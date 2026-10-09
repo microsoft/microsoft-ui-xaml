@@ -20,7 +20,6 @@
                 <!-- Shared Person cell templates and their converters (Templates\PersonCellTemplates.xaml).
                      Pages reference the keys with {StaticResource}; they never fork them. -->
                 <templates:PersonCellTemplates />
-                <!-- Every other converter key a page template uses (Converters\Converters.xaml). -->
                 <converters:SampleConverters />
             </ResourceDictionary.MergedDictionaries>
 
@@ -65,18 +64,14 @@
             <x:Double x:Key="ColWidthDatePicker">310</x:Double>
             <!-- Full TimePicker: its own MinWidth is ~242 plus margins. -->
             <x:Double x:Key="ColWidthTimePicker">256</x:Double>
-            <!-- ShiftTimeCompactTemplate (24 h, MinWidth 0, PickerSizing.FitToWidth): hh:mm fully
-                 visible at this width. Without FitToWidth the picker's inner button stays 242 px
-                 and the minutes are clipped. -->
+            <!-- Requires PickerSizing.FitToWidth; otherwise the picker keeps 242 px and clips the minutes. -->
             <x:Double x:Key="ColWidthTimeCompact">150</x:Double>
             <!-- CalendarDatePicker, the default date editor (JoinCalendarDateTemplate). -->
             <x:Double x:Key="ColWidthCalendarDate">170</x:Double>
             <x:Double x:Key="ColWidthStatus">120</x:Double>
             <x:Double x:Key="ColWidthNumber">100</x:Double>
-            <!-- CheckBox column. A sortable header reserves 8 + 8 px padding and the 16 px sort
-                 indicator, so "Active" (about 40 px at 14 px SemiBold) and "Seeded" need 84. -->
+            <!-- A sortable header reserves 8 + 8 px padding and the 16 px sort indicator. -->
             <x:Double x:Key="ColWidthBoolean">84</x:Double>
-            <!-- CheckBox column with a longer header, e.g. "Resolved" (about 57 px). -->
             <x:Double x:Key="ColWidthBooleanWide">96</x:Double>
             <!-- PersonPicture 28 px plus padding (AvatarTemplate). -->
             <x:Double x:Key="ColWidthAvatar">56</x:Double>
@@ -133,8 +128,6 @@
                 <Setter Property="FontSize" Value="12"/>
                 <Setter Property="TextWrapping" Value="Wrap"/>
             </Style>
-            <!-- Canonical rail: one StackPanel per section, a caption under the
-                 Shaping controls, and the Status grid. -->
             <Style x:Key="RailSectionStyle" TargetType="StackPanel">
                 <Setter Property="Spacing" Value="4"/>
             </Style>

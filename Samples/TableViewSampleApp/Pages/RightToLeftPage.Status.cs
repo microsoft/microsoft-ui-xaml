@@ -9,8 +9,6 @@ using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 
 namespace TableViewSampleApp.Pages;
 
-// RightToLeftPage readouts: FlowDirection, Shown, Sort, Column order and Rows. The Shaping and Last
-// action rows are written by SamplePageBase; this file only computes the page's own values.
 public sealed partial class RightToLeftPage
 {
     protected override void RefreshReadouts()

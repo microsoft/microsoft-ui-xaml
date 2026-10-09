@@ -17,11 +17,6 @@ using TableViewTextColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColu
 
 namespace TableViewSampleApp.Helpers;
 
-/// <summary>
-/// Generic helpers for the canonical Shaping section every table page carries. Pages keep only
-/// their feature code; key resolution, group identity, labels and selecting an item come from here
-/// so the behaviour is identical everywhere.
-/// </summary>
 public static class SampleShaping
 {
     /// <summary>Bucket label used for a null or blank group key.</summary>
@@ -66,22 +61,8 @@ public static class SampleShaping
         return string.IsNullOrWhiteSpace(value) ? NoneKey : value;
     }
 
-    /// <summary>
-    /// Selects <paramref name="item"/> with ONE <c>Select(int)</c> call.
-    /// <para>
-    /// Workaround for an API gap: TableView selection is index-only in this release
-    /// (<c>TableView.Select(int)</c>; <c>SelectedItem</c> is read-only, TableView.idl "Selection")
-    /// and the displayed projection, which includes group headers, has no IndexOf. The table's rows
-    /// ItemsRepeater is bound to that projection, so this looks the item up in the repeater's
-    /// ItemsSourceView (a read-only scan: no selection events) and selects that index once. Returns
-    /// false, and leaves the selection as it was, when the item is not displayed (filtered out,
-    /// removed) or no row is realized yet.
-    /// </para>
-    /// <para>
-    /// Usually not needed after a reshape: GroupBy, Sort and Filter raise a Reset, and the control
-    /// re-anchors the selection by item identity itself.
-    /// </para>
-    /// </summary>
+    // Workaround: selection is index-only in this release and the displayed projection (with group
+    // headers) has no IndexOf, so look the item up in the rows ItemsRepeater's ItemsSourceView.
     public static bool SelectItem(TableView? table, object? item)
     {
         if (table is null || item is null)
@@ -104,7 +85,6 @@ public static class SampleShaping
         return ReferenceEquals(table.SelectedItem, item);
     }
 
-    /// <summary>Selects the item a realized <paramref name="row"/> shows (see <see cref="SelectItem"/>).</summary>
     public static bool SelectRow(TableView table, TableViewRow row)
     {
         var index = ProjectionIndexOf(row);
@@ -139,7 +119,6 @@ public static class SampleShaping
         return -1;
     }
 
-    // The ItemsRepeater that hosts the row containers, and the row's element directly under it.
     private static ItemsRepeater? RowsRepeaterOf(TableViewRow row, out UIElement container)
     {
         container = row;
@@ -220,18 +199,8 @@ public static class SampleShaping
             ? path
             : (column as TableViewTextColumn)?.Binding?.Path?.Path;
 
-    /// <summary>
-    /// <paramref name="rows"/> in (approximately) the order <paramref name="table"/> shows them, for
-    /// the page readouts. TableView v1 does not expose its projection, so this approximates the
-    /// control's rules; it is not a parity implementation (string order uses .NET culture comparison,
-    /// and custom comparers, key-selector sorts and collapsed groups are not modelled): a stable
-    /// sort on the active column's key (<paramref name="sortKey"/>(row, path); culture-aware for
-    /// text, nulls first) and, when <paramref name="groupKey"/> is given (grouped mode), groups in
-    /// the order their first row appears. The verbs apply in the order they were declared: a sort
-    /// declared before GroupBy (<paramref name="sortOrdersGroups"/>, see
-    /// <see cref="Controls.ShapingOptions.SortOrdersGroups"/>) orders the rows and so the groups;
-    /// one declared after it sorts within each group, and the groups keep source order.
-    /// </summary>
+    // Approximates the table's row order for the readouts only: TableView v1 does not expose its
+    // projection. A sort declared before GroupBy orders the groups; one declared after sorts within them.
     public static IEnumerable<T> InViewOrder<T>(
         TableView? table,
         IEnumerable<T> rows,

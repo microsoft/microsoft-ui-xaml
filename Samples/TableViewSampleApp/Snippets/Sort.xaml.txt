@@ -49,8 +49,7 @@
     SelectionChanged="OnTeamsSelectionChanged"
     VerticalAlignment="Stretch"
     MinHeight="320">
-    <!-- The template renders a control; SortMemberPath names the value that orders
-         the rows. A text column without SortMemberPath sorts by its Binding path. -->
+    <!-- Template columns sort by SortMemberPath; a text column without one sorts by its Binding path. -->
     <tv:TableViewTemplateColumn x:Name="CrestColumn" Header="Crest" Width="{StaticResource ColWidthNarrow}" CellTemplate="{StaticResource CrestTemplate}" SortMemberPath="Team" HeaderToolTip="Club crest, drawn from the team's initials. Sorts by team name."/>
     <tv:TableViewTextColumn x:Name="GroupColumn" Header="Group" Width="{StaticResource ColWidthNarrow}" IsReadOnly="True" HeaderToolTip="Group stage group, A–H." Binding="{Binding Group}"/>
     <tv:TableViewTextColumn x:Name="TeamColumn" Header="Team" Width="*" MinWidth="{StaticResource ColMinWidthStar}" HeaderToolTip="Team name. Editable: press F2 or double-click a cell." Binding="{Binding Team, Mode=TwoWay}"/>

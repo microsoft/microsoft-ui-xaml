@@ -1,14 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Keyboard navigation + accessibility. Two tables, so this page does not stretch its Example
-    (multi-table rule, see SamplePresenter): every Example row is Auto, both tables
-    have a fixed Height so they still virtualize, and the page scrolls.
-    Top: keyboard navigation over mixed cells, with focus sentinels either side. Its Shaping
-    section is the shared ShapingOptions, attached to the top table only.
-    Bottom: a frozen, deterministic UIA / Narrator assessment fixture over 24 records, with its own
-    Fixture setup section and grouping switch. Try it / What to look for are presenter attributes;
-    Status is the shared StatusPanel (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.KeyboardNavPage"
     NavigationCacheMode="Disabled"
@@ -21,12 +11,8 @@
 
     <Page.Resources>
         <!-- snippet -->
-        <!-- Assessment fixture. The templates ARE the fixture: the intrinsic one deliberately sets NO
-             AutomationProperties.Name, so the provider must compose a name from the displayed content,
-             and the explicit one sets a name that differs from the displayed text. No compensating
-             TableViewTextColumn in either template-only scenario: Button peers supply intrinsic names
-             and only the explicit case sets Name. That asymmetry IS the thing under assessment, so do
-             not "fix" it by naming the intrinsic buttons. -->
+        <!-- The asymmetry is under assessment: the intrinsic template sets NO AutomationProperties.Name and the
+             explicit one sets a name that differs from the displayed text. Do not "fix" it. -->
         <DataTemplate x:Key="IntrinsicRecordTemplate" x:DataType="models:AccessibilityRow">
             <Button Click="OnTemplateContentClick" HorizontalAlignment="Stretch">
                 <TextBlock Text="{x:Bind DisplayText, Mode=OneWay}" TextWrapping="Wrap"/>
@@ -55,8 +41,7 @@
         WhatToLookFor="Arrow keys move between cells; Enter moves into the control of a template cell and Esc brings focus back to the cell. Tab leaves the table, because its body is one tab stop. The Photo column is decorative and never takes focus. Rows, Columns and Expected RowOrColumnMajor are what a UI Automation inspector should report for the first table; compare them rather than trusting them, because these readouts come from the app, not from UI Automation.">
 
         <controls:SamplePresenter.Example>
-            <!-- Two tables on one page, so StretchExample="False": every Example row is Auto and each
-                 table has a fixed Height, which keeps it bounded (and virtualized) while the page scrolls. -->
+            <!-- Two tables: every Example row is Auto and each table has a fixed Height, so both stay virtualized. -->
             <Grid RowSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -107,9 +92,7 @@
                             AutomationProperties.HelpText="Focus sentinel just before the fixture table."/>
                     <Border Style="{StaticResource TableHostBorderStyle}">
                         <!-- snippet -->
-                        <!-- Columns are built in code, so one fixture table switches between the four scenarios
-                             without re-creating the control or the 24 source objects. Height 248 shows about five
-                             rows, which keeps record 24 off screen. -->
+                        <!-- Height 248 shows about five rows, which keeps record 24 off screen. -->
                         <tv:TableView
                             x:Name="AssessmentTable"
                             AutomationProperties.AutomationId="KeyboardNavFixtureTable"

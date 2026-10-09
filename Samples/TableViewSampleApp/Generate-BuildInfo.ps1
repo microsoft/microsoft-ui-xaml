@@ -1,11 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See LICENSE in the project root for license information.
 
-# Generate-BuildInfo.ps1: write BuildInfo.g.cs (shown on the About page) from the current git state.
-# Invoked by the csproj _GenerateBuildInfo target. Robust against MSBuild's
-# %-escape eating that broke the inline git log --pretty=%s pattern. The file is rewritten only
-# when something other than the build time changed, so an unchanged tree stays incremental.
-# The snippet check lives in tools\Update-Snippets.ps1 (csproj _CheckTableViewSnippets).
+# Writes BuildInfo.g.cs (shown on the About page) from the current git state; run by the csproj
+# _GenerateBuildInfo target.
 #
 # Usage:  powershell -File Generate-BuildInfo.ps1 -OutFile <path> -ProjectDir <path>
 [CmdletBinding()]
@@ -60,8 +57,7 @@ internal static class BuildInfo
 
 $dir = Split-Path $OutFile -Parent
 if ($dir -and -not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-# BuildTimestamp is the time this file last changed: compare without it, so a rebuild of the same tree
-# does not touch the file and force CoreCompile.
+# Compare without BuildTimestamp so rebuilding the same tree does not touch the file and force CoreCompile.
 $stamp = '(?m)^\s*public static string BuildTimestamp .*$'
 $existing = if (Test-Path $OutFile) { [System.IO.File]::ReadAllText($OutFile) } else { $null }
 if ($null -ne $existing -and (($existing -replace $stamp, '') -ceq ($content -replace $stamp, ''))) {

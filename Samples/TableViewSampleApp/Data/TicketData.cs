@@ -96,8 +96,7 @@ public static class TicketData
     }
 
     // <snippet HeadersVisibility>
-    // Group key for a ticket (passed to Shaping.Attach, which hands it to GroupBy as the key
-    // selector). Never empty: GroupBy fails fast on an empty group identity.
+    // Never empty: GroupBy fails fast on an empty group identity.
     public static object GroupKeyOf(SupportTicket? ticket, string key)
     {
         var value = key switch

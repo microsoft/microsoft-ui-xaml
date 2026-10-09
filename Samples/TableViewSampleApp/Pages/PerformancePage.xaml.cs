@@ -46,8 +46,7 @@ public sealed partial class PerformancePage : SamplePageBase
         PerfTable.ItemsSource = _source;
         CaptureBaseline();
 
-        // No re-selection fallback: the control keeps the selection on its item across a reshape,
-        // and the fallback's deferred row lookup would only add noise to the measurement.
+        // No re-selection fallback: its deferred row lookup would add noise to the measurement.
         Shaping.RestoreSelection = false;
         Shaping.TimeCall = Timed;   // GroupBy, ClearGroupBy, Expand all and Collapse all are timed like every run
         InitializeSample(Status, Shaping.Attach(PerfTable, _source));
@@ -283,10 +282,8 @@ public sealed partial class PerformancePage : SamplePageBase
         }
     }
 
-    // Under an active GroupBy every Add regroups every row added so far, synchronously, so 10,000
-    // Adds cost O(n^2) and would freeze the window for minutes. The grouped run therefore does
-    // two things: (1) it times per-row Adds under the live grouping only until a time cap, and
-    // (2) it does the real 10,000 Adds with the grouping detached, then groups once.
+    // Under GroupBy every Add regroups all rows so far (O(n^2)): time per-row Adds only up to a cap,
+    // then do the real Adds with the grouping detached and group once.
     private async Task RunPerItemAddGroupedAsync(IReadOnlyList<Person> rows)
     {
         var key = Shaping.SelectedKey;
@@ -365,8 +362,6 @@ public sealed partial class PerformancePage : SamplePageBase
         }
     }
 
-    // ---- Shaping is timed like every other run (Shaping.TimeCall = Timed) ------------------
-
     protected override void OnShapingApplied(ShapingAppliedEventArgs e)
     {
         var ms = e.ElapsedMilliseconds;
@@ -379,8 +374,6 @@ public sealed partial class PerformancePage : SamplePageBase
     protected override void OnShapingAction(ShapingActionEventArgs e) =>
         e.Message += string.Format(CultureInfo.CurrentCulture, " in {0:N0} ms", e.ElapsedMilliseconds);
     // </snippet>
-
-    // ---- Memory -------------------------------------------------------------------------
 
     private void CaptureBaseline()
     {

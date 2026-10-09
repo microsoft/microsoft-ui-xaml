@@ -7,9 +7,6 @@ using TableViewSampleApp.Helpers;
 
 namespace TableViewSampleApp.Pages;
 
-// VirtualizationPage readouts: Realized rows, Realized share, Row pool, Peak pool, Row height,
-// Columns and Rows, sampled twice a second while the page is loaded. The Shaping and Last action
-// rows are written by SamplePageBase; this file only computes the page's own values.
 public sealed partial class VirtualizationPage
 {
     private int _peakPool;

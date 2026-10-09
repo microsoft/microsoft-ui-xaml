@@ -68,8 +68,7 @@ public static class LeagueData
     public static ObservableCollection<LeagueTeam> All() =>
         new(s_rows.Select(Clone));
 
-    /// <summary>Qualification band for a points total: Qualified (12+), Playoff (7–11) or
-    /// Eliminated. Never returns the empty string, so it is also safe as a GroupBy key.</summary>
+    // Never empty, so it is also safe as a GroupBy key.
     public static string Band(object? value) => value switch
     {
         int points when points >= 12 => "Qualified",
@@ -78,8 +77,7 @@ public static class LeagueData
         _ => SampleShaping.NoneKey,
     };
 
-    /// <summary>GroupBy key for a standings row and a group-key Tag (Group, Standing, Country,
-    /// IsSeeded). Never blank: an empty group identity fails fast.</summary>
+    // Never blank: an empty group identity fails fast.
     public static object GroupKeyOf(LeagueTeam? team, string key)
     {
         if (team is null)

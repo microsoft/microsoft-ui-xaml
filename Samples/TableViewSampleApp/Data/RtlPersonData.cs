@@ -9,17 +9,10 @@ using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Data;
 
-/// <summary>
-/// People with Arabic and Hebrew names and notes for the Right-to-left page, kept
-/// out of the page so it holds only the RTL behaviour. <see cref="Mixed"/> mixes the first <see cref="MixedInCount"/>
-/// into <see cref="PersonData"/>'s rows; "Add a person" takes the rest in turn through <see cref="Create"/>.
-/// </summary>
 public static class RtlPersonData
 {
-    /// <summary>How many right-to-left people <see cref="Mixed"/> puts into the top rows.</summary>
     public const int MixedInCount = 5;
 
-    /// <summary>The employee id of the first right-to-left person.</summary>
     public const int FirstEmployeeId = 1041;
 
     private static readonly (string First, string Last, string Department, string Role, string Office, string Notes)[] s_people =
@@ -34,10 +27,8 @@ public static class RtlPersonData
         ("מיכל", "פרץ", "HR", "Recruiter", "Redmond", "אחראית על גיוס מהנדסים ועל תהליך הקליטה."),
     };
 
-    /// <summary>First names the "Rename selected person" action cycles through.</summary>
     public static IReadOnlyList<string> Renames { get; } = ["سارة", "רוני", "كريم", "דניאל"];
 
-    /// <summary>PersonData.Take(40) with the first five Arabic / Hebrew people mixed into the top rows.</summary>
     public static ObservableCollection<Person> Mixed()
     {
         var people = PersonData.Take(40);
@@ -49,7 +40,6 @@ public static class RtlPersonData
         return people;
     }
 
-    /// <summary>The <paramref name="index"/>-th right-to-left person (cycling), with <paramref name="employeeId"/>.</summary>
     public static Person Create(int index, int employeeId)
     {
         var seed = s_people[index % s_people.Length];

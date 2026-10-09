@@ -11,11 +11,7 @@ using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Converters;
 
-/// <summary>
-/// Turns a row item into rich, non-string tooltip content. A converter is how a computed tooltip is
-/// authored when the content comes from a binding rather than a callback: the binding has no Path,
-/// so the whole row item arrives here.
-/// </summary>
+// The binding has no Path, so the whole row item arrives here.
 public sealed partial class RowCardConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
@@ -25,8 +21,7 @@ public sealed partial class RowCardConverter : IValueConverter
             return null!;
         }
 
-        // A fresh element per evaluation. The returned UIElement is parented by the cell's ToolTip,
-        // and one element cannot have two parents, so this must not be cached.
+        // One element cannot have two parents: build a fresh element per evaluation, never cache it.
         var panel = new StackPanel { Spacing = 4 };
         panel.Children.Add(new TextBlock { Text = person.FullName, FontWeight = FontWeights.SemiBold });
         panel.Children.Add(new TextBlock { Text = string.Format(CultureInfo.CurrentCulture, "{0}, {1}", person.Role, person.Department), Opacity = 0.75 });

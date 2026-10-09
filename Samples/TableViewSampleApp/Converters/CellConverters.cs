@@ -13,26 +13,12 @@ using Windows.UI.ViewManagement;
 
 namespace TableViewSampleApp.Converters;
 
-/// <summary>
-/// Shared palette for every chip and tinted cell in the gallery (Department, Active, Standing,
-/// Country, Priority, Salary, Task Manager heat).
-/// <list type="number">
-///   <item><description>Each brush is created once (<see cref="CreateTint"/> / <see cref="CreateDot"/>)
-///     and handed back by reference. A converter that returns <c>new SolidColorBrush(...)</c>
-///     allocates per realized cell per call, which under virtualization is continuous churn.</description></item>
-///   <item><description>Under a Windows Contrast theme the brand colours are dropped: tints become
-///     transparent and dots take the system window-text colour, so the user's guaranteed contrast
-///     pair wins. The brushes are RECOLOURED IN PLACE by <see cref="Refresh"/> (MainWindow calls it
-///     when the system colours change), so cells that are already realized follow a switch at once;
-///     a converter alone would only re-run when the bound value changes. Light and Dark need no
-///     change: the tints are translucent and the dots are mid-tone.</description></item>
-/// </list>
-/// </summary>
+// Brushes are created once and shared (no per-cell allocation under virtualization). Refresh recolours
+// them in place on a Contrast theme switch, so realized cells follow without re-conversion.
 public static class ChipBrushes
 {
     private const byte TintAlpha = 0x33;
 
-    // Every palette brush with its brand colour; declared first so the initializers below can register.
     private static readonly List<(SolidColorBrush Brush, Windows.UI.Color Color, bool IsDot)> s_palette = new();
     private static readonly AccessibilitySettings s_accessibilitySettings = new();
     private static readonly UISettings s_uiSettings = new();
@@ -53,24 +39,17 @@ public static class ChipBrushes
     /// <summary>True while Windows runs a Contrast theme. The property is live.</summary>
     public static bool IsHighContrast => s_accessibilitySettings.HighContrast;
 
-    /// <summary>Shared transparent brush: "no tint" in every theme.</summary>
     public static Brush Transparent => s_transparent;
 
-    /// <summary>The fallback (slate) dot, for a value with no colour of its own.</summary>
     public static Brush FallbackDot => s_fallbackDot;
 
-    /// <summary>A translucent chip background (alpha <paramref name="alpha"/>); transparent under a Contrast theme.</summary>
     public static SolidColorBrush CreateTint(byte r, byte g, byte b, byte alpha = TintAlpha) =>
         Register(ColorHelper.FromArgb(alpha, r, g, b), isDot: false);
 
-    /// <summary>A solid chip dot; the system window-text colour under a Contrast theme.</summary>
     public static SolidColorBrush CreateDot(byte r, byte g, byte b) =>
         Register(ColorHelper.FromArgb(0xFF, r, g, b), isDot: true);
 
-    /// <summary>
-    /// Re-reads the Contrast state and recolours every palette brush in place. Call on the UI
-    /// thread when the system colours change (UISettings.ColorValuesChanged).
-    /// </summary>
+    // Call on the UI thread.
     public static void Refresh()
     {
         var highContrast = IsHighContrast;

@@ -20,20 +20,12 @@ using TableViewSource = Microsoft.UI.Xaml.Controls.Tabular.TableViewSource;
 
 namespace TableViewSampleApp.Controls;
 
-/// <summary>
-/// The Shaping section every table page carries: Flat / Grouped (plus the disabled hierarchy
-/// modes), a group-key selector, Expand all and Collapse all. It reshapes the page's ONE
-/// <see cref="TableViewSource"/> in place with GroupBy / ClearGroupBy (the control keeps the
-/// selection across the reshape) and gates the controls that need the Grouped mode. The page
-/// keeps its feature code and reacts to <see cref="ShapingApplying"/> / <see cref="ShapingApplied"/> through SamplePageBase.
-/// </summary>
 [ContentProperty(Name = nameof(GroupKeys))]
 public sealed partial class ShapingOptions : UserControl
 {
     private TableView? _table;
     private TableViewSource? _source;
 
-    // Declaration order of the grouping and the table's sort axis (see SortOrdersGroups).
     private int _declarations;
     private int _groupDeclaredAt = -1;
     private int _sortDeclaredAt = -1;
@@ -46,32 +38,18 @@ public sealed partial class ShapingOptions : UserControl
         GroupKeys = new CallbackCollection<object>(InsertGroupKey, RemoveGroupKey);
     }
 
-    /// <summary>Raised before GroupBy / ClearGroupBy.</summary>
     public event EventHandler<ShapingApplyingEventArgs>? ShapingApplying;
 
-    /// <summary>Raised after the call returned, the selection was restored and the gating updated.</summary>
     public event EventHandler<ShapingAppliedEventArgs>? ShapingApplied;
 
-    /// <summary>Expand all / Collapse all ran (which one, how long, and the Last action narration).</summary>
     public event EventHandler<ShapingActionEventArgs>? ActionPerformed;
 
-    /// <summary>The fallback re-selected the item after a reshape the control did not re-anchor (see Apply).</summary>
     public event EventHandler? SelectionRestored;
 
-    /// <summary>
-    /// The table's sort changed (header click or API) and <see cref="SortOrdersGroups"/> is up to
-    /// date. Raised after this control has recorded the sort, so a readout that depends on the
-    /// sort-vs-GroupBy order is correct whichever Sorted handler ran first.
-    /// </summary>
     public event EventHandler? SortStateChanged;
 
-    /// <summary>The page's group keys: <c>&lt;ComboBoxItem Content="label" Tag="key"/&gt;</c> items.</summary>
     public IList<object> GroupKeys { get; }
 
-    /// <summary>
-    /// Prefix of the four AutomationIds: <c>{P}ShapingModeSelector</c>, <c>{P}GroupKeySelector</c>,
-    /// <c>{P}ExpandAllGroupsButton</c>, <c>{P}CollapseAllGroupsButton</c>. Use the page's nav Tag.
-    /// </summary>
     public string? AutomationIdPrefix
     {
         get => (string?)GetValue(AutomationIdPrefixProperty);
@@ -82,7 +60,6 @@ public sealed partial class ShapingOptions : UserControl
         DependencyProperty.Register(nameof(AutomationIdPrefix), typeof(string), typeof(ShapingOptions),
             new PropertyMetadata(null, (d, e) => ((ShapingOptions)d).ApplyAutomationIds((string?)e.NewValue ?? string.Empty)));
 
-    /// <summary>The page-specific sentence under the Shaping heading.</summary>
     public string? Description
     {
         get => (string?)GetValue(DescriptionProperty);
@@ -93,7 +70,6 @@ public sealed partial class ShapingOptions : UserControl
         DependencyProperty.Register(nameof(Description), typeof(string), typeof(ShapingOptions),
             new PropertyMetadata(null, (d, e) => ((ShapingOptions)d).DescriptionText.Text = (string?)e.NewValue ?? string.Empty));
 
-    /// <summary>"flat" (default) or "grouped": the mode applied when the page starts.</summary>
     public string InitialMode
     {
         get => (string)GetValue(InitialModeProperty);
@@ -104,7 +80,6 @@ public sealed partial class ShapingOptions : UserControl
         DependencyProperty.Register(nameof(InitialMode), typeof(string), typeof(ShapingOptions),
             new PropertyMetadata("flat", (d, e) => ((ShapingOptions)d).ShapingModeSelector.SelectedIndex = (string?)e.NewValue == "grouped" ? 1 : 0));
 
-    /// <summary>False disables the Grouped mode too (a page with nothing to group).</summary>
     public bool IsGroupingAvailable
     {
         get => (bool)GetValue(IsGroupingAvailableProperty);
@@ -115,38 +90,24 @@ public sealed partial class ShapingOptions : UserControl
         DependencyProperty.Register(nameof(IsGroupingAvailable), typeof(bool), typeof(ShapingOptions),
             new PropertyMetadata(true, (d, e) => ((ShapingOptions)d).GroupedItem.IsEnabled = (bool)e.NewValue));
 
-    /// <summary>False on the volume pages, which skip the re-selection fallback after a reshape.</summary>
     public bool RestoreSelection { get; set; } = true;
 
-    /// <summary>
-    /// Optional timer for the GroupBy / ClearGroupBy and Expand all / Collapse all calls: runs the
-    /// call and returns its milliseconds (reported as ElapsedMilliseconds). Null: a plain Stopwatch
-    /// around the call. Performance sets its Timed (settle the heap, call, synchronous layout).
-    /// </summary>
     public Func<Action, long>? TimeCall { get; set; }
 
     public TableView? Table => _table;
 
     public TableViewSource? Source => _source;
 
-    /// <summary>"flat" or "grouped". Written only after GroupBy / ClearGroupBy returned.</summary>
     public string AppliedMode { get; private set; } = "flat";
 
-    /// <summary>The group key last applied (the ComboBoxItem Tag).</summary>
     public string AppliedKey { get; private set; } = string.Empty;
 
     public bool IsGrouped => AppliedMode == "grouped";
 
-    /// <summary>
-    /// True when the table's sort was declared before the current GroupBy: the source applies its
-    /// verbs in declaration order, so that sort orders the rows and therefore the groups. A sort
-    /// declared after GroupBy sorts within each group, and the groups keep source order. Every
-    /// GroupBy (including <see cref="ReapplyIfGroupedOn"/>) is a new declaration; re-sorting the
-    /// same column keeps its place, sorting another column declares a new sort.
-    /// </summary>
+    // TableViewSource applies its verbs in declaration order: a sort declared before GroupBy orders the
+    // groups; one declared after it only sorts within each group.
     public bool SortOrdersGroups => _sortDeclaredAt >= 0 && _sortDeclaredAt < _groupDeclaredAt;
 
-    /// <summary>"Flat" or "Grouped by Department".</summary>
     public string AppliedText => SampleShaping.ShapingText(IsGrouped, GroupKeySelector);
 
     public string SelectedMode => SampleShaping.SelectedTag(ShapingModeSelector, "flat");
@@ -162,12 +123,8 @@ public sealed partial class ShapingOptions : UserControl
 
     private string DefaultKey => GroupKeys.Count > 0 && GroupKeys[0] is ComboBoxItem { Tag: string tag } ? tag : string.Empty;
 
-    /// <summary>
-    /// Connects the section to the page's table and its one source. Call once, after
-    /// InitializeComponent, and pass the result to SamplePageBase.InitializeSample. Until then the
-    /// selectors' SelectionChanged events (InitializeComponent, GroupKeys insertion) do nothing.
-    /// </summary>
-    /// <param name="groupKeyOf">GroupBy key for a row and a key Tag. Default: <see cref="SampleShaping.KeyOf"/> for Person.</param>
+    // Call once after InitializeComponent; until then SelectionChanged from InitializeComponent and
+    // GroupKeys insertion is ignored.
     public ShapingOptions Attach(TableView table, TableViewSource source, Func<object?, string, object>? groupKeyOf = null)
     {
         if (!ReferenceEquals(table, _table))
@@ -198,8 +155,7 @@ public sealed partial class ShapingOptions : UserControl
         return this;
     }
 
-    // Called by SamplePageBase.InitializeSample once it listens to the events: grouped-first pages
-    // apply their grouping here; flat pages only set the gating (no ClearGroupBy on a fresh source).
+    // Flat pages only set the gating: no ClearGroupBy on a fresh source.
     internal void ApplyInitialState()
     {
         if (_source is not null && InitialMode == "grouped")
@@ -212,7 +168,6 @@ public sealed partial class ShapingOptions : UserControl
         }
     }
 
-    /// <summary>Applies the selected mode and key to the source. <paramref name="announce"/>: narrate it as Last action.</summary>
     public void Apply(bool announce)
     {
         if (_table is null || _source is null)
@@ -238,11 +193,8 @@ public sealed partial class ShapingOptions : UserControl
         AppliedKey = key;
         _groupDeclaredAt = mode == "grouped" ? ++_declarations : -1;
 
-        // The reshape raises a Reset and the control re-anchors the selection by item identity, so
-        // normally there is nothing to do. Workaround: when the selected row's GROUP KEY changed
-        // (an edit, then ReapplyIfGroupedOn) this build of the control drops the selection, so on
-        // the next low-priority turn, once the projection is rebuilt, select the item again with
-        // one index lookup. It never clears a selection the user made meanwhile.
+        // Workaround: the control re-anchors the selection after a reshape, except when the selected row's
+        // group key changed; then re-select it once the projection is rebuilt.
         if (RestoreSelection && selected is not null && !ReferenceEquals(_table.SelectedItem, selected))
         {
             var table = _table;
@@ -264,7 +216,7 @@ public sealed partial class ShapingOptions : UserControl
     }
 
     // <snippet Groups Sort CellEditing CellTemplating Density Filter GridLinesVisibility HeadersVisibility TextWrap Virtualization>
-    // Every page reshapes its ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+    // Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
     private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
     {
         if (mode == "grouped")
@@ -274,18 +226,13 @@ public sealed partial class ShapingOptions : UserControl
         }
         else
         {
-            // Hierarchical (tree) rows are not available in this release, so the "Hierarchy" and
-            // "Grouped hierarchy" modes ship disabled. When hierarchy ships, it composes with the
-            // GroupBy stage on this same source rather than replacing it.
+            // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
             source.ClearGroupBy();
         }
     }
     // </snippet>
 
-    /// <summary>
-    /// Call after ANY write to the grouped-on property (an action or an in-cell edit): GroupBy does
-    /// not move a row whose key changed, so the grouping is applied again. Returns true if it was.
-    /// </summary>
+    // GroupBy does not move a row whose key changed: call after any write to the grouped-on property.
     public bool ReapplyIfGroupedOn(string? propertyName)
     {
         if (IsGrouped && propertyName == AppliedKey)
@@ -297,13 +244,8 @@ public sealed partial class ShapingOptions : UserControl
         return false;
     }
 
-    /// <summary>
-    /// Call after the page re-declared the active sort on the source (<c>TableViewSource.Sort</c> with
-    /// the column's path, to re-sort after a value change). The source then owns that axis as a NEW
-    /// declaration, after any GroupBy, so a sort that used to order the groups would only sort within
-    /// them. In that case GroupBy is applied again, after the sort, so the groups keep their order.
-    /// Returns true if it was.
-    /// </summary>
+    // Re-declaring the sort makes it a new declaration after GroupBy, so it would only sort within
+    // groups; GroupBy is applied again after it so the groups keep their order.
     public bool OnSortRedeclared()
     {
         var sortOrderedGroups = SortOrdersGroups;
@@ -331,7 +273,6 @@ public sealed partial class ShapingOptions : UserControl
         ActionPerformed?.Invoke(this, new ShapingActionEventArgs(ShapingAction.CollapsedAll, elapsedMilliseconds, "Collapsed all groups"));
     }
 
-    /// <summary>Disables the mode and key selectors while a long page action runs; false restores the gating.</summary>
     public void SetBusy(bool busy)
     {
         if (busy)

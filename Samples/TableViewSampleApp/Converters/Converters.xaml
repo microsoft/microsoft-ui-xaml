@@ -1,30 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Every converter a page template uses, registered once and merged in App.xaml, so pages resolve
-    the keys with {StaticResource} and never register converters themselves. The shared Person
-    converters live with their templates in Templates\PersonCellTemplates.xaml.
--->
 <ResourceDictionary
     x:Class="TableViewSampleApp.Converters.SampleConverters"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="using:TableViewSampleApp.Converters">
 
-    <!-- League standings (LeagueConverters.cs): Sorting -->
     <converters:SortStandingTintConverter x:Key="SortStandingTintConverter"/>
     <converters:SortStandingDotConverter x:Key="SortStandingDotConverter"/>
     <converters:SortStandingTextConverter x:Key="SortStandingTextConverter"/>
     <converters:SortCountryTintConverter x:Key="SortCountryTintConverter"/>
     <converters:SortCountryDotConverter x:Key="SortCountryDotConverter"/>
 
-    <!-- Group headers (GroupConverters.cs): Grouped rows -->
     <converters:GroupExpansionTextConverter x:Key="GroupExpansionTextConverter"/>
     <converters:GroupCountTextConverter x:Key="GroupCountTextConverter"/>
 
-    <!-- Processes (ProcessConverters.cs): Task Manager -->
     <converters:ProcessHeatBrushConverter x:Key="ProcessHeatBrushConverter"/>
 
-    <!-- Showcase tints (ShowcaseConverters.cs) -->
     <converters:ShowcaseDepartmentTintConverter x:Key="ShowcaseDepartmentTintConverter"/>
     <converters:ShowcaseDepartmentDotConverter x:Key="ShowcaseDepartmentDotConverter"/>
     <converters:ShowcaseSalaryTintConverter x:Key="ShowcaseSalaryTintConverter"/>

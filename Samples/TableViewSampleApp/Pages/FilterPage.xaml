@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Filtering: TableViewSource.Filter / ClearFilter on the same source that grouping uses. The
-    columns are built in code (BuildColumns) from the shared Person cell templates, which shows
-    how to resolve them from Application.Current.Resources.
-    The page holds only the filter behaviour: the table, its empty template, the Filter section
-    and the Actions. Try it / What to look for are presenter attributes; Shaping and Status are the
-    shared ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.FilterPage"
     NavigationCacheMode="Disabled"
@@ -19,9 +11,7 @@
 
     <Page.Resources>
         <!-- snippet -->
-        <!-- Shown when the filter narrows the projection to zero rows.
-             MaxWidth: the row area scrolls sideways, so it measures its content at infinite width;
-             without a cap the wrapping text lays out as one line wider than the table. -->
+        <!-- MaxWidth: the row area measures at infinite width, so uncapped text lays out as one wide line. -->
         <DataTemplate x:Key="FilterEmptyTemplate" x:DataType="system:Object">
             <StackPanel Spacing="4" Padding="24" MaxWidth="400" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="No rows match the filter" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>

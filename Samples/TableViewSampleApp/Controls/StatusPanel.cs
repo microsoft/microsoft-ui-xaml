@@ -10,27 +10,8 @@ using Microsoft.UI.Xaml.Markup;
 
 namespace TableViewSampleApp.Controls;
 
-/// <summary>
-/// The rail's Status section: a "Status" heading over a two-column grid of
-/// label/value rows. The page declares only its own value TextBlocks, in display order, each with
-/// <c>controls:StatusPanel.Label="…"</c>; the panel adds the label and the value style, and always
-/// ends with the fixed Rows → Shaping → Last action rows.
-/// <para>
-/// Only Last action is a live region (Polite): every action rewrites all readouts, so making each
-/// one live would queue several announcements per click. The panel raises LiveRegionChanged on Last
-/// action itself, once per text change. A readout that must be announced on its own sets
-/// AutomationProperties.LiveSetting (and the page raises the event).
-/// </para>
-/// <para>
-/// The readouts stay in the page's namescope (<c>ActiveSortText.Text = …</c> keeps working) and
-/// are placed in the grid synchronously as XAML adds them, so they exist before the page
-/// constructor's first RefreshReadouts.
-/// </para>
-/// <para>
-/// AutomationIds: a readout without an explicit AutomationId gets <c>{AutomationIdPrefix}{x:Name}</c>;
-/// the tail rows are <c>{P}RowsText</c>, <c>{P}ShapingModeText</c> and <c>{P}LastActionText</c>.
-/// </para>
-/// </summary>
+// Only Last action is a live region: every action rewrites all readouts, so making each one live
+// would queue several announcements per click.
 [ContentProperty(Name = nameof(Readouts))]
 public partial class StatusPanel : RailSection
 {
@@ -62,10 +43,8 @@ public partial class StatusPanel : RailSection
         Rebuild();
     }
 
-    /// <summary>The page's value TextBlocks, in display order, before the fixed tail rows.</summary>
     public IList<UIElement> Readouts { get; }
 
-    /// <summary>Prefix of every derived AutomationId: the page's nav Tag (e.g. "Sort").</summary>
     public string? AutomationIdPrefix
     {
         get => (string?)GetValue(AutomationIdPrefixProperty);
@@ -76,7 +55,6 @@ public partial class StatusPanel : RailSection
         DependencyProperty.Register(nameof(AutomationIdPrefix), typeof(string), typeof(StatusPanel),
             new PropertyMetadata(null, (d, e) => ((StatusPanel)d).DeriveAutomationIds()));
 
-    /// <summary>The "Rows" value. Written by the page's RefreshReadouts.</summary>
     public string Rows
     {
         get => (string)GetValue(RowsProperty);
@@ -87,7 +65,6 @@ public partial class StatusPanel : RailSection
         DependencyProperty.Register(nameof(Rows), typeof(string), typeof(StatusPanel),
             new PropertyMetadata("0", (d, e) => ((StatusPanel)d)._rowsValue.Text = (string?)e.NewValue ?? string.Empty));
 
-    /// <summary>The "Shaping" value ("Flat" / "Grouped by Department"). Written by SamplePageBase.</summary>
     public string ShapingText
     {
         get => (string)GetValue(ShapingTextProperty);
@@ -98,7 +75,6 @@ public partial class StatusPanel : RailSection
         DependencyProperty.Register(nameof(ShapingText), typeof(string), typeof(StatusPanel),
             new PropertyMetadata("Flat", (d, e) => ((StatusPanel)d)._shapingValue.Text = (string?)e.NewValue ?? string.Empty));
 
-    /// <summary>The "Last action" value. Written only by SamplePageBase.SetLastAction.</summary>
     public string LastAction
     {
         get => (string)GetValue(LastActionProperty);
@@ -139,7 +115,6 @@ public partial class StatusPanel : RailSection
         DependencyProperty.Register(nameof(ShowLastAction), typeof(bool), typeof(StatusPanel),
             new PropertyMetadata(true, (d, e) => ((StatusPanel)d).Rebuild()));
 
-    /// <summary>Label shown left of a readout (attached to the readout TextBlock).</summary>
     public static string GetLabel(DependencyObject element) => (string)element.GetValue(LabelProperty);
 
     public static void SetLabel(DependencyObject element, string value) => element.SetValue(LabelProperty, value);
@@ -187,7 +162,6 @@ public partial class StatusPanel : RailSection
         Rebuild();
     }
 
-    // Grid children in reading order: label, value, label, value, …, then the enabled tail rows.
     private void Rebuild()
     {
         if (_grid is null)
@@ -220,8 +194,7 @@ public partial class StatusPanel : RailSection
         var changed = !string.Equals(_lastActionValue.Text, text, System.StringComparison.Ordinal);
         _lastActionValue.Text = text;
 
-        // A TextBlock does not raise LiveRegionChanged when its text changes; raise it explicitly,
-        // and only for a new message, so Narrator reads each action once.
+        // TextBlock does not raise LiveRegionChanged on a text change; raise it once per new message.
         if (changed && _lastActionValue.IsLoaded)
         {
             (FrameworkElementAutomationPeer.FromElement(_lastActionValue)
@@ -242,8 +215,7 @@ public partial class StatusPanel : RailSection
         }
     }
 
-    // Only when the page did not set one: {prefix}{x:Name}. Re-run on Loading in case XAML set the
-    // Name after it added the element.
+    // Re-run on Loading in case XAML set the Name after it added the element.
     private void DeriveAutomationId(FrameworkElement value)
     {
         if (string.IsNullOrEmpty(value.Name) || !string.IsNullOrEmpty(AutomationProperties.GetAutomationId(value)))

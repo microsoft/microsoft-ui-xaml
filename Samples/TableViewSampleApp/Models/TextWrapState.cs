@@ -7,10 +7,6 @@ using Microsoft.UI.Xaml;
 
 namespace TableViewSampleApp.Models;
 
-/// <summary>
-/// Wrapping state shared by every Bio cell through x:Bind. Raises PropertyChanged so realized
-/// cells update in place when the rail changes.
-/// </summary>
 public sealed partial class TextWrapState : INotifyPropertyChanged
 {
     private TextWrapping _textWrapping = TextWrapping.Wrap;

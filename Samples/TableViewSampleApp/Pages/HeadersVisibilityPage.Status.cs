@@ -7,9 +7,6 @@ using TableViewSampleApp.Helpers;
 
 namespace TableViewSampleApp.Pages;
 
-// HeadersVisibilityPage readouts: Headers, Resolved and Rows (Sort is written by OnTableSorted).
-// The Shaping and Last action rows are written by SamplePageBase; this file only computes the
-// page's own values.
 public sealed partial class HeadersVisibilityPage
 {
     protected override void RefreshReadouts()

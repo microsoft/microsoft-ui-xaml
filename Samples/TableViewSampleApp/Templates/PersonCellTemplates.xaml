@@ -32,11 +32,8 @@
     <converters:SalaryTextConverter x:Key="SalaryTextConverter"/>
     <converters:AvatarImageConverter x:Key="AvatarImageConverter"/>
 
-    <!-- Photo (ColWidthAvatar). PersonPicture shows the image when AvatarPath resolves and
-         Person.Initials otherwise, so the cell is never blank. Initials are bound explicitly:
-         PersonPicture derives none from an Arabic or Hebrew DisplayName. The path goes through
-         AvatarImageConverter: never bind a raw string to an ImageSource. Decorative: the Name
-         column carries the row's identity. -->
+    <!-- Initials are bound explicitly: PersonPicture derives none from an Arabic or Hebrew DisplayName.
+         Never bind a raw string to an ImageSource: the path goes through AvatarImageConverter. -->
     <DataTemplate x:Key="AvatarTemplate" x:DataType="models:Person">
         <PersonPicture
             Width="28"
@@ -50,10 +47,7 @@
             AutomationProperties.AccessibilityView="Raw"/>
     </DataTemplate>
 
-    <!-- Department chip (ColWidthChip). Read-only. Tint and dot come from the cached
-         ChipBrushes and drop to transparent / theme text under a Contrast theme. The label is
-         the visible and the accessible value, so colour never carries meaning alone. The chip root
-         carries AutomationProperties.Name, which the cell reads first ("Department, Marketing"). -->
+    <!-- The chip root's AutomationProperties.Name is what the cell reads first ("Department, Marketing"). -->
     <!-- snippet CellTemplating -->
     <DataTemplate x:Key="DepartmentChipTemplate" x:DataType="models:Person">
         <Border
@@ -166,10 +160,8 @@
             AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Shift start for {0}'}"/>
     </DataTemplate>
 
-    <!-- Compact 24 h TimePicker (ColWidthTimeCompact). MinWidth="0" plus PickerSizing.FitToWidth
-         let it shrink to the column: without FitToWidth the inner FlyoutButton keeps its 242 px
-         MinWidth and the cell clips the minutes ("9" for 09:45). hh:mm is fully visible at the
-         token width. -->
+    <!-- MinWidth="0" plus PickerSizing.FitToWidth let it shrink; without FitToWidth the inner
+         FlyoutButton keeps its 242 px MinWidth and the minutes are clipped. -->
     <DataTemplate x:Key="ShiftTimeCompactTemplate" x:DataType="models:Person">
         <TimePicker
             Time="{x:Bind ShiftStart, Mode=TwoWay}"

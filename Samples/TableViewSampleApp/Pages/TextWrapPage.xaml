@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Text wrap + row height: a wrapping TextBlock in a TableViewTemplateColumn, with TextWrapping,
-    MaxLines and the column width driven from the rail, and the resulting distinct row heights.
-    The page holds only that behaviour: the table, the Bio template, the Wrapping and Bio column
-    width sections and the Actions. Try it / What to look for are presenter attributes; Shaping
-    and Status are the shared ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.TextWrapPage"
     NavigationCacheMode="Disabled"

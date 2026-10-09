@@ -8,16 +8,11 @@ using Microsoft.UI.Xaml.Media;
 
 namespace TableViewSampleApp.Converters;
 
-/// <summary>
-/// Heat-map tint for a Task Manager metric cell: one blue hue whose opacity deepens with load, as
-/// in Windows 11 Task Manager. ConverterParameter names the metric (Cpu, Memory, Disk, Network).
-/// In a high-contrast theme the tint is dropped so the system colours apply.
-/// </summary>
+// ConverterParameter names the metric: Cpu, Memory, Disk or Network.
 public sealed partial class ProcessHeatBrushConverter : IValueConverter
 {
     private static SolidColorBrush[]? s_levels;
 
-    // Thresholds for the four steps above the base tint, per metric.
     private static readonly double[] s_cpu = { 0.5, 2, 5, 10 };
     private static readonly double[] s_memory = { 50, 200, 500, 1000 };
     private static readonly double[] s_disk = { 0.1, 0.5, 2, 5 };
@@ -25,8 +20,7 @@ public sealed partial class ProcessHeatBrushConverter : IValueConverter
 
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        // Created on first use, on the UI thread, and shared by every cell; ChipBrushes recolours
-        // them (transparent) while a Contrast theme is on.
+        // Created on first use on the UI thread; ChipBrushes recolours them under a Contrast theme.
         s_levels ??= new[] { 22, 38, 58, 82, 110 }
             .Select(alpha => ChipBrushes.CreateTint(96, 160, 240, (byte)alpha))
             .ToArray();

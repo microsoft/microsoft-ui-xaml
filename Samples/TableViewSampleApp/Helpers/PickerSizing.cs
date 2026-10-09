@@ -7,15 +7,8 @@ using Microsoft.UI.Xaml.Media;
 
 namespace TableViewSampleApp.Helpers;
 
-/// <summary>
-/// Lets a TimePicker or DatePicker shrink to a narrow cell.
-///
-/// Setting <c>MinWidth="0"</c> on the picker is not enough: the template's inner FlyoutButton
-/// keeps its own themed MinWidth (242 for TimePicker, 296 for DatePicker), so it is laid out at
-/// that width and clipped by the cell. A 24-hour TimePicker in a 150 px column then shows only
-/// the hour ("9" for 09:45). With <c>helpers:PickerSizing.FitToWidth="True"</c> the FlyoutButton
-/// follows the picker's width instead, so the hour and minute columns share what the cell gives.
-/// </summary>
+// MinWidth="0" alone is not enough: the template's inner FlyoutButton keeps its themed MinWidth
+// (242 TimePicker, 296 DatePicker) and is clipped. FitToWidth makes it follow the picker's width.
 public static class PickerSizing
 {
     private const string FlyoutButtonPartName = "FlyoutButton";

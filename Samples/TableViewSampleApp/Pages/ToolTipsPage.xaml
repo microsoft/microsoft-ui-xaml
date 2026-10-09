@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Tooltips: TableViewColumn.HeaderToolTip and TableViewColumn.CellToolTipBinding, both opt-in and
-    per column. The page holds only the tooltip behaviour: the table, the Email cell template, the
-    Cell tooltips and Header tooltips sections and the Actions. Try it / What to look for are
-    presenter attributes; Shaping and Status are the shared ShapingOptions / StatusPanel controls
-    (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.ToolTipsPage"
     NavigationCacheMode="Disabled"

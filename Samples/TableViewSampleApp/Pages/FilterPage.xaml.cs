@@ -326,9 +326,7 @@ public sealed partial class FilterPage : SamplePageBase
             }
         }
 
-        // GroupBy's key selector and the filter predicate are delegates, evaluated when they are
-        // applied, so apply both again. Each reshape is a Reset, and the control keeps the moved
-        // row selected (or clears the selection when the row no longer matches the filter).
+        // GroupBy's key selector and the filter predicate are delegates evaluated when applied, so re-apply both.
         ReapplyIfGroupedOn(key);
         ApplyFilter();
         SetLastAction(string.Format(

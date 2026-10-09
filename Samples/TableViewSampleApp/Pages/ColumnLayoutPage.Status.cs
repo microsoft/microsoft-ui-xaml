@@ -7,9 +7,6 @@ using TableViewSampleApp.Helpers;
 
 namespace TableViewSampleApp.Pages;
 
-// ColumnLayoutPage readouts: Column, Width / ActualWidth, MinWidth / MaxWidth, Resize and Rows. The
-// page has no Shaping section, so the Shaping row keeps StatusPanel's "Flat"; Last action is written
-// by SamplePageBase. This file only computes the page's own values.
 public sealed partial class ColumnLayoutPage
 {
     protected override void RefreshReadouts()

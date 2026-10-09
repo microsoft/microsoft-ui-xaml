@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Performance: time the common TableView workloads on the UI thread. Each Action is one timed
-    run; results go to the Status readouts. Navigation cache stays disabled because a run can hold
-    a 100,000-row dataset. The page holds only the timed runs: the table, the Column set section
-    and the Actions. Try it / What to look for are presenter attributes; Shaping and Status are the
-    shared ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs); Shaping.TimeCall
-    times GroupBy and Expand / Collapse all like every other run.
--->
+<!-- Navigation cache stays disabled: a run can hold a 100,000-row dataset. -->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.PerformancePage"
     NavigationCacheMode="Disabled"
@@ -27,9 +20,7 @@
         <controls:SamplePresenter.Example>
             <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                 <!-- snippet -->
-                <!-- The table only shows the dataset; the runs live in the rail's Actions section. Exactly one
-                     * column (Name). Salary is formatted by the shared SalaryTextConverter (C0, current culture)
-                     and still sorts by the number, because a text column sorts by its Binding path. -->
+                <!-- Salary is formatted by a converter yet sorts by number: a text column sorts by its Binding path. -->
                 <tv:TableView
                     x:Name="PerfTable"
                     AutomationProperties.AutomationId="PerformanceTable"

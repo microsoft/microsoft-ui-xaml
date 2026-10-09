@@ -20,14 +20,8 @@ using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 
 namespace TableViewSampleApp.Pages;
 
-/// <summary>
-/// Sorting: TableView owns single-column sort STATE (direction, the header arrow, the
-/// SortByColumn / ToggleSortDirection / ClearSort API and the Sorted event) and reorders the
-/// bound rows itself. Template columns (Seeded CheckBox, Next match date picker, Kickoff time
-/// picker, Country and Standing chips) sort through SortMemberPath, by the value behind the
-/// control. Grouped, a sort applied after GroupBy reorders rows within each group; one applied
-/// before it orders the groups too (TableViewSource applies its verbs in declaration order).
-/// </summary>
+// Template columns sort through SortMemberPath, by the value behind the control. Grouped, a sort
+// declared after GroupBy sorts within each group; one declared before it orders the groups too.
 public sealed partial class SortPage : SamplePageBase
 {
     private bool _isResorting;
@@ -128,11 +122,8 @@ public sealed partial class SortPage : SamplePageBase
             return false;
         }
 
-        // SortByColumn ignores a request for the sort that is already applied. Re-declaring the
-        // same path on the source re-reads every key: one reshape and one Sorted, the column keeps
-        // its sort indicator, and the control keeps the selection on the same item. It is a new
-        // declaration, after any GroupBy, so OnSortRedeclared re-applies GroupBy when the sort
-        // used to order the groups.
+        // SortByColumn ignores a request for the sort already applied; re-declaring the same path on the
+        // source re-reads every key. That is a new declaration after any GroupBy, hence OnSortRedeclared.
         _isResorting = true;
         try
         {

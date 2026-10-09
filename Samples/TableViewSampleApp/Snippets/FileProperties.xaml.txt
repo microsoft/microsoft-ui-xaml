@@ -26,8 +26,7 @@
         SelectionChanged="OnPropSelectionChanged"
         VerticalAlignment="Stretch"
         MinHeight="320">
-        <!-- Property is fixed; Value takes the rest. Not Auto: an Auto column is
-             measured from the realized rows only, so it changes width while you scroll. -->
+        <!-- Not Auto: an Auto column is measured from the realized rows only, so it changes width while you scroll. -->
         <tv:TableViewTextColumn Header="Property" Width="{StaticResource ColWidthPropertyName}" Binding="{Binding Property}"/>
         <tv:TableViewTextColumn Header="Value" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Value}"/>
     </tv:TableView>

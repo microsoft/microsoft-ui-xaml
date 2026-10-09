@@ -1,9 +1,5 @@
-<!-- Assessment fixture. The templates ARE the fixture: the intrinsic one deliberately sets NO
-     AutomationProperties.Name, so the provider must compose a name from the displayed content,
-     and the explicit one sets a name that differs from the displayed text. No compensating
-     TableViewTextColumn in either template-only scenario: Button peers supply intrinsic names
-     and only the explicit case sets Name. That asymmetry IS the thing under assessment, so do
-     not "fix" it by naming the intrinsic buttons. -->
+<!-- The asymmetry is under assessment: the intrinsic template sets NO AutomationProperties.Name and the
+     explicit one sets a name that differs from the displayed text. Do not "fix" it. -->
 <DataTemplate x:Key="IntrinsicRecordTemplate" x:DataType="models:AccessibilityRow">
     <Button Click="OnTemplateContentClick" HorizontalAlignment="Stretch">
         <TextBlock Text="{x:Bind DisplayText, Mode=OneWay}" TextWrapping="Wrap"/>
@@ -47,9 +43,7 @@
 
 <!-- … -->
 
-<!-- Columns are built in code, so one fixture table switches between the four scenarios
-     without re-creating the control or the 24 source objects. Height 248 shows about five
-     rows, which keeps record 24 off screen. -->
+<!-- Height 248 shows about five rows, which keeps record 24 off screen. -->
 <tv:TableView
     x:Name="AssessmentTable"
     AutomationProperties.AutomationId="KeyboardNavFixtureTable"

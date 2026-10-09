@@ -12,8 +12,6 @@ using TableViewSampleApp.Helpers;
 
 namespace TableViewSampleApp.Pages;
 
-// TextWrapPage readouts: Wrapping, Bio width, Max lines, Row heights and Rows. The Shaping and Last
-// action rows are written by SamplePageBase; this file only computes the page's own values.
 public sealed partial class TextWrapPage
 {
     protected override void RefreshReadouts()

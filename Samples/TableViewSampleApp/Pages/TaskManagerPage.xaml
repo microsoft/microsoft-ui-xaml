@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Task Manager scenario: a 32 px command row (search, Run new task, End task) over one stretched
-    table, then the rail: Live data, Shaping, Actions, Status. The process list lives in
-    Data\ProcessData.cs. Try it / What to look for are presenter attributes; Shaping and Status are
-    the shared ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs). The page sets
-    no RequestedTheme: it follows the app theme, which the title-bar button owns.
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.TaskManagerPage"
     NavigationCacheMode="Disabled"
@@ -212,8 +205,7 @@
                 <controls:StatusPanel x:Name="Status" AutomationIdPrefix="TaskManager">
                     <TextBlock x:Name="SelectedProcessText" controls:StatusPanel.Label="Selected" Text="(none)"/>
                     <TextBlock x:Name="LiveText" controls:StatusPanel.Label="Live" Text="Every 2 seconds"/>
-                    <!-- Changes on every update, so it is not a live region (it would never stop talking):
-                         the page clears the Polite setting the panel gives every readout. -->
+                    <!-- Not a live region: it changes on every update, so the page clears the panel's Polite setting. -->
                     <TextBlock x:Name="TotalsText" controls:StatusPanel.Label="Totals" Text="CPU 0%" AutomationProperties.LiveSetting="Off"/>
                 </controls:StatusPanel>
             </StackPanel>

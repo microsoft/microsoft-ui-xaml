@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Empty state: TableView.EmptyTemplate, reached three ways (a null ItemsSource, a source emptied
-    in place, and a filter that matches nothing), flat or grouped.
-    The page holds only the empty-state behaviour: the table, its EmptyTemplate, the Data source
-    section and the Actions. Try it / What to look for are presenter attributes; Shaping and Status
-    are the shared ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.EmptyStatePage"
     NavigationCacheMode="Disabled"

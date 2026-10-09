@@ -8,13 +8,6 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace TableViewSampleApp.Controls;
 
-/// <summary>
-/// One section of a sample page's options rail: a Level 2 heading, an optional description, then
-/// the page's own children (buttons, selectors). A plain StackPanel with no template, so the UIA
-/// tree is exactly the inline pattern it replaces: a named group, the heading,
-/// the description, the controls. Children declared in XAML stay in the page's namescope, so
-/// their x:Name fields and Click handlers stay in the page.
-/// </summary>
 public partial class RailSection : StackPanel
 {
     private readonly TextBlock _heading;
@@ -36,10 +29,7 @@ public partial class RailSection : StackPanel
         Loading += (_, _) => HideNameFromAutomation();
     }
 
-    // WinUI reports an unset AutomationId as the element's Name, so a page's x:Name (needed to
-    // reach the section from code, e.g. x:Name="Status") would add an AutomationId the inline
-    // section never had. The x:Name field is already assigned by InitializeComponent, so the
-    // Name itself is no longer needed; FindName on it will not work.
+    // WinUI reports an unset AutomationId as the Name, so clear the x:Name (already assigned to the field).
     private void HideNameFromAutomation()
     {
         if (!string.IsNullOrEmpty(Name) && string.IsNullOrEmpty(AutomationProperties.GetAutomationId(this)))
@@ -48,7 +38,6 @@ public partial class RailSection : StackPanel
         }
     }
 
-    /// <summary>Section heading. Also the section's accessible name unless one is set explicitly.</summary>
     public string? Header
     {
         get => (string?)GetValue(HeaderProperty);
@@ -59,7 +48,6 @@ public partial class RailSection : StackPanel
         DependencyProperty.Register(nameof(Header), typeof(string), typeof(RailSection),
             new PropertyMetadata(null, (d, e) => ((RailSection)d).OnHeaderChanged((string?)e.NewValue)));
 
-    /// <summary>One or two sentences under the heading. No TextBlock is created while empty.</summary>
     public string? Description
     {
         get => (string?)GetValue(DescriptionProperty);
@@ -70,10 +58,6 @@ public partial class RailSection : StackPanel
         DependencyProperty.Register(nameof(Description), typeof(string), typeof(RailSection),
             new PropertyMetadata(null, (d, e) => ((RailSection)d).OnDescriptionChanged((string?)e.NewValue)));
 
-    /// <summary>
-    /// True for the first section in the rail: its heading keeps the style's top margin instead of
-    /// the 8 px that separates later sections.
-    /// </summary>
     public bool IsFirst
     {
         get => (bool)GetValue(IsFirstProperty);

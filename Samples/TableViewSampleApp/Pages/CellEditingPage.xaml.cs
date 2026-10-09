@@ -95,7 +95,6 @@ public sealed partial class CellEditingPage : SamplePageBase
     {
         if (!PeopleTable.CommitEdit())
         {
-            // No edit was open, or the editor's value was rejected.
             SetLastAction("CommitEdit returned false: no edit was open, or the value was rejected.");
         }
     }
@@ -104,7 +103,6 @@ public sealed partial class CellEditingPage : SamplePageBase
     {
         if (!PeopleTable.CancelEdit())
         {
-            // No edit was open.
             SetLastAction("CancelEdit returned false: no edit was open.");
         }
     }
@@ -171,11 +169,8 @@ public sealed partial class CellEditingPage : SamplePageBase
         return false;
     }
 
-    // Workaround: TableView v1 has no public focus-by-item API. Re-applying GroupBy recycles the
-    // row containers, and the control keeps focus at the same projected POSITION, so it would land
-    // on whatever container now sits where the edited row was, often a group header. After the next
-    // layout pass, put it back on the edited row in its new group. Not a pattern to copy: it walks
-    // the realized containers and focuses the row directly.
+    // Workaround, not a pattern to copy: TableView v1 has no focus-by-item API, and re-applying GroupBy
+    // keeps focus at the same projected position, often a group header.
     private void RestoreRowFocusAfterLayout(Person person)
     {
         void OnLayoutUpdated(object? sender, object e)
@@ -207,12 +202,8 @@ public sealed partial class CellEditingPage : SamplePageBase
         return null;
     }
 
-    // ---- Shaping: the grouped-value action is available only while grouped -----------------
-
     protected override void OnShapingApplied(ShapingAppliedEventArgs e) =>
         EditGroupedValueButton.IsEnabled = e.IsGrouped;
-
-    // ---- Actions ------------------------------------------------------------------------
 
     private void OnEditGroupedValueClick(object sender, RoutedEventArgs e)
     {

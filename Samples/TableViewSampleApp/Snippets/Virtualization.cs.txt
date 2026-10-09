@@ -16,17 +16,9 @@ if (IsGrouped)
 
 // …
 
-/// <summary>
-/// Selects row <paramref name="number"/> (1-based, source order) and scrolls to it.
-/// <para>
-/// Workaround, not a pattern to copy: this release has no TableView.ScrollIntoView, so the
-/// sample scrolls the template's body ScrollViewer to an estimated offset, then corrects the
-/// estimate from a realized row whose display index it knows (unrealized rows only have an
-/// estimated height), and finally lets the target row bring itself into view once it is
-/// realized. It relies on this page's preconditions: no sort (every column has CanSort=False),
-/// every group expanded, and a uniform row height.
-/// </para>
-/// </summary>
+// Workaround, not a pattern to copy: this release has no TableView.ScrollIntoView, so scroll the body
+// ScrollViewer to an estimated offset and correct it from a realized row. Assumes no sort, every
+// group expanded and a uniform row height.
 private void ScrollToRow(int number, string message)
 {
     if (_people.Count == 0)
@@ -78,9 +70,8 @@ private void ScrollToRow(int number, string message)
 
 // …
 
-// Reading realization: the control exposes no realized-row count, so the readout walks the
-// visual tree for TableViewRow (a public type). A row counts as realized when it is visible and
-// its bounds intersect the body viewport.
+// The control exposes no realized-row count, so walk the visual tree for TableViewRow and count the
+// visible rows that intersect the body viewport.
 private static bool InViewport(TableViewRow row, ScrollViewer scroller)
 {
     if (row.Visibility != Visibility.Visible || row.ActualHeight <= 0)
@@ -95,7 +86,7 @@ private static bool InViewport(TableViewRow row, ScrollViewer scroller)
 // …
 
 // From Controls\ShapingOptions.xaml.cs
-// Every page reshapes its ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+// Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
 private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
 {
     if (mode == "grouped")
@@ -105,9 +96,7 @@ private static void ApplyShaping(TableViewSource source, string mode, Func<objec
     }
     else
     {
-        // Hierarchical (tree) rows are not available in this release, so the "Hierarchy" and
-        // "Grouped hierarchy" modes ship disabled. When hierarchy ships, it composes with the
-        // GroupBy stage on this same source rather than replacing it.
+        // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
         source.ClearGroupBy();
     }
 }

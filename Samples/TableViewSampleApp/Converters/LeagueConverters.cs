@@ -9,12 +9,6 @@ using TableViewSampleApp.Data;
 
 namespace TableViewSampleApp.Converters;
 
-/// <summary>
-/// Chip palette for the standings' Standing and Country template columns. Every brush is
-/// created once into a static field and shared, so Convert never allocates. Under a Contrast
-/// theme the tint drops to transparent and the dot to the theme text brush (the shared
-/// <see cref="ChipBrushes"/> rule).
-/// </summary>
 internal static class LeagueChipPalette
 {
     private static readonly Dictionary<string, SolidColorBrush> s_standingTints = BuildStanding(dot: false);
@@ -61,7 +55,6 @@ internal static class LeagueChipPalette
     };
 }
 
-/// <summary>Chip background tint for the Standing template column. Returns a shared brush.</summary>
 public sealed partial class SortStandingTintConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
@@ -71,7 +64,6 @@ public sealed partial class SortStandingTintConverter : IValueConverter
         => throw new NotSupportedException();
 }
 
-/// <summary>Solid dot fill for the Standing chip. Returns a shared brush.</summary>
 public sealed partial class SortStandingDotConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
@@ -81,7 +73,6 @@ public sealed partial class SortStandingDotConverter : IValueConverter
         => throw new NotSupportedException();
 }
 
-/// <summary>Chip label: "Qualified", "Playoff" or "Eliminated".</summary>
 public sealed partial class SortStandingTextConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
@@ -91,7 +82,6 @@ public sealed partial class SortStandingTextConverter : IValueConverter
         => throw new NotSupportedException();
 }
 
-/// <summary>Chip background tint for the Country template column. Returns a shared brush.</summary>
 public sealed partial class SortCountryTintConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
@@ -101,7 +91,6 @@ public sealed partial class SortCountryTintConverter : IValueConverter
         => throw new NotSupportedException();
 }
 
-/// <summary>Solid dot fill for the Country chip. Returns a shared brush.</summary>
 public sealed partial class SortCountryDotConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)

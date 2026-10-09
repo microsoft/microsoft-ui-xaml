@@ -7,10 +7,6 @@ using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Pages;
 
-// KeyboardNavPage readouts: Selected index, Columns and Rows for the keyboard table, and Fixture
-// records, Fixture selection and Fixture IsEditing for the assessment fixture (Expected
-// RowOrColumnMajor is fixed). The Shaping and Last action rows are written by SamplePageBase; this
-// file only computes the page's own values.
 public sealed partial class KeyboardNavPage
 {
     protected override void RefreshReadouts()

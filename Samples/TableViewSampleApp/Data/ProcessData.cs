@@ -10,17 +10,10 @@ using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Data;
 
-/// <summary>
-/// The Task Manager page's process list (moved out of the page): a fixed snapshot of apps,
-/// background and Windows processes, some with child processes, plus the inbox apps "Run new
-/// task" starts in turn. Metric values are left at zero; the page's simulation fills them.
-/// </summary>
 public static class ProcessData
 {
-    /// <summary>The Task Manager categories, in display order.</summary>
     public static IReadOnlyList<string> Categories { get; } = new[] { "Apps", "Background processes", "Windows processes" };
 
-    // Run new task cycles through real inbox apps.
     private static readonly (string Name, string Glyph, double Memory)[] s_newTasks =
     {
         ("Paint", "\uE790", 62.4),
@@ -31,17 +24,12 @@ public static class ProcessData
         ("Media Player", "\uE8D6", 74.6),
     };
 
-    /// <summary>Group key for a process and a group-key Tag (Category or StatusText). Never blank.</summary>
     public static object GroupKeyOf(ProcessItem? process, string key)
     {
         var value = key == nameof(ProcessItem.StatusText) ? process?.StatusText : process?.Category;
         return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
     }
 
-    /// <summary>
-    /// The <paramref name="index"/>-th "Run new task" process: the inbox apps in turn, numbered
-    /// "(2)", "(3)", … from the second round. Running, in the Apps category.
-    /// </summary>
     public static ProcessItem NewTask(int index)
     {
         var template = s_newTasks[index % s_newTasks.Length];
@@ -56,12 +44,10 @@ public static class ProcessData
         };
     }
 
-    /// <summary>A new collection with every process (and its children) and their status text.</summary>
     public static ObservableCollection<ProcessItem> All()
     {
         var processes = new ObservableCollection<ProcessItem>();
 
-        // ── Apps ──
         processes.Add(new ProcessItem
         {
             Name = "Calendar",
@@ -260,7 +246,6 @@ public static class ProcessData
             IsHighCpu = true,
         });
 
-        // ── Background processes ──
         processes.Add(new ProcessItem
         {
             Name = "Antimalware Service Executable",
@@ -449,7 +434,6 @@ public static class ProcessData
             MemoryBaseline = 0.6,
         });
 
-        // ── Windows processes ──
         processes.Add(new ProcessItem
         {
             Name = "Client Server Runtime Process",
@@ -534,8 +518,7 @@ public static class ProcessData
             IsHighCpu = true,
         });
 
-        // Every row states its status: Task Manager shows Running unless a process is suspended or
-        // in efficiency mode. Suspended UWP hosts use no CPU (see TaskManagerPage.RandomizeValues).
+        // Task Manager shows Running unless a process is suspended or in efficiency mode.
         foreach (var process in processes.Concat(processes.SelectMany(parent => parent.Children)))
         {
             process.StatusText = process.IsEfficiency

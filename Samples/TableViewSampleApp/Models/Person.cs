@@ -49,18 +49,12 @@ public sealed class Person : INotifyPropertyChanged
 
     /// <summary>
     /// Single-character initial. Falls back to '?' when neither name is set. The shared
-    /// AvatarTemplate uses <see cref="Initials"/> instead.
     /// </summary>
     public string Initial => _firstName.Length > 0
         ? _firstName.Substring(0, 1)
         : (_lastName.Length > 0 ? _lastName.Substring(0, 1) : "?");
 
-    /// <summary>
-    /// Avatar initials: the first text element (grapheme) of the first name and of the last
-    /// name, e.g. "AC" for Ava Chen; Arabic and Hebrew names work the same way.
-    /// AvatarTemplate binds PersonPicture.Initials to this, because PersonPicture derives no
-    /// initials from an Arabic or Hebrew DisplayName and would show the generic glyph.
-    /// </summary>
+    // AvatarTemplate binds this: PersonPicture derives no initials from an Arabic or Hebrew DisplayName.
     public string Initials => FirstTextElement(_firstName) + FirstTextElement(_lastName);
 
     private static string FirstTextElement(string value)

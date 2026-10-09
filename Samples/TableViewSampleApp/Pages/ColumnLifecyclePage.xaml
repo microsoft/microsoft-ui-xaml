@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Column lifecycle: add, remove, hide, show and reorder TableViewColumn instances through the
-    observable TableView.Columns vector, over rows that can be grouped at the same time. The page
-    holds only the column behaviour: the table, the Column visibility and Column order sections and
-    the Actions. Try it / What to look for are presenter attributes; Shaping and Status are the
-    shared ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.ColumnLifecyclePage"
     NavigationCacheMode="Disabled"
@@ -26,8 +19,7 @@
         <controls:SamplePresenter.Example>
             <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                 <!-- snippet -->
-                <!-- The columns are declared in XAML; the page then moves, hides, adds and removes them in code.
-                     Template columns sort by SortMemberPath, the value behind the control. -->
+                <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
                 <tv:TableView
                     x:Name="PeopleTable"
                     AutomationProperties.AutomationId="ColumnLifecycleTable"

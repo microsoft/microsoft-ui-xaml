@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Sorting: single-column sort state owned by TableView (header clicks, SortByColumn,
-    ToggleSortDirection, ClearSort, the Sorted event) on a standings table whose template
-    columns sort by SortMemberPath: a date picker, a time picker, a CheckBox and two chips.
-    The page holds only the sort behaviour: the table, its templates, the Programmatic sort section
-    and the Actions. Try it / What to look for are presenter attributes; Shaping and Status are the
-    shared ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.SortPage"
     NavigationCacheMode="Disabled"
@@ -20,10 +12,7 @@
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <Page.Resources>
-        <!-- The templates are page-private because they are typed to LeagueTeam. Each editor is
-             two-way bound and carries a per-row accessible name; RowAutomationNameConverter
-             comes from the shared Templates dictionary and the chip converters from
-             Converters\Converters.xaml. -->
+        <!-- Page-private: the templates are typed to LeagueTeam. Each editor carries a per-row accessible name. -->
 
         <!-- Crest: initials from the club name, so the cell is never blank. Decorative. -->
         <DataTemplate x:Key="CrestTemplate" x:DataType="models:LeagueTeam">
@@ -130,9 +119,7 @@
             </Border>
         </DataTemplate>
 
-        <!-- Shown when "Clear all rows" empties the standings, flat or grouped.
-             MaxWidth: the row area scrolls sideways, so it measures its content at infinite width;
-             without a cap the wrapping text lays out as one line wider than the table. -->
+        <!-- MaxWidth: the row area measures at infinite width, so uncapped text lays out as one wide line. -->
         <DataTemplate x:Key="SortEmptyTemplate" x:DataType="system:Object">
             <StackPanel Spacing="4" Padding="24" MaxWidth="400" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="No teams to show" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>
@@ -169,8 +156,7 @@
                     SelectionChanged="OnTeamsSelectionChanged"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
-                    <!-- The template renders a control; SortMemberPath names the value that orders
-                         the rows. A text column without SortMemberPath sorts by its Binding path. -->
+                    <!-- Template columns sort by SortMemberPath; a text column without one sorts by its Binding path. -->
                     <tv:TableViewTemplateColumn x:Name="CrestColumn" Header="Crest" Width="{StaticResource ColWidthNarrow}" CellTemplate="{StaticResource CrestTemplate}" SortMemberPath="Team" HeaderToolTip="Club crest, drawn from the team's initials. Sorts by team name."/>
                     <tv:TableViewTextColumn x:Name="GroupColumn" Header="Group" Width="{StaticResource ColWidthNarrow}" IsReadOnly="True" HeaderToolTip="Group stage group, A–H." Binding="{Binding Group}"/>
                     <tv:TableViewTextColumn x:Name="TeamColumn" Header="Team" Width="*" MinWidth="{StaticResource ColMinWidthStar}" HeaderToolTip="Team name. Editable: press F2 or double-click a cell." Binding="{Binding Team, Mode=TwoWay}"/>

@@ -1,6 +1,5 @@
-<!-- There is no virtualization switch to set: bind a large source and TableView realizes only
-     the rows in the viewport. Exactly one * column (Role); the rest use width tokens, never
-     Auto, because Auto re-measures against whatever rows happen to be realized. -->
+<!-- No virtualization switch: bind a large source and only the viewport's rows are realized. Width
+     tokens, never Auto: Auto re-measures against whichever rows happen to be realized. -->
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.AutomationId="VirtualizationTable"
