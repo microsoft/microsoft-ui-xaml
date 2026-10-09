@@ -124,11 +124,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies the TableView's UIA BoundingRectangle ends at its own layout box, not at the realized cache rows below the body viewport.")]
         public void TableViewBoundingRectangleExcludesRowsBelowViewport()
         {
-            // ScrollingTableView is Height=300 over 200 rows, so the body repeater realizes cache rows well below the
-            // viewport. ScrollOffsetTextBlock is the next element in the same StackPanel, so its top is a scale-free
-            // bound on where the table really ends. FrameworkElementAutomationPeer's default bounds union every
-            // realized descendant; without TableViewAutomationPeer::GetBoundingRectangleCore the table reports
-            // roughly twice its rendered height and overlaps the text block.
+            // ScrollOffsetTextBlock follows the table in the same StackPanel, so its top is a scale-free bound on
+            // where the table really ends.
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem))
@@ -154,15 +151,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsLessThanOrEqual(tableBounds.Bottom, nextBounds.Top + 1,
                     "The table's bounding rectangle must end at its own box, above the element laid out after it.");
 
-                // Top-left: the header strip starts where the table does, at any scale (a wrong DIP->physical
-                // conversion shows up here at 150%).
+                // A wrong DIP->physical conversion shows up here at 150%.
                 Verify.IsLessThanOrEqual(Math.Abs(tableBounds.Left - headerHostBounds.Left), 1,
                     "The table's left edge must be its own layout box's left edge.");
                 Verify.IsLessThanOrEqual(Math.Abs(tableBounds.Top - headerHostBounds.Top), 1,
                     "The table's top edge must be its own layout box's top edge.");
 
-                // Horizontal: ScrollingTableView is Width=520 Height=300 while its columns sum to 840 DIP, so the
-                // unclipped union is both wider and taller. The aspect ratio is scale-free.
+                // Columns sum to 840 DIP, so the unclipped union is wider too. The aspect ratio is scale-free.
                 double aspect = (double)tableBounds.Width / tableBounds.Height;
                 Log.Comment("Aspect ratio {0:F3}, layout box 520x300 = {1:F3}.", aspect, 520.0 / 300.0);
                 Verify.IsLessThan(Math.Abs(aspect - (520.0 / 300.0)), 0.03,
@@ -174,9 +169,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies the TableView's UIA BoundingRectangle stays on its layout box when the body is scrolled to the middle, with cache rows realized ABOVE the viewport too.")]
         public void TableViewBoundingRectangleStaysOnLayoutBoxWhenScrolled()
         {
-            // At offset 0 nothing is realized above the viewport, so the unscrolled test cannot see top inflation.
-            // After a scroll to the middle the repeater keeps cache rows on both sides.
-            // Failure means the table's rectangle grows upward (or moves) as the user scrolls.
+            // At offset 0 nothing is realized above the viewport, so only a scrolled table can show top inflation.
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem))
@@ -196,7 +189,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 var before = tableView.BoundingRectangle;
                 string offsetsBefore = ReadScrollOffsets();
 
-                // 200 rows in a 300px table: ten notches land well inside the list, far from both ends.
                 WheelAtPoint(CentreOf(tableView), -10 * 120);
                 Wait.ForIdle();
 

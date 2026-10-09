@@ -217,8 +217,7 @@ bool TableView::TryFocusParentRow(winrt::UIElement const& container)
 
 void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired, bool subtree)
 {
-    // Consume the gesture state first, so a request that goes nowhere cannot leave it behind for
-    // an unrelated later request (a UIA Expand(), for one).
+    // Consume the gesture state first so a request that goes nowhere can't leak it to a later one.
     winrt::FocusState gestureState = winrt::FocusState::Unfocused;
     if (auto const header = container.try_as<winrt::TableViewGroupHeader>())
     {
@@ -323,12 +322,9 @@ void TableView::CaptureContainerFocusForRestore(
 
     if (auto const control = stateSource)
     {
-        // Any real focus state is worth restoring for a header. A band click focuses the header with
-        // FocusState::Pointer (TableViewGroupHeader::OnPointerReleased) and then collapses it; that
-        // keyboard focus location matters even though pointer focus draws no visual. The gesture
-        // decides the restored state when known: Space on a header that a click focused is a
-        // keyboard toggle and should come back with a focus visual. Data rows keep
-        // keyboard/programmatic only, because the row restore always focuses with Keyboard state.
+        // Headers restore pointer focus too: a band click focuses then collapses the header, and that
+        // focus location matters. Data rows keep keyboard/programmatic only, because the row restore
+        // always focuses with Keyboard state. A known gesture decides the restored state.
         const bool isHeader = container.try_as<winrt::TableViewGroupHeader>() != nullptr;
         const auto state = gestureState != winrt::FocusState::Unfocused ? gestureState : control.FocusState();
         const bool restorable = isHeader
@@ -351,9 +347,8 @@ bool TableView::CanRestoreContainerFocus(winrt::UIElement const& capturedContain
         return false;
     }
 
-    // The restore exists to recover focus the reshape stranded. If the user (or the app) has put
-    // focus somewhere outside the table in the meantime, leave it there. ItemsRepeater moves focus
-    // off a cleared container to a realized neighbour, which is still inside the table.
+    // Leave focus the user moved outside the table alone. ItemsRepeater moves focus off a cleared
+    // container to a realized neighbour, which is still inside.
     auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
     if (!focused)
     {
@@ -1149,7 +1144,6 @@ void TableView::ClearGroupHeaderElement(winrt::TableViewGroupHeader const& heade
     // scroll can still call Expand()/Row()/ContainingGrid() on this element -- nulling the owner
     // turns those into silent no-ops, which is worse than the ancestor walk it replaced. A weak
     // ref costs nothing to keep and stays correct.
-    // A press that began on this group must not complete as a toggle of the next group.
     winrt::get_self<TableViewGroupHeader>(header)->ResetPointerStateInternal();
     header.ClearValue(winrt::ContentControl::ContentTemplateProperty());
 }

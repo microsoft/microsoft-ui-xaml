@@ -384,13 +384,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a pointer click on a group header band moves keyboard focus to that header, taking it away from an unrelated control, and that the next key acts on that header.")]
         public void GroupHeaderPointerClickMovesKeyboardFocus()
         {
-            // Spec: dev-spec "Pointer" - a click on a row or cell makes it the keyboard focus target; the group
-            //   header band is the same kind of body container (ListViewItem/TreeViewItem do the same).
-            // The click also collapses the group, and the reshape recycles the header container, so the header is
-            //   re-found after the reshape and the test proves the CONSEQUENCE (Enter re-opens the same group)
-            //   rather than trusting a HasKeyboardFocus read on a UIObject resolved before the click.
-            // Failure means: the click toggles the group but keyboard focus stays on whatever had it before, so
-            //   the next Left/Right/Enter acts somewhere other than the band the user just clicked.
+            // The collapse recycles the header container, so it is re-found and the test checks the consequence
+            //   (Enter re-opens the same group) rather than a pre-click UIObject's HasKeyboardFocus.
             using (var setup = new TestSetupHelper(PageName))
             {
                 // Resolve toolbar controls before the grouped table realizes (see GroupHeaderPointerAndPressedVisualStates).
@@ -426,8 +421,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.LeftClick(groupHeader);
                 Wait.ForIdle();
 
-                // Observe everything before asserting anything (Verify throws): the collapse, the fresh header and
-                // where focus went are separate bugs.
+                // Observe everything before asserting (Verify throws).
                 rowsHost = GetRowsHost(tableView);
                 int rowsAfterClick = CountRows(rowsHost);
                 UIObject freshHeader = GetFirstGroupHeader(rowsHost);
@@ -445,7 +439,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(freshHasFocus, "A pointer click on a group header band must move keyboard focus to that header.");
                 Verify.IsFalse(dummyButton.HasKeyboardFocus, "Focus must leave the previously focused unrelated control.");
 
-                // The consequence: the next key acts on the header that was clicked.
                 KeyboardHelper.PressKey(Key.Enter);
                 Wait.ForIdle();
                 rowsHost = GetRowsHost(tableView);
@@ -458,10 +451,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a press on a group header band that is dragged off before release neither toggles the group nor moves keyboard focus.")]
         public void GroupHeaderPointerPressDraggedOffDoesNothing()
         {
-            // Click semantics: activation happens on release INSIDE the band. The header takes focus on that release,
-            //   not on press, so that moving focus off an open editor (which commits it on a later turn and can
-            //   reshape the table) never happens in the middle of a gesture that may still be cancelled.
-            // Failure means: a cancelled press still toggles the group or steals keyboard focus.
             using (var setup = new TestSetupHelper(PageName))
             {
                 Button dummyButton = FindElement.ById<Button>(DummyButton);
