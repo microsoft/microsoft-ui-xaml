@@ -252,6 +252,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Loads an icon under a Grid with AnimatedIcon.State "Initial State", then in one UI-thread pass sets
+        // Source to ChevronDownSmall, Settings and finally null, changing the Grid's State to "Normal", "PointerOver"
+        // and "" in between.
+        // Expected: each Source change immediately replaces the hosted composition visual (two different non-null
+        // visuals, then none); the icon ends with State "" and no recorded transition segment.
+        // Failure means: setting Source does not synchronously swap or remove the animated visual, parent State changes
+        // do not reach the icon, or a transition is recorded although no source is set.
         [TestMethod]
         public void CanChangeSourceAfterState()
         {
@@ -273,6 +280,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(" |  | ", DescribeLastSegment(animatedIcon));
         }
 
+        // Scenario: Loads an icon with the mock source MockIAnimatedIconSource2, whose markers are deliberately
+        // incomplete, and steps State through a, b, c, d, e, f, b, "0.12345" and "Failure".
+        // Expected: each transition resolves its markers in the documented fallback order: "XToY_Start"/"XToY_End",
+        // then "XToY", then "Y", then any marker ending in "ToY_End", then Y parsed as a number, else 0.0 (e.g. "fTob |
+        // | aTob_End", "0.12345ToFailure |  | 0.0").
+        // Failure means: AnimatedIcon's marker lookup and fallback order for state transitions changed or is broken.
         [TestMethod]
         public void TransitionFallbackLogic()
         {
@@ -319,6 +332,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: Places an icon with no Source in a StackPanel, then sets Source to
+        // AnimatedChevronDownSmallVisualSource.
+        // Expected: the height is 0 without a source; afterwards the icon has a real height (over 10), is as wide as
+        // the StackPanel and stays square because the 48x48 visual is scaled uniformly.
+        // Failure means: setting Source does not invalidate layout, or measure does not scale the visual uniformly to
+        // the available width.
         [TestMethod]
         public void ChangingSourcePropertyChangesRenderSize()
         {
@@ -339,6 +358,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsLessThan(Math.Abs(GetActualWidth(icon) - height), 1.0);
         }
 
+        // Scenario: Measures an icon showing the 48x48 AnimatedBackVisualSource against several constraints, including
+        // infinite width and/or height.
+        // Expected: the desired size keeps the 1:1 aspect ratio and fits the tighter side: 60x60 for 100x60, 32x32 for
+        // 32x96, 24x24 for infinity x 24, 36x36 for 36 x infinity, and the natural 48x48 when both sides are infinite.
+        // Failure means: MeasureOverride no longer scales the visual uniformly or mishandles unbounded constraints.
         [TestMethod]
         public void MeasureScalesVisualUniformlyToAvailableSize()
         {
@@ -353,6 +377,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(new Size(48, 48), MeasureIcon(icon, new Size(double.PositiveInfinity, double.PositiveInfinity)));
         }
 
+        // Scenario: Measures an icon that is not in the live tree and whose source creates a visual with a natural size
+        // of 0x0, once with 100x100 and once with 0x0 available.
+        // Expected: the desired size is 0x0 in both cases.
+        // Failure means: MeasureOverride mishandles a zero-size visual (for example dividing by zero and reporting a
+        // NaN, infinite or non-zero size).
         [TestMethod]
         public void MeasureReturnsZeroForZeroSizeVisual()
         {
@@ -363,6 +392,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(new Size(0, 0), MeasureIcon(icon, new Size(0, 0)));
         }
 
+        // Scenario: Arranges three icons showing the 48x48 back-arrow visual in a Canvas at 96x48 (wide), 96x96 (large)
+        // and 48x96 (tall).
+        // Expected: the root visual stays 48x48, is scaled by the smaller ratio and centered: wide -> offset (24,0)
+        // scale 1; large -> offset (0,0) scale 2; tall -> offset (0,24) scale 1.
+        // Failure means: ArrangeOverride computes the wrong scale or centering offset for the animated visual.
         [TestMethod]
         public void ArrangeCentersAndScalesAnimatedVisual()
         {
@@ -386,6 +420,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(new Vector2(48, 48), GetRootVisualSize(tallIcon));
         }
 
+        // Scenario: Loads an icon with no Source and a SymbolIconSource(Accept) FallbackIconSource.
+        // Expected: no animated visual is hosted; the icon's root panel has 2 children: the collapsed internal path and
+        // a SymbolIcon showing Accept.
+        // Failure means: the FallbackIconSource is not displayed when there is no source, or the internal path is
+        // visible.
         [TestMethod]
         public void FallbackIconIsShownWhenSourceIsNull()
         {
@@ -398,6 +437,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(Symbol.Accept, GetFallbackSymbol(icon));
         }
 
+        // Scenario: Loads an icon whose source returns null from TryCreateAnimatedVisual, with a SymbolIconSource(Back)
+        // fallback.
+        // Expected: no animated visual is hosted and the Back SymbolIcon is added as the second child of the root
+        // panel.
+        // Failure means: AnimatedIcon does not fall back to FallbackIconSource when the source fails to create a
+        // visual.
         [TestMethod]
         public void FallbackIconIsShownWhenSourceCreatesNoVisual()
         {
@@ -408,6 +453,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(Symbol.Back, GetFallbackSymbol(icon));
         }
 
+        // Scenario: Loads an icon with no Source showing an Accept SymbolIcon fallback, then sets FallbackIconSource to
+        // a FontIconSource with glyph U+E700.
+        // Expected: the root panel still has exactly 2 children and the fallback is now a FontIcon with glyph U+E700.
+        // Failure means: changing FallbackIconSource does not replace the old fallback element (it is kept, duplicated
+        // or not updated).
         [TestMethod]
         public void ChangingFallbackIconSourceReplacesFallbackIcon()
         {
@@ -421,6 +471,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("\uE700", GetFallbackGlyph(icon));
         }
 
+        // Scenario: Loads an icon with no Source and an Accept fallback, sets Source to AnimatedBackVisualSource, then
+        // sets Source back to null.
+        // Expected: with a source the visual is hosted and the fallback is removed (1 child); back at null the visual
+        // is gone and the Accept fallback is shown again (2 children).
+        // Failure means: switching Source between a real visual and null does not swap correctly between the animated
+        // visual and the fallback icon.
         [TestMethod]
         public void SettingSourceReplacesFallbackIconWithVisual()
         {
@@ -437,6 +493,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(Symbol.Accept, GetFallbackSymbol(icon));
         }
 
+        // Scenario: Loads an icon that has both a working source and an Accept fallback, then changes the fallback to
+        // Back.
+        // Expected: the animated visual is hosted and the root panel keeps only 1 child before and after the fallback
+        // change.
+        // Failure means: a fallback icon is added even though the animated visual is displayed.
         [TestMethod]
         public void FallbackIconIsNotShownWhenVisualIsDisplayed()
         {
@@ -448,6 +509,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(1, GetRootPanelChildCount(icon));
         }
 
+        // Scenario: Loads an icon, then toggles FlowDirection between LeftToRight and RightToLeft and
+        // MirroredWhenRightToLeft between true and false.
+        // Expected: RenderTransformOrigin is (0.5,0.5); the render transform's ScaleX is -1 (undoing the RTL mirror)
+        // only for RightToLeft with MirroredWhenRightToLeft false, and 1 otherwise.
+        // Failure means: the icon is wrongly mirrored or not mirrored in right-to-left layouts, or changes to
+        // MirroredWhenRightToLeft or FlowDirection are ignored.
         [TestMethod]
         public void RightToLeftFlowDirectionIsCounteredUnlessMirrored()
         {
@@ -469,6 +536,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(1.0, GetMirrorScaleX(icon));
         }
 
+        // Scenario: Loads an icon with no Source showing a Back fallback and sets FlowDirection to RightToLeft.
+        // Expected: the icon's render transform ScaleX stays 1.0, so no counter-mirroring is applied.
+        // Failure means: the right-to-left counter-mirror meant for the animated visual is also applied when only the
+        // fallback icon is shown.
         [TestMethod]
         public void FallbackIconIsNotCounterMirrored()
         {
@@ -478,6 +549,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(1.0, GetMirrorScaleX(icon));
         }
 
+        // Scenario: Creates an icon with a red Foreground and a recording source, then sets Source, loads it, changes
+        // the brush to blue, replaces it with a green brush, changes the old brush, and switches to a gradient brush.
+        // Expected: the source receives SetColorProperty("Foreground", ...) for red, blue and green, one call per
+        // change; changes to a replaced brush or after switching to a gradient brush cause no further calls.
+        // Failure means: Foreground colors are not forwarded to the animated visual source, or the icon keeps listening
+        // to brushes it no longer uses.
         [TestMethod]
         public void ForegroundColorIsForwardedToSource()
         {
@@ -510,6 +587,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("Foreground=" + Colors.Green, DescribeLastColorProperty(source));
         }
 
+        // Scenario: Uses a source with chosen markers (aTob_Start 0.1, aTob_End 0.2, bToc_Start 0.3, cTod_End 0.4, dToe
+        // 0.5, f 0.6) and zero duration, and steps State through a, b, c, d, e, f, b, "0.75" and "Failure".
+        // Expected: each step records the expected segment and Progress lands on the resolved value: 0, 0.2, 0.3, 0.4,
+        // 0.5, 0.6, 0.2, 0.75, then 0 for the unresolvable state.
+        // Failure means: the marker fallback picks the wrong marker, or the visual's Progress is not moved to the
+        // resolved marker position.
         [TestMethod]
         public void TransitionMovesProgressToResolvedMarker()
         {
@@ -565,6 +648,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: Loads an icon whose source has no markers and sets State "a", removes the source and sets "b", then
+        // sets a source with marker c=0.5 and sets State "c".
+        // Expected: no transition is recorded for "a" or "b"; the transition for "c" is bToc ending at marker "c" with
+        // Progress 0.5.
+        // Failure means: transitions are recorded without markers or without a source, or the previous state is not
+        // tracked while no transition can play.
         [TestMethod]
         public void StateChangeWithoutMarkersRecordsNoTransition()
         {
@@ -589,6 +678,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: Loads an icon in State "Normal" (zero duration) and sets State "Pressed" then "PointerOver" before
+        // the next layout pass.
+        // Expected: only one new transition, NormalToPointerOver with its _Start and _End markers, is recorded; the
+        // intermediate "Pressed" is skipped.
+        // Failure means: AnimatedIcon plays intermediate states set within one layout pass instead of going straight to
+        // the last one.
         [TestMethod]
         public void StateChangesWithinOneLayoutPassTransitionOnlyToLastState()
         {
@@ -606,6 +701,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: Loads an icon with its own State "Own" inside a Grid whose State is "Parent", then changes the
+        // Grid's State to "Changed".
+        // Expected: the icon keeps "Own" when it is loaded, and then follows the ancestor's change to "Changed".
+        // Failure means: loading overwrites an icon's own State with its ancestor's, or later ancestor State changes no
+        // longer reach the icon.
         [TestMethod]
         public void LocalStateIsKeptWhenLoadedUnderAncestorWithState()
         {
@@ -617,6 +717,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("Changed", GetStateOf(icon));
         }
 
+        // Scenario: With the QueueOne queue behavior, starts the slowed-down (about 12 s) NormalToPointerOver
+        // transition and sets State "Pressed" while it plays.
+        // Expected: NormalToPointerOver keeps playing (still 2 recorded segments); once it finishes,
+        // PointerOverToPressed plays as the 3rd segment.
+        // Failure means: QueueOne interrupts the playing transition or never plays the queued state.
+        // Note: logs SKIPPED and returns when Windows animation effects are disabled.
         [TestMethod]
         public void QueueOneDefersStateChangeUntilTransitionCompletes()
         {
@@ -637,6 +743,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: With QueueOne and the default queue length of 4, sets four states while the slowed-down
+        // NormalToPointerOver transition plays, then sets a fifth.
+        // Expected: the four states are queued with no new segment; the fifth immediately plays the oldest queued
+        // transition, PointerOverToPressed.
+        // Failure means: the queue length limit is not honored (states are dropped, played too early, or never advance
+        // when the queue is full).
+        // Note: logs SKIPPED and returns when Windows animation effects are disabled.
         [TestMethod]
         public void QueueOneAdvancesImmediatelyWhenQueueIsFull()
         {
@@ -663,6 +776,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: With the Cut queue behavior, sets State "Pressed" while the slowed-down NormalToPointerOver
+        // transition is playing.
+        // Expected: PointerOverToPressed starts immediately as the 3rd recorded segment.
+        // Failure means: Cut no longer interrupts the playing transition.
+        // Note: logs SKIPPED and returns when Windows animation effects are disabled.
         [TestMethod]
         public void CutInterruptsPlayingTransition()
         {
@@ -680,6 +798,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: With SpeedUpQueueOne and a speed-up multiplier of 1000000, sets State "Pressed" while the
+        // slowed-down NormalToPointerOver transition plays.
+        // Expected: the rest of NormalToPointerOver finishes within the same layout pass and PointerOverToPressed
+        // plays; segments are "ToNormal, NormalToPointerOver, PointerOverToPressed".
+        // Failure means: SpeedUpQueueOne does not speed up the playing transition and then play the queued state.
+        // Note: logs SKIPPED and returns when Windows animation effects are disabled.
         [TestMethod]
         public void SpeedUpQueueOneFinishesPlayingTransitionBeforeQueuedState()
         {
@@ -698,6 +822,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: With SpeedUpQueueOne, a speed-up multiplier of 1 and a queue length of 1, sets "Pressed" and then
+        // "Normal" while the slowed-down NormalToPointerOver transition plays.
+        // Expected: "Pressed" is queued (no new segment); "Normal" overflows the queue so PointerOverToPressed plays at
+        // once, and PressedToNormal follows when it completes.
+        // Failure means: SpeedUpQueueOne ignores the queue length or loses the queued state.
+        // Note: logs SKIPPED and returns when Windows animation effects are disabled.
         [TestMethod]
         public void SpeedUpQueueOneAdvancesImmediatelyWhenQueueIsFull()
         {
@@ -724,6 +854,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: With SpeedUpQueueOne (7x speed-up, durations stretched 80x), queues "Pressed" and "Normal" while
+        // NormalToPointerOver plays, then sets "PointerOver" once the queue has drained.
+        // Expected: queued transitions play in order; PointerOverToPressed is sped up (under 6 s) because another state
+        // waits, while the last queued PressedToNormal plays at normal speed (over 12 s) before NormalToPointerOver.
+        // Failure means: queued transitions play out of order, are not sped up while more states are waiting, or the
+        // last one is wrongly sped up.
+        // Note: logs SKIPPED and returns when Windows animation effects are disabled.
         [TestMethod]
         public void SpeedUpQueueOnePlaysQueuedStatesInOrderAfterSpeedingUp()
         {
@@ -755,6 +892,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: Uses a timed source whose bToc segment lasts exactly 20 ms (200000 ticks) and queues c and d while
+        // the 5.12 s aTob transition plays.
+        // Expected: bToc is animated, so d plays only after it completes; segments are recorded as "Toa, aTob, bToc,
+        // cTod".
+        // Failure means: the 20 ms threshold changed and a segment of exactly 20 ms is completed instantly instead of
+        // being animated.
+        // Note: logs SKIPPED and returns when Windows animation effects are disabled.
         [TestMethod]
         public void TransitionOfExactly20msIsAnimated()
         {
@@ -776,6 +920,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: Same setup as TransitionOfExactly20msIsAnimated, but bToc lasts 199804 ticks, just under 20 ms.
+        // Expected: bToc completes synchronously, so the queued d plays from within it and segments are recorded as
+        // "Toa, aTob, cTod, bToc".
+        // Failure means: segments shorter than 20 ms are animated instead of being completed immediately.
+        // Note: logs SKIPPED and returns when Windows animation effects are disabled.
         [TestMethod]
         public void TransitionShorterThan20msCompletesImmediately()
         {
@@ -797,6 +946,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: With a 100 s timed source, moves to State "x" (marker 0.9) and then "y", whose transition xToy runs
+        // from xToy_Start 0.1 to xToy_End 0.3.
+        // Expected: Progress is 0.9 at "x"; just after xToy starts, Progress is between 0.099 and 0.15 (at the start
+        // marker), not near 0.9.
+        // Failure means: transitions do not jump to their _Start marker before animating.
+        // Note: logs SKIPPED and returns when Windows animation effects are disabled.
         [TestMethod]
         public void TransitionAnimationStartsAtStartMarker()
         {
@@ -821,6 +976,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: With a 100 s timed source, moves to State "x" (marker 0.9) and then to the numeric State "0.5".
+        // Expected: the segment is "xTo0.5 |  | 0.5" and just after it starts Progress is still between 0.85 and
+        // 0.9001, i.e. it animates from the current position.
+        // Failure means: a numeric state jumps to some other start position instead of animating from the current
+        // Progress.
+        // Note: logs SKIPPED and returns when Windows animation effects are disabled.
         [TestMethod]
         public void NumericStateAnimatesFromCurrentProgress()
         {
@@ -845,6 +1006,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsLessThan(progress, 0.9001f);
             }
         }
+        // Scenario: Checks the generated AnimatedAcceptVisualSource: its Markers table, an animated visual it creates,
+        // and how it applies theme colors.
+        // Expected: Markers match the expected table exactly; the visual is 48x48, lasts 26666666 ticks (about 2.67 s),
+        // has content, accepts SetColorProperty and is closed by Dispose; SetColorProperty("Foreground") recolors its
+        // brushes while an unknown property name is ignored.
+        // Failure means: the generated AnimatedAcceptVisualSource changed or regressed (markers, size, duration or
+        // Foreground theming), so controls that use it may animate or color incorrectly.
         [TestMethod]
         public void AnimatedAcceptVisualSourceContract()
         {
@@ -854,6 +1022,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("Foreground applied=True; other name ignored=True", DescribeThemeForeground(source));
         }
 
+        // Scenario: Checks the generated AnimatedBackVisualSource: its Markers table, an animated visual it creates,
+        // and how it applies theme colors.
+        // Expected: Markers match the expected table exactly; the visual is 48x48, lasts 13333333 ticks (about 1.33 s),
+        // has content, accepts SetColorProperty and is closed by Dispose; SetColorProperty("Foreground") recolors its
+        // brushes while an unknown property name is ignored.
+        // Failure means: the generated AnimatedBackVisualSource changed or regressed (markers, size, duration or
+        // Foreground theming), so controls that use it may animate or color incorrectly.
         [TestMethod]
         public void AnimatedBackVisualSourceContract()
         {
@@ -863,6 +1038,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("Foreground applied=True; other name ignored=True", DescribeThemeForeground(source));
         }
 
+        // Scenario: Checks the generated AnimatedChevronDownSmallVisualSource: its Markers table, an animated visual it
+        // creates, and how it applies theme colors.
+        // Expected: Markers match the expected table exactly; the visual is 48x48, lasts 4833333 ticks (about 0.48 s),
+        // has content, accepts SetColorProperty and is closed by Dispose; SetColorProperty("Foreground") recolors its
+        // brushes while an unknown property name is ignored.
+        // Failure means: the generated AnimatedChevronDownSmallVisualSource changed or regressed (markers, size,
+        // duration or Foreground theming), so controls that use it may animate or color incorrectly.
         [TestMethod]
         public void AnimatedChevronDownSmallVisualSourceContract()
         {
@@ -872,6 +1054,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("Foreground applied=True; other name ignored=True", DescribeThemeForeground(source));
         }
 
+        // Scenario: Checks the generated AnimatedChevronRightDownSmallVisualSource: its Markers table, an animated
+        // visual it creates, and how it applies theme colors.
+        // Expected: Markers match the expected table exactly; the visual is 48x48, lasts 36666666 ticks (about 3.67 s),
+        // has content, accepts SetColorProperty and is closed by Dispose; SetColorProperty("Foreground") recolors its
+        // brushes while an unknown property name is ignored.
+        // Failure means: the generated AnimatedChevronRightDownSmallVisualSource changed or regressed (markers, size,
+        // duration or Foreground theming), so controls that use it may animate or color incorrectly.
         [TestMethod]
         public void AnimatedChevronRightDownSmallVisualSourceContract()
         {
@@ -881,6 +1070,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("Foreground applied=True; other name ignored=True", DescribeThemeForeground(source));
         }
 
+        // Scenario: Checks the generated AnimatedChevronUpDownSmallVisualSource: its Markers table, an animated visual
+        // it creates, and how it applies theme colors.
+        // Expected: Markers match the expected table exactly; the visual is 48x48, lasts 43333333 ticks (about 4.33 s),
+        // has content, accepts SetColorProperty and is closed by Dispose; SetColorProperty("Foreground") recolors its
+        // brushes while an unknown property name is ignored.
+        // Failure means: the generated AnimatedChevronUpDownSmallVisualSource changed or regressed (markers, size,
+        // duration or Foreground theming), so controls that use it may animate or color incorrectly.
         [TestMethod]
         public void AnimatedChevronUpDownSmallVisualSourceContract()
         {
@@ -890,6 +1086,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("Foreground applied=True; other name ignored=True", DescribeThemeForeground(source));
         }
 
+        // Scenario: Checks the generated AnimatedFindVisualSource: its Markers table, an animated visual it creates,
+        // and how it applies theme colors.
+        // Expected: Markers match the expected table exactly; the visual is 48x48, lasts 13333333 ticks (about 1.33 s),
+        // has content, accepts SetColorProperty and is closed by Dispose; SetColorProperty("Foreground") recolors its
+        // brushes while an unknown property name is ignored.
+        // Failure means: the generated AnimatedFindVisualSource changed or regressed (markers, size, duration or
+        // Foreground theming), so controls that use it may animate or color incorrectly.
         [TestMethod]
         public void AnimatedFindVisualSourceContract()
         {
@@ -899,6 +1102,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("Foreground applied=True; other name ignored=True", DescribeThemeForeground(source));
         }
 
+        // Scenario: Checks the generated AnimatedGlobalNavigationButtonVisualSource: its Markers table, an animated
+        // visual it creates, and how it applies theme colors.
+        // Expected: Markers match the expected table exactly; the visual is 48x48, lasts 13333333 ticks (about 1.33 s),
+        // has content, accepts SetColorProperty and is closed by Dispose; SetColorProperty("Foreground") recolors its
+        // brushes while an unknown property name is ignored.
+        // Failure means: the generated AnimatedGlobalNavigationButtonVisualSource changed or regressed (markers, size,
+        // duration or Foreground theming), so controls that use it may animate or color incorrectly.
         [TestMethod]
         public void AnimatedGlobalNavigationButtonVisualSourceContract()
         {
@@ -908,6 +1118,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("Foreground applied=True; other name ignored=True", DescribeThemeForeground(source));
         }
 
+        // Scenario: Checks the generated AnimatedSettingsVisualSource: its Markers table, an animated visual it
+        // creates, and how it applies theme colors.
+        // Expected: Markers match the expected table exactly; the visual is 48x48, lasts 20000000 ticks (about 2 s),
+        // has content, accepts SetColorProperty and is closed by Dispose; SetColorProperty("Foreground") recolors its
+        // brushes while an unknown property name is ignored.
+        // Failure means: the generated AnimatedSettingsVisualSource changed or regressed (markers, size, duration or
+        // Foreground theming), so controls that use it may animate or color incorrectly.
         [TestMethod]
         public void AnimatedSettingsVisualSourceContract()
         {
@@ -917,6 +1134,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("Foreground applied=True; other name ignored=True", DescribeThemeForeground(source));
         }
 
+        // Scenario: Loads an icon with AnimatedChevronRightDownSmallVisualSource (zero duration) and sets State
+        // "NormalOff" then "NormalOn".
+        // Expected: "NormalOff" resolves to a marker ending in "ToNormalOff_End"; "NormalOn" plays NormalOffToNormalOn
+        // between its _Start and _End markers and Progress ends at NormalOffToNormalOn_End.
+        // Failure means: the generated chevron's On/Off markers no longer work with AnimatedIcon's state transitions.
         [TestMethod]
         public void AnimatedChevronRightDownSmallTransitionsBetweenOnAndOffStates()
         {
@@ -935,6 +1157,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: Reads the AnimatedIcon State, Source, FallbackIconSource and MirroredWhenRightToLeft property
+        // identifiers, constructs an AnimatedIcon and an AnimatedIconSource, then reads them again.
+        // Expected: the 4 identifiers are non-null and distinct, unchanged after construction, and distinct from
+        // AnimatedIconSource's 3 same-named identifiers (7 distinct in total).
+        // Failure means: property registration is missing, is redone when an instance is constructed, or is shared
+        // incorrectly between AnimatedIcon and AnimatedIconSource.
         [TestMethod]
         public void DependencyPropertyIdentifiersAreRegisteredDistinctAndStable()
         {
@@ -955,6 +1183,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(7, CountDistinctNonNull(identifiers, iconSourceIdentifiers));
         }
 
+        // Scenario: Reads the registered default values of the four AnimatedIcon properties and the values of a newly
+        // created icon.
+        // Expected: defaults are State "", Source null, FallbackIconSource null and MirroredWhenRightToLeft false; a
+        // new icon has no local values and returns those defaults.
+        // Failure means: the registered metadata defaults changed (for example State null instead of ""), which can
+        // break code that reads them.
         [TestMethod]
         public void DependencyPropertyDefaultsMatchRegisteredMetadata()
         {
@@ -975,6 +1209,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(false, GetValueOf(icon, ids.MirroredWhenRightToLeft));
         }
 
+        // Scenario: Sets the four AnimatedIcon properties through SetValue and reads them through the CLR properties,
+        // then the reverse, then clears them; finally clears MirroredWhenRightToLeft (true) on a loaded RightToLeft
+        // icon.
+        // Expected: both access paths see the same values; ClearValue restores the defaults and leaves no local values;
+        // clearing MirroredWhenRightToLeft brings back the -1 counter-mirror ScaleX.
+        // Failure means: CLR properties and dependency properties use different storage, or ClearValue does not restore
+        // defaults or run the property-changed handling.
         [TestMethod]
         public void ClrPropertiesAndDependencyPropertiesShareStorage()
         {
@@ -1020,6 +1261,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(-1.0, GetMirrorScaleX(loadedIcon));
         }
 
+        // Scenario: Sets the attached AnimatedIcon.State on a SolidColorBrush (not a UIElement) and on Borders,
+        // including a null value.
+        // Expected: the values read back through GetState and GetValue ("Pressed", "PointerOver"); an untouched Border
+        // returns "", and setting null reads back as "".
+        // Failure means: the attached State cannot be stored on objects that are not icons (or fails for
+        // non-UIElements), or its default/null handling changed.
         [TestMethod]
         public void StateAttachedPropertyIsStoredOnAnyDependencyObject()
         {
@@ -1043,6 +1290,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("", GetStateOf(border));
         }
 
+        // Scenario: Loads XAML with a Grid setting AnimatedIcon.State="Pressed" around an AnimatedIcon with
+        // MirroredWhenRightToLeft="True", a SymbolIconSource(Accept) fallback and an AnimatedBackVisualSource as
+        // content.
+        // Expected: the Grid and the icon both have State "Pressed", Source is an AnimatedBackVisualSource, mirroring
+        // is true, the fallback symbol is Accept and the visual is displayed with no fallback child.
+        // Failure means: XAML parsing of AnimatedIcon (content property, attached State or property values) or State
+        // inheritance from an ancestor on load is broken.
         [TestMethod]
         public void XamlMarkupSetsAnimatedIconPropertiesAndAttachedState()
         {
@@ -1060,6 +1314,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(1, GetRootPanelChildCount(icon));
         }
 
+        // Scenario: Loads a templated ContentControl whose AnimatedIcon gets MirroredWhenRightToLeft from a Style
+        // setter and AnimatedIcon.State from a "Pressed" VisualState setter, then goes to Pressed and back to Normal.
+        // Expected: mirroring is true without being a local value; State is "" at first, "Pressed" in the Pressed state
+        // and "" again in Normal.
+        // Failure means: Style or VisualState setters targeting AnimatedIcon properties (the pattern used by Button,
+        // CheckBox and ComboBox templates) do not resolve or apply.
         [TestMethod]
         public void StyleAndVisualStateSettersResolveAnimatedIconProperties()
         {
@@ -1079,6 +1339,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("", GetStateOf(icon));
         }
 
+        // Scenario: Gets the AnimatedIcon type from the controls XAML metadata provider, inspects its members,
+        // activates an instance and sets and gets values through the metadata members.
+        // Expected: the full name matches, the content property is Source, the four members are writable dependency
+        // properties, an unknown member is absent, and member get/set reaches the real properties.
+        // Failure means: the generated XAML type information for AnimatedIcon is wrong, which breaks XAML parsing or
+        // binding of AnimatedIcon.
         [TestMethod]
         public void XamlMetadataProviderDescribesAnimatedIconMembers()
         {
@@ -1106,6 +1372,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(source, GetMemberValue(type, "Source", icon));
         }
 
+        // Scenario: Gets the activation factories for AnimatedIcon, AnimatedIconSource and AnimatedIconTestHooks and
+        // asks each factory object for its runtime class name.
+        // Expected: each factory reports its own full class name.
+        // Failure means: the generated activation factory for one of these classes is broken or registered under the
+        // wrong name.
         [TestMethod]
         public void ActivationFactoriesReportRuntimeClassNames()
         {

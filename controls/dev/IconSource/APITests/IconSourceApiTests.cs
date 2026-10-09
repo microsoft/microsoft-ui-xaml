@@ -115,6 +115,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Creates an AnimatedIconSource with AnimatedBackVisualSource, a Back fallback, a green Foreground
+        // and MirroredWhenRightToLeft true, then calls CreateIconElement.
+        // Expected: the result is an AnimatedIcon with a green Foreground, the same Source and FallbackIconSource
+        // objects (not copies) and MirroredWhenRightToLeft true.
+        // Failure means: CreateIconElement does not copy AnimatedIconSource's properties to the created AnimatedIcon.
         [TestMethod]
         public void AnimatedIconSourceCopiesPropertiesToCreatedIcon()
         {
@@ -129,6 +134,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(GetMirroredWhenRightToLeft(animatedIcon));
         }
 
+        // Scenario: Creates an icon from an AnimatedIconSource with no fallback, then sets the source's
+        // FallbackIconSource to a SymbolIconSource(Accept).
+        // Expected: the icon has no fallback at first, then has the same Accept SymbolIconSource object as the
+        // AnimatedIconSource.
+        // Failure means: later FallbackIconSource changes on AnimatedIconSource are not pushed to icons it already
+        // created.
         [TestMethod]
         public void AnimatedIconSourceFallbackIconSourcePropagatesToCreatedIcon()
         {
@@ -144,6 +155,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(HasSameSourceAndFallback(iconSource, animatedIcon));
         }
 
+        // Scenario: Reads the AnimatedIconSource Source, FallbackIconSource and MirroredWhenRightToLeft property
+        // identifiers, constructs an AnimatedIconSource, then reads them again along with AnimatedIcon's same-named
+        // ones.
+        // Expected: the 3 identifiers are non-null, distinct and unchanged after construction, and separate from
+        // AnimatedIcon's identifiers (6 distinct in total).
+        // Failure means: AnimatedIconSource property registration is missing, is redone when an instance is
+        // constructed, or is shared with AnimatedIcon.
         [TestMethod]
         public void AnimatedIconSourceDependencyPropertyIdentifiersAreRegisteredDistinctAndStable()
         {
@@ -164,6 +182,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(6, CountDistinctNonNull(identifiers, animatedIconIdentifiers));
         }
 
+        // Scenario: Checks the registered defaults, sets the three AnimatedIconSource properties through SetValue and
+        // reads them through the CLR properties, then the reverse, then clears them.
+        // Expected: defaults are null, null and false; a new instance has no local values; both access paths see the
+        // same values; ClearValue restores the defaults and leaves no local values.
+        // Failure means: AnimatedIconSource's CLR properties and dependency properties use different storage, or its
+        // defaults or ClearValue behavior are wrong.
         [TestMethod]
         public void AnimatedIconSourceClrPropertiesAndDependencyPropertiesShareStorage()
         {
@@ -204,6 +228,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(false, GetIconSourceMirrored(iconSource));
         }
 
+        // Scenario: Creates an icon from an empty AnimatedIconSource, then sets Source, FallbackIconSource and
+        // MirroredWhenRightToLeft on the source through SetValue, sets mirroring back to false, and clears Source.
+        // Expected: each change is immediately visible on the created icon; clearing Source makes the icon's Source
+        // null while its FallbackIconSource is unchanged.
+        // Failure means: AnimatedIconSource does not push property changes, or cleared values, to icons it already
+        // created.
         [TestMethod]
         public void AnimatedIconSourceDependencyPropertyChangesPropagateToCreatedIcon()
         {
@@ -231,11 +261,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(fallback, GetAnimatedIconFallback(animatedIcon));
         }
 
-        // Product bug: after AnimatedIconSource.ClearValue(MirroredWhenRightToLeftProperty), an AnimatedIcon already created
-        // from that source throws InvalidCastException (E_NOINTERFACE unboxing the pushed Boolean) from its
-        // MirroredWhenRightToLeft getter. The expectation is the registered default, exactly as for a value cleared on the
-        // icon itself. The getter is read without letting an exception escape the UI-thread callback, so the bug fails this
-        // test with the observed exception instead of ending the process.
+        // Scenario: Repro for a product bug. Creates an icon from an AnimatedIconSource, sets the source's
+        // MirroredWhenRightToLeft to true, then calls ClearValue(MirroredWhenRightToLeftProperty) on the source. The
+        // icon's getter is read inside a try/catch so an exception fails the test instead of crashing the process.
+        // Expected: the icon reads true after the set and the registered default false after the clear, exactly as when
+        // the value is cleared on the icon itself.
+        // Failure means: the product bug is still present: the already-created icon's MirroredWhenRightToLeft getter
+        // throws InvalidCastException (E_NOINTERFACE unboxing the pushed Boolean) instead of returning false. The test
+        // is ignored until the bug is fixed; if it passes, the bug is fixed and the test should be re-enabled.
         [TestMethod]
         [TestProperty("Ignore", "True")] // Repro for the AnimatedIconSource ClearValue(MirroredWhenRightToLeftProperty) product bug. Re-enable when fixed.
         public void AnimatedIconSourceClearedMirroredWhenRightToLeftPropagatesDefaultToCreatedIcon()
@@ -252,6 +285,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("False", DescribeMirroredWhenRightToLeft(animatedIcon));
         }
 
+        // Scenario: Loads an AnimatedIconSource from XAML with MirroredWhenRightToLeft="True", an
+        // AnimatedBackVisualSource Source and a SymbolIconSource(Back) fallback, then calls CreateIconElement.
+        // Expected: the parsed source has those values, and the created AnimatedIcon shares the same Source and
+        // fallback objects and has mirroring true.
+        // Failure means: XAML parsing of AnimatedIconSource, or copying its parsed properties to the created icon, is
+        // broken.
         [TestMethod]
         public void AnimatedIconSourceXamlMarkupCreatesConfiguredIcon()
         {
@@ -269,6 +308,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(true, GetMirroredWhenRightToLeft(animatedIcon));
         }
 
+        // Scenario: Gets the AnimatedIconSource type from the controls XAML metadata provider, inspects its members,
+        // activates an instance and sets and gets values through the metadata members.
+        // Expected: the full name matches, there is no content property, Source, FallbackIconSource and
+        // MirroredWhenRightToLeft are writable dependency properties, State is not a member, and member get/set reaches
+        // the real properties.
+        // Failure means: the generated XAML type information for AnimatedIconSource is wrong, which breaks XAML parsing
+        // or binding of AnimatedIconSource.
         [TestMethod]
         public void AnimatedIconSourceXamlMetadataDescribesMembers()
         {
