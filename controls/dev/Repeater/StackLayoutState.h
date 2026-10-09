@@ -37,4 +37,9 @@ private:
     int m_totalElementsMeasured{};
 
     static const int BufferSize = 100;
+
+    // Sentinel for slots that have not been measured yet. It cannot be 0.0, which is a size a collapsed element
+    // legitimately reports: such a slot would then be counted as a new measurement on every re-measure, inflating
+    // m_totalElementsMeasured while adding nothing to m_totalElementSize and decaying the average element size.
+    static constexpr double c_unmeasuredSize = -1.0;
 };
