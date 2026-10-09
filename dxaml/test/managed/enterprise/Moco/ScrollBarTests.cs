@@ -72,6 +72,83 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Hosting:Mode", "UAP")]
+        public void ScrollBarInitializesTrackBrushesOnPointerExpansion()
+        {
+            ScrollBar scrollBar = null;
+            Button button = null;
+            Style applicationStyle = null;
+            UIExecutor.Execute(() =>
+            {
+                scrollBar = new ScrollBar
+                {
+                    Orientation = Orientation.Vertical,
+                    Width = 12,
+                    Height = 200,
+                    Maximum = 100,
+                    ViewportSize = 20,
+                    IndicatorMode = ScrollingIndicatorMode.MouseIndicator,
+                    IsEnabled = false,
+                    Style = (Style)new XamlControlsResources()["DefaultScrollBarStyle"]
+                };
+                button = new Button { Content = "Pointer parking", Width = 150, Height = 100 };
+                var panel = new StackPanel { Orientation = Orientation.Horizontal };
+                panel.Children.Add(scrollBar);
+                panel.Children.Add(button);
+                TestServices.WindowHelper.WindowContent = panel;
+            });
+            TestServices.WindowHelper.WaitForIdle();
+            TestServices.InputHelper.MoveMouse(button);
+            TestServices.WindowHelper.WaitForIdle();
+            UIExecutor.Execute(() =>
+            {
+                applicationStyle = new Style { TargetType = typeof(Microsoft.UI.Xaml.Shapes.Rectangle) };
+                applicationStyle.Setters.Add(new Setter(FrameworkElement.TagProperty, "Application style"));
+                var root = (FrameworkElement)VisualTreeHelper.GetChild(scrollBar, 0);
+                foreach (var name in new[] { "HorizontalTrackRect", "VerticalTrackRect" })
+                {
+                    ((Microsoft.UI.Xaml.Shapes.Rectangle)root.FindName(name)).Style = applicationStyle;
+                }
+                scrollBar.IsEnabled = true;
+            });
+            TestServices.InputHelper.MoveMouse(scrollBar);
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                var root = (FrameworkElement)VisualTreeHelper.GetChild(scrollBar, 0);
+                var track = (Microsoft.UI.Xaml.Shapes.Rectangle)root.FindName("VerticalTrackRect");
+                Verify.IsNotNull(track);
+                Verify.AreEqual(applicationStyle, track.Style, "Pointer expansion must preserve the application's Style.");
+                Verify.AreEqual("Application style", track.Tag);
+                Verify.AreNotEqual(DependencyProperty.UnsetValue, track.ReadLocalValue(Microsoft.UI.Xaml.Shapes.Shape.FillProperty));
+                Verify.AreNotEqual(DependencyProperty.UnsetValue, track.ReadLocalValue(Microsoft.UI.Xaml.Shapes.Shape.StrokeProperty));
+                Verify.IsNotNull(track.Fill);
+                Verify.IsNotNull(track.Stroke);
+                scrollBar.IsEnabled = false;
+            });
+            TestServices.WindowHelper.WaitForIdle();
+            UIExecutor.Execute(() =>
+            {
+                var root = (FrameworkElement)VisualTreeHelper.GetChild(scrollBar, 0);
+                var track = (Microsoft.UI.Xaml.Shapes.Rectangle)root.FindName("VerticalTrackRect");
+                Verify.IsNotNull(track.Fill, "Disabling an expanded bar must not lose its base fill.");
+                Verify.IsNotNull(track.Stroke, "Disabling an expanded bar must not lose its base stroke.");
+                Verify.AreEqual(applicationStyle, track.Style);
+                track.ClearValue(Microsoft.UI.Xaml.Shapes.Shape.FillProperty);
+                track.ClearValue(Microsoft.UI.Xaml.Shapes.Shape.StrokeProperty);
+                scrollBar.IsEnabled = true;
+                Verify.IsTrue(VisualStateManager.GoToState(scrollBar, "Collapsed", false));
+                Verify.AreEqual(DependencyProperty.UnsetValue, track.ReadLocalValue(Microsoft.UI.Xaml.Shapes.Shape.FillProperty),
+                    "Later state updates must not undo the application's ClearValue.");
+                Verify.AreEqual(DependencyProperty.UnsetValue, track.ReadLocalValue(Microsoft.UI.Xaml.Shapes.Shape.StrokeProperty));
+                Verify.IsNull(track.Fill);
+                Verify.IsNull(track.Stroke);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
+        [TestProperty("Hosting:Mode", "UAP")]
         [TestProperty("Ignore", "True")] // DCPP: Unreliable test: Controls.ScrollBarTests.ScrollBarExpandCollapseWithoutAnimation
         public void ScrollBarExpandCollapseWithoutAnimations()
         {
