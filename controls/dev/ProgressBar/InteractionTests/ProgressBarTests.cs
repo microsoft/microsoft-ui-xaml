@@ -32,6 +32,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestEnvironment.Initialize(testContext);
         }
 
+        [TestCleanup]
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
@@ -164,8 +165,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 double newMinimumInputText = progressBar.Minimum;
                 double newMaximumInputText = progressBar.Maximum;
 
-                Verify.AreNotSame(oldMinimumInputText, newMinimumInputText, "Minimum updated");
-                Verify.AreNotSame(oldMaximumInputText, newMaximumInputText, "Maximum updated");
+                Verify.AreEqual(10.0, newMinimumInputText, "Minimum updated");
+                Verify.AreEqual(15.0, newMaximumInputText, "Maximum updated");
+                Verify.AreNotEqual(oldMinimumInputText, newMinimumInputText, "Minimum changed from its previous value");
+                Verify.AreNotEqual(oldMaximumInputText, newMaximumInputText, "Maximum changed from its previous value");
 
                 // Below edge cases are handled by Rangebase
 
