@@ -204,6 +204,71 @@
                 </StackPanel>
             </Grid>
 
+            <!-- Hierarchical rows: the same ParentBy(Id, ManagerId) fixture shown left-to-right and
+                 right-to-left. ResetHierarchy rebuilds both sources, so each test starts all collapsed. -->
+            <Grid x:Name="HierarchyTableHost" Visibility="Collapsed" RowSpacing="4" ColumnSpacing="16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8">
+                    <Button Content="Reset"
+                            AutomationProperties.Name="ResetHierarchy"
+                            AutomationProperties.AutomationId="ResetHierarchy"
+                            Click="OnResetHierarchyClick" />
+                </StackPanel>
+
+                <!-- Format documented on TableViewTestPageFacts.HierarchyReadout. -->
+                <TextBox x:Name="HierarchyReadout"
+                         Grid.Row="1"
+                         Grid.ColumnSpan="2"
+                         AutomationProperties.Name="HierarchyReadout"
+                         AutomationProperties.AutomationId="HierarchyReadout"
+                         HorizontalAlignment="Left"
+                         Width="840"
+                         IsReadOnly="True"
+                         IsTabStop="False"
+                         Text="" />
+
+                <controls:TableView x:Name="HierarchyTable"
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    AutomationProperties.Name="HierarchyTable"
+                                    AutomationProperties.AutomationId="HierarchyTable"
+                                    Height="320"
+                                    Width="400"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    IsReadOnly="False"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="Name" Width="160" Binding="{Binding Name, Mode=TwoWay}" />
+                    <controls:TableViewTextColumn Header="Dept" Width="100" Binding="{Binding Dept, Mode=TwoWay}" />
+                    <controls:TableViewTextColumn Header="Score" Width="100" Binding="{Binding Score}" />
+                </controls:TableView>
+
+                <controls:TableView x:Name="HierarchyRtlTable"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    AutomationProperties.Name="HierarchyRtlTable"
+                                    AutomationProperties.AutomationId="HierarchyRtlTable"
+                                    FlowDirection="RightToLeft"
+                                    Height="320"
+                                    Width="400"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="RtlName" Width="160" Binding="{Binding Name}" />
+                    <controls:TableViewTextColumn Header="RtlDept" Width="100" Binding="{Binding Dept}" />
+                    <controls:TableViewTextColumn Header="RtlScore" Width="100" Binding="{Binding Score}" />
+                </controls:TableView>
+            </Grid>
+
         </Grid>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
@@ -226,6 +291,10 @@
                     AutomationProperties.Name="GoToScrollingButton"
                     AutomationProperties.AutomationId="GoToScrollingButton"
                     Click="OnGoToScrollingClick" />
+            <Button Content="Hierarchy"
+                    AutomationProperties.Name="GoToHierarchyButton"
+                    AutomationProperties.AutomationId="GoToHierarchyButton"
+                    Click="OnGoToHierarchyClick" />
             <TextBlock x:Name="StatusTextBlock"
                        AutomationProperties.Name="StatusTextBlock"
                        AutomationProperties.AutomationId="StatusTextBlock"

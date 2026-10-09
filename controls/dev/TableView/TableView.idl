@@ -178,7 +178,7 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     String SortMemberPath { get; set; };
 
     // Optional comparer supplied by the column for custom sort ordering. Takes precedence over
-    // SortMemberPath.
+    // SortMemberPath. With TableViewSource.IsLiveShaping, changed items are re-compared and moved.
     ITableViewSortComparer CustomSortComparer { get; set; };
 
     // Read-only DP driven by the owning TableView. None means the column is not part of the
@@ -401,8 +401,7 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
 [webhosthidden]
 //
 // Template contract (MIDL3 does not surface [TemplatePart], so this block is it).
-// All parts are REQUIRED: the Selected* states target them by name, and an unresolved Storyboard
-// target fails when the state is applied, not when the template is parsed.
+// The first four parts are REQUIRED: the Selected* states target them by name.
 //
 //   PART_RootBorder              — Border. Row chrome; Background driven by CommonStates.
 //   PART_GridLineBorder          — Border. Renders border chrome and terminal-line suppression.
@@ -413,8 +412,19 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
 //                                  0 -> 1; SelectedDisabled also animates Fill. Custom templates
 //                                  using other indicator types must adapt the state targets.
 //
-//   CommonStates: Normal, PointerOver, Pressed, Disabled,
-//                 Selected, SelectedPointerOver, SelectedPressed, SelectedDisabled
+// The hierarchy parts are OPTIONAL, but declared together with the three hierarchy state groups.
+//
+//   PART_RowExpanderGutter       — FrameworkElement. Chevron column and toggle target; Margin set
+//                                  in code to the row's indent.
+//   PART_RowExpanderIcon         — FontIcon. Glyph and Visibility driven by the state groups.
+//
+//   CommonStates:        Normal, PointerOver, Pressed, Disabled,
+//                        Selected, SelectedPointerOver, SelectedPressed, SelectedDisabled
+//   HierarchyStates:     Hierarchical, NotHierarchical
+//   ExpandabilityStates: Expandable, NotExpandable
+//   ExpansionStates:     Expanded, Collapsed
+//
+// The hierarchy groups are entered on every row, including in flat and grouped tables.
 //
 // Selected states share this one group so nothing depends on GoToState call order.
 // Multiple/Extended selection will add a separate MultiSelectStates group (and a checkbox part)
@@ -429,7 +439,25 @@ unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsSelected { get; };
 
+    // ----- Hierarchy -----
+    // Read-only DPs written by the owning TableView. All 0/false for flat and grouped sources.
+
+    // 1-based depth (roots are 1), matching AutomationProperties.Level. 0 = not hierarchical.
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 Level { get; };
+
+    // True when this row has children. Drives ExpandabilityStates.
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsExpandable { get; };
+
+    // True when this row's children are currently projected as rows beneath it.
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsExpanded { get; };
+
     static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty LevelProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
 };
 
 [MUX_PREVIEW]
@@ -558,12 +586,20 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
 
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs> SelectionChanged;
 
-    // ----- Grouping commands -----
+    // ----- Bulk expansion commands -----
     // Expands or collapses every group in one batch. Individual groups are expanded and collapsed
     // through the group header's ExpandCollapse pattern or by clicking the header itself; these
     // are the programmatic bulk counterparts. Both are no-ops when the source is not grouped.
+    // Under GroupBy + ParentBy these affect only group headers, not tree nodes.
     void ExpandAllGroups();
     void CollapseAllGroups();
+
+    // Expands or collapses every tree node of a TableViewSource.ParentBy projection; no-ops
+    // otherwise. Independent of the group verbs. Sets the remembered state of every node, so the
+    // result persists after the filter changes or clears.
+    void ExpandAllRows();
+    void CollapseAllRows();
+
 
     // ----- Sorting -----
     // Single-column sort. The control reshapes the rows itself: an ItemsSource that is not already
@@ -629,11 +665,13 @@ unsealed runtimeclass TableViewAutomationPeer
     TableViewAutomationPeer(MU_XC_NAMESPACE.TableView owner);
 }
 
+// ExpandCollapse is advertised only by rows of a hierarchical source.
 [MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass TableViewRowAutomationPeer
     : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-      Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider
+      Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider,
+      Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
 {
     TableViewRowAutomationPeer(MU_XC_NAMESPACE.TableViewRow owner);
 }

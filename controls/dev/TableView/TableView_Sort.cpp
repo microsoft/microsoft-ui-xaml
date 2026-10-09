@@ -46,6 +46,21 @@ void TableViewSourceSortBinding::Clear()
     ResetCustomSort();
 }
 
+bool TableView::RepositionCustomSortItem(const winrt::IInspectable& item, bool reshapePending)
+{
+    auto const& state = m_tableViewSourceSort.CustomSortState;
+    if (!state || !state->HasComparer())
+    {
+        return false;
+    }
+    if (!item)
+    {
+        state->InvalidateRanks();
+        return false;
+    }
+    return state->Reposition(item, reshapePending);
+}
+
 namespace
 {
     winrt::hstring LocalizedOrFallback(std::wstring_view resourceName, std::wstring_view fallback) noexcept

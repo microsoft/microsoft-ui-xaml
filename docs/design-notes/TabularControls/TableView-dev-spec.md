@@ -2,7 +2,7 @@
 
 `TableView` is the minimal, display-only tabular base control for `Microsoft.UI.Xaml.Controls.Tabular.dll`. It renders an `ItemsSource` as virtualized rows and uses `Columns` to generate one cell per realized row/column intersection.
 
-This is the minimal, display-only base of the control, and it is read-only. It establishes column ownership, header/body layout, row virtualization, cell generation, leading frozen columns, basic row keyboard navigation, automation peers, density/theming hooks, and the lifetime patterns later work builds on. The interactive v1 features land additively on top of it: selection, filtering, single-column sort and single-level grouping are delivered; two-level hierarchy and column resize/reorder are still outstanding.
+This is the minimal, display-only base of the control, and it is read-only. It establishes column ownership, header/body layout, row virtualization, cell generation, leading frozen columns, basic row keyboard navigation, automation peers, density/theming hooks, and the lifetime patterns later work builds on. The interactive v1 features land additively on top of it: selection, filtering, single-column sort, single-level grouping and hierarchical rows are delivered; column resize/reorder is still outstanding.
 
 Feature-level requirements and the v1-vs-deferred breakdown are in [`TableView-functional-spec.md`](./TableView-functional-spec.md).
 
@@ -22,9 +22,9 @@ The API preserves migration-compatible concepts where useful:
 
 Frozen columns are limited to a contiguous leading prefix in v1. `TableViewFrozenEdge.Trailing` is reserved.
 
-Single-level grouping is delivered (see *Grouping model* below): group headers are their own container kind interleaved into the flat row projection, not a second nesting level in the layout. Two-level hierarchical presentation is still deferred, because a real nesting level requires different layout, virtualization, focus and accessibility models than a banded header does. Hierarchy deeper than two levels is out of scope for v1.
+Single-level grouping is delivered (see *Grouping model* below): group headers are their own container kind interleaved into the flat row projection, not a second nesting level in the layout. Hierarchical rows are delivered through `TableViewSource.ParentBy(keySelector, parentKeySelector)` over a flat source, with no depth limit: each visible row carries its level and expansion state, and the row's lead cell is indented with an expander gutter, so the layout stays a flat virtualized list. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md).
 
-`TableViewRow` is intentionally a public `unsealed` `Control` despite carrying no v1 dependency properties: it is the realized row container (mirroring `ListViewItem`/`DataGridRow`) and is referenced by the public `TableViewRowAutomationPeer` and `TableViewCellAutomationPeer` constructors, so it cannot be internalized without collapsing the public accessibility surface. Row-level features layer onto it: selection already does, and hierarchy will. Grouping deliberately does **not** — a group header is a `TableViewGroupHeader`, a separate container kind chosen by `TableViewRowTemplateSelector`, so `TableViewRow` never grows an "am I a header?" adaptive branch.
+`TableViewRow` is intentionally a public `unsealed` `Control` despite carrying no v1 dependency properties: it is the realized row container (mirroring `ListViewItem`/`DataGridRow`) and is referenced by the public `TableViewRowAutomationPeer` and `TableViewCellAutomationPeer` constructors, so it cannot be internalized without collapsing the public accessibility surface. Row-level features layer onto it: selection and hierarchy already do. Grouping deliberately does **not** — a group header is a `TableViewGroupHeader`, a separate container kind chosen by `TableViewRowTemplateSelector`, so `TableViewRow` never grows an "am I a header?" adaptive branch.
 
 
 ## Column model: `TextColumn` vs `TemplateColumn`
@@ -484,11 +484,11 @@ Row recycling, cell rebuild and dependency-property change callbacks can all run
 
 ## Non-goals
 
-`TableView` v1 does not attempt to replace `DataGrid`. The true v1 non-goals are marquee selection, multi-column sort, column virtualization, row headers, hierarchy deeper than two levels, and spreadsheet-like interaction. (Selection, single-column sort, filtering, grouping, and two-level hierarchy are v1 features, not non-goals; selection, sort, filtering and single-level grouping are delivered, and two-level hierarchy lands later. Cell editing is delivered by this PR.)
+`TableView` v1 does not attempt to replace `DataGrid`. The true v1 non-goals are marquee selection, multi-column sort, column virtualization, row headers, and spreadsheet-like interaction. (Selection, single-column sort, filtering, grouping, and hierarchical rows are v1 features, not non-goals, and are delivered. Cell editing is delivered by this PR.)
 
 ## Out of Scope
 
-Delivered later in the v1 stack: two-level hierarchy · column reorder · navigation-state persistence · samples · tests · theme-XBF emission.
+Delivered later in the v1 stack: column reorder · navigation-state persistence · samples · tests · theme-XBF emission.
 
 Already delivered in the v1 stack: row selection · shaping primitives · filtering · single-column sort · single-level grouping.
 

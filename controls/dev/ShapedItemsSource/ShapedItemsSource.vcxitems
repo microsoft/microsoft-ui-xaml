@@ -27,11 +27,13 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)RowIdentity.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapedGroup.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)LiveShapingTracker.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShapedItemsSource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)RowIdentity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ShapedGroup.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)LiveShapingTracker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ShapedItemsSource.cpp" />
   </ItemGroup>
 </Project>

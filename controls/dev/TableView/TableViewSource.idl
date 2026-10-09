@@ -28,9 +28,10 @@ runtimeclass TableViewSource
     //  * UI-thread affinity, like any XAML items source. The underlying collection must also
     //    raise its change notifications on that thread; raising them from a background thread
     //    is not supported. The verbs hold no lock.
-    //  * Rows are identified by their item's OBJECT identity; there is no app-supplied row key.
-    //    So selection and focus re-anchor across a reshape, but NOT across an item being
-    //    re-created, and the same object in two rows fails fast at materialization.
+    //  * Rows are identified by their item's OBJECT identity (under ParentBy, by its node key,
+    //    which also survives re-creation). So selection and focus re-anchor across a reshape, but
+    //    NOT across an item being re-created, and the same object in two rows fails fast at
+    //    materialization.
 
     // Accepts the same collection interfaces as ItemsSourceView: IVector<Object> (so also
     // IObservableVector<Object>), IBindableVector, IIterable<Object>, or IBindableIterable.
@@ -95,6 +96,23 @@ runtimeclass TableViewSource
     TableViewSource ClearFilter();
     TableViewSource ClearGroupBy();
     TableViewSource ClearSort();
+
+    // Declares a self-referencing parent/child relation over the flat source: keySelector returns
+    // each item's unique key, parentKeySelector its parent's key (null or empty for a root; an
+    // unknown parent key makes an orphan root). Null selectors, duplicate/empty keys, self-parent
+    // and cycles throw E_INVALIDARG and keep the previous projection. Value-typed keys compare by
+    // value and type; other objects by reference. Rows start collapsed; sort applies per sibling
+    // set, filter keeps matching rows plus their ancestors, and GroupBy buckets the roots.
+    // See docs/design-notes/TabularControls/Hierarchical-Data-Rows-Parent-Key-Design.md.
+    TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
+
+    // Removes the relation and shows the source flat again. Resets expansion state.
+    TableViewSource ClearParentBy();
+
+    // Opt-in: reshapes when an item's sort key, group key, filter result or parent relation changes
+    // (PropertyChanged), coalesced to one reshape per dispatcher turn and deferred while a cell is
+    // being edited.
+    Boolean IsLiveShaping{ get; set; };
 
 }
 

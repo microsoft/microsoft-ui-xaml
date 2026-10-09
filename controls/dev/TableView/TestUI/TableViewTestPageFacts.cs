@@ -29,6 +29,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string RtlTable = "RtlTableView";
         internal const string GroupedTable = "GroupedTableView";
         internal const string ScrollingTable = "ScrollingTableView";
+        internal const string HierarchyTable = "HierarchyTable";
+        internal const string HierarchyRtlTable = "HierarchyRtlTable";
 
         // ---- Page controls (AutomationId) ----
 
@@ -45,12 +47,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string CanUserSortColumnsCheckBox = "CanUserSortColumnsCheckBox";
         internal const string HookRowStatesButton = "HookRowStatesButton";
         internal const string HookGroupHeadersButton = "HookGroupHeadersButton";
+        internal const string ResetHierarchyButton = "ResetHierarchy";
 
         // Pivot navigation buttons are "GoTo<Item>Button".
         internal const string BasicPivotItem = "Basic";
         internal const string RtlPivotItem = "Rtl";
         internal const string GroupedPivotItem = "Grouped";
         internal const string ScrollingPivotItem = "Scrolling";
+        internal const string HierarchyPivotItem = "Hierarchy";
 
         internal static string GoToButton(string pivotItem) => "GoTo" + pivotItem + "Button";
 
@@ -65,6 +69,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string GroupToggleReport = "GroupToggleReportTextBlock";
         internal const string ScrollOffsets = "ScrollOffsetTextBlock";
         internal const string StatusText = "StatusTextBlock";
+
+        // Read-only TextBox describing HierarchyTable, as "key=value" fields joined by ';':
+        //   tree=<projection label>   rows in order as Name + Level + mark ('+' collapsed, '-' expanded,
+        //                             nothing for a leaf); group headers as [key]
+        //   rtl=<projection label>    the same for HierarchyRtlTable
+        //   selected=<name|none>      HierarchyTable.SelectedItem
+        //   beginning=<n>             BeginningEdit count since the last reset
+        //   editing=<True|False>      HierarchyTable.IsEditing
+        internal const string HierarchyReadout = "HierarchyReadout";
+
+        internal const string TreeField = "tree";
+        internal const string RtlTreeField = "rtl";
+        internal const string SelectedField = "selected";
+        internal const string BeginningEditField = "beginning";
+        internal const string EditingField = "editing";
+        internal const string NoneValue = "none";
 
         // ---- BasicTableView columns, in visible order ----
 
@@ -131,5 +151,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
 
         // The Basic item at a given position after sorting by Age descending (ages are 20 + id, strictly increasing).
         internal static int BasicIdAtPositionWhenAgeDescending(int position) => BasicItemCount - 1 - position;
+
+        // ---- Hierarchy fixture (ParentBy(Id, ManagerId)) ----
+        //
+        //   Ada (Eng)          Eve (Ops)       Gus (Ops, ManagerId 99: orphan, so a root leaf)
+        //   +- Ben             +- Fay
+        //   |  +- Dan
+        //   +- Cy
+        //
+        // Roots start collapsed. Level is 1-based for tree rows (roots are 1).
+
+        internal static readonly int[] HierarchyIds = { 1, 2, 3, 4, 5, 6, 7 };
+        internal static readonly int?[] HierarchyManagerIds = { null, 1, 1, 2, null, 5, 99 };
+        internal static readonly string[] HierarchyNames = { "Ada", "Ben", "Cy", "Dan", "Eve", "Fay", "Gus" };
+        internal static readonly string[] HierarchyDepts = { "Eng", "Eng", "Eng", "Eng", "Ops", "Ops", "Ops" };
+        internal static readonly int[] HierarchyScores = { 90, 75, 60, 85, 70, 95, 50 };
+
+        internal const string HierarchyAllCollapsed = "Ada1+ Eve1+ Gus1";
+        internal const string HierarchyAdaExpanded = "Ada1- Ben2+ Cy2 Eve1+ Gus1";
+        internal const string HierarchyAdaSubtreeExpanded = "Ada1- Ben2- Dan3 Cy2 Eve1+ Gus1";
+
+        // Row-relative x of the centre of an UNGROUPED ROOT row's chevron. The gutter is
+        // TableViewRowExpanderSize (24) wide and a root gets no indent, so it spans [0, 24) from the row's
+        // leading edge. Like BasicColumnWidths this mirrors a XAML value by hand.
+        internal const int HierarchyRootChevronCentreX = 12;
+
+        // HierarchyTable column widths (Name, Dept, Score), authored in XAML.
+        internal static readonly int[] HierarchyColumnWidths = { 160, 100, 100 };
+
+        // Row-relative x of the centre of the Dept cell, well clear of the chevron.
+        internal static int HierarchyDeptCellCentreX => HierarchyColumnWidths[0] + (HierarchyColumnWidths[1] / 2);
     }
 }
