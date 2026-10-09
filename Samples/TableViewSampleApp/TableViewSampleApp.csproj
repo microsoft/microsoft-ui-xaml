@@ -9,9 +9,9 @@
     <Platforms>x86;x64;ARM64;ARM64EC</Platforms>
     <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) &gt;= 8">win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) &lt; 8">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <!-- .NET has no arm64ec RID: ARM64EC hosts run x64 managed code, so map it to win-x64 (as ChartApp/TableViewApp do). -->
     <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64EC'">win-x64</RuntimeIdentifier>
     <WindowsAppSDKSelfContained Condition="'$(Platform)' == 'ARM64EC'">true</WindowsAppSDKSelfContained>
-    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
     <AppxPackageName>TableViewSampleApp</AppxPackageName>
