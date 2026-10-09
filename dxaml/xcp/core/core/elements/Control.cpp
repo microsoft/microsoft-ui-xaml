@@ -956,7 +956,7 @@ _Check_return_ HRESULT CControl::RefreshTemplateBindings(
     {
         m_fRequestTemplateBindingRefresh = FALSE;
 #ifdef XAMLPROFILER_ENABLED
-        XamlProfilerTracing::RefreshTemplateBindingsStop();
+        XamlElementTracing::RefreshTemplateBindingsStop(reinterpret_cast<uint64_t>(this));
 #else
         TraceRefreshTemplateBindingsEnd();
 
@@ -969,7 +969,7 @@ _Check_return_ HRESULT CControl::RefreshTemplateBindings(
     });
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::RefreshTemplateBindingsStart(reinterpret_cast<uint64_t>(this));
+    XamlElementTracing::RefreshTemplateBindingsStart(reinterpret_cast<uint64_t>(this));
 #else
     TraceRefreshTemplateBindingsBegin();
 
@@ -1131,10 +1131,10 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
         // resolved style name is captured after retrieval and read back here on the Stop edge; pStyle
         // is cleared before Cleanup, so it cannot be read from the lambda directly.
         xstring_ptr profilerStyleName;
-        XamlProfilerTracing::GetBuiltInStyleStart(reinterpret_cast<uint64_t>(this));
+        XamlElementTracing::GetBuiltInStyleStart(reinterpret_cast<uint64_t>(this));
         auto profilerGuard = wil::scope_exit([this, &profilerStyleName]()
         {
-            XamlProfilerTracing::GetBuiltInStyleStop(reinterpret_cast<uint64_t>(this),
+            XamlElementTracing::GetBuiltInStyleStop(reinterpret_cast<uint64_t>(this),
                 profilerStyleName.IsNull() ? L"None" : profilerStyleName.GetBuffer());
         });
 #endif
@@ -1149,7 +1149,7 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
         IFC(FxCallbacks::Control_GetBuiltInStyle(this, &pStyle));
 
 #ifdef XAMLPROFILER_ENABLED
-        if (pStyle && XamlProfilerTracing::IsEnabled())
+        if (pStyle && XamlElementTracing::IsEnabled())
         {
             IGNOREHR(pStyle->GetTargetTypeName(&profilerStyleName));
         }

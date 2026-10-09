@@ -165,7 +165,7 @@ Hub::OnCollectionChanged(
     UINT32 nIndexInPanel = nIndex;
 
 #ifdef XAMLPROFILER_ENABLED
-    const bool traceHubSectionCount = XamlProfilerTracing::IsEnabled();
+    const bool traceHubSectionCount = XamlElementTracing::IsEnabled();
 #else
     const bool traceHubSectionCount = !!EventEnabledHubSectionCountInfo();
 #endif
@@ -177,7 +177,7 @@ Hub::OnCollectionChanged(
 #ifndef XAMLPROFILER_ENABLED
             TraceHubSectionCountInfo(nNewSectionsCount);
 #else
-            XamlProfilerTracing::HubSectionCount(reinterpret_cast<uint64_t>(GetHandle()), nNewSectionsCount);
+            XamlElementTracing::HubSectionCount(reinterpret_cast<uint64_t>(GetHandle()), nNewSectionsCount);
 #endif
         }
     }

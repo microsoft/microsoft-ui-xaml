@@ -1153,15 +1153,15 @@ OrientedVirtualizingPanel::UpdateLogicalScrollData(
     ScrollVector offset = m_ScrollData.get_Offset();
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::UpdateLogicalScrollDataStart(reinterpret_cast<uint64_t>(GetHandle()));
+    XamlElementTracing::UpdateLogicalScrollDataStart(reinterpret_cast<uint64_t>(GetHandle()));
 #else
     TraceUpdateLogicalScrollDataBegin();
 #endif
 
-    auto guard = wil::scope_exit([]()
+    auto guard = wil::scope_exit([&]()
     {
 #ifdef XAMLPROFILER_ENABLED
-        XamlProfilerTracing::UpdateLogicalScrollDataStop();
+        XamlElementTracing::UpdateLogicalScrollDataStop(reinterpret_cast<uint64_t>(GetHandle()));
 #else
         TraceUpdateLogicalScrollDataEnd();
 #endif
@@ -1486,7 +1486,7 @@ OrientedVirtualizingPanel::AddContainerFromGenerator(
     _Inout_ BOOLEAN& visualOrderChanged)
 {
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::VirtualizationAddStart(pChild ? reinterpret_cast<uint64_t>(static_cast<UIElement*>(pChild)->GetHandle()) : 0);
+    XamlElementTracing::VirtualizationAddStart(pChild ? reinterpret_cast<uint64_t>(static_cast<UIElement*>(pChild)->GetHandle()) : 0);
 #else
     TraceVirtualizationAddBegin();
 #endif
@@ -1568,7 +1568,7 @@ OrientedVirtualizingPanel::AddContainerFromGenerator(
 
 Cleanup:
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::VirtualizationAddStop();
+    XamlElementTracing::VirtualizationAddStop(pChild ? reinterpret_cast<uint64_t>(static_cast<UIElement*>(pChild)->GetHandle()) : 0);
 #else
     TraceVirtualizationAddEnd();
 #endif
@@ -1992,15 +1992,15 @@ OrientedVirtualizingPanel::CleanupContainers(
     _In_ wf::Size constraint)
 {
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::VirtualizationCleanupStart(reinterpret_cast<uint64_t>(GetHandle()));
+    XamlElementTracing::VirtualizationCleanupStart(reinterpret_cast<uint64_t>(GetHandle()));
 #else
     TraceVirtualizationCleanupBegin();
 #endif
 
-    auto guard = wil::scope_exit([]()
+    auto guard = wil::scope_exit([&]()
     {
 #ifdef XAMLPROFILER_ENABLED
-        XamlProfilerTracing::VirtualizationCleanupStop();
+        XamlElementTracing::VirtualizationCleanupStop(reinterpret_cast<uint64_t>(GetHandle()));
 #else
         TraceVirtualizationCleanupEnd();
 #endif
@@ -2694,7 +2694,7 @@ OrientedVirtualizingPanel::MeasureChild(
     _Out_opt_ wf::Size* returnValue)
 {
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::MeasureChildStart(pChild ? reinterpret_cast<uint64_t>(static_cast<UIElement*>(pChild)->GetHandle()) : 0);
+    XamlElementTracing::MeasureChildStart(pChild ? reinterpret_cast<uint64_t>(static_cast<UIElement*>(pChild)->GetHandle()) : 0);
 #else
     TraceMeasureChildBegin();
 #endif
@@ -2725,7 +2725,7 @@ OrientedVirtualizingPanel::MeasureChild(
 
 Cleanup:
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::MeasureChildStop();
+    XamlElementTracing::MeasureChildStop(pChild ? reinterpret_cast<uint64_t>(static_cast<UIElement*>(pChild)->GetHandle()) : 0);
 #else
     TraceMeasureChildEnd();
 #endif

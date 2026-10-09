@@ -342,15 +342,15 @@ void ModernCollectionBasePanel::ContainerManager::UpdateDataIndexForFirstValidEl
 _Check_return_ HRESULT ModernCollectionBasePanel::ContainerManager::PlaceInValidElements(_In_ xaml_controls::ElementType type, _In_ INT32 dataIndex, _In_ const ctl::ComPtr<IUIElement>& spElement)
 {
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::PlaceElementStart(spElement ? reinterpret_cast<uint64_t>(spElement.Cast<UIElement>()->GetHandle()) : 0, dataIndex);
+    XamlElementTracing::PlaceElementStart(spElement ? reinterpret_cast<uint64_t>(spElement.Cast<UIElement>()->GetHandle()) : 0, dataIndex);
 #else
     TracePlaceElementBegin(dataIndex);
 #endif
 
-    auto guard = wil::scope_exit([]()
+    auto guard = wil::scope_exit([&]()
     {
 #ifdef XAMLPROFILER_ENABLED
-        XamlProfilerTracing::PlaceElementStop();
+        XamlElementTracing::PlaceElementStop(spElement ? reinterpret_cast<uint64_t>(spElement.Cast<UIElement>()->GetHandle()) : 0);
 #else
         TracePlaceElementEnd();
 #endif

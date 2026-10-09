@@ -3025,7 +3025,7 @@ _Check_return_ HRESULT TextSelectionManager::ChangeSelection(
     uint32_t newPosition)
 {
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::ChangeSelectionStart(reinterpret_cast<uint64_t>(m_pOwnerUIElement));
+    XamlElementTracing::ChangeSelectionStart(reinterpret_cast<uint64_t>(m_pOwnerUIElement));
 #else
     TraceChangeSelectionBegin();
 #endif
@@ -3063,7 +3063,7 @@ _Check_return_ HRESULT TextSelectionManager::ChangeSelection(
 
 Cleanup:
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::ChangeSelectionStop();
+    XamlElementTracing::ChangeSelectionStop(reinterpret_cast<uint64_t>(m_pOwnerUIElement));
 #else
     TraceChangeSelectionEnd();
 #endif
@@ -3086,7 +3086,7 @@ _Check_return_ HRESULT TextSelectionManager::ExtendSelectionRange(
     _Out_ SelectionRange<uint32_t>* newRange)
 {
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::ExtendSelectionRangeStart(reinterpret_cast<uint64_t>(m_pOwnerUIElement));
+    XamlElementTracing::ExtendSelectionRangeStart(reinterpret_cast<uint64_t>(m_pOwnerUIElement));
 #else
     TraceExtendSelectionRangeBegin();
 #endif
@@ -3123,7 +3123,7 @@ _Check_return_ HRESULT TextSelectionManager::ExtendSelectionRange(
 
 Cleanup:
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::ExtendSelectionRangeStop();
+    XamlElementTracing::ExtendSelectionRangeStop(reinterpret_cast<uint64_t>(m_pOwnerUIElement));
 #else
     TraceExtendSelectionRangeEnd();
 #endif

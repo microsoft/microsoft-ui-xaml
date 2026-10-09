@@ -14,6 +14,8 @@
 // SwipeTestHooks convention.
 #ifdef XAMLPROFILER_ENABLED
 
+#include "XamlTelemetry.h"
+
 class CDependencyObject;
 
 // Returns the IInspectable identity handle of the object's DXaml peer - the same value
@@ -333,6 +335,19 @@ public:
         uint64_t, NonLocalBudget,
         bool,     NonLocalAvailable,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+};
+
+// Element-scoped events are TraceLogging events on the existing Microsoft-Windows-XAML provider
+// {531a35ab-63ce-4bcf-aa98-f88c7a89e455}, through the same XamlTelemetryLogging registration that
+// XamlTelemetry uses, rather than on Microsoft-Windows-XAML-Profiler. TraceLogging events are
+// self-describing, so WPA/TraceProcessor decode their names and ElementId fields without a
+// registered manifest.
+class XamlElementTracing final : public TelemetryBase
+{
+    #pragma warning (suppress : 6387)
+    IMPLEMENT_TELEMETRY_CLASS(XamlElementTracing, XamlTelemetryLogging);
+
+public:
 
     // =====================================================================
     // Element-Scoped Activity Events
@@ -347,16 +362,16 @@ public:
     // profiler events (reinterpret_cast<uint64_t> of the live core object); it is
     // 0 only when the producing site legitimately has no element in scope.
     //
-    // Routing model (see XAMLPROFILER_ENABLED): the two providers are mutually exclusive at
-    // each call site. A retail (shipping) build never defines XAMLPROFILER_ENABLED and emits
-    // only the retail Microsoft-Windows-XAML operation, exactly as before — existing xperf/WPA
-    // consumers are byte-for-byte unaffected. A profiler-enabled (chk/debug) build emits only
-    // the profiler copy on Microsoft-Windows-XAML-Profiler IN PLACE OF the retail marker, so a
-    // profiler build never double-logs the same operation on both providers. Each call site
-    // selects one branch with #ifdef XAMLPROFILER_ENABLED (profiler) / #else (retail). The
-    // consumer keys a scope by (provider + task) and pairs Start/Stop by opcode, so each activity
-    // below reuses the retail operation's name as its ETW task and preserves the Begin/End timing
-    // while adding ElementId.
+    // Routing model (see XAMLPROFILER_ENABLED): the manifest and TraceLogging forms are mutually
+    // exclusive at each call site. A retail (shipping) build never defines XAMLPROFILER_ENABLED
+    // and emits only the retail manifest event, exactly as before — existing xperf/WPA consumers
+    // are byte-for-byte unaffected. A profiler-enabled (chk/debug) build emits only the
+    // TraceLogging copy below IN PLACE OF the retail manifest event, on the same
+    // Microsoft-Windows-XAML provider, so a profiler build never double-logs the same operation.
+    // Each call site selects one branch with #ifdef XAMLPROFILER_ENABLED (profiler) / #else
+    // (retail). The consumer keys a scope by (provider + task) and pairs Start/Stop by opcode, so
+    // each activity below reuses the retail operation's name as its event name and preserves the
+    // Begin/End timing while adding ElementId.
     //
     // Exceptions (stay additive): a few sites keep the pre-existing retail Begin/End AND also emit
     // the profiler marker, because the retail marker is not a same-location duplicate — its
@@ -371,11 +386,12 @@ public:
     //
     // Two shapes are used:
     //   * Activity events  (DEFINE_ELEMENT_ACTIVITY): a Start/Stop pair mirroring the
-    //     retail Begin/End so per-operation duration is preserved. ElementId may ride
-    //     the Start (element known on entry) or the Stop (element known only on exit,
-    //     e.g. container generation); the consumer back-fills a scope from either edge.
-    //     An operation whose retail marker carried extra payload adds a matching overload
-    //     on the edge that carried it (e.g. GetBuiltInStyleStop with the style name).
+    //     retail Begin/End so per-operation duration is preserved. Both edges carry
+    //     ElementId, so each Start and Stop row identifies its element on its own. The only
+    //     exception is GenerateContainerStart, whose container does not exist until the
+    //     operation ends. An operation whose retail marker carried extra payload adds a
+    //     matching overload on the edge that carried it (e.g. GetBuiltInStyleStop with the
+    //     style name).
     //   * Point events     (DEFINE_TRACELOGGING_EVENT_PARAMn): a single marker for
     //     operations whose retail form is win:Info, or whose element identity is
     //     per-iteration inside a pass-level Begin/End (RealizeTransition). The field
@@ -384,8 +400,8 @@ public:
 
     // Emits a Start/Stop activity pair on this provider under one ETW task (== OpName),
     // so the consumer pairs them into a duration exactly like the retail Begin/End.
-    // Overloads let ElementId ride whichever edge knows the element; the empty edge
-    // carries opcode + level only.
+    // Stop always takes ElementId; the parameterless Start exists only for
+    // GenerateContainer (see above).
 #define DEFINE_ELEMENT_ACTIVITY(OpName) \
     static void OpName##Start(uint64_t ElementId) \
     { \
@@ -406,12 +422,6 @@ public:
             TraceLoggingOpcode(WINEVENT_OPCODE_STOP), \
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE), \
             TraceLoggingValue(ElementId, "ElementId")); \
-    } \
-    static void OpName##Stop() \
-    { \
-        TraceLoggingWrite(TraceLoggingType::Provider(), #OpName, \
-            TraceLoggingOpcode(WINEVENT_OPCODE_STOP), \
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE)); \
     }
 
     // Layout-manager passes (CLayoutManager) — ElementId is the layout root the pass ran for.
@@ -436,8 +446,8 @@ public:
     DEFINE_ELEMENT_ACTIVITY(ProcessLayoutForTransition);
 
     // Focus (CFocusManager) — ElementId is the element gaining/holding focus.
-    // UpdateFocus already carries the focused element on its Stop (matching the retail End's
-    // pNewFocus payload), so no extra overload is needed there.
+    // UpdateFocus Start carries the requested target and Stop the element that actually received
+    // focus (the retail End's pNewFocus); they differ when focus is redirected.
     DEFINE_ELEMENT_ACTIVITY(UpdateFocus);
     DEFINE_ELEMENT_ACTIVITY(XYFocusEntered);
     // XYFocusEntered adds the retail Begin's focus-direction string on the Start edge.

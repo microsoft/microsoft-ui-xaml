@@ -13374,7 +13374,7 @@ CUIElement::BoundsTestEntry(
     HitTestParams myParams(hitTestParams);
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::HitTestStart(reinterpret_cast<uint64_t>(this));
+    XamlElementTracing::HitTestStart(reinterpret_cast<uint64_t>(this));
 #else
     TraceHitTestBegin();
 #endif
@@ -13388,20 +13388,20 @@ CUIElement::BoundsTestEntry(
     IFC_RETURN(BoundsTestInternal(target, pCallback, &hitTestParams, canHitDisabledElements, canHitInvisibleElements, nullptr /* pResult */));
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::HitTestStop();
+    XamlElementTracing::HitTestStop(reinterpret_cast<uint64_t>(this));
 #else
     TraceHitTestEnd();
 #endif
 
     // TODO: HitTest: put the stats on CCoreServices or something
 #ifdef XAMLPROFILER_ENABLED
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlElementTracing::IsEnabled())
     {
         const uint64_t elementId = reinterpret_cast<uint64_t>(this);
-        XamlProfilerTracing::OuterBoundsStats(elementId, hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);
-        XamlProfilerTracing::InnerBoundsStats(elementId, hitTestParams.m_hitTestPerfData->m_innerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_innerBoundsReuse);
-        XamlProfilerTracing::ContentBoundsStats(elementId, hitTestParams.m_hitTestPerfData->m_contentBoundsRecalc, hitTestParams.m_hitTestPerfData->m_contentBoundsReuse);
-        XamlProfilerTracing::ChildBoundsStats(elementId, hitTestParams.m_hitTestPerfData->m_childBoundsRecalc, hitTestParams.m_hitTestPerfData->m_childBoundsReuse);
+        XamlElementTracing::OuterBoundsStats(elementId, hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);
+        XamlElementTracing::InnerBoundsStats(elementId, hitTestParams.m_hitTestPerfData->m_innerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_innerBoundsReuse);
+        XamlElementTracing::ContentBoundsStats(elementId, hitTestParams.m_hitTestPerfData->m_contentBoundsRecalc, hitTestParams.m_hitTestPerfData->m_contentBoundsReuse);
+        XamlElementTracing::ChildBoundsStats(elementId, hitTestParams.m_hitTestPerfData->m_childBoundsRecalc, hitTestParams.m_hitTestPerfData->m_childBoundsReuse);
     }
 #else
     TraceOuterBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);

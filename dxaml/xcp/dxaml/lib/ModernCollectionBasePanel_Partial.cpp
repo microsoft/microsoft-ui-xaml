@@ -1010,15 +1010,15 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Generate(
     _In_ BOOLEAN goForward)
 {
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::GenerateItemsStart(reinterpret_cast<uint64_t>(GetHandle()));
+    XamlElementTracing::GenerateItemsStart(reinterpret_cast<uint64_t>(GetHandle()));
 #else
     TraceGenerateItemsBegin();
 #endif
 
-    auto guard = wil::scope_exit([]()
+    auto guard = wil::scope_exit([&]()
     {
 #ifdef XAMLPROFILER_ENABLED
-        XamlProfilerTracing::GenerateItemsStop();
+        XamlElementTracing::GenerateItemsStop(reinterpret_cast<uint64_t>(GetHandle()));
 #else
         TraceGenerateItemsEnd();
 #endif

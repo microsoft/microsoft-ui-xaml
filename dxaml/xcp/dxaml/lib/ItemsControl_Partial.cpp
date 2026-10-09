@@ -1816,7 +1816,7 @@ ItemsControl::PrepareItemContainer(
     _In_ IInspectable* pItem)
 {
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::PrepareContainerStart(pContainer ? reinterpret_cast<uint64_t>(static_cast<DependencyObject*>(pContainer)->GetHandle()) : 0);
+    XamlElementTracing::PrepareContainerStart(pContainer ? reinterpret_cast<uint64_t>(static_cast<DependencyObject*>(pContainer)->GetHandle()) : 0);
 #else
     TracePrepareContainerBegin();
 #endif
@@ -1851,7 +1851,7 @@ ItemsControl::PrepareItemContainer(
 
 Cleanup:
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::PrepareContainerStop();
+    XamlElementTracing::PrepareContainerStop(pContainer ? reinterpret_cast<uint64_t>(static_cast<DependencyObject*>(pContainer)->GetHandle()) : 0);
 #else
     TracePrepareContainerEnd();
 #endif

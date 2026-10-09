@@ -653,7 +653,7 @@ HRESULT CTransition::OnLayoutChanged(_In_ CUIElement* pTarget)
     LayoutTransitionStorage* pStorage = NULL;
     TransitionTrigger currentTrigger = DirectUI::TransitionTrigger::NoTrigger;
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::ProcessLayoutForTransitionStart(reinterpret_cast<uint64_t>(pTarget));
+    XamlElementTracing::ProcessLayoutForTransitionStart(reinterpret_cast<uint64_t>(pTarget));
 #else
     TraceProcessLayoutForTransitionBegin();
 #endif
@@ -810,7 +810,7 @@ Cleanup:
         CTransition::SetNextGenerationInformationFromLayout(pTarget, pStorage, pLayoutManager->GetNextLayoutCounter());
     }
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::ProcessLayoutForTransitionStop();
+    XamlElementTracing::ProcessLayoutForTransitionStop(reinterpret_cast<uint64_t>(pTarget));
 #else
     TraceProcessLayoutForTransitionEnd();
 #endif
@@ -1423,7 +1423,7 @@ _Check_return_ HRESULT CTransition::CancelTransitions(_In_ CUIElement* pTarget)
     CLayoutTransitionElement* pDestinationElement = NULL;
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::CancelTransitionsStart(reinterpret_cast<uint64_t>(pTarget));
+    XamlElementTracing::CancelTransitionsStart(reinterpret_cast<uint64_t>(pTarget));
 #else
     TraceCancelTransitionsBegin();
 #endif
@@ -1480,7 +1480,7 @@ _Check_return_ HRESULT CTransition::CancelTransitions(_In_ CUIElement* pTarget)
     }
 Cleanup:
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::CancelTransitionsStop();
+    XamlElementTracing::CancelTransitionsStop(reinterpret_cast<uint64_t>(pTarget));
 #else
     TraceCancelTransitionsEnd();
 #endif

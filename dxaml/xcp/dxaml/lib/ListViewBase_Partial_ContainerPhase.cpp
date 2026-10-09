@@ -115,7 +115,7 @@ ListViewBase::SetupContainerContentChangingAfterPrepare(
     wf::Size measureSize)
 {
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::SetupCCCStart(container ? reinterpret_cast<uint64_t>(static_cast<DependencyObject*>(container)->GetHandle()) : 0, itemIndex);
+    XamlElementTracing::SetupCCCStart(container ? reinterpret_cast<uint64_t>(static_cast<DependencyObject*>(container)->GetHandle()) : 0, itemIndex);
 #else
     TraceSetupCCCBegin(itemIndex);
 #endif
@@ -325,7 +325,7 @@ ListViewBase::SetupContainerContentChangingAfterPrepare(
     }
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::SetupCCCStop();
+    XamlElementTracing::SetupCCCStop(container ? reinterpret_cast<uint64_t>(static_cast<DependencyObject*>(container)->GetHandle()) : 0);
 #else
     TraceSetupCCCEnd();
 #endif

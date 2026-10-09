@@ -755,14 +755,14 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
 
     // ETW Trace, we want to raise an ETW event here if we can determine that the configuration
-    // does not allow virtualization to happen. Compute the layout state when EITHER provider is
-    // enabled, then independently guard the retail (Microsoft-Windows-XAML) and profiler
-    // (Microsoft-Windows-XAML-Profiler) emissions below. A profiler-only session never enables the
-    // retail provider, so gating the computation solely on EventEnabledVirtualizationIsEnabledByLayoutInfo()
-    // would drop the profiler event; a retail-only session likewise never enables the profiler.
+    // does not allow virtualization to happen. Compute the layout state when EITHER the retail
+    // manifest event or the profiler TraceLogging event is enabled, then independently guard each
+    // emission below. Both are on Microsoft-Windows-XAML, but the manifest predicate also checks
+    // that event's level/keywords, so gating the computation solely on
+    // EventEnabledVirtualizationIsEnabledByLayoutInfo() could drop the profiler event.
     if (EventEnabledVirtualizationIsEnabledByLayoutInfo()
 #ifdef XAMLPROFILER_ENABLED
-        || XamlProfilerTracing::IsEnabled()
+        || XamlElementTracing::IsEnabled()
 #endif
         )
     {
@@ -797,9 +797,9 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
             ctl::ComPtr<xaml::IDependencyObject> spParent;
             IFC(static_cast<ListViewBase*>(this)->get_Parent(&spParent));
 
-            // Either/or: compile the retail (Microsoft-Windows-XAML) emission only into retail
-            // builds and the profiler (Microsoft-Windows-XAML-Profiler) emission only into profiler
-            // builds, so a given build flavor raises a single event. The computation above is shared.
+            // Either/or: compile the retail manifest emission only into retail builds and the
+            // profiler TraceLogging emission only into profiler builds, so a given build flavor
+            // raises a single event. The computation above is shared.
 #ifndef XAMLPROFILER_ENABLED
             if (EventEnabledVirtualizationIsEnabledByLayoutInfo())
             {
@@ -813,9 +813,9 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
             }
 #endif
 #ifdef XAMLPROFILER_ENABLED
-            if (XamlProfilerTracing::IsEnabled())
+            if (XamlElementTracing::IsEnabled())
             {
-                XamlProfilerTracing::VirtualizationIsEnabledByLayout(
+                XamlElementTracing::VirtualizationIsEnabledByLayout(
                     reinterpret_cast<uint64_t>(GetHandle()),
                     !!isVirtualizationActive,
                     GetHandle()->m_strName.GetBuffer(),
