@@ -2,12 +2,16 @@
 
 ## Table of Contents
 
-- [Under the hood](#under-the-hood)
-  - [Glass window: concept](#glass-window-concept)
-  - [Glass window: implementation](#glass-window-implementation)
-  - [Min/Max/Close buttons and dragging](#minmaxclose-buttons-and-dragging)
-  - [NCHITTEST behavior](#nchittest-behavior)
-  - [Files](#files)
+- [Custom Title Bar](#custom-title-bar)
+  - [Table of Contents](#table-of-contents)
+  - [Under the hood](#under-the-hood)
+    - [Glass window: concept](#glass-window-concept)
+    - [Glass window: implementation](#glass-window-implementation)
+    - [Client area and top border](#client-area-and-top-border)
+      - [Fixing the Top Border color on Win10](#fixing-the-top-border-color-on-win10)
+    - [Min/Max/Close buttons and dragging](#minmaxclose-buttons-and-dragging)
+    - [NCHITTEST behavior](#nchittest-behavior)
+    - [Files](#files)
 
 WinUI allows an app developer to use her own custom UI element as a title bar instead of a system provided one. More 
 details can be found in the public documentation for 
@@ -56,6 +60,48 @@ User code can create any number of glass windows for multiple drag regions. The 
 and uses [`SetWindowRgn`](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowrgn) to cut holes
 and allow interactive controls like buttons to be placed in them. See `Microsoft.UI.Input.InputNonClientPointerSource` implementation
 for details.
+
+### Client area and top border
+
+`DesktopWindowImpl`, the implementation of `Window`, hosts WinUI content in a child `DesktopChildSiteBridge`, which wraps a child HWND.
+With `Window.ExtendsContentIntoTitleBar` enabled and the HWND not maximized, WinUI leaves one physical pixel above that child.
+This is because that top row of pixels at y=0 is where the window border is drawn by the DWM.
+
+On Win11, the DWM window border is drawn at y=0.  It doesn't matter what WinUI draws in that top row, the window border will be visible
+there instead.
+
+BUT on Win10, when ExtendsContentIntoTitleBar is true, the client content is shown all the way up to y=0, and you can't see the DWM border
+at all (it would normally be at y=0).  Since there's no WinUI content at y=0, the user sees DesktopWindowImpl's GDI background (from WM_ERASEBKGND).
+
+#### Fixing the Top Border color on Win10
+
+Win11 looks fine, so the fix only applies to Win10.
+`DesktopUtility::IsOnWindows10` checks the device version from `RtlGetDeviceFamilyInfoEnum`.
+This avoids probing an unsupported DWM attribute, which produces debugger output on Win10.
+
+We do two things:
+1. We call `DwmExtendFrameIntoClientArea` to tell DWM that a region inside the client area wants to participate in frame composition.
+2. We paint that top y=0 row with `BLACK_BRUSH`, which according to the [docs](https://learn.microsoft.com/en-us/windows/win32/dwm/customframe#extending-the-client-frame)
+produces pixels with zero alpha so that the DWM window border can show through.
+
+Now, when the DWM composes the scene, the DWM border is visible.
+
+Limitations:
+- This fix only applies when `Window.ExtendsContentIntoTitleBar` is true.  When the app sets `AppWindow.TitleBar.ExtendsContentIntoTitleBar`, they won't get this fix.
+We can consider supporting this in the future.
+- High-contrast is different, and not fully solved.  In high-contrast we draw the top row at y=0 with COLOR_WINDOWFRAME, but there is still a missing top border
+over the min/max/close buttons.
+
+Compatibility:
+- When we call `DwmExtendFrameIntoClientArea` we overwrite whatever margins the app may have set.
+- When we call `DwmExtendFrameIntoClientArea` it changes the color of all four window borders, so we need to do this in a predictable way that makes sense
+to app authors.
+
+Open issues:
+- High-contrast (mentioned above)
+- It's unclear why we need to set the top margin >1 when calling `DwmExtendFrameIntoClientArea`.  When setting the top margin to 1, the top border still
+looks wrong in the inactive state.
+
 ### Min/Max/Close buttons and dragging
 
 The glass window captures the input to perform the drag operation when mouse drag happens. When a drag operation 
@@ -107,3 +153,5 @@ heavy lifting of creating glass windows, caption button windows and handling and
   * Dxaml layer: [`dxaml/xcp/dxaml/lib/WindowChrome_Partial.cpp`](../../dxaml/xcp/dxaml/lib/WindowChrome_Partial.cpp)
   * Core layer: [`dxaml/xcp/components/WindowChrome/CWindowChrome.cpp`](../../dxaml/xcp/components/WindowChrome/CWindowChrome.cpp)
 * InputNonClientPointerSource: See the Windows App SDK documentation for this API.
+* Top-level HWND and window messages:
+  [`dxaml/xcp/dxaml/lib/DesktopWindowImpl.cpp`](../../dxaml/xcp/dxaml/lib/DesktopWindowImpl.cpp)

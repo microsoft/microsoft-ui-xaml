@@ -56,6 +56,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(WindowTopBorderPainting)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the Windows 10 Window ECITB border erase without changing either entry point's geometry.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
 #ifdef MUX_PRERELEASE
         // Experimental Width/Height properties on Window are only present in prerelease builds.
         BEGIN_TEST_METHOD(CanGetSetWindowWidthHeight)
