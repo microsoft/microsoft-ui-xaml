@@ -515,6 +515,192 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Shift+Tab back into the body from the control after the table resumes the cell that last had focus, not a control hosted in another row's template cell.")]
+        public void ShiftTabReentryResumesRememberedCell()
+        {
+            // Without the redirect, reverse tab search lands on the last realized row's hosted "Open" button.
+            // Focus leaves through UIA SetFocus: forward Tab out of the body is blocked (see TabMovesFocusOutOfTable).
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject rowsHost = GetRowsHost(BasicTable);
+                if (rowsHost == null) { Verify.Fail(BasicTable + " exposed no rows host."); return; }
+                if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
+
+                UIObject anchor = rowsHost.Children[1];
+                anchor.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(anchor.HasKeyboardFocus, "Precondition: the anchor row should hold focus first.");
+
+                // Move to Age so the assertion cannot pass on a default column.
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.AreEqual(AgeColumn, IndexOfFocusedCell(GetRowsHost(BasicTable).Children[1]),
+                    "Precondition: the Age cell of the anchor row should hold focus.");
+
+                UIObject afterTable = FindElement.ById(AfterTableButton);
+                if (afterTable == null) { Verify.Fail("AfterTableButton was not found."); return; }
+                afterTable.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(afterTable.HasKeyboardFocus, "Precondition: focus should have left the table.");
+
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+
+                UIObject row = GetRowsHost(BasicTable).Children[1];
+                int focusedCell = IndexOfFocusedCell(row);
+                Log.Comment("After Shift+Tab: focused element {0}; anchor focused cell index={1}.", DescribeFocused(), focusedCell);
+                Verify.AreEqual(AgeColumn, focusedCell, "Shift+Tab re-entry must resume the Age cell of the row that last had focus.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Shift+Tab back into the body resumes the remembered ROW at row level when the cursor was left at row level, not a control hosted in another row.")]
+        public void ShiftTabReentryResumesRememberedRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject rowsHost = GetRowsHost(BasicTable);
+                if (rowsHost == null) { Verify.Fail(BasicTable + " exposed no rows host."); return; }
+                if (rowsHost.Children.Count < 4) { Verify.Fail("Need several realized rows."); return; }
+
+                UIObject anchor = rowsHost.Children[2];
+                anchor.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(anchor.HasKeyboardFocus, "Precondition: the anchor row should hold focus at row level.");
+                Verify.AreEqual(-1, IndexOfFocusedCell(anchor), "Precondition: no cell of the anchor row should hold focus.");
+
+                UIObject afterTable = FindElement.ById(AfterTableButton);
+                if (afterTable == null) { Verify.Fail("AfterTableButton was not found."); return; }
+                afterTable.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(afterTable.HasKeyboardFocus, "Precondition: focus should have left the table.");
+
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+
+                UIObject row = GetRowsHost(BasicTable).Children[2];
+                Log.Comment("After Shift+Tab: focused element {0}; anchor has focus={1}, focused cell={2}.",
+                    DescribeFocused(), row.HasKeyboardFocus, IndexOfFocusedCell(row));
+                Verify.IsTrue(row.HasKeyboardFocus, "Shift+Tab re-entry must resume the row that last had focus.");
+                Verify.AreEqual(-1, IndexOfFocusedCell(row), "A row left at row level must be resumed at row level.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "After a sort moves the record whose cell had focus, Shift+Tab back into the body resumes that cell on the record's new row.")]
+        public void ShiftTabReentryAfterSortResumesCellOnMovedRecord()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject rowsHost = GetRowsHost(BasicTable);
+                if (rowsHost == null) { Verify.Fail(BasicTable + " exposed no rows host."); return; }
+                int bottomIndex = rowsHost.Children.Count - 1;
+                if (bottomIndex < 2) { Verify.Fail("Need several realized rows."); return; }
+
+                // Selection follows the record across the re-order, so it tells the test where the record went.
+                SelectRow(rowsHost.Children[bottomIndex]);
+                rowsHost.Children[bottomIndex].SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.AreEqual(AgeColumn, IndexOfFocusedCell(GetRowsHost(BasicTable).Children[bottomIndex]),
+                    "Precondition: the Age cell of the bottom row should hold focus.");
+
+                UIObject age = GetHeader(BasicTable, "Age");
+                if (age == null) { Verify.Fail("The Age header was not found."); return; }
+                age.SetFocus();
+                Wait.ForIdle();
+                VerifyFocusedHeader(BasicTable, "Age", "Precondition: the Age header should take focus.");
+
+                KeyboardHelper.PressKey(Key.Enter, numPresses: 2); // None -> Ascending -> Descending: oldest Age to the top
+                Wait.ForIdle();
+
+                int recordIndex = IndexOfSelectedRow(BasicTable);
+                Log.Comment("After the sort the tracked record is at index {0} (was {1}).", recordIndex, bottomIndex);
+                Verify.IsTrue(recordIndex >= 0 && recordIndex != bottomIndex, "Precondition: the sort must have moved the tracked record.");
+
+                UIObject afterTable = FindElement.ById(AfterTableButton);
+                if (afterTable == null) { Verify.Fail("AfterTableButton was not found."); return; }
+                afterTable.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(afterTable.HasKeyboardFocus, "Precondition: focus should have left the table.");
+
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+
+                rowsHost = GetRowsHost(BasicTable);
+                int focusedRow, focusedCell;
+                FindFocusedCell(BasicTable, out focusedRow, out focusedCell);
+                Log.Comment("After Shift+Tab: focused element {0}; focused cell row={1} column={2}.", DescribeFocused(), focusedRow, focusedCell);
+                Verify.AreEqual(recordIndex, focusedRow, "Shift+Tab re-entry must resume on the row that now holds the tracked record.");
+                Verify.AreEqual(AgeColumn, focusedCell, "Shift+Tab re-entry must resume the Age cell, the cell that last had focus.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Shift+Tab into a body whose remembered row was scrolled away and recycled lands on a row inside the viewport, at row level, without scrolling.")]
+        public void ShiftTabReentryAfterScrollLandsInViewportWithoutScrolling()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail("Could not select the 'Scrolling' pivot item."); return; }
+
+                UIObject tableView = GetTable(ScrollingTable);
+                if (tableView == null) { return; }
+                UIObject rowsHost = GetRowsHost(tableView);
+                if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
+
+                UIObject anchor = rowsHost.Children[1];
+                anchor.SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.AreEqual(1, IndexOfFocusedCell(GetRowsHost(tableView).Children[1]),
+                    "Precondition: the second cell of the anchor row should hold focus.");
+
+                UIObject afterTable = FindElement.ById(AfterTableButton);
+                if (afterTable == null) { Verify.Fail("AfterTableButton was not found."); return; }
+                afterTable.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(afterTable.HasKeyboardFocus, "Precondition: focus should have left the table.");
+
+                string offsetsBeforeScroll = ReadScrollOffsets();
+                WheelAtPoint(CentreOf(tableView), -10 * 120);
+                Wait.ForIdle(); // let the wheel's scroll animation settle before the baseline read
+                string offsetsBeforeReentry = ReadScrollOffsets();
+                Log.Comment("Body offsets '{0}' -> '{1}' after the wheel.", offsetsBeforeScroll, offsetsBeforeReentry);
+                Verify.AreNotEqual(offsetsBeforeScroll, offsetsBeforeReentry, "Precondition: the wheel must scroll the body.");
+                Verify.IsTrue(afterTable.HasKeyboardFocus, "Precondition: scrolling must not move focus.");
+
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+
+                string offsetsAfterReentry = ReadScrollOffsets();
+                rowsHost = GetRowsHost(tableView);
+                UIObject focusedRow = FindFocusedBodyElement(rowsHost);
+                var tableBounds = tableView.BoundingRectangle;
+                Log.Comment("After Shift+Tab: focused element {0}; offsets '{1}'; focused row bounds {2}; table bounds {3}.",
+                    DescribeFocused(), offsetsAfterReentry, focusedRow == null ? "<none>" : focusedRow.BoundingRectangle.ToString(), tableBounds);
+
+                if (focusedRow == null) { Verify.Fail("Shift+Tab must re-enter the body of the scrolled table."); return; }
+                // Vertical only: row-level focus may legitimately reset the horizontal offset from the drill-in.
+                Verify.AreEqual(VerticalOffsetOf(offsetsBeforeReentry), VerticalOffsetOf(offsetsAfterReentry),
+                    "Re-entry must not scroll the body vertically.");
+                var rowBounds = focusedRow.BoundingRectangle;
+                Verify.IsTrue(rowBounds.Top >= tableBounds.Top && rowBounds.Bottom <= tableBounds.Bottom + 1,
+                    "Re-entry must land on a row inside the table's visible box, not a cache row.");
+                Verify.IsTrue(focusedRow.HasKeyboardFocus && IndexOfFocusedCell(focusedRow) == -1,
+                    "The remembered record is not realized, so re-entry lands at row level, never in a cell of a different record.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Tab enters the table at the header band, the next Tab enters the body, and neither selects a row.")]
         public void TabIntoTableFocusesAHeaderThenARowWithoutSelecting()
         {

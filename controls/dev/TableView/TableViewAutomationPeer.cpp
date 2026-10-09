@@ -108,6 +108,58 @@ winrt::AutomationControlType TableViewAutomationPeer::GetAutomationControlTypeCo
     return winrt::AutomationControlType::DataGrid;
 }
 
+// The default bounds union every realized descendant, including cache rows the scroller clips, so
+// intersect with the table's layout box. Best-effort: if the two rects can't be reconciled (e.g. the
+// coordinate spaces disagree under a popup, island or transform) the base result wins.
+winrt::Rect TableViewAutomationPeer::GetBoundingRectangleCore()
+{
+    auto const bounds = __super::GetBoundingRectangleCore();
+    if (bounds.Width <= 0.0f || bounds.Height <= 0.0f)
+    {
+        return bounds;
+    }
+
+    auto const owner = Owner().try_as<winrt::FrameworkElement>();
+    if (!owner || !owner.XamlRoot())
+    {
+        return bounds;
+    }
+
+    const winrt::Rect localBounds{
+        0.0f,
+        0.0f,
+        static_cast<float>(owner.ActualWidth()),
+        static_cast<float>(owner.ActualHeight()) };
+    if (localBounds.Width <= 0.0f || localBounds.Height <= 0.0f)
+    {
+        return bounds;
+    }
+
+    winrt::Rect layoutBounds{};
+    try
+    {
+        // Same DIP -> physical mapping as InkCanvasAutomationPeer.
+        layoutBounds = SharedHelpers::ConvertDipsToPhysical(
+            owner, owner.TransformToVisual(nullptr).TransformBounds(localBounds));
+    }
+    catch (winrt::hresult_error const&)
+    {
+        // TransformToVisual throws while the owner is leaving the tree (teardown, window close).
+        return bounds;
+    }
+
+    // Intersect reports no overlap as RectHelper::Empty() (infinite extents); never return that.
+    auto const clipped = winrt::RectHelper::Intersect(bounds, layoutBounds);
+    if (!(clipped.Width > 0.0f) || !(clipped.Height > 0.0f) ||
+        !std::isfinite(clipped.X) || !std::isfinite(clipped.Y) ||
+        !std::isfinite(clipped.Width) || !std::isfinite(clipped.Height))
+    {
+        return bounds;
+    }
+
+    return clipped;
+}
+
 void TableViewAutomationPeer::RaiseStructureChangedForSortChange()
 {
     // Same children, new order.

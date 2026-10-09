@@ -372,6 +372,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // ---------- Pointer (absolute screen points) ----------
 
+        internal static string DescribeFocused()
+        {
+            try
+            {
+                UIObject focused = UIObject.Focused;
+                return focused == null ? "<none>" : string.Format("'{0}' [{1}]", focused.Name, focused.ClassName);
+            }
+            catch (Exception e)
+            {
+                return "<unavailable: " + e.GetType().Name + ">";
+            }
+        }
+
+        // Vertical only: MITA exposes no horizontal wheel, and Shift does not turn this into one.
+        internal static void WheelAtPoint(Point point, int delta)
+        {
+            Log.Comment("Rotate wheel by {0} at ({1}, {2}).", delta, point.X, point.Y);
+
+            PointerInput.Move(point);
+            MouseWheelInput.RotateWheel(delta);
+            Wait.ForIdle();
+        }
+
         internal static Point CentreOf(UIObject element)
         {
             var bounds = element.BoundingRectangle;
@@ -548,6 +571,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             var readout = FindElement.ById<TextBlock>(ScrollOffsets);
             return readout == null ? "<no readout>" : readout.DocumentText;
+        }
+
+        // Returns the whole readout if it has no "V=" field.
+        internal static string VerticalOffsetOf(string offsets)
+        {
+            foreach (string field in offsets.Split(';'))
+            {
+                if (field.StartsWith("V=", StringComparison.Ordinal))
+                {
+                    return field;
+                }
+            }
+            return offsets;
         }
     }
 }

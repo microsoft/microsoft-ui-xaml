@@ -1912,6 +1912,8 @@ void TableView::OnRowElementPrepared(
     }
     else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
     {
+        // A pooled container must not carry a press that began on its previous group.
+        winrt::get_self<TableViewGroupHeader>(header)->ResetPointerStateInternal();
         PrepareGroupHeaderElement(header, args.Index());
         InvalidateMeasure();
         QueueTerminalGridLineRefresh();
@@ -1951,6 +1953,12 @@ void TableView::OnRowElementClearing(
         }
 
         auto const rowImpl = winrt::get_self<TableViewRow>(row);
+        // About to show another record, so it stops being the drilled row; the cursor level and
+        // column survive for re-entry.
+        if (auto const drilled = m_cellLevelRow.get(); drilled && IsSameObject(row, drilled))
+        {
+            m_cellLevelRow = nullptr;
+        }
         // Release app-supplied tooltip content rather than pinning it in the recycle pool.
         rowImpl->ReleaseCellToolTips();
         rowImpl->SetTerminalGridLineSuppression({});
