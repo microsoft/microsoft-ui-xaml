@@ -14,6 +14,9 @@
 //      - Implements IOrientedPanel interface for logical and physical Orientation
 
 #include "precomp.h"
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif
 #include "OrientedVirtualizingPanel.g.h"
 #include "ScrollViewer.g.h"
 #include "ScrollContentPresenter.g.h"
@@ -1149,11 +1152,19 @@ OrientedVirtualizingPanel::UpdateLogicalScrollData(
     wf::Size viewport = constraint;
     ScrollVector offset = m_ScrollData.get_Offset();
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::UpdateLogicalScrollDataStart(reinterpret_cast<uint64_t>(GetHandle()));
+#else
     TraceUpdateLogicalScrollDataBegin();
+#endif
 
-    auto guard = wil::scope_exit([]()
+    auto guard = wil::scope_exit([&]()
     {
+#ifdef XAMLPROFILER_ENABLED
+        XamlElementTracing::UpdateLogicalScrollDataStop(reinterpret_cast<uint64_t>(GetHandle()));
+#else
         TraceUpdateLogicalScrollDataEnd();
+#endif
     });
 
     IFC_RETURN(get_RealizedChildren(&spRealizedChildren));
@@ -1474,7 +1485,11 @@ OrientedVirtualizingPanel::AddContainerFromGenerator(
     _In_ BOOLEAN newlyRealized,
     _Inout_ BOOLEAN& visualOrderChanged)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::VirtualizationAddStart(pChild ? reinterpret_cast<uint64_t>(static_cast<UIElement*>(pChild)->GetHandle()) : 0);
+#else
     TraceVirtualizationAddBegin();
+#endif
     HRESULT hr = S_OK;
     ctl::ComPtr<wfc::IVector<xaml::UIElement*>> spChildren;
     ctl::ComPtr<xaml::IUIElement> spChildAtPosition;
@@ -1552,7 +1567,11 @@ OrientedVirtualizingPanel::AddContainerFromGenerator(
     }
 
 Cleanup:
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::VirtualizationAddStop(pChild ? reinterpret_cast<uint64_t>(static_cast<UIElement*>(pChild)->GetHandle()) : 0);
+#else
     TraceVirtualizationAddEnd();
+#endif
     RRETURN(hr);
 }
 
@@ -1972,11 +1991,19 @@ OrientedVirtualizingPanel::CleanupContainers(
     _In_ xaml_controls::IItemsControl* pItemsControl,
     _In_ wf::Size constraint)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::VirtualizationCleanupStart(reinterpret_cast<uint64_t>(GetHandle()));
+#else
     TraceVirtualizationCleanupBegin();
+#endif
 
-    auto guard = wil::scope_exit([]()
+    auto guard = wil::scope_exit([&]()
     {
+#ifdef XAMLPROFILER_ENABLED
+        XamlElementTracing::VirtualizationCleanupStop(reinterpret_cast<uint64_t>(GetHandle()));
+#else
         TraceVirtualizationCleanupEnd();
+#endif
     });
 
     ctl::ComPtr<wfc::IVector<xaml::UIElement*>> spRealizedChildren;
@@ -2666,7 +2693,12 @@ OrientedVirtualizingPanel::MeasureChild(
     _In_ wf::Size layoutSlotSize,
     _Out_opt_ wf::Size* returnValue)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::MeasureChildStart(pChild ? reinterpret_cast<uint64_t>(static_cast<UIElement*>(pChild)->GetHandle()) : 0);
+#else
     TraceMeasureChildBegin();
+#endif
+
     HRESULT hr = S_OK;
     wf::Size childDesiredSize = {};
     wf::Size updatedDesiredSize = {};
@@ -2692,7 +2724,11 @@ OrientedVirtualizingPanel::MeasureChild(
     }
 
 Cleanup:
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::MeasureChildStop(pChild ? reinterpret_cast<uint64_t>(static_cast<UIElement*>(pChild)->GetHandle()) : 0);
+#else
     TraceMeasureChildEnd();
+#endif
     RRETURN(hr);
 }
 

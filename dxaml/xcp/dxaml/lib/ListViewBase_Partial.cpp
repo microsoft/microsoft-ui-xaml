@@ -5,6 +5,9 @@
 //      ListViewBase displays a rich, interactive collection of items.
 
 #include "precomp.h"
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif
 #include "ListViewBase.g.h"
 #include "ListViewBaseAutomationPeer.g.h"
 #include "ScrollViewer.g.h"
@@ -752,8 +755,16 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
 
     // ETW Trace, we want to raise an ETW event here if we can determine that the configuration
-    // does not allow virtualization to happen
-    if (EventEnabledVirtualizationIsEnabledByLayoutInfo())
+    // does not allow virtualization to happen. Compute the layout state when EITHER the retail
+    // manifest event or the profiler TraceLogging event is enabled, then independently guard each
+    // emission below. Both are on Microsoft-Windows-XAML, but the manifest predicate also checks
+    // that event's level/keywords, so gating the computation solely on
+    // EventEnabledVirtualizationIsEnabledByLayoutInfo() could drop the profiler event.
+    if (EventEnabledVirtualizationIsEnabledByLayoutInfo()
+#ifdef XAMLPROFILER_ENABLED
+        || XamlElementTracing::IsEnabled()
+#endif
+        )
     {
         BOOLEAN isVirtualizationActive = TRUE;
         ctl::ComPtr<IPanel> spItemsPanel;
@@ -785,13 +796,33 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
             }
             ctl::ComPtr<xaml::IDependencyObject> spParent;
             IFC(static_cast<ListViewBase*>(this)->get_Parent(&spParent));
-            TraceVirtualizationIsEnabledByLayoutInfo1(
-                isVirtualizationActive,
-                reinterpret_cast<UINT64>(GetHandle()),
-                GetHandle()->m_strName.GetBuffer(),
-                GetHandle()->GetClassName().GetBuffer(),
-                (spParent) ? static_cast<DependencyObject*>(spParent.Get())->GetHandle()->GetClassName().GetBuffer() : L"NULL"
-            );
+
+            // Either/or: compile the retail manifest emission only into retail builds and the
+            // profiler TraceLogging emission only into profiler builds, so a given build flavor
+            // raises a single event. The computation above is shared.
+#ifndef XAMLPROFILER_ENABLED
+            if (EventEnabledVirtualizationIsEnabledByLayoutInfo())
+            {
+                TraceVirtualizationIsEnabledByLayoutInfo1(
+                    isVirtualizationActive,
+                    reinterpret_cast<UINT64>(GetHandle()),
+                    GetHandle()->m_strName.GetBuffer(),
+                    GetHandle()->GetClassName().GetBuffer(),
+                    (spParent) ? static_cast<DependencyObject*>(spParent.Get())->GetHandle()->GetClassName().GetBuffer() : L"NULL"
+                );
+            }
+#endif
+#ifdef XAMLPROFILER_ENABLED
+            if (XamlElementTracing::IsEnabled())
+            {
+                XamlElementTracing::VirtualizationIsEnabledByLayout(
+                    reinterpret_cast<uint64_t>(GetHandle()),
+                    !!isVirtualizationActive,
+                    GetHandle()->m_strName.GetBuffer(),
+                    GetHandle()->GetClassName().GetBuffer(),
+                    (spParent) ? static_cast<DependencyObject*>(spParent.Get())->GetHandle()->GetClassName().GetBuffer() : L"NULL");
+            }
+#endif
         } // else if not modern panel, we shouldn't trace it here.
     }
 
