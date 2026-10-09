@@ -24,13 +24,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
     // Category 13 of the TableView API test plan: theming, resources, density and high contrast.
     //
-    // Three dictionaries own distinct things, and a test that looks in the wrong one finds nothing:
+    // Four dictionaries own distinct things, and a test that looks in the wrong one finds nothing:
     //
     //   * CommonStyles\TabularSurfaces_themeresources.xaml - the brush palette. Every TabularSurface*
     //     key, in Default / Light / HighContrast. The canonical source.
     //   * TableView\TableView_themeresources.xaml - the metric tokens ONLY: row heights, font sizes,
     //     cell and header padding, the density variants, gripper width. Brushes are deliberately
     //     excluded; mirroring them would collide on duplicate keys during theme-XBF emission.
+    //   * ResizeGripper\ResizeGripper_themeresources.xaml - the gripper's own styling keys
+    //     (ResizeGripperSeparator*), so a gripper resolves them without TableView.
     //   * TableView\TableView.xaml (root) - last-resort re-resolving {ThemeResource} fallbacks for
     //     hosts that do not merge TabularSurfaces.
     //
@@ -446,6 +448,49 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // The framework selects ThemeDictionaries["Dark"] ahead of ["Default"] under Dark
+        // (CResourceDictionary::EnsureActiveThemeDictionary), and an element-scoped dictionary is
+        // selected per element, not only at app scope. A "Default" entry with a different colour sits
+        // alongside so a lookup that only probes "Default" in Dark cannot pass by accident.
+        [TestMethod]
+        public void VerifyElementDarkThemeDictionaryOverrideWins()
+        {
+            var darkColor = Color.FromArgb(0xFF, 0x22, 0x88, 0xDD);
+            var defaultColor = Color.FromArgb(0xFF, 0xDD, 0x44, 0x11);
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+
+                tableView = CreateThemingTable();
+                var host = new Grid { RequestedTheme = ElementTheme.Dark };
+                host.Resources = new ResourceDictionary();
+                host.Resources.ThemeDictionaries["Dark"] = new ResourceDictionary
+                {
+                    ["TabularSurfaceGridLineBrush"] = new SolidColorBrush(darkColor),
+                };
+                host.Resources.ThemeDictionaries["Default"] = new ResourceDictionary
+                {
+                    ["TabularSurfaceGridLineBrush"] = new SolidColorBrush(defaultColor),
+                };
+                host.Children.Add(tableView);
+
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(ElementTheme.Dark, tableView.ActualTheme, "Precondition: the table must be in a Dark subtree.");
+
+                var actual = RequireCellSeparatorColor(tableView, "with an element-scoped Dark theme dictionary");
+                Verify.AreEqual(darkColor, actual,
+                    "Under Dark, an ancestor's ThemeDictionaries[\"Dark\"] entry must win over its [\"Default\"] entry and the TableView default.");
+            });
+        }
+
         [TestMethod]
         public void VerifyGridLineBrushSameColorOverrideKeepsObjectAndOpacity()
         {
@@ -572,13 +617,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 EnsureTabularControlsResources();
                 var resources = new TabularControlsResources();
 
+                // The defaults follow AccentFillColorDefaultBrush's per-theme tiers through
+                // {ThemeResource}, so the expected colours are read from the live system accent
+                // palette rather than pinned as hex: that keeps the check valid for any user accent
+                // and makes a reintroduced literal fail as soon as the accent differs from it.
+                var expectedLight = RequireApplicationColor("SystemAccentColorDark1");
+                var expectedDark = RequireApplicationColor("SystemAccentColorLight2");
+                Verify.AreNotEqual(expectedLight, expectedDark,
+                    "SystemAccentColorDark1 and SystemAccentColorLight2 must differ, or a Light/Dark swap could not be detected.");
+
                 var light = RequireBrush(resources, "Light", "ResizeGripperSeparatorBrush");
-                Verify.AreEqual(Color.FromArgb(0xFF, 0x76, 0xB9, 0xED), light.Color,
-                    "The Light default ResizeGripperSeparatorBrush must inline AccentFillColorDefault's SystemAccentColorLight2 value.");
+                Verify.AreEqual(expectedLight, light.Color,
+                    "The Light default ResizeGripperSeparatorBrush must follow AccentFillColorDefaultBrush's Light tier, SystemAccentColorDark1.");
 
                 var dark = RequireBrush(resources, "Default", "ResizeGripperSeparatorBrush");
-                Verify.AreEqual(Color.FromArgb(0xFF, 0x42, 0x9C, 0xE3), dark.Color,
-                    "The Default/Dark ResizeGripperSeparatorBrush must inline AccentFillColorDefault's SystemAccentColorDark1 value.");
+                Verify.AreEqual(expectedDark, dark.Color,
+                    "The Default/Dark ResizeGripperSeparatorBrush must follow AccentFillColorDefaultBrush's Dark tier, SystemAccentColorLight2.");
 
                 var highContrast = RequireBrush(resources, "HighContrast", "ResizeGripperSeparatorBrush");
                 var systemColors = CollectSystemColors();
@@ -1167,6 +1221,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             return colors;
+        }
+
+        internal static Color RequireApplicationColor(string key)
+        {
+            if (!Application.Current.Resources.ContainsKey(key) ||
+                !(Application.Current.Resources[key] is Color color))
+            {
+                Verify.Fail($"'{key}' must resolve to a Color from the application resources.");
+                return default;
+            }
+
+            return color;
         }
 
         internal static SolidColorBrush RequireBrush(ResourceDictionary resources, string themeName, string key)

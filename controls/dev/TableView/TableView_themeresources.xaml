@@ -3,28 +3,14 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- ResizeGripper separator metrics. Theme-invariant, so they sit at page scope rather than
-         being triplicated across the theme dictionaries below. These live here, in a page that is
-         already registered and merged for this binary, rather than in a ResizeGripper-owned page:
-         a separate themeresources page has to be wired into the generated master dictionary and the
-         binary's PRI, and a page that is not wired up is silently absent at runtime, which makes
-         every {ThemeResource} lookup in the gripper template fail and throws while applying the
-         template. -->
-    <Thickness x:Key="ResizeGripperSeparatorThickness">0,0,2,0</Thickness>
-    <!-- Horizontal grippers sit on their host's logical trailing edge, which is the LEFT edge under
-         RTL. The gripper's subtree is not auto-mirrored (its host arranges it at explicit physical
-         coordinates and it mirrors its own drag axis by hand), so a right-sided thickness would draw
-         the separator a full gripper width inboard of the column edge instead of on it. -->
-    <Thickness x:Key="ResizeGripperSeparatorThicknessMirrored">2,0,0,0</Thickness>
-    <Thickness x:Key="ResizeGripperSeparatorThicknessVertical">0,0,0,2</Thickness>
-
     <ResourceDictionary.ThemeDictionaries>
         <!-- Declare Light + Default (Dark) + HighContrast explicitly: once any merged theme
              dictionary defines "Light", XAML treats "Default" as Dark (not a Light fallback),
-             so omitting "Light" would drop these brushes from the Light theme. -->
+             so omitting "Light" would drop these tokens from the Light theme. -->
         <ResourceDictionary x:Key="Light">
             <!-- This page defines TableView metric tokens (row height, font size, cell/header
-                 padding, density variants) and the ResizeGripper width consumed by TableView headers.
+                 padding, density variants) and the ResizeGripper width consumed by TableView headers. The
+                 gripper's own styling keys live in ResizeGripper\ResizeGripper_themeresources.xaml.
                  The shared TabularSurface* brush palette lives in the single canonical source
                  controls/dev/CommonStyles/TabularSurfaces_themeresources.xaml, supplied by
                  TabularControlsResources. Keep TabularSurface brushes out of this page: mirroring them
@@ -45,13 +31,6 @@
             <Thickness x:Key="TableViewCellPaddingComfortable">8,8,8,8</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingCompact">8,2,8,2</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingComfortable">8,8,8,8</Thickness>
-
-            <!-- Declared as a literal brush, not a <StaticResource> alias. An alias inside a
-                 ThemeDictionaries block only resolves when this page is consumed through the dll's
-                 master themeresources.xaml; when an app merges the dictionary directly the alias has
-                 to cross-reference another merged dictionary's theme block, which the resolver does
-                 not do reliably - the observed failure is a silent Light-theme brush under Dark. -->
-            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="#FF76B9ED" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Default">
             <!-- TabularSurface* brushes intentionally omitted; see the Light dictionary note. -->
@@ -67,9 +46,6 @@
             <Thickness x:Key="TableViewCellPaddingComfortable">8,8,8,8</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingCompact">8,2,8,2</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingComfortable">8,8,8,8</Thickness>
-
-            <!-- See the Light dictionary note on literal brushes vs StaticResource aliases. -->
-            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="#FF429CE3" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <!-- TabularSurface* brushes intentionally omitted; see the Light dictionary note. The
@@ -86,12 +62,6 @@
             <Thickness x:Key="TableViewCellPaddingComfortable">8,8,8,8</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingCompact">8,2,8,2</Thickness>
             <Thickness x:Key="TableViewHeaderCellPaddingComfortable">8,8,8,8</Thickness>
-
-            <!-- SystemColorHighlightColor via {ThemeResource}: a re-resolving markup extension, which
-                 unlike a StaticResource alias does resolve across MergedDictionary boundaries. The
-                 accent brush is not usable here - under High Contrast it resolves to the window
-                 background, which would make the separator invisible. -->
-            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="{ThemeResource SystemColorHighlightColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

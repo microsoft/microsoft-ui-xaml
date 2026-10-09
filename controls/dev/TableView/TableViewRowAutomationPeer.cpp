@@ -8,6 +8,7 @@
 #include "TableViewRowAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
+#include "TableViewSource.h"
 #include "TableViewRowAutomationPeer.properties.cpp"
 
 #include <UIAutomationCore.h>
@@ -22,8 +23,36 @@ namespace
     // group-header bands, matching ItemsControlAutomationPeer. The table-level helpers count
     // data rows across the WHOLE projection, which is the right answer only for a flat source.
     //
-    // Walking the projection outwards from the row is what keeps this correct for a collapsed
-    // group: its data rows are not projected at all, so the walk stops at the adjacent band.
+    // Bounding the row by the adjacent bands is what keeps this correct for a collapsed group: its
+    // data rows are not projected at all, so the group ends at the next band.
+    //
+    // Narrator reads both properties for every row, so walking to the bands per query made reading
+    // a group quadratic. The row metadata provider answers from a cached band index instead; the
+    // walk remains only as the fallback when it cannot (no provider, or a projection it does not
+    // own).
+    bool TryGetGroupedRowSetMetadataFromProvider(TableView* tableImpl, int32_t rowIndex, int32_t& positionInSet, int32_t& sizeOfSet)
+    {
+        try
+        {
+            // Grouping exists only on an app-assigned TableViewSource, which is then the ItemsSource
+            // itself. The provider checks the repeater's view is its own projection, so the index
+            // is never resolved against a different one.
+            auto const source = tableImpl->ItemsSource().try_as<winrt::TableViewSource>();
+            auto const repeater = tableImpl->GetRowsRepeaterInternal();
+            if (!source || !repeater)
+            {
+                return false;
+            }
+
+            auto const metadata = winrt::get_self<::TableViewSource>(source)->GetRowMetadata();
+            return metadata && metadata->TryGetGroupMembership(repeater.ItemsSourceView(), rowIndex, positionInSet, sizeOfSet);
+        }
+        catch (...)
+        {
+            return false;
+        }
+    }
+
     bool TryGetGroupedRowSetMetadata(TableView* tableImpl, int32_t rowIndex, int32_t& positionInSet, int32_t& sizeOfSet)
     {
         if (!tableImpl || rowIndex < 0 || !tableImpl->IsTableViewSourceGrouped())
@@ -35,6 +64,11 @@ namespace
         if (rowIndex >= rowCount || tableImpl->IsGroupHeaderRow(rowIndex))
         {
             return false;
+        }
+
+        if (TryGetGroupedRowSetMetadataFromProvider(tableImpl, rowIndex, positionInSet, sizeOfSet))
+        {
+            return true;
         }
 
         int32_t first = rowIndex;

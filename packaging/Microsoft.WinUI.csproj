@@ -45,8 +45,10 @@
        this target (AppxManifest.xml up to date) while still running the other, which then wrote an empty
        fragment from an undefined $(LiftedExtensions) - and because the empty fragment was then newer than
        AppxManifest.xml, every later build considered it up to date. Consumers of the component package
-       (e.g. MUXControlsTestApp) lost every WinUI activatable class registration as a result. -->
-  <Target Name="FillExtensions" BeforeTargets="_CreateWinUIPackageLayout" Inputs="AppxManifest.xml;$(ArtifactsObjDir)MergedWinMD\LiftedWinRTClassRegistrations.xml" Outputs="$(OutDir)AppxManifest.xml;$(OutDir)package.appxfragment">
+       (e.g. MUXControlsTestApp) lost every WinUI activatable class registration as a result.
+       This project file is an input too, so a change to how the outputs are generated re-runs the
+       target - which also repairs an output tree still holding an empty fragment from the old split. -->
+  <Target Name="FillExtensions" BeforeTargets="_CreateWinUIPackageLayout" Inputs="$(MSBuildProjectFullPath);AppxManifest.xml;$(ArtifactsObjDir)MergedWinMD\LiftedWinRTClassRegistrations.xml" Outputs="$(OutDir)AppxManifest.xml;$(OutDir)package.appxfragment">
     <PropertyGroup>
       <Namespaces>
         <Namespace Prefix="ns" Uri="http://schemas.microsoft.com/appx/manifest/foundation/windows10" />

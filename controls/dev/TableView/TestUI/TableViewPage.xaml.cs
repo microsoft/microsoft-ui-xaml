@@ -206,7 +206,9 @@ namespace MUXControlsTestApp
         // Translation.X is still published, but purely as a mechanism diagnostic, never as a term in the sum.
         //
         // Format:
-        //   "H=<h>;V=<v>;HeaderH=<h>;FrozenX=<x>;FrozenT=<tx>;ScrollX=<x>;BodyFrozenX=<x>;BodyFrozenT=<tx>;BodyScrollX=<x>"
+        //   "H=<h>;V=<v>;HeaderH=<h>;FrozenX=<x>;FrozenT=<tx>;ScrollX=<x>;BodyFrozenX=<x>;BodyFrozenT=<tx>;BodyScrollX=<x>;VH=<vh>;RowH=<rh>"
+        // VH is PART_BodyScroller's ViewportHeight and RowH the first realized row's ActualHeight, both in DIPs, so
+        // a paging test can derive the rows-per-viewport independent of the VM's DPI.
         // All x values are table-relative (independent of window placement). The Frozen*/Scroll* trio samples
         // the HEADER band (PART_HeaderHost); the Body* trio samples the first realized row's cell panel
         // (PART_CellsHost) - the band TableViewCellsPanel.cpp:318-322 actually pins for the user. Both trios
@@ -220,9 +222,11 @@ namespace MUXControlsTestApp
             }
 
             Panel bodyCellsHost = FindDescendantByName<Panel>(ScrollingTableView, "PART_CellsHost");
+            TableViewRow firstRow = FindDescendant<TableViewRow>(ScrollingTableView);
 
             string text = string.Format(
-                "H={0:F0};V={1:F0};HeaderH={2};FrozenX={3};FrozenT={4};ScrollX={5};BodyFrozenX={6};BodyFrozenT={7};BodyScrollX={8}",
+                System.Globalization.CultureInfo.InvariantCulture,
+                "H={0:F0};V={1:F0};HeaderH={2};FrozenX={3};FrozenT={4};ScrollX={5};BodyFrozenX={6};BodyFrozenT={7};BodyScrollX={8};VH={9:F2};RowH={10}",
                 scroller.HorizontalOffset,
                 scroller.VerticalOffset,
                 _scrollingHeaderScroller == null
@@ -233,7 +237,11 @@ namespace MUXControlsTestApp
                 FormatCellRenderedLeft(_scrollingHeaderHost, frozen: false),
                 FormatCellRenderedLeft(bodyCellsHost, frozen: true),
                 FormatCellTranslationX(bodyCellsHost, frozen: true),
-                FormatCellRenderedLeft(bodyCellsHost, frozen: false));
+                FormatCellRenderedLeft(bodyCellsHost, frozen: false),
+                scroller.ViewportHeight,
+                firstRow == null || firstRow.ActualHeight <= 0
+                    ? "<none>"
+                    : firstRow.ActualHeight.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
 
             // LayoutUpdated also drives this; writing an unchanged string would re-dirty layout forever.
             if (ScrollOffsetTextBlock.Text != text)
@@ -640,6 +648,17 @@ namespace MUXControlsTestApp
         private void OnClearFilterClick(object sender, RoutedEventArgs e)
         {
             _groupedSource.ClearFilter();
+        }
+
+        // Sorts BasicTableView by Age, descending, through the public API - the same re-shape the header's own
+        // activation applies, without any header involvement.
+        private void OnFocusNeutralSortBasicByAgeClick(object sender, RoutedEventArgs e)
+        {
+            TableViewColumn age = BasicTableView.Columns.FirstOrDefault(column => (column.Header as string) == "Age");
+            if (age != null)
+            {
+                BasicTableView.SortByColumn(age, SortDirection.Descending);
+            }
         }
     }
 }

@@ -87,6 +87,22 @@
                 <ComboBoxItem Content="DescendingAscending" AutomationProperties.Name="SortCycleDescendingAscending" />
                 <ComboBoxItem Content="DescendingAscendingNone" AutomationProperties.Name="SortCycleDescendingAscendingNone" />
             </ComboBox>
+            <!-- Focus-neutral re-shape triggers, driven only through UIA Invoke (so they sit last, where clipping
+                 is harmless). IsTabStop=False + AllowFocusOnInteraction=False mean nothing - a click, a UIA
+                 SetFocus, or a harness preparing the Invoke - can move focus onto them, so a test that uses one
+                 knows the re-shape ran with focus exactly where it left it. -->
+            <Button Content="Sort Basic By Age (focus-neutral)"
+                    AutomationProperties.Name="FocusNeutralSortBasicByAgeButton"
+                    AutomationProperties.AutomationId="FocusNeutralSortBasicByAgeButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnFocusNeutralSortBasicByAgeClick" />
+            <Button Content="Filter Source (focus-neutral)"
+                    AutomationProperties.Name="FocusNeutralFilterSourceButton"
+                    AutomationProperties.AutomationId="FocusNeutralFilterSourceButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnFilterSourceClick" />
         </StackPanel>
 
         <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in

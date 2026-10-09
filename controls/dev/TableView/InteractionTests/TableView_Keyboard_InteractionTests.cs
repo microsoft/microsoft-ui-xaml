@@ -212,6 +212,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(afterPage > afterOneDown,
                     string.Format("PageDown must travel farther than a single Down: paged to position {0}, one Down reaches {1}.",
                         afterPage, afterOneDown));
+
+                // Roughly a viewport, not merely "more than one": a PageDown that stepped two rows passes the check
+                // above. One row of slack absorbs a partially visible last row; the clamp absorbs reaching the end.
+                int rowsPerViewport = ReadScrollingRowsPerViewport();
+                if (rowsPerViewport < 0) { return; }
+                int sizeOfSet = FocusedSizeOfSet();
+                int expectedTravel = sizeOfSet > 0
+                    ? Math.Min(rowsPerViewport - 1, sizeOfSet - atTop)
+                    : rowsPerViewport - 1;
+                Log.Comment("Rows per viewport={0}; PageDown travelled {1}, expected at least {2}.",
+                    rowsPerViewport, afterPage - atTop, expectedTravel);
+                Verify.IsTrue(afterPage - atTop >= expectedTravel,
+                    string.Format("PageDown must travel about a viewport ({0} rows visible): travelled {1}, expected at least {2}.",
+                        rowsPerViewport, afterPage - atTop, expectedTravel));
             }
         }
 
@@ -252,7 +266,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     "A row must still hold keyboard focus after PageUp.");
                 Verify.IsTrue(afterPagingUp < afterPagingDown,
                     string.Format("PageUp must page the focus back up (position {0} -> {1}).", afterPagingDown, afterPagingUp));
+
+                // Mirror of PageDownMovesByViewport: about a viewport, clamped at the first row.
+                int rowsPerViewport = ReadScrollingRowsPerViewport();
+                if (rowsPerViewport < 0) { return; }
+                int expectedTravel = Math.Min(rowsPerViewport - 1, afterPagingDown - 1);
+                Log.Comment("Rows per viewport={0}; PageUp travelled {1}, expected at least {2}.",
+                    rowsPerViewport, afterPagingDown - afterPagingUp, expectedTravel);
+                Verify.IsTrue(afterPagingDown - afterPagingUp >= expectedTravel,
+                    string.Format("PageUp must travel about a viewport ({0} rows visible): travelled {1}, expected at least {2}.",
+                        rowsPerViewport, afterPagingDown - afterPagingUp, expectedTravel));
             }
+        }
+
+        // Whole rows that fit PART_BodyScroller's viewport on the Scrolling table, from the page's in-process readout
+        // (both values in DIPs, so the result does not depend on the VM's DPI). Fails the test and returns -1 when the
+        // readout is missing.
+        private static int ReadScrollingRowsPerViewport()
+        {
+            string offsets = ReadScrollOffsets();
+            double viewport = ReadScrollOffsetComponent(offsets, "VH");
+            double rowHeight = ReadScrollOffsetComponent(offsets, "RowH");
+            if (double.IsNaN(viewport) || double.IsNaN(rowHeight) || viewport <= 0 || rowHeight <= 0)
+            {
+                Verify.Fail(string.Format("The scroll readout did not publish a viewport and row height: '{0}'.", offsets));
+                return -1;
+            }
+
+            int rows = (int)Math.Floor(viewport / rowHeight);
+            if (rows < 3)
+            {
+                Verify.Fail(string.Format("Precondition: the viewport must hold several rows to tell a page from a step ({0}).", offsets));
+                return -1;
+            }
+            return rows;
+        }
+
+        // SizeOfSet of the focused element, or -1.
+        private static int FocusedSizeOfSet()
+        {
+            const int UIA_SizeOfSetPropertyId = 30153;
+            AutomationElement focused = AutomationElement.FocusedElement;
+            if (focused == null) { return -1; }
+
+            object value = focused.GetCurrentPropertyValue(AutomationProperty.LookupById(UIA_SizeOfSetPropertyId));
+            return value is int size ? size : -1;
         }
 
         [TestMethod]
@@ -1106,14 +1164,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "When a sort reorders the rows while a row is focused, focus stays at the same position (now another record).")]
         public void FocusStaysAtSamePositionWhenSortReordersRows()
         {
-            // Owner decision; dev-spec Keyboard
-            // "Re-shape while focused". The sort is driven by the header peer's UIA Invoke, which does not move keyboard
-            // focus, so focus is inside the body throughout. Failure means a sort drags focus with the old record.
+            // Owner decision; dev-spec Keyboard "Re-shape while focused". The sort is applied through the public API by
+            // a page button that cannot take focus (IsTabStop=False, AllowFocusOnInteraction=False) and is driven by UIA
+            // Invoke, so focus is genuinely inside the body when the rows re-shape. Driving it through the header peer
+            // would not prove that: focus that reaches the header by any route correctly stays there.
+            // Failure means a sort drags focus with the old record.
             using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < BasicItemCount) { Verify.Fail("Need every authored Basic row realized."); return; }
+
+                var sort = FindElement.ById<Button>(FocusNeutralSortBasicByAgeButton);
+                if (sort == null) { Verify.Fail(FocusNeutralSortBasicByAgeButton + " was not found."); return; }
 
                 const int Position = 2;
                 rowsHost.Children[Position].SetFocus();
@@ -1121,14 +1184,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(GetRowsHost(BasicTable).Children[Position].HasKeyboardFocus, "Precondition: row 2 should take focus.");
                 Verify.IsTrue(GetRowsHost(BasicTable).Children[Position].Name.Contains(BasicName(Position)), "Precondition: row 2 holds Person 2.");
 
-                UIObject age = GetHeader(BasicTable, "Age");
-                if (age == null) { Verify.Fail("The Age header was not found."); return; }
-                var invoke = new InvokeImplementation(age);
-                invoke.Invoke(); // None -> Ascending
+                sort.InvokeAndWait(); // Age descending
                 Wait.ForIdle();
-                invoke = new InvokeImplementation(GetHeader(BasicTable, "Age"));
-                invoke.Invoke(); // Ascending -> Descending
-                Wait.ForIdle();
+
+                VerifyTriggerLeftFocusInBody(sort, BasicTable);
 
                 rowsHost = GetRowsHost(BasicTable);
                 UIObject focused = FindFocusedBodyElement(rowsHost);
@@ -1147,11 +1206,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Owner decision; dev-spec Keyboard
             // "Re-shape while focused ... also applies when the focused record was filtered out". The page filter acts on
             // the grouped source only. Projection before: H-Redmond, G0, G3, G6, H-Seattle, G1, G4, G7, H-Bellevue, G2, G5,
-            // G8. After removing Seattle, position 5 is G2. Failure means a filter drops focus out of the table.
+            // G8. After removing Seattle, position 5 is G2. The filter is applied by a page button that cannot take focus,
+            // driven by UIA Invoke, so focus is genuinely in the body when the rows re-shape.
+            // Failure means a filter drops focus out of the table.
             using (var setup = new TestSetupHelper(PageName))
             {
-                var filter = FindElement.ById<Button>(FilterSourceButton);
-                if (filter == null) { Verify.Fail("FilterSourceButton was not found."); return; }
+                var filter = FindElement.ById<Button>(FocusNeutralFilterSourceButton);
+                if (filter == null) { Verify.Fail(FocusNeutralFilterSourceButton + " was not found."); return; }
 
                 UIObject tableView = SelectGroupedPivotAndGetTable();
                 if (tableView == null) { return; }
@@ -1169,6 +1230,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 filter.InvokeAndWait();
                 Wait.ForIdle();
 
+                VerifyTriggerLeftFocusInBody(filter, GroupedTable);
+
                 rowsHost = tableView.Children[tableView.Children.Count - 1];
                 UIObject focused = FindFocusedBodyElement(rowsHost);
                 Log.Comment("After the filter focus is on: {0}.", focused == null ? "<none>" : focused.Name);
@@ -1177,6 +1240,106 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(rowsHost.Children[Position].RuntimeId, focused.RuntimeId, "Focus must stay at the same projected position (5).");
                 Verify.IsTrue(focused.Name.Contains(GroupedName(2)), "Position 5 must now be Grouped 2, the first Bellevue row.");
             }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A header that holds focus (via UIA SetFocus) and is sorted through UIA Invoke keeps focus; the body cursor is not replayed over it.")]
+        public void HeaderKeepsFocusWhenSortedThroughUia()
+        {
+            // Owner decision; dev-spec Keyboard "Re-shape while focused": however focus reached a column header -
+            // here a screen reader's UIA SetFocus - activating that header leaves focus on it. A body row is focused
+            // first so a remembered body position exists; failure means the re-shape pulled focus back into the body.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject rowsHost = GetRowsHost(BasicTable);
+                if (rowsHost == null) { return; }
+                if (rowsHost.Children.Count < BasicItemCount) { Verify.Fail("Need every authored Basic row realized."); return; }
+
+                const int Position = 2;
+                rowsHost.Children[Position].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(GetRowsHost(BasicTable).Children[Position].HasKeyboardFocus, "Precondition: row 2 should take focus.");
+
+                UIObject age = GetHeader(BasicTable, "Age");
+                if (age == null) { Verify.Fail("The Age header was not found."); return; }
+                age.SetFocus();
+                Wait.ForIdle();
+                VerifyFocusedHeader(BasicTable, "Age", "Precondition: UIA SetFocus should put focus on the Age header.");
+
+                new InvokeImplementation(GetHeader(BasicTable, "Age")).Invoke(); // None -> Ascending
+                Wait.ForIdle();
+                new InvokeImplementation(GetHeader(BasicTable, "Age")).Invoke(); // Ascending -> Descending
+                Wait.ForIdle();
+
+                rowsHost = GetRowsHost(BasicTable);
+                Verify.IsTrue(rowsHost.Children[Position].Name.Contains(BasicName(BasicIdAtPositionWhenAgeDescending(Position))),
+                    "Negative control: position 2 must now hold Person 9 (Age descending), proving the rows re-sorted.");
+
+                UIObject bodyFocus = FindFocusedBodyElement(rowsHost);
+                Log.Comment("After the sort the body holds focus on: {0}.", bodyFocus == null ? "<none>" : bodyFocus.Name);
+                Verify.IsNull(bodyFocus, "The re-shape must not move focus from the header back into the body.");
+                VerifyFocusedHeader(BasicTable, "Age", "The Age header must keep keyboard focus after sorting through UIA Invoke.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Focus on a control outside the TableView stays there when a filter re-shapes the rows.")]
+        public void ExternalControlKeepsFocusAcrossFilter()
+        {
+            // Owner decision; dev-spec Keyboard "Re-shape while focused": only a body cursor that is live, or that the
+            // re-shape itself dropped, is replayed. Focus moved programmatically (UIA SetFocus) to a page button after a
+            // body row was focused must stay on that button. Failure means a remembered body position survived a move
+            // to a non-null element outside the body and the restore stole focus back.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var filter = FindElement.ById<Button>(FocusNeutralFilterSourceButton);
+                if (filter == null) { Verify.Fail(FocusNeutralFilterSourceButton + " was not found."); return; }
+
+                UIObject tableView = SelectGroupedPivotAndGetTable();
+                if (tableView == null) { return; }
+
+                const int Position = 5;
+                UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
+                if (rowsHost.Children.Count < GroupedItemCount + Cities.Length) { Verify.Fail("Need the full grouped projection (3 headers + 9 rows) realized."); return; }
+
+                UIObject target = rowsHost.Children[Position];
+                target.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(target.HasKeyboardFocus, "Precondition: a body row should take focus first.");
+
+                var outside = FindElement.ById<Button>(DummyButton);
+                if (outside == null) { Verify.Fail(DummyButton + " was not found."); return; }
+                outside.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(outside.HasKeyboardFocus, "Precondition: UIA SetFocus should move focus to the page button.");
+
+                filter.InvokeAndWait();
+                Wait.ForIdle();
+
+                rowsHost = tableView.Children[tableView.Children.Count - 1];
+                Verify.IsTrue(rowsHost.Children[Position].Name.Contains(GroupedName(2)),
+                    "Negative control: position 5 must now be Grouped 2, proving the filter re-shaped the rows.");
+
+                UIObject bodyFocus = FindFocusedBodyElement(rowsHost);
+                Log.Comment("After the filter the body holds focus on: {0}.", bodyFocus == null ? "<none>" : bodyFocus.Name);
+                Verify.IsNull(bodyFocus, "The re-shape must not pull focus back into the body.");
+                Verify.IsTrue(FindElement.ById<Button>(DummyButton).HasKeyboardFocus, "Focus must stay on the page button outside the TableView.");
+            }
+        }
+
+        private const string FocusNeutralSortBasicByAgeButton = "FocusNeutralSortBasicByAgeButton";
+        private const string FocusNeutralFilterSourceButton = "FocusNeutralFilterSourceButton";
+
+        // Guards the two position tests against passing for the wrong reason: the trigger must not have taken focus,
+        // and focus must still be inside the named table's body.
+        private static void VerifyTriggerLeftFocusInBody(UIObject trigger, string tableAutomationId)
+        {
+            UIObject bodyFocus = FindFocusedBodyElement(GetRowsHost(tableAutomationId));
+            Log.Comment("After the re-shape trigger: trigger has focus={0}; body focus='{1}'.",
+                trigger.HasKeyboardFocus,
+                bodyFocus == null ? "<none>" : bodyFocus.Name);
+            Verify.IsFalse(trigger.HasKeyboardFocus, "Precondition: the focus-neutral trigger must not take focus.");
+            Verify.IsNotNull(bodyFocus, "Precondition: focus must still be inside the body after the re-shape trigger.");
         }
 
         #endregion

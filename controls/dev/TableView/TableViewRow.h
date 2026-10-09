@@ -135,7 +135,8 @@ private:
     bool IsGridLevelFocusInternal();
 
     // Takes the cells' authored content out of the tab order so XAML's own Tab walk cannot descend
-    // into it, and puts it back on the next dispatcher turn.
+    // into it, and puts it back on the next dispatcher turn (or earlier, on a repeat press,
+    // Unloaded, recycle-out or cell rebuild). Restore never overwrites a value the app changed.
     void SuppressCellContentTabStopsForTabWalkInternal();
     void RestoreCellContentTabStopsInternal();
 
@@ -194,6 +195,7 @@ private:
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     winrt::UIElement::GotFocus_revoker m_gotFocusRevoker{};
+    winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
     winrt::IObservableVector<winrt::TableViewColumn>::VectorChanged_revoker m_columnsVectorChangedRevoker{};
     weak_ref<winrt::IObservableVector<winrt::TableViewColumn>> m_observedColumns{};
@@ -211,9 +213,18 @@ private:
     // False = row-level focus; true = cell-level focus. Recycled rows return at row level.
     bool m_isCellLevel{ false };
 
-    // Cell-content elements whose IsTabStop was taken away for the length of one Tab walk. Empty
-    // whenever no Tab press is in flight.
-    std::vector<winrt::UIElement> m_suppressedContentTabStops{};
+    // One cell-content element whose IsTabStop was taken away for the length of one Tab walk,
+    // with the raw local value it had before (UnsetValue, a boxed bool, or a BindingExpression)
+    // so restore can put back exactly what the app declared. Weak: the row never extends the
+    // lifetime of authored content.
+    struct SuppressedContentTabStop
+    {
+        winrt::weak_ref<winrt::UIElement> element{ nullptr };
+        winrt::IInspectable originalLocalValue{ nullptr };
+    };
+
+    // Empty whenever no Tab press is in flight.
+    std::vector<SuppressedContentTabStop> m_suppressedContentTabStops{};
 
     // Prevent DataContextChanged re-entry while RebuildCells updates child DCs.
     bool m_isRebuildingCells{ false };

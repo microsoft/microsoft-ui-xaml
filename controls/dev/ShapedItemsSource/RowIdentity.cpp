@@ -42,6 +42,28 @@ namespace RowIdentity
         }
     }
 
+    uintptr_t GetObjectAddress(winrt::IInspectable const& item)
+    {
+        if (!item)
+        {
+            return 0;
+        }
+
+        // COM identity: the IUnknown obtained by QI is the canonical per-object pointer, so two
+        // references to the same object always yield the same address and two distinct objects
+        // never collide -- including two boxed copies of the same value, which are separate
+        // objects and therefore separate rows.
+        auto const unknown = item.as<winrt::Windows::Foundation::IUnknown>();
+        return reinterpret_cast<uintptr_t>(winrt::get_abi(unknown));
+    }
+
+    winrt::hstring FormatObjectIdentity(uintptr_t address)
+    {
+        wchar_t buffer[2 + (sizeof(uintptr_t) * 2) + 1]{};
+        swprintf_s(buffer, L"0x%zx", static_cast<size_t>(address));
+        return winrt::hstring{ buffer };
+    }
+
     ShapingHelpers::KeySelector MakeObjectIdentitySelector()
     {
         return [](winrt::IInspectable const& item) -> winrt::IInspectable
@@ -51,16 +73,7 @@ namespace RowIdentity
                 return nullptr;
             }
 
-            // COM identity: the IUnknown obtained by QI is the canonical per-object pointer, so
-            // two references to the same object always stringify identically and two distinct
-            // objects never collide -- including two boxed copies of the same value, which are
-            // separate objects and therefore separate rows.
-            auto const unknown = item.as<winrt::Windows::Foundation::IUnknown>();
-            auto const address = reinterpret_cast<uintptr_t>(winrt::get_abi(unknown));
-
-            wchar_t buffer[2 + (sizeof(uintptr_t) * 2) + 1]{};
-            swprintf_s(buffer, L"0x%zx", static_cast<size_t>(address));
-            return winrt::box_value(winrt::hstring{ buffer });
+            return winrt::box_value(FormatObjectIdentity(GetObjectAddress(item)));
         };
     }
 

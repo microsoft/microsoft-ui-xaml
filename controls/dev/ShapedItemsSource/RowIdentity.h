@@ -34,6 +34,11 @@ namespace RowIdentity
     // identity.
     ShapingHelpers::KeySelector MakeObjectIdentitySelector();
 
+    // The canonical IUnknown address object identity is derived from, and its string form. Kept
+    // together so a caller that holds only an address (e.g. captured by an event handler) names
+    // the same row the selector does.
+    uintptr_t GetObjectAddress(winrt::IInspectable const& item);
+    winrt::hstring FormatObjectIdentity(uintptr_t address);
     bool TryGetRequiredRowIdentity(
         winrt::IInspectable const& item,
         ShapingHelpers::KeySelector const& keySelector,

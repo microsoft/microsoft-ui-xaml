@@ -54,12 +54,6 @@
                                         <Setter Target="Separator.BorderThickness" Value="{ThemeResource ResizeGripperSeparatorThickness}" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <!-- Horizontal under RTL: same affordance on the mirrored edge. -->
-                                <VisualState x:Name="HorizontalMirrored">
-                                    <VisualState.Setters>
-                                        <Setter Target="Separator.BorderThickness" Value="{ThemeResource ResizeGripperSeparatorThicknessMirrored}" />
-                                    </VisualState.Setters>
-                                </VisualState>
                                 <VisualState x:Name="Vertical">
                                     <VisualState.Setters>
                                         <Setter Target="Separator.BorderThickness" Value="{ThemeResource ResizeGripperSeparatorThicknessVertical}" />

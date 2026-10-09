@@ -277,7 +277,10 @@ public:
 
     // Focuses the cell at a visible-column index inside an ALREADY realized container. Group
     // headers share the repeater and have no cells, so they keep taking container focus.
-    bool FocusRealizedRowCell(winrt::UIElement const& element, int32_t visibleColumnIndex);
+    bool FocusRealizedRowCell(
+        winrt::UIElement const& element,
+        int32_t visibleColumnIndex,
+        winrt::FocusState focusState = winrt::FocusState::Keyboard);
 
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 
@@ -727,22 +730,6 @@ private:
         m_isApplyingControlInitiatedSort = true;
         return gsl::finally([this]() { m_isApplyingControlInitiatedSort = false; });
     }
-    // Marks a re-shape as started by the HEADER's own activation path - Enter/Space on a focused
-    // header, or a tap on a header cell. See CaptureBodyFocusForReshape for why that, and not
-    // where focus happens to be, decides whether the body cursor is replayed afterwards.
-    //
-    // Scoped rather than flagged-and-queued: every re-shape a header activation causes runs
-    // SYNCHRONOUSLY inside ToggleSortDirection (the source applies the shaping delta and raises
-    // both notifications before it returns), so the scope covers exactly the window that can
-    // produce a capture and the flag is restored on the way out even if something throws. There is
-    // no dispatcher turn it could leak across.
-    [[nodiscard]] auto BeginHeaderActivationReshapeScope()
-    {
-        const bool previous = m_headerActivationReshape;
-        m_headerActivationReshape = true;
-        return gsl::finally([this, previous]() { m_headerActivationReshape = previous; });
-    }
-    bool m_headerActivationReshape{ false };
     // EmptyTemplate shows only for null or empty row sources.
     void UpdateEmptyState();
     void UpdateItemsSourceCollectionChangedSubscription();
@@ -923,11 +910,14 @@ private:
     // the same PROJECTED POSITION - the same row index, whichever record now occupies it - which is
     // deliberately NOT the record-identity rule that governs Tab re-entry (ResolveFocusEntryRow).
     //
-    // The position has to be TRACKED as focus moves rather than sampled when the re-shape is
-    // announced: both notifications the control can receive - the rows view's Reset and the
-    // projection-rebuilt callback - are raised after ItemsRepeater has already recycled the
-    // realized rows, so by then the focused element is gone. The capture therefore falls back to
-    // m_lastBodyFocus*, which the body's own GotFocus maintains.
+    // WHERE FOCUS IS when the re-shape starts decides whether anything is replayed: in the body, the
+    // live position is; dropped to null, the remembered position (m_lastBodyFocus*) is; anywhere
+    // else - a header of this table, or outside it - nothing is, and focus stays where it is.
+    //
+    // The position is also TRACKED as focus moves because the focused row can already have been
+    // recycled (focus dropped) by the time a notification reaches the control. The remembered
+    // position survives only transitions to null: the moment focus lands on any non-null element
+    // outside the body it is discarded, whatever the FocusState or direction.
     //
     // The replay is a budgeted pump rather than one shot: at the moment the restore is requested
     // nothing is realized at the captured index, and the deferred work a re-shape queues behind it
@@ -935,6 +925,10 @@ private:
     void CaptureBodyFocusForReshape();
     void RestoreBodyFocusAfterReshape();
     bool TryResolveLiveBodyFocusPosition(int32_t& row, int32_t& column, bool& cellLevel) const;
+    bool IsElementInBody(const winrt::DependencyObject& element) const;
+    bool IsFocusOnNonBodyElement() const;
+    void ForgetBodyFocusPosition();
+    static winrt::FocusState GetRestoreFocusStateFor(const winrt::IInspectable& focusedElement);
     void TrackBodyFocusPosition();
     void OnTableViewGotFocusForBodyTracking(
         const winrt::IInspectable& sender,
@@ -947,6 +941,7 @@ private:
     int32_t m_lastBodyFocusRow{ -1 };
     int32_t m_lastBodyFocusColumn{ 0 };
     bool m_lastBodyFocusCellLevel{ false };
+    winrt::FocusState m_lastBodyFocusState{ winrt::FocusState::Keyboard };
     bool m_suppressBodyFocusTracking{ false };
     winrt::UIElement::GotFocus_revoker m_bodyFocusTrackerGotFocusRevoker{};
     winrt::UIElement::LosingFocus_revoker m_bodyFocusTrackerLosingFocusRevoker{};
@@ -955,7 +950,6 @@ private:
     void CancelReshapeFocusRestore();
     bool TryLandReshapeFocus();
     bool IsBodyFocusAtRow(int32_t rowIndex) const;
-    bool HasFocusLeftTableView() const;
     // Drops a capture no shaping notification claimed, so an app-raised Reset cannot leave a stale
     // body position for an unrelated later re-shape to replay.
     void QueueReshapeFocusCaptureDisarm();
@@ -968,12 +962,15 @@ private:
     int32_t m_reshapeFocusRow{ -1 };
     int32_t m_reshapeFocusColumn{ 0 };
     bool m_reshapeFocusCellLevel{ false };
+    winrt::FocusState m_reshapeFocusState{ winrt::FocusState::Keyboard };
     // The consumed capture, replayed until it sticks.
     int32_t m_pendingReshapeFocusRow{ -1 };
     int32_t m_pendingReshapeFocusColumn{ 0 };
     bool m_pendingReshapeFocusCellLevel{ false };
+    winrt::FocusState m_pendingReshapeFocusState{ winrt::FocusState::Keyboard };
     int32_t m_reshapeFocusAttemptsLeft{ 0 };
-    bool m_reshapeFocusAimed{ false };
+    // The clamped row StartBringIntoView was last raised for, so each target is scrolled to once.
+    int32_t m_reshapeFocusBroughtIntoViewRow{ -1 };
     bool m_reshapeFocusTurnQueued{ false };
     winrt::event_token m_reshapeFocusLayoutToken{};
     // Enough attempts to cover realize -> arrange -> the deferred work a re-shape queues behind it,
@@ -1108,7 +1105,9 @@ private:
     // cannot wander out of the cell while interaction mode is active.
     bool TryHandleCellInteractionNavigationKey(const winrt::KeyRoutedEventArgs& args);
     // Focus helpers and pre-key anchors for the row/group-header levels.
-    bool FocusRowContainerInternal(winrt::UIElement const& element);
+    bool FocusRowContainerInternal(
+        winrt::UIElement const& element,
+        winrt::FocusState focusState = winrt::FocusState::Keyboard);
     bool FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, bool cellLevel);
     int32_t GetFocusedRowContainerIndex() const;
     int32_t GetFocusedGroupHeaderIndex() const;

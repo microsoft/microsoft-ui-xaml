@@ -1519,6 +1519,77 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "The frozen header cell must stay aligned with its frozen body cells under RTL");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the header grid line, sort indicator and resize gripper share the trailing (visual left) edge under RTL.")]
+        public void VerifyHeaderTrailingAdornmentsShareEdgeInRightToLeft()
+        {
+            // Header cells inherit the table's RightToLeft and are mirrored by the framework, so the
+            // trailing edge of a header is its visual LEFT. The grid line, the sort chevron and the
+            // gripper all sit on that edge; a hand-swapped alignment mirrors an already mirrored frame
+            // and puts the adornment on the visual RIGHT (leading) edge instead. Measured against an
+            // explicitly LeftToRight wrapper so "left" means what it says (see
+            // VerifyFrozenColumnsMirrorInRightToLeft).
+            TableView tableView = null;
+            FrameworkElement wrapper = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSortingTestHelpers.CreateSortTable();
+                tableView.CanUserResizeColumns = true;
+                tableView.GridLinesVisibility = TableViewGridLinesVisibility.All;
+                tableView.FlowDirection = FlowDirection.RightToLeft;
+
+                var host = new Grid { FlowDirection = FlowDirection.LeftToRight };
+                host.Children.Add(tableView);
+                wrapper = host;
+
+                LoadContent(host);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var headerCell = GetHeaderCell(tableView, 0);
+                Verify.AreEqual(FlowDirection.RightToLeft, headerCell.FlowDirection,
+                    "Precondition: FlowDirection must reach the header cell.");
+                Verify.IsGreaterThan(
+                    GetVisualRight(headerCell, wrapper),
+                    GetVisualRight(GetHeaderCell(tableView, 1), wrapper),
+                    "Precondition: under RTL the first header must be arranged to the right of the second.");
+
+                var cellLeft = GetVisualLeft(headerCell, wrapper);
+                var cellRight = GetVisualRight(headerCell, wrapper);
+                Log.Comment($"Header cell spans {cellLeft}..{cellRight}.");
+
+                var gridLine = headerCell.FindVisualChildByName("TableViewHeaderGridLine");
+                Verify.IsNotNull(gridLine, "The header cell must contain its vertical grid line.");
+                Verify.AreEqual(Visibility.Visible, gridLine.Visibility,
+                    "Precondition: a non-terminal header grid line must be visible with GridLinesVisibility.All.");
+                var gridLineLeft = GetVisualLeft(gridLine, wrapper);
+
+                var gripper = RequireGripper(tableView, 0);
+                var gripperLeft = GetVisualLeft(gripper, wrapper);
+
+                var indicator = TableViewSortingTestHelpers.FindSortIndicator(tableView, 0);
+                Verify.IsNotNull(indicator, "A sorted, sortable column must build a sort indicator.");
+                var indicatorLeft = GetVisualLeft(indicator, wrapper);
+                var indicatorRight = GetVisualRight(indicator, wrapper);
+                Log.Comment($"Grid line left {gridLineLeft}, gripper left {gripperLeft}, indicator {indicatorLeft}..{indicatorRight}.");
+
+                VerifyNear(cellLeft, gridLineLeft, c_positionTolerance,
+                    "Under RTL the header grid line must sit on the cell's trailing (visual left) edge");
+                VerifyNear(cellLeft, gripperLeft, c_positionTolerance,
+                    "Under RTL the resize gripper must sit on the cell's trailing (visual left) edge");
+                Verify.IsLessThan(indicatorLeft - cellLeft, cellRight - indicatorRight,
+                    "Under RTL the sort indicator must sit toward the cell's trailing (visual left) edge, with the grid line and gripper.");
+            });
+        }
     }
 
     internal static class TableViewSizingTestHelpers
@@ -1557,6 +1628,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return Math.Max(
                 transform.TransformPoint(new Point(0.0, 0.0)).X,
                 transform.TransformPoint(new Point(extent, 0.0)).X);
+        }
+
+        // The visual left edge counterpart of GetVisualRight.
+        internal static double GetVisualLeft(FrameworkElement element, FrameworkElement ancestor)
+        {
+            var transform = element.TransformToVisual(ancestor);
+
+            return Math.Min(
+                transform.TransformPoint(new Point(0.0, 0.0)).X,
+                transform.TransformPoint(new Point(element.ActualWidth, 0.0)).X);
         }
 
         // Scrolls far enough to realize the row at the given index, derived from a measured row height

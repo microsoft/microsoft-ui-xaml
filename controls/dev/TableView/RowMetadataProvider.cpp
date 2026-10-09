@@ -10,6 +10,7 @@
 #include "GroupContract.h"
 #include "ShapingHelpers.h"
 
+#include <algorithm>
 #include <string>
 #include <string_view>
 
@@ -108,6 +109,7 @@ RowMetadataProvider::RowMetadataProvider(
         if (weakAlive.lock())
         {
             InvalidateIdentityIndex();
+            InvalidateGroupHeaderIndices();
         }
     };
 
@@ -193,6 +195,69 @@ bool RowMetadataProvider::TryGetIndexForIdentity(winrt::hstring const& identity,
     }
 
     index = found->second;
+    return true;
+}
+
+void RowMetadataProvider::InvalidateGroupHeaderIndices()
+{
+    m_groupHeaderIndicesRowCount = -1;
+    m_groupHeaderIndices.clear();
+}
+
+void RowMetadataProvider::EnsureGroupHeaderIndices(int32_t rowCount)
+{
+    if (m_groupHeaderIndicesRowCount == rowCount)
+    {
+        return;
+    }
+
+    m_groupHeaderIndices.clear();
+    for (int32_t i = 0; i < rowCount; ++i)
+    {
+        if (TryGetGroupedEntry(m_groupedRows.GetAt(i)))
+        {
+            m_groupHeaderIndices.push_back(i);
+        }
+    }
+    m_groupHeaderIndicesRowCount = rowCount;
+}
+
+bool RowMetadataProvider::TryGetGroupMembership(
+    winrt::IInspectable const& rows,
+    int32_t index,
+    int32_t& positionInGroup,
+    int32_t& groupSize)
+{
+    positionInGroup = 0;
+    groupSize = 0;
+
+    // Answer only for the projection the caller actually indexed into, so a row index can never be
+    // resolved against a different (stale or replaced) projection.
+    if (m_sourceKind != SourceKind::Grouped || !m_groupedRows || !rows || !SameObject(rows, m_groupedRows))
+    {
+        return false;
+    }
+
+    const auto rowCount = m_groupedRows.Count();
+    if (index < 0 || index >= rowCount)
+    {
+        return false;
+    }
+
+    EnsureGroupHeaderIndices(rowCount);
+
+    // First band after the row; the one before it (if any) opens the row's group.
+    const auto next = std::upper_bound(m_groupHeaderIndices.begin(), m_groupHeaderIndices.end(), index);
+    const int32_t previousHeader = next == m_groupHeaderIndices.begin() ? -1 : *(next - 1);
+    if (previousHeader == index)
+    {
+        // A header band is not a member of any group's data set.
+        return false;
+    }
+    const int32_t nextHeader = next == m_groupHeaderIndices.end() ? rowCount : *next;
+
+    positionInGroup = index - previousHeader;
+    groupSize = nextHeader - previousHeader - 1;
     return true;
 }
 

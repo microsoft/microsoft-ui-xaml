@@ -1,0 +1,45 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Styling keys of ResizeGripper.xaml, owned here so any host of the primitive resolves them,
+         not only TableView. Registered as a ThemeResources page in ResizeGripper.vcxitems, which
+         merges it into the binary's generated themeresources.xaml; a page missing from that merge is
+         silently absent at runtime and every {ThemeResource} in the gripper template then throws
+         while the template is applied. -->
+
+    <!-- Theme-invariant, so at page scope rather than triplicated across the theme dictionaries.
+         The separator is on the template's logical right (trailing) edge; under RTL the framework
+         mirrors the gripper's subtree, so no mirrored variant is needed. -->
+    <Thickness x:Key="ResizeGripperSeparatorThickness">0,0,2,0</Thickness>
+    <Thickness x:Key="ResizeGripperSeparatorThicknessVertical">0,0,0,2</Thickness>
+
+    <ResourceDictionary.ThemeDictionaries>
+        <!-- Light + Default (Dark) + HighContrast explicitly: once any merged theme dictionary
+             defines "Light", XAML treats "Default" as Dark rather than a Light fallback. -->
+        <ResourceDictionary x:Key="Light">
+            <!-- Mirrors AccentFillColorDefaultBrush's Light tier (SystemAccentColorDark1), so it follows
+                 the user's accent colour. Uses {ThemeResource} on the colour rather than a
+                 <StaticResource> alias to AccentFillColorDefaultBrush: an alias inside a
+                 ThemeDictionaries block only resolves when this page is consumed through the dll's
+                 master themeresources.xaml; when an app merges the dictionary directly the alias has
+                 to cross-reference another merged dictionary's theme block, which the resolver does
+                 not do reliably - the observed failure is a silent Light-theme brush under Dark.
+                 {ThemeResource} re-resolves against the framework's system accent colours instead. -->
+            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="{ThemeResource SystemAccentColorDark1}" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Default">
+            <!-- Mirrors AccentFillColorDefaultBrush's Dark tier (SystemAccentColorLight2); see the Light
+                 dictionary note on {ThemeResource} vs StaticResource aliases. -->
+            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="{ThemeResource SystemAccentColorLight2}" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <!-- SystemColorHighlightColor via {ThemeResource}: a re-resolving markup extension, which
+                 unlike a StaticResource alias does resolve across MergedDictionary boundaries. The
+                 accent brush is not usable here - under High Contrast it resolves to the window
+                 background, which would make the separator invisible. -->
+            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>
