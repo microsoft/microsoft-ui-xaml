@@ -216,9 +216,7 @@ steps:
       condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
-  # TableView is built from this repo (controls\dev\dll-tabular), not delivered prebuilt via the
-  # pinned WinUIDetails package like Charts, so unlike ChartApp these also build in GitHub PR runs.
-  # MUXFinalRelease still skips them: Tabular is excluded from that configuration.
+  # Unlike ChartApp, TableView is built from this repo (not the WinUIDetails package), so GitHub runs build it too.
   - template: WinUI-BuildSampleApp-Steps.yml
     parameters:
       displayName: TableViewApp
