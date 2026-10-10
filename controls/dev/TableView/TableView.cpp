@@ -45,6 +45,9 @@ static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"s
 // Matches SortIndicatorSize in SortIndicator_themeresources.xaml; used only when that key is
 // missing or unusable.
 static constexpr double c_sortIndicatorSizeFallback{ 16.0 };
+static constexpr std::wstring_view s_ControlCornerRadiusKey{ L"ControlCornerRadius"sv };
+// Matches the Fluent ControlCornerRadius; used only when that key is missing or unusable.
+static constexpr winrt::CornerRadius c_controlCornerRadiusFallback{ 4.0, 4.0, 4.0, 4.0 };
 
 namespace
 {
@@ -2632,6 +2635,10 @@ void TableView::RebuildHeaders()
     {
         cachedSortIndicatorWidth = c_sortIndicatorSizeFallback;
     }
+    // The system focus visual takes its corners from the focused Grid's CornerRadius, so without
+    // this the header focus rect is square while row focus (TableViewRow style) is rounded.
+    const auto cachedHeaderCellCornerRadius = winrt::unbox_value_or<winrt::CornerRadius>(
+        LookupElementResource(*this, s_ControlCornerRadiusKey), c_controlCornerRadiusFallback);
     const bool canUserSortColumns = CanUserSortColumns();
 
     // XAML mirrors an RTL subtree with one transform where FlowDirection changes, so logical Right
@@ -2672,6 +2679,7 @@ void TableView::RebuildHeaders()
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
             headerCell.IsTabStop(true);
             headerCell.UseSystemFocusVisuals(true);
+            headerCell.CornerRadius(cachedHeaderCellCornerRadius);
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {
