@@ -19,7 +19,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public BindPathStep RootStep { get; private set; } = null;
         public IList<ConnectionIdElement> NamedElements { get; }
 
+        // The connection element that defines this binding scope.
+        // Used to name the generated bindings class and establish its root connector.
         internal ConnectionIdElement RootElement { get; private set; }
+        // The namescope element used by generated x:Load lookups; normally RootElement.
+        // ControlTemplates with bound x:Load use their connected visual root instead.
+        internal ConnectionIdElement LoadRootElement { get; private set; }
         internal List<BindAssignment> BindAssignments = new List<BindAssignment>();
         internal List<BoundEventAssignment> BoundEventAssignments = new List<BoundEventAssignment>();
         internal List<ConnectionIdElement> BoundElements = new List<ConnectionIdElement>();
@@ -51,6 +56,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         internal BindUniverse(ConnectionIdElement rootElement, XamlType dataRootType, bool isFileRoot, string classShortName)
         {
             RootElement = rootElement;
+            LoadRootElement = rootElement;
             IsFileRoot = isFileRoot;
             DataRootType = dataRootType;
             parentClassShortName = classShortName;
@@ -155,6 +161,18 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
 
             ProcessRootNamedElementSteps(targetPlatformMinVersion, issues);
+
+            if (RootElement.Type.IsDerivedFromControlTemplate() && ElementsWithBoundLoadAssignments.Any())
+            {
+                // The ControlTemplate connector receives the templated parent, not the visual root.
+                // Bound x:Load needs FindName in the template instance's namescope, so use and connect
+                // the first harvested child (the visual root) without changing the existing connector.
+                LoadRootElement = RootElement.Children.First();
+                if (!BoundElements.Contains(LoadRootElement))
+                {
+                    BoundElements.Add(LoadRootElement);
+                }
+            }
 
             foreach (var potentialParent in RootElement.AllChildren)
             {

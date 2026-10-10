@@ -569,10 +569,11 @@ namespace UnitTests
             return xamlEditor;
         }
 
-        public List<FileNameAndContentPair> GenerateCodeBehind(CodeGeneratorProjectContext cpx, List<string> xamlStrings, DirectUISchemaContext schema, CodeGenLanguage lang)
+        public List<FileNameAndContentPair> GenerateCodeBehind(CodeGeneratorProjectContext cpx, List<string> xamlStrings, DirectUISchemaContext schema, CodeGenLanguage lang, IList<string> rewrittenXaml = null)
         {
             XamlProjectInfo projectInfo = cpx.ProjectInfo;
             XamlClassCodeInfo sharedCodeInfo = null;
+            var fileInfos = new List<XamlFileCodeInfo>();
 
             string dummyFileName = "DummyFile.xaml";
             string dummyFilePath = Path.Combine(cpx.ProjectPath, dummyFileName);
@@ -600,6 +601,7 @@ namespace UnitTests
                 fileInfo.RelativePathFromGeneratedCodeToXamlFile = dummyFileName;
                 fileInfo.SourceXamlGivenPath = dummyFilePath;
                 sharedCodeInfo.AddXamlFileInfo(fileInfo);
+                fileInfos.Add(fileInfo);
             }
 
             if (!cpx.IsPass1)
@@ -627,7 +629,16 @@ namespace UnitTests
 
             var codeLang = GetCodeLanguage(cpx.IsPass1, lang);
             XamlCodeGenerator codeGenerator = new XamlCodeGenerator(codeLang, cpx.IsPass1, projectInfo, null);
-            return codeGenerator.GenerateCodeBehind(sharedCodeInfo);
+            List<FileNameAndContentPair> codeBehind = codeGenerator.GenerateCodeBehind(sharedCodeInfo);
+            if (rewrittenXaml != null)
+            {
+                var rewriter = new XamlConnectionIdRewriter();
+                for (int index = 0; index < xamlStrings.Count; index++)
+                {
+                    rewrittenXaml.Add(rewriter.Parse(xamlStrings[index], sharedCodeInfo, fileInfos[index]));
+                }
+            }
+            return codeBehind;
         }
 
         public List<FileNameAndContentPair> GenerateTypeInfo(bool isPass1, XamlSchemaCodeInfo schemaInfo, XamlProjectInfo projectInfo,

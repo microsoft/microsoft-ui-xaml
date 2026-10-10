@@ -71,11 +71,12 @@ namespace winrt::BindTestbed::implementation
         bool _contentLoaded{false};
 
     private:
+        struct Templates_obj4_Bindings;
         struct Templates_obj3_Bindings;
-        struct Templates_obj8_Bindings;
-        struct Templates_obj13_Bindings;
-        struct Templates_obj16_Bindings;
-        struct Templates_obj18_Bindings;
+        struct Templates_obj12_Bindings;
+        struct Templates_obj17_Bindings;
+        struct Templates_obj20_Bindings;
+        struct Templates_obj22_Bindings;
         struct Templates_obj1_Bindings;
 
         ::winrt::Microsoft::UI::Xaml::DataTemplate _TemplateWithUserControl{nullptr};

@@ -23,10 +23,10 @@ namespace winrt::BindTestbed::implementation
         template<typename T>
         constexpr bool is_type_complete_v<T, std::void_t<decltype(sizeof(T))>> = true;
 
+        static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::Controls::TextBlock' in your precompiled header 'pch.h'." );
         static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::Media::Brush>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::Media::Brush' in your precompiled header 'pch.h'." );
         static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::Controls::Border>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::Controls::Border' in your precompiled header 'pch.h'." );
         static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::Thickness>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::Thickness' in your precompiled header 'pch.h'." );
-        static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::Controls::TextBlock' in your precompiled header 'pch.h'." );
         static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::FrameworkElement>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::FrameworkElement' in your precompiled header 'pch.h'." );
         static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::Visibility>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::Visibility' in your precompiled header 'pch.h'." );
         static_assert( is_type_complete_v<::winrt::Microsoft::UI::Xaml::UIElement>, "Please #include the implementation header for '::winrt::Microsoft::UI::Xaml::UIElement' in your precompiled header 'pch.h'." );
@@ -104,43 +104,291 @@ namespace winrt::BindTestbed::implementation
                     }
                 }
                 break;
-            case 8: // Templates.xaml line 26
+            case 4: // Templates.xaml line 46
                 {
-                    auto element8 = target.as<::winrt::Microsoft::UI::Xaml::Controls::Grid>();
-                    auto objBindings = std::make_shared<Templates_obj8_Bindings>();
-                    objBindings->SetDataRoot(element8.DataContext());
+                    if (auto templatedParent4 = target.try_as<::winrt::Microsoft::UI::Xaml::Controls::Button>())
+                    {
+                        auto objBindings = std::make_shared<Templates_obj4_Bindings>();
+                        objBindings->SetDataRoot(templatedParent4);
+                        bindings = ::winrt::make_self<::winrt::BindTestbed::implementation::XamlBindings>(std::move(objBindings));
+                        XamlBindingHelper::SetDataTemplateComponent(templatedParent4, bindings.as<::winrt::Microsoft::UI::Xaml::Markup::IDataTemplateComponent>());
+                    }
+                }
+                break;
+            case 12: // Templates.xaml line 26
+                {
+                    auto element12 = target.as<::winrt::Microsoft::UI::Xaml::Controls::Grid>();
+                    auto objBindings = std::make_shared<Templates_obj12_Bindings>();
+                    objBindings->SetDataRoot(element12.DataContext());
                     objBindings->SetConverterLookupRoot(*this);
                     bindings = ::winrt::make_self<::winrt::BindTestbed::implementation::XamlBindings>(std::move(objBindings));
-                    bindings->SubscribeForDataContextChanged(element8);
-                    DataTemplate::SetExtensionInstance(element8, bindings.as<::winrt::Microsoft::UI::Xaml::IDataTemplateExtension>());
-                    XamlBindingHelper::SetDataTemplateComponent(element8, bindings.as<::winrt::Microsoft::UI::Xaml::Markup::IDataTemplateComponent>());
+                    bindings->SubscribeForDataContextChanged(element12);
+                    DataTemplate::SetExtensionInstance(element12, bindings.as<::winrt::Microsoft::UI::Xaml::IDataTemplateExtension>());
+                    XamlBindingHelper::SetDataTemplateComponent(element12, bindings.as<::winrt::Microsoft::UI::Xaml::Markup::IDataTemplateComponent>());
                 }
                 break;
-            case 13: // Templates.xaml line 20
+            case 17: // Templates.xaml line 20
                 {
-                    auto element13 = target.as<::winrt::Microsoft::UI::Xaml::Controls::Grid>();
-                    auto objBindings = std::make_shared<Templates_obj13_Bindings>();
-                    objBindings->SetDataRoot(element13.DataContext());
+                    auto element17 = target.as<::winrt::Microsoft::UI::Xaml::Controls::Grid>();
+                    auto objBindings = std::make_shared<Templates_obj17_Bindings>();
+                    objBindings->SetDataRoot(element17.DataContext());
                     bindings = ::winrt::make_self<::winrt::BindTestbed::implementation::XamlBindings>(std::move(objBindings));
-                    bindings->SubscribeForDataContextChanged(element13);
-                    DataTemplate::SetExtensionInstance(element13, bindings.as<::winrt::Microsoft::UI::Xaml::IDataTemplateExtension>());
-                    XamlBindingHelper::SetDataTemplateComponent(element13, bindings.as<::winrt::Microsoft::UI::Xaml::Markup::IDataTemplateComponent>());
+                    bindings->SubscribeForDataContextChanged(element17);
+                    DataTemplate::SetExtensionInstance(element17, bindings.as<::winrt::Microsoft::UI::Xaml::IDataTemplateExtension>());
+                    XamlBindingHelper::SetDataTemplateComponent(element17, bindings.as<::winrt::Microsoft::UI::Xaml::Markup::IDataTemplateComponent>());
                 }
                 break;
-            case 18: // Templates.xaml line 12
+            case 22: // Templates.xaml line 12
                 {
-                    auto element18 = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
-                    auto objBindings = std::make_shared<Templates_obj18_Bindings>();
-                    objBindings->SetDataRoot(element18.DataContext());
+                    auto element22 = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
+                    auto objBindings = std::make_shared<Templates_obj22_Bindings>();
+                    objBindings->SetDataRoot(element22.DataContext());
                     bindings = ::winrt::make_self<::winrt::BindTestbed::implementation::XamlBindings>(std::move(objBindings));
-                    bindings->SubscribeForDataContextChanged(element18);
-                    DataTemplate::SetExtensionInstance(element18, bindings.as<::winrt::Microsoft::UI::Xaml::IDataTemplateExtension>());
-                    XamlBindingHelper::SetDataTemplateComponent(element18, bindings.as<::winrt::Microsoft::UI::Xaml::Markup::IDataTemplateComponent>());
+                    bindings->SubscribeForDataContextChanged(element22);
+                    DataTemplate::SetExtensionInstance(element22, bindings.as<::winrt::Microsoft::UI::Xaml::IDataTemplateExtension>());
+                    XamlBindingHelper::SetDataTemplateComponent(element22, bindings.as<::winrt::Microsoft::UI::Xaml::Markup::IDataTemplateComponent>());
                 }
                 break;
         }
         return bindings ? bindings.as<::winrt::Microsoft::UI::Xaml::Markup::IComponentConnector>() : nullptr;
     }
+
+    template <typename D, typename ... I>
+    struct TemplatesT<D, I...>::Templates_obj4_Bindings
+        : public ::winrt::BindTestbed::implementation::ReferenceTypeXamlBindings<::winrt::Microsoft::UI::Xaml::Controls::Button, ::winrt::BindTestbed::implementation::XamlBindingTrackingBase>
+        , public std::enable_shared_from_this<TemplatesT<D, I...>::Templates_obj4_Bindings>
+        , public ::winrt::BindTestbed::implementation::IXamlBindingTracking
+{
+        Templates_obj4_Bindings()
+        {
+            InitializeTracking(this);
+        }
+
+        ~Templates_obj4_Bindings()
+        {
+            ReleaseAllListeners();
+        }
+
+        void Connect(int32_t connectionId, IInspectable const& target) override
+        {
+            switch(connectionId)
+            {
+            case 4: // Templates.xaml line 46
+                {
+                    Update(); // Template children have been connected, initialize bindings
+                }
+                break;
+            case 5: // Templates.xaml line 47
+                {
+                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Grid>();
+                    obj5 = targetElement;
+                if (std::find(UnloadedElementsToUpdate.begin(), UnloadedElementsToUpdate.end(), 6) == UnloadedElementsToUpdate.end())
+                {
+                    UnloadedElementsToUpdate.push_back(6);
+                }
+                }
+                break;
+            case 6: // Templates.xaml line 48
+                {
+                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
+                    obj6 = targetElement;
+                    // Templates.xaml line 48
+                    if (obj6)
+                    {
+                        Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj6, obj6TextDeferredValue);
+                    }
+                }
+                break;
+            }
+        }
+
+        void DisconnectUnloadedObject(int connectionId) override
+        {
+            switch (connectionId)
+            {
+                case 6: // Templates.xaml line 48
+                    {
+                        if (obj6)
+                        {
+                            obj6TextDeferredValue = obj6.Text();
+                            obj6 = nullptr;
+                        }
+                }
+                break;
+                default:
+                    throw hresult_invalid_argument(L"Invalid connectionId.");
+            }
+        }
+
+        void UpdateUnloadedElement(int connectionId)
+        {
+            switch (connectionId)
+            {
+            case 6: // Templates.xaml line 48
+                {
+                    // Templates.xaml line 48
+                    if (obj6LoadDeferredValue)
+                    {
+                        obj5.FindName(L"deferredUnboundRootText");
+                    }
+                    else
+                    {
+                        if (obj6) 
+                        {
+                            ::winrt::Microsoft::UI::Xaml::Markup::XamlMarkupHelper::UnloadObject(obj6);
+                        }
+                        DisconnectUnloadedObject(6);
+                    }
+                    }
+                    break;
+            default:
+                throw hresult_invalid_argument(L"Invalid connectionId.");
+            }
+        }
+        void Recycle() override
+        {
+            return;
+        }
+
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        {
+            nextPhase = 1;
+        }
+
+
+    private:
+        // Fields for each control that has bindings.
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj6 { nullptr };
+        ::winrt::hstring obj6TextDeferredValue {};
+        bool obj6LoadDeferredValue {};
+        ::winrt::Microsoft::UI::Xaml::Controls::Grid obj5 { nullptr };
+        std::list<int> UnloadedElementsToUpdate;
+
+        // Fields for binding tracking.
+        ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject> cacheDPC_Content;
+        ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject> cacheDPC_IsEnabled;
+        __int64 tokenDPC_Content{0};
+        __int64 tokenDPC_IsEnabled{0};
+
+        void CompleteUpdate(int phase)
+        {
+            while (!UnloadedElementsToUpdate.empty())
+            {
+                UpdateUnloadedElement(UnloadedElementsToUpdate.front());
+                UnloadedElementsToUpdate.pop_front();
+            }
+        }
+
+        // Update methods for each path node used in binding steps.
+
+        void Update_(::winrt::Microsoft::UI::Xaml::Controls::Button obj, int32_t phase)
+        {
+            _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::Microsoft::UI::Xaml::Controls::ContentControl::ContentProperty(), cacheDPC_Content, tokenDPC_Content);
+            _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::Microsoft::UI::Xaml::Controls::Control::IsEnabledProperty(), cacheDPC_IsEnabled, tokenDPC_IsEnabled);
+            if (obj)
+            {
+                if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
+                {
+                    Update_Content(obj.Content(), phase);
+                    Update_IsEnabled(obj.IsEnabled(), phase);
+                }
+            }
+            CompleteUpdate(phase);
+        }
+
+        void Update_Content(::winrt::Windows::Foundation::IInspectable obj, int32_t phase)
+        {
+            if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+            {
+                // Templates.xaml line 48
+                if (obj6)
+                {
+                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj6, ::winrt::unbox_value_or<::winrt::hstring>(obj, L""));
+                }
+                else
+                {
+                    obj6TextDeferredValue = ::winrt::unbox_value_or<::winrt::hstring>(obj, L"");
+                }
+            }
+        }
+
+        void Update_IsEnabled(bool obj, int32_t phase)
+        {
+            if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+            {
+                // Templates.xaml line 48
+                obj6LoadDeferredValue = obj;
+    
+                if (obj)
+                {
+                    obj5.FindName(L"deferredUnboundRootText");
+                }
+                else
+                {
+                    if (obj6) 
+                    {
+                        ::winrt::Microsoft::UI::Xaml::Markup::XamlMarkupHelper::UnloadObject(obj6);
+                    }
+                    DisconnectUnloadedObject(6);
+                }
+            }
+        }
+
+        virtual void ReleaseAllListeners() override
+        {
+            _bindingsTracking->UpdateDependencyPropertyChangedListener(nullptr, ::winrt::Microsoft::UI::Xaml::Controls::ContentControl::ContentProperty(), cacheDPC_Content, tokenDPC_Content);
+            _bindingsTracking->UpdateDependencyPropertyChangedListener(nullptr, ::winrt::Microsoft::UI::Xaml::Controls::Control::IsEnabledProperty(), cacheDPC_IsEnabled, tokenDPC_IsEnabled);
+        }
+
+        virtual void PropertyChanged(IInspectable const& sender, ::winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& e) override
+        {
+            CompleteUpdate(DATA_CHANGED);
+        }
+
+        void CollectionChanged(IInspectable const& sender, ::winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& e) override
+        {
+            CompleteUpdate(DATA_CHANGED);
+        }
+
+        void VectorChanged(IInspectable const& sender, ::winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& e) override
+        {
+            CompleteUpdate(DATA_CHANGED);
+        }
+
+        void MapChanged(IInspectable const& sender, ::winrt::Windows::Foundation::Collections::IMapChangedEventArgs<::winrt::hstring> const& e) override
+        {
+            CompleteUpdate(DATA_CHANGED);
+        }
+
+        void DependencyPropertyChanged(DependencyObject const& sender, DependencyProperty const& prop) override
+        {
+            if (sender)
+            {
+                if (sender == cacheDPC_Content.get() && ::winrt::Microsoft::UI::Xaml::Controls::ContentControl::ContentProperty() == prop)
+                {
+                    auto obj = sender.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
+                    if (obj)
+                    {
+                        Update_Content(obj.Content(), DATA_CHANGED);
+                    }
+                }
+                if (sender == cacheDPC_IsEnabled.get() && ::winrt::Microsoft::UI::Xaml::Controls::Control::IsEnabledProperty() == prop)
+                {
+                    auto obj = sender.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
+                    if (obj)
+                    {
+                        Update_IsEnabled(obj.IsEnabled(), DATA_CHANGED);
+                    }
+                }
+            }
+        }
+
+
+        static void Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(::winrt::Microsoft::UI::Xaml::Controls::TextBlock const& obj, ::winrt::hstring const& value)
+        {
+            obj.Text(value);
+        }
+    }; 
 
     template <typename D, typename ... I>
     struct TemplatesT<D, I...>::Templates_obj3_Bindings
@@ -167,28 +415,43 @@ namespace winrt::BindTestbed::implementation
                     Update(); // Template children have been connected, initialize bindings
                 }
                 break;
-            case 4: // Templates.xaml line 36
+            case 7: // Templates.xaml line 36
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Border>();
-                    obj4 = targetElement;
-                }
-                break;
-            case 5: // Templates.xaml line 38
-                {
-                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
-                    obj5 = targetElement;
-                }
-                break;
-            case 6: // Templates.xaml line 39
-                {
-                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
-                    obj6 = targetElement;
-                }
-                break;
-            case 7: // Templates.xaml line 40
-                {
-                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                     obj7 = targetElement;
+                if (std::find(UnloadedElementsToUpdate.begin(), UnloadedElementsToUpdate.end(), 11) == UnloadedElementsToUpdate.end())
+                {
+                    UnloadedElementsToUpdate.push_back(11);
+                }
+                }
+                break;
+            case 8: // Templates.xaml line 38
+                {
+                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
+                    obj8 = targetElement;
+                }
+                break;
+            case 9: // Templates.xaml line 39
+                {
+                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
+                    obj9 = targetElement;
+                }
+                break;
+            case 10: // Templates.xaml line 40
+                {
+                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
+                    obj10 = targetElement;
+                }
+                break;
+            case 11: // Templates.xaml line 41
+                {
+                    auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
+                    obj11 = targetElement;
+                    // Templates.xaml line 41
+                    if (obj11)
+                    {
+                        Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj11, obj11TextDeferredValue);
+                    }
                 }
                 break;
             }
@@ -196,7 +459,46 @@ namespace winrt::BindTestbed::implementation
 
         void DisconnectUnloadedObject(int connectionId) override
         {
-            throw ::winrt::hresult_invalid_argument { L"No unloadable elements to disconnect." };
+            switch (connectionId)
+            {
+                case 11: // Templates.xaml line 41
+                    {
+                        if (obj11)
+                        {
+                            obj11TextDeferredValue = obj11.Text();
+                            obj11 = nullptr;
+                        }
+                }
+                break;
+                default:
+                    throw hresult_invalid_argument(L"Invalid connectionId.");
+            }
+        }
+
+        void UpdateUnloadedElement(int connectionId)
+        {
+            switch (connectionId)
+            {
+            case 11: // Templates.xaml line 41
+                {
+                    // Templates.xaml line 41
+                    if (obj11LoadDeferredValue)
+                    {
+                        obj7.FindName(L"deferredTemplateText");
+                    }
+                    else
+                    {
+                        if (obj11) 
+                        {
+                            ::winrt::Microsoft::UI::Xaml::Markup::XamlMarkupHelper::UnloadObject(obj11);
+                        }
+                        DisconnectUnloadedObject(11);
+                    }
+                    }
+                    break;
+            default:
+                throw hresult_invalid_argument(L"Invalid connectionId.");
+            }
         }
         void Recycle() override
         {
@@ -211,22 +513,37 @@ namespace winrt::BindTestbed::implementation
 
     private:
         // Fields for each control that has bindings.
-        ::winrt::Microsoft::UI::Xaml::Controls::Border obj4 { nullptr };
-        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj5 { nullptr };
-        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj7 { nullptr };
-        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj6 { nullptr };
+        ::winrt::Microsoft::UI::Xaml::Controls::Border obj7 { nullptr };
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj8 { nullptr };
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj10 { nullptr };
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj11 { nullptr };
+        ::winrt::hstring obj11TextDeferredValue {};
+        bool obj11LoadDeferredValue {};
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj9 { nullptr };
+        std::list<int> UnloadedElementsToUpdate;
 
         // Fields for binding tracking.
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject> cacheDPC_BorderBrush;
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject> cacheDPC_BorderThickness;
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject> cacheDPC_Content;
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject> cacheDPC_Foreground;
+        ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject> cacheDPC_IsEnabled;
         ::winrt::Microsoft::UI::Xaml::DependencyObject cacheDPC_namedTextBlock_Text{nullptr};
         __int64 tokenDPC_BorderBrush{0};
         __int64 tokenDPC_BorderThickness{0};
         __int64 tokenDPC_Content{0};
         __int64 tokenDPC_Foreground{0};
+        __int64 tokenDPC_IsEnabled{0};
         __int64 tokenDPC_namedTextBlock_Text{0};
+
+        void CompleteUpdate(int phase)
+        {
+            while (!UnloadedElementsToUpdate.empty())
+            {
+                UpdateUnloadedElement(UnloadedElementsToUpdate.front());
+                UnloadedElementsToUpdate.pop_front();
+            }
+        }
 
         // Update methods for each path node used in binding steps.
 
@@ -236,6 +553,7 @@ namespace winrt::BindTestbed::implementation
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::Microsoft::UI::Xaml::Controls::Control::BorderThicknessProperty(), cacheDPC_BorderThickness, tokenDPC_BorderThickness);
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::Microsoft::UI::Xaml::Controls::ContentControl::ContentProperty(), cacheDPC_Content, tokenDPC_Content);
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::Microsoft::UI::Xaml::Controls::Control::ForegroundProperty(), cacheDPC_Foreground, tokenDPC_Foreground);
+            _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::Microsoft::UI::Xaml::Controls::Control::IsEnabledProperty(), cacheDPC_IsEnabled, tokenDPC_IsEnabled);
             if (obj)
             {
                 if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
@@ -244,8 +562,10 @@ namespace winrt::BindTestbed::implementation
                     Update_BorderThickness(obj.BorderThickness(), phase);
                     Update_Content(obj.Content(), phase);
                     Update_Foreground(obj.Foreground(), phase);
+                    Update_IsEnabled(obj.IsEnabled(), phase);
                 }
             }
+            CompleteUpdate(phase);
         }
 
         void Update_BorderBrush(::winrt::Microsoft::UI::Xaml::Media::Brush obj, int32_t phase)
@@ -253,7 +573,7 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // Templates.xaml line 36
-                Set_Microsoft_UI_Xaml_Controls_Border_BorderBrush(obj4, obj, std::nullopt);
+                Set_Microsoft_UI_Xaml_Controls_Border_BorderBrush(obj7, obj, std::nullopt);
             }
         }
 
@@ -262,7 +582,7 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // Templates.xaml line 36
-                Set_Microsoft_UI_Xaml_Controls_Border_BorderThickness(obj4, obj);
+                Set_Microsoft_UI_Xaml_Controls_Border_BorderThickness(obj7, obj);
             }
         }
 
@@ -271,7 +591,16 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // Templates.xaml line 38
-                Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj5, ::winrt::unbox_value_or<::winrt::hstring>(obj, L""));
+                Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj8, ::winrt::unbox_value_or<::winrt::hstring>(obj, L""));
+                // Templates.xaml line 41
+                if (obj11)
+                {
+                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj11, ::winrt::unbox_value_or<::winrt::hstring>(obj, L""));
+                }
+                else
+                {
+                    obj11TextDeferredValue = ::winrt::unbox_value_or<::winrt::hstring>(obj, L"");
+                }
             }
         }
 
@@ -280,7 +609,7 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // Templates.xaml line 38
-                Set_Microsoft_UI_Xaml_Controls_TextBlock_Foreground(obj5, obj, std::nullopt);
+                Set_Microsoft_UI_Xaml_Controls_TextBlock_Foreground(obj8, obj, std::nullopt);
             }
         }
 
@@ -301,7 +630,29 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // Templates.xaml line 40
-                Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj7, obj);
+                Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj10, obj);
+            }
+        }
+
+        void Update_IsEnabled(bool obj, int32_t phase)
+        {
+            if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+            {
+                // Templates.xaml line 41
+                obj11LoadDeferredValue = obj;
+    
+                if (obj)
+                {
+                    obj7.FindName(L"deferredTemplateText");
+                }
+                else
+                {
+                    if (obj11) 
+                    {
+                        ::winrt::Microsoft::UI::Xaml::Markup::XamlMarkupHelper::UnloadObject(obj11);
+                    }
+                    DisconnectUnloadedObject(11);
+                }
             }
         }
 
@@ -311,23 +662,28 @@ namespace winrt::BindTestbed::implementation
             _bindingsTracking->UpdateDependencyPropertyChangedListener(nullptr, ::winrt::Microsoft::UI::Xaml::Controls::Control::BorderThicknessProperty(), cacheDPC_BorderThickness, tokenDPC_BorderThickness);
             _bindingsTracking->UpdateDependencyPropertyChangedListener(nullptr, ::winrt::Microsoft::UI::Xaml::Controls::ContentControl::ContentProperty(), cacheDPC_Content, tokenDPC_Content);
             _bindingsTracking->UpdateDependencyPropertyChangedListener(nullptr, ::winrt::Microsoft::UI::Xaml::Controls::Control::ForegroundProperty(), cacheDPC_Foreground, tokenDPC_Foreground);
+            _bindingsTracking->UpdateDependencyPropertyChangedListener(nullptr, ::winrt::Microsoft::UI::Xaml::Controls::Control::IsEnabledProperty(), cacheDPC_IsEnabled, tokenDPC_IsEnabled);
             _bindingsTracking->UpdateDependencyPropertyChangedListener(nullptr, ::winrt::Microsoft::UI::Xaml::Controls::TextBlock::TextProperty(), cacheDPC_namedTextBlock_Text, tokenDPC_namedTextBlock_Text);
         }
 
         virtual void PropertyChanged(IInspectable const& sender, ::winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& e) override
         {
+            CompleteUpdate(DATA_CHANGED);
         }
 
         void CollectionChanged(IInspectable const& sender, ::winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& e) override
         {
+            CompleteUpdate(DATA_CHANGED);
         }
 
         void VectorChanged(IInspectable const& sender, ::winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& e) override
         {
+            CompleteUpdate(DATA_CHANGED);
         }
 
         void MapChanged(IInspectable const& sender, ::winrt::Windows::Foundation::Collections::IMapChangedEventArgs<::winrt::hstring> const& e) override
         {
+            CompleteUpdate(DATA_CHANGED);
         }
 
         void DependencyPropertyChanged(DependencyObject const& sender, DependencyProperty const& prop) override
@@ -364,6 +720,14 @@ namespace winrt::BindTestbed::implementation
                     if (obj)
                     {
                         Update_Foreground(obj.Foreground(), DATA_CHANGED);
+                    }
+                }
+                if (sender == cacheDPC_IsEnabled.get() && ::winrt::Microsoft::UI::Xaml::Controls::Control::IsEnabledProperty() == prop)
+                {
+                    auto obj = sender.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
+                    if (obj)
+                    {
+                        Update_IsEnabled(obj.IsEnabled(), DATA_CHANGED);
                     }
                 }
                 if (sender == cacheDPC_namedTextBlock_Text && ::winrt::Microsoft::UI::Xaml::Controls::TextBlock::TextProperty() == prop)
@@ -408,17 +772,17 @@ namespace winrt::BindTestbed::implementation
     }; 
 
     template <typename D, typename ... I>
-    struct TemplatesT<D, I...>::Templates_obj8_Bindings
+    struct TemplatesT<D, I...>::Templates_obj12_Bindings
         : public ::winrt::BindTestbed::implementation::ReferenceTypeXamlBindings<::winrt::BindTestbedModel::IEmployee, ::winrt::BindTestbed::implementation::XamlBindingTrackingBase>
-        , public std::enable_shared_from_this<TemplatesT<D, I...>::Templates_obj8_Bindings>
+        , public std::enable_shared_from_this<TemplatesT<D, I...>::Templates_obj12_Bindings>
         , public ::winrt::BindTestbed::implementation::IXamlBindingTracking
 {
-        Templates_obj8_Bindings()
+        Templates_obj12_Bindings()
         {
             InitializeTracking(this);
         }
 
-        ~Templates_obj8_Bindings()
+        ~Templates_obj12_Bindings()
         {
             ReleaseAllListeners();
         }
@@ -427,28 +791,28 @@ namespace winrt::BindTestbed::implementation
         {
             switch(connectionId)
             {
-            case 8: // Templates.xaml line 26
+            case 12: // Templates.xaml line 26
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Grid>();
-                    obj8 = targetElement;
+                    obj12 = targetElement;
                 }
                 break;
-            case 9: // Templates.xaml line 28
+            case 13: // Templates.xaml line 28
                 {
                     auto targetElement = target.as<::winrt::BindTestbed::MyUserControl1>();
-                    obj9 = targetElement;
+                    obj13 = targetElement;
                 }
                 break;
-            case 10: // Templates.xaml line 29
+            case 14: // Templates.xaml line 29
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
-                    obj10 = targetElement;
+                    obj14 = targetElement;
                 }
                 break;
-            case 11: // Templates.xaml line 30
+            case 15: // Templates.xaml line 30
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
-                    obj11 = targetElement;
+                    obj15 = targetElement;
                 }
                 break;
             }
@@ -475,7 +839,7 @@ namespace winrt::BindTestbed::implementation
                     SetDataRoot(item);
                     if (_dataContextChangedToken.value != 0)
                     {
-                        auto rootElement = this->obj8.get();
+                        auto rootElement = this->obj12.get();
                         if (rootElement != nullptr)
                         {
                             rootElement.DataContextChanged(_dataContextChangedToken);
@@ -503,10 +867,10 @@ namespace winrt::BindTestbed::implementation
 
     private:
         // Fields for each control that has bindings.
-        ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Controls::Grid> obj8;
-        ::winrt::BindTestbed::MyUserControl1 obj9 { nullptr };
-        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj11 { nullptr };
-        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj10 { nullptr };
+        ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Controls::Grid> obj12;
+        ::winrt::BindTestbed::MyUserControl1 obj13 { nullptr };
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj15 { nullptr };
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj14 { nullptr };
 
         // Fields for binding tracking.
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged> cachePC_;
@@ -530,7 +894,7 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // Templates.xaml line 28
-                Set_Microsoft_UI_Xaml_FrameworkElement_Tag(obj9, obj, std::nullopt);
+                Set_Microsoft_UI_Xaml_FrameworkElement_Tag(obj13, obj, std::nullopt);
             }
         }
 
@@ -539,7 +903,7 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
                 // Templates.xaml line 28
-                Set_Microsoft_UI_Xaml_UIElement_Visibility(obj9, ::winrt::unbox_value<::winrt::Microsoft::UI::Xaml::Visibility>(LookupConverter(L"BoolToVisibility").Convert(::winrt::box_value(obj), ::winrt::xaml_typename<::winrt::Microsoft::UI::Xaml::Visibility>(), nullptr, ::winrt::hstring{})));
+                Set_Microsoft_UI_Xaml_UIElement_Visibility(obj13, ::winrt::unbox_value<::winrt::Microsoft::UI::Xaml::Visibility>(LookupConverter(L"BoolToVisibility").Convert(::winrt::box_value(obj), ::winrt::xaml_typename<::winrt::Microsoft::UI::Xaml::Visibility>(), nullptr, ::winrt::hstring{})));
             }
         }
 
@@ -560,7 +924,7 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // Templates.xaml line 30
-                Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj11, obj);
+                Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj15, obj);
             }
         }
 
@@ -631,17 +995,17 @@ namespace winrt::BindTestbed::implementation
     }; 
 
     template <typename D, typename ... I>
-    struct TemplatesT<D, I...>::Templates_obj13_Bindings
+    struct TemplatesT<D, I...>::Templates_obj17_Bindings
         : public ::winrt::BindTestbed::implementation::ReferenceTypeXamlBindings<::winrt::BindTestbedModel::DataModel, ::winrt::BindTestbed::implementation::XamlBindingTrackingBase>
-        , public std::enable_shared_from_this<TemplatesT<D, I...>::Templates_obj13_Bindings>
+        , public std::enable_shared_from_this<TemplatesT<D, I...>::Templates_obj17_Bindings>
         , public ::winrt::BindTestbed::implementation::IXamlBindingTracking
 {
-        Templates_obj13_Bindings()
+        Templates_obj17_Bindings()
         {
             InitializeTracking(this);
         }
 
-        ~Templates_obj13_Bindings()
+        ~Templates_obj17_Bindings()
         {
             ReleaseAllListeners();
         }
@@ -650,16 +1014,16 @@ namespace winrt::BindTestbed::implementation
         {
             switch(connectionId)
             {
-            case 13: // Templates.xaml line 20
+            case 17: // Templates.xaml line 20
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Grid>();
-                    obj13 = targetElement;
+                    obj17 = targetElement;
                 }
                 break;
-            case 14: // Templates.xaml line 21
+            case 18: // Templates.xaml line 21
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
-                    obj14 = targetElement;
+                    obj18 = targetElement;
                 }
                 break;
             }
@@ -686,7 +1050,7 @@ namespace winrt::BindTestbed::implementation
                     SetDataRoot(item);
                     if (_dataContextChangedToken.value != 0)
                     {
-                        auto rootElement = this->obj13.get();
+                        auto rootElement = this->obj17.get();
                         if (rootElement != nullptr)
                         {
                             rootElement.DataContextChanged(_dataContextChangedToken);
@@ -703,8 +1067,8 @@ namespace winrt::BindTestbed::implementation
 
     private:
         // Fields for each control that has bindings.
-        ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Controls::Grid> obj13;
-        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj14 { nullptr };
+        ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Controls::Grid> obj17;
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj18 { nullptr };
 
         // Fields for binding tracking.
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged> cachePC_;
@@ -757,7 +1121,7 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // Templates.xaml line 21
-                Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj14, obj);
+                Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(obj18, obj);
             }
         }
 
@@ -845,17 +1209,17 @@ namespace winrt::BindTestbed::implementation
     }; 
 
     template <typename D, typename ... I>
-    struct TemplatesT<D, I...>::Templates_obj18_Bindings
+    struct TemplatesT<D, I...>::Templates_obj22_Bindings
         : public ::winrt::BindTestbed::implementation::ReferenceTypeXamlBindings<::winrt::BindTestbedModel::IEmployee, ::winrt::BindTestbed::implementation::XamlBindingTrackingBase>
-        , public std::enable_shared_from_this<TemplatesT<D, I...>::Templates_obj18_Bindings>
+        , public std::enable_shared_from_this<TemplatesT<D, I...>::Templates_obj22_Bindings>
         , public ::winrt::BindTestbed::implementation::IXamlBindingTracking
 {
-        Templates_obj18_Bindings()
+        Templates_obj22_Bindings()
         {
             InitializeTracking(this);
         }
 
-        ~Templates_obj18_Bindings()
+        ~Templates_obj22_Bindings()
         {
             ReleaseAllListeners();
         }
@@ -864,11 +1228,11 @@ namespace winrt::BindTestbed::implementation
         {
             switch(connectionId)
             {
-            case 18: // Templates.xaml line 12
+            case 22: // Templates.xaml line 12
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
-                    obj18 = targetElement;
-                    this->obj18.get().RegisterPropertyChangedCallback(::winrt::Microsoft::UI::Xaml::Controls::TextBlock::TextProperty(),
+                    obj22 = targetElement;
+                    this->obj22.get().RegisterPropertyChangedCallback(::winrt::Microsoft::UI::Xaml::Controls::TextBlock::TextProperty(),
                         [weakThis{ this->weak_from_this() }, this] (DependencyObject const& sender, DependencyProperty const& prop)
                         {
                             if (auto strongThis{ weakThis.lock() })
@@ -878,7 +1242,7 @@ namespace winrt::BindTestbed::implementation
                                     // Update Two Way binding
                                     if (GetDataRoot() != nullptr)
                                     {
-                                        GetDataRoot().LastName(this->obj18.get().Text());
+                                        GetDataRoot().LastName(this->obj22.get().Text());
                                     }
                                 }
                             }
@@ -896,7 +1260,7 @@ namespace winrt::BindTestbed::implementation
         void Recycle() override
         {
             ReleaseAllListeners();
-            ::winrt::Microsoft::UI::Xaml::Markup::XamlBindingHelper::SuspendRendering(this->obj18.get());
+            ::winrt::Microsoft::UI::Xaml::Markup::XamlBindingHelper::SuspendRendering(this->obj22.get());
         }
 
         void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
@@ -910,7 +1274,7 @@ namespace winrt::BindTestbed::implementation
                     SetDataRoot(item);
                     if (_dataContextChangedToken.value != 0)
                     {
-                        auto rootElement = this->obj18.get();
+                        auto rootElement = this->obj22.get();
                         if (rootElement != nullptr)
                         {
                             rootElement.DataContextChanged(_dataContextChangedToken);
@@ -922,7 +1286,7 @@ namespace winrt::BindTestbed::implementation
                  break;
             case 1:
                 {
-                    ::winrt::Microsoft::UI::Xaml::Markup::XamlBindingHelper::ResumeRendering(this->obj18.get());
+                    ::winrt::Microsoft::UI::Xaml::Markup::XamlBindingHelper::ResumeRendering(this->obj22.get());
                     nextPhase = -1;
                 }
                 break;
@@ -933,7 +1297,7 @@ namespace winrt::BindTestbed::implementation
 
     private:
         // Fields for each control that has bindings.
-        ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Controls::TextBlock> obj18;
+        ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Controls::TextBlock> obj22;
 
         // Fields for binding tracking.
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged> cachePC_;
@@ -958,9 +1322,9 @@ namespace winrt::BindTestbed::implementation
             if((phase & ((1 << 1) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
                 // Templates.xaml line 12
-                if (obj18)
+                if (obj22)
                 {
-                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this->obj18.get(), obj);
+                    Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this->obj22.get(), obj);
                 }
             }
         }

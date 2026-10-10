@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -20,6 +21,100 @@ namespace UnitTests
         public void SchemaInit()
         {
             _testHelper = new TestHelper();
+        }
+
+        [TestMethod]
+        public void CodeGenerator_ControlTemplateBoundLoad_CSharp()
+        {
+            AssertControlTemplateBoundLoad(CodeGenLanguage.CSharp, false /* rootHasBindings */, false /* namedTemplate */);
+        }
+
+        [TestMethod]
+        public void CodeGenerator_ControlTemplateBoundLoad_CppWinRT()
+        {
+            AssertControlTemplateBoundLoad(CodeGenLanguage.CppWinRT, false /* rootHasBindings */, false /* namedTemplate */);
+        }
+
+        [TestMethod]
+        public void CodeGenerator_ControlTemplateBoundLoad_CSharp_BoundRoot()
+        {
+            AssertControlTemplateBoundLoad(CodeGenLanguage.CSharp, true /* rootHasBindings */, false /* namedTemplate */);
+        }
+
+        [TestMethod]
+        public void CodeGenerator_ControlTemplateBoundLoad_CppWinRT_BoundRoot()
+        {
+            AssertControlTemplateBoundLoad(CodeGenLanguage.CppWinRT, true /* rootHasBindings */, false /* namedTemplate */);
+        }
+
+        [TestMethod]
+        public void CodeGenerator_ControlTemplateBoundLoad_CSharp_NamedTemplate()
+        {
+            AssertControlTemplateBoundLoad(CodeGenLanguage.CSharp, true /* rootHasBindings */, true /* namedTemplate */);
+        }
+
+        private void AssertControlTemplateBoundLoad(CodeGenLanguage language, bool rootHasBindings, bool namedTemplate)
+        {
+            string rootBinding = rootHasBindings ? "Opacity='{x:Bind Opacity, Mode=OneWay}'" : "";
+            string templateName = namedTemplate ? "x:Name='template'" : "x:Key='template'";
+
+            string xaml = $@"
+<ResourceDictionary
+    x:Class='LibManagedDll.TemplateDictionary'
+    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    xmlns:dll='using:LibManagedDll'>
+    <ControlTemplate {templateName} TargetType='dll:LoadableTemplateControl'>
+        <Grid {rootBinding}>
+            <TextBlock x:Name='deferred' Text='{{x:Bind Greeting, Mode=OneWay}}'
+                       x:Load='{{x:Bind IsVisible, Mode=OneWay}}'/>
+        </Grid>
+    </ControlTemplate>
+</ResourceDictionary>";
+
+            var context = new CodeGeneratorProjectContext(
+                new Version(KnownVersions.Latest), "ControlTemplateBoundLoad");
+            DirectUISchemaContext schema = _testHelper.LoadSchema(
+                SchemaMode.ManagedRuntime | SchemaMode.LoadUserDll);
+
+            var rewrittenXaml = new List<string>();
+            List<FileNameAndContentPair> pairs = _testHelper.GenerateCodeBehind(
+                context, new List<string> { xaml }, schema, language, rewrittenXaml);
+
+            // Verify rewriting produced the single document used by the connection checks.
+            Assert.AreEqual(1, rewrittenXaml.Count);
+
+            string code = string.Join(Environment.NewLine, pairs.Select(pair => pair.Contents));
+
+            // Find each obj<N> field used as a FindName receiver.
+            Match[] lookups = Regex.Matches(code,
+                @"(?<field>obj\d+)\.FindName")
+                .Cast<Match>().ToArray();
+
+            // Verify both immediate updates and deferred replay include a load lookup.
+            Assert.AreEqual(2, lookups.Length, code);
+
+            foreach (Match lookup in lookups)
+            {
+                string field = lookup.Groups["field"].Value;
+
+                // Verify the receiver is declared as a Grid field in the requested language.
+                string declaration = language == CodeGenLanguage.CSharp
+                    ? $@"global::Microsoft\.UI\.Xaml\.Controls\.Grid\s+{field}"
+                    : $@"::winrt::Microsoft::UI::Xaml::Controls::Grid\s+{field}";
+                Assert.IsTrue(Regex.IsMatch(code, declaration),
+                    $"Load lookup must use the declared {language} template visual root: {code}");
+
+                // Verify the generated code assigns the field a reference.
+                string assignment = $"{field} = ";
+                Assert.IsTrue(Regex.IsMatch(code, assignment),
+                    $"Template visual root must be connected: {code}");
+
+                // Verify the Grid's rewritten connection ID matches the obj<N> field suffix.
+                Assert.IsTrue(Regex.IsMatch(rewrittenXaml[0],
+                    $@"<Grid\b[^>]*\bx:ConnectionId\s*=\s*['""]{field.Substring(3)}['""]"),
+                    $"Rewritten XAML must connect the same visual root used for load lookups: {rewrittenXaml[0]}");
+            }
         }
 
         [TestMethod]

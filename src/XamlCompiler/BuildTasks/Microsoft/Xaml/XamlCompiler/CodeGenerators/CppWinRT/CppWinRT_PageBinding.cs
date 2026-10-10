@@ -1126,7 +1126,7 @@ this.Write("\");\r\n");
          } else { 
 this.Write("                ");
 
-this.Write(this.ToStringHelper.ToStringWithCulture(ba.BindUniverse.RootElement.ReferenceExpression));
+this.Write(this.ToStringHelper.ToStringWithCulture(ba.BindUniverse.LoadRootElement.ReferenceExpression));
 
 this.Write(".FindName(L\"");
 
