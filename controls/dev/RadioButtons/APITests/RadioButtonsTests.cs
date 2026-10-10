@@ -320,5 +320,156 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             VerifyNoNullItemsAndClear();
         }
+
+        private RadioButtons CreateLoadedRadioButtons(int itemCount, int maxColumns, double width = 1000)
+        {
+            RadioButtons radioButtons = null;
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons();
+                radioButtons.MaxColumns = maxColumns;
+                radioButtons.Width = width;
+                for (int i = 0; i < itemCount; i++)
+                {
+                    radioButtons.Items.Add("Option " + i);
+                }
+
+                Content = radioButtons;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            return radioButtons;
+        }
+
+        [TestMethod]
+        public void VerifyMultiColumnLayoutTestHooks()
+        {
+            var radioButtons = CreateLoadedRadioButtons(itemCount: 7, maxColumns: 1);
+
+            int layoutChangedCount = 0;
+            global::Windows.Foundation.TypedEventHandler<RadioButtons, object> handler = (s, a) => layoutChangedCount++;
+
+            RunOnUIThread.Execute(() =>
+            {
+                Microsoft.UI.Private.Controls.RadioButtonsTestHooks.SetTestHooksEnabled(radioButtons, true);
+                Microsoft.UI.Private.Controls.RadioButtonsTestHooks.LayoutChanged += handler;
+                radioButtons.MaxColumns = 3;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    // 7 items in 3 columns: column sizes 3, 2, 2 -> one "larger" column, 2 minimum rows.
+                    Verify.AreEqual(3, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetColumns(radioButtons));
+                    Verify.AreEqual(2, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetRows(radioButtons));
+                    Verify.AreEqual(1, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetLargerColumns(radioButtons));
+                    Verify.IsGreaterThan(layoutChangedCount, 0, "LayoutChanged should have been raised.");
+
+                    radioButtons.MaxColumns = 2;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    // 7 items in 2 columns: sizes 4, 3 -> one larger column, 3 minimum rows.
+                    Verify.AreEqual(2, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetColumns(radioButtons));
+                    Verify.AreEqual(3, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetRows(radioButtons));
+                    Verify.AreEqual(1, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetLargerColumns(radioButtons));
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Microsoft.UI.Private.Controls.RadioButtonsTestHooks.LayoutChanged -= handler;
+                    Microsoft.UI.Private.Controls.RadioButtonsTestHooks.SetTestHooksEnabled(radioButtons, false);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyMaxColumnsIsClampedByAvailableWidth()
+        {
+            // Wide enough for all requested columns first, then narrow to force a single column.
+            var radioButtons = CreateLoadedRadioButtons(itemCount: 4, maxColumns: 4, width: 2000);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Microsoft.UI.Private.Controls.RadioButtonsTestHooks.SetTestHooksEnabled(radioButtons, true);
+                radioButtons.Width = 30; // Narrower than a single item: layout must still report one column.
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetColumns(radioButtons));
+                Verify.AreEqual(4, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetRows(radioButtons));
+                Verify.AreEqual(0, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetLargerColumns(radioButtons));
+                Microsoft.UI.Private.Controls.RadioButtonsTestHooks.SetTestHooksEnabled(radioButtons, false);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyItemsSourceChangesRecycleAndClearElements()
+        {
+            RadioButtons radioButtons = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<string>() { "A", "B", "C", "D" };
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons();
+                radioButtons.ItemsSource = items;
+                radioButtons.SelectedIndex = 1;
+                Content = radioButtons;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Removing items clears/recycles their wrapping RadioButtons.
+                items.RemoveAt(3);
+                items.RemoveAt(0);
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("B", radioButtons.SelectedItem);
+                Verify.AreEqual(0, radioButtons.SelectedIndex, "Selection index should track the removal before it.");
+
+                // Re-adding items should reuse recycled radio buttons and show the right content.
+                items.Add("E");
+                items.Insert(0, "F");
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("B", radioButtons.SelectedItem);
+                Verify.AreEqual(1, radioButtons.SelectedIndex);
+                var first = radioButtons.ContainerFromIndex(0) as RadioButton;
+                Verify.IsNotNull(first);
+                Verify.AreEqual("F", first.Content);
+
+                // Replace the entire source: previously realized elements are all cleared.
+                radioButtons.ItemsSource = new List<string>() { "X", "Y" };
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(-1, radioButtons.SelectedIndex);
+                Verify.IsNull(radioButtons.SelectedItem);
+            });
+        }
     }
 }

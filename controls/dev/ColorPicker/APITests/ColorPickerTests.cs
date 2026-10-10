@@ -325,6 +325,183 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VisualTreeTestHelper.VerifyVisualTree(root: colorPicker, verificationFileNamePrefix: "ColorPicker");
         }
 
+        [TestMethod]
+        public void VerifyRingSpectrumFillsForAllComponents()
+        {
+            foreach (var components in new[]
+            {
+                ColorSpectrumComponents.HueSaturation,
+                ColorSpectrumComponents.SaturationHue,
+                ColorSpectrumComponents.HueValue,
+                ColorSpectrumComponents.ValueHue,
+                ColorSpectrumComponents.SaturationValue,
+                ColorSpectrumComponents.ValueSaturation,
+            })
+            {
+                ColorSpectrum colorSpectrum = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    colorSpectrum = new ColorSpectrum
+                    {
+                        Width = 200,
+                        Height = 200,
+                        Shape = ColorSpectrumShape.Ring,
+                        Components = components,
+                        Color = Microsoft.UI.Colors.Red
+                    };
+                });
+
+                // Exercises the ring pixel-fill path for each component ordering.
+                SetAsRootAndWaitForColorSpectrumFill(colorSpectrum);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(ColorSpectrumShape.Ring, colorSpectrum.Shape);
+                    Verify.AreEqual(components, colorSpectrum.Components);
+                    Verify.AreEqual(Microsoft.UI.Colors.Red, colorSpectrum.Color);
+                    Verify.IsNotNull(VisualTreeUtils.FindVisualChildByName(colorSpectrum, "SpectrumEllipse"));
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyBoxSpectrumFillsForAllComponents()
+        {
+            foreach (var components in new[]
+            {
+                ColorSpectrumComponents.HueSaturation,
+                ColorSpectrumComponents.SaturationHue,
+                ColorSpectrumComponents.HueValue,
+                ColorSpectrumComponents.ValueHue,
+                ColorSpectrumComponents.SaturationValue,
+                ColorSpectrumComponents.ValueSaturation,
+            })
+            {
+                ColorSpectrum colorSpectrum = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    colorSpectrum = new ColorSpectrum
+                    {
+                        Width = 200,
+                        Height = 200,
+                        Shape = ColorSpectrumShape.Box,
+                        Components = components,
+                        Color = Microsoft.UI.Colors.Blue
+                    };
+                });
+
+                SetAsRootAndWaitForColorSpectrumFill(colorSpectrum);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(components, colorSpectrum.Components);
+                    Verify.AreEqual(Microsoft.UI.Colors.Blue, colorSpectrum.Color);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyRingSpectrumColorRoundTripsThroughHsvColor()
+        {
+            ColorSpectrum colorSpectrum = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                colorSpectrum = new ColorSpectrum
+                {
+                    Width = 200,
+                    Height = 200,
+                    Shape = ColorSpectrumShape.Ring,
+                    Components = ColorSpectrumComponents.HueSaturation
+                };
+            });
+
+            SetAsRootAndWaitForColorSpectrumFill(colorSpectrum);
+
+            RunOnUIThread.Execute(() =>
+            {
+                colorSpectrum.HsvColor = new Vector4() { X = 240.0f, Y = 1.0f, Z = 1.0f, W = 1.0f };
+                Verify.AreEqual(Microsoft.UI.ColorHelper.FromArgb(255, 0, 0, 255), colorSpectrum.Color);
+
+                colorSpectrum.Shape = ColorSpectrumShape.Box;
+                Verify.AreEqual(Microsoft.UI.ColorHelper.FromArgb(255, 0, 0, 255), colorSpectrum.Color);
+                Verify.IsLessThan(Math.Abs(colorSpectrum.HsvColor.X - 240.0), 0.5);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyColorPickerSliderValuePattern()
+        {
+            ColorPicker colorPicker = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                colorPicker = new ColorPicker { IsAlphaEnabled = true, Color = Microsoft.UI.Colors.Red };
+                Content = colorPicker;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var thirdDimensionSlider = VisualTreeUtils.FindVisualChildByName(colorPicker, "ThirdDimensionSlider") as ColorPickerSlider;
+                var alphaSlider = VisualTreeUtils.FindVisualChildByName(colorPicker, "AlphaSlider") as ColorPickerSlider;
+                Verify.IsNotNull(thirdDimensionSlider);
+                Verify.IsNotNull(alphaSlider);
+
+                var peer = Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.FromElement(thirdDimensionSlider);
+                Verify.IsNotNull(peer);
+
+                var valueProvider = peer.GetPattern(Microsoft.UI.Xaml.Automation.Peers.PatternInterface.Value)
+                    as Microsoft.UI.Xaml.Automation.Provider.IValueProvider;
+                Verify.IsNotNull(valueProvider, "Non-alpha sliders expose the Value pattern.");
+                Verify.IsFalse(valueProvider.IsReadOnly);
+                Verify.IsFalse(string.IsNullOrEmpty(valueProvider.Value));
+                Verify.IsTrue(valueProvider.Value.Contains("100"), "Red has value 100%.");
+
+                // Changing the slider updates the automation value string.
+                thirdDimensionSlider.Value = 50;
+                Verify.IsTrue(valueProvider.Value.Contains("50"));
+
+                // The alpha slider falls back to the base slider peer, which has no Value pattern.
+                var alphaPeer = Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.FromElement(alphaSlider);
+                Verify.IsNotNull(alphaPeer);
+                Verify.IsNull(alphaPeer.GetPattern(Microsoft.UI.Xaml.Automation.Peers.PatternInterface.Value));
+            });
+        }
+
+        [TestMethod]
+        public void VerifyColorPickerSliderToolTipUpdatesWithValue()
+        {
+            ColorPicker colorPicker = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                colorPicker = new ColorPicker { IsAlphaEnabled = true };
+                Content = colorPicker;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var name in new[] { "ThirdDimensionSlider", "AlphaSlider" })
+                {
+                    var slider = VisualTreeUtils.FindVisualChildByName(colorPicker, name) as ColorPickerSlider;
+                    Verify.IsNotNull(slider);
+                    Verify.IsTrue(slider.Focus(FocusState.Programmatic));
+                    slider.Value = 40;
+                    var toolTip = VisualTreeUtils.FindVisualChildByName(slider, "ToolTip") as ToolTip;
+                    if (toolTip != null)
+                    {
+                        Verify.IsTrue(toolTip.Content.ToString().Contains("40"), name + " tooltip should reflect value.");
+                    }
+                }
+            });
+        }
+
         // This takes a FrameworkElement parameter so you can pass in either a ColorPicker or a ColorSpectrum.
         private void SetAsRootAndWaitForColorSpectrumFill(FrameworkElement element)
         {
