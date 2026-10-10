@@ -376,7 +376,7 @@ unsealed runtimeclass LinedFlowLayoutItemCollectionTransitionProvider : Microsof
 [MUX_PUBLIC]
 [webhosthidden]
 [contentproperty("ScrollViewer")]
-runtimeclass ItemsRepeaterScrollHost : Microsoft.UI.Xaml.FrameworkElement
+unsealed runtimeclass ItemsRepeaterScrollHost : Microsoft.UI.Xaml.FrameworkElement
 {
     ItemsRepeaterScrollHost();
 

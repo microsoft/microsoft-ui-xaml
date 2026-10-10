@@ -40,6 +40,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)FlowLayoutTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IndexPathTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InspectingDataSourceTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ItemsRepeaterScrollHostDerivationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LayoutTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PhasingTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RecyclePoolTests.cs" />
