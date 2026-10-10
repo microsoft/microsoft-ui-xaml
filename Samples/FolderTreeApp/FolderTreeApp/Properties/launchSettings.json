@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "FolderTreeApp (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "FolderTreeApp (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
