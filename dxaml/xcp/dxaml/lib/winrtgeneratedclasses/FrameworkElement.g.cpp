@@ -37,10 +37,6 @@ HRESULT DirectUI::FrameworkElementGenerated::QueryInterfaceImpl(_In_ REFIID iid,
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IFrameworkElement*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IFrameworkElementProtected)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IFrameworkElementProtected*>(this);
-    }
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides*>(this);
