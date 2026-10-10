@@ -628,16 +628,14 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
         {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
-        else if (auto const nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
+
+        // Walk through all the elements and make sure they are cleared into the old
+        // template's pool before m_itemTemplateWrapper is replaced with the new template.
+        for (auto const& child : Children())
         {
-            // Walk through all the elements and make sure they are cleared for
-            // non-virtualizing layouts.
-            for (auto const& child : Children())
+            if (GetVirtualizationInfo(child)->IsRealized())
             {
-                if (GetVirtualizationInfo(child)->IsRealized())
-                {
-                    ClearElementImpl(child);
-                }
+                ClearElementImpl(child);
             }
         }
     }
