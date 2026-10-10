@@ -31,7 +31,7 @@ namespace Microsoft.UI.Xaml.Controls
     [Implements(typeof(Microsoft.UI.Xaml.Controls.IInputValidationControl), Velocity = "Feature_InputValidation")]
     [Implements(typeof(Microsoft.UI.Xaml.Controls.IInputValidationControl2), Velocity = "Feature_InputValidation")]
     [InputProperty("Password")]
-    public sealed class PasswordBox
+    public class PasswordBox
         : Microsoft.UI.Xaml.Controls.Control
     {
         #region Properties
