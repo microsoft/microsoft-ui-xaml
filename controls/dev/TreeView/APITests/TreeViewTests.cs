@@ -1617,6 +1617,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(listControl.CanDragItems);
                 Verify.IsTrue(listControl.CanReorderItems);
 
+                // The two flags are independent: each getter must read its own property.
+                treeView.CanDragItems = false;
+                treeView.CanReorderItems = true;
+                Verify.IsFalse(treeView.CanDragItems);
+                Verify.IsFalse((bool)treeView.GetValue(TreeView.CanDragItemsProperty));
+                Verify.IsTrue(treeView.CanReorderItems);
+                Verify.IsTrue((bool)treeView.GetValue(TreeView.CanReorderItemsProperty));
+                Verify.IsFalse(listControl.CanDragItems);
+                Verify.IsTrue(listControl.CanReorderItems);
+
+                treeView.CanDragItems = true;
+                treeView.CanReorderItems = false;
+                Verify.IsTrue(treeView.CanDragItems);
+                Verify.IsTrue((bool)treeView.GetValue(TreeView.CanDragItemsProperty));
+                Verify.IsFalse(treeView.CanReorderItems);
+                Verify.IsFalse((bool)treeView.GetValue(TreeView.CanReorderItemsProperty));
+                Verify.IsTrue(listControl.CanDragItems);
+                Verify.IsFalse(listControl.CanReorderItems);
+
                 // Explicit ItemTemplate / ItemContainerStyle getters and their DP values agree.
                 treeView.ItemTemplate = template2;
                 treeView.ItemContainerStyle = style2;
@@ -1928,6 +1947,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // The initial view includes every pre-expanded descendant.
                 Verify.AreEqual("R0,C0,G0,G1,C1,G2,C2,G3,R1", GetFlattenedContent(listControl));
 
+                // Remove a root whose preceding sibling has expanded nested descendants: the removed node's flat index
+                // must account for every visible descendant of R0 (7), not only R0's direct children.
+                treeView.RootNodes.Remove(r1);
+                Verify.AreEqual("R0,C0,G0,G1,C1,G2,C2,G3", GetFlattenedContent(listControl));
+                treeView.RootNodes.Add(r1);
+                Verify.AreEqual("R0,C0,G0,G1,C1,G2,C2,G3,R1", GetFlattenedContent(listControl));
+
                 // Insert a pre-expanded subtree after an expanded sibling.
                 var n = new TreeViewNode() { Content = "N", IsExpanded = true };
                 var n0 = new TreeViewNode() { Content = "N0" };
@@ -1973,6 +1999,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("R0,R1", GetFlattenedContent(listControl));
                 treeView.Expand(r0);
                 Verify.AreEqual("R0,X,N,C2,R1", GetFlattenedContent(listControl));
+
+                // Clearing the children of the expanded LAST root removes everything up to the end of the view.
+                r1.Children.Add(new TreeViewNode() { Content = "Z0" });
+                r1.Children.Add(new TreeViewNode() { Content = "Z1" });
+                treeView.Expand(r1);
+                Verify.AreEqual("R0,X,N,C2,R1,Z0,Z1", GetFlattenedContent(listControl));
+                r1.Children.Clear();
+                Verify.AreEqual("R0,X,N,C2,R1", GetFlattenedContent(listControl));
+                Verify.IsFalse(r1.IsExpanded);
 
                 // Re-templating rebuilds the view from the existing root nodes and their expansion state.
                 var newTemplate = (ControlTemplate)XamlReader.Load(
