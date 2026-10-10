@@ -6788,6 +6788,14 @@ namespace Parser
         KnownEventIndex::UnknownType_UnknownEvent,
         KnownEventIndex::FrameworkApplication_ResourceManagerRequested,
         KnownEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread,
+        KnownEventIndex::UnknownType_UnknownEvent,
+        KnownEventIndex::UnknownType_UnknownEvent,
+        KnownEventIndex::UnknownType_UnknownEvent,
+        KnownEventIndex::UnknownType_UnknownEvent,
+        KnownEventIndex::WindowsXamlManager_WinUIProcessShutdownStarting,
+        KnownEventIndex::WindowsXamlManager_WinUIProcessShutdownCompleted,
+        KnownEventIndex::WindowsXamlManager_DllUnloadPreparing,
+        KnownEventIndex::WindowsXamlManager_DllUnloadPreparationComplete,
     };
 
     // Map known event indexes to stable event indexes
@@ -7078,5 +7086,9 @@ namespace Parser
         StableEventIndex::DesktopWindowXamlSource_TakeFocusRequested,
         StableEventIndex::DesktopWindowXamlSource_GotFocus,
         StableEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread,
+        StableEventIndex::WindowsXamlManager_WinUIProcessShutdownStarting,
+        StableEventIndex::WindowsXamlManager_WinUIProcessShutdownCompleted,
+        StableEventIndex::WindowsXamlManager_DllUnloadPreparing,
+        StableEventIndex::WindowsXamlManager_DllUnloadPreparationComplete,
     };
 }

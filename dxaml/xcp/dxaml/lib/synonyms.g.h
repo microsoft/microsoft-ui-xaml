@@ -574,6 +574,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Hosting::IElementCompositionPreview IElementCompositionPreview;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager IWindowsXamlManager;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager2 IWindowsXamlManager2;
+    typedef ABI::Microsoft::UI::Xaml::Hosting::IWinUIProcessShutdownCompletedEventArgs IWinUIProcessShutdownCompletedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IXamlIslandRoot IXamlIslandRoot;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs IXamlShutdownCompletedOnThreadEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest IXamlSourceFocusNavigationRequest;
