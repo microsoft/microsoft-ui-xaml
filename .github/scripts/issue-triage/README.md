@@ -5,6 +5,36 @@ Copilot to analyze it, and independently verifies the result before making any
 issue changes. The Markdown workflow is the source of truth; its compiled
 `issue-triage.lock.yml` is the workflow GitHub Actions executes.
 
+## Deterministic evidence handoff
+
+The trusted `prepare` step fetches and bounds the issue evidence. A
+`pre-agent-steps` hook then inserts that public JSON into the already-rendered
+prompt, before the model starts. The model receives the complete evidence in its
+initial input: it does not need to discover a filename, paginate a native file
+reader, search JSON, or build a temporary result file.
+
+The hook runs after gh-aw has rendered and downloaded the activation prompt.
+This is deliberately not `${{ steps.prepare.outputs.context }}` interpolation:
+agent-job step outputs do not exist when activation renders that prompt.
+Late insertion also leaves issue text that resembles Actions expressions or
+template directives as literal data; it is never reprocessed by the renderer.
+The hook requires exactly one trusted placeholder and rejects repeated
+attachment instead of silently omitting or duplicating context.
+
+Public JSON uses UTF-8 rather than escaping every non-ASCII character. It is
+enclosed in an untrusted-data block, with angle brackets in JSON values escaped
+so issue text cannot close that boundary. Escaping does not change parsed values
+or the input fingerprint. Maximum-length supplementary-Unicode bodies,
+follow-ups, and candidate records are passed directly, including their suffixes;
+they no longer depend on a tool's per-line output limit. A one-MiB evidence limit
+and two-MiB final-prompt limit fail visibly before inference rather than truncate
+input silently. These byte limits are separate from model credit/context limits.
+
+The model returns structured arguments through the native safe-output MCP tool,
+not a shell-mounted CLI. All agent shell execution and file writes are denied;
+trusted preprocessing steps still run outside the agent sandbox. The publisher
+still rebuilds live evidence independently.
+
 ## Behavior
 
 | Situation | Behavior |
@@ -158,12 +188,34 @@ runs. Re-enable that workflow in Actions to resume intake.
 The initial rollout does not modify project boards, internal mirroring, existing
 stale handling, or the maintainer's acceptance/closure process.
 
+## Detection reports
+
+An `agent_failure` warning in the generated Detection Runs issue does not by
+itself establish prompt injection or another detected threat. The earlier runs
+linked from [#12206](https://github.com/microsoft/microsoft-ui-xaml/issues/12206)
+either exhausted the old five-invocation budget while reading evidence or were
+superseded before activation/agent artifacts were available.
+
+Threat detection now starts only after successful activation and agent analysis,
+and not after workflow cancellation. Cancelled/superseded runs no longer launch
+a detector with missing artifacts and produce a misleading detector-failure
+warning. A failed analysis remains a failed workflow with its original job logs
+and failure handling; it is not converted to success.
+
+This does not relax publication safety. Successful analysis still requires a
+successful detection job **and** `detection_success == true` before the
+independent publisher can run. Detection has `continue-on-error: false`: an
+incomplete/failed safety analysis fails the job visibly rather than producing an
+overall green run with a skipped publisher. Real detection failures are still
+reported and block publication. Historical comments in the framework-managed
+Detection Runs issue are not edited or removed.
+
 ## Trust boundaries and limits
 
-- The prepared JSON keeps each area, follow-up, and candidate on one line, while
-  preserving the complete bounded evidence and fingerprint. The agent reads it
-  with the native `view` tool in explicit line ranges. Shell readers/searches
-  (`cat`, `grep`, `head`, etc.) remain denied; only the safe-output CLI is allowed.
+- Prepared JSON is attached directly to the rendered prompt by trusted code,
+  preserving the complete bounded evidence and fingerprint without agent file
+  reads. Agent shell execution is disabled, and safe outputs use the native MCP
+  interface rather than CLI wrappers.
 - Issue content, comments, code samples, links, and candidate text are untrusted.
   The model cannot search GitHub, download attachments, run sample code, or write
   directly to issues. It can only return a structured triage result.
@@ -198,10 +250,11 @@ stale handling, or the maintainer's acceptance/closure process.
   Ignored label events and other people's comments use separate
   concurrency groups so they cannot cancel an active intake. The triage agent
   is bounded to twelve model invocations (including evidence/tool iterations)
-  and ten AI credits, leaving room to read the evidence and submit its result;
+  and ten AI credits, leaving room to assess the supplied evidence and submit its result;
   the separate output-safety analysis has its own ten-credit budget. A
-  one-hundred-credit daily guardrail stops starting further analyses after the
-  measured threshold is reached; concurrent runs may already be in flight.
+  300-credit rolling 24-hour guardrail stops starting further automatic analyses
+  after the measured threshold is reached; concurrent runs may already be in
+  flight. Manual dispatch bypasses this daily guardrail, not the per-run limits.
   GitHub API rate limits use bounded backoff.
 - Action references and generated runtime containers are immutable pins. Only
   GitHub services are used for issue retrieval and AI analysis.
@@ -224,9 +277,11 @@ Product binaries do not need rebuilding for these automation-only changes.
 
 `find_duplicates.py` implements deterministic retrieval and ranking.
 `triage.py prepare EVENT_PATH CONTEXT_PATH` builds model input.
+`triage.py attach-context CONTEXT_PATH PROMPT_PATH` fills the rendered prompt's
+single evidence slot without a GitHub token or network access.
 `triage.py publish EVENT_PATH AGENT_OUTPUT_PATH` independently validates and
 previews unless `TRIAGE_PUBLISH` is explicitly `true`.
 
-Both commands require `GITHUB_REPOSITORY` and a job-scoped `GITHUB_TOKEN`.
+The `prepare` and `publish` commands require `GITHUB_REPOSITORY` and a job-scoped `GITHUB_TOKEN`.
 For local read-only checks, use an existing authenticated GitHub environment;
 never put a token in a fixture, command output, source file, or commit.
