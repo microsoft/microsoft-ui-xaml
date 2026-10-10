@@ -26,7 +26,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Classification", "Integration")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("TestSuite", "A")]
-        [TestProperty("Ignore", "True")] // TODO 29556921: Disabled after converting MUXControlsTestApp to a desktop .NET 5 app.  Re-enable when fixed.
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
@@ -36,6 +35,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+            RestartAppIfLongRunning();
+        }
+
+        // MUXTestInfra's AppWatcherThread fails the test host once one app instance has run for 15 minutes
+        // (Application.cs: "Test app process ran for an unexpectedly long time"). This class has ~90 tests that share
+        // one instance, so whichever test straddles that mark fails with 0xE0434352 before it starts. Once the
+        // instance is older than the threshold, ask the next TestSetupHelper to restart it. Same mitigation as the
+        // TableView interaction tests (TableViewInteractionTestHelpers.RestartAppIfLongRunning), which can't be
+        // called from here because that file is only compiled when FeatureTableViewEnabled is set.
+        private static readonly TimeSpan s_appRestartThreshold = TimeSpan.FromMinutes(10);
+
+        private static void RestartAppIfLongRunning()
+        {
+            try
+            {
+                var process = TestEnvironment.Application.Process;
+                if (process != null && !process.HasExited && DateTime.Now - process.StartTime > s_appRestartThreshold)
+                {
+                    Log.Comment("Test app has run for over {0} minutes; scheduling a restart before the AppWatcherThread limit.",
+                        s_appRestartThreshold.TotalMinutes);
+                    TestEnvironment.ShouldRestartApplication = true;
+                }
+            }
+            catch (Exception e) when (e is InvalidOperationException || e is System.ComponentModel.Win32Exception)
+            {
+                // The process could not be queried; leave the restart decision to the infra.
+            }
         }
 
         private bool IsPhoneDevice()
@@ -1252,7 +1278,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        [TestProperty("Ignore", "True")] //Task 24429465: DCPP: Multiple MUXControls interaction tests failing after IXP integration.
         public void DragItemOutOfTreeView_NodeMode()
         {
             DragItemOutOfTreeView();
@@ -1513,24 +1538,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
                 ClickButton("LabelItems");
 
-                InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .05, ItemRoot.BoundingRectangle.Height * .5);
+                ToggleTreeViewItemCheckBox(ItemRoot, 1);
                 ClickButton("GetSelected");
                 Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
 
                 Log.Comment("Retrieve first item as generic UIElement");
                 UIObject Item0 = FindElement.ById("Root.0");
-                Verify.IsNotNull(ItemRoot, "Verifying that we found a UIElement called Root.0");
+                Verify.IsNotNull(Item0, "Verifying that we found a UIElement called Root.0");
 
-                InputHelper.Tap(Item0, Item0.BoundingRectangle.Width * .1, Item0.BoundingRectangle.Height * .5);
+                ToggleTreeViewItemCheckBox(Item0, 2);
                 ClickButton("GetSelected");
                 Verify.AreEqual("Selected: Root.1, Root.2", ReadResult());
 
                 // tap on partial selected node will set it to unselected state
-                InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .05, ItemRoot.BoundingRectangle.Height * .5);
+                ToggleTreeViewItemCheckBox(ItemRoot, 1);
                 ClickButton("GetSelected");
                 Verify.AreEqual("Nothing selected", ReadResult());
 
-                InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .05, ItemRoot.BoundingRectangle.Height * .5);
+                ToggleTreeViewItemCheckBox(ItemRoot, 1);
                 ClickButton("GetSelected");
                 Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
             }
@@ -2500,7 +2525,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] Bug 24048408: DCPP: Multiple MUXC interaction tests fail in CatGates due to taking too long to execute
+        [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewFastReorderTest()
         {
@@ -2508,6 +2533,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ClickButton("AddExtraNodes");
                 ClickButton("LabelItems");
+                ClickButton("GetItemCount");
+                Verify.AreEqual("51", ReadResult());
                 var node = FindElement.ById("Node 1");
                 Verify.IsNotNull(node);
                 node.SetFocus();
@@ -2518,13 +2545,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Down, ModifierKey.Alt | ModifierKey.Shift, 50);
                 Log.Comment("Move up node 1");
                 KeyboardHelper.PressKey(Key.Up, ModifierKey.Alt | ModifierKey.Shift, 50);
-                Log.Comment("App didn't crash");
 
                 Keyboard.SendKeysDelay = originalDelay;
+
+                // The app must still respond and no node may be lost or duplicated by the rapid reorders.
+                ClickButton("GetItemCount");
+                Verify.AreEqual("51", ReadResult());
+                Log.Comment("App didn't crash");
             }
         }
 
-        // [TestMethod] 24048500
+        [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewDataLateInitTest()
         {
@@ -2860,9 +2891,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.AreEqual(expectedSelection, ReadResult());
         }
 
+        // Taps the item's multi-select check box. The check box is laid out after the item's indentation
+        // (16px per level below the root, see TreeViewItem::UpdateIndentation) plus its 10px left margin and is
+        // 32px wide (TreeViewItem.xaml). Tap its center at a fixed offset; the former width-proportional offset
+        // (5% of the item width per level) missed the box on narrower items and toggled nothing.
         private void ToggleTreeViewItemCheckBox(UIObject item, int level)
         {
-            InputHelper.Tap(item, item.BoundingRectangle.Width * 0.05 * level, item.BoundingRectangle.Height * .5);
+            const double indentationPerLevel = 16;
+            const double checkBoxLeftMargin = 10;
+            const double checkBoxWidth = 32;
+            double x = indentationPerLevel * (level - 1) + checkBoxLeftMargin + checkBoxWidth / 2;
+            InputHelper.Tap(item, x, item.BoundingRectangle.Height * .5);
         }
     }
 }
