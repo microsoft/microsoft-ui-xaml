@@ -6645,6 +6645,83 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    void MenuFlyoutIntegrationTests::ValidateKeyboardAcceleratorsDoNotCreateMenuFlyoutItemToolTips()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::Button^ button = nullptr;
+        xaml_controls::MenuFlyout^ menuFlyout = nullptr;
+
+        auto menuFlyoutOpenedEvent = std::make_shared<Event>();
+        auto menuFlyoutClosedEvent = std::make_shared<Event>();
+
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::MenuFlyout, Opened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::MenuFlyout, Closed);
+
+        RunOnUIThread([&]
+        {
+            button = safe_cast<xaml_controls::Button^>(xaml_markup::XamlReader::Load(
+                L"<Button xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"        AccessKey='BB' Content='Menu'> "
+                L"  <Button.Flyout> "
+                L"    <MenuFlyout> "
+                L"      <MenuFlyoutItem AccessKey='N' Text='New'> "
+                L"        <MenuFlyoutItem.KeyboardAccelerators> "
+                L"          <KeyboardAccelerator Key='N' /> "
+                L"        </MenuFlyoutItem.KeyboardAccelerators> "
+                L"      </MenuFlyoutItem> "
+                L"      <MenuFlyoutItem AccessKey='O' Text='Open'> "
+                L"        <MenuFlyoutItem.KeyboardAccelerators> "
+                L"          <KeyboardAccelerator Key='O' /> "
+                L"        </MenuFlyoutItem.KeyboardAccelerators> "
+                L"      </MenuFlyoutItem> "
+                L"    </MenuFlyout> "
+                L"  </Button.Flyout> "
+                L"</Button>"));
+
+            menuFlyout = safe_cast<xaml_controls::MenuFlyout^>(button->Flyout);
+
+            openedRegistration.Attach(menuFlyout, [menuFlyoutOpenedEvent]()
+            {
+                menuFlyoutOpenedEvent->Set();
+            });
+
+            closedRegistration.Attach(menuFlyout, [menuFlyoutClosedEvent]()
+            {
+                menuFlyoutClosedEvent->Set();
+            });
+
+            TestServices::WindowHelper->WindowContent = button;
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]
+        {
+            menuFlyout->ShowAt(button);
+        });
+
+        menuFlyoutOpenedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]
+        {
+            for (unsigned int itemIndex = 0; itemIndex < menuFlyout->Items->Size; ++itemIndex)
+            {
+                auto menuFlyoutItem = safe_cast<xaml_controls::MenuFlyoutItem^>(menuFlyout->Items->GetAt(itemIndex));
+                // Regression test: The original OptimizeApplyStyles opt-in incorrectly resulted in KeyboardAccelerators
+                // on MenuFlyoutItems not seeing that MenuFlyoutItem sets KeyboardAcceleratorPlacementMode=Hidden, which
+                // prevents setting a keytip tooltip. Verify there is no tooltip.
+                auto toolTip = TestServices::WindowHelper->TestGetActualToolTip(menuFlyoutItem);
+                VERIFY_IS_NULL(toolTip);
+            }
+
+            menuFlyout->Hide();
+        });
+
+        menuFlyoutClosedEvent->WaitForDefault();
+    }
+
     void MenuFlyoutIntegrationTests::ValidateSettingKeyboardAcceleratorDoesNotOverrideItemCustomKeyboardAcceleratorText()
     {
         TestCleanupWrapper cleanup;
