@@ -12,6 +12,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)BaselineResources2dot5stable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CommonStylesTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XamlControlsResourcesDerivationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CalendarViewTests.cs" />
   </ItemGroup>
 </Project>
