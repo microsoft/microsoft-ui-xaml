@@ -36,6 +36,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class TeachingTipTests : ApiTestBase
     {
+        // Scenario: open a normal tip and a light-dismiss tip (the light-dismiss one has a blue Background set before
+        //           it is shown), set Background on the normal tip through its property and its identifier, then turn
+        //           on light dismiss for it. Desktop only.
+        // Expected: the normal tip's Background reaches ContentRootGrid through the TemplateBinding; the light-dismiss
+        //           tip's TailPolygon, ContentRootGrid, MainContentPresenter and HeroContentBorder use the
+        //           TeachingTipTransientBackground resource instead of the blue brush; after light dismiss is enabled
+        //           those parts of the first tip no longer use its blue brush.
+        // A failure means: the tip background is not applied to the template, or light-dismiss tips do not switch to
+        //                  the transient background.
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // TeachingTip doesn't appear to show up correctly in OneCore.
         public void TeachingTipBackgroundTest()
@@ -159,6 +168,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a tip that has Content and an IconSource but no HeroContent.
+        // Expected: it loads, IconStates is "Icon" and TemplateSettings.IconElement is created from the IconSource.
+        // A failure means: the icon is not shown when there is no hero content, or the tip crashes while loading.
         [TestMethod]
         public void TeachingTipWithContentAndWithoutHeroContentDoesNotCrash()
         {
@@ -187,6 +199,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a tip with Content and HeroContent but no IconSource, then set and clear an IconSource.
+        // Expected: IconStates is "NoIcon" with a null IconElement at first, "Icon" after setting the IconSource, and
+        //           "NoIcon" with a null IconElement again after clearing it.
+        // A failure means: a tip without an icon shows an empty icon area, keeps a stale icon after it is cleared, or
+        //                  crashes.
         [TestMethod]
         public void TeachingTipWithContentAndWithoutIconSourceDoesNotCrash()
         {
@@ -220,6 +237,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: regression test for AB#60057581: clear the public TemplateSettingsProperty on a loaded tip, then
+        //           change IconSource, open the tip, resize its content and close it.
+        // Expected: TemplateSettings is null after ClearValue and every following step completes without a crash.
+        // A failure means: code that updates TemplateSettings (icon, size-based margins) dereferences the cleared
+        //                  settings and crashes the app.
         [TestMethod]
         public void TeachingTipWithClearedTemplateSettingsDoesNotCrash()
         {
@@ -278,6 +300,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
         }
 
+        // Scenario: open a tip with FontSize 22, a red Foreground and a TextBlock as its content.
+        // Expected: the content TextBlock inherits FontSize 22 (within 1) and the red Foreground.
+        // A failure means: inherited text properties stop flowing into the tip content after it is moved into the
+        //                  popup.
         [TestMethod]
         public void PropagatePropertiesDown()
         {
@@ -313,6 +339,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: open a tip without Title and Subtitle, then set both, clear Title and clear Subtitle.
+        // Expected: both are empty and Collapsed at first, both Visible once set, Title collapses on its own while
+        //           Subtitle stays Visible, then Subtitle collapses too.
+        // A failure means: an empty title or subtitle line is shown, a set one is hidden, or the two no longer collapse
+        //                  independently.
         [TestMethod]
         public void VerifySubTitleBlockVisibilityOnInitialUnset()
         {
@@ -351,6 +382,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: open an untargeted tip for each HeroContentPlacement value (Auto, Top, Bottom).
+        // Expected: HeroContentPlacementStates is HeroContentTop for Auto and Top, and HeroContentBottom for Bottom.
+        // A failure means: hero content is drawn on the wrong side of the tip.
         [TestMethod]
         public void TeachingTipHeroContentPlacementTest()
         {
@@ -411,6 +445,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Targeted placement
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: open a tip targeting a centered 40x40 button with ample (test-hook) window space, once each for
+        //           Top, Bottom, Left, Right and Center.
+        // Expected: the effective placement and PlacementStates equal the preference, and the popup is centered on the
+        //           target's axis with its edge against the target (Center: centered horizontally, bottom edge at the
+        //           target's center), within 0.5px.
+        // A failure means: a side placement is not honored or the tip is offset from its target.
         [TestMethod]
         public void TargetedTipIsPositionedAtPreferredSidePlacement()
         {
@@ -443,6 +483,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: open a targeted tip for each of the 8 corner placements with ample space, then set
+        //           PlacementMargin=1 so it is repositioned with settled sizes.
+        // Expected: the placement is kept; the edge facing the target is the target edge plus the 1px margin, and along
+        //           the other axis the tail center is on the target's center (first two tail-margin columns + half the
+        //           tail's long side), within 0.5px. The first-open position is not asserted (TT-2).
+        // A failure means: a corner placement uses the wrong offset (sign, width/height swap or tail distance), so the
+        //                  tail does not point at the target.
         [TestMethod]
         public void TargetedTipIsPositionedAtPreferredCornerPlacement()
         {
@@ -500,6 +547,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: for all 13 placements, open a targeted tip and reposition it with PlacementMargin=1 so the tail is
+        //           measured.
+        // Expected: TemplateSettings.TopLeft/TopRightHighlightMargin match TeachingTip.h for the tail's edge; for
+        //           Bottom, BottomLeft and BottomRight the exact values come from the ContentRootGrid width, the second
+        //           tail-margin column + 2, the tail polygon's sides minus the 2px occlusion and the corner radii.
+        // A failure means: the top highlight line is drawn through the tail or stops in the wrong place.
         [TestMethod]
         public void TailPlacementUpdatesTopHighlightMargins()
         {
@@ -523,6 +576,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: open Top, Bottom, Left and Right tips, then set PlacementMargin to (11, 13, 17, 19).
+        // Expected: each tip moves away from the target by exactly the margin of its target-facing side, the other axis
+        //           is unchanged and the placement is kept.
+        // A failure means: PlacementMargin is ignored, applied on the wrong side, or does not reposition an open tip.
         [TestMethod]
         public void PlacementMarginMovesOpenTargetedTipAwayFromTarget()
         {
@@ -560,6 +617,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: open a RightToLeft targeted tip for every preferred placement, including Auto.
+        // Expected: horizontal placements are mirrored (Left/Right, TopLeft/TopRight, BottomLeft/BottomRight,
+        //           LeftTop/RightTop, LeftBottom/RightBottom), Top/Bottom/Center are unchanged and Auto becomes Top.
+        // A failure means: tips in right-to-left apps open on the wrong side of their target.
         [TestMethod]
         public void PreferredPlacementIsMirroredForRightToLeftFlowDirection()
         {
@@ -599,6 +660,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Placement fallback
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: leave only 5px on the preferred side (Left, Right, Bottom, Top) of the target and ample space
+        //           elsewhere.
+        // Expected: Left falls back to Right, Right to Left, Bottom to Top and Top to Bottom.
+        // A failure means: the fallback order changed, so tips jump to an unexpected side when space is short.
         [TestMethod]
         public void PlacementFallsBackToOppositeSideWhenPreferredSideLacksSpace()
         {
@@ -609,6 +674,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyEffectivePlacementWithinWindow(TeachingTipPlacementMode.Top, TeachingTipPlacementMode.Bottom, AmpleSpace, NarrowSpace, AmpleSpace, AmpleSpace);
         }
 
+        // Scenario: put more than half of the target outside the left window edge, then 10px of it outside the top
+        //           edge.
+        // Expected: a Top preference ends up Right in the first case and Bottom in the second.
+        // A failure means: tips are placed against target edges that are not visible.
         [TestMethod]
         public void PlacementAvoidsSidesWhereTargetIsOutsideWindow()
         {
@@ -620,6 +689,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyEffectivePlacementWithinWindow(TeachingTipPlacementMode.Top, TeachingTipPlacementMode.Bottom, AmpleSpace, -10, AmpleSpace, AmpleSpace);
         }
 
+        // Scenario: give the tip hero content at the bottom, at the top, or taller than the rest of the tip.
+        // Expected: a Top preference falls back to Bottom, a Bottom preference to Top, and a Left preference to Top, so
+        //           the tail never touches the hero content.
+        // A failure means: the tail is drawn against the hero content.
         [TestMethod]
         public void HeroContentPlacementExcludesTailPlacementsAgainstHeroContent()
         {
@@ -648,6 +721,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
         }
 
+        // Scenario: open a tip with hero content and HeroContentPlacement=Auto for all 13 placements.
+        // Expected: hero content is at the bottom for tails on the top edge (Bottom, BottomLeft, BottomRight,
+        //           LeftBottom, RightBottom) and at the top otherwise; the test hook and HeroContentPlacementStates
+        //           agree.
+        // A failure means: with Auto, hero content is drawn next to the tail.
         [TestMethod]
         public void HeroContentFollowsTailSideWhenPlacementIsAuto()
         {
@@ -672,6 +750,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: open an out-of-root (ShouldConstrainToRootBounds=false) tip preferring Bottom with only 5px below
+        //           the target.
+        // Expected: the effective placement is still Bottom and the popup is not constrained to the root bounds.
+        // A failure means: out-of-root tips are wrongly constrained or fall back as if they had to fit in the window.
         [TestMethod]
         public void UnconstrainedTipUsesPreferredPlacementWithoutSpaceChecks()
         {
@@ -687,6 +769,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: open an untargeted tip, set ShouldConstrainToRootBounds=false while it is open, close it and open
+        //           it again.
+        // Expected: the open popup is untouched (same popup, still constrained and open); the next open uses a new,
+        //           unconstrained popup.
+        // A failure means: changing the setting disturbs an open tip, or the new value is never applied.
         [TestMethod]
         public void ChangingShouldConstrainToRootBoundsAppliesToNextOpen()
         {
@@ -723,6 +810,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Tail visibility
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: open a Bottom tip, set TailVisibility=Collapsed, then back to Auto.
+        // Expected: Collapsed shows the Untargeted state and hides the tail polygon while the placement (Bottom) and
+        //           the popup offsets stay the same and TopRightHighlightMargin is 0; Auto restores the Bottom state
+        //           and the tail.
+        // A failure means: hiding the tail moves the tip, leaves the tail visible, or cannot be undone.
         [TestMethod]
         public void CollapsedTailVisibilityHidesTailWithoutMovingTargetedTip()
         {
@@ -763,6 +855,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: open an untargeted tip with the default TailVisibility and another with TailVisibility=Visible.
+        // Expected: the default tip is in the Untargeted state with the tail collapsed; the Visible one uses the Bottom
+        //           state with the tail shown.
+        // A failure means: untargeted tips show a tail by default, or ignore TailVisibility=Visible.
         [TestMethod]
         public void VisibleTailVisibilityShowsTailForUntargetedTip()
         {
@@ -788,6 +884,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Untargeted placement
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: open an untargeted tip with PlacementMargin (3, 5, 7, 11) for every placement and Auto.
+        // Expected: the popup is 24px plus the margin from the near window edges, window size minus (tip size + 24 +
+        //           margin) from the far edges, or centered (shifted by the margin difference), within 0.5px; the state
+        //           is Untargeted.
+        // A failure means: untargeted tips are placed at the wrong window position or ignore the margin.
         [TestMethod]
         public void UntargetedTipIsPositionedRelativeToWindowEdges()
         {
@@ -815,6 +916,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: open and close an untargeted tip once, then open it inside a 10x10 test window.
+        // Expected: Closing then Closed (both Programmatic) are raised, IsOpen is reset to false and the popup never
+        //           opens.
+        // A failure means: a tip that cannot fit is shown anyway, or apps waiting for Closed never get it.
         [TestMethod]
         public void UntargetedTipThatDoesNotFitRaisesClosingAndClosedWithoutOpening()
         {
@@ -850,6 +955,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Buttons, commands and styles
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: open a tip with an action button, add an ActionButtonClick handler (plus one that is added and
+        //           removed) and invoke the button.
+        // Expected: ActionButtonClick is raised once with the tip as sender, the removed handler is not called, Closing
+        //           is not raised and the tip stays open.
+        // A failure means: ActionButtonClick is missing, goes to removed handlers, or the action button closes the tip.
         [TestMethod]
         public void ActionButtonClickRaisesEventWithoutClosingTip()
         {
@@ -882,6 +992,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: open a tip with ActionButtonCommand and ActionButtonCommandParameter and invoke the action button.
+        // Expected: the command runs once with "ActionParameter" and the tip stays open.
+        // A failure means: the action command or its parameter is not bound to the button.
         [TestMethod]
         public void ActionButtonCommandExecutesWithParameter()
         {
@@ -910,6 +1023,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: open a tip whose ActionButtonCommand.CanExecute returns false.
+        // Expected: the action button is disabled.
+        // A failure means: users can click an action whose command cannot run.
         [TestMethod]
         public void ActionButtonIsDisabledWhenCommandCannotExecute()
         {
@@ -927,6 +1043,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: open a tip with CloseButtonContent, CloseButtonCommand and its parameter, add event handlers (one
+        //           added and removed) and invoke the close button.
+        // Expected: the command runs once with "CloseParameter"; the events are exactly CloseButtonClick, Closing
+        //           (CloseButton), Closed (CloseButton) in that order; the removed handler is not called and the tip is
+        //           closed.
+        // A failure means: the close button does not run its command, reports the wrong close reason or order, or does
+        //                  not close the tip.
         [TestMethod]
         public void CloseButtonCommandExecutesWithParameterAndClosesTip()
         {
@@ -971,6 +1094,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: open a tip with ActionButtonStyle and CloseButtonStyle that each set a different Tag.
+        // Expected: the template's ActionButton and CloseButton use exactly those styles (and get their Tags).
+        // A failure means: button style properties are not applied to the tip's buttons.
         [TestMethod]
         public void ButtonStylesAreAppliedToTemplateButtons()
         {
@@ -1007,6 +1133,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: set the six combinations of action content, close content and light dismiss on one tip.
+        // Expected: ButtonsStates and CloseButtonLocations are: no buttons -> header X (footer for light dismiss);
+        //           action only -> header X (footer for light dismiss); close only -> footer; both -> footer.
+        // A failure means: the tip shows the wrong buttons or the close button in the wrong place.
         [TestMethod]
         public void ButtonStatesReflectButtonContentAndLightDismiss()
         {
@@ -1036,6 +1166,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: set Content to an element, to null and to a string.
+        // Expected: ContentStates is Content, NoContent and Content.
+        // A failure means: the content area is not hidden when Content is cleared, or not shown again.
         [TestMethod]
         public void ContentStatesTrackContentPresence()
         {
@@ -1057,6 +1190,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Closing: deferral
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: take a deferral in the Closing handler, close the tip, then complete the deferral.
+        // Expected: while deferred, IsOpen is false but the popup stays open, Closed is not raised and the tip is not
+        //           idle; after Complete the tip closes and Closed is raised once with reason Programmatic.
+        // A failure means: Closing deferrals are not honored, so apps cannot delay the close.
         [TestMethod]
         public void ClosingDeferralHoldsTipOpenUntilCompleted()
         {
@@ -1096,6 +1233,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: take two deferrals in the Closing handler, close the tip and complete them one at a time.
+        // Expected: after the first Complete the popup is still open and Closed has not been raised; after the second
+        //           the tip closes and Closed is raised once.
+        // A failure means: the close finishes when the first of several deferrals completes.
         [TestMethod]
         public void ClosingWaitsForAllDeferrals()
         {
@@ -1134,6 +1275,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Automation
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: read the IWindowProvider of a tip while closed, while toggling light dismiss, and while open; ask
+        //           it to minimize.
+        // Expected: closed: not topmost, not modal, not maximizable/minimizable, Normal, WaitForInputIdle true; IsModal
+        //           follows IsLightDismissEnabled; open: topmost and ReadyForUserInteraction; SetVisualState is ignored
+        //           and the tip stays open. GetPattern(Window) returning null is only logged (TT-3).
+        // A failure means: UI Automation reports the wrong window state for the tip.
         [TestMethod]
         public void AutomationPeerReportsWindowStateOfTip()
         {
@@ -1169,6 +1316,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: open a tip and call IWindowProvider.Close on its automation peer.
+        // Expected: IsOpen becomes false right away, the tip closes, Closed is raised once with reason Programmatic and
+        //           the peer no longer reports topmost.
+        // A failure means: assistive technology cannot close the tip, or the close reason is wrong.
         [TestMethod]
         public void AutomationPeerCloseClosesTip()
         {
@@ -1194,6 +1345,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: hold the close with a Closing deferral, read InteractionState, then complete the deferral.
+        // Expected: InteractionState is Closing while the close is deferred. The value for a closed, idle tip is only
+        //           logged (TT-5).
+        // A failure means: UI Automation does not report that the tip is closing.
         [TestMethod]
         public void AutomationPeerReportsClosingWhileCloseIsDeferred()
         {
@@ -1224,6 +1379,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: open a tip with a Title, change the Title, set AutomationProperties.Name and then AutomationId on
+        //           the tip.
+        // Expected: the popup's name follows the Title until an explicit name is set, which then wins even when the
+        //           Title changes; the popup's AutomationId follows the tip's.
+        // A failure means: screen readers and UI tests see the tip popup with a stale or missing name or id.
         [TestMethod]
         public void AutomationIdAndNameAreForwardedToPopup()
         {
@@ -1252,6 +1412,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Tail center point, placement boundaries and opening state
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: open a targeted tip for all 13 placements, then an untargeted tip, and read
+        //           TailOcclusionGrid.CenterPoint.
+        // Expected: the center point (the origin of the expand/contract scale animation) is at the tail, computed from
+        //           the grid's row and column sizes for each placement, and at the tip's center when there is no tail.
+        // A failure means: the open and close animations grow from the wrong point.
         [TestMethod]
         public void TailPlacementSetsScaleCenterPointAtTail()
         {
@@ -1312,6 +1477,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: put the target exactly against the left, right or top edge of the (test) window, for an out-of-root
+        //           tip with screen space beyond that edge (ReturnTopForOutOfWindowPlacement off).
+        // Expected: the preferred Left, Right or Top placement is kept.
+        // A failure means: a target that only touches the window edge is treated as clipped (< vs <=), so the tip moves
+        //                  to another side.
         [TestMethod]
         public void TargetFlushWithWindowEdgeKeepsThatSideAvailable()
         {
@@ -1326,18 +1496,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 (t, w) => t.Y - w.Y);
         }
 
+        // Scenario: open an untargeted tip, then re-evaluate its placement (via HeroContentPlacement) against a test
+        //           window 1px taller than the tip, and then exactly as tall.
+        // Expected: with 1px to spare the tip stays open and Closed is not raised; at exactly its height Closing then
+        //           Closed (Programmatic) are raised and the tip and popup close. Reopening into an exact fit is not
+        //           tested (TT-8).
+        // A failure means: the fit check accepts an exact fit (> vs >=).
         [TestMethod]
         public void UntargetedTipExactlyAsTallAsWindowDoesNotOpen()
         {
             VerifyUntargetedExactFit(constrainToRootBounds: true);
         }
 
+        // Scenario: same as UntargetedTipExactlyAsTallAsWindowDoesNotOpen for an out-of-root tip measured against the
+        //           (test) screen bounds.
+        // Expected: with 1px to spare the tip stays open; at exactly its height it raises Closing then Closed
+        //           (Programmatic) and closes.
+        // A failure means: the screen fit check accepts an exact fit.
         [TestMethod]
         public void UntargetedOutOfRootTipExactlyAsTallAsScreenDoesNotOpen()
         {
             VerifyUntargetedExactFit(constrainToRootBounds: false);
         }
 
+        // Scenario: measure a BottomLeft tip, then leave beside the target only half the tip's width, so the corner
+        //           placement does not fit but Bottom and Top both do.
+        // Expected: BottomLeft and BottomRight preferences fall back to Bottom, not Top.
+        // A failure means: bottom-corner preferences flip to the top of the target although Bottom fits.
         [TestMethod]
         public void BottomCornerPreferenceFallsBackToBottomBeforeTop()
         {
@@ -1360,6 +1545,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyEffectivePlacementWithinWindow(TeachingTipPlacementMode.BottomRight, TeachingTipPlacementMode.Bottom, AmpleSpace, AmpleSpace, side, AmpleSpace);
         }
 
+        // Scenario: slow the expand animation to 2s and poll while the tip is open but not yet idle. Skipped (with a
+        //           warning) when system animations are off, because the tip is idle as soon as it opens.
+        // Expected: InteractionState is Running while the tip is opening, then ReadyForUserInteraction once it is idle.
+        // A failure means: UI Automation does not report the opening phase correctly.
         [TestMethod]
         public void AutomationPeerReportsRunningWhileTipIsOpening()
         {
@@ -1411,6 +1600,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Repositioning an open tip
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: open an untargeted tip (bottom center), then change PreferredPlacement to Top, Left, Center and
+        //           RightBottom while it is open.
+        // Expected: each change moves the popup immediately to the untargeted offsets of the new placement and the tip
+        //           stays open. The effective placement of an open targeted tip is not asserted (TT-7).
+        // A failure means: PreferredPlacement changes are ignored until the tip reopens.
         [TestMethod]
         public void ChangingPreferredPlacementRepositionsOpenUntargetedTip()
         {
@@ -1439,6 +1633,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: runs isolated (IsolationLevel=Method). Restore the test window to 90% of its maximized size, open a
+        //           targeted Bottom tip and an untargeted tip, resize the window to 75%, and wait for both popups to
+        //           move.
+        // Expected: the targeted tip is again centered below its moved target, the untargeted tip is at the bottom
+        //           center of the resized window, both stay open, and the window is maximized again afterwards
+        //           (verified).
+        // A failure means: open tips stay at their old positions when the window size changes (XamlRoot.Changed not
+        //                  handled).
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")] // Resizes the test app window, so it runs in its own app instance.
         public void OpenTipsRepositionWhenWindowIsResized()
@@ -1531,6 +1733,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Animation, shadow and elevation test hooks
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: replace the expand and contract easing functions with linear ones through the test hooks, then open
+        //           and close the tip.
+        // Expected: the tip becomes idle both open and closed and Closed is raised exactly once. The easing curve
+        //           itself is not observable.
+        // A failure means: animations rebuilt around a custom easing never complete (the tip never goes idle) or throw.
         [TestMethod]
         public void CustomEasingFunctionsDriveOpenAndClose()
         {
@@ -1553,6 +1760,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => Verify.AreEqual(1, closedCount, "Closed count"));
         }
 
+        // Scenario: open and close once so the animations exist, set 1.5s expand and contract durations through the
+        //           test hooks, then open and close again. Skipped (with a warning) when system animations are off.
+        // Expected: opening and closing each take at least 1.0s until the tip is idle (defaults are 300ms and 200ms);
+        //           only this lower bound is checked.
+        // A failure means: duration changes are not applied to animations that already exist.
         [TestMethod]
         public void AnimationDurationHooksApplyToExistingAnimations()
         {
@@ -1590,6 +1802,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(closeTime >= minimum, $"Closing took {closeTime.TotalMilliseconds}ms; the {duration.TotalMilliseconds}ms contract animation should apply");
         }
 
+        // Scenario: open a tip, turn its shadow off and back on through the test hook.
+        // Expected: ContentRootGrid has a ThemeShadow by default, none after turning it off, and a ThemeShadow again
+        //           with Translation.Z at the default 32 after turning it on.
+        // A failure means: the shadow cannot be removed or is not restored.
         [TestMethod]
         public void TipShadowHookRemovesAndRestoresThemeShadow()
         {
@@ -1610,6 +1826,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: open a tip, set its content elevation to 12 through the test hook, then close and reopen it.
+        // Expected: ContentRootGrid.Translation.Z is 12 with X/Y unchanged, and is still 12 after reopening.
+        // A failure means: the content elevation is not applied or is lost when the tip reopens.
         [TestMethod]
         public void ContentElevationHookRaisesContentRootGrid()
         {
@@ -1633,6 +1852,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => Verify.AreEqual(12f, GetContentRootGrid(tip).Translation.Z, "Content elevation after reopening"));
         }
 
+        // Scenario: open a Bottom tip and set its tail elevation to 12 through the test hook.
+        // Expected: TailPolygon.Translation.Z is 12 with X/Y unchanged.
+        // A failure means: the tail elevation is not applied.
         [TestMethod]
         public void TailElevationHookRaisesTailPolygon()
         {
@@ -1656,6 +1878,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Test hook getters and events
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: read the title/subtitle visibility hooks for a tip with text that is not in the tree yet, then
+        //           again after its template is applied.
+        // Expected: both report Collapsed before the template exists and Visible afterwards.
+        // A failure means: the hooks report stale values or fail when the template parts are missing.
         [TestMethod]
         public void TitleAndSubtitleVisibilityHooksNeedTheTemplate()
         {
@@ -1681,6 +1907,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: call every TeachingTipTestHooks getter with a null tip.
+        // Expected: they return true, Auto, Auto, 0, 0, Collapsed, Collapsed and null.
+        // A failure means: the hooks dereference a null tip or return the wrong default.
         [TestMethod]
         public void TestHookGettersReturnDefaultsForNullTip()
         {
@@ -1697,6 +1926,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: subscribe one handler to each of the 7 static TeachingTipTestHooks events, change Title/Subtitle
+        //           and open/close a Bottom tip with hero content, unsubscribe and repeat.
+        // Expected: on debug builds every event notifies its handler with the tip as sender (the product raises them
+        //           only under DBG); after unsubscribing no handler is called on any build.
+        // A failure means: hook events are not raised to subscribers, or still reach handlers that were removed.
         [TestMethod]
         public void TestHookEventsStopNotifyingAfterUnsubscribe()
         {
@@ -1795,6 +2029,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Events
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: add and remove the only handler of ActionButtonClick, CloseButtonClick, Closing and Closed, add new
+        //           handlers, then invoke the action and close buttons.
+        // Expected: the new handlers see exactly ActionButtonClick, CloseButtonClick, Closing, Closed, and the removed
+        //           handlers are never called.
+        // A failure means: removed event handlers are still called, or events stop after a handler is removed.
         [TestMethod]
         public void RemovedEventHandlersAreNotInvoked()
         {
@@ -1842,6 +2081,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
 #if MUX_PRERELEASE
+        // Scenario: only in prerelease builds (#if MUX_PRERELEASE). Subscribe to Opened and open the tip; remove the
+        //           handler, add another, close and reopen.
+        // Expected: Opened is raised exactly once per open, with the tip as sender and non-null args, when the tip is
+        //           already idle with its popup open; the removed handler is not called again while the new one is.
+        // A failure means: Opened fires too early, more than once, or reaches removed handlers.
         [TestMethod]
         public void OpenedIsRaisedOnceTheTipHasOpened()
         {
@@ -1878,6 +2122,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 #endif
 
+        // Scenario: in the Closing handler read Cancel, set it to true, read it, set it back to false and read it.
+        // Expected: the values are False, True, False and the close then completes with one Closed (Programmatic).
+        //           Leaving Cancel=true is not tested (TT-1).
+        // A failure means: TeachingTipClosingEventArgs.Cancel does not store the value set by the app.
         [TestMethod]
         public void ClosingCancelCanBeSetAndClearedInHandler()
         {
@@ -1916,6 +2164,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Automation peer, dependency properties and activation factories
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: create a TeachingTipAutomationPeer directly with new, then turn on light dismiss.
+        // Expected: its Owner is the tip, its class name is Microsoft.UI.Xaml.Controls.TeachingTip, it implements
+        //           IWindowProvider, and its control type is Pane, then Window with light dismiss.
+        // A failure means: apps or derived controls cannot create the peer, or it reports the wrong owner, class or
+        //                  role.
         [TestMethod]
         public void AutomationPeerCanBeCreatedForTip()
         {
@@ -1933,6 +2186,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: read all 21 TeachingTip dependency property identifiers and round-trip values through each
+        //           identifier and its property on a tip in the tree.
+        // Expected: the identifiers are non-null and distinct; a value set through either the identifier or the
+        //           property is visible through the other and ClearValue restores the default (IDL defaults; the button
+        //           styles default to DefaultButtonStyle from the default style); IsOpen defaults to false;
+        //           TemplateSettings holds the tip's own settings and accepts another.
+        // A failure means: an identifier is wired to the wrong property or a default changed, which breaks bindings,
+        //                  styles and SetValue/GetValue callers.
         [TestMethod]
         public void DependencyPropertyIdentifiersMatchProperties()
         {
@@ -1997,6 +2258,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: create a TeachingTipTemplateSettings and round-trip values through its 3 identifiers and
+        //           properties.
+        // Expected: the identifiers are non-null and distinct, values round-trip both ways, and ClearValue restores
+        //           Thickness(0)/null.
+        // A failure means: TemplateSettings cannot be created or its identifiers do not back its properties.
         [TestMethod]
         public void TemplateSettingsPropertyIdentifiersMatchProperties()
         {
@@ -2018,6 +2284,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: get the WinRT activation factories of TeachingTip, TeachingTipTemplateSettings,
+        //           TeachingTipAutomationPeer and TeachingTipTestHooks through CsWinRT.
+        // Expected: each factory reports its runtime class name, and IActivationFactory.ActivateInstance returns
+        //           E_NOTIMPL (these classes are composable or static-only).
+        // A failure means: the WinRT metadata contract of these classes changed.
         [TestMethod]
         public void ActivationFactoriesReportClassNamesAndRejectDefaultActivation()
         {
@@ -2057,6 +2328,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: open and close a tip and read the runtime class name of each event args object.
+        // Expected: the names are TeachingTipOpenedEventArgs (prerelease builds only), TeachingTipClosingEventArgs and
+        //           TeachingTipClosedEventArgs, in that order.
+        // A failure means: the event args report the wrong WinRT class, or the events are raised in a different order.
         [TestMethod]
         public void EventArgsReportRuntimeClassNames()
         {
@@ -2089,6 +2364,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Custom template without the optional tail and button parts
         // ------------------------------------------------------------------------------------------------
 
+        // Scenario: runs isolated (IsolationLevel=Method). Use a template with only Container and ContentRootGrid
+        //           (required, TT-6) plus a TailEdgeBorder, in an 800x600 test window; open, reposition with
+        //           PlacementMargin=1 and close.
+        // Expected: the tip opens and closes to idle with the popup showing the template root, sits at (400, 575) like
+        //           a zero-size tip after the reposition, and raises Closed once (Programmatic). The (0,0) position
+        //           right after opening is only logged (TT-4).
+        // A failure means: custom templates without the tail parts crash, hang, or are positioned as if they had a
+        //                  size.
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")] // A custom template reaches missing-part fallbacks; isolated so a crash cannot affect other tests.
         public void UntargetedTipWithoutTailPartsOpensAndCloses()
@@ -2134,6 +2417,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: runs isolated (IsolationLevel=Method). Open Top and TopRight tips with the same minimal template
+        //           and reposition them with PlacementMargin=1.
+        // Expected: the placement is kept and the popup's origin is at the target's top center minus the margin, as for
+        //           a tip and tail of size 0. The position right after opening is only logged (TT-4).
+        // A failure means: without the tail parts the tip uses a non-zero fallback size or tail distance.
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")] // A custom template reaches missing-part fallbacks; isolated so a crash cannot affect other tests.
         public void TargetedTipWithoutTailPartsIsPositionedAsZeroSized()
@@ -2165,6 +2453,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: runs isolated (IsolationLevel=Method). Use a custom template whose TailOcclusionGrid has a single
+        //           column, open a BottomRight tip and reposition it.
+        // Expected: TopRightHighlightMargin.Left is the tail's long side minus 5 and the popup's left edge is at the
+        //           target's center (no tail edge margin, no tail-center distance); the top edge is the target bottom
+        //           plus the 1px margin.
+        // A failure means: the tail-margin code reads a column that does not exist, or uses a non-zero margin.
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")] // A custom template reaches missing-part fallbacks; isolated so a crash cannot affect other tests.
         public void TailGridWithOneColumnHasNoTailEdgeMargin()
@@ -2198,6 +2492,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             CloseTip(tip);
         }
 
+        // Scenario: open a Top tip, then re-evaluate its placement (via HeroContentPlacement) with test window space
+        //           above the target equal to the TailOcclusionGrid height plus the tail's short side (shorter
+        //           TailPolygon side minus 2), and then 1px less.
+        // Expected: with exactly that space the placement stays Top; with 1px less it falls back to Bottom.
+        // A failure means: the room a Top tip needs is computed wrongly (tail short side or fit comparison).
         [TestMethod]
         public void TopPlacementNeedsRoomForContentAndTailShortSide()
         {
@@ -2237,6 +2536,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: runs isolated (IsolationLevel=Method). Call every TeachingTipTestHooks setter with a null tip and a
+        //           valid second argument, then use the easing hooks on a real tip.
+        // Expected: the null calls do nothing and do not crash; the real tip then opens and closes normally.
+        // A failure means: a test hook dereferences a null tip.
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")] // A hook that dereferenced the null tip would crash the test app.
         public void TestHookSettersIgnoreNullTip()
