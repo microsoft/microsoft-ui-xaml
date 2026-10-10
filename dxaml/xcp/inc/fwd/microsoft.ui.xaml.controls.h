@@ -487,6 +487,7 @@ namespace Controls {
     interface IDatePickerFlyoutItem;
     interface IDatePickerFlyoutItemStatics;
     interface IDatePickerFlyoutPresenter;
+    interface IDatePickerFlyoutPresenterFactory;
     interface IDatePickerFlyoutPresenter2;
     interface IDatePickerFlyoutPresenterStatics2;
     interface IDatePickerFlyoutStatics;
