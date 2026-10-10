@@ -65,6 +65,7 @@
             <Button AutomationProperties.AutomationId="CountPopupsButton" Content="Count popups" Click="OnCountPopupsClicked" Margin="0,0,8,0"/>
             <TextBox x:Name="PopupCountTextBox" AutomationProperties.AutomationId="PopupCountTextBox" IsReadOnly="True" />
             <TextBox x:Name="CustomButtonsOpenCount" AutomationProperties.AutomationId="CustomButtonsOpenCount" IsReadOnly="True" />
+            <TextBox x:Name="FlyoutVisibleFrameCountTextBox" AutomationProperties.AutomationId="FlyoutVisibleFrameCountTextBox" IsReadOnly="True" Margin="8,0,0,0" />
         </StackPanel>
     </StackPanel>
 </local:TestPage>
