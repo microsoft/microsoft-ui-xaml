@@ -837,29 +837,9 @@ void InkToolbar::UpdateToolButtonVisuals(winrt::InkToolbarToolButton const& butt
     bool isEnabled = button.IsEnabled();
     SetButtonCheck(button, isEnabled ? isActive : false);
 
-    // Tie the extension (chevron) glyph to whether the checked button has an attached flyout with
-    // additional options: eraser only when it has an L3; custom tool/pen only when they supply
-    // configuration content; every other tool always does.
-    bool hasMore = false;
-    if (winrt::FlyoutBase::GetAttachedFlyout(button) && IsButtonChecked(button))
-    {
-        if (auto eraserButton = button.try_as<winrt::InkToolbarEraserButton>())
-        {
-            hasMore = winrt::get_self<InkToolbarEraserButton>(eraserButton)->ShouldShowL3();
-        }
-        else if (auto customTool = button.try_as<winrt::InkToolbarCustomToolButton>())
-        {
-            hasMore = customTool.ConfigurationContent() != nullptr;
-        }
-        else if (auto customPen = button.try_as<winrt::InkToolbarCustomPenButton>())
-        {
-            hasMore = customPen.ConfigurationContent() != nullptr;
-        }
-        else
-        {
-            hasMore = true;
-        }
-    }
+    // Tie the extension (chevron) glyph to whether the checked button has a dropdown with additional
+    // options (InkToolbarToolButton::HasL3).
+    bool hasMore = IsButtonChecked(button) && winrt::get_self<InkToolbarToolButton>(button)->HasL3();
     button.IsExtensionGlyphShown(hasMore);
 }
 

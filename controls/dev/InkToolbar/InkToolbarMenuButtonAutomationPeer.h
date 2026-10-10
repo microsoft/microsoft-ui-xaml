@@ -10,9 +10,8 @@
 #include "InkToolbarMenuButton.h"
 #include "InkToolbarTrace.h"
 #include "ResourceAccessor.h"
+#include "Utils.h"
 #include "InkToolbarMenuButtonAutomationPeer.g.h"
-
-#include <string>
 
 class InkToolbarMenuButtonAutomationPeer :
     public ReferenceTracker<InkToolbarMenuButtonAutomationPeer, winrt::implementation::InkToolbarMenuButtonAutomationPeerT>
@@ -21,15 +20,17 @@ public:
     InkToolbarMenuButtonAutomationPeer(winrt::InkToolbarMenuButton const& owner)
         : ReferenceTracker(owner)
     {
+        // Cache here (UI thread); a resource lookup from a UIA callback can fail-fast.
         try
         {
-            m_dropDownControlType = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilDropDownControlTypeName);
             m_persistentName = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilButtonName);
         }
         catch (winrt::hresult_error const& e)
         {
             InkToolbarLogHResult(e.code(), L"menu button accessibility resource lookup");
         }
+        try { m_nameFormat = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilButtonNameFormat); }
+        catch (...) { m_nameFormat = L"%1!s!, %2!s!"; }
     }
 
     // IAutomationPeerOverrides
@@ -43,29 +44,20 @@ public:
             }
             return nullptr;
         }
-        if (patternInterface == winrt::PatternInterface::Toggle)
-        {
-            if (auto owner = GetImpl(); owner && owner->HasL3())
-            {
-                // The dropdown reports expansion, not the stencil's on/off state.
-                return nullptr;
-            }
-        }
+        // Toggle comes from the ToggleButton base in both modes: it reports whether a measuring tool is
+        // showing, which is separate from whether the dropdown is open.
         return __super::GetPatternCore(patternInterface);
     }
 
     winrt::AutomationControlType GetAutomationControlTypeCore()
     {
-        return winrt::AutomationControlType::Button;
-    }
-
-    hstring GetLocalizedControlTypeCore()
-    {
-        if (auto owner = GetImpl(); owner && owner->HasL3() && !m_dropDownControlType.empty())
+        // Like ToggleSplitButton: a toggle that also opens a dropdown is a split button, since a Button
+        // must not expose both Toggle and ExpandCollapse.
+        if (auto owner = GetImpl(); owner && owner->HasL3())
         {
-            return m_dropDownControlType;
+            return winrt::AutomationControlType::SplitButton;
         }
-        return __super::GetLocalizedControlTypeCore();
+        return winrt::AutomationControlType::Button;
     }
 
     hstring GetNameCore()
@@ -74,7 +66,7 @@ public:
         if (auto owner = GetImpl(); owner && owner->MenuKind() == winrt::InkToolbarMenuKind::Stencil && !m_persistentName.empty())
         {
             return name.empty() ? m_persistentName
-                : winrt::hstring{ std::wstring{ m_persistentName.c_str() } + L", " + std::wstring{ name.c_str() } };
+                : StringUtil::FormatString(m_nameFormat, m_persistentName.c_str(), name.c_str());
         }
         return name;
     }
@@ -113,8 +105,8 @@ public:
     }
 
 private:
-    winrt::hstring m_dropDownControlType;
     winrt::hstring m_persistentName;
+    winrt::hstring m_nameFormat;
 
     com_ptr<InkToolbarMenuButton> GetImpl()
     {

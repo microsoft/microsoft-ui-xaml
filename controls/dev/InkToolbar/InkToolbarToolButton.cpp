@@ -11,6 +11,9 @@
 #include "InkToolbarToolButton.h"
 #include "InkToolbarToolButtonAutomationPeer.h"
 #include "InkToolbar.h"
+#include "InkToolbarEraserButton.h"
+#include "InkToolbarCustomToolButton.h"
+#include "InkToolbarCustomPenButton.h"
 #include "InkToolbarFlyoutHelper.h"
 #include "InkToolbarTrace.h"
 
@@ -141,9 +144,27 @@ winrt::InkToolbar InkToolbarToolButton::GetParentInkToolbar()
 }
 
 // L3 = the tool's config flyout (the attached Flyout created above / assigned by the pen buttons).
+// True when this tool opens a dropdown: the eraser only when it has items to show, custom tools/pens only
+// when they supply configuration content, and the built-in pens always. Matches the extension-glyph rule.
 bool InkToolbarToolButton::HasL3()
 {
-    return winrt::FlyoutBase::GetAttachedFlyout(*this) != nullptr;
+    if (!winrt::FlyoutBase::GetAttachedFlyout(*this))
+    {
+        return false;
+    }
+    // ToolKind is set by each concrete button's constructor, so it identifies the concrete type. (A
+    // try_as on this implementation would query the composed XAML base, not the derived interfaces.)
+    switch (ToolKind())
+    {
+    case winrt::InkToolbarTool::Eraser:
+        return static_cast<InkToolbarEraserButton*>(this)->ShouldShowL3();
+    case winrt::InkToolbarTool::CustomTool:
+        return static_cast<InkToolbarCustomToolButton*>(this)->ConfigurationContent() != nullptr;
+    case winrt::InkToolbarTool::CustomPen:
+        return static_cast<InkToolbarCustomPenButton*>(this)->ConfigurationContent() != nullptr;
+    default:
+        return true;
+    }
 }
 
 bool InkToolbarToolButton::IsL3Open()
