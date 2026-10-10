@@ -73,6 +73,9 @@
     <FileInfo Include="$(XamlGenOutputPath)core\DependencyObjectTraits.g.h">
       <Destination>xcp\components\metadata\inc</Destination>
     </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\TrackerTargetTraits.g.h">
+      <Destination>xcp\components\metadata\inc</Destination>
+    </FileInfo>
     <FileInfo Include="$(XamlGenOutputPath)core\Indexes.g.h">
       <Destination>xcp\components\metadata\inc</Destination>
     </FileInfo>

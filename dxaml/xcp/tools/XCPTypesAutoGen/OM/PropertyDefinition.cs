@@ -88,12 +88,20 @@ namespace OM
                 {
                     return PropertyType.AbiFullName;
                 }
+                else if (XamlPropertyFlags.WeakRef)
+                {
+                    // Explicit, greppable opt-out from tracked storage: store a weak reference.
+                    return "ctl::WeakRefPtr";
+                }
                 else if (XamlPropertyFlags.UseComPtr)
                 {
                     return string.Format("ctl::ComPtr<{0}>", PropertyType.AbiFullName);
                 }
                 else
                 {
+                    // Reference (tracker-target) types default to GC-visible tracked storage so
+                    // cross-boundary references are seen by the reference-tracker walk.
+                    // See TypeReference.IsTrackerTarget.
                     return string.Format("TrackerPtr<{0}>", PropertyType.AbiFullName);
                 }
             }
