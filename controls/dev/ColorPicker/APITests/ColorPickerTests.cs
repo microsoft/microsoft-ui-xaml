@@ -492,12 +492,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var slider = VisualTreeUtils.FindVisualChildByName(colorPicker, name) as ColorPickerSlider;
                     Verify.IsNotNull(slider);
                     Verify.IsTrue(slider.Focus(FocusState.Programmatic));
+                    // The ToolTip is the value of ToolTipService.ToolTip on the template's HorizontalThumb (not a visual child).
+                    var thumb = VisualTreeUtils.FindVisualChildByName(slider, "HorizontalThumb");
+                    Verify.IsNotNull(thumb, name + " template should contain HorizontalThumb.");
+                    var toolTip = ToolTipService.GetToolTip(thumb) as ToolTip;
+                    Verify.IsNotNull(toolTip, name + " thumb should have a ToolTip.");
+
                     slider.Value = 40;
-                    var toolTip = VisualTreeUtils.FindVisualChildByName(slider, "ToolTip") as ToolTip;
-                    if (toolTip != null)
-                    {
-                        Verify.IsTrue(toolTip.Content.ToString().Contains("40"), name + " tooltip should reflect value.");
-                    }
+                    var text40 = toolTip.Content as string;
+                    Verify.IsFalse(string.IsNullOrEmpty(text40), name + " tooltip content should be a non-empty string.");
+                    Verify.IsTrue(text40.Contains("40"), name + " tooltip should reflect value 40: " + text40);
+
+                    slider.Value = 73;
+                    var text73 = toolTip.Content as string;
+                    Verify.IsTrue(text73.Contains("73"), name + " tooltip should reflect value 73: " + text73);
+                    Verify.IsFalse(text73.Contains("40"), name + " tooltip should no longer reflect 40: " + text73);
                 }
             });
         }

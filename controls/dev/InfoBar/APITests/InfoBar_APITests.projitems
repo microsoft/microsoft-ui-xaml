@@ -2,9 +2,9 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>c5d8e2a1-3b7f-4d96-8a14-6e9f0b2c7d58</SharedGUID>
+    <SharedGUID>7b3c9d1e-4a52-4e8f-9c6d-2f1a8e5b0d37</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <Import_RootNamespace>InfoBar_APITests</Import_RootNamespace>

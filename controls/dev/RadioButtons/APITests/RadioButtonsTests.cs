@@ -407,10 +407,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(1, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetColumns(radioButtons));
-                Verify.AreEqual(4, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetRows(radioButtons));
-                Verify.AreEqual(0, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetLargerColumns(radioButtons));
-                Microsoft.UI.Private.Controls.RadioButtonsTestHooks.SetTestHooksEnabled(radioButtons, false);
+                try
+                {
+                    Verify.AreEqual(1, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetColumns(radioButtons));
+                    Verify.AreEqual(4, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetRows(radioButtons));
+                    Verify.AreEqual(0, Microsoft.UI.Private.Controls.RadioButtonsTestHooks.GetLargerColumns(radioButtons));
+                }
+                finally
+                {
+                    Microsoft.UI.Private.Controls.RadioButtonsTestHooks.SetTestHooksEnabled(radioButtons, false);
+                }
             });
         }
 
