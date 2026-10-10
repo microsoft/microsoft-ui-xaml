@@ -182,6 +182,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button setHeroContentButton;
 
+        public ComboBox GetContentComboBox()
+        {
+            return GetElement(ref contentComboBox, "ContentComboBox");
+        }
+        private ComboBox contentComboBox;
+
+        public Button GetSetContentButton()
+        {
+            return GetElement(ref setContentButton, "SetContentButton");
+        }
+        private Button setContentButton;
+
         public ComboBox GetPreferredPlacementComboBox()
         {
             return GetElement(ref preferredPlacementComboBox, "PreferredPlacementComboBox");

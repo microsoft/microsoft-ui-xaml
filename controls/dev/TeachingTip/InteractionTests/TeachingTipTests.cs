@@ -1271,6 +1271,165 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void F6MovesFocusIntoOpenLightDismissTip()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
+            {
+                elements = new TeachingTipTestPageElements();
+                SetTeachingTipLocation(TipLocationOptions.VisualTree);
+                ScrollTargetIntoView();
+                EnableLightDismiss(true);
+                OpenTeachingTip();
+                ClearTeachingTipDebugMessages();
+
+                // An opening light-dismiss tip takes focus; move it back to the page so F6 starts outside the tip.
+                var showButton = elements.GetShowButton();
+                FocusHelper.SetFocus(showButton);
+                Wait.ForIdle();
+                Verify.IsTrue(showButton.HasKeyboardFocus, "Precondition: focus is on the page, outside the tip");
+                Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "Precondition: moving focus to the page does not dismiss the tip");
+
+                // The tip's content has a CheckBox, its first focusable element; F6 moves focus there and is handled.
+                KeyboardHelper.PressKey(Key.F6);
+                Wait.ForIdle();
+                var contentCheckBox = FindElement.ById("CancelClosesCheckBoxInVisualTree");
+                Verify.IsNotNull(contentCheckBox, "The tip's content CheckBox");
+                Verify.IsTrue(contentCheckBox.HasKeyboardFocus, "F6 should focus the first focusable element of the light-dismiss tip");
+                Verify.IsFalse(showButton.HasKeyboardFocus, "Focus should have left the page");
+                Verify.AreEqual(0, CountTeachingTipDebugMessages("Page KeyDown: F6"), "F6 should be handled by the open tip");
+                Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "F6 must not close the tip");
+
+                // F6 again, now with focus inside the tip. Focus came from the light-dismiss branch, which records no element to
+                // return to (TeachingTip::HandleF6Clicked), so the tip's popup handler has nowhere to send focus: focus stays in the
+                // tip, the tip stays open, and the key does not reach the page.
+                KeyboardHelper.PressKey(Key.F6);
+                Wait.ForIdle();
+                Verify.IsTrue(contentCheckBox.HasKeyboardFocus, "F6 inside the tip with no element to return to keeps focus in the tip");
+                Verify.AreEqual(0, CountTeachingTipDebugMessages("Page KeyDown: F6"), "F6 pressed inside the tip does not reach the page");
+                Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "F6 inside the tip must not close it");
+
+                CloseTeachingTipProgrammatically();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void F6IsNotHandledByLightDismissTipWithNothingFocusable()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
+            {
+                elements = new TeachingTipTestPageElements();
+                SetTeachingTipLocation(TipLocationOptions.VisualTree);
+                ScrollTargetIntoView();
+
+                // No content and no button content: with light dismiss both close buttons are collapsed, so nothing in the tip can take focus.
+                elements.GetContentComboBox().SelectItemByName("No Content");
+                elements.GetSetContentButton().InvokeAndWait();
+                EnableLightDismiss(true);
+                OpenTeachingTip();
+                ClearTeachingTipDebugMessages();
+
+                var showButton = elements.GetShowButton();
+                FocusHelper.SetFocus(showButton);
+                Wait.ForIdle();
+                Verify.IsTrue(showButton.HasKeyboardFocus, "Precondition: focus is on the page, outside the tip");
+                Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "Precondition: moving focus to the page does not dismiss the tip");
+
+                // With nothing to focus, the tip leaves F6 unhandled, so it reaches the page's PreviewKeyDown logger.
+                KeyboardHelper.PressKey(Key.F6);
+                Wait.ForIdle();
+                Verify.AreEqual(1, CountTeachingTipDebugMessages("Page KeyDown: F6"), "F6 should not be handled by a tip with nothing focusable");
+                Verify.IsTrue(showButton.HasKeyboardFocus, "Focus should stay on the page");
+                Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "F6 must not close the tip");
+
+                CloseTeachingTipProgrammatically();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void LightDismissTipRaisesUiaWindowOpenedAndClosedEvents()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
+            {
+                elements = new TeachingTipTestPageElements();
+                SetTeachingTipLocation(TipLocationOptions.VisualTree);
+                ScrollTargetIntoView();
+                EnableLightDismiss(true);
+
+                // A light-dismiss tip reports itself as a UIA window. The waiters register UIA listeners, which the tip
+                // checks (AutomationPeer.ListenerExists) before raising WindowOpened/WindowClosed.
+                UIObject appWindow = TestEnvironment.Application.ApplicationFrameWindow ?? TestEnvironment.Application.CoreWindow;
+                Verify.IsNotNull(appWindow, "Test app window");
+                var tipCondition = UICondition.CreateFromName("TeachingTipInVisualTree");
+
+                using (var openedWaiter = new AutomationEventWaiter(WindowPattern.WindowOpenedEvent, appWindow, Scope.Descendants, tipCondition))
+                {
+                    elements.GetShowButton().InvokeAndWait();
+                    WaitForTipOpened();
+                    Verify.IsTrue(openedWaiter.TryWait(TimeSpan.FromSeconds(5)), "Opening a light-dismiss tip should raise UIA WindowOpened");
+                }
+
+                using (var closedWaiter = new AutomationEventWaiter(WindowPattern.WindowClosedEvent, appWindow, Scope.Descendants, tipCondition))
+                {
+                    elements.GetCloseButton().InvokeAndWait();
+                    WaitForTipClosed();
+                    Verify.IsTrue(closedWaiter.TryWait(TimeSpan.FromSeconds(5)), "Closing a light-dismiss tip should raise UIA WindowClosed");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void NonLightDismissTipDoesNotRaiseUiaWindowEvents()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
+            {
+                elements = new TeachingTipTestPageElements();
+                SetTeachingTipLocation(TipLocationOptions.VisualTree);
+                ScrollTargetIntoView();
+                EnableLightDismiss(false);
+
+                UIObject appWindow = TestEnvironment.Application.ApplicationFrameWindow ?? TestEnvironment.Application.CoreWindow;
+                Verify.IsNotNull(appWindow, "Test app window");
+                var tipCondition = UICondition.CreateFromName("TeachingTipInVisualTree");
+
+                // With UIA listeners registered, a tip without light dismiss is not reported as a window, so neither event is raised.
+                // The bounded waits are long compared to the event latency shown by the positive control below.
+                using (var openedWaiter = new AutomationEventWaiter(WindowPattern.WindowOpenedEvent, appWindow, Scope.Descendants, tipCondition))
+                {
+                    elements.GetShowButton().InvokeAndWait();
+                    WaitForTipOpened();
+                    Verify.IsFalse(openedWaiter.TryWait(TimeSpan.FromSeconds(2)), "Opening a tip without light dismiss must not raise UIA WindowOpened");
+                }
+
+                using (var closedWaiter = new AutomationEventWaiter(WindowPattern.WindowClosedEvent, appWindow, Scope.Descendants, tipCondition))
+                {
+                    elements.GetCloseButton().InvokeAndWait();
+                    WaitForTipClosed();
+                    Verify.IsFalse(closedWaiter.TryWait(TimeSpan.FromSeconds(2)), "Closing a tip without light dismiss must not raise UIA WindowClosed");
+                }
+
+                // Positive control: the same listeners receive both events once light dismiss is enabled.
+                EnableLightDismiss(true);
+                using (var openedWaiter = new AutomationEventWaiter(WindowPattern.WindowOpenedEvent, appWindow, Scope.Descendants, tipCondition))
+                {
+                    elements.GetShowButton().InvokeAndWait();
+                    WaitForTipOpened();
+                    Verify.IsTrue(openedWaiter.TryWait(TimeSpan.FromSeconds(5)), "Positive control: WindowOpened for a light-dismiss tip");
+                }
+
+                using (var closedWaiter = new AutomationEventWaiter(WindowPattern.WindowClosedEvent, appWindow, Scope.Descendants, tipCondition))
+                {
+                    elements.GetCloseButton().InvokeAndWait();
+                    WaitForTipClosed();
+                    Verify.IsTrue(closedWaiter.TryWait(TimeSpan.FromSeconds(5)), "Positive control: WindowClosed for a light-dismiss tip");
+                }
+            }
+        }
+
         private void CloseOpenAndCloseWithJustKeyboardViaF6()
         {
             KeyboardHelper.PressKey(Key.F6);
