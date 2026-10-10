@@ -23,6 +23,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class ProgressBarTests : ApiTestBase
     {
+        // Scenario: load two ProgressBars from XAML, one inside a Grid whose resources set ProgressBarTrackHeight to 3,
+        //           and one without the override.
+        // Expected: the template's track Rectangle is 3 high in the first bar and keeps the default height of 1 in the
+        //           second.
+        // A failure means: ProgressBarTrackHeight could not be overridden per scope, or the override would leak.
         [TestMethod]
         public void ResourceOverridablity()
         {
@@ -64,6 +69,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: a ProgressBar named "Bar" goes through combinations of IsIndeterminate, ShowPaused and ShowError; a
+        //           peer is also constructed directly.
+        // Expected: class name and control type ProgressBar; a determinate, normal bar is named "Bar"; indeterminate,
+        //           paused and error each add a status prefix; error wins over paused, paused over indeterminate; the
+        //           direct peer matches.
+        // A failure means: screen readers would announce the wrong or no status for a busy, paused or failed bar.
         [TestMethod]
         public void AutomationPeerNameReflectsStatusPrecedence()
         {
@@ -117,6 +128,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: a determinate bar (range 10-60, value 35) is read through RangeValue, updated, set through
+        //           SetValue(250), then made indeterminate and determinate again.
+        // Expected: Minimum 10, Maximum 60, Value 35 then 50, NaN SmallChange/LargeChange; after SetValue(250) Value is
+        //           in range and reported; there is no RangeValue pattern while indeterminate, and it returns when
+        //           determinate.
+        // A failure means: assistive technology would read wrong values, or a value for an indeterminate bar.
         [TestMethod]
         public void AutomationPeerExposesRangeValueOnlyWhenDeterminate()
         {
@@ -160,6 +177,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: a 20 high bar with padding (5,2,7,3) is resized to widths 180, 181, 280 and 281.
+        // Expected: EllipseDiameter/EllipseOffset are 4/4 up to 180, 5/7 up to 280 and 6/9 above; animation positions
+        //           scale with the width (e.g. EllipseAnimationEndPosition = width/3); ClipRect excludes the padding
+        //           (5, 2, width-12, 15).
+        // A failure means: the indeterminate animation would be sized or placed wrong, or draw into the padding.
         [TestMethod]
         public void TemplateSettingsFollowWidthThresholds()
         {
@@ -181,6 +203,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyTemplateSettingsAtWidth(progressBar, 281, expectedDiameter: 6, expectedOffset: 9);
         }
 
+        // Scenario: a 200 wide bar changes range, Value, IsIndeterminate, ShowPaused, ShowError and Visibility.
+        // Expected: the determinate indicator is (Value-Min)/(Max-Min) of 200 (50, 150, 0 for an empty range, 100 for
+        //           70 in 20-120); indeterminate shows 80/120; paused or error widen the second to 200
+        //           (IndeterminatePaused/IndeterminateError, Error when collapsed); states return to Indeterminate,
+        //           then Determinate.
+        // A failure means: the bar would draw the wrong amount of progress or the wrong state visuals.
         [TestMethod]
         public void IndicatorWidthsAndStatesFollowRangeAndStatus()
         {
@@ -267,11 +295,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForState(progressBar, "Determinate");
         }
 
-        // Scenario: read every public static DependencyProperty identifier of ProgressBar, then for each property
-        //           compare GetValue/SetValue/ClearValue with the CLR property on an unparented bar.
-        // Expected: identifiers are non-null, distinct (also from the inherited RangeBase.ValueProperty) and stable;
-        //           GetValue matches the CLR default; values set through either surface are visible through the other;
-        //           ClearValue restores the default. TemplateSettings (no public DP) is a stable, non-null instance.
+        // Scenario: compare GetValue/SetValue/ClearValue with the CLR property for every public DependencyProperty of
+        //           ProgressBar, on an unparented bar.
+        // Expected: identifiers are non-null, distinct (also from RangeBase.ValueProperty) and stable; defaults match;
+        //           values set through either surface are visible through the other; ClearValue restores the default;
+        //           TemplateSettings is a stable non-null instance.
+        // A failure means: XAML, bindings or styles using the DP identifiers would disagree with the CLR properties.
         [TestMethod]
         public void DependencyPropertyIdentifiersAndClrPropertiesAgree()
         {

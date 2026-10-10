@@ -229,6 +229,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: make the ring determinate, then through the test page inputs set Minimum/Maximum to 10/15, then
+        //           Maximum 5, then Minimum 15, then 0.1/1.1 and press Change Value; values are read through UIA
+        //           RangeValue.
+        // Expected: Minimum 10 and Maximum 15 (both changed); a Maximum below Minimum becomes Minimum; a Minimum above
+        //           Value raises Value and Maximum to it; with the decimal range Change Value still changes Value.
+        // A failure means: range changes would not reach UIA, or the ring's Maximum/Value coercion would break.
         [TestMethod]
         public void UpdateMinMaxTest()
         {

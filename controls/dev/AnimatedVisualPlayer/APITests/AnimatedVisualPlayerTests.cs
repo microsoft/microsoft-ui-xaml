@@ -34,6 +34,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static readonly TimeSpan HiddenPlayDuration = TimeSpan.FromMilliseconds(1500);
         private const int HostVisibilityTimeoutMs = 5000;
 
+        // Scenario: a player whose Source fails shows a 100x50 FallbackContent; then a valid 750 ms Source is set.
+        // Expected: after the failure: one create call, not loaded, Diagnostics "load failed", and the fallback is the
+        //           only child and sets a 100x50 desired/actual size. After the valid load: loaded, fallback removed
+        //           and detached, Duration 750 ms, Diagnostics null.
+        // A failure means: a failed animation would show no fallback, or the fallback, size or Diagnostics would go
+        //                  stale.
         [TestMethod]
         public void FallbackContentIsShownWhenSourceFailsAndRemovedWhenContentLoads()
         {
@@ -76,6 +82,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: a player whose source fails, with no FallbackContent, then sets, replaces and clears
+        //           FallbackContent.
+        // Expected: no child and a 0x0 desired size without a template; FallbackA is shown at 100x50, FallbackB
+        //           replaces it at 60x30, and clearing removes it and returns to 0x0.
+        // A failure means: changing FallbackContent after a load failure would not update the visuals or layout size.
         [TestMethod]
         public void FallbackContentChangesWhileFallenBackAreApplied()
         {
@@ -116,6 +127,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: measure a player with 200x100 content under each Stretch and several available sizes (some
+        //           infinite), plus players with zero-size content and with no Source.
+        // Expected: None is capped by the available size; Uniform keeps the aspect ratio (400x200, or 100x50 with one
+        //           infinite dimension); Fill and UniformToFill use the available size, or 100x50 with an infinite
+        //           height. Zero-size content is not loaded and, like no Source, measures 0x0.
+        // A failure means: the player would request the wrong layout size for a Stretch mode.
         [TestMethod]
         public void MeasureRespectsStretch()
         {
@@ -164,6 +181,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: arrange a 400x400 player with 200x100 content under each Stretch, then with 100x200 content under
+        //           Uniform and UniformToFill.
+        // Expected: Uniform is the default; the root visual's Scale, Offset, Size and Clip offset match each mode (e.g.
+        //           Uniform scale 2 offset (0,100), UniformToFill scale 4 offset (-200,0) clip (50,0), Fill scale
+        //           (2,4)); the same root visual is reused for new content.
+        // A failure means: animations would render stretched, off-center or wrongly clipped inside the player.
         [TestMethod]
         public void ArrangeScalesAndPositionsContentForEachStretch()
         {
@@ -230,9 +253,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: a player shows content and plays it, then its Source is cleared.
-        // Expected: the play completes, the content is closed and removed from the player's visual, and the
-        //           content-derived properties (IsAnimatedVisualLoaded, Duration, Diagnostics, desired size) are reset.
+        // Scenario: a loaded player (AutoPlay off) with 750 ms content and Diagnostics starts a looped play, then
+        //           Source is cleared.
+        // Expected: IsPlaying and IsAnimatedVisualLoaded become false, Duration zero, Diagnostics null, desired size
+        //           0x0 (from 200x100); the content visual is removed and disposed, the source is not asked again, and
+        //           the looped play completes.
+        // A failure means: clearing Source would leave stale content or state, leak it, or hang a PlayAsync caller.
         [TestMethod]
         public void ClearingSourceUnloadsContentAndResetsState()
         {
@@ -283,6 +309,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(play.Wait(CompletionTimeoutMs), "The looped play is completed when Source is cleared.");
         }
 
+        // Scenario: three players get AutoPlay and loaded content in different orders: AutoPlay turned on after load,
+        //           Source set after load, and AutoPlay turned on before a dynamic source has content.
+        // Expected: AutoPlay defaults to true; nothing plays until both AutoPlay and loaded content are present, then
+        //           each player plays; all three still play after 3x the duration (looped) and stop on Stop().
+        // A failure means: AutoPlay animations would not start, would start without content, or would not loop.
         [TestMethod]
         public void AutoPlayStartsLoopedPlayOnlyWhenContentIsLoaded()
         {
@@ -344,6 +375,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: start a non-looped PlayAsync with AutoPlay off, then turn AutoPlay on while it plays.
+        // Expected: the original play runs to completion and afterwards IsPlaying is false with AutoPlay still true, so
+        //           no looped AutoPlay play replaced it.
+        // A failure means: turning AutoPlay on would cut short a play the app started and replace it with an endless
+        //                  loop.
         [TestMethod]
         public void AutoPlayDoesNotReplaceAPlayAlreadyInProgress()
         {
@@ -376,6 +412,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: a dynamic source returns empty content, then raises AnimatedVisualInvalidated with 1 s content;
+        //           then Source is replaced and the old source raises the event again.
+        // Expected: the player subscribes once; empty content is not loaded; invalidation recreates and loads it
+        //           (Duration 1 s); replacing the source disposes the old content and unsubscribes, and later events
+        //           from it change nothing.
+        // A failure means: dynamic content updates would be lost, or a replaced source could still affect the player.
         [TestMethod]
         public void DynamicSourceInvalidationReloadsContent()
         {
@@ -424,6 +466,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: two IAnimatedVisualSource3 players, Latency (default) and Resources; the idle Latency one switches
+        //           to Resources and back, and the Resources one gets SetProgress(0.5).
+        // Expected: content is created through IAnimatedVisualSource3, with animations for Latency only; switching to
+        //           Resources destroys them once after a commit and back to Latency recreates them; SetProgress creates
+        //           the Resources player's animations, sets 0.5, then destroys them.
+        // A failure means: AnimationOptimization would not save resources, or SetProgress would not show the frame.
         [TestMethod]
         public void AnimationOptimizationControlsAnimationCreation()
         {
@@ -492,6 +540,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: start a looped play, switch AnimationOptimization to Resources while it plays, then end the play
+        //           with SetProgress(0.75).
+        // Expected: while playing, the play stays pending and the animations are not destroyed; SetProgress completes
+        //           the play, then the animations are destroyed once and IsPlaying is false.
+        // A failure means: switching to Resources during a play would break it, or animations would not be released
+        //                  after.
         [TestMethod]
         public void AnimationOptimizationChangeIsDeferredWhilePlaying()
         {
@@ -534,11 +588,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: an idle player whose animations exist switches AnimationOptimization to Resources and back to
-        //           Latency in the same UI tick, before the deferred DestroyAnimations runs.
-        // Expected: the destroy that Resources scheduled (after a compositor commit) is superseded by the switch back,
-        //           so the content's animations are neither destroyed nor recreated. Switching to Resources alone on
-        //           the same player does destroy them, which shows the observation window is long enough.
+        // Scenario: an idle player with animations switches AnimationOptimization to Resources and back to Latency in
+        //           one UI tick, before the deferred DestroyAnimations runs.
+        // Expected: the destroy scheduled for after a compositor commit is superseded, so after two commits the
+        //           animations are neither destroyed nor recreated. Resources alone then does destroy them (so the wait
+        //           is long enough) and Latency recreates them.
+        // A failure means: a quick Resources/Latency toggle would destroy animations still in use, or recreate them.
         [TestMethod]
         public void SwitchingBackToLatencyInTheSameTickCancelsTheDeferredDestroy()
         {
@@ -593,6 +648,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: a Resources player with a legacy (non-IAnimatedVisualSource3) source loads and runs a non-looped
+        //           play.
+        // Expected: the animations the legacy source created are destroyed after load (count 1); PlayAsync recreates
+        //           them and plays; after the play completes they are destroyed again (count 2) and IsPlaying is false.
+        // A failure means: Resources would keep animations alive after load or a play, or would play without
+        //                  animations.
         [TestMethod]
         public void ResourcesOptimizationReleasesAnimationsAfterPlayCompletes()
         {
@@ -629,6 +690,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => Verify.IsFalse(player.IsPlaying));
         }
 
+        // Scenario: SetProgress with in- and out-of-range values on a loaded player and on one without content; a
+        //           looped play and a play without content are then ended by SetProgress(0.25) and Stop().
+        // Expected: 0.4 is kept; -0.5, 1.5 and 2.0 clamp to 0, 1 and 1 (also without content); the play without content
+        //           does not start; neither play completes on its own; SetProgress completes the looped play and Stop
+        //           the pending one.
+        // A failure means: SetProgress would show a frame outside the animation, or PlayAsync callers would hang.
         [TestMethod]
         public void SetProgressClampsAndCompletesTheCurrentPlay()
         {
@@ -686,6 +753,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: from a Duration-changed callback raised while content loads, request a non-looped PlayAsync and
+        //           Pause it at once; Resume it later.
+        // Expected: at request time content is not loaded and nothing plays; after loading the play starts (IsPlaying
+        //           true) but stays paused for 3x its duration; after Resume it completes and IsPlaying is false.
+        // A failure means: a play requested during loading would be lost or would ignore its Pause.
         [TestMethod]
         public void PlayRequestedDuringContentLoadStartsOnceLoadedAndHonorsPause()
         {
@@ -741,6 +813,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => Verify.IsFalse(player.IsPlaying));
         }
 
+        // Scenario: during a looped play, start a second looped PlayAsync; the IsPlaying=false change it causes runs a
+        //           callback that starts a third (reentrant) looped PlayAsync.
+        // Expected: the reentrant play is the one playing; the first and the overtaken outer play both complete; the
+        //           reentrant play keeps playing until Stop completes it and IsPlaying is false.
+        // A failure means: PlayAsync from an IsPlaying handler would play the wrong play, hang a caller, or break
+        //                  IsPlaying.
         [TestMethod]
         public void PlayAsyncStartedFromIsPlayingCallbackSupersedesTheOuterPlay()
         {
@@ -796,11 +874,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => Verify.IsFalse(player.IsPlaying));
         }
 
-        // Scenario: read every public static DependencyProperty identifier of AnimatedVisualPlayer, then for each
-        //           property compare GetValue/SetValue/ClearValue with the CLR property on an unparented player.
-        // Expected: identifiers are non-null, distinct and stable; GetValue matches the CLR default; values set through
-        //           either surface are visible through the other; ClearValue restores the default. Read-only properties
-        //           report their defaults. Setting Source through the DP reaches the player's change handler.
+        // Scenario: compare GetValue/SetValue/ClearValue with the CLR property for every public DependencyProperty
+        //           identifier of AnimatedVisualPlayer, on an unparented player.
+        // Expected: identifiers are non-null, distinct and stable; defaults match; values set through either surface
+        //           are visible through the other; ClearValue restores the default. Source set through the DP loads
+        //           content and updates Duration.
+        // A failure means: XAML, bindings or styles using the DP identifiers would disagree with the CLR properties.
         [TestMethod]
         public void DependencyPropertyIdentifiersAndClrPropertiesAgree()
         {
@@ -860,10 +939,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: construct an AnimatedVisualPlayerAutomationPeer directly (as a derived control or custom peer
-        //           would), and ask the framework for the player's peer.
-        // Expected: both peers belong to the player, report the AnimatedVisualPlayer class name and the Image control
-        //           type, and the framework returns an AnimatedVisualPlayerAutomationPeer.
+        // Scenario: construct an AnimatedVisualPlayerAutomationPeer directly, and ask the framework for the player's
+        //           peer.
+        // Expected: both peers are owned by the player and report the AnimatedVisualPlayer class name and Image control
+        //           type; the framework creates an AnimatedVisualPlayerAutomationPeer once and reuses it.
+        // A failure means: screen readers would get the wrong role or class name, or custom peers could not be made.
         [TestMethod]
         public void AutomationPeerCreatedDirectlyAndByTheFramework()
         {
@@ -885,11 +965,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: a player in its own window plays a non-looped animation while the window is hidden and shown
-        //           (AppWindow.Hide/Show flips XamlRoot.IsHostVisible and raises XamlRoot.Changed).
-        // Expected: (a) while hidden the play does not progress to completion and IsPlaying stays true; (b) once shown
-        //           it completes; (c) a play paused before hiding is not resumed by showing, only by Resume(); (d) a
-        //           Resume() while hidden does not restart the play until the window is shown.
+        // Scenario: a player in its own window plays while the window is hidden and shown (AppWindow.Hide/Show). A
+        //           resize first raises a visible XamlRoot.Changed: m_isHostVisible starts false, so the first hide
+        //           after load isn't detected.
+        // Expected: (a) a play does not complete while hidden; (b) it completes once shown; (c) a play paused before
+        //           hiding resumes only on Resume(); (d) Resume() while hidden waits until the window is shown.
+        // A failure means: animations would run in hidden windows, not continue when shown, or override Pause.
         [TestMethod]
         public void HidingTheHostWindowPausesPlayUntilTheWindowIsShown()
         {
@@ -959,10 +1040,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // Scenario: an unparented player (never loaded, so never unloaded) loads content and starts a looped play,
-        //           then the app releases every reference to the player.
-        // Expected: while the player is referenced its looped play stays pending; once the player is released and
-        //           collected, its destructor completes the pending play.
+        // Scenario: an unparented player (never loaded, so never unloaded) starts a looped play, then the app releases
+        //           every reference to it. Relies on the GC releasing the unparented player.
+        // Expected: while the player is referenced its looped play stays pending; once it is released and collected,
+        //           its destructor completes the play.
+        // A failure means: an app that drops a playing player would have its PlayAsync task pending forever.
         [TestMethod]
         public void ReleasingAPlayingPlayerCompletesItsPlay()
         {
@@ -977,11 +1059,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(WaitForCompletionAfterCollection(play), "Releasing the player should complete its pending play.");
         }
 
-        // Scenario: get the activation factory of each AnimatedVisualPlayer/ProgressBar/ProgressRing class and of
-        //           their automation peers directly from Microsoft.UI.Xaml.Controls.dll (DllGetActivationFactory).
-        // Expected: each factory reports its class name through IInspectable::GetRuntimeClassName, and
-        //           IActivationFactory::ActivateInstance returns E_NOTIMPL because these composable classes are created
-        //           only through their factory interface's CreateInstance.
+        // Scenario: ABI-level check through DllGetActivationFactory: get the factory of AnimatedVisualPlayer,
+        //           ProgressBar, ProgressRing and their automation peers from Microsoft.UI.Xaml.Controls.dll.
+        // Expected: each factory is returned, reports its class name through GetRuntimeClassName, and ActivateInstance
+        //           returns E_NOTIMPL with no instance (these composable classes are created through CreateInstance).
+        // A failure means: a factory would be missing or misnamed, or allow default activation of a composable class.
         [TestMethod]
         public void ActivationFactoriesReportClassNameAndRejectDefaultActivation()
         {

@@ -20,6 +20,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class ProgressRingTests : ApiTestBase
     {
+        // Scenario: toggle IsActive on an unparented ProgressRing and read its AccessibilityView.
+        // Expected: an active ring is not Raw; an inactive ring is Raw.
+        // A failure means: screen readers would announce an inactive ring, or skip an active one.
         [TestMethod]
         public void VerifyAccessibilityView()
         {
@@ -35,6 +38,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: set Value, Minimum and Maximum inside and outside the range of an unparented determinate ring.
+        // Expected: defaults are Value 0 and range 0-100; Value clamps into range (150 to 100, -5 to 0) but NaN is
+        //           kept; Minimum 200 raises Maximum and Value to 200; Maximum 50 lowers Minimum and Value to 50;
+        //           in-range values are kept.
+        // A failure means: the ring could hold an inconsistent range or out-of-range value and show wrong progress.
         [TestMethod]
         public void ValueMinimumAndMaximumAreCoercedIntoRange()
         {
@@ -79,6 +87,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: an inactive ring is resized to 40, 41 and 100 square, then to 0 wide with MinWidth cleared.
+        // Expected: EllipseDiameter and EllipseOffset.Top are 5/15 at 40 (one extra pixel), 4.1/16.4 at 41 and 10/40 at
+        //           100, with the other offset sides 0 and MaxSideLength equal to the size; at width 0 they are all 0.
+        // A failure means: the ring's template ellipse would be sized or positioned wrong.
         [TestMethod]
         public void TemplateSettingsFollowSize()
         {
@@ -122,12 +134,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: read every public static DependencyProperty identifier of ProgressRing, then for each property
-        //           compare GetValue/SetValue/ClearValue with the CLR property on an unparented ring.
-        // Expected: identifiers are non-null, distinct and stable; GetValue matches the CLR default; values set through
-        //           either surface are visible through the other; ClearValue restores the default. The range values
-        //           are chosen inside the default range so coercion does not change the other range properties.
-        //           TemplateSettings (no public DP) is a stable, non-null instance.
+        // Scenario: compare GetValue/SetValue/ClearValue with the CLR property for every public DependencyProperty of
+        //           ProgressRing, on an unparented ring.
+        // Expected: identifiers are non-null, distinct and stable; defaults match; values set through either surface
+        //           are visible through the other; ClearValue restores the default; range values stay inside the
+        //           default range so coercion does not interfere; TemplateSettings is a stable non-null instance.
+        // A failure means: XAML, bindings or styles using the DP identifiers would disagree with the CLR properties.
         [TestMethod]
         public void DependencyPropertyIdentifiersAndClrPropertiesAgree()
         {
@@ -176,10 +188,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: an active determinate ring that uses the built-in determinate animation (no DeterminateSource)
-        //           gets new Foreground/Background brushes and brush colors.
-        // Expected: smoke only (must not throw); the player keeps the same built-in source. The Lottie colors are not
-        //           observable from the API and are not asserted (a determinate ring is suspected to ignore them).
+        // Scenario: an active determinate ring using the built-in determinate animation gets new Foreground/Background
+        //           brushes and brush colors.
+        // Expected: smoke only: no exception, same built-in source, still loaded and determinate. Colors are not
+        //           observable through the API, and a suspected product bug means a determinate ring ignores
+        //           Foreground/Background.
+        // A failure means: recoloring a determinate ring would throw, or replace or unload its animation.
         [TestMethod]
         public void ColorChangesOnADeterminateRingKeepTheBuiltInSource()
         {
@@ -215,6 +229,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: a ring named "Ring" (range 10-20, value 15) toggles IsActive and IsIndeterminate while its peer is
+        //           read; SetValue(250) is called on the provider.
+        // Expected: class name ProgressRing, control type ProgressBar, a localized type; the name is "Ring" except
+        //           active indeterminate (busy prefix); no RangeValue while indeterminate; determinate RangeValue is
+        //           10/20/15 with NaN Small/LargeChange, and SetValue keeps Value in range.
+        // A failure means: screen readers would announce the wrong role, busy state or progress for the ring.
         [TestMethod]
         public void AutomationPeerReflectsActiveAndIndeterminateState()
         {
@@ -277,6 +297,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: three rings use custom IndeterminateSource/DeterminateSource that are cleared and set again; an
+        //           active ring with both toggles IsIndeterminate. Brush changes are smoke only.
+        // Expected: the LottiePlayer uses the custom source for the current state; clearing one falls back to a
+        //           non-null built-in source and setting it again restores it; with DeterminateSource cleared the
+        //           active ring uses a built-in one.
+        // A failure means: custom ring animations would not show, or the wrong animation would show after a change.
         [TestMethod]
         public void CustomSourcesAreSelectedByStateAndClearingRestoresDefaults()
         {
