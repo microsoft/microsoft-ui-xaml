@@ -555,6 +555,9 @@ TableView::~TableView()
     {
         winrt::get_self<::TableViewRowTemplateSelector>(selector)->Detach();
     }
+
+    // Unloaded may not have run; member destruction would release ThemeSettings in a noexcept context.
+    ReleaseThemeSettings();
 }
 
 TableView::TableView()
@@ -3113,17 +3116,26 @@ void TableView::OnTableViewUnloaded()
     // Drop the ThemeSettings subscription and instance so a subsequent Loaded re-creates it against
     // the (possibly different) window's WindowId. IsHighContrast falls back to AccessibilitySettings
     // while detached.
-    //
-    // Order matters. The auto_revoke revoker holds only a weak_ref to ThemeSettings and its revoke()
-    // is noexcept: if remove_Changed throws (which it does at app shutdown, where this Unloaded runs
-    // from DispatcherQueueController::ShutdownQueue and ThemeSettings' underlying window feature is
-    // already detaching, surfacing RPC_E_WRONG_THREAD), the exception escapes the noexcept boundary
-    // and terminates the process -- a try/catch here can never intercept it. So we release our strong
-    // reference FIRST. If it was the last one the object dies, the revoker's weak_ref goes stale and
-    // revoke() becomes a no-op (no ABI call, no throw); if the framework still holds the object it is
-    // alive and remove_Changed succeeds normally. Either way remove_Changed is never called against a
-    // half-torn-down feature.
-    m_themeSettings = nullptr;
+    ReleaseThemeSettings();
+}
+
+void TableView::ReleaseThemeSettings()
+{
+    // At window close the HWND is already gone, so ~ThemeSettings fails to detach its window feature
+    // and throws out of Release(). Assigning nullptr (and revoke()) are noexcept, which turns that
+    // throw into a fail-fast (0xC0000409), so release through ::IUnknown where it can be caught.
+    // Release first: once the object is gone the revoker's weak_ref is stale and revoke() is a no-op,
+    // so remove_Changed is never called against a half-torn-down feature.
+    if (auto const themeSettings = static_cast<::IUnknown*>(winrt::detach_abi(m_themeSettings)))
+    {
+        try
+        {
+            themeSettings->Release();
+        }
+        catch (...)
+        {
+        }
+    }
     m_themeSettingsChangedRevoker.revoke();
 }
 

@@ -1120,6 +1120,7 @@ private:
 
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     void OnTableViewUnloaded();
+    void ReleaseThemeSettings();
     bool m_rowsSourceDrained{ false };
 
     double ComputeLeadingFrozenWidth();
