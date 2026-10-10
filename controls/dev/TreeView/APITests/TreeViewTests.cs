@@ -228,11 +228,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        // Not a TreeView bug (GitHub #1775 was closed as stale). In this API-test host, laying out ANY code-only managed
-        // subclass of a WinUI control (verified with TreeView, Expander and InfoBadge subclasses, internal or public)
-        // throws COMException 0x800F1000 "No installed components were detected" and then crashes TE.ProcessHost with
-        // 0xC000027B in Microsoft.UI.Xaml.dll, aborting the rest of the run. Subclassed TreeViewNode and standalone
-        // (subclassed) TreeViewList instances lay out fine. Re-enable once the test app supports code-only control subclasses.
+        // Not a TreeView bug (GitHub #1775 was closed as stale). Observed in this API-test host: laying out code-only
+        // managed subclasses of TreeView, Expander or InfoBadge (MUXC templated controls deriving directly from Control;
+        // internal or public; defined in this file or in the TreeView TestUI sources) throws COMException 0x800F1000
+        // "No installed components were detected" and then crashes TE.ProcessHost with 0xC000027B in Microsoft.UI.Xaml.dll,
+        // aborting the rest of the run. Code-only subclasses of TreeViewList (derives from the core ListView), of the core
+        // Button and of TreeViewNode lay out fine, and a missing IXamlMetadataProvider entry is not the discriminator (the
+        // Button subclass has none either). WinUI platform issue; re-enable once such subclasses can be laid out here.
         [TestProperty("Ignore", "True")]
         public void TreeViewInheritanceTest()
         {
@@ -1644,20 +1646,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 treeView.SelectionMode = TreeViewSelectionMode.Multiple;
                 Content.UpdateLayout();
 
-                int expanding = 0, collapsed = 0, selectionChanged = 0, itemInvoked = 0, dragStarting = 0, dragCompleted = 0;
+                // ItemInvoked, DragItemsStarting and DragItemsCompleted are only raised by real input, so their unsubscription
+                // can't be observed in-process; the interaction tests cover those events. Only observable events are checked here.
+                int expanding = 0, collapsed = 0, selectionChanged = 0;
                 global::Windows.Foundation.TypedEventHandler<TreeView, TreeViewExpandingEventArgs> onExpanding = (s, e) => expanding++;
                 global::Windows.Foundation.TypedEventHandler<TreeView, TreeViewCollapsedEventArgs> onCollapsed = (s, e) => collapsed++;
                 global::Windows.Foundation.TypedEventHandler<TreeView, TreeViewSelectionChangedEventArgs> onSelectionChanged = (s, e) => selectionChanged++;
-                global::Windows.Foundation.TypedEventHandler<TreeView, TreeViewItemInvokedEventArgs> onItemInvoked = (s, e) => itemInvoked++;
-                global::Windows.Foundation.TypedEventHandler<TreeView, TreeViewDragItemsStartingEventArgs> onDragStarting = (s, e) => dragStarting++;
-                global::Windows.Foundation.TypedEventHandler<TreeView, TreeViewDragItemsCompletedEventArgs> onDragCompleted = (s, e) => dragCompleted++;
 
                 treeView.Expanding += onExpanding;
                 treeView.Collapsed += onCollapsed;
                 treeView.SelectionChanged += onSelectionChanged;
-                treeView.ItemInvoked += onItemInvoked;
-                treeView.DragItemsStarting += onDragStarting;
-                treeView.DragItemsCompleted += onDragCompleted;
 
                 treeView.Expand(nodeA);
                 treeView.Collapse(nodeA);
@@ -1665,18 +1663,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(1, expanding);
                 Verify.AreEqual(1, collapsed);
                 Verify.AreEqual(1, selectionChanged);
-                // Item invocation and drag require real input (covered by the interaction tests);
-                // none of the API operations above may raise them.
-                Verify.AreEqual(0, itemInvoked);
-                Verify.AreEqual(0, dragStarting);
-                Verify.AreEqual(0, dragCompleted);
 
                 treeView.Expanding -= onExpanding;
                 treeView.Collapsed -= onCollapsed;
                 treeView.SelectionChanged -= onSelectionChanged;
-                treeView.ItemInvoked -= onItemInvoked;
-                treeView.DragItemsStarting -= onDragStarting;
-                treeView.DragItemsCompleted -= onDragCompleted;
 
                 // A second, still-subscribed handler proves the operations still raise the events.
                 int stillExpanding = 0, stillCollapsed = 0, stillSelectionChanged = 0;
@@ -1695,9 +1685,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(1, expanding, "Removed Expanding handler must not run");
                 Verify.AreEqual(1, collapsed, "Removed Collapsed handler must not run");
                 Verify.AreEqual(1, selectionChanged, "Removed SelectionChanged handler must not run");
-                Verify.AreEqual(0, itemInvoked);
-                Verify.AreEqual(0, dragStarting);
-                Verify.AreEqual(0, dragCompleted);
             });
         }
 

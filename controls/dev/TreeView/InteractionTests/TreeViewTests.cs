@@ -1520,6 +1520,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
+            // Read while MainPage is still displayed (TestSetupHelper navigates away from it).
+            m_rasterizationScale = GetAppRasterizationScale();
+
             using (var setup = new TestSetupHelper("TreeView Tests"))
             {
                 SetContentMode(isContentMode);
@@ -2181,6 +2184,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void TreeViewPartialSelectionTest(bool isContentMode = false)
         {
+            // Read while MainPage is still displayed (TestSetupHelper navigates away from it).
+            m_rasterizationScale = GetAppRasterizationScale();
+
             using (var setup = new TestSetupHelper("TreeView Tests"))
             {
                 SetContentMode(isContentMode);
@@ -2891,17 +2897,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.AreEqual(expectedSelection, ReadResult());
         }
 
-        // Taps the item's multi-select check box. The check box is laid out after the item's indentation
-        // (16px per level below the root, see TreeViewItem::UpdateIndentation) plus its 10px left margin and is
-        // 32px wide (TreeViewItem.xaml). Tap its center at a fixed offset; the former width-proportional offset
-        // (5% of the item width per level) missed the box on narrower items and toggled nothing.
+        // Taps the item's multi-select check box. In the item template (TreeViewItem.xaml) the check box sits after the
+        // item's 4px left presenter margin, the indentation (16px per level below the root, see
+        // TreeViewItem::UpdateIndentation) and its own 10px left margin, and is 32px wide. Tap its center. These are XAML
+        // effective pixels, while InputHelper.Tap offsets are physical pixels relative to the UIA bounding rectangle, so
+        // scale by the app's RasterizationScale (read from MainPage via GetAppRasterizationScale before navigating). The
+        // former width-proportional offset (5% of the item width per level) missed the box on narrower items.
         private void ToggleTreeViewItemCheckBox(UIObject item, int level)
         {
+            const double itemLeftMargin = 4;
             const double indentationPerLevel = 16;
             const double checkBoxLeftMargin = 10;
             const double checkBoxWidth = 32;
-            double x = indentationPerLevel * (level - 1) + checkBoxLeftMargin + checkBoxWidth / 2;
+            double x = (itemLeftMargin + indentationPerLevel * (level - 1) + checkBoxLeftMargin + checkBoxWidth / 2) * m_rasterizationScale;
             InputHelper.Tap(item, x, item.BoundingRectangle.Height * .5);
+        }
+
+        private double m_rasterizationScale = 1.0;
+
+        // MainPage of MUXControlsTestApp publishes XamlRoot.RasterizationScale in RasterizationScaleTextBox (same source
+        // ItemsViewTestsWithInputHelper uses). It is only reachable while MainPage is displayed, i.e. before TestSetupHelper.
+        private static double GetAppRasterizationScale()
+        {
+            var textBox = FindElement.ById("RasterizationScaleTextBox");
+            if (textBox == null)
+            {
+                Log.Warning("RasterizationScaleTextBox not found; assuming RasterizationScale 1.");
+                return 1.0;
+            }
+
+            string value = new Edit(textBox).Value;
+            Log.Comment("RasterizationScale: " + value);
+            double scale;
+            if (!double.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out scale) &&
+                !double.TryParse(value, out scale))
+            {
+                Log.Warning("Could not parse RasterizationScale '" + value + "'; assuming 1.");
+                return 1.0;
+            }
+            return scale;
         }
     }
 }
