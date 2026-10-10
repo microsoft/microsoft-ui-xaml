@@ -44,6 +44,7 @@ public:
     // to support consumption of private API's such as MaterialProperties exclusively in WUXC.
     static com_ptr<MaterialHelper> GetMaterialHelperInstance();
     static com_ptr<MaterialHelper> TryGetMaterialHelperInstance();
+    static com_ptr<MaterialHelper> TryGetMaterialHelperInstanceForListenerRemoval();
     static void ClearMaterialHelperInstance();
 
 #ifdef TWOPANEVIEW_INCLUDED

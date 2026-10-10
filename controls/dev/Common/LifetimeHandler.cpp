@@ -117,6 +117,13 @@ com_ptr<MaterialHelper> LifetimeHandler::TryGetMaterialHelperInstance()
 }
 
 /* static */
+com_ptr<MaterialHelper> LifetimeHandler::TryGetMaterialHelperInstanceForListenerRemoval()
+{
+    // Listener removal must not query the compositor or create state during teardown.
+    return s_tlsInstanceNoRef ? s_tlsInstanceNoRef->m_materialHelper : nullptr;
+}
+
+/* static */
 void LifetimeHandler::ClearMaterialHelperInstance()
 {
     Instance().m_materialHelper = nullptr;
