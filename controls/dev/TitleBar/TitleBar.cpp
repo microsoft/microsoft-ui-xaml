@@ -356,20 +356,14 @@ void TitleBar::OnContentLayoutUpdated(const winrt::IInspectable& /*sender*/, con
 }
 
 // Static callback for IsDragRegion attached property changes.
-// Walks up the visual tree to find the parent TitleBar and triggers an update of its drag regions.
-// This handles dynamic changes to IsDragRegion at runtime (including hot reload scenarios).
-// 
-// Note: If element is not yet in the visual tree (e.g., during initial XAML parsing),
-// GetParent returns null and we exit immediately. The TitleBar will discover the
-// IsDragRegion value later via FindInteractableElements() during layout updates.
+// Walks up the visual tree to find the parent TitleBar and triggers a coalesced update
+// of its drag regions. Multiple IsDragRegion changes in the same tick are batched into
+// a single UpdateInteractableElementsList + UpdateDragRegion pass via the DispatcherQueue
+// to avoid O(changes * treeSize) work on Windows 11 high-frequency updates.
 void TitleBar::OnIsDragRegionPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& /*args*/)
 {
-    // Walk up from sender to find the owning TitleBar and refresh its drag regions.
-    // Note: If multiple elements have their IsDragRegion changed at the same time,
-    // this will result in duplicate work. A future optimization could defer the update
-    // using CompositionTarget.Rendered to coalesce multiple changes into a single pass.
     auto current = sender.try_as<winrt::DependencyObject>();
     while (current)
     {
@@ -377,8 +371,43 @@ void TitleBar::OnIsDragRegionPropertyChanged(
         {
             if (auto titleBarImpl = winrt::get_self<TitleBar>(titleBar))
             {
-                titleBarImpl->UpdateInteractableElementsList();
-                titleBarImpl->UpdateDragRegion();
+                if (!titleBarImpl->m_isDragRegionUpdatePending)
+                {
+                    titleBarImpl->m_isDragRegionUpdatePending = true;
+                    // Coalesce via DispatcherQueue Low priority (next tick) to batch rapid changes.
+                    // Fallback to immediate update if DispatcherQueue is unavailable (e.g., not yet loaded).
+                    if (auto dispatcherQueue = titleBar.DispatcherQueue())
+                    {
+                        bool enqueued = dispatcherQueue.TryEnqueue(
+                            winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Low,
+                            winrt::Microsoft::UI::Dispatching::DispatcherQueueHandler(
+                                [weakTitleBar = winrt::make_weak(titleBar)]()
+                                {
+                                    if (auto strongTitleBar = weakTitleBar.get())
+                                    {
+                                        if (auto impl = winrt::get_self<TitleBar>(strongTitleBar))
+                                        {
+                                            impl->m_isDragRegionUpdatePending = false;
+                                            impl->UpdateInteractableElementsList();
+                                            impl->UpdateDragRegion();
+                                        }
+                                    }
+                                }));
+                        if (!enqueued)
+                        {
+                            // Queue shut down — run immediately.
+                            titleBarImpl->m_isDragRegionUpdatePending = false;
+                            titleBarImpl->UpdateInteractableElementsList();
+                            titleBarImpl->UpdateDragRegion();
+                        }
+                    }
+                    else
+                    {
+                        titleBarImpl->m_isDragRegionUpdatePending = false;
+                        titleBarImpl->UpdateInteractableElementsList();
+                        titleBarImpl->UpdateDragRegion();
+                    }
+                }
             }
             return;
         }
