@@ -51,6 +51,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         public TestContext TestContext { get; set; }
 
+        // Scenario: for the tip in resources and in the visual tree, close it programmatically, with the header X,
+        //           programmatically with light dismiss on, by light dismiss (click outside, then Esc), and with the
+        //           footer close button.
+        // Expected: the logged Closing/Closed events report Programmatic, CloseButton (after "Close Button Clicked"),
+        //           Programmatic, LightDismiss, LightDismiss and CloseButton, in order.
+        // A failure means: apps get the wrong TeachingTipCloseReason or the events in the wrong order.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void CloseReasonIsAccurate()
@@ -129,6 +135,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: open a targeted tip and remove its target button from the tree.
+        // Expected: the tip's content is unloaded (the page's "content unloaded" check box turns on).
+        // A failure means: a tip stays open after its target is removed from the page.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void TargetUnloadingClosesTeachingTip()
@@ -151,6 +160,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: set and then remove the tip's target, open it, and remove the former target button from the tree.
+        // Expected: the tip's content stays loaded.
+        // A failure means: a tip closes because an element it no longer targets was unloaded.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void PreviousTargetUnloadingLeavesTeachingTipOpen()
@@ -175,6 +187,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: open a tip and remove the TeachingTip itself from the tree.
+        // Expected: its content is unloaded and IsOpen turns off.
+        // A failure means: removing a TeachingTip leaves its popup on screen.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void TeachingTipRemovalClosesPopup()
@@ -199,6 +214,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: for both tip locations, open the tip and scroll the target by 10, -20 and 10 pixels with the
+        //           TipFollowsTarget hook off, on, then off.
+        // Expected: when off, the tip's vertical offset does not change; when on, it moves up and down with the target
+        //           and returns exactly to its original offset; after turning it off again it stays put.
+        // A failure means: tips drift when they should not follow the target, or do not follow it when they should.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void TipCanFollowTarget()
@@ -218,14 +238,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     ScrollBy(10);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should not follow the target by default");
                     ScrollBy(-20);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset - 10);
                     Wait.ForIdle();
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should not follow the target by default");
                     ScrollBy(10);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should not follow the target by default");
 
                     SetTipFollowsTarget(true);
 
@@ -238,24 +258,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsGreaterThan(GetTipVerticalOffset(), initialTipVerticalOffset);
                     ScrollBy(10);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should return to its original position with the target");
 
                     SetTipFollowsTarget(false);
 
                     ScrollBy(10);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should stop following the target");
                     ScrollBy(-20);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset - 10);
                     Wait.ForIdle();
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should stop following the target");
                     ScrollBy(10);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should stop following the target");
                 }
             }
         }
 
+        // Scenario: Ignored (#2219, unreliable): scroll, then unmaximize and maximize the window with Win+Down/Win+Up,
+        //           and repeat for a tip on the window edge.
+        // Expected: the tip's vertical offset decreases after the resize; the edge tip's horizontal offset decreases
+        //           after restoring and increases after maximizing. The API test OpenTipsRepositionWhenWindowIsResized
+        //           covers this reliably.
+        // A failure means: open tips are not repositioned when the window is resized.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("Ignore", "True")] // #2219 Unreliable test: TeachingTipTests.TipFollowsTargetOnWindowResize 
@@ -316,6 +342,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Ignored (#3125): with Auto placement, shrink the test window (and then screen) bounds around the
+        //           target step by step, also for an out-of-root tip with ReturnTopForOutOfWindowPlacement on and off.
+        // Expected: the chosen placement goes through Top, Bottom, LeftTop, LeftBottom, RightBottom, RightTop, TopLeft,
+        //           TopRight, BottomLeft, BottomRight, Center, Left and Right; out-of-root with the shortcut on always
+        //           gives Top.
+        // A failure means: the Auto placement order changed.
         [TestMethod] 
         [TestProperty("TestSuite", "B")]
         [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
@@ -344,6 +376,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Ignored. Data-driven over tip location and 5 cases: with test window bounds around the target, all
+        //           sides available (case 1) or no room on the left, top, right or bottom (cases 2-5); set each
+        //           preferred placement.
+        // Expected: case 1 honors every preference; cases 2-5 move preferences that need the missing side to the
+        //           expected fallback placement.
+        // A failure means: preferred placements are not honored, or fall back to the wrong side.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("Ignore", "True")]
@@ -548,6 +586,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Ignored. Same data-driven cases as SpecifiedPlacement with the page in RightToLeft.
+        // Expected: the same expectations with horizontal placements mirrored.
+        // A failure means: preferred placements are not mirrored or fall back to the wrong side in right-to-left apps.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("Ignore", "True")]
@@ -757,6 +798,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
 
+        // Scenario: for both tip locations, open and close a tip without an icon, then remove the icon from an open
+        //           tip.
+        // Expected: the tip opens without an icon, closes, and stays open when its icon is removed.
+        // A failure means: a tip without an icon cannot open, or removing the icon closes or crashes it.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void NoIconDoesNotCrash()
@@ -774,15 +819,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     SetIcon(IconOptions.NoIcon);
                     OpenTeachingTip();
+                    Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "A tip without an icon should open");
                     CloseTeachingTipProgrammatically();
+                    Verify.AreEqual(ToggleState.Off, elements.GetIsOpenCheckBox().ToggleState);
                     SetIcon(IconOptions.People);
                     OpenTeachingTip();
                     SetIcon(IconOptions.NoIcon);
+                    Wait.ForIdle();
+                    Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "Removing the icon must not close an open tip");
+                    CloseTeachingTipProgrammatically();
                 }
             }
         }
 
 
+        // Scenario: for both tip locations, toggle ShouldConstrainToRootBounds while the tip is closed and while it is
+        //           open.
+        // Expected: an out-of-root tip uses Top for the Auto placement; changing the setting while open does not close
+        //           the tip, and it applies after the tip reopens.
+        // A failure means: switching between in-window and out-of-root tips closes an open tip or is never applied.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void CanSwitchShouldConstrainToRootBounds()
@@ -801,14 +856,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     CloseTeachingTipProgrammatically();
                     SetShouldConstrainToRootBounds(false);
                     OpenTeachingTip();
+                    // Out-of-root tips skip the space checks and use Top for the Auto placement.
+                    Verify.AreEqual("Top", GetEffectivePlacement(), "Unconstrained tip placement");
                     CloseTeachingTipProgrammatically();
                     SetShouldConstrainToRootBounds(true);
                     OpenTeachingTip();
                     CloseTeachingTipProgrammatically();
                     OpenTeachingTip();
                     SetShouldConstrainToRootBounds(false);
+                    Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "Changing ShouldConstrainToRootBounds must not close an open tip");
                     CloseTeachingTipProgrammatically();
                     OpenTeachingTip();
+                    Verify.AreEqual("Top", GetEffectivePlacement(), "The new setting applies when the tip reopens");
                     SetShouldConstrainToRootBounds(true);
                     CloseTeachingTipProgrammatically();
                     OpenTeachingTip();
@@ -818,6 +877,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
 
+        // Scenario: for both tip locations, show the tip inside a 10x10 test window, then as an out-of-root tip with a
+        //           10x10 test screen.
+        // Expected: the in-window tip does not open (the log shows Closed with reason Programmatic); the out-of-root
+        //           tip opens with the Top placement.
+        // A failure means: tips that cannot fit are shown, or out-of-root tips are refused.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void TipsWhichDoNotFitDoNotOpen()
@@ -854,6 +918,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
 
+        // Scenario: for both tip locations, open a tip with an action button and switch its theme Light, Dark, Light.
+        // Expected: the button and content text are black, then white, then black (alpha ignored).
+        // A failure means: tip content does not follow the requested theme, leaving text unreadable.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void VerifyTheming()
@@ -892,6 +959,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Ignored (#1769): open a tip and set Title, then Subtitle, to an empty string.
+        // Expected: both are Visible at first; an empty Title collapses only the title, and an empty Subtitle collapses
+        //           the subtitle too.
+        // A failure means: empty title/subtitle lines are still shown.
         [TestMethod] //Disabled with issue #1769
         [TestProperty("TestSuite", "B")]
         [TestProperty("Ignore", "True")]
@@ -917,6 +988,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: open a page that declares a TeachingTip in XAML with IsOpen=true, then invoke its close button.
+        // Expected: the tip is open on load, its content and close button are found through UI Automation, and invoking
+        //           the button closes the tip and it goes idle.
+        // A failure means: tips declared open in XAML do not open on load or cannot be closed.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TestTeachingTipInXamlPage()
@@ -991,6 +1066,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             CloseTeachingTipProgrammatically();
         }
 
+        // Scenario: for both tip locations, open the tip, clear its AutomationProperties.Name and set it again.
+        // Expected: the popup's UIA name is the tip's name, falls back to the title ("We've Added Auto Saving!") when
+        //           cleared, and returns to the name when set again.
+        // A failure means: screen readers announce the tip popup with a missing or stale name.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void AutomationNameIsForwardedToPopup()
@@ -1009,11 +1088,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     SetAutomationName(AutomationNameOptions.None);
                     Verify.IsNotNull(FindElement.ByNameAndClassName("We've Added Auto Saving!", "Popup"));
                     SetAutomationName(location == TipLocationOptions.VisualTree ? AutomationNameOptions.VisualTree : AutomationNameOptions.Resources);
+                    Verify.IsNotNull(FindElement.ByNameAndClassName(location == TipLocationOptions.VisualTree ? "TeachingTipInVisualTree" : "TeachingTipInResources", "Popup"),
+                        "Restoring the explicit name should be forwarded to the popup");
                     CloseTeachingTipProgrammatically();
                 }
             }
         }
 
+        // Scenario: Ignored: open a tip and close and reopen it using only the keyboard (F6 then Enter), with and
+        //           without CloseButtonContent, and use F6 and Tab to return to the page and close it.
+        // Expected: each keyboard sequence closes the tip.
+        // A failure means: keyboard users cannot reach and use the tip's close button with F6.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         [TestProperty("Ignore", "True")]
@@ -1035,6 +1120,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: on the focus page, put focus on the open button and press Tab with the tip closed, open, and closed
+        //           with light dismiss enabled.
+        // Expected: focus stays on the open button each time.
+        // A failure means: a TeachingTip adds itself to the page's tab order.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void VerifyTeachingTipNotIncludedInTabOrder()
@@ -1104,6 +1193,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: open a tip with short action and close button content.
+        // Expected: the UIA names of ActionButton and CloseButton are "A:Short Text." and "C:Short Text.".
+        // A failure means: screen readers announce the tip buttons without their text.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void VerifyTeachingTipButtonsNameAutomationProperty()
@@ -1126,6 +1218,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: on the focus page, open a normal tip and press F6 twice; then enable light dismiss, open it and
+        //           press Esc.
+        // Expected: F6 moves focus to the tip's close button and back to the open button; a light-dismiss tip takes
+        //           focus on its close button when it opens, and Esc returns focus to the open button.
+        // A failure means: keyboard focus does not move into or out of the tip as designed.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void VerifyTeachingTipGetsFocus()
@@ -1194,6 +1291,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: open the tip, switch its target, and switch back.
+        // Expected: switching moves the tip vertically while it stays open; switching back restores exactly the
+        //           original offset.
+        // A failure means: changing Target does not reposition an open tip or closes it.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void VerifyTeachingTipTargetChange()
@@ -1211,6 +1312,236 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 double newYOffset = GetTipVerticalOffset();
 
                 Verify.IsFalse(oldYOffset == newYOffset);
+                Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "Changing the target must not close the tip");
+
+                // Switching back to the original target must restore the original position, showing the tip tracks its current target.
+                elements.GetSwitchTargetButton().InvokeAndWait();
+                Verify.AreEqual(oldYOffset, GetTipVerticalOffset(), "Tip position for the original target");
+            }
+        }
+
+        // Scenario: with focus on the page and a tip open without CloseButtonContent, press F6, then Enter, then F6
+        //           again with no tip open.
+        // Expected: F6 focuses the header X button and is handled (the page's F6 log stays empty); Enter logs Close
+        //           Button Clicked, Closing and Closed with reason CloseButton, and focus returns to the show button;
+        //           with no tip open F6 reaches the page once.
+        // A failure means: F6 targets a hidden button, is not marked handled, or focus is not restored after closing.
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void F6FocusesHeaderCloseButtonWhenThereIsNoCloseButtonContent()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
+            {
+                elements = new TeachingTipTestPageElements();
+                SetTeachingTipLocation(TipLocationOptions.VisualTree);
+                ScrollTargetIntoView();
+                OpenTeachingTip();
+                ClearTeachingTipDebugMessages();
+
+                var showButton = elements.GetShowButton();
+                FocusHelper.SetFocus(showButton);
+                Wait.ForIdle();
+                Verify.IsTrue(showButton.HasKeyboardFocus, "Focus should start on the page");
+
+                // Without CloseButtonContent the header (X) button is the tip's only close button.
+                KeyboardHelper.PressKey(Key.F6);
+                Wait.ForIdle();
+                Verify.IsTrue(elements.GetTeachingTipAlternateCloseButton().HasKeyboardFocus, "F6 should focus the header close button");
+                // The open tip handles F6, so the page's PreviewKeyDown logger (tunneling after the tip's handler) must not see it.
+                Verify.AreEqual(0, CountTeachingTipDebugMessages("Page KeyDown: F6"), "F6 should be handled by the open tip");
+
+                KeyboardHelper.PressKey(Key.Enter);
+                WaitForTipClosed();
+                Verify.IsTrue(GetTeachingTipDebugMessage(0).ToString().Contains("Close Button Clicked"));
+                Verify.IsTrue(GetTeachingTipDebugMessage(1).ToString().Contains("CloseButton"));
+                Verify.IsTrue(GetTeachingTipDebugMessage(2).ToString().Contains("Closed"));
+                Verify.IsTrue(GetTeachingTipDebugMessage(2).ToString().Contains("CloseButton"));
+
+                Wait.ForIdle();
+                Verify.IsTrue(showButton.HasKeyboardFocus, "Focus should return to the element that had focus before F6");
+
+                // Positive control: with no tip open, F6 is not handled and reaches the page.
+                KeyboardHelper.PressKey(Key.F6);
+                Wait.ForIdle();
+                Verify.AreEqual(1, CountTeachingTipDebugMessages("Page KeyDown: F6"), "An unhandled F6 should reach the page");
+            }
+        }
+
+        // Scenario: open a light-dismiss tip, move focus back to the page, press F6, then press F6 again with focus
+        //           inside the tip.
+        // Expected: the first F6 focuses the tip's first focusable element (the content CheckBox) and is handled; the
+        //           second keeps focus on the CheckBox (the tip has no element to return to); the tip stays open and
+        //           the page's F6 log stays empty.
+        // A failure means: F6 does not move keyboard users into a light-dismiss tip, or sends focus somewhere
+        //                  unexpected.
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void F6MovesFocusIntoOpenLightDismissTip()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
+            {
+                elements = new TeachingTipTestPageElements();
+                SetTeachingTipLocation(TipLocationOptions.VisualTree);
+                ScrollTargetIntoView();
+                EnableLightDismiss(true);
+                OpenTeachingTip();
+                ClearTeachingTipDebugMessages();
+
+                // An opening light-dismiss tip takes focus; move it back to the page so F6 starts outside the tip.
+                var showButton = elements.GetShowButton();
+                FocusHelper.SetFocus(showButton);
+                Wait.ForIdle();
+                Verify.IsTrue(showButton.HasKeyboardFocus, "Precondition: focus is on the page, outside the tip");
+                Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "Precondition: moving focus to the page does not dismiss the tip");
+
+                // The tip's content has a CheckBox, its first focusable element; F6 moves focus there and is handled.
+                KeyboardHelper.PressKey(Key.F6);
+                Wait.ForIdle();
+                var contentCheckBox = FindElement.ById("CancelClosesCheckBoxInVisualTree");
+                Verify.IsNotNull(contentCheckBox, "The tip's content CheckBox");
+                Verify.IsTrue(contentCheckBox.HasKeyboardFocus, "F6 should focus the first focusable element of the light-dismiss tip");
+                Verify.IsFalse(showButton.HasKeyboardFocus, "Focus should have left the page");
+                Verify.AreEqual(0, CountTeachingTipDebugMessages("Page KeyDown: F6"), "F6 should be handled by the open tip");
+                Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "F6 must not close the tip");
+
+                // F6 again, now with focus inside the tip. Focus came from the light-dismiss branch, which records no element to
+                // return to (TeachingTip::HandleF6Clicked), so the tip's popup handler has nowhere to send focus: focus stays in the
+                // tip, the tip stays open, and the key does not reach the page.
+                KeyboardHelper.PressKey(Key.F6);
+                Wait.ForIdle();
+                Verify.IsTrue(contentCheckBox.HasKeyboardFocus, "F6 inside the tip with no element to return to keeps focus in the tip");
+                Verify.AreEqual(0, CountTeachingTipDebugMessages("Page KeyDown: F6"), "F6 pressed inside the tip does not reach the page");
+                Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "F6 inside the tip must not close it");
+
+                CloseTeachingTipProgrammatically();
+            }
+        }
+
+        // Scenario: open a light-dismiss tip with no content and no buttons, put focus on the page and press F6.
+        // Expected: F6 reaches the page's F6 log exactly once (not handled), focus stays on the show button and the tip
+        //           stays open.
+        // A failure means: the tip swallows F6 when it has nothing to focus, or moves focus to a hidden button.
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void F6IsNotHandledByLightDismissTipWithNothingFocusable()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
+            {
+                elements = new TeachingTipTestPageElements();
+                SetTeachingTipLocation(TipLocationOptions.VisualTree);
+                ScrollTargetIntoView();
+
+                // No content and no button content: with light dismiss both close buttons are collapsed, so nothing in the tip can take focus.
+                elements.GetContentComboBox().SelectItemByName("No Content");
+                elements.GetSetContentButton().InvokeAndWait();
+                EnableLightDismiss(true);
+                OpenTeachingTip();
+                ClearTeachingTipDebugMessages();
+
+                var showButton = elements.GetShowButton();
+                FocusHelper.SetFocus(showButton);
+                Wait.ForIdle();
+                Verify.IsTrue(showButton.HasKeyboardFocus, "Precondition: focus is on the page, outside the tip");
+                Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "Precondition: moving focus to the page does not dismiss the tip");
+
+                // With nothing to focus, the tip leaves F6 unhandled, so it reaches the page's PreviewKeyDown logger.
+                KeyboardHelper.PressKey(Key.F6);
+                Wait.ForIdle();
+                Verify.AreEqual(1, CountTeachingTipDebugMessages("Page KeyDown: F6"), "F6 should not be handled by a tip with nothing focusable");
+                Verify.IsTrue(showButton.HasKeyboardFocus, "Focus should stay on the page");
+                Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "F6 must not close the tip");
+
+                CloseTeachingTipProgrammatically();
+            }
+        }
+
+        // Scenario: with UIA WindowOpened/WindowClosed listeners registered, open and close a light-dismiss tip.
+        // Expected: WindowOpened and then WindowClosed arrive from the tip within 5s.
+        // A failure means: assistive technology is not told that a light-dismiss tip (a UIA window) opened or closed.
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void LightDismissTipRaisesUiaWindowOpenedAndClosedEvents()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
+            {
+                elements = new TeachingTipTestPageElements();
+                SetTeachingTipLocation(TipLocationOptions.VisualTree);
+                ScrollTargetIntoView();
+                EnableLightDismiss(true);
+
+                // A light-dismiss tip reports itself as a UIA window. The waiters register UIA listeners, which the tip
+                // checks (AutomationPeer.ListenerExists) before raising WindowOpened/WindowClosed.
+                UIObject appWindow = TestEnvironment.Application.ApplicationFrameWindow ?? TestEnvironment.Application.CoreWindow;
+                Verify.IsNotNull(appWindow, "Test app window");
+                var tipCondition = UICondition.CreateFromName("TeachingTipInVisualTree");
+
+                using (var openedWaiter = new AutomationEventWaiter(WindowPattern.WindowOpenedEvent, appWindow, Scope.Descendants, tipCondition))
+                {
+                    elements.GetShowButton().InvokeAndWait();
+                    WaitForTipOpened();
+                    Verify.IsTrue(openedWaiter.TryWait(TimeSpan.FromSeconds(5)), "Opening a light-dismiss tip should raise UIA WindowOpened");
+                }
+
+                using (var closedWaiter = new AutomationEventWaiter(WindowPattern.WindowClosedEvent, appWindow, Scope.Descendants, tipCondition))
+                {
+                    elements.GetCloseButton().InvokeAndWait();
+                    WaitForTipClosed();
+                    Verify.IsTrue(closedWaiter.TryWait(TimeSpan.FromSeconds(5)), "Closing a light-dismiss tip should raise UIA WindowClosed");
+                }
+            }
+        }
+
+        // Scenario: with the same UIA listeners registered, open and close a tip without light dismiss, then enable
+        //           light dismiss and do it again.
+        // Expected: no WindowOpened or WindowClosed arrives within 2s for the normal tip; both arrive within 5s once
+        //           light dismiss is on (positive control).
+        // A failure means: tips that are not UIA windows announce themselves as windows.
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void NonLightDismissTipDoesNotRaiseUiaWindowEvents()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
+            {
+                elements = new TeachingTipTestPageElements();
+                SetTeachingTipLocation(TipLocationOptions.VisualTree);
+                ScrollTargetIntoView();
+                EnableLightDismiss(false);
+
+                UIObject appWindow = TestEnvironment.Application.ApplicationFrameWindow ?? TestEnvironment.Application.CoreWindow;
+                Verify.IsNotNull(appWindow, "Test app window");
+                var tipCondition = UICondition.CreateFromName("TeachingTipInVisualTree");
+
+                // With UIA listeners registered, a tip without light dismiss is not reported as a window, so neither event is raised.
+                // The bounded waits are long compared to the event latency shown by the positive control below.
+                using (var openedWaiter = new AutomationEventWaiter(WindowPattern.WindowOpenedEvent, appWindow, Scope.Descendants, tipCondition))
+                {
+                    elements.GetShowButton().InvokeAndWait();
+                    WaitForTipOpened();
+                    Verify.IsFalse(openedWaiter.TryWait(TimeSpan.FromSeconds(2)), "Opening a tip without light dismiss must not raise UIA WindowOpened");
+                }
+
+                using (var closedWaiter = new AutomationEventWaiter(WindowPattern.WindowClosedEvent, appWindow, Scope.Descendants, tipCondition))
+                {
+                    elements.GetCloseButton().InvokeAndWait();
+                    WaitForTipClosed();
+                    Verify.IsFalse(closedWaiter.TryWait(TimeSpan.FromSeconds(2)), "Closing a tip without light dismiss must not raise UIA WindowClosed");
+                }
+
+                // Positive control: the same listeners receive both events once light dismiss is enabled.
+                EnableLightDismiss(true);
+                using (var openedWaiter = new AutomationEventWaiter(WindowPattern.WindowOpenedEvent, appWindow, Scope.Descendants, tipCondition))
+                {
+                    elements.GetShowButton().InvokeAndWait();
+                    WaitForTipOpened();
+                    Verify.IsTrue(openedWaiter.TryWait(TimeSpan.FromSeconds(5)), "Positive control: WindowOpened for a light-dismiss tip");
+                }
+
+                using (var closedWaiter = new AutomationEventWaiter(WindowPattern.WindowClosedEvent, appWindow, Scope.Descendants, tipCondition))
+                {
+                    elements.GetCloseButton().InvokeAndWait();
+                    WaitForTipClosed();
+                    Verify.IsTrue(closedWaiter.TryWait(TimeSpan.FromSeconds(5)), "Positive control: WindowClosed for a light-dismiss tip");
+                }
             }
         }
 
@@ -1641,6 +1972,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Task.Delay(TimeSpan.FromMilliseconds(250)).Wait();
             }
             return elements.GetLstTeachingTipEvents().Items[index];
+        }
+
+        private int CountTeachingTipDebugMessages(string text)
+        {
+            int count = 0;
+            foreach (var item in elements.GetLstTeachingTipEvents().Items)
+            {
+                if (item.ToString().Contains(text))
+                {
+                    count++;
+                }
+            }
+            return count;
         }
 
         private void ClearTeachingTipDebugMessages()
