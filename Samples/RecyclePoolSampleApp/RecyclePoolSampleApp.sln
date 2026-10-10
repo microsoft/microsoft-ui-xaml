@@ -1,0 +1,43 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RecyclePoolSampleApp", "RecyclePoolSampleApp\RecyclePoolSampleApp.csproj", "{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM64 = Debug|ARM64
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|ARM64 = Release|ARM64
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Debug|ARM64.Build.0 = Debug|ARM64
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Debug|x64.ActiveCfg = Debug|x64
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Debug|x64.Build.0 = Debug|x64
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Debug|x64.Deploy.0 = Debug|x64
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Debug|x86.ActiveCfg = Debug|x86
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Debug|x86.Build.0 = Debug|x86
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Debug|x86.Deploy.0 = Debug|x86
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Release|ARM64.ActiveCfg = Release|ARM64
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Release|ARM64.Build.0 = Release|ARM64
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Release|ARM64.Deploy.0 = Release|ARM64
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Release|x64.ActiveCfg = Release|x64
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Release|x64.Build.0 = Release|x64
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Release|x64.Deploy.0 = Release|x64
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Release|x86.ActiveCfg = Release|x86
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Release|x86.Build.0 = Release|x86
+		{7C5A1E93-4B08-42D6-A5F1-9C3E6D4B1A72}.Release|x86.Deploy.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5D9E2A41-8C73-4E60-B1F2-6A4D8E93C507}
+	EndGlobalSection
+EndGlobal
