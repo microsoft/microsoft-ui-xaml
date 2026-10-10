@@ -193,6 +193,7 @@ public sealed partial class ShapingOptions : UserControl
         AppliedKey = key;
         _groupDeclaredAt = mode == "grouped" ? ++_declarations : -1;
 
+        // Workaround for AB#64548351: the control drops the selection when a row's group key changes.
         // Workaround: the control re-anchors the selection after a reshape, except when the selected row's
         // group key changed; then re-select it once the projection is rebuilt.
         if (RestoreSelection && selected is not null && !ReferenceEquals(_table.SelectedItem, selected))
