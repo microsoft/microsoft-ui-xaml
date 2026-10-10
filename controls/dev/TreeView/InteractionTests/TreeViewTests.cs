@@ -1520,9 +1520,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            // Read while MainPage is still displayed (TestSetupHelper navigates away from it).
-            m_rasterizationScale = GetAppRasterizationScale();
-
             using (var setup = new TestSetupHelper("TreeView Tests"))
             {
                 SetContentMode(isContentMode);
@@ -2184,9 +2181,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void TreeViewPartialSelectionTest(bool isContentMode = false)
         {
-            // Read while MainPage is still displayed (TestSetupHelper navigates away from it).
-            m_rasterizationScale = GetAppRasterizationScale();
-
             using (var setup = new TestSetupHelper("TreeView Tests"))
             {
                 SetContentMode(isContentMode);
@@ -2901,40 +2895,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         // item's 4px left presenter margin, the indentation (16px per level below the root, see
         // TreeViewItem::UpdateIndentation) and its own 10px left margin, and is 32px wide. Tap its center. These are XAML
         // effective pixels, while InputHelper.Tap offsets are physical pixels relative to the UIA bounding rectangle, so
-        // scale by the app's RasterizationScale (read from MainPage via GetAppRasterizationScale before navigating). The
-        // former width-proportional offset (5% of the item width per level) missed the box on narrower items.
+        // scale by the test window's DPI (equal to the app's RasterizationScale), read at tap time so it is independent of
+        // the current page and of app restarts. The former width-proportional offset (5% of the item width per level)
+        // missed the box on narrower items.
         private void ToggleTreeViewItemCheckBox(UIObject item, int level)
         {
             const double itemLeftMargin = 4;
             const double indentationPerLevel = 16;
             const double checkBoxLeftMargin = 10;
             const double checkBoxWidth = 32;
-            double x = (itemLeftMargin + indentationPerLevel * (level - 1) + checkBoxLeftMargin + checkBoxWidth / 2) * m_rasterizationScale;
+            double scale = GetTestWindowScale();
+            double x = (itemLeftMargin + indentationPerLevel * (level - 1) + checkBoxLeftMargin + checkBoxWidth / 2) * scale;
             InputHelper.Tap(item, x, item.BoundingRectangle.Height * .5);
         }
 
-        private double m_rasterizationScale = 1.0;
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern uint GetDpiForWindow(IntPtr hwnd);
 
-        // MainPage of MUXControlsTestApp publishes XamlRoot.RasterizationScale in RasterizationScaleTextBox (same source
-        // ItemsViewTestsWithInputHelper uses). It is only reachable while MainPage is displayed, i.e. before TestSetupHelper.
-        private static double GetAppRasterizationScale()
+        // DPI scale of the running test app's window (1.0 at 96 DPI). Falls back to 1.0 with a warning if the window
+        // handle is not available.
+        private static double GetTestWindowScale()
         {
-            var textBox = FindElement.ById("RasterizationScaleTextBox");
-            if (textBox == null)
+            IntPtr hwnd = TestEnvironment.Application.Hwnd;
+            uint dpi = hwnd != IntPtr.Zero ? GetDpiForWindow(hwnd) : 0;
+            if (dpi == 0)
             {
-                Log.Warning("RasterizationScaleTextBox not found; assuming RasterizationScale 1.");
+                Log.Warning("Could not read the test window DPI; assuming scale 1.");
                 return 1.0;
             }
-
-            string value = new Edit(textBox).Value;
-            Log.Comment("RasterizationScale: " + value);
-            double scale;
-            if (!double.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out scale) &&
-                !double.TryParse(value, out scale))
-            {
-                Log.Warning("Could not parse RasterizationScale '" + value + "'; assuming 1.");
-                return 1.0;
-            }
+            double scale = dpi / 96.0;
+            Log.Comment("Test window DPI " + dpi + " (scale " + scale + ")");
             return scale;
         }
     }
