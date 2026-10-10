@@ -8,7 +8,6 @@
 
 #include <MetadataAPI.h>
 #include <DependencyLocator.h>
-#include <MetadataResetter.h>
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -45,9 +44,6 @@ IFACEMETHODIMP FrameworkView::Initialize(_In_ wac::ICoreApplicationView* pCoreAp
 
     ReplaceInterface(m_pCoreApplicationView, pCoreApplicationView);
     IFC(HookCoreActivationEvents(TRUE /* fRegister */));
-
-    // Get reference to metadata from app object after it has been initialized.
-    m_metadataRef = FrameworkApplication::GetCurrentNoRef()->GetMetadataReference();
 
 Cleanup:
     if (FAILED(hr) && fIsMainView)
@@ -118,10 +114,6 @@ Cleanup:
     // We need to release the ref to the CoreApplicationView here to break a ref cycle.
     // (CoreApplicationView references the FrameworkView, and the FrameworkView references the CoreApplicationView).
     ReleaseInterface(m_pCoreApplicationView);
-
-    // Clear the reference to the metadata store from this thread. If this is the last reference, this will
-    // reset the metadata store.
-    m_metadataRef = nullptr;
 
     VERIFYHR(hr);
     // should we return hr as result of Uninitialize?
@@ -236,4 +228,3 @@ _Check_return_ HRESULT FrameworkView::HookCoreActivationEvents(bool fRegister)
 Cleanup:
     RRETURN(hr);
 }
-
