@@ -200,8 +200,9 @@ stale handling, or the maintainer's acceptance/closure process.
   is bounded to twelve model invocations (including evidence/tool iterations)
   and ten AI credits, leaving room to read the evidence and submit its result;
   the separate output-safety analysis has its own ten-credit budget. A
-  one-hundred-credit daily guardrail stops starting further analyses after the
-  measured threshold is reached; concurrent runs may already be in flight.
+  300-credit rolling 24-hour guardrail stops starting further automatic analyses
+  after the measured threshold is reached; concurrent runs may already be in
+  flight. Manual dispatch bypasses this daily guardrail, not the per-run limits.
   GitHub API rate limits use bounded backoff.
 - Action references and generated runtime containers are immutable pins. Only
   GitHub services are used for issue retrieval and AI analysis.

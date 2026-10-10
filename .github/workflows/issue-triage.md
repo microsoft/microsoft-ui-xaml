@@ -82,7 +82,7 @@ engine:
 model: small
 max-turns: 12
 max-ai-credits: 10
-max-daily-ai-credits: 100
+max-daily-ai-credits: 300
 permissions:
   contents: read
   issues: read

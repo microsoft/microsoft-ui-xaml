@@ -102,7 +102,12 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertRegex(self.source, r"(?m)^max-turns: 12$")
         self.assertRegex(self.lock, r"(?m)^\s+GH_AW_MAX_TURNS: 12$")
         self.assertRegex(self.source, r"(?m)^max-ai-credits: 10$")
-        self.assertRegex(self.source, r"(?m)^max-daily-ai-credits: 100$")
+        self.assertRegex(self.source, r"(?m)^max-daily-ai-credits: 300$")
+        self.assertEqual(
+            set(re.findall(r'(?m)^\s+GH_AW_MAX_DAILY_AI_CREDITS: "(\d+)"$', self.lock)),
+            {"300"},
+        )
+        self.assertRegex(self.source, r"threat-detection:\n(?:    [^\n]*\n)*?    max-ai-credits: 10\n")
 
     def test_fix_preserves_shell_and_publication_restrictions(self):
         self.assertIn("bash: [safeoutputs]", self.source)
