@@ -996,6 +996,7 @@ namespace Controls {
     interface IToggleSplitButtonFactory;
     interface IToggleSplitButtonIsCheckedChangedEventArgs;
     interface IToggleSwitch;
+    interface IToggleSwitchFactory;
     interface IToggleSwitchFeature_HeaderPlacement;
     interface IToggleSwitchOverrides;
     interface IToggleSwitchStatics;
