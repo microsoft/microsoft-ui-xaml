@@ -440,9 +440,9 @@ namespace Microsoft.UI.Xaml.Controls
     [CodeGen(partial: true)]
     [PropertyChange(PropertyChangeCallbackType.NoCallback)]
     [Guids(ClassGuid = "d44de20b-6ea6-450d-a487-fc55ba279531")]
-    public sealed class TimePickerFlyoutPresenter : Controls.Control
+    public class TimePickerFlyoutPresenter : Controls.Control
     {
-        internal TimePickerFlyoutPresenter() { }
+        public TimePickerFlyoutPresenter() { }
 
         [PropertyInitialization(PropertyInitializationType.CallbackRetrievedValue)]
         public Windows.Foundation.Boolean IsDefaultShadowEnabled { get; set; }
