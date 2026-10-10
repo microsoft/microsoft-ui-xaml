@@ -220,7 +220,7 @@ namespace Microsoft.UI.Xaml.Shapes
 
     [NativeName("CPolygon")]
     [Guids(ClassGuid = "2a3756f2-801e-4947-865e-06041fbecf7c")]
-    public sealed class Polygon
+    public class Polygon
      : Microsoft.UI.Xaml.Shapes.Shape
     {
 
