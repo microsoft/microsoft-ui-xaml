@@ -29,5 +29,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Hierarchy_APITests_Common.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Hierarchy_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_LiveShaping_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Localization_APITests.cs" />
   </ItemGroup>
 </Project>
