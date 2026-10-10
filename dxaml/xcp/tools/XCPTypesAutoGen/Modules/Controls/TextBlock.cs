@@ -10,7 +10,7 @@ namespace Microsoft.UI.Xaml.Controls
     [Guids(ClassGuid = "084b23b7-41a9-44c6-a55d-f16b809e0dcf")]
     [NativeName("CTextBlock")]
     [ContentProperty("Inlines")]
-    public sealed class TextBlock
+    public class TextBlock
         : Microsoft.UI.Xaml.FrameworkElement
     {
         #region Properties
