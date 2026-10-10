@@ -101,6 +101,118 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyTemplateSettingsAtSize(progressRing, 40, expectedDiameter: 5.0, expectedOffsetTop: 15.0);
             VerifyTemplateSettingsAtSize(progressRing, 41, expectedDiameter: 4.1, expectedOffsetTop: 16.4);
             VerifyTemplateSettingsAtSize(progressRing, 100, expectedDiameter: 10.0, expectedOffsetTop: 40.0);
+
+            // A ring that collapses to zero width has no ellipse. The style's MinWidth is cleared so the width can reach 0.
+            RunOnUIThread.Execute(() =>
+            {
+                progressRing.MinWidth = 0;
+                progressRing.Width = 0;
+                progressRing.UpdateLayout();
+            });
+            RunOnUIThread.WaitForTick();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0.0, progressRing.ActualWidth);
+                var settings = progressRing.TemplateSettings;
+                Log.Comment($"Width 0: EllipseDiameter={settings.EllipseDiameter} EllipseOffset={settings.EllipseOffset} MaxSideLength={settings.MaxSideLength}");
+                Verify.AreEqual(0.0, settings.EllipseDiameter, "EllipseDiameter at width 0");
+                Verify.AreEqual(0.0, settings.MaxSideLength, "MaxSideLength at width 0");
+                Verify.AreEqual(new Thickness(0), settings.EllipseOffset, "EllipseOffset at width 0");
+            });
+        }
+
+        // Scenario: read every public static DependencyProperty identifier of ProgressRing, then for each property
+        //           compare GetValue/SetValue/ClearValue with the CLR property on an unparented ring.
+        // Expected: identifiers are non-null, distinct and stable; GetValue matches the CLR default; values set through
+        //           either surface are visible through the other; ClearValue restores the default. The range values
+        //           are chosen inside the default range so coercion does not change the other range properties.
+        //           TemplateSettings (no public DP) is a stable, non-null instance.
+        [TestMethod]
+        public void DependencyPropertyIdentifiersAndClrPropertiesAgree()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var properties = new DependencyProperty[]
+                {
+                    ProgressRing.IsActiveProperty,
+                    ProgressRing.IsIndeterminateProperty,
+                    ProgressRing.DeterminateSourceProperty,
+                    ProgressRing.IndeterminateSourceProperty,
+                    ProgressRing.ValueProperty,
+                    ProgressRing.MinimumProperty,
+                    ProgressRing.MaximumProperty,
+                };
+                for (int i = 0; i < properties.Length; i++)
+                {
+                    Verify.IsNotNull(properties[i], "Dependency property identifier #" + i + " should not be null");
+                    for (int j = 0; j < i; j++)
+                    {
+                        Verify.IsFalse(ReferenceEquals(properties[i], properties[j]), "Dependency property identifiers #" + j + " and #" + i + " should be distinct");
+                    }
+                }
+                Verify.IsTrue(ReferenceEquals(ProgressRing.IsActiveProperty, ProgressRing.IsActiveProperty), "Identifiers are stable.");
+                Verify.IsTrue(ReferenceEquals(ProgressRing.DeterminateSourceProperty, ProgressRing.DeterminateSourceProperty), "Identifiers are stable.");
+
+                var progressRing = new ProgressRing();
+                var source = new global::AnimatedVisuals.ProgressRingDeterminate();
+
+                VerifyDependencyPropertyRoundTrip(progressRing, ProgressRing.IsActiveProperty, () => progressRing.IsActive, v => progressRing.IsActive = v, true, false);
+                VerifyDependencyPropertyRoundTrip(progressRing, ProgressRing.IsIndeterminateProperty, () => progressRing.IsIndeterminate, v => progressRing.IsIndeterminate = v, true, false);
+                VerifyDependencyPropertyRoundTrip<IAnimatedVisualSource>(progressRing, ProgressRing.DeterminateSourceProperty, () => progressRing.DeterminateSource, v => progressRing.DeterminateSource = v, null, source);
+                VerifyDependencyPropertyRoundTrip<IAnimatedVisualSource>(progressRing, ProgressRing.IndeterminateSourceProperty, () => progressRing.IndeterminateSource, v => progressRing.IndeterminateSource = v, null, source);
+                VerifyDependencyPropertyRoundTrip(progressRing, ProgressRing.ValueProperty, () => progressRing.Value, v => progressRing.Value = v, 0.0, 40.0);
+                VerifyDependencyPropertyRoundTrip(progressRing, ProgressRing.MinimumProperty, () => progressRing.Minimum, v => progressRing.Minimum = v, 0.0, -10.0);
+                VerifyDependencyPropertyRoundTrip(progressRing, ProgressRing.MaximumProperty, () => progressRing.Maximum, v => progressRing.Maximum = v, 100.0, 50.0);
+
+                // None of the round trips above changed the other range properties.
+                Verify.AreEqual(0.0, progressRing.Value);
+                Verify.AreEqual(0.0, progressRing.Minimum);
+                Verify.AreEqual(100.0, progressRing.Maximum);
+
+                var templateSettings = progressRing.TemplateSettings;
+                Verify.IsNotNull(templateSettings, "TemplateSettings is created with the ring.");
+                Verify.IsTrue(ReferenceEquals(templateSettings, progressRing.TemplateSettings), "TemplateSettings returns the same instance.");
+            });
+        }
+
+        // Scenario: an active determinate ring that uses the built-in determinate animation (no DeterminateSource)
+        //           gets new Foreground/Background brushes and brush colors.
+        // Expected: smoke only (must not throw); the player keeps the same built-in source. The Lottie colors are not
+        //           observable from the API and are not asserted (a determinate ring is suspected to ignore them).
+        [TestMethod]
+        public void ColorChangesOnADeterminateRingKeepTheBuiltInSource()
+        {
+            ProgressRing progressRing = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                progressRing = new ProgressRing() { IsActive = true, IsIndeterminate = false, Value = 50 };
+            });
+
+            LoadInHost(progressRing);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var player = GetLottiePlayer(progressRing);
+                var builtInSource = player.Source;
+                Verify.IsNotNull(builtInSource, "A determinate ring without DeterminateSource uses a built-in animation.");
+                Verify.IsNull(progressRing.DeterminateSource);
+                Verify.IsTrue(player.IsAnimatedVisualLoaded);
+
+                var foreground = new SolidColorBrush(Colors.Red);
+                progressRing.Foreground = foreground;
+                foreground.Color = Colors.Blue;
+                var background = new SolidColorBrush(Colors.Green);
+                progressRing.Background = background;
+                background.Color = Colors.Yellow;
+                progressRing.Foreground = new LinearGradientBrush();
+                progressRing.Background = new LinearGradientBrush();
+
+                Verify.AreSame(builtInSource, player.Source, "Color changes must not replace the built-in determinate animation.");
+                Verify.IsFalse(progressRing.IsIndeterminate);
+                Verify.IsTrue(player.IsAnimatedVisualLoaded);
+            });
         }
 
         [TestMethod]
@@ -268,6 +380,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var player = progressRing.FindVisualChildByName("LottiePlayer") as AnimatedVisualPlayer;
             Verify.IsNotNull(player, "The ProgressRing template should contain the LottiePlayer.");
             return player;
+        }
+
+        private static void VerifyDependencyPropertyRoundTrip<T>(DependencyObject owner, DependencyProperty property, Func<T> getClrValue, Action<T> setClrValue, T defaultValue, T newValue)
+        {
+            Verify.AreEqual(defaultValue, getClrValue(), "CLR default");
+            Verify.AreEqual(defaultValue, (T)owner.GetValue(property), "GetValue default");
+
+            owner.SetValue(property, newValue);
+            Verify.AreEqual(newValue, getClrValue(), "A value set through the DP should be visible through the CLR property");
+            owner.ClearValue(property);
+            Verify.AreEqual(defaultValue, getClrValue(), "ClearValue should restore the default");
+
+            setClrValue(newValue);
+            Verify.AreEqual(newValue, (T)owner.GetValue(property), "A value set through the CLR property should be visible through the DP");
+            owner.ClearValue(property);
+            Verify.AreEqual(defaultValue, getClrValue(), "ClearValue should restore the default");
+            Verify.AreEqual(defaultValue, (T)owner.GetValue(property), "ClearValue should restore the default");
         }
 
         private static void VerifyTemplateSettingsAtSize(ProgressRing progressRing, double size, double expectedDiameter, double expectedOffsetTop)

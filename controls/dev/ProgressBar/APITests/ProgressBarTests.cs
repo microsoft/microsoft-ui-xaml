@@ -267,6 +267,44 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForState(progressBar, "Determinate");
         }
 
+        // Scenario: read every public static DependencyProperty identifier of ProgressBar, then for each property
+        //           compare GetValue/SetValue/ClearValue with the CLR property on an unparented bar.
+        // Expected: identifiers are non-null, distinct (also from the inherited RangeBase.ValueProperty) and stable;
+        //           GetValue matches the CLR default; values set through either surface are visible through the other;
+        //           ClearValue restores the default. TemplateSettings (no public DP) is a stable, non-null instance.
+        [TestMethod]
+        public void DependencyPropertyIdentifiersAndClrPropertiesAgree()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var properties = new DependencyProperty[]
+                {
+                    ProgressBar.IsIndeterminateProperty,
+                    ProgressBar.ShowErrorProperty,
+                    ProgressBar.ShowPausedProperty,
+                    Microsoft.UI.Xaml.Controls.Primitives.RangeBase.ValueProperty,
+                };
+                for (int i = 0; i < properties.Length; i++)
+                {
+                    Verify.IsNotNull(properties[i], "Dependency property identifier #" + i + " should not be null");
+                    for (int j = 0; j < i; j++)
+                    {
+                        Verify.IsFalse(ReferenceEquals(properties[i], properties[j]), "Dependency property identifiers #" + j + " and #" + i + " should be distinct");
+                    }
+                }
+                Verify.IsTrue(ReferenceEquals(ProgressBar.ShowErrorProperty, ProgressBar.ShowErrorProperty), "Identifiers are stable.");
+
+                var progressBar = new ProgressBar();
+                VerifyDependencyPropertyRoundTrip(progressBar, ProgressBar.IsIndeterminateProperty, () => progressBar.IsIndeterminate, v => progressBar.IsIndeterminate = v, false, true);
+                VerifyDependencyPropertyRoundTrip(progressBar, ProgressBar.ShowErrorProperty, () => progressBar.ShowError, v => progressBar.ShowError = v, false, true);
+                VerifyDependencyPropertyRoundTrip(progressBar, ProgressBar.ShowPausedProperty, () => progressBar.ShowPaused, v => progressBar.ShowPaused = v, false, true);
+
+                var templateSettings = progressBar.TemplateSettings;
+                Verify.IsNotNull(templateSettings, "TemplateSettings is created with the bar.");
+                Verify.IsTrue(ReferenceEquals(templateSettings, progressBar.TemplateSettings), "TemplateSettings returns the same instance.");
+            });
+        }
+
         private static ProgressBar CreateProgressBar(double width)
         {
             return new ProgressBar()
@@ -368,6 +406,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static void VerifyClose(double expected, double actual, string message)
         {
             Verify.IsLessThan(Math.Abs(expected - actual), 0.01, $"{message}: expected {expected}, actual {actual}");
+        }
+
+        private static void VerifyDependencyPropertyRoundTrip<T>(DependencyObject owner, DependencyProperty property, Func<T> getClrValue, Action<T> setClrValue, T defaultValue, T newValue)
+        {
+            Verify.AreEqual(defaultValue, getClrValue(), "CLR default");
+            Verify.AreEqual(defaultValue, (T)owner.GetValue(property), "GetValue default");
+
+            owner.SetValue(property, newValue);
+            Verify.AreEqual(newValue, getClrValue(), "A value set through the DP should be visible through the CLR property");
+            owner.ClearValue(property);
+            Verify.AreEqual(defaultValue, getClrValue(), "ClearValue should restore the default");
+
+            setClrValue(newValue);
+            Verify.AreEqual(newValue, (T)owner.GetValue(property), "A value set through the CLR property should be visible through the DP");
+            owner.ClearValue(property);
+            Verify.AreEqual(defaultValue, getClrValue(), "ClearValue should restore the default");
+            Verify.AreEqual(defaultValue, (T)owner.GetValue(property), "ClearValue should restore the default");
         }
     }
 }
