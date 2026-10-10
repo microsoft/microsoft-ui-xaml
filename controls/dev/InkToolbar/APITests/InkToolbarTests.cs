@@ -4,6 +4,7 @@
 using Common;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
@@ -887,8 +888,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsNotNull(peer, $"{tool} should create an automation peer.");
                     Verify.AreEqual(AutomationControlType.Button, peer.GetAutomationControlType(),
                         $"{tool} should expose the standard Button role.");
-                    Verify.AreEqual("drop down button", peer.GetLocalizedControlType(),
-                        $"{tool} should advertise its configuration dropdown.");
+                    Verify.AreEqual("button", peer.GetLocalizedControlType(),
+                        $"{tool} should use the standard localized button role; ExpandCollapse reports the dropdown.");
 
                     const string paletteHelpText = "Open to choose a color from the palette";
                     var selectedColorHelpText = AutomationProperties.GetHelpText(button);
@@ -995,12 +996,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 peer = FrameworkElementAutomationPeer.CreatePeerForElement(button);
                 Verify.IsNotNull(peer, "MenuButton should create an automation peer.");
-                Verify.AreEqual(AutomationControlType.Button, peer.GetAutomationControlType(),
-                    "The measuring-tools dropdown should expose the standard Button role.");
-                Verify.AreEqual("dropdown", peer.GetLocalizedControlType(),
-                    "The measuring-tools button should advertise its dropdown.");
-                Verify.IsNull(peer.GetPattern(PatternInterface.Toggle),
-                    "The measuring-tools dropdown should not announce an additional on/off state.");
+                Verify.AreEqual(AutomationControlType.SplitButton, peer.GetAutomationControlType(),
+                    "The measuring-tools button toggles a stencil and opens a dropdown, so it should be a split button.");
+                Verify.AreEqual("split button", peer.GetLocalizedControlType(),
+                    "The measuring-tools button should use the standard localized split-button role.");
+                var stencilToggle = peer.GetPattern(PatternInterface.Toggle) as IToggleProvider;
+                Verify.IsNotNull(stencilToggle,
+                    "The measuring-tools button should report whether a measuring tool is showing.");
+                Verify.AreEqual(button.IsChecked == true ? ToggleState.On : ToggleState.Off, stencilToggle.ToggleState,
+                    "The Toggle state should match whether a measuring tool is showing.");
                 Verify.AreEqual("Measuring tools, Ruler", peer.GetName(),
                     "The name should include both the menu identity and the selected ruler.");
 
@@ -1026,8 +1030,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState,
                         "Opening the measuring-tools flyout through UIA should report Expanded.");
-                    Verify.IsNull(peer.GetPattern(PatternInterface.Toggle),
-                        "An expanded measuring-tools dropdown should not expose Toggle.");
+                    Verify.IsNotNull(peer.GetPattern(PatternInterface.Toggle),
+                        "An expanded measuring-tools button should still report its on/off state.");
                     Verify.AreEqual("Measuring tools, Ruler", peer.GetName(),
                         "Opening the dropdown should preserve its identity and selected stencil.");
 
@@ -1125,10 +1129,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 button.IsRulerItemVisible = true;
                 button.IsProtractorItemVisible = true;
-                Verify.AreEqual("dropdown", peer.GetLocalizedControlType(),
-                    "Restoring both stencils should restore the dropdown role on the existing peer.");
-                Verify.IsNull(peer.GetPattern(PatternInterface.Toggle),
-                    "Restoring dropdown mode should stop exposing the single-stencil Toggle pattern.");
+                Verify.AreEqual(AutomationControlType.SplitButton, peer.GetAutomationControlType(),
+                    "Restoring both stencils should restore the split-button role on the existing peer.");
+                Verify.AreEqual("split button", peer.GetLocalizedControlType(),
+                    "Restoring both stencils should restore the localized split-button role.");
+                Verify.IsNotNull(peer.GetPattern(PatternInterface.Toggle),
+                    "Restoring dropdown mode should keep the measuring tool's on/off state.");
                 var expandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
                 Verify.IsNotNull(expandCollapse, "Restoring both stencils should restore ExpandCollapse.");
                 Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState,
@@ -1206,30 +1212,128 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(() =>
             {
-                foreach (var button in new InkToolbarToolButton[]
+                // Tools that open a dropdown use the Button role with ExpandCollapse; a tool without one keeps
+                // UWP's Custom role (localized as "button") and does not advertise a dropdown.
+                foreach (var (button, opensDropDown) in new (InkToolbarToolButton, bool)[]
                 {
-                    new InkToolbarEraserButton(),
-                    new InkToolbarCustomToolButton()
+                    (new InkToolbarEraserButton(), true),
+                    (new InkToolbarCustomToolButton { ConfigurationContent = new TextBlock { Text = "Options" } }, true),
+                    (new InkToolbarCustomPenButton { ConfigurationContent = new TextBlock { Text = "Options" } }, true),
+                    (new InkToolbarCustomToolButton(), false),
+                    (new InkToolbarCustomPenButton(), false)
                 })
                 {
                     Content = button;
                     Content.UpdateLayout();
+                    var description = $"{button.GetType().Name} (dropdown: {opensDropDown})";
 
                     var peer = FrameworkElementAutomationPeer.CreatePeerForElement(button);
-                    Verify.IsNotNull(peer, "The tool should create an automation peer.");
-                    Verify.AreEqual(AutomationControlType.Custom, peer.GetAutomationControlType(),
-                        "The built-in pen role change should not change eraser or custom-tool roles.");
+                    Verify.IsNotNull(peer, $"{description} should create an automation peer.");
+                    Verify.AreEqual(opensDropDown ? AutomationControlType.Button : AutomationControlType.Custom,
+                        peer.GetAutomationControlType(), $"{description} role should follow whether it opens a dropdown.");
                     Verify.AreEqual("button", peer.GetLocalizedControlType(),
-                        "Eraser and custom tools should retain their localized button role.");
+                        $"{description} should be announced as a button.");
                     AutomationProperties.SetHelpText(button, "Custom tool help");
                     Verify.AreEqual("Custom tool help", peer.GetHelpText(),
-                        "Eraser and custom tools should preserve help text without a palette hint.");
+                        $"{description} should preserve help text without a palette hint.");
+                    Verify.IsNotNull(peer.GetPattern(PatternInterface.SelectionItem),
+                        $"{description} should keep its tool selection state.");
+
                     var expandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
-                    Verify.IsNotNull(expandCollapse, "Existing tool expand/collapse support should be preserved.");
-                    Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState,
-                        "A closed eraser or custom tool should retain its Collapsed state.");
+                    if (opensDropDown)
+                    {
+                        Verify.IsNotNull(expandCollapse, $"{description} should expose IExpandCollapseProvider.");
+                        Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState,
+                            $"{description} should report Collapsed while its dropdown is closed.");
+                    }
+                    else
+                    {
+                        Verify.IsNull(expandCollapse, $"{description} should not advertise a dropdown it cannot open.");
+                    }
                 }
             });
+        }
+
+        [TestMethod]
+        public void InkToolbarEraserFlyoutItemAutomationPeerTest()
+        {
+            var toolbar = CreateLoadedInkToolbar();
+            InkToolbarToolButton eraser = null;
+            IExpandCollapseProvider expandCollapse = null;
+            Flyout flyout = null;
+            using var closed = new ManualResetEvent(false);
+            EventHandler<object> closedHandler = (s, e) => closed.Set();
+            RunOnUIThread.Execute(() =>
+            {
+                eraser = toolbar.GetToolButton(InkToolbarTool.Eraser);
+                Verify.IsNotNull(eraser, "The eraser should be present after load.");
+                toolbar.ActiveTool = eraser;
+                toolbar.UpdateLayout();
+
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(eraser);
+                expandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+                Verify.IsNotNull(expandCollapse, "The eraser should expose IExpandCollapseProvider.");
+                flyout = FlyoutBase.GetAttachedFlyout(eraser) as Flyout;
+                Verify.IsNotNull(flyout, "The eraser should have a flyout.");
+                flyout.Closed += closedHandler;
+            });
+
+            try
+            {
+                RunOnUIThread.Execute(() => expandCollapse.Expand());
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState,
+                        "Opening the eraser flyout through UIA should report Expanded.");
+
+                    var modes = new[] { "StrokeEraser", "SmallEraser", "LargeEraser" }
+                        .Select(name => FindChildByName(flyout.Content, name) as InkToolbarFlyoutItem)
+                        .ToList();
+                    Verify.IsTrue(modes.All(item => item != null), "The eraser flyout should contain every eraser mode.");
+
+                    // Visible eraser modes form one set; hidden modes are not part of it.
+                    var visibleModes = modes.Where(item => item.Visibility == Visibility.Visible).ToList();
+                    for (int i = 0; i < visibleModes.Count; i++)
+                    {
+                        var itemPeer = FrameworkElementAutomationPeer.CreatePeerForElement(visibleModes[i]);
+                        Verify.AreEqual(i + 1, itemPeer.GetPositionInSet(), $"{visibleModes[i].Name} should have its visible position.");
+                        Verify.AreEqual(visibleModes.Count, itemPeer.GetSizeOfSet(), $"{visibleModes[i].Name} should count only visible eraser modes.");
+                    }
+
+                    // The eraser always has a mode, so UIA must not be able to deselect the current one.
+                    var strokeMode = modes[0];
+                    strokeMode.IsChecked = true;
+                    var strokePeer = FrameworkElementAutomationPeer.CreatePeerForElement(strokeMode);
+                    var strokeSelection = strokePeer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                    Verify.IsNotNull(strokeSelection, "An eraser mode should expose ISelectionItemProvider.");
+                    Verify.IsTrue(strokeSelection.IsSelected, "The checked eraser mode should report selected.");
+                    Verify.Throws<InvalidOperationException>(() => strokeSelection.RemoveFromSelection(),
+                        "RemoveFromSelection on the selected eraser mode should be rejected.");
+                    Verify.IsTrue(strokeMode.IsChecked, "The selected eraser mode should stay checked.");
+                    Verify.IsTrue(strokeSelection.IsSelected, "The selected eraser mode should stay selected.");
+
+                    var clearAll = FindChildByName(flyout.Content, "ClearAll") as InkToolbarFlyoutItem;
+                    if (clearAll != null)
+                    {
+                        var clearAllPeer = FrameworkElementAutomationPeer.CreatePeerForElement(clearAll);
+                        Verify.IsNull(clearAllPeer.GetPattern(PatternInterface.SelectionItem),
+                            "Clear all is an action, not an eraser mode.");
+                    }
+                });
+            }
+            finally
+            {
+                try
+                {
+                    RunOnUIThread.Execute(() => expandCollapse.Collapse());
+                    Verify.IsTrue(closed.WaitOne(DefaultWaitTimeInMS), "The eraser flyout should finish closing.");
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() => flyout.Closed -= closedHandler);
+                }
+            }
         }
 
         // Tooltip / automation-name parity (UWP TooltipTest + AutomationNameTest): each tool button

@@ -40,6 +40,8 @@ public:
     void UpdateVisualStatesForAllItems();
     winrt::InkToolbarFlyoutItem GetFirstVisibleItemInGroup();
     bool IsAnySelectedInRadioGroup();
+    // True for an item in a group where one item must stay selected (Radio items, and the eraser modes).
+    bool RequiresSelectionInGroup();
 
     winrt::InkToolbarFlyoutItem GetRelativeItem(
         RelativeItem relative,
