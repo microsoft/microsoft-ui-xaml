@@ -251,7 +251,7 @@ namespace Microsoft.UI.Xaml.Shapes
 
     [NativeName("CPolyline")]
     [Guids(ClassGuid = "0d7b50f1-4277-44c1-995c-a4ba0d863140")]
-    public sealed class Polyline
+    public class Polyline
      : Microsoft.UI.Xaml.Shapes.Shape
     {
 
