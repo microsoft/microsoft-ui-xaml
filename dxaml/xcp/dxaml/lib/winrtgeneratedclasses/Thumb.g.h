@@ -94,15 +94,18 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) ThumbFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::Primitives::IThumbFactory
         , public ABI::Microsoft::UI::Xaml::Controls::Primitives::IThumbStatics
     {
-        BEGIN_INTERFACE_MAP(ThumbFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(ThumbFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(ThumbFactory, ABI::Microsoft::UI::Xaml::Controls::Primitives::IThumbFactory)
             INTERFACE_ENTRY(ThumbFactory, ABI::Microsoft::UI::Xaml::Controls::Primitives::IThumbStatics)
-        END_INTERFACE_MAP(ThumbFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(ThumbFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IThumb** ppInstance);
 
         // Static properties.
 
