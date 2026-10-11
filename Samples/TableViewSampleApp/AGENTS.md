@@ -106,8 +106,8 @@ workarounds. Its `SourceSnippet` and `AdditionalSnippet` values (or `Snippet="X"
 Do not check in generated `BuildInfo.cs`, and do not change the existing `BuildInfo` field names
 without updating `Pages\AboutPage.xaml.cs`.
 
-The pages deliberately source-free today are `AboutPage.xaml`, `HomePage.xaml`,
-`SettingsPage.xaml` and `HierarchyPage.xaml`. Every other page declares `Snippet="X"`.
+The pages deliberately source-free today are `AboutPage.xaml`, `HomePage.xaml` and
+`SettingsPage.xaml`. Every other page declares `Snippet="X"`.
 
 ## Page structure
 

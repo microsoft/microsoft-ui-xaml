@@ -17,7 +17,7 @@
   *.Status.cs and shared files contribute only through named regions.
 
   A Tag is generated only when its own page files contain at least one unnamed region; a page
-  without one (About, Home, Settings, Hierarchy) has no generated snippet. A snippet whose first
+  without one (About, Home, Settings) has no generated snippet. A snippet whose first
   line is "// snippet:manual" or "<!-- snippet:manual -->" is the opt-out: it is never generated
   or checked (SamplePresenter does not display that marker line).
 
