@@ -8,7 +8,9 @@ using System;
 using System.Threading;
 using Windows.Foundation;
 using Windows.UI.ViewManagement;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Shapes;
 using Microsoft.UI.Xaml.Media;
 
@@ -178,6 +180,115 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 GC.Collect();
                 Log.Comment("Done");
             }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies default-template clipping follows CanContentRenderOutsideBounds.")]
+        public void VerifyContentClippingVisualState()
+        {
+            ScrollView scrollView = null;
+            Rectangle rectangleScrollViewContent = null;
+            AutoResetEvent scrollViewLoadedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                rectangleScrollViewContent = new Rectangle();
+                Style scrollViewStyle = new Style
+                {
+                    TargetType = typeof(ScrollView),
+                };
+                Setter cornerRadiusSetter = new Setter
+                {
+                    Property = Control.CornerRadiusProperty,
+                    Value = new CornerRadius(12),
+                };
+                scrollViewStyle.Setters.Add(cornerRadiusSetter);
+
+                scrollView = new ScrollView
+                {
+                    CanContentRenderOutsideBounds = true,
+                    Style = scrollViewStyle,
+                    Template = (ControlTemplate)XamlReader.Load(TestUtilities.ProcessTestXamlForRepo(
+                        @"<ControlTemplate
+                            xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                            xmlns:controls='using:Microsoft.UI.Xaml.Controls'
+                            xmlns:primitives='using:Microsoft.UI.Xaml.Controls.Primitives'
+                            TargetType='controls:ScrollView'>
+                            <Grid x:Name='PART_Root' CornerRadius='{TemplateBinding CornerRadius}'>
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name='ContentClippingStates'>
+                                        <VisualState x:Name='ContentClipped' />
+                                        <VisualState x:Name='ContentNotClipped'>
+                                            <VisualState.Setters>
+                                                <Setter Target='PART_Root.CornerRadius' Value='0' />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <primitives:ScrollPresenter
+                                    x:Name='PART_ScrollPresenter'
+                                    CanContentRenderOutsideBounds='{TemplateBinding CanContentRenderOutsideBounds}'
+                                    Content='{TemplateBinding Content}' />
+                            </Grid>
+                        </ControlTemplate>")),
+                };
+
+                SetupDefaultUI(scrollView, rectangleScrollViewContent, scrollViewLoadedEvent);
+            });
+
+            WaitForEvent("Waiting for Loaded event", scrollViewLoadedEvent);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Grid root = VisualTreeHelper.GetChild(scrollView, 0) as Grid;
+                Verify.IsNotNull(root);
+                Verify.AreEqual("PART_Root", root.Name);
+                Verify.IsTrue(scrollView.CanContentRenderOutsideBounds);
+                Verify.IsTrue(scrollView.ScrollPresenter.CanContentRenderOutsideBounds);
+                Verify.AreEqual(new CornerRadius(12), scrollView.CornerRadius);
+
+                Verify.AreEqual(new CornerRadius(0), root.CornerRadius);
+                Verify.IsNull(scrollView.ScrollPresenter.Clip);
+
+                Log.Comment("Setting a local CornerRadius while content clipping is disabled.");
+                scrollView.CornerRadius = new CornerRadius(20);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Grid root = VisualTreeHelper.GetChild(scrollView, 0) as Grid;
+                Verify.AreEqual(new CornerRadius(20), root.CornerRadius);
+
+                Log.Comment("Clearing the local CornerRadius.");
+                scrollView.ClearValue(Control.CornerRadiusProperty);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Grid root = VisualTreeHelper.GetChild(scrollView, 0) as Grid;
+                Verify.AreEqual(new CornerRadius(12), scrollView.CornerRadius);
+                Verify.AreEqual(new CornerRadius(0), root.CornerRadius);
+
+                Log.Comment("Restoring content clipping.");
+                scrollView.CanContentRenderOutsideBounds = false;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Grid root = VisualTreeHelper.GetChild(scrollView, 0) as Grid;
+                Verify.AreEqual(new CornerRadius(12), root.CornerRadius);
+                Verify.IsNotNull(scrollView.ScrollPresenter.Clip);
+
+                Content = null;
+            });
         }
 
         [TestMethod]

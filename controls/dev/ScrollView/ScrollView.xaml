@@ -142,6 +142,14 @@
                   </Storyboard>
                 </VisualState>
               </VisualStateGroup>
+              <VisualStateGroup x:Name="ContentClippingStates">
+                <VisualState x:Name="ContentClipped" />
+                <VisualState x:Name="ContentNotClipped">
+                  <VisualState.Setters>
+                    <Setter Target="PART_Root.CornerRadius" Value="0" />
+                  </VisualState.Setters>
+                </VisualState>
+              </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
             <Grid.RowDefinitions>
               <RowDefinition Height="*" />

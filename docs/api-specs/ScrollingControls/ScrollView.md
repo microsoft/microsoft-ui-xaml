@@ -2313,7 +2313,7 @@ decoupled these limitations should disappear.
 
 # Preview and Future Features with Known Scenarios
 
-These features have valid scenarios and should be considered for future releases.
+The following features should be considered for future releases or are in preview.
 
 ## Markup scenarios
 
@@ -2323,8 +2323,8 @@ These features have valid scenarios and should be considered for future releases
 [ScrollViewer property](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.scrollviewer.cancontentrenderoutsidebounds?view=windows-app-sdk-2.0).
 The default value is `False`, which applies a viewport-sized rectangular clip during arrange. Setting the property to
 `True` removes that clip so translated, scaled, shadowed, or otherwise overflowing content can render outside the
-viewport. The property changes rendering only; it does not change extent, viewport, scrolling boundaries, realization,
-or layout.
+viewport. The property changes rendering and hit testing; it does not change extent, viewport, scrolling boundaries,
+realization, or layout.
 
 ```csharp
 unsealed runtimeclass ScrollView : ...

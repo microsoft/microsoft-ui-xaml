@@ -842,6 +842,7 @@ private:
     tracker_ref<winrt::IScrollControllerPanningInfo> m_verticalScrollControllerPanningInfo{ this };
     tracker_ref<winrt::UIElement> m_anchorElement{ this };
     tracker_ref<winrt::ScrollingAnchorRequestedEventArgs> m_anchorRequestedEventArgs{ this };
+    tracker_ref<winrt::RectangleGeometry> m_viewportClip{ this };
     std::vector<tracker_ref<winrt::UIElement>> m_anchorCandidates;
     std::list<std::shared_ptr<InteractionTrackerAsyncOperation>> m_interactionTrackerAsyncOperations;
     winrt::Rect m_anchorElementBounds{};

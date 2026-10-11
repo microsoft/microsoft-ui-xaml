@@ -27,6 +27,9 @@ ScrollView::ScrollView()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_ScrollView);
 
     EnsureProperties();
+    RegisterPropertyChangedCallback(
+        winrt::Control::CornerRadiusProperty(),
+        { this, &ScrollView::OnCornerRadiusChanged });
     SetDefaultStyleKey(this);
     HookUISettingsEvent();
     HookScrollViewEvents();
@@ -496,6 +499,7 @@ void ScrollView::OnApplyTemplate()
     }
 
     UpdateVisualStates(false /*useTransitions*/);
+    UpdateContentClippingVisualState(false /*useTransitions*/);
 }
 
 #pragma endregion
@@ -802,7 +806,11 @@ void ScrollView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     bool horizontalChange = dependencyProperty == s_HorizontalScrollBarVisibilityProperty;
     bool verticalChange = dependencyProperty == s_VerticalScrollBarVisibilityProperty;
 
-    if (horizontalChange || verticalChange)
+    if (dependencyProperty == s_CanContentRenderOutsideBoundsProperty)
+    {
+        UpdateContentClippingVisualState();
+    }
+    else if (horizontalChange || verticalChange)
     {
         UpdateScrollControllersVisibility(horizontalChange, verticalChange);
         UpdateVisualStates(
@@ -1815,6 +1823,25 @@ void ScrollView::UpdateVisualStates(
 
     UpdateScrollControllersVisualState(useTransitions, showIndicators, hideIndicators);
     UpdateScrollControllersSeparatorVisualState(useTransitions, scrollControllersAutoHidingChanged);
+}
+
+void ScrollView::UpdateContentClippingVisualState(bool useTransitions)
+{
+    const bool hasLocalCornerRadius =
+        ReadLocalValue(winrt::Control::CornerRadiusProperty()) != winrt::DependencyProperty::UnsetValue();
+
+    GoToState(
+        CanContentRenderOutsideBounds() && !hasLocalCornerRadius ?
+            s_contentNotClippedStateName :
+            s_contentClippedStateName,
+        useTransitions);
+}
+
+void ScrollView::OnCornerRadiusChanged(
+    const winrt::DependencyObject& /*sender*/,
+    const winrt::DependencyProperty& /*dependencyProperty*/)
+{
+    UpdateContentClippingVisualState(false /*useTransitions*/);
 }
 
 // Updates the state for the ScrollingIndicatorStates state group.

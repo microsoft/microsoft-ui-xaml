@@ -247,9 +247,13 @@ private:
         bool scrollControllersAutoHidingChanged = false,
         bool updateScrollControllersAutoHiding = false,
         bool onlyForAutoHidingScrollControllers = false);
+    void UpdateContentClippingVisualState(bool useTransitions = true);
     void UpdateScrollControllersVisualState(bool useTransitions = true, bool showIndicators = false, bool hideIndicators = false);
     void UpdateScrollControllersSeparatorVisualState(bool useTransitions = true, bool scrollControllersAutoHidingChanged = false);
     void GoToState(std::wstring_view const& stateName, bool useTransitions = true);
+    void OnCornerRadiusChanged(
+        const winrt::DependencyObject& sender,
+        const winrt::DependencyProperty& dependencyProperty);
 
     void HandleKeyDownForStandardScroll(winrt::KeyRoutedEventArgs);
     void HandleKeyDownForXYNavigation(winrt::KeyRoutedEventArgs);
@@ -380,6 +384,8 @@ private:
     static constexpr std::wstring_view s_noIndicatorStateName{ L"NoIndicator"sv };
     static constexpr std::wstring_view s_touchIndicatorStateName{ L"TouchIndicator"sv };
     static constexpr std::wstring_view s_mouseIndicatorStateName{ L"MouseIndicator"sv };
+    static constexpr std::wstring_view s_contentClippedStateName{ L"ContentClipped"sv };
+    static constexpr std::wstring_view s_contentNotClippedStateName{ L"ContentNotClipped"sv };
 
     static constexpr std::wstring_view s_scrollBarsSeparatorExpanded{ L"ScrollBarsSeparatorExpanded"sv };
     static constexpr std::wstring_view s_scrollBarsSeparatorCollapsed{ L"ScrollBarsSeparatorCollapsed"sv };

@@ -5657,21 +5657,39 @@ void ScrollPresenter::UpdateManipulationRedirectionMode()
 
 void ScrollPresenter::UpdateViewportClip(const winrt::Size& viewport)
 {
-    if (CanContentRenderOutsideBounds())
+    const auto currentClip = Clip();
+    const winrt::Rect viewportRect{ 0.0f, 0.0f, viewport.Width, viewport.Height };
+
+    if (m_viewportClip)
     {
-        Clip(nullptr);
+        m_viewportClip.get().Rect(viewportRect);
+    }
+
+    if (currentClip && (!m_viewportClip || currentClip != m_viewportClip.get()))
+    {
         return;
     }
 
-    auto viewportClip = Clip().try_as<winrt::RectangleGeometry>();
-
-    if (!viewportClip)
+    if (CanContentRenderOutsideBounds())
     {
-        viewportClip = winrt::RectangleGeometry();
-        Clip(viewportClip);
+        if (m_viewportClip && currentClip == m_viewportClip.get())
+        {
+            Clip(nullptr);
+        }
+
+        return;
     }
 
-    viewportClip.Rect({ 0.0f, 0.0f, viewport.Width, viewport.Height });
+    if (!m_viewportClip)
+    {
+        m_viewportClip.set(winrt::RectangleGeometry());
+        m_viewportClip.get().Rect(viewportRect);
+    }
+
+    if (!currentClip)
+    {
+        Clip(m_viewportClip.get());
+    }
 }
 
 void ScrollPresenter::OnContentSizeChanged(const winrt::UIElement& content)
