@@ -1,0 +1,50 @@
+<!-- CellTemplatingPage.xaml: the table. Every CellTemplate is a shared key from
+     Templates\PersonCellTemplates.xaml, merged once in App.xaml, so the page declares none.
+     The template renders a control; SortMemberPath names the value that orders the rows. -->
+<tv:TableView x:Name="PeopleTable"
+              AutomationProperties.AutomationId="CellTemplatingTable"
+              AutomationProperties.Name="People with templated cells"
+              ItemsSource="{x:Bind Source}"
+              SelectionMode="Single" IsReadOnly="False"
+              VerticalAlignment="Stretch" MinHeight="320">
+    <tv:TableViewTemplateColumn Header="Photo"      Width="{StaticResource ColWidthAvatar}"       CellTemplate="{StaticResource AvatarTemplate}"           CanSort="False"/>
+    <tv:TableViewTextColumn     Header="Name"       Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}" IsReadOnly="True"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}"         CellTemplate="{StaticResource DepartmentChipTemplate}"   SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Active"     Width="{StaticResource ColWidthBoolean}"      CellTemplate="{StaticResource ActiveCheckBoxTemplate}"   SortMemberPath="IsActive"/>
+    <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+    <tv:TableViewTemplateColumn Header="Shift"      Width="{StaticResource ColWidthTimeCompact}"  CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart"/>
+    <tv:TableViewTemplateColumn Header="Office"     Width="{StaticResource ColWidthCombo}"        CellTemplate="{StaticResource OfficeComboTemplate}"      SortMemberPath="Office"/>
+    <tv:TableViewTemplateColumn Header="Details"    Width="{StaticResource ColWidthAction}"       CellTemplate="{StaticResource DetailsButtonTemplate}"    CanSort="False"/>
+</tv:TableView>
+
+<ComboBox x:Name="JoinDateEditorSelector" Header="Join date editor" SelectedIndex="0"
+          SelectionChanged="OnJoinDateEditorChanged">
+    <ComboBoxItem Content="Calendar date picker (compact)" Tag="calendar"/>
+    <ComboBoxItem Content="Date picker (full)" Tag="datepicker"/>
+</ComboBox>
+
+<!-- Templates\PersonCellTemplates.xaml (shared): a read-only visual and an editor.
+     x:DataType + x:Bind only. The chip dot is decorative (Raw); the label carries the value.
+     The CheckBox keeps IsTabStop and hit testing, binds TwoWay to an INPC property (so the
+     value survives row recycling) and has a per-row accessible name. -->
+<DataTemplate x:Key="DepartmentChipTemplate" x:DataType="models:Person">
+    <Border CornerRadius="10" Padding="8,2" Margin="6,2" HorizontalAlignment="Left"
+            Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource DepartmentChipTintConverter}}"
+            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" BorderThickness="1"
+            AutomationProperties.AccessibilityView="Raw">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+            <Ellipse Width="8" Height="8"
+                     Fill="{x:Bind Department, Mode=OneWay, Converter={StaticResource DepartmentChipDotConverter}}"
+                     AutomationProperties.AccessibilityView="Raw"/>
+            <TextBlock Text="{x:Bind Department, Mode=OneWay}"
+                       AutomationProperties.Name="{x:Bind Department, Mode=OneWay}"/>
+        </StackPanel>
+    </Border>
+</DataTemplate>
+
+<DataTemplate x:Key="ActiveCheckBoxTemplate" x:DataType="models:Person">
+    <CheckBox IsChecked="{x:Bind IsActive, Mode=TwoWay}" MinWidth="0" Margin="14,2"
+              AutomationProperties.Name="{x:Bind FullName, Mode=OneWay,
+                  Converter={StaticResource RowAutomationNameConverter},
+                  ConverterParameter='Active for {0}'}"/>
+</DataTemplate>

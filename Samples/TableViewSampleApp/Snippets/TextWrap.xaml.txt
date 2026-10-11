@@ -1,0 +1,34 @@
+<!-- The Bio cell binds the page's static WrapState, so every realized cell, including
+     recycled ones, follows the rail. Its accessible name is the bio itself. -->
+<DataTemplate x:Key="BioTemplate" x:DataType="models:Person">
+    <TextBlock
+        Text="{x:Bind Bio, Mode=OneWay}"
+        TextWrapping="{x:Bind local:TextWrapPage.WrapState.TextWrapping, Mode=OneWay}"
+        TextTrimming="{x:Bind local:TextWrapPage.WrapState.TextTrimming, Mode=OneWay}"
+        MaxLines="{x:Bind local:TextWrapPage.WrapState.MaxLines, Mode=OneWay}"
+        Margin="8,6"
+        VerticalAlignment="Center"
+        SizeChanged="OnBioSizeChanged"
+        AutomationProperties.Name="{x:Bind Bio, Mode=OneWay}"/>
+</DataTemplate>
+
+<tv:TableView x:Name="PeopleTable"
+              ItemsSource="{x:Bind Source}"
+              SelectionMode="Single"
+              IsReadOnly="True">
+    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+</tv:TableView>
+
+<ToggleSwitch x:Name="WrapToggle" Header="TextWrapping" IsOn="True" OnContent="Wrap" OffContent="NoWrap" Toggled="OnWrapToggled"/>
+
+<!-- Disabled by ApplyTextState while TextWrapping is NoWrap, where MaxLines is a no-op. -->
+<ComboBox x:Name="MaxLinesSelector" Header="Max lines" SelectedIndex="0" SelectionChanged="OnMaxLinesChanged">
+    <ComboBoxItem Content="Unlimited" Tag="0"/>
+    <ComboBoxItem Content="2 lines + ellipsis" Tag="2"/>
+    <ComboBoxItem Content="3 lines + ellipsis" Tag="3"/>
+</ComboBox>
+
+<Slider x:Name="BioWidthSlider" Minimum="220" Maximum="520" StepFrequency="20" Value="360" ValueChanged="OnBioWidthChanged"/>

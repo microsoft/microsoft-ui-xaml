@@ -1,0 +1,45 @@
+<!-- SortPage.xaml: the table. The template renders a control; SortMemberPath names the value
+     that orders the rows. A text column without SortMemberPath sorts by its Binding path. -->
+<tv:TableView x:Name="TeamsTable"
+              AutomationProperties.AutomationId="SortTable"
+              AutomationProperties.Name="League standings"
+              ItemsSource="{x:Bind Source}"
+              SelectionMode="Single" IsReadOnly="False"
+              EmptyTemplate="{StaticResource SortEmptyTemplate}"
+              Sorted="OnTableSorted"
+              VerticalAlignment="Stretch" MinHeight="320">
+    <tv:TableViewTextColumn     x:Name="TeamColumn"      Header="Team"       Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Team, Mode=TwoWay}"/>
+    <tv:TableViewTemplateColumn x:Name="SeededColumn"    Header="Seeded"     Width="{StaticResource ColWidthBoolean}"      CellTemplate="{StaticResource SeededCheckBoxTemplate}" SortMemberPath="IsSeeded"/>
+    <tv:TableViewTemplateColumn x:Name="NextMatchColumn" Header="Next match" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource NextMatchDateTemplate}"  SortMemberPath="NextMatchDate"/>
+    <tv:TableViewTemplateColumn x:Name="KickoffColumn"   Header="Kickoff"    Width="{StaticResource ColWidthTimeCompact}"  CellTemplate="{StaticResource KickoffTimeTemplate}"    SortMemberPath="Kickoff"/>
+    <tv:TableViewTextColumn     x:Name="NextMatchTextColumn" Header="Next match (text)" Width="{StaticResource ColWidthDate}" Visibility="Collapsed" IsReadOnly="True" Binding="{Binding NextMatchText}"/>
+    <tv:TableViewTextColumn     x:Name="PlayedColumn"    Header="P"          Width="{StaticResource ColWidthStatNarrow}"   IsReadOnly="True" CanSort="False" Binding="{Binding Played}"/>
+    <tv:TableViewTextColumn     x:Name="PointsColumn"    Header="Pts"        Width="{StaticResource ColWidthStat}"         IsReadOnly="True" Binding="{Binding Points}"/>
+    <tv:TableViewTemplateColumn x:Name="StandingColumn"  Header="Standing"   Width="{StaticResource ColWidthChip}"         IsReadOnly="True" CellTemplate="{StaticResource StandingChipTemplate}" SortMemberPath="Points"/>
+</tv:TableView>
+
+<!-- Page resources: editors typed to LeagueTeam. CalendarDatePicker.Date is nullable, so it
+     binds the NextMatchDateOrNull shim; the column still sorts by NextMatchDate. -->
+<DataTemplate x:Key="NextMatchDateTemplate" x:DataType="models:LeagueTeam">
+    <CalendarDatePicker Date="{x:Bind NextMatchDateOrNull, Mode=TwoWay}"
+                        DateFormat="{}{day.integer} {month.abbreviated} {year.full}"
+                        Margin="6,2" HorizontalAlignment="Stretch"
+                        AutomationProperties.Name="{x:Bind Team, Mode=OneWay,
+                            Converter={StaticResource RowAutomationNameConverter},
+                            ConverterParameter='Next match for {0}'}"/>
+</DataTemplate>
+
+<DataTemplate x:Key="KickoffTimeTemplate" x:DataType="models:LeagueTeam">
+    <TimePicker Time="{x:Bind Kickoff, Mode=TwoWay}" ClockIdentifier="24HourClock"
+                MinuteIncrement="15" MinWidth="0" Margin="6,2" HorizontalAlignment="Stretch"
+                AutomationProperties.Name="{x:Bind Team, Mode=OneWay,
+                    Converter={StaticResource RowAutomationNameConverter},
+                    ConverterParameter='Kickoff for {0}'}"/>
+</DataTemplate>
+
+<DataTemplate x:Key="SeededCheckBoxTemplate" x:DataType="models:LeagueTeam">
+    <CheckBox IsChecked="{x:Bind IsSeeded, Mode=TwoWay}" MinWidth="0" Margin="14,2"
+              AutomationProperties.Name="{x:Bind Team, Mode=OneWay,
+                  Converter={StaticResource RowAutomationNameConverter},
+                  ConverterParameter='Seeded: {0}'}"/>
+</DataTemplate>

@@ -1,0 +1,96 @@
+// ShowcasePage.xaml.cs. One TableViewSource, created once and reshaped in place.
+public ShowcasePage()
+{
+    Vibrant = true;
+    FillPeople(100);
+    _source = TableViewSource.From(People);
+    InitializeComponent();
+    // ...
+}
+
+private void OnLiveTimerTick(object? sender, object e)
+{
+    var flipped = false;
+    _isBulkUpdate = true;
+    try
+    {
+        foreach (var person in People.Take(LiveRowCount))
+        {
+            // Nudge Salary within the dataset band and flip Active now and then. Person raises
+            // PropertyChanged, so only these cells re-run their bindings and tint converters.
+            var next = Math.Clamp(person.Salary + ((_liveRandom.NextDouble() - 0.5) * 12_000), 110_000, MaxSalary);
+            person.Salary = Math.Round(next / 100.0) * 100.0;
+            if (_liveRandom.NextDouble() < 0.15)
+            {
+                person.IsActive = !person.IsActive;
+                flipped = true;
+            }
+        }
+    }
+    finally
+    {
+        _isBulkUpdate = false;
+    }
+
+    // Neither grouping nor sorting observes PropertyChanged, so re-apply whichever one is
+    // keyed on a value the tick just changed.
+    if (flipped)
+    {
+        ReapplyIfGroupedOn(nameof(Person.IsActive));
+    }
+
+    ResortIfSortedOn(nameof(Person.Salary), nameof(Person.IsActive));
+    RefreshReadouts();
+}
+
+// The control sorts once, when the sort is applied. Re-declaring the same path on the source
+// re-reads every key (TableViewSource.Sort replaces that axis in place), so a row whose sorted
+// value changed moves to its new position.
+private void ResortIfSortedOn(params string[] propertyNames)
+{
+    var column = ActiveSortColumn();
+    if (_source is null || column is null || Array.IndexOf(propertyNames, column.SortMemberPath) < 0)
+    {
+        return;
+    }
+
+    var selected = PeopleTable.SelectedItem;
+    _isResorting = true;
+    try
+    {
+        _source.Sort(column.SortMemberPath, column.SortDirection);
+    }
+    finally
+    {
+        _isResorting = false;
+    }
+
+    SampleShaping.Reselect(PeopleTable, selected, MaxProbeIndex, RefreshReadouts);
+}
+
+private TableViewColumn? ActiveSortColumn() =>
+    PeopleTable.Columns.FirstOrDefault(column => column.SortDirection != TableViewSortDirection.None);
+
+private void OnColumnCheckBoxClick(object sender, RoutedEventArgs e)
+{
+    if (sender is not CheckBox checkBox || !_columnToggles.TryGetValue(checkBox, out var column))
+    {
+        return;
+    }
+
+    var show = checkBox.IsChecked == true;
+    column.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} column -> {1}", column.Header, show ? "shown" : "hidden"));
+}
+
+private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (!_ready)
+    {
+        return;
+    }
+
+    var visibility = Enum.Parse<TableViewHeadersVisibility>(SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column"));
+    PeopleTable.HeadersVisibility = visibility;
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "HeadersVisibility -> {0}", visibility));
+}

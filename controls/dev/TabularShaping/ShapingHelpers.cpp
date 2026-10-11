@@ -943,7 +943,7 @@ namespace ShapingHelpers
         std::function<bool(winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason)> const& resolveIdentity,
         std::function<bool(winrt::IInspectable const& existingKey, winrt::IInspectable const& newKey)> const& keysConsideredEqual,
         std::vector<KeyedBucket>& outBuckets,
-        wchar_t const*& degradeReason)
+        wchar_t const*& rejectReason)
     {
         outBuckets.clear();
         // identity string -> index into outBuckets, so first-seen group order is preserved by
@@ -958,7 +958,7 @@ namespace ShapingHelpers
             wchar_t const* reason = nullptr;
             if (!resolveIdentity || !resolveIdentity(key, identity, reason))
             {
-                degradeReason = reason;
+                rejectReason = reason;
                 return false;
             }
 
@@ -972,12 +972,12 @@ namespace ShapingHelpers
             {
                 auto& bucket = outBuckets[it->second];
                 // A genuine identity COLLISION (two logically-different keys mapping to the same
-                // identity string) forces a flat degrade; keysConsideredEqual lets the adapter
+                // identity string) fails the bucketization; keysConsideredEqual lets the adapter
                 // treat intentional shared identities (e.g. an app-supplied identity selector) as
                 // the same group instead.
                 if (keysConsideredEqual && !keysConsideredEqual(bucket.Key, key))
                 {
-                    degradeReason = L"duplicate group identity";
+                    rejectReason = L"duplicate group identity";
                     return false;
                 }
                 bucket.Items.push_back(item);

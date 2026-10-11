@@ -1,0 +1,46 @@
+<!-- CellEditingPage.xaml. Text columns get a built-in TextBox editor; the Department column
+     supplies its own editor through CellEditingTemplate. -->
+<DataTemplate x:Key="DepartmentTextTemplate" x:DataType="models:Person">
+    <TextBlock Text="{x:Bind Department, Mode=OneWay}" Margin="12,0,8,0"
+               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+</DataTemplate>
+
+<!-- Classic {Binding} with UpdateSourceTrigger=Explicit and no x:DataType: the control commits by
+     calling UpdateSource on the editor's binding expressions, which it can find only on a
+     {Binding}. Esc therefore discards the choice without touching the model. -->
+<DataTemplate x:Key="DepartmentEditingTemplate">
+    <ComboBox SelectedItem="{Binding Department, Mode=TwoWay, UpdateSourceTrigger=Explicit}"
+              AutomationProperties.Name="Department"
+              HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4,0">
+        <x:String>Design</x:String>
+        <x:String>Engineering</x:String>
+        <!-- ...the other PersonData.Departments values... -->
+    </ComboBox>
+</DataTemplate>
+
+<tv:TableView
+    x:Name="PeopleTable"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    IsReadOnly="False"
+    BeginningEdit="OnBeginningEdit"
+    CellEditEnding="OnCellEditEnding">
+    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}"/>
+    <tv:TableViewTextColumn Header="Last name" Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}"/>
+    <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Role}"/>
+    <tv:TableViewTemplateColumn
+        Header="Department"
+        Width="{StaticResource ColWidthCombo}"
+        CellTemplate="{StaticResource DepartmentTextTemplate}"
+        CellEditingTemplate="{StaticResource DepartmentEditingTemplate}"
+        SortMemberPath="Department"/>
+</tv:TableView>
+
+<ToggleSwitch x:Name="ReadOnlyToggle" Header="IsReadOnly" Toggled="OnReadOnlyToggled"/>
+
+<!-- AllowFocusOnInteraction="False": clicking the button leaves the editor open and focused. -->
+<Button x:Name="CommitEditButton" Content="Commit the open edit" Click="OnCommitEditClick"
+        IsEnabled="False" AllowFocusOnInteraction="False"/>
+<Button x:Name="CancelEditButton" Content="Cancel the open edit" Click="OnCancelEditClick"
+        IsEnabled="False" AllowFocusOnInteraction="False"/>

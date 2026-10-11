@@ -7,6 +7,7 @@
 #include "TableViewGroupHeader.h"
 #include "TableViewGroupInfo.h"
 #include "TableView.h"
+#include "TableViewAutomationHelpers.h"
 
 #include "ResourceAccessor.h"
 
@@ -60,22 +61,51 @@ winrt::hstring TableViewGroupHeaderAutomationPeer::GetNameCore()
     // being assembled here.
     if (auto const header = GetHeader())
     {
+        if (auto const name = winrt::AutomationProperties::GetName(header); !name.empty())
+        {
+            return name;
+        }
+        if (auto const label = GetLabeledBy())
+        {
+            if (auto const name = label.GetName(); !name.empty())
+            {
+                return name;
+            }
+        }
         if (auto const info = header.Content().try_as<winrt::TableViewGroupInfo>())
         {
-            auto const keyText = info.KeyText();
-            auto const countText = info.ItemCountText();
-            if (!keyText.empty() && !countText.empty())
+            if (auto const name = GroupInfoToName(info); !name.empty())
             {
-                return winrt::hstring{ std::wstring{ keyText } + L" " + std::wstring{ countText } };
-            }
-            if (!keyText.empty())
-            {
-                return keyText;
+                return name;
             }
         }
     }
 
     return __super::GetNameCore();
+}
+
+int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
+{
+    // An app-set AutomationProperties.Level wins, as in the dxaml peers that compute this.
+    if (const auto provided = __super::GetLevelCore(); provided > 0)
+    {
+        return provided;
+    }
+
+    // 1-based per UIA; 0 means "unknown", the honest answer once the projection info is gone.
+    if (auto const header = GetHeader())
+    {
+        if (auto const info = header.Content().try_as<winrt::TableViewGroupInfo>())
+        {
+            const auto level = info.Level();
+            if (level >= 0)
+            {
+                return level + 1;
+            }
+        }
+    }
+
+    return 0;
 }
 
 void TableViewGroupHeaderAutomationPeer::RaiseExpandCollapseAutomationEvent(

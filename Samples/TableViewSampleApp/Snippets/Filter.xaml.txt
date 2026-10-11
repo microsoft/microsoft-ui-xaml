@@ -1,0 +1,22 @@
+<!-- FilterPage.xaml: the columns are added in code (BuildColumns). The EmptyTemplate shows
+     when the filter leaves no rows. -->
+<tv:TableView x:Name="FilterTable"
+              AutomationProperties.AutomationId="FilterTable"
+              AutomationProperties.Name="Filtered people"
+              ItemsSource="{x:Bind Source}"
+              SelectionMode="Single"
+              SelectionChanged="OnTableSelectionChanged"
+              EmptyTemplate="{StaticResource FilterEmptyTemplate}"
+              VerticalAlignment="Stretch" MinHeight="320"/>
+
+<DataTemplate x:Key="FilterEmptyTemplate" x:DataType="system:Object">
+    <StackPanel Spacing="4" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <TextBlock Text="No rows match the filter" Style="{ThemeResource SubtitleTextBlockStyle}"/>
+        <TextBlock Text="The underlying collection is untouched. Clear the filter to bring every row back."
+                   TextWrapping="Wrap"/>
+    </StackPanel>
+</DataTemplate>
+
+<TextBox x:Name="SearchBox" Header="Query" PlaceholderText="Name, department, role or email"
+         TextChanged="OnSearchChanged"/>
+<ToggleSwitch x:Name="ActiveOnlyToggle" Header="Active only" Toggled="OnActiveToggled"/>

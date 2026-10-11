@@ -49,7 +49,7 @@
                   </TransformMatrix>
                   <Visual VisualId="3" Tag="PrimaryVisual" SizeX="103" SizeY="20" OffsetX="0" OffsetY="260" OffsetZ="0">
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="103" SizeY="11" BorderMode="Hard" OffsetX="0" OffsetY="5" OffsetZ="0">
+                      <wucSpriteVisual SizeX="105" SizeY="13" BorderMode="Hard" OffsetX="-1" OffsetY="4" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
@@ -62,7 +62,7 @@
                     </Visual>
                   </Visual>
                 </Visual>
-                <wucSpriteVisual SizeX="150" SizeY="11" BorderMode="Hard" OffsetX="11" OffsetY="145" OffsetZ="0">
+                <wucSpriteVisual SizeX="152" SizeY="13" BorderMode="Hard" OffsetX="10" OffsetY="144" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -72,7 +72,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="150" SizeY="11" BorderMode="Hard" OffsetX="240" OffsetY="145" OffsetZ="0">
+                <wucSpriteVisual SizeX="152" SizeY="13" BorderMode="Hard" OffsetX="239" OffsetY="144" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -88,7 +88,7 @@
                   </TransformMatrix>
                   <Visual VisualId="4" Tag="PrimaryVisual" SizeX="267" SizeY="40" OffsetX="113" OffsetY="0" OffsetZ="0">
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="264" SizeY="23" BorderMode="Hard" OffsetX="2" OffsetY="9" OffsetZ="0">
+                      <wucSpriteVisual SizeX="266" SizeY="25" BorderMode="Hard" OffsetX="1" OffsetY="8" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />

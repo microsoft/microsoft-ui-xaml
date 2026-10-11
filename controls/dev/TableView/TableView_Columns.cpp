@@ -364,6 +364,10 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
         winrt::get_self<TableViewRow>(row)->RefreshColumnVisibility(column, visibility);
     });
 
+    // Visibility can move the terminal column. Evaluate after layout so Auto and Star widths,
+    // transforms, and the body viewport are final.
+    QueueTerminalGridLineRefresh();
+
     // Keep a synchronous RefreshFrozenColumns here: collapsing a column changes the leading
     // frozen-band width without changing any surviving column's ActualWidth, so ResolveColumnWidths'
     // `changed` gate stays false and would never re-pin. Refresh it directly.
@@ -391,6 +395,7 @@ void TableView::OnColumnWidthChanged(const winrt::TableViewColumn& column)
     InvalidateMeasure();
     InvalidateCellPanels();
     RefreshFrozenColumns();
+    QueueTerminalGridLineRefresh();
 }
 
 void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column)

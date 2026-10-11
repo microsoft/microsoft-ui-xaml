@@ -1,0 +1,69 @@
+/// <summary>Wrapping, trimming and line limit shared by every Bio cell.</summary>
+public static TextWrapState WrapState { get; } = new();
+
+// The one writer of WrapState, so the toggle and the max-lines picker never overwrite each
+// other. Every Bio cell binds WrapState, which is what makes the setting survive recycling.
+private void ApplyTextState()
+{
+    var wrapOn = WrapToggle.IsOn;
+    WrapState.TextWrapping = wrapOn ? TextWrapping.Wrap : TextWrapping.NoWrap;
+
+    // TextBlock.MaxLines only clamps text that wraps, so it is not applied for NoWrap and the
+    // picker is disabled to say so.
+    WrapState.MaxLines = wrapOn ? _maxLines : 0;
+    WrapState.TextTrimming = !wrapOn || _maxLines > 0 ? TextTrimming.CharacterEllipsis : TextTrimming.None;
+    MaxLinesSelector.IsEnabled = wrapOn;
+    QueueRowMeasure();
+}
+
+private void OnBioWidthChanged(object sender, RangeBaseValueChangedEventArgs e)
+{
+    // Fires during InitializeComponent when Value is set; the XAML Width already matches.
+    if (!IsLoaded || BioColumn is null || BioWidthText is null)
+    {
+        return;
+    }
+
+    BioColumn.Width = new GridLength(e.NewValue);
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Bio column Width -> {0:N0} px", e.NewValue));
+    QueueRowMeasure();
+}
+
+// Coalesced: many cells change size in one layout pass, but the rows are measured once,
+// after layout, at low priority.
+private void QueueRowMeasure()
+{
+    if (_measureQueued)
+    {
+        return;
+    }
+
+    _measureQueued = true;
+    DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+    {
+        _measureQueued = false;
+        if (IsLoaded)
+        {
+            RefreshRowHeights();
+        }
+    });
+}
+
+private static void CollectRowHeights(DependencyObject node, SortedSet<double> heights)
+{
+    if (node is TableViewRow row)
+    {
+        if (row.ActualHeight > 0 && row.Visibility == Visibility.Visible)
+        {
+            heights.Add(Math.Round(row.ActualHeight));
+        }
+
+        return;
+    }
+
+    var count = VisualTreeHelper.GetChildrenCount(node);
+    for (var i = 0; i < count; i++)
+    {
+        CollectRowHeights(VisualTreeHelper.GetChild(node, i), heights);
+    }
+}

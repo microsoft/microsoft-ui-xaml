@@ -30,10 +30,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(RedirectVisualAtFractionalScale)
+                TEST_METHOD_PROPERTY(L"Description", L"Verifies redirected TextBlock glyphs are not clipped at fractional display scales.")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+                TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            END_TEST_METHOD()
+
         private:
             inline Platform::String^ GetResourcesPath() const;
         };
 
     } }
 } } } }
-

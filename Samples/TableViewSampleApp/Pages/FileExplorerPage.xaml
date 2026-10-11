@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    File Explorer scenario, on the canonical page template (FIX-PLAN §1.2): Try it, a 32 px
+    address row (Back, Up, path, Refresh), one stretched table, then the rail in the order
+    Filter, Shaping, Actions, Status, What to look for.
+-->
+<Page
+    x:Class="TableViewSampleApp.Pages.FileExplorerPage"
+    NavigationCacheMode="Disabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:models="using:TableViewSampleApp.Models"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <Page.Resources>
+        <!-- The glyph is decorative (Raw); the name carries the row. -->
+        <DataTemplate x:Key="FileNameTemplate" x:DataType="models:FileSystemEntry">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
+                <FontIcon Glyph="{x:Bind IconGlyph}" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+                <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="File Explorer"
+        Description="A File Explorer-style folder listing that opens in this sample's install folder. Each folder is read on a background thread and its entries replace the items of one ObservableCollection, which a single TableViewSource filters and groups in place. Name, Type and Size sort through a computed SortMemberPath that keeps folders together, as Explorer does. Open a folder with Enter or a double-click, and go up with Backspace or the Up button."
+        SourceCaption="FileExplorerPage.xaml (excerpt)"
+        SourceSnippet="FileExplorer.xaml.txt"
+        AdditionalSnippetCaption="FileExplorerPage.xaml.cs (excerpt)"
+        AdditionalSnippet="FileExplorer.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <!-- scaffold:tryit -->
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
+                    IsOpen="True"
+                    IsClosable="False"
+                    MinHeight="104"
+                    Message="Select the Assets folder and press Enter to open it, then press Backspace to come back. Click the Name header twice: folders stay together at the top, then at the bottom. Set Filter to Files only, then switch Shaping to Grouped by Item type."/>
+                <!-- /scaffold -->
+
+                <!-- Scenario address row (32 px): Back, Up, path and Refresh, as in File Explorer. -->
+                <Grid Grid.Row="1" ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button
+                        x:Name="BackButton"
+                        AutomationProperties.AutomationId="FileExplorerBackButton"
+                        AutomationProperties.Name="Back"
+                        ToolTipService.ToolTip="Back"
+                        IsEnabled="False"
+                        Click="OnBackClick">
+                        <FontIcon Glyph="&#xE72B;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+                    </Button>
+                    <Button
+                        Grid.Column="1"
+                        x:Name="UpButton"
+                        AutomationProperties.AutomationId="FileExplorerUpButton"
+                        AutomationProperties.Name="Up"
+                        ToolTipService.ToolTip="Up (Backspace in the table)"
+                        Click="OnUpClick">
+                        <FontIcon Glyph="&#xE74A;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+                    </Button>
+                    <TextBox
+                        Grid.Column="2"
+                        x:Name="AddressBar"
+                        AutomationProperties.AutomationId="FileExplorerAddressBar"
+                        AutomationProperties.Name="Folder path"
+                        PlaceholderText="Type a folder path and press Enter"
+                        IsSpellCheckEnabled="False"
+                        KeyDown="OnAddressBarKeyDown"/>
+                    <Button
+                        Grid.Column="3"
+                        AutomationProperties.AutomationId="FileExplorerRefreshButton"
+                        AutomationProperties.Name="Refresh"
+                        ToolTipService.ToolTip="Refresh: read the folder again"
+                        Click="OnRefreshClick">
+                        <FontIcon Glyph="&#xE72C;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+                    </Button>
+                </Grid>
+
+                <Border Grid.Row="2" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                    <tv:TableView
+                        x:Name="FileTable"
+                        AutomationProperties.AutomationId="FileExplorerTable"
+                        AutomationProperties.Name="Folder contents"
+                        ItemsSource="{x:Bind Source}"
+                        SelectionMode="Single"
+                        IsReadOnly="True"
+                        Sorted="OnTableSorted"
+                        SelectionChanged="OnSelectionChanged"
+                        DoubleTapped="OnRowDoubleTapped"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <!-- Name, Type and Size sort by a folders-first key (FileSystemEntry.*SortKey);
+                             Date modified sorts by the DateModified value, not by its display text.
+                             The control sorts by itself and the header shows the direction. -->
+                        <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" CellTemplate="{StaticResource FileNameTemplate}" SortMemberPath="NameSortKey"/>
+                        <tv:TableViewTextColumn Header="Type" Width="{StaticResource ColWidthType}" Binding="{Binding TypeDisplay}" SortMemberPath="TypeSortKey"/>
+                        <tv:TableViewTextColumn x:Name="DateModifiedColumn" Header="Date modified" Width="{StaticResource ColWidthDateTime}" Binding="{Binding DateModifiedDisplay}" SortMemberPath="DateModified"/>
+                        <tv:TableViewTextColumn Header="Size" Width="{StaticResource ColWidthNumber}" Binding="{Binding SizeDisplay}" SortMemberPath="SizeSortKey"/>
+                    </tv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <!-- 1. Primary feature -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Filter">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Filter"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="TableViewSource.Filter keeps only the rows a predicate accepts, on the same source that sorts and groups, so the folder is not read again. Match nothing shows the empty result."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="FilterSelector"
+                        AutomationProperties.AutomationId="FileExplorerFilterSelector"
+                        Header="Show"
+                        SelectedIndex="0"
+                        SelectionChanged="OnFilterChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="All items" Tag="all"/>
+                        <ComboBoxItem Content="Folders only" Tag="folders"/>
+                        <ComboBoxItem Content="Files only" Tag="files"/>
+                        <ComboBoxItem Content="Match nothing (empty result)" Tag="none"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Grouping bands the listing like File Explorer's Group by: by item type, folders and files, or date modified (newest first). TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="FileExplorerShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="0"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. These two options stay
+                             visible but disabled so the shape of the feature is discoverable. When the
+                             control ships hierarchy, enable them and uncomment the matching branch in
+                             ApplyShaping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="FileExplorerGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        SelectionChanged="OnGroupKeyChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Item type" Tag="TypeDisplay"/>
+                        <ComboBoxItem Content="Folder or file" Tag="IsFolder"/>
+                        <ComboBoxItem Content="Date modified" Tag="DateModified"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="FileExplorerExpandAllGroupsButton"
+                        Content="Expand all"
+                        Click="OnExpandAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="FileExplorerCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        Click="OnCollapseAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                </StackPanel>
+                <!-- /scaffold -->
+
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Opening a folder replaces the items of the one collection; removing a row changes only this listing, never the disk. Watch the table and the Last action readout. Actions that change one row need a selected row."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="OpenSelectedButton"
+                            AutomationProperties.AutomationId="FileExplorerOpenSelectedButton"
+                            Content="Open selected folder"
+                            Click="OnOpenSelectedClick"
+                            ToolTipService.ToolTip="Opens the selected folder, the same as pressing Enter or double-clicking it."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RemoveSelectedButton"
+                            AutomationProperties.AutomationId="FileExplorerRemoveSelectedButton"
+                            Content="Remove selected from listing"
+                            Click="OnRemoveSelectedClick"
+                            ToolTipService.ToolTip="Removes the row from this listing only; grouped, its group disappears when it was the last row. Refresh brings it back."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="GoToAppFolderButton"
+                            AutomationProperties.AutomationId="FileExplorerGoToAppFolderButton"
+                            Content="Go to the app folder"
+                            Click="OnGoToAppFolderClick"
+                            ToolTipService.ToolTip="Returns to the folder the page opened in: this sample's install folder."
+                            AutomationProperties.HelpText="Returns to this sample's install folder."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Folder" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="FolderText" AutomationProperties.AutomationId="FileExplorerFolderText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(reading)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Items" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="ItemsText" AutomationProperties.AutomationId="FileExplorerItemsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0 items" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="Selected" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="SelectedText" AutomationProperties.AutomationId="FileExplorerSelectedText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="FileExplorerRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="4" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="FileExplorerShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="5" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="FileExplorerLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
+
+                <muxc:InfoBar
+                    Title="What to look for"
+                    Severity="Informational"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Message="Changing Filter or Shaping never re-reads the folder: Items stays the same while Rows changes. Folders stay together when you sort by Name, Type or Size, because those SortMemberPaths name a folders-first key. Grouping by Date modified sorts the listing newest first, so the buckets run from Today to older. A folder that cannot be read, or a mistyped path, is reported in Last action instead of failing silently."/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+    </controls:SamplePresenter>
+</Page>

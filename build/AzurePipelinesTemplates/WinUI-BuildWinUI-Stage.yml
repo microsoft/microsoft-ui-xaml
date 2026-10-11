@@ -2,6 +2,8 @@
 # Licensed under the MIT License.
 parameters:
   stageName: 'Build'
+  # Optional UI label; the stage identifier stays stageName so dependsOn refs are unaffected.
+  stageDisplayName: ''
   pipelineKind: '' # can be: Nightly, PR, GitHubPR, BuildAndTest, Preview, Official
   signOutput: false # this is true for Release builds
   buildScenarioApps: false
@@ -10,21 +12,40 @@ parameters:
   projectCaching: false
   pgoBuildModeMSBuildArg: '/p:PGOBuildMode=$(pgoBuildMode)'
   buildProductOnly: false
+  # Forwarded to WinUI-BuildMUXProject-Steps.yml. When set, the product is downloaded from the
+  # parent mono-build (Build-WinUI-<plat>-Release) for Release x86/x64/arm64 jobs instead of being
+  # rebuilt. Empty (default) = build the product (standalone behavior).
+  consumeProductFromBuildId: ''
+  consumeProductFromPipeline: ''
+  # Variable group supplying WinUIInternalFeedUri. Standalone WinUI uses the WinUI-project
+  # group; the monobuild test pipeline overrides to the OS-project WinAppSDK-WinUI-InternalFeed.
+  internalFeedVariableGroup: 'WinUI-InternalFeed'
   dependsOn: ''
+  # Optional OneBranch host SKU for the BuildMUX jobs (e.g. D64). Empty = inherit the
+  # pipeline-level WindowsHostVersion, which currently draws an 8-vCPU host.
+  buildHostSku: ''
 
 stages:
 - stage: ${{ parameters.stageName }}
+  ${{ if ne(parameters.stageDisplayName, '') }}:
+    displayName: ${{ parameters.stageDisplayName }}
   # Skip the build job if we are reusing the output of a previous build.
   # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
   condition:
     and(succeeded(), eq(variables['useBuildOutputFromBuildId'],''))
   dependsOn: ${{ parameters.dependsOn }}
   variables:
-  - group: WinUI-InternalFeed
+  - group: ${{ parameters.internalFeedVariableGroup }}
   jobs:
   - job: BuildMUX
     pool:
       type: windows
+      # hostVersion REPLACES featureFlags.WindowsHostVersion, so Version/Network are restated.
+      ${{ if ne(parameters.buildHostSku, '') }}:
+        hostVersion:
+          Version: 2022
+          Network: KS3
+          SKU: ${{ parameters.buildHostSku }}
     timeoutInMinutes: 500
     strategy:
       maxParallel: 10
@@ -166,6 +187,8 @@ stages:
         projectCaching: ${{ parameters.projectCaching }}
         pgoBuildModeMSBuildArg: ${{ parameters.pgoBuildModeMSBuildArg }}
         buildProductOnly: ${{ parameters.buildProductOnly }}
+        consumeProductFromBuildId: ${{ parameters.consumeProductFromBuildId }}
+        consumeProductFromPipeline: ${{ parameters.consumeProductFromPipeline }}
 
     - ${{ if eq(parameters.pipelineKind, 'Nightly') }}:
       - task: CodeQL3000Finalize@0

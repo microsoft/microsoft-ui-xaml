@@ -1,0 +1,31 @@
+<!-- GridLinesVisibility: None / Horizontal / Vertical / All (the default). The lines run
+     through text and template cells alike. -->
+<tv:TableView x:Name="PeopleTable"
+              ItemsSource="{x:Bind Source}"
+              GridLinesVisibility="All"
+              SelectionMode="Single"
+              IsReadOnly="True">
+    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+    <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+    <tv:TableViewTextColumn Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+</tv:TableView>
+
+<ComboBox x:Name="GridLinesSelector"
+          Header="Grid lines"
+          SelectedIndex="3"
+          SelectionChanged="OnGridLinesChanged">
+    <ComboBoxItem Content="None" Tag="None"/>
+    <ComboBoxItem Content="Horizontal" Tag="Horizontal"/>
+    <ComboBoxItem Content="Vertical" Tag="Vertical"/>
+    <ComboBoxItem Content="All (default)" Tag="All"/>
+</ComboBox>
+
+<!-- Banding is a Style, so the same grid lines are checked against both the theme brushes
+     and a custom row background. -->
+<Style x:Key="CustomBandingTableViewStyle" TargetType="tv:TableView">
+    <Setter Property="RowBackground" Value="{ThemeResource SampleCustomRowBackgroundBrush}"/>
+    <Setter Property="AlternatingRowBackground" Value="{ThemeResource SampleCustomAlternatingRowBackgroundBrush}"/>
+</Style>

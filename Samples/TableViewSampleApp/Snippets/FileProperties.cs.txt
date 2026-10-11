@@ -1,0 +1,57 @@
+// FilePropertiesPage.xaml.cs. One source over one collection, created once; it is never rebuilt.
+public ObservableCollection<FilePropertyEntry> Entries { get; } = new();
+
+public TableViewSource? Source => _source;
+
+public FilePropertiesPage()
+{
+    _source = TableViewSource.From(Entries);
+    InitializeComponent();
+
+    // This page starts Grouped by section (ShapingModeSelector SelectedIndex="1"). The
+    // SelectionChanged that InitializeComponent raised was ignored by the guard, so apply it now.
+    ApplyShaping(announce: false);
+    Loaded += OnPageLoaded;
+}
+
+// Picking a file refills the one collection; the source re-projects it under the current
+// filter and grouping. Every value comes from FileVersionInfo or FileInfo, so none is blank.
+private void ShowFile(FileInfo file)
+{
+    _currentFile = file;
+    Entries.Clear();
+    foreach (var entry in ReadProperties(file))
+    {
+        Entries.Add(entry);
+    }
+}
+
+// Remove is a collection change: the source drops the row (and an emptied section) by itself.
+Entries.Remove(entry);
+
+// Move rewrites the grouped-on value. GroupBy takes a delegate, not a property path, so it is
+// re-applied; ApplyShaping then restores the selection, so the row stays selected.
+var from = entry.Section;
+entry.Section = SampleShaping.Next(s_sections, from);
+ReapplyIfGroupedOn(nameof(FilePropertyEntry.Section));
+
+private void ApplyShaping(bool announce)
+{
+    // ...guards, then:
+    var selected = PropTable.SelectedItem;
+    switch (mode)
+    {
+        case "grouped":
+            _source.GroupBy(item => KeyOf(item as FilePropertyEntry, key), SampleShaping.GroupIdentity);
+            break;
+        default:
+            _source.ClearGroupBy();
+            mode = "flat";
+            break;
+    }
+
+    _appliedMode = mode;
+    _appliedKey = key;
+    SampleShaping.Reselect(PropTable, selected, Entries.Count + s_sections.Length + 2, RefreshReadouts);
+    UpdateShapingGating();
+}

@@ -1,0 +1,70 @@
+private void OnGridLinesChanged(object sender, SelectionChangedEventArgs e)
+{
+    // Fires during InitializeComponent (SelectedIndex="3") before the table exists.
+    if (PeopleTable is null || GridLinesText is null)
+    {
+        return;
+    }
+
+    PeopleTable.GridLinesVisibility = SampleShaping.SelectedTag(GridLinesSelector, "All") switch
+    {
+        "None" => TableViewGridLinesVisibility.None,
+        "Horizontal" => TableViewGridLinesVisibility.Horizontal,
+        "Vertical" => TableViewGridLinesVisibility.Vertical,
+        _ => TableViewGridLinesVisibility.All,
+    };
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "GridLinesVisibility -> {0}", PeopleTable.GridLinesVisibility));
+}
+
+private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (PeopleTable is null || RowBandingText is null)
+    {
+        return;
+    }
+
+    var custom = SampleShaping.SelectedTag(RowBandingSelector, "default") == "custom";
+    PeopleTable.Style = custom ? (Style)Resources["CustomBandingTableViewStyle"] : null;
+    SetLastAction(custom
+        ? "Row banding -> custom RowBackground / AlternatingRowBackground"
+        : "Row banding -> default theme");
+}
+
+private void OnMoveToNextGroupClick(object sender, RoutedEventArgs e)
+{
+    if (PeopleTable.SelectedItem is not Person person)
+    {
+        SetLastAction("No row selected.");
+        return;
+    }
+
+    // Moves along the key the Group key selector names, so the row always changes group
+    // when grouped (and the same value changes when flat).
+    var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+    var from = SampleShaping.KeyOf(person, key);
+    _isBulkUpdate = true;
+    try
+    {
+        switch (key)
+        {
+            case nameof(Person.Office):
+                person.Office = SampleShaping.Next(PersonData.Offices, person.Office);
+                break;
+            case nameof(Person.IsActive):
+                person.IsActive = !person.IsActive;
+                break;
+            default:
+                person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
+                break;
+        }
+    }
+    finally
+    {
+        _isBulkUpdate = false;
+    }
+
+    // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
+    // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+    ReapplyIfGroupedOn(key);
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
+}

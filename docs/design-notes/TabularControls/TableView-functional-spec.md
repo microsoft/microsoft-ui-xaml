@@ -1,8 +1,8 @@
 # TableView — Functional Spec
 
-> **Internal** (mirror-excluded). Summarizes the engineering-relevant requirements; the
-> authoritative, Confidential/Internal-Only sources are linked under [References](#references)
-> (business/compete analysis is not reproduced here).
+> Summarizes the engineering-relevant requirements. Business and compete analysis is not
+> reproduced here; the internal planning documents that own it are tracked by the feature team
+> and are deliberately not linked from this repository.
 
 ## Purpose
 
@@ -25,7 +25,7 @@ full `DataGrid` replacement.
 |---|---|
 | PR 1 | Empty `Microsoft.UI.Xaml.Controls.Tabular.dll` scaffolding |
 | **PR 2 (this)** | Display-only baseline: columns/cells/headers, gridlines, density, row virtualization, leading-frozen columns, keyboard row-focus nav, read-only UIA peers |
-| PR 3 | Selection, single-column sort, grouping, 2-level hierarchy, column resize/reorder, nav-state; themed rendering |
+| PR 3 | Selection, single-column sort, filtering, grouping, 2-level hierarchy, column resize/reorder, nav-state; themed rendering. Shipped incrementally: selection, then the shaping engine with filter + sort, then grouping. |
 | PR 4 | Tests + `TableViewSamples` e2e app |
 
 ## Functional requirements
@@ -37,7 +37,7 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - `ObservableCollection`-backed `ItemsSource`; incremental add/remove/update. — **PR2** render · **PR3** shaped (sort/group)
 - Read-only by default (`IsReadOnly` = `true`). — **PR2**
 - Custom cell templates (`TableViewTemplateColumn`). — **PR2**
-- `GroupedItemsSource` for grouped/banded sections. — **PR3**
+- Grouped/banded sections, declared on the data source as `TableViewSource.GroupBy(keySelector)` rather than as a separate `GroupedItemsSource` property. — **PR3, shipped**
 
 ### Column capabilities
 - Width + `MinWidth`/`MaxWidth` (pixel in v1; `Auto`/`*` fall back to default width). — **PR2** · UI resize **PR3**
@@ -52,8 +52,47 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 ### Row & hierarchy
 - Single + multi selection (Ctrl/Shift). — **PR3**
 - Per-row/cell context menu; checkbox selection (File-Explorer-specific). — **PR3** / surface
-- 2-level nested rows (hard cap in v1) + grouping. — **PR3**
+- Single-level grouping with expand/collapse group headers. — **PR3, shipped** (see [Grouping](#grouping))
+- 2-level nested rows (hard cap in v1). — **PR3**
 - &gt;2-level hierarchy, row drag-drop, marquee selection. — *out of scope*
+
+### Grouping
+
+Grouping is declared on the data source, not on the control: the control renders whatever shape
+the source publishes, so the same engine serves an app that never touches `TableView`.
+
+- Single-level grouping via `TableViewSource.GroupBy(keySelector)`; `ClearGroupBy()` removes it.
+  A second `GroupBy` replaces the first — grouping axes never stack. — **shipped**
+- The group key is any object. Its **identity** is what buckets rows, and it must be a stable,
+  non-empty string. Value-typed keys (`String`, `Int32`, `Int64`, `Guid`, `Boolean`, enums) get a
+  built-in identity; a reference-typed key needs the
+  `GroupBy(keySelector, groupIdentitySelector)` overload. — **shipped**
+- An unresolvable or colliding group identity **fails fast** (`hresult_invalid_argument` on the
+  call that builds the projection). It does not silently fall back to an ungrouped table: a
+  grouping request that quietly did nothing is the harder bug to find. A `null` key and an
+  empty-string key are both unresolvable — `String` is a supported key type, but `""` is not a
+  usable identity — so an app grouping on a nullable or blank-able property supplies its own
+  fallback label. — **shipped**
+- Composition with the other shaping verbs is order-sensitive and deliberate: a sort declared
+  **before** `GroupBy` orders the groups themselves; a sort declared **after** `GroupBy` orders
+  rows **within** each group. A filter always runs first, and a group whose last row is filtered
+  out disappears. — **shipped**
+- Every group header is expand/collapse-capable: click or tap the band, or use the
+  `ExpandCollapse` UIA pattern. `TableView.ExpandAllGroups()` / `CollapseAllGroups()` are the
+  bulk programmatic counterparts and are no-ops when the source is not grouped. — **shipped**
+- Expansion is **intent keyed by group identity**, not state on a group object, so a collapse
+  survives a re-sort, a re-filter and a regroup that re-mints every group. Newly arriving groups
+  inherit the current default rather than an intent nobody expressed. — **shipped**
+- Header presentation: `TableView.GroupHeaderTemplate` fills the content region of the
+  control-owned `TableViewGroupHeader`, which keeps the chevron and the themed band. The template
+  binds against a `TableViewGroupInfo` projection (`Key`, `ItemCount`, `Level`, `IsExpandable`,
+  `IsExpanded`, and the culture-formatted `KeyText` / `ItemCountText`). — **shipped**
+- Accessibility: `TableViewGroupHeaderAutomationPeer` exposes `ExpandCollapse` and `GridItem`; a
+  non-expandable group reports `LeafNode` rather than dropping the pattern. — **shipped**
+- Per-group programmatic expand/collapse (by key, from app code), multi-level grouping, and
+  group-level aggregates/summaries. — *deferred*
+- Incremental (non-rebuild) maintenance of a grouped projection: a source change under grouping
+  currently rebuilds rather than splicing. Correct, but O(N) per change. — *deferred*
 
 ### Editing
 - Opt-in cell editing (`IsReadOnly = false` on the control; per-column `IsReadOnly`). — **cell editing**
@@ -83,7 +122,7 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - Recycling: a recycled row never shows a previous item's cell tooltip. No invalidation API is needed — the binding tracks the row's `DataContext`, so a recycled row re-resolves through the same inheritance that refreshes its cell text, and a source `PropertyChanged` updates a live tooltip in place.
 - Because the control never calls into app code while realizing a cell, there is no re-entrancy surface, no drain budget, and no coalescing machinery.
 - Column header: opt-in via `TableViewColumn.HeaderToolTip`, whose value is the tooltip content. Covers the whole header cell, including its padding and sort affordance. Header cells are rebuilt rather than recycled, so the value is read when the header is built and re-applied in place when it changes — no binding, no invalidation. String content is reported as the header's UIA help text by `TableViewColumnHeaderAutomationPeer`, joined with the sort state when the column has one; the header peer is virtual, so `AutomationProperties.HelpText` on the element would never reach a client. — **PR4**
-- Group-header tooltips are **deferred** until grouping is enabled.
+- Group-header tooltips are **deferred**. Grouping ships, but the group header has no tooltip opt-in: `TableViewColumn.CellToolTipBinding` and `HeaderToolTip` are column-scoped, and the group header is a `TableViewGroupHeader` whose content is app-templated, so an app that wants a tooltip there puts one in its `GroupHeaderTemplate` today. A control-owned group-header tooltip API needs its own opt-in property and is not in this release.
 
 > Tooltips are **not** gated on text truncation. No WinUI control keys tooltips off `IsTextTrimmed`; the shipped pattern is to gate on a cheap content predicate (non-empty string) or an explicit opt-in.
 
@@ -96,13 +135,12 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 
 ## References
 
-Authoritative (Microsoft Confidential — Internal Only):
-
-- Scope & API parity — [`TableView-v1-Scope-API-Parity.docx`](https://microsoft.sharepoint-df.com/teams/ShellFTL/_layouts/15/Doc.aspx?sourcedoc=%7B4261A4D3-3D4B-4ABC-9A42-81FC0D5B0F48%7D&file=TableView-v1-Scope-API-Parity.docx)
-- Functional 1-pager (purpose, compete analysis, business impact) — [`1 pager Functional 1 pager Table View Control.docx`](https://microsoft.sharepoint-df.com/teams/ShellFTL/_layouts/15/Doc.aspx?sourcedoc=%7BCBB7B347-128C-4528-838B-0A83AD85BAAF%7D&file=1%20pager%20Functional%201%20pager%20Table%20View%20Control.docx)
-- MLP requirements matrix + NFR — [`Table View MLP requirements.xlsx`](https://microsoft.sharepoint-df.com/teams/ShellFTL/_layouts/15/Doc.aspx?sourcedoc=%7BFF1387FE-28FE-44E6-A6FC-09633A857A40%7D&file=Table%20View%20MLP%20requirements.xlsx)
-
 Repo:
 
 - Design (layout + implementation): [`TableView-dev-spec.md`](./TableView-dev-spec.md)
 - API surface + samples: [`../../api-specs/TableView/TableView-spec.md`](../../api-specs/TableView/TableView-spec.md)
+
+Planning material that is not in this repository — the v1 scope and API-parity document, the
+functional 1-pager, and the MLP requirements matrix — is owned by the feature team. Everything
+those documents say that constrains the implementation is restated here, so this file is the
+working contract for anyone building or reviewing the control.

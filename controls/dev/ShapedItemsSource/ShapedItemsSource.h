@@ -43,10 +43,17 @@ class ShapedGroup;
 class ShapedItemsSource : public std::enable_shared_from_this<ShapedItemsSource>
 {
 public:
-    // What the last rebuild actually produced -- the EFFECTIVE shape, not the requested one. A
-    // grouping request degrades to Flat when group identity is unresolvable or collides, and a
-    // source with no usable row identity degrades to Unshaped, a plain 1:1 mirror. Consumers read
-    // this to decide how to interpret a row, so it must never report intent.
+    // What the last rebuild actually produced -- the EFFECTIVE shape, not the requested one.
+    // Consumers read this to decide how to interpret a row, so it must never report intent.
+    //
+    // Only ONE shaping request degrades: a source with no usable ROW identity degrades to
+    // Unshaped, a plain 1:1 mirror (RebuildUnshapedRows). A GROUPING request does NOT degrade --
+    // an unresolvable, unstable or colliding group identity throws hresult_invalid_argument out of
+    // RebuildGroupedRows instead of quietly producing Flat. The asymmetry is deliberate: a row
+    // identity the engine cannot derive is a property of the app's data that the app may not be
+    // able to change, and an unshaped mirror still shows every row; a bad group identity comes
+    // from the GroupBy(...) selector the app just wrote, and silently rendering ungrouped is a bug
+    // an app ships without ever noticing.
     enum class ProjectionKind
     {
         // No projection has been built yet.
@@ -61,37 +68,6 @@ public:
 
     explicit ShapedItemsSource(winrt::IInspectable const& source);
     ~ShapedItemsSource();
-
-    // Scope returned by DeferRefresh. Move-only: copying it would end the deferral early.
-    class DeferRefreshScope
-    {
-    public:
-        explicit DeferRefreshScope(ShapedItemsSource* owner) noexcept : m_owner(owner) {}
-        DeferRefreshScope(DeferRefreshScope&& other) noexcept : m_owner(std::exchange(other.m_owner, nullptr)) {}
-        DeferRefreshScope& operator=(DeferRefreshScope&& other) noexcept
-        {
-            if (this != &other)
-            {
-                Release();
-                m_owner = std::exchange(other.m_owner, nullptr);
-            }
-            return *this;
-        }
-        DeferRefreshScope(DeferRefreshScope const&) = delete;
-        DeferRefreshScope& operator=(DeferRefreshScope const&) = delete;
-        ~DeferRefreshScope() { Release(); }
-
-    private:
-        void Release() noexcept
-        {
-            if (auto* const owner = std::exchange(m_owner, nullptr))
-            {
-                owner->EndShapingBatch();
-            }
-        }
-
-        ShapedItemsSource* m_owner{ nullptr };
-    };
 
     // Subscribes to the source and builds the first projection. Separate from the constructor so
     // the owner can install its handlers first and therefore observe the very first projection.
@@ -169,21 +145,7 @@ public:
 
     void Refresh();
 
-    // Suppresses intermediate projections while several verbs are declared as one change.
-    // A consumer whose API surfaces shaping as a COLLECTION (e.g. a vector of sort descriptions)
-    // has to re-declare every axis whenever one of them moves; without this each axis would
-    // rebuild the projection and emit its own Reset. Re-entrant: only the outermost scope
-    // applies. Spec diffing is unaffected -- the pipeline diffs against the last COMMITTED spec,
-    // so one commit at the end sees exactly the accumulated change.
-    //
-    // Scope-bound rather than a Begin/End pair, matching ICollectionView::DeferRefresh: every
-    // consumer was already wrapping the pair in a scope guard, and an unbalanced End would
-    // strand the projection in a permanently deferred state.
-    [[nodiscard]] DeferRefreshScope DeferRefresh();
-
 private:
-    void BeginShapingBatch();
-    void EndShapingBatch();
     void SubscribeToSourceCollectionChanges();
     void UnsubscribeFromSourceCollectionChanges();
     void OnSourceCollectionChanged();
@@ -223,7 +185,6 @@ private:
     bool TryGetTrackedFlatRowIndex(winrt::hstring const& identity, uint32_t& index) const;
     void ShiftTrackedFlatRowIndicesForInsert(uint32_t insertedIndex);
     void ShiftTrackedFlatRowIndicesForRemove(uint32_t removedIndex);
-    static winrt::hstring StringifyKey(winrt::IInspectable const& key);
     // Prefixes a caller-facing message with the consumer's diagnostic name.
     winrt::hstring Diagnostic(std::wstring_view text) const;
     ShapingHelpers::ShapingPipeline::SortedInsertPlacement SortedInsertPlacementFor(winrt::IInspectable const& item) const;
@@ -266,10 +227,6 @@ private:
     // the source must not interleave a nested update against a half-updated projection.
     bool m_isApplyingIncrementalChange{ false };
     bool m_pendingRefresh{ false };
-    // Depth of the current BeginShapingBatch scope, plus what the batch owes when it unwinds.
-    uint32_t m_shapingBatchDepth{ 0 };
-    bool m_shapingBatchHasShapingChange{ false };
-    bool m_shapingBatchHasRefresh{ false };
     std::unordered_map<winrt::hstring, winrt::com_ptr<ShapedGroup>> m_groupCache;
     std::shared_ptr<GroupedSourceAdapter> m_groupedAdapter{};
 

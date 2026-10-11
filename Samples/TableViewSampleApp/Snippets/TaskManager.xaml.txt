@@ -1,0 +1,44 @@
+<!-- TaskManagerPage.xaml: a metric cell. The converter turns the raw value into a tint, and
+     returns no tint in a high-contrast theme. The leaf in the Status cell repeats its text, so
+     it is decorative (Raw). -->
+<DataTemplate x:Key="CpuHeatTemplate" x:DataType="models:ProcessItem">
+    <Border Background="{x:Bind CpuPercent, Mode=OneWay, Converter={StaticResource ProcessHeatBrushConverter}, ConverterParameter=Cpu}" Padding="8,4">
+        <TextBlock Text="{x:Bind CpuDisplay, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+    </Border>
+</DataTemplate>
+
+<!-- The table. String headers, so header cells and data cells are announced with their column
+     name ("CPU, 3.2%"). SortMemberPath names the raw value behind each template. Name is the one
+     star column, so the four metric columns always fit. -->
+<tv:TableView x:Name="ProcessTable"
+              AutomationProperties.AutomationId="TaskManagerTable"
+              AutomationProperties.Name="Processes"
+              ItemsSource="{x:Bind Source}"
+              SelectionMode="Single"
+              Sorted="OnProcessTableSorted"
+              SelectionChanged="OnSelectionChanged"
+              VerticalAlignment="Stretch" MinHeight="320">
+    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" CellTemplate="{StaticResource ProcessNameTemplate}" SortMemberPath="Name"/>
+    <tv:TableViewTemplateColumn Header="Status" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource ProcessStatusTemplate}" SortMemberPath="StatusText"/>
+    <tv:TableViewTemplateColumn x:Name="CpuColumn" Header="CPU" Width="{StaticResource ColWidthMetric}" CellTemplate="{StaticResource CpuHeatTemplate}" SortMemberPath="CpuPercent"/>
+    <tv:TableViewTemplateColumn x:Name="MemoryColumn" Header="Memory" Width="{StaticResource ColWidthMetric}" CellTemplate="{StaticResource MemoryHeatTemplate}" SortMemberPath="MemoryMB"/>
+    <tv:TableViewTemplateColumn x:Name="DiskColumn" Header="Disk" Width="{StaticResource ColWidthMetric}" CellTemplate="{StaticResource DiskHeatTemplate}" SortMemberPath="DiskMBps"/>
+    <tv:TableViewTemplateColumn x:Name="NetworkColumn" Header="Network" Width="{StaticResource ColWidthMetric}" CellTemplate="{StaticResource NetworkHeatTemplate}" SortMemberPath="NetworkMbps"/>
+</tv:TableView>
+
+<!-- Live data: a true on/off is a ToggleSwitch; the interval is a ComboBox. -->
+<ToggleSwitch x:Name="LiveUpdatesToggle" Header="Live updates" IsOn="True"
+              OnContent="Running" OffContent="Paused" Toggled="OnLiveUpdatesToggled"/>
+<ComboBox x:Name="UpdateIntervalSelector" Header="Update interval" SelectedIndex="1"
+          SelectionChanged="OnUpdateIntervalChanged">
+    <ComboBoxItem Content="1 second" Tag="1"/>
+    <ComboBoxItem Content="2 seconds" Tag="2"/>
+    <ComboBoxItem Content="5 seconds" Tag="5"/>
+</ComboBox>
+
+<!-- Shaping: group keys are data (Content = label, Tag = property name). -->
+<ComboBox x:Name="GroupKeySelector" Header="Group key" SelectedIndex="0" IsEnabled="False"
+          SelectionChanged="OnGroupKeyChanged">
+    <ComboBoxItem Content="Category" Tag="Category"/>
+    <ComboBoxItem Content="Status" Tag="StatusText"/>
+</ComboBox>

@@ -1,0 +1,91 @@
+// SortPage.xaml.cs. The source is created once; the table owns the sort state.
+public ObservableCollection<LeagueTeam> Teams { get; } = LeagueData.All();
+
+public TableViewSource? Source => _source;
+
+public SortPage()
+{
+    _source = TableViewSource.From(Teams);
+    InitializeComponent();
+    Loaded += OnPageLoaded;
+    Unloaded += OnPageUnloaded;
+}
+
+// Programmatic sort: one column at a time; a new sort replaces the previous one.
+private void OnSortNextMatchClick(object sender, RoutedEventArgs e) => SortBy(NextMatchColumn, TableViewSortDirection.Ascending);
+
+private void SortBy(TableViewColumn column, TableViewSortDirection direction)
+{
+    TeamsTable.SortByColumn(column, direction);
+}
+
+private void OnTogglePointsClick(object sender, RoutedEventArgs e)
+{
+    TeamsTable.ToggleSortDirection(PointsColumn);
+}
+
+private void OnClearSortClick(object sender, RoutedEventArgs e)
+{
+    TeamsTable.ClearSort();
+}
+
+// Sorted fires after the sort state is applied and the header arrow is published: header
+// clicks and the API calls above alike. Column is null when the sort was cleared.
+private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
+{
+    _sortedFiredCount++;
+    _lastSortedColumn = args.Column is null ? "cleared" : ColumnLabel(args.Column);
+}
+
+// A PropertyChanged on the sorted value does NOT re-position the row by itself, so apply the
+// active sort again whenever a value it depends on changes.
+private bool ResortIfSortedOn(params string[] propertyNames)
+{
+    var column = ActiveSortColumn();
+    if (column is null || !propertyNames.Contains(SampleShaping.SortPathOf(column)))
+    {
+        return false;
+    }
+
+    // SortByColumn ignores a request for the sort that is already applied, so clear the
+    // column's sort and apply it again: the rows are re-ordered by the new values.
+    var direction = column.SortDirection;
+    TeamsTable.SortByColumn(column, TableViewSortDirection.None);
+    TeamsTable.SortByColumn(column, direction);
+    return true;
+}
+
+private TableViewColumn? ActiveSortColumn() =>
+    TeamsTable?.Columns.FirstOrDefault(c => c.SortDirection != TableViewSortDirection.None);
+
+private void OnPostponeClick(object sender, RoutedEventArgs e)
+{
+    if (TeamsTable.SelectedItem is not LeagueTeam team)
+    {
+        SetLastAction("No row selected.");
+        return;
+    }
+
+    team.NextMatchDate = team.NextMatchDate.AddDays(7);
+    ResortIfSortedOn(nameof(LeagueTeam.NextMatchDate), nameof(LeagueTeam.NextMatchText));
+}
+
+// Models\LeagueTeam.cs: the value the date column sorts by, and the text the text column sorts by.
+public DateTimeOffset NextMatchDate
+{
+    get => _nextMatchDate;
+    set
+    {
+        if (Set(ref _nextMatchDate, value))
+        {
+            Raise(nameof(NextMatchDateOrNull));
+            Raise(nameof(NextMatchText));
+        }
+    }
+}
+
+public string NextMatchText => _nextMatchDate.ToString("d MMM", CultureInfo.CurrentCulture);
+
+// Grouped shaping composes with the sort: rows reorder within each group.
+// The key selector receives the ROW; the identity selector receives the KEY.
+_source.GroupBy(item => KeyOf(item as LeagueTeam, key), SampleShaping.GroupIdentity);

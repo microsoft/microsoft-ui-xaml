@@ -4371,6 +4371,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
 
         TestServices::WindowHelper->WaitForIdle();
+        TestServices::WindowHelper->SynchronouslyTickUIThread(2);
         TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
     }
 

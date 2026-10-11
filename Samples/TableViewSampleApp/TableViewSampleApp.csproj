@@ -20,11 +20,15 @@
     <LangVersion>latest</LangVersion>
     <!-- Program.cs provides the entry point (see DisableXamlGeneratedMain sample for the pattern). -->
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <DefineConstants Condition="'$(TableViewSampleEnableVerificationLogs)' == 'true'">$(DefineConstants);TABLEVIEW_SAMPLE_VERIFY</DefineConstants>
     <!-- TableView is [MUX_PREVIEW] and surfaces as CS8305 ("for evaluation purposes only"). -->
     <NoWarn>$(NoWarn);CS8305</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Assets\AppIcon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
@@ -42,6 +46,26 @@
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
+
+  <!-- Source snippets shown in each page's Source expander. Embedded rather than loose content so
+       CodeBlock can resolve them by name with no file I/O and no deployment step. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Snippets\*.txt">
+      <WithCulture>false</WithCulture>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <!-- BuildInfo.g.cs is generated under obj\ so local builds do not rewrite tracked source. -->
+  <Target Name="_GenerateBuildInfo" BeforeTargets="XamlPreCompile;CoreCompile">
+    <PropertyGroup>
+      <_TableViewSampleBuildInfoFile>$(IntermediateOutputPath)BuildInfo.g.cs</_TableViewSampleBuildInfoFile>
+    </PropertyGroup>
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Generate-BuildInfo.ps1&quot; -OutFile &quot;$(_TableViewSampleBuildInfoFile)&quot; -ProjectDir &quot;$(MSBuildProjectDirectory)&quot;"
+          EnvironmentVariables="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier)" />
+    <ItemGroup>
+      <Compile Include="$(_TableViewSampleBuildInfoFile)" Link="BuildInfo.g.cs" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />

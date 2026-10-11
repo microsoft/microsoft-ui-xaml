@@ -1,0 +1,95 @@
+public sealed partial class RowCardConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is not Person person)
+        {
+            return null!;
+        }
+
+        // A fresh element per evaluation. The returned UIElement is parented by the cell's ToolTip,
+        // and one element cannot have two parents, so this must not be cached.
+        var panel = new StackPanel { Spacing = 4 };
+        panel.Children.Add(new TextBlock { Text = person.FullName, FontWeight = FontWeights.SemiBold });
+        panel.Children.Add(new TextBlock { Text = string.Format(CultureInfo.CurrentCulture, "{0}, {1}", person.Role, person.Department), Opacity = 0.75 });
+        panel.Children.Add(new TextBlock { Text = person.Email, Opacity = 0.6, FontSize = 12 });
+
+        return panel;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) =>
+        throw new NotSupportedException();
+}
+
+private void AttachCellToolTips()
+{
+    // A tooltip on an image cell: the person's name.
+    PhotoColumn.CellToolTipBinding = new Binding { Path = new PropertyPath(nameof(Person.FullName)) };
+
+    // No Path: the binding produces the row item, and the converter turns it into content.
+    NameColumn.CellToolTipBinding = new Binding { Converter = new RowCardConverter() };
+
+    // Same text as the cell itself: the usual case for a column that truncates.
+    BioColumn.CellToolTipBinding = new Binding { Path = new PropertyPath(nameof(Person.Bio)) };
+
+    // A different property, and an observable one: Person raises PropertyChanged for Role, so
+    // the tooltip follows the data with no invalidation call from the app.
+    DepartmentColumn.CellToolTipBinding = new Binding { Path = new PropertyPath(nameof(Person.Role)) };
+
+    // Salary deliberately gets nothing, so it is easy to confirm no tooltip appears.
+}
+
+private void DetachCellToolTips()
+{
+    // Clearing the binding retracts the tooltip; there is no separate remove call.
+    PhotoColumn.CellToolTipBinding = null;
+    NameColumn.CellToolTipBinding = null;
+    BioColumn.CellToolTipBinding = null;
+    DepartmentColumn.CellToolTipBinding = null;
+}
+
+private void ApplyHeaderToolTips(string mode)
+{
+    switch (mode)
+    {
+        case "changed":
+            // Changed in place on one column, retracted on another: both update paths.
+            NameColumn.HeaderToolTip = "Full name: given name, then family name";
+            DepartmentColumn.HeaderToolTip = null;
+            break;
+        case "none":
+            foreach (var column in PeopleTable.Columns)
+            {
+                column.HeaderToolTip = null;
+            }
+
+            break;
+        default:
+            NameColumn.HeaderToolTip = "Full name, as entered";
+            DepartmentColumn.HeaderToolTip = "Team the person reports into";
+
+            // HeaderToolTip takes any object. Non-string content is mouse-only: there is no
+            // sensible way to announce a visual tree, so it is not reported as help text.
+            var card = new StackPanel { Spacing = 4 };
+            card.Children.Add(new TextBlock { Text = "Bio", FontWeight = FontWeights.SemiBold });
+            card.Children.Add(new TextBlock { Text = "A short free-form summary", Opacity = 0.75 });
+            BioColumn.HeaderToolTip = card;
+
+            // Repeats the header's own text, so the peer drops it rather than announcing it twice.
+            SalaryColumn.HeaderToolTip = "Salary";
+            break;
+    }
+}
+
+private void OnNextRoleClick(object sender, RoutedEventArgs e)
+{
+    var changed = People.Take(10).ToList();
+    foreach (var person in changed)
+    {
+        person.Role = SampleShaping.Next(PersonData.Roles, person.Role);
+    }
+
+    ReapplyIfGroupedOn(nameof(Person.Role));
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Gave {0:N0} people their next role; {1} is now {2}",
+        changed.Count, changed[0].FullName, changed[0].Role));
+}

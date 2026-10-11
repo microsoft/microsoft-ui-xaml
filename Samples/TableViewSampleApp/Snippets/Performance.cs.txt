@@ -1,0 +1,40 @@
+// DO: build the rows off the UI thread and off the clock, then bind them once:
+// one collection, one TableViewSource, one ItemsSource assignment.
+var rows = await Task.Run(() => PersonData.Many(count));
+var ms = Timed(() =>
+{
+    _people = new ObservableCollection<Person>(rows);
+    _source = TableViewSource.From(_people);
+    PerfTable.ItemsSource = _source;
+});
+
+// DON'T: one CollectionChanged notification, and one projection update, per row.
+var ms = Timed(() =>
+{
+    people.Clear();
+    foreach (var person in rows)
+    {
+        people.Add(person);
+    }
+});
+
+// Settles the heap, then times the mutation plus one synchronous measure and arrange, so the
+// window ends when the new rows are laid out rather than when the C# call returns.
+private long Timed(Action mutation)
+{
+    GC.Collect();
+    GC.WaitForPendingFinalizers();
+    GC.Collect();
+
+    var stopwatch = Stopwatch.StartNew();
+    mutation();
+    PerfTable.UpdateLayout();
+    stopwatch.Stop();
+    return stopwatch.ElapsedMilliseconds;
+}
+
+// Sort, filter and group run on the control and the source, not on a re-built list.
+var ms = Timed(() => PerfTable.SortByColumn(NameColumn, direction));
+var ms = Timed(() => source.Filter(item => item is Person { Department: FilterDepartment }));
+var ms = Timed(() => source.ClearFilter());
+ms = Timed(() => source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity));
