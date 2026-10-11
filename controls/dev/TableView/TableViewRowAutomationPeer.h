@@ -25,7 +25,8 @@ public:
     hstring GetNameCore();
 
     // Rows are virtualized: UIA only ever sees the realized window, so the control has to supply
-    // "row i of n" on the same flat basis as IGridProvider.
+    // "row i of n" on the same flat basis as IGridProvider. A tree row reports its position
+    // within its sibling set instead.
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
 
@@ -49,6 +50,18 @@ public:
     bool CanReuseForRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
     void TrackCurrentRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
     void DropCellPeerCache();
+
+    // IExpandCollapseProvider — hierarchical rows only. A leaf reports LeafNode rather than the
+    // pattern being withdrawn, matching TableViewGroupHeaderAutomationPeer.
+    winrt::ExpandCollapseState ExpandCollapseState();
+    void Expand();
+    void Collapse();
+
+    // IAutomationPeerOverrides3. Level is the row's 1-based tree depth.
+    int32_t GetLevelCore();
+
+    // Raised by the owning row on expansion change so clients don't read stale state.
+    void RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
 
 private:
     // The owning TableView, or null once the row has been recycled out of the tree.
@@ -90,4 +103,10 @@ private:
     TableViewTrackedItemIdentity m_item;
     int32_t m_lastKnownRowIndex{ -1 };
     int32_t m_trackedItemOccurrence{ -1 };
+    winrt::TableViewRow GetRow() const;
+    bool IsHierarchicalRow() const;
+    // Passed to the owner unresolved so it stays idempotent.
+    void SetExpansion(bool expand);
+    // Sibling-set position/size. False when not a realized tree row (UIA gets 0, "unknown").
+    bool TryGetSiblingPosition(int32_t& positionInSet, int32_t& sizeOfSet);
 };

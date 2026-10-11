@@ -15,8 +15,12 @@
 #include "ShapingPipeline.h"
 #include "ShapingHelpers.h"
 #include "RowIdentity.h"
+#include "ParentKeyIndex.h"
+#include "LiveShapingTracker.h"
 
+#include <winrt/Microsoft.UI.Dispatching.h>
 class GroupedSourceAdapter;
+class HierarchicalSourceAdapter;
 class ShapedGroup;
 
 // Layer 2 of the shaping stack: the LIVE PROJECTION.
@@ -64,6 +68,11 @@ public:
         Flat,
         // Group headers interleaved with their items, produced through the group adapter.
         Grouped,
+        // A tree via the hierarchy adapter; no synthetic rows, a parent IS a data row.
+        Hierarchical,
+        // Both axes: ROOTS are bucketed into groups (headers at depth 0 only); descendants stay
+        // under their parent.
+        GroupedHierarchical,
     };
 
     explicit ShapedItemsSource(winrt::IInspectable const& source);
@@ -97,6 +106,13 @@ public:
         ShapingHelpers::KeySelector const& key,
         RowIdentity::IdentitySelector const& groupIdentitySelector);
     void ClearGroup();
+
+    // Declares a self-referencing hierarchy: `key` is each item's unique identity, `parentKey` its
+    // parent's (null/empty/unknown = root). Invalid data (duplicate/null key, self-parent, cycle)
+    // throws E_INVALIDARG, leaving the previous projection. Re-declaring resets expansion intent.
+    // With grouping, the group key buckets ROOTS only.
+    void SetParent(ShapingHelpers::KeySelector key, ShapingHelpers::KeySelector parentKey);
+    void ClearParentBy();
     void SetSort(
         winrt::hstring const& previousAxisToken,
         winrt::hstring const& axisToken,
@@ -139,11 +155,27 @@ public:
     // (group order, headers excluded) so Rows() stays coherent regardless of grouping.
     winrt::IObservableVector<winrt::IInspectable> Rows() const noexcept { return m_rows; }
     std::shared_ptr<GroupedSourceAdapter> GroupedAdapter() const noexcept { return m_groupedAdapter; }
+    std::shared_ptr<HierarchicalSourceAdapter> HierarchicalAdapter() const noexcept { return m_hierarchicalAdapter; }
     // The selector every identity consumer must use. Derives identity from each item's object
     // identity, so shaping never depends on the app having a unique domain key.
     ShapingHelpers::KeySelector const& IdentitySelector() const noexcept { return EffectiveIdentitySelector(); }
 
     void Refresh();
+
+    // One switch for sort keys, group key, filter result and hierarchy edge together.
+    void SetLiveShaping(bool enabled);
+    bool IsLiveShapingEnabled() const noexcept { return m_liveShapingEnabled; }
+
+    // Lets the owner hold live restores (e.g. while a cell editor is open). A held restore stays
+    // dirty and runs the turn after ResumeHeldLiveShaping.
+    void SetLiveShapingHold(std::function<bool()> isHeld) { m_liveShapingHold = std::move(isHeld); }
+    void ResumeHeldLiveShaping();
+
+    // Runs per live item change before snapshot comparison, so the owner can refresh state the
+    // selectors read (comparer ranks). Arg: restore already posted. True forces a reshape. Also
+    // runs for each arriving item, and once with a null item when live shaping turns on (every
+    // item may have changed untracked).
+    void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook) { m_liveItemChangedHook = std::move(hook); }
 
 private:
     void SubscribeToSourceCollectionChanges();
@@ -162,6 +194,69 @@ private:
     void ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder = -1, int32_t beforeOrder = -1) const { m_pipeline.ApplySort(rows, afterOrder, beforeOrder); }
     void RebuildFlat(std::vector<winrt::IInspectable>& rows);
     void RebuildGrouped(std::vector<winrt::IInspectable>& rows);
+    void RebuildHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure);
+    // Both axes: buckets the roots, one adapter segment and one group per bucket.
+    void RebuildGroupedHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure);
+
+    // Builds the index over UNFILTERED rows (builds and retains `structure` if null). Throws
+    // E_INVALIDARG before mutating anything. Returns null and queues a Refresh when a selector
+    // changed the relation mid-build; caller then publishes nothing.
+    std::shared_ptr<ShapingHelpers::ParentKeyIndex> BuildHierarchyIndex(
+        std::vector<winrt::IInspectable> const& rows,
+        std::shared_ptr<const ShapingHelpers::ParentStructure> structure,
+        bool sortRoots,
+        uint64_t declarationGeneration);
+
+    // Retained structure if it still describes `rows` (same declaration, no source change, same
+    // rows/order, keys and parents unchanged per live snapshots or re-run selectors); else null.
+    std::shared_ptr<const ShapingHelpers::ParentStructure> TryReuseHierarchyStructure(
+        std::vector<winrt::IInspectable> const& rows,
+        uint64_t declarationGeneration,
+        uint64_t sourceChangeStamp) const;
+    // The tree structure last built, and what it was built from.
+    std::shared_ptr<const ShapingHelpers::ParentStructure> m_hierarchyStructure;
+    uint64_t m_hierarchyStructureGeneration{ 0 };
+    uint64_t m_hierarchyStructureSourceStamp{ 0 };
+    // Bumped by every source change notification, including ones deferred behind a rebuild.
+    uint64_t m_sourceChangeStamp{ 0 };
+    // Stamp captured when the current Refresh materialized the source.
+    uint64_t m_refreshSourceStamp{ 0 };
+
+    // Creates the adapter if needed, applies any pending intent reset, and hands it the index.
+    void PublishHierarchyIndex(std::shared_ptr<ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments);
+
+    std::vector<winrt::IInspectable> VisibleHierarchicalRows() const;
+
+    // Re-derives group Items from the hierarchy adapter; also on node toggles, since nothing else
+    // tells the grouped adapter the tree changed.
+    void ResliceGroupsFromHierarchy();
+
+    // Root -> bucket, by object identity.
+    std::unordered_map<void*, size_t> m_rootBucketIndex;
+    std::vector<winrt::com_ptr<ShapedGroup>> m_hierarchyGroups;
+
+    // Tears down the hierarchical projection and adapter. Every non-hierarchical rebuild calls it,
+    // else the adapter keeps re-slicing groups and pinning rows.
+    void ReleaseHierarchyProjection();
+    // Completes a ClearParentBy deferred by an in-flight publication, when it unwinds.
+    void CompleteDeferredHierarchyTeardown();
+    // Cleared only once non-hierarchical metadata is actually published.
+    bool m_pendingHierarchyTeardown{ false };
+    // Consumer may hold hierarchical row metadata. Separate from m_kind, which is set BEFORE
+    // publishing.
+    bool m_hierarchyPublished{ false };
+    // Raises ProjectionRebuilt for the staged m_kind and maintains m_hierarchyPublished.
+    void PublishProjection();
+    // One completion attempt; CompleteDeferredHierarchyTeardown guards it.
+    void TryCompleteDeferredHierarchyTeardown();
+    // The visible rows of a released, ungrouped tree while its teardown is owed.
+    std::vector<winrt::IInspectable> m_releasedHierarchyRows;
+    // Drops the adapter's collapse overrides on filter context rows. Called by every filter verb.
+    void ResetHierarchyFilterOverlay();
+    // Re-entrancy guard for the re-slice; Refresh defers while set.
+    bool m_reslicingGroups{ false };
+    // Bumped when m_hierarchyGroups changes, so an in-flight re-slice detects staleness.
+    uint64_t m_hierarchyGeneration{ 0 };
     void RebuildUnshapedRows(std::vector<winrt::IInspectable> const& rows, wchar_t const* reason);
     bool IsIdentityRequired() const;
     // True when any of Filter / Sort / GroupBy is in force. Distinct from IsIdentityRequired,
@@ -180,6 +275,15 @@ private:
     bool IsSourceMutable() const;
     bool TryGetRequiredRowIdentity(winrt::IInspectable const& item, winrt::hstring& identity, wchar_t const*& reason) const;
     bool TryGetGroupIdentity(winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason) const;
+    // Buckets by m_groupSelector; throws E_INVALIDARG on an invalid group identity.
+    std::vector<ShapingHelpers::KeyedBucket> BucketizeGroupsOrThrow(std::vector<winrt::IInspectable> const& items);
+    // Finds or creates the cached group for the bucket and sets its GroupKey.
+    winrt::com_ptr<ShapedGroup> AcquireCachedGroup(ShapingHelpers::KeyedBucket const& bucket);
+    void PruneGroupCache(std::unordered_set<winrt::hstring> const& liveKeys);
+    // Loads m_groupSource and (re-)attaches the grouped adapter, publishing one Reset.
+    void AttachGroupSource(std::vector<winrt::IInspectable> const& groups);
+    // Detaches the grouped adapter, then clears m_groupSource and m_groupCache.
+    void ReleaseGroupedProjection();
     void ClearFlatRowIdentityTracking();
     void RebuildFlatRowIdentityTracking(std::vector<winrt::IInspectable> const& rows);
     bool TryGetTrackedFlatRowIndex(winrt::hstring const& identity, uint32_t& index) const;
@@ -189,6 +293,40 @@ private:
     winrt::hstring Diagnostic(std::wstring_view text) const;
     ShapingHelpers::ShapingPipeline::SortedInsertPlacement SortedInsertPlacementFor(winrt::IInspectable const& item) const;
     bool TryGetSourceItemCount(uint32_t& count) const;
+    struct LiveShapeSnapshot
+    {
+        std::vector<winrt::hstring> SortKeys;
+        winrt::hstring GroupKey;
+        // Hierarchy edge, when a ParentBy relation is declared. A change posts a live reparent and
+        // invalidates the retained structure.
+        std::wstring NodeKey;
+        std::wstring ParentKey;
+        bool PassesFilter{ true };
+    };
+    LiveShapeSnapshot CaptureLiveShapeSnapshot(winrt::IInspectable const& item) const;
+    // Drops the retained tree structure so the next Refresh re-reads every key and parent key.
+    void InvalidateRetainedHierarchyStructure() noexcept;
+    static bool LiveShapeSnapshotsDiffer(
+        LiveShapeSnapshot const& left,
+        LiveShapeSnapshot const& right);
+    static void const* LiveShapingKeyFor(winrt::IInspectable const& item);
+    // Mark-and-sweep reconcile; surviving items keep their subscription.
+    void RefreshLiveShapingSubscriptions(std::vector<winrt::IInspectable> const& items);
+    void ClearLiveShapingSubscriptions();
+    void ResubscribeLiveShapingFromSource();
+    // O(1) per-item delta for incremental paths.
+    void AddLiveShapingSubscription(winrt::IInspectable const& item);
+    void RemoveLiveShapingSubscription(winrt::IInspectable const& item);
+    // Subscription delta driven by the args, not the projection, so every apply path is covered.
+    void ApplyLiveShapingDelta(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
+    void OnLiveShapedItemChanged(
+        winrt::IInspectable const& item,
+        winrt::hstring const& propertyName);
+    // Marks stale and posts ONE restore; N changes in a turn cost one reshape.
+    void MarkLiveShapingDirty();
+    // Posts RestoreLiveShaping to the next turn, or runs it now when nothing can be posted.
+    void PostLiveShapingRestore();
+    void RestoreLiveShaping();
     void RaiseProjectionRebuilt() const { if (m_projectionRebuilt) { m_projectionRebuilt(); } }
     void RaiseShapeSwapped() const { if (m_shapeSwapped) { m_shapeSwapped(); } }
     void RaiseShapingChanged(bool reorderOnly) const { if (m_shapingChanged) { m_shapingChanged(reorderOnly); } }
@@ -221,14 +359,45 @@ private:
     std::unordered_set<winrt::hstring> m_flatRowIdentities;
     std::unordered_map<winrt::hstring, uint32_t> m_flatRowIdentityToIndex;
     // Guards re-entrant Refresh (a source notification arriving while a rebuild's ReplaceAll is
-    // already mutating the projection).
+    // already mutating the projection). Also held while a deferred hierarchy teardown publishes, so
+    // requests from that publication's handlers are deferred the same way.
     bool m_isRefreshing{ false };
     // Guards re-entrant incremental application: a synchronous VectorChanged handler that mutates
     // the source must not interleave a nested update against a half-updated projection.
     bool m_isApplyingIncrementalChange{ false };
     bool m_pendingRefresh{ false };
+    // Coalesces posted replays of a Refresh requested during a pass that threw.
+    void ScheduleRefreshReplay();
+    // Posts a pending Refresh after a failed incremental application; keeps it if nothing posted.
+    void PostPendingRefresh() noexcept;
+    bool m_refreshReplayScheduled{ false };
     std::unordered_map<winrt::hstring, winrt::com_ptr<ShapedGroup>> m_groupCache;
     std::shared_ptr<GroupedSourceAdapter> m_groupedAdapter{};
+    std::shared_ptr<LiveShapingTracker> m_liveShaping{ std::make_shared<LiveShapingTracker>() };
+    // Owning thread (m_rows is bound to it); PropertyChanged is always handled here. Null off a
+    // dispatcher thread: changes then run inline on the owner thread, dropped on others.
+    winrt::Microsoft::UI::Dispatching::DispatcherQueue m_ownerQueue{ nullptr };
+    DWORD m_ownerThreadId{ 0 };
+    bool m_liveShapingEnabled{ false };
+    std::unordered_map<void const*, LiveShapeSnapshot> m_liveShapeSnapshots;
+    // Pending live reshape; doubles as the "restore already posted" guard.
+    bool m_liveShapingDirty{ false };
+    std::function<bool()> m_liveShapingHold{};
+    // A restore found the hold on and parked; ResumeHeldLiveShaping re-posts it.
+    bool m_liveShapingHeld{ false };
+    std::function<bool(winrt::IInspectable const&, bool)> m_liveItemChangedHook{};
+
+    // Both set or both null; m_parentKeySelector is the "hierarchy declared" test.
+    ShapingHelpers::KeySelector m_keySelector{ nullptr };
+    ShapingHelpers::KeySelector m_parentKeySelector{ nullptr };
+    // Bumped by SetParent/ClearParentBy; an index build that sees it move discards its result.
+    uint64_t m_parentDeclarationGeneration{ 0 };
+    // Set by SetParent, consumed by the next publish: re-declaring the relation clears intent.
+    bool m_parentRelationRedeclared{ false };
+    // Set by parent verbs, consumed by ApplyShapingChange: the pipeline spec diff cannot see the
+    // hierarchy axis. Survives a shaping batch.
+    bool m_hierarchyAxisDirty{ false };
+    std::shared_ptr<HierarchicalSourceAdapter> m_hierarchicalAdapter{};
 
     std::function<void()> m_projectionRebuilt{ nullptr };
     std::function<void()> m_shapeSwapped{ nullptr };
