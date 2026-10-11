@@ -77,7 +77,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
 
         // A new source starts flat; give it the current shaping.
         Shaping.Attach(PeopleTable, _source);
-        if (IsGrouped)
+        if (Shaping.IsShaped)
         {
             Shaping.Apply(announce: false);
         }
@@ -156,7 +156,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
     // <snippet>
     // Workaround, not a pattern to copy: this release has no TableView.ScrollIntoView, so scroll the body
     // ScrollViewer to an estimated offset and correct it from a realized row. Assumes no sort, every
-    // group expanded and a uniform row height.
+    // group and row expanded and a uniform row height.
     private void ScrollToRow(int number, string message)
     {
         if (_people.Count == 0)
@@ -170,6 +170,12 @@ public sealed partial class VirtualizationPage : SamplePageBase
         {
             // The display index map assumes every group is expanded.
             PeopleTable.ExpandAllGroups();
+        }
+
+        if (IsHierarchical)
+        {
+            // There is no per-row expand: expanding every row is the only way to reveal a nested row.
+            PeopleTable.ExpandAllRows();
         }
 
         var indexes = DisplayIndexes();
@@ -211,27 +217,31 @@ public sealed partial class VirtualizationPage : SamplePageBase
     }
     // </snippet>
 
-    // Display index of every row. Flat: the source index. Grouped: groups appear in
-    // first-encountered source order and keep source order inside, and each group header takes
-    // one index before its rows (the same indexes Select uses).
+    // Display index of every row. Flat: the source index. Hierarchy (all expanded): tree order.
+    // Grouped: groups appear in first-encountered order and keep that order inside, and each group
+    // header takes one index before its rows (the same indexes Select uses); under Grouped
+    // hierarchy a row is in its root's group.
     private Dictionary<Person, int> DisplayIndexes()
     {
         var map = new Dictionary<Person, int>(_people.Count);
+        var relation = IsHierarchical ? Shaping.Relation : null;
+        IReadOnlyList<Person> rows = relation is null ? _people : relation.TreeOrder(_people);
         if (!IsGrouped)
         {
-            for (var i = 0; i < _people.Count; i++)
+            for (var i = 0; i < rows.Count; i++)
             {
-                map[_people[i]] = i;
+                map[rows[i]] = i;
             }
 
             return map;
         }
 
+        Func<Person, Person> rootOf = relation is null ? person => person : relation.RootMap(_people);
         var groups = new Dictionary<string, List<Person>>(StringComparer.Ordinal);
         var order = new List<List<Person>>();
-        foreach (var person in _people)
+        foreach (var person in rows)
         {
-            var identity = SampleShaping.GroupIdentity(SampleShaping.KeyOf(person, AppliedGroupKey));
+            var identity = SampleShaping.GroupIdentity(SampleShaping.KeyOf(rootOf(person), AppliedGroupKey));
             if (!groups.TryGetValue(identity, out var members))
             {
                 members = new List<Person>();

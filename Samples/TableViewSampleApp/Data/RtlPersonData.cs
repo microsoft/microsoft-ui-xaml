@@ -53,6 +53,7 @@ public static class RtlPersonData
             Office = seed.Office,
             Bio = seed.Notes,
             EmployeeId = employeeId,
+            ManagerId = PersonData.DepartmentHeadId(seed.Department),
             IsActive = employeeId % 5 != 0,
             JoinDate = new DateTimeOffset(DateTimeOffset.Now.Date.AddDays(-97 * (employeeId % 13 + 1)), TimeSpan.Zero),
             ShiftStart = new TimeSpan(8 + employeeId % 3, 0, 0),

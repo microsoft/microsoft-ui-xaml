@@ -118,8 +118,11 @@ A page holds only the TableView behaviour it demonstrates; the generic parts are
   `TrackLifetime`), `EnqueueIfLoaded`, `BeginBulkUpdate`, and the page hooks `OnShapingApplying`,
   `OnShapingApplied`, `OnShapingAction` (Expand all / Collapse all) and `OnLastActionSet`.
 - `Controls\RailSection.cs`, `Controls\ShapingOptions.xaml`, `Controls\StatusPanel.cs` — the rail's
-  section chrome, the Shaping section (GroupBy / ClearGroupBy and gating; the control itself keeps
-  the selection across the reshape) and the Status grid with its fixed Rows → Shaping → Last action
+  section chrome, the Shaping section (Flat, Grouped, Hierarchy and Grouped hierarchy: GroupBy /
+  ClearGroupBy and ParentBy / ClearParentBy on the page's one source, and gating; the control itself
+  keeps the selection across the reshape. A page passes its `ParentRelation` to `Attach`, Person rows
+  default to `ParentRelation.Manager`, and a page whose rows have no parent relation sets
+  `HierarchyUnavailableReason`) and the Status grid with its fixed Rows → Shaping → Last action
   tail. Only Last action is a live region (Polite, raised once per new message); a readout that
   must be announced on its own sets `AutomationProperties.LiveSetting` itself. `ShapingOptions.TimeCall` lets a page
   time the GroupBy / ClearGroupBy and Expand / Collapse all calls. `SamplePresenter.TryIt` and

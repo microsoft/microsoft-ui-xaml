@@ -180,12 +180,6 @@ public static class SampleShaping
         return values[0];
     }
 
-    /// <summary>
-    /// Status value for the "Shaping" readout: "Flat", or "Grouped by Department".
-    /// </summary>
-    public static string ShapingText(bool grouped, ComboBox? groupKeySelector) =>
-        grouped ? string.Format(CultureInfo.CurrentCulture, "Grouped by {0}", Label(groupKeySelector)) : "Flat";
-
     /// <summary>Status value for the "Rows" readout, e.g. "40" (current culture, N0).</summary>
     public static string RowCountText(int count) => count.ToString("N0", CultureInfo.CurrentCulture);
 

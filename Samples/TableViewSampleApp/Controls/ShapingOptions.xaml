@@ -20,17 +20,15 @@
             HorizontalAlignment="Stretch">
             <ComboBoxItem Content="Flat" Tag="flat"/>
             <ComboBoxItem Content="Grouped" Tag="grouped"/>
-            <!-- Hierarchy is not available in this release: shown disabled so the feature is discoverable. -->
-            <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                          AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-            <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
-                          AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+            <!-- Enabled once the page attaches a ParentRelation; otherwise disabled with the page's reason. -->
+            <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"/>
+            <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"/>
         </ComboBox>
         <ComboBox
             x:Name="GroupKeySelector"
             Header="Group key"
             IsEnabled="False"
-            AutomationProperties.HelpText="Available in the Grouped shaping mode."
+            AutomationProperties.HelpText="Available in the Grouped and Grouped hierarchy shaping modes."
             SelectionChanged="OnGroupKeyChanged"
             HorizontalAlignment="Stretch"/>
         <Button
@@ -39,7 +37,7 @@
             Click="OnExpandAllClick"
             IsEnabled="False"
             ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
-            AutomationProperties.HelpText="Available in the Grouped shaping mode."
+            AutomationProperties.HelpText="Available in every shaping mode except Flat."
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Center"/>
         <Button
@@ -48,10 +46,10 @@
             Click="OnCollapseAllClick"
             IsEnabled="False"
             ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
-            AutomationProperties.HelpText="Available in the Grouped shaping mode."
+            AutomationProperties.HelpText="Available in every shaping mode except Flat."
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Center"/>
         <TextBlock Style="{StaticResource RailCaptionTextStyle}"
-                   Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                   Text="Group key needs a grouped mode; Expand all and Collapse all need any mode but Flat."/>
     </StackPanel>
 </UserControl>

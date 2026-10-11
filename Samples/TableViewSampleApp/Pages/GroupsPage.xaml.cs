@@ -234,7 +234,7 @@ public sealed partial class GroupsPage : SamplePageBase
 
         // Give the new hire the first group's key, so the row joins a live group.
         var key = ActionKey;
-        var firstKey = InViewOrder().Select(p => SampleShaping.KeyOf(p, key) as string).FirstOrDefault();
+        var firstKey = InViewOrder().Select(GroupInView(key)).FirstOrDefault() as string;
         if (firstKey is not null)
         {
             switch (key)
@@ -255,7 +255,7 @@ public sealed partial class GroupsPage : SamplePageBase
         }
 
         People.Add(person);
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} to {1}", person.FullName, SampleShaping.KeyOf(person, key)));
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} to {1}", person.FullName, GroupInView(key)(person)));
     }
     // </snippet>
 
@@ -268,8 +268,9 @@ public sealed partial class GroupsPage : SamplePageBase
         }
 
         var key = ActionKey;
-        var group = SampleShaping.KeyOf(person, key);
-        var wasLast = People.Count(p => Equals(SampleShaping.KeyOf(p, key), group)) == 1;
+        var groupOf = GroupInView(key);
+        var group = groupOf(person);
+        var wasLast = People.Count(p => Equals(groupOf(p), group)) == 1;
         People.Remove(person);
         _removed.Add(person);
         SetLastAction(string.Format(
@@ -283,7 +284,7 @@ public sealed partial class GroupsPage : SamplePageBase
     {
         var key = ActionKey;
         var smallest = InViewOrder()
-            .GroupBy(p => SampleShaping.KeyOf(p, key))
+            .GroupBy(GroupInView(key))
             .OrderBy(g => g.Count())
             .FirstOrDefault();
         if (smallest is null)

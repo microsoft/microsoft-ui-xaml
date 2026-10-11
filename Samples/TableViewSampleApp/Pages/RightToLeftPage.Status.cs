@@ -15,7 +15,7 @@ public sealed partial class RightToLeftPage
     {
         Status.Rows = SampleShaping.RowCountText(People.Count);
         var term = FilterBox?.Text.Trim() ?? string.Empty;
-        var shown = term.Length == 0 ? People.Count : People.Count(p => Matches(p, term));
+        var shown = term.Length == 0 ? People.Count : CountShown(People, p => Matches(p, term));
         ShownText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} of {1:N0}", shown, People.Count);
         FlowDirectionText.Text = PeopleTable.FlowDirection.ToString();
         ColumnOrderText.Text = PeopleTable.Columns.SequenceEqual(_originalColumnOrder)

@@ -98,7 +98,10 @@ visible on purpose.
 - Tooltips, grid lines, cell templating, text wrapping, row height, cell editing,
   empty state, density, and grouped rows
 - Hierarchical rows (`TableViewSource.ParentBy`): one flat list, two relations, composed with
-  filter, sort and grouping, and `IsLiveShaping` reshaping both trees when a row's property changes
+  filter, sort and grouping, and `IsLiveShaping` reshaping both trees when a row's property changes.
+  The table pages' Shaping section also offers Hierarchy and Grouped hierarchy (ParentBy, plus
+  GroupBy on the roots) over their own data: people by manager, files by folder, processes by app;
+  pages whose rows have no parent relation show those modes disabled with the reason
 - Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
 - `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
   sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing

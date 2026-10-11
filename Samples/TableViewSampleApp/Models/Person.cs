@@ -31,6 +31,7 @@ public sealed class Person : INotifyPropertyChanged
     private bool _isActive;
     private string? _avatarPath;
     private int _employeeId;
+    private int? _managerId;
     private string _office = string.Empty;
 
     public string FirstName
@@ -156,6 +157,13 @@ public sealed class Person : INotifyPropertyChanged
     {
         get => _employeeId;
         set => Set(ref _employeeId, value);
+    }
+
+    /// <summary>EmployeeId of this person's manager, or null for a department head (a root of the org chart).</summary>
+    public int? ManagerId
+    {
+        get => _managerId;
+        set => Set(ref _managerId, value);
     }
 
     /// <summary>Office location; one of <c>PersonData.Offices</c>.</summary>

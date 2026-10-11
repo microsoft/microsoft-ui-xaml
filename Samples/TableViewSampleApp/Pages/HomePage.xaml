@@ -54,7 +54,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                     <x:String>Control type — Microsoft.UI.Xaml.Controls.Tabular.TableView</x:String>
-                    <x:String>Model-first source — TableViewSource.From(items) with Filter, GroupBy and Sort, reshaped in place</x:String>
+                    <x:String>Model-first source — TableViewSource.From(items) with Filter, GroupBy, ParentBy and Sort, reshaped in place</x:String>
                     <x:String>Columns — TableViewTextColumn for bound text and TableViewTemplateColumn for DataTemplate cells</x:String>
                     <x:String>Template cells with editors — CheckBox, date and time pickers, ComboBox and Button with a Flyout, two-way bound and reachable from the keyboard</x:String>
                     <x:String>Cell editing — double-click or F2 edits a cell in place, CellEditingTemplate supplies a custom editor, and TableView.IsReadOnly locks the whole table</x:String>
@@ -73,7 +73,7 @@
                     <x:String>Row virtualization — realizes only the visible rows, so large datasets scroll smoothly</x:String>
                     <x:String>Keyboard navigation and UI Automation peers for tables, rows, cells and headers</x:String>
                     <x:String>RTL flow — mirrored layout and resize gripper placement</x:String>
-                    <x:String>Hierarchical rows from a parent key (ParentBy), composed with filter, sort, grouping and live shaping</x:String>
+                    <x:String>Hierarchical rows from a parent key (ParentBy), composed with filter, sort, grouping and live shaping, on the Hierarchy page and in the Hierarchy and Grouped hierarchy shaping modes of the table pages</x:String>
                 </ItemsControl>
             </StackPanel>
 

@@ -168,7 +168,7 @@ public sealed partial class PerformancePage : SamplePageBase
 
             // A new dataset gets the current shaping; GroupBy is timed separately (Group row).
             Shaping.Attach(PerfTable, _source);
-            if (IsGrouped)
+            if (Shaping.IsShaped)
             {
                 Shaping.Apply(announce: false);
             }
@@ -256,9 +256,9 @@ public sealed partial class PerformancePage : SamplePageBase
         try
         {
             var rows = await Task.Run(() => PersonData.Many(PerItemCap));
-            if (IsGrouped)
+            if (Shaping.IsShaped)
             {
-                await RunPerItemAddGroupedAsync(rows);
+                await RunPerItemAddShapedAsync(rows);
                 return;
             }
 
@@ -282,19 +282,22 @@ public sealed partial class PerformancePage : SamplePageBase
         }
     }
 
-    // Under GroupBy every Add regroups all rows so far (O(n^2)): time per-row Adds only up to a cap,
-    // then do the real Adds with the grouping detached and group once.
-    private async Task RunPerItemAddGroupedAsync(IReadOnlyList<Person> rows)
+    // Under GroupBy or ParentBy every Add reshapes all rows so far (O(n^2)): time per-row Adds only up
+    // to a cap, then do the real Adds with the shaping detached and apply it once.
+    private async Task RunPerItemAddShapedAsync(IReadOnlyList<Person> rows)
     {
         var key = Shaping.SelectedKey;
-        var keyLabel = Shaping.SelectedKeyLabel;
+        var shapingText = Shaping.AppliedText; // snippet:skip
+        var grouped = IsGrouped;
+        var relation = IsHierarchical ? Shaping.Relation : null;
+        var verbs = grouped && relation is not null ? "GroupBy and ParentBy" : grouped ? "GroupBy" : "ParentBy"; // snippet:skip
         var source = _source;
         var people = _people;
         Shaping.SetBusy(true);
         try
         {
-            // (1) DON'T: per-row Add while grouped, stopped at GroupedAddBudgetMs.
-            PerItemAddText.Text = "Adding under GroupBy (capped)…";
+            // (1) DON'T: per-row Add while shaped, stopped at GroupedAddBudgetMs.
+            PerItemAddText.Text = string.Format(CultureInfo.CurrentCulture, "Adding under {0} (capped)…", verbs);
             await Task.Delay(50);
             int added = 0;
             int tailStartIndex = 0;
@@ -326,16 +329,21 @@ public sealed partial class PerformancePage : SamplePageBase
             var perAddMs = (double)tailMs / Math.Max(1, added - tailStartIndex);
 
             // Let the window repaint between the two blocking steps.
-            PerItemAddText.Text = "Adding with the grouping detached…";
+            PerItemAddText.Text = "Adding with the shaping detached…";
             await Task.Delay(50);
 
-            // (2) DO: detach the grouping, add per row against the flat source, group once.
+            // (2) DO: detach the shaping, add per row against the flat source, shape once.
             long addMs = 0;
             var regroupMs = 0L;
             var totalMs = Timed(() =>
             {
                 var stopwatch = Stopwatch.StartNew();
                 source.ClearGroupBy();
+                if (relation is not null)
+                {
+                    source.ClearParentBy();
+                }
+
                 people.Clear();
                 foreach (var person in rows)
                 {
@@ -343,18 +351,27 @@ public sealed partial class PerformancePage : SamplePageBase
                 }
 
                 addMs = stopwatch.ElapsedMilliseconds;
-                source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+                if (relation is not null)
+                {
+                    source.ParentBy(item => relation.KeyOf(item), item => relation.ParentKeyOf(item));
+                }
+
+                if (grouped)
+                {
+                    source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+                }
+
                 regroupMs = stopwatch.ElapsedMilliseconds - addMs;
             });
 
             PerItemAddText.Text = string.Format(
                 CultureInfo.CurrentCulture,
-                "Grouped by {0}: {1:N0} of {2:N0} Adds before the {3:N0} ms cap ({4:N0} ms, last Adds {5:N1} ms each). Grouping detached: {2:N0} Adds plus one GroupBy in {6:N0} ms ({7:N0} ms Adds, {8:N0} ms GroupBy), {9}",
-                keyLabel, added, PerItemCap, GroupedAddBudgetMs, probeMs, perAddMs, totalMs, addMs, regroupMs, ColumnSetLabel);
+                "{0}: {1:N0} of {2:N0} Adds before the {3:N0} ms cap ({4:N0} ms, last Adds {5:N1} ms each). Shaping detached: {2:N0} Adds plus one {10} in {6:N0} ms ({7:N0} ms Adds, {8:N0} ms {10}), {9}",
+                shapingText, added, PerItemCap, GroupedAddBudgetMs, probeMs, perAddMs, totalMs, addMs, regroupMs, ColumnSetLabel, verbs);
             SetLastAction(string.Format(
                 CultureInfo.CurrentCulture,
-                "Under GroupBy only {0:N0} of {1:N0} one-at-a-time Adds fit in {2:N0} ms. With the grouping detached and applied once, all {1:N0} took {3:N0} ms.",
-                added, PerItemCap, GroupedAddBudgetMs, totalMs));
+                "Under {4} only {0:N0} of {1:N0} one-at-a-time Adds fit in {2:N0} ms. With the shaping detached and applied once, all {1:N0} took {3:N0} ms.",
+                added, PerItemCap, GroupedAddBudgetMs, totalMs, verbs));
         }
         finally
         {
@@ -365,9 +382,13 @@ public sealed partial class PerformancePage : SamplePageBase
     protected override void OnShapingApplied(ShapingAppliedEventArgs e)
     {
         var ms = e.ElapsedMilliseconds;
-        GroupText.Text = e.IsGrouped
-            ? string.Format(CultureInfo.CurrentCulture, "GroupBy {0}: {1:N0} ms, {2:N0} rows", e.KeyLabel, ms, _people.Count)
-            : string.Format(CultureInfo.CurrentCulture, "ClearGroupBy: {0:N0} ms, {1:N0} rows", ms, _people.Count);
+        GroupText.Text = (e.IsGrouped, e.IsHierarchical) switch
+        {
+            (true, true) => string.Format(CultureInfo.CurrentCulture, "GroupBy {0} + ParentBy: {1:N0} ms, {2:N0} rows", e.KeyLabel, ms, _people.Count),
+            (false, true) => string.Format(CultureInfo.CurrentCulture, "ParentBy: {0:N0} ms, {1:N0} rows", ms, _people.Count),
+            (true, false) => string.Format(CultureInfo.CurrentCulture, "GroupBy {0}: {1:N0} ms, {2:N0} rows", e.KeyLabel, ms, _people.Count),
+            _ => string.Format(CultureInfo.CurrentCulture, "ClearGroupBy: {0:N0} ms, {1:N0} rows", ms, _people.Count),
+        };
         e.Message += string.Format(CultureInfo.CurrentCulture, " in {0:N0} ms", ms);
     }
 

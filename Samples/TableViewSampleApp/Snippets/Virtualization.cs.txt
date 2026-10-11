@@ -9,7 +9,7 @@ PeopleTable.ItemsSource = _source;
 
 // A new source starts flat; give it the current shaping.
 Shaping.Attach(PeopleTable, _source);
-if (IsGrouped)
+if (Shaping.IsShaped)
 {
     Shaping.Apply(announce: false);
 }
@@ -18,7 +18,7 @@ if (IsGrouped)
 
 // Workaround, not a pattern to copy: this release has no TableView.ScrollIntoView, so scroll the body
 // ScrollViewer to an estimated offset and correct it from a realized row. Assumes no sort, every
-// group expanded and a uniform row height.
+// group and row expanded and a uniform row height.
 private void ScrollToRow(int number, string message)
 {
     if (_people.Count == 0)
@@ -31,6 +31,12 @@ private void ScrollToRow(int number, string message)
     {
         // The display index map assumes every group is expanded.
         PeopleTable.ExpandAllGroups();
+    }
+
+    if (IsHierarchical)
+    {
+        // There is no per-row expand: expanding every row is the only way to reveal a nested row.
+        PeopleTable.ExpandAllRows();
     }
 
     var indexes = DisplayIndexes();
@@ -86,17 +92,31 @@ private static bool InViewport(TableViewRow row, ScrollViewer scroller)
 // …
 
 // From Controls\ShapingOptions.xaml.cs
-// Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
-private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
+// Reshape the ONE TableViewSource in place. GroupBy/ClearGroupBy is the group axis and
+// ParentBy/ClearParentBy the hierarchy axis; together, GroupBy buckets the roots and each root
+// keeps its subtree.
+private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
 {
-    if (mode == "grouped")
+    if (relation is not null && IsHierarchicalMode(mode))
+    {
+        // A second ParentBy replaces the relation and resets expansion, so declare it once.
+        if (!hadParentBy)
+        {
+            source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
+        }
+    }
+    else if (hadParentBy)
+    {
+        source.ClearParentBy();
+    }
+
+    if (mode is "grouped" or "groupedHierarchy")
     {
         // The key selector receives the ROW; the identity selector receives the KEY.
         source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
     }
     else
     {
-        // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
         source.ClearGroupBy();
     }
 }

@@ -24,6 +24,14 @@ public static class ProcessData
         ("Media Player", "\uE8D6", 74.6),
     };
 
+    private const int NewTaskFirstPid = 20_000;
+
+    /// <summary>A process under the app that started it (TableViewSource.ParentBy selectors).</summary>
+    public static ParentRelation ParentProcess { get; } = new(
+        "Parent process",
+        row => (row as ProcessItem)?.Pid,
+        row => (row as ProcessItem)?.ParentPid);
+
     public static object GroupKeyOf(ProcessItem? process, string key)
     {
         var value = key == nameof(ProcessItem.StatusText) ? process?.StatusText : process?.Category;
@@ -36,6 +44,7 @@ public static class ProcessData
         var round = (index / s_newTasks.Length) + 1;
         return new ProcessItem
         {
+            Pid = NewTaskFirstPid + (index * 4),
             Name = round == 1 ? template.Name : string.Format(CultureInfo.CurrentCulture, "{0} ({1})", template.Name, round),
             Category = "Apps",
             IconGlyph = template.Glyph,
@@ -517,6 +526,18 @@ public static class ProcessData
             MemoryBaseline = 112.5,
             IsHighCpu = true,
         });
+
+        // Windows process ids are multiples of 4; each child records its app's id.
+        var pid = 1024;
+        foreach (var process in processes)
+        {
+            process.Pid = pid += 4;
+            foreach (var child in process.Children)
+            {
+                child.Pid = pid += 4;
+                child.ParentPid = process.Pid;
+            }
+        }
 
         // Task Manager shows Running unless a process is suspended or in efficiency mode.
         foreach (var process in processes.Concat(processes.SelectMany(parent => parent.Children)))

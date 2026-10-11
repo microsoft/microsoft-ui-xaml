@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -25,6 +26,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
     private readonly List<ProcessItem> _stashedProcesses = new();
     private string? _searchText;
     private int _newTaskCount;
+    private bool _childRowsShown;
     private (TableViewColumn? Column, SortDirection Direction) _reportedSort;
 
     public TaskManagerPage()
@@ -47,7 +49,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
         // </snippet>
 
         UpdateTotals();
-        InitializeSample(Status, Shaping.Attach(ProcessTable, Source, (row, key) => ProcessData.GroupKeyOf(row as ProcessItem, key)));
+        InitializeSample(Status, Shaping.Attach(ProcessTable, Source, (row, key) => ProcessData.GroupKeyOf(row as ProcessItem, key), ProcessData.ParentProcess));
         TrackTimer(_timer, () => LiveUpdatesToggle.IsOn);
     }
 
@@ -166,7 +168,42 @@ public sealed partial class TaskManagerPage : SamplePageBase
     // </snippet>
 
     private int VisibleCount() =>
-        _searchText is { } text ? Processes.Count(process => MatchesSearch(process, text)) : Processes.Count;
+        _searchText is { } text ? CountShown(Processes, process => MatchesSearch(process, text)) : Processes.Count;
+
+    // <snippet>
+    // Child processes are rows only while the source is nested: ParentBy then shows each under its app.
+    protected override void OnShapingApplying(ShapingApplyingEventArgs e)
+    {
+        var show = e.Mode is "hierarchy" or "groupedHierarchy";
+        if (show == _childRowsShown)
+        {
+            return;
+        }
+
+        _childRowsShown = show;
+        if (show)
+        {
+            foreach (var app in Processes.Where(process => process.Children.Count > 0).ToList())
+            {
+                var index = Processes.IndexOf(app);
+                foreach (var child in app.Children)
+                {
+                    Processes.Insert(++index, child);
+                }
+            }
+        }
+        else
+        {
+            foreach (var child in Processes.Where(process => process.ParentPid is not null).ToList())
+            {
+                Processes.Remove(child);
+            }
+        }
+    }
+    // </snippet>
+
+    private IEnumerable<ProcessItem> RowsOf(ProcessItem app) =>
+        _childRowsShown ? app.Children.Prepend(app) : new[] { app };
 
     // ---- Actions ------------------------------------------------------------------------
 
@@ -189,7 +226,17 @@ public sealed partial class TaskManagerPage : SamplePageBase
             return;
         }
 
-        Processes.Remove(process);
+        // Ending an app ends its child processes; ending a child removes it from its app.
+        foreach (var row in RowsOf(process).ToList())
+        {
+            Processes.Remove(row);
+        }
+
+        if (process.ParentPid is { } parentPid && Processes.FirstOrDefault(p => p.Pid == parentPid) is { } app)
+        {
+            app.Children.Remove(process);
+        }
+
         UpdateTotals();
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Ended {0} ({1})", process.Name, process.Category));
     }
@@ -226,7 +273,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
     {
         if (_stashedProcesses.Count > 0)
         {
-            foreach (var process in _stashedProcesses)
+            foreach (var process in _stashedProcesses.SelectMany(RowsOf))
             {
                 Processes.Add(process);
             }
@@ -239,7 +286,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
             return;
         }
 
-        _stashedProcesses.AddRange(Processes);
+        _stashedProcesses.AddRange(Processes.Where(process => process.ParentPid is null));
         Processes.Clear();
         RemoveAllButton.Content = "Restore all rows";
         UpdateTotals();
@@ -257,7 +304,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
 
     private void RandomizeAll()
     {
-        foreach (var process in Processes)
+        foreach (var process in Processes.Where(process => process.ParentPid is null))
         {
             if (process.Children.Count > 0)
             {

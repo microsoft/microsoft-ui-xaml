@@ -34,7 +34,7 @@
         Snippet="Hierarchy"
         StretchExample="True"
         TryIt="Expand a row with its chevron or the Right arrow; Left collapses it or moves to the parent, and * expands the whole subtree. Select a row and choose Reparent, Rename or Next department: with Live shaping on, both trees reshape in place."
-        WhatToLookFor="The same person sits at a different depth in each table. A filter keeps every match and its ancestors; the ancestors are ordinary rows (selectable, counted, announced like any row) and nothing marks them as context. Code can expand or collapse only every row at once (ExpandAllRows / CollapseAllRows): there is no per-row expand API in this release, so the chevron, the keyboard and UI Automation are the only ways to open a single row.">
+        WhatToLookFor="The same person sits at a different depth in each table. A filter keeps every match and its ancestors; the ancestors are ordinary rows (selectable, counted, announced like any row) and nothing marks them as context. Code can expand or collapse only every row at once (ExpandAllRows / CollapseAllRows): there is no per-row expand API in this release, so the chevron, the keyboard and UI Automation are the only ways to open a single row. Known control issue: under a filter, a match whose descendants also match stays collapsed (type Ada: Ada A1 stays closed), so those descendants stay hidden until you expand it.">
 
         <controls:SamplePresenter.Example>
             <Grid ColumnSpacing="12">

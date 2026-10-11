@@ -22,9 +22,12 @@ public sealed partial class FilterPage
 
         // The projection's row count is not exposed, so count the matches app-side.
         var matched = People.Count(p => Matches(p, query, activeOnly));
-        Status.Rows = HasFilter
-            ? string.Format(CultureInfo.CurrentCulture, "Showing {0:N0} of {1:N0}", matched, People.Count)
-            : SampleShaping.RowCountText(People.Count);
+        var shown = CountShown(People, p => Matches(p, query, activeOnly));
+        Status.Rows = !HasFilter
+            ? SampleShaping.RowCountText(People.Count)
+            : shown == matched
+                ? string.Format(CultureInfo.CurrentCulture, "Showing {0:N0} of {1:N0}", matched, People.Count)
+                : string.Format(CultureInfo.CurrentCulture, "Showing {0:N0} of {1:N0} ({2:N0} matches plus their managers)", shown, People.Count, matched);
 
         SelectedItemText.Text = FilterTable.SelectedItem is Person person ? person.FullName : "(none)";
     }

@@ -18,8 +18,9 @@ public sealed partial class ColumnLifecyclePage
         HiddenColumnsText.Text = hidden.Count == 0 ? "(none)" : string.Join(", ", hidden);
 
         var key = AppliedGroupKey;
+        var rowOf = GroupingRowOf(People);
         GroupCountText.Text = IsGrouped
-            ? People.Select(p => SampleShaping.KeyOf(p, key)).Distinct().Count().ToString("N0", CultureInfo.CurrentCulture)
-            : "(flat)";
+            ? People.Select(p => SampleShaping.KeyOf(rowOf(p), key)).Distinct().Count().ToString("N0", CultureInfo.CurrentCulture)
+            : IsHierarchical ? "(not grouped)" : "(flat)";
     }
 }

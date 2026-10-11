@@ -120,8 +120,8 @@
                             AutomationProperties.AutomationId="PerformancePerItemAddButton"
                             Content="Add 10,000 rows one at a time"
                             Click="OnPerItemAddClick"
-                            ToolTipService.ToolTip="The pattern to avoid: Clear() and then Add() per row into the bound collection, one change notification per row. Capped at 10,000 rows. When grouped, every Add regroups all rows, so the grouped run stops after 2 seconds and then repeats the Adds with the grouping detached and applied once."
-                            AutomationProperties.HelpText="The pattern to avoid: Clear() and then Add() per row into the bound collection, one change notification per row. Capped at 10,000 rows. When grouped, every Add regroups all rows, so the grouped run stops after 2 seconds and then repeats the Adds with the grouping detached and applied once."
+                            ToolTipService.ToolTip="The pattern to avoid: Clear() and then Add() per row into the bound collection, one change notification per row. Capped at 10,000 rows. When grouped or nested (Hierarchy), every Add reshapes all rows, so that run stops after 2 seconds and then repeats the Adds with the shaping detached and applied once."
+                            AutomationProperties.HelpText="The pattern to avoid: Clear() and then Add() per row into the bound collection, one change notification per row. Capped at 10,000 rows. When grouped or nested (Hierarchy), every Add reshapes all rows, so that run stops after 2 seconds and then repeats the Adds with the shaping detached and applied once."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                         <Button

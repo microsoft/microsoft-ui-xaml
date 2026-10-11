@@ -31,13 +31,15 @@ public sealed partial class TaskManagerPage
     // Totals change on every tick, so they are written by the tick (not by RefreshReadouts).
     private void UpdateTotals()
     {
-        // CpuPercent is per core, so overall utilization is the sum over the core count.
+        // CpuPercent is per core, so overall utilization is the sum over the core count. Child process
+        // rows are already summed into their app.
+        var apps = Processes.Where(p => p.ParentPid is null).ToList();
         TotalsText.Text = string.Format(
             CultureInfo.CurrentCulture,
             "CPU {0:N0}%, memory {1:N0}%, disk {2:N1} MB/s, network {3:N1} Mbps",
-            Math.Min(Processes.Sum(p => p.CpuPercent) / SimulatedCores, 100),
-            Math.Min(Processes.Sum(p => p.MemoryMB) / SimulatedMemoryMB * 100, 100),
-            Processes.Sum(p => p.DiskMBps),
-            Processes.Sum(p => p.NetworkMbps));
+            Math.Min(apps.Sum(p => p.CpuPercent) / SimulatedCores, 100),
+            Math.Min(apps.Sum(p => p.MemoryMB) / SimulatedMemoryMB * 100, 100),
+            apps.Sum(p => p.DiskMBps),
+            apps.Sum(p => p.NetworkMbps));
     }
 }

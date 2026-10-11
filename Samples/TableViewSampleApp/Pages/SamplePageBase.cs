@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -26,11 +27,23 @@ public partial class SamplePageBase : Page
 
     protected bool IsGrouped => _shaping?.IsGrouped ?? false;
 
+    protected bool IsHierarchical => _shaping?.IsHierarchical ?? false;
+
     protected string AppliedGroupKey => _shaping?.AppliedKey ?? string.Empty;
 
     protected bool SortOrdersGroups => _shaping?.SortOrdersGroups ?? false;
 
     protected bool IsBulkUpdating => _bulkUpdateDepth > 0;
+
+    // Under Grouped hierarchy GroupBy buckets only the roots: a nested row is shown in its root's group.
+    protected Func<T, T> GroupingRowOf<T>(IEnumerable<T> rows)
+        where T : class =>
+        IsHierarchical && _shaping?.Relation is { } relation ? relation.RootMap(rows) : row => row;
+
+    // Rows a filter leaves in the projection. Under ParentBy that is every match plus its ancestors.
+    protected int CountShown<T>(IEnumerable<T> rows, Func<T, bool> matches)
+        where T : class =>
+        IsHierarchical && _shaping?.Relation is { } relation ? relation.CountWithAncestors(rows, matches) : rows.Count(matches);
 
     protected void InitializeSample(StatusPanel status, ShapingOptions? shaping = null)
     {

@@ -39,7 +39,7 @@ public sealed partial class GroupsPage
 
         var key = AppliedGroupKey;
         var groups = InViewOrder()
-            .GroupBy(p => SampleShaping.KeyOf(p, key))
+            .GroupBy(GroupInView(key))
             .Select(g => string.Format(CultureInfo.CurrentCulture, "{0} {1:N0}", g.Key, g.Count()))
             .ToList();
         GroupsText.Text = groups.Count == 0
@@ -48,8 +48,15 @@ public sealed partial class GroupsPage
         ExpansionText.Text = ExpansionSummary();
     }
 
+    // Under Grouped hierarchy GroupBy buckets only the roots: a nested row is in its root's group.
+    private Func<Person, object> GroupInView(string key)
+    {
+        var rowOf = GroupingRowOf(People);
+        return person => SampleShaping.KeyOf(rowOf(person), key);
+    }
+
     private IEnumerable<Person> InViewOrder() =>
-        SampleShaping.InViewOrder(PeopleTable, People, SortKey, IsGrouped ? p => SampleShaping.KeyOf(p, AppliedGroupKey) : null, SortOrdersGroups);
+        SampleShaping.InViewOrder(PeopleTable, People, SortKey, IsGrouped ? GroupInView(AppliedGroupKey) : null, SortOrdersGroups);
 
     private static IComparable? SortKey(Person person, string path) => path switch
     {
@@ -64,7 +71,8 @@ public sealed partial class GroupsPage
     private HashSet<string> CurrentGroupIdentities()
     {
         var key = AppliedGroupKey;
-        return People.Select(p => SampleShaping.GroupIdentity(SampleShaping.KeyOf(p, key))).ToHashSet();
+        var groupOf = GroupInView(key);
+        return People.Select(p => SampleShaping.GroupIdentity(groupOf(p))).ToHashSet();
     }
 
     private string ExpansionSummary()

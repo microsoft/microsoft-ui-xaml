@@ -69,17 +69,31 @@ private void OnMoveToNextGroupClick(object sender, RoutedEventArgs e)
 // …
 
 // From Controls\ShapingOptions.xaml.cs
-// Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
-private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
+// Reshape the ONE TableViewSource in place. GroupBy/ClearGroupBy is the group axis and
+// ParentBy/ClearParentBy the hierarchy axis; together, GroupBy buckets the roots and each root
+// keeps its subtree.
+private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
 {
-    if (mode == "grouped")
+    if (relation is not null && IsHierarchicalMode(mode))
+    {
+        // A second ParentBy replaces the relation and resets expansion, so declare it once.
+        if (!hadParentBy)
+        {
+            source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
+        }
+    }
+    else if (hadParentBy)
+    {
+        source.ClearParentBy();
+    }
+
+    if (mode is "grouped" or "groupedHierarchy")
     {
         // The key selector receives the ROW; the identity selector receives the KEY.
         source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
     }
     else
     {
-        // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
         source.ClearGroupBy();
     }
 }
