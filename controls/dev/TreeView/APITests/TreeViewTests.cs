@@ -40,6 +40,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class TreeViewTests : ApiTestBase
     {
+        // Scenario: Detached TreeViewNodes (no TreeView): Children.Add/Insert/RemoveAt on a parent node.
+        // Expected: HasChildren (+DP) false at first; Parent/Count/order/Depth update (child 0, removed -1);
+        //   parent IsExpanded stays false.
+        // Failure means: TreeViewNodeVector Append/InsertAt/RemoveAt or TreeViewNode::put_ParentImpl/UpdateDepth
+        //   no longer maintain Parent/Depth bookkeeping.
         [TestMethod]
         public void TreeViewNodeTest()
         {
@@ -98,6 +103,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode (RootNodes); child1 expanded; SetAt under collapsed child2, SetAt on RootNodes[0],
+        //   expand child2, then RootNodes.Clear() twice.
+        // Expected: ListControl.Items count 3 -> 3 (collapsed SetAt hidden) -> 4 -> 0 -> 0 (empty Clear is safe).
+        // Failure means: ViewModel::TreeViewNodeVectorChanged/SetAt/Clear mishandle replace or reset of nodes in
+        //   the flattened view (e.g. a replaced expanded root's descendants are not removed).
         [TestMethod]
         public void TreeViewClearAndSetAtTest()
         {
@@ -143,6 +153,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Content mode (ItemsSource = ExtendedObservableCollection of 3 items), then ReplaceAll with 2
+        //   new items (raises a collection Reset).
+        // Expected: RootNodes count 3 then 2; RootNodes[0].Content is items[0] before and after the reset.
+        // Failure means: TreeViewNode::OnItemsSourceChanged/SyncChildrenNodesWithItemsSource no longer rebuilds
+        //   the root nodes on a collection Reset.
         [TestMethod]
         public void TreeViewItemSourceResetRecreateItems()
         {
@@ -180,6 +195,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode; root with 4 children added to RootNodes, Expand(root), then RemoveAt(2),
+        //   Insert(1, node4) and Children.Clear() on the expanded root.
+        // Expected: ListControl.Items count 1 -> 5 -> 4 -> 5 -> 1 with the exact flattened order after each edit.
+        // Failure means: ViewModel::TreeViewNodeVectorChanged/ExpandNode no longer keep the flattened view in sync
+        //   with child edits under an expanded node.
         [TestMethod]
         public void TreeViewUpdateTest()
         {
@@ -227,6 +247,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Lays out code-only managed subclasses SpecialTreeView and SpecialTreeViewList (ItemsSource of
+        //   5 strings) in a StackPanel; also constructs SpecialTreeViewItem and SpecialTreeViewNode.
+        // Expected: No exception or crash while the subclassed controls are laid out.
+        // Failure means: Ignored (PC-2, WinUI platform issue, GitHub #1775): laying out code-only managed
+        //   subclasses of TreeView (also Expander/InfoBadge) throws 0x800F1000 and crashes the test host;
+        //   a pass would mean such subclasses now lay out and the test can be re-enabled.
         [TestMethod]
         // Not a TreeView bug (GitHub #1775 was closed as stale). Observed in this API-test host: laying out code-only
         // managed subclasses of TreeView, Expander or InfoBadge (MUXC templated controls deriving directly from Control;
@@ -256,6 +282,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Default TreeView placed in the visual tree and laid out.
+        // Expected: TreeView.IsTabStop is false (focus goes to the inner list/items, not the TreeView itself).
+        // Failure means: The TreeView constructor/default style regressed and made the TreeView itself a tab stop.
         [TestMethod]
         public void VerifyTreeViewIsNotTabStop()
         {
@@ -268,6 +297,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode; childless root node in a laid-out TreeView; Children.Clear() on it while a
+        //   VectorChanged handler throws on Reset.
+        // Expected: One list item; clearing an empty Children vector is a no-op (no Reset raised, no crash).
+        // Failure means: TreeViewNodeVector::Clear raises a Reset for an already-empty vector, triggering needless
+        //   ViewModel/handler work (here an exception).
         [TestMethod]
         public void VerifyClearingNodeWithNoChildren()
         {
@@ -296,6 +330,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Detached expanded root node with one child; reads values through GetValue on the DPs.
+        // Expected: ContentProperty, DepthProperty (-1 root / 0 child), IsExpandedProperty and HasChildrenProperty
+        //   report the expected per-node values.
+        // Failure means: TreeViewNode DP registration (TreeViewNode.properties.cpp) or the Depth/HasChildren
+        //   updates no longer keep the DP values current.
         [TestMethod]
         public void TreeViewNodeDPTest()
         {
@@ -320,6 +359,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode; laid-out TreeView, set ItemTemplate (XAML DataTemplate), add a node, lay out.
+        // Expected: The realized TreeViewItem's ContentTemplate is the TreeView.ItemTemplate instance.
+        // Failure means: TreeView.ItemTemplate no longer flows (via the default template binding) to the inner
+        //   TreeViewList and its containers.
         [TestMethod]
         public void TreeViewItemTemplateTest()
         {
@@ -346,6 +389,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Content mode (ItemsSource = [5]); then sets the realized TreeViewItem's own ItemsSource.
+        // Expected: GlyphOpacity is 0.0 for the leaf and 1.0 once the container has a non-empty ItemsSource.
+        // Failure means: TreeViewItem::OnPropertyChanged(ItemsSource)/SetItemsSource no longer updates the node's
+        //   children/HasChildren, so the chevron stays hidden.
         [TestMethod]
         public void ValidateTreeViewItemSourceChangeUpdatesChevronOpacity()
         {
@@ -365,6 +412,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode; set ItemContainerStyle (Background=Green) on a laid-out TreeView, add a node.
+        // Expected: The realized TreeViewItem's Style is the same Style instance.
+        // Failure means: TreeView.ItemContainerStyle no longer flows to the inner TreeViewList and its containers.
         [TestMethod]
         public void TreeViewItemContainerStyleTest()
         {
@@ -390,6 +440,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode; set ItemContainerTransitions (one ContentThemeTransition), add a node, lay out.
+        // Expected: Container realized; TreeView and inner ListControl share the same TransitionCollection
+        //   holding one ContentThemeTransition.
+        // Failure means: The TreeView default template no longer binds ItemContainerTransitions to TreeViewList.
         [TestMethod]
         public void TreeViewItemContainerTransitionTest()
         {
@@ -420,6 +474,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Content mode; ItemsSource = CreateTreeViewItemsSource() (2 root items), no layout.
+        // Expected: 2 RootNodes are created and RootNodes[0].Content is items[0].
+        // Failure means: TreeViewNode::ItemsSource/SyncChildrenNodesWithItemsSource no longer creates root nodes
+        //   from the data.
         [TestMethod]
         public void TreeViewItemsSourceTest()
         {
@@ -434,6 +492,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Content mode; Add, Remove, Replace (items[1] = ...) and Clear on the ObservableCollection.
+        // Expected: RootNodes count 3 -> 2; replaced node carries the new content; Clear leaves 0 RootNodes.
+        // Failure means: TreeViewNode::OnItemsSourceChanged no longer mirrors Add/Remove/Replace/Reset collection
+        //   changes into RootNodes.
         [TestMethod]
         public void TreeViewItemsSourceUpdateTest()
         {
@@ -467,6 +529,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: object.ToString() on a TreeViewNode (Content "Node") and on a managed subclass TreeViewNode2.
+        // Expected: ToString() returns the node's Content for both.
+        // Failure means: Ignored (PC-1): C#/WinRT object.ToString() returns the class name because TreeView.idl
+        //   does not declare IStringable on TreeViewNode; a pass would mean the IDL now declares IStringable
+        //   (re-enable). The native IStringable contract is covered by
+        //   TreeViewNodeNativeIStringableReturnsContent.
         [TestMethod]
         // TODO 29556921: Since MUXControlsTestApp became a desktop C#/WinRT app, object.ToString() on a TreeViewNode returns
         // the runtime class name ("Microsoft.UI.Xaml.Controls.TreeViewNode", "MUXControlsTestApp.TreeViewNode2") instead of
@@ -487,6 +555,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Casts TreeViewNodes (string Content, then int 42; managed subclass TreeViewNode2) to
+        //   Windows.Foundation.IStringable and calls ToString().
+        // Expected: "Node", then "42", and the subclass returns its string Content.
+        // Failure means: TreeViewNode::ToString (native IStringable) no longer returns the stringified Content.
         [TestMethod]
         public void TreeViewNodeNativeIStringableReturnsContent()
         {
@@ -505,6 +577,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode, Multiple selection; node1 added to SelectedNodes before the TreeView is templated.
+        // Expected: After layout node1's multi-select check box is checked and node2's is not.
+        // Failure means: SelectedNodes set before TreeView::OnApplyTemplate are no longer applied to the ViewModel
+        //   and the realized containers' check boxes.
         [TestMethod]
         public void TreeViewPendingSelectedNodesTest()
         {
@@ -526,6 +602,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode TreeView (400x400, one node) set as visual-tree root and compared against the stored
+        //   "TreeView" visual-tree master; gated by TestPass:MaxOSVer 22H2.
+        // Expected: The dumped visual tree (elements and properties) matches the master file.
+        // Failure means: The TreeView default template/visual tree (or theme resources) changed vs the master.
         [TestMethod]
         [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void VerifyVisualTree()
@@ -542,6 +622,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VisualTreeTestHelper.VerifyVisualTree(root: treeView, verificationFileNamePrefix: "TreeView");
         }
 
+        // Scenario: Content mode (ItemsSource [1,2,3]), Single selection; toggles TreeViewItem.IsSelected on
+        //   items 1/2, then sets ItemsSource = null.
+        // Expected: SelectionChanged fires each time with the exact Added/RemovedItems (data items), incl.
+        //   RemovedItems = [1] when ItemsSource is cleared.
+        // Failure means: TreeView::OnListControlSelectionChanged/RaiseSelectionChanged report wrong Added/Removed
+        //   items or stop raising SelectionChanged when the source is cleared.
         [TestMethod]
         public void TreeViewSelectionChangedSingleMode()
         {
@@ -605,6 +691,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode, Multiple selection, pre-expanded 1(11,12,13), 2(21), 3; select 1, set 11 selected
+        //   then unselected, then SelectAll().
+        // Expected: AddedItems = 1 + its 3 children; then RemovedItems = [11] only; SelectAll adds all 7 nodes.
+        // Failure means: ViewModel::UpdateSelection/SelectAll no longer propagate selection to descendants or
+        //   batch Added/RemovedItems into a single TreeView.SelectionChanged.
         [TestMethod]
         public void TreeViewSelectionChangedMultipleMode()
         {
@@ -710,6 +801,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Detached node mode: expanded non-root node with children; Children.Clear(), Remove(last child)
+        //   and RemoveAt(0) of the last child, re-expanding between steps.
+        // Expected: IsExpanded becomes false each time the node loses its last child.
+        // Failure means: TreeViewNodeVector::Clear/RemoveAt (updateIsExpanded) no longer auto-collapse a non-root
+        //   parent whose last child is removed.
         [TestMethod]
         public void RemovingLastChildrenSetsIsExpandedToFalse()
         {
@@ -753,6 +849,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Content mode; root container ItemsSource [1,2], expand, RemoveAt both via the data source
+        //   (Remove notifications), then Add one back. Regression for GitHub issue #10251.
+        // Expected: 0 children with IsExpanded still true and HasChildren false; after Add: 1 child, still
+        //   expanded, HasChildren true.
+        // Failure means: ItemsSource-driven removals (TreeViewNode::OnItemsSourceChanged/RemoveFromChildrenNodes,
+        //   RemoveAt without updateIsExpanded) collapse the parent again (#10251 regression).
         [TestMethod]
         public void RemovingLastChildFromItemsSourcePreservesIsExpanded()
         {
@@ -799,6 +901,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Default laid-out TreeView; sets TreeView.Background to a green SolidColorBrush.
+        // Expected: Inner ListControl background is not green by default and becomes green after the set.
+        // Failure means: The default TreeView template no longer TemplateBinds Background onto the TreeViewList.
         [TestMethod]
         public void TreeViewBackgroundTest()
         {
@@ -824,6 +929,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Sets SelectedItem on an untemplated TreeView before and after assigning ItemsSource (strings).
+        // Expected: No exception; the SelectedItem getter returns the value just set each time.
+        // Failure means: TreeView SelectedItem handling (TreeView::OnPropertyChanged) crashes or drops the value
+        //   when there is no list control yet.
         [TestMethod]
         public void VerifySettingSelectionDoesNotCrash()
         {
@@ -844,6 +953,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Content mode via XAML (Multiple; ItemTemplate TreeViewItem binding IsExpanded/ItemsSource;
+        //   3x3x3 data); adds/removes items via both SelectedItems and SelectedNodes.
+        // Expected: After each edit SelectedNodes and SelectedItems match the expected set, incl. whole-subtree
+        //   selection of a parent and the parent dropping out when one of its children is deselected.
+        // Failure means: SelectedItemsVector/SelectedTreeNodeVector (ViewModel.cpp) no longer keep SelectedItems
+        //   and SelectedNodes in sync or propagate selection to descendants/ancestors.
         [TestMethod]
         public void SelectedItemsTest()
         {
@@ -931,6 +1046,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return peer;
         }
 
+        // Scenario: Node mode A(A0,A1),B laid out; Expand(A); TreeViewItemAutomationPeer for each container.
+        // Expected: PositionInSet/SizeOfSet/Level: A 1/2/1, B 2/2/1, A0 1/2/2, A1 2/2/2.
+        // Failure means: TreeViewItemAutomationPeer::GetPositionInSetCore/GetSizeOfSetCore/GetLevelCore compute
+        //   wrong UIA set/level values.
         [TestMethod]
         public void TreeViewItemPeerReportsPositionSizeAndLevel()
         {
@@ -962,6 +1081,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B; automation peer for A's container.
+        // Expected: ControlType TreeItem, ClassName "Microsoft.UI.Xaml.Controls.TreeViewItem"; the ExpandCollapse
+        //   pattern is returned and is the peer itself.
+        // Failure means: TreeViewItemAutomationPeer::GetAutomationControlTypeCore/GetClassNameCore/GetPatternCore
+        //   regressed.
         [TestMethod]
         public void TreeViewItemPeerIdentity()
         {
@@ -977,6 +1101,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B; AutomationProperties.Name set on B's container.
+        // Expected: B's peer GetName() returns "Explicit name".
+        // Failure means: TreeViewItemAutomationPeer::GetNameCore no longer prefers an explicit
+        //   AutomationProperties.Name over the node content.
         [TestMethod]
         public void TreeViewItemPeerNameUsesExplicitAutomationName()
         {
@@ -991,6 +1119,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode; peers for node "A", a node with null Content and a node with "" Content.
+        // Expected: Names "A", "Microsoft.UI.Xaml.Controls.TreeViewNode" (null) and "TreeViewNode" (empty string).
+        // Failure means: TreeViewItemAutomationPeer::GetNameCore fallbacks (node string representation, then
+        //   "TreeViewNode" for an empty name) regressed.
         [TestMethod]
         public void TreeViewItemPeerNameFallsBackToNodeContent()
         {
@@ -1021,6 +1153,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B; UIA Expand/Collapse on A's peer, then Expand on leaf B's peer.
+        // Expected: Collapsed/LeafNode initially; Expand/Collapse toggle A.IsExpanded and the state, raising
+        //   Expanding/Collapsed once each with node A; leaf B stays LeafNode.
+        // Failure means: TreeViewItemAutomationPeer::Expand/Collapse/ExpandCollapseState no longer drive the node
+        //   or raise TreeView Expanding/Collapsed.
         [TestMethod]
         public void TreeViewItemPeerExpandCollapseProvider()
         {
@@ -1056,6 +1193,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Peer for a standalone TreeViewItem with no owning TreeView; calls Expand and Collapse.
+        // Expected: LeafNode, Level -1, PositionInSet 0, SizeOfSet 0; Expand/Collapse are harmless no-ops.
+        // Failure means: TreeViewItemAutomationPeer null handling of GetParentTreeView/GetParentListView regressed
+        //   (crash or bogus values for orphaned items).
         [TestMethod]
         public void TreeViewItemPeerWithoutTreeViewReportsDefaults()
         {
@@ -1077,6 +1218,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B, Single selection; SelectionItem pattern on B's peer: Select, then
+        //   RemoveFromSelection.
+        // Expected: Pattern/SelectionContainer non-null; IsSelected toggles; SelectedNode = B, SelectedItem set;
+        //   both null after removal.
+        // Failure means: TreeViewItemAutomationPeer::Select/RemoveFromSelection/IsSelected or
+        //   TreeView::OnListControlSelectionChanged no longer update SelectedNode/SelectedItem.
         [TestMethod]
         public void TreeViewItemPeerSelectionItemPatternSingleMode()
         {
@@ -1106,6 +1253,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B, Multiple selection; AddToSelection on A and B, RemoveFromSelection on A.
+        // Expected: SelectedNodes contains A and B, both IsSelected; after removal only B remains selected.
+        // Failure means: TreeViewItemAutomationPeer::AddToSelection/RemoveFromSelection (UpdateSelection) no
+        //   longer edit TreeView.SelectedNodes in multi-select mode.
         [TestMethod]
         public void TreeViewItemPeerSelectionItemPatternMultipleMode()
         {
@@ -1134,6 +1285,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B with SelectionMode None; queries the SelectionItem pattern on A's peer.
+        // Expected: GetPattern(SelectionItem) returns null.
+        // Failure means: TreeViewItemAutomationPeer::GetPatternCore exposes SelectionItem while selection is
+        //   disabled.
         [TestMethod]
         public void TreeViewItemPeerHasNoSelectionItemPatternWhenSelectionModeIsNone()
         {
@@ -1150,6 +1305,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B; TreeViewListAutomationPeer for the inner ListControl.
+        // Expected: ControlType is Tree and a DropTarget pattern is exposed.
+        // Failure means: TreeViewListAutomationPeer::GetAutomationControlTypeCore/GetPatternCore regressed.
         [TestMethod]
         public void TreeViewListPeerReportsTreeControlType()
         {
@@ -1164,6 +1322,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B, Multiple selection; Selection pattern on the list peer; B added to
+        //   SelectedNodes.
+        // Expected: CanSelectMultiple true, IsSelectionRequired false, GetSelection() returns no elements.
+        // Failure means: TreeViewListAutomationPeer::CanSelectMultiple/IsMultiselect/IsSelectionRequired/
+        //   GetSelection regressed.
         [TestMethod]
         public void TreeViewListPeerSelectionPatternMultipleMode()
         {
@@ -1187,6 +1350,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B, Single selection; Selection pattern on the list peer.
+        // Expected: CanSelectMultiple false and IsSelectionRequired false.
+        // Failure means: TreeViewListAutomationPeer::CanSelectMultiple/IsMultiselect misreport the selection mode.
         [TestMethod]
         public void TreeViewListPeerCannotSelectMultipleInSingleMode()
         {
@@ -1205,6 +1371,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B; TreeViewItemDataAutomationPeers for A and B on the list peer;
+        //   Expand/Collapse through A's data peer.
+        // Expected: ExpandCollapse pattern exposed; A Collapsed / B LeafNode; Expand/Collapse update A.IsExpanded
+        //   and the reported state.
+        // Failure means: TreeViewItemDataAutomationPeer::Expand/Collapse/ExpandCollapseState no longer forward to
+        //   the realized item's TreeViewItemAutomationPeer.
         [TestMethod]
         public void TreeViewListPeerCreatesDataPeersThatForwardExpandCollapse()
         {
@@ -1231,6 +1403,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode, A collapsed so A0 has no container; data peer for A0; reads ExpandCollapseState,
+        //   calls Expand and Collapse.
+        // Expected: Each throws UIA_E_ELEMENTNOTENABLED (0x80040200) and A0 stays collapsed.
+        // Failure means: TreeViewItemDataAutomationPeer::GetTreeViewItemAutomationPeer no longer throws for
+        //   unrealized items (null deref or silent success instead).
         [TestMethod]
         public void TreeViewDataPeerForUnrealizedItemThrowsElementNotEnabled()
         {
@@ -1282,6 +1459,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B; TreeView.Expand(A) then Collapse(A).
+        // Expected: Expanding and Collapsed fire exactly once each; args.Node is A and args.Item is "A" (Content).
+        // Failure means: TreeView::OnNodeExpanding/OnNodeCollapsed or the event args' Node/Item regressed in
+        //   node mode.
         [TestMethod]
         public void TreeViewExpandingAndCollapsedEventArgsExposeNodeAndItemInNodeMode()
         {
@@ -1309,6 +1490,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Content mode (ItemsSource = CreateTreeViewItemsSource()); Expand then Collapse RootNodes[0].
+        // Expected: Expanding/Collapsed args.Node is the root node and args.Item is the data item items[0].
+        // Failure means: TreeViewExpandingEventArgs::Item/TreeViewCollapsedEventArgs::Item no longer return the
+        //   data item in content mode.
         [TestMethod]
         public void TreeViewExpandingAndCollapsedEventArgsExposeDataItemInContentMode()
         {
@@ -1337,6 +1522,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B; TreeView.Expand(A) then Collapse(A).
+        // Expected: Node and container IsExpanded track; ExpandedGlyphVisibility/CollapsedGlyphVisibility in
+        //   TreeViewItemTemplateSettings swap Visible/Collapsed.
+        // Failure means: TreeView::OnNodeExpanding/OnNodeCollapsed or TreeViewItem::OnPropertyChanged(IsExpanded)
+        //   no longer sync container state and glyph visibility.
         [TestMethod]
         public void TreeViewExpandCollapseUpdatesContainerAndGlyphVisibility()
         {
@@ -1360,6 +1550,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B; cycles TreeView.SelectionMode Single -> Multiple -> None -> Single.
+        // Expected: ListControl.SelectionMode is Single, None, None, Single (multi-select is done by TreeView).
+        // Failure means: TreeView::UpdateItemsSelectionMode maps TreeViewSelectionMode to the wrong
+        //   ListViewSelectionMode.
         [TestMethod]
         public void TreeViewSelectionModeChangeUpdatesListControlSelectionMode()
         {
@@ -1383,6 +1577,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Content mode, Single selection; sets SelectedItem = items[1], then items[0].
+        // Expected: SelectedItem round-trips; SelectedNode is the matching root node; SelectedItems has 1 entry.
+        // Failure means: TreeView::OnPropertyChanged(SelectedItem)/UpdateSelection no longer map the data item to
+        //   its node and select it.
         [TestMethod]
         public void TreeViewSelectedItemPropertySelectsMatchingNode()
         {
@@ -1406,6 +1604,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: ICustomPropertyProvider (and IStringable) on nodes with string, null, int, nested-node, Uri
+        //   and SolidColorBrush Content.
+        // Expected: Content string/"42"/inner node's string/Uri text; null and brush fall back to the full type
+        //   name; Type.Name "TreeViewNode"; GetCustomProperty/GetIndexedProperty return null.
+        // Failure means: TreeViewNode::GetStringRepresentation/GetContentAsString/ToString/Type/GetCustomProperty
+        //   regressed.
         [TestMethod]
         public void TreeViewNodeStringRepresentationUsesContent()
         {
@@ -1448,6 +1652,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Detached parent with one child; Children.RemoveAt(1) (past the end).
+        // Expected: Throws ArgumentOutOfRangeException; Count stays 1; child's Parent and Depth (0) unchanged.
+        // Failure means: TreeViewNodeVector::RemoveAt no longer rejects an out-of-range index before detaching
+        //   or mutating children.
         [TestMethod]
         public void TreeViewNodeChildrenRemoveAtOutOfRangeThrowsAndLeavesChildrenIntact()
         {
@@ -1476,6 +1684,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Detached parent with two children; Children[0] = replacement.
+        // Expected: Count 2, order [replacement, second]; replacement Parent = parent, Depth 0; old child Parent
+        //   null, Depth -1.
+        // Failure means: TreeViewNodeVector::SetAt no longer detaches the old child and reparents the new one.
         [TestMethod]
         public void TreeViewNodeChildrenSetAtReplacesChildAndReparents()
         {
@@ -1500,6 +1712,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Detached root > expanded parent with two children; parent.Children.Clear().
+        // Expected: Count 0; both children Parent null; child1 Depth -1; parent HasChildren and IsExpanded false.
+        // Failure means: TreeViewNodeVector::Clear no longer detaches children (put_ParentImpl/UpdateDepth) or
+        //   collapses the non-root parent, or UpdateHasChildren is stale.
         [TestMethod]
         public void TreeViewNodeChildrenClearDetachesAllChildren()
         {
@@ -1525,6 +1741,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Detached nodes: mid(leaf) is added under root, then removed from root.
+        // Expected: leaf Depth 0 -> 1 when mid is attached and back to 0 when detached; mid Depth -1 and Parent
+        //   null; leaf.Parent stays mid.
+        // Failure means: TreeViewNode::UpdateDepth no longer recurses into descendants when a subtree is
+        //   reparented.
         [TestMethod]
         public void TreeViewNodeDepthFollowsReparenting()
         {
@@ -1548,6 +1769,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode (int content); checks DP defaults, then sets CanDragItems/CanReorderItems, item
+        //   template/style selectors and ItemTemplate/ItemContainerStyle before and after templating.
+        // Expected: Defaults true/true/null; getters and GetValue agree and flow to ListControl; selectors pick
+        //   T1/S1 for 1, T2/S2 for 2; drag/reorder flags are independent; clearing selectors clears the list's.
+        // Failure means: TreeView.properties.cpp getters/setters (e.g. swapped CanDrag/CanReorder) or the
+        //   default template bindings to the TreeViewList regressed.
         [TestMethod]
         public void TreeViewPropertiesRoundTripAndFlowToListControl()
         {
@@ -1656,6 +1883,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B, Multiple; subscribe Expanding/Collapsed/SelectionChanged, Expand/
+        //   Collapse/SelectAll, unsubscribe, add new handlers and repeat.
+        // Expected: Original handlers fire once and never after removal; the new handlers fire once each.
+        // Failure means: TreeView event remove accessors (event token bookkeeping) no longer detach handlers.
         [TestMethod]
         public void TreeViewEventHandlersStopFiringAfterUnsubscribe()
         {
@@ -1707,6 +1938,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Standalone TreeViewItem/TemplateSettings defaults; node mode A(A0(A0a),A1),B expanded; sets
+        //   glyph props and HasUnrealizedChildren on B's container, then on a detached node.
+        // Expected: Default glyphs/size 8/null brush; indentation 0/16/32 by depth; glyph props reach the glyph
+        //   TextBlocks; HasUnrealizedChildren drives node HasChildren and GlyphOpacity 0/1.
+        // Failure means: TreeViewItem glyph DP defaults/UpdateIndentation/OnPropertyChanged(HasUnrealizedChildren)
+        //   or TreeViewNode::HasUnrealizedChildren/UpdateHasChildren regressed.
         [TestMethod]
         public void TreeViewItemGlyphUnrealizedChildrenAndTemplateSettings()
         {
@@ -1801,6 +2038,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode TreeView queried before templating (pending SelectedNode), then laid out; then a
+        //   content-mode TreeView for container/item lookups.
+        // Expected: Pre-template lookups and SelectedItems are null, SelectedNode is pending; after layout it is
+        //   applied; container/node/item lookups agree in both modes; SelectedNode set/null updates containers.
+        // Failure means: TreeView ContainerFromNode/ContainerFromItem/NodeFromContainer/ItemFromContainer/
+        //   SelectedNode null handling or pending-selection application in OnApplyTemplate regressed.
         [TestMethod]
         public void TreeViewContainerAndSelectionApisBeforeAndAfterTemplate()
         {
@@ -1880,6 +2123,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B in Multiple with B selected; switch to None, then back to Multiple.
+        // Expected: EnabledUnselected/EnabledSelected -> Disabled (check boxes Collapsed, B still selected)
+        //   -> states restored with check boxes Visible.
+        // Failure means: TreeViewList::EnableMultiselect/TreeViewItem::UpdateTreeViewItemVisualState no longer
+        //   refresh realized containers on a SelectionMode change.
         [TestMethod]
         public void TreeViewSelectionModeSwitchUpdatesMultiSelectVisualStates()
         {
@@ -1913,6 +2161,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode nested pre-expanded tree; remove/add root, insert expanded subtree, remove/replace/
+        //   clear expanded children, collapse/expand root, clear last root's children, then re-template.
+        // Expected: ListControl flattened content matches after every edit; depths, indentation, parent links and
+        //   auto-collapse are correct; a new template rebuilds the same view on a new ListControl.
+        // Failure means: ViewModel::TreeViewNodeVectorChanged/IndexOfNextSibling no longer removes the removed
+        //   child's expanded descendants or miscomputes flat indexes (or PrepareView fails on re-template).
         [TestMethod]
         public void TreeViewFlattenedViewTracksNestedEditsUnderExpandedParents()
         {
@@ -2028,6 +2282,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode Multiple, P(K0,K1) collapsed, Q; select unrealized K0, expand P, select P, add/
+        //   remove/replace P's children, SelectedNodes[0] = Q, then SelectedNodes.Clear().
+        // Expected: P check box indeterminate (not UIA-selected) then checked; selection follows child add/remove/
+        //   replace; SetAt/Clear keep SelectedNodes, SelectedItems and check boxes consistent.
+        // Failure means: ViewModel::SelectedNodeChildrenChanged/UpdateSelectionStateOfAncestors or
+        //   SelectedTreeNodeVector::SetAt/Clear no longer keep multi-select state consistent.
         [TestMethod]
         public void TreeViewMultiSelectStateTracksChildEditsAndSelectedNodesEdits()
         {
@@ -2113,6 +2373,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Content mode, Multiple (ItemsSource a,b,c); SelectedItems[0] = c, items[1] = b2, then
+        //   RootNodes Insert/RemoveAt/Clear.
+        // Expected: SelectedNodes/check boxes follow SelectedItems SetAt; source Replace swaps node and container;
+        //   node edits write back to ItemsSource without duplicate nodes.
+        // Failure means: SelectedItemsVector::SetAt, TreeViewNode::OnItemsSourceChanged or the
+        //   TreeViewNodeVector::GetWritableParentItemsSource write-back regressed.
         [TestMethod]
         public void TreeViewContentModeEditsSyncItemsSourceAndSelectedItems()
         {
@@ -2170,6 +2436,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode: set container IsExpanded true/false; then content mode XAML with TwoWay
+        //   IsExpanded binding, with data-side and node-side changes.
+        // Expected: Node updates only after a dispatcher pass; bound state realizes children (4, then 5 items);
+        //   TreeView.Collapse updates the container and writes back to the data (3 items).
+        // Failure means: TreeViewItem::UpdateNodeIsExpandedAsync or TreeView::OnNodeCollapsed container sync
+        //   regressed (lost, or synchronous during layout, IsExpanded propagation).
         [TestMethod]
         public void TreeViewContainerIsExpandedDrivesNodeAfterDispatch()
         {
@@ -2260,6 +2532,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Node mode A(A0,A1),B; DropTarget pattern from the list peer with no drag in progress.
+        // Expected: DropEffect is ""; DropEffects throws E_NOTIMPL (0x80004001), a documented product gap.
+        // Failure means: TreeViewListAutomationPeer::DropEffect/DropEffects changed; if DropEffects is now
+        //   implemented, update the expectation.
         [TestMethod]
         public void TreeViewListPeerDropTargetOutsideDrag()
         {
