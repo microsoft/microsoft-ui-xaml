@@ -254,6 +254,7 @@ public sealed partial class GroupsPage : SamplePageBase
             }
         }
 
+        PersonData.ReportToDepartmentHead(person, People); // snippet:skip
         People.Add(person);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} to {1}", person.FullName, GroupInView(key)(person)));
     }

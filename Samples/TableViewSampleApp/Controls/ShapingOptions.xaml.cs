@@ -39,6 +39,13 @@ public sealed partial class ShapingOptions : UserControl
     private ParentRelation? _relation;
     private bool _parentDeclared;
     private bool _revertingMode;
+    private TableViewColumn? _treeColumn;
+    private readonly List<TableViewColumn> _movedLeadColumns = new();
+    private GridLength _treeColumnWidth;
+    private double _treeColumnMinWidth;
+
+    // Chevron (24) plus about five 16-px levels, and the group header offset under Grouped hierarchy.
+    private const double HierarchyIndentReserve = 112;
 
     public ShapingOptions()
     {
@@ -117,6 +124,9 @@ public sealed partial class ShapingOptions : UserControl
             }));
 
     public bool RestoreSelection { get; set; } = true;
+
+    // Header of the column that hosts the chevron and indent in the Hierarchy modes.
+    public string HierarchyColumnHeader { get; set; } = "Name";
 
     public Func<Action, long>? TimeCall { get; set; }
 
@@ -252,6 +262,7 @@ public sealed partial class ShapingOptions : UserControl
         AppliedMode = mode;
         AppliedKey = key;
         _parentDeclared = IsHierarchicalMode(mode);
+        ArrangeHierarchyColumn(_parentDeclared);
         _groupDeclaredAt = IsGrouped ? ++_declarations : -1;
 
         // Workaround for AB#64548351: the control drops the selection when a row's group key changes.
@@ -307,6 +318,92 @@ public sealed partial class ShapingOptions : UserControl
     // </snippet>
 
     private static bool IsHierarchicalMode(string mode) => mode is "hierarchy" or "groupedHierarchy";
+
+    // TableView draws the chevron and the per-level indent in the first visible column. In the
+    // Hierarchy modes the HierarchyColumnHeader column leads (narrow lead columns such as Photo or #
+    // move after it) and is widened by the indent it hosts; Flat and Grouped restore both.
+    private void ArrangeHierarchyColumn(bool hierarchical)
+    {
+        if (_table is null)
+        {
+            return;
+        }
+
+        var columns = _table.Columns;
+        if (hierarchical)
+        {
+            if (_treeColumn is not null)
+            {
+                return;
+            }
+
+            TableViewColumn? tree = null;
+            foreach (var column in columns)
+            {
+                if (column.Visibility == Visibility.Visible && Equals(column.Header, HierarchyColumnHeader))
+                {
+                    tree = column;
+                    break;
+                }
+            }
+
+            if (tree is null)
+            {
+                return;
+            }
+
+            var leading = new List<TableViewColumn>();
+            for (var i = columns.IndexOf(tree) - 1; i >= 0; i--)
+            {
+                leading.Insert(0, columns[i]);
+                columns.RemoveAt(i);
+            }
+
+            for (var i = 0; i < leading.Count; i++)
+            {
+                columns.Insert(columns.IndexOf(tree) + 1 + i, leading[i]);
+            }
+
+            _treeColumn = tree;
+            _movedLeadColumns.Clear();
+            _movedLeadColumns.AddRange(leading);
+            _treeColumnWidth = tree.Width;
+            _treeColumnMinWidth = tree.MinWidth;
+            if (tree.Width.IsAbsolute)
+            {
+                tree.Width = new GridLength(tree.Width.Value + HierarchyIndentReserve);
+            }
+            else
+            {
+                tree.MinWidth = Math.Max(tree.MinWidth, 0) + HierarchyIndentReserve;
+            }
+
+            return;
+        }
+
+        if (_treeColumn is not { } treeColumn)
+        {
+            return;
+        }
+
+        _treeColumn = null;
+        foreach (var column in _movedLeadColumns)
+        {
+            var at = columns.IndexOf(treeColumn);
+            var from = columns.IndexOf(column);
+            if (at < 0 || from < 0 || from < at)
+            {
+                continue;
+            }
+
+            columns.RemoveAt(from);
+            columns.Insert(at, column);
+        }
+
+        _movedLeadColumns.Clear();
+        treeColumn.Width = _treeColumnWidth;
+        treeColumn.MinWidth = _treeColumnMinWidth;
+    }
 
     private static string ShapingText(string mode, string keyLabel, string? relationLabel) => mode switch
     {
@@ -477,7 +574,7 @@ public sealed partial class ShapingOptions : UserControl
         AutomationProperties.SetHelpText(HierarchyItem, reason ?? string.Format(CultureInfo.CurrentCulture, "Nests the rows by {0} (TableViewSource.ParentBy).", _relation!.Label));
         AutomationProperties.SetHelpText(GroupedHierarchyItem, groupedReason ?? string.Format(CultureInfo.CurrentCulture, "Groups the root rows by the group key; each root keeps its {0} subtree.", _relation!.Label));
         CaptionText.Text = reason is null
-            ? string.Format(CultureInfo.CurrentCulture, "Group key needs a grouped mode; Expand all and Collapse all need any mode but Flat. The Hierarchy modes nest the rows by {0}; nested rows start collapsed.", _relation!.Label)
+            ? string.Format(CultureInfo.CurrentCulture, "Group key needs a grouped mode; Expand all and Collapse all need any mode but Flat. The Hierarchy modes nest the rows by {0} in the {1} column, shown first; nested rows start collapsed.", _relation!.Label, HierarchyColumnHeader)
             : "Group key needs a grouped mode; Expand all and Collapse all need any mode but Flat. Hierarchy: " + reason;
     }
 

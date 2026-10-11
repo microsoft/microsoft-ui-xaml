@@ -30,7 +30,7 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
         Source = TableViewSource.From(Tickets);    // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
-        InitializeSample(Status, Shaping.Attach(TicketsTable, Source, (row, key) => TicketData.GroupKeyOf(row as SupportTicket, key)));
+        InitializeSample(Status, Shaping.Attach(TicketsTable, Source, (row, key) => TicketData.GroupKeyOf(row as SupportTicket, key), TicketData.ParentTicket));
         TrackItems(Tickets, OnTicketChanged);
         TrackLifetime(() => TicketsTable.Sorted += OnTableSorted, () => TicketsTable.Sorted -= OnTableSorted);
     }
@@ -146,12 +146,14 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
             return;
         }
 
+        // Under Grouped hierarchy a sub-task sits in its parent's group; its own sub-tasks become roots.
+        var group = TicketData.GroupKeyOf(GroupingRowOf(Tickets)(ticket), AppliedGroupKey);
         Tickets.Remove(ticket);
 
         if (IsGrouped)
         {
-            var group = TicketData.GroupKeyOf(ticket, AppliedGroupKey);
-            var remaining = Tickets.Count(t => Equals(TicketData.GroupKeyOf(t, AppliedGroupKey), group));
+            var rowOf = GroupingRowOf(Tickets);
+            var remaining = Tickets.Count(t => Equals(TicketData.GroupKeyOf(rowOf(t), AppliedGroupKey), group));
             SetLastAction(remaining == 0
                 ? string.Format(CultureInfo.CurrentCulture, "Closed {0}; it was the last ticket in {1}, so that group is gone", ticket.TicketId, group)
                 : string.Format(CultureInfo.CurrentCulture, "Closed {0}; {1} keeps {2:N0} ticket(s)", ticket.TicketId, group, remaining));

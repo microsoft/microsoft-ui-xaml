@@ -22,6 +22,7 @@ public sealed partial class SupportTicket : INotifyPropertyChanged
 
     private string _ticketId = string.Empty;
     private string _summary = string.Empty;
+    private string? _parentTicketId;
     private string _assignee = string.Empty;
     private string _queue = string.Empty;
     private string _priority = "Sev 3";
@@ -48,6 +49,13 @@ public sealed partial class SupportTicket : INotifyPropertyChanged
     {
         get => _summary;
         set => Set(ref _summary, value);
+    }
+
+    /// <summary>TicketId of the ticket this one is a sub-task of, or null for a top-level ticket.</summary>
+    public string? ParentTicketId
+    {
+        get => _parentTicketId;
+        set => Set(ref _parentTicketId, value);
     }
 
     public string Assignee

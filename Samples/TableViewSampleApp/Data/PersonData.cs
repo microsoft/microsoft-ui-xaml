@@ -106,6 +106,14 @@ public static class PersonData
         All.FirstOrDefault(p => p.ManagerId is null && string.Equals(p.Department, department, StringComparison.Ordinal))?.EmployeeId;
 
     /// <summary>
+    /// For a row added to <paramref name="people"/>: reports to the head of its department there (a
+    /// row with no manager), or becomes a head itself, so the manager hierarchy never dangles.
+    /// </summary>
+    public static void ReportToDepartmentHead(Person person, IEnumerable<Person> people) =>
+        person.ManagerId = people.FirstOrDefault(p => p.ManagerId is null && !ReferenceEquals(p, person)
+            && string.Equals(p.Department, person.Department, StringComparison.Ordinal))?.EmployeeId;
+
+    /// <summary>
     /// Returns the cached canonical dataset (1000 deterministic entries).
     /// Pages then take a slice of any size from this list.
     /// </summary>

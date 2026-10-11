@@ -28,6 +28,12 @@ public sealed partial class FilePropertiesPage : SamplePageBase
 {
     private static readonly string[] s_sections = { "Description", "Origin", "File" };
 
+    // A detail property under the one it refines: Size on disk under Size, the Build flags under Build.
+    private static readonly ParentRelation s_parentProperty = new(
+        "Parent property",
+        row => (row as FilePropertyEntry)?.Property,
+        row => (row as FilePropertyEntry)?.ParentProperty);
+
     private FileInfo? _currentFile;
 
     public FilePropertiesPage()
@@ -41,7 +47,7 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         PropTable.Density = TableViewDensity.Compact;
         // </snippet>
 
-        InitializeSample(Status, Shaping.Attach(PropTable, Source, (row, key) => KeyOf(row as FilePropertyEntry, key)));
+        InitializeSample(Status, Shaping.Attach(PropTable, Source, (row, key) => KeyOf(row as FilePropertyEntry, key), s_parentProperty));
         TrackLifetime(ListFilesOnce);
     }
 
@@ -138,27 +144,27 @@ public sealed partial class FilePropertiesPage : SamplePageBase
             new FilePropertyEntry("Description", "Type", FileType(file.Extension), fs),
             new FilePropertyEntry("Description", "File version", version.FileVersion ?? string.Empty, vr),
             new FilePropertyEntry("Description", "Product name", version.ProductName ?? string.Empty, vr),
-            new FilePropertyEntry("Description", "Product version", version.ProductVersion ?? string.Empty, vr),
+            new FilePropertyEntry("Description", "Product version", version.ProductVersion ?? string.Empty, vr, parentProperty: "Product name"),
             new FilePropertyEntry("Description", "Copyright", version.LegalCopyright ?? string.Empty, vr),
             new FilePropertyEntry("Description", "Language", version.Language ?? string.Empty, vr),
 
             new FilePropertyEntry("Origin", "Company", version.CompanyName ?? string.Empty, vr),
             new FilePropertyEntry("Origin", "Original filename", version.OriginalFilename ?? string.Empty, vr),
-            new FilePropertyEntry("Origin", "Internal name", version.InternalName ?? string.Empty, vr),
+            new FilePropertyEntry("Origin", "Internal name", version.InternalName ?? string.Empty, vr, parentProperty: "Original filename"),
             new FilePropertyEntry("Origin", "Build", version.IsDebug ? "Debug" : version.IsPrivateBuild ? "Private" : "Release", vr),
-            new FilePropertyEntry("Origin", "Pre-release", YesNo(version.IsPreRelease), vr),
-            new FilePropertyEntry("Origin", "Patched", YesNo(version.IsPatched), vr),
+            new FilePropertyEntry("Origin", "Pre-release", YesNo(version.IsPreRelease), vr, parentProperty: "Build"),
+            new FilePropertyEntry("Origin", "Patched", YesNo(version.IsPatched), vr, parentProperty: "Build"),
 
             new FilePropertyEntry("File", "Name", file.Name, fs),
             new FilePropertyEntry("File", "Folder path", file.DirectoryName ?? string.Empty, fs),
             new FilePropertyEntry("File", "Size", SizeText(file.Length), fs),
             // Rounded up to the 4 KB allocation unit of an NTFS volume.
-            new FilePropertyEntry("File", "Size on disk", SizeText((file.Length + 4095) / 4096 * 4096), fs),
+            new FilePropertyEntry("File", "Size on disk", SizeText((file.Length + 4095) / 4096 * 4096), fs, parentProperty: "Size"),
             new FilePropertyEntry("File", "Date created", file.CreationTime.ToString("F", CultureInfo.CurrentCulture), fs, isDate: true),
             new FilePropertyEntry("File", "Date modified", file.LastWriteTime.ToString("F", CultureInfo.CurrentCulture), fs, isDate: true),
             new FilePropertyEntry("File", "Date accessed", file.LastAccessTime.ToString("F", CultureInfo.CurrentCulture), fs, isDate: true),
             new FilePropertyEntry("File", "Attributes", file.Attributes.ToString(), fs),
-            new FilePropertyEntry("File", "Read-only", YesNo(file.IsReadOnly), fs),
+            new FilePropertyEntry("File", "Read-only", YesNo(file.IsReadOnly), fs, parentProperty: "Attributes"),
         };
     }
 
@@ -233,7 +239,11 @@ public sealed partial class FilePropertiesPage : SamplePageBase
 
         // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row.
         ReapplyIfGroupedOn(nameof(FilePropertyEntry.Section));
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", entry.Property, from, entry.Section));
+        // A nested row stays in its parent property's group. // snippet:skip
+        var shownIn = GroupingRowOf(Entries)(entry); // snippet:skip
+        SetLastAction(ReferenceEquals(shownIn, entry) || !IsGrouped
+            ? string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", entry.Property, from, entry.Section)
+            : string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}; it stays under {3} in the {4} group", entry.Property, from, entry.Section, shownIn.Property, KeyOf(shownIn, AppliedGroupKey)));
     }
 
     private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)

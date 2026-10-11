@@ -164,6 +164,7 @@ public sealed partial class RightToLeftPage : SamplePageBase
     private void OnAddPersonClick(object sender, RoutedEventArgs e)
     {
         var person = RtlPersonData.Create(_nextRtlPerson++, RtlPersonData.FirstEmployeeId + People.Count);
+        PersonData.ReportToDepartmentHead(person, People);
         People.Add(person);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} ({1})", person.FullName, person.Department));
     }

@@ -106,6 +106,7 @@ public sealed partial class DensityPage : SamplePageBase
         person.Department = selected.Department;
         person.Role = selected.Role;
         person.IsActive = selected.IsActive;
+        PersonData.ReportToDepartmentHead(person, People);
         People.Insert(People.IndexOf(selected) + 1, person);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} to {1}", person.FullName, SampleShaping.KeyOf(person, AppliedGroupKey)));
     }

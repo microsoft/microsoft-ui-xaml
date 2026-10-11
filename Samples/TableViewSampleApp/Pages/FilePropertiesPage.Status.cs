@@ -19,6 +19,6 @@ public sealed partial class FilePropertiesPage
                 .Select(section => (section, count: visible.Count(entry => entry.Section == section)))
                 .Where(pair => pair.count > 0)
                 .Select(pair => string.Format(CultureInfo.CurrentCulture, "{0} {1:N0}", pair.section, pair.count)));
-        Status.Rows = SampleShaping.RowCountText(visible.Count);
+        Status.Rows = SampleShaping.RowCountText(CountShown(Entries, visible.Contains));
     }
 }

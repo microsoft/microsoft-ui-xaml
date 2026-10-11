@@ -167,6 +167,7 @@ public sealed partial class SelectionPage : SamplePageBase
         person.Department = selected.Department;
         person.Office = selected.Office;
         person.IsActive = selected.IsActive;
+        PersonData.ReportToDepartmentHead(person, People); // snippet:skip
 
         var before = _changeCount; // snippet:skip
         People.Insert(People.IndexOf(selected), person);

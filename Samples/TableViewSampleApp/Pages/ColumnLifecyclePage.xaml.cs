@@ -255,6 +255,7 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
             }
         }
 
+        PersonData.ReportToDepartmentHead(person, People);
         People.Add(person);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} to {1}", person.FullName, SampleShaping.KeyOf(person, key)));
     }
