@@ -70,7 +70,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(PlateauScale)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Zoom scale not applied
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -138,7 +138,7 @@ public:
     TEST_METHOD(DeviceLostOnCreatingSvgDecoder_Stream)
 
     BEGIN_TEST_METHOD(ReloadsOnScaleChange)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Zoom scale not applied
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
