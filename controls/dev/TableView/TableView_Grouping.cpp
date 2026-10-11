@@ -231,7 +231,12 @@ void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::op
     // Capture focus while the container still owns it; the deferred reshape recycles it.
     CaptureContainerFocusForRestore(container, identity);
 
-    QueueGroupExpansionByIdentity(identity, desired, subtree);
+    // A header toggles a group; anything else is a tree row.
+    const auto axis = container && container.try_as<winrt::TableViewGroupHeader>()
+        ? BulkExpansionAxis::Groups
+        : BulkExpansionAxis::Rows;
+
+    QueueGroupExpansionByIdentity(identity, desired, axis, subtree);
 }
 
 winrt::hstring TableView::TryGetContainerIdentity(winrt::UIElement const& container)
@@ -357,7 +362,11 @@ winrt::hstring TableView::CaptureFocusedContainerForRestore()
 
 // Directional request from a UIA provider or the band gesture. Identity is resolved here, while
 // the container's index is still current, because the mutation below is deferred.
-void TableView::QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, bool subtree)
+void TableView::QueueGroupExpansionByIdentity(
+    winrt::hstring const& identity,
+    std::optional<bool> desired,
+    BulkExpansionAxis axis,
+    bool subtree)
 {
     if (identity.empty())
     {
@@ -369,8 +378,8 @@ void TableView::QueueGroupExpansionByIdentity(winrt::hstring const& identity, st
     // makes the deferred half an idempotent set.
     const auto generation = m_rowMetadataGeneration;
 
-    // A later bulk expand/collapse supersedes this request (see ApplyGroupExpansionByIdentity).
-    const auto bulkGeneration = m_groupExpansionBulkGeneration;
+    // A bulk expand/collapse on this axis requested after this supersedes it (see ApplyGroupExpansionByIdentity).
+    const auto bulkGeneration = BulkExpansionGeneration(axis);
 
     // Defer the structural mutation off the current callout. Running it inline re-projects rows
     // while the caller's frame is still on the stack, which faults on the pointer path and
@@ -380,11 +389,11 @@ void TableView::QueueGroupExpansionByIdentity(winrt::hstring const& identity, st
     if (auto const queue = DispatcherQueue())
     {
         // A refused enqueue means the thread is shutting down and the UI is going away regardless.
-        queue.TryEnqueue([weakThis, identity, desired, generation, bulkGeneration, subtree]()
+        queue.TryEnqueue([weakThis, identity, desired, generation, axis, bulkGeneration, subtree]()
             {
                 if (auto strongThis = weakThis.get())
                 {
-                    strongThis->ApplyGroupExpansionByIdentity(identity, desired, generation, bulkGeneration, subtree);
+                    strongThis->ApplyGroupExpansionByIdentity(identity, desired, generation, axis, bulkGeneration, subtree);
                 }
             });
         return;
@@ -392,13 +401,14 @@ void TableView::QueueGroupExpansionByIdentity(winrt::hstring const& identity, st
 
     // No dispatcher means this is not a UI thread (test host), so there is no in-flight callout to
     // unwind and the hazard above cannot apply.
-    ApplyGroupExpansionByIdentity(identity, desired, generation, bulkGeneration, subtree);
+    ApplyGroupExpansionByIdentity(identity, desired, generation, axis, bulkGeneration, subtree);
 }
 
 void TableView::ApplyGroupExpansionByIdentity(
     winrt::hstring const& identity,
     std::optional<bool> desired,
     uint64_t generation,
+    BulkExpansionAxis axis,
     uint64_t bulkGeneration,
     bool subtree)
 {
@@ -410,9 +420,9 @@ void TableView::ApplyGroupExpansionByIdentity(
         return;
     }
 
-    // A bulk expand/collapse ran while this was queued. It is the later intent and clears per-group
-    // exceptions, so applying this now would resurrect one; drop it.
-    if (bulkGeneration != m_groupExpansionBulkGeneration)
+    // A bulk expand/collapse on this axis was requested after this one. It is the later intent and
+    // clears per-item exceptions, so applying this now would resurrect one; drop it.
+    if (bulkGeneration != BulkExpansionGeneration(axis))
     {
         return;
     }
@@ -428,9 +438,9 @@ void TableView::ApplyGroupExpansionByIdentity(
     {
         if (m_editState == EditState::Ending)
         {
-            QueueCoalescedEditReshape([this, identity, desired, generation, bulkGeneration, subtree]()
+            QueueCoalescedEditReshape([this, identity, desired, generation, axis, bulkGeneration, subtree]()
             {
-                ApplyGroupExpansionByIdentity(identity, desired, generation, bulkGeneration, subtree);
+                ApplyGroupExpansionByIdentity(identity, desired, generation, axis, bulkGeneration, subtree);
             });
         }
         return;
@@ -654,20 +664,31 @@ void TableView::SetBulkExpansion(bool expand, BulkExpansionAxis axis)
         return;
     }
 
+    // Stamped at the request, so a per-item request made after this one - even while this one is
+    // deferred behind an ending edit - is not mistaken for an older intent.
+    ++BulkExpansionGeneration(axis);
+
+    ApplyBulkExpansion(expand, axis);
+}
+
+void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
+{
+    if (!m_tableViewSourceRowMetadata)
+    {
+        return;
+    }
+
     if (!TryTerminateEditForControlInitiatedReshape())
     {
         if (m_editState == EditState::Ending)
         {
             QueueCoalescedEditReshape([this, expand, axis]()
             {
-                SetBulkExpansion(expand, axis);
+                ApplyBulkExpansion(expand, axis);
             });
         }
         return;
     }
-
-    // Invalidates in-flight per-group requests, which the bulk state also resets.
-    ++m_groupExpansionBulkGeneration;
 
     // Both axes: row expansion under groups also recycles focused header containers.
     auto const focusedGroupIdentity = CaptureFocusedContainerForRestore();

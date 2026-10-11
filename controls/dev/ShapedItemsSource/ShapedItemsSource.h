@@ -4,7 +4,6 @@
 #pragma once
 
 #include <memory>
-#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -383,15 +382,19 @@ private:
     std::unordered_map<uintptr_t, FlatItemPropertyChangedSubscription> m_flatItemPropertyChangedRevokers;
     bool m_flatItemPropertyChangedTrackingActive{ false };
     bool m_flatItemsMayChangeSortWithoutNotification{ false };
-    // Guards the fields below: PropertyChanged may be raised off the owning thread.
-    std::mutex m_sortDirtyLock;
     // First path segment of each active sort axis' SortMemberPath.
     std::unordered_set<winrt::hstring> m_sortKeyPropertyNames;
     // Some axis has no path (delegate key / comparer), so any property may affect the sort.
     bool m_anyPropertyMayAffectSort{ false };
+    // Owner thread only: off-thread PropertyChanged is marshalled before it reaches these.
     std::unordered_set<uintptr_t> m_sortDirtyRows;
     bool m_sortDirtyOverflow{ false };
     bool m_raiseReorderAfterIncrementalChange{ false };
+    // Bumped by every rebuild and every invalidation of the retained shaping state. The sorted
+    // incremental path plans indices, then calls into app code (sort keys, comparers, m_rows
+    // listeners) before splicing; a changed value means those indices describe a projection that
+    // no longer exists.
+    uint64_t m_projectionGeneration{ 0 };
     // Guards re-entrant Refresh (a source notification arriving while a rebuild's ReplaceAll is
     // already mutating the projection). Also held while a deferred hierarchy teardown publishes, so
     // requests from that publication's handlers are deferred the same way.

@@ -140,17 +140,65 @@ namespace
         return false;
     }
 
-    // Every key EnsureActiveThemeDictionary can select; used to recognise a Lookup hit that came
-    // from a theme dictionary chosen by the APP theme.
-    constexpr std::wstring_view s_allThemeDictionaryKeys[]{
-        L"Light"sv, L"Dark"sv, L"Default"sv,
-        L"HighContrast"sv, L"HighContrastBlack"sv, L"HighContrastWhite"sv, L"HighContrastCustom"sv };
+    // Every key EnsureActiveThemeDictionary can select.
+    constexpr std::wstring_view s_highContrastWhiteKey{ L"HighContrastWhite"sv };
+    constexpr std::wstring_view s_highContrastBlackKey{ L"HighContrastBlack"sv };
+    constexpr std::wstring_view s_highContrastCustomKey{ L"HighContrastCustom"sv };
+
+    // SystemThemingInterop::GetSystemHighContrastTheme: the variant comes from the system window
+    // colours (including Xbox's video-safe pair). Empty when High Contrast is off.
+    std::wstring_view SystemHighContrastVariantKey()
+    {
+        HIGHCONTRASTW highContrast{};
+        highContrast.cbSize = sizeof(highContrast);
+        if (!::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, 0) ||
+            !(highContrast.dwFlags & HCF_HIGHCONTRASTON))
+        {
+            return {};
+        }
+
+        const auto foreground = static_cast<unsigned int>(::GetSysColor(COLOR_WINDOWTEXT));
+        const auto background = static_cast<unsigned int>(::GetSysColor(COLOR_WINDOW));
+        if ((background == 0x00FFFFFF && foreground == 0x0) || (background == 0x00EBEBEB && foreground == 0x00101010))
+        {
+            return s_highContrastWhiteKey;
+        }
+        if ((background == 0x0 && foreground == 0x00FFFFFF) || (background == 0x00101010 && foreground == 0x00EBEBEB))
+        {
+            return s_highContrastBlackKey;
+        }
+        return s_highContrastCustomKey;
+    }
+
+    // EnsureActiveThemeDictionary's selection order: the HC variant (a subtree-requested Light/Dark
+    // maps to HighContrastWhite/Black, otherwise the system variant), then "HighContrast", then the
+    // base theme, then "Default".
+    std::vector<std::wstring_view> ThemeDictionaryKeys(
+        bool highContrast,
+        std::wstring_view highContrastVariant,
+        bool isLight)
+    {
+        std::vector<std::wstring_view> keys;
+        if (highContrast)
+        {
+            if (!highContrastVariant.empty())
+            {
+                keys.push_back(highContrastVariant);
+            }
+            keys.push_back(L"HighContrast"sv);
+        }
+        keys.push_back(isLight ? L"Light"sv : L"Dark"sv);
+        keys.push_back(L"Default"sv);
+        return keys;
+    }
 
     struct ElementResourceQuery
     {
         winrt::IInspectable boxedKey;
-        // Candidate theme-dictionary keys in selection order; the first one present wins.
+        // Candidate theme-dictionary keys for the ELEMENT's theme, in selection order.
         std::vector<std::wstring_view> themeKeys;
+        // The same for the APP-wide theme, which is what a code-issued Lookup selects with.
+        std::vector<std::wstring_view> appThemeKeys;
         // Global theme resources for this key, which Lookup appends to every dictionary's scope.
         // Resolved lazily through an empty dictionary, which has no scope of its own.
         winrt::IInspectable globalValue{ nullptr };
@@ -184,38 +232,55 @@ namespace
 
     // Lookup/HasKey are full-scope (own, merged, APP-theme dictionary, global), and enumerating a
     // dictionary forces CResourceDictionary::EnsureAll (realizes every deferred resource - the whole
-    // WinUI theme). So "own entry" is decided by elimination: the hit is own unless another scope
-    // returns the same resource.
+    // WinUI theme). So "own entry" is decided by comparing the hit with the one value that full-scope
+    // Lookup would have returned had there been no own entry: the nearest merged scope (last-to-first),
+    // then the app-theme dictionary, then global. Comparing with ONE candidate rather than any scope
+    // keeps an own entry that merely equals an unselected merged or theme value.
+    //
+    // Approximations, both deliberate:
+    // - A merged hit equal to global is skipped as the global fallback. GetKeyNoRefImpl actually lets
+    //   the last merged dictionary answer with global first, but Tabular keys are global (the dll's
+    //   theme resources), so mirroring that sends nearly every lookup down through the app's merged
+    //   dictionaries (XamlControlsResources included) - prohibitively expensive.
+    // - An own value-typed entry equal to the global default is indistinguishable from the fallback
+    //   (value types come back as fresh boxes) and is treated as not own; only an ancestor override of
+    //   the same key can then differ from what the framework returns.
     bool IsOwnEntry(winrt::ResourceDictionary const& dict, winrt::IInspectable const& found, ElementResourceQuery& query)
     {
-        if (IsSameResource(found, query.GlobalValue()))
-        {
-            return false;
-        }
+        // GetKeyNoRefImpl searches the LAST merged dictionary with global scope, so when the key
+        // exists globally that first search always answers and the loop stops; only a key with no
+        // global value reaches earlier merged dictionaries, and there a full-scope Lookup is exact.
+        winrt::IInspectable fallback{ nullptr };
+        auto const& global = query.GlobalValue();
         if (auto const merged = dict.MergedDictionaries())
         {
-            for (uint32_t i = merged.Size(); i-- > 0;)
+            for (uint32_t i = merged.Size(); i-- > 0 && !fallback;)
             {
-                if (IsSameResource(found, QuietLookup(merged.GetAt(i), query.boxedKey)))
+                // Every Lookup ends at global; only a hit that differs from it is the merged scope's.
+                auto value = QuietLookup(merged.GetAt(i), query.boxedKey);
+                if (value && !IsSameResource(value, global))
                 {
-                    return false;
+                    fallback = std::move(value);
                 }
             }
         }
-        if (auto const themeDicts = dict.ThemeDictionaries())
+        if (!fallback)
         {
-            for (auto const themeKey : s_allThemeDictionaryKeys)
+            if (auto const themed = SelectThemeDictionary(dict, query.appThemeKeys))
             {
-                if (auto const themed = QuietLookup(themeDicts, winrt::box_value(winrt::hstring{ themeKey })).try_as<winrt::ResourceDictionary>())
+                auto value = QuietLookup(themed, query.boxedKey);
+                if (value && !IsSameResource(value, global))
                 {
-                    if (IsSameResource(found, QuietLookup(themed, query.boxedKey)))
-                    {
-                        return false;
-                    }
+                    fallback = std::move(value);
                 }
             }
         }
-        return true;
+        if (!fallback)
+        {
+            fallback = query.GlobalValue();
+        }
+
+        return !IsSameResource(found, fallback);
     }
 
     // Framework (GetKeyNoRefImpl) order: own entries, MergedDictionaries last-to-first, then the
@@ -255,21 +320,40 @@ namespace
     }
 
     // Resolves a key the way {ThemeResource} would from `start`: ancestors nearest first, then
-    // Application.Resources, then global theme resources. Theme keys are tried as
-    // EnsureActiveThemeDictionary does: "HighContrast" (under HC), "Light"/"Dark", then "Default".
+    // Application.Resources, then global theme resources, with theme dictionaries selected as
+    // EnsureActiveThemeDictionary does (see ThemeDictionaryKeys).
     winrt::IInspectable LookupElementResource(winrt::FrameworkElement const& start, std::wstring_view key, bool highContrast = false)
     {
         ElementResourceQuery query;
         query.boxedKey = winrt::box_value(winrt::hstring{ key });
+
+        const auto systemHighContrastVariant = SystemHighContrastVariantKey();
+
         // Theme-scoped resources must resolve against the element's ActualTheme.
         // High Contrast is orthogonal to ActualTheme; callers pass cached HC state for hot-path brush lookups.
         const auto theme = start ? start.ActualTheme() : winrt::ElementTheme::Default;
+        std::wstring_view elementHighContrastVariant = systemHighContrastVariant;
         if (highContrast)
         {
-            query.themeKeys.push_back(L"HighContrast"sv);
+            // A subtree that requested a theme selects the matching HC variant, not the system's.
+            for (auto requester = start; requester; requester = requester.Parent().try_as<winrt::FrameworkElement>())
+            {
+                if (requester.RequestedTheme() != winrt::ElementTheme::Default)
+                {
+                    elementHighContrastVariant = theme == winrt::ElementTheme::Light ? s_highContrastWhiteKey : s_highContrastBlackKey;
+                    break;
+                }
+            }
         }
-        query.themeKeys.push_back(theme == winrt::ElementTheme::Light ? L"Light"sv : L"Dark"sv);
-        query.themeKeys.push_back(L"Default"sv);
+        query.themeKeys = ThemeDictionaryKeys(highContrast, elementHighContrastVariant, theme == winrt::ElementTheme::Light);
+
+        // What a code-issued Lookup selects: no subtree theme, so the app-wide base and system HC.
+        auto appIsLight = theme == winrt::ElementTheme::Light;
+        if (auto const app = winrt::Application::Current())
+        {
+            appIsLight = app.RequestedTheme() == winrt::ApplicationTheme::Light;
+        }
+        query.appThemeKeys = ThemeDictionaryKeys(!systemHighContrastVariant.empty(), systemHighContrastVariant, appIsLight);
 
         winrt::FrameworkElement walker = start;
         while (walker)
@@ -528,6 +612,20 @@ TableView::TableView()
             }
         });
     AddHandler(winrt::UIElement::PreviewKeyDownEvent(), winrt::box_value(m_previewKeyDownHandler), false /* handledEventsToo */);
+
+    // handledEventsToo: rows and headers mark their presses handled, and a press anywhere in the
+    // table is the user taking focus over from a pending re-shape restore.
+    AddHandler(
+        winrt::UIElement::PointerPressedEvent(),
+        winrt::box_value(winrt::PointerEventHandler(
+            [weakThis](winrt::IInspectable const&, winrt::PointerRoutedEventArgs const&)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->CancelReshapeFocusRestoreForUserInput();
+                }
+            })),
+        true /* handledEventsToo */);
 
     // Headers need no direction stamp (see RebuildHeaders); the rebuild keeps them in step with the body.
     RegisterPropertyChangedCallback(

@@ -446,6 +446,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Framework order is own entry, then MergedDictionaries last-to-first. An own entry that is the
+        // same object as an EARLIER (non-winning) merged entry must still be own; deciding own-ness by
+        // "matches any merged entry" would skip it and return the winning merged entry instead.
+        [TestMethod]
+        public void VerifyOwnEntryBeatsMergedEntryEvenWhenAnotherMergedEntryMatches()
+        {
+            var ownColor = Color.FromArgb(0xFF, 0x11, 0xAA, 0x55);
+            var winningMergedColor = Color.FromArgb(0xFF, 0xAA, 0x33, 0x11);
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+
+                var ownBrush = new SolidColorBrush(ownColor);
+                tableView = CreateThemingTable();
+                var host = new Grid();
+                host.Resources = new ResourceDictionary { ["TabularSurfaceGridLineBrush"] = ownBrush };
+                host.Resources.MergedDictionaries.Add(new ResourceDictionary { ["TabularSurfaceGridLineBrush"] = ownBrush });
+                host.Resources.MergedDictionaries.Add(new ResourceDictionary { ["TabularSurfaceGridLineBrush"] = new SolidColorBrush(winningMergedColor) });
+                host.Children.Add(tableView);
+
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var actual = RequireCellSeparatorColor(tableView, "with an own entry shared by a non-winning merged dictionary");
+                Verify.AreEqual(ownColor, actual,
+                    "An own ResourceDictionary entry must win over MergedDictionaries, even when an earlier merged dictionary holds the same object.");
+            });
+        }
+
         // Under Dark the framework picks ThemeDictionaries["Dark"] ahead of ["Default"], per element.
         // The differing "Default" entry stops a lookup that only probes "Default" from passing.
         [TestMethod]

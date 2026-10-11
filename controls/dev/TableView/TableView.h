@@ -813,20 +813,6 @@ private:
     // brand-new source.
     uint64_t m_rowMetadataGeneration{ 0 };
 
-    // Bumped by every bulk expand/collapse so a queued per-group request that predates it is
-    // dropped instead of re-creating the exception the bulk set just erased.
-    uint64_t m_groupExpansionBulkGeneration{ 0 };
-
-    void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired, bool subtree = false);
-    void QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, bool subtree = false);
-    void ApplyGroupExpansionByIdentity(
-        winrt::hstring const& identity,
-        std::optional<bool> desired,
-        uint64_t generation,
-        uint64_t bulkGeneration,
-        bool subtree = false);
-    void RaiseGroupStructureChanged();
-
     // Which axis a bulk command drives; both share the coalescing/focus/restamp machinery.
     enum class BulkExpansionAxis
     {
@@ -834,7 +820,33 @@ private:
         Rows,
     };
 
+    // Bumped when a bulk expand/collapse is REQUESTED (not when a deferred one replays), per axis,
+    // so a queued per-item request that predates the bulk is dropped instead of re-creating the
+    // exception the bulk set erases, while one made after it - or on the other axis - survives.
+    uint64_t m_groupBulkExpansionGeneration{ 0 };
+    uint64_t m_rowBulkExpansionGeneration{ 0 };
+    uint64_t& BulkExpansionGeneration(BulkExpansionAxis axis)
+    {
+        return axis == BulkExpansionAxis::Rows ? m_rowBulkExpansionGeneration : m_groupBulkExpansionGeneration;
+    }
+
+    void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired, bool subtree = false);
+    void QueueGroupExpansionByIdentity(
+        winrt::hstring const& identity,
+        std::optional<bool> desired,
+        BulkExpansionAxis axis,
+        bool subtree = false);
+    void ApplyGroupExpansionByIdentity(
+        winrt::hstring const& identity,
+        std::optional<bool> desired,
+        uint64_t generation,
+        BulkExpansionAxis axis,
+        uint64_t bulkGeneration,
+        bool subtree = false);
+    void RaiseGroupStructureChanged();
+
     void SetBulkExpansion(bool expand, BulkExpansionAxis axis);
+    void ApplyBulkExpansion(bool expand, BulkExpansionAxis axis);
 
     void ForEachRealizedGroupHeader(std::function<void(winrt::TableViewGroupHeader const&, int32_t)> const& fn);
 
@@ -990,6 +1002,7 @@ private:
     void ArmReshapeFocusAttempt();
     void OnReshapeFocusAttempt();
     void CancelReshapeFocusRestore();
+    void CancelReshapeFocusRestoreForUserInput();
     bool TryLandReshapeFocus();
     bool IsBodyFocusAtRow(int32_t rowIndex) const;
     void QueueReshapeFocusCaptureDisarm();
@@ -1009,6 +1022,8 @@ private:
     bool m_pendingReshapeFocusCellLevel{ false };
     winrt::FocusState m_pendingReshapeFocusState{ winrt::FocusState::Keyboard };
     int32_t m_reshapeFocusAttemptsLeft{ 0 };
+    // Set for the turn a restore is armed in; that turn's input triggered the re-shape.
+    bool m_reshapeFocusArmedThisTurn{ false };
     // So each target is scrolled into view only once.
     int32_t m_reshapeFocusBroughtIntoViewRow{ -1 };
     bool m_reshapeFocusTurnQueued{ false };

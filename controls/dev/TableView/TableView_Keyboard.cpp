@@ -709,6 +709,19 @@ void TableView::OnPreviewKeyDownForNavigation(
     const winrt::IInspectable& /*sender*/,
     const winrt::KeyRoutedEventArgs& args)
 {
+    switch (args.Key())
+    {
+    case winrt::Windows::System::VirtualKey::Shift:
+    case winrt::Windows::System::VirtualKey::Control:
+    case winrt::Windows::System::VirtualKey::Menu:
+    case winrt::Windows::System::VirtualKey::LeftWindows:
+    case winrt::Windows::System::VirtualKey::RightWindows:
+        break;
+    default:
+        CancelReshapeFocusRestoreForUserInput();
+        break;
+    }
+
     // Snapshot before XAML focus navigation; Left/Right only need the cell anchor.
     switch (args.Key())
     {
@@ -1365,6 +1378,26 @@ void TableView::RestoreBodyFocusAfterReshape()
 
     m_pendingReshapeFocusRow = row;
     m_reshapeFocusBroughtIntoViewRow = -1;
+
+    m_reshapeFocusArmedThisTurn = true;
+    if (auto const queue = DispatcherQueue())
+    {
+        auto weakThis = get_weak();
+        if (!queue.TryEnqueue([weakThis]()
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->m_reshapeFocusArmedThisTurn = false;
+                }
+            }))
+        {
+            m_reshapeFocusArmedThisTurn = false;
+        }
+    }
+    else
+    {
+        m_reshapeFocusArmedThisTurn = false;
+    }
     if (m_pendingReshapeFocusCellLevel)
     {
         SetColumnCursorInternal(m_pendingReshapeFocusColumn);
@@ -1440,6 +1473,19 @@ void TableView::CancelReshapeFocusRestore()
     {
         LayoutUpdated(m_reshapeFocusLayoutToken);
         m_reshapeFocusLayoutToken = {};
+    }
+}
+
+// A restore re-aims at its row until it confirms, which is right against the repeater's own focus
+// rescue but wrong against the user: a key or pointer press during that window is a newer intent,
+// even when it lands on another body row (which the non-body check in OnReshapeFocusAttempt misses).
+// Input in the turn that armed the restore is exempt: that input is what triggered the re-shape
+// (a page PreviewKeyDown tunnels ahead of ours; a press-mode control inside the table bubbles first).
+void TableView::CancelReshapeFocusRestoreForUserInput()
+{
+    if (m_pendingReshapeFocusRow >= 0 && !m_reshapeFocusArmedThisTurn)
+    {
+        CancelReshapeFocusRestore();
     }
 }
 

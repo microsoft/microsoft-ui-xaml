@@ -1634,6 +1634,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a shaping verb issued re-entrantly from a sort key during a sorted Replace rebuilds instead of splicing stale indices.")]
+        public void VerifyReentrantShapingDuringSortedReplaceRebuilds()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var reenter = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                source = TableViewSource.From(items).Sort(
+                    o =>
+                    {
+                        var name = Person(o).Name;
+                        // The incremental path plans the Replace by calling this key; filtering here
+                        // rebuilds and shrinks the projection under the indices it is planning.
+                        if (reenter && name == "Zed")
+                        {
+                            reenter = false;
+                            source.Filter(p => Person(p).Role == "Engineer");
+                        }
+                        return name;
+                    },
+                    SortDirection.Ascending);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "baseline");
+
+                reenter = true;
+                items[0] = new ShapedPerson("Zed", "Engineer", "Platform");
+                Verify.IsFalse(reenter, "Precondition: the sort key must have been asked about the replacement row.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Diego", "Owen", "Rafa", "Zed" },
+                    "the re-entrant filter and the replace must both be reflected exactly once");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a sorted Add of rows that implement no change notification is inserted in place, without a Reset.")]
         public void VerifySortedAddOfPlainItemsInsertsInPlaceWithoutReset()
         {
