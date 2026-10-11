@@ -132,7 +132,7 @@
                               <wucSpriteVisual SizeX="266" SizeY="84" BorderMode="Soft">
                                 <MaskBrush>
                                   <Source>
-                                    <ColorBrush Color="rgb {0.9765, 0.9765, 0.9765}" />
+                                    <EffectBrush />
                                   </Source>
                                   <Mask>
                                     <NineGridBrush LeftInset="9" TopInset="9" RightInset="9" BottomInset="9" isCenterHollow="False">
