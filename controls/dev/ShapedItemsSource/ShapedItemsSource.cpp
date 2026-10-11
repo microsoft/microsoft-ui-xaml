@@ -124,6 +124,10 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
 
     if (enabled)
     {
+        // Live shaping takes over staleness detection; anything the sort-key subscriptions had
+        // pending is covered by the restore posted below.
+        ClearFlatItemPropertyChangedTracking();
+
         // Untracked in-place edits are invisible to the fresh snapshots, so drop the retained
         // structure and post one restore to catch up.
         InvalidateRetainedHierarchyStructure();
@@ -138,6 +142,13 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
     else
     {
         ClearLiveShapingSubscriptions();
+
+        // Sort-key tracking owns staleness again. The projection is current (live shaping kept it
+        // so), hence tracking restarts with nothing dirty.
+        if (m_kind == ProjectionKind::Flat && m_shapingState.HasProjection)
+        {
+            RebuildFlatItemPropertyChangedTracking(m_shapingState.Items);
+        }
     }
 }
 
@@ -384,7 +395,7 @@ bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta
 
     // Membership is unchanged and subscriptions are keyed by object, so only start/stop observing
     // when a sort appears or disappears. Every row was just re-sorted, so nothing is dirty.
-    if (!HasActiveSort())
+    if (!ShouldTrackSortKeyChanges())
     {
         ClearFlatItemPropertyChangedTracking();
     }
@@ -914,6 +925,14 @@ bool ShapedItemsSource::TryReshapeStaleSortedFlatProjection()
         return true;
     }
 
+    // Live shaping owns staleness here, but its repair is posted, so a change arriving before that
+    // turn can see an order its own edit already invalidated. Refuse the in-place splice while a
+    // restore is pending and let the caller rebuild instead of binary-searching an unsorted list.
+    if (IsLiveShapingEnabled())
+    {
+        return !m_liveShapingDirty;
+    }
+
     std::unordered_set<uintptr_t> dirtyRows;
     bool overflow = false;
     {
@@ -1123,7 +1142,7 @@ void ShapedItemsSource::RebuildFlatItemPropertyChangedTracking(std::vector<winrt
     auto previous = std::move(m_flatItemPropertyChangedRevokers);
     ClearFlatItemPropertyChangedTracking();
 
-    if (!HasActiveSort())
+    if (!ShouldTrackSortKeyChanges())
     {
         return;
     }

@@ -194,6 +194,10 @@ private:
     void UntrackFlatItemPropertyChanged(winrt::IInspectable const& item);
     void ClearFlatItemPropertyChangedTracking();
     void RebuildFlatItemPropertyChangedTracking(std::vector<winrt::IInspectable> const& rows);
+    // Single owner for sort-key staleness: live shaping already subscribes to every item and
+    // re-shapes on any shaping-relevant edit, so the sort-key subscriptions would be a second
+    // handler per row observing the same change.
+    bool ShouldTrackSortKeyChanges() const { return HasActiveSort() && !IsLiveShapingEnabled(); }
     void ClearSortDirtyRows();
     void OnFlatItemPropertyChanged(uintptr_t itemAddress, winrt::hstring const& propertyName);
     void UpdateSortKeyPropertyFilter();

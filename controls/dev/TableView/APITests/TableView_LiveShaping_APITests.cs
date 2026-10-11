@@ -171,6 +171,44 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a sort key edit followed by an Add in the same turn settles into one correct order.")]
+        public void VerifySortKeyEditThenAddInOneTurnKeepsOrder()
+        {
+            var list = MakeLiveFlat();
+            var tableView = Place(MakeSource(list, s => s.Sort(LiveByScore, SortDirection.Ascending), live: true));
+            Verify.AreEqual("A B C D", Labels(tableView), "Precondition: sorted by Score ascending.");
+
+            // The live reshape is posted, so the Add arrives while the projection still reflects A's
+            // old Score. The incremental sorted insert must not binary-search that stale order.
+            var actual = After(tableView, () =>
+            {
+                Named(list, "A").Score = 50;
+                list.Add(new LiveRow { Id = 5, Name = "E", Score = 25, Team = "X" });
+            });
+
+            Verify.AreEqual("B E C D A", actual,
+                "An edit and an Add in one turn must settle into the fully sorted order.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies turning IsLiveShaping off hands sort key staleness back to the next-collection-change repair.")]
+        public void VerifyDisableHandsStalenessBackToTheCollectionChangeRepair()
+        {
+            var list = MakeLiveFlat();
+            var source = MakeSource(list, s => s.Sort(LiveByScore, SortDirection.Ascending), live: true);
+            var tableView = Place(source);
+
+            RunOnUIThread.Execute(() => source.IsLiveShaping = false);
+
+            Verify.AreEqual("A B C D", After(tableView, () => Named(list, "A").Score = 50),
+                "With live shaping off, the edit must stay stale until a collection change.");
+
+            Verify.AreEqual("B C D A E",
+                After(tableView, () => list.Add(new LiveRow { Id = 5, Name = "E", Score = 60, Team = "X" })),
+                "The next collection change must repair the stale row before applying the add.");
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a live reshape waits for an open cell edit and runs once the edit closes.")]
         public void VerifyHeldWhileEditing()
         {
