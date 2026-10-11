@@ -492,8 +492,15 @@ void TableView::ApplyGroupExpansionByIdentity(
     try
     {
         // Local strong ref: a handler may re-declare the shape and replace the provider mid-call.
+        // Edit-ending handlers ran app code above, so re-check the source before mutating; a stale
+        // request still falls through to drain queued edit reshapes.
         auto const provider = m_tableViewSourceRowMetadata;
-        if (subtree)
+        const bool sourceStillCurrent = provider && generation == m_rowMetadataGeneration;
+        if (!sourceStillCurrent)
+        {
+            changed = false;
+        }
+        else if (subtree)
         {
             provider->ExpandSubtree(identity);
             changed = true;
@@ -730,6 +737,7 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
         return;
     }
 
+    const uint64_t generation = m_rowMetadataGeneration;
     if (!TryTerminateEditForControlInitiatedReshape())
     {
         if (m_editState == EditState::Ending)
@@ -748,24 +756,28 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     bool changed = false;
     try
     {
-        // Local strong ref, as in ApplyGroupExpansionByIdentity.
+        // Local strong ref, as in ApplyGroupExpansionByIdentity; edit-ending handlers may have
+        // replaced or cleared the source.
         auto const provider = m_tableViewSourceRowMetadata;
-        switch (axis)
+        if (provider && generation == m_rowMetadataGeneration)
         {
-        case BulkExpansionAxis::Groups:
-            expand
-                ? provider->ExpandAllGroups()
-                : provider->CollapseAllGroups();
-            break;
+            switch (axis)
+            {
+            case BulkExpansionAxis::Groups:
+                expand
+                    ? provider->ExpandAllGroups()
+                    : provider->CollapseAllGroups();
+                break;
 
-        case BulkExpansionAxis::Rows:
-            expand
-                ? provider->ExpandAllRows()
-                : provider->CollapseAllRows();
-            break;
+            case BulkExpansionAxis::Rows:
+                expand
+                    ? provider->ExpandAllRows()
+                    : provider->CollapseAllRows();
+                break;
+            }
+
+            changed = true;
         }
-
-        changed = true;
     }
     catch (...)
     {

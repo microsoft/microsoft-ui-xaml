@@ -787,10 +787,15 @@ void TableViewRowAutomationPeer::RaiseExpandCollapseAutomationEvent(
 
 int32_t TableViewRowAutomationPeer::GetLevelCore()
 {
-    // Level is already 1-based. Non-tree rows defer to base (honours AutomationProperties.Level).
+    // An app-set AutomationProperties.Level wins, as in GetPositionInSetCore/GetSizeOfSetCore.
+    if (const auto provided = __super::GetLevelCore(); provided > 0)
+    {
+        return provided;
+    }
+
+    // Level is already 1-based; 0 (not a tree row) is UIA's "not specified".
     auto const row = GetRow();
-    const int32_t level = row ? row.Level() : 0;
-    return level > 0 ? level : __super::GetLevelCore();
+    return row ? row.Level() : 0;
 }
 
 // Position within the sibling set (not the flat axis), O(1) from the hierarchy descriptor.

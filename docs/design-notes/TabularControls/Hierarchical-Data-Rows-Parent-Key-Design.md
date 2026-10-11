@@ -117,7 +117,9 @@ rebuild (`MakeNodeKey`, built on `ShapingHelpers::ValueKey::ToObjectLookupKey`):
 
 The value form keeps a type tag, so mixed types do not match: an `Int32` key never matches an
 `Int64` parent key, and an enum never matches an enum of another type or a plain integer. This is
-documented, not coerced.
+documented, not coerced. Floating-point keys (`Single`, `Double`, and the components of `Point`,
+`Size` and `Rect`) compare as numbers: `-0` equals `+0`, and every NaN equals every other NaN of the
+same type.
 
 An enum declared in app code that is not a WinRT type (a plain C# `enum`) is not boxed as an
 `IPropertyValue`; it reaches the control as an opaque object and is therefore compared by reference
@@ -125,6 +127,8 @@ identity, which a fresh box never satisfies. Apps convert such keys to their int
 
 Every key object is held for the whole index build. An object key's lookup form is its address, and
 a released temporary's address could otherwise be reused by the next selector result and alias it.
+Object keys are also held for as long as the built structure is current, because the node key
+outlives the build as expansion intent and selection identity (§5).
 
 ### 3.2 Roots, orphans, and invalid data
 
@@ -238,6 +242,8 @@ Every item has exactly one parent, and the app supplies the key, so no path key 
 - It survives **reparenting**. A node the user expanded stays expanded when it moves.
 - It is also the row identity for the metadata provider (`GetIdentity`), so selection re-anchors on
   it too.
+- Selection follows the presented row. When a collapse hides the selected row, the selection is
+  cleared rather than held for the hidden row, and expanding again does not restore it.
 
 ### 5.2 Baseline, bulk verbs, and redeclaration
 
@@ -590,6 +596,16 @@ department, and expand or collapse all. The **100k perf** button times the 100k-
 - **Load on demand** (Kendo/DevExtreme remote "has children"): needs a way to show a chevron with no
   children present yet; depends on the child-provider seam above.
 - **Filter modes** other than with-ancestors.
+- **Per-row programmatic expansion.** v1 has no app-callable expand or collapse for a single row;
+  `TableViewRow.IsExpanded` is read-only and the only app verbs are `ExpandAllRows` /
+  `CollapseAllRows`. Users toggle individual rows by chevron, keyboard and UI Automation. Restoring
+  saved expansion, expanding to a search hit, or expanding to the selection needs a keyed verb on
+  `TableView` (for example `ExpandRow(item)` / `CollapseRow(item)`), which the adapter already
+  supports internally (`SetNodeExpanded`, `ExpandSubtree`). Out of scope for v1, additive post-v1.
+- **Matching ancestors under a filter.** Auto-expand (§4.2) applies to context rows only. A row that
+  matches keeps its own expansion state, so a match below a collapsed matching ancestor is reached
+  by expanding that ancestor. Expanding every ancestor of a match would also expand the whole tree
+  under a broad filter; a filter mode (above) is the place to offer that.
 - **Observing key property changes without live shaping** (without `IsLiveShaping`, an in-place
   reparent waits for the next reshape or collection change; §6).
 - Also not covered: declarative aggregation, nested grouping, cascading selection, drag-reparent,

@@ -222,14 +222,28 @@ void TableViewRow::OnApplyTemplate()
 
     // Revoke unconditionally so a re-template that drops the gutter leaves no stale subscription.
     m_gutterPointerPressedRevoker.revoke();
+    m_gutterPointerReleasedRevoker.revoke();
+    m_gutterPointerExitedRevoker.revoke();
+    m_gutterPointerCaptureLostRevoker.revoke();
+    m_isGutterPressed = false;
 
     // Subscribe per template apply, not per prepare (pooled container would fan one tap into N
-    // toggles). Handled on PRESSED so the row's release-time selection latch never sees it.
+    // toggles). The press is handled so the row's release-time selection latch never arms; the
+    // toggle itself fires on release-inside, matching TableViewGroupHeader.
     if (auto const gutter = m_rowExpanderGutter.get())
     {
         m_gutterPointerPressedRevoker = gutter.PointerPressed(
             winrt::auto_revoke,
             { this, &TableViewRow::OnExpanderGutterPointerPressed });
+        m_gutterPointerReleasedRevoker = gutter.PointerReleased(
+            winrt::auto_revoke,
+            { this, &TableViewRow::OnExpanderGutterPointerReleased });
+        m_gutterPointerExitedRevoker = gutter.PointerExited(
+            winrt::auto_revoke,
+            { this, &TableViewRow::OnExpanderGutterPointerCanceled });
+        m_gutterPointerCaptureLostRevoker = gutter.PointerCaptureLost(
+            winrt::auto_revoke,
+            { this, &TableViewRow::OnExpanderGutterPointerCanceled });
     }
 
     if (host)
@@ -1501,12 +1515,34 @@ void TableViewRow::OnExpanderGutterPointerPressed(
 
     // Keep the press from arming the row's release-time selection latch.
     args.Handled(true);
+    m_isGutterPressed = true;
+}
+
+void TableViewRow::OnExpanderGutterPointerReleased(
+    winrt::IInspectable const& /*sender*/,
+    winrt::PointerRoutedEventArgs const& args)
+{
+    // Released over the gutter (no capture is taken), so a press that drags off never toggles.
+    const bool wasPressed = std::exchange(m_isGutterPressed, false);
+    if (!wasPressed || !IsExpandable())
+    {
+        return;
+    }
+
+    args.Handled(true);
 
     if (auto const owner = GetOwningTableView())
     {
         // Shared with group headers: resolves identity now, defers the reshape.
         winrt::get_self<TableView>(owner)->ToggleGroupExpansion(*this);
     }
+}
+
+void TableViewRow::OnExpanderGutterPointerCanceled(
+    winrt::IInspectable const& /*sender*/,
+    winrt::PointerRoutedEventArgs const& /*args*/)
+{
+    m_isGutterPressed = false;
 }
 
 bool TableViewRow::IsWithinExpanderGutter(const winrt::IInspectable& source) const
@@ -2158,7 +2194,14 @@ void TableViewRow::RefreshFrozenColumnLayout(double horizontalOffset, double lea
     if (auto host = m_cellsHost.get())
     {
         TableViewCellsPanel::ApplyFrozenColumnLayout(host, horizontalOffset, leadingFrozenWidth);
-        SyncExpanderGutterWithLeadCell(host);
+
+        // Same gate as ApplyHierarchyAffordance: flat rows skip this on every scroll pass, but a
+        // row leaving a tree still resets its gutter Translation.
+        auto const gutter = m_rowExpanderGutter.get();
+        if (gutter && (Level() > 0 || gutter.Translation().x != 0.0f))
+        {
+            SyncExpanderGutterWithLeadCell(host);
+        }
     }
 }
 

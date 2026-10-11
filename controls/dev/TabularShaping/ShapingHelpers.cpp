@@ -17,6 +17,26 @@ namespace ShapingHelpers
 {
     namespace
     {
+        // Value keys compare numerically equal floats as equal: -0 folds into +0 and every NaN
+        // into one canonical NaN, so the key is not the raw bit pattern.
+        uint32_t CanonicalFloatBits(float value) noexcept
+        {
+            if (std::isnan(value)) return 0x7FC00000u;
+            if (value == 0.0f) return 0u;
+            uint32_t bits = 0;
+            std::memcpy(&bits, &value, sizeof(bits));
+            return bits;
+        }
+
+        uint64_t CanonicalDoubleBits(double value) noexcept
+        {
+            if (std::isnan(value)) return 0x7FF8000000000000ull;
+            if (value == 0.0) return 0ull;
+            uint64_t bits = 0;
+            std::memcpy(&bits, &value, sizeof(bits));
+            return bits;
+        }
+
         enum class NumericKind { None, Signed, Unsigned, Floating };
 
         enum class ValueClassRank
@@ -471,23 +491,15 @@ namespace ShapingHelpers
             return true;
         case winrt::Windows::Foundation::PropertyType::Single:
         {
-            const auto value = propertyValue.GetSingle();
-            uint32_t bits = 0;
-            static_assert(sizeof(bits) == sizeof(value));
-            std::memcpy(&bits, &value, sizeof(bits));
             wchar_t buffer[16];
-            swprintf_s(buffer, L"f32:%08X", bits);
+            swprintf_s(buffer, L"f32:%08X", CanonicalFloatBits(propertyValue.GetSingle()));
             key = winrt::hstring{ buffer };
             return true;
         }
         case winrt::Windows::Foundation::PropertyType::Double:
         {
-            const auto value = propertyValue.GetDouble();
-            uint64_t bits = 0;
-            static_assert(sizeof(bits) == sizeof(value));
-            std::memcpy(&bits, &value, sizeof(bits));
             wchar_t buffer[24];
-            swprintf_s(buffer, L"f64:%016llX", static_cast<unsigned long long>(bits));
+            swprintf_s(buffer, L"f64:%016llX", static_cast<unsigned long long>(CanonicalDoubleBits(propertyValue.GetDouble())));
             key = winrt::hstring{ buffer };
             return true;
         }
@@ -1120,8 +1132,13 @@ namespace ShapingHelpers
 
     void CustomSortRankAdapter::AddRanked(winrt::IInspectable const& item, int32_t rank)
     {
+        InsertRanked(m_ranks.size(), item, rank);
+    }
+
+    void CustomSortRankAdapter::InsertRanked(size_t position, winrt::IInspectable const& item, int32_t rank)
+    {
         void* const identity = IdentityOf(item);
-        m_ranks.push_back({ item, rank, identity });
+        m_ranks.insert(m_ranks.begin() + position, RankEntry{ item, rank, identity });
         if (identity)
         {
             m_rankByIdentity[identity] = rank;
@@ -1250,45 +1267,54 @@ namespace ShapingHelpers
         int32_t& rank,
         bool& tied)
     {
-        // Find where the item belongs among the existing ranks and insert it there, shifting the
-        // ranks above it.
+        // m_ranks is ordered by rank, so a binary search finds the slot in O(log n) comparer calls;
+        // this can run inside the app's PropertyChanged setter. Find the first entry not below item.
         rank = 0;
         tied = false;
-        for (size_t i = 0; i < m_ranks.size(); ++i)
+        size_t low = 0;
+        size_t high = m_ranks.size();
+        bool highIsEqual = false;
+        while (low < high)
         {
-            auto const entryItem = m_ranks[i].Item;
-            auto const entryRank = m_ranks[i].Rank;
+            const size_t mid = low + (high - low) / 2;
+            // Copied: the comparer is app code and must not see a reference into m_ranks.
+            auto const entryItem = m_ranks[mid].Item;
             const int32_t comparison = SafeCompare(entryItem, item);
             if (m_generation != generation)
             {
                 return false;
             }
-            if (comparison == 0)
-            {
-                rank = entryRank;
-                tied = true;
-                AddRanked(item, rank);
-                return true;
-            }
             if (comparison < 0)
             {
-                rank = std::max(rank, entryRank + 1);
+                low = mid + 1;
             }
-        }
-
-        for (auto& entry : m_ranks)
-        {
-            if (entry.Rank >= rank)
+            else
             {
-                ++entry.Rank;
-                if (entry.Identity)
-                {
-                    m_rankByIdentity[entry.Identity] = entry.Rank;
-                }
+                high = mid;
+                highIsEqual = comparison == 0;
             }
         }
 
-        AddRanked(item, rank);
+        if (low < m_ranks.size() && highIsEqual)
+        {
+            rank = m_ranks[low].Rank;
+            tied = true;
+            InsertRanked(low, item, rank);
+            return true;
+        }
+
+        rank = low > 0 ? m_ranks[low - 1].Rank + 1 : 0;
+        for (size_t i = low; i < m_ranks.size(); ++i)
+        {
+            auto& entry = m_ranks[i];
+            ++entry.Rank;
+            if (entry.Identity)
+            {
+                m_rankByIdentity[entry.Identity] = entry.Rank;
+            }
+        }
+
+        InsertRanked(low, item, rank);
         return true;
     }
 
@@ -1404,7 +1430,8 @@ namespace ShapingHelpers
 
     bool CustomSortRankAdapter::ShouldRerankAll() const noexcept
     {
-        // Re-placing costs about n comparer calls per item, a full re-rank about n log n.
+        // Re-placing costs about log n comparer calls plus an O(n) rank shift per item; a full
+        // re-rank about n log n.
         size_t log2Count = 0;
         for (size_t remaining = m_ranks.size(); remaining > 0; remaining >>= 1)
         {

@@ -7,6 +7,7 @@
 #include "ShapingHelpers.h"
 
 #include <bit>
+#include <cmath>
 #include <string>
 
 namespace ShapingHelpers
@@ -17,6 +18,14 @@ namespace
     constexpr size_t c_nodePrefixLength = std::size(c_nodePrefix) - 1;
     constexpr std::wstring_view c_valueKeyPrefix{ L"value:" };
     constexpr std::wstring_view c_objectKeyPrefix{ L"object:" };
+
+    // -0 folds into +0 and every NaN into one, matching the shared Single/Double formatter.
+    uint32_t CanonicalFloatBits(float value) noexcept
+    {
+        if (std::isnan(value)) return 0x7FC00000u;
+        if (value == 0.0f) return 0u;
+        return std::bit_cast<uint32_t>(value);
+    }
 
     bool IsNoKey(winrt::IInspectable const& key)
     {
@@ -73,21 +82,21 @@ namespace
         case winrt::Windows::Foundation::PropertyType::Point:
         {
             const auto p = pv.GetPoint();
-            swprintf_s(buffer, L"pt:%08X,%08X", std::bit_cast<uint32_t>(p.X), std::bit_cast<uint32_t>(p.Y));
+            swprintf_s(buffer, L"pt:%08X,%08X", CanonicalFloatBits(p.X), CanonicalFloatBits(p.Y));
             return std::wstring{ c_valueKeyPrefix } + buffer;
         }
         case winrt::Windows::Foundation::PropertyType::Size:
         {
             const auto s = pv.GetSize();
-            swprintf_s(buffer, L"sz:%08X,%08X", std::bit_cast<uint32_t>(s.Width), std::bit_cast<uint32_t>(s.Height));
+            swprintf_s(buffer, L"sz:%08X,%08X", CanonicalFloatBits(s.Width), CanonicalFloatBits(s.Height));
             return std::wstring{ c_valueKeyPrefix } + buffer;
         }
         case winrt::Windows::Foundation::PropertyType::Rect:
         {
             const auto r = pv.GetRect();
             swprintf_s(buffer, L"rc:%08X,%08X,%08X,%08X",
-                std::bit_cast<uint32_t>(r.X), std::bit_cast<uint32_t>(r.Y),
-                std::bit_cast<uint32_t>(r.Width), std::bit_cast<uint32_t>(r.Height));
+                CanonicalFloatBits(r.X), CanonicalFloatBits(r.Y),
+                CanonicalFloatBits(r.Width), CanonicalFloatBits(r.Height));
             return std::wstring{ c_valueKeyPrefix } + buffer;
         }
         default:
@@ -199,6 +208,11 @@ bool BuildParentStructure(
     {
         auto key = SafeSelect(keySelector, rows[i]);
         auto nodeKey = MakeNodeKey(key);
+        if (IsObjectNodeKey(nodeKey))
+        {
+            // Outlives the build: the address is also expansion intent and selection identity.
+            result.KeyObjects.push_back(key);
+        }
         keepAlive.push_back(std::move(key));
         if (nodeKey.empty())
         {

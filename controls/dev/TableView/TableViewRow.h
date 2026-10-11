@@ -198,6 +198,12 @@ private:
     void OnExpanderGutterPointerPressed(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
+    void OnExpanderGutterPointerReleased(
+        const winrt::IInspectable& sender,
+        const winrt::PointerRoutedEventArgs& args);
+    void OnExpanderGutterPointerCanceled(
+        const winrt::IInspectable& sender,
+        const winrt::PointerRoutedEventArgs& args);
     bool IsWithinExpanderGutter(const winrt::IInspectable& source) const;
     void UpdateExpanderGutterClip();
 
@@ -215,6 +221,11 @@ private:
     // Chevron hit target. Null if a re-template drops the part (indent still applies).
     tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
     winrt::UIElement::PointerPressed_revoker m_gutterPointerPressedRevoker{};
+    winrt::UIElement::PointerReleased_revoker m_gutterPointerReleasedRevoker{};
+    winrt::UIElement::PointerExited_revoker m_gutterPointerExitedRevoker{};
+    winrt::UIElement::PointerCaptureLost_revoker m_gutterPointerCaptureLostRevoker{};
+    // Chevron toggles on release-inside, like TableViewGroupHeader.
+    bool m_isGutterPressed{ false };
     // Lead cell's last arranged slot in the cells host (negative width: none yet / none visible).
     double m_leadCellLeft{ 0.0 };
     double m_leadCellWidth{ -1.0 };

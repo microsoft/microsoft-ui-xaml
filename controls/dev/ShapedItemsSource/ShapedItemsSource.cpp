@@ -2828,6 +2828,11 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
     // A full restore is already posted; skip snapshot capture so bulk edits cost one capture.
     if (m_liveShapingDirty)
     {
+        if (m_liveShapingHeld)
+        {
+            // Lets MarkLiveShapingDirty re-post a restore whose hold lifted without a resume.
+            MarkLiveShapingDirty();
+        }
         return;
     }
 
@@ -2848,12 +2853,18 @@ void ShapedItemsSource::MarkLiveShapingDirty()
 {
     if (m_liveShapingDirty)
     {
+        // A held restore normally waits for ResumeHeldLiveShaping. If the hold has since lifted
+        // without one (the owner was destroyed mid-edit), re-post so live shaping does not stall.
+        if (m_liveShapingHeld && !(m_liveShapingHold && m_liveShapingHold()))
+        {
+            ResumeHeldLiveShaping();
+        }
         return;
     }
     m_liveShapingDirty = true;
 
-    // Post, don't reshape inline: coalesces a turn's writes into one rebuild and stays out of the
-    // app's PropertyChanged handler.
+    // Post where possible: coalesces a turn's writes into one rebuild and stays out of the app's
+    // PropertyChanged handler.
     PostLiveShapingRestore();
 }
 
@@ -2881,8 +2892,16 @@ void ShapedItemsSource::PostLiveShapingRestore()
         }
     }
 
-    // Couldn't post: restore eagerly rather than leave the projection stale.
-    RestoreLiveShaping();
+    // Couldn't post (no dispatcher, or its queue is shutting down): restore now rather than leave
+    // the projection stale. This can run inside the app's PropertyChanged, so contain failures as
+    // the posted path does.
+    try
+    {
+        RestoreLiveShaping();
+    }
+    catch (...)
+    {
+    }
 }
 
 void ShapedItemsSource::RestoreLiveShaping()

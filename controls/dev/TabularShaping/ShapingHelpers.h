@@ -262,7 +262,9 @@ namespace ShapingHelpers
         };
 
         static void* IdentityOf(winrt::IInspectable const& item);
+        // m_ranks stays ordered by rank; PlaceUnranked relies on it to binary-search.
         void AddRanked(winrt::IInspectable const& item, int32_t rank);
+        void InsertRanked(size_t position, winrt::IInspectable const& item, int32_t rank);
 
         // App code, so it never escapes: a throwing comparer degrades to "equal", which keeps the
         // merge stable rather than random. Also normalizes the result to -1 / 0 / 1.
