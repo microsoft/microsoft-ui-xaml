@@ -1048,16 +1048,10 @@ void TableView::WatchTelemetryTransform(winrt::Transform const& transform)
             winrt::CompositeTransform::RotationProperty(), winrt::CompositeTransform::TranslateXProperty(),
             winrt::CompositeTransform::TranslateYProperty() });
     }
-    else if (auto group = transform.try_as<winrt::TransformGroup>())
+    else if (transform.try_as<winrt::TransformGroup>())
     {
-        if (WatchTelemetryVisualProperty(group, winrt::TransformGroup::ChildrenProperty()))
-        {
-            for (auto const& child : group.Children())
-            {
-                if (m_telemetryObservationLimited) { break; }
-                WatchTelemetryTransform(child);
-            }
-        }
+        // TransformCollection has no in-place mutation notification.
+        TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::DeferredOrUnproven);
     }
 }
 

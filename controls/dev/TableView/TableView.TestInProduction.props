@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Imported only by Tabular and its isolated TableView policy tests, after the common paths. -->
+  <!-- Scoped to Tabular and the explicit real-TiP TableView validation consumers. -->
   <PropertyGroup>
     <TableViewTIPPackagesConfigContents>$([System.IO.File]::ReadAllText('$(ProjectRoot)build\packages.TestInProduction.config'))</TableViewTIPPackagesConfigContents>
     <TestInProductionPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(TableViewTIPPackagesConfigContents), 'Microsoft.Windows.TestInProduction.*?version="(.*?)"').Groups[1].Value)</TestInProductionPackageVersion>

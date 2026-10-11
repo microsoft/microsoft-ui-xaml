@@ -27,4 +27,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Virtualization_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_NegativePath_APITests.cs" />
   </ItemGroup>
+  <ItemGroup Condition="'$(RequireRealTestInProduction)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Telemetry_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewTelemetryCapture.cs" />
+  </ItemGroup>
 </Project>

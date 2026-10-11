@@ -4,6 +4,8 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove(environment.props))" />
   <Import Project="$(MUXCProjectRoot)mux.controls.props" Condition="Exists('$(MUXCProjectRoot)mux.controls.props')" />
   <Import Project="$(MUXCProjectRoot)FeatureAreas.props" />
+  <Import Project="$(MUXCProjectRoot)dev\TableView\TableView.TestInProduction.props"
+          Condition="'$(FeatureTableViewEnabled)' == 'true' and '$(RequireRealTestInProduction)' == 'true'" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -183,6 +185,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(FeatureTableViewEnabled) == 'true'">
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Condition="'$(RequireRealTestInProduction)' == 'true'" />
     <CsWinRTInputs Include="$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd" Condition="Exists('$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd')" />
     <Reference Include="$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd" Condition="Exists('$(XamlBuildOutputRoot)controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd')">
       <IsWinMDFile>true</IsWinMDFile>

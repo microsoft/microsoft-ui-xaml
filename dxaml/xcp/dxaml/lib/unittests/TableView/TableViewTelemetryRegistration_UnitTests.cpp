@@ -177,7 +177,7 @@ public:
     TEST_METHOD(EveryInitialTerminalSynchronouslyRevokesOwnedRegistration)
     {
 #if TABLEVIEW_TIP_REAL_LIBRARY
-        for (uint32_t terminal = 0; terminal != 10; ++terminal)
+        for (uint32_t terminal = 0; terminal != 11; ++terminal)
         {
             auto observed = std::make_shared<PublisherState>();
             auto publisher = new Publisher(observed);
@@ -203,6 +203,7 @@ public:
             case 7: CompleteInitial(state, Result::Cancelled); break;
             case 8: EndSession(state); break;
             case 9: AbandonSession(state); break;
+            case 10: IgnoreInitial(state, IgnoreReason::Stale); break;
             }
             VERIFY_IS_TRUE(state.initial == InitialState::Finished && !owner.registration.IsArmed());
             VERIFY_ARE_EQUAL(1u, observed->removals);
