@@ -11,10 +11,10 @@
             <Element Type="Microsoft.UI.Xaml.Controls.Button">
               <Properties>
                 <Property Name="AccessKey" Value="1" />
-                <Property Name="Background" Value="#33FFFFFF" />
+                <Property Name="Background" Value="#0FFFFFFF" />
                 <Property Name="BackgroundSizing" Value="1" />
                 <Property Name="BorderBrush" Value="#00FFFFFF" />
-                <Property Name="BorderThickness" Value="1,1,1,1" />
+                <Property Name="BorderThickness" Value="2,2,2,2" />
                 <Property Name="Content" Value="button 1" />
                 <Property Name="FocusState" Value="1" />
                 <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
@@ -24,7 +24,7 @@
                 <Property Name="Foreground" Value="#FFFFFFFF" />
                 <Property Name="HorizontalAlignment" Value="0" />
                 <Property Name="KeyTipPlacementMode" Value="5" />
-                <Property Name="Padding" Value="8,5,8,6" />
+                <Property Name="Padding" Value="11,5,11,6" />
                 <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                 <Property Name="UseSystemFocusVisuals" Value="True" />
                 <Property Name="VerticalAlignment" Value="1" />
@@ -33,16 +33,16 @@
                 <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
                   <Properties>
                     <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                    <Property Name="Background" Value="#33FFFFFF" />
+                    <Property Name="Background" Value="#0FFFFFFF" />
                     <Property Name="BackgroundSizing" Value="1" />
                     <Property Name="BorderBrush" Value="#00FFFFFF" />
-                    <Property Name="BorderThickness" Value="1,1,1,1" />
+                    <Property Name="BorderThickness" Value="2,2,2,2" />
                     <Property Name="Content" Value="button 1" />
                     <Property Name="ContentTransitions" Value="[NULL]" />
                     <Property Name="CornerRadius" Value="0,0,0,0" />
                     <Property Name="DataContext" Value="button 1" />
                     <Property Name="HorizontalContentAlignment" Value="1" />
-                    <Property Name="Padding" Value="8,5,8,6" />
+                    <Property Name="Padding" Value="11,5,11,6" />
                     <Property Name="VerticalContentAlignment" Value="1" />
                   </Properties>
                   <ChildElements>
@@ -69,10 +69,10 @@
             <Element Type="Microsoft.UI.Xaml.Controls.Button">
               <Properties>
                 <Property Name="AccessKey" Value="ii" />
-                <Property Name="Background" Value="#33FFFFFF" />
+                <Property Name="Background" Value="#0FFFFFFF" />
                 <Property Name="BackgroundSizing" Value="1" />
                 <Property Name="BorderBrush" Value="#00FFFFFF" />
-                <Property Name="BorderThickness" Value="1,1,1,1" />
+                <Property Name="BorderThickness" Value="2,2,2,2" />
                 <Property Name="Content" Value="button 2" />
                 <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
                 <Property Name="FontFamily" Value="Segoe UI" />
@@ -81,7 +81,7 @@
                 <Property Name="Foreground" Value="#FFFFFFFF" />
                 <Property Name="HorizontalAlignment" Value="0" />
                 <Property Name="KeyTipPlacementMode" Value="5" />
-                <Property Name="Padding" Value="8,5,8,6" />
+                <Property Name="Padding" Value="11,5,11,6" />
                 <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                 <Property Name="UseSystemFocusVisuals" Value="True" />
                 <Property Name="VerticalAlignment" Value="1" />
@@ -90,16 +90,16 @@
                 <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
                   <Properties>
                     <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                    <Property Name="Background" Value="#33FFFFFF" />
+                    <Property Name="Background" Value="#0FFFFFFF" />
                     <Property Name="BackgroundSizing" Value="1" />
                     <Property Name="BorderBrush" Value="#00FFFFFF" />
-                    <Property Name="BorderThickness" Value="1,1,1,1" />
+                    <Property Name="BorderThickness" Value="2,2,2,2" />
                     <Property Name="Content" Value="button 2" />
                     <Property Name="ContentTransitions" Value="[NULL]" />
                     <Property Name="CornerRadius" Value="0,0,0,0" />
                     <Property Name="DataContext" Value="button 2" />
                     <Property Name="HorizontalContentAlignment" Value="1" />
-                    <Property Name="Padding" Value="8,5,8,6" />
+                    <Property Name="Padding" Value="11,5,11,6" />
                     <Property Name="VerticalContentAlignment" Value="1" />
                   </Properties>
                   <ChildElements>
@@ -126,10 +126,10 @@
             <Element Type="Microsoft.UI.Xaml.Controls.Button">
               <Properties>
                 <Property Name="AccessKey" Value="WW" />
-                <Property Name="Background" Value="#33FFFFFF" />
+                <Property Name="Background" Value="#0FFFFFFF" />
                 <Property Name="BackgroundSizing" Value="1" />
                 <Property Name="BorderBrush" Value="#00FFFFFF" />
-                <Property Name="BorderThickness" Value="1,1,1,1" />
+                <Property Name="BorderThickness" Value="2,2,2,2" />
                 <Property Name="Content" Value="button 3" />
                 <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
                 <Property Name="FontFamily" Value="Segoe UI" />
@@ -138,7 +138,7 @@
                 <Property Name="Foreground" Value="#FFFFFFFF" />
                 <Property Name="HorizontalAlignment" Value="0" />
                 <Property Name="KeyTipPlacementMode" Value="4" />
-                <Property Name="Padding" Value="8,5,8,6" />
+                <Property Name="Padding" Value="11,5,11,6" />
                 <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
                 <Property Name="UseSystemFocusVisuals" Value="True" />
                 <Property Name="VerticalAlignment" Value="1" />
@@ -147,16 +147,16 @@
                 <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
                   <Properties>
                     <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                    <Property Name="Background" Value="#33FFFFFF" />
+                    <Property Name="Background" Value="#0FFFFFFF" />
                     <Property Name="BackgroundSizing" Value="1" />
                     <Property Name="BorderBrush" Value="#00FFFFFF" />
-                    <Property Name="BorderThickness" Value="1,1,1,1" />
+                    <Property Name="BorderThickness" Value="2,2,2,2" />
                     <Property Name="Content" Value="button 3" />
                     <Property Name="ContentTransitions" Value="[NULL]" />
                     <Property Name="CornerRadius" Value="0,0,0,0" />
                     <Property Name="DataContext" Value="button 3" />
                     <Property Name="HorizontalContentAlignment" Value="1" />
-                    <Property Name="Padding" Value="8,5,8,6" />
+                    <Property Name="Padding" Value="11,5,11,6" />
                     <Property Name="VerticalContentAlignment" Value="1" />
                   </Properties>
                   <ChildElements>
@@ -191,10 +191,10 @@
         <Properties>
           <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Border]" />
           <Property Name="HighContrastAdjustment" Value="0" />
-          <Property Name="HorizontalOffset" Value="27.5" />
+          <Property Name="HorizontalOffset" Value="31.5" />
           <Property Name="IsHitTestVisible" Value="False" />
           <Property Name="IsOpen" Value="True" />
-          <Property Name="VerticalOffset" Value="33" />
+          <Property Name="VerticalOffset" Value="36" />
         </Properties>
       </Element>
       <PopupElement.Child>
@@ -232,10 +232,10 @@
         <Properties>
           <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Border]" />
           <Property Name="HighContrastAdjustment" Value="0" />
-          <Property Name="HorizontalOffset" Value="72" />
+          <Property Name="HorizontalOffset" Value="80" />
           <Property Name="IsHitTestVisible" Value="False" />
           <Property Name="IsOpen" Value="True" />
-          <Property Name="VerticalOffset" Value="65" />
+          <Property Name="VerticalOffset" Value="70" />
         </Properties>
       </Element>
       <PopupElement.Child>
@@ -273,10 +273,10 @@
         <Properties>
           <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Border]" />
           <Property Name="HighContrastAdjustment" Value="0" />
-          <Property Name="HorizontalOffset" Value="27" />
+          <Property Name="HorizontalOffset" Value="31" />
           <Property Name="IsHitTestVisible" Value="False" />
           <Property Name="IsOpen" Value="True" />
-          <Property Name="VerticalOffset" Value="1" />
+          <Property Name="VerticalOffset" Value="2" />
         </Properties>
       </Element>
       <PopupElement.Child>

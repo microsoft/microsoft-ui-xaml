@@ -6,9 +6,6 @@
     <Visual Tag="PrependVisual">
       <Visual Tag="PrimaryVisual" SizeX="400" SizeY="400">
         <Visual Tag="ContentVisual">
-          <wucSpriteVisual SizeX="400" SizeY="400" BorderMode="Soft">
-            <ColorBrush Color="#ff000000" />
-          </wucSpriteVisual>
           <Visual Tag="PrependVisual" SizeX="400" SizeY="400">
             <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
             <Visual PixelSnappingEnabled="True" VisualId="1" Tag="PrimaryVisual" SizeX="400" SizeY="400">
@@ -99,7 +96,7 @@
                       <wucSpriteVisual SizeX="20" SizeY="20" BorderMode="Soft" OffsetX="12" OffsetY="10" OffsetZ="0">
                         <NineGridBrush LeftInset="2" TopInset="2" RightInset="2" BottomInset="2" isCenterHollow="True">
                           <Source>
-                            <ColorBrush Color="Argb {0.8, 1, 1, 1}" />
+                            <ColorBrush Color="#ff000000" />
                           </Source>
                         </NineGridBrush>
                       </wucSpriteVisual>
@@ -122,7 +119,7 @@
                       <wucSpriteVisual SizeX="20" SizeY="20" BorderMode="Soft" OffsetX="12" OffsetY="50" OffsetZ="0">
                         <NineGridBrush LeftInset="2" TopInset="2" RightInset="2" BottomInset="2" isCenterHollow="True">
                           <Source>
-                            <ColorBrush Color="Argb {0.8, 1, 1, 1}" />
+                            <ColorBrush Color="#ff000000" />
                           </Source>
                         </NineGridBrush>
                       </wucSpriteVisual>
@@ -148,7 +145,7 @@
                                   <wucSpriteVisual SizeX="96" SizeY="36" BorderMode="Soft" TransparentForInput="True" OffsetX="2" OffsetY="2" OffsetZ="0">
                                     <NineGridBrush LeftInset="1" TopInset="1" RightInset="1" BottomInset="1" isCenterHollow="True">
                                       <Source>
-                                        <ColorBrush Color="Argb {0.6, 0, 0, 0}" />
+                                        <ColorBrush Color="Argb {0.702, 0, 0, 0}" />
                                       </Source>
                                     </NineGridBrush>
                                   </wucSpriteVisual>
@@ -177,7 +174,7 @@
                       <wucSpriteVisual SizeX="20" SizeY="20" BorderMode="Soft" OffsetX="12" OffsetY="90" OffsetZ="0">
                         <NineGridBrush LeftInset="2" TopInset="2" RightInset="2" BottomInset="2" isCenterHollow="True">
                           <Source>
-                            <ColorBrush Color="Argb {0.8, 1, 1, 1}" />
+                            <ColorBrush Color="#ff000000" />
                           </Source>
                         </NineGridBrush>
                       </wucSpriteVisual>
@@ -200,7 +197,7 @@
                       <wucSpriteVisual SizeX="20" SizeY="20" BorderMode="Soft" OffsetX="12" OffsetY="130" OffsetZ="0">
                         <NineGridBrush LeftInset="2" TopInset="2" RightInset="2" BottomInset="2" isCenterHollow="True">
                           <Source>
-                            <ColorBrush Color="Argb {0.8, 1, 1, 1}" />
+                            <ColorBrush Color="#ff000000" />
                           </Source>
                         </NineGridBrush>
                       </wucSpriteVisual>
@@ -223,7 +220,7 @@
                       <wucSpriteVisual SizeX="20" SizeY="20" BorderMode="Soft" OffsetX="12" OffsetY="170" OffsetZ="0">
                         <NineGridBrush LeftInset="2" TopInset="2" RightInset="2" BottomInset="2" isCenterHollow="True">
                           <Source>
-                            <ColorBrush Color="Argb {0.8, 1, 1, 1}" />
+                            <ColorBrush Color="#ff000000" />
                           </Source>
                         </NineGridBrush>
                       </wucSpriteVisual>
@@ -246,7 +243,7 @@
                       <wucSpriteVisual SizeX="20" SizeY="20" BorderMode="Soft" OffsetX="12" OffsetY="210" OffsetZ="0">
                         <NineGridBrush LeftInset="2" TopInset="2" RightInset="2" BottomInset="2" isCenterHollow="True">
                           <Source>
-                            <ColorBrush Color="Argb {0.8, 1, 1, 1}" />
+                            <ColorBrush Color="#ff000000" />
                           </Source>
                         </NineGridBrush>
                       </wucSpriteVisual>
@@ -269,7 +266,7 @@
                       <wucSpriteVisual SizeX="20" SizeY="20" BorderMode="Soft" OffsetX="12" OffsetY="250" OffsetZ="0">
                         <NineGridBrush LeftInset="2" TopInset="2" RightInset="2" BottomInset="2" isCenterHollow="True">
                           <Source>
-                            <ColorBrush Color="Argb {0.8, 1, 1, 1}" />
+                            <ColorBrush Color="#ff000000" />
                           </Source>
                         </NineGridBrush>
                       </wucSpriteVisual>
@@ -292,7 +289,7 @@
                       <wucSpriteVisual SizeX="20" SizeY="20" BorderMode="Soft" OffsetX="12" OffsetY="290" OffsetZ="0">
                         <NineGridBrush LeftInset="2" TopInset="2" RightInset="2" BottomInset="2" isCenterHollow="True">
                           <Source>
-                            <ColorBrush Color="Argb {0.8, 1, 1, 1}" />
+                            <ColorBrush Color="#ff000000" />
                           </Source>
                         </NineGridBrush>
                       </wucSpriteVisual>
@@ -315,7 +312,7 @@
                       <wucSpriteVisual SizeX="20" SizeY="20" BorderMode="Soft" OffsetX="12" OffsetY="330" OffsetZ="0">
                         <NineGridBrush LeftInset="2" TopInset="2" RightInset="2" BottomInset="2" isCenterHollow="True">
                           <Source>
-                            <ColorBrush Color="Argb {0.8, 1, 1, 1}" />
+                            <ColorBrush Color="#ff000000" />
                           </Source>
                         </NineGridBrush>
                       </wucSpriteVisual>
