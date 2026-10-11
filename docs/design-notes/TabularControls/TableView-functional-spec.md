@@ -25,7 +25,7 @@ full `DataGrid` replacement.
 |---|---|
 | PR 1 | Empty `Microsoft.UI.Xaml.Controls.Tabular.dll` scaffolding |
 | **PR 2 (this)** | Display-only baseline: columns/cells/headers, gridlines, density, row virtualization, leading-frozen columns, keyboard row-focus nav, read-only UIA peers |
-| PR 3 | Selection, single-column sort, filtering, grouping, 2-level hierarchy, column resize/reorder, nav-state; themed rendering. Shipped incrementally: selection, then the shaping engine with filter + sort, then grouping. |
+| PR 3 | Selection, single-column sort, filtering, grouping, hierarchical rows, column resize/reorder, nav-state; themed rendering. Shipped incrementally: selection, then the shaping engine with filter + sort, then grouping. |
 | PR 4 | Tests + `TableViewSamples` e2e app |
 
 ## Functional requirements
@@ -53,8 +53,9 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - Single + multi selection (Ctrl/Shift). — **PR3**
 - Per-row/cell context menu; checkbox selection (File-Explorer-specific). — **PR3** / surface
 - Single-level grouping with expand/collapse group headers. — **PR3, shipped** (see [Grouping](#grouping))
-- 2-level nested rows (hard cap in v1). — **PR3**
-- &gt;2-level hierarchy, row drag-drop, marquee selection. — *out of scope*
+- Hierarchical rows from a flat source via `TableViewSource.ParentBy(keySelector, parentKeySelector)` / `ClearParentBy()`, no depth limit; row expand/collapse, `TableView.ExpandAllRows()` / `CollapseAllRows()`. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md). — **PR3**
+- Opt-in live shaping (`TableViewSource.IsLiveShaping`): reshapes when an item's `PropertyChanged` moves a sort, filter, group or parent value. — **PR3**
+- Row drag-drop, marquee selection. — *out of scope*
 
 ### Grouping
 

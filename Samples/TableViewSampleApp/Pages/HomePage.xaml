@@ -73,7 +73,7 @@
                     <x:String>Row virtualization — realizes only the visible rows, so large datasets scroll smoothly</x:String>
                     <x:String>Keyboard navigation and UI Automation peers for tables, rows, cells and headers</x:String>
                     <x:String>RTL flow — mirrored layout and resize gripper placement</x:String>
-                    <x:String>Hierarchical rows — not available in this release; the Hierarchy page describes the planned axis</x:String>
+                    <x:String>Hierarchical rows from a parent key (ParentBy), composed with filter, sort, grouping and live shaping</x:String>
                 </ItemsControl>
             </StackPanel>
 
@@ -103,7 +103,7 @@
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Headers visibility" Tag="HeadersVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Headers visibility sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Tooltips" Tag="ToolTips" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Tooltips sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Grouped rows" Tag="Groups" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grouped rows sample."/>
-                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Hierarchy" Tag="Hierarchy" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Hierarchy placeholder page."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Hierarchy" Tag="Hierarchy" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Hierarchy page."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Grid lines visibility" Tag="GridLinesVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grid lines visibility sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Text wrap + row height" Tag="TextWrap" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Text wrap and row height sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Cell templating" Tag="CellTemplating" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Cell templating sample."/>

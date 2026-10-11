@@ -1677,18 +1677,52 @@ bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
     // Focus was on a row container.
     if (m_navAnchorRowContainer >= 0)
     {
+        auto const row = GetRealizedRowAt(m_navAnchorRowContainer);
+        if (!row)
+        {
+            // Consume Left so directional focus navigation cannot walk out of the table.
+            if (!drillIn)
+            {
+                args.Handled(true);
+                return true;
+            }
+            return false;
+        }
+
+        // Treegrid level: forward expands a collapsed node else drills in; backward collapses an
+        // expanded node else moves to the parent. Shift chords keep the plain drill.
+        if (row.Level() > 0 && !IsKeyDown(winrt::VirtualKey::Shift))
+        {
+            if (drillIn && row.IsExpandable() && !row.IsExpanded())
+            {
+                SetGroupExpansion(row, true);
+                args.Handled(true);
+                return true;
+            }
+
+            if (!drillIn)
+            {
+                if (row.IsExpandable() && row.IsExpanded())
+                {
+                    SetGroupExpansion(row, false);
+                }
+                else
+                {
+                    TryFocusParentRow(row);
+                }
+
+                // Consumed even at a root, for the same reason as the flat row below.
+                args.Handled(true);
+                return true;
+            }
+        }
+
         if (!drillIn)
         {
             // Nothing further out at row level. Consumed anyway: an unconsumed Left here reaches
             // directional focus navigation, which would walk focus sideways out of the table.
             args.Handled(true);
             return true;
-        }
-
-        auto const row = GetRealizedRowAt(m_navAnchorRowContainer);
-        if (!row)
-        {
-            return false;
         }
 
         auto const rowImpl = winrt::get_self<TableViewRow>(row);

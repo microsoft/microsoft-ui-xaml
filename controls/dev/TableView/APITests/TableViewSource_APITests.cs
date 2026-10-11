@@ -186,6 +186,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyProjection(tableView, items.Select(p => p.Name).ToList(), "fresh source");
                 Verify.AreEqual(0, GroupHeaderCount(tableView),
                     "A source with no GroupBy must project no group header rows.");
+                Verify.IsFalse(TableViewSource.From(items).IsLiveShaping, "IsLiveShaping must default to false.");
             });
         }
 

@@ -11,6 +11,7 @@
 #include "TableViewRowInfo.h"
 #include "GroupedEntry.h"
 #include "GroupedSourceAdapter.h"
+#include "HierarchicalSourceAdapter.h"
 
 namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives::implementation
 {
@@ -39,6 +40,18 @@ public:
         GroupedSourceAdapterPtr const& adapter,
         ItemKeySelector const& itemKeySelector = {});
 
+    // All rows are data rows; level/expandability come from the adapter descriptor, keys are "node:".
+    static TableViewRowMetadataProvider CreateForHierarchicalRows(
+        HierarchicalSourceAdapterPtr const& adapter,
+        ItemKeySelector const& itemKeySelector = {});
+
+    // GroupBy over hierarchy roots. Row indices are the grouped axis (with headers), so node
+    // metadata is resolved by item via TryGetNodeRowForItem.
+    static TableViewRowMetadataProvider CreateForGroupedHierarchicalRows(
+        GroupedSourceAdapterPtr const& groupedAdapter,
+        HierarchicalSourceAdapterPtr const& hierarchicalAdapter,
+        ItemKeySelector const& itemKeySelector = {});
+
     TableViewRowInfo GetRowInfo(int32_t index) override;
     winrt::hstring GetIdentity(int32_t index) override;
     bool TryGetIndexForIdentity(winrt::hstring const& identity, int32_t& index) override;
@@ -49,11 +62,22 @@ public:
     // Bulk group commands. No-ops when the source is not grouped.
     void ExpandAllGroups() override;
     void CollapseAllGroups() override;
+    void ExpandAllRows() override;
+    void CollapseAllRows() override;
+    void ExpandSubtree(winrt::hstring const& key) override;
+
+    bool IsHierarchicalSource() const override
+    {
+        return m_sourceKind == SourceKind::Hierarchical || m_sourceKind == SourceKind::GroupedHierarchical;
+    }
 
     enum class SourceKind
     {
         Flat,
         Grouped,
+        Hierarchical,
+        // Row kinds/identities from the grouped axis; level/expansion from the hierarchy adapter.
+        GroupedHierarchical,
     };
 
     RowMetadataProvider(
@@ -61,14 +85,22 @@ public:
         winrt::ItemsSourceView const& flatRows,
         winrt::ItemsSourceView const& groupedRows,
         GroupedSourceAdapterPtr const& groupedAdapter,
-        ItemKeySelector const& itemKeySelector);
+        ItemKeySelector const& itemKeySelector,
+        winrt::ItemsSourceView const& hierarchicalRows = nullptr,
+        HierarchicalSourceAdapterPtr const& hierarchicalAdapter = nullptr);
 
 private:
     // Single implementation behind all six expand/collapse/toggle entry points. They differ only
     // in how the caller names the group (row key vs. the app's GroupBy key), so resolution stays
     // in the wrappers and the state change lives here exactly once. `desired` empty means toggle.
-    // Returns the resulting expansion state; false when there is no group or no adapter.
+    // Returns true when the expansion state changed.
     bool SetGroupExpandedCore(winrt::IInspectable const& group, std::optional<bool> desired);
+
+    // Hierarchy equivalent; the node key is the adapter's addressing scheme.
+    bool SetNodeExpandedCore(winrt::hstring const& nodeKey, std::optional<bool> desired);
+
+    // Composed projection routes both key spaces through Expand/Collapse/Toggle.
+    bool IsNodeExpansionKey(winrt::hstring const& key) const;
 
     winrt::IInspectable GetGroupedRow(int32_t index) const;
     winrt::com_ptr<GroupedEntry> TryGetGroupHeaderEntry(int32_t index) const;
@@ -89,6 +121,8 @@ private:
     winrt::ItemsSourceView m_flatRows{ nullptr };
     winrt::ItemsSourceView m_groupedRows{ nullptr };
     GroupedSourceAdapterPtr m_groupedAdapter{};
+    winrt::ItemsSourceView m_hierarchicalRows{ nullptr };
+    HierarchicalSourceAdapterPtr m_hierarchicalAdapter{};
     ItemKeySelector m_itemKeySelector{};
 
     // Lazily built identity -> row index over the rows this provider wraps. Rebuilt wholesale
@@ -112,6 +146,7 @@ private:
     // races teardown becomes a no-op under the weak lock -- GC / re-entrancy safety, not threading.
     winrt::event_token m_groupedRowsChangedToken{};
     winrt::event_token m_flatRowsChangedToken{};
+    winrt::event_token m_hierarchicalRowsChangedToken{};
     std::shared_ptr<bool> m_alive{ std::make_shared<bool>(true) };
 };
 
