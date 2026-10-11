@@ -154,6 +154,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // ---------- Focus ----------
 
+        // The focused element's UIA PositionInSet (1-based, within the group), or -1. Unlike a scroll
+        // percentage, it distinguishes a page from a single step.
+        internal static int FocusedPositionInSet()
+        {
+            AutomationElement focused = AutomationElement.FocusedElement;
+            if (focused == null) { return -1; }
+
+            object value = focused.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
+            return value is int position ? position : -1;
+        }
+
         internal static UIObject FindFocusedRow(UIObject rowsHost)
         {
             if (rowsHost == null) { return null; }
@@ -542,12 +553,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         internal static string ReadFirstItemName() => ReadPageReadout(FirstItemName);
 
-        // Reads the page's PART_BodyScroller offset readout, formatted "H=<h>;V=<v>;HeaderH=<h>". Used only as a
-        // precondition that the body moved, never as the subject of an assertion.
+        // Reads the page's scroll/frozen-geometry readout (format: TableViewPage.ReportScrollOffsets).
+        // Header-sync and frozen-column tests assert on these page-published values, not UIA
+        // BoundingRectangle: the header scrolls via PART_HeaderScroller's offset and frozen cells are
+        // pinned with a composition-only Translation, neither of which the peer rectangles reflect.
+        // *X is from TransformToVisual, which already includes Translation; *T is diagnostic only
+        // (adding it to *X double-counts the pin).
         internal static string ReadScrollOffsets()
         {
             var readout = FindElement.ById<TextBlock>(ScrollOffsets);
             return readout == null ? "<no readout>" : readout.DocumentText;
+        }
+
+        // Returns double.NaN when the readout is missing or malformed.
+        internal static double ReadScrollOffsetComponent(string offsets, string name)
+        {
+            if (string.IsNullOrEmpty(offsets)) { return double.NaN; }
+
+            foreach (string part in offsets.Split(';'))
+            {
+                int split = part.IndexOf('=');
+                if (split <= 0) { continue; }
+
+                if (string.Equals(part.Substring(0, split).Trim(), name, StringComparison.Ordinal))
+                {
+                    return double.TryParse(
+                        part.Substring(split + 1).Trim(),
+                        System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out double value) ? value : double.NaN;
+                }
+            }
+            return double.NaN;
         }
     }
 }

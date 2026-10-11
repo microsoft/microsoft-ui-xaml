@@ -125,6 +125,12 @@ void TableViewAutomationPeer::RaiseStructureChangedForGroupExpansion()
     RaiseStructureChanged(winrt::AutomationStructureChangeType::ChildrenInvalidated);
 }
 
+void TableViewAutomationPeer::RaiseStructureChangedForColumnsChange()
+{
+    // A column isn't a child of this peer, so ChildAdded/ChildRemoved don't apply.
+    RaiseStructureChanged(winrt::AutomationStructureChangeType::ChildrenInvalidated);
+}
+
 void TableViewAutomationPeer::RaiseStructureChanged(winrt::AutomationStructureChangeType const& structureChangeType)
 {
     RaiseStructureChangedEvent(structureChangeType, nullptr);

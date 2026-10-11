@@ -84,6 +84,21 @@ winrt::hstring TableViewGroupHeaderAutomationPeer::GetNameCore()
     return __super::GetNameCore();
 }
 
+void TableViewGroupHeaderAutomationPeer::SetFocusCore()
+{
+    // Base peer focuses as Programmatic, which FocusManager coerces (e.g. to Pointer: no focus
+    // visual, and group-expansion focus restore skips it), hence explicit Keyboard.
+    if (auto const header = GetHeader())
+    {
+        if (header.Focus(winrt::FocusState::Keyboard))
+        {
+            return;
+        }
+    }
+
+    __super::SetFocusCore();
+}
+
 int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
 {
     // An app-set AutomationProperties.Level wins, as in the dxaml peers that compute this.
@@ -92,19 +107,7 @@ int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
         return provided;
     }
 
-    // 1-based per UIA; 0 means "unknown", the honest answer once the projection info is gone.
-    if (auto const header = GetHeader())
-    {
-        if (auto const info = header.Content().try_as<winrt::TableViewGroupInfo>())
-        {
-            const auto level = info.Level();
-            if (level >= 0)
-            {
-                return level + 1;
-            }
-        }
-    }
-
+    // Grouping is single-level: no synthesized Level (0 = not specified) unless the app sets one.
     return 0;
 }
 

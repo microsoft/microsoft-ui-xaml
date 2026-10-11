@@ -134,7 +134,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product finding #21: adding/removing a column raises no StructureChanged to a UIA client.
         [TestProperty("Description", "Verifies adding and removing a column raises a StructureChanged event that reaches a UIA client outside the app.")]
         public void VerifyStructureChangedEventsReachAUiaClient()
         {
