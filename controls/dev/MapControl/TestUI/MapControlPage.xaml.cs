@@ -22,6 +22,9 @@ namespace MUXControlsTestApp
     [TopLevelTestPage(Name = "MapControl")]
     public sealed partial class MapControlPage : TestPage
     {
+        // Set while InjectWebMessagesAsync runs; overlapping clicks are ignored so handler subscriptions stay balanced.
+        private bool _injectingWebMessages;
+
         public MapControlPage()
         {
             this.InitializeComponent();
@@ -128,6 +131,11 @@ namespace MUXControlsTestApp
 
         private async void InjectWebMessagesButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_injectingWebMessages)
+            {
+                return;
+            }
+            _injectingWebMessages = true;
             webMessageResults.Text = "Running";
             try
             {
@@ -136,6 +144,10 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 webMessageResults.Text = "Exception: " + ex.GetType().Name + " " + ex.Message;
+            }
+            finally
+            {
+                _injectingWebMessages = false;
             }
         }
 
@@ -172,16 +184,19 @@ namespace MUXControlsTestApp
             TypedEventHandler<MapControl, MapElementClickEventArgs> onClick = (s, a) => { clicks.Add(a); };
             TypedEventHandler<MapElementsLayer, MapElementClickEventArgs> onLayerClick = (s, a) => { layerClicks++; };
             TypedEventHandler<MapControl, MapControlMapServiceErrorOccurredEventArgs> onError = (s, a) => { errors.Add(a.DiagnosticMessage); };
-            myMap.MapElementClick += onClick;
-            myMap.MapServiceErrorOccurred += onError;
-            // The injected script error deliberately contains the live token (to exercise map.html's redaction); keep it
-            // out of the page's general output box.
-            myMap.MapServiceErrorOccurred -= Map_MapServiceErrorOccurred;
-            testLayer.MapElementClick += onLayerClick;
-            int layer = myMap.Layers.Count;
-            myMap.Layers.Add(testLayer);
+            bool generalErrorHandlerDetached = false;
             try
             {
+                myMap.MapElementClick += onClick;
+                myMap.MapServiceErrorOccurred += onError;
+                // The injected script error deliberately contains the live token (to exercise map.html's redaction); keep it
+                // out of the page's general output box.
+                myMap.MapServiceErrorOccurred -= Map_MapServiceErrorOccurred;
+                generalErrorHandlerDetached = true;
+                testLayer.MapElementClick += onLayerClick;
+                int layer = myMap.Layers.Count;
+                myMap.Layers.Add(testLayer);
+
                 string l = layer.ToString(CultureInfo.InvariantCulture);
                 string outOfRange = (layer + 1).ToString(CultureInfo.InvariantCulture);
                 // map.html sends a pin at [longitude, latitude] with position[0] as "latitude" and position[1] as "longitude";
@@ -218,8 +233,12 @@ namespace MUXControlsTestApp
             {
                 myMap.MapElementClick -= onClick;
                 myMap.MapServiceErrorOccurred -= onError;
-                myMap.MapServiceErrorOccurred += Map_MapServiceErrorOccurred;
                 testLayer.MapElementClick -= onLayerClick;
+                if (generalErrorHandlerDetached)
+                {
+                    // Restores exactly the one subscription made in the constructor.
+                    myMap.MapServiceErrorOccurred += Map_MapServiceErrorOccurred;
+                }
             }
 
             string marker = errors.FirstOrDefault(x => x.Contains("marker-5821"));
