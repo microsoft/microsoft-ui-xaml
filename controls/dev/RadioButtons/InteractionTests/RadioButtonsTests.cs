@@ -31,7 +31,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        [TestProperty("Ignore", "True")] //Task 26103056: MUXC RadioButtons test is unreliable. They have been disabled.
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
@@ -221,6 +220,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                         VerifySelectedFocusedIndex(0);
                         KeyboardHelper.PressKey(Key.Up);
                         VerifySelectedFocusedIndex(0);
+                        // Down from the first item (index 0) moves to the second item.
+                        KeyboardHelper.PressKey(Key.Down);
+                        VerifySelectedFocusedIndex(1);
 
                         TapOnItem(9, useBackup);
                         VerifySelectedFocusedIndex(9);
@@ -291,6 +293,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("Ignore", "True")] // Task 26103056: unreliable; still fails when run (no reason streamed by TAEF).
         public void SingleRowKeyboardTest()
         {
             using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
@@ -577,6 +580,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("Ignore", "True")] // Task 26103056: unreliable; still fails when run (no reason streamed by TAEF).
         public void ColumnsTest()
         {
             using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
@@ -689,6 +693,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("Ignore", "True")] // Task 26103056: intermittent; after clicking ReproTextBlock focus sometimes isn't on item 0 (VerifyFocusedIndex AreEqual(0, -1)).
         public void ScrollViewerSettingSelectionDoesNotMoveFocus()
         {
             using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
@@ -717,6 +722,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("Ignore", "True")] // Task 26103056: unreliable; fails in VerifyFocusedIndex with AreEqual(3, -1) after Alt+R with a selection.
         public void AccessKeys()
         {
             using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
