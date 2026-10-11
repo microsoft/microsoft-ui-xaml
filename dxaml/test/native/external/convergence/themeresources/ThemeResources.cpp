@@ -498,14 +498,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void ThemeResourcesTests::NonTabularResourceMissKeepsGenericDiagnostic()
+        void ThemeResourcesTests::MarkupMissingKeyWithFormatTokensThrowsGenericError()
         {
             TestCleanupWrapper cleanup;
 
             RunOnUIThread([&]()
             {
                 DisableErrorReportingScopeGuard disableErrors;
-                String^ key = L"TabularSurfaceRowBackgroundBrush_NotPresent_%0_%1";
+                String^ key = L"MissingResourceKey_%0_%1";
                 String^ extensions[] = { L"StaticResource", L"ThemeResource" };
 
                 for (auto extension : extensions)
@@ -523,11 +523,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                         error = ex;
                     }
 
-                    VERIFY_IS_NOT_NULL(error);
-                    VERIFY_ARE_EQUAL(static_cast<int>(0x802B000A), error->HResult);
+                    VERIFY_IS_NOT_NULL(error, L"An unresolved required markup resource must throw.");
+                    VERIFY_ARE_EQUAL(static_cast<HRESULT>(0x802B000A), error->HResult, L"Markup resource misses retain the parse HRESULT.");
                     String^ expected = L"Cannot find a Resource with the Name/Key " + key;
-                    VERIFY_IS_NOT_NULL(wcsstr(error->Message->Data(), expected->Data()));
-                    VERIFY_IS_NULL(wcsstr(error->Message->Data(), L"TabularControlsResources"));
+                    VERIFY_IS_NOT_NULL(wcsstr(error->Message->Data(), expected->Data()), L"The generic error must preserve literal percent tokens in the key.");
                 }
             });
         }

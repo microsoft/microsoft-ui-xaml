@@ -83,11 +83,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
 
                     Verify.IsNotNull(error, "The missing header brush must fail during stock template realization.");
-                    Verify.AreEqual(unchecked((int)0x802B000A), error.HResult);
-                    Verify.IsTrue(error.Message.Contains("TabularSurfaceHeaderBackgroundBrush"));
-                    Verify.IsTrue(error.Message.Contains("Cannot find a Resource with the Name/Key "));
-                    Verify.IsTrue(error.Message.Contains("[Line: "));
-                    Verify.IsFalse(error.Message.Contains("TabularControlsResources"));
+                    Verify.AreEqual(unchecked((int)0x802B000A), error.HResult, "Stock template resource misses retain the parse HRESULT.");
+                    Verify.IsTrue(error.Message.Contains("TabularSurfaceHeaderBackgroundBrush"), "The missing header brush confirms the stock deferred-template path was exercised.");
+                    Verify.IsTrue(error.Message.Contains("Cannot find a Resource with the Name/Key "), "The exception retains the generic resource-error prefix.");
+                    Verify.IsTrue(error.Message.Contains("[Line: "), "The parse diagnostic retains its location.");
+                    Verify.IsFalse(error.Message.Contains("TabularControlsResources"), "Setup guidance is separate debug output, not part of the exception.");
                 }
                 finally
                 {

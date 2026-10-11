@@ -315,6 +315,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     L"through the 'Source' property is in the search path.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(VerifyXamlResourceReferenceTraceDeferredTemplateStaticResource)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a compiled deferred StaticResource miss traces its saved source path.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(VerifyXamlResourceReferenceTraceDeferredTemplateThemeResource)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a compiled deferred ThemeResource miss traces its saved source path.")
+            END_TEST_METHOD()
+
 
         private:
             void AccentColorChangeUpdatesGlobalThemesTest();

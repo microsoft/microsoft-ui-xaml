@@ -37,20 +37,22 @@ rather than a workaround. For the standard defaults, merge it in `App.xaml` afte
 Applications can instead supply equivalent resources or a complete custom style/template; no
 particular dictionary object is enforced. Compilation and construction can succeed before a
 required resource lookup fails during initial layout/style realization. The exception message
-remains unchanged: it reports the missing key, `0x802B000A` and the parser line/position. An
-unhandled parse failure can surface as a `0xC000027B` stowed exception.
+remains unchanged: it reports the missing key and parser line/position. The parse failure retains
+HRESULT `0x802B000A`; an unhandled failure can surface as a `0xC000027B` stowed exception.
 
-If a `TableView` is constructed before any `TabularControlsResources` instance has successfully
-completed construction, the Tabular DLL logs conditional setup guidance to an attached debugger,
-once per process. This is an advisory hint, not proof that resources are missing or registered.
-Equivalent resources, custom templates and later registration remain valid. A previously constructed
-dictionary suppresses the hint even if it was never merged or has since been removed.
+If a `TableView` is constructed before a `TabularControlsResources` instance has successfully
+completed construction on the same XAML UI thread, the Tabular DLL logs informational setup guidance
+to an attached debugger, at most once for the lifetime of that thread. Construction without an
+attached debugger does not consume the hint. This is advisory, not proof that resources are missing
+or registered. Equivalent resources, custom templates and later registration remain valid. A
+previously constructed dictionary on that thread suppresses the hint even if it was never merged
+or has since been removed.
 
 For the referencing markup path in resource-lookup tracing, enable tracing early in the application
 constructor, before `InitializeComponent`:
 
 ```csharp
-DebugSettings.IsXamlResourceReferenceTracingEnabled = true;
+this.DebugSettings.IsXamlResourceReferenceTracingEnabled = true;
 InitializeComponent();
 ```
 

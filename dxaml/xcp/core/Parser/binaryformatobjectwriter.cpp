@@ -1744,8 +1744,13 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideStaticResourceReference(
             });
 
             xstring_ptr currentUri;
-            // BaseUri is null while expanding a deferred template.
-            if (const auto sourceUri = m_spContext->get_BaseUri() ? m_spContext->get_BaseUri() : m_spContext->get_XamlResourceUri())
+            // A deferred template can retain its source only in the saved XAML resource URI.
+            auto sourceUri = m_spContext->get_BaseUri();
+            if (!sourceUri)
+            {
+                sourceUri = m_spContext->get_XamlResourceUri();
+            }
+            if (sourceUri)
             {
                 IGNOREHR(UriXStringGetters::GetPath(sourceUri, &currentUri));
             }
@@ -1834,8 +1839,13 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideThemeResourceValue(_In_ 
             });
 
             xstring_ptr currentUri;
-            // BaseUri is null while expanding a deferred template.
-            if (const auto sourceUri = m_spContext->get_BaseUri() ? m_spContext->get_BaseUri() : m_spContext->get_XamlResourceUri())
+            // A deferred template can retain its source only in the saved XAML resource URI.
+            auto sourceUri = m_spContext->get_BaseUri();
+            if (!sourceUri)
+            {
+                sourceUri = m_spContext->get_XamlResourceUri();
+            }
+            if (sourceUri)
             {
                 IGNOREHR(UriXStringGetters::GetPath(sourceUri, &currentUri));
             }
