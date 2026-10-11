@@ -170,9 +170,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // Six automation strings - CellLocalizedControlType, CellTextSeparator, CellNameFormat,
                 // GroupHeaderNameFormat, BooleanTrue and BooleanFalse - exist only in
                 // Strings\en-US\Resources.resw and in none of the other 85 locale files, so a non-English
-                // screen-reader user hears the English fallbacks for all six. Separately, mi-NZ is checked
-                // in with no strings at all. Both are real defects, but neither can be fixed by a test
-                // change: the values have to come from the localization pipeline.
+                // screen-reader user hears the English fallbacks for all six. That is a real defect, but it
+                // cannot be fixed by a test change: the values have to come from the localization pipeline.
                 //
                 // This assertion locks the gap at its present size so it cannot GROW, and fails the moment
                 // a new string ships without localization. Tighten the constants as the gaps close.
@@ -214,11 +213,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(anyResolved,
                     "No TableView resource resolved in any non-default language, so an empty locale cannot be distinguished from an unlocalized payload.");
 
-                // Strings\mi-NZ\Resources.resw is checked in with ZERO data elements, while the same
-                // locale is fully populated for peer controls such as Breadcrumb. A per-key gap list hides
-                // that, because one wholly empty locale reads as a handful of individually missing keys.
-                // The allowlist keeps the known case from failing CI while still catching the NEXT locale
-                // that ships empty.
+                // A per-key gap list hides a wholly empty locale, because it reads as a handful of
+                // individually missing keys. That is not hypothetical: Strings\mi-NZ\Resources.resw was
+                // checked in with zero data elements until localization update #12205 filled it. The
+                // allowlist exists so a known case cannot fail CI; it is empty now, so the next locale
+                // that ships empty fails here.
                 var unexpected = empty.Except(KnownEmptyLocales, StringComparer.OrdinalIgnoreCase).ToList();
 
                 Verify.AreEqual(0, unexpected.Count,
@@ -426,15 +425,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             "he-IL",    // RTL
             "ru-RU",    // Cyrillic, complex plurals
             "zh-CN",    // Simplified Chinese
-            "mi-NZ",    // the locale whose resource file is checked in empty
+            "mi-NZ",    // was checked in empty until #12205; kept as a regression guard
         };
 
-        // Six keys are absent from every non-English locale file, and mi-NZ is checked in empty. See
-        // VerifyEveryResourceResolvesInEveryShippedLocale for the full explanation; together these form
-        // the ceiling that keeps the gap from growing. Both should shrink to zero once localization runs.
+        // Six keys are absent from every non-English locale file. See
+        // VerifyEveryResourceResolvesInEveryShippedLocale for the full explanation; this is the ceiling
+        // that keeps the gap from growing. It should shrink to zero once localization runs.
         internal const int KnownUnlocalizedKeysPerLocale = 6;
 
-        internal static readonly string[] KnownEmptyLocales = { "mi-NZ" };
+        // Locales allowed to resolve no TableView string at all. Empty: mi-NZ was the one case, and
+        // #12205 fixed it. Add an entry only for a locale that is KNOWN to ship empty.
+        internal static readonly string[] KnownEmptyLocales = { };
 
         // A wholly empty locale contributes every key, not just the six, so the ceiling cannot be a flat
         // multiple of the locale count.
