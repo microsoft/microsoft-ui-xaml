@@ -129,49 +129,51 @@
             </Grid>
         </controls:SamplePresenter.Example>
 
+        <controls:SamplePresenter.InfoExtras>
+            <controls:RailSection
+                IsFirst="True"
+                Header="Keyboard"
+                Description="The shortcuts the first table supports. The table body is a single tab stop: Tab and Shift+Tab move between the Before table button, the table and the After table button, and the arrow keys move inside it.">
+                <Grid Style="{StaticResource StatusGridStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Up / Down" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="previous / next row" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="1" Text="Left / Right" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="previous / next cell in the focused row" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="2" Text="Home / End" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="first / last cell of the focused row" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="3" Text="Ctrl+Home / Ctrl+End" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="first / last row. Known issue: Ctrl+End can stop near the bottom of the visible rows instead of on the last row." TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="4" Text="Page Up / Page Down" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="one viewport up / down" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="5" Text="Tab / Shift+Tab" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="5" Grid.Column="1" Text="into the table, then out of it to the next or previous control on the page" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="6" Text="Space" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="6" Grid.Column="1" Text="selects the focused row; toggles the Active checkbox once focus is inside it" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="7" Text="Enter / Esc" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="7" Grid.Column="1" Text="on the Active, Office or Details cell: into its control / back to the cell" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="8" Text="Enter / Space" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="8" Grid.Column="1" Text="on a focused Name or Department header: sorts by that column" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                </Grid>
+            </controls:RailSection>
+        </controls:SamplePresenter.InfoExtras>
+
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <controls:RailSection
-                    IsFirst="True"
-                    Header="Keyboard"
-                    Description="The shortcuts the first table supports. The table body is a single tab stop: Tab and Shift+Tab move between the Before table button, the table and the After table button, and the arrow keys move inside it.">
-                    <Grid Style="{StaticResource StatusGridStyle}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Up / Down" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" Text="previous / next row" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Text="Left / Right" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="previous / next cell in the focused row" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="2" Text="Home / End" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="first / last cell of the focused row" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="3" Text="Ctrl+Home / Ctrl+End" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" Text="first / last row. Known issue: Ctrl+End can stop near the bottom of the visible rows instead of on the last row." TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="4" Text="Page Up / Page Down" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="4" Grid.Column="1" Text="one viewport up / down" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="5" Text="Tab / Shift+Tab" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="5" Grid.Column="1" Text="into the table, then out of it to the next or previous control on the page" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="6" Text="Space" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="6" Grid.Column="1" Text="selects the focused row; toggles the Active checkbox once focus is inside it" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="7" Text="Enter / Esc" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="7" Grid.Column="1" Text="on the Active, Office or Details cell: into its control / back to the cell" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="8" Text="Enter / Space" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="8" Grid.Column="1" Text="on a focused Name or Department header: sorts by that column" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    </Grid>
-                </controls:RailSection>
-
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="KeyboardNav"

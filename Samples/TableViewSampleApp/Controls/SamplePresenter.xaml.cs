@@ -76,6 +76,7 @@ public sealed partial class SamplePresenter : UserControl
         LayoutUpdated += OnLayoutUpdated;
         Bindings.Update();
         UpdateOptionsVisibility();
+        UpdateKeyboardReference();
         UpdateSourceVisibility();
         ApplyResponsiveLayout(ActualWidth);
     }
@@ -135,10 +136,73 @@ public sealed partial class SamplePresenter : UserControl
         (d as SamplePresenter)?.Bindings.Update();
     }
 
+    // Page-specific content shown in the Info tab between "What to look for" and the keyboard reference.
+    public object? InfoExtras
+    {
+        get => GetValue(InfoExtrasProperty);
+        set => SetValue(InfoExtrasProperty, value);
+    }
+
+    public static readonly DependencyProperty InfoExtrasProperty =
+        DependencyProperty.Register(nameof(InfoExtras), typeof(object), typeof(SamplePresenter),
+            new PropertyMetadata(null, OnBindingsChanged));
+
+    // Adds the hierarchy keys to the keyboard reference; pages with ShapingOptions get them when it has a parent relation.
+    public bool ShowHierarchyKeys
+    {
+        get => (bool)GetValue(ShowHierarchyKeysProperty);
+        set => SetValue(ShowHierarchyKeysProperty, value);
+    }
+
+    public static readonly DependencyProperty ShowHierarchyKeysProperty =
+        DependencyProperty.Register(nameof(ShowHierarchyKeys), typeof(bool), typeof(SamplePresenter),
+            new PropertyMetadata(false, (d, e) => ((SamplePresenter)d).UpdateKeyboardReference()));
+
+    private void UpdateKeyboardReference() =>
+        KeyboardReferenceSection.IncludeHierarchy = ShowHierarchyKeys || FindShaping(Options)?.Relation is not null;
+
+    private static ShapingOptions? FindShaping(object? node)
+    {
+        switch (node)
+        {
+            case ShapingOptions shaping:
+                return shaping;
+            case Panel panel:
+                foreach (var child in panel.Children)
+                {
+                    if (FindShaping(child) is { } found)
+                    {
+                        return found;
+                    }
+                }
+
+                return null;
+            case ContentControl content:
+                return FindShaping(content.Content);
+            case Border border:
+                return FindShaping(border.Child);
+            default:
+                return null;
+        }
+    }
+
+    private void OnRailTabsSelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+    {
+        var showInfo = sender.SelectedItem == RailInfoTab;
+        if (showInfo)
+        {
+            UpdateKeyboardReference();
+        }
+
+        OptionsHost.Visibility = showInfo ? Visibility.Collapsed : Visibility.Visible;
+        InfoPanel.Visibility = showInfo ? Visibility.Visible : Visibility.Collapsed;
+        RailScroller.ChangeView(null, 0, null, disableAnimation: true);
+    }
+
     private void UpdateOptionsVisibility()
     {
         var hasOptions = Options is not null;
-        OptionsBorder.Visibility = hasOptions ? Visibility.Visible : Visibility.Collapsed;
+        OptionsRail.Visibility = hasOptions ? Visibility.Visible : Visibility.Collapsed;
         ApplyResponsiveLayout(ActualWidth);
     }
 
@@ -482,7 +546,9 @@ public sealed partial class SamplePresenter : UserControl
     // Unnamed on purpose (see SamplePresenter.xaml): WinUI would surface an x:Name as the AutomationId.
     private InfoBar TryItInfoBar => (InfoBar)ExampleGrid.Children[0];
 
-    private InfoBar WhatToLookForInfoBar => (InfoBar)RailPanel.Children[2];
+    private InfoBar WhatToLookForInfoBar => (InfoBar)InfoPanel.Children[0];
+
+    private ScrollViewer RailScroller => (ScrollViewer)RailGrid.Children[1];
 
     private void UpdateTryIt()
     {
@@ -505,6 +571,7 @@ public sealed partial class SamplePresenter : UserControl
 
         var hasHeight = !double.IsNaN(availableHeight) && availableHeight > 0;
         var target = hasHeight ? Math.Max(0, availableHeight - _headerHeight - OuterGrid.Margin.Top - OuterGrid.Margin.Bottom) : 0;
+        OptionsRail.MaxRailHeight = hasHeight ? Math.Max(ExampleRowMinHeight, Math.Floor(target)) : double.PositiveInfinity;
         var sourceVisible = SourceExpander.Visibility == Visibility.Visible;
         var sourceExpanded = sourceVisible && SourceExpander.IsExpanded;
         // Right after a collapse ActualHeight is still the expanded height.
@@ -650,20 +717,22 @@ public sealed partial class SamplePresenter : UserControl
 
         if (isNarrow)
         {
-            Grid.SetRow(OptionsBorder, 1);
-            Grid.SetColumn(OptionsBorder, 0);
-            Grid.SetColumnSpan(OptionsBorder, 2);
-            OptionsBorder.Margin = new Thickness(0, 12, 0, 0);
+            OptionsRail.FillsSlot = false;
+            Grid.SetRow(OptionsRail, 1);
+            Grid.SetColumn(OptionsRail, 0);
+            Grid.SetColumnSpan(OptionsRail, 2);
+            OptionsRail.Margin = new Thickness(0, 12, 0, 0);
             // Collapse the right column to 0 so it doesn't reserve 320 px of dead space.
             OptionsColumn.Width = new GridLength(0);
             Grid.SetRow(SourceExpander, 2);
         }
         else
         {
-            Grid.SetRow(OptionsBorder, 0);
-            Grid.SetColumn(OptionsBorder, 1);
-            Grid.SetColumnSpan(OptionsBorder, 1);
-            OptionsBorder.Margin = new Thickness(12, 0, 0, 0);
+            OptionsRail.FillsSlot = true;
+            Grid.SetRow(OptionsRail, 0);
+            Grid.SetColumn(OptionsRail, 1);
+            Grid.SetColumnSpan(OptionsRail, 1);
+            OptionsRail.Margin = new Thickness(12, 0, 0, 0);
             // Restore the fixed-width column for the wide layout.
             OptionsColumn.Width = hasOptions ? new GridLength(OptionsColumnWidth) : new GridLength(0);
             Grid.SetRow(SourceExpander, 1);

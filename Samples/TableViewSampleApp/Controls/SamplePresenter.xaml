@@ -99,36 +99,75 @@
         <!-- Options rail (right in wide layouts, stacked under the example in narrow
              layouts) — collapses when Options is null. In wide mode its width is
              governed by the parent OptionsColumn (fixed 320 px) so the table never
-             shakes. -->
-        <Border
-            x:Name="OptionsBorder"
+             shakes, and RailHost bounds its height so the rail scrolls, not the page. -->
+        <local:RailHost
+            x:Name="OptionsRail"
             Grid.Row="0" Grid.Column="1"
             Margin="12,0,0,0"
-            Padding="16"
+            Visibility="Collapsed">
+        <Border
+            x:Name="OptionsBorder"
             CornerRadius="6"
             BorderThickness="1"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            Background="{ThemeResource LayerFillColorDefaultBrush}"
-            Visibility="Collapsed">
-            <ScrollViewer VerticalScrollMode="Auto" VerticalScrollBarVisibility="Auto">
-                <StackPanel x:Name="RailPanel" Spacing="12">
-                    <TextBlock Text="Options" FontWeight="SemiBold" FontSize="12"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                    <ContentControl
-                        x:Name="OptionsHost"
-                        IsTabStop="False"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Stretch"
-                        Content="{x:Bind Options, Mode=OneWay}"/>
-                    <InfoBar
-                        Title="What to look for"
-                        Severity="Informational"
-                        IsOpen="True"
-                        IsClosable="False"
-                        Visibility="Collapsed"/>
-                </StackPanel>
-            </ScrollViewer>
+            Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Grid x:Name="RailGrid">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <SelectorBar
+                    x:Name="RailTabs"
+                    Margin="8,4,8,0"
+                    AutomationProperties.AutomationId="RailTabs"
+                    AutomationProperties.Name="Sample panels"
+                    SelectionChanged="OnRailTabsSelectionChanged">
+                    <SelectorBarItem
+                        x:Name="RailOptionsTab"
+                        Text="Options"
+                        IsSelected="True"
+                        AutomationProperties.AutomationId="RailOptionsTab"
+                        AutomationProperties.Name="Options"/>
+                    <SelectorBarItem
+                        x:Name="RailInfoTab"
+                        Text="Info"
+                        AutomationProperties.AutomationId="RailInfoTab"
+                        AutomationProperties.Name="Info"/>
+                </SelectorBar>
+                <ScrollViewer
+                    Grid.Row="1"
+                    VerticalScrollMode="Auto"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollMode="Disabled"
+                    HorizontalScrollBarVisibility="Disabled"
+                    IsVerticalScrollChainingEnabled="False">
+                    <Grid Padding="16,8,16,16">
+                        <ContentControl
+                            x:Name="OptionsHost"
+                            IsTabStop="False"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Content="{x:Bind Options, Mode=OneWay}"/>
+                        <StackPanel x:Name="InfoPanel" Spacing="12" Visibility="Collapsed">
+                            <InfoBar
+                                Title="What to look for"
+                                Severity="Informational"
+                                IsOpen="True"
+                                IsClosable="False"
+                                Visibility="Collapsed"/>
+                            <ContentControl
+                                x:Name="InfoExtrasHost"
+                                IsTabStop="False"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                Content="{x:Bind InfoExtras, Mode=OneWay}"/>
+                            <local:KeyboardReference x:Name="KeyboardReferenceSection"/>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
         </Border>
+        </local:RailHost>
 
         <!-- Source expander spans both columns -->
         <Expander
