@@ -130,7 +130,6 @@ winrt::Size TableView::MeasureOverride(winrt::Size const& availableSize)
         {
             if (auto const scroller = m_bodyScroller.get()) { ObserveScrollTelemetry(scroller, false, false); }
         }
-        QueueTelemetryLayout();
         return desired;
     }
     catch (...)
@@ -143,6 +142,42 @@ winrt::Size TableView::MeasureOverride(winrt::Size const& availableSize)
         {
             TableViewTelemetry::IgnoreOperation(m_scrollTelemetry, scrollGeneration,
                 TableViewTelemetry::IgnoreReason::UnattributedFault, winrt::to_hresult());
+        }
+        throw;
+    }
+}
+
+winrt::Size TableView::ArrangeOverride(winrt::Size const& finalSize)
+{
+    BeginInitializationTelemetry(TableViewTelemetry::Origin::Loaded);
+    auto const lifetime = m_telemetryLifetimeGeneration;
+    auto const generation = m_telemetry.operationGeneration;
+    try
+    {
+        auto arranged = __super::ArrangeOverride(finalSize);
+        if (lifetime == m_telemetryLifetimeGeneration && TableViewTelemetry::IsInitializing(m_telemetry))
+        {
+            RefreshTelemetryConfiguration();
+            if (lifetime == m_telemetryLifetimeGeneration)
+            {
+                if (m_rowsRepeater.get())
+                {
+                    TableViewTelemetry::CompleteInitial(m_telemetry, TableViewTelemetry::Result::Success);
+                }
+                else
+                {
+                    TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::DeferredOrUnproven);
+                }
+            }
+        }
+        return arranged;
+    }
+    catch (...)
+    {
+        if (lifetime == m_telemetryLifetimeGeneration)
+        {
+            IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::Layout,
+                generation, TableViewTelemetry::Stage::Layout, winrt::to_hresult());
         }
         throw;
     }

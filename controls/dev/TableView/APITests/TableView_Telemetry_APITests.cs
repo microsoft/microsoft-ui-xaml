@@ -47,24 +47,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(1u, summary.Number("SelectionCount"));
             Verify.AreEqual(1u, summary.Number("ContentKind"));
             Verify.IsTrue(summary.Flag("RowCountAvailable"));
-            Verify.AreEqual(3, events.Count(e => e.Provider == TableViewTelemetryCapture.SdkProvider),
+            Verify.AreEqual(1, events.Count(e => e.Provider == TableViewTelemetryCapture.SdkProvider),
                 "Selection must not add per-action SDK spans or feature-use events.");
         }
 
         [TestMethod]
-        public void VerifyRectangleClipRecovery()
+        public void VerifyInitializationDoesNotWaitForRectangleClipReveal()
         {
             VerifyClipRecovery(changeTransform: false);
         }
 
         [TestMethod]
-        public void VerifyClipTransformRecovery()
+        public void VerifyInitializationDoesNotWaitForClipTransformReveal()
         {
             VerifyClipRecovery(changeTransform: true);
         }
 
         [TestMethod]
-        public void VerifyMutableTransformGroupDoesNotLeaveInitializationPending()
+        public void VerifyMutableTransformGroupDoesNotDelayInitialization()
         {
             using var capture = new TableViewTelemetryCapture();
             TableView table = null;
@@ -88,12 +88,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             IdleSynchronizer.Wait();
             var events = UnloadAndRead(capture);
-            Verify.AreEqual(1, events.Count(e => e.IsTip(64477764)));
-            VerifyTip(events, operation: 0, kind: 4, reason: 107, count: 1);
             Verify.IsTrue(events.Single(e => e.IsTip(64477764)).TimestampQpc < changed,
-                "An unobservable mutable transform must be retired before waiting for its collection changes.");
-            Verify.AreEqual(3u, Summary(events).Number("InitialOutcome"));
-            VerifyNoProductFailures(events);
+                "Arrangement must finish before the application's later transform collection change.");
+            VerifyInitialization(events);
         }
 
         [TestMethod]
@@ -115,7 +112,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyUnsupportedClipObservationIsIgnored()
+        public void VerifyInitializationDoesNotReadUnsupportedClipProjection()
         {
             using var capture = new TableViewTelemetryCapture();
             TableView table = null;
@@ -130,14 +127,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => table.ClearValue(UIElement.ClipProperty));
             IdleSynchronizer.Wait();
             var events = UnloadAndRead(capture);
-            Verify.AreEqual(1, events.Count(e => e.IsTip(64477764)));
-            VerifyTip(events, operation: 0, kind: 4, reason: 106, count: 1);
-            var start = events.Single(e => e.Name == "TableView_Initialization/Start");
-            var stop = events.Single(e => e.Name == "TableView_Initialization/Stop");
-            Verify.AreEqual(start.ActivityId, stop.ActivityId);
-            Verify.AreEqual(3u, stop.Number("Result"));
-            Verify.AreEqual(3u, Summary(events).Number("InitialOutcome"));
-            VerifyNoProductFailures(events);
+            VerifyInitialization(events);
+        }
+
+        [TestMethod]
+        public void VerifyInitializationDoesNotWaitForOpacityReveal()
+        {
+            using var capture = new TableViewTelemetryCapture();
+            TableView table = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateTableView();
+                table.Opacity = 0;
+                LoadContent(table);
+            });
+            IdleSynchronizer.Wait();
+            long reveal = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                reveal = Stopwatch.GetTimestamp();
+                table.Opacity = 1;
+            });
+            IdleSynchronizer.Wait();
+            var events = UnloadAndRead(capture);
+            Verify.IsTrue(events.Single(e => e.IsTip(64477764)).TimestampQpc < reveal,
+                "Arrangement latency must not include waiting for the app to show an opaque control.");
+            VerifyInitialization(events);
         }
 
         [TestMethod]
@@ -308,9 +323,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             IdleSynchronizer.Wait();
             var events = UnloadAndRead(capture);
+            Verify.IsTrue(events.Single(e => e.IsTip(64477764)).TimestampQpc < reveal,
+                "Arrangement must finish before the application's later clip reveal.");
             VerifyInitialization(events);
-            Verify.IsTrue(events.Single(e => e.IsTip(64477764)).TimestampQpc >= reveal,
-                "Initialization must not finish before the supported clip is revealed.");
         }
 
         private IReadOnlyList<TableViewTelemetryCapture.Record> UnloadAndRead(TableViewTelemetryCapture capture)
@@ -323,19 +338,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static TableViewTelemetryCapture.Record Summary(IReadOnlyList<TableViewTelemetryCapture.Record> events)
         {
             var summary = events.Single(e => e.Name == "TableView_SessionSummary");
-            Verify.AreEqual(3u, summary.Number("SchemaVersion"));
-            Verify.AreEqual(1u, summary.Number("SessionSummaryVersion"));
+            Verify.AreEqual(4u, summary.Number("SchemaVersion"));
+            Verify.AreEqual(2u, summary.Number("SessionSummaryVersion"));
             return summary;
         }
 
         private static void VerifyInitialization(IReadOnlyList<TableViewTelemetryCapture.Record> events)
         {
-            var start = events.Single(e => e.Name == "TableView_Initialization/Start");
-            var stop = events.Single(e => e.Name == "TableView_Initialization/Stop");
-            Verify.AreEqual(3u, start.Number("SchemaVersion"));
-            Verify.AreEqual(3u, stop.Number("SchemaVersion"));
-            Verify.AreEqual(start.ActivityId, stop.ActivityId);
-            Verify.AreEqual(1u, stop.Number("Result"));
+            Verify.AreEqual(0, events.Count(e => e.Name.StartsWith("TableView_Initialization", StringComparison.Ordinal)),
+                "TiP supplies initialization timing; SDK must not duplicate that activity.");
             Verify.AreEqual(1, events.Count(e => e.IsTip(64477764)));
             VerifyTip(events, operation: 0, kind: 1, reason: 1, count: 1);
             Verify.AreEqual(1u, Summary(events).Number("InitialOutcome"));

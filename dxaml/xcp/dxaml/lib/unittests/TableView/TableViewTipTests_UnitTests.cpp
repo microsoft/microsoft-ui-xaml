@@ -105,7 +105,7 @@ public:
         const auto operation = TableViewOperationTest::info();
         VERIFY_ARE_EQUAL(64477764u, initial.testCaseId);
         VERIFY_ARE_EQUAL(64477774u, operation.testCaseId);
-        VERIFY_ARE_EQUAL(static_cast<unsigned char>(2), initial.version);
+        VERIFY_ARE_EQUAL(static_cast<unsigned char>(3), initial.version);
         VERIFY_ARE_EQUAL(static_cast<unsigned char>(2), operation.version);
         VERIFY_IS_TRUE(initial.storage == TestStorage::Process && operation.storage == TestStorage::Process);
         constexpr auto forbidden = TestProperties::ExtendedLifetime | TestProperties::RuntimeExtended |

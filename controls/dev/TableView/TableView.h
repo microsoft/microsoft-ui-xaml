@@ -15,7 +15,6 @@
 #include "TableView.properties.h"
 #include "TableViewRowInfo.h"
 #include "TableViewTelemetry.h"
-#include "TableViewTelemetryRegistration.h"
 
 // ThemeSettings (Microsoft.UI.System) is used below for UI-thread High Contrast change notifications.
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
@@ -272,6 +271,7 @@ public:
     bool FocusRealizedRowCell(winrt::UIElement const& element, int32_t visibleColumnIndex);
 
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
+    winrt::Size ArrangeOverride(winrt::Size const& finalSize);
 
 
     enum class EditingUnit
@@ -649,7 +649,7 @@ private:
     private:
         TableView& m_owner;
         ActionTelemetry* m_previousAction{};
-        TableViewTelemetry::State m_state;
+        TableViewTelemetry::OperationState m_state;
         TableViewTelemetry::Stage m_stage;
         uint64_t m_generation{};
         uint64_t m_controlGenerationAtAdmission{};
@@ -678,14 +678,7 @@ private:
     };
 
     void BeginInitializationTelemetry(TableViewTelemetry::Origin origin) noexcept;
-    void QueueTelemetryLayout() noexcept;
-    void StopTelemetryLayout() noexcept;
-    void OnTelemetryLayout();
-    bool WatchTelemetryVisualProperty(winrt::DependencyObject const& object, winrt::DependencyProperty const& property);
-    void WatchTelemetryTransform(winrt::Transform const& transform);
-    bool SpendTelemetryInspectionBudget() noexcept;
     TableViewTelemetry::Configuration SnapshotTelemetryConfiguration() noexcept;
-    bool TryGetTelemetryConfiguration(TableViewTelemetry::Configuration& configuration);
     uint64_t BeginOperationTelemetry(TableViewTelemetry::Operation operation, bool admitted = true) noexcept;
     void EndOperationTelemetry() noexcept;
     void InvalidateOperationTelemetry() noexcept;
@@ -697,7 +690,7 @@ private:
     void IgnoreScrollTelemetry(TableViewTelemetry::IgnoreReason reason) noexcept;
 
     TableViewTelemetry::State m_telemetry;
-    TableViewTelemetry::State m_scrollTelemetry;
+    TableViewTelemetry::OperationState m_scrollTelemetry{ m_telemetry };
     ActionTelemetry* m_activeActionTelemetry{};
     uint64_t m_telemetryLifetimeGeneration{};
     TableViewTelemetry::IgnoreReason m_telemetryCancellationReason{ TableViewTelemetry::IgnoreReason::Cancelled };
@@ -716,19 +709,6 @@ private:
     std::optional<double> m_headerScrollTelemetryOffset;
     bool m_scrollTelemetrySettled{};
     uint64_t m_scrollTelemetryVersion{};
-    winrt::event_token m_telemetryLayoutToken{};
-    TableViewTelemetry::Registration m_telemetryLayoutRegistration;
-    struct TelemetryVisualWatch
-    {
-        winrt::weak_ref<winrt::DependencyObject> object{ nullptr };
-        winrt::DependencyProperty property{ nullptr };
-        TableViewTelemetry::Registration registration;
-    };
-    std::vector<TelemetryVisualWatch> m_telemetryVisualWatches;
-    uint64_t m_telemetryLayoutGeneration{};
-    uint32_t m_telemetryInspectionCount{};
-    uint32_t m_telemetryInspectionBudget{};
-    bool m_telemetryObservationLimited{};
     bool m_telemetryTemplateApplied{};
     uint32_t m_telemetryMutationDepth{};
     uint32_t m_telemetrySourceMutationDepth{};

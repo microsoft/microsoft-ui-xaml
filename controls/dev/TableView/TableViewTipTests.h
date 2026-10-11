@@ -79,7 +79,7 @@ namespace TableViewTelemetry
 
     TIP_declare_test(TableViewInitializationTest, 64477764)
     {
-        TIP_set_data_version(2);
+        TIP_set_data_version(3);
         TIP_set_metrics_enabled();
         using reason = TableViewTipReason;
 

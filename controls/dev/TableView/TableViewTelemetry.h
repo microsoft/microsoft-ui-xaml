@@ -6,15 +6,11 @@
 #include <array>
 #include <cstdint>
 #include <optional>
-#include <TraceLoggingActivity.h>
 #include "MuxcTraceLogging.h"
 #include "TableViewTipTests.h"
 
 namespace TableViewTelemetry
 {
-    using Activity = TraceLoggingActivity<
-        g_hTelemetryProvider, MICROSOFT_KEYWORD_MEASURES | KEYWORD_TABLEVIEW, WINEVENT_LEVEL_INFO>;
-
     enum class Result : uint32_t { Started = 0, Success = 1, Failure = 2, Cancelled = 3 };
     enum class Stage : uint32_t
     {
@@ -22,7 +18,7 @@ namespace TableViewTelemetry
         Selection = 6, Editing = 7, Filter = 8, Grouping = 9, Scroll = 10
     };
     enum class InitialState { NotStarted, Started, Finished };
-    enum class InitialOutcome : uint32_t { NotObserved = 0, Ready = 1, Failure = 2, Ignored = 3 };
+    enum class InitialOutcome : uint32_t { NotObserved = 0, Arranged = 1, Failure = 2, Ignored = 3 };
     enum class Attribution : uint32_t { Unknown = 0, Product = 1, Application = 2 };
 
     struct ShapingObservation
@@ -68,39 +64,43 @@ namespace TableViewTelemetry
         bool rowCountAvailable{};
     };
 
-    // One control's UI-thread state; never retains an item, column or visual.
-    struct State
-    {
-        State() = default;
-        State(State const&) = delete;
-        State& operator=(State const&) = delete;
+    struct State;
 
-        std::optional<Activity> initialActivity;
-        void (*initialCompleted)(void*) noexcept {};
-        void* initialCompletedContext{};
-        TableViewInitializationTest initialTest;
+    // Bounded operation ownership; borrows the control's census without duplicating it.
+    struct OperationState
+    {
+        explicit OperationState(State& owner) noexcept : usageOwner(owner) {}
+        OperationState(OperationState const&) = delete;
+        OperationState& operator=(OperationState const&) = delete;
+
         TableViewOperationTest operationTest;
         Configuration configuration{ Content::Empty, 0, false, false };
-        Session session;
-        // Borrowed only by synchronous control actions and the control-owned scroll state.
-        State* usageOwner{};
-        InitialState initial{};
-        InitialOutcome initialOutcome{};
+        State& usageOwner;
         Origin origin{};
         uint64_t operationGeneration{};
         uint64_t operationSessionGeneration{};
         Operation operation{};
-        uint32_t reportedErrors{};
-        bool initialTipPending{};
         bool operationTipPending{};
         bool operationPending{};
         bool operationHandled{};
     };
 
+    // Only the control owns initialization, loaded-session counters and the diagnostic mask.
+    struct State : OperationState
+    {
+        State() noexcept : OperationState(*this) {}
+        TableViewInitializationTest initialTest;
+        Session session;
+        InitialState initial{};
+        InitialOutcome initialOutcome{};
+        uint32_t reportedErrors{};
+        bool initialTipPending{};
+    };
+
     bool IsEnabled() noexcept;
-    bool IsOperationStarted(State const& state) noexcept;
-    bool IsOperationHandled(State const& state, Operation operation, uint64_t generation) noexcept;
-    bool NeedsLayout(State const& state) noexcept;
+    bool IsOperationStarted(OperationState const& state) noexcept;
+    bool IsOperationHandled(OperationState const& state, Operation operation, uint64_t generation) noexcept;
+    inline bool IsInitializing(State const& state) noexcept { return state.initial == InitialState::Started; }
     void BeginSession(State& state) noexcept;
     void EndSession(State& state) noexcept;
     void AbandonSession(State& state) noexcept;
@@ -109,14 +109,13 @@ namespace TableViewTelemetry
     void CompleteInitial(State& state, Result result, Stage stage = Stage::None, std::optional<HRESULT> error = {}) noexcept;
     void IgnoreInitial(State& state, IgnoreReason reason, Stage stage = Stage::None,
         std::optional<HRESULT> error = {}, AppFaultKind kind = AppFaultKind::None) noexcept;
-    bool UpdateConfiguration(State& state, Configuration const& configuration) noexcept;
-    uint64_t BeginOperation(State& state, Operation operation) noexcept;
-    void CompleteOperation(State& state, Result result, std::optional<HRESULT> error = {}) noexcept;
-    void CompleteOperation(State& state, uint64_t generation, Result result, std::optional<HRESULT> error = {}) noexcept;
-    void IgnoreOperation(State& state, uint64_t generation, IgnoreReason reason,
+    bool UpdateConfiguration(OperationState& state, Configuration const& configuration) noexcept;
+    uint64_t BeginOperation(OperationState& state, Operation operation) noexcept;
+    void CompleteOperation(OperationState& state, uint64_t generation, Result result, std::optional<HRESULT> error = {}) noexcept;
+    void IgnoreOperation(OperationState& state, uint64_t generation, IgnoreReason reason,
         std::optional<HRESULT> error = {}, AppFaultKind kind = AppFaultKind::None) noexcept;
-    void FailOperation(State& state, Operation operation, uint64_t generation, Stage stage, std::optional<HRESULT> error = {}) noexcept;
-    void ReportError(State& state, Operation operation, Stage stage, bool recoverable,
+    void FailOperation(OperationState& state, Operation operation, uint64_t generation, Stage stage, std::optional<HRESULT> error = {}) noexcept;
+    void ReportError(OperationState& state, Operation operation, Stage stage, bool recoverable,
         Attribution attribution = Attribution::Unknown, std::optional<HRESULT> error = {},
         AppFaultKind kind = AppFaultKind::None) noexcept;
     uint32_t CountBucket(uint32_t count) noexcept;

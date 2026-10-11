@@ -41,12 +41,25 @@ public:
         State state;
         BeginInitial(state, Origin::Loaded);
 #if TABLEVIEW_TIP_REAL_LIBRARY
-        VERIFY_IS_TRUE(state.initialTipPending && NeedsLayout(state));
+        VERIFY_IS_TRUE(state.initialTipPending && IsInitializing(state));
 #endif
         CompleteInitial(state, Result::Success);
         auto const generation = BeginOperation(state, Operation::Filter);
-        VERIFY_IS_FALSE(NeedsLayout(state));
+        VERIFY_IS_FALSE(IsInitializing(state));
         IgnoreOperation(state, generation, IgnoreReason::Cancelled);
+    }
+
+    TEST_METHOD(InitializationOutcomeDoesNotDependOnNativeAdmission)
+    {
+        State state;
+        BeginInitial(state, Origin::Loaded);
+        VERIFY_IS_TRUE(state.initial == InitialState::Started);
+        CompleteInitial(state, Result::Success);
+        VERIFY_IS_TRUE(state.initial == InitialState::Finished);
+        VERIFY_IS_TRUE(state.initialOutcome == InitialOutcome::Arranged);
+        IgnoreInitial(state, IgnoreReason::Unloaded);
+        BeginInitial(state, Origin::Template);
+        VERIFY_IS_TRUE(state.initialOutcome == InitialOutcome::Arranged);
     }
 
 #ifdef KEYWORD_TABLEVIEW
@@ -85,9 +98,9 @@ public:
 
     TEST_METHOD(SessionEpochRejectsLateOperationOwners)
     {
-        State owner, action;
+        State owner;
+        OperationState action{ owner };
         BeginSession(owner);
-        action.usageOwner = &owner;
         auto const old = BeginOperation(action, Operation::CommitEdit);
         EndSession(owner);
         BeginSession(owner);
@@ -97,8 +110,7 @@ public:
         VERIFY_IS_TRUE(IsOperationStarted(owner));
         CompleteOperation(owner, current, Result::Success);
         VERIFY_ARE_EQUAL(1u, owner.session.counts[8]);
-        State lateFailure;
-        lateFailure.usageOwner = &owner;
+        OperationState lateFailure{ owner };
         auto const failureGeneration = BeginOperation(lateFailure, Operation::CommitEdit);
 #if TABLEVIEW_TIP_REAL_LIBRARY
         auto observedFailure = lateFailure.operationTest;

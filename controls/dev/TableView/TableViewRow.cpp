@@ -1227,7 +1227,7 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         // rows update reactively. Custom columns must also bind to inherited DataContext, not bake
         // in the initial dataItem.
         std::optional<TableView::ApplicationCalloutTelemetry> callout;
-        if (TableViewTelemetry::NeedsLayout(ownerImpl->m_telemetry) || ownerImpl->m_activeActionTelemetry ||
+        if (TableViewTelemetry::IsInitializing(ownerImpl->m_telemetry) || ownerImpl->m_activeActionTelemetry ||
             TableViewTelemetry::IsOperationStarted(ownerImpl->m_telemetry))
         {
             callout.emplace(*ownerImpl, TableViewTelemetry::Stage::Layout, TableViewTelemetry::AppFaultKind::Factory);

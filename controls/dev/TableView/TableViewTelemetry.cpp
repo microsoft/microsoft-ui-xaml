@@ -13,7 +13,7 @@ namespace TableViewTelemetry
 {
     namespace
     {
-        constexpr uint32_t schemaVersion = 3;
+        constexpr uint32_t schemaVersion = 4;
         constexpr ULONGLONG measuresKeyword = MICROSOFT_KEYWORD_MEASURES | KEYWORD_TABLEVIEW;
 
 #define TABLEVIEW_COMMON_FIELDS \
@@ -28,7 +28,7 @@ namespace TableViewTelemetry
     TraceLoggingKeyword(measuresKeyword), \
     TABLEVIEW_COMMON_FIELDS
 
-        TableViewTipDimensions GetDimensions(State const& state) noexcept
+        TableViewTipDimensions GetDimensions(OperationState const& state) noexcept
         {
             TableViewTipDimensions dimensions;
             dimensions.origin = state.origin;
@@ -61,11 +61,6 @@ namespace TableViewTelemetry
             }
         }
 
-        State& UsageOwner(State& state) noexcept
-        {
-            return state.usageOwner ? *state.usageOwner : state;
-        }
-
         void ObserveCollector(Session& session, bool enabled) noexcept
         {
             session.collectorEverEnabled = session.collectorEverEnabled || enabled;
@@ -78,15 +73,15 @@ namespace TableViewTelemetry
             else { ++count; }
         }
 
-        bool OwnsSession(State& state) noexcept
+        bool OwnsSession(OperationState const& state) noexcept
         {
-            auto const& session = UsageOwner(state).session;
+            auto const& session = state.usageOwner.session;
             return session.active && state.operationSessionGeneration == session.generation;
         }
 
-        void RecordOutcome(State& state, Result result, std::optional<IgnoreReason> reason = {}) noexcept
+        void RecordOutcome(OperationState& state, Result result, std::optional<IgnoreReason> reason = {}) noexcept
         {
-            auto& session = UsageOwner(state).session;
+            auto& session = state.usageOwner.session;
             if (!OwnsSession(state) || !IsMeasuredOperation(state.operation)) { return; }
             ObserveCollector(session, IsEnabled());
             if (result == Result::Success)
@@ -161,25 +156,15 @@ namespace TableViewTelemetry
             test.reset();
         }
 
-        void StopInitialActivity(State& state, Result result, Stage stage) noexcept
+        void StopInitial(State& state, Result result) noexcept
         {
             state.initial = InitialState::Finished;
-            state.initialOutcome = result == Result::Success ? InitialOutcome::Ready :
+            state.initialOutcome = result == Result::Success ? InitialOutcome::Arranged :
                 result == Result::Failure ? InitialOutcome::Failure : InitialOutcome::Ignored;
             state.initialTipPending = false;
-            if (state.initialCompleted) { state.initialCompleted(state.initialCompletedContext); }
-            if (state.initialActivity && state.initialActivity->IsStarted())
-            {
-                TraceLoggingWriteStop(*state.initialActivity, "TableView_Initialization", TABLEVIEW_COMMON_FIELDS,
-                    TraceLoggingUInt32(static_cast<uint32_t>(result), "Result"),
-                    TraceLoggingUInt32(static_cast<uint32_t>(stage), "FailureStage"),
-                    TraceLoggingUInt32(static_cast<uint32_t>(state.origin), "StartOrigin"),
-                    TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance));
-            }
-            state.initialActivity.reset();
         }
 
-        void StopOperation(State& state) noexcept
+        void StopOperation(OperationState& state) noexcept
         {
             if (state.operationPending) { state.operationHandled = true; }
             state.operationPending = false;
@@ -205,17 +190,12 @@ namespace TableViewTelemetry
         return TraceLoggingProviderEnabled(g_hTelemetryProvider, WINEVENT_LEVEL_INFO, measuresKeyword) != FALSE;
     }
 
-    bool NeedsLayout(State const& state) noexcept
-    {
-        return state.initial == InitialState::Started;
-    }
-
-    bool IsOperationStarted(State const& state) noexcept
+    bool IsOperationStarted(OperationState const& state) noexcept
     {
         return state.operationPending;
     }
 
-    bool IsOperationHandled(State const& state, Operation operation, uint64_t generation) noexcept
+    bool IsOperationHandled(OperationState const& state, Operation operation, uint64_t generation) noexcept
     {
         return generation != 0 && generation == state.operationGeneration &&
             operation == state.operation && state.operationHandled;
@@ -228,7 +208,6 @@ namespace TableViewTelemetry
         state.session = {};
         state.session.generation = generation;
         state.session.active = true;
-        state.usageOwner = &state;
         state.reportedErrors = 0;
         state.session.collectorEnabledAtLoad = IsEnabled();
         ObserveCollector(state.session, state.session.collectorEnabledAtLoad);
@@ -247,7 +226,7 @@ namespace TableViewTelemetry
         auto const& configuration = state.configuration;
         TraceLoggingWriteActivity(g_hTelemetryProvider, "TableView_SessionSummary",
             g_TelemetryProviderActivityId != GUID{} ? &g_TelemetryProviderActivityId : nullptr, nullptr, TABLEVIEW_INFO_FIELDS,
-            TraceLoggingUInt32(1, "SessionSummaryVersion"),
+            TraceLoggingUInt32(2, "SessionSummaryVersion"),
             TraceLoggingUInt32(static_cast<uint32_t>(state.initialOutcome), "InitialOutcome"),
             TraceLoggingUInt32(static_cast<uint32_t>(configuration.content), "ContentKind"),
             TraceLoggingUInt32(configuration.columnCountBucket, "ColumnCountBucket"),
@@ -294,20 +273,10 @@ namespace TableViewTelemetry
     void BeginInitial(State& state, Origin origin) noexcept
     {
         if (state.initial != InitialState::NotStarted) { return; }
-        state.initial = InitialState::Finished;
+        state.initial = InitialState::Started;
         state.origin = origin;
         state.initialTest->dimensions = GetDimensions(state);
         state.initialTipPending = state.initialTest.start() != GUID{};
-        if (state.initialTipPending) { state.initial = InitialState::Started; }
-        if (IsEnabled())
-        {
-            state.initial = InitialState::Started;
-            state.initialActivity.emplace();
-            state.initialActivity->SetRelatedActivityId(g_TelemetryProviderActivityId);
-            TraceLoggingWriteStart(*state.initialActivity, "TableView_Initialization", TABLEVIEW_COMMON_FIELDS,
-                TraceLoggingUInt32(static_cast<uint32_t>(state.origin), "StartOrigin"),
-                TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance));
-        }
     }
 
     void CompleteInitial(State& state, Result result, Stage stage, std::optional<HRESULT> error) noexcept
@@ -324,10 +293,10 @@ namespace TableViewTelemetry
             return;
         }
         if (state.initialTipPending) { CompleteTip(state.initialTest, result, stage, error); }
-        StopInitialActivity(state, result, stage);
+        StopInitial(state, result);
     }
 
-    void IgnoreInitial(State& state, IgnoreReason reason, Stage stage, std::optional<HRESULT> error, AppFaultKind kind) noexcept
+    void IgnoreInitial(State& state, IgnoreReason reason, Stage, std::optional<HRESULT> error, AppFaultKind kind) noexcept
     {
         if (state.initial != InitialState::Started) { return; }
         auto const name = GetIgnoreName(reason);
@@ -336,10 +305,10 @@ namespace TableViewTelemetry
         {
             IgnoreTip(state.initialTest, reason, name, error, kind);
         }
-        StopInitialActivity(state, Result::Cancelled, stage);
+        StopInitial(state, Result::Cancelled);
     }
 
-    bool UpdateConfiguration(State& state, Configuration const& configuration) noexcept
+    bool UpdateConfiguration(OperationState& state, Configuration const& configuration) noexcept
     {
         if (configuration.rowCountBucket > 4 || configuration.columnCountBucket > 4 ||
             static_cast<uint32_t>(configuration.content) > static_cast<uint32_t>(Content::GroupHeaders))
@@ -349,12 +318,13 @@ namespace TableViewTelemetry
         }
         state.configuration = configuration;
         auto const dimensions = GetDimensions(state);
-        if (state.initialTipPending) { state.initialTest->dimensions = dimensions; }
+        auto& owner = state.usageOwner;
+        if (&state == &owner && owner.initialTipPending) { owner.initialTest->dimensions = dimensions; }
         if (state.operationTipPending) { state.operationTest->dimensions = dimensions; }
         return true;
     }
 
-    uint64_t BeginOperation(State& state, Operation operation) noexcept
+    uint64_t BeginOperation(OperationState& state, Operation operation) noexcept
     {
         if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(Operation::Scroll))
         {
@@ -367,7 +337,7 @@ namespace TableViewTelemetry
         auto const generation = ++state.operationGeneration;
         state.operationHandled = false;
         state.operation = operation;
-        auto& session = UsageOwner(state).session;
+        auto& session = state.usageOwner.session;
         state.operationSessionGeneration = session.active ? session.generation : 0;
         if (session.active) { ObserveCollector(session, IsEnabled()); }
         {
@@ -380,12 +350,7 @@ namespace TableViewTelemetry
         return generation;
     }
 
-    void CompleteOperation(State& state, Result result, std::optional<HRESULT> error) noexcept
-    {
-        CompleteOperation(state, state.operationGeneration, result, error);
-    }
-
-    void CompleteOperation(State& state, uint64_t generation, Result result, std::optional<HRESULT> error) noexcept
+    void CompleteOperation(OperationState& state, uint64_t generation, Result result, std::optional<HRESULT> error) noexcept
     {
         if (generation != state.operationGeneration || !state.operationPending) { return; }
         if (state.operationSessionGeneration && !OwnsSession(state))
@@ -408,7 +373,7 @@ namespace TableViewTelemetry
         StopOperation(state);
     }
 
-    void IgnoreOperation(State& state, uint64_t generation, IgnoreReason reason, std::optional<HRESULT> error, AppFaultKind kind) noexcept
+    void IgnoreOperation(OperationState& state, uint64_t generation, IgnoreReason reason, std::optional<HRESULT> error, AppFaultKind kind) noexcept
     {
         if (generation != state.operationGeneration || !state.operationPending) { return; }
         auto const name = GetIgnoreName(reason);
@@ -421,7 +386,7 @@ namespace TableViewTelemetry
         StopOperation(state);
     }
 
-    void FailOperation(State& state, Operation operation, uint64_t generation, Stage stage, std::optional<HRESULT> error) noexcept
+    void FailOperation(OperationState& state, Operation operation, uint64_t generation, Stage stage, std::optional<HRESULT> error) noexcept
     {
         if (generation != state.operationGeneration && !(operation == Operation::InitialLayout && generation == 0)) { return; }
         // Zero identifies an initialization boundary before an operation was admitted.
@@ -437,11 +402,11 @@ namespace TableViewTelemetry
             RecordOutcome(state, Result::Failure);
             StopOperation(state);
         }
-        CompleteInitial(state, Result::Failure, stage, error);
+        if (&state == &state.usageOwner) { CompleteInitial(state.usageOwner, Result::Failure, stage, error); }
         ReportError(state, operation, stage, false, Attribution::Product, error);
     }
 
-    void ReportError(State& state, Operation operation, Stage stage, bool recoverable,
+    void ReportError(OperationState& state, Operation operation, Stage stage, bool recoverable,
         Attribution attribution, std::optional<HRESULT> error, AppFaultKind kind) noexcept
     {
         if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(Operation::Scroll))
@@ -449,7 +414,7 @@ namespace TableViewTelemetry
             OutputDebugStringW(L"TableView telemetry: invalid error operation.\n");
             return;
         }
-        auto& owner = UsageOwner(state);
+        auto& owner = state.usageOwner;
         if (&owner != &state && state.operationSessionGeneration && !OwnsSession(state)) { return; }
         auto const bit = uint32_t{ 1 } << static_cast<uint32_t>(operation);
         if ((owner.reportedErrors & bit) ||
