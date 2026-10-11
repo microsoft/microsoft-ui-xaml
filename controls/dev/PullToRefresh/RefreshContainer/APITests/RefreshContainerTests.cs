@@ -102,6 +102,105 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // BUG-PTR-4: changing PullDirection while the default visualizer is exactly 100x100 runs the container's own re-adapt path, which throws ArgumentException (E_INVALIDARG) out of the PullDirection setter.
+        [TestProperty("Description", "When the default visualizer is exactly 100x100 a PullDirection change does not resize it (no SizeChanged), so the container itself must replace the default adapter and re-adapt the ScrollViewer for the new direction.")]
+        public void PullDirectionChangeReadaptsSquareDefaultVisualizer()
+        {
+            RefreshContainer refreshContainer = null;
+            int sizeChangedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                refreshContainer = new RefreshContainer() {
+                    PullDirection = RefreshPullDirection.TopToBottom,
+                    Width = c_defaultPullDimension,
+                    Height = c_defaultPullDimension,
+                    Content = CreateScrollViewer()
+                };
+                Content = refreshContainer;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                IRefreshContainerPrivate containerPrivate = (IRefreshContainerPrivate)refreshContainer;
+                IRefreshVisualizerPrivate visualizerPrivate = (IRefreshVisualizerPrivate)refreshContainer.Visualizer;
+                refreshContainer.Visualizer.SizeChanged += (object sender, SizeChangedEventArgs args) => { sizeChangedCount++; };
+
+                foreach (RefreshPullDirection direction in new RefreshPullDirection[] { RefreshPullDirection.LeftToRight, RefreshPullDirection.BottomToTop })
+                {
+                    Log.Comment("PullDirection -> " + direction);
+                    Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualWidth, "Precondition: square default visualizer");
+                    Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualHeight, "Precondition: square default visualizer");
+                    IRefreshInfoProviderAdapter oldAdapter = containerPrivate.RefreshInfoProviderAdapter;
+                    IRefreshInfoProvider oldProvider = visualizerPrivate.InfoProvider;
+                    Verify.IsNotNull(oldAdapter);
+                    Verify.IsNotNull(oldProvider, "Precondition: the ScrollViewer is adapted");
+                    // Identity is observable: without a change the same adapter and provider are returned.
+                    Verify.IsTrue(object.ReferenceEquals(oldAdapter, containerPrivate.RefreshInfoProviderAdapter), "Adapter identity is stable");
+                    Verify.IsTrue(object.ReferenceEquals(oldProvider, visualizerPrivate.InfoProvider), "Provider identity is stable");
+
+                    refreshContainer.PullDirection = direction;
+
+                    // The PullDirection change itself re-adapts (synchronously, before any layout pass).
+                    IRefreshInfoProviderAdapter newAdapter = containerPrivate.RefreshInfoProviderAdapter;
+                    Verify.IsTrue(newAdapter is ScrollViewerIRefreshInfoProviderAdapter, "A default ScrollViewer adapter is used");
+                    Verify.IsFalse(object.ReferenceEquals(oldAdapter, newAdapter), "A new default adapter is created for " + direction);
+                    IRefreshInfoProvider newProvider = visualizerPrivate.InfoProvider;
+                    Verify.IsNotNull(newProvider, "The ScrollViewer is adapted again");
+                    Verify.IsFalse(object.ReferenceEquals(oldProvider, newProvider), "The visualizer uses the new provider for " + direction);
+                    Verify.IsLessThan(Math.Abs(c_defaultExecutionRatio - newProvider.ExecutionRatio), 0.0001, "ExecutionRatio");
+
+                    Content.UpdateLayout();
+                    Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualWidth);
+                    Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualHeight);
+                    Verify.IsTrue(object.ReferenceEquals(newProvider, visualizerPrivate.InfoProvider), "Layout does not adapt again");
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, sizeChangedCount, "The square visualizer is never resized, so SizeChanged cannot have re-adapted it");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Flipping PullDirection along the same axis (LeftToRight -> RightToLeft) keeps the 100x300 default visualizer size, moves it to the opposite edge and rotates its indicator; the square-visualizer re-adapt path is not taken for a non-square visualizer.")]
+        public void SameAxisPullDirectionFlipMovesNonSquareVisualizer()
+        {
+            RefreshContainer refreshContainer = null;
+            RunOnUIThread.Execute(() =>
+            {
+                refreshContainer = CreateLoadedContainer(RefreshPullDirection.LeftToRight, CreateScrollViewer());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualWidth, "Precondition: 100 wide");
+                Verify.AreEqual(c_containerSize, refreshContainer.Visualizer.ActualHeight, "Precondition: not square");
+                Verify.IsNotNull(((IRefreshVisualizerPrivate)refreshContainer.Visualizer).InfoProvider, "Precondition: the ScrollViewer is adapted");
+
+                refreshContainer.PullDirection = RefreshPullDirection.RightToLeft;
+                Content.UpdateLayout();
+
+                Grid presenter = GetPresenter(refreshContainer);
+                Verify.AreEqual(VerticalAlignment.Stretch, presenter.VerticalAlignment);
+                Verify.AreEqual(HorizontalAlignment.Right, presenter.HorizontalAlignment);
+                Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.Width);
+                Verify.IsTrue(double.IsNaN(refreshContainer.Visualizer.Height), "Height stays Auto");
+                Verify.AreEqual(c_defaultPullDimension, refreshContainer.Visualizer.ActualWidth);
+                Verify.AreEqual(c_containerSize, refreshContainer.Visualizer.ActualHeight);
+                float rotation = ElementCompositionPreview.GetElementVisual(refreshContainer.Visualizer.Content).RotationAngle;
+                Verify.IsLessThan(Math.Abs((float)(Math.PI / 2) - rotation), c_tolerance, "RightToLeft indicator rotation " + rotation);
+                Verify.IsNotNull(((IRefreshVisualizerPrivate)refreshContainer.Visualizer).InfoProvider);
+                Verify.AreEqual(RefreshVisualizerState.Idle, refreshContainer.Visualizer.State);
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "RequestRefresh on the container (and on its visualizer) raises RefreshContainer.RefreshRequested once per handler, keeps the visualizer Refreshing until every deferral completes and then returns to Idle, for every pull direction.")]
         public void RequestRefreshCompletesOnlyAfterAllDeferralsComplete()
         {

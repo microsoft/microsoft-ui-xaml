@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using Common;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
@@ -108,13 +110,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 addLayerButton.Invoke();
                 Wait.ForIdle();
 
-                // Add a pin
+                // Add a pin at an asymmetric location so a latitude/longitude swap anywhere on the way to map.html and back is visible.
                 var addPinButton = FindElement.ByName<Button>("Add Pin");
                 var latitudeTextBox = FindElement.ById<Edit>("latitudePinText");
                 var longitudeTextBox = FindElement.ById<Edit>("longitudePinText");
 
-                KeyboardHelper.EnterText(latitudeTextBox, "0");
-                KeyboardHelper.EnterText(longitudeTextBox, "0");
+                KeyboardHelper.EnterText(latitudeTextBox, "10");
+                KeyboardHelper.EnterText(longitudeTextBox, "20");
                 Wait.ForIdle();
                 addPinButton.Invoke();
 
@@ -139,8 +141,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 //Check if both click events were raised
                 var logBox = new Edit(FindElement.ById("output"));
-                Verify.IsTrue(logBox.GetText().Contains("Layer Clicked"));
-                Verify.IsTrue(logBox.GetText().Contains("Map Clicked"));
+                string log = logBox.GetText();
+                Verify.IsTrue(log.Contains("Layer Clicked"));
+                // The box also receives map service diagnostics, so only the click report is parsed and logged.
+                var click = Regex.Match(log, @"Map Clicked at (-?[0-9.]+),(-?[0-9.]+)");
+                Verify.IsTrue(click.Success, "The map click reports a location");
+                Log.Comment(click.Value);
+                double latitude = double.Parse(click.Groups[1].Value, CultureInfo.InvariantCulture);
+                double longitude = double.Parse(click.Groups[2].Value, CultureInfo.InvariantCulture);
+                Verify.IsLessThan(Math.Abs(latitude - 10.0), 0.1, "Latitude of the clicked pin (10)");
+                Verify.IsLessThan(Math.Abs(longitude - 20.0), 0.1, "Longitude of the clicked pin (20)");
 
             }
         }

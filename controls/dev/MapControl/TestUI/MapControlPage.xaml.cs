@@ -126,7 +126,8 @@ namespace MUXControlsTestApp
         }
         private void Map_MapElementClick(MapControl sender, MapElementClickEventArgs args)
         {
-            output.Text += "Map Clicked\n";
+            // The location lets interaction tests verify the latitude/longitude round trip through map.html.
+            output.Text += "Map Clicked at " + FormatLocation(args) + "\n";
         }
 
         private async void InjectWebMessagesButton_Click(object sender, RoutedEventArgs e)
@@ -273,7 +274,7 @@ namespace MUXControlsTestApp
 
         private static string FormatLocation(MapElementClickEventArgs args)
         {
-            if (args == null)
+            if (args == null || args.Location == null)
             {
                 return "none";
             }

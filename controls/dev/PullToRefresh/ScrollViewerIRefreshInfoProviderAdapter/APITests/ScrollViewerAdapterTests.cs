@@ -54,6 +54,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "AdaptFromTree searches at most 10 levels below a root that is not itself a ScrollViewer: a ScrollViewer exactly 10 levels down is adapted, one 11 levels down is not.")]
+        public void AdaptFromTreeSearchesTenLevelsBelowTheRoot()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                ScrollViewer reachable = new ScrollViewer() { Content = new Button() };
+                Grid reachableRoot = new Grid();
+                // Grid -> 9 Borders -> ScrollViewer: the ScrollViewer is 10 levels below the root.
+                reachableRoot.Children.Add(WrapInBorders(reachable, 9));
+                Content = reachableRoot;
+                Content.UpdateLayout();
+                Verify.AreEqual(10, DistanceFromAncestor(reachable, reachableRoot), "Precondition: depth 10");
+                ScrollViewerIRefreshInfoProviderAdapter adapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, null);
+                IRefreshInfoProvider provider = adapter.AdaptFromTree(reachableRoot, new Size(1.0, 1.0));
+                Verify.IsNotNull(provider, "A ScrollViewer 10 levels below the root is adapted");
+                Verify.IsLessThan(Math.Abs(c_defaultExecutionRatio - provider.ExecutionRatio), 0.0001, "ExecutionRatio");
+
+                ScrollViewer tooDeep = new ScrollViewer() { Content = new Button() };
+                Grid tooDeepRoot = new Grid();
+                tooDeepRoot.Children.Add(WrapInBorders(tooDeep, 10));
+                Content = tooDeepRoot;
+                Content.UpdateLayout();
+                Verify.AreEqual(11, DistanceFromAncestor(tooDeep, tooDeepRoot), "Precondition: depth 11");
+                ScrollViewerIRefreshInfoProviderAdapter secondAdapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, null);
+                Verify.IsNull(secondAdapter.AdaptFromTree(tooDeepRoot, new Size(1.0, 1.0)), "A ScrollViewer 11 levels below the root is beyond the search depth");
+            });
+        }
+
+        private static UIElement WrapInBorders(UIElement element, int count)
+        {
+            UIElement current = element;
+            for (int i = 0; i < count; i++)
+            {
+                current = new Border() { Child = current };
+            }
+            return current;
+        }
+
+        private static int DistanceFromAncestor(DependencyObject element, DependencyObject ancestor)
+        {
+            int distance = 0;
+            DependencyObject current = element;
+            while (current != null && !object.ReferenceEquals(current, ancestor))
+            {
+                current = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(current);
+                distance++;
+            }
+            return current == null ? -1 : distance;
+        }
+
+        [TestMethod]
         public void AdaptOnNullThrows()
         {
             RunOnUIThread.Execute(() =>

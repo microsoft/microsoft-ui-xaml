@@ -359,6 +359,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "The ExecutionRatio is an exclusive threshold: a ratio exactly equal to it is Interacting (from zero, from Interacting and when falling back from Pending); only a larger ratio is Pending.")]
+        public void ExecutionRatioIsAnExclusivePendingThreshold()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                RefreshVisualizer refreshVisualizer = new RefreshVisualizer();
+                Content = refreshVisualizer;
+                Content.UpdateLayout();
+
+                RefreshInfoProviderImpl provider = new RefreshInfoProviderImpl(ElementCompositionPreview.GetElementVisual(refreshVisualizer).Compositor);
+                ((IRefreshVisualizerPrivate)refreshVisualizer).InfoProvider = provider;
+                Verify.AreEqual((double)0.8f, provider.ExecutionRatio, "Precondition: the double's ExecutionRatio is exactly 0.8f");
+                List<string> transitions = RecordTransitions(refreshVisualizer);
+                Visual indicator = ElementCompositionPreview.GetElementVisual(refreshVisualizer.Content);
+                SetInteracting(provider, true);
+
+                // From Idle at zero, exactly the execution ratio is not past it.
+                provider.RaiseInteractionRatioChangedEvent(0.8f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Interacting, c_minimumIndicatorOpacity);
+                // Interacting stays Interacting at exactly the execution ratio.
+                provider.RaiseInteractionRatioChangedEvent(0.8f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Interacting, c_minimumIndicatorOpacity);
+                // Just above it is Pending.
+                provider.RaiseInteractionRatioChangedEvent(0.81f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Pending, c_fullIndicatorOpacity);
+                // Back to exactly the execution ratio leaves Pending.
+                provider.RaiseInteractionRatioChangedEvent(0.8f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Interacting, c_minimumIndicatorOpacity);
+                provider.RaiseInteractionRatioChangedEvent(0.0f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Idle, c_minimumIndicatorOpacity);
+                // From zero, just above the execution ratio goes straight to Pending.
+                provider.RaiseInteractionRatioChangedEvent(0.81f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Pending, c_fullIndicatorOpacity);
+                provider.RaiseInteractionRatioChangedEvent(0.0f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Interacting, c_minimumIndicatorOpacity);
+                provider.RaiseInteractionRatioChangedEvent(0.0f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Idle, c_minimumIndicatorOpacity);
+
+                VerifyTransitions(new string[] {
+                    "Idle->Interacting", "Interacting->Pending", "Pending->Interacting", "Interacting->Idle",
+                    "Idle->Pending", "Pending->Interacting", "Interacting->Idle" }, transitions);
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "The visualizer uses the ExecutionRatio of its current InfoProvider and ignores events from a provider it no longer uses.")]
         public void ReplacedInfoProviderIsIgnoredAndNewExecutionRatioIsUsed()
         {
