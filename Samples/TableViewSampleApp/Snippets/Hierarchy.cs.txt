@@ -63,6 +63,9 @@ private void ApplySort()
 {
     foreach (var source in Sources)
     {
+        // A key-selector sort is an anonymous axis: a new Sort(keySelector) is added behind the
+        // previous one instead of replacing it, so clear the old axis first.
+        source.ClearSort();
         switch (SortCombo.SelectedIndex)
         {
             case 1:
@@ -73,9 +76,6 @@ private void ApplySort()
                 break;
             case 3:
                 source.Sort(new TableViewKeySelector(item => ((Employee)item).Title), SortDirection.Ascending);
-                break;
-            default:
-                source.ClearSort();
                 break;
         }
     }

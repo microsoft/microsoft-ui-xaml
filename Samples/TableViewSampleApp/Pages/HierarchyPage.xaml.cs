@@ -31,6 +31,7 @@ public sealed partial class HierarchyPage : SamplePageBase
     private int _nextId;
     private bool _ready;   // guards handlers that fire while InitializeComponent applies initial values
     private bool _perfRunning;
+    private TableView? _activeTable;   // the table the user selected in last
 
     public HierarchyPage()
     {
@@ -110,6 +111,9 @@ public sealed partial class HierarchyPage : SamplePageBase
     {
         foreach (var source in Sources)
         {
+            // A key-selector sort is an anonymous axis: a new Sort(keySelector) is added behind the
+            // previous one instead of replacing it, so clear the old axis first.
+            source.ClearSort();
             switch (SortCombo.SelectedIndex)
             {
                 case 1:
@@ -120,9 +124,6 @@ public sealed partial class HierarchyPage : SamplePageBase
                     break;
                 case 3:
                     source.Sort(new TableViewKeySelector(item => ((Employee)item).Title), SortDirection.Ascending);
-                    break;
-                default:
-                    source.ClearSort();
                     break;
             }
         }
@@ -204,7 +205,19 @@ public sealed partial class HierarchyPage : SamplePageBase
         SetLastAction(LiveToggle.IsOn ? "Live shaping -> On" : "Live shaping -> Off");
     }
 
-    private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args) => RefreshReadouts();
+    // The tables select independently; the actions act on the row selected last, and the other
+    // table's selection is cleared so only one row reads as selected.
+    private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
+    {
+        if (sender.SelectedItem is not null && !ReferenceEquals(sender, _activeTable))
+        {
+            var other = ReferenceEquals(sender, ManagerTable) ? MentorTable : ManagerTable;
+            _activeTable = sender;
+            other.DeselectAll();
+        }
+
+        RefreshReadouts();
+    }
 
     // The prefix sorts last and flips name-filter matching.
     private void Rename_Click(object sender, RoutedEventArgs e)
@@ -362,8 +375,7 @@ public sealed partial class HierarchyPage : SamplePageBase
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Reset to {0:N0} employees", _employees.Count));
     }
 
-    private Employee? SelectedEmployee() =>
-        ManagerTable.SelectedItem as Employee ?? MentorTable.SelectedItem as Employee;
+    private Employee? SelectedEmployee() => _activeTable?.SelectedItem as Employee;
 
     private Employee NewEmployee(int? managerId, int? mentorId)
     {
@@ -398,11 +410,11 @@ public sealed partial class HierarchyPage : SamplePageBase
 
         var lines = new List<string>();
         var failed = false;
+        var table = ManagerTable;
         try
         {
             var data = HierarchyData.Generate(PerfCount);
             var sortBy = new TableViewKeySelector(item => ((Employee)item).Name);
-            var table = ManagerTable;
 
             var hier = new List<double[]>();
             var group = new List<double[]>();
@@ -419,8 +431,6 @@ public sealed partial class HierarchyPage : SamplePageBase
                     group.Add(g);
                 }
             }
-
-            table.ItemsSource = _managerSource;
 
             string[] hierSteps = { "ParentBy", "Sort(Name)", "ExpandAllRows" };
             string[] groupSteps = { "GroupBy(Dept)", "Sort(Name)", "ExpandAllGroups" };
@@ -445,10 +455,15 @@ public sealed partial class HierarchyPage : SamplePageBase
             failed = true;
             lines.Add($"PERF ERROR {ex}");
         }
+        finally
+        {
+            // MeasureRun swaps in temporary sources; always give the table its own source back.
+            table.ItemsSource = _managerSource;
+            PerfButton.IsEnabled = true;
+            _perfRunning = false;
+        }
 
         StatusText.Text = string.Join("\n", lines);
-        PerfButton.IsEnabled = true;
-        _perfRunning = false;
         SetLastAction(failed ? "Perf probe failed; see Perf probe" : "Perf probe finished; see Perf probe");
     }
 

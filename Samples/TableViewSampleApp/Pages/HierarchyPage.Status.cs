@@ -46,7 +46,7 @@ public sealed partial class HierarchyPage
         Status.ShapingText = string.Join(", ", parts);
 
         SelectedText.Text = SelectedEmployee() is { } selected
-            ? string.Format(CultureInfo.CurrentCulture, "{0} (Id {1})", selected.Name, selected.Id)
+            ? string.Format(CultureInfo.CurrentCulture, "{0} (Id {1}, {2} table)", selected.Name, selected.Id, ReferenceEquals(_activeTable, MentorTable) ? "Mentor" : "Manager")
             : "(none)";
         LiveText.Text = LiveToggle.IsOn ? "On" : "Off";
     }
