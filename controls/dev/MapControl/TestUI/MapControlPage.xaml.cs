@@ -174,6 +174,9 @@ namespace MUXControlsTestApp
             TypedEventHandler<MapControl, MapControlMapServiceErrorOccurredEventArgs> onError = (s, a) => { errors.Add(a.DiagnosticMessage); };
             myMap.MapElementClick += onClick;
             myMap.MapServiceErrorOccurred += onError;
+            // The injected script error deliberately contains the live token (to exercise map.html's redaction); keep it
+            // out of the page's general output box.
+            myMap.MapServiceErrorOccurred -= Map_MapServiceErrorOccurred;
             testLayer.MapElementClick += onLayerClick;
             int layer = myMap.Layers.Count;
             myMap.Layers.Add(testLayer);
@@ -215,6 +218,7 @@ namespace MUXControlsTestApp
             {
                 myMap.MapElementClick -= onClick;
                 myMap.MapServiceErrorOccurred -= onError;
+                myMap.MapServiceErrorOccurred += Map_MapServiceErrorOccurred;
                 testLayer.MapElementClick -= onLayerClick;
             }
 
@@ -227,6 +231,13 @@ namespace MUXControlsTestApp
             }
             string token = myMap.MapServiceToken;
             bool tokenInErrors = !string.IsNullOrEmpty(token) && errors.Any(x => x.Contains(token));
+            if (!string.IsNullOrEmpty(token))
+            {
+                // This text is UIA-readable and logged by the interaction test, and CI injects a real map key into this
+                // page: never display the token, even if map.html's redaction regresses (the test then still fails,
+                // because it requires "[REDACTED]").
+                errorSummary = errorSummary.Replace(token, "<UNREDACTED-TOKEN>");
+            }
             return "clicks=" + clicks.Count +
                 ";layerClicks=" + layerClicks +
                 ";first=" + FormatLocation(clicks.Count > 0 ? clicks[0] : null) +

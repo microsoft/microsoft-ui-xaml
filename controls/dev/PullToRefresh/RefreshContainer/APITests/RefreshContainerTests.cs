@@ -324,10 +324,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 reachableProvider.RaiseInteractionRatioChangedEvent(0.0f);
                 Verify.AreEqual(RefreshVisualizerState.Idle, reachable.Visualizer.State);
 
-                // Removing the adapter falls back to the same tree search.
+                // Removing the adapter falls back to the same tree search, which re-assigns the provider.
+                visualizerPrivate.InfoProvider = null;
+                Verify.IsNull(visualizerPrivate.InfoProvider, "Precondition: the provider was cleared");
                 ((IRefreshContainerPrivate)reachable).RefreshInfoProviderAdapter = null;
                 Verify.IsNull(((IRefreshContainerPrivate)reachable).RefreshInfoProviderAdapter);
-                Verify.IsTrue(object.ReferenceEquals(reachableProvider, visualizerPrivate.InfoProvider));
+                Verify.IsTrue(object.ReferenceEquals(reachableProvider, visualizerPrivate.InfoProvider), "The tree search re-assigns the reachable provider");
 
                 // One level deeper (11 levels) is beyond the search depth.
                 RefreshInfoProviderGrid deepProvider = new RefreshInfoProviderGrid();

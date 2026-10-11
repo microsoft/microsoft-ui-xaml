@@ -425,8 +425,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 refreshVisualizer.Orientation = RefreshVisualizerOrientation.Normal;
                 VerifyClose(0.0f, indicator.RotationAngle, "RotationAngle after Orientation=Normal");
 
-                // The default (square, 30x30) indicator rotates around its center.
-                Verify.AreEqual(new Vector3(15.0f, 15.0f, 0.0f), indicator.CenterPoint);
+                // The default (square, 30x30 DIP) indicator rotates around the center of its rendered size
+                // (derived from RenderSize, which is rounded to physical pixels at non-100% scale).
+                VerifyCenterPoint(indicator, refreshVisualizer.Content, "Default indicator");
             });
         }
 
@@ -477,13 +478,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Content.UpdateLayout();
                 ((IRefreshVisualizerPrivate)refreshVisualizer).SetInternalPullDirection(RefreshPullDirection.TopToBottom);
                 Visual indicator = ElementCompositionPreview.GetElementVisual(refreshVisualizer.Content);
-                Verify.AreEqual(new Vector3(20.0f, 10.0f, 0.0f), indicator.CenterPoint);
+                Size size = ((FrameworkElement)refreshVisualizer.Content).RenderSize;
+                Verify.IsGreaterThan(Math.Abs(size.Width - size.Height), 1.0, "Precondition: the indicator is not square, so swapped axes are detectable");
+                VerifyCenterPoint(indicator, refreshVisualizer.Content, "Non-square indicator");
             });
         }
 
         private static void VerifyClose(float expected, float actual, string context)
         {
             Verify.IsLessThan(Math.Abs(expected - actual), c_tolerance, context + ": expected " + expected + ", actual " + actual);
+        }
+
+        private static void VerifyCenterPoint(Visual indicator, UIElement content, string context)
+        {
+            Size size = ((FrameworkElement)content).RenderSize;
+            Verify.IsTrue(size.Width > 0 && size.Height > 0, context + ": indicator has been laid out");
+            Vector3 centerPoint = indicator.CenterPoint;
+            VerifyClose((float)(size.Width / 2), centerPoint.X, context + " CenterPoint.X (half the rendered width)");
+            VerifyClose((float)(size.Height / 2), centerPoint.Y, context + " CenterPoint.Y (half the rendered height)");
+            VerifyClose(0.0f, centerPoint.Z, context + " CenterPoint.Z");
         }
 
         private static void SetInteracting(RefreshInfoProviderImpl provider, bool isInteracting)
