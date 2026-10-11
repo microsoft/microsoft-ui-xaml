@@ -87,7 +87,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsFalse(ProjectedGroupHeaderTexts(tableView).Any(text => text.StartsWith(OldMarker) && text.EndsWith(FirstGroupKey)),
+                Verify.IsFalse(ProjectedGroupHeaderTexts(tableView).Contains(OldMarker + FirstGroupKey),
                     "Precondition: the first group's header must have left realization, so its container is pooled.");
 
                 // #12190 skips pooled containers when re-preparing headers, precisely so a pooled
@@ -193,14 +193,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
-                Verify.IsTrue(GetRealizedRows(tableView).Any(row => ReferenceEquals(row.DataContext, items[0])),
+                Verify.IsTrue(RealizedProjectedRows(tableView).Any(row => ReferenceEquals(row.DataContext, items[0])),
                     "Precondition: the first item must be realized before scrolling."));
 
             ScrollToEnd(tableView);
 
             RunOnUIThread.Execute(() =>
             {
-                var rows = GetRealizedRows(tableView);
+                var rows = RealizedProjectedRows(tableView);
                 Verify.IsGreaterThan(rows.Count, 0, "Rows must still be realized after scrolling.");
 
                 Verify.IsFalse(rows.Any(row => ReferenceEquals(row.DataContext, items[0])),
@@ -245,7 +245,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var rows = GetRealizedRows(tableView);
+                var rows = RealizedProjectedRows(tableView);
                 Verify.IsGreaterThan(rows.Count, 0, "Rows must still be realized after scrolling.");
 
                 Verify.IsFalse(rows.Any(row => ReferenceEquals(row.DataContext, items[0])),
@@ -289,7 +289,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var projected = GetProjectedElements(tableView, requireAllRealized: false);
-                var rows = GetRealizedRows(tableView);
+                var rows = RealizedProjectedRows(tableView);
 
                 Verify.IsGreaterThan(rows.Count, 0, "Rows must still be realized after scrolling.");
 
@@ -361,12 +361,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var extent = 0.0;
             RunOnUIThread.Execute(() => extent = GetBodyScroller(tableView)?.ScrollableHeight ?? 0.0);
 
-            Verify.IsGreaterThan(extent, 0.0, "The fixture must overflow its viewport, or nothing is recycled.");
+            Verify.IsGreaterThan(extent, 1.0, "The fixture must overflow its viewport, or nothing is recycled.");
 
-            ScrollBodyTo(tableView, ScrollAxis.Vertical, extent);
+            // One pixel short of the extent: ScrollBodyTo requires the extent to be STRICTLY greater
+            // than the offset, and the last pixel makes no difference to which rows are realized.
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, extent - 1.0);
         }
 
         internal static void ScrollToStart(TableView tableView) => ScrollBodyTo(tableView, ScrollAxis.Vertical, 0.0);
+
+        // The rows the repeater has actually realized, in projection order. NOT GetRealizedRows: that
+        // walks the visual tree, and a cleared container stays parented to the repeater's panel with a
+        // null DataContext (see RealizedElementCount in the virtualization tests). After a long scroll
+        // the pool is full of those, and every assertion here is about rows that host an item.
+        internal static List<TableViewRow> RealizedProjectedRows(TableView tableView)
+            => GetProjectedElements(tableView, requireAllRealized: false)
+                .OfType<TableViewRow>()
+                .ToList();
 
         // requireAllRealized:false throughout: a virtualizing fixture never has every element realized,
         // and the default would turn that into a failure.
