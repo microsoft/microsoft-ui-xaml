@@ -11,6 +11,11 @@ using Windows.UI;
 using System.Windows.Input;
 using Windows.Devices.Geolocation;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+using Windows.Data.Json;
+using Windows.Foundation;
 
 namespace MUXControlsTestApp
 {
@@ -119,6 +124,131 @@ namespace MUXControlsTestApp
         private void Map_MapElementClick(MapControl sender, MapElementClickEventArgs args)
         {
             output.Text += "Map Clicked\n";
+        }
+
+        private async void InjectWebMessagesButton_Click(object sender, RoutedEventArgs e)
+        {
+            webMessageResults.Text = "Running";
+            try
+            {
+                webMessageResults.Text = await InjectWebMessagesAsync();
+            }
+            catch (Exception ex)
+            {
+                webMessageResults.Text = "Exception: " + ex.GetType().Name + " " + ex.Message;
+            }
+        }
+
+        // Posts web messages into the map's WebView2 exactly as map.html does (pushpin clicks and script errors),
+        // plus malformed messages, and reports what MapControl raised. Needs neither network access nor a map key.
+        private async Task<string> InjectWebMessagesAsync()
+        {
+            WebView2 webView = VisualTreeHelper.GetChildrenCount(myMap) > 0 ? VisualTreeHelper.GetChild(myMap, 0) as WebView2 : null;
+            if (webView == null)
+            {
+                return "No WebView2";
+            }
+            await webView.EnsureCoreWebView2Async();
+
+            // Wait until map.html's script is loaded (it defines sendErrorInfo) and the map was initialized with the service token.
+            bool pageReady = false;
+            for (int i = 0; i < 60 && !pageReady; i++)
+            {
+                pageReady = (await webView.CoreWebView2.ExecuteScriptAsync("typeof sendErrorInfo === 'function' && currentMapServiceToken.length > 0")) == "true";
+                if (!pageReady)
+                {
+                    await Task.Delay(500);
+                }
+            }
+            if (!pageReady)
+            {
+                return "map.html not loaded";
+            }
+
+            var clicks = new List<MapElementClickEventArgs>();
+            int layerClicks = 0;
+            var errors = new List<string>();
+            var testLayer = new MapElementsLayer();
+            TypedEventHandler<MapControl, MapElementClickEventArgs> onClick = (s, a) => { clicks.Add(a); };
+            TypedEventHandler<MapElementsLayer, MapElementClickEventArgs> onLayerClick = (s, a) => { layerClicks++; };
+            TypedEventHandler<MapControl, MapControlMapServiceErrorOccurredEventArgs> onError = (s, a) => { errors.Add(a.DiagnosticMessage); };
+            myMap.MapElementClick += onClick;
+            myMap.MapServiceErrorOccurred += onError;
+            testLayer.MapElementClick += onLayerClick;
+            int layer = myMap.Layers.Count;
+            myMap.Layers.Add(testLayer);
+            try
+            {
+                string l = layer.ToString(CultureInfo.InvariantCulture);
+                string outOfRange = (layer + 1).ToString(CultureInfo.InvariantCulture);
+                // map.html sends a pin at [longitude, latitude] with position[0] as "latitude" and position[1] as "longitude";
+                // this is the message for a pin at latitude 47.6, longitude -122.3.
+                await Post(webView, "{type:'pushpinClickEvent', coordinate:{latitude:-122.3, longitude:47.6}, layer:" + l + ", point:987654, text:'Pushpin clicked!'}");
+                string[] malformed = new string[] {
+                    "{type:'pushpinClickEvent', coordinate:{latitude:1, longitude:2}, layer:" + outOfRange + ", point:1}",
+                    "{type:'pushpinClickEvent', coordinate:{latitude:1, longitude:2}, point:1}",
+                    "{type:'pushpinClickEvent', layer:" + l + ", point:1}",
+                    "{type:'pushpinClickEvent', coordinate:{latitude:'1', longitude:2}, layer:" + l + ", point:1}",
+                    "{type:'pushpinClickEvent', coordinate:{longitude:2}, layer:" + l + ", point:1}",
+                    "{type:'pushpinClickEvent', coordinate:{latitude:1, longitude:2}, layer:'" + l + "', point:1}",
+                    "{type:'pushpinClickEvent', coordinate:{latitude:1, longitude:2}, layer:" + l + ", point:'Unknown'}",
+                    "{type:'pushpinClickEvent', coordinate:7, layer:" + l + ", point:1}",
+                    "{type:5, coordinate:{latitude:1, longitude:2}, layer:" + l + ", point:1}",
+                    "{coordinate:{latitude:1, longitude:2}, layer:" + l + ", point:1}",
+                    "'pushpinClickEvent'",
+                    "[1, 2, 3]" };
+                foreach (string message in malformed)
+                {
+                    await Post(webView, message);
+                }
+                // Sentinel click (pin at latitude 10, longitude 20), then a script error raised through map.html's own error path,
+                // whose message contains the service token (which map.html must redact before it reaches native code).
+                await Post(webView, "{type:'pushpinClickEvent', coordinate:{latitude:20, longitude:10}, layer:" + l + ", point:4242}");
+                await webView.CoreWebView2.ExecuteScriptAsync("sendErrorInfo({ code: 'MapControlUiTest', message: 'marker-5821 ' + currentMapServiceToken });");
+
+                for (int i = 0; i < 100 && !(clicks.Count >= 2 && errors.Any(x => x.Contains("marker-5821"))); i++)
+                {
+                    await Task.Delay(100);
+                }
+            }
+            finally
+            {
+                myMap.MapElementClick -= onClick;
+                myMap.MapServiceErrorOccurred -= onError;
+                testLayer.MapElementClick -= onLayerClick;
+            }
+
+            string marker = errors.FirstOrDefault(x => x.Contains("marker-5821"));
+            string errorSummary = "none";
+            if (marker != null)
+            {
+                JsonObject parsed = JsonObject.Parse(marker);
+                errorSummary = parsed.GetNamedString("type") + "," + parsed.GetNamedString("code") + "," + parsed.GetNamedString("message");
+            }
+            string token = myMap.MapServiceToken;
+            bool tokenInErrors = !string.IsNullOrEmpty(token) && errors.Any(x => x.Contains(token));
+            return "clicks=" + clicks.Count +
+                ";layerClicks=" + layerClicks +
+                ";first=" + FormatLocation(clicks.Count > 0 ? clicks[0] : null) +
+                ";firstElementNull=" + (clicks.Count > 0 && clicks[0].Element == null) +
+                ";second=" + FormatLocation(clicks.Count > 1 ? clicks[1] : null) +
+                ";error=" + errorSummary +
+                ";tokenInErrors=" + tokenInErrors;
+        }
+
+        private static async Task Post(WebView2 webView, string messageScript)
+        {
+            await webView.CoreWebView2.ExecuteScriptAsync("window.chrome.webview.postMessage(" + messageScript + ");");
+        }
+
+        private static string FormatLocation(MapElementClickEventArgs args)
+        {
+            if (args == null)
+            {
+                return "none";
+            }
+            BasicGeoposition position = args.Location.Position;
+            return position.Latitude.ToString(CultureInfo.InvariantCulture) + "," + position.Longitude.ToString(CultureInfo.InvariantCulture);
         }
     }
 }

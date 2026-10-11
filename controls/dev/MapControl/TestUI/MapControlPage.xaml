@@ -68,6 +68,12 @@
                 <TextBlock>Output</TextBlock>
                 <TextBox x:Name="output" AutomationProperties.AutomationId="output" IsReadOnly="true"/>
                 <Button Content="Clear Output" AutomationProperties.AutomationId="ClearOutputButton" Click="ClearOutputButton_Click" />
+
+                <StackPanel Height="20"/>
+
+                <TextBlock>Web message injection (no network or key needed)</TextBlock>
+                <Button Content="Inject Web Messages" AutomationProperties.AutomationId="InjectWebMessagesButton" Click="InjectWebMessagesButton_Click" />
+                <TextBox x:Name="webMessageResults" AutomationProperties.AutomationId="WebMessageResults" IsReadOnly="true" TextWrapping="Wrap" Width="300" Text="Not run"/>
             </StackPanel>
         </StackPanel>
     </Grid>

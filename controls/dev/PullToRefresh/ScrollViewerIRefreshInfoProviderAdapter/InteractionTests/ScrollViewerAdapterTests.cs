@@ -56,10 +56,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject CheckLeaksButtonUIObject = FindElement.ByName("CheckLeaksButton");
                 Verify.IsNotNull(CheckLeaksButtonUIObject, "Verifying that we found a UIElement called CheckLeaksButton");
 
+                TextBlock leakCheckResult = new TextBlock(FindElement.ById("LeakCheckResult"));
+                Verify.AreEqual("Not checked", leakCheckResult.DocumentText);
+
                 InputHelper.Tap(AdaptOnSVWithoutWaitingForLoadedButtonUIObject);
                 InputHelper.Tap(RemoveButtonUIObject);
                 InputHelper.Tap(GCButtonUIObject);
                 InputHelper.Tap(CheckLeaksButtonUIObject);
+                Wait.ForIdle();
+
+                Log.Comment("Leak check result: " + leakCheckResult.DocumentText);
+                Verify.AreEqual("No leaks", leakCheckResult.DocumentText, "The adapted ScrollViewer is collected after it is removed");
             }
         }
     }

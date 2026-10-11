@@ -288,35 +288,16 @@ namespace MUXControlsTestApp
             set;
         }
 
-        async private void containerTimer_Tick(object sender, object e)
+        // DispatcherTimer ticks on the UI thread. (The previous CoreApplication.MainView dispatcher hop is not available in the
+        // desktop test app and threw E_ILLEGAL_METHOD_CALL, crashing the app after every refresh.)
+        private void containerTimer_Tick(object sender, object e)
         {
-            CoreDispatcher disp = Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher;
-            if (disp.HasThreadAccess)
-            {
-                containerTimer_TickImpl();
-            }
-            else
-            {
-                await disp.RunAsync(CoreDispatcherPriority.Normal, () =>
-                 {
-                     containerTimer_TickImpl();
-                 });
-            }
+            containerTimer_TickImpl();
         }
-        async private void visualizerTimer_Tick(object sender, object e)
+
+        private void visualizerTimer_Tick(object sender, object e)
         {
-            CoreDispatcher disp = Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher;
-            if (disp.HasThreadAccess)
-            {
-                visualizerTimer_TickImpl();
-            }
-            else
-            {
-                await disp.RunAsync(CoreDispatcherPriority.Normal, () =>
-                {
-                    visualizerTimer_TickImpl();
-                });
-            }
+            visualizerTimer_TickImpl();
         }
 
         private void containerTimer_TickImpl()

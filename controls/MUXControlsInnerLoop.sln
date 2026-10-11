@@ -89,6 +89,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RefreshContainer", "Refresh
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RefreshVisualizer_TestUI", "dev\PullToRefresh\RefreshVisualizer\TestUI\RefreshVisualizer_TestUI.shproj", "{BF236EE7-B31D-4150-A777-2B91492A84E2}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RefreshContainer_APITests", "dev\PullToRefresh\RefreshContainer\APITests\RefreshContainer_APITests.shproj", "{B47A8A0B-050A-429E-8320-AEA43025FDEE}"
+EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RefreshVisualizer_APITests", "dev\PullToRefresh\RefreshVisualizer\APITests\RefreshVisualizer_APITests.shproj", "{C0D77E37-D2D0-4E37-B6A1-8E6EAE28945D}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RefreshContainer_TestUI", "dev\PullToRefresh\RefreshContainer\TestUI\RefreshContainer_TestUI.shproj", "{DDB468E4-7B64-4301-8FCB-1BEBBB1E689F}"
@@ -735,6 +737,7 @@ Global
 		{E965AF28-0E13-4552-84B7-0C4215E76FD3} = {B1242C40-BBB3-4490-A936-5C71A3BE8336}
 		{337D78D3-9499-4B35-BB9F-52F37BB33D9A} = {B1242C40-BBB3-4490-A936-5C71A3BE8336}
 		{BF236EE7-B31D-4150-A777-2B91492A84E2} = {E965AF28-0E13-4552-84B7-0C4215E76FD3}
+		{B47A8A0B-050A-429E-8320-AEA43025FDEE} = {E965AF28-0E13-4552-84B7-0C4215E76FD3}
 		{C0D77E37-D2D0-4E37-B6A1-8E6EAE28945D} = {E965AF28-0E13-4552-84B7-0C4215E76FD3}
 		{DDB468E4-7B64-4301-8FCB-1BEBBB1E689F} = {337D78D3-9499-4B35-BB9F-52F37BB33D9A}
 		{ED7DBA65-8F09-44F3-8D25-7BB5A7A89609} = {E965AF28-0E13-4552-84B7-0C4215E76FD3}
@@ -1116,6 +1119,7 @@ Global
 		dev\PullToRefresh\RefreshVisualizer\TestUI\RefreshVisualizer_TestUI.projitems*{bf236ee7-b31d-4150-a777-2b91492a84e2}*SharedItemsImports = 13
 		dev\ParallaxView\InteractionTests\ParallaxView_InteractionTests.projitems*{bfaad014-132c-4d2a-a28e-4ef717d3e648}*SharedItemsImports = 13
 		dev\ScrollView\InteractionTests\ScrollView_InteractionTests.projitems*{bfaad015-232d-5d2b-b28f-5ef717d3e648}*SharedItemsImports = 13
+		dev\PullToRefresh\RefreshContainer\APITests\RefreshContainer_APITests.projitems*{b47a8a0b-050a-429e-8320-aea43025fdee}*SharedItemsImports = 13
 		dev\PullToRefresh\RefreshVisualizer\APITests\RefreshVisualizer_APITests.projitems*{c0d77e37-d2d0-4e37-b6a1-8e6eae28945d}*SharedItemsImports = 13
 		dev\Breadcrumb\InteractionTests\Breadcrumb_InteractionTests.projitems*{c1477378-4a7a-43e5-8499-98a23544cc8a}*SharedItemsImports = 13
 		dev\Interactions\ButtonInteraction\InteractionTests\ButtonInteraction_InteractionTests.projitems*{c332ceaf-68b6-4980-b6f3-b15e350cdce0}*SharedItemsImports = 13

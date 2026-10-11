@@ -38,7 +38,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         
         [TestMethod]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
-        [TestProperty("Ignore", "True")] // TODO 29556471: Disabled after converting MUXControlsTestApp to a desktop .NET 5 app.  Re-enable when fixed.
         public void BasicInteractionTest()
         {
             using (var setup = new TestSetupHelper("PTR Tests")) // This literally clicks the button corresponding to the test page.
@@ -67,19 +66,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Retrieve list view item two as generic UIElement");
                 UIObject listViewItem2 = FindElement.ByName("listViewItem2");
-                Verify.IsNotNull(listViewItem1, "Verifying that we found a UIElement called listViewItem2");
+                Verify.IsNotNull(listViewItem2, "Verifying that we found a UIElement called listViewItem2");
 
                 Wait.ForIdle();
 
                 Log.Comment("Retrieve list view item ten as generic UIElement");
                 UIObject listViewItem10 = FindElement.ByName("listViewItem10");
-                Verify.IsNotNull(listViewItem1, "Verifying that we found a UIElement called listViewItem10");
+                Verify.IsNotNull(listViewItem10, "Verifying that we found a UIElement called listViewItem10");
 
                 Wait.ForIdle();
 
                 Log.Comment("Retrieve list view item nine as generic UIElement");
                 UIObject listViewItem9 = FindElement.ByName("listViewItem9");
-                Verify.IsNotNull(listViewItem1, "Verifying that we found a UIElement called listViewItem9");
+                Verify.IsNotNull(listViewItem9, "Verifying that we found a UIElement called listViewItem9");
 
                 Wait.ForIdle();
 
@@ -163,7 +162,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // TODO 29556471: Disabled after converting MUXControlsTestApp to a desktop .NET 5 app.  Re-enable when fixed.
         public void RefreshRequestedHandlersWorkOnEitherContainerOrVisualizerOrBoth()
         {
             using (var setup = new TestSetupHelper("PTR Tests")) // This literally clicks the button corresponding to the test page.
@@ -255,7 +253,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         //Issue #6649 Some tests fail when run on OS 21H1 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // 24178380
+        [TestProperty("Ignore", "True")] // 24178380. Still failing on a desktop test VM (2026-10): after RotateButton installs a new TestUI ImageIRefreshInfoProviderAdapter, the horizontal drag on the image crashes the test app (E_INVALIDARG 0x80070057 raised in Microsoft.UI.Xaml.dll, 0xC000027B).
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
         public void InteractionOnImageTest()
         {
@@ -264,7 +262,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         //Issue #6649 Some tests fail when run on OS 21H1 
         [TestMethod]
-        [TestProperty("Ignore", "True")] //Task 24429465: DCPP: Multiple MUXControls interaction tests failing after IXP integration.
+        [TestProperty("Ignore", "True")] //Task 24429465: DCPP: Multiple MUXControls interaction tests failing after IXP integration. Still failing on a desktop test VM (2026-10), also when run alone: tapping AdaptButton (TestUI ImageIRefreshInfoProviderAdapter re-adapting the image) crashes the test app (E_INVALIDARG 0x80070057 raised in Microsoft.UI.Xaml.dll, 0xC000027B).
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
         public void InteractionOnImageWithInfoProviderTest()
         {

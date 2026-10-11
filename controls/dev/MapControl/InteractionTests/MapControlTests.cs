@@ -32,6 +32,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestEnvironment.Initialize(testContext);
         }
 
+        [TestCleanup]
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
@@ -141,6 +142,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(logBox.GetText().Contains("Layer Clicked"));
                 Verify.IsTrue(logBox.GetText().Contains("Map Clicked"));
 
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)]
+        [TestProperty("Description", "Web messages posted into the map's WebView2 the way map.html posts them raise MapElementClick (map and layer) with the pin location and a map.html script error raises MapServiceErrorOccurred with the service token redacted; malformed messages raise nothing. Needs no network access or map key.")]
+        public void InjectedWebMessagesRaiseMapEventsAndMalformedMessagesAreIgnored()
+        {
+            using (var setup = new TestSetupHelper("MapControl Tests"))
+            {
+                Edit results = new Edit(FindElement.ById("WebMessageResults"));
+                Verify.AreEqual("Not run", results.Value);
+
+                FindElement.ById<Button>("InjectWebMessagesButton").Invoke();
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(
+                    () => { string value = results.Value; return value != "Not run" && value != "Running"; },
+                    retryTimoutByMilliseconds: 60000
+                );
+                Log.Comment("Web message results: " + results.Value);
+
+                // Two clicks: the map.html-shaped click for a pin at (47.6, -122.3) and the sentinel at (10, 20) posted
+                // after twelve malformed messages, which must raise nothing.
+                Verify.AreEqual(
+                    "clicks=2;layerClicks=2;first=47.6,-122.3;firstElementNull=True;second=10,20;error=javascriptError,MapControlUiTest,marker-5821 [REDACTED];tokenInErrors=False",
+                    results.Value);
             }
         }
     }
