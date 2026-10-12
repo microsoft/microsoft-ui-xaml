@@ -117,8 +117,8 @@
                         SelectionChanged="OnSelectionChanged"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <!-- String headers, so the header cells and every data cell are announced
-                             with their column name ("CPU, 3.2%"). SortMemberPath names the raw value
+                        <!-- A data cell is announced by its value ("3.2%"); the screen reader adds
+                             the column name from the header. SortMemberPath names the raw value
                              behind each template. -->
                         <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" CellTemplate="{StaticResource ProcessNameTemplate}" SortMemberPath="Name"/>
                         <tv:TableViewTemplateColumn Header="Status" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource ProcessStatusTemplate}" SortMemberPath="StatusText"/>

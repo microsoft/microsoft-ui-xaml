@@ -56,6 +56,9 @@ public:
     // IVirtualizedItemProvider — available only after the owning row has been recycled out.
     void Realize();
 
+    // The name a client last read, for a NameProperty change; empty while an edit pins the name.
+    std::optional<winrt::hstring> TakeLastNameInternal();
+
     winrt::hstring ReadNameForEdit();
     void BeginEditName();
     void EndEditName();
@@ -80,12 +83,14 @@ private:
     void TrackRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
     [[noreturn]] static void ThrowElementNotAvailable();
 
-    // Resolves the column's stringified Header.
+    // Resolves the column's stringified Header, else the name its header item exposes.
     winrt::hstring GetColumnHeaderText();
+    // True when GetColumnHeaderItems reports a header, so the cell name must not repeat it.
+    bool IsColumnHeaderReachable();
 
     // Resolves displayed text from the TextBlock or content peer name.
     winrt::hstring GetCellValueText();
-    winrt::hstring ReadDisplayName(winrt::FrameworkElement const& display = nullptr);
+    winrt::hstring ReadDisplayName(bool columnHeaderReachable, winrt::FrameworkElement const& display = nullptr);
     void PrepareAutomationContentView(winrt::FrameworkElement const& cell);
     bool GetCachedHasInteractiveCellContent(winrt::FrameworkElement const& cell);
     winrt::IInspectable GetCurrentAutomationContentItem();

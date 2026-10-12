@@ -710,7 +710,11 @@ unsealed runtimeclass TableViewColumnHeaderAutomationPeer
     TableViewColumnHeaderAutomationPeer(MU_XC_NAMESPACE.TableView owner, MU_XC_NAMESPACE.TableViewColumn column);
 }
 
-// Cell peer supplies per-cell grid/table structure and "{column header}, {cell value}" names.
+// Cell peer supplies per-cell grid/table structure. Its name is the cell value ("blank" when empty);
+// the column header is reported through ITableItemProvider.GetColumnHeaderItems while column headers
+// are shown and the column is visible. Only when column headers are hidden does the name become
+// "{column header}, {cell value}". A cell holding an interactive control is named after its column
+// header, since the control names itself.
 [MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass TableViewCellAutomationPeer
