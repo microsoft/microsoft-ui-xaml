@@ -3569,11 +3569,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
         TestServices::WindowHelper->WaitForIdle();
 
-        // Direction 3: clearing constraints (Min=0, Max=+Infinity) while a non-overlapped presenter is active
-        // must also be honored when we come back - i.e. the presenter ends up with no min/max.
+        // Direction 3: reset the width constraints (Min=0, Max=+Infinity) while a non-overlapped presenter
+        // is active. window1 can't write to the OverlappedPresenter yet, so it keeps ownership for now. Back
+        // on an overlapped presenter, window1 clears the old values once and then stops owning them.
         RunOnUIThread([&]()
         {
-            LOG_OUTPUT(L"----- overlapped -> compact overlay: clear the width constraints while deferred -----");
+            LOG_OUTPUT(L"----- overlapped -> compact overlay: reset the width constraints while compact overlay is active -----");
             AppWindow^ appWindow = window1->AppWindow;
             appWindow->SetPresenter(AppWindowPresenterKind::CompactOverlay);
 
@@ -3591,15 +3592,24 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         RunOnUIThread([&]()
         {
-            LOG_OUTPUT(L"----- compact overlay -> overlapped: cleared width constraints stay cleared, height stays set -----");
+            LOG_OUTPUT(L"----- compact overlay -> overlapped: width constraints are cleared, height stays set -----");
             OverlappedPresenter^ op = currentOverlapped();
             VERIFY_IS_NOT_NULL(op);
-            VERIFY_IS_NULL(op->PreferredMinimumWidth);      // cleared
-            VERIFY_IS_NULL(op->PreferredMaximumWidth);      // cleared
+            VERIFY_IS_NULL(op->PreferredMinimumWidth);      // cleared on the way back to overlapped
+            VERIFY_IS_NULL(op->PreferredMaximumWidth);      // cleared on the way back to overlapped
             VERIFY_IS_NOT_NULL(op->PreferredMinimumHeight); // never cleared
 
             VERIFY_ARE_EQUAL(0.0, window1->MinWidth);
             VERIFY_ARE_EQUAL(300.0, window1->MinHeight);
+            VERIFY_IS_TRUE(std::isinf(window1->MaxWidth) && window1->MaxWidth > 0.0);
+
+            // window1 no longer owns MinWidth, so setting MinHeight must not overwrite the MinWidth value
+            // the app sets directly on the presenter.
+            op->PreferredMinimumWidth = ref new Platform::Box<int>(500);
+            window1->MinHeight = 310.0;
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumWidth);
+            VERIFY_ARE_EQUAL(500, op->PreferredMinimumWidth->Value);
+            VERIFY_ARE_EQUAL(310.0, window1->MinHeight);
         });
     }
 
@@ -3790,6 +3800,270 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_LESS_THAN(minHeightExtendedChrome, minHeightStandardChrome);
         });
         TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void WindowIntegrationTests::MinMaxSizeTitleBarTogglePreservesHeight()
+    {
+        TestCleanupWrapper cleanup;
+        WindowAutoCloser window1;
+
+        RunOnUIThread([&]()
+        {
+            window1.Attach(ref new xaml::Window());
+            window1->Content = ref new xaml_controls::Grid();
+            window1->ExtendsContentIntoTitleBar = true;
+            window1->Height = 200.0;
+            window1->MaxHeight = 200.0;
+            window1->Activate();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(std::abs(200.0 - window1->Bounds.Height) <= 2.0);
+
+            // Turning ExtendsContentIntoTitleBar off moves the caption back out of the client area, so the
+            // window chrome grows. If window1 kept the old maximum, which was computed for the smaller chrome,
+            // the window would be clamped and the client would lose about one caption height.
+            window1->ExtendsContentIntoTitleBar = false;
+            LOG_OUTPUT(L"Client height after ExtendsContentIntoTitleBar off: %f", window1->Bounds.Height);
+            VERIFY_IS_TRUE(std::abs(200.0 - window1->Bounds.Height) <= 2.0);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(std::abs(200.0 - window1->Bounds.Height) <= 2.0);
+        });
+    }
+
+    void WindowIntegrationTests::MinMaxSizeAfterClose()
+    {
+        TestCleanupWrapper cleanup;
+
+        for (const bool activate : { false, true })
+        {
+            LOG_OUTPUT(L"Window activated before close=%d", activate);
+            WindowAutoCloser window1;
+            auto closedRegistration = CreateSafeEventRegistration(xaml::Window, Closed);
+            bool cancelClose = true;
+            DWORD owningThreadId = 0;
+
+            RunOnUIThread([&]()
+            {
+                owningThreadId = ::GetCurrentThreadId();
+                window1.Attach(ref new xaml::Window());
+                window1->Content = ref new xaml_controls::Grid();
+                window1->MinWidth = 300.0;
+                window1->MaxWidth = 900.0;
+                if (activate)
+                {
+                    window1->Activate();
+                }
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                // window1 freezes the Min/Max values after the Closed handlers run, so a value the handler
+                // sets sticks. Each pass sets a different value, so the checks below prove the set from the
+                // real close stuck (not just the one from the canceled close).
+                closedRegistration.Attach(window1.get(),
+                    ref new wf::TypedEventHandler<Platform::Object^, xaml::WindowEventArgs^>(
+                        [&](Platform::Object^, xaml::WindowEventArgs^ args)
+                        {
+                            window1->MinHeight = cancelClose ? 250.0 : 260.0;
+                            args->Handled = cancelClose;
+                        }));
+
+                // A canceled close changes nothing: the values can still be set.
+                window1->Close();
+                VERIFY_ARE_EQUAL(250.0, window1->MinHeight);
+                window1->MaxHeight = 800.0;
+                VERIFY_ARE_EQUAL(800.0, window1->MaxHeight);
+
+                cancelClose = false;
+                window1->Close();
+
+                VERIFY_ARE_EQUAL(300.0, window1->MinWidth);
+                VERIFY_ARE_EQUAL(260.0, window1->MinHeight);
+                VERIFY_ARE_EQUAL(900.0, window1->MaxWidth);
+                VERIFY_ARE_EQUAL(800.0, window1->MaxHeight);
+
+                // Valid sets after close are silent no-ops.
+                window1->MinWidth = 1.0;
+                window1->MinHeight = 0.0;
+                window1->MaxWidth = std::numeric_limits<double>::infinity();
+                window1->MaxHeight = 2.0;
+                VERIFY_ARE_EQUAL(300.0, window1->MinWidth);
+                VERIFY_ARE_EQUAL(260.0, window1->MinHeight);
+                VERIFY_ARE_EQUAL(900.0, window1->MaxWidth);
+                VERIFY_ARE_EQUAL(800.0, window1->MaxHeight);
+
+                // Invalid sets still throw after close.
+                VERIFY_THROWS_SPECIFIC_WINRT(window1->MinWidth = -1.0, Platform::Exception^,
+                    [](Platform::Exception^ ex) { return ex->HResult == E_INVALIDARG; });
+                VERIFY_THROWS_SPECIFIC_WINRT(window1->MinHeight = std::numeric_limits<double>::infinity(), Platform::Exception^,
+                    [](Platform::Exception^ ex) { return ex->HResult == E_INVALIDARG; });
+                VERIFY_THROWS_SPECIFIC_WINRT(window1->MaxWidth = -1.0, Platform::Exception^,
+                    [](Platform::Exception^ ex) { return ex->HResult == E_INVALIDARG; });
+                VERIFY_THROWS_SPECIFIC_WINRT(window1->MaxHeight = std::numeric_limits<double>::quiet_NaN(), Platform::Exception^,
+                    [](Platform::Exception^ ex) { return ex->HResult == E_INVALIDARG; });
+                VERIFY_ARE_EQUAL(300.0, window1->MinWidth);
+                VERIFY_ARE_EQUAL(800.0, window1->MaxHeight);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            // The thread check still applies after close.
+            VERIFY_ARE_NOT_EQUAL(owningThreadId, ::GetCurrentThreadId());
+            VERIFY_THROWS_SPECIFIC_WINRT((void)window1->MinWidth, Platform::Exception^,
+                [](Platform::Exception^ ex) { return ex->HResult == RPC_E_WRONG_THREAD; });
+            VERIFY_THROWS_SPECIFIC_WINRT(window1->MaxHeight = 500.0, Platform::Exception^,
+                [](Platform::Exception^ ex) { return ex->HResult == RPC_E_WRONG_THREAD; });
+
+            RunOnUIThread([&]()
+            {
+                VERIFY_ARE_EQUAL(300.0, window1->MinWidth);
+                VERIFY_ARE_EQUAL(800.0, window1->MaxHeight);
+            });
+        }
+    }
+
+    void WindowIntegrationTests::MinMaxSizeResetReleasesOwnership()
+    {
+        using namespace Microsoft::UI::Windowing;
+
+        TestCleanupWrapper cleanup;
+        WindowAutoCloser window1;
+
+        RunOnUIThread([&]()
+        {
+            window1.Attach(ref new xaml::Window());
+            window1->Content = ref new xaml_controls::Grid();
+            window1->Activate();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            OverlappedPresenter^ op = dynamic_cast<OverlappedPresenter^>(window1->AppWindow->Presenter);
+            VERIFY_IS_NOT_NULL(op);
+
+            window1->MinWidth = 400.0;
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumWidth);
+
+            // Resetting to the default clears the presenter value, and window1 stops owning MinWidth.
+            window1->MinWidth = 0.0;
+            VERIFY_IS_NULL(op->PreferredMinimumWidth);
+            VERIFY_ARE_EQUAL(0.0, window1->MinWidth);
+
+            // window1 no longer owns MinWidth, so setting MaxHeight must not clear the MinWidth value the app
+            // sets directly on the presenter.
+            op->PreferredMinimumWidth = ref new Platform::Box<int>(500);
+            window1->MaxHeight = 2000.0;
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumWidth);
+            VERIFY_ARE_EQUAL(500, op->PreferredMinimumWidth->Value);
+
+            // Resetting a property window1 never owned must also leave the presenter value alone.
+            op->PreferredMaximumWidth = ref new Platform::Box<int>(1500);
+            window1->MaxWidth = std::numeric_limits<double>::infinity();
+            VERIFY_IS_NOT_NULL(op->PreferredMaximumWidth);
+            VERIFY_ARE_EQUAL(1500, op->PreferredMaximumWidth->Value);
+
+            // Setting a non-default value takes ownership again and overwrites the value the app set on the
+            // presenter.
+            window1->MinWidth = 300.0;
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumWidth);
+            VERIFY_ARE_NOT_EQUAL(500, op->PreferredMinimumWidth->Value);
+            VERIFY_ARE_EQUAL(300.0, window1->MinWidth);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void WindowIntegrationTests::MinMaxSizeSizeChangedReentrancy()
+    {
+        using namespace Microsoft::UI::Windowing;
+
+        TestCleanupWrapper cleanup;
+
+        for (const bool closeInHandler : { false, true })
+        {
+            LOG_OUTPUT(L"SizeChanged handler closes=%d", closeInHandler);
+            WindowAutoCloser window1;
+            auto sizeChangedRegistration = CreateSafeEventRegistration(xaml::Window, SizeChanged);
+            int sizeChangedCount = 0;
+
+            RunOnUIThread([&]()
+            {
+                window1.Attach(ref new xaml::Window());
+                window1->Content = ref new xaml_controls::Grid();
+                window1->Width = 400.0;
+                window1->Height = 300.0;
+                // Own MaxHeight up front. It comes after MinWidth in the write order, so when the handler below
+                // runs during the MinWidth write, the loop still has a MaxHeight write left to do. That's the
+                // write that has to stop (window closed) or use the handler's new value.
+                window1->MaxHeight = 2000.0;
+                window1->Activate();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                sizeChangedRegistration.Attach(window1.get(),
+                    ref new wf::TypedEventHandler<Platform::Object^, xaml::WindowSizeChangedEventArgs^>(
+                        [&](Platform::Object^, xaml::WindowSizeChangedEventArgs^)
+                        {
+                            if (++sizeChangedCount != 1)
+                            {
+                                return;
+                            }
+                            if (closeInHandler)
+                            {
+                                window1->Close();
+                            }
+                            else
+                            {
+                                // Below the current height of 300, so the window has to shrink.
+                                window1->MaxHeight = 250.0;
+                            }
+                        }));
+
+                // A minimum wider than the window forces a resize, which raises SizeChanged while the
+                // setter is still writing to the presenter.
+                VERIFY_NO_THROW(window1->MinWidth = 500.0);
+                LOG_OUTPUT(L"SizeChanged count during setter: %d", sizeChangedCount);
+                VERIFY_ARE_EQUAL(500.0, window1->MinWidth);
+
+                if (!closeInHandler)
+                {
+                    VERIFY_ARE_EQUAL(250.0, window1->MaxHeight);
+                    OverlappedPresenter^ op = dynamic_cast<OverlappedPresenter^>(window1->AppWindow->Presenter);
+                    VERIFY_IS_NOT_NULL(op);
+                    VERIFY_IS_NOT_NULL(op->PreferredMinimumWidth);
+                    VERIFY_IS_NOT_NULL(op->PreferredMaximumHeight);
+                }
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_GREATER_THAN_OR_EQUAL(sizeChangedCount, 1);
+                VERIFY_ARE_EQUAL(500.0, window1->MinWidth);
+                if (closeInHandler)
+                {
+                    // Closed windows keep their frozen values and ignore valid sets.
+                    window1->MinWidth = 600.0;
+                    VERIFY_ARE_EQUAL(500.0, window1->MinWidth);
+                }
+                else
+                {
+                    VERIFY_IS_TRUE(window1->Bounds.Width >= 498.0);
+                    // If the outer setter wrote its old MaxHeight (2000) after the handler ran, the window
+                    // would not be clamped here.
+                    VERIFY_IS_TRUE(window1->Bounds.Height <= 252.0);
+                }
+            });
+        }
     }
 
 #endif // MUX_PRERELEASE

@@ -248,6 +248,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that Window Min/Max size constraints re-apply when ExtendsContentIntoTitleBar toggles, so they track the changed chrome instead of drifting by the caption height.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeTitleBarTogglePreservesHeight)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that turning ExtendsContentIntoTitleBar off while MaxHeight equals Height keeps the client height at Height.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeAfterClose)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that WinUI Window Min/Max size values freeze at close: getters still work, valid sets do nothing, invalid values still throw, and calls from another thread still throw.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeResetReleasesOwnership)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that resetting a WinUI Window Min/Max size to its default (0 or +Infinity) makes WinUI stop managing that presenter value, that resetting a property WinUI never owned leaves the presenter alone, and that setting it again takes it back.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeSizeChangedReentrancy)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a SizeChanged handler raised while a Min/Max size setter is writing to the presenter can safely set another Min/Max size or close the window.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
 #endif // MUX_PRERELEASE
 
         BEGIN_TEST_METHOD(ContentSetInMarkupIsReleasedWhenCleared)

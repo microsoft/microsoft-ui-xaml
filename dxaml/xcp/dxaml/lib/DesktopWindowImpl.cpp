@@ -1196,6 +1196,12 @@ _Check_return_ HRESULT DesktopWindowImpl::OnAppWindowChanged(_In_ ixp::IAppWindo
         return S_OK;
     }
 
+    // Re-applying the pending size and the size constraints below can raise SizeChanged, and the app's
+    // handler could drop the last reference to the Window. Hold a reference for the rest of this callback
+    // so the Window stays alive, the same way OnMessage does. spWindow isn't used for anything else.
+    ctl::ComPtr<xaml::IWindow> spWindow;
+    IFC_RETURN(ResolveWindowWeakReference(&spWindow));
+
     if (DesktopUtility::IsPriorToWindows11() && m_windowChrome)
     {
         // Style/size messages can arrive while AppWindow still reports the old presenter.
@@ -2226,13 +2232,14 @@ _Check_return_ HRESULT DesktopWindowImpl::put_ExtendsContentIntoTitleBarImpl(_In
 
     IFC_RETURN(m_windowChrome->SetIsChromeActive(!!value));
 
-    if (preserveClientSize)
-    {
-        IFC_RETURN(ApplyRestoredClientSizeInDips(boundsBefore.Width, boundsBefore.Height));
-    }
-
     // Refresh client and chrome together even without an explicit Height or size constraints.
     // A SizeChanged handler can toggle the title bar and then immediately switch presenters.
+    //
+    // Update the size constraints *before* restoring the client size below. The presenter limits are in
+    // outer-window pixels (client + frame), and the toggle just changed the frame. If we restored first,
+    // the old limit could stop the window from reaching the right size. Example: Height and MaxHeight are
+    // both 200. Turning ExtendsContentIntoTitleBar off moves the caption into the frame, so the window has
+    // to grow by the caption height to keep the client at 200. The old max would block that.
     if (AreNewWindowingApisEnabled())
     {
         TrackLastRestoredClientSize();
@@ -2240,6 +2247,13 @@ _Check_return_ HRESULT DesktopWindowImpl::put_ExtendsContentIntoTitleBarImpl(_In
         {
             IFC_RETURN(ApplySizeConstraintsToPresenterIfOverlapped());
         }
+    }
+
+    // Changing the constraints above can resize the window and raise SizeChanged. The app's handler can
+    // then close the window, or maximize, minimize, or switch presenters. Re-check before restoring.
+    if (preserveClientSize && !m_bIsClosed && IsInOverlappedRestoredState())
+    {
+        IFC_RETURN(ApplyRestoredClientSizeInDips(boundsBefore.Width, boundsBefore.Height));
     }
 
     return S_OK;
@@ -2429,44 +2443,68 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplySizeConstraintsToPresenterIfOverl
 
     // Only touch a presenter property the app has opted into (the optional has a value). A minimum of 0
     // means "no app-requested minimum" and a maximum of +Infinity means "no maximum", so those map to a
-    // null reference, clearing the constraint while still leaving it under our ownership.
-    if (m_minWidth.has_value())
+    // null reference, clearing the constraint.
+    //
+    // Each presenter write can resize the window and raise SizeChanged. The app's handler can close the
+    // window, so check m_bIsClosed before each write.
+    //
+    // After each write, onWritten does two things:
+    //  - Remembers the first failure. We keep going so the other constraints still get applied, then
+    //    return that first failure. Nothing gets rolled back.
+    //  - If the app reset the property to its default and the null write succeeded, gives ownership back
+    //    to the app (see m_minWidth in the header).
+    HRESULT firstError = S_OK;
+    auto onWritten = [&firstError](HRESULT hr, std::optional<double>& member, double defaultValue)
+    {
+        if (SUCCEEDED(hr) && member == defaultValue)
+        {
+            member.reset();
+        }
+        if (SUCCEEDED(firstError))
+        {
+            firstError = hr;
+        }
+    };
+    const double infinity = std::numeric_limits<double>::infinity();
+
+    if (m_minWidth.has_value() && !m_bIsClosed)
     {
         ctl::ComPtr<wf::IReference<int>> ref;
         if (*m_minWidth > 0.0)
         {
             IFC_RETURN(transformToPixelsAndBox(*m_minWidth, chromeWidth, ref));
         }
-        IFC_RETURN(presenter->put_PreferredMinimumWidth(ref.Get()));
+        onWritten(presenter->put_PreferredMinimumWidth(ref.Get()), m_minWidth, 0.0);
     }
-    if (m_minHeight.has_value())
+    if (m_minHeight.has_value() && !m_bIsClosed)
     {
         ctl::ComPtr<wf::IReference<int>> ref;
         if (*m_minHeight > 0.0)
         {
             IFC_RETURN(transformToPixelsAndBox(*m_minHeight, chromeHeight, ref));
         }
-        IFC_RETURN(presenter->put_PreferredMinimumHeight(ref.Get()));
+        onWritten(presenter->put_PreferredMinimumHeight(ref.Get()), m_minHeight, 0.0);
     }
-    if (m_maxWidth.has_value())
+    if (m_maxWidth.has_value() && !m_bIsClosed)
     {
         ctl::ComPtr<wf::IReference<int>> ref;
         if (!DoubleUtil::IsInfinity(*m_maxWidth))
         {
             IFC_RETURN(transformToPixelsAndBox(*m_maxWidth, chromeWidth, ref));
         }
-        IFC_RETURN(presenter->put_PreferredMaximumWidth(ref.Get()));
+        onWritten(presenter->put_PreferredMaximumWidth(ref.Get()), m_maxWidth, infinity);
     }
-    if (m_maxHeight.has_value())
+    if (m_maxHeight.has_value() && !m_bIsClosed)
     {
         ctl::ComPtr<wf::IReference<int>> ref;
         if (!DoubleUtil::IsInfinity(*m_maxHeight))
         {
             IFC_RETURN(transformToPixelsAndBox(*m_maxHeight, chromeHeight, ref));
         }
-        IFC_RETURN(presenter->put_PreferredMaximumHeight(ref.Get()));
+        onWritten(presenter->put_PreferredMaximumHeight(ref.Get()), m_maxHeight, infinity);
     }
 
+    IFC_RETURN(firstError);
     return S_OK;
 }
 
@@ -2506,10 +2544,17 @@ _Check_return_ HRESULT DesktopWindowImpl::ClearOwnedConstraintsOnPresenterIfOver
     return S_OK;
 }
 
+// Window.MinWidth, MinHeight, MaxWidth, and MaxHeight getters and setters. All four follow the same rules:
+//  - A setter validates the value, stores it, then writes it to the presenter. If the write fails, we keep
+//    the stored value and return the error. A later re-apply (DPI change, presenter change) tries again.
+//  - Setting a property WinUI doesn't own to its default (0 for a minimum, +Infinity for a maximum) does
+//    nothing, so it can't overwrite a value the app set directly on the presenter.
+//  - After the window closes, the getters return the last values. The setters still validate, but a valid
+//    value does nothing.
+
 _Check_return_ HRESULT DesktopWindowImpl::get_MinWidthImpl(_Out_ DOUBLE* pValue)
 {
     ASSERT(AreNewWindowingApisEnabled());
-    IFC_RETURN(CheckIsWindowClosed());
     *pValue = m_minWidth.value_or(0.0);
     return S_OK;
 }
@@ -2517,24 +2562,20 @@ _Check_return_ HRESULT DesktopWindowImpl::get_MinWidthImpl(_Out_ DOUBLE* pValue)
 _Check_return_ HRESULT DesktopWindowImpl::put_MinWidthImpl(_In_ DOUBLE value)
 {
     ASSERT(AreNewWindowingApisEnabled());
-    IFC_RETURN(CheckIsWindowClosed());
     IFC_RETURN(ValidateMinConstraint(value));
-
-    // If pushing to the presenter fails, don't leave a value the getter would report but we never applied.
-    const std::optional<double> previous = m_minWidth;
-    auto restoreOnFailure = wil::scope_exit([this, previous]() { m_minWidth = previous; });
+    if (m_bIsClosed || (value == 0.0 && !m_minWidth.has_value()))
+    {
+        return S_OK;
+    }
 
     m_minWidth = value;
     IFC_RETURN(ApplySizeConstraintsToPresenterIfOverlapped());
-
-    restoreOnFailure.release();
     return S_OK;
 }
 
 _Check_return_ HRESULT DesktopWindowImpl::get_MinHeightImpl(_Out_ DOUBLE* pValue)
 {
     ASSERT(AreNewWindowingApisEnabled());
-    IFC_RETURN(CheckIsWindowClosed());
     *pValue = m_minHeight.value_or(0.0);
     return S_OK;
 }
@@ -2542,24 +2583,20 @@ _Check_return_ HRESULT DesktopWindowImpl::get_MinHeightImpl(_Out_ DOUBLE* pValue
 _Check_return_ HRESULT DesktopWindowImpl::put_MinHeightImpl(_In_ DOUBLE value)
 {
     ASSERT(AreNewWindowingApisEnabled());
-    IFC_RETURN(CheckIsWindowClosed());
     IFC_RETURN(ValidateMinConstraint(value));
-
-    // If pushing to the presenter fails, don't leave a value the getter would report but we never applied.
-    const std::optional<double> previous = m_minHeight;
-    auto restoreOnFailure = wil::scope_exit([this, previous]() { m_minHeight = previous; });
+    if (m_bIsClosed || (value == 0.0 && !m_minHeight.has_value()))
+    {
+        return S_OK;
+    }
 
     m_minHeight = value;
     IFC_RETURN(ApplySizeConstraintsToPresenterIfOverlapped());
-
-    restoreOnFailure.release();
     return S_OK;
 }
 
 _Check_return_ HRESULT DesktopWindowImpl::get_MaxWidthImpl(_Out_ DOUBLE* pValue)
 {
     ASSERT(AreNewWindowingApisEnabled());
-    IFC_RETURN(CheckIsWindowClosed());
     *pValue = m_maxWidth.value_or(std::numeric_limits<double>::infinity());
     return S_OK;
 }
@@ -2567,24 +2604,20 @@ _Check_return_ HRESULT DesktopWindowImpl::get_MaxWidthImpl(_Out_ DOUBLE* pValue)
 _Check_return_ HRESULT DesktopWindowImpl::put_MaxWidthImpl(_In_ DOUBLE value)
 {
     ASSERT(AreNewWindowingApisEnabled());
-    IFC_RETURN(CheckIsWindowClosed());
     IFC_RETURN(ValidateMaxConstraint(value));
-
-    // If pushing to the presenter fails, don't leave a value the getter would report but we never applied.
-    const std::optional<double> previous = m_maxWidth;
-    auto restoreOnFailure = wil::scope_exit([this, previous]() { m_maxWidth = previous; });
+    if (m_bIsClosed || (DoubleUtil::IsInfinity(value) && !m_maxWidth.has_value()))
+    {
+        return S_OK;
+    }
 
     m_maxWidth = value;
     IFC_RETURN(ApplySizeConstraintsToPresenterIfOverlapped());
-
-    restoreOnFailure.release();
     return S_OK;
 }
 
 _Check_return_ HRESULT DesktopWindowImpl::get_MaxHeightImpl(_Out_ DOUBLE* pValue)
 {
     ASSERT(AreNewWindowingApisEnabled());
-    IFC_RETURN(CheckIsWindowClosed());
     *pValue = m_maxHeight.value_or(std::numeric_limits<double>::infinity());
     return S_OK;
 }
@@ -2592,17 +2625,14 @@ _Check_return_ HRESULT DesktopWindowImpl::get_MaxHeightImpl(_Out_ DOUBLE* pValue
 _Check_return_ HRESULT DesktopWindowImpl::put_MaxHeightImpl(_In_ DOUBLE value)
 {
     ASSERT(AreNewWindowingApisEnabled());
-    IFC_RETURN(CheckIsWindowClosed());
     IFC_RETURN(ValidateMaxConstraint(value));
-
-    // If pushing to the presenter fails, don't leave a value the getter would report but we never applied.
-    const std::optional<double> previous = m_maxHeight;
-    auto restoreOnFailure = wil::scope_exit([this, previous]() { m_maxHeight = previous; });
+    if (m_bIsClosed || (DoubleUtil::IsInfinity(value) && !m_maxHeight.has_value()))
+    {
+        return S_OK;
+    }
 
     m_maxHeight = value;
     IFC_RETURN(ApplySizeConstraintsToPresenterIfOverlapped());
-
-    restoreOnFailure.release();
     return S_OK;
 }
 
