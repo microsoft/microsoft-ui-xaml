@@ -272,8 +272,8 @@ namespace DirectUI
         //
         // Empty means the app never set that property, so we leave the matching presenter constraint alone
         // (the app or system may manage it directly). Once set, we own that presenter constraint and keep it
-        // in sync, clearing it back to null when the app resets to the "no constraint" default (0 for a
-        // minimum, +Infinity for a maximum).
+        // in sync. When the app resets it to the "no constraint" default (0 for a minimum, +Infinity for a
+        // maximum), we clear it back to null and then give up ownership (back to empty).
         //
         // Once set via Window, the app must not poke the matching Preferred Min/Max on the AppWindow's
         // OverlappedPresenter directly - Window is the source of truth and re-applies its value on the next
