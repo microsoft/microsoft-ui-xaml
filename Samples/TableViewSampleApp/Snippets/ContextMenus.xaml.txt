@@ -1,0 +1,58 @@
+<!-- A cell or row menu inherits the row's data item as its DataContext, so its items can
+     bind to the person and read it back in their Click handlers. -->
+<MenuFlyout x:Key="NameCellMenu">
+    <MenuFlyoutItem Text="Copy name" Click="OnCopyNameClick">
+        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8C8;"/></MenuFlyoutItem.Icon>
+    </MenuFlyoutItem>
+    <MenuFlyoutItem Text="{Binding Email}" Click="OnCopyEmailClick">
+        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE715;"/></MenuFlyoutItem.Icon>
+    </MenuFlyoutItem>
+</MenuFlyout>
+
+<!-- The row menu is the fallback for every cell without its own CellContextFlyout, and for
+     blank space past the last column. -->
+<MenuFlyout x:Key="RowMenu">
+    <MenuFlyoutItem Text="Copy row" Click="OnCopyRowClick">
+        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8C8;"/></MenuFlyoutItem.Icon>
+    </MenuFlyoutItem>
+    <MenuFlyoutSeparator/>
+    <MenuFlyoutItem Text="Move to next department" Click="OnNextDepartmentClick">
+        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8AB;"/></MenuFlyoutItem.Icon>
+    </MenuFlyoutItem>
+    <MenuFlyoutItem Text="Remove from list" Click="OnRemoveClick">
+        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE74D;"/></MenuFlyoutItem.Icon>
+    </MenuFlyoutItem>
+</MenuFlyout>
+
+<!-- … -->
+
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.AutomationId="ContextMenusTable"
+    AutomationProperties.Name="People with context menus"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    RowContextFlyout="{StaticResource RowMenu}"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <!-- The table's own menu: the final fallback, e.g. for group headers. -->
+    <tv:TableView.ContextFlyout>
+        <MenuFlyout>
+            <MenuFlyoutItem Text="Restore the list" Click="OnRestoreListClick">
+                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE72C;"/></MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+        </MenuFlyout>
+    </tv:TableView.ContextFlyout>
+    <!-- Each header gets its own HeaderContextFlyout in code, so its items know the column. -->
+    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                                 CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="{StaticResource ColWidthShortName}"
+                             Binding="{Binding FullName}"
+                             CellContextFlyout="{StaticResource NameCellMenu}"/>
+    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}"
+                                 CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}"
+                             Binding="{Binding Office}"/>
+    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}"
+                             Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+</tv:TableView>

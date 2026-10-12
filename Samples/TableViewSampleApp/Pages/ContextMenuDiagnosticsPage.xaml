@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="TableViewSampleApp.ContextMenuPage"
+    x:Class="TableViewSampleApp.Pages.ContextMenuDiagnosticsPage"
+    NavigationCacheMode="Disabled"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
@@ -9,7 +10,7 @@
             <tv:TableView Loaded="OnNestedLoaded" Height="100" Width="200" />
         </DataTemplate>
         <DataTemplate x:Key="AppFlyoutCell">
-            <TextBlock Text="{Binding Notes}" Margin="8,0">
+            <TextBlock Text="{Binding Bio}" Margin="8,0">
                 <TextBlock.ContextFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem Text="APP-OWNED" />
@@ -26,23 +27,11 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBlock Text="Context menus" FontSize="18" />
+        <TextBlock Text="Context menu diagnostics" FontSize="18" />
         <ScrollViewer Grid.Row="1" MaxHeight="180"
                       HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="8">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <ComboBox x:Name="Mode" SelectedIndex="0" AutomationProperties.Name="Request mode">
-                        <ComboBoxItem Content="Keep" />
-                        <ComboBoxItem Content="Replace" />
-                        <ComboBoxItem Content="Null" />
-                        <ComboBoxItem Content="Suppress" />
-                        <ComboBoxItem Content="Remove column" />
-                        <ComboBoxItem Content="Hide column" />
-                        <ComboBoxItem Content="Swap items" />
-                        <ComboBoxItem Content="Swap items + null" />
-                        <ComboBoxItem Content="Retemplate in callback" />
-                        <ComboBoxItem Content="Retain args" />
-                    </ComboBox>
                     <CheckBox x:Name="NoSelection"
                               Content="SelectionMode.None"
                               Click="OnSelectionMode" />
@@ -63,10 +52,9 @@
                     <Button Content="Show headers" Click="OnShowHeaders" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="RTL + frozen Name" Click="OnRtl" />
+                    <Button Content="RTL + frozen First name" Click="OnRtl" />
                     <Button Content="Plain flyout" Click="OnPlainFlyout" />
-                    <Button Content="Group by City" Click="OnGroup" />
-                    <Button Content="Change retained args" Click="OnChangeRetainedArgs" />
+                    <Button Content="Group by Office" Click="OnGroup" />
                 </StackPanel>
                 <TextBlock x:Name="Hint" TextWrapping="Wrap" MaxWidth="680" HorizontalAlignment="Left" />
             </StackPanel>
@@ -74,7 +62,7 @@
         <tv:TableView x:Name="Table" Grid.Row="2" IsReadOnly="False"
                       AutomationProperties.Name="Context menu table" />
         <StackPanel Grid.Row="3" Spacing="4">
-            <TextBlock Text="Cell actions: right-click Name to use a bound value; City or Score to use Item + Column."
+            <TextBlock Text="Cell action: right-click First name and choose Show first name value to use a value bound to the row item."
                        TextWrapping="Wrap" />
             <TextBlock x:Name="ActionResult" TextWrapping="Wrap"
                        AutomationProperties.LiveSetting="Polite" />

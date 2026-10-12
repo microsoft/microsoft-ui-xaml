@@ -84,6 +84,10 @@ shell arguments are:
 - `--verify-groups` / `--verify-selection` — local automation log flags, compiled only when
   `TableViewSampleEnableVerificationLogs=true` defines `TABLEVIEW_SAMPLE_VERIFY`. Public sample
   builds must not write diagnostic log files next to the executable by default.
+- `--verify-context-menus` (with `--page=ContextMenus`) — same build switch. Runs the context menu
+  self-check in `Pages\ContextMenusPage.Verification.cs` (SendInput mouse/keyboard plus UIA
+  `ShowContextMenu`), writes `verification-context-menus.txt` next to the exe, then exits. Run it
+  when changing context menu resolution, focus or the Context menus page.
 
 ## Shell invariants
 
@@ -106,8 +110,9 @@ workarounds. Its `SourceSnippet` and `AdditionalSnippet` values (or `Snippet="X"
 Do not check in generated `BuildInfo.cs`, and do not change the existing `BuildInfo` field names
 without updating `Pages\AboutPage.xaml.cs`.
 
-The pages deliberately source-free today are `AboutPage.xaml`, `HomePage.xaml` and
-`SettingsPage.xaml`. Every other page declares `Snippet="X"`.
+The pages deliberately source-free today are `AboutPage.xaml`, `HomePage.xaml`,
+`SettingsPage.xaml` and `ContextMenuDiagnosticsPage.xaml` (a manual verification harness, not a
+usage example). Every other page declares `Snippet="X"`.
 
 ## Page structure
 
