@@ -9,6 +9,7 @@ namespace TableViewSampleApp.Pages;
 public sealed partial class CellEditingPage
 {
     private int _editsCommitted;
+    private int _editsAtBeginEdit;
     private string _openEdit = "(none)";
 
     protected override void RefreshReadouts()

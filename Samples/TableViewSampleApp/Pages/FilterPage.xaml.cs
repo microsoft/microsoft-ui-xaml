@@ -128,8 +128,8 @@ public sealed partial class FilterPage : SamplePageBase
 
         ApplyFilter();
         SetLastAction(Query.Length > 0
-            ? string.Format(CultureInfo.CurrentCulture, "Filter(query \u201C{0}\u201D)", Query)
-            : "Query cleared");
+            ? string.Format(CultureInfo.CurrentCulture, "Filter(query \u201C{0}\u201D): {1}", Query, ShownSummary())
+            : "Query cleared: " + ShownSummary());
     }
 
     private void OnActiveToggled(object sender, RoutedEventArgs e)
@@ -140,7 +140,7 @@ public sealed partial class FilterPage : SamplePageBase
         }
 
         ApplyFilter();
-        SetLastAction(ActiveOnly ? "Active only -> On" : "Active only -> Off");
+        SetLastAction((ActiveOnly ? "Active only -> On: " : "Active only -> Off: ") + ShownSummary());
     }
 
     /// <summary>
@@ -229,7 +229,7 @@ public sealed partial class FilterPage : SamplePageBase
         SearchBox.Text = string.Empty;
         ActiveOnlyToggle.IsOn = false;
         ApplyFilter();
-        SetLastAction("ClearFilter(): every row is back");
+        SetLastAction("ClearFilter(): every row is back, " + ShownSummary());
         SearchBox.Focus(FocusState.Programmatic);
 
         var peer = FrameworkElementAutomationPeer.FromElement(SearchBox)

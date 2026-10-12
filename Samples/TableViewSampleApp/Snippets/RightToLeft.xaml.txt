@@ -26,7 +26,7 @@
     <ToggleSwitch
         x:Name="RtlToggle"
         AutomationProperties.AutomationId="RightToLeftFlowDirectionToggle"
-        Header="FlowDirection"
+        Header="Right-to-left layout"
         IsOn="True"
         OnContent="RightToLeft"
         OffContent="LeftToRight"

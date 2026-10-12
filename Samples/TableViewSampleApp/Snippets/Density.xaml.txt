@@ -22,6 +22,7 @@
     x:Name="DensitySelector"
     AutomationProperties.AutomationId="DensitySelector"
     Header="Density"
+    AutomationProperties.HelpText="Row height and built-in cell padding preset."
     SelectedIndex="1"
     SelectionChanged="OnDensityChanged"
     HorizontalAlignment="Stretch">

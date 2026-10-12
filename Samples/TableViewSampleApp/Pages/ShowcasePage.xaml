@@ -86,6 +86,7 @@
                                   Header="Live updates" IsOn="True" OnContent="On" OffContent="Off" Toggled="OnLiveToggled"/>
                     <Slider x:Name="UpdateIntervalSlider" AutomationProperties.AutomationId="ShowcaseUpdateIntervalSlider"
                             Header="Update interval (ms)" Minimum="200" Maximum="2000" StepFrequency="100" Value="700"
+                            AutomationProperties.HelpText="Milliseconds between live updates, from 200 to 2000."
                             ValueChanged="OnUpdateIntervalChanged"/>
                     <ToggleSwitch x:Name="VibrantToggle" AutomationProperties.AutomationId="ShowcaseVibrantToggle"
                                   Header="Vibrant cells" IsOn="True" OnContent="On" OffContent="Off" Toggled="OnVibrantToggled"/>

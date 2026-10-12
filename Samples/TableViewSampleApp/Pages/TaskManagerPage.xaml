@@ -80,9 +80,10 @@
                         x:Name="SearchBox"
                         AutomationProperties.AutomationId="TaskManagerSearchBox"
                         AutomationProperties.Name="Search processes"
-                        PlaceholderText="Search by name, category or status"
+                        AutomationProperties.HelpText="Matches the name, category or status."
+                        ToolTipService.ToolTip="Matches the name, category or status."
+                        PlaceholderText="Search processes"
                         QueryIcon="Find"
-                        MaxWidth="380"
                         HorizontalAlignment="Stretch"
                         TextChanged="OnSearchBoxTextChanged"/>
                     <Button

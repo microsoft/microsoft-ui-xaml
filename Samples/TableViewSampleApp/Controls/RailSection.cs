@@ -83,6 +83,7 @@ public partial class RailSection : StackPanel
     {
         if (string.IsNullOrEmpty(description))
         {
+            ClearValue(AutomationProperties.FullDescriptionProperty);
             if (_description is not null)
             {
                 Children.Remove(_description);
@@ -103,6 +104,25 @@ public partial class RailSection : StackPanel
         }
 
         _description.Text = description;
+        AutomationProperties.SetFullDescription(this, description);
+    }
+
+    // A Panel has no peer of its own, so without this the section's Name never reaches UIA.
+    protected override AutomationPeer OnCreateAutomationPeer() => new GroupAutomationPeer(this, nameof(RailSection));
+
+    internal sealed class GroupAutomationPeer : FrameworkElementAutomationPeer
+    {
+        private readonly string _className;
+
+        public GroupAutomationPeer(FrameworkElement owner, string className)
+            : base(owner)
+        {
+            _className = className;
+        }
+
+        protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Group;
+
+        protected override string GetClassNameCore() => _className;
     }
 
     private void ApplyHeadingMargin()
