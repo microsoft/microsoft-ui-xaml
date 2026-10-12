@@ -29,6 +29,9 @@ public:
     winrt::hstring GetClassNameCore();
     winrt::hstring GetNameCore();
 
+    // Lands keyboard focus for UIA SetFocus; see the definition.
+    void SetFocusCore();
+
     // IExpandCollapseProvider
     void Expand();
     void Collapse();

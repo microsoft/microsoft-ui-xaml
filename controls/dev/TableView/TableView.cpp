@@ -80,78 +80,301 @@ namespace
         return nullptr;
     }
 
-    winrt::IInspectable LookupInThemeDictionaries(
-        winrt::ResourceDictionary const& dict, winrt::hstring const& themeKey, winrt::IInspectable const& boxedKey)
+    // Misses are the common case here; HasKey does not originate an error on a miss the way
+    // Lookup (and therefore TryLookup) does.
+    winrt::IInspectable QuietLookup(winrt::IMap<winrt::IInspectable, winrt::IInspectable> const& map, winrt::IInspectable const& boxedKey)
     {
-        if (!dict)
+        if (map && map.HasKey(boxedKey))
         {
-            return nullptr;
+            return map.Lookup(boxedKey);
         }
-        if (auto themeDicts = dict.ThemeDictionaries())
+        return nullptr;
+    }
+
+    // Reference-typed resources keep their identity across lookups; value-typed ones (x:Double,
+    // Thickness, Color, ...) come back as a fresh box every time, so they compare by value.
+    bool IsSameResource(winrt::IInspectable const& left, winrt::IInspectable const& right)
+    {
+        if (!left || !right)
         {
-            const auto boxedThemeKey = winrt::box_value(themeKey);
-            if (themeDicts.HasKey(boxedThemeKey))
+            return false;
+        }
+        if (IsSameObject(left, right))
+        {
+            return true;
+        }
+
+        const auto leftValue = left.try_as<winrt::IPropertyValue>();
+        const auto rightValue = right.try_as<winrt::IPropertyValue>();
+        if (!leftValue || !rightValue || leftValue.Type() != rightValue.Type())
+        {
+            return false;
+        }
+
+        switch (leftValue.Type())
+        {
+        case winrt::PropertyType::Boolean: return leftValue.GetBoolean() == rightValue.GetBoolean();
+        case winrt::PropertyType::Double: return leftValue.GetDouble() == rightValue.GetDouble();
+        case winrt::PropertyType::Single: return leftValue.GetSingle() == rightValue.GetSingle();
+        case winrt::PropertyType::Int32: return leftValue.GetInt32() == rightValue.GetInt32();
+        case winrt::PropertyType::UInt32: return leftValue.GetUInt32() == rightValue.GetUInt32();
+        case winrt::PropertyType::Int64: return leftValue.GetInt64() == rightValue.GetInt64();
+        case winrt::PropertyType::String: return leftValue.GetString() == rightValue.GetString();
+        default: break;
+        }
+
+        if (auto const l = left.try_as<winrt::IReference<winrt::Thickness>>())
+        {
+            auto const r = right.try_as<winrt::IReference<winrt::Thickness>>();
+            return r && l.Value() == r.Value();
+        }
+        if (auto const l = left.try_as<winrt::IReference<winrt::Color>>())
+        {
+            auto const r = right.try_as<winrt::IReference<winrt::Color>>();
+            return r && l.Value() == r.Value();
+        }
+        if (auto const l = left.try_as<winrt::IReference<winrt::CornerRadius>>())
+        {
+            auto const r = right.try_as<winrt::IReference<winrt::CornerRadius>>();
+            return r && l.Value() == r.Value();
+        }
+        return false;
+    }
+
+    // Every key EnsureActiveThemeDictionary can select.
+    constexpr std::wstring_view s_highContrastWhiteKey{ L"HighContrastWhite"sv };
+    constexpr std::wstring_view s_highContrastBlackKey{ L"HighContrastBlack"sv };
+    constexpr std::wstring_view s_highContrastCustomKey{ L"HighContrastCustom"sv };
+
+    // SystemThemingInterop::GetSystemHighContrastTheme: the variant comes from the system window
+    // colours (including Xbox's video-safe pair). Empty when High Contrast is off.
+    std::wstring_view SystemHighContrastVariantKey()
+    {
+        HIGHCONTRASTW highContrast{};
+        highContrast.cbSize = sizeof(highContrast);
+        if (!::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, 0) ||
+            !(highContrast.dwFlags & HCF_HIGHCONTRASTON))
+        {
+            return {};
+        }
+
+        const auto foreground = static_cast<unsigned int>(::GetSysColor(COLOR_WINDOWTEXT));
+        const auto background = static_cast<unsigned int>(::GetSysColor(COLOR_WINDOW));
+        if ((background == 0x00FFFFFF && foreground == 0x0) || (background == 0x00EBEBEB && foreground == 0x00101010))
+        {
+            return s_highContrastWhiteKey;
+        }
+        if ((background == 0x0 && foreground == 0x00FFFFFF) || (background == 0x00101010 && foreground == 0x00EBEBEB))
+        {
+            return s_highContrastBlackKey;
+        }
+        return s_highContrastCustomKey;
+    }
+
+    // EnsureActiveThemeDictionary's selection order: the HC variant (a subtree-requested Light/Dark
+    // maps to HighContrastWhite/Black, otherwise the system variant), then "HighContrast", then the
+    // base theme, then "Default".
+    std::vector<std::wstring_view> ThemeDictionaryKeys(
+        bool highContrast,
+        std::wstring_view highContrastVariant,
+        bool isLight)
+    {
+        std::vector<std::wstring_view> keys;
+        if (highContrast)
+        {
+            if (!highContrastVariant.empty())
             {
-                if (auto themed = themeDicts.Lookup(boxedThemeKey).try_as<winrt::ResourceDictionary>())
-                {
-                    if (auto v = themed.TryLookup(boxedKey))
-                    {
-                        return v;
-                    }
-                }
+                keys.push_back(highContrastVariant);
             }
+            keys.push_back(L"HighContrast"sv);
         }
-        if (auto merged = dict.MergedDictionaries())
+        keys.push_back(isLight ? L"Light"sv : L"Dark"sv);
+        keys.push_back(L"Default"sv);
+        return keys;
+    }
+
+    struct ElementResourceQuery
+    {
+        winrt::IInspectable boxedKey;
+        // Candidate theme-dictionary keys for the ELEMENT's theme, in selection order.
+        std::vector<std::wstring_view> themeKeys;
+        // The same for the APP-wide theme, which is what a code-issued Lookup selects with.
+        std::vector<std::wstring_view> appThemeKeys;
+        // Global theme resources for this key, which Lookup appends to every dictionary's scope.
+        // Resolved lazily through an empty dictionary, which has no scope of its own.
+        winrt::IInspectable globalValue{ nullptr };
+        bool globalResolved{ false };
+
+        winrt::IInspectable const& GlobalValue()
         {
-            for (uint32_t i = merged.Size(); i-- > 0;)
+            if (!globalResolved)
             {
-                if (auto v = LookupInThemeDictionaries(merged.GetAt(i), themeKey, boxedKey))
+                globalResolved = true;
+                globalValue = QuietLookup(winrt::ResourceDictionary{}, boxedKey);
+            }
+            return globalValue;
+        }
+    };
+
+    winrt::ResourceDictionary SelectThemeDictionary(winrt::ResourceDictionary const& dict, std::vector<std::wstring_view> const& themeKeys)
+    {
+        if (auto const themeDicts = dict.ThemeDictionaries())
+        {
+            for (auto const themeKey : themeKeys)
+            {
+                if (auto const themed = QuietLookup(themeDicts, winrt::box_value(winrt::hstring{ themeKey })).try_as<winrt::ResourceDictionary>())
                 {
-                    return v;
+                    return themed;
                 }
             }
         }
         return nullptr;
     }
 
+    // Lookup/HasKey are full-scope (own, merged, APP-theme dictionary, global), and enumerating a
+    // dictionary forces CResourceDictionary::EnsureAll (realizes every deferred resource - the whole
+    // WinUI theme). So "own entry" is decided by comparing the hit with the one value that full-scope
+    // Lookup would have returned had there been no own entry: the nearest merged scope (last-to-first),
+    // then the app-theme dictionary, then global. Comparing with ONE candidate rather than any scope
+    // keeps an own entry that merely equals an unselected merged or theme value.
+    //
+    // Approximations, both deliberate:
+    // - A merged hit equal to global is skipped as the global fallback. GetKeyNoRefImpl actually lets
+    //   the last merged dictionary answer with global first, but Tabular keys are global (the dll's
+    //   theme resources), so mirroring that sends nearly every lookup down through the app's merged
+    //   dictionaries (XamlControlsResources included) - prohibitively expensive.
+    // - An own value-typed entry equal to the global default is indistinguishable from the fallback
+    //   (value types come back as fresh boxes) and is treated as not own; only an ancestor override of
+    //   the same key can then differ from what the framework returns.
+    bool IsOwnEntry(winrt::ResourceDictionary const& dict, winrt::IInspectable const& found, ElementResourceQuery& query)
+    {
+        // GetKeyNoRefImpl searches the LAST merged dictionary with global scope, so when the key
+        // exists globally that first search always answers and the loop stops; only a key with no
+        // global value reaches earlier merged dictionaries, and there a full-scope Lookup is exact.
+        winrt::IInspectable fallback{ nullptr };
+        auto const& global = query.GlobalValue();
+        if (auto const merged = dict.MergedDictionaries())
+        {
+            for (uint32_t i = merged.Size(); i-- > 0 && !fallback;)
+            {
+                // Every Lookup ends at global; only a hit that differs from it is the merged scope's.
+                auto value = QuietLookup(merged.GetAt(i), query.boxedKey);
+                if (value && !IsSameResource(value, global))
+                {
+                    fallback = std::move(value);
+                }
+            }
+        }
+        if (!fallback)
+        {
+            if (auto const themed = SelectThemeDictionary(dict, query.appThemeKeys))
+            {
+                auto value = QuietLookup(themed, query.boxedKey);
+                if (value && !IsSameResource(value, global))
+                {
+                    fallback = std::move(value);
+                }
+            }
+        }
+        if (!fallback)
+        {
+            fallback = query.GlobalValue();
+        }
+
+        return !IsSameResource(found, fallback);
+    }
+
+    // Framework (GetKeyNoRefImpl) order: own entries, MergedDictionaries last-to-first, then the
+    // active theme dictionary - chosen from the ELEMENT's theme, which a code-issued Lookup cannot see.
+    winrt::IInspectable LookupInDictionaryScope(winrt::ResourceDictionary const& dict, ElementResourceQuery& query)
+    {
+        if (!dict)
+        {
+            return nullptr;
+        }
+
+        if (auto const found = QuietLookup(dict, query.boxedKey))
+        {
+            if (IsOwnEntry(dict, found, query))
+            {
+                return found;
+            }
+        }
+
+        if (auto const merged = dict.MergedDictionaries())
+        {
+            for (uint32_t i = merged.Size(); i-- > 0;)
+            {
+                if (auto found = LookupInDictionaryScope(merged.GetAt(i), query))
+                {
+                    return found;
+                }
+            }
+        }
+
+        if (auto const themed = SelectThemeDictionary(dict, query.themeKeys))
+        {
+            return LookupInDictionaryScope(themed, query);
+        }
+
+        return nullptr;
+    }
+
+    // Resolves a key the way {ThemeResource} would from `start`: ancestors nearest first, then
+    // Application.Resources, then global theme resources, with theme dictionaries selected as
+    // EnsureActiveThemeDictionary does (see ThemeDictionaryKeys).
     winrt::IInspectable LookupElementResource(winrt::FrameworkElement const& start, std::wstring_view key, bool highContrast = false)
     {
-        const auto boxedKey = winrt::box_value(winrt::hstring{ key });
+        ElementResourceQuery query;
+        query.boxedKey = winrt::box_value(winrt::hstring{ key });
+
+        const auto systemHighContrastVariant = SystemHighContrastVariantKey();
+
         // Theme-scoped resources must resolve against the element's ActualTheme.
-        const auto theme = start ? start.ActualTheme() : winrt::ElementTheme::Default;
         // High Contrast is orthogonal to ActualTheme; callers pass cached HC state for hot-path brush lookups.
-        const winrt::hstring themeKey{
-            highContrast ? L"HighContrast" : (theme == winrt::ElementTheme::Light ? L"Light" : L"Default") };
+        const auto theme = start ? start.ActualTheme() : winrt::ElementTheme::Default;
+        std::wstring_view elementHighContrastVariant = systemHighContrastVariant;
+        if (highContrast)
+        {
+            // A subtree that requested a theme selects the matching HC variant, not the system's.
+            for (auto requester = start; requester; requester = requester.Parent().try_as<winrt::FrameworkElement>())
+            {
+                if (requester.RequestedTheme() != winrt::ElementTheme::Default)
+                {
+                    elementHighContrastVariant = theme == winrt::ElementTheme::Light ? s_highContrastWhiteKey : s_highContrastBlackKey;
+                    break;
+                }
+            }
+        }
+        query.themeKeys = ThemeDictionaryKeys(highContrast, elementHighContrastVariant, theme == winrt::ElementTheme::Light);
+
+        // What a code-issued Lookup selects: no subtree theme, so the app-wide base and system HC.
+        auto appIsLight = theme == winrt::ElementTheme::Light;
+        if (auto const app = winrt::Application::Current())
+        {
+            appIsLight = app.RequestedTheme() == winrt::ApplicationTheme::Light;
+        }
+        query.appThemeKeys = ThemeDictionaryKeys(!systemHighContrastVariant.empty(), systemHighContrastVariant, appIsLight);
 
         winrt::FrameworkElement walker = start;
         while (walker)
         {
-            if (auto resources = walker.Resources())
+            if (auto found = LookupInDictionaryScope(walker.Resources(), query))
             {
-                if (auto found = LookupInThemeDictionaries(resources, themeKey, boxedKey))
-                {
-                    return found;
-                }
-                if (auto found = resources.TryLookup(boxedKey))
-                {
-                    return found;
-                }
+                return found;
             }
             walker = walker.Parent().try_as<winrt::FrameworkElement>();
         }
 
         if (auto app = winrt::Application::Current())
         {
-            if (auto resources = app.Resources())
+            if (auto found = LookupInDictionaryScope(app.Resources(), query))
             {
-                if (auto found = LookupInThemeDictionaries(resources, themeKey, boxedKey))
-                {
-                    return found;
-                }
-                return resources.TryLookup(boxedKey);
+                return found;
             }
         }
-        return nullptr;
+
+        return query.GlobalValue();
     }
 
     constexpr winrt::Thickness s_zeroThickness{ 0, 0, 0, 0 };
@@ -402,9 +625,21 @@ TableView::TableView()
         });
     AddHandler(winrt::UIElement::PreviewKeyDownEvent(), winrt::box_value(m_previewKeyDownHandler), false /* handledEventsToo */);
 
-    // The header cell's subtree does not observe the ambient FlowDirection auto-flip, so
-    // RebuildHeaders stamps the trailing-edge alignment from the control's FlowDirection. That
-    // stamp is not self-updating: rebuild the headers when the direction actually flips.
+    // handledEventsToo: rows and headers mark their presses handled, and a press anywhere in the
+    // table is the user taking focus over from a pending re-shape restore.
+    AddHandler(
+        winrt::UIElement::PointerPressedEvent(),
+        winrt::box_value(winrt::PointerEventHandler(
+            [weakThis](winrt::IInspectable const&, winrt::PointerRoutedEventArgs const&)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->CancelReshapeFocusRestoreForUserInput();
+                }
+            })),
+        true /* handledEventsToo */);
+
+    // Headers need no direction stamp (see RebuildHeaders); the rebuild keeps them in step with the body.
     RegisterPropertyChangedCallback(
         winrt::FrameworkElement::FlowDirectionProperty(),
         [weakThis](winrt::DependencyObject const&, winrt::DependencyProperty const&)
@@ -736,6 +971,13 @@ void TableView::OnApplyTemplate()
     // are wired. ItemsRepeater may react to ItemsSource immediately; doing this earlier leaves it
     // briefly sourced without the selector/ElementPrepared owner hookup TableView rows require.
     RefreshRowsPipeline();
+
+    // Track the body cursor as focus moves: re-shape notifications arrive after ItemsRepeater has
+    // recycled the focused row, so the pre-reshape position is only observable here.
+    m_bodyFocusTrackerGotFocusRevoker = GotFocus(
+        winrt::auto_revoke, { this, &TableView::OnTableViewGotFocusForBodyTracking });
+    m_bodyFocusTrackerLosingFocusRevoker = LosingFocus(
+        winrt::auto_revoke, { this, &TableView::OnTableViewLosingFocusForBodyTracking });
 
     // Body horizontal scrolling drives the header ScrollViewer; vertical stickiness is structural.
 
@@ -1422,6 +1664,10 @@ void TableView::QueueGroupExpansionRowRefresh()
 
 void TableView::RefreshRealizedRowsAfterGroupExpansion()
 {
+    // A reshape can rebind a pooled header in place without ElementPrepared/ElementIndexChanged,
+    // leaving a stale IsExpanded (read by the ExpandCollapse peer and chevron states).
+    RefreshRealizedGroupHeadersAfterExpansion();
+
     ForEachRealizedRow([this](winrt::TableViewRow const& row)
     {
         auto* const rowImpl = winrt::get_self<TableViewRow>(row);
@@ -1464,6 +1710,12 @@ void TableView::AdoptItemsSource()
     }
 
     m_activeSource.set(tableViewSource);
+
+    // A remembered body position names a row of the old source.
+    ForgetBodyFocusPosition();
+    m_reshapeFocusValid = false;
+    m_reshapeFocusRow = -1;
+    CancelReshapeFocusRestore();
 
     if (tableViewSource)
     {
@@ -1543,6 +1795,10 @@ void TableView::RefreshRowsPipeline()
 
     if (auto repeater = m_rowsRepeater.get())
     {
+        // Subscribe BEFORE the repeater adopts the view: handlers run in subscription order, so we
+        // see a Reset while the focused row is still realized.
+        UpdateReshapeFocusDetectorSubscription(m_rowsItemsSourceView);
+
         // ItemsRepeater has no identity short-circuit: re-assigning the same source tears down
         // every container and resets scroll. Guard so a theme-change or Loaded repump does not
         // blow away realized rows.
@@ -1564,6 +1820,13 @@ void TableView::RefreshRowsPipeline()
 
 void TableView::OnTableViewSourceProjectionChanged()
 {
+    // The repeater's focus rescue during recycling must not be mistaken for the user's position.
+    SuppressBodyFocusTrackingForThisTurn();
+
+    // Capture first: RefreshRowsPipeline tears down realized rows synchronously, and
+    // TerminateEditWithoutVisualRestore can move focus before that.
+    CaptureBodyFocusForReshape();
+
     // A shaping verb swapped the projected shape after we bound, so the cached view and row
     // metadata describe the previous projection. Re-read them and re-drive the rows.
     if (IsEditing())
@@ -1653,6 +1916,9 @@ void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
         QueueGroupExpansionRowRefresh();
     }
 
+    // The new shape is in place by now (re-order and rebuild have both run).
+    RestoreBodyFocusAfterReshape();
+
     // The app may have declared or cleared a sort straight on the source, which the control has no
     // other way to learn about. Reconcile before anything else so the chevrons never outlive the
     // axis they describe.
@@ -1720,6 +1986,46 @@ void TableView::OnItemsSourceCollectionChanged(const winrt::IInspectable& /*send
 {
     UpdateEmptyState();
     QueueTerminalGridLineRefresh();
+}
+
+void TableView::UpdateReshapeFocusDetectorSubscription(const winrt::ItemsSourceView& view)
+{
+    if (m_reshapeFocusDetectorRevoker && SameInspectableIdentity(view, m_reshapeFocusDetectorView))
+    {
+        // Re-subscribing would move us behind the repeater.
+        return;
+    }
+
+    m_reshapeFocusDetectorRevoker = {};
+    m_reshapeFocusDetectorView = nullptr;
+
+    if (view)
+    {
+        m_reshapeFocusDetectorRevoker = view.CollectionChanged(
+            winrt::auto_revoke, { this, &TableView::OnRowsSourceResetForFocus });
+        m_reshapeFocusDetectorView = view;
+    }
+}
+
+void TableView::OnRowsSourceResetForFocus(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::NotifyCollectionChangedEventArgs& args)
+{
+    // Only a Reset recycles every realized row; on Add/Remove focus rides along with its element.
+    if (args.Action() != winrt::NotifyCollectionChangedAction::Reset)
+    {
+        return;
+    }
+
+    SuppressBodyFocusTrackingForThisTurn();
+
+    CaptureBodyFocusForReshape();
+
+    // Close the edit before the repeater recycles the editor's container for another record.
+    if (IsEditing())
+    {
+        TerminateEditWithoutVisualRestore();
+    }
 }
 
 void TableView::UpdateEmptyState()
@@ -2332,12 +2638,10 @@ void TableView::RebuildHeaders()
     }
     const bool canUserSortColumns = CanUserSortColumns();
 
-    // Logical-end (trailing) edge alignment must mirror under RTL. The header cell's subtree does
-    // not observe the ambient FlowDirection auto-flip, so read the control's FlowDirection and swap
-    // explicitly. This is a build-time stamp, kept current because a runtime FlowDirection flip
-    // rebuilds the headers.
-    const bool isRightToLeft = FlowDirection() == winrt::FlowDirection::RightToLeft;
-    const auto logicalEndAlignment = isRightToLeft ? winrt::HorizontalAlignment::Left : winrt::HorizontalAlignment::Right;
+    // XAML mirrors an RTL subtree with one transform where FlowDirection changes, so logical Right
+    // is the trailing edge in both directions. Never swap sides by hand in a header cell (grid
+    // line, sort indicator, resize gripper).
+    const auto logicalEndAlignment = winrt::HorizontalAlignment::Right;
 
     if (auto columns = Columns())
     {
@@ -2352,23 +2656,15 @@ void TableView::RebuildHeaders()
             // peer attaches to the right element. Content and chevron get separate columns so the
             // chevron reserves width instead of overlaying text.
             auto const headerCell = winrt::make<TableViewHeaderCell>(*this, column).as<winrt::Grid>();
-            const int contentColumnIndex = isRightToLeft ? 1 : 0;
-            const int indicatorColumnIndex = isRightToLeft ? 0 : 1;
+            constexpr int contentColumnIndex = 0;
+            constexpr int indicatorColumnIndex = 1;
             {
                 winrt::ColumnDefinition starColumn;
                 starColumn.Width(winrt::GridLengthHelper::FromValueAndType(1, winrt::GridUnitType::Star));
                 winrt::ColumnDefinition autoColumn;
                 autoColumn.Width(winrt::GridLengthHelper::FromValueAndType(0, winrt::GridUnitType::Auto));
-                if (isRightToLeft)
-                {
-                    headerCell.ColumnDefinitions().Append(autoColumn);
-                    headerCell.ColumnDefinitions().Append(starColumn);
-                }
-                else
-                {
-                    headerCell.ColumnDefinitions().Append(starColumn);
-                    headerCell.ColumnDefinitions().Append(autoColumn);
-                }
+                headerCell.ColumnDefinitions().Append(starColumn);
+                headerCell.ColumnDefinitions().Append(autoColumn);
             }
             headerCell.Visibility(column.Visibility());
             // Header cells are the named keyboard/UIA targets; the host is one Tab stop, and arrows
@@ -2423,14 +2719,7 @@ void TableView::RebuildHeaders()
             auto contentPadding = cachedHeaderCellPadding;
             if (headerIsSortable)
             {
-                if (isRightToLeft)
-                {
-                    contentPadding.Left += cachedSortIndicatorWidth;
-                }
-                else
-                {
-                    contentPadding.Right += cachedSortIndicatorWidth;
-                }
+                contentPadding.Right += cachedSortIndicatorWidth;
             }
             content.Padding(contentPadding);
             content.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
@@ -2498,7 +2787,7 @@ void TableView::RebuildHeaders()
             // reaching the header's Tapped handler and sorting the column.
             if (headerIsResizable)
             {
-                AppendResizeGripperVisual(headerCell, column, cachedResizeGripperWidth, headerText, logicalEndAlignment);
+                AppendResizeGripperVisual(headerCell, column, cachedResizeGripperWidth, headerText);
             }
 
             host.Children().Append(headerCell);
@@ -2699,9 +2988,67 @@ void TableView::QueueRebuildHeaders()
     }
 }
 
+void TableView::RaiseColumnsStructureChanged()
+{
+    // FromElement only: don't create a peer just to announce when no client is connected.
+    if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TableViewAutomationPeer>())
+    {
+        winrt::get_self<TableViewAutomationPeer>(peer)->RaiseStructureChangedForColumnsChange();
+    }
+}
+
+void TableView::QueueRaiseColumnsStructureChanged()
+{
+    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::StructureChanged))
+    {
+        return;
+    }
+
+    if (m_columnsStructureChangedQueued)
+    {
+        return;
+    }
+
+    auto dispatcher = DispatcherQueue();
+    if (!dispatcher)
+    {
+        // No dispatcher (test host / teardown): nothing to coalesce against, so raise inline.
+        RaiseColumnsStructureChanged();
+        return;
+    }
+
+    // Deferred so a burst of Columns VectorChanged callbacks announces once, with the final shape.
+    m_columnsStructureChangedQueued = true;
+    auto weakThis = get_weak();
+    if (!dispatcher.TryEnqueue([weakThis]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->m_columnsStructureChangedQueued = false;
+                try
+                {
+                    strongThis->RaiseColumnsStructureChanged();
+                }
+                catch (...)
+                {
+                    // Best-effort announcement; never fail-fast the dispatcher.
+                }
+            }
+        }))
+    {
+        m_columnsStructureChangedQueued = false;
+        RaiseColumnsStructureChanged();
+    }
+}
+
 void TableView::OnTableViewUnloaded()
 {
     m_headerSortSpaceArmedColumn = nullptr;
+    // Neither a pending restore nor a remembered position may outlive this tree.
+    CancelReshapeFocusRestore();
+    ForgetBodyFocusPosition();
+    m_reshapeFocusValid = false;
+    m_reshapeFocusRow = -1;
     if (m_pendingFocusLayoutToken.value)
     {
         LayoutUpdated(m_pendingFocusLayoutToken);
@@ -2854,8 +3201,7 @@ void TableView::AppendResizeGripperVisual(
     const winrt::Grid& headerCell,
     const winrt::TableViewColumn& column,
     double gripperWidth,
-    const winrt::hstring& headerText,
-    winrt::HorizontalAlignment logicalEndAlignment)
+    const winrt::hstring& headerText)
 {
     auto weakThis = get_weak();
     winrt::ResizeGripper gripperVisual;
@@ -2864,10 +3210,8 @@ void TableView::AppendResizeGripperVisual(
     // column would sit between the user and the data.
     gripperVisual.IsTabStop(false);
     winrt::AutomationProperties::SetAccessibilityView(gripperVisual, winrt::AccessibilityView::Raw);
-    // Same explicit logical-end alignment the grid line and the sort affordance use: the header
-    // cell's subtree does not observe the ambient FlowDirection auto-flip, so the gripper has to be
-    // told which edge is trailing or it lands opposite the grid line under RTL.
-    gripperVisual.HorizontalAlignment(logicalEndAlignment);
+    // Trailing edge in both flow directions; deliberately NOT swapped for RTL (see RebuildHeaders).
+    gripperVisual.HorizontalAlignment(winrt::HorizontalAlignment::Right);
     gripperVisual.Width(gripperWidth);
     if (!headerText.empty())
     {
@@ -2940,12 +3284,8 @@ void TableView::AppendResizeGripperVisual(
         }
 
         state->didDelta = true;
-        // std::max mirrors TableViewColumn::UpdateActualWidth, so a column whose MaxWidth is below
-        // its MinWidth cannot make Width and ActualWidth disagree.
-        double lo = (std::isfinite(col.MinWidth()) && col.MinWidth() >= 0.0) ? col.MinWidth() : 0.0;
-        double hi = (std::isfinite(col.MaxWidth()) && col.MaxWidth() >= 0.0)
-            ? std::max(lo, col.MaxWidth())
-            : std::numeric_limits<double>::infinity();
+        double lo = NonNegativeFiniteOrZero(col.MinWidth());
+        double hi = MaxWidthForColumn(col, lo);
 
         // The upper bound never falls below the width the drag started from, so a table that
         // already overflows can still shrink.
