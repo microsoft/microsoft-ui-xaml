@@ -21,7 +21,6 @@
 
 #include "InitialFocusSIPSuspender.h"
 #include "FocusLockOverrideGuard.h"
-#include "XamlProfilerTracing.h"
 
 #define E_FOCUS_ASYNCOP_INPROGRESS 64L
 

@@ -5,9 +5,6 @@
 //      ListViewBase displays a rich, interactive collection of items.
 
 #include "precomp.h"
-#ifdef XAMLPROFILER_ENABLED
-#include <XamlProfilerTracing.h>
-#endif
 #include "ListViewBase.g.h"
 #include "ListViewBaseAutomationPeer.g.h"
 #include "ScrollViewer.g.h"

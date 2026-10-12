@@ -18,7 +18,6 @@
 #include "RectUtil.h"
 #include "focusmgr.h"
 #include "RootScale.h"
-#include "XamlProfilerTracing.h"
 
 using namespace RuntimeFeatureBehavior;
 

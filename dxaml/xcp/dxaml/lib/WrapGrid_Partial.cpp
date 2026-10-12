@@ -7,9 +7,6 @@
 //      containers which are being visible or focused
 
 #include "precomp.h"
-#ifdef XAMLPROFILER_ENABLED
-#include <XamlProfilerTracing.h>
-#endif
 #include "WrapGrid.g.h"
 #include <math.h>
 #include "ScrollContentPresenter.g.h"

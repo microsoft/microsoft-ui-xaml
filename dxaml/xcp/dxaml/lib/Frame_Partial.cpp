@@ -10,9 +10,6 @@
 //      cache size is 10.
 
 #include "precomp.h"
-#ifdef XAMLPROFILER_ENABLED
-#include <XamlProfilerTracing.h>
-#endif
 #include "Frame.g.h"
 #include "Page.g.h"
 #include "NavigationFailedEventArgs.g.h"

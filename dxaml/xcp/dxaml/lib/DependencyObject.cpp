@@ -2,9 +2,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
-#ifdef XAMLPROFILER_ENABLED
-#include <XamlProfilerTracing.h>
-#endif
 #include "DependencyObject.h"
 #include "BindingExpression.g.h"
 #include "DependencyPropertyChangedEventArgs.g.h"

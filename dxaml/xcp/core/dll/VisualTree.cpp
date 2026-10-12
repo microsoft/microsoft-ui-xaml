@@ -14,7 +14,6 @@
 #include "XamlIslandRoot.h"
 #include <XamlIslandRootScale.h>
 #include <XamlOneCoreTransforms.h>
-#include "XamlProfilerTracing.h"
 
 // Marked noinline so we can easily breakpoint
 // When we hit this warning, it represents code that will not work correctly in DesktopWindowXamlSource or AppWindows

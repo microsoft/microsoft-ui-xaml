@@ -16,7 +16,6 @@
 #include "Duration.h"
 #include <FrameworkTheming.h>
 #include "RichEditGripperChild.h"
-#include "XamlProfilerTracing.h"
 
 // Sentinel values to trigger the create initialization of the pole parameters
 static const XFLOAT POLE_HEIGHT_INITIALIZATION_NEEDED = -1.0f;

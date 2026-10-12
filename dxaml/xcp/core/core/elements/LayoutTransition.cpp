@@ -16,7 +16,6 @@
 #include "CFrame.g.h"
 
 #include <vsm\inc\DynamicTimelineHelper.h>
-#include "XamlProfilerTracing.h"
 
 using namespace DirectUI;
 

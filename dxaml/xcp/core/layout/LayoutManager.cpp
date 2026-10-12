@@ -7,9 +7,6 @@
 #include <EffectiveViewportChangedEventArgs.h>
 #include <string>
 #include <LayoutCycleDebugSettings.h>
-#ifdef XAMLPROFILER_ENABLED
-#include "XamlProfilerTracing.h"
-#endif
 
 // Apps usually tend to have a few entries in the sizeChangedQueue and
 // sometimes up to a dozen. The value of 24 is a conservative estimate to

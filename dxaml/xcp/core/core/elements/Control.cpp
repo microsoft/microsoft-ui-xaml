@@ -15,9 +15,6 @@
 #include "CVisualStateManager2.h"
 #include <Theme.h>
 #include "XamlTelemetry.h"
-#ifdef XAMLPROFILER_ENABLED
-#include "XamlProfilerTracing.h"
-#endif
 #include "MetadataAPI.h"
 #include <OptionalChangeState.h>
 

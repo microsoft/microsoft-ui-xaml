@@ -14,9 +14,6 @@
 //      - Implements IOrientedPanel interface for logical and physical Orientation
 
 #include "precomp.h"
-#ifdef XAMLPROFILER_ENABLED
-#include <XamlProfilerTracing.h>
-#endif
 #include "OrientedVirtualizingPanel.g.h"
 #include "ScrollViewer.g.h"
 #include "ScrollContentPresenter.g.h"
