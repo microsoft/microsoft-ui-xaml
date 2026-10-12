@@ -32,6 +32,8 @@ runtimeclass TableViewSource
     //    which also survives re-creation). So selection and focus re-anchor across a reshape, but
     //    NOT across an item being re-created, and the same object in two rows fails fast at
     //    materialization.
+    //  * A TableViewSource can be the ItemsSource of one TableView at a time; binding it to a
+    //    second table is ignored until the first releases it.
 
     // Accepts the same collection interfaces as ItemsSourceView: IVector<Object> (so also
     // IObservableVector<Object>), IBindableVector, IIterable<Object>, or IBindableIterable.

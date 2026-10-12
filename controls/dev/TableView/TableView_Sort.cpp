@@ -738,7 +738,8 @@ void TableView::QueueReconcileSortStateWithSource()
 void TableView::ReconcileSortStateWithSource()
 {
     auto tableViewSource = ShapingSourceInternal();
-    if (!tableViewSource)
+    // Released on Unloaded: another table may own it now, and Loaded reconciles on reclaim.
+    if (!tableViewSource || m_activeSourceReleased)
     {
         return;
     }
