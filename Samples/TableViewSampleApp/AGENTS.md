@@ -184,17 +184,38 @@ an `AutomationProperties.Name` so the group has context.
 `AutomationProperties.HeadingLevel`; the rail's section headers are `Level2`. Headings are how a
 screen reader user skims a page, so a visually-styled heading without one is a real defect.
 
+**Every action reports its outcome.** A button, toggle or selector that changes the page calls
+`SetLastAction` with what happened, in words a listener can act on: "Hid the Bio column", "showing
+3 of 60 rows", not just the API name. That includes the no-op case: a reset with nothing to reset
+says so. A control that does nothing perceivable is reported as broken, so a sample never ships an
+inert button. Focus sentinels and similar test aids say what they are when activated.
+`SetLastAction` re-announces a repeated message, so pressing the same button twice is not silent.
+
 **Announce only what changed.** Only Last action is a live region, raised once per new message. A
-readout that must be announced on its own sets `AutomationProperties.LiveSetting="Polite"` itself —
-see the Page structure section. Do not make a whole status panel live: it will re-announce
-everything on every refresh.
+readout that must be announced on its own sets `AutomationProperties.LiveSetting="Polite"` **and**
+raises `AutomationEvents.LiveRegionChanged` on its peer after updating the text — a `TextBlock`
+never raises it by itself, so `LiveSetting` alone is silent (see `StatusPanel.AnnounceLastAction`).
+Do not make a whole status panel live: it will re-announce everything on every refresh.
+
+**Make values mean what they show.** Narrator reads a `Slider` value as a percentage of its range.
+When the slider means something else (pixels, milliseconds), say so: put the unit in the `Header`
+or `HelpText`, and set `AutomationProperties.ItemStatus` to the current value with its unit, as
+`ColumnLayoutPage` does.
+
+**Group rail options with `RailSection`.** It reports a UIA Group named after its visible heading,
+with its description as `FullDescription`. Build new option groups from it rather than a bare
+`StackPanel`, which has no peer and leaves the group name unannounced.
 
 **Survive text scaling and reflow.** Do not put a fixed `Width` or `Height` on anything that renders
 text. Use `MinWidth`/`MaxWidth` with `TextWrapping`, and let height be `Auto`; layout must hold at
 200% and 400% text scaling and in a portrait window. `SamplePresenter` already drops the options
 rail below the example under `WideLayoutMinWidth` (900px) — do not add a fixed-width container that
 defeats it. Where text is trimmed, `TextTrimming` must be paired with a `ToolTipService.ToolTip`
-and the full string exposed to UIA, so trimming never destroys information.
+and the full string exposed to UIA, so trimming never destroys information. `TableViewTextColumn`
+always trims; where a cell value can be long (a path, a description), use a
+`TableViewTemplateColumn` with a wrapping `TextBlock` and a `SortMemberPath`, as `TextWrapPage` and
+`FilePropertiesPage` do. Keep a `TextBox` placeholder short and put the longer hint in `HelpText`
+and a tooltip: placeholders do not wrap.
 
 **Theme by token, not by accent.** Theme dictionaries use only `Light`, `Dark`, `HighContrast`, and
 high-contrast entries use `SystemColor*` resources. For anything behind text — row banding,
