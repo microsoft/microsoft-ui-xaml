@@ -602,8 +602,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // Scenario: load a ColorPicker (alpha enabled, Color Red), get the automation peers of its ThirdDimensionSlider
         //     (value channel) and AlphaSlider, and set the third-dimension slider's Value to 50.
-        // Expected: the third-dimension peer exposes a non-read-only Value pattern whose string contains 100, then 50;
-        //     the alpha slider's peer returns no Value pattern.
+        // Expected: the third-dimension peer exposes a Value pattern whose string contains 100, then 50 (IsReadOnly is
+        //     only logged, because SetValue is unimplemented); the alpha slider's peer returns no Value pattern.
         // Failure means: ColorPickerSliderAutomationPeer::GetPatternCore no longer separates alpha from HSV channels, or
         //     Value / GetValueString stopped reporting the slider's current value to screen readers.
         [TestMethod]
@@ -632,7 +632,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var valueProvider = peer.GetPattern(Microsoft.UI.Xaml.Automation.Peers.PatternInterface.Value)
                     as Microsoft.UI.Xaml.Automation.Provider.IValueProvider;
                 Verify.IsNotNull(valueProvider, "Non-alpha sliders expose the Value pattern.");
-                Verify.IsFalse(valueProvider.IsReadOnly);
+                // IsReadOnly is only logged: the peer reports writable while SetValue is unimplemented, and a fix may either
+                // implement SetValue or report read-only, so the test shouldn't pin either answer.
+                Log.Comment("ColorPickerSliderAutomationPeer IsReadOnly: {0}", valueProvider.IsReadOnly);
                 Verify.IsFalse(string.IsNullOrEmpty(valueProvider.Value));
                 Verify.IsTrue(valueProvider.Value.Contains("100"), "Red has value 100%.");
 
