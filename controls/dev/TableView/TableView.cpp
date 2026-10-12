@@ -801,6 +801,7 @@ void TableView::OnApplyTemplate()
     m_headerSortSpaceArmedColumn = nullptr;
     __super::OnApplyTemplate();
     InvalidateTableViewResourceCache(this);
+    CancelHeaderFocusRestore();
 
     if (m_pendingGroupFocusLayoutToken.value)
     {
@@ -2677,6 +2678,10 @@ void TableView::RebuildHeaders()
         return;
     }
 
+    // Clearing the host drops focus with the cell; remember which header held it.
+    winrt::FocusState focusedHeaderState = winrt::FocusState::Unfocused;
+    auto const focusedHeaderColumn = GetFocusedHeaderColumn(host, focusedHeaderState);
+
     // Clearing the host under a live popup tears its child down reentrantly.
     ReleaseHeaderToolTips(host);
 
@@ -2853,6 +2858,86 @@ void TableView::RebuildHeaders()
     RefreshFrozenColumns();
     ApplyGridLinesToHeader();
     RefreshResizeGripperAvailability();
+
+    if (focusedHeaderColumn)
+    {
+        RestoreHeaderFocus(focusedHeaderColumn, focusedHeaderState);
+    }
+}
+
+winrt::TableViewColumn TableView::GetFocusedHeaderColumn(const winrt::Panel& host, winrt::FocusState& focusState) const
+{
+    focusState = winrt::FocusState::Unfocused;
+    auto const root = XamlRoot();
+    if (!host || !root)
+    {
+        return nullptr;
+    }
+
+    auto const focusedElement = winrt::FocusManager::GetFocusedElement(root);
+    auto current = focusedElement.try_as<winrt::DependencyObject>();
+    while (current)
+    {
+        auto const parent = winrt::VisualTreeHelper::GetParent(current);
+        if (parent == host)
+        {
+            winrt::TableViewColumn column{ nullptr };
+            if (auto const cell = current.try_as<winrt::FrameworkElement>())
+            {
+                column = cell.Tag().try_as<winrt::TableViewColumn>();
+            }
+            if (column)
+            {
+                focusState = winrt::FocusState::Keyboard;
+                if (auto const ui = focusedElement.try_as<winrt::UIElement>())
+                {
+                    focusState = ui.FocusState() == winrt::FocusState::Keyboard ? winrt::FocusState::Keyboard : winrt::FocusState::Programmatic;
+                }
+            }
+            return column;
+        }
+        current = parent;
+    }
+
+    return nullptr;
+}
+
+void TableView::RestoreHeaderFocus(const winrt::TableViewColumn& column, winrt::FocusState focusState)
+{
+    CancelHeaderFocusRestore();
+    if (TryFocusHeaderCell(column, focusState))
+    {
+        return;
+    }
+
+    auto weakThis = get_weak();
+    m_headerFocusRestoreLayoutToken = LayoutUpdated(
+        [weakThis, weakColumn = winrt::make_weak(column), focusState](winrt::IInspectable const&, winrt::IInspectable const&)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->CancelHeaderFocusRestore();
+                if (auto const liveColumn = weakColumn.get())
+                {
+                    strongThis->TryFocusHeaderCell(liveColumn, focusState);
+                }
+            }
+        });
+}
+
+bool TableView::TryFocusHeaderCell(const winrt::TableViewColumn& column, winrt::FocusState focusState)
+{
+    auto const cell = TableViewCellsPanel::CellForColumn(m_headerHost.get(), column);
+    return cell && cell.Focus(focusState);
+}
+
+void TableView::CancelHeaderFocusRestore()
+{
+    if (m_headerFocusRestoreLayoutToken.value)
+    {
+        LayoutUpdated(m_headerFocusRestoreLayoutToken);
+        m_headerFocusRestoreLayoutToken = {};
+    }
 }
 
 // Builds the chevron for one header. The indicator is a display-only primitive: it owns no sort
@@ -3105,6 +3190,7 @@ void TableView::OnTableViewUnloaded()
     ForgetBodyFocusPosition();
     m_reshapeFocusValid = false;
     m_reshapeFocusRow = -1;
+    CancelHeaderFocusRestore();
 
     if (m_pendingGroupFocusLayoutToken.value)
     {

@@ -580,6 +580,14 @@ private:
     void ApplySelection(int32_t index);
 
     void ReleaseHeaderToolTips(const winrt::Panel& host);
+    winrt::TableViewColumn GetFocusedHeaderColumn(const winrt::Panel& host, winrt::FocusState& focusState) const;
+    // Refocuses the rebuilt header for column; retries once after layout if it cannot take focus yet.
+    void RestoreHeaderFocus(const winrt::TableViewColumn& column, winrt::FocusState focusState);
+    bool TryFocusHeaderCell(const winrt::TableViewColumn& column, winrt::FocusState focusState);
+    void CancelHeaderFocusRestore();
+    // Visible-header index that headerCell's successor takes once it collapses, or -1 when focus is
+    // not inside headerCell.
+    int32_t GetCollapsingHeaderFocusIndex(const winrt::Panel& host, const winrt::FrameworkElement& headerCell) const;
 
     // Created lazily so a TableView that never selects pays nothing.
     void EnsureSelectionModel();
@@ -1051,6 +1059,7 @@ private:
     // Terminal-edge geometry is evaluated once after layout settles; gridline rendering then
     // changes without changing row/cell layout thickness.
     winrt::event_token m_terminalGridLinesLayoutToken{};
+    winrt::event_token m_headerFocusRestoreLayoutToken{};
     winrt::weak_ref<winrt::TableViewRow> m_terminalGridLineRow{};
     winrt::weak_ref<winrt::TableViewGroupHeader> m_terminalGridLineGroupHeader{};
     winrt::FrameworkElement::SizeChanged_revoker m_terminalGridLineRowSizeChangedRevoker{};

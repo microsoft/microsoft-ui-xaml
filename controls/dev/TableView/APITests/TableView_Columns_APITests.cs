@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
@@ -378,6 +379,115 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 VerifyEveryRowMatchesHeaders(tableView, "after duplicating a column instance");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a focused header keeps focus when the header band is rebuilt.")]
+        public void VerifyHeaderFocusSurvivesHeaderRebuild()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateLoadedTableView("Name", "Role", "City");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(GetHeaderCell(tableView, 1).Focus(FocusState.Keyboard), "Precondition: header 1 takes keyboard focus.");
+                tableView.Columns[1].Header = "Renamed";
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyHeaderFocused(tableView, tableView.Columns[1], "after a header rename");
+                tableView.CanUserSortColumns = false;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyHeaderFocused(tableView, tableView.Columns[1], "after CanUserSortColumns = false");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a focused header keeps focus across the header rebuild a theme change performs.")]
+        public void VerifyHeaderFocusSurvivesThemeChange()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateLoadedTableView("Name", "Role", "City");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(GetHeaderCell(tableView, 1).Focus(FocusState.Keyboard), "Precondition: header 1 takes keyboard focus.");
+                // ActualThemeChanged only fires on a real change, so flip away from the current theme.
+                tableView.RequestedTheme = tableView.ActualTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyHeaderFocused(tableView, tableView.Columns[1], "after a theme change");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies hiding the focused column moves focus to the next visible header, or the previous one when it was last.")]
+        public void VerifyHidingFocusedColumnMovesFocusToNextVisibleHeader()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateLoadedTableView("Name", "Role", "City");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(GetHeaderCell(tableView, 1).Focus(FocusState.Keyboard), "Precondition: header 1 takes keyboard focus.");
+                tableView.Columns[1].Visibility = Visibility.Collapsed;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyHeaderFocused(tableView, tableView.Columns[2], "after hiding the focused middle column");
+
+                Verify.IsTrue(GetHeaderCell(tableView, 2).Focus(FocusState.Keyboard), "Precondition: the last header takes keyboard focus.");
+                tableView.Columns[2].Visibility = Visibility.Collapsed;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyHeaderFocused(tableView, tableView.Columns[0], "after hiding the focused last column");
+            });
+        }
+
+        private static void VerifyHeaderFocused(TableView tableView, TableViewColumn column, string context)
+        {
+            var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as FrameworkElement;
+            Verify.IsNotNull(focused, $"Focus must stay in the header band {context}.");
+            Verify.IsTrue(ReferenceEquals(GetHeaderHost(tableView), VisualTreeHelper.GetParent(focused)),
+                $"The focused element must be a header cell {context}, not {focused.GetType().Name}.");
+            Verify.IsTrue(ReferenceEquals(column, focused.Tag), $"The header of the expected column must hold focus {context}.");
         }
 
 
