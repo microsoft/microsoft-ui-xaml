@@ -49,6 +49,8 @@ public:
     // Expanding or collapsing a group adds or removes whole runs of rows, so every cached child
     // of the TableView peer may be stale.
     void RaiseStructureChangedForGroupExpansion();
+    // Column add/remove/hide changes every row's cells and the header band.
+    void RaiseStructureChangedForColumnsChange();
 
     // Internal — the single source of column-header peer identity, shared with
     // TableViewCellAutomationPeer::GetColumnHeaderItems.

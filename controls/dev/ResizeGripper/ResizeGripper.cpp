@@ -38,19 +38,6 @@ ResizeGripper::ResizeGripper()
 
     IsEnabledChanged({ this, &ResizeGripper::OnIsEnabledChanged });
     Unloaded({ this, &ResizeGripper::OnUnloaded });
-
-    // The separator's side is derived from FlowDirection, and FlowDirection is not a property this
-    // control declares, so there is no OnPropertyChanged for it. A host may flip direction on a live
-    // tree rather than rebuilding it, which would otherwise leave the separator on the stale edge.
-    RegisterPropertyChangedCallback(
-        winrt::FrameworkElement::FlowDirectionProperty(),
-        [](winrt::DependencyObject const& sender, winrt::DependencyProperty const&)
-        {
-            if (auto const gripper = sender.try_as<winrt::ResizeGripper>())
-            {
-                winrt::get_self<ResizeGripper>(gripper)->UpdateOrientationVisualState();
-            }
-        });
 }
 
 // Detached mid-gesture - the host rebuilt the subtree we live in - so no manipulation event will
@@ -107,26 +94,10 @@ bool ResizeGripper::IsHorizontalDrag()
     return DragOrientation() != winrt::Orientation::Vertical;
 }
 
-// The separator is drawn on one side of the gripper, so the state has to carry the mirror as well as
-// the axis: under RTL a horizontal gripper's trailing edge is its LEFT edge. Only the horizontal case
-// mirrors - FlowDirection does not mirror y, so a vertical gripper's separator stays on the bottom.
-// Falls back to the unmirrored state if a host's template predates HorizontalMirrored, which is the
-// previous behaviour rather than no separator at all.
+// Axis only: the separator is on the logical trailing edge and the framework mirrors it under RTL.
 void ResizeGripper::UpdateOrientationVisualState()
 {
-    if (!IsHorizontalDrag())
-    {
-        winrt::VisualStateManager::GoToState(*this, L"Vertical", true /* useTransitions */);
-        return;
-    }
-
-    if (FlowDirection() == winrt::FlowDirection::RightToLeft &&
-        winrt::VisualStateManager::GoToState(*this, L"HorizontalMirrored", true /* useTransitions */))
-    {
-        return;
-    }
-
-    winrt::VisualStateManager::GoToState(*this, L"Horizontal", true /* useTransitions */);
+    winrt::VisualStateManager::GoToState(*this, IsHorizontalDrag() ? L"Horizontal" : L"Vertical", true /* useTransitions */);
 }
 
 // PARKED - deliberately not called. The framework drops ProtectedCursor on the next pointer move,
@@ -176,9 +147,6 @@ void ResizeGripper::OnManipulationStarting(winrt::ManipulationStartingRoutedEven
 {
     __super::OnManipulationStarting(args);
 
-    // Default container is this element, so the two frames agree by definition.
-    m_containerIsRightToLeft = FlowDirection() == winrt::FlowDirection::RightToLeft;
-
     // A host-designated frame wins: it knows which of its ancestors stays put while the drag
     // resizes something, and it is not subject to any scale applied above it.
     auto container = ManipulationContainer();
@@ -196,14 +164,6 @@ void ResizeGripper::OnManipulationStarting(winrt::ManipulationStartingRoutedEven
     if (container)
     {
         args.Container(container);
-
-        // Cumulative().Translation is expressed in the CONTAINER's space, and RTL mirrors that
-        // space. Record the container's direction so the delta is mirrored against the frame it
-        // was actually measured in, not against this element's own direction.
-        if (auto const containerElement = container.try_as<winrt::FrameworkElement>())
-        {
-            m_containerIsRightToLeft = containerElement.FlowDirection() == winrt::FlowDirection::RightToLeft;
-        }
     }
 }
 
@@ -224,9 +184,8 @@ void ResizeGripper::OnManipulationDelta(winrt::ManipulationDeltaRoutedEventArgs 
     double totalDelta = isHorizontal ? translation.X : translation.Y;
 
     // Report a logical delta, so positive always grows in reading order and both input paths agree.
-    // Mirror only when this element and the measurement frame disagree; mirroring on the element's
-    // own direction inverts the drag in a fully-RTL app, where the container is mirrored too.
-    if (isHorizontal && (FlowDirection() == winrt::FlowDirection::RightToLeft) != m_containerIsRightToLeft)
+    // Cumulative().Translation is in unmirrored physical space, so mirror it on RTL (matches TryKeyboardStep).
+    if (isHorizontal && FlowDirection() == winrt::FlowDirection::RightToLeft)
     {
         totalDelta = -totalDelta;
     }
@@ -278,6 +237,8 @@ void ResizeGripper::BeginDrag()
     }
     m_lastRaisedDelta = 0.0;
     SetValue(s_IsDraggingProperty, box_value(true));
+    // Before raising: a handler may end the drag re-entrantly.
+    AttachCancelKeyHandler();
     UpdateVisualState();
     m_dragStartedEventSource(*this, nullptr);
 }
@@ -311,6 +272,8 @@ void ResizeGripper::EndDrag(bool canceled)
 
     const double totalDelta = m_lastRaisedDelta;
 
+    DetachCancelKeyHandler();
+
     // Clear the flag before raising: a throwing handler would otherwise leave IsDragging stuck
     // true, wedging every later BeginDrag.
     SetValue(s_IsDraggingProperty, box_value(false));
@@ -318,6 +281,76 @@ void ResizeGripper::EndDrag(bool canceled)
 
     auto eventArgs = winrt::make<::ResizeGripperDragCompletedEventArgs>(totalDelta, canceled);
     m_dragCompletedEventSource(*this, eventArgs);
+}
+
+// Escape cancels the drag. A pointer drag takes no focus, so the hook lives on the XamlRoot content,
+// and only for the drag.
+void ResizeGripper::AttachCancelKeyHandler()
+{
+    if (m_cancelKeyHandler)
+    {
+        return;
+    }
+
+    auto const xamlRoot = XamlRoot();
+    if (!xamlRoot)
+    {
+        return;
+    }
+
+    auto const root = xamlRoot.Content().try_as<winrt::UIElement>();
+    if (!root)
+    {
+        return;
+    }
+
+    // RemoveHandler needs the same boxed instance, so it is stored.
+    auto const handler = winrt::box_value(winrt::KeyEventHandler(
+        [weakThis = get_weak()](winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
+        {
+            if (auto const strongThis = weakThis.get())
+            {
+                strongThis->OnCancelKeyDown(sender, args);
+            }
+        }));
+
+    // handledEventsToo: a host handling Escape first must not strand the drag.
+    root.AddHandler(winrt::UIElement::KeyDownEvent(), handler, true /* handledEventsToo */);
+
+    m_cancelKeyHandler = handler;
+    m_cancelKeyRoot = winrt::make_weak(root);
+}
+
+void ResizeGripper::DetachCancelKeyHandler()
+{
+    auto const handler = m_cancelKeyHandler;
+    m_cancelKeyHandler = nullptr;
+
+    if (!handler)
+    {
+        return;
+    }
+
+    auto const root = m_cancelKeyRoot.get();
+    m_cancelKeyRoot = nullptr;
+
+    if (root)
+    {
+        root.RemoveHandler(winrt::UIElement::KeyDownEvent(), handler);
+    }
+}
+
+void ResizeGripper::OnCancelKeyDown(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Key() != winrt::VirtualKey::Escape || !IsDragging())
+    {
+        return;
+    }
+
+    EndDrag(true /* canceled */);
+
+    // An Escape with no drag in flight belongs to the app.
+    args.Handled(true);
 }
 
 void ResizeGripper::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)

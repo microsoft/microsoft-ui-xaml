@@ -55,17 +55,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         #region Assistive-technology focus route
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product finding #15: a group header focused via UIA SetFocus loses focus across its own collapse.
         [TestProperty("Description", "Verifies a group header focused through UIA SetFocus - the route a screen reader takes - still holds focus after its own group collapses, so the next key reaches the same header.")]
         public void GroupHeaderKeepsFocusAcrossCollapseWhenFocusedThroughUia()
         {
-            // PRODUCT FINDING #15, expected to FAIL until the product is fixed. Left failing deliberately: the
-            //   protocol forbids weakening a test to match current behaviour.
             // Scenario: a screen reader moves focus with IUIAutomationElement::SetFocus and then sends an
-            //   activation key. Measured three times: the collapse itself is correct, and the header then stops
-            //   holding focus, so the next key lands elsewhere and the user cannot re-open the group they just
-            //   closed. The keyboard file's Tab-route tests pass and do NOT cover this - Tab and SetFocus place
-            //   focus by different paths, so one passing says nothing about the other.
+            //   activation key. Tab-route tests do NOT cover this: Tab and SetFocus place focus by different
+            //   paths (the group-header peer's SetFocusCore must focus with FocusState::Keyboard).
             // Failure means: TableView is operable by a sighted keyboard user but not by a screen-reader user,
             //   which is an accessibility bug, not a cosmetic one.
             using (var setup = new TestSetupHelper(PageName))
