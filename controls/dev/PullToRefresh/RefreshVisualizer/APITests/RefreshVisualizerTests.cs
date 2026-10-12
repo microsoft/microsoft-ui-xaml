@@ -333,6 +333,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "A RefreshVisualizer that is released while its InfoProvider is still alive unsubscribes from the provider's IsInteractingForRefreshChanged and InteractionRatioChanged events when it is destroyed.")]
+        public void ReleasedVisualizerUnsubscribesFromALiveInfoProvider()
+        {
+            CountingRefreshInfoProvider provider = null;
+            WeakReference visualizerSentinel = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                provider = new CountingRefreshInfoProvider(ElementCompositionPreview.GetElementVisual(new Border()).Compositor);
+                visualizerSentinel = CreateVisualizerUsingProvider(provider);
+                Verify.AreEqual(1, provider.InteractionRatioChangedSubscribers, "Precondition: the visualizer listens to InteractionRatioChanged");
+                Verify.AreEqual(1, provider.IsInteractingForRefreshChangedSubscribers, "Precondition: the visualizer listens to IsInteractingForRefreshChanged");
+            });
+            IdleSynchronizer.Wait();
+
+            // Only the provider is kept alive; the visualizer (never in the tree, no other references) is collected and its
+            // final release is completed on the UI thread.
+            for (int i = 0; i < 5 && visualizerSentinel.IsAlive; i++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                IdleSynchronizer.Wait();
+                Log.Comment(string.Format("Iteration {0}: visualizer alive={1}, InteractionRatioChanged subscribers={2}, IsInteractingForRefreshChanged subscribers={3}",
+                    i, visualizerSentinel.IsAlive, Volatile.Read(ref provider.InteractionRatioChangedSubscribers), Volatile.Read(ref provider.IsInteractingForRefreshChangedSubscribers)));
+            }
+            IdleSynchronizer.Wait();
+
+            Verify.IsFalse(visualizerSentinel.IsAlive, "The visualizer was released");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, provider.InteractionRatioChangedSubscribers, "InteractionRatioChanged handler removed");
+                Verify.AreEqual(0, provider.IsInteractingForRefreshChangedSubscribers, "IsInteractingForRefreshChanged handler removed");
+                Verify.AreEqual(2, provider.TotalRemoves, "Exactly the two handlers added by the visualizer were removed");
+            });
+            GC.KeepAlive(provider);
+        }
+
+        // Kept out of line so that no reference to the visualizer survives in the caller's frame.
+        [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private static WeakReference CreateVisualizerUsingProvider(IRefreshInfoProvider provider)
+        {
+            // The managed Tag value is held by the native visualizer, so it stays alive as long as the visualizer does.
+            object sentinel = new object();
+            RefreshVisualizer refreshVisualizer = new RefreshVisualizer() { Tag = sentinel };
+            ((IRefreshVisualizerPrivate)refreshVisualizer).InfoProvider = provider;
+            return new WeakReference(sentinel);
+        }
+
+        [TestMethod]
         public void RefreshCompletedDeferralCompletedOffUIThread()
         {
             RunOnUIThread.Execute(() =>
@@ -749,6 +799,49 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyClose(expected.Y, actual.Y, context + " Y");
             VerifyClose(expected.Z, actual.Z, context + " Z");
         }
+    }
+
+    // An IRefreshInfoProvider that counts the handlers added to and removed from its events.
+    partial class CountingRefreshInfoProvider : IRefreshInfoProvider
+    {
+        private readonly CompositionPropertySet compositionProperties;
+        private TypedEventHandler<IRefreshInfoProvider, RefreshInteractionRatioChangedEventArgs> interactionRatioChanged;
+        private TypedEventHandler<IRefreshInfoProvider, object> isInteractingForRefreshChanged;
+
+        public int InteractionRatioChangedSubscribers;
+        public int IsInteractingForRefreshChangedSubscribers;
+        public int TotalRemoves;
+
+        public CountingRefreshInfoProvider(Compositor compositor)
+        {
+            compositionProperties = compositor.CreatePropertySet();
+            compositionProperties.InsertScalar(InteractionRatioCompositionProperty, 0.0f);
+        }
+
+        public double ExecutionRatio { get { return 0.8; } }
+        public CompositionPropertySet CompositionProperties { get { return compositionProperties; } }
+        public string InteractionRatioCompositionProperty { get { return "InteractionRatio"; } }
+        public bool IsInteractingForRefresh { get { return false; } }
+
+        public event TypedEventHandler<IRefreshInfoProvider, RefreshInteractionRatioChangedEventArgs> InteractionRatioChanged
+        {
+            add { interactionRatioChanged += value; InteractionRatioChangedSubscribers++; }
+            remove { interactionRatioChanged -= value; InteractionRatioChangedSubscribers--; TotalRemoves++; }
+        }
+
+        public event TypedEventHandler<IRefreshInfoProvider, object> IsInteractingForRefreshChanged
+        {
+            add { isInteractingForRefreshChanged += value; IsInteractingForRefreshChangedSubscribers++; }
+            remove { isInteractingForRefreshChanged -= value; IsInteractingForRefreshChangedSubscribers--; TotalRemoves++; }
+        }
+
+#pragma warning disable CS0067 // Required by IRefreshInfoProvider; this provider never refreshes.
+        public event TypedEventHandler<IRefreshInfoProvider, object> RefreshCompleted;
+        public event TypedEventHandler<IRefreshInfoProvider, object> RefreshStarted;
+#pragma warning restore CS0067
+
+        public void OnRefreshCompleted() { }
+        public void OnRefreshStarted() { }
     }
 
     partial class RefreshInfoProviderImpl : IRefreshInfoProvider
