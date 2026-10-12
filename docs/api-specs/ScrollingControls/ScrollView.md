@@ -273,6 +273,61 @@ option on the `ScrollView`'s 'ContentOrientation enables the same thing in a mor
 </ScrollViewer>
 ```
 
+## Allowing content to render outside the viewport
+
+By default, `ScrollView` clips its content to the scrolling viewport. Set
+`CanContentRenderOutsideBounds` to `true` when transformed content, shadows, or other visual
+effects need to render beyond that viewport.
+
+```xml
+<mux:ScrollView
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    Width="240"
+    Height="160"
+    CanContentRenderOutsideBounds="True">
+    <Canvas Width="240" Height="160">
+        <Rectangle
+            Canvas.Left="-24"
+            Canvas.Top="40"
+            Width="96"
+            Height="80"
+            Fill="CornflowerBlue" />
+    </Canvas>
+</mux:ScrollView>
+```
+
+With the default template, `ScrollView` forwards the property to its inner `ScrollPresenter` and
+also changes the template root's corner radius when appropriate. Content outside the
+viewport—including content that has been scrolled out of view—is then no longer hidden by the
+framework's viewport clip and can draw over neighboring elements. The removed clip also no
+longer excludes that content from hit testing.
+
+The property removes the framework-owned viewport clip, it cannot select which overflowing
+visuals remain visible. Use it only when the surrounding layout can tolerate all content that
+renders outside the viewport.
+
+Changing the property causes the inner `ScrollPresenter` to arrange again so it can update its
+clip. It does not change the resulting layout size, extent, or viewport dimensions.
+
+`CornerRadius` can still intentionally clip the content. The default template uses the following
+precedence:
+
+| `CanContentRenderOutsideBounds` | `CornerRadius` source | Default-template behavior |
+| --- | --- | --- |
+| `false` | Any source | The effective corner radius is applied normally. |
+| `true` | No local value (property default or style) | The template root's corner radius is set to `0`. |
+| `true` | A local value, including a literal or binding | The local corner radius remains in effect. |
+
+Setting the template root's corner radius to `0` squares its border corners and removes the
+rounded clip that the root applies to its children. This does not change the value returned by
+`ScrollView.CornerRadius`. Any local value takes precedence even if it equals the value supplied
+by the style. Clear the local value, or set it to `0`, when that rounded clip should not remain.
+Setting `CanContentRenderOutsideBounds` back to `false` restores the effective corner radius.
+
+The property cannot override a clip on the content, an ancestor element, or another part of a
+custom control template. For the lower-level viewport clip and `UIElement.Clip` precedence, see
+the [`ScrollPresenter` clipping behavior](ScrollPresenter.md#allow-content-to-render-outside-the-viewport).
+
 ## Controlling the presence of scroll bars
 
 By default, a `ScrollView` has [ScrollBar](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.ScrollBar) 
@@ -1407,7 +1462,10 @@ scrolling through touch/pen.
 
 
 ```xml
-<Style TargetType="local:ScrollView">
+<Style
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxp="using:Microsoft.UI.Xaml.Controls.Primitives"
+    TargetType="mux:ScrollView">
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="IsTabStop" Value="False"/>
     <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"/>
@@ -1425,12 +1483,24 @@ scrolling through touch/pen.
     <Setter Property="MaxZoomFactor" Value="10.0"/>
     <Setter Property="HorizontalAnchorRatio" Value="0.0"/>
     <Setter Property="VerticalAnchorRatio" Value="0.0"/>
+    <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
     <Setter Property="Template">
     <Setter.Value>
-        <ControlTemplate TargetType="local:ScrollView">
-            <Grid x:Name="PART_Root">
+        <ControlTemplate TargetType="mux:ScrollView">
+            <Grid x:Name="PART_Root"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}">
                 <VisualStateManager.VisualStateGroups>
                     ...
+                    <VisualStateGroup x:Name="ContentClippingStates">
+                        <VisualState x:Name="ContentClipped"/>
+                        <VisualState x:Name="ContentNotClipped">
+                            <VisualState.Setters>
+                                <Setter Target="PART_Root.CornerRadius" Value="0"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
                 </VisualStateManager.VisualStateGroups>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -1440,11 +1510,12 @@ scrolling through touch/pen.
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <local:ScrollPresenter x:Name="PART_ScrollPresenter"
+                <muxp:ScrollPresenter x:Name="PART_ScrollPresenter"
                                 Grid.ColumnSpan="2" Grid.RowSpan="2"
                                 Background="{TemplateBinding Background}"
                                 Margin="{TemplateBinding Padding}"
                                 Content="{TemplateBinding Content}"
+                                CanContentRenderOutsideBounds="{TemplateBinding CanContentRenderOutsideBounds}"
                                 ContentOrientation="{TemplateBinding ContentOrientation}"
                                 HorizontalScrollMode="{TemplateBinding HorizontalScrollMode}"
                                 VerticalScrollMode="{TemplateBinding VerticalScrollMode}"
@@ -1484,6 +1555,22 @@ scrolling through touch/pen.
 # API Notes
 
 ## ScrollView class
+
+### ScrollView.CanContentRenderOutsideBounds property
+
+Gets or sets a value that indicates whether the content can render outside the bounds of the
+`ScrollView` viewport. The default is `false`.
+
+With the default template, setting the property to `true` removes the inner
+`ScrollPresenter`'s own viewport clip. It also sets the template root's corner radius to `0`
+when `ScrollView.CornerRadius` has no local value.
+
+A local or bound `CornerRadius` takes precedence and remains in effect. The property value
+returned by `CornerRadius` is not changed when the template changes its root corner radius.
+
+_Spec note: `ScrollViewer` already exposes
+[`CanContentRenderOutsideBounds`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.scrollviewer.cancontentrenderoutsidebounds).
+This brings the same property, with the same name and default, to `ScrollView`._
 
 ### ScrollView.Content property
 Gets or sets the scrollable/zoomable content.
@@ -2047,6 +2134,11 @@ unsealed runtimeclass Microsoft.UI.Xaml.Controls.ScrollView :
     ScrollView();
 
     Microsoft.UI.Xaml.UIElement Content { get; set; };
+    [contract(Microsoft.UI.Xaml.XamlContract, 12)]
+    {
+        // Default value: false.
+        Boolean CanContentRenderOutsideBounds { get; set; };
+    }
     Microsoft.UI.Xaml.UIElement CurrentAnchor { get; };
     Microsoft.UI.Composition.CompositionPropertySet ExpressionAnimationSources { get; };
     Double HorizontalOffset { get; };
@@ -2134,6 +2226,10 @@ unsealed runtimeclass Microsoft.UI.Xaml.Controls.ScrollView :
     event Windows.Foundation.TypedEventHandler<ScrollView, ScrollingAnchorRequestedEventArgs> AnchorRequested;
 
     static Microsoft.UI.Xaml.DependencyProperty ContentProperty { get; };
+    [contract(Microsoft.UI.Xaml.XamlContract, 12)]
+    {
+        static Microsoft.UI.Xaml.DependencyProperty CanContentRenderOutsideBoundsProperty { get; };
+    }
     static Microsoft.UI.Xaml.DependencyProperty ScrollPresenterProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HorizontalScrollBarVisibilityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty VerticalScrollBarVisibilityProperty { get; };
@@ -2316,25 +2412,6 @@ decoupled these limitations should disappear.
 These features have valid scenarios and should be considered for future releases.
 
 ## Markup scenarios
-
-### Clipping suppression
-
-The old ScrollViewer has [this property](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.scrollviewer.cancontentrenderoutsidebounds) 
-already. It would allow the inner ScrollPresenter to stop its clipping.
-
-```csharp
-unsealed runtimeclass ScrollView : ...
-{
-    // Default Value: False
-    Boolean CanContentRenderOutsideBounds { get; set; };
-}
-
-unsealed runtimeclass ScrollPresenter : ...
-{
-    // Default Value: False
-    Boolean CanContentRenderOutsideBounds { get; set; };
-}
-```
 
 ### Deferral of visual scrolling when interacting with scroll bar
 
