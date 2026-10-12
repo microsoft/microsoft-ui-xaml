@@ -1062,13 +1062,9 @@ private:
     void OnHeaderContextRequested(winrt::ContextRequestedEventArgs const& args);
     std::optional<TableViewDetails::ContextMenuTarget> ResolveHeaderContextMenuTarget(
         winrt::ContextRequestedEventArgs const& args);
-    winrt::FlyoutBase ResolveContextFlyout(TableViewDetails::ContextMenuTarget const& target);
-    winrt::TableViewContextFlyoutRequestedEventArgs RaiseContextFlyoutRequested(
-        TableViewDetails::ContextMenuTarget const& target,
-        winrt::FlyoutBase const& resolvedFlyout);
+    TableViewDetails::ContextMenuCandidate ResolveContextFlyout(TableViewDetails::ContextMenuTarget const& target);
     void ShowContextFlyout(
-        TableViewDetails::ContextMenuTarget const& target,
-        winrt::FlyoutBase const& flyout,
+        TableViewDetails::ContextMenuCandidate const& candidate,
         winrt::ContextRequestedEventArgs const& args);
     bool m_isProcessingContextMenu{ false };
 

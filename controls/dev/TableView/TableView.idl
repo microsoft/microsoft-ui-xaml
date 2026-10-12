@@ -298,17 +298,6 @@ runtimeclass TableViewCellEditEndingEventArgs
 
 [MUX_PREVIEW]
 [webhosthidden]
-runtimeclass TableViewContextFlyoutRequestedEventArgs
-{
-    Object Item { get; };
-    MU_XC_NAMESPACE.TableViewColumn Column { get; };
-    Boolean IsHeader { get; };
-    Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase ContextFlyout;
-    Boolean Handled;
-};
-
-[MUX_PREVIEW]
-[webhosthidden]
 unsealed runtimeclass TableViewTextColumn : TableViewColumn
 {
     TableViewTextColumn();
@@ -578,12 +567,6 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     // There is no post-close event in this release. CellEditEnding reports the outcome through
     // EditAction and is raised for every close, so a second "it finished" event is surface without
     // a scenario of its own yet. It can be added later without breaking anyone.
-
-    // ----- Context menus -----
-    // Raised synchronously once a body or header request has a candidate flyout from the public
-    // row/column properties. Set Handled=true to suppress all custom and native fallback. Leaving
-    // ContextFlyout null permits the request to continue to native bubbling.
-    event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewContextFlyoutRequestedEventArgs> ContextFlyoutRequested;
 
     // ----- Selection -----
     // Row-scoped, single item. SelectedItem and SelectedIndex are read-only projections of the
