@@ -260,6 +260,361 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
+    // Category 15 crossed with grouping, sorting and automation: shaping must not defeat virtualization.
+    [TestClass]
+    public class TableViewVirtualizationAcrossFeaturesTests : TableViewApiTestBase
+    {
+        private const int ManyGroupsItemCount = 2000;
+        private const int ItemsPerGroup = 5;
+        private const int ManyGroupsCount = ManyGroupsItemCount / ItemsPerGroup;
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped source with hundreds of groups realizes only a viewport-bounded set of headers and rows at every scroll offset.")]
+        public void VerifyGroupedProjectionRealizesBoundedRowsAcrossManyGroups()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateManyGroupsTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            var bound = 0;
+            var scrollable = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                bound = MixedRealizationBound(tableView);
+                scrollable = GetBodyScroller(tableView)?.ScrollableHeight ?? 0.0;
+
+                Verify.AreEqual(ManyGroupsItemCount + ManyGroupsCount, GetProjectedCount(tableView),
+                    "Precondition: the projection must hold one header per group plus every data row.");
+                Verify.IsLessThan(bound, GetProjectedCount(tableView),
+                    "Precondition: the projection must be far larger than the bound, or the bound proves nothing.");
+
+                VerifyGroupedRealizationBounded(tableView, bound, "at the start", expectRows: true);
+            });
+
+            foreach (var fraction in new[] { 1.0 / 3.0, 2.0 / 3.0 })
+            {
+                ScrollBodyTo(tableView, ScrollAxis.Vertical, scrollable * fraction);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsNull(GetProjectedElements(tableView, requireAllRealized: false)[0],
+                        $"Precondition: the first group header must have left realization at {fraction:P0}.");
+
+                    VerifyGroupedRealizationBounded(tableView, bound, $"at {fraction:P0}", expectRows: true);
+                });
+            }
+
+            ScrollToEnd(tableView);
+
+            RunOnUIThread.Execute(() => VerifyGroupedRealizationBounded(tableView, bound, "at the end", expectRows: true));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies collapsing every group of a large grouped source realizes headers only, at every scroll offset.")]
+        public void VerifyCollapsedGroupsRealizeNoDataRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateManyGroupsTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(ProjectedRowCount(tableView), 0, "Precondition: data rows must be realized before collapsing.");
+
+                tableView.CollapseAllGroups();
+            });
+
+            SettleLayout(tableView);
+
+            var bound = 0;
+            var scrollable = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(ManyGroupsCount, GetProjectedCount(tableView),
+                    "A full collapse must project exactly one header per group.");
+
+                bound = MixedRealizationBound(tableView);
+                scrollable = GetBodyScroller(tableView)?.ScrollableHeight ?? 0.0;
+
+                Verify.IsLessThan(bound, ManyGroupsCount,
+                    "Precondition: the collapsed projection must still be far larger than the bound, so headers themselves virtualize.");
+
+                VerifyGroupedRealizationBounded(tableView, bound, "collapsed, at the start", expectRows: false);
+            });
+
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, scrollable / 2.0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(GetProjectedElements(tableView, requireAllRealized: false)[0],
+                    "Precondition: the first group header must have left realization.");
+
+                VerifyGroupedRealizationBounded(tableView, bound, "collapsed, halfway", expectRows: false);
+            });
+
+            ScrollToEnd(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGroupedRealizationBounded(tableView, bound, "collapsed, at the end", expectRows: false);
+
+                foreach (var header in ProjectedGroupHeaders(tableView))
+                {
+                    Verify.IsFalse(header.IsExpanded, "Every header realized after scrolling must report its group collapsed.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a long hop-scroll over a sorted large source keeps realization and the container pool bounded and every realized row in sorted position.")]
+        public void VerifyScrollingUnderActiveSortKeepsRealizationBounded()
+        {
+            TableView tableView = null;
+            List<Person> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeManyItems(TableViewVirtualizationTestHelpers.LargeSourceCount);
+
+                var indexOf = new Dictionary<Person, int>();
+                for (var i = 0; i < items.Count; i++)
+                {
+                    indexOf[items[i]] = i;
+                }
+
+                var source = TableViewSource.From(items).Sort(o => indexOf[(Person)o], SortDirection.Descending);
+                tableView = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 240);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            var bound = 0;
+            var scrollable = 0.0;
+            var leftStart = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(ReferenceEquals(items[items.Count - 1], GetProjectedItem(tableView, 0)),
+                    "Precondition: the descending sort must be active, so the last source item projects first.");
+
+                bound = TableViewVirtualizationTestHelpers.RealizationBound(tableView);
+                scrollable = GetBodyScroller(tableView)?.ScrollableHeight ?? 0.0;
+                Verify.IsLessThan(bound, items.Count, "Precondition: the source must be far larger than the bound.");
+
+                VerifySortedRealization(tableView, items, bound, "at the start");
+            });
+
+            for (var hop = 1; hop <= 10; hop++)
+            {
+                ScrollBodyTo(tableView, ScrollAxis.Vertical, scrollable * hop / 11.0);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    leftStart |= GetProjectedElements(tableView, requireAllRealized: false)[0] == null;
+                    VerifySortedRealization(tableView, items, bound, $"at hop {hop}");
+                });
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(leftStart, "Precondition: the first sorted row must have left realization, so containers were recycled.");
+
+                // A visual-tree count on purpose: it measures the container pool, which grows if recycled rows leak.
+                var containers = GetRealizedRows(tableView).Count;
+                Log.Comment($"Containers parented after ten hops: {containers}, bound {bound}.");
+
+                Verify.IsLessThanOrEqual(containers, bound,
+                    $"The container pool must not grow with the distance scrolled under a sort; {containers} containers, bound {bound}.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell peer is reference-stable while its row stays realized, and that re-acquiring it after a scroll away and back describes the same item and coordinates.")]
+        public void VerifyCellPeerIdentityIsStableAcrossScrollAwayAndBack()
+        {
+            TableView tableView = null;
+            List<Person> items = null;
+            Person target = null;
+            TableViewCellAutomationPeer before = null;
+            string nameBefore = null;
+            const int targetIndex = 1;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeManyItems(RecyclingSourceCount);
+                target = items[targetIndex];
+                tableView = CreateScrollableTable(items);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RequireRealizedRowFor(tableView, target);
+                if (row == null)
+                {
+                    return;
+                }
+
+                before = GetCellPeer(row, 0);
+
+                // TableViewRowAutomationPeer::GetOrCreateCellPeer is the single source of cell-peer identity while realized.
+                Verify.IsTrue(ReferenceEquals(before, GetCellPeer(row, 0)),
+                    "Re-acquiring a realized cell's peer must return the same provider; UIA compares providers by identity.");
+
+                nameBefore = before.GetName();
+                Verify.IsTrue(nameBefore != null && nameBefore.Contains(target.Name),
+                    $"Precondition: the cell peer must name the target item; saw '{nameBefore}'.");
+                VerifyCellCoordinates(before, targetIndex, 0, "before scrolling");
+            });
+
+            ScrollToEnd(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsFalse(RealizedProjectedRows(tableView).Any(row => ReferenceEquals(row.DataContext, target)),
+                    "Precondition: the target item must have left realization, so its container was recycled."));
+
+            ScrollToStart(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RequireRealizedRowFor(tableView, target);
+                if (row == null)
+                {
+                    return;
+                }
+
+                var after = GetCellPeer(row, 0);
+
+                // Peers are per container, not per item: a container rehosting a different item drops its cell-peer
+                // cache (TableViewRow::EnsureOwningTableViewInternal), so only value equality is guaranteed here.
+                Log.Comment($"Re-acquired peer is {(ReferenceEquals(before, after) ? "the same" : "a different")} instance.");
+
+                Verify.AreEqual(nameBefore, after.GetName(),
+                    "The re-acquired cell peer must report the same name for the same item after a scroll away and back.");
+                VerifyCellCoordinates(after, targetIndex, 0, "after scrolling away and back");
+
+                Verify.IsTrue(ReferenceEquals(after, GetCellPeer(row, 0)),
+                    "Once realized again, the cell peer must again be reference-stable across acquisitions.");
+            });
+        }
+
+        private static TableView CreateManyGroupsTable()
+        {
+            var items = Enumerable
+                .Range(0, ManyGroupsItemCount)
+                .Select(i => new Person { Name = $"Person {i}", Role = $"Group {i / ItemsPerGroup}" })
+                .ToList();
+
+            var source = TableViewSource.From(items);
+            source.GroupBy(o => ((Person)o).Role);
+
+            return CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 240);
+        }
+
+        // RealizationBound's viewport-plus-cache formula, sized by the shortest realized element so shorter group headers cannot exceed it.
+        private static int MixedRealizationBound(TableView tableView)
+        {
+            var heights = GetProjectedElements(tableView, requireAllRealized: false)
+                .OfType<FrameworkElement>()
+                .Select(element => element.ActualHeight)
+                .Where(height => height > 0.0)
+                .ToList();
+
+            var scroller = GetBodyScroller(tableView);
+
+            if (heights.Count == 0 || scroller == null || scroller.ViewportHeight <= 0.0)
+            {
+                Verify.Fail("The fixture must realize sized elements inside a laid-out viewport.");
+                return 0;
+            }
+
+            var viewportElements = (int)global::System.Math.Ceiling(scroller.ViewportHeight / heights.Min());
+            Log.Comment($"Shortest element {heights.Min()}, viewport {scroller.ViewportHeight}, viewport elements {viewportElements}.");
+
+            return (viewportElements * 5) + 4;
+        }
+
+        private static void VerifyGroupedRealizationBounded(TableView tableView, int bound, string context, bool expectRows)
+        {
+            var realized = TableViewVirtualizationTestHelpers.RealizedElementCount(tableView);
+            var headers = ProjectedGroupHeaders(tableView).Count;
+            var rows = ProjectedRowCount(tableView);
+            Log.Comment($"{context}: realized {realized} ({headers} headers, {rows} rows), bound {bound}.");
+
+            Verify.IsGreaterThan(headers, 0, $"Group headers must be realized ({context}).");
+            Verify.IsLessThanOrEqual(realized, bound,
+                $"Realization, headers included, must stay inside the viewport-plus-cache bound ({context}); realized {realized}, bound {bound}.");
+
+            if (expectRows)
+            {
+                Verify.IsGreaterThan(rows, 0, $"Data rows must be realized alongside headers ({context}).");
+            }
+            else
+            {
+                Verify.AreEqual(0, rows, $"No data row may be realized while every group is collapsed ({context}).");
+            }
+        }
+
+        private static void VerifySortedRealization(TableView tableView, List<Person> items, int bound, string context)
+        {
+            var elements = GetProjectedElements(tableView, requireAllRealized: false);
+            var realized = elements.Count(element => element != null);
+            Log.Comment($"{context}: realized {realized}, bound {bound}.");
+
+            Verify.IsGreaterThan(realized, 0, $"Rows must be realized ({context}).");
+            Verify.IsLessThanOrEqual(realized, bound,
+                $"Realization must stay bounded under a sort ({context}); realized {realized}, bound {bound}.");
+
+            for (var i = 0; i < elements.Count; i++)
+            {
+                if (elements[i] is TableViewRow row)
+                {
+                    Verify.IsTrue(ReferenceEquals(items[items.Count - 1 - i], row.DataContext),
+                        $"The row realized at sorted index {i} must host the item sorted there ({context}).");
+                }
+            }
+        }
+
+        private static TableViewRow RequireRealizedRowFor(TableView tableView, Person item)
+        {
+            var row = RealizedProjectedRows(tableView).FirstOrDefault(candidate => ReferenceEquals(candidate.DataContext, item));
+            Verify.IsNotNull(row, $"'{item.Name}' must be realized.");
+            return row;
+        }
+
+        private static void VerifyCellCoordinates(TableViewCellAutomationPeer cellPeer, int row, int column, string context)
+        {
+            var gridItem = cellPeer.GetPattern(Microsoft.UI.Xaml.Automation.Peers.PatternInterface.GridItem)
+                as Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider;
+
+            if (gridItem == null)
+            {
+                Verify.Fail($"The cell peer must advertise GridItem ({context}).");
+                return;
+            }
+
+            Verify.AreEqual(row, gridItem.Row, $"The cell peer must report the row of the item it describes ({context}).");
+            Verify.AreEqual(column, gridItem.Column, $"The cell peer must report its visible-column index ({context}).");
+        }
+    }
+
     internal static class TableViewRecyclingTestHelpers
     {
         internal const int RecyclingSourceCount = 120;
