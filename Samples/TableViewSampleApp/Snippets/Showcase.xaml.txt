@@ -1,5 +1,18 @@
-<!-- ShowcasePage.xaml. A tinted template cell: the converter reads the bound value, so a live
-     update recolors only the cell whose value changed. -->
+<!-- Each tinted cell binds its background through a converter, so a live update recolors only that cell. -->
+<DataTemplate x:Key="ShowcaseDepartmentPillTemplate" x:DataType="models:Person">
+    <Border Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource ShowcaseDepartmentTintConverter}}"
+            AutomationProperties.Name="{x:Bind Department, Mode=OneWay}"
+            CornerRadius="10" Padding="10,3" Margin="6,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal" Spacing="7">
+            <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                     Fill="{x:Bind Department, Mode=OneWay, Converter={StaticResource ShowcaseDepartmentDotConverter}}"
+                     AutomationProperties.AccessibilityView="Raw"/>
+            <TextBlock Text="{x:Bind Department, Mode=OneWay}" VerticalAlignment="Center"
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+        </StackPanel>
+    </Border>
+</DataTemplate>
+
 <DataTemplate x:Key="ShowcaseSalaryTemplate" x:DataType="models:Person">
     <Border Background="{x:Bind Salary, Mode=OneWay, Converter={StaticResource ShowcaseSalaryTintConverter}}"
             CornerRadius="4" Padding="8,2" Margin="2,2" HorizontalAlignment="Stretch" VerticalAlignment="Center">
@@ -8,6 +21,8 @@
                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
     </Border>
 </DataTemplate>
+
+<!-- … -->
 
 <tv:TableView
     x:Name="PeopleTable"
@@ -20,17 +35,30 @@
     SelectionMode="Single"
     VerticalAlignment="Stretch"
     MinHeight="320">
-    <!-- Visible by default: fits the table width at the default window size. -->
     <tv:TableViewTemplateColumn x:Name="AvatarColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
     <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
     <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource ShowcaseDepartmentPillTemplate}" SortMemberPath="Department"/>
     <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" CanResize="False" HeaderToolTip="Fixed width: this column sets CanResize to False."/>
     <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
     <tv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource ShowcaseSalaryTemplate}" SortMemberPath="Salary"/>
-    <!-- Hidden by default; the Columns section turns them on. -->
     <tv:TableViewTemplateColumn x:Name="ShiftColumn" Header="Shift" Width="{StaticResource ColWidthTimeCompact}" CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart" Visibility="Collapsed"/>
     <tv:TableViewTemplateColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthCombo}" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office" Visibility="Collapsed"/>
     <tv:TableViewTextColumn x:Name="EmailColumn" Header="Email" Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" Visibility="Collapsed"/>
     <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" Visibility="Collapsed"/>
     <tv:TableViewTemplateColumn x:Name="DetailsColumn" Header="Details" Width="{StaticResource ColWidthAction}" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False" Visibility="Collapsed"/>
 </tv:TableView>
+
+<!-- … -->
+
+<controls:RailSection
+    IsFirst="True"
+    Header="Live updates"
+    Description="A timer changes the Salary and Active values of the first five rows. Person raises PropertyChanged, so only those cells re-run their bindings and tints. Vibrant cells turns the Department and Salary tints on or off.">
+    <ToggleSwitch x:Name="LiveToggle" AutomationProperties.AutomationId="ShowcaseLiveToggle"
+                  Header="Live updates" IsOn="True" OnContent="On" OffContent="Off" Toggled="OnLiveToggled"/>
+    <Slider x:Name="UpdateIntervalSlider" AutomationProperties.AutomationId="ShowcaseUpdateIntervalSlider"
+            Header="Update interval (ms)" Minimum="200" Maximum="2000" StepFrequency="100" Value="700"
+            ValueChanged="OnUpdateIntervalChanged"/>
+    <ToggleSwitch x:Name="VibrantToggle" AutomationProperties.AutomationId="ShowcaseVibrantToggle"
+                  Header="Vibrant cells" IsOn="True" OnContent="On" OffContent="Off" Toggled="OnVibrantToggled"/>
+</controls:RailSection>

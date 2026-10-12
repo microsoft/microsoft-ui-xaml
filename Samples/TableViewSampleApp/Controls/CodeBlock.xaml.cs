@@ -8,7 +8,10 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
 
 namespace TableViewSampleApp.Controls;
 
@@ -34,6 +37,37 @@ public sealed partial class CodeBlock : UserControl
         _copyFeedbackTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _copyFeedbackTimer.Tick += OnCopyFeedbackTimerTick;
         Unloaded += OnUnloaded;
+        CodeText.PointerWheelChanged += OnCodeWheelChanged;
+    }
+
+    // Without this, a ScrollViewer that cannot scroll vertically turns a vertical wheel into horizontal
+    // scrolling; hand the wheel to the nearest vertically scrollable ancestor instead.
+    private void OnCodeWheelChanged(object sender, PointerRoutedEventArgs e)
+    {
+        if (e.Handled || CodeScroller.ScrollableHeight > 0.5
+            || (e.KeyModifiers & (VirtualKeyModifiers.Shift | VirtualKeyModifiers.Control)) != 0)
+        {
+            return;
+        }
+
+        var properties = e.GetCurrentPoint(CodeScroller).Properties;
+        if (properties.IsHorizontalMouseWheel || properties.MouseWheelDelta == 0)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        for (var parent = VisualTreeHelper.GetParent(CodeScroller); parent is not null; parent = VisualTreeHelper.GetParent(parent))
+        {
+            if (parent is ScrollViewer outer
+                && outer.VerticalScrollMode != ScrollMode.Disabled
+                && outer.ScrollableHeight > 0.5)
+            {
+                var offset = Math.Clamp(outer.VerticalOffset - properties.MouseWheelDelta, 0, outer.ScrollableHeight);
+                outer.ChangeView(null, offset, null, disableAnimation: true);
+                return;
+            }
+        }
     }
 
     public string Caption
@@ -56,11 +90,6 @@ public sealed partial class CodeBlock : UserControl
         DependencyProperty.Register(nameof(Code), typeof(string), typeof(CodeBlock),
             new PropertyMetadata(string.Empty, OnContentChanged));
 
-    /// <summary>
-    /// Maximum height of the code viewport. Defaults to 360. Set to
-    /// <see cref="double.PositiveInfinity"/> when an outer scroller already bounds the block;
-    /// the block then stops scrolling vertically itself (one vertical scroller, D:S9).
-    /// </summary>
     public double CodeMaxHeight
     {
         get => (double)GetValue(CodeMaxHeightProperty);

@@ -1,24 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Task Manager scenario, on the canonical page template (FIX-PLAN §1.2): Try it, a 32 px
-    command row (search, Run new task, End task), one stretched table, then the rail in the order
-    Live data, Shaping, Actions, Status, What to look for. The page sets no RequestedTheme: it
-    follows the app theme, which the title-bar button owns.
--->
-<Page
+<pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.TaskManagerPage"
     NavigationCacheMode="Disabled"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:models="using:TableViewSampleApp.Models"
-    xmlns:local="using:TableViewSampleApp.Pages"
+    xmlns:pages="using:TableViewSampleApp.Pages"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <Page.Resources>
-        <local:ProcessHeatBrushConverter x:Key="ProcessHeatBrushConverter"/>
-
+        <!-- snippet -->
         <!-- The glyph is decorative (Raw); the name carries the row. No Image bound to a path:
              x:Bind of an empty string to Image.Source throws inside Bindings_Update and blanks
              the whole template. -->
@@ -59,37 +51,26 @@
                 <TextBlock Text="{x:Bind NetworkDisplay, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
             </Border>
         </DataTemplate>
+        <!-- /snippet -->
     </Page.Resources>
 
     <controls:SamplePresenter
         Header="Task Manager"
         Description="A Task Manager-style process list built from TableViewTemplateColumn cells: an icon and name, a status, and four metric cells whose tint deepens with load. A DispatcherTimer updates the metrics live, and sorting a metric column keeps the list in order as the values change. The search box filters the same TableViewSource with Filter, and Shaping groups it into the Task Manager categories with GroupBy. Select a process to end it or move it to another category."
-        SourceCaption="TaskManagerPage.xaml (excerpt)"
-        SourceSnippet="TaskManager.xaml.txt"
-        AdditionalSnippetCaption="TaskManagerPage.xaml.cs (excerpt)"
-        AdditionalSnippet="TaskManager.cs.txt"
-        StretchExample="True">
+        Snippet="TaskManager"
+        StretchExample="True"
+        TryIt="Click the CPU header and watch the busiest processes trade places on every live update. Type edge in the search box to filter, then select a process and choose End task. Switch Shaping to Grouped to band the processes into Apps, Background processes and Windows processes."
+        WhatToLookFor="With CPU sorted, rows change places on every update while the selected process stays selected, because the page re-sorts the same source rather than rebuilding it. Grouped, the sort orders rows within each band, and a search that matches nothing in a band removes that band's header. The metric tints drop out in a high-contrast theme, and the page follows the app theme set in the title bar.">
 
         <controls:SamplePresenter.Example>
             <Grid RowSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <!-- scaffold:tryit -->
-                <muxc:InfoBar
-                    Grid.Row="0"
-                    Title="Try it"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    MinHeight="104"
-                    Message="Click the CPU header and watch the busiest processes trade places on every live update. Type edge in the search box to filter, then select a process and choose End task. Switch Shaping to Grouped to band the processes into Apps, Background processes and Windows processes."/>
-                <!-- /scaffold -->
 
                 <!-- Scenario command row (32 px): search, Run new task and End task, as in Task Manager. -->
-                <Grid Grid.Row="1" ColumnSpacing="8">
+                <Grid ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -118,11 +99,13 @@
                         AutomationProperties.AutomationId="TaskManagerEndTaskButton"
                         Content="End task"
                         Click="OnEndTaskClick"
+                        IsEnabled="False"
                         ToolTipService.ToolTip="Removes the selected process from the list."
                         AutomationProperties.HelpText="Select a process first."/>
                 </Grid>
 
-                <Border Grid.Row="2" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                    <!-- snippet -->
                     <tv:TableView
                         x:Name="ProcessTable"
                         AutomationProperties.AutomationId="TaskManagerTable"
@@ -138,23 +121,23 @@
                              behind each template. -->
                         <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" CellTemplate="{StaticResource ProcessNameTemplate}" SortMemberPath="Name"/>
                         <tv:TableViewTemplateColumn Header="Status" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource ProcessStatusTemplate}" SortMemberPath="StatusText"/>
-                        <tv:TableViewTemplateColumn x:Name="CpuColumn" Header="CPU" Width="{StaticResource ColWidthMetric}" CellTemplate="{StaticResource CpuHeatTemplate}" SortMemberPath="CpuPercent" HeaderToolTip="CPU use per core. Opens sorted highest first"/>
-                        <tv:TableViewTemplateColumn x:Name="MemoryColumn" Header="Memory" Width="{StaticResource ColWidthMetric}" CellTemplate="{StaticResource MemoryHeatTemplate}" SortMemberPath="MemoryMB" HeaderToolTip="Working set. Opens sorted highest first"/>
-                        <tv:TableViewTemplateColumn x:Name="DiskColumn" Header="Disk" Width="{StaticResource ColWidthMetric}" CellTemplate="{StaticResource DiskHeatTemplate}" SortMemberPath="DiskMBps" HeaderToolTip="Disk throughput. Opens sorted highest first"/>
-                        <tv:TableViewTemplateColumn x:Name="NetworkColumn" Header="Network" Width="{StaticResource ColWidthMetric}" CellTemplate="{StaticResource NetworkHeatTemplate}" SortMemberPath="NetworkMbps" HeaderToolTip="Network throughput. Opens sorted highest first"/>
+                        <tv:TableViewTemplateColumn x:Name="CpuColumn" Header="CPU" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource CpuHeatTemplate}" SortMemberPath="CpuPercent" HeaderToolTip="CPU use per core. Opens sorted highest first"/>
+                        <tv:TableViewTemplateColumn x:Name="MemoryColumn" Header="Memory" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource MemoryHeatTemplate}" SortMemberPath="MemoryMB" HeaderToolTip="Working set. Opens sorted highest first"/>
+                        <tv:TableViewTemplateColumn x:Name="DiskColumn" Header="Disk" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource DiskHeatTemplate}" SortMemberPath="DiskMBps" HeaderToolTip="Disk throughput. Opens sorted highest first"/>
+                        <tv:TableViewTemplateColumn x:Name="NetworkColumn" Header="Network" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource NetworkHeatTemplate}" SortMemberPath="NetworkMbps" HeaderToolTip="Network throughput. Opens sorted highest first"/>
                     </tv:TableView>
+                    <!-- /snippet -->
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <!-- 1. Primary feature -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Live data">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Live data"
-                               Style="{StaticResource SectionHeaderTextStyle}"/>
-                    <TextBlock Text="A DispatcherTimer rewrites every process's CPU, memory, disk and network values, and the cells follow through their bindings. A value change does not move a row, so while a metric column is sorted each update re-declares that sort with TableViewSource.Sort(path, direction)."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <!-- snippet -->
+                <controls:RailSection
+                    IsFirst="True"
+                    Header="Live data"
+                    Description="A DispatcherTimer rewrites every process's CPU, memory, disk and network values, and the cells follow through their bindings. A value change does not move a row, so while a metric column is sorted each update re-declares that sort with TableViewSource.Sort(path, direction).">
                     <ToggleSwitch
                         x:Name="LiveUpdatesToggle"
                         AutomationProperties.AutomationId="TaskManagerLiveUpdatesToggle"
@@ -174,74 +157,20 @@
                         <ComboBoxItem Content="2 seconds" Tag="2"/>
                         <ComboBoxItem Content="5 seconds" Tag="5"/>
                     </ComboBox>
-                </StackPanel>
+                </controls:RailSection>
+                <!-- /snippet -->
 
-                <!-- scaffold:shaping -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="Grouping bands the processes by category, as Task Manager does, or by status. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
-                    <ComboBox
-                        x:Name="ShapingModeSelector"
-                        AutomationProperties.AutomationId="TaskManagerShapingModeSelector"
-                        Header="Shaping mode"
-                        SelectedIndex="0"
-                        SelectionChanged="OnShapingModeChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Flat" Tag="flat"/>
-                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                        <!-- Hierarchical rows are not available in this release. These two options stay
-                             visible but disabled so the shape of the feature is discoverable. When the
-                             control ships hierarchy, enable them and uncomment the matching branch in
-                             ApplyShaping. -->
-                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                    </ComboBox>
-                    <ComboBox
-                        x:Name="GroupKeySelector"
-                        AutomationProperties.AutomationId="TaskManagerGroupKeySelector"
-                        Header="Group key"
-                        SelectedIndex="0"
-                        IsEnabled="False"
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        SelectionChanged="OnGroupKeyChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Category" Tag="Category"/>
-                        <ComboBoxItem Content="Status" Tag="StatusText"/>
-                    </ComboBox>
-                    <Button
-                        x:Name="ExpandAllButton"
-                        AutomationProperties.AutomationId="TaskManagerExpandAllGroupsButton"
-                        Content="Expand all"
-                        Click="OnExpandAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <Button
-                        x:Name="CollapseAllButton"
-                        AutomationProperties.AutomationId="TaskManagerCollapseAllGroupsButton"
-                        Content="Collapse all"
-                        Click="OnCollapseAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
-                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
-                </StackPanel>
-                <!-- /scaffold -->
+                <controls:ShapingOptions
+                    x:Name="Shaping"
+                    AutomationIdPrefix="TaskManager"
+                    Description="Grouping bands the processes by category, as Task Manager does, or by status. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    <ComboBoxItem Content="Category" Tag="Category"/>
+                    <ComboBoxItem Content="Status" Tag="StatusText"/>
+                </controls:ShapingOptions>
 
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="Each action changes the live collection or the sort while the timer keeps updating values. Run new task and End task are in the command row above the table. Watch the table and the Last action readout. Actions that change one row need a selected row."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    Header="Actions"
+                    Description="Each action changes the live collection or the sort while the timer keeps updating values. Run new task and End task are in the command row above the table. Watch the table and the Last action readout. Actions that change one row need a selected row.">
                     <StackPanel Spacing="8">
                         <Button
                             x:Name="SortByCpuButton"
@@ -271,56 +200,15 @@
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                     </StackPanel>
-                </StackPanel>
+                </controls:RailSection>
 
-                <!-- scaffold:status -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <Grid Style="{StaticResource StatusGridStyle}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Selected" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SelectedProcessText" AutomationProperties.AutomationId="TaskManagerSelectedProcessText"
-                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="1" Text="Live" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="LiveText" AutomationProperties.AutomationId="TaskManagerLiveText"
-                                   AutomationProperties.LiveSetting="Polite" Text="Every 2 seconds" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <!-- Changes on every update, so it is not a live region (it would never stop talking). -->
-                        <TextBlock Grid.Row="2" Text="Totals" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="TotalsText" AutomationProperties.AutomationId="TaskManagerTotalsText"
-                                   Text="CPU 0%" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="3" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="TaskManagerRowsText"
-                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="4" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="TaskManagerShapingModeText"
-                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="5" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="TaskManagerLastActionText"
-                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
-                                   Style="{StaticResource StatusReadoutValueStyle}"/>
-                    </Grid>
-                </StackPanel>
-                <!-- /scaffold -->
-
-                <muxc:InfoBar
-                    Title="What to look for"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    Message="With CPU sorted, rows change places on every update while the selected process stays selected, because the page re-sorts the same source rather than rebuilding it. Grouped, the sort orders rows within each band, and a search that matches nothing in a band removes that band's header. The metric tints drop out in a high-contrast theme, and the page follows the app theme set in the title bar."/>
+                <controls:StatusPanel x:Name="Status" AutomationIdPrefix="TaskManager">
+                    <TextBlock x:Name="SelectedProcessText" controls:StatusPanel.Label="Selected" Text="(none)"/>
+                    <TextBlock x:Name="LiveText" controls:StatusPanel.Label="Live" Text="Every 2 seconds"/>
+                    <!-- Not a live region: it changes on every update, so the page clears the panel's Polite setting. -->
+                    <TextBlock x:Name="TotalsText" controls:StatusPanel.Label="Totals" Text="CPU 0%" AutomationProperties.LiveSetting="Off"/>
+                </controls:StatusPanel>
             </StackPanel>
         </controls:SamplePresenter.Options>
     </controls:SamplePresenter>
-</Page>
+</pages:SamplePageBase>

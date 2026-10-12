@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Services;
@@ -24,7 +25,18 @@ public static class FileSystemBrowser
     public static string InitialDirectory =>
         Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory);
 
-    public static DirectoryListing Read(string directoryPath)
+    /// <summary>An entry under the folder that contains it (TableViewSource.ParentBy selectors).</summary>
+    public static ParentRelation ParentFolder { get; } = new(
+        "Folder",
+        row => (row as FileSystemEntry)?.FullPath,
+        row => row is FileSystemEntry entry ? Path.GetDirectoryName(entry.FullPath) : null);
+
+    /// <summary>
+    /// Reads a folder. With <paramref name="subfolderLevels"/> above 0 the entries of its subfolders
+    /// follow too, that many levels deep, up to <paramref name="maxEntries"/> in total; unreadable
+    /// subfolders are skipped.
+    /// </summary>
+    public static DirectoryListing Read(string directoryPath, int subfolderLevels = 0, int maxEntries = int.MaxValue)
     {
         string fullPath;
         try
@@ -45,25 +57,25 @@ public static class FileSystemBrowser
         var entries = new List<FileSystemEntry>();
         try
         {
-            var folder = new DirectoryInfo(fullPath);
-            foreach (var info in folder.EnumerateFileSystemInfos())
+            ReadInto(new DirectoryInfo(fullPath), entries, maxEntries);
+            for (int level = 0, start = 0; level < subfolderLevels && entries.Count < maxEntries; level++)
             {
-                // Skip hidden and system items, as File Explorer does by default.
-                if ((info.Attributes & (FileAttributes.Hidden | FileAttributes.System)) != 0)
+                var end = entries.Count;
+                for (var i = start; i < end && entries.Count < maxEntries; i++)
                 {
-                    continue;
+                    if (entries[i].IsFolder)
+                    {
+                        try
+                        {
+                            ReadInto(new DirectoryInfo(entries[i].FullPath), entries, maxEntries);
+                        }
+                        catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+                        {
+                        }
+                    }
                 }
 
-                var isFolder = info is DirectoryInfo;
-                entries.Add(new FileSystemEntry
-                {
-                    Name = info.Name,
-                    IsFolder = isFolder,
-                    FullPath = info.FullName,
-                    TypeDisplay = isFolder ? FileSystemEntry.FolderType : FileSystemEntry.GetFileType(info.FullName),
-                    DateModified = info.LastWriteTime,
-                    Size = info is FileInfo file ? file.Length : 0,
-                });
+                start = end;
             }
         }
         catch (UnauthorizedAccessException)
@@ -76,5 +88,33 @@ public static class FileSystemBrowser
         }
 
         return new DirectoryListing(fullPath, entries, null);
+    }
+
+    private static void ReadInto(DirectoryInfo folder, List<FileSystemEntry> entries, int maxEntries)
+    {
+        foreach (var info in folder.EnumerateFileSystemInfos())
+        {
+            if (entries.Count >= maxEntries)
+            {
+                return;
+            }
+
+            // Skip hidden and system items, as File Explorer does by default.
+            if ((info.Attributes & (FileAttributes.Hidden | FileAttributes.System)) != 0)
+            {
+                continue;
+            }
+
+            var isFolder = info is DirectoryInfo;
+            entries.Add(new FileSystemEntry
+            {
+                Name = info.Name,
+                IsFolder = isFolder,
+                FullPath = info.FullName,
+                TypeDisplay = isFolder ? FileSystemEntry.FolderType : FileSystemEntry.GetFileType(info.FullName),
+                DateModified = info.LastWriteTime,
+                Size = info is FileInfo file ? file.Length : 0,
+            });
+        }
     }
 }

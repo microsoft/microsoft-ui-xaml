@@ -1,84 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Column lifecycle: add, remove, hide, show and reorder TableViewColumn instances through the
-    observable TableView.Columns vector, over rows that can be grouped at the same time. Structure
-    follows the golden page (CellTemplatingPage): Try it, one stretched table, then the rail in the
-    order Column visibility, Column order, Shaping, Actions, Status, What to look for.
--->
-<Page
+<pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.ColumnLifecyclePage"
     NavigationCacheMode="Disabled"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:pages="using:TableViewSampleApp.Pages"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
         Header="Column lifecycle"
         Description="TableView.Columns is an observable vector of TableViewColumn objects, and every change to it shows up in the table at once. Add a column, remove it, move it left or right, or hide it with TableViewColumn.Visibility and show it again. A column keeps its own width, template and sort settings wherever it goes, because the same object is moved rather than rebuilt. Template columns such as the Active checkbox and the date picker go through exactly the same path as text columns, and grouping the rows underneath does not disturb any of it."
-        SourceCaption="ColumnLifecyclePage.xaml (excerpt)"
-        SourceSnippet="ColumnLifecycle.xaml.txt"
-        AdditionalSnippetCaption="ColumnLifecyclePage.xaml.cs (excerpt)"
-        AdditionalSnippet="ColumnLifecycle.cs.txt"
-        StretchExample="True">
+        Snippet="ColumnLifecycle"
+        StretchExample="True"
+        TryIt="Tick Shift to show the hidden column, then untick Salary. Pick Department in Column and press Move right twice. Press Add Join date column: a full date picker column appears at the end and the table scrolls sideways. Switch Shaping to Grouped and repeat: the columns and the group headers do not affect each other."
+        WhatToLookFor="When a column moves, its width, template and sort setting move with it. A hidden column comes back in its old place. The Active checkbox and the date and time pickers keep their values through every move, because each cell is bound to the row, not to the column's position. The default columns fit the window; after Add Join date column the table scrolls sideways on purpose.">
 
         <controls:SamplePresenter.Example>
-            <Grid RowSpacing="12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <!-- scaffold:tryit -->
-                <muxc:InfoBar
-                    Grid.Row="0"
-                    Title="Try it"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    MinHeight="104"
-                    Message="Tick Shift to show the hidden column, then untick Salary. Pick Department in Column and press Move right twice. Press Add Join date column: a full date picker column appears at the end and the table scrolls sideways. Switch Shaping to Grouped and repeat: the columns and the group headers do not affect each other."/>
-                <!-- /scaffold -->
-                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                    <tv:TableView
-                        x:Name="PeopleTable"
-                        AutomationProperties.AutomationId="ColumnLifecycleTable"
-                        AutomationProperties.Name="People with dynamic columns"
-                        ItemsSource="{x:Bind Source}"
-                        SelectionMode="Single"
-                        VerticalAlignment="Stretch"
-                        MinHeight="320">
-                        <tv:TableViewTemplateColumn x:Name="ColAvatar" Header="Photo" Width="{StaticResource ColWidthAvatar}"
-                                                     CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                        <tv:TableViewTextColumn x:Name="ColName" Header="Name" Width="{StaticResource ColWidthShortName}"
-                                                 Binding="{Binding FullName}"/>
-                        <tv:TableViewTemplateColumn x:Name="ColDepartment" Header="Department" Width="{StaticResource ColWidthChip}"
-                                                     CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                        <tv:TableViewTextColumn x:Name="ColRole" Header="Role" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
-                                                 Binding="{Binding Role}"/>
-                        <tv:TableViewTextColumn x:Name="ColSalary" Header="Salary" Width="{StaticResource ColWidthNumber}"
-                                                 Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
-                        <tv:TableViewTemplateColumn x:Name="ColActive" Header="Active" Width="{StaticResource ColWidthBoolean}"
-                                                     CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"
-                                                     HeaderToolTip="Whether the person is currently on staff. Editable."/>
-                        <!-- Starts hidden: TableViewColumn.Visibility, not removal from the vector. -->
-                        <tv:TableViewTemplateColumn x:Name="ColShift" Header="Shift" Width="{StaticResource ColWidthTimeCompact}"
-                                                     CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart"
-                                                     Visibility="Collapsed"
-                                                     HeaderToolTip="Start of the daily shift, 24-hour clock. Editable."/>
-                    </tv:TableView>
-                </Border>
-            </Grid>
+            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                <!-- snippet -->
+                <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
+                <tv:TableView
+                    x:Name="PeopleTable"
+                    AutomationProperties.AutomationId="ColumnLifecycleTable"
+                    AutomationProperties.Name="People with dynamic columns"
+                    ItemsSource="{x:Bind Source}"
+                    SelectionMode="Single"
+                    VerticalAlignment="Stretch"
+                    MinHeight="320">
+                    <tv:TableViewTemplateColumn x:Name="ColAvatar" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                                                 CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                    <tv:TableViewTextColumn x:Name="ColName" Header="Name" Width="{StaticResource ColWidthShortName}"
+                                             Binding="{Binding FullName}"/>
+                    <tv:TableViewTemplateColumn x:Name="ColDepartment" Header="Department" Width="{StaticResource ColWidthChip}"
+                                                 CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                    <tv:TableViewTextColumn x:Name="ColRole" Header="Role" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
+                                             Binding="{Binding Role}"/>
+                    <tv:TableViewTextColumn x:Name="ColSalary" Header="Salary" Width="{StaticResource ColWidthNumber}"
+                                             Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+                    <tv:TableViewTemplateColumn x:Name="ColActive" Header="Active" Width="{StaticResource ColWidthBoolean}"
+                                                 CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"
+                                                 HeaderToolTip="Whether the person is currently on staff. Editable."/>
+                    <!-- Starts hidden: TableViewColumn.Visibility, not removal from the vector. -->
+                    <tv:TableViewTemplateColumn x:Name="ColShift" Header="Shift" Width="{StaticResource ColWidthTimeCompact}"
+                                                 CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart"
+                                                 Visibility="Collapsed"
+                                                 HeaderToolTip="Start of the daily shift, 24-hour clock. Editable."/>
+                </tv:TableView>
+                <!-- /snippet -->
+            </Border>
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <!-- 1. Primary feature -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Column visibility">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Column visibility"
-                               Style="{StaticResource SectionHeaderTextStyle}"/>
-                    <TextBlock Text="Each box sets TableViewColumn.Visibility. A hidden column stays in the Columns vector, so it comes back in the same place with the same width."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    IsFirst="True"
+                    Header="Column visibility"
+                    Description="Each box sets TableViewColumn.Visibility. A hidden column stays in the Columns vector, so it comes back in the same place with the same width.">
                     <CheckBox x:Name="VisAvatarCheckBox" AutomationProperties.AutomationId="ColumnLifecycleVisPhotoCheckBox" Content="Photo" Tag="0" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle"/>
                     <CheckBox x:Name="VisNameCheckBox" AutomationProperties.AutomationId="ColumnLifecycleVisNameCheckBox" Content="Name" Tag="1" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle"/>
                     <CheckBox x:Name="VisDepartmentCheckBox" AutomationProperties.AutomationId="ColumnLifecycleVisDepartmentCheckBox" Content="Department" Tag="2" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle"/>
@@ -86,13 +64,11 @@
                     <CheckBox x:Name="VisSalaryCheckBox" AutomationProperties.AutomationId="ColumnLifecycleVisSalaryCheckBox" Content="Salary" Tag="4" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle"/>
                     <CheckBox x:Name="VisActiveCheckBox" AutomationProperties.AutomationId="ColumnLifecycleVisActiveCheckBox" Content="Active" Tag="5" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle"/>
                     <CheckBox x:Name="VisShiftCheckBox" AutomationProperties.AutomationId="ColumnLifecycleVisShiftCheckBox" Content="Shift" Tag="6" IsChecked="False" Checked="OnColumnToggle" Unchecked="OnColumnToggle"/>
-                </StackPanel>
+                </controls:RailSection>
 
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Column order">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Column order"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="Moving a column is RemoveAt plus Insert on TableView.Columns with the same instance. Add and Remove grow and shrink the vector with a template column built in code."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    Header="Column order"
+                    Description="Moving a column is RemoveAt plus Insert on TableView.Columns with the same instance. Add and Remove grow and shrink the vector with a template column built in code.">
                     <ComboBox
                         x:Name="ColumnPicker"
                         AutomationProperties.AutomationId="ColumnLifecycleColumnSelector"
@@ -125,75 +101,20 @@
                                 AutomationProperties.HelpText="Puts the columns back in their starting order and visibility."
                                 HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                     </StackPanel>
-                </StackPanel>
+                </controls:RailSection>
 
-                <!-- scaffold:shaping -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="Grouping changes the rows, never the columns, so a column you moved or hid stays that way. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
-                    <ComboBox
-                        x:Name="ShapingModeSelector"
-                        AutomationProperties.AutomationId="ColumnLifecycleShapingModeSelector"
-                        Header="Shaping mode"
-                        SelectedIndex="0"
-                        SelectionChanged="OnShapingModeChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Flat" Tag="flat"/>
-                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                        <!-- Hierarchical rows are not available in this release. These two options stay
-                             visible but disabled so the shape of the feature is discoverable. When the
-                             control ships hierarchy, enable them and uncomment the matching branch in
-                             ApplyShaping. -->
-                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                    </ComboBox>
-                    <ComboBox
-                        x:Name="GroupKeySelector"
-                        AutomationProperties.AutomationId="ColumnLifecycleGroupKeySelector"
-                        Header="Group key"
-                        SelectedIndex="0"
-                        IsEnabled="False"
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        SelectionChanged="OnGroupKeyChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Department" Tag="Department"/>
-                        <ComboBoxItem Content="Role" Tag="Role"/>
-                        <ComboBoxItem Content="Active" Tag="IsActive"/>
-                    </ComboBox>
-                    <Button
-                        x:Name="ExpandAllButton"
-                        AutomationProperties.AutomationId="ColumnLifecycleExpandAllGroupsButton"
-                        Content="Expand all"
-                        Click="OnExpandAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <Button
-                        x:Name="CollapseAllButton"
-                        AutomationProperties.AutomationId="ColumnLifecycleCollapseAllGroupsButton"
-                        Content="Collapse all"
-                        Click="OnCollapseAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
-                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
-                </StackPanel>
-                <!-- /scaffold -->
+                <controls:ShapingOptions
+                    x:Name="Shaping"
+                    AutomationIdPrefix="ColumnLifecycle"
+                    Description="Grouping changes the rows, never the columns, so a column you moved or hid stays that way. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Role" Tag="Role"/>
+                    <ComboBoxItem Content="Active" Tag="IsActive"/>
+                </controls:ShapingOptions>
 
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="These change the rows while the columns stay as you arranged them; grouped, rows move between groups and groups appear and disappear. Watch the table and the Last action readout. Actions that change one row need a selected row."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    Header="Actions"
+                    Description="These change the rows while the columns stay as you arranged them; grouped, rows move between groups and groups appear and disappear. Watch the table and the Last action readout. Actions that change one row need a selected row.">
                     <StackPanel Spacing="8">
                         <Button x:Name="MoveRowButton" AutomationProperties.AutomationId="ColumnLifecycleMoveRowButton"
                                 Content="Move selected row to the next group" Click="OnMoveRowClick"
@@ -216,56 +137,15 @@
                                 AutomationProperties.HelpText="Reloads the original 40 people."
                                 HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                     </StackPanel>
-                </StackPanel>
+                </controls:RailSection>
 
-                <!-- scaffold:status -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <Grid Style="{StaticResource StatusGridStyle}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Columns" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ColumnOrderText" AutomationProperties.AutomationId="ColumnLifecycleColumnOrderText"
-                                   AutomationProperties.LiveSetting="Polite" Text="-" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="1" Text="Hidden" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="HiddenColumnsText" AutomationProperties.AutomationId="ColumnLifecycleHiddenColumnsText"
-                                   AutomationProperties.LiveSetting="Polite" Text="-" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="2" Text="Groups" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="GroupCountText" AutomationProperties.AutomationId="ColumnLifecycleGroupCountText"
-                                   AutomationProperties.LiveSetting="Polite" Text="-" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="3" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="ColumnLifecycleRowsText"
-                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="4" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="ColumnLifecycleShapingModeText"
-                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="5" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="ColumnLifecycleLastActionText"
-                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
-                                   Style="{StaticResource StatusReadoutValueStyle}"/>
-                    </Grid>
-                </StackPanel>
-                <!-- /scaffold -->
-
-                <muxc:InfoBar
-                    Title="What to look for"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    Message="When a column moves, its width, template and sort setting move with it. A hidden column comes back in its old place. The Active checkbox and the date and time pickers keep their values through every move, because each cell is bound to the row, not to the column's position. The default columns fit the window; after Add Join date column the table scrolls sideways on purpose."/>
+                <controls:StatusPanel x:Name="Status" AutomationIdPrefix="ColumnLifecycle">
+                    <TextBlock x:Name="ColumnOrderText" controls:StatusPanel.Label="Columns" Text="-"/>
+                    <TextBlock x:Name="HiddenColumnsText" controls:StatusPanel.Label="Hidden" Text="-"/>
+                    <TextBlock x:Name="GroupCountText" controls:StatusPanel.Label="Groups" Text="-"/>
+                </controls:StatusPanel>
             </StackPanel>
         </controls:SamplePresenter.Options>
 
     </controls:SamplePresenter>
-</Page>
+</pages:SamplePageBase>
