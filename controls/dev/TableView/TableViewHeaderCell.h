@@ -14,6 +14,14 @@ public:
     TableViewHeaderCell(winrt::TableView const& table, winrt::TableViewColumn const& column)
         : m_table(winrt::make_weak(table)), m_column(winrt::make_weak(column))
     {
+        // A Grid has no pointer overrides. Never marks the events handled, so Tapped-to-sort and
+        // focus are unaffected.
+        PointerEntered({ this, &TableViewHeaderCell::OnPointerEntered });
+        PointerExited({ this, &TableViewHeaderCell::OnPointerExited });
+        PointerPressed({ this, &TableViewHeaderCell::OnPointerPressed });
+        PointerReleased({ this, &TableViewHeaderCell::OnPointerReleased });
+        PointerCaptureLost({ this, &TableViewHeaderCell::OnPointerLost });
+        PointerCanceled({ this, &TableViewHeaderCell::OnPointerLost });
     }
 
     winrt::hstring GetRuntimeClassName() const
@@ -28,6 +36,140 @@ public:
     }
 
 private:
+    enum class PointerVisualState
+    {
+        Normal,
+        PointerOver,
+        Pressed,
+    };
+
+    void OnPointerEntered(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs&)
+    {
+        m_isPointerOver = true;
+        UpdatePointerVisualState();
+    }
+
+    void OnPointerExited(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs&)
+    {
+        m_isPointerOver = false;
+        m_isPressed = false;
+        UpdatePointerVisualState();
+    }
+
+    void OnPointerPressed(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs&)
+    {
+        m_isPressed = true;
+        UpdatePointerVisualState();
+    }
+
+    void OnPointerReleased(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs&)
+    {
+        m_isPressed = false;
+        UpdatePointerVisualState();
+    }
+
+    void OnPointerLost(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs&)
+    {
+        m_isPointerOver = false;
+        m_isPressed = false;
+        UpdatePointerVisualState();
+    }
+
+    bool IsSortable() const
+    {
+        auto const table = m_table.get();
+        auto const column = m_column.get();
+        return table && column && table.CanUserSortColumns() && column.CanSort();
+    }
+
+    void UpdatePointerVisualState()
+    {
+        auto state = PointerVisualState::Normal;
+        if (IsSortable())
+        {
+            state = m_isPressed ? PointerVisualState::Pressed
+                : m_isPointerOver ? PointerVisualState::PointerOver
+                : PointerVisualState::Normal;
+        }
+
+        if (state == m_visualState)
+        {
+            return;
+        }
+
+        m_visualState = state;
+
+        winrt::ContentPresenter content{ nullptr };
+        if (Children().Size() > 0)
+        {
+            content = Children().GetAt(0).try_as<winrt::ContentPresenter>();
+        }
+
+        auto const indicator = TableView::FindSortIndicator(*this);
+
+        auto const table = m_table.get();
+        if (state == PointerVisualState::Normal || !table)
+        {
+            Background(winrt::SolidColorBrush{ winrt::Colors::Transparent() });
+            ApplyStateForeground(content, indicator, nullptr);
+            return;
+        }
+
+        auto const tableImpl = winrt::get_self<TableView>(table);
+        const bool pressed = state == PointerVisualState::Pressed;
+        // A null brush would make the cell stop taking pointer input.
+        winrt::Brush background = tableImpl->LookupHeaderStateBrush(pressed
+            ? L"TabularSurfaceHeaderBackgroundPressedBrush"
+            : L"TabularSurfaceHeaderBackgroundPointerOverBrush");
+        if (!background)
+        {
+            background = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
+        }
+        Background(background);
+
+        winrt::Brush foreground{ nullptr };
+        if (tableImpl->IsHighContrast())
+        {
+            foreground = tableImpl->LookupHeaderStateBrush(pressed
+                ? L"TabularSurfaceHeaderForegroundPressedBrush"
+                : L"TabularSurfaceHeaderForegroundPointerOverBrush");
+        }
+        ApplyStateForeground(content, indicator, foreground);
+    }
+
+    // The chevron needs the same HC foreground as the text, or it vanishes on the highlight fill.
+    static void ApplyStateForeground(
+        winrt::ContentPresenter const& content,
+        winrt::SortIndicator const& indicator,
+        winrt::Brush const& foreground)
+    {
+        if (content)
+        {
+            if (foreground)
+            {
+                content.Foreground(foreground);
+            }
+            else
+            {
+                content.ClearValue(winrt::ContentPresenter::ForegroundProperty());
+            }
+        }
+        if (indicator)
+        {
+            if (foreground)
+            {
+                indicator.Foreground(foreground);
+            }
+            else
+            {
+                indicator.ClearValue(winrt::Control::ForegroundProperty());
+            }
+        }
+    }
+
     winrt::weak_ref<winrt::TableView> m_table;
     winrt::weak_ref<winrt::TableViewColumn> m_column;
+    PointerVisualState m_visualState{ PointerVisualState::Normal };
+    bool m_isPointerOver{ false };
+    bool m_isPressed{ false };
 };

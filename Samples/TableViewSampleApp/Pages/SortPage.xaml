@@ -139,7 +139,7 @@
         Snippet="Sort"
         StretchExample="True"
         TryIt="Click the Next match header to sort by date, then open a row's Next match picker, pick a later date and watch the row move. Choose Sort next match as text in Actions and compare the order. Switch Shaping mode to Grouped and click Pts: the rows reorder within each group."
-        WhatToLookFor="Template columns sort by SortMemberPath, the DateTimeOffset, TimeSpan or bool behind the control, not by the text it renders: by date 28 Dec comes before 2 Jan, as text it comes after. An edited value does not re-position its row until the sort is applied again, which is why this page calls SortByColumn after each edit. The standings plus the date and time columns are wider than the window, so the table scrolls horizontally on purpose.">
+        WhatToLookFor="A sortable header highlights on hover and changes again while pressed, like a row; a column that cannot sort shows no hover feedback. Template columns sort by SortMemberPath, the DateTimeOffset, TimeSpan or bool behind the control, not by the text it renders: by date 28 Dec comes before 2 Jan, as text it comes after. An edited value does not re-position its row until the sort is applied again, which is why this page calls SortByColumn after each edit. The standings plus the date and time columns are wider than the window, so the table scrolls horizontally on purpose.">
 
         <controls:SamplePresenter.Example>
             <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">

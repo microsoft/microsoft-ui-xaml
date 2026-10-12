@@ -667,6 +667,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifyHeaderPointerStateBrushesResolveInEveryTheme()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var resources = new TabularControlsResources();
+
+                foreach (var themeName in new[] { "Default", "Light" })
+                {
+                    Verify.AreEqual(
+                        RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundPointerOverBrush").Color,
+                        RequireBrush(resources, themeName, "TabularSurfaceHeaderBackgroundPointerOverBrush").Color,
+                        $"'{themeName}' header pointer-over fill must match the row pointer-over fill.");
+                    Verify.AreEqual(
+                        RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundPressedBrush").Color,
+                        RequireBrush(resources, themeName, "TabularSurfaceHeaderBackgroundPressedBrush").Color,
+                        $"'{themeName}' header pressed fill must match the row pressed fill.");
+
+                    var restForeground = RequireBrush(resources, themeName, "TabularSurfaceHeaderForegroundBrush").Color;
+                    Verify.AreEqual(restForeground,
+                        RequireBrush(resources, themeName, "TabularSurfaceHeaderForegroundPointerOverBrush").Color,
+                        $"'{themeName}' header text must keep its rest colour on hover.");
+                    Verify.AreEqual(restForeground,
+                        RequireBrush(resources, themeName, "TabularSurfaceHeaderForegroundPressedBrush").Color,
+                        $"'{themeName}' header text must keep its rest colour when pressed.");
+                }
+
+                var systemColors = CollectSystemColors();
+                Verify.IsGreaterThan(systemColors.Count, 0,
+                    "SystemColor* resources must resolve from the application resources before validating HighContrast.");
+
+                var highlight = RequireBrush(resources, "HighContrast", "TabularSurfaceRowBackgroundPointerOverBrush").Color;
+                var highlightText = RequireBrush(resources, "HighContrast", "TabularSurfaceRowForegroundPointerOverBrush").Color;
+                foreach (var state in new[] { "PointerOver", "Pressed" })
+                {
+                    var background = RequireBrush(resources, "HighContrast", $"TabularSurfaceHeaderBackground{state}Brush").Color;
+                    var foreground = RequireBrush(resources, "HighContrast", $"TabularSurfaceHeaderForeground{state}Brush").Color;
+                    Verify.IsTrue(systemColors.Contains(background) && systemColors.Contains(foreground),
+                        $"HighContrast header {state} brushes must resolve through system colours.");
+                    Verify.AreEqual(highlight, background, $"HighContrast header {state} fill must be SystemColorHighlightColor.");
+                    Verify.AreEqual(highlightText, foreground, $"HighContrast header {state} text must be SystemColorHighlightTextColor.");
+                }
+            });
+        }
+
         // If the sort glyph cannot be themed it may end up invisible against a customised header
         // background.
         [TestMethod]
