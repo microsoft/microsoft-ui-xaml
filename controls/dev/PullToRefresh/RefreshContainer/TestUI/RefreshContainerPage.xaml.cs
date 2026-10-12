@@ -125,6 +125,10 @@ namespace MUXControlsTestApp
             if (scrollAwayStarted && !scrollAwayFinished && listScrollViewer.VerticalOffset >= 199.0)
             {
                 scrollAwayFinished = true;
+                // The first scroll has landed. It started while the offset was still inside the adapter's 1 DIP threshold,
+                // so it must not have cancelled the pull; record that before the second scroll, which starts beyond it.
+                scrollAwayInteractingAfterFirstScroll = scrollAwayProvider != null && scrollAwayProvider.IsInteractingForRefresh;
+                UpdateScrollAwayTrace();
                 listScrollViewer.ChangeView(null, 250.0, null, true /*disableAnimation*/);
             }
         }
@@ -307,6 +311,7 @@ namespace MUXControlsTestApp
                 scrollAwayRatioAtCancel = double.NaN;
                 scrollAwayMaxRatioAfterCancel = double.NaN;
                 scrollAwayOffsetAtCancel = double.NaN;
+                scrollAwayInteractingAfterFirstScroll = null;
                 scrollAwayProvider = ((IRefreshVisualizerPrivate)sender).InfoProvider;
                 scrollAwayProvider.InteractionRatioChanged += ScrollAwayProvider_InteractionRatioChanged;
                 scrollAwayProvider.IsInteractingForRefreshChanged += ScrollAwayProvider_IsInteractingForRefreshChanged;
@@ -380,7 +385,8 @@ namespace MUXControlsTestApp
         {
             this.ScrollAwayTrace.Text = "ratioAtCancel=" + scrollAwayRatioAtCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) +
                 ";maxRatioAfterCancel=" + scrollAwayMaxRatioAfterCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) +
-                ";offsetAtCancel=" + scrollAwayOffsetAtCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+                ";offsetAtCancel=" + scrollAwayOffsetAtCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) +
+                ";interactingAfterFirstScroll=" + (scrollAwayInteractingAfterFirstScroll.HasValue ? scrollAwayInteractingAfterFirstScroll.Value.ToString() : "NotRecorded");
         }
 
         private IRefreshInfoProvider scrollAwayProvider;
@@ -388,6 +394,7 @@ namespace MUXControlsTestApp
         private double scrollAwayRatioAtCancel = double.NaN;
         private double scrollAwayMaxRatioAfterCancel = double.NaN;
         private double scrollAwayOffsetAtCancel = double.NaN;
+        private bool? scrollAwayInteractingAfterFirstScroll;
 
         private void ResetStates_Click(object sender, RoutedEventArgs e)
         {
