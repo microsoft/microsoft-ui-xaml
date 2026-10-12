@@ -197,7 +197,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 provider.RaiseInteractionRatioChangedEvent(-0.2f);
                 VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Idle, c_minimumIndicatorOpacity);
 
-                // Back at zero, then Pending again; at or below the execution ratio it is Interacting instead.
+                // Back at zero, then Pending again; from Pending a ratio of exactly 0 (above the execution ratio, not
+                // positive) is Idle; at or below the execution ratio it is Interacting instead.
+                provider.RaiseInteractionRatioChangedEvent(0.0f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Idle, c_minimumIndicatorOpacity);
+                provider.RaiseInteractionRatioChangedEvent(0.1f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Pending, c_fullIndicatorOpacity);
                 provider.RaiseInteractionRatioChangedEvent(0.0f);
                 VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Idle, c_minimumIndicatorOpacity);
                 provider.RaiseInteractionRatioChangedEvent(0.1f);
@@ -209,7 +214,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Idle, c_minimumIndicatorOpacity);
                 Verify.AreEqual(0, provider.OnRefreshStartedCalls, "No refresh was requested");
                 VerifyTransitions(new string[] {
-                    "Idle->Pending", "Pending->Idle", "Idle->Pending", "Pending->Interacting", "Interacting->Idle" }, transitions);
+                    "Idle->Pending", "Pending->Idle", "Idle->Pending", "Pending->Idle", "Idle->Pending", "Pending->Interacting", "Interacting->Idle" }, transitions);
             });
         }
 

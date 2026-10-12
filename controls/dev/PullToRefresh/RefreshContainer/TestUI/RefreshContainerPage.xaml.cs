@@ -106,6 +106,7 @@ namespace MUXControlsTestApp
             if (scrollAwayProvider != null)
             {
                 scrollAwayProvider.InteractionRatioChanged -= ScrollAwayProvider_InteractionRatioChanged;
+                scrollAwayProvider.IsInteractingForRefreshChanged -= ScrollAwayProvider_IsInteractingForRefreshChanged;
                 scrollAwayProvider = null;
             }
             if (scrollAwayRenderingHooked)
@@ -305,8 +306,10 @@ namespace MUXControlsTestApp
                 scrollAwayStarted = true;
                 scrollAwayRatioAtCancel = double.NaN;
                 scrollAwayMaxRatioAfterCancel = double.NaN;
+                scrollAwayOffsetAtCancel = double.NaN;
                 scrollAwayProvider = ((IRefreshVisualizerPrivate)sender).InfoProvider;
                 scrollAwayProvider.InteractionRatioChanged += ScrollAwayProvider_InteractionRatioChanged;
+                scrollAwayProvider.IsInteractingForRefreshChanged += ScrollAwayProvider_IsInteractingForRefreshChanged;
                 if (!scrollAwayRenderingHooked)
                 {
                     CompositionTarget.Rendering += ScrollAway_Rendering;
@@ -337,6 +340,17 @@ namespace MUXControlsTestApp
             SampleScrollAwayRatio();
         }
 
+        // Records the ScrollViewer's offset (in DIPs) at the instant the provider stops interacting for refresh, i.e. the
+        // offset the adapter's threshold check saw when it cancelled the pull.
+        private void ScrollAwayProvider_IsInteractingForRefreshChanged(IRefreshInfoProvider sender, object args)
+        {
+            if (!sender.IsInteractingForRefresh && double.IsNaN(scrollAwayOffsetAtCancel))
+            {
+                scrollAwayOffsetAtCancel = listScrollViewer.VerticalOffset;
+                UpdateScrollAwayTrace();
+            }
+        }
+
         private void SampleScrollAwayRatio()
         {
             if (scrollAwayProvider == null || double.IsNaN(scrollAwayRatioAtCancel))
@@ -365,13 +379,15 @@ namespace MUXControlsTestApp
         private void UpdateScrollAwayTrace()
         {
             this.ScrollAwayTrace.Text = "ratioAtCancel=" + scrollAwayRatioAtCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) +
-                ";maxRatioAfterCancel=" + scrollAwayMaxRatioAfterCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+                ";maxRatioAfterCancel=" + scrollAwayMaxRatioAfterCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) +
+                ";offsetAtCancel=" + scrollAwayOffsetAtCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private IRefreshInfoProvider scrollAwayProvider;
         private bool scrollAwayRenderingHooked;
         private double scrollAwayRatioAtCancel = double.NaN;
         private double scrollAwayMaxRatioAfterCancel = double.NaN;
+        private double scrollAwayOffsetAtCancel = double.NaN;
 
         private void ResetStates_Click(object sender, RoutedEventArgs e)
         {

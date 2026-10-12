@@ -298,12 +298,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 // once at the cancel and then every frame.
                 string trace = new Edit(FindElement.ByName("ScrollAwayTrace")).Value;
                 Log.Comment("Scroll-away trace: " + trace);
-                System.Text.RegularExpressions.Match ratios = System.Text.RegularExpressions.Regex.Match(trace, @"ratioAtCancel=([0-9.]+);maxRatioAfterCancel=([0-9.]+)");
-                Verify.IsTrue(ratios.Success, "Ratios were recorded around the cancel");
+                System.Text.RegularExpressions.Match ratios = System.Text.RegularExpressions.Regex.Match(trace, @"ratioAtCancel=([0-9.]+);maxRatioAfterCancel=([0-9.]+);offsetAtCancel=([0-9.]+)");
+                Verify.IsTrue(ratios.Success, "Ratios and the offset were recorded around the cancel");
                 double ratioAtCancel = double.Parse(ratios.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
                 double maxRatioAfterCancel = double.Parse(ratios.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture);
+                double offsetAtCancel = double.Parse(ratios.Groups[3].Value, System.Globalization.CultureInfo.InvariantCulture);
                 Verify.IsTrue(ratioAtCancel <= 0.8, "Cancelled before reaching the execution ratio: " + ratioAtCancel);
                 Verify.IsTrue(maxRatioAfterCancel >= ratioAtCancel + 0.1, "The pull continued after the cancel: " + maxRatioAfterCancel + " >= " + ratioAtCancel + " + 0.1");
+                // The hook's first ChangeView is still seen at the old offset (0, inside the adapter's 1 DIP threshold), so
+                // the pull must only be cancelled once the ScrollViewer has actually moved past the threshold. The offset is
+                // read (in DIPs) at the instant the provider stops interacting for refresh.
+                Verify.IsTrue(offsetAtCancel > 1.0, "The pull was cancelled only after the view moved past the 1 DIP threshold: offset at cancel " + offsetAtCancel);
 
                 scrollAway.Uncheck();
                 Wait.ForIdle();
