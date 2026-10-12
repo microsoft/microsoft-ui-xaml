@@ -49,7 +49,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Text="Manager relation (parent key = ManagerId)" Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Manager relation (parent key = ManagerId)" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
                     <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                         <!-- snippet -->
                         <!-- Columns and the relation are declared in code. Per-level indent is a theme
@@ -76,7 +76,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Text="Mentor relation (parent key = MentorId)" Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Mentor relation (parent key = MentorId)" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
                     <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                         <tv:TableView
                             x:Name="MentorTable"
