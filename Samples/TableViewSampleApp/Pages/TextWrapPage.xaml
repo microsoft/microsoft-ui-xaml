@@ -37,24 +37,22 @@
         WhatToLookFor="Row heights is the list of distinct heights among the realized rows: one value means every row is the same height. With wrapping on it shows several, and narrowing the column adds taller ones. With Max lines set, no row grows past that many lines, and with NoWrap every row collapses to one height. Group header bands do not change height with the rows.">
 
         <controls:SamplePresenter.Example>
-            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                <!-- snippet -->
-                <tv:TableView
-                    x:Name="PeopleTable"
-                    AutomationProperties.AutomationId="TextWrapTable"
-                    AutomationProperties.Name="People with wrapped bios"
-                    ItemsSource="{x:Bind Source}"
-                    SelectionMode="Single"
-                    IsReadOnly="True"
-                    VerticalAlignment="Stretch"
-                    MinHeight="320">
-                    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-                    <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
-                    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                </tv:TableView>
-                <!-- /snippet -->
-            </Border>
+            <!-- snippet -->
+            <tv:TableView
+                x:Name="PeopleTable"
+                AutomationProperties.AutomationId="TextWrapTable"
+                AutomationProperties.Name="People with wrapped bios"
+                ItemsSource="{x:Bind Source}"
+                SelectionMode="Single"
+                IsReadOnly="True"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
+                <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+            </tv:TableView>
+            <!-- /snippet -->
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
