@@ -325,9 +325,8 @@ bool TableView::TryResolveFocusedCell(winrt::IInspectable& item, winrt::TableVie
 
     column = focusedColumn ? focusedColumn : m_currentColumn.get();
 
-    // Keyboard-only fallback. Row navigation focuses the row, not a column-tagged cell, so a user
-    // who has never used the pointer has no current column and F2 would silently do nothing.
-    // Defaulting to the first visible editable column makes the keyboard path reachable.
+    // With focus on the row rather than a cell there is no current column, and F2 would silently
+    // do nothing.
     if (!column)
     {
         column = FirstEditableColumn(*this);
@@ -345,10 +344,8 @@ bool TableView::TryResolveFocusedCell(winrt::IInspectable& item, winrt::TableVie
 
 bool TableView::TryResolveCurrentCell(winrt::IInspectable& item, winrt::TableViewColumn& column)
 {
-    // Focus wins over the cached current cell when they disagree. Row navigation moves focus but not
-    // the current cell (there is no cell-level keyboard navigation yet), so without this, clicking
-    // row 1 then arrowing to row 40 and pressing F2 would edit row 1. Preferring the focused row
-    // while keeping the cached column gives the user the cell they are looking at.
+    // Focus wins over the cached current cell when they disagree, so clicking row 1, arrowing to
+    // row 40 and pressing F2 edits the focused cell rather than row 1.
     winrt::IInspectable focusedItem{ nullptr };
     winrt::TableViewColumn focusedColumn{ nullptr };
     if (TryResolveFocusedCell(focusedItem, focusedColumn))
