@@ -14,6 +14,9 @@
 #include "ResourceAccessor.h"
 #include "Utils.h"
 
+#include <UIAutomationCore.h>
+#include <UIAutomationCoreApi.h>
+
 // Shared helpers for the TableView automation peers, so the visible-column and column-header-string
 // logic lives in one place instead of being copy-pasted across the peer translation units. Assumes
 // pch.h (winrt type aliases) is included first, per the TableView header convention.
@@ -66,6 +69,12 @@ private:
     winrt::weak_ref<winrt::IInspectable> m_weakItem{ nullptr };
     winrt::IInspectable m_strongItem{ nullptr };
 };
+
+// A stale provider must fail rather than report coordinates that now belong to another element.
+[[noreturn]] inline void ThrowElementNotAvailable()
+{
+    throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
+}
 
 // Resource lookups feeding UIA are supplementary: degrade instead of letting a missing PRI (a host
 // app that does not merge the control's resources) escape into a UIA call.

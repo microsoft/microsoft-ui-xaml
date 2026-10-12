@@ -2539,7 +2539,7 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
                                     return;
                                 }
                                 auto const peerImpl = winrt::get_self<TableViewCellAutomationPeer>(currentPeer);
-                                if (peerImpl->Row() < 0 || peerImpl->Value() != newValue || peerImpl->ReadNameForEdit() != newName)
+                                if (peerImpl->GetRowIndexInternal() < 0 || peerImpl->Value() != newValue || peerImpl->ReadNameForEdit() != newName)
                                 {
                                     return;
                                 }
