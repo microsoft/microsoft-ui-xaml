@@ -21,6 +21,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public partial class RadioButtonsTests : ApiTestBase
     {
+        // Scenario: two RadioButtons bound to {"Option 1", "Option 2"}; one ItemTemplate is a plain TextBlock, the other's
+        //     template root is already a RadioButton with Foreground=Blue.
+        // Expected: ContainerFromIndex(0) is a RadioButton in both; the TextBlock one is wrapped in a default (non-blue)
+        //     RadioButton, while the RadioButton template is used as the container itself (blue foreground kept).
+        // Failure means: RadioButtonsElementFactory::GetElementCore no longer wraps non-RadioButton template content in a
+        //     RadioButton, or wraps/replaces a template whose root is already a RadioButton.
         [TestMethod]
         public void VerifyCustomItemTemplate()
         {
@@ -77,6 +83,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: a loaded RadioButtons with IsEnabled toggled true -> false -> true, reading the template root's
+        //     CommonStates visual state group after each change.
+        // Expected: CommonStates.CurrentState is "Normal", then "Disabled", then "Normal" again.
+        // Failure means: RadioButtons::OnIsEnabledChanged/UpdateVisualStateForIsEnabledChange (hooked up in OnApplyTemplate)
+        //     no longer drive the Normal/Disabled states, so a disabled RadioButtons doesn't look disabled.
         [TestMethod]
         public void VerifyIsEnabledChangeUpdatesVisualState()
         {
@@ -138,6 +149,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: RadioButtons with a custom template (ScrollViewer Height=120 + virtualizing StackLayout ItemsRepeater),
+        //     100 string items, SelectedIndex=0; scroll to the end and back once for a baseline, then 5 more round trips.
+        // Expected: fewer than 100 children are realized, ElementClearing fires, the child count after the extra scrolling
+        //     equals the baseline, item 0 is RadioButton "Option 0", and GetRows/GetColumns/GetLargerColumns return -1.
+        // Failure means: RadioButtonsElementFactory::RecycleElementCore/GetElementCore stopped reusing pooled wrapper
+        //     RadioButtons (containers leak on every scroll), or RadioButtons::GetLayout mishandles a non-built-in layout.
         [TestMethod]
         public void VerifyVirtualizingTemplateDoesNotRetainRecycledContainers()
         {
@@ -238,6 +255,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: RadioButtons with 4 string items; SelectedIndex set to 0, then 2, then out-of-range 99, then 0 -> -1,
+        //     capturing every SelectionChanged event.
+        // Expected: the first selection reports 0 removed / 1 added items; deselecting reports no added items; no
+        //     AddedItems or RemovedItems collection ever contains a null entry.
+        // Failure means: RadioButtons::Select again appends the null that GetDataAtIndex returns for -1/out-of-range
+        //     indices to the SelectionChangedEventArgs, so handlers see null items.
         [TestMethod]
         public void VerifySelectionChangedArgsDoNotContainNullItems()
         {
@@ -355,6 +378,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return radioButtons;
         }
 
+        // Scenario: 7 string items at MaxColumns=1 (Width=1000); enable RadioButtonsTestHooks, then set MaxColumns=3 and
+        //     later MaxColumns=2.
+        // Expected: MaxColumns=3 gives 3 columns, 2 minimum rows, 1 larger column and raises LayoutChanged; MaxColumns=2
+        //     gives 2 columns, 3 minimum rows, 1 larger column.
+        // Failure means: ColumnMajorUniformToLargestGridLayout::CalculateColumns/ArrangeOverride distribute items across
+        //     columns incorrectly, or the test-hook plumbing (SetTestHooksEnabled/LayoutChanged) stopped reporting.
         [TestMethod]
         public void VerifyMultiColumnLayoutTestHooks()
         {
@@ -405,6 +434,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: 4 items with MaxColumns=4 at Width=2000, then Width shrunk to 30 (narrower than a single item).
+        // Expected: the test hooks report 1 column, 4 rows and 0 larger columns.
+        // Failure means: ColumnMajorUniformToLargestGridLayout::CalculateColumns no longer clamps MaxColumns to the
+        //     available width (or returns fewer than 1 column), so items overflow or vanish in narrow layouts.
         [TestMethod]
         public void VerifyMaxColumnsIsClampedByAvailableWidth()
         {
@@ -434,6 +467,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: ObservableCollection {A, B, C, D} with SelectedIndex=1; remove D and A, then add E and insert F at 0,
+        //     then replace ItemsSource with {X, Y}.
+        // Expected: after the removals B stays selected at index 0; after the inserts B is at index 1 and container 0 shows
+        //     "F"; after the source swap SelectedIndex is -1 and SelectedItem is null.
+        // Failure means: RadioButtons::OnRepeaterElementIndexChanged no longer moves selection with the checked item,
+        //     recycled RadioButtons keep stale content, or UpdateItemsSource doesn't clear selection on a new source.
         [TestMethod]
         public void VerifyItemsSourceChangesRecycleAndClearElements()
         {
@@ -497,6 +536,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         //           dependency property identifiers of RadioButtons and ColumnMajorUniformToLargestGridLayout.
         // Expected: the header and template reach the header presenter; the peer is a Group named after the header unless a
         //           name is set; a removed handler is not called; every identifier is distinct and agrees with its CLR property.
+        // Failure means: Header/HeaderTemplate templating, RadioButtonsAutomationPeer::GetNameCore or DP registration broke.
         [TestMethod]
         public void VerifyHeaderPropertiesAndAutomationPeer()
         {
@@ -610,6 +650,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Expected: pre-load SelectedItem selects its index on load; hooks enabled before load report layout changes;
         //           post-load SelectedItem selects by item, an unknown item clears the selection; an added checked
         //           RadioButton becomes the selection; null arguments return -1.
+        // Failure means: RadioButtons::OnRepeaterLoaded, UpdateSelectedItem, OnRepeaterElementPrepared or test hooks broke.
         [TestMethod]
         public void VerifySelectionAppliedBeforeAndAfterLoad()
         {
@@ -726,6 +767,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Expected: items are sized to the largest item and laid out column-major with the configured spacing; each setter
         //           re-measures; MaxColumns below 1 throws and keeps the old value; zero-width items use the requested
         //           column count even with no available width; no items take no width.
+        // Failure means: ColumnMajorUniformToLargestGridLayout Measure/ArrangeOverride, CalculateColumns or validation broke.
         [TestMethod]
         public void VerifyColumnMajorLayoutStandalone()
         {
@@ -821,8 +863,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // Scenario: RadioButtons whose ItemTemplate is a DataTemplateSelector, and RadioButtons whose ItemTemplate is a
         //           custom element factory that creates RadioButtons; then remove the selected item from the latter.
-        // Expected: each item uses the RadioButton template the selector picks; the custom factory's RadioButtons are used
-        //           as containers and the removed one is returned to that factory, clearing the selection.
+        // Expected: each item uses the RadioButton template the selector picks (a non-RadioButton template is wrapped); the
+        //           custom factory's RadioButtons are used as containers and the removed one is returned to that factory,
+        //           clearing the selection.
+        // Failure means: RadioButtonsElementFactory ignores DataTemplateSelector/IElementFactory ItemTemplates or recycling.
         [TestMethod]
         public void VerifyItemTemplateSelectorAndCustomElementFactory()
         {

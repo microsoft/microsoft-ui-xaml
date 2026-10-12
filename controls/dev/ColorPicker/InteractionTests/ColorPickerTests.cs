@@ -1243,10 +1243,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // Scenario: with (Saturation, Value) and then (Hue, Value) spectrums, use the keyboard on the third-dimension slider,
-        //           including at its bounds; then press Left on the alpha slider at 0% opacity.
-        // Expected: the slider takes the hue / saturation channel (distinct automation names), arrow keys change that channel
-        //           by one step, and no slider wraps around at its minimum or maximum.
+        // Scenario: with (Saturation, Value) then (Hue, Value) spectrums, use arrow keys on the third-dimension slider,
+        //     including at its bounds; then press Left and Right on the alpha slider at 0% opacity.
+        // Expected: the slider takes the hue / saturation channel (distinct automation names), arrow keys change that
+        //     channel by one step, and no slider wraps around at its minimum or maximum.
+        // Failure means: ColorPickerSlider::OnKeyDown (bounds, no wrap) or ColorPicker::SetThirdDimensionSliderChannel /
+        //     OnThirdDimensionSliderValueChanged regressed, so keyboard users get wrap-around or the wrong channel.
         [TestMethod]
         public void CanUseKeyboardOnThirdDimensionSliderForHueAndSaturation()
         {
@@ -1327,11 +1329,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // Scenario: drag past the right edge of a box (Hue, Saturation) spectrum, tap outside the circle of a ring spectrum,
-        //           then use the arrow keys on the spectrum for each other component ordering (and once in RTL).
-        // Expected: the drag clamps to the last column (maximum hue); the outside tap selects the ring's outer edge (maximum
-        //           saturation, hue of that angle); each arrow key
-        //           changes exactly the HSV channel mapped to that axis by one step in the direction of the key press.
+        // Scenario: drag past the right edge of a box (Hue, Saturation) spectrum, tap outside the circle of a ring
+        //     spectrum, then press arrow keys on the spectrum for each other ordering (and once in RTL).
+        // Expected: the drag clamps to the last column (hue >= 355); the tap picks the ring's outer edge (saturation >=
+        //     99); each arrow key changes only its mapped HSV channel by one step in the key's direction.
+        // Failure means: ColorSpectrum::UpdateColorFromPoint no longer clamps/projects outside points, or
+        //     ColorSpectrum::OnKeyDown maps a key to the wrong channel or direction (including the RTL inversion).
         [TestMethod]
         public void CanUseKeyboardAndPointerOnColorSpectrumForAllComponents()
         {

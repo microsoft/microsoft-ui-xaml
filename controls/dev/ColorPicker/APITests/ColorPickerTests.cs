@@ -30,6 +30,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class ColorPickerTests : ApiTestBase
     {
+        // Scenario: create a ColorPicker, check defaults, set and read back every property; also check that each DP
+        //     identifier (incl. ColorPickerSlider.ColorChannel) is non-null, distinct and round-trips.
+        // Expected: documented defaults (White, hue 0-359, sat/value 0-100, Box, HueSaturation); set values read back;
+        //     Color leaves Green once the ranges clamp it; Get/Set/ClearValue agree with the CLR properties.
+        // Failure means: a ColorPicker/ColorPickerSlider DP registration or default changed, a DP identifier is null or
+        //     shared, or ColorPicker::OnMinMaxHue/Saturation/ValueChanged no longer clamps Color into the new ranges.
         [TestMethod]
         public void ColorPickerTest()
         {
@@ -156,6 +162,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: subscribe to ColorPicker.ColorChanged, set Color to Green, set Green again, then unsubscribe (-=) and
+        //     set Red, checking the sender, the unchanged-value case and handler removal.
+        // Expected: exactly one event (sender == picker, OldColor White, NewColor Green); none for the unchanged value;
+        //     after -= Color becomes Red without calling the handler.
+        // Failure means: ColorPicker::OnColorChanged raises ColorChanged with wrong args/sender or for an unchanged
+        //     color, or the event source no longer removes handlers, so apps would get duplicate or stale notifications.
         [TestMethod]
         public void ColorPickerEventsTest()
         {
@@ -191,6 +203,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: create a ColorSpectrum, check defaults, set Color/ranges/Shape/Components, then HsvColor; also check
+        //     DP identifiers, Get/Set/ClearValue round trips, and setting/clearing Color through its DP.
+        // Expected: defaults match (White, HSV (0,0,1,1), full ranges, Box, HueSaturation); Green gives HSV ~(120,1,0.5);
+        //     HSV (120,1,1) gives #FF00FF00; DPs round-trip; Color Blue gives hue ~240; clearing it restores HsvColor.
+        // Failure means: a ColorSpectrum DP registration or default changed, or ColorSpectrum::OnColorChanged /
+        //     OnHsvColorChanged (SetColor) no longer keep Color and HsvColor in sync through the RGB <-> HSV conversion.
         [TestMethod]
         public void ColorSpectrumTest()
         {
@@ -277,6 +295,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: subscribe to ColorSpectrum.ColorChanged, set HsvColor to pure green, unsubscribe (-=) and set
+        //     HsvColor to blue; then only log (no assert) whether setting Color directly raises the event.
+        // Expected: exactly one event (sender == spectrum, OldColor White, NewColor #FF00FF00), Color is #FF00FF00, and
+        //     no further event after -=.
+        // Failure means: ColorSpectrum::SetColor / RaiseColorChanged stopped raising ColorChanged (or sends wrong
+        //     colors/sender) for HSV changes, which is the user-input path, or -= no longer removes the handler.
         [TestMethod]
         public void ColorSpectrumEventsTest()
         {
@@ -453,6 +477,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VisualTreeTestHelper.VerifyVisualTree(root: colorPicker, verificationFileNamePrefix: "ColorPicker");
         }
 
+        // Scenario: for each of the six ColorSpectrumComponents orderings, load a 200x200 Ring ColorSpectrum set to Red
+        //     and wait (up to 30 s) for SpectrumRectangle.Fill to be assigned.
+        // Expected: the Fill arrives for every ordering; Shape, Components and Color are unchanged and the
+        //     SpectrumEllipse part exists.
+        // Failure means: ColorSpectrum::CreateBitmapsAndColorMap / FillPixelForRing failed or hung for an ordering, so
+        //     UpdateBitmapSources never set a brush and the ring spectrum would render blank.
         [TestMethod]
         public void VerifyRingSpectrumFillsForAllComponents()
         {
@@ -493,6 +523,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: for each of the six ColorSpectrumComponents orderings, load a 200x200 Box ColorSpectrum set to Blue
+        //     and wait (up to 30 s) for SpectrumRectangle.Fill to be assigned.
+        // Expected: the Fill arrives for every ordering, and Components and Color are unchanged afterwards.
+        // Failure means: ColorSpectrum::CreateBitmapsAndColorMap / FillPixelForBox failed or hung for an ordering, so
+        //     UpdateBitmapSources never set a brush and the box spectrum would render blank.
         [TestMethod]
         public void VerifyBoxSpectrumFillsForAllComponents()
         {
@@ -530,6 +565,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: on a loaded Ring ColorSpectrum with (Hue, Saturation) components, set HsvColor to (240, 1, 1, 1),
+        //     then switch Shape to Box.
+        // Expected: Color becomes opaque pure blue (#FF0000FF) and stays blue after the shape change, with HsvColor hue
+        //     still ~240.
+        // Failure means: ColorSpectrum::SetColor's HSV -> RGB conversion is wrong, or OnShapeChanged /
+        //     CreateBitmapsAndColorMap rewrote Color or HsvColor while rebuilding the spectrum for the new shape.
         [TestMethod]
         public void VerifyRingSpectrumColorRoundTripsThroughHsvColor()
         {
@@ -559,6 +600,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a ColorPicker (alpha enabled, Color Red), get the automation peers of its ThirdDimensionSlider
+        //     (value channel) and AlphaSlider, and set the third-dimension slider's Value to 50.
+        // Expected: the third-dimension peer exposes a non-read-only Value pattern whose string contains 100, then 50;
+        //     the alpha slider's peer returns no Value pattern.
+        // Failure means: ColorPickerSliderAutomationPeer::GetPatternCore no longer separates alpha from HSV channels, or
+        //     Value / GetValueString stopped reporting the slider's current value to screen readers.
         [TestMethod]
         public void VerifyColorPickerSliderValuePattern()
         {
@@ -600,6 +647,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a ColorPicker with alpha enabled; for ThirdDimensionSlider and AlphaSlider, focus the slider,
+        //     get the ToolTip attached to its HorizontalThumb, and set Value to 40 and then 73.
+        // Expected: each thumb has a ToolTip whose string content contains 40, then contains 73 and no longer 40.
+        // Failure means: ColorPickerSlider::OnApplyTemplate / OnValueChangedEvent no longer refresh the ToolTip part's
+        //     content from GetToolTipString, so the value tooltip would show a stale number while the slider moves.
         [TestMethod]
         public void VerifyColorPickerSliderToolTipUpdatesWithValue()
         {
@@ -639,9 +691,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: set each range property of ColorPicker and ColorSpectrum to its inclusive bounds, and one past each bound.
-        // Expected: bound values are accepted and read back; values outside [0, 359] (hue) or [0, 100] (saturation/value)
-        //           throw ArgumentException. Every case uses a fresh instance so earlier failures can't influence it.
+        // Scenario: set each range property of ColorPicker and ColorSpectrum to its inclusive bounds, and one past each
+        //     bound.
+        // Expected: bounds are accepted and read back; values outside [0, 359] (hue) or [0, 100] (saturation/value) throw
+        //     ArgumentException. Every case uses a fresh instance so earlier failures can't influence it.
+        // Failure means: the range checks in ColorPicker/ColorSpectrum::OnMinMaxHue/Saturation/ValueChanged were removed
+        //     or are off by one, so invalid ranges are silently accepted or valid bounds are rejected.
         [TestMethod]
         public void ValidateRangePropertiesThrowForOutOfRangeValues()
         {
@@ -687,10 +742,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: change ColorSpectrumComponents on a loaded ColorPicker so that the third-dimension slider controls value,
-        //           hue and saturation, move the slider, and constrain the hue/saturation/value ranges (including min >= max).
-        // Expected: slider channel, range, value, automation name and background gradient follow the components and ranges;
-        //           moving the slider changes the matching HSV channel of Color.
+        // Scenario: change ColorSpectrumComponents on a loaded ColorPicker so the third-dimension slider controls value,
+        //     hue and saturation; move the slider; constrain the hue/saturation/value ranges (including min >= max).
+        // Expected: slider channel, range, value, automation name and gradient follow the components and ranges; moving
+        //     it changes that HSV channel of Color; min >= max clamps slider and gradient to the minimum.
+        // Failure means: ColorPicker::SetThirdDimensionSliderChannel / UpdateThirdDimensionSlider (range, gradient stops)
+        //     or OnThirdDimensionSliderValueChanged use the wrong HSV channel or range for the third-dimension slider.
         [TestMethod]
         public void VerifyThirdDimensionSliderFollowsSpectrumComponents()
         {
@@ -812,12 +869,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: on a loaded ColorPicker with the More button, toggle the button off and on, switch the color model
-        //           between RGB and HSV, and type valid and invalid hex strings; also re-template the picker with a plain
-        //           Button as MoreButton.
-        // Expected: the More button's label/name and the text-entry grid follow the toggle state; the hex box name follows
-        //           the color model; valid hex updates Color, invalid hex leaves it unchanged; when the hex box loses focus
-        //           with invalid text, the text is replaced by the current (last valid) color.
+        // Scenario: on a loaded ColorPicker with the More button, toggle it, switch RGB/HSV and type valid/invalid hex
+        //     (focused or not, alpha on/off); also re-template a picker with a plain Button as MoreButton.
+        // Expected: More label/name and TextEntryGrid follow the toggle (or each click); the hex box name follows the
+        //     model; valid hex sets Color, invalid hex keeps it and is replaced by the last valid color on focus loss.
+        // Failure means: ColorPicker::UpdateMoreButton / OnMoreButton*, OnColorRepresentationComboBoxSelectionChanged,
+        //     OnHexTextChanging validation or the OnTextBoxLostFocus rollback regressed.
         [TestMethod]
         public void VerifyTextEntryMoreButtonColorModelAndHexValidation()
         {
@@ -1043,10 +1100,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: a ColorPickerSlider and a ColorSpectrum hosted outside a ColorPicker.
-        // Expected: the slider's tooltip shows the channel and value without a color name (one distinct format per channel)
-        //           and its Value pattern reports an empty value; the spectrum's peer falls back to a default name, honors
-        //           AutomationProperties.Name, exposes the Value pattern and defers other patterns to its base peer.
+        // Scenario: a ColorPickerSlider (templated with a ToolTip part) and a ColorSpectrum hosted outside a ColorPicker.
+        // Expected: the slider tooltip contains the value, with distinct text per channel, and its Value is empty; the
+        //     spectrum peer has a default name, honors AutomationProperties.Name, has Value but not Invoke.
+        // Failure means: ColorPickerSlider::GetToolTipString or ColorPickerSliderAutomationPeer::Value mishandle a slider
+        //     with no parent ColorPicker, or ColorSpectrumAutomationPeer::GetNameCore / GetPatternCore regressed.
         [TestMethod]
         public void VerifyStandaloneColorPickerSliderAndColorSpectrumAutomation()
         {
@@ -1120,12 +1178,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: a loaded box ColorSpectrum with (Saturation, Value) components is moved through hues in every sextant,
-        //           then switched to (Hue, Value), given a new MinValue, and finally given min >= max ranges.
-        // Expected: the spectrum brush blends the two pure-hue surfaces around the hue (adjacent sextants share a surface,
-        //           the last wraps to the first) with the fractional sextant as opacity; for (Hue, Value) the opacity is the
-        //           saturation; MinValue and min >= max ranges rebuild the surfaces, and with MinValue >= MaxValue the
-        //           spectrum is drawn at MinValue along its whole value axis.
+        // Scenario: box ColorSpectrum with (Saturation, Value): set a hue in each sextant; then switch to (Hue, Value),
+        //     raise MinValue, switch to (Value, Saturation) and make all three ranges min >= max.
+        // Expected: each SpectrumBrush blends the pure-hue surfaces around the hue (wrapping after purple) by the sextant
+        //     fraction; (Hue, Value) blends by saturation; ranges rebuild surfaces; MinValue >= MaxValue draws MinValue.
+        // Failure means: ColorSpectrum::UpdateBitmapSources picks wrong surfaces/opacity, or OnMinMax*Changed /
+        //     CreateBitmapsAndColorMap skip a rebuild or mishandle min >= max, so the spectrum draws wrong colors.
         [TestMethod]
         public void VerifySpectrumBrushAcrossHueSextantsAndRangeChanges()
         {

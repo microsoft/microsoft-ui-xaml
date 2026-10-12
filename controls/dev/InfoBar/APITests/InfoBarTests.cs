@@ -31,6 +31,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return infoBar;
         }
 
+        // Scenario: Constructs a new InfoBar (not added to the tree) and reads every public property without setting any.
+        // Expected: IsOpen=false, Title/Message empty, Severity=Informational, IconSource/ActionButton/Content null,
+        //     IsIconVisible=true, IsClosable=true, and TemplateSettings is non-null.
+        // Failure means: an InfoBar dependency property default (InfoBar.idl metadata) changed, or the InfoBar constructor
+        //     no longer creates the InfoBarTemplateSettings instance, breaking apps that rely on the documented defaults.
         [TestMethod]
         public void VerifyDefaultProperties()
         {
@@ -50,6 +55,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Loads an open InfoBar, then sets Severity to Informational, Success, Warning and Error in turn and reads
+        //     AutomationProperties.Name from the "StandardIcon" template part after each change.
+        // Expected: StandardIcon exists, has a non-empty automation name for every severity, and all four names differ.
+        // Failure means: InfoBar::UpdateSeverity (or OnApplyTemplate) no longer sets the localized severity name on the
+        //     standard icon via GetIconSeverityLevelResourceName, so screen readers announce a missing or wrong name.
         [TestMethod]
         public void VerifySeverityUpdatesStandardIconAutomationName()
         {
@@ -75,6 +85,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(4, new HashSet<string>(names.Values).Count, "Each severity should have a distinct icon automation name.");
         }
 
+        // Scenario: Loads an open InfoBar, then sets Severity to Error, Warning, Success and Informational in turn and reads
+        //     the current state of the "SeverityLevels" VisualStateGroup on the template root.
+        // Expected: After each change the SeverityLevels current state name equals the severity enum name.
+        // Failure means: InfoBar::UpdateSeverity no longer drives the SeverityLevels visual states (or the template renamed
+        //     them), so e.g. a Warning InfoBar would render with Informational background and icon styling.
         [TestMethod]
         public void VerifySeverityChangeTransitionsVisualState()
         {
@@ -103,6 +118,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: Loads an open InfoBar with no IconSource, then sets IconSource to a SymbolIconSource (Accept), then a
+        //     FontIconSource, then null, checking TemplateSettings.IconElement after each step.
+        // Expected: IconElement is null initially, then a SymbolIcon with Symbol.Accept, then a FontIcon, then null again.
+        // Failure means: InfoBar::UpdateIcon (OnIconSourcePropertyChanged) no longer converts IconSource into an
+        //     IconElement via SharedHelpers::MakeIconElementFrom, or does not clear it, so a custom icon would be
+        //     missing, stale or of the wrong type.
         [TestMethod]
         public void VerifyIconSourceCreatesAndClearsIconElement()
         {
@@ -125,6 +146,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Loads an open InfoBar, then toggles IconSource (SymbolIconSource / null) and IsIconVisible
+        //     (false / true), reading the "IconStates" VisualStateGroup current state after each change.
+        // Expected: StandardIconVisible -> UserIconVisible (IconSource set) -> NoIconVisible (IsIconVisible=false) ->
+        //     UserIconVisible (IsIconVisible=true) -> StandardIconVisible (IconSource cleared).
+        // Failure means: InfoBar::UpdateIconVisibility no longer picks the right IconStates state from IsIconVisible and
+        //     IconSource, so the InfoBar would show the standard icon, a custom icon, or no icon at the wrong times.
         [TestMethod]
         public void VerifyIconVisibilityVisualStates()
         {
@@ -161,6 +188,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Loads an open InfoBar, sets its Foreground to a red SolidColorBrush, then clears the local Foreground
+        //     value, inspecting the "Title" and "Message" TextBlock template parts.
+        // Expected: Both template parts exist; with Foreground set both TextBlocks are red; after ClearValue the Title
+        //     TextBlock is no longer red.
+        // Failure means: InfoBar::OnForegroundChanged/UpdateForeground no longer switches between the ForegroundSet and
+        //     ForegroundNotSet visual states, so a custom InfoBar Foreground is ignored or sticks after being cleared.
         [TestMethod]
         public void VerifyForegroundPropagatesToTitleAndMessage()
         {
@@ -189,6 +222,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Loads an open InfoBar (IsClosable defaults to true), then sets IsClosable to false and back to true,
+        //     checking the Visibility of the "CloseButton" template part after each change.
+        // Expected: CloseButton exists and is Visible, becomes Collapsed when IsClosable=false, and Visible again when true.
+        // Failure means: InfoBar::UpdateCloseButton (OnIsClosablePropertyChanged) no longer drives the CloseButtonVisible /
+        //     CloseButtonCollapsed states, so users could see a close button on a non-closable InfoBar or lose it entirely.
         [TestMethod]
         public void VerifyCloseButtonVisibilityFollowsIsClosable()
         {
@@ -210,6 +248,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Loads an open InfoBar with Closing (sets e.Cancel) and Closed (records e.Reason) handlers; sets
+        //     IsOpen=false with Cancel=true, then again with Cancel=false.
+        // Expected: Cancelled close reverts IsOpen to true and raises no Closed; the uncancelled close leaves IsOpen false
+        //     and raises Closed exactly once with Reason=Programmatic.
+        // Failure means: InfoBar::RaiseClosingEvent no longer honors Cancel (reverting IsOpen) or no longer raises
+        //     RaiseClosedEvent, or OnIsOpenPropertyChanged reports the wrong m_lastCloseReason for programmatic closes.
         [TestMethod]
         public void VerifyClosingCanBeCancelledAndClosedReportsReason()
         {
@@ -234,6 +278,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Creates an automation peer for an InfoBar, then puts the InfoBar in the tree and opens/closes it once
+        //     per severity (Informational, Success, Warning, Error) so the peer raises opened/closed notifications.
+        // Expected: Peer is non-null, control type is StatusBar, class name is "Microsoft.UI.Xaml.Controls.InfoBar", and
+        //     the open/close loop completes without throwing.
+        // Failure means: InfoBarAutomationPeer::GetAutomationControlTypeCore/GetClassNameCore changed, or the
+        //     InfoBar::UpdateVisibility -> peer RaiseOpenedEvent/RaiseClosedEvent notification path throws for a severity.
         [TestMethod]
         public void VerifyAutomationPeer()
         {
