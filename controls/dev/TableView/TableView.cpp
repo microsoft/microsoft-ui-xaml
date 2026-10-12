@@ -1229,6 +1229,7 @@ void TableView::OnHeadersVisibilityPropertyChanged(const winrt::DependencyProper
     }
 
     UpdateHeaderVisibility();
+    InvalidateMeasure();
     QueueTerminalGridLineRefresh();
 
     // UIA: every realized cell's name and header items follow whether column headers are shown.

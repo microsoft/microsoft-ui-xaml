@@ -23,11 +23,8 @@
 // from the header host and realized rows once, then resolves Pixel / Auto / Star widths into
 // TableViewColumn.ActualWidth.
 //
-// Only realized rows contribute, so Auto sizes to the widest *realized* cell. Auto is shrink-capable:
-// each measure pass re-derives the width from the currently pulled measured max (header + realized
-// rows), so a column narrows when its widest content shrinks (CGrid parity) rather than latching a
-// grow-only maximum. Because only realized rows contribute under virtualization, the Auto width still
-// reflects the widest realized cell and can change as rows scroll into / out of realization.
+// Only realized rows contribute, so Auto sizes to the widest cell realized so far. Auto is grow-only
+// within a data set, so a column never narrows as rows scroll out (ResetColumnDesiredWidths).
 //
 // Resolved widths (Pixel / Auto / Star) are snapped to device pixels when UseLayoutRounding is set,
 // using the XamlRoot rasterization scale -- again mirroring CGrid.
@@ -153,8 +150,8 @@ void TableView::ResetColumnDesiredWidths()
             // column that was Auto, temporarily switched to Pixel/Star, then switched back must not
             // retain a stale max from a previous data set. This runs only on real data-set boundaries
             // (ItemsSource / Columns replaced / CellTemplate / Header), so it correctly clears across
-            // them while Density / Min / Max changes (which do not call this) preserve the max within a
-            // data set.
+            // them while Density / Min / Max / HeadersVisibility changes (which do not call this)
+            // preserve the max within a data set.
             if (column && winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this)
             {
                 winrt::get_self<TableViewColumn>(column)->ResetDesiredWidthInternal();
@@ -245,29 +242,31 @@ void TableView::ResolveColumnWidths()
 
         case winrt::GridUnitType::Auto:
         {
-            // Pull measured widths from the header and currently realized row panels. Preserve v1's
-            // grow-only policy by storing max(previous desired, pulled measured) on the column.
-            double pulledMeasuredMax = 0.0;
+            // Pull measured widths from the header and currently realized row panels. Rows and header
+            // keep separate maxima, so toggling the headers never drops the rows' width.
+            double headerMeasured = 0.0;
             // Only consume the header host's cache when headers are actually shown: a hidden header is
             // not measured this pass, so its per-pass cache is stale (and, with the raw-identity key,
             // a freed column's address could be reused by a new column and false-match a stale entry).
             // A hidden header must not drive column width regardless.
             if (ShouldShowColumnHeaders())
             {
-                pulledMeasuredMax = std::max(pulledMeasuredMax, GetHeaderMeasuredWidthForColumn(column));
+                headerMeasured = NonNegativeFiniteOrZero(GetHeaderMeasuredWidthForColumn(column));
             }
 
+            double rowsMeasured = 0.0;
             for (auto const& row : realizedRows)
             {
                 // Ask the row for its cell's measured width instead of reaching into its panel.
-                pulledMeasuredMax = std::max(pulledMeasuredMax, winrt::get_self<TableViewRow>(row)->MeasuredWidthForColumn(column));
+                rowsMeasured = std::max(rowsMeasured, winrt::get_self<TableViewRow>(row)->MeasuredWidthForColumn(column));
             }
 
             auto columnImpl = winrt::get_self<TableViewColumn>(column);
-            // Shrink-capable Auto: size to the CURRENT measured content max rather than a monotonic
-            // grow-only max, so the column narrows when its widest content shrinks (CGrid parity).
-            const double desired = NonNegativeFiniteOrZero(pulledMeasuredMax);
-            columnImpl->SetDesiredWidthInternal(desired);
+            // Grow-only within a data set (WPF / WCT DataGrid parity), so scrolling never narrows the column.
+            columnImpl->SetDesiredWidthInternal(
+                std::max(columnImpl->RowsDesiredWidthInternal(), NonNegativeFiniteOrZero(rowsMeasured)),
+                ShouldShowColumnHeaders() ? std::max(columnImpl->HeaderDesiredWidthInternal(), headerMeasured) : 0.0);
+            const double desired = columnImpl->DesiredWidthInternal();
 
             const double resolved = layoutRound(
                 std::clamp(desired > 0.0 ? desired : c_widthDefault.Value, lo, hi));

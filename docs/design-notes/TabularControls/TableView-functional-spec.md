@@ -40,7 +40,7 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - Grouped/banded sections, declared on the data source as `TableViewSource.GroupBy(keySelector)` rather than as a separate `GroupedItemsSource` property. — **PR3, shipped**
 
 ### Column capabilities
-- Width + `MinWidth`/`MaxWidth` (pixel in v1; `Auto`/`*` fall back to default width). — **PR2** · UI resize **PR3**
+- Width + `MinWidth`/`MaxWidth` (`Pixel` exact; `Auto` grows to the widest realized cell within a data set; `*` shares the viewport). — **PR2** · UI resize **PR3**
 - Reorder (drag + `MoveColumn`). — **PR3**
 - Show/hide via `Visibility`. — **PR2**
 - Sticky (always-visible) header. — **PR2**

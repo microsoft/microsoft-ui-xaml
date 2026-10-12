@@ -480,14 +480,16 @@ void TableViewColumn::SetResolvedActualWidthInternal(double width)
     }
 }
 
-void TableViewColumn::SetDesiredWidthInternal(double desiredWidth)
+void TableViewColumn::SetDesiredWidthInternal(double rowsDesiredWidth, double headerDesiredWidth)
 {
-    m_desiredWidth = std::max(0.0, desiredWidth);
+    m_rowsDesiredWidth = std::max(0.0, rowsDesiredWidth);
+    m_headerDesiredWidth = std::max(0.0, headerDesiredWidth);
 }
 
 void TableViewColumn::ResetDesiredWidthInternal()
 {
-    m_desiredWidth = 0.0;
+    m_rowsDesiredWidth = 0.0;
+    m_headerDesiredWidth = 0.0;
 }
 
 void TableViewColumn::UpdateActualWidth()

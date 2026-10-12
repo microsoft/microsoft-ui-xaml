@@ -629,14 +629,14 @@ Base class for TableView columns.
 
 `TableViewColumn` derives from `Microsoft.UI.Xaml.DependencyObject` and has `Header` as its content property.
 
-`Width` accepts `Pixel`/`Auto`/`*` (`GridLength`) for forward-compatibility; in v1 only explicit pixel widths are realized — `Auto` and `*` fall back to the default column width. True Auto/Star sizing is deferred.
+`Width` accepts `Pixel`/`Auto`/`*` (`GridLength`). `Pixel` is exact; `Auto` sizes to the widest realized cell and header, and grows within a data set (it does not shrink as rows scroll out of view; hiding the headers drops only the header's own width); `*` takes a proportional share of the body viewport left after the fixed columns. `MinWidth`/`MaxWidth` clamp every mode. Auto widths reset only when `ItemsSource` is assigned a new value, not on an in-place collection `Reset` or clear-and-refill, a `TableViewSource` filter or refilter, or a `Density` change; to re-fit, re-assign `ItemsSource` (or give the column a `Pixel` `Width`).
 
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `Header` | `Object` | `null` | Header content for the column. |
 | `HeaderTemplate` | `DataTemplate` | `null` | Template used to display the header. |
 | `HeaderTemplateSelector` | `DataTemplateSelector` | `null` | Template selector used to display the header; takes precedence over `HeaderTemplate` when both are set. |
-| `Width` | `GridLength` | Default column width | Accepts `Pixel`/`Auto`/`*` (`GridLength`) for forward-compatibility; in v1 only explicit pixel widths are realized — `Auto` and `*` fall back to the default column width. True Auto/Star sizing is deferred. |
+| `Width` | `GridLength` | Default column width | `Pixel` = exact; `Auto` = widest realized cell or header (grows within a data set); `*` = a proportional share of the body viewport after fixed columns. |
 | `MinWidth` | `Double` | `20` | Minimum column width. |
 | `MaxWidth` | `Double` | Infinity | Maximum column width. |
 | `ActualWidth` | `Double` | `120` | Read-only realized width. |

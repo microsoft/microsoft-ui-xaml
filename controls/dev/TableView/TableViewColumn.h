@@ -103,13 +103,14 @@ public:
     void SetSortStateInternal(winrt::SortDirection direction);
 
     // Internal — Auto size-to-content. The owning TableView pulls measured widths from the header
-    // and realized row panels; ResolveColumnWidths derives the current measured max each pass and
-    // stores the resulting nonnegative desired width here (shrink-capable — not a grow-only
-    // accumulator). Reset on data-set boundaries (ItemsSource / Columns replaced / CellTemplate /
-    // Header changes).
-    void SetDesiredWidthInternal(double desiredWidth);
+    // and realized row panels; ResolveColumnWidths keeps the grow-only max of the row widths and of
+    // the header width separately, so hiding the headers drops only the header term. Both reset on
+    // data-set boundaries (ItemsSource / Columns replaced / CellTemplate / Header changes).
+    void SetDesiredWidthInternal(double rowsDesiredWidth, double headerDesiredWidth);
     void ResetDesiredWidthInternal();
-    double DesiredWidthInternal() const noexcept { return m_desiredWidth; }
+    double RowsDesiredWidthInternal() const noexcept { return m_rowsDesiredWidth; }
+    double HeaderDesiredWidthInternal() const noexcept { return m_headerDesiredWidth; }
+    double DesiredWidthInternal() const noexcept { return std::max(m_rowsDesiredWidth, m_headerDesiredWidth); }
 
     // Internal - resize: the width the app authored. A user resize rewrites Width as pixels, and
     // the layout needs the original mode to know whether the table is meant to fit its viewport.
@@ -125,8 +126,10 @@ private:
     // Write the resolved, clamped width into the read-only ActualWidth DP.
     void UpdateActualWidth();
 
-    // Monotonic max of pulled realized-cell measured widths for an Auto column (0 until first pull).
-    double m_desiredWidth{ 0.0 };
+    // Monotonic maxima of the pulled realized-row cell and header measured widths for an Auto column
+    // (0 until first pull; the header term is 0 while headers are hidden).
+    double m_rowsDesiredWidth{ 0.0 };
+    double m_headerDesiredWidth{ 0.0 };
     winrt::GridLength m_authoredWidth{ c_widthDefault };
     bool m_inUserResize{ false };
 
