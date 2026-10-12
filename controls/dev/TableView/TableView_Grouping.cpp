@@ -223,6 +223,12 @@ void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::op
     {
         gestureState = winrt::get_self<TableViewGroupHeader>(header)->TakeGestureFocusStateInternal();
     }
+    else if (subtree)
+    {
+        // Only the Multiply key expands a row subtree, so restore as Keyboard even when the row was
+        // focused by a click: its rebuild recycles the row, which would otherwise strand focus.
+        gestureState = winrt::FocusState::Keyboard;
+    }
 
     if (!m_tableViewSourceRowMetadata)
     {
