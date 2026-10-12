@@ -1294,6 +1294,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     // Visible eraser modes form one set; hidden modes are not part of it.
                     var visibleModes = modes.Where(item => item.Visibility == Visibility.Visible).ToList();
+                    foreach (var hidden in modes.Where(item => item.Visibility != Visibility.Visible))
+                    {
+                        Verify.AreEqual(0, AutomationProperties.GetPositionInSet(hidden), $"{hidden.Name} is hidden and should not be in the set.");
+                        Verify.AreEqual(0, AutomationProperties.GetSizeOfSet(hidden), $"{hidden.Name} is hidden and should not be in the set.");
+                    }
                     for (int i = 0; i < visibleModes.Count; i++)
                     {
                         var itemPeer = FrameworkElementAutomationPeer.CreatePeerForElement(visibleModes[i]);
@@ -1301,17 +1306,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         Verify.AreEqual(visibleModes.Count, itemPeer.GetSizeOfSet(), $"{visibleModes[i].Name} should count only visible eraser modes.");
                     }
 
-                    // The eraser always has a mode, so UIA must not be able to deselect the current one.
-                    var strokeMode = modes[0];
-                    strokeMode.IsChecked = true;
-                    var strokePeer = FrameworkElementAutomationPeer.CreatePeerForElement(strokeMode);
-                    var strokeSelection = strokePeer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
-                    Verify.IsNotNull(strokeSelection, "An eraser mode should expose ISelectionItemProvider.");
-                    Verify.IsTrue(strokeSelection.IsSelected, "The checked eraser mode should report selected.");
-                    Verify.Throws<InvalidOperationException>(() => strokeSelection.RemoveFromSelection(),
-                        "RemoveFromSelection on the selected eraser mode should be rejected.");
-                    Verify.IsTrue(strokeMode.IsChecked, "The selected eraser mode should stay checked.");
-                    Verify.IsTrue(strokeSelection.IsSelected, "The selected eraser mode should stay selected.");
+                    // The eraser always has a mode, so UIA must not be able to deselect the current one. Collapsed
+                    // items have no automation peer, so this only applies when an eraser mode is shown.
+                    var selectedMode = visibleModes.FirstOrDefault(item => item.IsChecked);
+                    if (selectedMode != null)
+                    {
+                        var selectedPeer = FrameworkElementAutomationPeer.CreatePeerForElement(selectedMode);
+                        var selection = selectedPeer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                        Verify.IsNotNull(selection, "An eraser mode should expose ISelectionItemProvider.");
+                        Verify.IsTrue(selection.IsSelected, "The checked eraser mode should report selected.");
+                        Verify.Throws<InvalidOperationException>(() => selection.RemoveFromSelection(),
+                            "RemoveFromSelection on the selected eraser mode should be rejected.");
+                        Verify.IsTrue(selectedMode.IsChecked, "The selected eraser mode should stay checked.");
+                    }
+                    else
+                    {
+                        Log.Comment("No eraser mode is shown, so there is no selectable eraser mode to check.");
+                    }
 
                     var clearAll = FindChildByName(flyout.Content, "ClearAll") as InkToolbarFlyoutItem;
                     if (clearAll != null)
