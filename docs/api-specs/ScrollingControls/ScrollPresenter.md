@@ -109,6 +109,42 @@ Again it is the parent `ScrollView` that sets the properties on its inner `Scrol
 to values chosen to match common usage, 
 for example the basic `<ScrollView/>` is configured for vertical scrolling.
 
+## Allow content to render outside the viewport
+
+By default, `ScrollPresenter` clips its content to a rectangle that matches the viewport. The
+viewport is the arranged area reported by `ViewportWidth` and `ViewportHeight`. Set
+`CanContentRenderOutsideBounds` to `true` when transformed content, shadows, or other visual
+effects need to render beyond that area.
+
+This property controls the viewport clip managed by `ScrollPresenter`. It does not disable clips
+supplied by the app or by another element in the visual tree.
+
+| `CanContentRenderOutsideBounds` | App-assigned `Clip` | Result |
+| --- | --- | --- |
+| `false` | None | `ScrollPresenter` applies a rectangular viewport clip. |
+| `true` | None | `ScrollPresenter` does not apply its managed viewport clip. |
+| Either value | A `RectangleGeometry` | The app-assigned rectangle remains in effect. |
+
+The viewport clip is exposed through the inherited `UIElement.Clip` property. After
+`ScrollPresenter` is arranged and viewport clipping is in effect, `Clip` returns a
+viewport-sized `RectangleGeometry` managed by `ScrollPresenter`.
+
+Changing `CanContentRenderOutsideBounds` causes `ScrollPresenter` to arrange. The
+clip is added, removed, or resized during that arrange pass.
+
+When the clip is removed, content outside the viewport—including content that has been
+scrolled out of view—is no longer hidden by that clip and can draw over neighboring elements.
+The removed clip also no longer excludes that content from hit testing.
+
+The property removes the entire framework-owned viewport clip; it cannot select which overflowing
+visuals remain visible. Use it only when the surrounding layout can tolerate all content that
+renders outside the viewport. Even if the property is set to `true`, the content can still be
+clipped by its own clip or an ancestor element.
+
+For the corresponding higher-level control behavior, including the default `ScrollView`
+template and an example, see
+[`ScrollView.CanContentRenderOutsideBounds`](ScrollView.md#scrollviewcancontentrenderoutsidebounds-property).
+
 
 ## Snap points examples
 
@@ -308,6 +344,27 @@ named "PART_VerticalScrollBar" instead of a vertical `ScrollBar`.
 ## ScrollPresenter class
 
 Provides primitive scroll and zoom supports for content.
+
+### ScrollPresenter.CanContentRenderOutsideBounds property
+
+Gets or sets a value that indicates whether the content can render outside the bounds of the
+`ScrollPresenter` viewport. The default is `false`.
+
+When the value is `false` and the app has not assigned `UIElement.Clip`, `ScrollPresenter`
+applies a rectangular clip that matches the viewport. When the value is `true`,
+`ScrollPresenter` removes only that managed viewport clip.
+
+A non-null `RectangleGeometry` assigned by the app to `UIElement.Clip` takes precedence for both
+values of this property. `ScrollPresenter` does not replace, resize, or remove that rectangle.
+Consequently, setting this property to `false` does not guarantee viewport clipping when the app
+has assigned a different clip.
+
+Changes to the managed clip take effect during arrange. For complete behavior, see
+[Allow content to render outside the viewport](#allow-content-to-render-outside-the-viewport).
+
+_Spec note: `ScrollContentPresenter` already exposes
+[`CanContentRenderOutsideBounds`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.scrollcontentpresenter.cancontentrenderoutsidebounds).
+This brings the same property, with the same name and default, to `ScrollPresenter`._
 
 ### ScrollPresenter.HorizontalSnapPoints property
 
@@ -1024,7 +1081,7 @@ _Mike: "Single OffsetVelocity { get; }: Is it valid for this to be negative?"_
 
 ```csharp
 [contentproperty("Content")]
-unsealed runtimeclass Microsoft.UI.Xaml.Controls.Primittives.ScrollPresenter
+unsealed runtimeclass Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter
     : Microsoft.UI.Xaml.FrameworkElement,
       Microsoft.UI.Xaml.Controls.IScrollAnchorProvider
 {
@@ -1032,6 +1089,11 @@ unsealed runtimeclass Microsoft.UI.Xaml.Controls.Primittives.ScrollPresenter
 
     Microsoft.UI.Xaml.Media.Brush Background { get; set; };
     Microsoft.UI.Xaml.UIElement Content { get; set; };
+    [contract(Microsoft.UI.Xaml.XamlContract, 12)]
+    {
+        // Default value: false.
+        Boolean CanContentRenderOutsideBounds { get; set; };
+    }
     Microsoft.UI.Composition.CompositionPropertySet ExpressionAnimationSources { get; };
     Double HorizontalOffset { get; };
     Double VerticalOffset { get; };
@@ -1119,6 +1181,10 @@ unsealed runtimeclass Microsoft.UI.Xaml.Controls.Primittives.ScrollPresenter
 
     static Microsoft.UI.Xaml.DependencyProperty BackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ContentProperty { get; };
+    [contract(Microsoft.UI.Xaml.XamlContract, 12)]
+    {
+        static Microsoft.UI.Xaml.DependencyProperty CanContentRenderOutsideBoundsProperty { get; };
+    }
     static Microsoft.UI.Xaml.DependencyProperty ContentOrientationProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HorizontalScrollChainModeProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty VerticalScrollChainModeProperty { get; };
@@ -2411,6 +2477,7 @@ those API calls to its inner `ScrollPresenter`.
 | **Type**            | **Name**                          |
 |---------------------|-----------------------------------|
 | Property            | Content                           |
+| Property            | CanContentRenderOutsideBounds     |
 | Property            | ExpressionAnimationSources        |
 | Property            | HorizontalOffset                  |
 | Property            | VerticalOffset                    |
@@ -2437,6 +2504,7 @@ those API calls to its inner `ScrollPresenter`.
 | Property            | HorizontalAnchorRatio             |
 | Property            | VerticalAnchorRatio               |
 | Dependency property | ContentProperty                   |
+| Dependency property | CanContentRenderOutsideBoundsProperty |
 | Dependency property | ContentOrientationProperty        |
 | Dependency property | HorizontalScrollChainModeProperty |
 | Dependency property | VerticalScrollChainModeProperty   |
