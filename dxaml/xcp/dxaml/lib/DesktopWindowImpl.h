@@ -144,6 +144,8 @@ namespace DirectUI
         void OnSetFocus();
         void RegisterDesktopWindowClass();
         void CreateDesktopWindow();
+        _Check_return_ HRESULT UpdateWindowWeakReference();
+        _Check_return_ HRESULT ResolveWindowWeakReference(_Outptr_result_maybenull_ xaml::IWindow** window);
         _Check_return_ HRESULT RaiseWindowSizeChangedEvent();
         _Check_return_ HRESULT RaiseWindowActivatedEvent(_In_ const xaml::WindowActivationState state);
         _Check_return_ HRESULT RaiseWindowVisibilityChangedEvent(_In_ const BOOLEAN visible);
@@ -155,7 +157,7 @@ namespace DirectUI
         // "RestoredClientSize" is WinUI's name for what the window's client size is when in the normal state and its
         // AppWindow is using the default Overlapped presenter.
         _Check_return_ HRESULT GetRestoredClientSizeInDips(_Out_ wf::Size* pValue);
-        _Check_return_ HRESULT SetRestoredClientSizeInDips(std::optional<double> width, std::optional<double> height);
+        _Check_return_ HRESULT ApplyRestoredClientSizeInDips(std::optional<double> width, std::optional<double> height);
         _Check_return_ HRESULT GetSavedRestoreChromeSizeInPixels(_Out_ SIZE* pChromeSize);
         
         // Applies the requested client size now, or defers it (pending) until we can honor it.
@@ -168,7 +170,7 @@ namespace DirectUI
         // Live chrome (outer minus client) in pixels
         _Check_return_ HRESULT MeasureLiveChromeInPixels(_Out_ SIZE* pChromeSize);
         float GetWindowScale();
-        // Records the tracked restored size (client + chrome, both DIPs) as a unit.
+        // Tracks the restored size (client + chrome, both DIPs) as a unit.
         void SetTrackedRestoredSize(wf::Size clientDips, wf::Size chromeDips);
         _Check_return_ HRESULT ValidateWidthHeightValue(DOUBLE value);
 
@@ -176,13 +178,13 @@ namespace DirectUI
         bool AppWindowPresenterSupportsSizing();
         // True when the live window represents its restored geometry (sizing presenter, not min/maxed).
         bool IsInOverlappedRestoredState();
-        // True once the app has set Width or Height (opted into the feature).
-        bool HasExplicitClientSize() const { return m_hasExplicitClientSize; }
+        // True once the app has opted into preserving client height across title-bar toggles.
+        bool HasExplicitClientHeight() const { return m_hasExplicitClientHeight; }
 
-        // Records the live client size as the restored size, but only while in the restored state.
-        void UpdateLastRestoredClientSize();
-        // Defers UpdateLastRestoredClientSize onto the dispatcher queue, coalescing WM_SIZE bursts.
-        void ScheduleUpdateLastRestoredClientSize();
+        // Tracks the live client size as the restored size, but only while in the restored state.
+        void TrackLastRestoredClientSize();
+        // Defers TrackLastRestoredClientSize onto the dispatcher queue, coalescing WM_SIZE bursts.
+        void ScheduleTrackLastRestoredClientSize();
         // Applies a Width/Height remembered before first show or while in a non-sizing presenter.
         _Check_return_ HRESULT ApplyPendingClientSizeIfNeeded();
         // On AppWindow.Changed (presenter swap): applies a Width/Height remembered while in a non-sizing
@@ -211,6 +213,9 @@ namespace DirectUI
         bool m_bIsClosed = false;
         bool m_bIsClosing = false;
         Window* m_dxamlWindowInstance = nullptr;
+        // Captured from the controlling owner when an event handler is registered.
+        wil::critical_section m_weakWindowLock;
+        ctl::WeakRefPtr m_weakWindow;
         DXamlCore* m_dxamlCoreNoRef = nullptr;
         bool m_bMinimizedOrHidden = false;
         bool m_bInitialWindowActivation = true;
@@ -219,8 +224,8 @@ namespace DirectUI
         // Window sizing support
         // --------------------------------------------------
 
-        // True once the app has set Width or Height at least once.
-        bool m_hasExplicitClientSize = false;
+        // True once the app has set Height at least once.
+        bool m_hasExplicitClientHeight = false;
 
         // When the app has set Width/Height, but we haven't been able to honor them yet,
         // we store them here.
@@ -229,14 +234,19 @@ namespace DirectUI
 
         // The window's last known restored size in DIPs - the client-area size and its non-client
         // chrome (outer window rect minus client rect) the window has, or returns to, when it isn't
-        // maximized, minimized, or in a non-sizing presenter. Client and chrome are always tracked
-        // together (see SetTrackedRestoredSize).
+        // maximized, minimized, or in a non-sizing presenter. While open, client and chrome are
+        // tracked together (see SetTrackedRestoredSize). After close, client preserves the final
+        // resolved size; pending requests still take precedence and chrome is no longer used.
         struct TrackedRestoredSize
         {
             wf::Size client;
             wf::Size chrome;
         };
         std::optional<TrackedRestoredSize> m_trackedRestoredSize;
+
+        // When true, we're applying a restored-size request through SetWindowPos and expect a synchronous WM_SIZE.
+        // On the next WM_SIZE, clear this flag and track the size before raising Window.SizeChanged.
+        bool m_trackRestoredSizeOnNextSize = false;
 
         // We've scheduled an update of the restored client size onto the dispatcher queue
         bool m_restoredSizeUpdateScheduled = false;
@@ -245,7 +255,7 @@ namespace DirectUI
         bool m_inSizeMove = false;
 
         // Lifetime sentinel for deferred (DispatcherQueue) restored-size callbacks. Lazily allocated
-        // the first time we enqueue such a callback (ScheduleUpdateLastRestoredClientSize); stays null
+        // the first time we enqueue such a callback (ScheduleTrackLastRestoredClientSize); stays null
         // for windows that never schedule one. Shutdown() clears it so a callback outliving the window
         // no-ops instead of touching freed memory.
         std::shared_ptr<bool> m_isWindowAlive;

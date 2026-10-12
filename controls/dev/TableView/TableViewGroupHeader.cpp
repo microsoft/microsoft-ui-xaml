@@ -9,6 +9,8 @@
 #include "TableViewGroupInfo.h"
 #include "TableViewGroupHeaderAutomationPeer.h"
 
+static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
+
 TableViewGroupHeader::TableViewGroupHeader()
 {
     SetDefaultStyleKey(this);
@@ -67,6 +69,7 @@ void TableViewGroupHeader::OnApplyTemplate()
     __super::OnApplyTemplate();
 
     m_isEnabledChangedRevoker.revoke();
+    m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
 
     // Keep CommonStates in sync with IsEnabled so Disabled activates when a consumer toggles it
     // at runtime, not only when it happens to be false at template time.
@@ -81,6 +84,29 @@ void TableViewGroupHeader::OnApplyTemplate()
         });
 
     UpdateVisualStates(false /* useTransitions */);
+    UpdateTerminalBottomGridLineSuppression();
+}
+
+void TableViewGroupHeader::SetTerminalBottomGridLineSuppression(bool suppress)
+{
+    // Re-applies on every call rather than returning early on an unchanged flag: the overlay is
+    // also derived from BorderThickness, so a same-value push re-asserts it against the current
+    // thickness.
+    m_suppressBottomGridLine = suppress;
+    UpdateTerminalBottomGridLineSuppression();
+}
+
+void TableViewGroupHeader::UpdateTerminalBottomGridLineSuppression()
+{
+    if (auto gridLineBorder = m_gridLineBorder.get())
+    {
+        auto thickness = BorderThickness();
+        if (m_suppressBottomGridLine)
+        {
+            thickness.Bottom = 0.0;
+        }
+        gridLineBorder.BorderThickness(thickness);
+    }
 }
 
 void TableViewGroupHeader::OnContentChanged(winrt::IInspectable const& oldContent, winrt::IInspectable const& newContent)
@@ -111,20 +137,18 @@ void TableViewGroupHeader::OnPropertyChanged(const winrt::DependencyPropertyChan
         SyncExpansionToContent();
         UpdateVisualStates(true /* useTransitions */);
     }
-
 }
 
 void TableViewGroupHeader::RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState)
 {
-    // Route through the peer the client is connected to. FromElement returns the already-created
-    // peer; CreatePeerForElement is the fallback because a container freshly prepared out of the
-    // recycle pool may not have had its peer created yet, and XAML caches the peer per element so
-    // this returns that same instance rather than a disconnected one.
-    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
-    if (!peer)
+    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
-        peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(*this);
+        return;
     }
+
+    // FromElement only: no live peer means no listener, so creating one purely to announce would
+    // materialize automation objects a client never asked for.
+    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
 
     if (auto const headerPeer = peer ? peer.try_as<winrt::TableViewGroupHeaderAutomationPeer>() : nullptr)
     {

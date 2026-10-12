@@ -91,6 +91,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [Description("Validate that enabling the GamepadKeyRouting XamlOptionalChange makes the framework turn on gamepad key routing in the OS.")]
+        public void GamepadKeyRoutingIsEnabledAtStartupTest()
+        {
+            // WinUICppDesktopSampleApp sets <EnabledXamlOptionalChanges>...GamepadKeyRouting</EnabledXamlOptionalChanges>,
+            // so Application::Start() should have called the OS gamepad key routing API before the
+            // main window was created. The app sampled the OS state at that point; here we read back
+            // what it saw. This guards against codeflow or merge issues silently dropping the call.
+            var textBlockAsUIObject = FindElement.ByName("textBlockGamepadKeyRouting");
+            Verify.IsNotNull(textBlockAsUIObject);
+            string state = new TextBlock(textBlockAsUIObject).DocumentText;
+            Log.Comment($"textBlockGamepadKeyRouting={state}");
+
+            if (state == "Unavailable")
+            {
+                // The OS on this machine cannot route gamepad input, so there is nothing for the
+                // framework to have enabled and there is nothing to verify.
+                Log.Warning("Gamepad key routing is not supported on this OS - skipping verification.");
+                return;
+            }
+
+            Verify.AreEqual("Enabled", state);
+        }
+
+        [TestMethod]
         [Description("Basic tests of a few MUX controls: TextBlock, CheckBox, Button, ToggleButton, Flyout.")]
         [TestProperty("Ignore", "True")]    // http://task.ms/45771651
         public void MUXControlsTest()

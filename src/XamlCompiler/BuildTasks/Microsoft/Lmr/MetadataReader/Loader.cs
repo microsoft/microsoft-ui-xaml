@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Reflection.Adds;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
-using Debug=Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal.Debug;
+using Debug = System.Diagnostics.Debug;
 using System.IO;
 
 using System.Reflection;  

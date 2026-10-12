@@ -45,7 +45,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\BindAssignmentBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\BindAssignment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\CompiledBindingParseException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\ContractVersion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\CodeGenerators\BindPathParameterCodeGenerators.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\BindUniverse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\BoundEventAssignment.cs" />
@@ -137,7 +136,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\ITypeSpec.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\ITypeUniverse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\ExtraAPIs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\DebugHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\SimpleUniverse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\Tokens.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Lmr\ReflectionAdds\TypeNameParser.cs" />

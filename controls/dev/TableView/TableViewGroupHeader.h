@@ -76,6 +76,7 @@ public:
     // ancestor walk from a detached element silently finds nothing and no-ops.
     void SetOwningTableViewInternal(winrt::TableView const& owner);
     winrt::TableView GetOwningTableView() const;
+    void SetTerminalBottomGridLineSuppression(bool suppress);
 
     // Internal: single-subscription guard for the ToggleRequested handler.
     // PrepareGroupHeaderElement sets this once so repeated prepares are no-ops.
@@ -84,15 +85,17 @@ public:
 
 private:
     void UpdateVisualStates(bool useTransitions);
-
+    void UpdateTerminalBottomGridLineSuppression();
 
     // Mirror the authoritative IsExpandable/IsExpanded DPs onto the bound projection.
     void SyncExpansionToContent();
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
+    tracker_ref<winrt::Border> m_gridLineBorder{ this };
 
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
+    bool m_suppressBottomGridLine{ false };
 
     winrt::weak_ref<winrt::TableView> m_owningTableView{ nullptr };
 

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 namespace System.Reflection.Adds
 {
-    using Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal;
+    using Debug = System.Diagnostics.Debug;
     using System.Reflection.Metadata;
 
     using System.Reflection;

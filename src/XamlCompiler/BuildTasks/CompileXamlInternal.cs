@@ -573,8 +573,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
             else
             {
-                // managed will always be zero length (from pass1)
-                if (Language.IsNative)
+                // Native type info and the C# pass-1 API stub must be non-empty; VB uses an empty
+                // pass-1 placeholder.
+                if (Language.IsNative || Language.Name == ProgrammingLanguage.CSharp)
                 {
                     if (fileInfo.Length == 0)
                     {
@@ -680,24 +681,28 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 return true;
             }
 
-            // Here we are processing the XamlTypeInfo.g.[cs/vb]
+            // Here we are processing the XamlTypeInfo.g.[cs/vb].
             // 1) The design type build (pass1) needs to report all generated file (including pass2 generated files)
             // 2) We don't want the preBuild to compile the pass2 code from the previous build
             //    because things may have changed and it may fail to compile.
-            // SO we Zero out the Pass2 file in Pass1.
-            // BUT we also want to preserve it for pass2 so that simple
-            // incremental builds don't see a NEW xamlTypeInfo.g.[cs/vb] if they don't have to.
-            // We backup a copy of the contents for later use in Pass2. [GenerateTypeInfo()]
-            // (the timestamp saved on the Zero length file)
+            // C# replaces the pass2 implementation with a compilable API stub. VB retains
+            // its zero-length placeholder. Both preserve the previous file for pass2 so
+            // no-change builds can restore its original timestamp.
             string xamlTypeInfoFile = Path.Combine(OutputFolderFullpath, KnownStrings.XamlTypeInfo + Language.Pass2Extension);
             Debug.Assert(_generatedCodeFiles.Contains(xamlTypeInfoFile) == false);
 
             if (IsPass1)
             {
-                // Don't delete the Pass2 files in DesignTime build.
                 if (!IsDesignTimeBuild)
                 {
-                    FileHelpers.BackupIfExistsAndTruncateToNull(xamlTypeInfoFile);
+                    if (Language.Name == ProgrammingLanguage.CSharp)
+                    {
+                        PrepareCSharpPass1XamlTypeInfoFile(xamlTypeInfoFile);
+                    }
+                    else
+                    {
+                        FileHelpers.BackupIfExistsAndTruncateToNull(xamlTypeInfoFile);
+                    }
                 }
                 _generatedCodeFiles.Add(xamlTypeInfoFile);
                 return true;
@@ -1006,6 +1011,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
                 // Create Code Generator
                 _codeGenerator = new XamlCodeGenerator(Language, IsPass1, _projectInfo, _typeInfoCollector.SchemaInfo);
+                if (IsPass1 && Language.Name == ProgrammingLanguage.CSharp)
+                {
+                    string xamlTypeInfoFile = Path.Combine(OutputFolderFullpath, KnownStrings.XamlTypeInfo + Language.Pass2Extension);
+                    ConfigureCSharpPass1TypeInfoGeneration(_projectInfo, _codeGenerator, xamlTypeInfoFile);
+                }
 
                 // We have collected all the information.
                 // Start writing out the generated files  code and edited XAML.
@@ -1047,7 +1057,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                         return false;
                 }
 
-                // C++ has Pass1 typeinfo file.  Managed code just returns OK nothing in Pass1.
+                // Native languages generate their pass-1 type info, and C# generates the
+                // XamlMetaDataProvider API stub used by the intermediate compilation.
                 if (!GenerateTypeInfo())
                 {
                     return false;
@@ -1460,8 +1471,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 else
                 {
                     // XamlTypeInfo.g.[cs/vb] is a special case.
-                    // the XamlTypeInfo.g.cs, was zeroed out in pass1, but a backup was saved
-                    //
+                    // Pass 1 replaced the prior file with a placeholder and saved a backup.
                     FileNameAndContentPair codeFile0 = codeFiles[0];
                     bool fileContentsAreTheSame = false;
 
@@ -1482,9 +1492,97 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     else
                     {
                         TaskFileService.WriteFile(codeFile0.Contents, outputFilename);
+                        if (File.Exists(backupFilename))
+                        {
+                            File.Delete(backupFilename);
+                        }
                     }
                 }
             }
+        }
+
+        private void PrepareCSharpPass1XamlTypeInfoFile(string xamlTypeInfoFile)
+        {
+            if (CodeGenerationControlFlags.HasFlag(CodeGenCtrlFlags.NoTypeInfoCodeGen))
+            {
+                FileHelpers.BackupIfExistsAndTruncateToNull(xamlTypeInfoFile);
+                return;
+            }
+
+            XamlProjectInfo projectInfo = GetBasicProjectInfo();
+            XamlCodeGenerator codeGenerator = new XamlCodeGenerator(Language, true, projectInfo, null);
+            ConfigureCSharpPass1TypeInfoGeneration(projectInfo, codeGenerator, xamlTypeInfoFile);
+            WriteCSharpPass1XamlTypeInfoFile(codeGenerator.GenerateTypeInfo(null));
+        }
+
+        private void ConfigureCSharpPass1TypeInfoGeneration(
+            XamlProjectInfo projectInfo,
+            XamlCodeGenerator codeGenerator,
+            string xamlTypeInfoFile)
+        {
+            bool? hasMetadataProvider = SaveState.XamlTypeInfoHasMetadataProvider;
+
+            if (!hasMetadataProvider.HasValue && File.Exists(xamlTypeInfoFile))
+            {
+                string existingContents = File.ReadAllText(xamlTypeInfoFile);
+
+                if (existingContents.Contains(TypeInfoDefinition.XamlMetadataProviderClassDeclaration))
+                {
+                    hasMetadataProvider = true;
+                }
+                else if (existingContents.Contains(TypeInfoDefinition.CSharpNoTypeInfoMarker))
+                {
+                    hasMetadataProvider = false;
+                }
+            }
+
+            codeGenerator.GenerateTypeInfoOverride = hasMetadataProvider ?? true;
+        }
+
+        private void WriteCSharpPass1XamlTypeInfoFile(List<FileNameAndContentPair> codeFiles)
+        {
+            if (codeFiles == null || codeFiles.Count != 1)
+            {
+                throw new InvalidOperationException("Managed C# pass 1 must generate exactly one XamlTypeInfo file.");
+            }
+
+            FileNameAndContentPair codeFile = codeFiles[0];
+            string outputFilename = Path.Combine(OutputFolderFullpath, codeFile.FileName);
+
+            if (IsDesignTimeBuild && File.Exists(outputFilename))
+            {
+                return;
+            }
+
+            DateTime? preservedTimestamp = PrepareCSharpPass1XamlTypeInfoBackup(outputFilename);
+            TaskFileService.WriteFile(codeFile.Contents, outputFilename);
+            if (preservedTimestamp.HasValue)
+            {
+                File.SetLastWriteTime(outputFilename, preservedTimestamp.Value);
+            }
+        }
+
+        private DateTime? PrepareCSharpPass1XamlTypeInfoBackup(string outputFilename)
+        {
+            string backupFilename = outputFilename + KnownStrings.BackupSuffix;
+            FileInfo outputFile = new FileInfo(outputFilename);
+            bool outputIsPass1Stub = false;
+
+            if (outputFile.Exists && outputFile.Length > 0)
+            {
+                outputIsPass1Stub = File.ReadAllText(outputFilename).Contains(TypeInfoDefinition.CSharpPass1StubMarker);
+                if (!outputIsPass1Stub)
+                {
+                    FileHelpers.BackupFile(outputFilename);
+                }
+            }
+
+            if (File.Exists(backupFilename))
+            {
+                return File.GetLastWriteTime(backupFilename);
+            }
+
+            return outputFile.Exists ? (DateTime?)outputFile.LastWriteTime : null;
         }
 
         private bool WriteRootsFile(Roots roots, String filename)
@@ -1549,9 +1647,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         {
             PerformanceUtility.FireCodeMarker(CodeMarkerEvent.perfXC_GenerateTypeInfoStart);
             bool hasCodeGen = true;
+            bool suppressTypeInfoCodeGen = ShouldSuppressTypeInfoCodeGen();
 
             List<FileNameAndContentPair> codeFiles;
-            if (ShouldSuppressTypeInfoCodeGen())
+            if (suppressTypeInfoCodeGen)
             {
                 codeFiles = null;
                 hasCodeGen = false;
@@ -1562,8 +1661,22 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
             PerformanceUtility.FireCodeMarker(CodeMarkerEvent.perfXC_GenerateTypeInfoEnd);
 
+            if (!IsPass1 && Language.Name == ProgrammingLanguage.CSharp)
+            {
+                SaveState.XamlTypeInfoHasMetadataProvider =
+                    !suppressTypeInfoCodeGen &&
+                    TypeInfoDefinition.ShouldGenerateTypeInfo(_projectInfo, _typeInfoCollector.SchemaInfo);
+            }
+
             PerformanceUtility.FireCodeMarker(CodeMarkerEvent.perfXC_WriteTypeinfoFilesToDiskStart);
-            WriteXamlTypeInfoFilesToDisk(codeFiles);
+            if (IsPass1 && Language.Name == ProgrammingLanguage.CSharp && codeFiles != null)
+            {
+                WriteCSharpPass1XamlTypeInfoFile(codeFiles);
+            }
+            else
+            {
+                WriteXamlTypeInfoFilesToDisk(codeFiles);
+            }
             PerformanceUtility.FireCodeMarker(CodeMarkerEvent.perfXC_WriteTypeinfoFilesToDiskEnd);
 
             // Tell MSBUILD that we have generated files which need to be built
@@ -1592,13 +1705,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     // generated code files, but they only look at Pass1 outputs.  So we return all the
                     // generated files in pass1, even though the pass2 files are not written yet.
                     //   The files need to exist or the language service might get confused.
-                    //   We leave existing (previous build) pass2 files, otherwise we create empty files.
                     if (IsPass1)
                     {
                         string xamlTypeInfo = Path.Combine(OutputFolderFullpath, "XamlTypeInfo" + Language.Pass2Extension);
-                        // Should not clear the file on design time builds. However, BackupIfExistsAndTruncateToNull should be allowed to
-                        // create an empty file if it doesn't exist.
-                        if (!this.IsDesignTimeBuild || !File.Exists(xamlTypeInfo))
+                        if (Language.Name != ProgrammingLanguage.CSharp &&
+                            (!this.IsDesignTimeBuild || !File.Exists(xamlTypeInfo)))
                         {
                             FileHelpers.BackupIfExistsAndTruncateToNull(xamlTypeInfo);
                         }
@@ -1884,7 +1995,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             return ret;
         }
 
-        private XamlProjectInfo GetProjectInfo()
+        private XamlProjectInfo GetBasicProjectInfo()
         {
             XamlProjectInfo projectInfo = new XamlProjectInfo();
 
@@ -1892,13 +2003,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             projectInfo.ProjectName = FileHelpers.GetSafeName(ProjectName) ?? String.Empty;
             projectInfo.RootNamespace = RootNamespace;
             projectInfo.IsLibrary = IsOutputTypeLibrary || IsOutputTypeWinMd;
-            projectInfo.IsCLSCompliant = _localAssembly != null && _localAssembly.IsClsCompliant();
             projectInfo.ShouldGenerateDisableXBind = this.EnableXBindDiagnostics;
             projectInfo.EnableTypeInfoReflection = EnableTypeInfoReflection;
             projectInfo.EnableDefaultValidationContextGeneration = EnableDefaultValidationContextGeneration;
-            // only C++ pass 2.  Otherwise maps are empty;
-            projectInfo.ClassToHeaderFileMap = GetClassToHeaderFileMap();
-            projectInfo.AdditionalXamlTypeInfoIncludes = GetAdditionalXamlTypeInfoIncludes();
 
             if (this.IgnoreSpecifiedTargetPlatformMinVersion)
             {
@@ -1909,12 +2016,22 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 projectInfo.TargetPlatformMinVersion = new Version(this.TargetPlatformMinVersion);
             }
 
-            projectInfo.IsInputValidationEnabled = TypeExists(KnownTypes.IInputValidationControl, _loadedAssemblies);
             projectInfo.IsWin32App = EnableWin32Codegen;
             projectInfo.UsingCSWinRT = UsingCSWinRT;
             projectInfo.PrecompiledHeaderFile = PrecompiledHeaderFile;
             projectInfo.EnabledXamlOptionalChanges = ParseCommaSeparatedList(EnabledXamlOptionalChanges);
             projectInfo.DisabledXamlOptionalChanges = ParseCommaSeparatedList(DisabledXamlOptionalChanges);
+            return projectInfo;
+        }
+
+        private XamlProjectInfo GetProjectInfo()
+        {
+            XamlProjectInfo projectInfo = GetBasicProjectInfo();
+
+            projectInfo.IsCLSCompliant = _localAssembly != null && _localAssembly.IsClsCompliant();
+            projectInfo.ClassToHeaderFileMap = GetClassToHeaderFileMap(); // Populated only for C++ pass 2, otherwise empty.
+            projectInfo.AdditionalXamlTypeInfoIncludes = GetAdditionalXamlTypeInfoIncludes();
+            projectInfo.IsInputValidationEnabled = TypeExists(KnownTypes.IInputValidationControl, _loadedAssemblies);
             return projectInfo;
         }
 

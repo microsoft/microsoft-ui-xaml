@@ -3732,7 +3732,10 @@ void ScrollPresenter::ValidateZoomFactoryBoundary(double value)
 {
     if (!IsZoomFactorBoundaryValid(value))
     {
-        throw winrt::hresult_error(E_INVALIDARG);
+        throw winrt::hresult_invalid_argument(
+            StringUtil::FormatString(
+                L"Zoom-factor boundary must be finite; received %1!s!.",
+                winrt::to_hstring(value).c_str()));
     }
 }
 
@@ -3761,7 +3764,10 @@ void ScrollPresenter::ValidateAnchorRatio(double value)
 {
     if (!IsAnchorRatioValid(value))
     {
-        throw winrt::hresult_error(E_INVALIDARG);
+        throw winrt::hresult_invalid_argument(
+            StringUtil::FormatString(
+                L"Anchor ratio must be NaN or between 0 and 1 inclusive; received %1!s!.",
+                winrt::to_hstring(value).c_str()));
     }
 }
 
