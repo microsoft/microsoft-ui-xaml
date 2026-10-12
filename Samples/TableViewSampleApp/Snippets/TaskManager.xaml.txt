@@ -43,6 +43,7 @@
 
 <tv:TableView
     x:Name="ProcessTable"
+    Grid.Row="1"
     AutomationProperties.AutomationId="TaskManagerTable"
     AutomationProperties.Name="Processes"
     ItemsSource="{x:Bind Source}"

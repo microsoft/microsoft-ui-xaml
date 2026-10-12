@@ -18,19 +18,17 @@
         WhatToLookFor="ActualWidth is the width after the MinWidth and MaxWidth clamp, so it can differ from Width; the readout updates after layout and while you drag. A full date picker needs about 310 px, so the 200 px Join date column clips it. Auto measures only the realized rows, so scrolling can change an Auto width and Auto mode can leave an empty band on the right. A Star column with no resizable Star column after it has no width to trade, so its edge shows no gripper. Width is the lesson here, so this page scrolls horizontally in Playground and Pixel modes on purpose.">
 
         <controls:SamplePresenter.Example>
-            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                <!-- snippet -->
-                <!-- The columns are built in code for each width intent; see ColumnLayoutPage.xaml.cs. -->
-                <tv:TableView
-                    x:Name="WidthsTable"
-                    AutomationProperties.AutomationId="ColumnLayoutTable"
-                    AutomationProperties.Name="People, with columns sized by the chosen width intent"
-                    ItemsSource="{x:Bind People}"
-                    SelectionMode="Single"
-                    VerticalAlignment="Stretch"
-                    MinHeight="320"/>
-                <!-- /snippet -->
-            </Border>
+            <!-- snippet -->
+            <!-- The columns are built in code for each width intent; see ColumnLayoutPage.xaml.cs. -->
+            <tv:TableView
+                x:Name="WidthsTable"
+                AutomationProperties.AutomationId="ColumnLayoutTable"
+                AutomationProperties.Name="People, with columns sized by the chosen width intent"
+                ItemsSource="{x:Bind People}"
+                SelectionMode="Single"
+                VerticalAlignment="Stretch"
+                MinHeight="320"/>
+            <!-- /snippet -->
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>

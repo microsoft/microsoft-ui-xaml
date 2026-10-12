@@ -35,21 +35,19 @@
         WhatToLookFor="The predicate runs when Filter is called, not on every property change, so the page calls Filter again after an edit: the row then leaves or rejoins the view without the source being rebuilt. The control keeps the selection across a query change while the selected row still matches. Grouped, a group with no matching rows is not shown at all, and the header counts are the filtered counts. In the Hierarchy modes the filter also keeps each match's managers as ordinary rows (Rows counts them). Known control issue: a matching row whose reports also match stays collapsed, so its matching reports stay hidden until you expand it.">
 
         <controls:SamplePresenter.Example>
-            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                <!-- snippet -->
-                <!-- Columns are added in code: see BuildColumns. -->
-                <tv:TableView
-                    x:Name="FilterTable"
-                    AutomationProperties.AutomationId="FilterTable"
-                    AutomationProperties.Name="Filtered people"
-                    ItemsSource="{x:Bind Source}"
-                    SelectionMode="Single"
-                    SelectionChanged="OnTableSelectionChanged"
-                    EmptyTemplate="{StaticResource FilterEmptyTemplate}"
-                    VerticalAlignment="Stretch"
-                    MinHeight="320"/>
-                <!-- /snippet -->
-            </Border>
+            <!-- snippet -->
+            <!-- Columns are added in code: see BuildColumns. -->
+            <tv:TableView
+                x:Name="FilterTable"
+                AutomationProperties.AutomationId="FilterTable"
+                AutomationProperties.Name="Filtered people"
+                ItemsSource="{x:Bind Source}"
+                SelectionMode="Single"
+                SelectionChanged="OnTableSelectionChanged"
+                EmptyTemplate="{StaticResource FilterEmptyTemplate}"
+                VerticalAlignment="Stretch"
+                MinHeight="320"/>
+            <!-- /snippet -->
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
