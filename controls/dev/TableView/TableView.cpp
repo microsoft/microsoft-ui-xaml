@@ -504,22 +504,17 @@ namespace
         }
     }
 
+    // The stock style always supplies TabularSurfaceGridLineBrush; on a miss draw only in High Contrast.
     winrt::Brush CreateGridLineFallbackBrush(winrt::FrameworkElement const& start, bool highContrast)
     {
-        auto color = highContrast
-            ? winrt::Colors::White()
-            : (start.ActualTheme() == winrt::ElementTheme::Light
-                ? winrt::ColorHelper::FromArgb(0x29, 0x00, 0x00, 0x00)
-                : winrt::ColorHelper::FromArgb(0x29, 0xff, 0xff, 0xff));
-
-        if (highContrast)
+        if (!highContrast)
         {
-            color = winrt::unbox_value_or<winrt::Color>(
-                LookupElementResource(start, L"SystemColorWindowTextColor", true),
-                color);
+            return nullptr;
         }
 
-        return winrt::SolidColorBrush(color);
+        return winrt::SolidColorBrush(winrt::unbox_value_or<winrt::Color>(
+            LookupElementResource(start, L"SystemColorWindowTextColor", true),
+            winrt::Colors::White()));
     }
 
 }
