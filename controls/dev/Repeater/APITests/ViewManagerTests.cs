@@ -20,6 +20,7 @@ using Common;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.HResults;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -1019,8 +1020,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             scrollViewer = sv;
             return itemsRepeater;
         }
-
-        private const int E_FAIL = unchecked((int)0x80004005);
 
         // Scenario: focus the first item, scroll far away so it leaves the realized range, then scroll back.
         // Expected: the focused element keeps its index and focus while out of view and the same instance is reused

@@ -286,13 +286,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         // Scenario: subscribe to the ViewportChanged, PostArrange and ConfigurationChanged events of the host's scrolling
-        //           surface, scroll and re-arrange the host, then unsubscribe.
-        // Expected: subscribing and unsubscribing succeed, and none of the three events is raised while subscribed: the host
-        //           accepts ConfigurationChanged as a no-op, never raises PostArrange, and raises ViewportChanged only from
-        //           code paths that nothing calls (see untestable.md).
-        // A failure means: the scroll host started raising these events, so components that track it must be revalidated.
+        //           surface, scroll and re-arrange the host, unsubscribe, then scroll and re-arrange again.
+        // Expected: subscribing and unsubscribing succeed, scrolling still works, and no removed handler is called by the
+        //           second scroll and arrange. How often the events fire while subscribed is only logged, not asserted:
+        //           today the host never subscribes to its ScrollViewer's ViewChanging/ViewChanged/SizeChanged events, so
+        //           ViewportChanged is never raised and PostArrange has no raiser, which is a product gap, not a contract.
+        // A failure means: handler registration or removal on the scrolling surface is broken, or it breaks scrolling.
         [TestMethod]
-        [TestProperty("Description", "Verifies the ItemsRepeaterScrollHost scrolling-surface events accept handler registration and removal and are not raised.")]
+        [TestProperty("Description", "Verifies the ItemsRepeaterScrollHost scrolling-surface events accept handler registration and removal, and removed handlers are not called.")]
         public void VerifyScrollingSurfaceEventsCanBeSubscribedAndRemoved()
         {
             ItemsRepeaterScrollHost scrollHost = null;
@@ -323,20 +324,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             Verify.IsTrue(viewChangedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for ViewChanged.");
             IdleSynchronizer.Wait();
 
+            int viewportChangedAfterRemoval = 0, postArrangeAfterRemoval = 0, configurationChangedAfterRemoval = 0;
             RunOnUIThread.Execute(() =>
             {
                 // Re-arrange while still subscribed: an arrange pass is where PostArrange would be raised.
                 scrollHost.InvalidateArrange();
                 scrollHost.UpdateLayout();
                 Log.Comment($"Raised while subscribed: ViewportChanged={viewportChangedCount}, PostArrange={postArrangeCount}, ConfigurationChanged={configurationChangedCount}");
-                Verify.AreEqual(0, viewportChangedCount, "The scroll host does not raise ViewportChanged during a scroll and layout.");
-                Verify.AreEqual(0, postArrangeCount, "The scroll host does not raise PostArrange.");
-                Verify.AreEqual(0, configurationChangedCount, "The scroll host does not report configuration changes.");
+                Verify.AreEqual(150.0, scrollViewer.VerticalOffset);
+
                 var surface = AsScrollingSurface(scrollHost);
                 surface.ViewportChanged -= viewportChanged;
                 surface.PostArrange -= postArrange;
                 surface.ConfigurationChanged -= configurationChanged;
-                Verify.AreEqual(150.0, scrollViewer.VerticalOffset);
+                viewportChangedAfterRemoval = viewportChangedCount;
+                postArrangeAfterRemoval = postArrangeCount;
+                configurationChangedAfterRemoval = configurationChangedCount;
+
+                viewChangedEvent.Reset();
+                Verify.IsTrue(scrollViewer.ChangeView(null, 300.0, null, disableAnimation: true));
+            });
+
+            Verify.IsTrue(viewChangedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for ViewChanged after removing the handlers.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                scrollHost.InvalidateArrange();
+                scrollHost.UpdateLayout();
+                Verify.AreEqual(300.0, scrollViewer.VerticalOffset);
+                Verify.AreEqual(viewportChangedAfterRemoval, viewportChangedCount, "A removed ViewportChanged handler is not called.");
+                Verify.AreEqual(postArrangeAfterRemoval, postArrangeCount, "A removed PostArrange handler is not called.");
+                Verify.AreEqual(configurationChangedAfterRemoval, configurationChangedCount, "A removed ConfigurationChanged handler is not called.");
             });
         }
 

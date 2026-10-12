@@ -16,6 +16,7 @@ using Common;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.HResults;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -1199,8 +1200,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 }
             });
         }
-
-        private const int E_FAIL = unchecked((int)0x80004005);
 
         // Scenario: call SelectAll and SelectAllFlat on a flat list source.
         // Expected: every item is selected and SelectionChanged is raised once per call.

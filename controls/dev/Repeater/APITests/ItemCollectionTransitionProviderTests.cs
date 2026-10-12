@@ -216,14 +216,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 var element = add.Element;
                 Verify.IsTrue((transition.Triggers & ItemCollectionTransitionTriggers.CollectionChangeAdd) != 0);
                 Verify.IsFalse(transition.HasStarted, "A transition that was not animated was never started.");
-                Verify.AreEqual("Microsoft.UI.Xaml.Controls.ItemCollectionTransition", GetNativeRuntimeClassName(transition));
-                Verify.AreEqual("Microsoft.UI.Xaml.Controls.ItemCollectionTransitionCompletedEventArgs", GetNativeRuntimeClassName(add));
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.ItemCollectionTransition", SharedHelpers.GetNativeRuntimeClassName(transition));
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.ItemCollectionTransitionCompletedEventArgs", SharedHelpers.GetNativeRuntimeClassName(add));
 
                 var progress = transition.Start();
                 Verify.IsTrue(transition.HasStarted);
                 Verify.AreSame(transition, progress.Transition);
                 Verify.AreSame(element, progress.Element);
-                Verify.AreEqual("Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProgress", GetNativeRuntimeClassName(progress));
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProgress", SharedHelpers.GetNativeRuntimeClassName(progress));
                 int countBeforeComplete = completed.Count;
                 progress.Complete();
                 Verify.AreEqual(countBeforeComplete + 1, completed.Count, "Complete() raises TransitionCompleted synchronously.");
@@ -345,12 +345,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
 
             RunOnUIThread.Execute(() => { Content = null; });
-        }
-
-        private static string GetNativeRuntimeClassName(object instance)
-        {
-            var objRef = ((global::WinRT.IWinRTObject)instance).NativeObject;
-            return global::WinRT.IInspectable.FromAbi(objRef.ThisPtr).GetRuntimeClassName(false);
         }
 
         struct CallInfo

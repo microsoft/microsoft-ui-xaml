@@ -19,6 +19,7 @@ using Microsoft.UI.Private.Controls;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.HResults;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -806,9 +807,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             };
         }
 
-        private const int E_FAIL = unchecked((int)0x80004005);
-        private const int E_INVALIDARG = unchecked((int)0x80070057);
-
         // Scenario: resolve elements through a RecyclingElementFactory with no SelectTemplateKey handler, an unknown
         //           key and an empty key.
         // Expected: the handler receives the item and owner, its key selects the template, and invalid setups fail with
@@ -981,8 +979,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(COR_E_INVALIDOPERATION, hresult);
             });
         }
-
-        private const int COR_E_INVALIDOPERATION = unchecked((int)0x80131509);
 
         private partial class ThrowingContainerSelector : DataTemplateSelector
         {

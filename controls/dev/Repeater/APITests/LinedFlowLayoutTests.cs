@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.HResults;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -20,8 +21,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     public class LinedFlowLayoutTests : ApiTestBase
     {
         private const double c_lineHeight = 50.0;
-        private const int E_BOUNDS = unchecked((int)0x8000000B);
-        private const int E_INVALID_OPERATION = unchecked((int)0x800710DD); // HRESULT_FROM_WIN32(ERROR_INVALID_OPERATION)
 
         [TestMethod]
         [TestProperty("Description", "Verifies the LinedFlowLayout default property values.")]

@@ -17,6 +17,7 @@ using MUXControlsTestApp.Utils;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.HResults;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -24,8 +25,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     [TestClass]
     public partial class InspectingDataSourceTests : ApiTestBase
     {
-        private const int E_INVALIDARG = unchecked((int)0x80070057);
-        private const int E_NOTIMPL = unchecked((int)0x80004001);
 
         // Scenario: create an ItemsSourceView from null and from an object that is not a supported collection.
         // Expected: both fail with E_INVALIDARG.

@@ -20,6 +20,7 @@ using Common;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.HResults;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -932,11 +933,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 return _inner.Arrange(context, finalSize);
             }
         }
-
-        private const int E_FAIL = unchecked((int)0x80004005);
-        private const int E_NOINTERFACE = unchecked((int)0x80004002);
-        private const int E_NOTIMPL = unchecked((int)0x80004001);
-        private const int E_INVALIDARG = unchecked((int)0x80070057);
 
         private static int CaptureHResult(Action action)
         {

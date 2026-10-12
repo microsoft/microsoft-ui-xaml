@@ -13,10 +13,12 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Common;
+using Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.HResults;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -26,7 +28,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     [TestClass]
     public class RepeaterApiContractTests : ApiTestBase
     {
-        private const int E_NOTIMPL = unchecked((int)0x80004001);
         private static readonly Guid IID_IInspectable = new Guid("AF86E2E0-B12D-4C6A-9C5A-D7AA65101E90");
 
         // Product concern PC-LFL-TIMER: a LinedFlowLayout whose asynchronous measure timer was created crashes the process
@@ -222,6 +223,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Tuple.Create<string, object>(ns + "LinedFlowLayoutItemCollectionTransitionProvider", new LinedFlowLayoutItemCollectionTransitionProvider()),
                     Tuple.Create<string, object>(ns + "IndexPath", IndexPath.CreateFrom(1, 2)),
                     Tuple.Create<string, object>(ns + "SelectionModel", new SelectionModel()),
+                    Tuple.Create<string, object>("Microsoft.UI.Xaml.Automation.Peers.RepeaterAutomationPeer", new RepeaterAutomationPeer(new ItemsRepeater())),
                 };
 
                 // Event args are only created by the product, so raise each event once and keep the args.
@@ -307,7 +309,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 foreach (var entry in instances)
                 {
                     Verify.IsNotNull(entry.Item2, entry.Item1 + " instance was obtained.");
-                    string actual = GetNativeRuntimeClassName(entry.Item2);
+                    string actual = SharedHelpers.GetNativeRuntimeClassName(entry.Item2);
                     Log.Comment(entry.Item1 + " -> " + actual);
                     Verify.AreEqual(entry.Item1, actual);
                 }
@@ -326,7 +328,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             RunOnUIThread.Execute(() =>
             {
                 var view = new ItemsSourceView(new List<string>() { "A" });
-                Verify.AreEqual("Microsoft.UI.Xaml.Controls.ItemsSourceView", GetNativeRuntimeClassName(view));
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.ItemsSourceView", SharedHelpers.GetNativeRuntimeClassName(view));
             });
         }
 
@@ -447,14 +449,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     hr = e.HResult;
                 }
                 Verify.AreEqual(1, selectTemplateKeyCalls, "The removed (last) SelectTemplateKey handler is not called.");
-                Verify.AreEqual(unchecked((int)0x80004005), hr, "Without a SelectTemplateKey handler, a factory with two templates cannot pick one (E_FAIL).");
+                Verify.AreEqual(E_FAIL, hr, "Without a SelectTemplateKey handler, a factory with two templates cannot pick one (E_FAIL).");
             });
-        }
-
-        private static string GetNativeRuntimeClassName(object instance)
-        {
-            var objRef = ((global::WinRT.IWinRTObject)instance).NativeObject;
-            return global::WinRT.IInspectable.FromAbi(objRef.ThisPtr).GetRuntimeClassName(false);
         }
 
         private static bool AreSameValue(object expected, object actual)

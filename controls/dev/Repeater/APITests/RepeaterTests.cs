@@ -22,6 +22,7 @@ using Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Windows.Foundation;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.HResults;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -997,9 +998,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             // Each item maps to a distinct element instance.
             Verify.AreEqual(items.Count, realized.Distinct().Count());
         }
-
-        private const int E_FAIL = unchecked((int)0x80004005);
-        private const int E_INVALIDARG = unchecked((int)0x80070057);
 
         // Scenario: call GetOrCreateElement without an ItemsSource and with indexes outside the items range.
         // Expected: without a source the call fails with E_FAIL; out-of-range indexes fail with E_INVALIDARG.
