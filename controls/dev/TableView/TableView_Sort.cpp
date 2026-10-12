@@ -21,6 +21,7 @@
 #include "TableViewSource.h"
 #include "TableViewSortingEventArgs.h"
 #include "TableViewSortedEventArgs.h"
+#include "TableViewAutomationHelpers.h"
 #include "ResourceAccessor.h"
 #include "Utils.h"
 #include "ShapingHelpers.h"
@@ -668,14 +669,15 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         // announcement a screen-reader user has no way to learn the order changed.
         if (trigger)
         {
+            // The realized header peer also names template headers, which carry no string.
             winrt::hstring header;
-            if (auto const headerContent = trigger.Header())
+            if (auto const headerPeer = GetRealizedColumnHeaderPeer(*this, trigger))
             {
-                if (auto const headerString = headerContent.try_as<winrt::IPropertyValue>();
-                    headerString && headerString.Type() == winrt::PropertyType::String)
-                {
-                    header = headerString.GetString();
-                }
+                header = headerPeer.GetName();
+            }
+            if (header.empty())
+            {
+                header = TableViewDetails::GetColumnHeaderText(trigger);
             }
 
             switch (trigger.SortDirection())

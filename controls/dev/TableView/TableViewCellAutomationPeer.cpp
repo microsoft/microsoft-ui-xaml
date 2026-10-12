@@ -443,7 +443,7 @@ winrt::hstring TableViewCellAutomationPeer::ReadDisplayName(winrt::TableView con
 winrt::hstring TableViewCellAutomationPeer::GetColumnHeaderText(winrt::TableView const& table)
 {
     auto const column = m_column.get();
-    if (auto const headerString = TryGetColumnHeaderString(column))
+    if (auto const headerString = TableViewDetails::TryGetColumnHeaderText(column))
     {
         return *headerString;
     }
