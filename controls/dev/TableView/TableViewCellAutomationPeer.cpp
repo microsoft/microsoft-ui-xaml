@@ -169,7 +169,8 @@ hstring TableViewCellAutomationPeer::GetNameCore()
     if (auto const cell = Owner().try_as<winrt::FrameworkElement>();
         GetCachedHasInteractiveCellContent(cell))
     {
-        auto const name = GetColumnHeaderText();
+        // The control names itself; naming the cell after it too would read that name twice.
+        auto const name = GetColumnHeaderText(tableView);
         m_lastName = name;
         return name;
     }
@@ -177,12 +178,12 @@ hstring TableViewCellAutomationPeer::GetNameCore()
     {
         if (auto const display = winrt::get_self<TableViewRow>(row)->GetDisplayElementForAutomation(Owner()))
         {
-            auto const name = ReadDisplayName(display.try_as<winrt::FrameworkElement>());
+            auto const name = ReadDisplayName(tableView, display.try_as<winrt::FrameworkElement>());
             m_lastName = name;
             return name;
         }
     }
-    auto const name = ReadDisplayName();
+    auto const name = ReadDisplayName(tableView);
     m_lastName = name;
     return name;
 }
@@ -208,7 +209,7 @@ winrt::hstring TableViewCellAutomationPeer::ReadNameForEdit()
 
     UpdateNameItem(row && tableView
         ? row.DataContext() : nullptr);
-    auto const name = ReadDisplayName();
+    auto const name = ReadDisplayName(tableView);
     m_lastName = name;
     return name;
 }
@@ -372,35 +373,122 @@ void TableViewCellAutomationPeer::QueueFinalName(uint64_t generation)
     TVDiag::LogRetailF(L"[TableView] Optional final cell-name invalidation could not be queued.");
 }
 
-winrt::hstring TableViewCellAutomationPeer::ReadDisplayName(winrt::FrameworkElement const& display)
+namespace
 {
-    const auto headerText = GetColumnHeaderText();
+    // True when the cell shows nothing: only layout containers and empty text.
+    bool ShowsNoCellContent(winrt::DependencyObject const& element, uint32_t depth)
+    {
+        auto const fe = element.try_as<winrt::FrameworkElement>();
+        if (!fe || fe.Visibility() != winrt::Visibility::Visible)
+        {
+            return true;
+        }
+        if (auto const textBlock = fe.try_as<winrt::TextBlock>())
+        {
+            return textBlock.Text().empty();
+        }
+        if (auto const textBox = fe.try_as<winrt::TextBox>())
+        {
+            return textBox.Text().empty();
+        }
+        if (depth == 0 || !(fe.try_as<winrt::Panel>() || fe.try_as<winrt::Border>() || fe.try_as<winrt::ContentPresenter>()))
+        {
+            return false;
+        }
+        const auto count = winrt::VisualTreeHelper::GetChildrenCount(fe);
+        for (int32_t i = 0; i < count; ++i)
+        {
+            if (!ShowsNoCellContent(winrt::VisualTreeHelper::GetChild(fe, i), depth - 1))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+winrt::hstring TableViewCellAutomationPeer::ReadDisplayName(winrt::TableView const& table, winrt::FrameworkElement const& display)
+{
     uint32_t remaining = 32;
-    const auto valueText = display
+    auto valueText = display
         ? GetCellContentName(display, true, 8, remaining)
         : GetCellDisplayText(Owner().try_as<winrt::FrameworkElement>());
 
-    if (headerText.empty())
+    // Borrowing the header would read an empty cell like one whose value is the header text.
+    if (valueText.empty())
+    {
+        // An unnamed visual (a ProgressBar, say) is not blank; name it by its column instead.
+        if (display && !ShowsNoCellContent(display, 8))
+        {
+            return GetColumnHeaderText(table);
+        }
+        valueText = LocalizedOrFallbackForTableViewAutomation(SR_TableViewCellBlankName, L"blank");
+    }
+
+    // A reachable header item already gives the column context.
+    if (IsColumnHeaderReachable(table))
     {
         return valueText;
     }
-    if (valueText.empty())
+
+    const auto headerText = GetColumnHeaderText(table);
+    if (headerText.empty())
     {
-        return headerText;
+        return valueText;
     }
 
     return FormatLocalizedOrFallback(SR_TableViewCellNameFormat, L"%1!s!, %2!s!", headerText.c_str(), valueText.c_str(), L", ");
 }
 
-winrt::hstring TableViewCellAutomationPeer::GetColumnHeaderText()
+winrt::hstring TableViewCellAutomationPeer::GetColumnHeaderText(winrt::TableView const& table)
 {
-    // Non-string headers have no simple textual prefix, so let the value stand alone.
-    if (auto const headerString = TryGetColumnHeaderString(m_column.get()))
+    auto const column = m_column.get();
+    if (auto const headerString = TryGetColumnHeaderString(column))
     {
         return *headerString;
     }
 
+    // Hidden headers collapse their header cells, so read an element header's own name first.
+    if (auto const headerElement = column ? column.Header().try_as<winrt::FrameworkElement>() : nullptr)
+    {
+        uint32_t remaining = 32;
+        if (auto const name = GetCellContentName(headerElement, false /* allowPeerCreation */, 8, remaining); !name.empty())
+        {
+            return name;
+        }
+    }
+
+    // An object or templated header has no string form; use the name its header item exposes.
+    if (table)
+    {
+        if (auto const headerPeer = GetRealizedColumnHeaderPeer(table, column))
+        {
+            return headerPeer.GetName();
+        }
+    }
+
     return {};
+}
+
+bool TableViewCellAutomationPeer::IsColumnHeaderReachable(winrt::TableView const& table)
+{
+    auto const column = m_column.get();
+    return table && IsVisibleColumn(column) &&
+        winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == table &&
+        winrt::get_self<TableView>(table)->AreColumnHeadersShownInternal();
+}
+
+std::optional<winrt::hstring> TableViewCellAutomationPeer::TakeLastNameInternal()
+{
+    // An edit pins the pre-edit name; EndEditName publishes the final one.
+    if (m_editName)
+    {
+        return std::nullopt;
+    }
+
+    auto lastName = std::move(m_lastName);
+    m_lastName.reset();
+    return lastName;
 }
 
 winrt::hstring TableViewCellAutomationPeer::GetCellValueText()
@@ -1077,7 +1165,8 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewCellAutomationPeer::
     {
         if (auto const row = m_row.get())
         {
-            if (auto const owner = GetTrackedTableForRow(row))
+            // Hidden headers are named into the cell instead, so reporting them would repeat the header.
+            if (auto const owner = GetTrackedTableForRow(row); owner && IsColumnHeaderReachable(owner))
             {
                 // Resolve the visual's peer even when the app supplies a custom table peer.
                 auto const headerPeer = GetRealizedColumnHeaderPeer(owner, column);

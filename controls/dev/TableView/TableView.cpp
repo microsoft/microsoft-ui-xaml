@@ -1229,6 +1229,19 @@ void TableView::OnHeadersVisibilityPropertyChanged(const winrt::DependencyProper
 
     UpdateHeaderVisibility();
     QueueTerminalGridLineRefresh();
+
+    // UIA: every realized cell's name and header items follow whether column headers are shown.
+    const auto columnBit = static_cast<uint32_t>(winrt::TableViewHeadersVisibility::Column);
+    const bool showedColumnHeaders =
+        (static_cast<uint32_t>(winrt::unbox_value<winrt::TableViewHeadersVisibility>(args.OldValue())) & columnBit) != 0;
+    if (showedColumnHeaders != ShouldShowColumnHeaders() &&
+        winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    {
+        ForEachRealizedRow([](winrt::TableViewRow const& row)
+        {
+            winrt::get_self<TableViewRow>(row)->RaiseCellAutomationNamesChangedInternal();
+        });
+    }
 }
 
 void TableView::OnGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)

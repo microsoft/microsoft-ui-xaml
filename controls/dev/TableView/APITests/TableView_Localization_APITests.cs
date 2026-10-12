@@ -271,6 +271,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 items = MakeItems();
                 tableView = CreateTableView(items, headers: new[] { "Name", "Role" });
+                // Only a cell whose column header is hidden composes its name with CellNameFormat.
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
                 LoadContent(tableView);
             });
 
@@ -349,6 +351,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             "TableViewBooleanFalse",
             "TableViewBooleanTrue",
+            "TableViewCellBlankName",
             "TableViewCellLocalizedControlType",
             "TableViewCellNameFormat",
             "TableViewCellTextSeparator",
@@ -384,6 +387,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             "TableViewBooleanFalse",
             "TableViewBooleanTrue",
+            "TableViewCellBlankName",
             "TableViewCellLocalizedControlType",
             "TableViewCellNameFormat",
             "TableViewCellTextSeparator",

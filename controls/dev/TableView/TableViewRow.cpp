@@ -1741,6 +1741,35 @@ void TableViewRow::ResetCellAutomationNames()
     }
 }
 
+void TableViewRow::RaiseCellAutomationNamesChangedInternal()
+{
+    if (auto const host = m_cellsHost.get())
+    {
+        for (auto const& cell : host.Children())
+        {
+            try
+            {
+                if (auto const peer = TableViewCell::TryGetExistingPeer(cell)
+                    .try_as<winrt::TableViewCellAutomationPeer>())
+                {
+                    if (auto const oldName = winrt::get_self<TableViewCellAutomationPeer>(peer)->TakeLastNameInternal())
+                    {
+                        if (auto const newName = peer.GetName(); newName != *oldName)
+                        {
+                            peer.RaisePropertyChangedEvent(winrt::AutomationElementIdentifiers::NameProperty(),
+                                winrt::box_value(*oldName), winrt::box_value(newName));
+                        }
+                    }
+                }
+            }
+            catch (...)
+            {
+                TVDiag::LogRetailF(L"[TableView] Optional cell name change could not be raised.");
+            }
+        }
+    }
+}
+
 void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
 {
     RestoreCellContentTabStopsInternal();

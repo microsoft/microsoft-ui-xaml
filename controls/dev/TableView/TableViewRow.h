@@ -108,6 +108,8 @@ public:
 
     // Releases control-owned cell tooltips (recycle-out).
     void ReleaseCellToolTips();
+    // Raises NameProperty changed on cell peers that already exist; creates none.
+    void RaiseCellAutomationNamesChangedInternal();
 
     void RefreshColumnVisibility(const winrt::TableViewColumn& column, winrt::Visibility visibility);
     double MeasuredWidthForColumn(const winrt::TableViewColumn& column) const;

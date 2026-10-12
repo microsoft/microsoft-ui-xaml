@@ -254,6 +254,7 @@ public:
     // Automation peer accessors; weak refs may be null before OnApplyTemplate.
     winrt::ItemsRepeater GetRowsRepeaterInternal() const { return m_rowsRepeater.get(); }
     winrt::Panel GetHeaderHostInternal() const { return m_headerHost.get(); }
+    bool AreColumnHeadersShownInternal() { return ShouldShowColumnHeaders(); }
     int32_t GetRowCountInternal() const { return GetItemsSourceCount(); }
     int32_t GetDataRowPositionInSetInternal(int32_t rowIndex) const;
     int32_t GetDataRowSizeOfSetInternal() const;
