@@ -54,6 +54,11 @@ namespace MUXControlsTestApp
             base.OnNavigatedFrom(e);
             containerTimer.Stop();
             visualizerTimer.Stop();
+            if (scrollAwayRenderingHooked)
+            {
+                CompositionTarget.Rendering -= ScrollAway_Rendering;
+                scrollAwayRenderingHooked = false;
+            }
         }
 
         private void OnMainPageLoaded(object sender, RoutedEventArgs e)
@@ -102,6 +107,11 @@ namespace MUXControlsTestApp
             {
                 scrollAwayProvider.InteractionRatioChanged -= ScrollAwayProvider_InteractionRatioChanged;
                 scrollAwayProvider = null;
+            }
+            if (scrollAwayRenderingHooked)
+            {
+                CompositionTarget.Rendering -= ScrollAway_Rendering;
+                scrollAwayRenderingHooked = false;
             }
             this.StateTransitions.Text = "";
             this.ScrollAwayTrace.Text = "";
@@ -293,34 +303,73 @@ namespace MUXControlsTestApp
             if (this.ScrollAwayDuringPullCheckBox.IsChecked == true && !scrollAwayStarted && args.NewState == RefreshVisualizerState.Interacting)
             {
                 scrollAwayStarted = true;
-                scrollAwayLastRatio = 0.0;
                 scrollAwayRatioAtCancel = double.NaN;
                 scrollAwayMaxRatioAfterCancel = double.NaN;
                 scrollAwayProvider = ((IRefreshVisualizerPrivate)sender).InfoProvider;
                 scrollAwayProvider.InteractionRatioChanged += ScrollAwayProvider_InteractionRatioChanged;
+                if (!scrollAwayRenderingHooked)
+                {
+                    CompositionTarget.Rendering += ScrollAway_Rendering;
+                    scrollAwayRenderingHooked = true;
+                }
                 listScrollViewer.ChangeView(null, 200.0, null, true /*disableAnimation*/);
             }
             else if (scrollAwayStarted && double.IsNaN(scrollAwayRatioAtCancel) && args.OldState == RefreshVisualizerState.Interacting && args.NewState == RefreshVisualizerState.Idle)
             {
-                scrollAwayRatioAtCancel = scrollAwayLastRatio;
+                // The provider writes every tracker position to its composition property set before it throttles
+                // InteractionRatioChanged, so this is the ratio at the moment of the cancel.
+                scrollAwayRatioAtCancel = ReadScrollAwayRatio();
+                UpdateScrollAwayTrace();
             }
         }
 
         // Shows whether the pull was still going on when the interaction was cancelled: a ratio that keeps growing after
         // the cancel means the finger was still dragging, i.e. the cancel did not come from the end of the manipulation.
+        // The ratio is sampled from the provider's composition property (updated on every tracker change), not from the
+        // throttled InteractionRatioChanged event arguments.
         private void ScrollAwayProvider_InteractionRatioChanged(IRefreshInfoProvider sender, RefreshInteractionRatioChangedEventArgs args)
         {
-            scrollAwayLastRatio = args.InteractionRatio;
-            if (!double.IsNaN(scrollAwayRatioAtCancel))
+            SampleScrollAwayRatio();
+        }
+
+        private void ScrollAway_Rendering(object sender, object e)
+        {
+            SampleScrollAwayRatio();
+        }
+
+        private void SampleScrollAwayRatio()
+        {
+            if (scrollAwayProvider == null || double.IsNaN(scrollAwayRatioAtCancel))
             {
-                scrollAwayMaxRatioAfterCancel = double.IsNaN(scrollAwayMaxRatioAfterCancel) ? args.InteractionRatio : Math.Max(scrollAwayMaxRatioAfterCancel, args.InteractionRatio);
+                return;
             }
+            double ratio = ReadScrollAwayRatio();
+            if (!double.IsNaN(ratio) && (double.IsNaN(scrollAwayMaxRatioAfterCancel) || ratio > scrollAwayMaxRatioAfterCancel))
+            {
+                scrollAwayMaxRatioAfterCancel = ratio;
+                UpdateScrollAwayTrace();
+            }
+        }
+
+        private double ReadScrollAwayRatio()
+        {
+            float ratio;
+            if (scrollAwayProvider != null &&
+                scrollAwayProvider.CompositionProperties.TryGetScalar(scrollAwayProvider.InteractionRatioCompositionProperty, out ratio) == Microsoft.UI.Composition.CompositionGetValueStatus.Succeeded)
+            {
+                return ratio;
+            }
+            return double.NaN;
+        }
+
+        private void UpdateScrollAwayTrace()
+        {
             this.ScrollAwayTrace.Text = "ratioAtCancel=" + scrollAwayRatioAtCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) +
                 ";maxRatioAfterCancel=" + scrollAwayMaxRatioAfterCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private IRefreshInfoProvider scrollAwayProvider;
-        private double scrollAwayLastRatio;
+        private bool scrollAwayRenderingHooked;
         private double scrollAwayRatioAtCancel = double.NaN;
         private double scrollAwayMaxRatioAfterCancel = double.NaN;
 

@@ -108,7 +108,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Without a template, clearing MapControl.Layers empties it and it can be refilled; Layers and MapElementsLayer.MapElements can be replaced with app collections, which the getters then return.")]
+        [TestProperty("Description", "Without a template, clearing MapControl.Layers empties it and it can be refilled; Layers and MapElementsLayer.MapElements can be replaced with app collections, which the getters then return; clearing a layer's replaced original MapElements collection leaves the current elements untouched.")]
         public void LayersAndElementsCanBeReplacedAndCleared()
         {
             RunOnUIThreadGuarded(() =>
@@ -133,11 +133,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(1, original.Count, "The original collection is not modified by the replacement");
                 Verify.AreEqual("c", AutomationProperties.GetName(original[0]));
 
-                MapElementsLayer layer = new MapElementsLayer();
+                // A layer owned by a (still untemplated) map listens to its original MapElements vector.
+                MapControl owner = new MapControl();
+                MapElementsLayer layer = CreateNamedLayer("owned");
                 Verify.AreEqual(0, layer.MapElements.Count);
-                List<MapElement> elements = new List<MapElement>() { new MapIcon() { Location = CreatePoint(11, 12) }, new MapIcon() { Location = CreatePoint(13, 14) } };
+                owner.Layers.Add(layer);
+                IList<MapElement> originalElements = layer.MapElements;
+                MapIcon first = new MapIcon() { Location = CreatePoint(9, 10) };
+                originalElements.Add(first);
+                VerifyElements(layer, first);
+
+                MapIcon replacementA = new MapIcon() { Location = CreatePoint(11, 12) };
+                MapIcon replacementB = new MapIcon() { Location = CreatePoint(13, 14) };
+                List<MapElement> elements = new List<MapElement>() { replacementA, replacementB };
                 layer.MapElements = elements;
-                VerifyElements(layer, (MapIcon)elements[0], (MapIcon)elements[1]);
+                VerifyElements(layer, replacementA, replacementB);
+                Verify.AreEqual(1, originalElements.Count, "Replacing MapElements does not modify the original collection");
+
+                // Clearing the replaced original still reaches the layer, whose Reset handling re-reads the layer's CURRENT
+                // MapElements (MapElementsLayer::HandleMapElementsChanged reads MapElements(), not the changed vector).
+                // It must leave the current elements untouched.
+                originalElements.Clear();
+                Verify.AreEqual(0, originalElements.Count, "The original collection is empty");
+                VerifyElements(layer, replacementA, replacementB);
+                Verify.AreEqual(2, elements.Count, "The assigned collection is not modified");
+                Verify.AreEqual(1, owner.Layers.Count, "The layer is still the map's only layer");
+                // (owner.Layers is an IList<MapLayer>, so its getter returns a different projected wrapper; compare by name.)
+                Verify.IsTrue(owner.Layers[0] is MapElementsLayer, "The map's layer is a MapElementsLayer");
+                Verify.AreEqual("owned", AutomationProperties.GetName(owner.Layers[0]), "The map still holds the same layer");
+                Verify.AreEqual(2, ((MapElementsLayer)owner.Layers[0]).MapElements.Count, "Read through the map, the layer has the two current elements");
             });
         }
 

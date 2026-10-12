@@ -341,7 +341,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                provider = new CountingRefreshInfoProvider(ElementCompositionPreview.GetElementVisual(new Border()).Compositor);
+                // The thread's compositor, not GetElementVisual(new Border()): no hand-off visual on an orphan element
+                // becomes garbage during the forced collections below.
+                provider = new CountingRefreshInfoProvider(global::Microsoft.UI.Xaml.Media.CompositionTarget.GetCompositorForCurrentThread());
                 visualizerSentinel = CreateVisualizerUsingProvider(provider);
                 Verify.AreEqual(1, provider.InteractionRatioChangedSubscribers, "Precondition: the visualizer listens to InteractionRatioChanged");
                 Verify.AreEqual(1, provider.IsInteractingForRefreshChangedSubscribers, "Precondition: the visualizer listens to IsInteractingForRefreshChanged");

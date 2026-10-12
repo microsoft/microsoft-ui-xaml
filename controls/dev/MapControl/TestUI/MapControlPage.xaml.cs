@@ -341,14 +341,16 @@ namespace MUXControlsTestApp
     function HtmlMarkerLayer() { layerCount++; this.id = 'fake-layer-' + layerCount; log.push('HtmlMarkerLayer'); }
     HtmlMarkerLayer.prototype.getId = function () { return this.id; };
     function Control() {}
-    window.atlas = {
+    // Non-writable, so a real Azure Maps SDK served from the HTTP cache on reload (bypassing the WebResourceRequested
+    // filter) cannot replace this stand-in.
+    Object.defineProperty(window, 'atlas', { writable: false, configurable: false, enumerable: true, value: {
         Map: Map,
         HtmlMarker: function () {},
         source: { DataSource: DataSource },
         layer: { HtmlMarkerLayer: HtmlMarkerLayer },
         data: { Point: function (coordinates) { this.coordinates = coordinates; }, Feature: function (geometry, properties, id) { this.geometry = geometry; this.properties = properties; this.id = id; } },
         control: { ZoomControl: Control, CompassControl: Control, PitchControl: Control, StyleControl: Control }
-    };
+    } });
 })();";
 
         private async void RunProtocolChecksButton_Click(object sender, RoutedEventArgs e)

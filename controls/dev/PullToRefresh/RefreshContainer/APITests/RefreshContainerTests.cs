@@ -586,6 +586,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             IdleSynchronizer.Wait();
 
+            // Collect once while the container is still loaded, so the "alive while loaded" precondition can fail if
+            // something only weakly held the native objects. (No UI-thread call inside the GC sequence.)
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            IdleSynchronizer.Wait();
+
             RunOnUIThread.Execute(() =>
             {
                 foreach (var pair in objects)

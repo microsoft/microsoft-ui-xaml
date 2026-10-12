@@ -293,7 +293,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(initialRefreshCount, refreshCount.Value, "No refresh was requested");
 
                 // The pull ratio kept growing after the cancel: the finger was still dragging, so the interaction was ended
-                // by the view change and not by the end of the manipulation.
+                // by the view change and not by the end of the manipulation. The page samples the ratio from the provider's
+                // composition property (written on every tracker change, before InteractionRatioChanged is throttled):
+                // once at the cancel and then every frame.
                 string trace = new Edit(FindElement.ByName("ScrollAwayTrace")).Value;
                 Log.Comment("Scroll-away trace: " + trace);
                 System.Text.RegularExpressions.Match ratios = System.Text.RegularExpressions.Regex.Match(trace, @"ratioAtCancel=([0-9.]+);maxRatioAfterCancel=([0-9.]+)");
@@ -301,7 +303,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 double ratioAtCancel = double.Parse(ratios.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
                 double maxRatioAfterCancel = double.Parse(ratios.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture);
                 Verify.IsTrue(ratioAtCancel <= 0.8, "Cancelled before reaching the execution ratio: " + ratioAtCancel);
-                Verify.IsTrue(maxRatioAfterCancel > ratioAtCancel, "The pull continued after the cancel: " + maxRatioAfterCancel + " > " + ratioAtCancel);
+                Verify.IsTrue(maxRatioAfterCancel >= ratioAtCancel + 0.1, "The pull continued after the cancel: " + maxRatioAfterCancel + " >= " + ratioAtCancel + " + 0.1");
 
                 scrollAway.Uncheck();
                 Wait.ForIdle();
