@@ -163,6 +163,9 @@ public:
 
     void Refresh();
 
+    // False when a shaped projection could not identify every row (a null item, or one object on
+    // two rows), so a shaping verb that would throw from Refresh can be refused up front.
+    bool CanProjectWithRowIdentity() const;
     // One switch for sort keys, group key, filter result and hierarchy edge together.
     void SetLiveShaping(bool enabled);
     bool IsLiveShapingEnabled() const noexcept { return m_liveShapingEnabled; }
@@ -236,6 +239,8 @@ private:
     uint64_t m_sourceChangeStamp{ 0 };
     // Stamp captured when the current Refresh materialized the source.
     uint64_t m_refreshSourceStamp{ 0 };
+    // Stamp whose rows the last successful shaped Refresh validated; never a real stamp until then.
+    uint64_t m_validatedSourceStamp{ ~uint64_t{ 0 } };
 
     // Creates the adapter if needed, applies any pending intent reset, and hands it the index.
     void PublishHierarchyIndex(std::shared_ptr<ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments);

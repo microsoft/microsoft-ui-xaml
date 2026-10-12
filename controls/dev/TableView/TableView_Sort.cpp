@@ -178,6 +178,15 @@ bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDi
         }
     }
 
+    // A null item or one object on two rows can't be sorted; refuse before any state changes.
+    if (direction != winrt::SortDirection::None)
+    {
+        if (auto const source = ShapingSourceInternal(); source && !winrt::get_self<::TableViewSource>(source)->CanApplySort())
+        {
+            return false;
+        }
+    }
+
     // An open editor is showing a row at an index that is about to move. Close it first; if it
     // cannot close synchronously, replay this request once it does.
     if (!TryTerminateEditForControlInitiatedReshape())
@@ -255,6 +264,14 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
     else
     {
         next = opening;
+    }
+
+    if (next != winrt::SortDirection::None)
+    {
+        if (auto const source = ShapingSourceInternal(); source && !winrt::get_self<::TableViewSource>(source)->CanApplySort())
+        {
+            return false;
+        }
     }
 
     if (!TryTerminateEditForControlInitiatedReshape())

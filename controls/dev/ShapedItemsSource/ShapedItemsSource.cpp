@@ -1505,6 +1505,31 @@ bool ShapedItemsSource::ValidateRowIdentities(
     return RowIdentity::ValidateRowIdentities(rows, EffectiveIdentitySelector(), reason);
 }
 
+bool ShapedItemsSource::CanProjectWithRowIdentity() const
+{
+    // A shaped projection validated its rows when it was built.
+    if (m_kind != ProjectionKind::None && m_kind != ProjectionKind::Unshaped &&
+        m_validatedSourceStamp == m_sourceChangeStamp)
+    {
+        return true;
+    }
+
+    // Mirrors Refresh: identity is validated over the rows a shaped projection would publish.
+    auto rows = Materialize(m_source);
+    if (!m_parentKeySelector)
+    {
+        ApplyFilter(rows);
+    }
+
+    wchar_t const* reason = nullptr;
+    if (!ValidateRowIdentities(rows, reason))
+    {
+        LogIdentityProjectionDisabled(reason);
+        return false;
+    }
+    return true;
+}
+
 void ShapedItemsSource::ClearFlatRowIdentityTracking()
 {
     RowIdentity::ClearFlatRowIdentityTracking(m_flatRowIdentities, m_flatRowIdentityToIndex);
@@ -1837,6 +1862,7 @@ void ShapedItemsSource::Refresh()
             {
                 RebuildFlat(rows);
             }
+            m_validatedSourceStamp = m_refreshSourceStamp;
         }
         MUX_ASSERT(m_source == authoritativeSource);
     }
@@ -1849,6 +1875,7 @@ void ShapedItemsSource::Refresh()
         {
             m_liveShapingDirty = true;
         }
+        m_validatedSourceStamp = ~uint64_t{ 0 };
 
         // A request that arrived during the failed pass describes newer state; post it (inline
         // would throw into the same app call). Only such requests replay, so bad data cannot loop.

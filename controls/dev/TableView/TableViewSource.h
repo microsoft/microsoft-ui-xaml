@@ -127,6 +127,8 @@ public:
     // Lets the owner refresh a custom comparer's ranks as items change (see
     // ShapedItemsSource::SetLiveItemChangedHook).
     void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook);
+    // False when sorting would fail because the rows include a null item or one object twice.
+    bool CanApplySort() const;
 
 private:
     winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
