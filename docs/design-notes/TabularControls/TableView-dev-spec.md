@@ -153,6 +153,8 @@ This yields three outcomes:
 | `*` present, no donor, dragged column is `*` | **Pinned** — the divider does not move |
 | `*` present, no donor, dragged column is `Pixel`/`Auto` | **Shrink-only** — may narrow to its own `MinWidth`, may not grow |
 
+A pinned column shows no gripper. Availability is re-evaluated when `Width`, `Visibility` or `CanResize` changes, never mid-drag. `IsColumnResizePinned` is the one rule shared by the drag bounds and the gripper's visibility; the collapsed gripper stays in the header cell, so `Alt+Arrow` still reaches it and is clamped the same way.
+
 What each other column reserves: a donor reserves its `MinWidth`; a `Pixel` column its pixel width; an `Auto` column its content width; a locked `*` column its share of the **authored** layout, so a neighbour's drag cannot move it.
 
 Two-column expectations, viewport 478, `MinWidth` 50 (`!` = `CanResize="False"`):

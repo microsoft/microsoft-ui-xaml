@@ -2847,6 +2847,7 @@ void TableView::RebuildHeaders()
     // Pin (or refresh) leading-frozen header cells at the current scroll offset.
     RefreshFrozenColumns();
     ApplyGridLinesToHeader();
+    RefreshResizeGripperAvailability();
 }
 
 // Builds the chevron for one header. The indicator is a display-only primitive: it owns no sort
@@ -3424,6 +3425,11 @@ void TableView::AppendResizeGripperVisual(
         if (strongThis && col && state->didDelta)
         {
             strongThis->AnnounceColumnWidth(weakHeaderCell.get(), col);
+        }
+
+        if (strongThis)
+        {
+            strongThis->RefreshResizeGripperAvailability();
         }
     });
     headerCell.Children().Append(gripperVisual);
