@@ -77,22 +77,20 @@ hstring TableViewColumnHeaderAutomationPeer::GetNameCore()
         }
     }
 
-    if (auto const headerString = TryGetColumnHeaderString(m_column.get()))
+    if (auto const headerString = TableViewDetails::TryGetColumnHeaderText(m_column.get()))
     {
         return *headerString;
     }
 
-    // Read template content, never re-enter this header's own peer.
-    if (auto const header = GetHeaderElement().try_as<winrt::Panel>())
+    // Read only the header content presenter (the first child): the grid line, sort indicator and
+    // resize gripper siblings must never name the header.
+    if (auto const header = GetHeaderElement().try_as<winrt::Panel>(); header && header.Children().Size() > 0)
     {
         uint32_t remaining = 64;
-        for (auto const& child : header.Children())
+        if (auto const name = GetCellContentName(header.Children().GetAt(0).try_as<winrt::FrameworkElement>(), true, 8, remaining);
+            !name.empty())
         {
-            if (auto const name = GetCellContentName(child.try_as<winrt::FrameworkElement>(), true, 8, remaining);
-                !name.empty())
-            {
-                return name;
-            }
+            return name;
         }
     }
 

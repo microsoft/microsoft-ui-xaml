@@ -405,7 +405,7 @@ winrt::hstring TableViewCellAutomationPeer::ReadDisplayName(bool columnHeaderRea
 winrt::hstring TableViewCellAutomationPeer::GetColumnHeaderText()
 {
     auto const column = m_column.get();
-    if (auto const headerString = TryGetColumnHeaderString(column))
+    if (auto const headerString = TableViewDetails::TryGetColumnHeaderText(column))
     {
         return *headerString;
     }

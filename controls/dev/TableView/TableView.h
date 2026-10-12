@@ -19,6 +19,50 @@
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
 #include <winrt/Microsoft.UI.System.h>
 
+namespace TableViewDetails
+{
+    // A UIElement header has no text, and a templated header shows its template rather than the
+    // object's ToString (CsWinRT makes every managed object IStringable, yielding its type name).
+    inline std::optional<winrt::hstring> TryGetHeaderContentText(const winrt::IInspectable& header, bool isTemplated)
+    {
+        if (!header || header.try_as<winrt::UIElement>())
+        {
+            return std::nullopt;
+        }
+        if (auto const propValue = header.try_as<winrt::IPropertyValue>();
+            propValue && propValue.Type() == winrt::PropertyType::String)
+        {
+            return propValue.GetString();
+        }
+        if (!isTemplated)
+        {
+            if (auto const stringable = header.try_as<winrt::IStringable>())
+            {
+                return stringable.ToString();
+            }
+        }
+
+        return std::nullopt;
+    }
+
+    inline std::optional<winrt::hstring> TryGetColumnHeaderText(const winrt::TableViewColumn& column)
+    {
+        if (!column)
+        {
+            return std::nullopt;
+        }
+
+        return TryGetHeaderContentText(
+            column.Header(), column.HeaderTemplate() || column.HeaderTemplateSelector());
+    }
+
+    // Shared by the header cell's automation name and the gripper's OwnerName.
+    inline winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
+    {
+        return TryGetColumnHeaderText(column).value_or(winrt::hstring{});
+    }
+}
+
 struct ColumnResizeBounds
 {
     double Min{ 0.0 };

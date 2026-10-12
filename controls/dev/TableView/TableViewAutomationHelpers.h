@@ -498,26 +498,3 @@ inline winrt::hstring GetCellDisplayText(winrt::FrameworkElement const& cell, bo
     uint32_t remaining = 32;
     return GetCellContentName(content, allowPeerCreation, 8, remaining);
 }
-
-// Returns the column Header's string form (an IStringable, or a String-typed IPropertyValue), or
-// nullopt when the header is not a string (or the column is null). Returning nullopt rather than an
-// empty string lets callers distinguish "no string header" from "an explicitly empty string header".
-inline std::optional<winrt::hstring> TryGetColumnHeaderString(winrt::TableViewColumn const& column)
-{
-    if (column)
-    {
-        auto const header = column.Header();
-        if (auto const stringable = header.try_as<winrt::IStringable>())
-        {
-            return stringable.ToString();
-        }
-        if (auto const propValue = header.try_as<winrt::IPropertyValue>())
-        {
-            if (propValue.Type() == winrt::PropertyType::String)
-            {
-                return propValue.GetString();
-            }
-        }
-    }
-    return std::nullopt;
-}
