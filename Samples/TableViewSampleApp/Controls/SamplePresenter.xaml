@@ -76,14 +76,35 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition x:Name="ExampleHostRow" Height="Auto"/>
                 </Grid.RowDefinitions>
-                <InfoBar
+                <!-- Try it callout, styled like an informational InfoBar. Not an InfoBar: InfoBar announces
+                     its title and message when it opens (64477279), and this one opens on every navigation.
+                     Unnamed, like the InfoBar it replaces: WinUI reports an unset AutomationId as the x:Name. -->
+                <Border
                     Grid.Row="0"
-                    Title="Try it"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
                     MinHeight="104"
-                    Visibility="Collapsed"/>
+                    Padding="16,14"
+                    CornerRadius="{ThemeResource ControlCornerRadius}"
+                    BorderThickness="1"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}"
+                    Visibility="Collapsed">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            Glyph="&#xE946;"
+                            FontSize="16"
+                            VerticalAlignment="Top"
+                            Margin="0,2,0,0"
+                            Foreground="{ThemeResource SystemFillColorAttentionBrush}"
+                            AutomationProperties.AccessibilityView="Raw"/>
+                        <TextBlock Grid.Column="1" TextWrapping="Wrap">
+                            <Run Text="Try it" FontWeight="SemiBold"/><Run Text="  "/><Run x:Name="TryItMessageRun"/>
+                        </TextBlock>
+                    </Grid>
+                </Border>
                 <ContentControl
                     x:Name="ExampleHost"
                     Grid.Row="1"
@@ -134,14 +155,20 @@
                         AutomationProperties.AutomationId="RailInfoTab"
                         AutomationProperties.Name="Info"/>
                 </SelectorBar>
+                <!-- A tab stop so Up/Down and Page Up/Down scroll the rail when focus would otherwise sit
+                     on a Slider or selector that consumes them (64479175, 64480152). -->
                 <ScrollViewer
                     Grid.Row="1"
                     VerticalScrollMode="Auto"
                     VerticalScrollBarVisibility="Auto"
                     HorizontalScrollMode="Disabled"
                     HorizontalScrollBarVisibility="Disabled"
-                    IsVerticalScrollChainingEnabled="False">
-                    <Grid Padding="16,8,16,16">
+                    IsVerticalScrollChainingEnabled="False"
+                    IsTabStop="True"
+                    UseSystemFocusVisuals="True"
+                    AutomationProperties.Name="Sample panel content">
+                    <!-- Right padding clears the overlay scrollbar when it expands (64478783). -->
+                    <Grid Padding="16,8,24,16">
                         <ContentControl
                             x:Name="OptionsHost"
                             IsTabStop="False"

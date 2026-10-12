@@ -126,7 +126,7 @@ A page holds only the TableView behaviour it demonstrates; the generic parts are
   tail. Only Last action is a live region (Polite, raised once per new message); a readout that
   must be announced on its own sets `AutomationProperties.LiveSetting` itself. `ShapingOptions.TimeCall` lets a page
   time the GroupBy / ClearGroupBy and Expand / Collapse all calls. `SamplePresenter.TryIt` renders
-  the Try it InfoBar. The rail has two tabs (`RailTabs`: `RailOptionsTab`, default, and
+    the Try it callout. The rail has two tabs (`RailTabs`: `RailOptionsTab`, default, and
   `RailInfoTab`) and scrolls on its own, bounded to the Example row (`Controls\RailHost.cs`).
   Options holds `SamplePresenter.Options`; Info holds `WhatToLookFor`, the page's `InfoExtras` and
   the shared `Controls\KeyboardReference.cs` (hierarchy keys with a parent relation or
@@ -192,7 +192,9 @@ per new message. A readout that must be announced on its own sets
 `AutomationProperties.LiveSetting="Polite"` **and** raises `AutomationEvents.LiveRegionChanged` on
 its peer after updating the text — a `TextBlock` never raises it by itself, so `LiveSetting` alone
 is silent (see `StatusPanel.AnnounceLastAction`).
-Do not make a whole status panel live: it will re-announce everything on every refresh.
+Do not make a whole status panel live: it will re-announce everything on every refresh. Do not use
+an `InfoBar` for static guidance either: it announces its title and message whenever it opens, so
+an always-open one is read aloud on every navigation. The Try it callout is a styled `Border`.
 
 **Make values mean what they show.** Narrator reads a `Slider` value as a percentage of its range.
 When the slider means something else (pixels, milliseconds), say so: put the unit in the `Header`

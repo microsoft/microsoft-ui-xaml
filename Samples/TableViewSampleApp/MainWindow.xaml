@@ -72,6 +72,17 @@
             <muxc:NavigationView.Resources>
                 <Thickness x:Key="NavigationViewContentMargin">0,0,0,0</Thickness>
                 <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
+                <!-- Wrap item labels so they stay readable at 200% text (64496403). The default theme style
+                     still supplies the template; the accessible name still comes from the Content string. -->
+                <Style TargetType="muxc:NavigationViewItem">
+                    <Setter Property="ContentTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,6"/>
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
             </muxc:NavigationView.Resources>
 
             <muxc:NavigationView.MenuItems>
