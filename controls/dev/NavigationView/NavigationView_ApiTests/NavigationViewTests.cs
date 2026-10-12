@@ -1593,6 +1593,81 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyRemovedNavigationViewItemDoesNotReceivePaneChanges()
+        {
+            VerifyRemovedNavigationViewItemDoesNotReceiveSplitViewChanges(navView =>
+            {
+                navView.IsPaneOpen = false;
+                navView.IsPaneOpen = true;
+                Verify.IsTrue(navView.IsPaneOpen);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyRemovedNavigationViewItemDoesNotReceiveDisplayModeChanges()
+        {
+            VerifyRemovedNavigationViewItemDoesNotReceiveSplitViewChanges(navView =>
+            {
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                Verify.AreEqual(NavigationViewPaneDisplayMode.Left, navView.PaneDisplayMode);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyRemovedNavigationViewItemDoesNotReceiveCompactPaneLengthChanges()
+        {
+            VerifyRemovedNavigationViewItemDoesNotReceiveSplitViewChanges(navView =>
+            {
+                navView.CompactPaneLength = 64;
+                Verify.AreEqual(64.0, ((NavigationViewItem)navView.MenuItems[0]).CompactPaneLength);
+            });
+        }
+
+        private void VerifyRemovedNavigationViewItemDoesNotReceiveSplitViewChanges(Action<NavigationView> updatePane)
+        {
+            NavigationView navView = null;
+            NavigationViewItem parent = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsPaneOpen = true,
+                    Width = 800,
+                    Height = 600
+                };
+                parent = new NavigationViewItem { Content = "Parent", IsExpanded = true };
+                for (int index = 0; index < 6; index++)
+                {
+                    parent.MenuItems.Add(new NavigationViewItem
+                    {
+                        Content = new TextBlock { Text = $"Child {index}" }
+                    });
+                }
+                navView.MenuItems.Add(parent);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                parent.MenuItems.Clear();
+                parent.MenuItems.Add(new NavigationViewItem { Content = "Replacement" });
+                // Keep the callback in the gap between GC disconnection and deferred native deletion.
+                GC.Collect();
+                updatePane(navView);
+                parent.IsExpanded = true;
+                Content.UpdateLayout();
+                Verify.IsTrue(parent.IsExpanded);
+                Verify.AreEqual(1, parent.MenuItems.Count);
+                Verify.IsGreaterThan(parent.ActualHeight, 0.0);
+            });
+        }
+
+        [TestMethod]
         public void VerifyNVIOutlivingNVDoesNotCrash()
         {
             NavigationViewItem menuItem1 = null;
