@@ -88,6 +88,8 @@ struct TableViewResourceCache
         double cellFontSize{ 0.0 };
         bool hasHeaderFontSize{ false };
         double headerFontSize{ 0.0 };
+        bool hasHeaderFontWeight{ false };
+        winrt::Windows::UI::Text::FontWeight headerFontWeight{};
     };
     FontInfo font{};
 
@@ -170,6 +172,7 @@ public:
     winrt::Thickness GetDensityHeaderCellPadding();
     double GetCellFontSize();
     double GetHeaderFontSize();
+    winrt::Windows::UI::Text::FontWeight GetHeaderFontWeight();
 
     // Per-level indent from the TableViewRowIndentSize resource, cached for rows.
     double GetRowIndentSize();

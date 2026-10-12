@@ -464,6 +464,7 @@ namespace
         cache.density.hasHeaderCellPadding = false;
         cache.font.hasCellFontSize = false;
         cache.font.hasHeaderFontSize = false;
+        cache.font.hasHeaderFontWeight = false;
         cache.hierarchy.hasRowIndentSize = false;
         cache.hierarchy.hasRowExpanderSize = false;
         cache.hierarchy.hasGroupExpanderSize = false;
@@ -2257,6 +2258,26 @@ double TableView::GetHeaderFontSize()
     return cache.font.headerFontSize;
 }
 
+winrt::Windows::UI::Text::FontWeight TableView::GetHeaderFontWeight()
+{
+    auto& cache = GetTableViewResourceCache(this);
+    if (cache.font.hasHeaderFontWeight)
+    {
+        return cache.font.headerFontWeight;
+    }
+
+    const auto fallback = winrt::FontWeights::SemiBold();
+    if (auto raw = LookupElementResource(*this, L"TableViewHeaderFontWeight"))
+    {
+        cache.font.headerFontWeight = winrt::unbox_value_or<winrt::Windows::UI::Text::FontWeight>(raw, fallback);
+        cache.font.hasHeaderFontWeight = true;
+        return cache.font.headerFontWeight;
+    }
+    cache.font.headerFontWeight = fallback;
+    cache.font.hasHeaderFontWeight = true;
+    return cache.font.headerFontWeight;
+}
+
 double TableView::GetRowIndentSize()
 {
     // Cached: hit per realized row on every pass, and resource lookup walks the whole tree. Cleared
@@ -2669,6 +2690,7 @@ void TableView::RebuildHeaders()
     // Header cells share the density row min-height so the header band matches the body rows.
     const double cachedRowMinHeight = GetDensityRowMinHeight();
     const double cachedHeaderFontSize = GetHeaderFontSize();
+    const auto cachedHeaderFontWeight = GetHeaderFontWeight();
     const winrt::Brush cachedHeaderCellFill = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
     // of RebuildHeaders; a non-positive or non-finite override would flow straight into Width().
@@ -2776,9 +2798,9 @@ void TableView::RebuildHeaders()
             content.Padding(contentPadding);
             content.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
             content.VerticalAlignment(winrt::VerticalAlignment::Center);
-            // Column-header text: theme font size, SemiBold to stand out from cells (templates override).
+            // Column-header text: theme font size and weight (templates override).
             content.FontSize(cachedHeaderFontSize);
-            content.FontWeight(winrt::FontWeights::SemiBold());
+            content.FontWeight(cachedHeaderFontWeight);
             winrt::Grid::SetColumn(content, contentColumnIndex);
             headerCell.Children().Append(content);
 

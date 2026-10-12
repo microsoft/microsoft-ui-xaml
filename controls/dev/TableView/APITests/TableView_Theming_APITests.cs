@@ -1171,6 +1171,74 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void VerifyHeaderFontWeightDefaultIsSemiBold()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual((ushort)600, GetHeaderPresenter(tableView, 0).FontWeight.Weight,
+                    "TableViewHeaderFontWeight defaults to SemiBold.");
+            });
+        }
+
+        // Override before load: the resolved weight is cached per instance.
+        [TestMethod]
+        public void VerifyHeaderFontWeightResourceOverrideApplies()
+        {
+            TableView appScoped = null;
+            TableView elementScoped = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TableViewHeaderFontWeight", Microsoft.UI.Text.FontWeights.Normal);
+
+                appScoped = CreateThemingTable();
+                LoadContent(appScoped);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual((ushort)400, GetHeaderPresenter(appScoped, 0).FontWeight.Weight,
+                        "An app-scope TableViewHeaderFontWeight override must win over the SemiBold default.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => ClearApplicationResource("TableViewHeaderFontWeight"));
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                elementScoped = CreateThemingTable();
+                elementScoped.Resources["TableViewHeaderFontWeight"] = Microsoft.UI.Text.FontWeights.Bold;
+                LoadContent(elementScoped);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual((ushort)700, GetHeaderPresenter(elementScoped, 0).FontWeight.Weight,
+                    "A TableViewHeaderFontWeight in the TableView's own Resources must win.");
+            });
+        }
+
         #endregion
     }
 
