@@ -279,12 +279,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // One of very few exact values the spec states outright (TableView-dev-spec.md:176): the dark
-        // TabularSurfaceGridLineBrush is #29FFFFFF and the C++ fallback uses the same 16% white.
-        //
-        // Pinning a literal colour is normally weak. Here the spec names it, and the test's real job is
-        // the cross-source agreement: the two sources drifting apart gives a host that merges
-        // TabularSurfaces a different gridline colour from one that does not, which is the same app
-        // looking different depending on how it was packaged.
+        // TabularSurfaceGridLineBrush is #29FFFFFF. Pinning a literal colour is normally weak; here the
+        // spec names it.
         [TestMethod]
         public void VerifyDarkGridLineBrushMatchesTheDocumentedValue()
         {
@@ -301,11 +297,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(Color.FromArgb(0x29, 0xFF, 0xFF, 0xFF), dark.Color,
                     "Dark TabularSurfaceGridLineBrush must be #29FFFFFF - 16% white, bumped from DividerStrokeColorDefault's " +
-                    "8.2% for readability over row banding. TableView.cpp's CreateGridLineFallbackBrush hardcodes the same value.");
+                    "8.2% for readability over row banding.");
 
                 Verify.AreEqual(Color.FromArgb(0x29, 0x00, 0x00, 0x00), light.Color,
-                    "Light TabularSurfaceGridLineBrush must be #29000000, matching CreateGridLineFallbackBrush's light branch. " +
-                    "If these disagree, the gridline colour depends on whether the host merged TabularSurfaces.");
+                    "Light TabularSurfaceGridLineBrush must be #29000000, the Light counterpart of the Dark value.");
             });
         }
 
