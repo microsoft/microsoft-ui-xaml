@@ -373,6 +373,10 @@ need no new base API or re-plumbing.
 - `Density` — row min-height + built-in cell/header padding preset.
 - `TabularSurfaces` theme resources — the theme-aware (light/dark/high-contrast) source of the
   default brushes, re-resolved on theme and high-contrast changes.
+- Typography theme keys — `TableViewCellFontSize` (14), `TableViewHeaderFontSize` (14) and
+  `TableViewHeaderFontWeight` (`SemiBold`). They do not vary with `Density`; an override in the
+  TableView's or an ancestor's `Resources`, or in `Application.Resources`, wins. Values are cached
+  per instance, so a later override applies after a theme, high-contrast or density change.
 
 **Rich styling (later):** delivered as **per-element `Style` dependency properties**, matching WPF
 `DataGrid` (`RowStyle` / `CellStyle` / `ColumnHeaderStyle`) — **not** a monolithic `TableStyle`.

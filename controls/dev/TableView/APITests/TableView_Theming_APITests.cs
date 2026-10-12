@@ -1171,6 +1171,117 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void VerifyHeaderFontWeightDefaultIsSemiBold()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual((ushort)600, GetHeaderPresenter(tableView, 0).FontWeight.Weight,
+                    "TableViewHeaderFontWeight defaults to SemiBold.");
+            });
+        }
+
+        // Override before load: the resolved weight is cached per instance.
+        [TestMethod]
+        public void VerifyHeaderFontWeightResourceOverrideApplies()
+        {
+            TableView appScoped = null;
+            TableView elementScoped = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TableViewHeaderFontWeight", Microsoft.UI.Text.FontWeights.Normal);
+
+                appScoped = CreateThemingTable();
+                LoadContent(appScoped);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual((ushort)400, GetHeaderPresenter(appScoped, 0).FontWeight.Weight,
+                        "An app-scope TableViewHeaderFontWeight override must win over the SemiBold default.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => ClearApplicationResource("TableViewHeaderFontWeight"));
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                elementScoped = CreateThemingTable();
+                elementScoped.Resources["TableViewHeaderFontWeight"] = Microsoft.UI.Text.FontWeights.Bold;
+                LoadContent(elementScoped);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual((ushort)700, GetHeaderPresenter(elementScoped, 0).FontWeight.Weight,
+                    "A TableViewHeaderFontWeight in the TableView's own Resources must win.");
+            });
+        }
+
+        // FontWeight comes back as a fresh box per lookup, so the own-entry check must compare it by
+        // value; otherwise the APP-theme dictionary's entry reads as an own entry and wins. Both themes
+        // run so one of them always differs from the app theme.
+        [TestMethod]
+        public void VerifyHeaderFontWeightThemeDictionaryOverrideFollowsElementTheme()
+        {
+            var cases = new[]
+            {
+                (Theme: ElementTheme.Light, Weight: (ushort)700),
+                (Theme: ElementTheme.Dark, Weight: (ushort)300),
+            };
+
+            foreach (var testCase in cases)
+            {
+                TableView tableView = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    EnsureTabularControlsResources();
+                    tableView = CreateThemingTable();
+                    tableView.RequestedTheme = testCase.Theme;
+                    tableView.Resources.ThemeDictionaries["Light"] = new ResourceDictionary
+                    {
+                        ["TableViewHeaderFontWeight"] = Microsoft.UI.Text.FontWeights.Bold,
+                    };
+                    tableView.Resources.ThemeDictionaries["Dark"] = new ResourceDictionary
+                    {
+                        ["TableViewHeaderFontWeight"] = Microsoft.UI.Text.FontWeights.Light,
+                    };
+                    LoadContent(tableView);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(testCase.Theme, tableView.ActualTheme, "Precondition: RequestedTheme picks the table's theme.");
+                    Verify.AreEqual(testCase.Weight, GetHeaderPresenter(tableView, 0).FontWeight.Weight,
+                        $"Under {testCase.Theme}, the TableView's ThemeDictionaries[\"{testCase.Theme}\"] TableViewHeaderFontWeight must win.");
+                });
+            }
+        }
+
         #endregion
     }
 
