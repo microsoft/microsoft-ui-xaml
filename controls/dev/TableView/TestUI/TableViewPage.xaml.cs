@@ -131,6 +131,9 @@ namespace MUXControlsTestApp
 
             InitializeComponent();
 
+            navigateToTouch.Click += delegate { Frame.NavigateWithoutAnimation(typeof(TableViewTouchPage), 0); };
+            navigateToVirtualization.Click += delegate { Frame.NavigateWithoutAnimation(typeof(TableViewVirtualizationPage), 0); };
+
             for (int i = 0; i < Facts.BasicItemCount; i++)
             {
                 _basicItems.Add(new TableViewTestPerson(i, Facts.BasicName(i), Facts.BasicAge(i), Facts.CityOf(i)));

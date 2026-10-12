@@ -99,6 +99,18 @@
                     IsTabStop="False"
                     AllowFocusOnInteraction="False"
                     Click="OnDisableFocusedRowClick" />
+            <Button x:Name="navigateToTouch"
+                    Content="Touch Page"
+                    AutomationProperties.Name="navigateToTouch"
+                    AutomationProperties.AutomationId="navigateToTouch"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False" />
+            <Button x:Name="navigateToVirtualization"
+                    Content="Virtualization"
+                    AutomationProperties.Name="navigateToVirtualization"
+                    AutomationProperties.AutomationId="navigateToVirtualization"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False" />
         </StackPanel>
 
         <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in

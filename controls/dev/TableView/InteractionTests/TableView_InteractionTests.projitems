@@ -15,6 +15,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\TestUI\TableViewTestPageFacts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Accessibility_InteractionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Axe_InteractionTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Touch_InteractionTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\TestUI\TableViewVirtualizationPageFacts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Virtualization_InteractionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Editing_InteractionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Hierarchy_InteractionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Keyboard_InteractionTests.cs" />
