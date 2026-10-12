@@ -230,6 +230,7 @@ void TableViewRow::OnIsEnabledChanged(
 void TableViewRow::OnApplyTemplate()
 {
     m_contextRequestedRevoker.revoke();
+    m_cellsHostContextRequestedRevoker.revoke();
     __super::OnApplyTemplate();
 
     ResetCellAutomationNames();
@@ -281,9 +282,24 @@ void TableViewRow::OnApplyTemplate()
         {
             if (auto self = weakThis.get())
             {
-                self->OnContextRequested(args);
+                self->OnContextRequested(args, false /* contentFlyoutOnly */);
             }
         });
+
+    // A keyboard request starts at the cell wrapper, above any CellTemplate content. Catch it at the
+    // cells host, below a row template's own ContextFlyout, so the cell's content menu wins like it
+    // does for a pointer request.
+    if (host)
+    {
+        m_cellsHostContextRequestedRevoker = host.ContextRequested(winrt::auto_revoke,
+            [weakThis = get_weak()](auto&&, winrt::ContextRequestedEventArgs const& args)
+            {
+                if (auto self = weakThis.get())
+                {
+                    self->OnContextRequested(args, true /* contentFlyoutOnly */);
+                }
+            });
+    }
 
     RebuildCells();
 
@@ -2840,7 +2856,7 @@ void TableViewRow::ResetPressState()
     m_lastPressItem.set(nullptr);
 }
 
-void TableViewRow::OnContextRequested(winrt::ContextRequestedEventArgs const& args)
+void TableViewRow::OnContextRequested(winrt::ContextRequestedEventArgs const& args, bool contentFlyoutOnly)
 {
     if (args.Handled())
     {
@@ -2855,6 +2871,12 @@ void TableViewRow::OnContextRequested(winrt::ContextRequestedEventArgs const& ar
 
     auto const target = ResolveContextMenuTarget(args);
     if (!target)
+    {
+        return;
+    }
+
+    if (contentFlyoutOnly &&
+        (!target->Column || !TableViewDetails::FindContentContextFlyout(target->Anchor)))
     {
         return;
     }
@@ -2877,6 +2899,7 @@ std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextM
     }
 
     auto node = args.OriginalSource().try_as<winrt::DependencyObject>();
+    winrt::TableViewColumn sourceColumn{ nullptr };
     bool reachedRow = false;
     while (node)
     {
@@ -2899,6 +2922,11 @@ std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextM
                 {
                     return std::nullopt;
                 }
+
+                if (!sourceColumn)
+                {
+                    sourceColumn = tagged;
+                }
             }
         }
 
@@ -2913,9 +2941,11 @@ std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextM
     auto* ownerImpl = winrt::get_self<TableView>(owner);
     winrt::Point hostPoint{};
     bool const hasPosition = args.TryGetPosition(nullptr, hostPoint);
+    // Without a position (keyboard, UIA ShowContextMenu) the cell the request came from decides;
+    // a request raised on the row itself falls back to the current cell.
     auto column = hasPosition
         ? ResolvePressedColumn(args.OriginalSource(), hostPoint)
-        : ownerImpl->CurrentColumn();
+        : (sourceColumn ? sourceColumn : ownerImpl->CurrentColumn());
     uint32_t index{};
     if (column && (column.Visibility() != winrt::Visibility::Visible ||
         winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != owner ||

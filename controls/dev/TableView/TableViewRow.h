@@ -180,7 +180,7 @@ private:
     winrt::TableViewColumn ResolvePressedColumn(
         const winrt::IInspectable& originalSource,
         const winrt::Point& hostPoint);
-    void OnContextRequested(winrt::ContextRequestedEventArgs const& args);
+    void OnContextRequested(winrt::ContextRequestedEventArgs const& args, bool contentFlyoutOnly);
     std::optional<TableViewDetails::ContextMenuTarget> ResolveContextMenuTarget(
         winrt::ContextRequestedEventArgs const& args);
 
@@ -246,6 +246,7 @@ private:
     // Use auto_revoke for self-event subscriptions instead of manual token cleanup.
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_contextRequestedRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_cellsHostContextRequestedRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     winrt::UIElement::GotFocus_revoker m_gotFocusRevoker{};

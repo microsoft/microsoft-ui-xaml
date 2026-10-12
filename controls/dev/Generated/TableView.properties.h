@@ -95,8 +95,6 @@ public:
     void BeginningEdit(winrt::event_token const& token);
     winrt::event_token CellEditEnding(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellEditEndingEventArgs> const& value);
     void CellEditEnding(winrt::event_token const& token);
-    winrt::event_token ContextFlyoutRequested(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewContextFlyoutRequestedEventArgs> const& value);
-    void ContextFlyoutRequested(winrt::event_token const& token);
     winrt::event_token SelectionChanged(winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs> const& value);
     void SelectionChanged(winrt::event_token const& token);
     winrt::event_token Sorted(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortedEventArgs> const& value);
@@ -106,7 +104,6 @@ public:
 
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewBeginningEditEventArgs>> m_beginningEditEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellEditEndingEventArgs>> m_cellEditEndingEventSource;
-    event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewContextFlyoutRequestedEventArgs>> m_contextFlyoutRequestedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs>> m_selectionChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortedEventArgs>> m_sortedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortingEventArgs>> m_sortingEventSource;
