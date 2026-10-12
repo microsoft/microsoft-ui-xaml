@@ -16,6 +16,7 @@
             <CheckBox x:Name="CancelDrag" Content="Cancel drag start" IsChecked="True"/>
             <CheckBox x:Name="RetemplateOnPress" Content="Retemplate on press"/>
             <Button x:Name="Snapshot" Content="Read state" Click="Snapshot_Click"/>
+            <CheckBox x:Name="DeferDragStart" Content="Defer drag start"/>
         </StackPanel>
         <NavigationView x:Name="NavView" Grid.Row="1" PaneDisplayMode="Left"
                         IsPaneOpen="True" OpenPaneLength="220" IsSettingsVisible="False"
@@ -42,6 +43,10 @@
             <TextBlock x:Name="CaptureCount" Text="0"/>
             <TextBlock x:Name="PressedStates" Text="Not read"/>
             <TextBlock x:Name="RetemplateCount" Text="0"/>
+            <TextBlock x:Name="LastPointerDevice" Text="None"/>
+            <TextBlock x:Name="DragStartPointerOver" Text="Not read"/>
+            <Button x:Name="CompleteDragDeferral" Content="Complete drag deferral" IsEnabled="False"
+                    Click="CompleteDragDeferral_Click"/>
         </StackPanel>
     </Grid>
 </local:TestPage>

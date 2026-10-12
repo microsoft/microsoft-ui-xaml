@@ -17,10 +17,12 @@ namespace MUXControlsTestApp
         private int dragCount;
         private int invocationCount;
         private int retemplateCount;
+        private DragOperationDeferral dragDeferral;
 
         public NavigationViewDragPage()
         {
             InitializeComponent();
+            Unloaded += (sender, args) => CompletePendingDragDeferral();
             DragItem.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
             {
                 if (RetemplateOnPress.IsChecked == true)
@@ -35,16 +37,45 @@ namespace MUXControlsTestApp
             }), true);
             foreach (var item in new[] { DragItem, NestedDragItem })
             {
+                item.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
+                    LastPointerDevice.Text = args.Pointer.PointerDeviceType.ToString()), true);
                 item.DragStarting += (sender, args) =>
                 {
+                    DragStartPointerOver.Text = Descendants((DependencyObject)sender)
+                        .OfType<FrameworkElement>()
+                        .SelectMany(element => VisualStateManager.GetVisualStateGroups(element))
+                        .Any(group => group.CurrentState != null && group.CurrentState.Name.Contains("PointerOver"))
+                        .ToString();
                     DragCount.Text = (++dragCount).ToString();
                     DragSource.Text = ((FrameworkElement)sender).Name;
                     args.Data.SetText(DragSource.Text);
                     args.AllowedOperations = DataPackageOperation.Copy;
                     args.Cancel = CancelDrag.IsChecked == true;
+                    if (DeferDragStart.IsChecked == true)
+                    {
+                        if (dragDeferral != null)
+                        {
+                            throw new InvalidOperationException("Complete the pending drag deferral before starting another drag.");
+                        }
+                        dragDeferral = args.GetDeferral();
+                        CompleteDragDeferral.IsEnabled = true;
+                    }
                 };
                 item.DropCompleted += (sender, args) => CompletionResult.Text = args.DropResult.ToString();
             }
+        }
+
+        private void CompleteDragDeferral_Click(object sender, RoutedEventArgs args)
+        {
+            CompletePendingDragDeferral();
+        }
+
+        private void CompletePendingDragDeferral()
+        {
+            var deferral = dragDeferral;
+            dragDeferral = null;
+            CompleteDragDeferral.IsEnabled = false;
+            deferral?.Complete();
         }
 
         private void TopMode_Click(object sender, RoutedEventArgs args)

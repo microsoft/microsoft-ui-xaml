@@ -42,6 +42,9 @@ NavigationViewItem::NavigationViewItem()
 {
     SetDefaultStyleKey(this);
     SetValue(s_MenuItemsProperty, winrt::make<Vector<winrt::IInspectable>>());
+
+    // End the press before app handlers can defer DragStarting.
+    DragStarting({ this, &NavigationViewItem::OnDragStarting });
 }
 
 void NavigationViewItem::UpdateVisualStateNoTransition()
@@ -1197,6 +1200,28 @@ void NavigationViewItem::OnItemPointerCanceled(const winrt::IInspectable&, const
         m_capturedPointer.PointerId() == args.Pointer().PointerId())
     {
         ProcessPointerCanceled(args);
+    }
+}
+
+void NavigationViewItem::OnDragStarting(const winrt::UIElement&, const winrt::DragStartingEventArgs& args)
+{
+    if (m_isPointerCapturedByItem)
+    {
+        // Automatic dragging may release pen capture without raising PointerCaptureLost.
+        m_isPressed = false;
+        m_isPointerOver = false;
+        if (const auto xamlRoot = XamlRoot())
+        {
+            // GetPosition returns the source anchor in physical pixels.
+            auto position = args.GetPosition(*this);
+            const auto scale = static_cast<float>(xamlRoot.RasterizationScale());
+            position.X /= scale;
+            position.Y /= scale;
+            m_isPointerOver = !IsOutOfControlBounds(position);
+        }
+        ReleaseCapturedPointer();
+        ResetTrackedPointerId();
+        UpdateVisualState(true);
     }
 }
 

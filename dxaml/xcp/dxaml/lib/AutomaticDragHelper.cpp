@@ -272,6 +272,11 @@ AutomaticDragHelper::HandlePointerMovedEventArgs(
         if (ShouldStartMouseDrag(newMousePosition))
         {
             ctl::ComPtr<wf::IAsyncOperation<wadt::DataPackageOperation>> spAsyncOperation;
+
+            // Releasing pen capture may not raise PointerCaptureLost, and the
+            // release after a drag may occur elsewhere. End tracking explicitly.
+            m_isLeftButtonPressed = false;
+            IFC_RETURN(UnregisterEvents());
             IFC_RETURN(StopCheckingForMouseDrag(spPointer.Get()));
 
             IFC_RETURN(m_pOwnerNoRef->StartDragAsync(spPointerPoint.Get(), &spAsyncOperation));

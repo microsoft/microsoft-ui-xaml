@@ -86,6 +86,7 @@ private:
     void OnPresenterPointerCaptureLost(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnItemPointerReleased(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnItemPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnDragStarting(const winrt::UIElement& sender, const winrt::DragStartingEventArgs& args);
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsVectorChanged(const winrt::Collections::IObservableVector<winrt::IInspectable>& sender, const winrt::Collections::IVectorChangedEventArgs& args);
 
