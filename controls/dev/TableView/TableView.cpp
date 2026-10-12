@@ -721,6 +721,8 @@ TableView::TableView()
 
 void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
+    ReclaimItemsSource();
+
     // ThemeSettings requires a WindowId, so it can only be created once we have a XamlRoot.
     if (m_themeSettings)
     {
@@ -1724,10 +1726,15 @@ void TableView::RefreshRealizedRowsAfterGroupExpansion()
     InvalidateMeasure();
 }
 
-void TableView::AdoptItemsSource()
+void TableView::AdoptItemsSource(bool reclaimActiveSource)
 {
     auto const itemsSource = ItemsSource();
-    auto tableViewSource = itemsSource.try_as<winrt::TableViewSource>();
+    // Reclaiming keeps the projection this table already minted, and with it the shaping state.
+    winrt::TableViewSource tableViewSource = reclaimActiveSource ? m_activeSource.get() : winrt::TableViewSource{ nullptr };
+    if (!tableViewSource)
+    {
+        tableViewSource = itemsSource.try_as<winrt::TableViewSource>();
+    }
 
     // Normalize the source. When the app hands us a plain collection, project it through a
     // TableViewSource of our own so the control has exactly one row pipeline rather than a shaped
@@ -1746,16 +1753,34 @@ void TableView::AdoptItemsSource()
         tableViewSource = winrt::TableViewSource::From(itemsSource);
     }
 
+    StopAwaitingSource();
+    if (tableViewSource && !winrt::get_self<::TableViewSource>(tableViewSource)->SetOwningTableView(*this))
+    {
+        TVDiag::LogRetailF(L"[TableView] ItemsSource is a TableViewSource already bound to another TableView; ignored.");
+        // Retry when the owner lets go; OnTableViewLoaded retries too.
+        auto weakThis = get_weak();
+        winrt::get_self<::TableViewSource>(tableViewSource)->AddOwnerReleasedHandler(*this, [weakThis]()
+        {
+            if (auto strongThis = weakThis.get(); strongThis && strongThis->IsLoaded())
+            {
+                strongThis->ReclaimItemsSource();
+            }
+        });
+        m_awaitedSource = winrt::make_weak(tableViewSource);
+        tableViewSource = nullptr;
+    }
+
     // Detach the previous source before adopting the new one. Swapping ItemsSource between two
     // TableViewSources leaves the old one alive and still subscribed to the app's collection, so
     // without this it keeps a back-pointer to this control and a later rebuild of that discarded
     // source would drive a TableView it no longer belongs to.
     if (auto const previouslyOwned = m_activeSource.get(); previouslyOwned && previouslyOwned != tableViewSource)
     {
-        winrt::get_self<::TableViewSource>(previouslyOwned)->SetOwningTableView(nullptr);
+        winrt::get_self<::TableViewSource>(previouslyOwned)->ReleaseOwningTableView(*this);
     }
 
     m_activeSource.set(tableViewSource);
+    m_activeSourceReleased = false;
 
     // A remembered body position names a row of the old source.
     ForgetBodyFocusPosition();
@@ -1766,7 +1791,6 @@ void TableView::AdoptItemsSource()
     if (tableViewSource)
     {
         auto* const sourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
-        sourceImpl->SetOwningTableView(*this);
 
         // The source raises this rather than calling back into TableView by name, so the shaping
         // stack stays below the control. Weak, because the control owns the source through
@@ -1798,6 +1822,18 @@ void TableView::AdoptItemsSource()
             auto strongThis = weakThis.get();
             return strongThis && strongThis->RepositionCustomSortItem(item, reshapePending);
         });
+
+        if (IsLoaded())
+        {
+            // The source may have been sorted while another table owned it.
+            QueueReconcileSortStateWithSource();
+        }
+        else
+        {
+            // No Unloaded will come to release it; OnTableViewLoaded reclaims it.
+            sourceImpl->ReleaseOwningTableView(*this);
+            m_activeSourceReleased = true;
+        }
     }
 }
 
@@ -3182,6 +3218,30 @@ void TableView::QueueRaiseColumnsStructureChanged()
     }
 }
 
+void TableView::StopAwaitingSource()
+{
+    if (auto const awaitedSource = m_awaitedSource.get())
+    {
+        winrt::get_self<::TableViewSource>(awaitedSource)->RemoveOwnerReleasedHandler(*this);
+    }
+    m_awaitedSource = nullptr;
+}
+
+void TableView::ReclaimItemsSource()
+{
+    if (m_activeSource.get() ? !m_activeSourceReleased : !ItemsSource().try_as<winrt::TableViewSource>())
+    {
+        return;
+    }
+
+    AdoptItemsSource(true /* reclaimActiveSource */);
+    // While drained, OnRowsRepeaterLoaded re-sources the repeater.
+    if (!m_rowsSourceDrained)
+    {
+        RefreshRowsPipeline();
+    }
+}
+
 void TableView::OnTableViewUnloaded()
 {
     m_headerSortSpaceArmedColumn = nullptr;
@@ -3240,6 +3300,15 @@ void TableView::OnTableViewUnloaded()
         catch (...) {}
         m_rowsSourceDrained = true; // Remember that Loaded must restore the source.
     }
+
+    // An unloaded table may stay alive until GC; let a newly loaded one bind the source meanwhile.
+    // OnTableViewLoaded reclaims it.
+    if (auto const activeSource = m_activeSource.get(); activeSource && !m_activeSourceReleased)
+    {
+        winrt::get_self<::TableViewSource>(activeSource)->ReleaseOwningTableView(*this);
+        m_activeSourceReleased = true;
+    }
+    StopAwaitingSource();
 
     // Detach ViewChanged so deferred scroll callbacks do not run after unload.
     if (auto bodyScroller = m_bodyScroller.get())

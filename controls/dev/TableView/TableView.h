@@ -864,7 +864,9 @@ private:
     //                        re-reads its row-metadata provider, and re-resolves empty-state +
     //                        selection. Runs on every re-entry (template applied, repeater
     //                        reloaded, shaping verb) with no lifetime work.
-    void AdoptItemsSource();
+    // reclaimActiveSource: re-bind the source this table released on Unloaded, or retry a refused one.
+    void AdoptItemsSource(bool reclaimActiveSource = false);
+    void ReclaimItemsSource();
     void RefreshRowsPipeline();
     // Raised by the bound TableViewSource when a shaping verb swapped its projection
     // (grouped <-> flat), so the cached view / row metadata are re-read.
@@ -1168,6 +1170,11 @@ private:
     void OnTableViewUnloaded();
     void ReleaseThemeSettings();
     bool m_rowsSourceDrained{ false };
+    // Unloaded released ownership of m_activeSource; Loaded reclaims it.
+    bool m_activeSourceReleased{ false };
+    // The source whose owner refused this table, which waits to be offered it on release.
+    winrt::weak_ref<winrt::TableViewSource> m_awaitedSource{ nullptr };
+    void StopAwaitingSource();
 
     double ComputeLeadingFrozenWidth();
     void RefreshFrozenColumns();
