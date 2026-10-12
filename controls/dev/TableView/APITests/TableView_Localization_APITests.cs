@@ -19,35 +19,9 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewLocalizationT
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
     // Category 17 of the TableView test plan: localization and resource resolution.
-    //
-    // WHY THIS CATEGORY EXISTS, AND WHY IT CANNOT GO THROUGH THE AUTOMATION PEERS.
-    // Every TableView string goes through LocalizedOrFallbackForTableViewAutomation or
-    // FormatLocalizedOrFallback (TableViewAutomationHelpers.h), both of which swallow the lookup
-    // failure and return a HARD-CODED ENGLISH LITERAL:
-    //
-    //     LocalizedOrFallbackForTableViewAutomation(SR_TableViewBooleanTrue, L"True")
-    //     FormatLocalizedOrFallback(SR_TableViewCellNameFormat, L"%1!s!, %2!s!", ...)
-    //
-    // That fallback is correct product behaviour - a missing string must not blank an automation
-    // name - but it means a peer-level assertion is BLIND to resource failure. A test that loads a
-    // table and checks "the cell peer has a non-empty Name" passes identically whether the resource
-    // map resolved or the control silently announced English to a Japanese screen-reader user.
-    // Issue #12070 (TableView could not resolve its default strings from the Tabular resource map)
-    // shipped for exactly that reason, and was fixed with no regression test.
-    //
-    // So this category asserts against the RESOURCE MAP ITSELF, through the same WinAppSDK
-    // ResourceManager the product uses (ResourceAccessor.cpp:34-46). Section 17.4 then cross-checks
-    // that what a peer announces is actually built from the resolved resource rather than from the
-    // fallback - the one peer-level assertion that can tell the two apart.
-    //
-    // WHY NOT Windows.ApplicationModel.Resources.Core. LocalizationTests.cs:30 is [Ignore]d with
-    // "Disabled after converting MUXControlsTestApp to a desktop .NET 5 app". That is the UWP
-    // resource stack, which does not resolve in a desktop app. The product moved to
-    // Microsoft.Windows.ApplicationModel.Resources; these tests follow it.
-    //
-    // NO ENGLISH LITERAL IS PINNED. TableView_AutomationPeer_APITests.cs:1283 states the rule -
-    // "pinning English text turns the test into a localization tripwire". These tests assert
-    // resolution, placeholder arity and cross-consistency, never a translated value.
+    // LocalizedOrFallbackForTableViewAutomation / FormatLocalizedOrFallback fall back to hard-coded
+    // English, so asserting on the automation peer alone cannot detect a failed lookup (#12070).
+    // These tests therefore read the resource map directly.
     [TestClass]
     public class TableViewLocalizationTests : TableViewApiTestBase
     {
@@ -76,8 +50,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 }
 
-                // The direct #12070 guard. If the Tabular resource subtree stops resolving, every key
-                // fails here at once, where a peer-level test would see nothing at all.
                 Verify.AreEqual(0, unresolved.Count,
                     $"Every TableView resource must resolve. Unresolved: {string.Join(", ", unresolved)}.");
             });
@@ -95,8 +67,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     var value = TryResolve(map, key);
 
-                    // A resource stack that echoes the identifier back produces a string that is
-                    // non-empty, so every other assertion in this file would accept it.
                     Verify.AreNotEqual(key, value,
                         $"{key} resolved to its own key name, which means the lookup failed rather than succeeded.");
                 }
@@ -117,8 +87,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Log.Comment($"Subtrees in use: {string.Join(", ", subtrees)}");
 
-                // #12070 was a subtree-resolution failure. A split across two subtrees means half the
-                // strings are one build-flag change away from silently falling back to English.
                 Verify.AreEqual(1, subtrees.Count,
                     $"All TableView resources must share one subtree; found {subtrees.Count}: {string.Join(", ", subtrees)}.");
             });
@@ -158,23 +126,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment($"Unlocalized: {gap}");
                 }
 
-                // PRECONDITION. If the test app were packaged with its languages filtered down to the
-                // default, every lookup above would miss and this test would report a localization
-                // disaster that is really a packaging artefact. Requiring at least one localized hit
-                // separates the two: no hits at all means the payload carries no translations, which is
-                // a different bug and is reported as such rather than as 100+ missing strings.
+                // A payload with no localized resources at all is reported as such, not as N missing strings.
                 Verify.IsGreaterThan(resolvedSomewhere, 0,
                     "No TableView resource resolved in any non-default language. The test payload appears to carry no localized resources at all, so per-locale coverage cannot be judged.");
 
-                // KNOWN GAP, ASSERTED AS A CEILING RATHER THAN ZERO.
-                // Six automation strings - CellLocalizedControlType, CellTextSeparator, CellNameFormat,
-                // GroupHeaderNameFormat, BooleanTrue and BooleanFalse - exist only in
-                // Strings\en-US\Resources.resw and in none of the other 85 locale files, so a non-English
-                // screen-reader user hears the English fallbacks for all six. That is a real defect, but it
-                // cannot be fixed by a test change: the values have to come from the localization pipeline.
-                //
-                // This assertion locks the gap at its present size so it cannot GROW, and fails the moment
-                // a new string ships without localization. Tighten the constants as the gaps close.
+                // Known gap: six automation strings exist only in en-US. This is a ceiling that must not
+                // grow; tighten KnownUnlocalizedKeysPerLocale as localization lands.
                 var ceiling = MaxKnownUnlocalizedCount();
 
                 Verify.IsLessThanOrEqual(gaps.Count, ceiling,
@@ -213,11 +170,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(anyResolved,
                     "No TableView resource resolved in any non-default language, so an empty locale cannot be distinguished from an unlocalized payload.");
 
-                // A per-key gap list hides a wholly empty locale, because it reads as a handful of
-                // individually missing keys. That is not hypothetical: Strings\mi-NZ\Resources.resw was
-                // checked in with zero data elements until localization update #12205 filled it. The
-                // allowlist exists so a known case cannot fail CI; it is empty now, so the next locale
-                // that ships empty fails here.
                 var unexpected = empty.Except(KnownEmptyLocales, StringComparer.OrdinalIgnoreCase).ToList();
 
                 Verify.AreEqual(0, unexpected.Count,
@@ -225,8 +177,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 foreach (var fixedUp in KnownEmptyLocales.Except(empty, StringComparer.OrdinalIgnoreCase))
                 {
-                    // Not a failure: localizing a locale must never break the build. It does mean the
-                    // allowlist is stale and should shrink.
                     Log.Comment($"{fixedUp} is no longer empty; remove it from KnownEmptyLocales.");
                 }
             });
@@ -252,9 +202,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var actual = CountPlaceholders(value, format.Style);
                     Log.Comment($"{format.Key} = '{value}' -> {actual} placeholder(s), expected {format.ExpectedPlaceholders}.");
 
-                    // A translator who drops %2!s! does not produce an error: StringUtil::FormatString
-                    // simply emits a string missing the value, so a cell announces its header and
-                    // nothing else. Arity is the only machine-checkable half of a translated format.
                     Verify.AreEqual(format.ExpectedPlaceholders, actual,
                         $"{format.Key} must keep {format.ExpectedPlaceholders} placeholder(s); resolved value was '{value}'.");
                 }
@@ -275,7 +222,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         var value = TryResolveForLanguage(map, format.Key, language);
 
-                        // An absent translation is section 17.2's subject, not this test's.
                         if (string.IsNullOrWhiteSpace(value))
                         {
                             continue;
@@ -316,8 +262,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var format = TryResolve(map, "TableViewCellNameFormat");
                 Verify.IsFalse(string.IsNullOrWhiteSpace(format), "CellNameFormat must resolve for this test to mean anything.");
 
-                // The cell peer is the surface that composes header text and value text through the
-                // format resource (TableViewCellAutomationPeer.cpp:392).
                 var peer = GetCellPeer(tableView, items[0], 0);
                 Verify.IsNotNull(peer, "The fixture must produce a cell peer for the first cell.");
 
@@ -326,9 +270,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.IsFalse(string.IsNullOrWhiteSpace(name), "A realized cell must expose an automation name.");
 
-                // The separator carried by the FORMAT is the part the fallback would differ in. Asserting
-                // the name is consistent with the resolved resource - rather than merely non-empty -
-                // is what distinguishes "resource resolved" from "fell back to L\"%1!s!, %2!s!\"".
+                // Checking the resolved separator, not just a non-empty name, is what tells the resource from the fallback.
                 var separator = SeparatorOf(format);
                 if (!string.IsNullOrEmpty(separator))
                 {
@@ -361,8 +303,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(string.IsNullOrWhiteSpace(nameFormat), "GroupHeaderNameFormat must resolve.");
                 Verify.IsFalse(string.IsNullOrWhiteSpace(countFormat), "GroupHeaderCountFormat must resolve.");
 
-                // GroupInfoToName (TableViewAutomationHelpers.h:228) composes the announced name, and the
-                // group header peer is where it surfaces.
                 var peer = GetGroupHeaderPeer(tableView, 0);
                 Verify.IsNotNull(peer, "The grouped fixture must produce a group header peer.");
 
@@ -371,9 +311,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.IsFalse(string.IsNullOrWhiteSpace(name), "A realized group header must expose an automation name.");
 
-                // GroupInfoToName composes KeyText and ItemCountText through the name format, and
-                // ItemCountText is itself produced through the count format. The count format's literal
-                // framing - the parentheses in en-US - must therefore appear in the announced name.
                 var framing = LiteralFramingOf(countFormat);
                 if (!string.IsNullOrEmpty(framing))
                 {
@@ -388,10 +325,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     internal static class TableViewLocalizationTestHelpers
     {
-        // The 18 keys defined in Strings\en-US\Resources.resw, which are the 18 SR_TableView* constants
-        // declared in ResourceAccessor.h. The SR_ macro maps SR_Foo -> L"Foo", so these are the macro
-        // names with the SR_ prefix removed. Kept as an explicit list so that adding a string to the
-        // product without a matching resource fails section 17.1 rather than going unnoticed.
         internal static readonly string[] AllResourceKeys =
         {
             "TableViewBooleanFalse",
@@ -414,31 +347,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             "TableViewSortedDescending",
         };
 
-        // A spread over script, direction and plural rules rather than all 85: these are the locales
-        // where a format or separator problem actually shows up differently.
         internal static readonly string[] RepresentativeLocales =
         {
-            "fr-FR",    // Latin, space-before-punctuation conventions
-            "de-DE",    // Latin, long compounds
-            "ja-JP",    // CJK, ideographic punctuation in the header format
-            "ar-SA",    // RTL
-            "he-IL",    // RTL
-            "ru-RU",    // Cyrillic, complex plurals
-            "zh-CN",    // Simplified Chinese
-            "mi-NZ",    // was checked in empty until #12205; kept as a regression guard
+            "fr-FR",
+            "de-DE",
+            "ja-JP",
+            "ar-SA",
+            "he-IL",
+            "ru-RU",
+            "zh-CN",
+            "mi-NZ",
         };
 
-        // Six keys are absent from every non-English locale file. See
-        // VerifyEveryResourceResolvesInEveryShippedLocale for the full explanation; this is the ceiling
-        // that keeps the gap from growing. It should shrink to zero once localization runs.
         internal const int KnownUnlocalizedKeysPerLocale = 6;
 
-        // Locales allowed to resolve no TableView string at all. Empty: mi-NZ was the one case, and
-        // #12205 fixed it. Add an entry only for a locale that is KNOWN to ship empty.
+        // Locales allowed to resolve no TableView string at all.
         internal static readonly string[] KnownEmptyLocales = { };
 
-        // A wholly empty locale contributes every key, not just the six, so the ceiling cannot be a flat
-        // multiple of the locale count.
         internal static int MaxKnownUnlocalizedCount()
         {
             var emptyCount = RepresentativeLocales.Count(l => KnownEmptyLocales.Contains(l, StringComparer.OrdinalIgnoreCase));
@@ -449,10 +374,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         internal enum PlaceholderStyle
         {
-            // StringUtil::FormatString's %1!s! / %2!s! form.
             FormatMessage,
 
-            // The {0} form used by the group-header count resource.
             DotNet,
         }
 
@@ -463,11 +386,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             public PlaceholderStyle Style;
         }
 
-        // Arity comes from the product's own call sites, not from the English values:
-        //   CellNameFormat            TableViewCellAutomationPeer.cpp:392   header + value
-        //   GroupHeaderNameFormat     TableViewAutomationHelpers.h:228      keyText + countText
-        //   ColumnHeaderHelpTextFormat TableViewColumnHeaderAutomationPeer.cpp:177  tooltip + sort state
-        //   GroupHeaderCountFormat    TableViewGroupHeaderAutomationPeer.cpp:58     count
         internal static readonly FormatResource[] FormatResources =
         {
             new FormatResource { Key = "TableViewCellNameFormat", ExpectedPlaceholders = 2, Style = PlaceholderStyle.FormatMessage },
@@ -482,11 +400,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static Microsoft.Windows.ApplicationModel.Resources.ResourceManager Manager
             => s_manager ?? (s_manager = new Microsoft.Windows.ApplicationModel.Resources.ResourceManager());
 
-        // The product picks its subtree with a build macro - MUXTABULARROOT_NAMESPACE_STR when
-        // MUXCONTROLS_TABULAR is defined, otherwise Microsoft.UI.Xaml (ResourceAccessor.cpp:11-15).
-        // Neither macro is checked in, so rather than hard-code a guess that would rot at the next
-        // packaging change, the map is walked once and each key located by its leaf name. That also
-        // makes section 17.3's "all in one subtree" assertion possible.
+        // Paths are discovered by scanning because the product's resource subtree is chosen by a build macro.
         private static Dictionary<string, string> ResourcePathsByKey()
         {
             if (s_resourcePathsByKey != null)
@@ -523,8 +437,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         internal static string FindResourcePath(string key)
             => ResourcePathsByKey().TryGetValue(key, out var path) ? path : null;
 
-        // Returned as the resource map rather than a subtree so callers can resolve by full path and
-        // stay independent of how the subtree is named.
         internal static Microsoft.Windows.ApplicationModel.Resources.ResourceMap RequireTableViewResourceMap()
         {
             var main = Manager.MainResourceMap;
@@ -576,8 +488,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var candidate = map.GetValue(path, context);
 
-                // A candidate that falls back to the default language is not a translation. Treat it as
-                // absent so section 17.2 counts it, which is the whole point of that test.
                 if (!ResolvedForLanguage(candidate, language))
                 {
                     return null;
@@ -607,12 +517,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 if (qualifiers == null || !qualifiers.TryGetValue("Language", out var resolved) || string.IsNullOrEmpty(resolved))
                 {
-                    // No language qualifier at all means the resource is language-neutral, which for a
-                    // translated string means it came from the default file.
+                    // A language-neutral candidate is the default-language fallback; treat it as untranslated.
                     return false;
                 }
 
-                // A request for fr-FR satisfied by "fr" is a translation; one satisfied by "en-US" is not.
                 return language.StartsWith(resolved, StringComparison.OrdinalIgnoreCase)
                     || resolved.StartsWith(language, StringComparison.OrdinalIgnoreCase);
             }
@@ -652,7 +560,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 if (style == PlaceholderStyle.FormatMessage)
                 {
-                    // %<n>!s!
                     if (value[i] != '%' || i + 1 >= value.Length || !char.IsDigit(value[i + 1]))
                     {
                         continue;
@@ -662,7 +569,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
                 else
                 {
-                    // {<n>}
                     if (value[i] != '{' || i + 2 >= value.Length || !char.IsDigit(value[i + 1]) || value[i + 2] != '}')
                     {
                         continue;
@@ -675,10 +581,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return seen.Count;
         }
 
-        // The literal text a two-placeholder format puts BETWEEN its arguments - ", " for the en-US
-        // cell name format. This is what differs between a resolved resource and the English fallback
-        // in a locale that punctuates differently, so it is the observable that makes section 17.4 a
-        // real check rather than a non-empty assertion.
         internal static string SeparatorOf(string format)
         {
             if (string.IsNullOrEmpty(format))
@@ -694,7 +596,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 return null;
             }
 
-            // Step past "%1!s!".
             var afterFirst = format.IndexOf('!', first);
             afterFirst = afterFirst < 0 ? first + 2 : format.IndexOf('!', afterFirst + 1) + 1;
 
@@ -703,8 +604,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 : format.Substring(afterFirst, second - afterFirst);
         }
 
-        // The literal text a one-placeholder format wraps around its argument - "(" for en-US's "({0})".
-        // Only the leading run is returned; it is enough to tell the resolved resource from the fallback.
         internal static string LiteralFramingOf(string format)
         {
             if (string.IsNullOrEmpty(format))
