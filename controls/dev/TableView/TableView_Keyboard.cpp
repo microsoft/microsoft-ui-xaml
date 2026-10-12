@@ -709,6 +709,8 @@ void TableView::OnPreviewKeyDownForNavigation(
     const winrt::IInspectable& /*sender*/,
     const winrt::KeyRoutedEventArgs& args)
 {
+    m_navKeyHandledEarly = false;
+
     switch (args.Key())
     {
     case winrt::Windows::System::VirtualKey::Shift:
@@ -1037,6 +1039,14 @@ void TableView::OnKeyDownForNavigation(
             args.Handled(true);
         }
     }
+}
+
+// Rows forward Left/Right before PART_BodyScroller scrolls on them; the handledEventsToo KeyDown
+// then skips the key, since hierarchy Left/Right is not idempotent.
+void TableView::HandleBodyHorizontalKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args)
+{
+    m_navKeyHandledEarly = true;
+    OnKeyDownForNavigation(nullptr, args);
 }
 
 bool TableView::FocusRow(int32_t index)

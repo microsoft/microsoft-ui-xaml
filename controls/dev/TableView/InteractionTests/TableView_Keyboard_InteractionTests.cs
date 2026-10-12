@@ -710,6 +710,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Left on a focused row does nothing: it neither moves focus nor scrolls the body horizontally (dev-spec Keyboard).")]
+        public void LeftOnFocusedRowDoesNotScrollBody()
+        {
+            // PART_BodyScroller scrolls on Left before the key bubbles to the TableView.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+
+                UIObject tableView = GetTable(ScrollingTable);
+                if (tableView == null) { return; }
+                UIObject rowsHost = GetRowsHost(tableView);
+                if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
+
+                UIObject row = rowsHost.Children[1];
+                row.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(row.HasKeyboardFocus, "Precondition: the row should hold focus.");
+
+                if (!DragHorizontalScrollBar(tableView, 30)) { Verify.Fail("The body scroller's horizontal ScrollBar was not found."); return; }
+
+                string offsetsBefore = ReadScrollOffsets();
+                double before = ReadScrollOffsetComponent(offsetsBefore, "H");
+                Verify.IsTrue(GetRowsHost(tableView).Children[1].HasKeyboardFocus, "Precondition: dragging the ScrollBar must not move focus.");
+                Verify.IsTrue(before > 0, string.Format("Precondition: the body must be scrolled horizontally: '{0}'.", offsetsBefore));
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+
+                string offsetsAfter = ReadScrollOffsets();
+                double after = ReadScrollOffsetComponent(offsetsAfter, "H");
+                Log.Comment("Body offsets '{0}' -> '{1}' after Left.", offsetsBefore, offsetsAfter);
+                Verify.IsTrue(Math.Abs(after - before) <= 0.5, "Left on a row must not scroll the body horizontally.");
+                Verify.IsTrue(GetRowsHost(tableView).Children[1].HasKeyboardFocus, "Left on a row must leave focus on that row.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Shift+Tab from the body lands on the header band, and a second Shift+Tab leaves the table upstream.")]
         public void ShiftTabMovesFocusOutOfTableUpstream()
         {

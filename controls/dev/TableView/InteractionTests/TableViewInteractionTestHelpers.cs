@@ -507,6 +507,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
         }
 
+        // dx is a screen delta; positive scrolls the content right. Returns false if the ScrollBar was not found.
+        // The ScrollBars are direct children of the body scroller; enumerating those is safe, unlike a row's children.
+        internal static bool DragHorizontalScrollBar(UIObject tableView, int dx)
+        {
+            UIObject scrollBar = null;
+            foreach (UIObject child in tableView.Children)
+            {
+                if (child.ClassName != "ScrollViewer")
+                {
+                    continue;
+                }
+
+                foreach (UIObject scrollerChild in child.Children)
+                {
+                    if (scrollerChild.ClassName == "ScrollBar" && scrollerChild.Name == "Horizontal")
+                    {
+                        scrollBar = scrollerChild;
+                        break;
+                    }
+                }
+            }
+
+            if (scrollBar == null)
+            {
+                return false;
+            }
+
+            var bounds = scrollBar.BoundingRectangle;
+            if (bounds.Width <= 0 || bounds.Height <= 0)
+            {
+                return false;
+            }
+
+            // A quarter along the track is inside the thumb at offset 0: the viewport is ~62% of the extent.
+            int startX = bounds.Left + (bounds.Width / 4);
+            int y = bounds.Top + (bounds.Height / 2);
+
+            Log.Comment("Dragging the horizontal ScrollBar thumb from ({0}, {1}) by {2}px.", startX, y, dx);
+
+            InputHelper.LeftMouseButtonDown(scrollBar, -(bounds.Width / 4), 0);
+            InputHelper.MoveMouse(new Point(startX + (dx / 2), y));
+            InputHelper.MoveMouse(new Point(startX + dx, y));
+            InputHelper.LeftMouseButtonUp();
+            Wait.ForIdle();
+
+            return true;
+        }
+
         // ---------- Test page ----------
 
         // MUXTestInfra's AppWatcherThread kills the test host once ONE app instance has run for 15 minutes
