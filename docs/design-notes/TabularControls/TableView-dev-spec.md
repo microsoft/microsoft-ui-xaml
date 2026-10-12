@@ -211,6 +211,7 @@ Keyboard handling is cell-aware and follows the WAI-ARIA treegrid model. `TableV
   - `Tab` into a scrolled body from the column header band lands on the first fully visible enabled row or group header in the body viewport (a partially visible one if none is fully visible), or the last one for `Shift+Tab`; for a row at cell level, on the cell in the current column. Landing on a group header from the band, scrolled or not, leaves cell level, but the column cursor is kept. If no enabled element is in the viewport, the framework's target is kept. It never targets a cache row, so the body scrolls no further than the focus bring-into-view padding.
 - **Rows.**
   - Unhandled `Up`, `Down`, `PageUp` and `PageDown` keep the starting level: row to row, or cell to cell in the same visible column. `Up` from the first row moves to the header band.
+  - A row that keyboard navigation focuses is scrolled fully into view, including a row that is not realized yet, such as the last row on `End`.
   - From a focused row, `Right` drills into the first cell. `Left` on the first cell returns to the row. `Left` on a row does nothing.
   - At cell level, `Left`/`Right` move the cell cursor within the focused row without wrapping. `Home`/`End` move to the first/last cell of the current row, and `Ctrl+Home`/`Ctrl+End` move to the first/last cell of the table. All horizontal keys mirror under RTL.
 - **Selection.**

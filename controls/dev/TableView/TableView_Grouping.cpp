@@ -568,7 +568,7 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
     // Defer to after the reshape's relayout. The reprojection triggered by the toggle recycles the
     // header container during the next layout pass; focusing now would land on a container layout
     // is about to recycle, dropping focus a second time. A one-shot LayoutUpdated fires once the
-    // tree has settled, mirroring FocusRow's deferred-focus pattern.
+    // tree has settled.
     if (m_pendingGroupFocusLayoutToken.value)
     {
         LayoutUpdated(m_pendingGroupFocusLayoutToken);
@@ -676,17 +676,24 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
         return;
     }
 
-    if (!fromPointerGesture)
+    if (!IsRowElementArranged(element))
     {
-        if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
+        element.UpdateLayout();
+        if (!IsRowElementArranged(element))
         {
-            frameworkElement.StartBringIntoView();
+            return;
         }
     }
 
     if (auto const control = element.try_as<winrt::Control>())
     {
         control.Focus(focusState);
+    }
+
+    // After Focus, so this non-animated request replaces the one focus raises.
+    if (!fromPointerGesture)
+    {
+        BringRowElementIntoView(element, std::nullopt);
     }
 }
 

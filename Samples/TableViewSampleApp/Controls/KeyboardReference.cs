@@ -15,8 +15,8 @@ public sealed partial class KeyboardReference : RailSection
     {
         ("Up / Down", "Previous / next row"),
         ("Left / Right", "Previous / next cell in the focused row"),
-        ("Home / End", "First / last cell of the focused row"),
-        ("Ctrl+Home / Ctrl+End", "First / last row. Known issue: Ctrl+End can stop near the bottom of the visible rows instead of on the last row."),
+        ("Home / End", "First / last row; at cell level, first / last cell of the focused row"),
+        ("Ctrl+Home / Ctrl+End", "First / last cell of the table"),
         ("Page Up / Page Down", "One viewport up / down"),
         ("Tab / Shift+Tab", "The column headers and the table body are one tab stop each: Tab goes to the headers, then the body, then out. Shift+Tab back into the body resumes the row or cell you left, or lands on the last visible row without scrolling"),
         ("Enter / Esc", "On a template cell: into its control / back to the cell"),

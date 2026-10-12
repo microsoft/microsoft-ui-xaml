@@ -793,11 +793,6 @@ void TableView::OnApplyTemplate()
     __super::OnApplyTemplate();
     InvalidateTableViewResourceCache(this);
 
-    if (m_pendingFocusLayoutToken.value)
-    {
-        LayoutUpdated(m_pendingFocusLayoutToken);
-        m_pendingFocusLayoutToken = {};
-    }
     if (m_pendingGroupFocusLayoutToken.value)
     {
         LayoutUpdated(m_pendingGroupFocusLayoutToken);
@@ -3118,11 +3113,6 @@ void TableView::OnTableViewUnloaded()
     ForgetBodyFocusPosition();
     m_reshapeFocusValid = false;
     m_reshapeFocusRow = -1;
-    if (m_pendingFocusLayoutToken.value)
-    {
-        LayoutUpdated(m_pendingFocusLayoutToken);
-        m_pendingFocusLayoutToken = {};
-    }
 
     if (m_pendingGroupFocusLayoutToken.value)
     {

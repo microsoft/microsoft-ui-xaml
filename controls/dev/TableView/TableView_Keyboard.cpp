@@ -1377,7 +1377,7 @@ void TableView::RestoreBodyFocusAfterReshape()
     }
 
     m_pendingReshapeFocusRow = row;
-    m_reshapeFocusBroughtIntoViewRow = -1;
+    m_pendingReshapeFocusAlign.reset();
 
     m_reshapeFocusArmedThisTurn = true;
     if (auto const queue = DispatcherQueue())
@@ -1468,7 +1468,6 @@ void TableView::CancelReshapeFocusRestore()
 {
     m_pendingReshapeFocusRow = -1;
     m_reshapeFocusAttemptsLeft = 0;
-    m_reshapeFocusBroughtIntoViewRow = -1;
     if (m_reshapeFocusLayoutToken.value)
     {
         LayoutUpdated(m_reshapeFocusLayoutToken);
@@ -1538,8 +1537,8 @@ void TableView::OnReshapeFocusAttempt()
     ArmReshapeFocusAttempt();
 }
 
-// Success is confirmed at the top of the next attempt, not inferred from Focus(), so a landing that
-// later re-shape work wipes is re-aimed.
+// Success (focus at the row and the row in view) is confirmed on the next attempt, not inferred
+// from Focus(), so a landing that later re-shape work wipes or scrolls away is re-aimed.
 bool TableView::TryLandReshapeFocus()
 {
     const int32_t rowCount = GetItemsSourceCount();
@@ -1556,11 +1555,6 @@ bool TableView::TryLandReshapeFocus()
 
     // A filter can shorten the projection past the captured position; clamp to stay in the body.
     const int32_t target = std::clamp(m_pendingReshapeFocusRow, 0, rowCount - 1);
-
-    if (IsBodyFocusAtRow(target))
-    {
-        return true;
-    }
 
     // TryGetElement first: GetOrCreateElement can recycle the container the repeater's rescue just
     // focused, and it throws while a layout pass is in flight.
@@ -1582,32 +1576,144 @@ bool TableView::TryLandReshapeFocus()
         }
     }
 
-    auto const frameworkElement = element.try_as<winrt::FrameworkElement>();
-    if (!frameworkElement ||
-        !frameworkElement.IsLoaded() ||
-        frameworkElement.ActualHeight() <= 0.0 ||
-        !winrt::VisualTreeHelper::GetParent(frameworkElement))
+    if (!IsRowElementArranged(element))
     {
         // Realized but not arranged yet; Focus() would be refused.
         return false;
     }
 
-    if (m_reshapeFocusBroughtIntoViewRow != target)
+    const bool focused = IsBodyFocusAtRow(target);
+    if (focused && IsRowElementInViewport(element))
     {
-        m_reshapeFocusBroughtIntoViewRow = target;
-        frameworkElement.StartBringIntoView();
+        return true;
     }
 
-    if (m_pendingReshapeFocusCellLevel)
+    if (!focused)
     {
-        FocusRealizedRowCell(element, m_pendingReshapeFocusColumn, m_pendingReshapeFocusState);
-    }
-    else
-    {
-        FocusRowContainerInternal(element, m_pendingReshapeFocusState);
+        if (m_pendingReshapeFocusCellLevel)
+        {
+            FocusRealizedRowCell(element, m_pendingReshapeFocusColumn, m_pendingReshapeFocusState);
+        }
+        else
+        {
+            FocusRowContainerInternal(element, m_pendingReshapeFocusState);
+        }
     }
 
+    BringRowElementIntoView(element, m_pendingReshapeFocusAlign);
     return false;
+}
+
+void TableView::BeginPendingBodyFocus(int32_t row, int32_t column, bool cellLevel, std::optional<double> alignRatio)
+{
+    m_pendingReshapeFocusRow = row;
+    m_pendingReshapeFocusColumn = column;
+    m_pendingReshapeFocusCellLevel = cellLevel;
+    m_pendingReshapeFocusState = winrt::FocusState::Keyboard;
+    m_pendingReshapeFocusAlign = alignRatio;
+    m_reshapeFocusAttemptsLeft = s_reshapeFocusRestoreAttempts;
+    ArmReshapeFocusAttempt();
+}
+
+bool TableView::IsRowElementArranged(winrt::UIElement const& element)
+{
+    auto const frameworkElement = element.try_as<winrt::FrameworkElement>();
+    return frameworkElement &&
+        frameworkElement.IsLoaded() &&
+        frameworkElement.ActualHeight() > 0.0 &&
+        winrt::VisualTreeHelper::GetParent(frameworkElement);
+}
+
+bool TableView::IsRowElementInViewport(winrt::UIElement const& element) const
+{
+    auto const frameworkElement = element.try_as<winrt::FrameworkElement>();
+    auto const scroller = m_bodyScroller.get();
+    if (!frameworkElement || !scroller)
+    {
+        return false;
+    }
+
+    const double viewportHeight = scroller.ViewportHeight();
+    if (!(viewportHeight > 0.0))
+    {
+        return false;
+    }
+
+    double top = 0.0;
+    try
+    {
+        top = frameworkElement.TransformToVisual(scroller).TransformPoint({ 0.0f, 0.0f }).Y;
+    }
+    catch (winrt::hresult_error const&)
+    {
+        return false;
+    }
+
+    // Same slack as FindViewportEdgeRowInternal; a row taller than the viewport counts once top-aligned.
+    constexpr double slack = 0.5;
+    const double bottom = top + frameworkElement.ActualHeight();
+    return top >= -slack && (bottom <= viewportHeight + slack || top <= slack);
+}
+
+bool TableView::BringRowElementIntoView(winrt::UIElement const& element, std::optional<double> alignRatio)
+{
+    auto const frameworkElement = element.try_as<winrt::FrameworkElement>();
+    if (!frameworkElement)
+    {
+        return false;
+    }
+
+    if (!IsRowElementArranged(element))
+    {
+        try
+        {
+            frameworkElement.UpdateLayout();
+        }
+        catch (...)
+        {
+            return false;
+        }
+
+        if (!IsRowElementArranged(element))
+        {
+            return false;
+        }
+    }
+
+    if (IsRowElementInViewport(element))
+    {
+        return true;
+    }
+
+    winrt::BringIntoViewOptions options;
+    options.AnimationDesired(false);
+    if (alignRatio)
+    {
+        options.VerticalAlignmentRatio(*alignRatio);
+    }
+
+    // Keep a focused cell's horizontal span so the row request does not undo the cell's own scroll.
+    if (auto const root = XamlRoot())
+    {
+        if (auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::FrameworkElement>();
+            focused && SharedHelpers::IsAncestor(focused, element, false /* checkVisibility */))
+        {
+            try
+            {
+                const auto origin = focused.TransformToVisual(element).TransformPoint({ 0.0f, 0.0f });
+                options.TargetRect(winrt::Rect{
+                    origin.X, 0.0f,
+                    static_cast<float>(focused.ActualWidth()),
+                    static_cast<float>(frameworkElement.ActualHeight()) });
+            }
+            catch (winrt::hresult_error const&)
+            {
+            }
+        }
+    }
+
+    frameworkElement.StartBringIntoView(options);
+    return true;
 }
 
 bool TableView::IsBodyFocusAtRow(int32_t rowIndex) const
@@ -2064,7 +2170,7 @@ bool TableView::TryGetFocusedCell(int32_t& rowIndex, int32_t& columnIndex, bool 
     return false;
 }
 
-bool TableView::FocusCell(int32_t rowIndex, int32_t visibleColumnIndex)
+bool TableView::FocusCell(int32_t rowIndex, int32_t visibleColumnIndex, std::optional<double> alignRatio)
 {
     if (visibleColumnIndex >= 0)
     {
@@ -2072,7 +2178,7 @@ bool TableView::FocusCell(int32_t rowIndex, int32_t visibleColumnIndex)
         SetColumnCursorInternal(visibleColumnIndex);
     }
 
-    return FocusRowElementInternal(rowIndex, m_currentCellColumn, true /* cellLevel */);
+    return FocusRowElementInternal(rowIndex, m_currentCellColumn, true /* cellLevel */, alignRatio);
 }
 
 // Single writer for the shared column cursor; setting it also marks that a real column was chosen.
@@ -2094,14 +2200,15 @@ void TableView::ResetColumnCursorInternal()
     m_columnCursorEstablished = false;
 }
 
-bool TableView::FocusRowContainer(int32_t rowIndex)
+bool TableView::FocusRowContainer(int32_t rowIndex, std::optional<double> alignRatio)
 {
     // Row level keeps the remembered column untouched for the next drill-in.
-    return FocusRowElementInternal(rowIndex, m_currentCellColumn, false /* cellLevel */);
+    return FocusRowElementInternal(rowIndex, m_currentCellColumn, false /* cellLevel */, alignRatio);
 }
 
-// Shared realization path; if layout is required, finish on LayoutUpdated at the same requested level.
-bool TableView::FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, bool cellLevel)
+// Shared realization path; a row that cannot be arranged yet finishes in the re-shape attempt loop.
+bool TableView::FocusRowElementInternal(
+    int32_t rowIndex, int32_t targetColumn, bool cellLevel, std::optional<double> alignRatio)
 {
     auto repeater = m_rowsRepeater.get();
     if (!repeater)
@@ -2115,84 +2222,46 @@ bool TableView::FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, 
         return false;
     }
 
-    if (m_pendingFocusLayoutToken.value)
-    {
-        LayoutUpdated(m_pendingFocusLayoutToken);
-        m_pendingFocusLayoutToken = {};
-    }
+    // This request is newer intent than any keyboard or re-shape focus still settling.
+    CancelReshapeFocusRestore();
 
     auto element = repeater.GetOrCreateElement(rowIndex);
-    if (!element)
+    if (!element || !element.try_as<winrt::Control>())
     {
         return false;
     }
 
-    auto frameworkElement = element.try_as<winrt::FrameworkElement>();
-    if (frameworkElement)
+    if (!IsRowElementArranged(element))
     {
-        frameworkElement.StartBringIntoView();
+        try
+        {
+            element.UpdateLayout();
+        }
+        catch (...)
+        {
+        }
     }
 
-    if (element.try_as<winrt::Control>())
+    if (IsRowElementArranged(element))
     {
-        if (frameworkElement &&
-            (!frameworkElement.IsLoaded() ||
-                frameworkElement.ActualHeight() <= 0.0 ||
-                !winrt::VisualTreeHelper::GetParent(frameworkElement)))
-        {
-            auto weakThis = get_weak();
-            m_pendingFocusLayoutToken = LayoutUpdated(
-                [weakThis, rowIndex, targetColumn, cellLevel](winrt::IInspectable const&, winrt::IInspectable const&)
-                {
-                    auto strongThis = weakThis.get();
-                    if (!strongThis)
-                    {
-                        return;
-                    }
-
-                    if (strongThis->m_pendingFocusLayoutToken.value)
-                    {
-                        strongThis->LayoutUpdated(strongThis->m_pendingFocusLayoutToken);
-                        strongThis->m_pendingFocusLayoutToken = {};
-                    }
-
-                    // Layout callbacks fail-fast on escaping exceptions, so contain realization/focus work.
-                    try
-                    {
-                        if (rowIndex < 0 || rowIndex >= strongThis->GetItemsSourceCount())
-                        {
-                            return;
-                        }
-
-                        if (auto repeater = strongThis->m_rowsRepeater.get())
-                        {
-                            if (auto element = repeater.GetOrCreateElement(rowIndex))
-                            {
-                                if (cellLevel)
-                                {
-                                    strongThis->FocusRealizedRowCell(element, targetColumn);
-                                }
-                                else
-                                {
-                                    strongThis->FocusRowContainerInternal(element);
-                                }
-                            }
-                        }
-                    }
-                    catch (...)
-                    {
-                        // Best-effort deferred focus: the row can be recycled or the source
-                        // reshaped between the request and this callback.
-                    }
-                });
-            return true;
-        }
-
-        return cellLevel
+        const bool focused = cellLevel
             ? FocusRealizedRowCell(element, targetColumn)
             : FocusRowContainerInternal(element);
+        if (!focused)
+        {
+            return false;
+        }
+
+        // After Focus, so this non-animated request replaces the one focus raises.
+        BringRowElementIntoView(element, alignRatio);
+        if (IsRowElementInViewport(element))
+        {
+            return true;
+        }
     }
-    return false;
+
+    BeginPendingBodyFocus(rowIndex, targetColumn, cellLevel, alignRatio);
+    return true;
 }
 
 // Focuses an already-realized container at row level; group headers have no cell level.
