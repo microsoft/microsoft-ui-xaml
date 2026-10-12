@@ -489,7 +489,7 @@ public sealed partial class MainWindow : Window
         // Hint the NEXT state in the glyph so the title-bar button matches
         // the same Default → Light → Dark → Default cycle. Called from
         // AppSettings.ThemeChanged so both the toggle button AND the
-        // Settings page radios refresh the glyph through this single path.
+        // Settings page theme ComboBox refresh the glyph through this single path.
         if (ThemeToggleIcon is null) return;
 
         ThemeToggleIcon.Glyph = theme switch

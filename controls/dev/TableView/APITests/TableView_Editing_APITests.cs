@@ -644,6 +644,47 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies FontWeight set on the TableView reaches the text column's editor TextBox.")]
+        public void VerifyTableViewFontWeightReachesTextEditor()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                items[0].RejectPrefix = InvalidPrefix;
+
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                tableView.FontWeight = Microsoft.UI.Text.FontWeights.Bold;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // A rejected value holds the edit open, so the editor stays in the tree.
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), InvalidPrefix + "Nope");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: an edit is open.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
+                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
+                Verify.AreEqual(Microsoft.UI.Text.FontWeights.Bold.Weight, editors[0].FontWeight.Weight,
+                    "The editor must not set a local FontWeight that blocks the TableView's value.");
+            });
+
+            RunOnUIThread.Execute(() => tableView.CancelEdit());
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a cell blocked by validation recovers: a subsequent acceptable value commits and closes the edit.")]
         public void VerifyClearingValidationErrorAllowsTheCommit()
         {

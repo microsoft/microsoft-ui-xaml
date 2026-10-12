@@ -591,6 +591,44 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Shift+Tab back into the body does not resume the remembered cell once its row is disabled; focus still lands in the body.")]
+        public void ShiftTabReentrySkipsCellInDisabledRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject rowsHost = GetRowsHost(BasicTable);
+                if (rowsHost == null) { Verify.Fail(BasicTable + " exposed no rows host."); return; }
+                if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
+
+                rowsHost.Children[1].SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.AreEqual(AgeColumn, IndexOfFocusedCell(GetRowsHost(BasicTable).Children[1]),
+                    "Precondition: the Age cell of the anchor row should hold focus.");
+
+                // Moves focus to AfterTableButton, then disables the row that held it.
+                var disable = FindElement.ById<Button>(DisableFocusedRowButton);
+                if (disable == null) { Verify.Fail(DisableFocusedRowButton + " was not found."); return; }
+                disable.InvokeAndWait();
+                Wait.ForIdle();
+                Verify.IsTrue(FindElement.ById(AfterTableButton).HasKeyboardFocus, "Precondition: focus should have left the table.");
+
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+
+                rowsHost = GetRowsHost(BasicTable);
+                UIObject focusedRow = FindFocusedRow(rowsHost);
+                Log.Comment("After Shift+Tab: focused element {0}.", DescribeFocused());
+                Verify.IsNotNull(focusedRow, "Shift+Tab must land on a row of the body at row level.");
+                Verify.IsTrue(focusedRow.IsEnabled, "Re-entry must not land on the disabled row.");
+                Verify.AreEqual(-1, IndexOfFocusedCell(focusedRow), "With the remembered cell unreachable, re-entry is row-level.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Shift+Tab back into the body resumes the remembered ROW at row level when the cursor was left at row level, not a control hosted in another row.")]
         public void ShiftTabReentryResumesRememberedRow()
         {
@@ -1489,6 +1527,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private const string FocusNeutralSortBasicByAgeButton = "FocusNeutralSortBasicByAgeButton";
         private const string FocusNeutralFilterSourceButton = "FocusNeutralFilterSourceButton";
+        private const string DisableFocusedRowButton = "DisableFocusedRowButton";
 
         // Guards the position tests against passing for the wrong reason (focus must still be in the body).
         private static void VerifyTriggerLeftFocusInBody(UIObject trigger, string tableAutomationId)

@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
@@ -152,6 +153,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "A press in a cell's empty area must reach that cell, or row selection and double-click-to-edit are dead across most of the cell.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies forward Tab entry into a scrolled body lands on a row inside the viewport without scrolling.")]
+        public void VerifyForwardTabEntryLandsOnFirstViewportRow()
+        {
+            TableView tableView = null;
+            Button before = null;
+            double offset = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewWithColumns(MakeManyItems(200), height: 200);
+                // No header band, so Tab from Before enters the body directly.
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+                before = new Button { Content = "Before" };
+                var panel = new StackPanel();
+                panel.Children.Add(before);
+                panel.Children.Add(tableView);
+                panel.Children.Add(new Button { Content = "After" });
+                LoadContent(panel);
+            });
+
+            SettleLayout(tableView);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 2000.0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                offset = GetBodyScroller(tableView).VerticalOffset;
+                Verify.IsTrue(before.Focus(FocusState.Keyboard), "Precondition: Before takes focus.");
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Next,
+                    new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }), "Tab from Before must move focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                var row = FocusManager.GetFocusedElement(tableView.XamlRoot) as TableViewRow;
+                Verify.IsNotNull(row, "Tab entry must land on a row.");
+                Verify.AreEqual(offset, scroller.VerticalOffset, "Tab entry must not scroll the body.");
+
+                var top = row.TransformToVisual(scroller).TransformPoint(new Point(0.0, 0.0)).Y;
+                Log.Comment($"Focused row top {top}, height {row.ActualHeight}, viewport {scroller.ViewportHeight}.");
+                Verify.IsTrue(top >= -0.5 && top + row.ActualHeight <= scroller.ViewportHeight + 0.5,
+                    "Tab entry must land on a row inside the viewport, not on a cache row.");
+            });
+        }
     }
 
     // Category 5.2 of the TableView test plan: generated cell content.
@@ -203,6 +252,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment($"Short cell height {shortText.ActualHeight}; long cell height {longText.ActualHeight}.");
                 Verify.AreEqual(shortText.ActualHeight, longText.ActualHeight,
                     "A value too wide for its column must be trimmed to one line, not wrapped onto several.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies FontWeight set on the TableView reaches generated text cells.")]
+        public void VerifyTableViewFontWeightReachesTextCells()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewWithColumns();
+                // Bold, not SemiBold: the header is already SemiBold.
+                tableView.FontWeight = Microsoft.UI.Text.FontWeights.Bold;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var text = GetCellContent(GetRowCell(RequireFirstRow(tableView), 0)) as TextBlock;
+                Verify.IsNotNull(text, "A text column should generate a TextBlock.");
+                Verify.AreEqual(Microsoft.UI.Text.FontWeights.Bold.Weight, text.FontWeight.Weight,
+                    "A text cell must not set a local FontWeight that blocks the TableView's value.");
             });
         }
 

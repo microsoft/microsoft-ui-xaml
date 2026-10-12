@@ -39,7 +39,7 @@ namespace TableViewDetails
         return {};
     }
 
-    // One header-text extraction per column, shared by the header cell's automation name, the gripper's OwnerName and the text column's editor.
+    // Shared by the header cell's automation name and the gripper's OwnerName.
     inline winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
     {
         return GetHeaderContentText(column.Header());

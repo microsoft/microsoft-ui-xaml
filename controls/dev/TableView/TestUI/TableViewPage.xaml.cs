@@ -802,5 +802,19 @@ namespace MUXControlsTestApp
                 BasicTableView.SortByColumn(age, SortDirection.Descending);
             }
         }
+
+        // Moves focus out first so disabling the row cannot shift focus to another row of the table.
+        private void OnDisableFocusedRowClick(object sender, RoutedEventArgs e)
+        {
+            for (var node = FocusManager.GetFocusedElement(XamlRoot) as DependencyObject; node != null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (node is TableViewRow row)
+                {
+                    AfterTableButton.Focus(FocusState.Programmatic);
+                    row.IsEnabled = false;
+                    return;
+                }
+            }
+        }
     }
 }

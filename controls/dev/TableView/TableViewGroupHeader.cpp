@@ -355,6 +355,10 @@ void TableViewGroupHeader::OnPointerReleased(winrt::PointerRoutedEventArgs const
     // The editor commit inside Focus() can reshape and recycle this header onto another group.
     if (pressedIdentity != GetGroupIdentity())
     {
+        if (IsExpandable())
+        {
+            args.Handled(true);
+        }
         return;
     }
 

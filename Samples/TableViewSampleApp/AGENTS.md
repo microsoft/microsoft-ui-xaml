@@ -160,10 +160,7 @@ locally and an error in CI (`TF_BUILD` / `ContinuousIntegrationBuild`, or
 
 ## Accessibility
 
-An accessibility test pass against this gallery logged 115 bugs, and roughly three quarters of them
-were sample markup rather than TableView defects. The rules below are what those bugs reduced to.
-Treat them as build rules, not aspirations: a new page that breaks one of them re-opens a bug that
-was already paid for once.
+Rules distilled from the sample's accessibility test pass.
 
 **Name every element a user can reach, exactly once.** A control that takes focus must report a
 non-empty UIA Name. Prefer the name the user can see: `Content`, `Header`, or a child `TextBlock`.
@@ -174,11 +171,10 @@ content — the result is announced twice. Use `AutomationProperties.LabeledBy` 
 under a control, never as a substitute for the name.
 
 **Group related options into one control, not loose siblings.** A set of mutually exclusive choices
-is `muxc:RadioButtons` with `SelectedIndex` and `SelectionChanged` — one tab stop, arrow-key
-selection, and correct `PositionInSet`/`SizeOfSet`. Loose `RadioButton`s sharing a `GroupName` and a
-`Checked` handler give each item its own tab stop and no set position; that shape was removed from
-this app and should not come back. Where a group of controls is not a selection, give the container
-an `AutomationProperties.Name` so the group has context.
+is a single selector — a `ComboBox` (as `ThemeModeCombo` on Settings) or `muxc:RadioButtons` — never
+loose `RadioButton`s sharing a `GroupName`, which give each item its own tab stop and no set
+position. Where a group of controls is not a selection, give the container an
+`AutomationProperties.Name` so the group has context.
 
 **Mark up structure.** A `TextBlock` that reads as a section heading carries
 `AutomationProperties.HeadingLevel`; the rail's section headers are `Level2`. Headings are how a
@@ -191,10 +187,11 @@ says so. A control that does nothing perceivable is reported as broken, so a sam
 inert button. Focus sentinels and similar test aids say what they are when activated.
 `SetLastAction` re-announces a repeated message, so pressing the same button twice is not silent.
 
-**Announce only what changed.** Only Last action is a live region, raised once per new message. A
-readout that must be announced on its own sets `AutomationProperties.LiveSetting="Polite"` **and**
-raises `AutomationEvents.LiveRegionChanged` on its peer after updating the text — a `TextBlock`
-never raises it by itself, so `LiveSetting` alone is silent (see `StatusPanel.AnnounceLastAction`).
+**Announce only what changed.** In the status panel only Last action is a live region, raised once
+per new message. A readout that must be announced on its own sets
+`AutomationProperties.LiveSetting="Polite"` **and** raises `AutomationEvents.LiveRegionChanged` on
+its peer after updating the text — a `TextBlock` never raises it by itself, so `LiveSetting` alone
+is silent (see `StatusPanel.AnnounceLastAction`).
 Do not make a whole status panel live: it will re-announce everything on every refresh.
 
 **Make values mean what they show.** Narrator reads a `Slider` value as a percentage of its range.
@@ -220,7 +217,7 @@ and a tooltip: placeholders do not wrap.
 **Theme by token, not by accent.** Theme dictionaries use only `Light`, `Dark`, `HighContrast`, and
 high-contrast entries use `SystemColor*` resources. For anything behind text — row banding,
 chips, tints — use neutral layer/card fills such as `CardBackgroundFillColorSecondary`. Accent-derived
-fills do not keep 4.5:1 against body text and have already caused one Sev1.
+fills do not keep 4.5:1 against body text.
 
 **Hide decoration, name meaning.** An image or glyph that carries information gets a name; one that
 is purely decorative is removed from the tree with `AutomationProperties.AccessibilityView="Raw"`
