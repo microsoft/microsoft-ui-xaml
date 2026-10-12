@@ -237,7 +237,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: regression test for AB#60057581: clear the public TemplateSettingsProperty on a loaded tip, then
+        // Scenario: regression test: clear the public TemplateSettingsProperty on a loaded tip, then
         //           change IconSource, open the tip, resize its content and close it.
         // Expected: TemplateSettings is null after ClearValue and every following step completes without a crash.
         // A failure means: code that updates TemplateSettings (icon, size-based margins) dereferences the cleared
@@ -245,7 +245,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void TeachingTipWithClearedTemplateSettingsDoesNotCrash()
         {
-            // Regression test for AB#60057581: clearing the public TemplateSettingsProperty left
+            // Regression test: clearing the public TemplateSettingsProperty left
             // OnIconSourceChanged and UpdateSizeBasedTemplateSettings dereferencing a null peer.
             var loadedEvent = new AutoResetEvent(false);
             TeachingTip teachingTip = null;
@@ -1988,7 +1988,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 if (PlatformConfiguration.IsDebugBuildConfiguration())
                 {
-                    // TeachingTip raises the hook events only in debug (DBG) builds.
+                    // TeachingTip raises the hook events only in debug (DBG) builds; release builds verify only unsubscription.
                     List<string> raisedForTip;
                     lock (notifications)
                     {
@@ -1998,10 +1998,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Verify.IsTrue(raisedForTip.Contains(name), $"{name} should notify its subscriber with the tip as sender");
                     }
-                }
-                else
-                {
-                    Log.Comment("Release build: TeachingTip compiles the hook notifications out, so only unsubscription is verified.");
                 }
 
                 RunOnUIThread.Execute(() => { Unsubscribe(); subscribed = false; });

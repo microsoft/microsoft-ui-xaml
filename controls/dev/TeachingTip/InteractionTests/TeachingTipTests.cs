@@ -1369,9 +1369,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // Scenario: open a light-dismiss tip, move focus back to the page, press F6, then press F6 again with focus
         //           inside the tip.
-        // Expected: the first F6 focuses the tip's first focusable element (the content CheckBox) and is handled; the
-        //           second keeps focus on the CheckBox (the tip has no element to return to); the tip stays open and
-        //           the page's F6 log stays empty.
+        // Expected: the first F6 focuses the tip's first focusable element (the content CheckBox) and is handled (the
+        //           page's F6 log stays empty); the second keeps focus on the CheckBox (the tip has no element to
+        //           return to) and the tip stays open.
         // A failure means: F6 does not move keyboard users into a light-dismiss tip, or sends focus somewhere
         //                  unexpected.
         [TestMethod]
@@ -1406,11 +1406,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // F6 again, now with focus inside the tip. Focus came from the light-dismiss branch, which records no element to
                 // return to (TeachingTip::HandleF6Clicked), so the tip's popup handler has nowhere to send focus: focus stays in the
-                // tip, the tip stays open, and the key does not reach the page.
+                // tip and the tip stays open. The page's F6 log is not checked here: a key pressed inside the popup is routed
+                // through the popup's own tree and never reaches the page's handler, whether or not the tip handles it.
                 KeyboardHelper.PressKey(Key.F6);
                 Wait.ForIdle();
                 Verify.IsTrue(contentCheckBox.HasKeyboardFocus, "F6 inside the tip with no element to return to keeps focus in the tip");
-                Verify.AreEqual(0, CountTeachingTipDebugMessages("Page KeyDown: F6"), "F6 pressed inside the tip does not reach the page");
                 Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "F6 inside the tip must not close it");
 
                 CloseTeachingTipProgrammatically();
