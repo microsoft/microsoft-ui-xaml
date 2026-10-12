@@ -5657,13 +5657,14 @@ void ScrollPresenter::UpdateManipulationRedirectionMode()
 
 void ScrollPresenter::UpdateViewportClip(const winrt::Size& viewport)
 {
-    const auto currentClip = Clip();
     const winrt::Rect viewportRect{ 0.0f, 0.0f, viewport.Width, viewport.Height };
 
     if (m_viewportClip)
     {
         m_viewportClip.get().Rect(viewportRect);
     }
+
+    const auto currentClip = Clip();
 
     if (currentClip && (!m_viewportClip || currentClip != m_viewportClip.get()))
     {
