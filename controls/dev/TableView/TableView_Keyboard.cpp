@@ -1664,7 +1664,11 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
 
     if (m_currentCellRow >= 0)
     {
-        // m_currentCellRow isn't renumbered by reshapes, so follow the remembered item.
+        // m_currentCellRow is a bare index, and nothing renumbers it when the source reshapes
+        // (sort, filter, group expand/collapse, insert, remove), so index 2 can name a different
+        // record by the time focus comes back. Follow the remembered ITEM instead: m_currentItem is
+        // written by the same OnRowCellFocusChanged funnel that writes m_currentCellRow, and it is
+        // cleared with SetCurrentCell(nullptr, nullptr) when the source is replaced.
         auto const rememberedItem = m_currentItem.get();
         winrt::IInspectable itemAtRememberedRow{ nullptr };
         auto const stillTheSameRecord =
@@ -1672,7 +1676,9 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
             TryGetItemAtRowIndex(m_currentCellRow, itemAtRememberedRow) &&
             SameInspectableIdentity(itemAtRememberedRow, rememberedItem);
 
-        // Realized rows only, so entry never forces a realization or a scroll.
+        // A reshape that only moved the item is recoverable: FindRealizedRowForItem searches
+        // realized rows only, so this never forces a realization or a surprise scroll. When the
+        // item is gone or off-screen, entry falls back to the viewport edge row.
         if (auto const remembered = stillTheSameRecord
                 ? GetRealizedRowAt(m_currentCellRow)
                 : FindRealizedRowForItem(rememberedItem))
@@ -1817,6 +1823,8 @@ TableView::FocusEntryTarget TableView::ResolveFocusEntryTarget(
 
 void TableView::ArmCellLevelRowInternal(winrt::TableViewRow const& row)
 {
+    // A cell holds focus, so the cursor is at cell level on THIS row. Release any other row that
+    // was still drilled in before claiming this one, so only one row ever has its cells armed.
     if (!row)
     {
         return;

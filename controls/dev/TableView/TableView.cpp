@@ -2557,8 +2557,6 @@ void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t
         rowInfo.IsExpanded);
 }
 
-// One header-text extraction per column, shared by the header cell's automation name and the
-// gripper's OwnerName.
 using TableViewDetails::GetColumnHeaderText;
 
 // GetColumnHeaderText renders any IStringable for automation purposes, but only a genuine string
@@ -3089,6 +3087,7 @@ void TableView::OnTableViewUnloaded()
     m_terminalGridLineVerticalOffset = std::numeric_limits<double>::quiet_NaN();
     m_pendingGroupFocusIdentity.clear();
     m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+    m_pendingGroupFocusFromPointerGesture = false;
 
     // Null ItemsSource on unload to release repeater cache work before it ticks on a detached subtree.
     // OnRowsRepeaterLoaded re-sources cached pages when they return.

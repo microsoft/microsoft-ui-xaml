@@ -215,7 +215,7 @@ Keyboard handling is cell-aware and follows the WAI-ARIA treegrid model. `TableV
   - `Ctrl` plus a navigation key moves focus without selecting.
   - `Space` (without `Alt` or `Ctrl`) selects the focused row from row or cell level.
 - **Cell content.** `Enter` on a cell that hosts a focusable control moves focus into that control, and arrow keys then stay inside it. `Escape` returns to the cell. `F2` remains the begin-edit key.
-- **Re-entry.** Tabbing back into the body from outside the table (`Tab` or `Shift+Tab`, that is a focus move with direction `Next` or `Previous`) returns to the same **record** that last had focus, even after a sort or filter has moved it, at the level it was left at: the same visible column at cell level, or the row at row level. This holds whichever element the framework aimed at, including a control hosted in another row's template cell. A record that is no longer realized, or no remembered record, lands on the first (`Tab`) or last (`Shift+Tab`) row inside the body viewport at row level, so re-entry never scrolls to a cache row. The entry is redirected at most once per focus operation. Arrow, pointer and programmatic focus moves are never redirected.
+- **Re-entry.** Focus entering the body from outside the table with direction `Next` or `Previous` (`Tab`/`Shift+Tab`, including a programmatic `TryMoveFocus(Next/Previous)`) returns to the same **record** that last had focus, even after a sort or filter has moved it, at the level it was left at: the same visible column at cell level, or the row at row level. This holds whichever row element the framework aimed at, including a control hosted in another row's template cell. The remembered record is resumed if it is realized; otherwise entry lands on the first (`Tab`) or last (`Shift+Tab`) row inside the body viewport at row level, so the fallback never targets a cache row. Entry aimed at a group header is not redirected, and the redirect is skipped when its target is not focusable (for example, its row is disabled). The entry is redirected at most once per focus operation. Pointer, arrow-key, UIA and `Focus()` moves are never redirected.
 - **Re-shape while focused.** When a sort or filter re-shapes the rows while focus is **inside** the body, focus stays at the same **position**, the same projected row index, and so lands on whichever row now occupies it. This also applies when the focused record was filtered out. The body position is put back only when focus is in the body when the re-shape runs, or when the re-shape itself drops focus. If focus is anywhere else, focus stays there. This includes a column header (however focus got there, by keyboard, pointer, app code, or a UIA `SetFocus`) whose Enter, Space, click, or UIA Invoke caused the sort, and controls outside the TableView.
 - **Gamepad.** Gamepad, D-pad and XY-focus navigation are not supported. Only the keyboard routing above is specified.
 
@@ -223,7 +223,7 @@ The internal `GridCoordinateHelper` performs the row/column ↔ flat-index math,
 
 Accessibility exposes a UIA grid/table model:
 
-- `TableViewAutomationPeer`: `IGridProvider`, `ITableProvider`, `ISelectionProvider`, `IItemContainerProvider`
+- `TableViewAutomationPeer`: `IGridProvider`, `ITableProvider`, `ISelectionProvider`, `IItemContainerProvider`. `BoundingRectangle` is clipped to the control's layout box, so realized cache rows outside the body viewport are excluded; the default bounds are used when the clip is unavailable.
 - `TableViewRowAutomationPeer`: `DataItem` control type, `ISelectionItemProvider`, composed name and group-relative `PositionInSet`/`SizeOfSet`; no grid/table provider (exposes its cell peers as children)
 - `TableViewCellAutomationPeer`: `IGridItemProvider`, `ITableItemProvider`, `IValueProvider`, `Custom` control type with localized `cell`
 - `TableViewColumnHeaderAutomationPeer`: column-header name/bounds, `IInvokeProvider` (sort), `PositionInSet`/`SizeOfSet`
@@ -323,9 +323,9 @@ than a nested button, so there is one interactive element and one automation sto
 expanding or collapsing re-publishes the projection, the realized header the gesture started on is
 gone by the time the work runs: expansion is queued **by identity** with a generation stamp
 (`QueueGroupExpansionByIdentity` / `ApplyGroupExpansionByIdentity`), and focus is captured and
-restored by identity too (`CaptureGroupHeaderFocusForRestore` /
-`RestoreGroupHeaderFocusIfPending`), so a keyboard user does not lose focus to the top of the
-table on every collapse. The restored focus state follows the gesture (`Keyboard` for a key, `Pointer` for a click), and the restore is skipped when focus has meanwhile moved outside the table. A pointer click on a band focuses the header on **release** inside the band, before the toggle, and only when the band still shows the group that was pressed; a press dragged off the band does nothing.
+restored by identity too (`CaptureContainerFocusForRestore` /
+`RestoreContainerFocusIfPending`), so focus does not drop to the top of the
+table on every collapse. The restore covers group headers and hierarchical data rows. For a header the restored focus state follows the gesture (`Keyboard` for a key, `Pointer` for a click), and a restore after a pointer click on the header does not scroll it into view. A data row is restored only from keyboard or programmatic focus, always with `Keyboard` state, and only when the reset recycled its container. The restore is skipped when focus has meanwhile moved outside the table or the host window is hidden. A pointer click on a band focuses the header on **release** inside the band, before the toggle, and only when the band still shows the group that was pressed; a press dragged off the band does nothing.
 
 **Header presentation.** `TableViewGroupHeader` is a templated `ContentControl`, not a code-built
 visual tree: the chevron gutter (`PART_ExpanderGutter` / `PART_ExpanderIcon`) and the themed band
@@ -409,7 +409,7 @@ they can be obsoleted while the API is still `[MUX_PREVIEW]`.
 
 **`TableViewColumn`** — `DependencyObject`, `[contentproperty("Header")]`. Members: `Header`, `HeaderTemplate`, `HeaderTemplateSelector`, `Width` (`GridLength`), `MinWidth` (`20`), `MaxWidth` (infinity), `ActualWidth` (get-only), `FrozenEdge`, `Visibility`, `IsReadOnly` (default `false`), `GetOwningTableView()`, `GenerateElement(Object)`, overridable `GenerateElementCore(Object)`, `GenerateEditingElement(Object)`, overridable `GenerateEditingElementCore(Object)` and `GetEditingPropertyPathCore()`.
 
-**`TableViewTextColumn`** — `TableViewColumn` that generates text cells. `Binding` is a plain CLR property. Its editing element is a `TextBox` bound with a clone of `Binding` forced to `TwoWay` + `UpdateSourceTrigger=Explicit`.
+**`TableViewTextColumn`** — `TableViewColumn` that generates text cells. `Binding` is a plain CLR property. Its editing element is a `TextBox` bound with a clone of `Binding` forced to `TwoWay` + `UpdateSourceTrigger=Explicit`. The built-in text column's editor `TextBox` takes `AutomationProperties.Name` from the column header text.
 
 **`TableViewTemplateColumn`** — `TableViewColumn` that generates templated cells. DPs `CellTemplate` and `CellEditingTemplate`.
 

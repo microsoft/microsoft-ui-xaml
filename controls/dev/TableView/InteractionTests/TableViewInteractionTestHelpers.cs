@@ -396,7 +396,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // Vertical only: MITA exposes no horizontal wheel, and Shift does not turn this into one.
+        // Rotates the wheel with the pointer parked over the given point. Vertical only: MITA exposes no
+        // horizontal wheel, and holding Shift does not turn this into one (measured - the body scrolled
+        // VERTICALLY with Shift down). Use DragHorizontalScrollBar for the horizontal axis.
         internal static void WheelAtPoint(Point point, int delta)
         {
             Log.Comment("Rotate wheel by {0} at ({1}, {2}).", delta, point.X, point.Y);

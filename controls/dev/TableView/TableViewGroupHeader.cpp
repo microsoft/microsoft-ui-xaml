@@ -292,7 +292,7 @@ winrt::hstring TableViewGroupHeader::GetGroupIdentity()
 {
     if (auto const owner = GetOwningTableView())
     {
-        return winrt::get_self<TableView>(owner)->GetGroupHeaderIdentityInternal(*this);
+        return winrt::get_self<TableView>(owner)->GetContainerIdentityInternal(*this);
     }
     return {};
 }
@@ -314,8 +314,6 @@ void TableViewGroupHeader::OnPointerPressed(winrt::PointerRoutedEventArgs const&
 
     // A reshape between press and release can recycle this container onto another group.
     m_pressedGroupIdentity = GetGroupIdentity();
-
-    // Focus on release, not press: leaving an open editor commits it later and can reshape mid-gesture.
 
     // The band owns the gesture: mark it handled so a press on a group header never reaches the
     // row's selection handling.
@@ -345,12 +343,19 @@ void TableViewGroupHeader::OnPointerReleased(winrt::PointerRoutedEventArgs const
     }
 
     // Focus before the toggle so the toggle captures it for the restore after the reshape.
+    // Focus on release, not press: leaving an open editor commits it and can reshape mid-gesture.
     if (Focus(winrt::FocusState::Pointer))
     {
         if (auto const owner = GetOwningTableView())
         {
             winrt::get_self<TableView>(owner)->SetCellCursorActiveInternal(false);
         }
+    }
+
+    // The editor commit inside Focus() can reshape and recycle this header onto another group.
+    if (pressedIdentity != GetGroupIdentity())
+    {
+        return;
     }
 
     if (IsExpandable())

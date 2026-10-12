@@ -21,7 +21,6 @@
 
 namespace TableViewDetails
 {
-    // Shared with TableViewTextColumn so its cell editor name matches the header's automation name.
     inline winrt::hstring GetHeaderContentText(const winrt::IInspectable& header)
     {
         if (header)
@@ -40,6 +39,7 @@ namespace TableViewDetails
         return {};
     }
 
+    // One header-text extraction per column, shared by the header cell's automation name, the gripper's OwnerName and the text column's editor.
     inline winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
     {
         return GetHeaderContentText(column.Header());
@@ -333,7 +333,7 @@ public:
 
     void ArmCellLevelRowInternal(winrt::TableViewRow const& row);
 
-    winrt::hstring GetGroupHeaderIdentityInternal(winrt::UIElement const& container)
+    winrt::hstring GetContainerIdentityInternal(winrt::UIElement const& container)
     {
         return TryGetContainerIdentity(container);
     }
@@ -915,14 +915,16 @@ private:
     // structural reshape that recycles the focused header container, dropping focus (and its
     // visual) to nothing. Capture the header's identity + FocusState at gesture time, then restore
     // focus to the same group's header once the reshape's relayout has settled, unless focus left
-    // the table. Same for focused hierarchical data rows whose container a reset recycles.
+    // the table. Headers restore with the gesture's focus state. Same for focused hierarchical data
+    // rows whose container a reset recycles; re-focused only when focus did not survive, and only
+    // from keyboard / programmatic focus.
     void CaptureContainerFocusForRestore(
         winrt::UIElement const& container,
         winrt::hstring const& identity,
         winrt::FocusState gestureState = winrt::FocusState::Unfocused);
     winrt::hstring CaptureFocusedContainerForRestore();
     void RestoreContainerFocusIfPending(winrt::hstring const& identity);
-    void FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState);
+    void FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture);
     bool CanRestoreContainerFocus(winrt::UIElement const& capturedContainer);
     // Row identity for a realized container. Identity is index-independent once captured.
     winrt::hstring TryGetContainerIdentity(winrt::UIElement const& container);
@@ -1025,6 +1027,7 @@ private:
     winrt::event_token m_pendingGroupFocusLayoutToken{};
     winrt::hstring m_pendingGroupFocusIdentity{};
     winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
+    bool m_pendingGroupFocusFromPointerGesture{ false };
     // Weak: pooled and recycled.
     winrt::weak_ref<winrt::UIElement> m_pendingGroupFocusContainer{ nullptr };
     winrt::event_token m_pendingGroupRowRefreshLayoutToken{};

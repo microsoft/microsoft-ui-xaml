@@ -127,7 +127,6 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
 
     winrt::BindingOperations::SetBinding(textBox, winrt::TextBox::TextProperty(), editingBinding);
 
-    // Without a name, assistive technology announces the editor as an unlabeled edit field.
     if (auto const headerText = TableViewDetails::GetHeaderContentText(Header()); !headerText.empty())
     {
         winrt::AutomationProperties::SetName(textBox, headerText);

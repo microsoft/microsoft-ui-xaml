@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
@@ -599,6 +600,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Leave no open edit behind for the next test in the class.
+            RunOnUIThread.Execute(() => tableView.CancelEdit());
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the text column's editor TextBox takes its UIA name from the column header text.")]
+        public void VerifyTextColumnEditorNameComesFromHeader()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                items[0].RejectPrefix = InvalidPrefix;
+
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // A rejected value holds the edit open, so the editor stays in the tree.
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), InvalidPrefix + "Nope");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: an edit is open.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
+                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
+                Verify.AreEqual("Name", AutomationProperties.GetName(editors[0]), "The editor's UIA name must be the column header text.");
+            });
+
             RunOnUIThread.Execute(() => tableView.CancelEdit());
             IdleSynchronizer.Wait();
         }

@@ -46,9 +46,19 @@ namespace
             return false;
         }
 
-        if (auto const control = target.try_as<winrt::Control>())
+        // Cells are Grids, not Controls, so a disabled ancestor row does not show in the target's own state.
+        winrt::DependencyObject current = target;
+        while (current)
         {
-            return control.IsEnabled();
+            if (auto const control = current.try_as<winrt::Control>(); control && !control.IsEnabled())
+            {
+                return false;
+            }
+            if (current == owner)
+            {
+                break;
+            }
+            current = winrt::VisualTreeHelper::GetParent(current);
         }
 
         return true;

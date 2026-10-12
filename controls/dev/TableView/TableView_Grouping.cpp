@@ -284,6 +284,7 @@ void TableView::CaptureContainerFocusForRestore(
     // Clear any prior capture: a fresh toggle supersedes an earlier one whose restore has not run.
     m_pendingGroupFocusIdentity.clear();
     m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+    m_pendingGroupFocusFromPointerGesture = false;
     m_pendingGroupFocusContainer = nullptr;
 
     if (identity.empty() || !container)
@@ -333,6 +334,7 @@ void TableView::CaptureContainerFocusForRestore(
         {
             m_pendingGroupFocusIdentity = identity;
             m_pendingGroupFocusState = state;
+            m_pendingGroupFocusFromPointerGesture = gestureState == winrt::FocusState::Pointer;
             m_pendingGroupFocusContainer = winrt::make_weak(container);
         }
     }
@@ -372,6 +374,7 @@ winrt::hstring TableView::CaptureFocusedContainerForRestore()
     // a fresh single-group toggle does.
     m_pendingGroupFocusIdentity.clear();
     m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+    m_pendingGroupFocusFromPointerGesture = false;
     m_pendingGroupFocusContainer = nullptr;
 
     auto const root = XamlRoot();
@@ -551,9 +554,11 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
     }
 
     const auto focusState = m_pendingGroupFocusState;
+    const bool fromPointerGesture = m_pendingGroupFocusFromPointerGesture;
     auto const weakContainer = m_pendingGroupFocusContainer;
     m_pendingGroupFocusIdentity.clear();
     m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+    m_pendingGroupFocusFromPointerGesture = false;
     m_pendingGroupFocusContainer = nullptr;
 
     // Defer to after the reshape's relayout. The reprojection triggered by the toggle recycles the
@@ -568,7 +573,7 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
 
     auto weakThis = get_weak();
     m_pendingGroupFocusLayoutToken = LayoutUpdated(
-        [weakThis, identity, focusState, weakContainer](winrt::IInspectable const&, winrt::IInspectable const&)
+        [weakThis, identity, focusState, fromPointerGesture, weakContainer](winrt::IInspectable const&, winrt::IInspectable const&)
         {
             auto strongThis = weakThis.get();
             if (!strongThis)
@@ -593,7 +598,7 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
                     return;
                 }
 
-                strongThis->FocusContainerByIdentity(identity, focusState);
+                strongThis->FocusContainerByIdentity(identity, focusState, fromPointerGesture);
             }
             catch (...)
             {
@@ -602,7 +607,7 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
         });
 }
 
-void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState)
+void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture)
 {
     if (identity.empty() || !m_tableViewSourceRowMetadata)
     {
@@ -667,9 +672,12 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
         return;
     }
 
-    if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
+    if (!fromPointerGesture)
     {
-        frameworkElement.StartBringIntoView();
+        if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
+        {
+            frameworkElement.StartBringIntoView();
+        }
     }
 
     if (auto const control = element.try_as<winrt::Control>())
