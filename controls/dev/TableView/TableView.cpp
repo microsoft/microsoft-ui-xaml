@@ -2727,19 +2727,8 @@ void TableView::RebuildHeaders()
             }
 
             // Header cell root: TableViewHeaderCell is the focus/hit-test target so its automation
-            // peer attaches to the right element. Content and chevron get separate columns so the
-            // chevron reserves width instead of overlaying text.
+            // peer attaches to the right element.
             auto const headerCell = winrt::make<TableViewHeaderCell>(*this, column).as<winrt::Grid>();
-            constexpr int contentColumnIndex = 0;
-            constexpr int indicatorColumnIndex = 1;
-            {
-                winrt::ColumnDefinition starColumn;
-                starColumn.Width(winrt::GridLengthHelper::FromValueAndType(1, winrt::GridUnitType::Star));
-                winrt::ColumnDefinition autoColumn;
-                autoColumn.Width(winrt::GridLengthHelper::FromValueAndType(0, winrt::GridUnitType::Auto));
-                headerCell.ColumnDefinitions().Append(starColumn);
-                headerCell.ColumnDefinitions().Append(autoColumn);
-            }
             headerCell.Visibility(column.Visibility());
             // Header cells are the named keyboard/UIA targets; the host is one Tab stop, and arrows
             // must still reach every visible header. Every visible header is a tab stop by product
@@ -2802,7 +2791,6 @@ void TableView::RebuildHeaders()
             // Column-header text: theme font size and weight (templates override).
             content.FontSize(cachedHeaderFontSize);
             content.FontWeight(cachedHeaderFontWeight);
-            winrt::Grid::SetColumn(content, contentColumnIndex);
             headerCell.Children().Append(content);
 
             // Resolve from TableView so header grid lines track theme.
@@ -2815,7 +2803,6 @@ void TableView::RebuildHeaders()
                 winrt::AutomationProperties::SetAccessibilityView(headerGridLine, winrt::AccessibilityView::Raw);
                 headerGridLine.Visibility(wantVerticalHeaderLines ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
                 headerGridLine.Background(cachedHeaderGridLineBrush);
-                winrt::Grid::SetColumnSpan(headerGridLine, 2);
                 headerCell.Children().Append(headerGridLine);
             }
 
@@ -2834,12 +2821,9 @@ void TableView::RebuildHeaders()
                 // The chevron is decoration on top of a clickable header: letting it take the hit
                 // would create a dead spot in the middle of the click target.
                 indicatorHost.IsHitTestVisible(false);
-                // SortIndicator has a fixed themed Width and only fades via Opacity, so an always-
-                // visible host would cost that width on every sortable column.
                 indicatorHost.Visibility(column.SortDirection() == winrt::SortDirection::None
                     ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
                 AppendSortIndicatorVisual(indicatorHost, column);
-                winrt::Grid::SetColumn(indicatorHost, indicatorColumnIndex);
                 headerCell.Children().Append(indicatorHost);
 
                 // Weak: the handler is owned by a visual the control also owns, so a strong
@@ -2965,7 +2949,7 @@ void TableView::RefreshSortIndicators()
         {
             const auto direction = column.SortDirection();
             indicator.Direction(ToSortIndicatorDirection(direction));
-            // Keep the reserved column in step with the chevron.
+            // Keep the host in step with the chevron.
             if (auto const indicatorHost = indicator.Parent().try_as<winrt::UIElement>())
             {
                 indicatorHost.Visibility(direction == winrt::SortDirection::None
@@ -3456,7 +3440,6 @@ void TableView::AppendResizeGripperVisual(
             strongThis->AnnounceColumnWidth(weakHeaderCell.get(), col);
         }
     });
-    winrt::Grid::SetColumnSpan(gripperVisual, 2);
     headerCell.Children().Append(gripperVisual);
 }
 
