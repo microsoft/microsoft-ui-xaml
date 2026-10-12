@@ -752,6 +752,16 @@ void TableView::OnPreviewKeyDownForNavigation(
         m_navAnchorGroupHeader = -1;
         break;
     }
+
+    // PART_BodyScroller would otherwise page on its own before our handledEventsToo KeyDown runs.
+    if ((args.Key() == winrt::Windows::System::VirtualKey::PageUp ||
+            args.Key() == winrt::Windows::System::VirtualKey::PageDown) &&
+        !args.Handled() &&
+        !IsEditing() &&
+        IsFocusExactlyOnBodyItem())
+    {
+        args.Handled(true);
+    }
 }
 
 void TableView::OnKeyDownForNavigation(
@@ -803,34 +813,10 @@ void TableView::OnKeyDownForNavigation(
     }
 
     // handledEventsToo recovers keys swallowed by PART_BodyScroller, but not keys consumed by
-    // hosted controls. Accept exact focus on our row/group/cell only, excluding nested TableViews.
-    if (args.Handled())
+    // hosted controls.
+    if (args.Handled() && !IsFocusExactlyOnBodyItem())
     {
-        bool focusOnOurRow = false;
-        if (auto const root = XamlRoot())
-        {
-            // Group headers and exact cells are valid anchors. Do not walk from descendants: hosted
-            // TextBox/ComboBox controls keep the handled keys they claim.
-            if (auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::UIElement>())
-            {
-                if (focused.try_as<winrt::TableViewRow>() || focused.try_as<winrt::TableViewGroupHeader>())
-                {
-                    if (auto const repeater = m_rowsRepeater.get())
-                    {
-                        focusOnOurRow = repeater.GetElementIndex(focused) >= 0;
-                    }
-                }
-                else
-                {
-                    int32_t focusedRow = -1, focusedColumn = -1;
-                    focusOnOurRow = TryGetFocusedCell(focusedRow, focusedColumn, true /* requireExactCell */);
-                }
-            }
-        }
-        if (!focusOnOurRow)
-        {
-            return;
-        }
+        return;
     }
 
     const auto key = args.Key();
@@ -932,6 +918,7 @@ void TableView::OnKeyDownForNavigation(
     {
         // First navigation key enters at the WPF DataGrid/ListView-equivalent row.
         int32_t initialRow = -1;
+        std::optional<double> initialAlign{};
         switch (key)
         {
         case winrt::Windows::System::VirtualKey::Up:
@@ -944,12 +931,13 @@ void TableView::OnKeyDownForNavigation(
             initialRow = rowCount - 1;
             break;
         case winrt::Windows::System::VirtualKey::PageDown:
-            initialRow = std::clamp(GetEstimatedRowsPerPage() - 1, 0, rowCount - 1);
+            initialRow = GetPageTargetRow(0, true /* pageDown */, rowCount);
+            initialAlign = 1.0;
             break;
         default:
             break;
         }
-        if (initialRow >= 0 && FocusRowContainer(initialRow))
+        if (initialRow >= 0 && FocusRowContainer(initialRow, initialAlign))
         {
             // Single selection follows the keyboard cursor, matching ListView and WPF's DataGrid.
             if (!isControlDown)
@@ -965,6 +953,7 @@ void TableView::OnKeyDownForNavigation(
     bool consumeKey = true;
     // Absolute/page keys are consumed at boundaries; Up/Down may escape the table.
     bool absoluteRowNav = false;
+    std::optional<double> alignRatio{};
 
     switch (key)
     {
@@ -1000,19 +989,15 @@ void TableView::OnKeyDownForNavigation(
         absoluteRowNav = true;
         break;
     case winrt::Windows::System::VirtualKey::PageUp:
-    {
-        const int32_t step = GetEstimatedRowsPerPage();
-        newRow = std::max(0, currentRow - step);
+        newRow = GetPageTargetRow(currentRow, false /* pageDown */, rowCount);
+        alignRatio = 0.0;
         absoluteRowNav = true;
         break;
-    }
     case winrt::Windows::System::VirtualKey::PageDown:
-    {
-        const int32_t step = GetEstimatedRowsPerPage();
-        newRow = std::min(rowCount - 1, currentRow + step);
+        newRow = GetPageTargetRow(currentRow, true /* pageDown */, rowCount);
+        alignRatio = 1.0;
         absoluteRowNav = true;
         break;
-    }
     default:
         consumeKey = false;
         break;
@@ -1030,8 +1015,8 @@ void TableView::OnKeyDownForNavigation(
             // Up/Down preserve the starting level per ARIA treegrid: row-to-row or same-column
             // cell-to-cell.
             const bool moved = hasCellAnchor
-                ? FocusCell(newRow, anchorColumn)
-                : FocusRowContainer(newRow);
+                ? FocusCell(newRow, anchorColumn, alignRatio)
+                : FocusRowContainer(newRow, alignRatio);
             if (moved)
             {
                 if (!isControlDown)
@@ -1972,6 +1957,58 @@ winrt::UIElement TableView::FindViewportEdgeElementInternal(bool last, bool incl
     }
 
     return fullyVisible ? fullyVisible : partiallyVisible;
+}
+
+int32_t TableView::GetPageTargetRow(int32_t currentRow, bool pageDown, int32_t rowCount)
+{
+    int32_t first = -1;
+    int32_t last = -1;
+    if (auto const repeater = m_rowsRepeater.get())
+    {
+        if (auto const row = FindViewportEdgeRowInternal(false /* last */))
+        {
+            first = repeater.GetElementIndex(row);
+        }
+        if (auto const row = FindViewportEdgeRowInternal(true /* last */))
+        {
+            last = repeater.GetElementIndex(row);
+        }
+    }
+
+    const int32_t step = (first >= 0 && last >= 0)
+        ? std::max(1, last - first)
+        : std::max(1, GetEstimatedRowsPerPage() - 1);
+    if (pageDown)
+    {
+        return (last >= 0 && currentRow < last) ? last : std::clamp(currentRow + step, 0, rowCount - 1);
+    }
+    return (first >= 0 && currentRow > first) ? first : std::clamp(currentRow - step, 0, rowCount - 1);
+}
+
+// Excludes nested TableViews and hosted content: hosted TextBox/ComboBox controls keep the keys they claim.
+bool TableView::IsFocusExactlyOnBodyItem() const
+{
+    auto const root = XamlRoot();
+    if (!root)
+    {
+        return false;
+    }
+
+    auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::UIElement>();
+    if (!focused)
+    {
+        return false;
+    }
+
+    if (focused.try_as<winrt::TableViewRow>() || focused.try_as<winrt::TableViewGroupHeader>())
+    {
+        auto const repeater = m_rowsRepeater.get();
+        return repeater && repeater.GetElementIndex(focused) >= 0;
+    }
+
+    int32_t focusedRow = -1;
+    int32_t focusedColumn = -1;
+    return TryGetFocusedCell(focusedRow, focusedColumn, true /* requireExactCell */);
 }
 
 bool TableView::RowShowsCurrentItemInternal(winrt::TableViewRow const& row) const
