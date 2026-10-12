@@ -334,6 +334,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description", "A RefreshVisualizer that is released while its InfoProvider is still alive unsubscribes from the provider's IsInteractingForRefreshChanged and InteractionRatioChanged events when it is destroyed.")]
+        // Runs in its own test host. In the shared API-test host this test twice crashed the host during its first forced GC,
+        // with a framework assert: 0xC0000420 STATUS_ASSERTION_FAILURE in CImageSource::SetBitmapState (Microsoft.UI.Xaml.dll;
+        // validation runs h1 and m2). That GC also releases objects left over by earlier tests. Taking the compositor from
+        // GetCompositorForCurrentThread() instead of an orphan element's visual (below) is a mitigation, not the root cause.
+        // The release cannot be made deterministic without the GC: the cast to IRefreshVisualizerPrivate caches its own
+        // native reference in the projected wrapper, and CsWinRT does not expose that cache for disposal.
+        [TestProperty("IsolationLevel", "Method")]
         public void ReleasedVisualizerUnsubscribesFromALiveInfoProvider()
         {
             CountingRefreshInfoProvider provider = null;
