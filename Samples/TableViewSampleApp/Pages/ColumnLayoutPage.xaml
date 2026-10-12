@@ -15,7 +15,7 @@
         Snippet="ColumnLayout"
         StretchExample="True"
         TryIt="Drag the right edge of the Name header and watch Width / ActualWidth update; the Role (locked) column has CanResize off, so its edge does not move. Pick Join date in Column and drag the Width slider past 310 to see the date picker stop clipping. Then switch Width intent to Auto and scroll down: Auto columns size to the rows on screen."
-        WhatToLookFor="ActualWidth is the width after the MinWidth and MaxWidth clamp, so it can differ from Width; the readout updates after layout and while you drag. A full date picker needs about 310 px, so the 200 px Join date column clips it. Auto measures only the realized rows, so scrolling can change an Auto width and Auto mode can leave an empty band on the right. A Star column with no resizable Star column after it has no width to trade, so its edge shows no gripper. Width is the lesson here, so this page scrolls horizontally in Playground and Pixel modes on purpose.">
+        WhatToLookFor="ActualWidth is the width after the MinWidth and MaxWidth clamp, so it can differ from Width; the readout updates after layout and while you drag. A full date picker needs about 310 px, so the 200 px Join date column clips it. Auto measures only the realized rows, so scrolling can change an Auto width and Auto mode can leave an empty band on the right. A Star column with no resizable Star column after it has no width to trade, so its edge shows no gripper, and when MinWidth equals MaxWidth the gripper is hidden too. Width is the lesson here, so this page scrolls horizontally in Playground and Pixel modes on purpose.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
