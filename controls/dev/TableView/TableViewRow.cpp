@@ -667,8 +667,8 @@ void TableViewRow::RestoreCellContentTabStopsInternal()
 // The body is one tab stop; Enter is the route into cell content. The move is left to XAML:
 // FocusManager::TryMoveFocus ignores ItemsRepeater's KeyboardNavigationMode::Once, so Shift+Tab
 // would land in the previous row's content. Multiply expands the subtree (as TreeViewItem);
-// Left/Right belong to TableView::TryHandleRowLevelDrillKey to avoid double handling, and Space
-// stays row selection.
+// unhandled Left/Right go to TableView::TryHandleRowLevelDrillKey here, ahead of PART_BodyScroller,
+// and Space stays row selection.
 void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 {
     if (!args.Handled() &&
@@ -692,6 +692,15 @@ void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         {
             winrt::get_self<TableView>(owner)->ExpandRowSubtree(*this);
             args.Handled(true);
+        }
+    }
+
+    if (!args.Handled() &&
+        (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::Right))
+    {
+        if (auto const owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->HandleBodyHorizontalKeyFromRowInternal(args);
         }
     }
 

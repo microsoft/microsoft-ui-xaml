@@ -593,6 +593,10 @@ TableView::TableView()
         {
             if (auto strongThis = weakThis.get())
             {
+                if (std::exchange(strongThis->m_navKeyHandledEarly, false))
+                {
+                    return;
+                }
                 strongThis->OnKeyDownForNavigation(sender, args);
             }
         });

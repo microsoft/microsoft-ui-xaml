@@ -213,7 +213,7 @@ Keyboard handling is cell-aware and follows the WAI-ARIA treegrid model. `TableV
   - Unhandled `Up`, `Down`, `PageUp` and `PageDown` keep the starting level: row to row, or cell to cell in the same visible column. `Up` from the first row moves to the header band.
   - `PageDown` pages like `ListView`: it first moves to the last fully visible row, and from there one viewport (less one row) further, aligning that row to the bottom. `PageUp` mirrors it towards the top. The table handles both keys itself, so the body scroller does not page on its own.
   - A row that keyboard navigation focuses is scrolled fully into view, including a row that is not realized yet, such as the last row on `End`.
-  - From a focused row, `Right` drills into the first cell. `Left` on the first cell returns to the row. `Left` on a row does nothing.
+  - From a focused row, `Right` drills into the first cell. `Left` on the first cell returns to the row. `Left` on a row does nothing. On a row, `Left`/`Right` are handled before the body scroller sees them, so they never scroll the body on their own; only a newly focused cell is brought into view.
   - At cell level, `Left`/`Right` move the cell cursor within the focused row without wrapping. `Home`/`End` move to the first/last cell of the current row, and `Ctrl+Home`/`Ctrl+End` move to the first/last cell of the table. All horizontal keys mirror under RTL.
 - **Selection.**
   - Selection follows keyboard focus.

@@ -269,6 +269,8 @@ public:
     // default, or that row's current cell once the user has drilled in with Right.
     bool FocusRow(int32_t index);
 
+    void HandleBodyHorizontalKeyFromRowInternal(const winrt::KeyRoutedEventArgs& args);
+
 
     // Moves keyboard focus to a cell by row index and VISIBLE column index, realizing and scrolling
     // the row into view first. A negative column means "keep the current one". Group-header rows
@@ -1137,6 +1139,8 @@ private:
     std::vector<tracker_ref<winrt::TableViewColumn>> m_trackedColumns;
 
     winrt::KeyEventHandler m_keyDownHandler{ nullptr };  // Root KeyDown (handledEventsToo); registration is released with the element, no explicit RemoveHandler needed.
+    // Set when a row already ran this key through OnKeyDownForNavigation.
+    bool m_navKeyHandledEarly{ false };
     void OnKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
