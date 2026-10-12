@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,36 +11,33 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
+using TableViewSampleApp.Data;
+using TableViewSampleApp.Helpers;
+using TableViewSampleApp.Models;
 
-namespace TableViewSampleApp;
+namespace TableViewSampleApp.Pages;
 
-public sealed partial class ContextMenuPage : Page
+// Manual verification harness for the context menu pipeline; see README.md, "Context menu diagnostics".
+public sealed partial class ContextMenuDiagnosticsPage : Page
 {
     private readonly TableViewTextColumn _name =
-        SampleColumns.Text("Name", nameof(Item.Name), SampleColumns.Pixels(140));
+        SampleColumns.Text("First name", nameof(Person.FirstName), SampleColumns.Pixels(140));
     private readonly TableViewTextColumn _city =
-        SampleColumns.Text("City", nameof(Item.City), SampleColumns.Pixels(120));
+        SampleColumns.Text("Office", nameof(Person.Office), SampleColumns.Pixels(120));
     private readonly TableViewTextColumn _score =
-        SampleColumns.Text("Score", nameof(Item.Score), SampleColumns.Pixels(70));
+        SampleColumns.Text("Salary", nameof(Person.Salary), SampleColumns.Pixels(90));
     private readonly TableViewTemplateColumn _notes = new();
-    private readonly List<Item> _items = Data.Make(300);
-    private int _requests;
+    private readonly List<Person> _items = PersonData.Many(300);
     private int _opens;
-    private int _requestedFixtureIndex = -1;
-    private object? _requestedItem;
-    private string _lastRequest = "none";
+    private int _openedFixtureIndex = -1;
     private string _lastOpen = "none";
     private string _apiDefaults = "UNKNOWN";
     private bool _mutateOnFocus;
     private bool _nullItemFixture;
     private bool _innerMenus = true;
     private string _nullRealized = "PENDING";
-    private TableViewContextFlyoutRequestedEventArgs? _retainedArgs;
-    private MenuFlyoutItem? _targetedCellAction;
 
-    private sealed record CellActionValue(string Row, string Column, object Value);
-
-    public ContextMenuPage()
+    public ContextMenuDiagnosticsPage()
     {
         InitializeComponent();
         // GotFocus is delivered after Focus returns; GettingFocus exercises synchronous invalidation.
@@ -45,21 +45,20 @@ public sealed partial class ContextMenuPage : Page
         {
             if (!_mutateOnFocus) return;
             _mutateOnFocus = false;
-            Table.ItemsSource = Data.Make(300);
-            Hint.Text = "Items replaced during focus. Expect no custom request or custom open; native fallback remains eligible if no custom menu was configured.";
+            Table.ItemsSource = PersonData.Many(300);
+            Hint.Text = "Items replaced during focus. Expect no custom open; native fallback remains eligible if no custom menu was configured.";
             Report();
         };
         Table.LayoutUpdated += OnTableLayoutUpdated;
         VerifyApiDefaults();
         _name.Binding = new Binding
         {
-            Path = new PropertyPath(nameof(Item.Name)),
+            Path = new PropertyPath(nameof(Person.FirstName)),
             Mode = BindingMode.TwoWay,
         };
-        _notes.Header = "Notes";
+        _notes.Header = "Bio";
         _notes.Width = SampleColumns.Pixels(220);
         _notes.CellTemplate = (DataTemplate)Resources["AppFlyoutCell"];
-        Table.ContextFlyoutRequested += OnRequest;
         Table.SelectionChanged += (_, _) => Report();
         Reset();
     }
@@ -77,12 +76,13 @@ public sealed partial class ContextMenuPage : Page
         {
             var bound = new MenuFlyoutItem();
             bound.SetBinding(MenuFlyoutItem.TextProperty,
-                new Binding { Path = new PropertyPath(nameof(Item.Name)) });
+                new Binding { Path = new PropertyPath(nameof(Person.FirstName)) });
             menu.Items.Add(bound);
             menu.Opened += (_, _) =>
             {
-                bool matches = ReferenceEquals(bound.DataContext, _requestedItem);
-                _lastOpen = $"{label}; binding={(matches ? "PASS" : "FAIL")}; text={bound.Text}";
+                // The menu inherits the requested row's item; compare it with the row that was invoked.
+                _openedFixtureIndex = bound.DataContext is Person item ? _items.IndexOf(item) : -1;
+                _lastOpen = $"{label}; item={(bound.DataContext as Person)?.FullName ?? "(null)"}; text={bound.Text}";
             };
         }
 
@@ -143,7 +143,6 @@ public sealed partial class ContextMenuPage : Page
         _mutateOnFocus = false;
         _nullItemFixture = false;
         _innerMenus = true;
-        _retainedArgs = null;
         _nullRealized = "PENDING";
         Table.FlowDirection = FlowDirection.LeftToRight;
         Table.HeadersVisibility = TableViewHeadersVisibility.Column;
@@ -161,130 +160,43 @@ public sealed partial class ContextMenuPage : Page
         _name.CellContextFlyout = null;
         _name.HeaderContextFlyout = null;
         _city.HeaderContextFlyout = null;
-        _requests = 0;
         _opens = 0;
-        _requestedItem = null;
-        _requestedFixtureIndex = -1;
-        _lastRequest = "none";
+        _openedFixtureIndex = -1;
         _lastOpen = "none";
         ActionResult.Text = "Choose a cell menu action to display its row, column, and value.";
         var nameMenu = Menu("CELL", true);
-        var nameAction = new MenuFlyoutItem { Text = "Show name value" };
+        var nameAction = new MenuFlyoutItem { Text = "Show first name value" };
         nameAction.SetBinding(MenuFlyoutItem.CommandParameterProperty,
-            new Binding { Path = new PropertyPath(nameof(Item.Name)) });
+            new Binding { Path = new PropertyPath(nameof(Person.FirstName)) });
         nameAction.Click += OnShowNameValue;
         nameMenu.Items.Add(nameAction);
-        nameMenu.Opened += (_, _) => nameAction.IsEnabled = nameAction.DataContext is Item;
+        nameMenu.Opened += (_, _) => nameAction.IsEnabled = nameAction.DataContext is Person;
         _name.CellContextFlyout = nameMenu;
         _name.HeaderContextFlyout = Menu("HEADER");
-        _city.HeaderContextFlyout = Menu("CITY HEADER");
-        var rowMenu = Menu("ROW", true);
-        _targetedCellAction = new MenuFlyoutItem { Text = "Show targeted cell value", IsEnabled = false };
-        _targetedCellAction.Click += OnShowTargetedCellValue;
-        rowMenu.Items.Add(_targetedCellAction);
-        Table.RowContextFlyout = rowMenu;
+        _city.HeaderContextFlyout = Menu("OFFICE HEADER");
+        Table.RowContextFlyout = Menu("ROW", true);
         Table.ContextFlyout = Menu("NATIVE");
         Table.ItemsSource = _items;
-        Mode.SelectedIndex = 0;
-        Hint.Text = "Right-click Name, City or a header. Reset keeps direct element menus; navigate away/back to remove them.";
-        Report();
-    }
-
-    private void OnRequest(TableView sender, TableViewContextFlyoutRequestedEventArgs args)
-    {
-        ++_requests;
-        _requestedItem = args.Item;
-        _requestedFixtureIndex = args.Item is Item item ? _items.IndexOf(item) : -1;
-        _lastRequest = $"{(args.IsHeader ? "header" : "body")}; " +
-            $"column={args.Column?.Header ?? "(none)"}; item={(args.Item as Item)?.Name ?? "(none)"}";
-        ConfigureTargetedCellAction(args);
-        switch (Mode.SelectedIndex)
-        {
-            case 1:
-                args.ContextFlyout = Menu("REPLACEMENT");
-                break;
-            case 2:
-                args.ContextFlyout = null;
-                break;
-            case 3:
-                args.Handled = true;
-                break;
-            case 4:
-                if (args.Column is not null)
-                {
-                    sender.Columns.Remove(args.Column);
-                }
-                break;
-            case 5:
-                if (args.Column is not null)
-                {
-                    args.Column.Visibility = Visibility.Collapsed;
-                }
-                break;
-            case 6:
-                sender.ItemsSource = Data.Make(300);
-                break;
-            case 7:
-                sender.ItemsSource = Data.Make(300);
-                args.ContextFlyout = null;
-                break;
-            case 8:
-                Retemplate(sender);
-                break;
-            case 9:
-                _retainedArgs = args;
-                Hint.Text = "Args retained. Dismiss the menu, then choose Change retained args.";
-                break;
-        }
-
+        Hint.Text = "Right-click First name, Office or a header. Reset keeps direct element menus; navigate away/back to remove them.";
         Report();
     }
 
     private void OnShowNameValue(object sender, RoutedEventArgs e)
     {
-        if (sender is MenuFlyoutItem { DataContext: Item row, CommandParameter: string value })
+        if (sender is MenuFlyoutItem { DataContext: Person row, CommandParameter: string value })
         {
-            ActionResult.Text = $"Binding: row={row.Name}; column=Name; value={value}";
+            ActionResult.Text = $"Binding: row={row.FullName}; column=FirstName; value={value}";
         }
         else
         {
-            ActionResult.Text = "No bound Name value is available for this row.";
-        }
-    }
-
-    private void ConfigureTargetedCellAction(TableViewContextFlyoutRequestedEventArgs args)
-    {
-        if (_targetedCellAction is null) return;
-        _targetedCellAction.CommandParameter = null;
-        _targetedCellAction.IsEnabled = false;
-        if (args.IsHeader || args.Item is not Item row) return;
-
-        // The menu inherits the row, not a cell value. Map the known sample columns explicitly.
-        CellActionValue? target =
-            ReferenceEquals(args.Column, _name) ? new(row.Name, nameof(Item.Name), row.Name) :
-            ReferenceEquals(args.Column, _city) ? new(row.Name, nameof(Item.City), row.City) :
-            ReferenceEquals(args.Column, _score) ? new(row.Name, nameof(Item.Score), row.Score) :
-            ReferenceEquals(args.Column, _notes) ? new(row.Name, nameof(Item.Notes), row.Notes) : null;
-        _targetedCellAction.CommandParameter = target;
-        _targetedCellAction.IsEnabled = target is not null;
-    }
-
-    private void OnShowTargetedCellValue(object sender, RoutedEventArgs e)
-    {
-        if (sender is MenuFlyoutItem { CommandParameter: CellActionValue target })
-        {
-            ActionResult.Text = $"Item + Column: row={target.Row}; column={target.Column}; value={target.Value}";
-        }
-        else
-        {
-            ActionResult.Text = "No targeted cell value is available for this request.";
+            ActionResult.Text = "No bound FirstName value is available for this row.";
         }
     }
 
     private void Report() =>
-        Status.Text = $"defaults={_apiDefaults}; requests={_requests}; opens={_opens}; selected={Table.SelectedIndex}; " +
-            $"request=[{_lastRequest}]; open=[{_lastOpen}]" +
-            $"; fixtureIndex={_requestedFixtureIndex}" +
+        Status.Text = $"defaults={_apiDefaults}; opens={_opens}; selected={Table.SelectedIndex}; " +
+            $"open=[{_lastOpen}]" +
+            $"; fixtureIndex={_openedFixtureIndex}" +
             (_nullItemFixture ? $"; realizedNull={_nullRealized}" : "");
 
     private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
@@ -310,9 +222,9 @@ public sealed partial class ContextMenuPage : Page
         var header = Descendants(Table).OfType<Grid>().FirstOrDefault(grid =>
             ReferenceEquals(grid.Tag, _name) &&
             VisualTreeHelper.GetParent(grid) is FrameworkElement { Name: "PART_HeaderHost" });
-        if (header is null) { Hint.Text = "FAIL: no Name header"; return; }
+        if (header is null) { Hint.Text = "FAIL: no First name header"; return; }
         header.ContextFlyout = Menu("DIRECT HEADER");
-        Hint.Text = "Invoke the Name header. Navigate away/back afterwards.";
+        Hint.Text = "Invoke the First name header. Navigate away/back afterwards.";
     }
 
     private static void Retemplate(TableView table)
@@ -329,7 +241,7 @@ public sealed partial class ContextMenuPage : Page
     {
         if (Table.Template is null) { Hint.Text = "FAIL: template unavailable"; return; }
         Retemplate(Table);
-        Hint.Text = "Template replaced; invoke Name again.";
+        Hint.Text = "Template replaced; invoke First name again.";
     }
 
     private void OnMutateOnFocus(object sender, RoutedEventArgs e)
@@ -342,17 +254,17 @@ public sealed partial class ContextMenuPage : Page
     {
         var inner = (TableView)sender;
         if (inner.Columns.Count != 0) return;
-        var column = SampleColumns.Text("Inner", nameof(Item.Name), SampleColumns.Pixels(120));
+        var column = SampleColumns.Text("Inner", nameof(Person.FirstName), SampleColumns.Pixels(120));
         column.CellContextFlyout = _innerMenus ? Menu("INNER") : null;
         inner.Columns.Add(column);
-        inner.ItemsSource = Data.Make(2);
+        inner.ItemsSource = PersonData.Many(2);
     }
 
     private void OnNested(object sender, RoutedEventArgs e)
     {
         _innerMenus = true;
         _notes.CellTemplate = (DataTemplate)Resources["NestedTableCell"];
-        Hint.Text = "Right-click an Inner body cell. Only opens increases; outer requests stays unchanged.";
+        Hint.Text = "Right-click an Inner body cell: INNER opens, not the outer ROW menu.";
     }
 
     private void OnClearInnerMenus(object sender, RoutedEventArgs e)
@@ -369,7 +281,7 @@ public sealed partial class ContextMenuPage : Page
         _nullItemFixture = true;
         _nullRealized = "PENDING";
         Table.ItemsSource = new object?[] { null, _items[1] };
-        Hint.Text = "First row has a real null item. Invoke blank Name/City with Keep, Null, Suppress or mutation modes.";
+        Hint.Text = "First row has a real null item. Invoke its blank First name and Office cells.";
         Report();
     }
 
@@ -411,24 +323,15 @@ public sealed partial class ContextMenuPage : Page
             Report();
         };
         _name.CellContextFlyout = flyout;
-        Hint.Text = "Invoke Name with Keep, Null or Suppress to compare plain Flyout routing.";
+        Hint.Text = "Invoke First name: PLAIN FLYOUT opens through the same cell routing.";
     }
 
     private void OnGroup(object sender, RoutedEventArgs e)
     {
         var source = TableViewSource.From(_items);
-        source.GroupBy(new TableViewKeySelector(item => ((Item)item).City));
+        source.GroupBy(new TableViewKeySelector(item => ((Person)item).Office));
         Table.ItemsSource = source;
-        Hint.Text = "Invoke a group header: NATIVE, no custom request. Reset restores ungrouped items.";
-    }
-
-    private void OnChangeRetainedArgs(object sender, RoutedEventArgs e)
-    {
-        if (_retainedArgs is null) { Hint.Text = "FAIL: invoke a menu with Retain args first"; return; }
-        _retainedArgs.ContextFlyout = Menu("LATE REPLACEMENT");
-        _retainedArgs.Handled = true;
-        Hint.Text = "Retained args changed after callback. No new request or open should occur.";
-        Report();
+        Hint.Text = "Invoke a group header: NATIVE. Reset restores ungrouped items.";
     }
 
     private void OnSelectionMode(object sender, RoutedEventArgs e) =>
