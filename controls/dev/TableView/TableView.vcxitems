@@ -51,7 +51,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewBeginningEditEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCellEditEndingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewFocusHelpers.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewContextFlyoutRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewToolTipHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSortingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSortedEventArgs.h" />

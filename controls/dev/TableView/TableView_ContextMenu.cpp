@@ -7,7 +7,7 @@
 #include "TableViewRow.h"
 #include "TableViewColumn.h"
 #include "TableViewCellsPanel.h"
-#include "TableViewContextFlyoutRequestedEventArgs.h"
+#include "SharedHelpers.h"
 
 bool TableView::IsContextMenuTargetCurrent(
     TableViewDetails::ContextMenuTarget const& target) const
@@ -141,56 +141,120 @@ void TableView::OnHeaderContextRequested(winrt::ContextRequestedEventArgs const&
     }
 }
 
-winrt::FlyoutBase TableView::ResolveContextFlyout(
+namespace
+{
+    bool IsTextControl(winrt::DependencyObject const& element)
+    {
+        return element.try_as<winrt::TextBlock>() || element.try_as<winrt::RichTextBlock>() ||
+            element.try_as<winrt::RichTextBlockOverflow>() || element.try_as<winrt::TextBox>() ||
+            element.try_as<winrt::RichEditBox>() || element.try_as<winrt::PasswordBox>();
+    }
+
+    bool HasAppContextFlyout(winrt::UIElement const& element)
+    {
+        if (!element.ContextFlyout())
+        {
+            return false;
+        }
+
+        // Text controls carry a built-in copy/select flyout as their default value; only a flyout the
+        // app set on the element itself counts.
+        return !IsTextControl(element) ||
+            element.ReadLocalValue(winrt::UIElement::ContextFlyoutProperty()) != winrt::DependencyProperty::UnsetValue();
+    }
+}
+
+TableViewDetails::ContextMenuCandidate TableViewDetails::FindContentContextFlyout(
+    winrt::FrameworkElement const& wrapper)
+{
+    if (!wrapper)
+    {
+        return {};
+    }
+
+    // Depth-first in visual order, so the outermost app element (the template root) wins over
+    // anything nested inside it.
+    std::vector<winrt::DependencyObject> stack;
+    auto const pushChildren = [&stack](winrt::DependencyObject const& parent)
+    {
+        auto const count = winrt::VisualTreeHelper::GetChildrenCount(parent);
+        for (int32_t i = count - 1; i >= 0; --i)
+        {
+            stack.push_back(winrt::VisualTreeHelper::GetChild(parent, i));
+        }
+    };
+
+    pushChildren(wrapper);
+    while (!stack.empty())
+    {
+        auto const node = std::move(stack.back());
+        stack.pop_back();
+
+        auto const element = node.try_as<winrt::UIElement>();
+        if (!element || element.Visibility() != winrt::Visibility::Visible ||
+            node.try_as<winrt::TableView>())
+        {
+            continue;
+        }
+
+        if (HasAppContextFlyout(element))
+        {
+            if (auto const anchor = element.try_as<winrt::FrameworkElement>())
+            {
+                return { element.ContextFlyout(), anchor };
+            }
+        }
+
+        pushChildren(node);
+    }
+
+    return {};
+}
+
+TableViewDetails::ContextMenuCandidate TableView::ResolveContextFlyout(
     TableViewDetails::ContextMenuTarget const& target)
 {
+    // A ContextFlyout the app placed inside the cell or header (template or style) wins over the
+    // column/row properties, so keyboard and wrapper-padding requests match what a pointer request
+    // on the content already shows natively.
+    if (target.Column)
+    {
+        if (auto content = TableViewDetails::FindContentContextFlyout(target.Anchor))
+        {
+            return content;
+        }
+    }
+
     if (target.Kind == TableViewDetails::ContextMenuTargetKind::Header)
     {
-        return target.Column.HeaderContextFlyout();
+        return { target.Column.HeaderContextFlyout(), target.Anchor };
     }
 
     if (target.Column)
     {
         if (auto const flyout = target.Column.CellContextFlyout())
         {
-            return flyout;
+            return { flyout, target.Anchor };
         }
     }
 
-    return RowContextFlyout();
-}
-
-winrt::TableViewContextFlyoutRequestedEventArgs TableView::RaiseContextFlyoutRequested(
-    TableViewDetails::ContextMenuTarget const& target,
-    winrt::FlyoutBase const& resolvedFlyout)
-{
-    auto result = winrt::make_self<TableViewContextFlyoutRequestedEventArgs>(
-        target.Item,
-        target.Column,
-        target.Kind == TableViewDetails::ContextMenuTargetKind::Header,
-        resolvedFlyout);
-    if (m_contextFlyoutRequestedEventSource)
-    {
-        m_contextFlyoutRequestedEventSource(*this, *result);
-    }
-    return *result;
+    return { RowContextFlyout(), target.Anchor };
 }
 
 void TableView::ShowContextFlyout(
-    TableViewDetails::ContextMenuTarget const& target,
-    winrt::FlyoutBase const& flyout,
+    TableViewDetails::ContextMenuCandidate const& candidate,
     winrt::ContextRequestedEventArgs const& args)
 {
     winrt::FlyoutShowOptions options;
     options.Placement(winrt::FlyoutPlacementMode::Auto);
 
     winrt::Point point{};
-    if (args.TryGetPosition(target.Anchor, point))
+    if (args.TryGetPosition(candidate.Anchor, point))
     {
         options.Position(point);
     }
 
-    flyout.ShowAt(target.Anchor, options);
+    candidate.Flyout.ShowAt(candidate.Anchor, options);
 }
 
 TableViewDetails::ContextMenuResult TableView::ProcessContextMenuRequest(
@@ -251,36 +315,31 @@ TableViewDetails::ContextMenuResult TableView::ProcessContextMenuRequest(
             return invalidatedResult;
         }
 
-        target.Row.Focus(winrt::FocusState::Programmatic);
+        // Focus the row only when focus is outside it. Pulling focus off a focused cell would make
+        // the flyout's focus restore land on the row's first cell and move the current cell there.
+        winrt::DependencyObject const rowObject = target.Row;
+        auto const root = XamlRoot();
+        auto const focused = root
+            ? winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>()
+            : nullptr;
+        if (!focused ||
+            (focused != rowObject && !SharedHelpers::IsAncestor(focused, rowObject, false /* checkVisibility */)))
+        {
+            target.Row.Focus(winrt::FocusState::Programmatic);
+        }
+
         if (!requestIsCurrent())
         {
             return invalidatedResult;
         }
     }
 
-    auto flyout = ResolveContextFlyout(target);
-    if (!flyout)
+    auto const candidate = ResolveContextFlyout(target);
+    if (!candidate)
     {
         return ContextMenuResult::Unhandled;
     }
 
-    auto decision = RaiseContextFlyoutRequested(target, flyout);
-    if (decision.Handled())
-    {
-        return ContextMenuResult::Suppressed;
-    }
-
-    flyout = decision.ContextFlyout();
-    if (!flyout)
-    {
-        return ContextMenuResult::Unhandled;
-    }
-
-    if (!requestIsCurrent())
-    {
-        return ContextMenuResult::Suppressed;
-    }
-
-    ShowContextFlyout(target, flyout, args);
+    ShowContextFlyout(candidate, args);
     return ContextMenuResult::Shown;
 }
