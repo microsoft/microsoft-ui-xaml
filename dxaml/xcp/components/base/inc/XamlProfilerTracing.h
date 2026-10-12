@@ -526,7 +526,6 @@ public:
     DEFINE_ELEMENT_ACTIVITY(GetElementCount);
 
     // Control template/style operations (CControl) — ElementId is the control.
-    DEFINE_ELEMENT_ACTIVITY(RefreshTemplateBindings);
     DEFINE_ELEMENT_ACTIVITY(GetBuiltInStyle);
     // GetBuiltInStyle adds the retail End's resolved style target-type name on the Stop edge.
     static void GetBuiltInStyleStop(uint64_t ElementId, PCWSTR StyleName)

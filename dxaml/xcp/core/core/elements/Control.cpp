@@ -952,9 +952,6 @@ _Check_return_ HRESULT CControl::RefreshTemplateBindings(
     auto onExit = wil::scope_exit([this]()
     {
         m_fRequestTemplateBindingRefresh = FALSE;
-#ifdef XAMLPROFILER_ENABLED
-        XamlElementTracing::RefreshTemplateBindingsStop(reinterpret_cast<uint64_t>(this));
-#else
         TraceRefreshTemplateBindingsEnd();
 
         TraceLoggingProviderWrite(
@@ -962,12 +959,8 @@ _Check_return_ HRESULT CControl::RefreshTemplateBindings(
             TraceLoggingBoolean(false, "IsStart"),
             TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-#endif
     });
 
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::RefreshTemplateBindingsStart(reinterpret_cast<uint64_t>(this));
-#else
     TraceRefreshTemplateBindingsBegin();
 
     TraceLoggingProviderWrite(
@@ -978,7 +971,6 @@ _Check_return_ HRESULT CControl::RefreshTemplateBindings(
         TraceLoggingWideString(GetStrClassName().GetBuffer(), "ClassName"),
         TraceLoggingWideString(m_strName.GetBuffer(), "Name"),
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-#endif
 
     if (m_propertySubscriptions)
     {
