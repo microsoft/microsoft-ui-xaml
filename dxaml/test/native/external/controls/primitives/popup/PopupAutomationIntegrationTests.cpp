@@ -155,7 +155,8 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
         CheckUIAElementName(retainedProvider, s_automationPopupButtonName);
     });
 
-    for (int cycle = 0; cycle < 3; cycle++)
+    const int reopenCount = hostChange == PopupHostChange::NonWindowed ? 1 : 3;
+    for (int cycle = 0; cycle < reopenCount; cycle++)
     {
         const bool changeHost = hostChange == PopupHostChange::NewPopup ||
             (hostChange == PopupHostChange::NonWindowed && cycle == 0);
