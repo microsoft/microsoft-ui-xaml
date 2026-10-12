@@ -157,3 +157,73 @@ build's `_CheckTableViewSnippets` target runs it with `-Check` only when a sourc
 tool changed, never in design-time builds; a stale or missing snippet is a warning (`TVSNIP001`)
 locally and an error in CI (`TF_BUILD` / `ContinuousIntegrationBuild`, or
 `/p:TableViewSampleStrictSnippets=true`).
+
+## Accessibility
+
+An accessibility test pass against this gallery logged 115 bugs, and roughly three quarters of them
+were sample markup rather than TableView defects. The rules below are what those bugs reduced to.
+Treat them as build rules, not aspirations: a new page that breaks one of them re-opens a bug that
+was already paid for once.
+
+**Name every element a user can reach, exactly once.** A control that takes focus must report a
+non-empty UIA Name. Prefer the name the user can see: `Content`, `Header`, or a child `TextBlock`.
+Add `AutomationProperties.Name` only when UIA would otherwise be empty, or when the visible text is
+a poor name out of context. Do not add it to a control that already derives a good name from its
+content — the result is announced twice. Use `AutomationProperties.LabeledBy` when a separate
+`TextBlock` is the visible label, and `AutomationProperties.HelpText` for the supporting sentence
+under a control, never as a substitute for the name.
+
+**Group related options into one control, not loose siblings.** A set of mutually exclusive choices
+is `muxc:RadioButtons` with `SelectedIndex` and `SelectionChanged` — one tab stop, arrow-key
+selection, and correct `PositionInSet`/`SizeOfSet`. Loose `RadioButton`s sharing a `GroupName` and a
+`Checked` handler give each item its own tab stop and no set position; that shape was removed from
+this app and should not come back. Where a group of controls is not a selection, give the container
+an `AutomationProperties.Name` so the group has context.
+
+**Mark up structure.** A `TextBlock` that reads as a section heading carries
+`AutomationProperties.HeadingLevel`; the rail's section headers are `Level2`. Headings are how a
+screen reader user skims a page, so a visually-styled heading without one is a real defect.
+
+**Announce only what changed.** Only Last action is a live region, raised once per new message. A
+readout that must be announced on its own sets `AutomationProperties.LiveSetting="Polite"` itself —
+see the Page structure section. Do not make a whole status panel live: it will re-announce
+everything on every refresh.
+
+**Survive text scaling and reflow.** Do not put a fixed `Width` or `Height` on anything that renders
+text. Use `MinWidth`/`MaxWidth` with `TextWrapping`, and let height be `Auto`; layout must hold at
+200% and 400% text scaling and in a portrait window. `SamplePresenter` already drops the options
+rail below the example under `WideLayoutMinWidth` (900px) — do not add a fixed-width container that
+defeats it. Where text is trimmed, `TextTrimming` must be paired with a `ToolTipService.ToolTip`
+and the full string exposed to UIA, so trimming never destroys information.
+
+**Theme by token, not by accent.** Theme dictionaries use only `Light`, `Dark`, `HighContrast`, and
+high-contrast entries use `SystemColor*` resources. For anything behind text — row banding,
+chips, tints — use neutral layer/card fills such as `CardBackgroundFillColorSecondary`. Accent-derived
+fills do not keep 4.5:1 against body text and have already caused one Sev1.
+
+**Hide decoration, name meaning.** An image or glyph that carries information gets a name; one that
+is purely decorative is removed from the tree with `AutomationProperties.AccessibilityView="Raw"`
+so it is not a stop for a screen reader. An icon-only button needs both a `ToolTipService.ToolTip`
+and an `AutomationProperties.Name`.
+
+**Never strand focus.** Focus must not land on something that then disappears, and it must not fall
+out of the window. After navigation, move focus to the destination page (`FocusFirstElement` in
+`MainWindow.xaml.cs`). If you add a control that collapses or replaces content, decide where focus
+goes before it is removed.
+
+**Know what is not ours to fix.** Some findings are stock WinUI behaviour and reproduce without
+TableView — the `TextBox` clear button is `IsTabStop="False"` and `AccessibilityView="Raw"` by
+design, tooltips that Esc will not dismiss, and the "popup window" announcement for `ComboBox` and
+`Flyout`. File those upstream against the framework. Do not add a sample-local workaround that
+diverges from platform behaviour just to clear a bug.
+
+**Do not "fix" the fixtures.** `Pages\KeyboardNavPage.xaml` deliberately contains an unnamed
+template button next to an explicitly-named one, so the two can be compared in a UIA inspector. It
+carries a comment saying so. The same applies to any element whose comment records an intentional
+asymmetry — read the comment before changing the markup.
+
+**Check it before you claim it.** Automated scans (Accessibility Insights / Fast Pass) catch a
+minority of these; most need Narrator, Tab-only navigation, 400% scaling and a portrait window.
+`AutomationProperties.AutomationId` is a contract with the UIA verification scripts: WinUI reports
+an unset AutomationId as the element's `x:Name`, so do not add an `x:Name` to an element with an
+automation peer unless the AutomationId should change too.
