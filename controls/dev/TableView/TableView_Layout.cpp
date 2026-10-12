@@ -32,6 +32,12 @@
 
 namespace
 {
+    bool IsFixedWidthColumn(winrt::TableViewColumn const& column)
+    {
+        const double lo = NonNegativeFiniteOrZero(column.MinWidth());
+        return MaxWidthForColumn(column, lo) <= lo;
+    }
+
     double MinWidthForStarFactor(winrt::TableViewColumn const& column, double factor)
     {
         if (factor > 0.0)
@@ -519,7 +525,8 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
         const bool participates =
             i > draggedIndex &&
             other.Width().GridUnitType == winrt::GridUnitType::Star &&
-            resizeEnabled && other.CanResize();
+            resizeEnabled && other.CanResize() &&
+            !IsFixedWidthColumn(other);
 
         if (!participates)
         {
@@ -551,11 +558,21 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
     return bounds;
 }
 
-// A Star column with no later resizable Star column to trade width with. Shared by the drag bounds
-// and the gripper's visibility so the two cannot disagree.
+// MinWidth meets MaxWidth, or a Star column with no later resizable Star column to trade with.
+// Shared by the drag bounds and gripper visibility so the two cannot disagree.
 bool TableView::IsColumnResizePinned(const winrt::TableViewColumn& column)
 {
-    if (!column || column.Width().GridUnitType != winrt::GridUnitType::Star)
+    if (!column)
+    {
+        return false;
+    }
+
+    if (IsFixedWidthColumn(column))
+    {
+        return true;
+    }
+
+    if (column.Width().GridUnitType != winrt::GridUnitType::Star)
     {
         return false;
     }
@@ -579,7 +596,8 @@ bool TableView::IsColumnResizePinned(const winrt::TableViewColumn& column)
             winrt::get_self<TableViewColumn>(other)->GetOwningTableView() == *this &&
             other.Visibility() == winrt::Visibility::Visible &&
             other.Width().GridUnitType == winrt::GridUnitType::Star &&
-            other.CanResize())
+            other.CanResize() &&
+            !IsFixedWidthColumn(other))
         {
             return false;
         }

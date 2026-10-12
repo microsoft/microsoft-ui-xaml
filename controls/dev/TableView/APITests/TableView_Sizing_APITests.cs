@@ -1219,6 +1219,63 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a column whose MinWidth equals its MaxWidth shows no gripper.")]
+        public void VerifyFixedWidthColumnHidesGripper()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(120.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                column.MinWidth = 120.0;
+                column.MaxWidth = 120.0;
+
+                Verify.AreEqual(Visibility.Collapsed, RequireGripper(tableView, 0).Visibility,
+                    "A column whose MinWidth equals its MaxWidth can never change width, so it must not offer a gripper.");
+
+                column.MaxWidth = double.PositiveInfinity;
+
+                Verify.AreEqual(Visibility.Visible, RequireGripper(tableView, 0).Visibility,
+                    "Lifting MaxWidth must restore the gripper.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a fixed-width Star column does not count as a donor for the Star column before it.")]
+        public void VerifyFixedWidthStarDonorPinsPreviousColumn()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(1.0, GridUnitType.Star)),
+                    ("Second", new GridLength(1.0, GridUnitType.Star)));
+                tableView.Columns[1].MinWidth = 150.0;
+                tableView.Columns[1].MaxWidth = 150.0;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(Visibility.Collapsed, RequireGripper(tableView, 0).Visibility,
+                    "The only later Star column is fixed at 150 and cannot give width, so column 0 has no donor.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies gripper availability is re-evaluated when a column's Width changes.")]
         public void VerifyGripperAvailabilityTracksWidthChange()
         {
