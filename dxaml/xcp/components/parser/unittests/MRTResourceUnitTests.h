@@ -15,7 +15,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_CLASS_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_CLASS()
 
-        BEGIN_TEST_METHOD(EmbeddedDataMemoryOutlivesResource)
+        TEST_CLASS_SETUP(ClassSetup)
+        TEST_CLASS_CLEANUP(ClassCleanup)
+
+        BEGIN_TEST_METHOD(EmbeddedDataMemoryRetainsResource)
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(RepeatedLoadsShareEmbeddedData)
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(StreamRetainsEmbeddedDataMemory)
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ImageMemoryReleasesResourceOnWorkerThread)
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ConcurrentMemoryReleases)
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(FailedLoadClearsOutput)
         END_TEST_METHOD()
     };
 

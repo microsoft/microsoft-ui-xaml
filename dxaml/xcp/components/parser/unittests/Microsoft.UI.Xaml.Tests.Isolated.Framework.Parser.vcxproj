@@ -32,6 +32,8 @@
             $(XcpPath)\components\theminginterop\inc\;
             $(XcpPath)\components\metadata\mocks\;
             $(XcpPath)\components\mrt\inc\;
+            $(XcpPath)\components\imaging\inc\;
+            $(XcpPath)\components\winuri\inc\;
             $(XcpPath)\core\inc\;
             $(XcpPath)\core\Parser\;
             $(XcpPath)\pal\inc\;
