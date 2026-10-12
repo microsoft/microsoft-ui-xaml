@@ -64,6 +64,8 @@ public:
     void EndEditName();
     void ResetEditName();
     void UpdateNameItem(winrt::IInspectable const& item);
+    // Row() without the ElementNotAvailable throw: -1 when the row is gone.
+    int32_t GetRowIndexInternal();
 
 private:
     // True when this cell is editable AND its column produces a TextBox editor, which is the only
@@ -81,7 +83,7 @@ private:
     int32_t GetItemOccurrenceAtIndex(winrt::TableView const& tableView, winrt::IInspectable const& item, int32_t targetIndex);
     bool IsTrackedRow(winrt::TableViewRow const& row, winrt::TableView const& tableView);
     void TrackRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
-    [[noreturn]] static void ThrowElementNotAvailable();
+    bool IsOwnerCurrentCellOfRow(winrt::TableViewRow const& row);
 
     // Resolves the column's stringified Header, else the name its header item exposes.
     winrt::hstring GetColumnHeaderText();

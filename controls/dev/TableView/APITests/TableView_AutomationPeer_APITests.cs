@@ -633,6 +633,127 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a cell peer whose row is gone throws ElementNotAvailable from GridItem.Row instead of reporting -1.")]
+        public void VerifyStaleCellPeerGridItemRowThrowsElementNotAvailable()
+        {
+            TableView tableView = null;
+            IGridItemProvider gridItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gridItem = GetCellPeer(RequireRowPeer(tableView, 1), 2).GetPattern(PatternInterface.GridItem) as IGridItemProvider;
+                Verify.IsNotNull(gridItem, "Precondition: the cell peer advertises GridItem.");
+                Verify.AreEqual(1, gridItem.Row, "Precondition: the live cell reports its row.");
+
+                tableView.ItemsSource = new List<Person>();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGridItemRowThrowsElementNotAvailable(gridItem, "a cell whose row was removed");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell peer replaced by a column reorder on the same row throws ElementNotAvailable from GridItem.Row and Column.")]
+        public void VerifyRebuiltCellPeerGridItemThrowsElementNotAvailable()
+        {
+            TableView tableView = null;
+            IGridItemProvider gridItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gridItem = GetCellPeer(RequireRowPeer(tableView, 0), 0).GetPattern(PatternInterface.GridItem) as IGridItemProvider;
+                Verify.IsNotNull(gridItem, "Precondition: the cell peer advertises GridItem.");
+                Verify.AreEqual(0, gridItem.Column, "Precondition: the live cell reports its column.");
+
+                // Only the row's cells are rebuilt, so the old provider's column would name another cell.
+                var alias = tableView.Columns[2];
+                tableView.Columns.RemoveAt(2);
+                tableView.Columns.Insert(0, alias);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGridItemCoordinateThrowsElementNotAvailable(() => gridItem.Row, "Row", "a cell rebuilt by a column reorder");
+                VerifyGridItemCoordinateThrowsElementNotAvailable(() => gridItem.Column, "Column", "a cell rebuilt by a column reorder");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a recycled group header peer throws ElementNotAvailable from GridItem.Row instead of reporting -1.")]
+        public void VerifyRecycledGroupHeaderGridItemRowThrowsElementNotAvailable()
+        {
+            TableView tableView = null;
+            IGridItemProvider gridItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gridItem = GetGroupHeaderPeer(tableView, 0).GetPattern(PatternInterface.GridItem) as IGridItemProvider;
+                Verify.IsNotNull(gridItem, "Precondition: the group header peer advertises GridItem.");
+                Verify.AreEqual(0, gridItem.Row, "Precondition: the live header reports its row.");
+
+                tableView.ItemsSource = new List<Person>();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGridItemRowThrowsElementNotAvailable(gridItem, "a recycled group header");
+            });
+        }
+
+        private static void VerifyGridItemRowThrowsElementNotAvailable(IGridItemProvider gridItem, string subject)
+            => VerifyGridItemCoordinateThrowsElementNotAvailable(() => gridItem.Row, "Row", subject);
+
+        private static void VerifyGridItemCoordinateThrowsElementNotAvailable(Func<int> read, string coordinate, string subject)
+        {
+            Exception error = null;
+            int value = int.MinValue;
+            try
+            {
+                value = read();
+            }
+            catch (Exception exception)
+            {
+                error = exception;
+            }
+
+            Verify.AreNotEqual(-1, value, $"GridItem.{coordinate} on {subject} must not report -1, which reads as a real coordinate.");
+            Verify.IsNotNull(error, $"GridItem.{coordinate} on {subject} must throw; it returned {value}.");
+            Verify.AreEqual(unchecked((int)0x80040201), error.HResult, $"GridItem.{coordinate} on {subject} must fail with UIA_E_ELEMENTNOTAVAILABLE.");
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a cell peer reports its containing grid and exactly one column header, and no row headers.")]
         public void VerifyCellPeerTableItemReportsContainingGridAndColumnHeader()
         {

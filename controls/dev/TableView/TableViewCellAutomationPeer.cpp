@@ -992,11 +992,6 @@ void TableViewCellAutomationPeer::TrackRowItem(winrt::TableViewRow const& row, w
     }
 }
 
-[[noreturn]] void TableViewCellAutomationPeer::ThrowElementNotAvailable()
-{
-    throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
-}
-
 winrt::UIElement TableViewCellAutomationPeer::GetRealizedCellFromRow(winrt::TableViewRow const& row)
 {
     if (!row)
@@ -1033,50 +1028,93 @@ winrt::UIElement TableViewCellAutomationPeer::GetRealizedCellFromRow(winrt::Tabl
 
 int32_t TableViewCellAutomationPeer::Row()
 {
+    auto const row = m_row.get();
+    auto const tableView = row ? GetTrackedTableForRow(row) : nullptr;
+    if (!tableView || !IsOwnerCurrentCellOfRow(row))
+    {
+        ThrowElementNotAvailable();
+    }
+
+    if (const auto rowIndex = GetRowIndex(); rowIndex >= 0)
+    {
+        return rowIndex;
+    }
+
+    // Between recycle and re-prepare a live row has no repeater index; only an item that has left
+    // the source makes this provider stale.
+    if (const auto itemIndex = GetTrackedItemIndex(tableView); itemIndex >= 0)
+    {
+        return itemIndex;
+    }
+    ThrowElementNotAvailable();
+}
+
+int32_t TableViewCellAutomationPeer::GetRowIndexInternal()
+{
     return GetRowIndex();
 }
 
 int32_t TableViewCellAutomationPeer::Column()
 {
-    // Computed live, mirroring Row(): a cached index goes stale as soon as a column is hidden or
-    // shown underneath a client holding this provider.
-    if (auto const row = m_row.get())
+    auto const row = m_row.get();
+    if (!row || !GetTrackedTableForRow(row) || !IsOwnerCurrentCellOfRow(row))
     {
-        if (!GetTrackedTableForRow(row))
-        {
-            ThrowElementNotAvailable();
-        }
-
-        if (auto const rowImpl = winrt::get_self<TableViewRow>(row))
-        {
-            if (auto const cellsHost = rowImpl->GetCellsHostPanelInternal())
-            {
-                auto const cell = Owner().try_as<winrt::UIElement>();
-                auto const cellChildren = cellsHost.Children();
-                const auto count = cellChildren.Size();
-                int32_t visibleColumnIndex = 0;
-
-                // Same walk and predicate as TableViewAutomationPeer::VisibleColumnToChildIndex and
-                // the row peer's GetChildrenCore, so all three agree on the coordinate.
-                for (uint32_t i = 0; i < count; ++i)
-                {
-                    auto const child = cellChildren.GetAt(i).try_as<winrt::UIElement>();
-                    if (!child || !IsVisibleColumn(rowImpl->GetCellOwningColumn(child)))
-                    {
-                        continue;
-                    }
-
-                    if (child == cell)
-                    {
-                        return visibleColumnIndex;
-                    }
-                    ++visibleColumnIndex;
-                }
-            }
-        }
+        ThrowElementNotAvailable();
     }
 
+    // Computed live, mirroring Row(): a cached index goes stale as soon as a column is hidden or
+    // shown underneath a client holding this provider.
+    auto const rowImpl = winrt::get_self<TableViewRow>(row);
+    if (auto const cellsHost = rowImpl->GetCellsHostPanelInternal())
+    {
+        auto const cell = Owner().try_as<winrt::UIElement>();
+        auto const cellChildren = cellsHost.Children();
+        const auto count = cellChildren.Size();
+        int32_t visibleColumnIndex = 0;
+
+        // Same walk and predicate as TableViewAutomationPeer::VisibleColumnToChildIndex and
+        // the row peer's GetChildrenCore, so all three agree on the coordinate.
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            auto const child = cellChildren.GetAt(i).try_as<winrt::UIElement>();
+            if (!child || !IsVisibleColumn(rowImpl->GetCellOwningColumn(child)))
+            {
+                continue;
+            }
+
+            if (child == cell)
+            {
+                return visibleColumnIndex;
+            }
+            ++visibleColumnIndex;
+        }
+
+        // Still hosted, but its column is collapsed: the cell has no visible-column coordinate.
+        ThrowElementNotAvailable();
+    }
+
+    if (m_columnIndex < 0)
+    {
+        ThrowElementNotAvailable();
+    }
     return m_columnIndex;
+}
+
+// A same-row rebuild (column reorder or removal, CellTemplate change) replaces the cells while the
+// row and its item stay live, so a tracked row alone does not prove this cell is current.
+bool TableViewCellAutomationPeer::IsOwnerCurrentCellOfRow(winrt::TableViewRow const& row)
+{
+    auto const rowImpl = winrt::get_self<TableViewRow>(row);
+    auto const cellsHost = rowImpl->GetCellsHostPanelInternal();
+    if (!cellsHost)
+    {
+        return true;
+    }
+
+    auto const cell = Owner().try_as<winrt::UIElement>();
+    return cell &&
+        winrt::VisualTreeHelper::GetParent(cell).try_as<winrt::Panel>() == cellsHost &&
+        rowImpl->GetCellOwningColumn(cell) == m_column.get();
 }
 
 int32_t TableViewCellAutomationPeer::RowSpan()
