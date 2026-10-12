@@ -501,15 +501,7 @@ void TableView::ApplyGroupExpansionByIdentity(
         else if (desired.has_value())
         {
             // Idempotent set: applying the state we already have is a no-op in the provider.
-            if (*desired)
-            {
-                provider->Expand(identity);
-            }
-            else
-            {
-                provider->Collapse(identity);
-            }
-            changed = true;
+            changed = *desired ? provider->Expand(identity) : provider->Collapse(identity);
         }
         else
         {

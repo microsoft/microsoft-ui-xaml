@@ -14,6 +14,7 @@ using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
+using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using MUXTestInfra.Shared.Infra;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.TableViewInteractionTestHelpers;
@@ -113,6 +114,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.AreEqual(baselineRows, CountRows(rowsHost), "A second Enter must re-expand the same group and restore the baseline row count.");
                 Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState, "After the second Enter the header must report Expanded.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a UIA Collapse on an already-collapsed group header raises no StructureChanged, while the first Collapse does.")]
+        public void GroupHeaderRepeatedCollapseRaisesNoStructureChanged()
+        {
+            // Events are only observable from an out-of-proc client (see TableViewTests.VerifyStructureChangedEventsReachAUiaClient).
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = SelectGroupedPivotAndGetTable();
+                if (tableView == null)
+                {
+                    Verify.Fail("The grouped TableView was not found.");
+                    return;
+                }
+
+                UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
+                UIObject groupHeader = GetFirstGroupHeader(rowsHost);
+                if (groupHeader == null)
+                {
+                    Verify.Fail("No TableViewGroupHeader peer was found under the rows host of the grouped table.");
+                    return;
+                }
+
+                var expandCollapse = new ExpandCollapseImplementation(groupHeader);
+                Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState, "Precondition: group 0 starts expanded.");
+
+                // Group StructureChanged is raised on the TableView's own peer, so element scope on the table.
+                using (var waiter = new StructureChangedEventWaiter(tableView, Scope.Element))
+                {
+                    expandCollapse.Collapse();
+                    Wait.ForIdle();
+                    Verify.IsTrue(waiter.TryWait(TimeSpan.FromSeconds(5)), "Positive control: the first Collapse must raise StructureChanged.");
+                    Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState, "The first Collapse must collapse the group.");
+
+                    // Drain any trailing events from the first Collapse so they cannot be blamed on the second.
+                    waiter.Reset();
+                    Wait.ForIdle();
+                    waiter.TryWait(TimeSpan.FromMilliseconds(500));
+                    waiter.Reset();
+
+                    expandCollapse.Collapse();
+                    Wait.ForIdle();
+                    Verify.IsFalse(waiter.TryWait(TimeSpan.FromSeconds(2)), "Collapsing an already-collapsed group changes nothing and must not raise StructureChanged.");
+                }
             }
         }
 
