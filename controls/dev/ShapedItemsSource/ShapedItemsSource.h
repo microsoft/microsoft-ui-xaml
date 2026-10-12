@@ -295,6 +295,7 @@ private:
     void PruneGroupCache(std::unordered_set<winrt::hstring> const& liveKeys);
     // Loads m_groupSource and (re-)attaches the grouped adapter, publishing one Reset.
     void AttachGroupSource(std::vector<winrt::IInspectable> const& groups);
+    void ReattachGroupedAdapterAfterFailedRefill();
     // Detaches the grouped adapter, then clears m_groupSource and m_groupCache.
     void ReleaseGroupedProjection();
     void ClearFlatRowIdentityTracking();

@@ -1675,6 +1675,15 @@ void ShapedItemsSource::AttachGroupSource(std::vector<winrt::IInspectable> const
     m_groupedAdapter->Source(m_groupSource);
 }
 
+void ShapedItemsSource::ReattachGroupedAdapterAfterFailedRefill()
+{
+    // Reattach so a refill that threw after the quiet detach does not orphan the adapter.
+    if (m_groupedAdapter && m_groupSource && !m_groupedAdapter->Source())
+    {
+        m_groupedAdapter->Source(m_groupSource);
+    }
+}
+
 void ShapedItemsSource::ReleaseGroupedProjection()
 {
     if (m_groupSource)
@@ -2008,12 +2017,27 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     // asks Rows() whether the edited item is still present.
     m_rows.ReplaceAll(flatRows);
 
-    for (auto& bucket : keyedBuckets)
+    // Detach first: a live adapter would rebuild per changed group, briefly publishing a moved row
+    // in no group, which drops its selection.
+    if (m_groupedAdapter)
     {
-        auto group = AcquireCachedGroup(bucket);
-        group->SetItems(bucket.Items);
-        groups.push_back(group.as<winrt::IInspectable>());
-        liveKeys.insert(bucket.Identity);
+        m_groupedAdapter->DetachSourceQuietly();
+    }
+
+    try
+    {
+        for (auto& bucket : keyedBuckets)
+        {
+            auto group = AcquireCachedGroup(bucket);
+            group->SetItems(bucket.Items);
+            groups.push_back(group.as<winrt::IInspectable>());
+            liveKeys.insert(bucket.Identity);
+        }
+    }
+    catch (...)
+    {
+        ReattachGroupedAdapterAfterFailedRefill();
+        throw;
     }
 
     PruneGroupCache(liveKeys);
@@ -2136,7 +2160,19 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
     PruneGroupCache(liveKeys);
 
     // Fill groups BEFORE attaching the grouped adapter so it publishes one coherent Reset.
-    ResliceGroupsFromHierarchy();
+    if (m_groupedAdapter)
+    {
+        m_groupedAdapter->DetachSourceQuietly();
+    }
+    try
+    {
+        ResliceGroupsFromHierarchy();
+    }
+    catch (...)
+    {
+        ReattachGroupedAdapterAfterFailedRefill();
+        throw;
+    }
     AttachGroupSource(groups);
 
     // Rows(): visible rows in group order, headers excluded.

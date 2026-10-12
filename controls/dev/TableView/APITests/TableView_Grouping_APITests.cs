@@ -807,6 +807,99 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
+
+        #region 9.6 Selection across a regroup
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a regroup that moves the selected row into a later group keeps it selected without raising SelectionChanged.")]
+        public void VerifySelectionSurvivesRegroupWhenKeyChanges()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            ShapedPerson ines = null;
+            var changes = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var people = MakeShapedPeople();
+                ines = people.First(person => person.Name == "Ines");
+                source = TableViewSource.From(people);
+                source.GroupBy(o => Person(o).Role);
+
+                tableView = CreateGroupedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(GetProjectedItems(tableView).IndexOf(ines));
+                Verify.AreSame(ines, tableView.SelectedItem, "Precondition: Ines is selected.");
+
+                // Designer is bucketed before Engineer, so the old group is refilled before the new one.
+                ines.Role = "Engineer";
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.SelectionChanged += (s, e) => changes++;
+                // GroupBy takes a delegate, so the app re-declares it after a key change.
+                source.GroupBy(o => Person(o).Role);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(
+                    new[] { "#Designer", "Asha", "#Engineer", "Diego", "Rafa", "Ines", "Owen", "#Architect", "Mei" },
+                    GetProjectedLabels(tableView, includeCount: false),
+                    "the regroup must move Ines into Engineer");
+                Verify.AreSame(ines, tableView.SelectedItem, "The moved row must stay selected.");
+                Verify.AreEqual(GetProjectedItems(tableView).IndexOf(ines), tableView.SelectedIndex,
+                    "SelectedIndex must follow the row to its new position.");
+                Verify.AreEqual(0, changes, "The selected item did not change, so no SelectionChanged may be raised.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies collapsing the group of the selected row clears the selection.")]
+        public void VerifyCollapsingSelectedRowsGroupClearsSelection()
+        {
+            TableView tableView = null;
+            var changes = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(GetProjectedLabels(tableView, includeCount: false).IndexOf("Ines"));
+                Verify.AreEqual("Ines", (tableView.SelectedItem as ShapedPerson)?.Name, "Precondition: Ines is selected.");
+
+                tableView.SelectionChanged += (s, e) => changes++;
+                GetExpandCollapseProvider(tableView, 0).Collapse();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(tableView.SelectedItem, "A row hidden by a group collapse must not stay selected.");
+                Verify.AreEqual(-1, tableView.SelectedIndex, "The cleared selection has no index.");
+                Verify.AreEqual(1, changes, "One SelectionChanged for the clear.");
+            });
+        }
+
+        #endregion
     }
 
     internal static class TableViewGroupingTestHelpers
