@@ -379,6 +379,7 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
     // `changed` gate stays false and would never re-pin. Refresh it directly.
     InvalidateMeasure();
     RefreshFrozenColumns();
+    RefreshResizeGripperAvailability();
 
     // UIA addresses only visible columns (IsVisibleColumn), so a visibility flip shifts column
     // indices just like an add/remove.
@@ -406,6 +407,13 @@ void TableView::OnColumnWidthChanged(const winrt::TableViewColumn& column)
     InvalidateCellPanels();
     RefreshFrozenColumns();
     QueueTerminalGridLineRefresh();
+
+    // A drag converts columns to Pixel as it goes; re-evaluating then would pull the gripper out
+    // from under the pointer. DragCompleted refreshes instead.
+    if (!m_activeColumnResizeDrag)
+    {
+        RefreshResizeGripperAvailability();
+    }
 }
 
 void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column)

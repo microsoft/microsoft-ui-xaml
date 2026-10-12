@@ -1168,6 +1168,9 @@ private:
     // Limits a resize gesture to the width the other columns can absorb. Unbounded when nothing
     // constrains it.
     ColumnResizeBounds ResizeBoundsForColumn(const winrt::TableViewColumn& column);
+    bool IsColumnResizePinned(const winrt::TableViewColumn& column);
+    // Collapses the gripper of every pinned column; it stays in the tree for keyboard resize lookup.
+    void RefreshResizeGripperAvailability();
     void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, std::vector<ColumnResizeFrozenColumn>& frozen);
     static void RestoreColumnWidth(const winrt::TableViewColumn& column, const winrt::IInspectable& localWidth);
     // Re-invalidate the header + realized row cells panels so they re-measure/arrange after a resolve.
