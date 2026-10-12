@@ -685,7 +685,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         RequireBrush(resources, themeName, "TabularSurfaceHeaderBackgroundPressedBrush").Color,
                         $"'{themeName}' header pressed fill must match the row pressed fill.");
 
-                    var restForeground = RequireBrush(resources, themeName, "TabularSurfaceHeaderForegroundBrush").Color;
+                    // Header text inherits TableView.Foreground (TabularSurfaceRowForegroundBrush); the
+                    // state keys only apply in High Contrast but must still match it elsewhere.
+                    var restForeground = RequireBrush(resources, themeName, "TabularSurfaceRowForegroundBrush").Color;
                     Verify.AreEqual(restForeground,
                         RequireBrush(resources, themeName, "TabularSurfaceHeaderForegroundPointerOverBrush").Color,
                         $"'{themeName}' header text must keep its rest colour on hover.");
