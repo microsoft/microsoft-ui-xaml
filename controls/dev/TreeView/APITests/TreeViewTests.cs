@@ -1941,7 +1941,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Scenario: Standalone TreeViewItem/TemplateSettings defaults; node mode A(A0(A0a),A1),B expanded; sets
         //   glyph props and HasUnrealizedChildren on B's container, then on a detached node.
         // Expected: Default glyphs/size 8/null brush; indentation 0/16/32 by depth; glyph props reach the glyph
-        //   TextBlocks; HasUnrealizedChildren drives node HasChildren and GlyphOpacity 0/1.
+        //   template parts (TextBlock or FontIcon); HasUnrealizedChildren drives node HasChildren and GlyphOpacity 0/1.
         // Failure means: TreeViewItem glyph DP defaults/UpdateIndentation/OnPropertyChanged(HasUnrealizedChildren)
         //   or TreeViewNode::HasUnrealizedChildren/UpdateHasChildren regressed.
         [TestMethod]
@@ -1984,8 +1984,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(0, containerA0a.TreeViewItemTemplateSettings.DragItemsCount);
 
                 // Glyph properties round-trip and flow into the chevron glyph template parts.
-                var collapsedGlyph = VisualTreeUtils.FindVisualChildByName(containerB, "CollapsedGlyph") as TextBlock;
-                var expandedGlyph = VisualTreeUtils.FindVisualChildByName(containerB, "ExpandedGlyph") as TextBlock;
+                // The glyph parts are looked up as FrameworkElement so the test works whether the template uses
+                // TextBlock or FontIcon for them (see ReadGlyphPart).
+                var collapsedGlyph = VisualTreeUtils.FindVisualChildByName(containerB, "CollapsedGlyph") as FrameworkElement;
+                var expandedGlyph = VisualTreeUtils.FindVisualChildByName(containerB, "ExpandedGlyph") as FrameworkElement;
                 Verify.IsNotNull(collapsedGlyph);
                 Verify.IsNotNull(expandedGlyph);
                 Verify.IsNotNull(containerB.GlyphBrush, "Default style supplies a glyph brush");
@@ -2005,12 +2007,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(14.0, (double)containerB.GetValue(TreeViewItem.GlyphSizeProperty));
                 Verify.AreSame(brush, containerB.GlyphBrush);
                 Verify.AreSame(brush, containerB.GetValue(TreeViewItem.GlyphBrushProperty));
-                Verify.AreEqual("+", collapsedGlyph.Text);
-                Verify.AreEqual("-", expandedGlyph.Text);
-                Verify.AreEqual(14.0, collapsedGlyph.FontSize);
-                Verify.AreEqual(14.0, expandedGlyph.FontSize);
-                Verify.AreSame(brush, collapsedGlyph.Foreground);
-                Verify.AreSame(brush, expandedGlyph.Foreground);
+                var collapsedPart = ReadGlyphPart(collapsedGlyph, "CollapsedGlyph");
+                var expandedPart = ReadGlyphPart(expandedGlyph, "ExpandedGlyph");
+                Verify.AreEqual("+", collapsedPart.Glyph);
+                Verify.AreEqual("-", expandedPart.Glyph);
+                Verify.AreEqual(14.0, collapsedPart.FontSize);
+                Verify.AreEqual(14.0, expandedPart.FontSize);
+                Verify.AreSame(brush, collapsedPart.Foreground);
+                Verify.AreSame(brush, expandedPart.Foreground);
 
                 // HasUnrealizedChildren on a realized container is pushed to its node, which then
                 // reports children and shows the chevron even though it has no child nodes.
@@ -2565,6 +2569,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("DropEffects threw " + thrown.GetType().FullName + " HResult=0x" + thrown.HResult.ToString("X8"));
                 Verify.AreEqual(unchecked((int)0x80004001), thrown.HResult);
             });
+        }
+
+        // Reads the glyph text, font size and foreground from a TreeViewItem chevron glyph template part, which is a
+        // TextBlock (Text) today and may be a FontIcon (Glyph); fails clearly for any other part type.
+        private static (string Glyph, double FontSize, Brush Foreground) ReadGlyphPart(FrameworkElement part, string partName)
+        {
+            if (part is TextBlock textBlock)
+            {
+                return (textBlock.Text, textBlock.FontSize, textBlock.Foreground);
+            }
+            if (part is FontIcon fontIcon)
+            {
+                return (fontIcon.Glyph, fontIcon.FontSize, fontIcon.Foreground);
+            }
+            Verify.Fail(partName + " is a " + (part == null ? "null" : part.GetType().FullName) + ", expected TextBlock or FontIcon");
+            throw new InvalidOperationException(partName + " has an unsupported type");
         }
 
         // Flattened view of the inner list (node mode) as comma-separated node content.

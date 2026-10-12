@@ -18,8 +18,8 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    // Class-level [TestProperty("Ignore", "True")] (TODO 29556921, added when MUXControlsTestApp became a
-    // desktop .NET app) removed: a /runignoredtests trial of the 88 ignored tests passed 83/88 unmodified; the
+    // Class-level [TestProperty("Ignore", "True")] (added when MUXControlsTestApp became a desktop .NET app)
+    // removed: a /runignoredtests trial of the 88 ignored tests passed 83/88 unmodified; the
     // 5 failures were test-side (stale check-box tap geometry, fixed in ToggleTreeViewItemCheckBox) or infra
     // (MUXTestInfra AppWatcher 15-minute app-lifetime limit; TestCleanup's RestartAppIfLongRunning schedules an
     // app restart after 10 minutes). TreeViewFastReorderTest and TreeViewDataLateInitTest were re-enabled too.
@@ -955,7 +955,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // Scenario: Open the TreeView page and measure the collapsed Root item.
-        // Expected: Root's UIA bounding rectangle height is exactly 28 (physical px, so assumes 100% scale).
+        // Expected: Root's UIA bounding rectangle height is 28 DIPs, scaled by the test window DPI (+/-1 px).
         // Failure means: TreeViewItem default template/density resources (min height, padding, margins)
         //   changed.
         [TestMethod]
@@ -965,8 +965,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("TreeView Tests"))
             {
                 UIObject root = LabelFirstItem();
-                int height = root.BoundingRectangle.Height;
-                Verify.AreEqual(height, 28);
+                VerifyHeightInDips(root.BoundingRectangle.Height, 28, "Root item");
             }
         }
 
@@ -2509,8 +2508,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // Scenario: Navigate to ItemTemplateSelectorTestPage (TreeView with ItemTemplateSelector and
         //   ItemContainerStyleSelector setting Height 50/60).
-        // Expected: Items "Template1" and "Template2" exist with heights 46 and 56 (style height minus 4px
-        //   margins).
+        // Expected: Items "Template1" and "Template2" exist with heights 46 and 56 DIPs (style height minus 4px
+        //   margins), scaled by the test window DPI (+/-1 px).
         // Failure means: TreeView no longer forwards ItemTemplateSelector / ItemContainerStyleSelector to the
         //   inner TreeViewList and its TreeViewItem containers.
         [TestMethod]
@@ -2528,8 +2527,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 var topBottomMargin = 4; // To account for the 2px top and 2px bottom margins for TreeViewItem
 
                 // Verify item container styles are set correctly by checking heights
-                Verify.AreEqual(node1.BoundingRectangle.Height, 50 - topBottomMargin);
-                Verify.AreEqual(node2.BoundingRectangle.Height, 60 - topBottomMargin);
+                VerifyHeightInDips(node1.BoundingRectangle.Height, 50 - topBottomMargin, "Template1 item");
+                VerifyHeightInDips(node2.BoundingRectangle.Height, 60 - topBottomMargin, "Template2 item");
             }
         }
 
@@ -2812,7 +2811,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         // PC-7 (product bug): in Single mode TreeView.SelectedItem is only synced from the inner ListView's
         // SelectionChanged, which needs a realized container; selecting an unrealized node via SelectedNode leaves
         // SelectedItem stale until realization. Timing-dependent: fails consistently on Win10 RS5 x86chk CI agents
-        // (PR #12227 build 160184362), passes on faster Win11 agents. Re-enable once SelectedItem is updated from
+        // (PR #12227), passes on faster Win11 agents. Re-enable once SelectedItem is updated from
         // the ViewModel selection change.
         [TestProperty("Ignore", "True")]
         public void TreeViewSelectRegressionTest()
@@ -3003,12 +3002,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Move down node 1");
                 var originalDelay = Keyboard.SendKeysDelay;
                 Keyboard.SendKeysDelay = 10;
-
-                KeyboardHelper.PressKey(Key.Down, ModifierKey.Alt | ModifierKey.Shift, 50);
-                Log.Comment("Move up node 1");
-                KeyboardHelper.PressKey(Key.Up, ModifierKey.Alt | ModifierKey.Shift, 50);
-
-                Keyboard.SendKeysDelay = originalDelay;
+                try
+                {
+                    KeyboardHelper.PressKey(Key.Down, ModifierKey.Alt | ModifierKey.Shift, 50);
+                    Log.Comment("Move up node 1");
+                    KeyboardHelper.PressKey(Key.Up, ModifierKey.Alt | ModifierKey.Shift, 50);
+                }
+                finally
+                {
+                    Keyboard.SendKeysDelay = originalDelay;
+                }
 
                 // The app must still respond and no node may be lost or duplicated by the rapid reorders.
                 ClickButton("GetItemCount");
@@ -3425,6 +3428,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern uint GetDpiForWindow(IntPtr hwnd);
+
+        // Verifies a UIA bounding-rectangle height (physical px) against an expected XAML height in DIPs, scaled by
+        // the test window DPI and rounded, allowing +/-1 px for layout rounding.
+        private static void VerifyHeightInDips(int actualPx, double expectedDips, string what)
+        {
+            double scale = GetTestWindowScale();
+            int expectedPx = (int)Math.Round(expectedDips * scale);
+            Log.Comment(what + ": height " + actualPx + " px, expected " + expectedDips + " DIPs * " + scale + " = " + expectedPx + " px (+/-1)");
+            Verify.IsTrue(Math.Abs(actualPx - expectedPx) <= 1, what + " height " + actualPx + " px should be " + expectedPx + " px (+/-1)");
+        }
 
         // DPI scale of the running test app's window (1.0 at 96 DPI). Falls back to 1.0 with a warning if the window
         // handle is not available.
