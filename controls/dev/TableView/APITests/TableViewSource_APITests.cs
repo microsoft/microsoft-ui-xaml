@@ -1797,6 +1797,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies re-declaring GroupBy after a group key change reaches the row view as exactly one Reset.")]
+        public void VerifyRegroupAfterKeyChangePublishesOneReset()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            List<ShapedPerson> people = null;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeShapedPeople();
+                source = TableViewSource.From(people).GroupBy(o => Person(o).Role);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => people.First(p => p.Name == "Ines").Role = "Engineer");
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                source.GroupBy(o => Person(o).Role);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(
+                    tableView,
+                    new List<string>
+                    {
+                        "#Designer(1)", "Asha",
+                        "#Engineer(4)", "Diego", "Rafa", "Ines", "Owen",
+                        "#Architect(1)", "Mei",
+                    },
+                    "the regroup must move Ines into Engineer");
+                Verify.AreEqual("Reset", string.Join(",", actions),
+                    "a regroup must reach the row view as one Reset");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a burst of mutations under shaping settles to the shape of the final source contents.")]
         public void VerifyBurstOfMutationsWhileShapedSettlesCorrectly()
         {
