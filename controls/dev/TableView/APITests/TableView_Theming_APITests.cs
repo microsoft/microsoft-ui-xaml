@@ -238,12 +238,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 foreach (var key in CollectKeys(highContrast))
                 {
                     // Only the canonical palette entries, which declare an explicit
-                    // Color="{ThemeResource SystemColor*}". The MUX_-prefixed keys are StaticResource
-                    // aliases; a StaticResource inside a theme dictionary is resolved when that
-                    // dictionary loads, so reading one off a detached TabularControlsResources yields
-                    // whichever sibling theme XAML happened to bind - an artifact of the read, not the
-                    // value a high-contrast user would see. Same for SortIndicatorForeground, which is
-                    // an alias to SystemColorWindowTextColorBrush.
+                    // Color="{ThemeResource SystemColor*}". SortIndicatorForeground is a StaticResource
+                    // alias to SystemColorWindowTextColorBrush; a StaticResource inside a theme
+                    // dictionary is resolved when that dictionary loads, so reading one off a detached
+                    // TabularControlsResources yields whichever sibling theme XAML happened to bind - an
+                    // artifact of the read, not the value a high-contrast user would see.
                     if (!key.StartsWith("TabularSurface", StringComparison.Ordinal))
                     {
                         continue;
