@@ -63,10 +63,28 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verify that when a parentless popup opens, the main tree is still accessible")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyWindowedPopupProviderSurvivesReopen)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a retained popup content provider stays usable when the same popup reopens without structure listeners.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWindowedPopupProviderIsRecreatedAfterHostChange)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a retained provider is invalidated when its content moves to another popup host.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyPopupProviderIsRecreatedAfterWindowedFallback)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a retained provider is invalidated when a parented popup falls back to non-windowed rendering.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
     private:
+        enum class PopupHostChange { None, NewPopup, NonWindowed };
+
         wrl::ComPtr<IRawElementProviderFragment> GetUIAWindow();
         void CheckUIAElementName(_In_ wrl::ComPtr<IRawElementProviderFragment> uiaElement, _In_ const WCHAR* expectedName);
         void VerifyParentlessPopupAutomationTreeCommon(bool hasFrameAP);
+        void VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange);
 
         static WCHAR s_automationName[];
         static WCHAR s_automationId[];

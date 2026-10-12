@@ -745,17 +745,28 @@ _Check_return_ HRESULT CDependencyObject::TryReCreateUIAWrapper()
                 CUIAWindow* oldUIAWindow = static_cast<CUIAWrapper*>(wrapper)->GetUIAWindow();
                 CUIAWindow* uiaWindow = GetContext()->GetUIAWindowForElementRootNoRef(visualTree->GetRootElementNoRef());
 
-                // This indicates that the UIAWindows are different. Invalidate the current UIAWrapper and create a new one with the correct UIAWindow
+                // A windowed popup can use a different UIA window from its VisualTree root.
                 if (oldUIAWindow != uiaWindow)
                 {
-                     currentAP->InvalidateUIAWrapper();
-                     wrapper->Invalidate();
+                    xref_ptr<CPopup> popup;
+                    if (auto element = do_pointer_cast<CUIElement>(this))
+                    {
+                        IFC_RETURN(CPopupRoot::GetOpenPopupForElement(element, popup.ReleaseAndGetAddressOf()));
+                    }
 
-                     if (uiaWindow)
-                     {
-                         xref_ptr<CUIAWrapper> spWrapper;
-                         IFC_RETURN(uiaWindow->CreateProviderForAP(currentAP, spWrapper.ReleaseAndGetAddressOf()));
-                     }
+                    // Popup descendants can already have a wrapper rooted to the popup's UIA host.
+                    // Re-entering that same popup does not change their automation host.
+                    if (!popup || !popup->IsWindowed() || oldUIAWindow != popup->GetUIAWindow())
+                    {
+                        currentAP->InvalidateUIAWrapper();
+                        wrapper->Invalidate();
+
+                        if (uiaWindow)
+                        {
+                            xref_ptr<CUIAWrapper> spWrapper;
+                            IFC_RETURN(uiaWindow->CreateProviderForAP(currentAP, spWrapper.ReleaseAndGetAddressOf()));
+                        }
+                    }
                 }
             }
         }
