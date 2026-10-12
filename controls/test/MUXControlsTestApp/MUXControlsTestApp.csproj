@@ -303,6 +303,7 @@
   <Import Project="$(MUXCProjectRoot)dev\TreeView\APITests\TreeView_APITests.projitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems" Label="Shared" Condition="$(FeatureTwoPaneViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems" Label="Shared" Condition="$(FeatureAnimatedVisualPlayerEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\AnimatedVisualPlayer\APITests\AnimatedVisualPlayer_APITests.projitems" Label="Shared" Condition="$(FeatureAnimatedVisualPlayerEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\CommonStyles\APITests\CommonStyles_ApiTests.projitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\AutoSuggestBox\APITests\AutoSuggestBox_APITests.projitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\AutoSuggestBox\TestUI\AutoSuggestBox_TestUI.projitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
