@@ -1326,12 +1326,23 @@ void NavigationViewItem::UnhookEventsAndClearFields()
 
 void NavigationViewItem::PrepNavigationViewItem(const winrt::SplitView& splitView)
 {
+    // Use XAML's weak reference, which disconnects when reference tracking collects the item.
+    const winrt::DependencyPropertyChangedCallback onSplitViewPropertyChanged{
+        [weakThis = winrt::make_weak(static_cast<winrt::NavigationViewItem>(*this))]
+        (const winrt::DependencyObject& sender, const winrt::DependencyProperty& property)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                winrt::get_self<NavigationViewItem>(strongThis)->OnSplitViewPropertyChanged(sender, property);
+            }
+        }};
+
     m_splitViewIsPaneOpenChangedRevoker = RegisterPropertyChanged(splitView,
-        winrt::SplitView::IsPaneOpenProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+        winrt::SplitView::IsPaneOpenProperty(), onSplitViewPropertyChanged);
     m_splitViewDisplayModeChangedRevoker = RegisterPropertyChanged(splitView,
-        winrt::SplitView::DisplayModeProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+        winrt::SplitView::DisplayModeProperty(), onSplitViewPropertyChanged);
     m_splitViewCompactPaneLengthChangedRevoker = RegisterPropertyChanged(splitView,
-        winrt::SplitView::CompactPaneLengthProperty(), { this, &NavigationViewItem::OnSplitViewPropertyChanged });
+        winrt::SplitView::CompactPaneLengthProperty(), onSplitViewPropertyChanged);
 
     UpdateCompactPaneLength();
     UpdateIsClosedCompact();

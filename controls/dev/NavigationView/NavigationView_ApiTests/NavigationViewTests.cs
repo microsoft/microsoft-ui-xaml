@@ -1593,6 +1593,99 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyPanePropertiesAfterCollectingRemovedHierarchicalItems()
+        {
+            foreach (bool useItemsSource in new[] { false, true })
+            {
+                foreach (string property in new[] { "IsPaneOpen", "CompactPaneLength", "PaneDisplayMode" })
+                {
+                    NavigationView navView = null;
+                    IList<object> items = null;
+                    WeakReference removedChild = null;
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        navView = new NavigationView
+                        {
+                            PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                            Width = 800,
+                            Height = 600
+                        };
+                        if (useItemsSource)
+                        {
+                            items = new ObservableCollection<object>();
+                            navView.MenuItemsSource = items;
+                        }
+                        else
+                        {
+                            items = navView.MenuItems;
+                        }
+
+                        var parent = new NavigationViewItem
+                        {
+                            Content = new TextBlock { Text = "Removed parent" },
+                            IsExpanded = true
+                        };
+                        var child = new NavigationViewItem { Content = new TextBlock { Text = "Removed child" } };
+                        parent.MenuItems.Add(child);
+                        items.Add(parent);
+                        Content = navView;
+                        Content.UpdateLayout();
+                        Verify.IsNotNull(VisualTreeHelper.GetParent(child), "The child must be realized before removal.");
+                        removedChild = new WeakReference(child);
+                        navView.IsPaneOpen = false;
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        items.Clear();
+                        var replacement = new NavigationViewItem
+                        {
+                            Content = "Replacement",
+                            IsExpanded = true
+                        };
+                        replacement.MenuItems.Add(new NavigationViewItem { Content = "Replacement child" });
+                        items.Add(replacement);
+                        Content.UpdateLayout();
+                    });
+                    IdleSynchronizer.Wait();
+
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment($"Updating {property} after collection; MenuItemsSource={useItemsSource}");
+                        Verify.IsFalse(removedChild.IsAlive, "The removed managed child must have been collected.");
+                        if (property == "CompactPaneLength")
+                        {
+                            navView.CompactPaneLength = 64;
+                            Verify.AreEqual(64.0, navView.CompactPaneLength);
+                        }
+                        else if (property == "PaneDisplayMode")
+                        {
+                            navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+                            navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                        }
+                        navView.IsPaneOpen = true;
+                        Content.UpdateLayout();
+                        Verify.IsTrue(navView.IsPaneOpen);
+                        navView.IsPaneOpen = false;
+                        Content.UpdateLayout();
+                        Verify.IsFalse(navView.IsPaneOpen);
+                        navView.IsPaneOpen = true;
+                        Content.UpdateLayout();
+                        Verify.IsTrue(navView.IsPaneOpen);
+                    });
+                    IdleSynchronizer.Wait();
+                }
+            }
+        }
+
+        [TestMethod]
         public void VerifyNVIOutlivingNVDoesNotCrash()
         {
             NavigationViewItem menuItem1 = null;
