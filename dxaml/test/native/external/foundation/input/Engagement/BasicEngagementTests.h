@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -108,7 +108,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(UnparentedPopupAutofocusOnEngagement)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that autofocus works in an unparented popup when engaged with a gamepad.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // WPF: Multiple XY focus failures in WPF mode
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // WPF: Multiple XY focus failures in WPF mode
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CanFocusOnFocusEngageableItem)
@@ -177,7 +177,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(EngagedElementWithinPopupShouldDisengageWhenLosingFocus)
                 TEST_METHOD_PROPERTY(L"Description", L"When an element within the popup root is engaged and we focus another element within the popup root, we should disengage")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // XamlObjects events can be fired after its parent Island has been Dispose
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // XamlObjects events can be fired after its parent Island has been Dispose
             END_TEST_METHOD()
 
         private:

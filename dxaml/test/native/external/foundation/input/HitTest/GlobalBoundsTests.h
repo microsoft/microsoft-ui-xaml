@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -53,7 +53,7 @@ public:
     TEST_METHOD(ProjectionMakesConcavePolygon)
 
     BEGIN_TEST_METHOD(FindElementsInHostCoordinates_SwapChainPanel)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Crash in test code
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash in test code
     END_TEST_METHOD()
     
     TEST_METHOD(FindElementsInHostCoordinates_BaseItemChrome)

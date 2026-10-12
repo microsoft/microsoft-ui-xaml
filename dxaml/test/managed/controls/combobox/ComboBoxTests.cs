@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using Private.Infrastructure;
 using System;
@@ -268,7 +268,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestMethod]
         // Test relies on MessageDialog behavior of taking focus off the current window on Desktop and Xbox.
         [TestProperty("TestPass:ExcludeOn", "OneCore,WindowsCore")]
-        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void ValidateFocusStateWhenWindowLosesFocus()
         {
             ComboBox comboBox = null;

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -163,7 +163,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateOpenedComboBoxPositionByTouchInput)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the opened ComboBox's position that must be positioned within the visible bounds when it is opened by using the touch input.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Not working in WPF-hosting, scrollViewer bounds relative to WindowHelper->WindowBounds are unexpected.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Not working in WPF-hosting, scrollViewer bounds relative to WindowHelper->WindowBounds are unexpected.
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
@@ -193,7 +193,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateOpenedComboBoxPositionWithDifferentInput)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the opened ComboBox position that must be positioned within the visible bounds when it is opened with the different input.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Not working in WPF-hosting, scrollViewer bounds relative to WindowHelper->WindowBounds are unexpected.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Not working in WPF-hosting, scrollViewer bounds relative to WindowHelper->WindowBounds are unexpected.
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 

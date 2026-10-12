@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -162,7 +162,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(EngagedElementCanDistinguishBetweenPopupsOpenedBeforeAndAfterEngagement)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can distinguish between when to consider a popup as a candidate based on when it was opened")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Crash in test dll
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash in test dll
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(EngagedElementCanNavigateToPopupOpenedByAnotherPopup)
@@ -195,13 +195,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(UsingFocusHintRectShouldIncludeFocusedElement)
                 TEST_METHOD_PROPERTY(L"Description", L"When we pass in a focus hint rect, the focused element should be part of the candidate list")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(XYFocusIgnoresOcclusivity)
                 TEST_METHOD_PROPERTY(L"Description", L"When using private api: IgnoreOcclusivity, we should choose a candidate even when occluded")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             END_TEST_METHOD()
 
         private:

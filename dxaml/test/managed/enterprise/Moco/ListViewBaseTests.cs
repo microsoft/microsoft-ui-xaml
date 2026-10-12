@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using Private.Infrastructure;
 using System;
@@ -1648,7 +1648,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void GroupStyleSelectorTest()
         {
             Grid rootPanel = null;
@@ -3081,6 +3081,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Description", "If the selected item's container is not focusable, validate that focus is sent to children instead.")]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void DoesFocusChildrenOfSelectedItemIfContainerIsNotFocusable()
         {
             StackPanel root = null;

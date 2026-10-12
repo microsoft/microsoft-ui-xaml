@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -32,7 +32,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Scroll with mouse-wheel while auto-scrolling the content of a horizontal GridView with touch.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // DCPP: Test shutdown assert on WPF - ~CDirectManipulationService still has m_mapViewports
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Test shutdown assert on WPF - ~CDirectManipulationService still has m_mapViewports
                 TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
             END_TEST_METHOD()
 

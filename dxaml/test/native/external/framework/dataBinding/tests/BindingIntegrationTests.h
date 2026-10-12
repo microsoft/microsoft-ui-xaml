@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -217,7 +217,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(CanBindToAnimation)
                 // WPF_HOSTING_MODE_FAILURE - Animates to incorrect value, needs investigation.
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyDataTemplateExtensions)

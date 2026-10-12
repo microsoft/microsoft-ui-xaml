@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -81,7 +81,7 @@ public:
         // in WindowHelper::ShutdownXaml.
         TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // LTE test hook can't add to transition root of island's popup root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // LTE test hook can't add to transition root of island's popup root
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(SecondaryLTELeavesDanglingCompNodePointer)

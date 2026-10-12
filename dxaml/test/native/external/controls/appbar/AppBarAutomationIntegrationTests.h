@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -29,7 +29,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyNoLightDismissInTreeWhenCollapsed)
             TEST_METHOD_PROPERTY(L"Description", L"Verify that there is no light dismiss button in the UIA tree when the AppBar is collapsed")
-            TEST_CLASS_PROPERTY(L"Hosting:Mode", L"WPF")    // WPF_HOSTING_MODE_FAILURE: Close Button is found in UIA tree.
+            TEST_CLASS_PROPERTY(L"Hosting:Mode", L"UAP")    // WPF_HOSTING_MODE_FAILURE: Close Button is found in UIA tree.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyLightDismissInTreeWhenExpanded)

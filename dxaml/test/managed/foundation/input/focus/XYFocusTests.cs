@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using System;
 
@@ -1428,7 +1428,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
 
         [TestMethod]
         [TestProperty("Description", "Verifies that tab navigation in FindNextElementOptions causes an exception to be thrown.")]
-        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void VerifyFindNextElementOptionsCannotUseTabNavigation()
         {
             const string rootPanelXaml =

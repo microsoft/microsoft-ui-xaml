@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using System;
 using System.Threading;
@@ -174,7 +174,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("Description", "Validates that a submenu is shown on the left of its parent menu when no room is available on the right.")]
-        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void ValidateSubMenuPositioning()
         {
             TestServices.WindowHelper.SetWindowSizeOverride(new Size(1024, 400));

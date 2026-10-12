@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -82,11 +82,11 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(HitTestParentedPopup_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // By design - XamlIslandRoots require a subtree root in the API
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - XamlIslandRoots require a subtree root in the API
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(HitTestParentedPopup3D_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // By design - XamlIslandRoots require a subtree root in the API
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - XamlIslandRoots require a subtree root in the API
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 
@@ -98,11 +98,11 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(HitTestNestedParentedPopup_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // By design - XamlIslandRoots require a subtree root in the API
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - XamlIslandRoots require a subtree root in the API
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(HitTestNestedParentedPopup3D_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // By design - XamlIslandRoots require a subtree root in the API
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - XamlIslandRoots require a subtree root in the API
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 
@@ -115,11 +115,11 @@ public:
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(HitTestParentlessPopup_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // By design - UAP cannot hit parentless popup contents with a non-null subtree root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - UAP cannot hit parentless popup contents with a non-null subtree root
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(HitTestParentlessPopup3D_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // By design - UAP cannot hit parentless popup contents with a non-null subtree root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - UAP cannot hit parentless popup contents with a non-null subtree root
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 
@@ -132,11 +132,11 @@ public:
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(HitTestNestedParentlessPopup_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // By design - UAP cannot hit parentless popup contents with a non-null subtree root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - UAP cannot hit parentless popup contents with a non-null subtree root
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(HitTestNestedParentlessPopup3D_NullSubtreeRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // By design - UAP cannot hit parentless popup contents with a non-null subtree root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // By design - UAP cannot hit parentless popup contents with a non-null subtree root
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 
@@ -155,7 +155,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(NewLTETargetingExisting3D)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // VisualTreeHelper::FindElementsInHostCoordinates with no element not supported with DesktopWindowXamlSource
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // VisualTreeHelper::FindElementsInHostCoordinates with no element not supported with DesktopWindowXamlSource
     END_TEST_METHOD()
 
     TEST_METHOD(LTESkipsSubtree_DepthUnderLTE)
@@ -171,7 +171,7 @@ public:
         // in WindowHelper::ShutdownXaml.
         TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Simulates SurfacePresenter where the root is null. XamlIslandRoots not needed.
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Simulates SurfacePresenter where the root is null. XamlIslandRoots not needed.
     END_TEST_METHOD()
 
     inline Platform::String^ GetResourcesPath() const;

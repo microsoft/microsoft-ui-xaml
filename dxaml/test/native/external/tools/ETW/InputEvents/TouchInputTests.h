@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -23,7 +23,7 @@ public:
         BEGIN_TEST_METHOD(TappedEvent)
         TEST_METHOD_PROPERTY(L"Description", L"Validates dragging a Rectangle in a Canvas with the left mouse button and raw pointer events.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DoubleTappedEvent)
@@ -36,13 +36,13 @@ public:
         BEGIN_TEST_METHOD(RightTappedEvent)
         TEST_METHOD_PROPERTY(L"Description", L"Validates dragging a Rectangle in a Canvas with the left mouse button and raw pointer events.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(HoldingEvent)
         TEST_METHOD_PROPERTY(L"Description", L"Validates dragging a Rectangle in a Canvas with the left mouse button and raw pointer events.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
         END_TEST_METHOD()
 private:
     void SetupElements(_Out_ Microsoft::UI::Xaml::Shapes::Rectangle^* pRect, _Out_ Microsoft::UI::Xaml::Controls::Grid^* pGrid);

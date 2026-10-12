@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -27,7 +27,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyCommonUiaPropertyChangesBeingRaised)
             TEST_METHOD_PROPERTY(L"Description", L"Validates if common UIA property change events are being raised on layout update.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")//WPF_HOSTING_MODE_FAILURE: When WPF-hosted, automation change event isn't raised as expected.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")//WPF_HOSTING_MODE_FAILURE: When WPF-hosted, automation change event isn't raised as expected.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyControllerForPropertyChanged)
