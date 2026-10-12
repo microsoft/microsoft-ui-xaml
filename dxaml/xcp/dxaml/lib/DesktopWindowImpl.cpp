@@ -2399,23 +2399,36 @@ _Check_return_ HRESULT DesktopWindowImpl::ClearOwnedConstraintsOnPresenterIfOver
     // resizing the window, so the old-DPI pixel values don't clamp the resize. We only clear what we own,
     // to avoid disturbing a constraint the app set directly on the presenter for a dimension it didn't
     // route through Window.
+    //
+    // If one write fails, keep going and return the first error. Otherwise one failure would leave the
+    // remaining old-DPI values in place to clamp the resize.
+    HRESULT firstError = S_OK;
+    auto recordFirstError = [&firstError](HRESULT hr)
+    {
+        if (SUCCEEDED(firstError))
+        {
+            firstError = hr;
+        }
+    };
+
     if (m_minWidth.has_value())
     {
-        IFC_RETURN(presenter->put_PreferredMinimumWidth(nullptr));
+        recordFirstError(presenter->put_PreferredMinimumWidth(nullptr));
     }
     if (m_minHeight.has_value())
     {
-        IFC_RETURN(presenter->put_PreferredMinimumHeight(nullptr));
+        recordFirstError(presenter->put_PreferredMinimumHeight(nullptr));
     }
     if (m_maxWidth.has_value())
     {
-        IFC_RETURN(presenter->put_PreferredMaximumWidth(nullptr));
+        recordFirstError(presenter->put_PreferredMaximumWidth(nullptr));
     }
     if (m_maxHeight.has_value())
     {
-        IFC_RETURN(presenter->put_PreferredMaximumHeight(nullptr));
+        recordFirstError(presenter->put_PreferredMaximumHeight(nullptr));
     }
 
+    IFC_RETURN(firstError);
     return S_OK;
 }
 
