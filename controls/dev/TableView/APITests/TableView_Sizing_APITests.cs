@@ -347,21 +347,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies an Auto column widens when a wider row realizes and narrows again when that row is recycled.")]
+        [TestProperty("Description", "Verifies an Auto column widens when a wider row realizes and keeps that width when the row is recycled.")]
         public void VerifyAutoWidthGrowsAsWiderRowsRealize()
         {
-            // Auto is shrink-capable, not a grow-only high-water mark: the width tracks the widest
-            // *currently realized* cell in both directions. The alternative reading - that a column
-            // latches its maximum for the life of the data set - would mean one wide row anywhere in a
-            // long source permanently widens the column even while that row is nowhere near the
-            // viewport, stealing space from every other column for the rest of the session.
-            //
-            // The two readings are indistinguishable on the way up. Only scrolling the wide row back
-            // out separates them, so this test must travel in both directions.
-            //
-            // TableView.idl:122 still says Auto "grows within a data set", which reads as monotonic and
-            // contradicts this. The IDL wording is stale and should be corrected to match the decided
-            // behavior; see the test plan.
+            // Growth and shrink look alike on the way up, so the wide row must also scroll back out.
             TableView tableView = null;
             double initialWidth = 0.0;
             double grownWidth = 0.0;
@@ -410,22 +399,189 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsFalse(IsItemRealized(tableView, wideItem),
-                    "Precondition: the wide row must be recycled after scrolling back, or the shrink assertion would be vacuous.");
+                    "Precondition: the wide row must be recycled after scrolling back, or the grow-only assertion would be vacuous.");
 
                 var settledWidth = tableView.Columns[0].ActualWidth;
                 Log.Comment($"Auto width after the wide row was recycled: {settledWidth}.");
 
-                Verify.IsLessThan(settledWidth, grownWidth,
-                    "An Auto column must narrow again once its widest realized cell is recycled, rather than latching a grow-only maximum.");
+                Verify.AreEqual(grownWidth, settledWidth,
+                    "An Auto column must keep its grown width when its widest realized cell is recycled; Auto grows within a data set.");
+            });
+        }
 
-                // Returning to the original rows must not leave the column any wider than it started.
-                // This is deliberately an upper bound rather than an equality: Auto tracks the widest
-                // *currently realized* cell, and the realized set after scrolling back is not
-                // guaranteed to be identical to the initial one, so a slightly narrower result is
-                // correct behavior rather than a regression. What must not happen is the column
-                // staying wide - or drifting wider - once the wide row is gone.
-                Verify.IsLessThanOrEqual(settledWidth, initialWidth + c_widthTolerance,
-                    "Auto width must not remain wider than it started once the original rows are realized again.");
+        [TestMethod]
+        [TestProperty("Description", "Verifies showing column headers mid data set does not shrink a grown Auto column to the on-screen rows.")]
+        public void VerifyShowingHeadersKeepsGrownAutoWidth()
+        {
+            VerifyChangeKeepsGrownAutoWidth(
+                t => t.HeadersVisibility = TableViewHeadersVisibility.None,
+                t => t.HeadersVisibility = TableViewHeadersVisibility.Column,
+                "Showing a header narrower than the grown width must not reset the Auto column to the on-screen rows.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies hiding column headers mid data set does not shrink a grown Auto column to the on-screen rows.")]
+        public void VerifyHidingHeadersKeepsGrownAutoWidth()
+        {
+            VerifyChangeKeepsGrownAutoWidth(
+                t => t.HeadersVisibility = TableViewHeadersVisibility.Column,
+                t => t.HeadersVisibility = TableViewHeadersVisibility.None,
+                "Hiding the headers drops only the header's width; the width grown by a recycled row must be kept.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies changing a column's tooltip binding does not shrink its grown Auto width.")]
+        public void VerifyCellToolTipBindingChangeKeepsGrownAutoWidth()
+        {
+            VerifyChangeKeepsGrownAutoWidth(
+                t => { },
+                t => t.Columns[0].CellToolTipBinding = new Binding { Path = new PropertyPath("Name") },
+                "A tooltip does not change what the cell displays, so the grown Auto width must be kept.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies changing a column's editing template while no edit is open does not shrink its grown Auto width.")]
+        public void VerifyCellEditingTemplateChangeKeepsGrownAutoWidth()
+        {
+            VerifyChangeKeepsGrownAutoWidth(
+                t => { },
+                t => t.Columns[0].CellEditingTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""><TextBox /></DataTemplate>"),
+                "An editing template does not change what the cell displays, so the grown Auto width must be kept.");
+        }
+
+        private void VerifyChangeKeepsGrownAutoWidth(Action<TableView> setup, Action<TableView> change, string message)
+        {
+            TableView tableView = null;
+            double initialWidth = 0.0;
+            double grownWidth = 0.0;
+            Person wideItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var names = Enumerable.Range(0, 120).Select(i => $"Row {i}").ToArray();
+                names[c_wideRowIndex] = VeryLongText;
+
+                tableView = CreateAutoColumnTable("Name", names);
+                setup(tableView);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                wideItem = ((IReadOnlyList<Person>)tableView.ItemsSource)[c_wideRowIndex];
+                initialWidth = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width with only short rows realized: {initialWidth}.");
+            });
+
+            ScrollBodyToItem(tableView, c_wideRowIndex);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(IsItemRealized(tableView, wideItem),
+                    "Precondition: the wide row must be realized after scrolling to it.");
+
+                grownWidth = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width with the wide row realized: {grownWidth}.");
+
+                Verify.IsGreaterThan(grownWidth, initialWidth,
+                    "Precondition: the wide row must widen the Auto column, or the kept-width assertion would be vacuous.");
+            });
+
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 0.0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(IsItemRealized(tableView, wideItem),
+                    "Precondition: the wide row must be recycled before the change, or only on-screen rows are tested.");
+
+                change(tableView);
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var widthAfterChange = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width after the change: {widthAfterChange}.");
+
+                Verify.AreEqual(grownWidth, widthAfterChange, message);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a new ItemsSource starts a new data set, so an Auto column can narrow to the new content.")]
+        public void VerifyAutoWidthResetsWhenItemsSourceChanges()
+        {
+            TableView tableView = null;
+            double wideWidth = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutoColumnTable("Name", new[] { "Al", VeryLongText, "Cy" });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                wideWidth = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width with a long cell: {wideWidth}.");
+
+                tableView.ItemsSource = new[] { "Al", "Bo", "Cy" }
+                    .Select(name => new Person { Name = name, Role = "Role" })
+                    .ToList();
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var narrowWidth = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width after replacing ItemsSource with short cells: {narrowWidth}.");
+
+                Verify.IsLessThan(narrowWidth, wideWidth,
+                    "A new ItemsSource is a new data set: the grow-only Auto width must reset so the column fits the new content.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an Auto column follows its current header width, so turning off sorting gives back the sort indicator's space.")]
+        public void VerifyAutoWidthFollowsCurrentHeaderWidth()
+        {
+            TableView tableView = null;
+            double sortableWidth = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutoColumnTable("A column header wider than its cells", new[] { "Al", "Bo", "Cy" });
+                tableView.CanUserSortColumns = true;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                sortableWidth = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width with a sortable header: {sortableWidth}.");
+                tableView.CanUserSortColumns = false;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var width = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width after turning off sorting: {width}.");
+                Verify.IsLessThan(width, sortableWidth,
+                    "The header no longer reserves the sort indicator, so a header-driven Auto column must narrow.");
             });
         }
 
@@ -1602,10 +1758,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // Far enough down a 120-row source that it cannot be realized while the first rows are in view.
         internal const int c_wideRowIndex = 60;
-
-        // Auto widths are layout-rounded against the current RasterizationScale, so a width that
-        // returns to "the same" value can differ by a rounding step.
-        internal const double c_widthTolerance = 2.0;
 
         // Positions are compared after two independent arrange passes; the same rounding applies.
         internal const double c_positionTolerance = 2.0;
