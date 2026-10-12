@@ -164,6 +164,112 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Down past the bottom of the viewport keeps each newly focused row fully in view (dev-spec Keyboard).")]
+        public void DownArrowKeepsFocusedRowInView()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(ScrollingTable);
+                if (rowsHost == null) { return; }
+                if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized rows to measure movement."); return; }
+
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.AreEqual(1, FocusedPositionInSet(), "Precondition: focus should start on the first row of the set.");
+
+                int rowsPerViewport = ReadScrollingRowsPerViewport();
+                if (rowsPerViewport < 0) { return; }
+
+                for (int press = 1; press <= rowsPerViewport + 3; press++)
+                {
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+                    int position = FocusedPositionInSet();
+                    Verify.AreEqual(1 + press, position, string.Format("Down #{0} must advance exactly one row.", press));
+                    VerifyScrollingRowInView(position, string.Format("after Down #{0}", press));
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "End and Ctrl+End reach the last row of a virtualized table and keep it in view; selection follows End (dev-spec Keyboard).")]
+        public void EndAndCtrlEndReachLastRowOfVirtualizedTable()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(ScrollingTable);
+                if (rowsHost == null) { return; }
+                if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized rows."); return; }
+
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.AreEqual(1, FocusedPositionInSet(), "Precondition: focus should start on the first row of the set.");
+
+                KeyboardHelper.PressKey(Key.End);
+                Wait.ForIdle();
+                Verify.AreEqual(ScrollingItemCount, FocusedPositionInSet(), "End at row level must focus the last row.");
+                VerifyScrollingRowInView(ScrollingItemCount, "after End");
+                UIObject focusedRow = FindFocusedRow(GetRowsHost(ScrollingTable));
+                Verify.IsTrue(focusedRow != null && IsSelected(focusedRow), "End must select the row it focuses.");
+
+                KeyboardHelper.PressKey(Key.Home);
+                Wait.ForIdle();
+                Verify.AreEqual(1, FocusedPositionInSet(), "Precondition: Home must return to the first row.");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.AreEqual(0, IndexOfFocusedCell(FindFocusedBodyElement(GetRowsHost(ScrollingTable))),
+                    "Precondition: Right must drill into the first cell.");
+
+                KeyboardHelper.PressKey(Key.End, ModifierKey.Control);
+                Wait.ForIdle();
+                UIObject focusedBody = FindFocusedBodyElement(GetRowsHost(ScrollingTable));
+                if (focusedBody == null) { Verify.Fail("Ctrl+End must leave focus in the body."); return; }
+                Verify.AreEqual(focusedBody.Children.Count - 1, IndexOfFocusedCell(focusedBody), "Ctrl+End must focus the last cell.");
+
+                // Home and Left return to row level in the same row, where PositionInSet names the row.
+                KeyboardHelper.PressKey(Key.Home);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                Verify.AreEqual(ScrollingItemCount, FocusedPositionInSet(), "Ctrl+End must reach the last row.");
+                VerifyScrollingRowInView(ScrollingItemCount, "after Ctrl+End");
+
+                KeyboardHelper.PressKey(Key.Home, ModifierKey.Control);
+                Wait.ForIdle();
+                VerifyFocusedCell(ScrollingTable, 0, 0, "Ctrl+Home must reach the first cell of the first row.");
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                Verify.AreEqual(1, FocusedPositionInSet(), "Ctrl+Home must reach the first row.");
+            }
+        }
+
+        // Asserts the Scrolling-table row at a 1-based position lies inside the body viewport, from the page readout.
+        private static void VerifyScrollingRowInView(int positionInSet, string when)
+        {
+            string offsets = ReadScrollOffsets();
+            double offset = ReadScrollOffsetComponent(offsets, "V");
+            double viewport = ReadScrollOffsetComponent(offsets, "VH");
+            double rowHeight = ReadScrollOffsetComponent(offsets, "RowH");
+            if (double.IsNaN(offset) || double.IsNaN(viewport) || double.IsNaN(rowHeight) || rowHeight <= 0)
+            {
+                Verify.Fail(string.Format("The scroll readout did not publish V, VH and RowH: '{0}'.", offsets));
+                return;
+            }
+
+            // V is published rounded and RowH rounding accumulates over 200 rows, so allow two DIPs.
+            double top = (positionInSet - 1) * rowHeight;
+            Log.Comment("Row {0} {1}: top={2}, offsets '{3}'.", positionInSet, when, top, offsets);
+            Verify.IsTrue(top >= offset - 2 && top + rowHeight <= offset + viewport + 2,
+                string.Format("Row {0} must be in view {1}: top {2}, viewport {3}..{4}.",
+                    positionInSet, when, top, offset, offset + viewport));
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Page Down moves keyboard focus by roughly a viewport, farther than a single Down (dev-spec Keyboard).")]
         public void PageDownMovesByViewport()
         {

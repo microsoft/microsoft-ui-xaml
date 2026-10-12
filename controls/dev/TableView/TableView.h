@@ -275,12 +275,12 @@ public:
     // Moves keyboard focus to a cell by row index and VISIBLE column index, realizing and scrolling
     // the row into view first. A negative column means "keep the current one". Group-header rows
     // have no cells and fall back to focusing the header container. Drills the cursor to CELL level.
-    bool FocusCell(int32_t rowIndex, int32_t visibleColumnIndex);
+    bool FocusCell(int32_t rowIndex, int32_t visibleColumnIndex, std::optional<double> alignRatio = std::nullopt);
 
     // Moves keyboard focus to the row CONTAINER at a flat row index, realizing and scrolling it
     // into view first, and leaves the cursor at ROW level. This is the body's entry level and what
     // Up/Down move between while the user has not drilled into cells.
-    bool FocusRowContainer(int32_t rowIndex);
+    bool FocusRowContainer(int32_t rowIndex, std::optional<double> alignRatio = std::nullopt);
 
     // The row that body entry should land on when focus is aimed at a row CONTAINER from outside
     // the table. Used by TableViewRow's GettingFocus redirect: entering the table returns to the
@@ -1013,10 +1013,7 @@ private:
     int32_t m_terminalGridLineColumnIndex{ -1 };
     double m_terminalGridLineHorizontalOffset{ std::numeric_limits<double>::quiet_NaN() };
     double m_terminalGridLineVerticalOffset{ std::numeric_limits<double>::quiet_NaN() };
-    winrt::event_token m_pendingFocusLayoutToken{};
     // Deferred restore of keyboard focus to a group header after a toggle reshape recycles it.
-    // Separate from m_pendingFocusLayoutToken (row focus) so a row-focus request and a group-focus
-    // restore in flight at once cannot clobber each other's one-shot LayoutUpdated token.
     winrt::event_token m_pendingGroupFocusLayoutToken{};
     winrt::hstring m_pendingGroupFocusIdentity{};
     winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
@@ -1060,6 +1057,11 @@ private:
     void CancelReshapeFocusRestoreForUserInput();
     bool TryLandReshapeFocus();
     bool IsBodyFocusAtRow(int32_t rowIndex) const;
+    // Keyboard moves to a row that is not arranged yet finish through the same attempt loop.
+    void BeginPendingBodyFocus(int32_t row, int32_t column, bool cellLevel, std::optional<double> alignRatio);
+    static bool IsRowElementArranged(winrt::UIElement const& element);
+    bool IsRowElementInViewport(winrt::UIElement const& element) const;
+    bool BringRowElementIntoView(winrt::UIElement const& element, std::optional<double> alignRatio);
     void QueueReshapeFocusCaptureDisarm();
     void UpdateReshapeFocusDetectorSubscription(const winrt::ItemsSourceView& view);
     void OnRowsSourceResetForFocus(
@@ -1076,11 +1078,10 @@ private:
     int32_t m_pendingReshapeFocusColumn{ 0 };
     bool m_pendingReshapeFocusCellLevel{ false };
     winrt::FocusState m_pendingReshapeFocusState{ winrt::FocusState::Keyboard };
+    std::optional<double> m_pendingReshapeFocusAlign{};
     int32_t m_reshapeFocusAttemptsLeft{ 0 };
     // Set for the turn a restore is armed in; that turn's input triggered the re-shape.
     bool m_reshapeFocusArmedThisTurn{ false };
-    // So each target is scrolled into view only once.
-    int32_t m_reshapeFocusBroughtIntoViewRow{ -1 };
     bool m_reshapeFocusTurnQueued{ false };
     winrt::event_token m_reshapeFocusLayoutToken{};
     // Covers realize -> arrange -> deferred re-shape work, yet bounded so a restore never fights
@@ -1228,7 +1229,7 @@ private:
     bool FocusRowContainerInternal(
         winrt::UIElement const& element,
         winrt::FocusState focusState = winrt::FocusState::Keyboard);
-    bool FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, bool cellLevel);
+    bool FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, bool cellLevel, std::optional<double> alignRatio);
     int32_t GetFocusedRowContainerIndex() const;
     int32_t GetFocusedGroupHeaderIndex() const;
     bool TryMoveFocusToHeaderBandFromBody(int32_t visibleColumnIndex);
