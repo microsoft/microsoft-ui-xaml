@@ -16,6 +16,7 @@
 #include "SortIndicator.h"
 #include "RuntimeProfiler.h"
 #include "TVDiag.h"
+#include "TabularControlsResources.h"
 
 #include <string>
 #include <cmath>
@@ -338,6 +339,17 @@ TableView::TableView()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TableView);
 
     SetDefaultStyleKey(this);
+
+    // Construction is only a setup heuristic; equivalent resources or custom templates are valid.
+    static thread_local bool s_reportedMissingResources{ false };
+    if (!TabularControlsResources::HasBeenCreatedOnCurrentThread() && !s_reportedMissingResources)
+    {
+        s_reportedMissingResources = TVDiag::LogDebugger(
+            L"TableView setup: if using the default template, merge "
+            L"<TabularControlsResources xmlns=\"using:Microsoft.UI.Xaml.Controls.Tabular\" /> into "
+            L"App.xaml > Application.Resources.MergedDictionaries after XamlControlsResources, before overrides. "
+            L"Equivalent resources or a complete custom template are also supported.");
+    }
 
     // Columns must be observable; OnColumnsPropertyChanged owns the VectorChanged subscription to avoid duplicate callbacks.
     auto columns = winrt::single_threaded_observable_vector<winrt::TableViewColumn>();
