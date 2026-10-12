@@ -270,6 +270,11 @@ namespace ShapingHelpers
 
         bool HasComparer() const noexcept { return static_cast<bool>(m_comparer); }
 
+        // Drop rows that left the source so the ranks stop keeping them alive. Rank gaps left
+        // behind are harmless: keys only have to order. Both are no-ops inside a comparer callback.
+        void Forget(winrt::IInspectable const& item);
+        void RetainOnly(std::vector<winrt::IInspectable> const& liveRows);
+
     private:
         struct RankEntry
         {

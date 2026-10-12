@@ -1822,6 +1822,13 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
             auto strongThis = weakThis.get();
             return strongThis && strongThis->RepositionCustomSortItem(item, reshapePending);
         });
+        sourceImpl->SetRowsReleasedHook([weakThis](winrt::IInspectable const& item, std::vector<winrt::IInspectable> const& liveRows)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->ReleaseCustomSortRows(item, liveRows);
+            }
+        });
 
         if (IsLoaded())
         {

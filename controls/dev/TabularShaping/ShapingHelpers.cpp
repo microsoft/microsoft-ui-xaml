@@ -11,6 +11,7 @@
 #include <cstring>
 #include <numeric>
 #include <unordered_map>
+#include <unordered_set>
 #include "winnls.h"
 
 namespace ShapingHelpers
@@ -1137,6 +1138,67 @@ namespace ShapingHelpers
         {
             m_rerankAllPending = true;
         }
+    }
+
+    void CustomSortRankAdapter::Forget(winrt::IInspectable const& item)
+    {
+        if (m_comparerActive || !item)
+        {
+            return;
+        }
+
+        void* const identity = IdentityOf(item);
+        auto const isItem = [&](winrt::IInspectable const& candidate, void* candidateIdentity)
+        {
+            return candidate == item || (identity && candidateIdentity == identity);
+        };
+        m_ranks.erase(
+            std::remove_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry) { return isItem(entry.Item, entry.Identity); }),
+            m_ranks.end());
+        m_evicted.erase(
+            std::remove_if(m_evicted.begin(), m_evicted.end(), [&](winrt::IInspectable const& evicted) { return isItem(evicted, IdentityOf(evicted)); }),
+            m_evicted.end());
+        if (identity)
+        {
+            m_rankByIdentity.erase(identity);
+        }
+    }
+
+    void CustomSortRankAdapter::RetainOnly(std::vector<winrt::IInspectable> const& liveRows)
+    {
+        if (m_comparerActive || (m_ranks.empty() && m_evicted.empty()))
+        {
+            return;
+        }
+
+        std::unordered_set<void*> live;
+        live.reserve(liveRows.size());
+        for (auto const& row : liveRows)
+        {
+            if (void* const identity = row ? IdentityOf(row) : nullptr)
+            {
+                live.insert(identity);
+            }
+        }
+        auto const isLive = [&](void* identity) { return identity && live.find(identity) != live.end(); };
+
+        m_ranks.erase(
+            std::remove_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry)
+            {
+                if (isLive(entry.Identity))
+                {
+                    return false;
+                }
+                if (entry.Identity)
+                {
+                    m_rankByIdentity.erase(entry.Identity);
+                }
+                return true;
+            }),
+            m_ranks.end());
+        m_evicted.erase(
+            std::remove_if(m_evicted.begin(), m_evicted.end(), [&](winrt::IInspectable const& evicted) { return !isLive(IdentityOf(evicted)); }),
+            m_evicted.end());
     }
 
     void CustomSortRankAdapter::Rank(

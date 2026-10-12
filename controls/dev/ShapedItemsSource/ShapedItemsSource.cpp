@@ -1331,6 +1331,10 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
         filteredSource.erase(filteredSource.begin() + removal.SourceIndex);
         m_shapingState.Items.erase(m_shapingState.Items.begin() + removal.RowIndex);
         UntrackFlatItemPropertyChanged(removal.Item);
+        if (m_rowsReleasedHook)
+        {
+            m_rowsReleasedHook(removal.Item, {});
+        }
         m_rows.RemoveAt(removal.RowIndex);
         return true;
     };
@@ -1790,6 +1794,10 @@ void ShapedItemsSource::Refresh()
         // keeps the flag set, so the next live change still forces a rebuild.
         m_liveShapingChangeDropped->store(false);
         auto rows = Materialize(authoritativeSource);
+        if (m_rowsReleasedHook)
+        {
+            m_rowsReleasedHook(nullptr, rows);
+        }
         RefreshLiveShapingSubscriptions(rows);
 
         // All snapshots were just recaptured, so any pending live restore is satisfied -- unless

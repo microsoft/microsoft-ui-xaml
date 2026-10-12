@@ -62,6 +62,23 @@ bool TableView::RepositionCustomSortItem(const winrt::IInspectable& item, bool r
     return state->Reposition(item, reshapePending);
 }
 
+void TableView::ReleaseCustomSortRows(const winrt::IInspectable& item, const std::vector<winrt::IInspectable>& liveRows)
+{
+    auto const& state = m_tableViewSourceSort.CustomSortState;
+    if (!state || !state->HasComparer())
+    {
+        return;
+    }
+    if (item)
+    {
+        state->Forget(item);
+    }
+    else
+    {
+        state->RetainOnly(liveRows);
+    }
+}
+
 namespace
 {
     winrt::hstring LocalizedOrFallback(std::wstring_view resourceName, std::wstring_view fallback) noexcept
