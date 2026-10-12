@@ -84,6 +84,38 @@ namespace MUXControlsTestApp
             var sv = VisualTreeHelper.GetChild(boarderChild, 0);
             var sbas = (ScrollViewer)sv;
             sbas.ViewChanging += Sv_ViewChanging;
+            listScrollViewer = sbas;
+            sbas.ViewChanged += Sv_ViewChanged;
+            this.ScrollAwayDuringPullCheckBox.Checked += ScrollAwayDuringPullCheckBox_Toggled;
+            this.ScrollAwayDuringPullCheckBox.Unchecked += ScrollAwayDuringPullCheckBox_Toggled;
+        }
+
+        private ScrollViewer listScrollViewer;
+        private bool scrollAwayStarted;
+        private bool scrollAwayFinished;
+
+        private void ScrollAwayDuringPullCheckBox_Toggled(object sender, RoutedEventArgs e)
+        {
+            scrollAwayStarted = false;
+            scrollAwayFinished = false;
+            if (scrollAwayProvider != null)
+            {
+                scrollAwayProvider.InteractionRatioChanged -= ScrollAwayProvider_InteractionRatioChanged;
+                scrollAwayProvider = null;
+            }
+            this.StateTransitions.Text = "";
+            this.ScrollAwayTrace.Text = "";
+        }
+
+        // First ChangeView: the adapter sees ViewChanging while the pull is Interacting but the current offset is still 0.
+        // Second ChangeView (once the first one is applied): the current offset is now beyond the adapter's threshold.
+        private void Sv_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+            if (scrollAwayStarted && !scrollAwayFinished && listScrollViewer.VerticalOffset >= 199.0)
+            {
+                scrollAwayFinished = true;
+                listScrollViewer.ChangeView(null, 250.0, null, true /*disableAnimation*/);
+            }
         }
 
         private void RCRefreshRequestedComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -257,7 +289,40 @@ namespace MUXControlsTestApp
         private void RefreshVisualizer_RefreshStateChanged(RefreshVisualizer sender, RefreshStateChangedEventArgs args)
         {
             UpdateStatesComboBox(args.NewState);
+            this.StateTransitions.Text += args.OldState + "->" + args.NewState + ";";
+            if (this.ScrollAwayDuringPullCheckBox.IsChecked == true && !scrollAwayStarted && args.NewState == RefreshVisualizerState.Interacting)
+            {
+                scrollAwayStarted = true;
+                scrollAwayLastRatio = 0.0;
+                scrollAwayRatioAtCancel = double.NaN;
+                scrollAwayMaxRatioAfterCancel = double.NaN;
+                scrollAwayProvider = ((IRefreshVisualizerPrivate)sender).InfoProvider;
+                scrollAwayProvider.InteractionRatioChanged += ScrollAwayProvider_InteractionRatioChanged;
+                listScrollViewer.ChangeView(null, 200.0, null, true /*disableAnimation*/);
+            }
+            else if (scrollAwayStarted && double.IsNaN(scrollAwayRatioAtCancel) && args.OldState == RefreshVisualizerState.Interacting && args.NewState == RefreshVisualizerState.Idle)
+            {
+                scrollAwayRatioAtCancel = scrollAwayLastRatio;
+            }
         }
+
+        // Shows whether the pull was still going on when the interaction was cancelled: a ratio that keeps growing after
+        // the cancel means the finger was still dragging, i.e. the cancel did not come from the end of the manipulation.
+        private void ScrollAwayProvider_InteractionRatioChanged(IRefreshInfoProvider sender, RefreshInteractionRatioChangedEventArgs args)
+        {
+            scrollAwayLastRatio = args.InteractionRatio;
+            if (!double.IsNaN(scrollAwayRatioAtCancel))
+            {
+                scrollAwayMaxRatioAfterCancel = double.IsNaN(scrollAwayMaxRatioAfterCancel) ? args.InteractionRatio : Math.Max(scrollAwayMaxRatioAfterCancel, args.InteractionRatio);
+            }
+            this.ScrollAwayTrace.Text = "ratioAtCancel=" + scrollAwayRatioAtCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) +
+                ";maxRatioAfterCancel=" + scrollAwayMaxRatioAfterCancel.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        private IRefreshInfoProvider scrollAwayProvider;
+        private double scrollAwayLastRatio;
+        private double scrollAwayRatioAtCancel = double.NaN;
+        private double scrollAwayMaxRatioAfterCancel = double.NaN;
 
         private void ResetStates_Click(object sender, RoutedEventArgs e)
         {
@@ -320,6 +385,46 @@ namespace MUXControlsTestApp
                 this.VisualizerRefreshCompletionDeferral.Dispose();
                 this.VisualizerRefreshCompletionDeferral = null;
             }
+        }
+    }
+
+    // A Panel that is itself an IRefreshInfoProvider. It is referenced from RefreshContainerPage.xaml so that the app's
+    // XAML type information knows it, which lets API tests use it as the "Root" of a custom RefreshContainer template.
+    public sealed partial class RefreshInfoProviderPanel : Grid, IRefreshInfoProvider
+    {
+        private readonly Microsoft.UI.Composition.CompositionPropertySet compositionProperties;
+
+        public RefreshInfoProviderPanel()
+        {
+            compositionProperties = Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(this).Compositor.CreatePropertySet();
+            compositionProperties.InsertScalar(InteractionRatioCompositionProperty, 0.0f);
+        }
+
+        public void RaiseInteractionRatioChangedEvent(float interactionRatio)
+        {
+            InteractionRatioChanged?.Invoke(this, PullToRefreshHelperTestApi.CreateRefreshInteractionRatioChangedEventArgsInstance(interactionRatio));
+        }
+
+        public double ExecutionRatio => 0.8;
+        public Microsoft.UI.Composition.CompositionPropertySet CompositionProperties => compositionProperties;
+        public string InteractionRatioCompositionProperty => "InteractionRatio";
+        public bool IsInteractingForRefresh => false;
+
+        public event TypedEventHandler<IRefreshInfoProvider, RefreshInteractionRatioChangedEventArgs> InteractionRatioChanged;
+#pragma warning disable CS0067 // Required by IRefreshInfoProvider; this provider never interacts.
+        public event TypedEventHandler<IRefreshInfoProvider, object> IsInteractingForRefreshChanged;
+#pragma warning restore CS0067
+        public event TypedEventHandler<IRefreshInfoProvider, object> RefreshCompleted;
+        public event TypedEventHandler<IRefreshInfoProvider, object> RefreshStarted;
+
+        public void OnRefreshCompleted()
+        {
+            RefreshCompleted?.Invoke(this, null);
+        }
+
+        public void OnRefreshStarted()
+        {
+            RefreshStarted?.Invoke(this, null);
         }
     }
 }

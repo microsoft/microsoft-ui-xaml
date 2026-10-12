@@ -10,6 +10,7 @@ using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.Interactions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Private.Controls;
 using Windows.Foundation;
 using System.Threading;
@@ -54,7 +55,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "AdaptFromTree searches at most 10 levels below a root that is not itself a ScrollViewer: a ScrollViewer exactly 10 levels down is adapted, one 11 levels down is not.")]
+        [TestProperty("Description", "AdaptFromTree searches at most 10 levels below a root that is not itself a ScrollViewer: a ScrollViewer exactly 10 levels down is adapted, one 11 levels down is not. A root that is a ScrollViewer is adapted itself, not a ScrollViewer nested in its content.")]
         public void AdaptFromTreeSearchesTenLevelsBelowTheRoot()
         {
             RunOnUIThread.Execute(() =>
@@ -79,6 +80,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(11, DistanceFromAncestor(tooDeep, tooDeepRoot), "Precondition: depth 11");
                 ScrollViewerIRefreshInfoProviderAdapter secondAdapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, null);
                 Verify.IsNull(secondAdapter.AdaptFromTree(tooDeepRoot, new Size(1.0, 1.0)), "A ScrollViewer 11 levels below the root is beyond the search depth");
+
+                // A root that is itself a ScrollViewer is adapted directly, even when its content contains another ScrollViewer.
+                ScrollViewer nested = new ScrollViewer() { Content = new Button() { Content = "nested" } };
+                StackPanel rootContent = new StackPanel();
+                rootContent.Children.Add(nested);
+                ScrollViewer rootScrollViewer = new ScrollViewer() { Content = rootContent };
+                Content = rootScrollViewer;
+                Content.UpdateLayout();
+                RecordingAnimationHandler handler = new RecordingAnimationHandler();
+                ScrollViewerIRefreshInfoProviderAdapter thirdAdapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, handler);
+                IRefreshInfoProvider rootProvider = thirdAdapter.AdaptFromTree(rootScrollViewer, new Size(1.0, 1.0));
+                Verify.IsNotNull(rootProvider, "A root ScrollViewer is adapted");
+                Verify.IsLessThan(Math.Abs(c_defaultExecutionRatio - rootProvider.ExecutionRatio), 0.0001, "ExecutionRatio");
+                thirdAdapter.SetAnimations(new Border());
+                Verify.AreEqual(1, handler.TrackerInfoProviders.Count);
+                Verify.IsTrue(object.ReferenceEquals(rootContent, handler.TrackerInfoProviders[0]), "The root ScrollViewer's content is animated, not the nested ScrollViewer's");
             });
         }
 
@@ -204,7 +221,96 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "InteractionTracker position changes are converted to an InteractionRatio (pull distance / visualizer size, clamped to 1) published in the composition property set; InteractionRatioChanged is throttled except near 0 and the execution ratio.")]
+        [TestProperty("Description", "SetAnimations before any Adapt hands the animation handler the container with no content and no InteractionTracker; the default handler then only enables Translation on the container, and animates the content once a ScrollViewer is adapted.")]
+        public void SetAnimationsBeforeAdaptHasNoContentOrTracker()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                Border recordedContainer = new Border();
+                Border defaultContainer = new Border();
+                Button content = new Button() { Content = "content" };
+                ScrollViewer sv = new ScrollViewer() { Content = content };
+                StackPanel panel = new StackPanel();
+                panel.Children.Add(recordedContainer);
+                panel.Children.Add(defaultContainer);
+                panel.Children.Add(sv);
+                Content = panel;
+                Content.UpdateLayout();
+
+                RecordingAnimationHandler handler = new RecordingAnimationHandler();
+                ScrollViewerIRefreshInfoProviderAdapter recordedAdapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, handler);
+                recordedAdapter.SetAnimations(recordedContainer);
+                Verify.AreEqual(1, handler.CallCount);
+                Verify.IsTrue(object.ReferenceEquals(recordedContainer, handler.TrackerVisualizers[0]));
+                Verify.IsNull(handler.TrackerInfoProviders[0], "No ScrollViewer has been adapted, so there is no content");
+                Verify.IsNull(handler.Trackers[0], "No ScrollViewer has been adapted, so there is no InteractionTracker");
+
+                // The default animation handler (null handler argument).
+                Visual containerVisual = ElementCompositionPreview.GetElementVisual(defaultContainer);
+                Visual contentVisual = ElementCompositionPreview.GetElementVisual(content);
+                Vector3 translation;
+                Verify.AreEqual(CompositionGetValueStatus.NotFound, containerVisual.Properties.TryGetVector3("Translation", out translation), "Precondition: container Translation not enabled");
+                Verify.AreEqual(CompositionGetValueStatus.NotFound, contentVisual.Properties.TryGetVector3("Translation", out translation), "Precondition: content Translation not enabled");
+                ScrollViewerIRefreshInfoProviderAdapter defaultAdapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, null);
+                defaultAdapter.SetAnimations(defaultContainer);
+                Verify.AreEqual(CompositionGetValueStatus.Succeeded, containerVisual.Properties.TryGetVector3("Translation", out translation), "The container is prepared for animation");
+                Verify.AreEqual(Vector3.Zero, translation);
+                Verify.AreEqual(CompositionGetValueStatus.NotFound, contentVisual.Properties.TryGetVector3("Translation", out translation), "No content is animated before Adapt");
+
+                IRefreshInfoProvider provider = defaultAdapter.Adapt(sv, new Size(100.0, 100.0));
+                Verify.IsNotNull(provider);
+                defaultAdapter.SetAnimations(defaultContainer);
+                Verify.AreEqual(CompositionGetValueStatus.Succeeded, contentVisual.Properties.TryGetVector3("Translation", out translation), "The adapted content is animated");
+                Verify.AreEqual(Vector3.Zero, translation);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Adapting another ScrollViewer before the first one is loaded drops the pending Loaded handling: when the first ScrollViewer loads later, no interaction source is added to the adapter's InteractionTracker.")]
+        public void ReadaptBeforeLoadedDropsThePendingLoadedHandler()
+        {
+            StackPanel panel = null;
+            ScrollViewer notYetLoaded = null;
+            InteractionTracker tracker = null;
+            int notYetLoadedLoadedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                Border container = new Border();
+                Button loadedContent = new Button() { Content = "loaded" };
+                ScrollViewer loaded = new ScrollViewer() { Content = loadedContent };
+                panel = new StackPanel();
+                panel.Children.Add(container);
+                panel.Children.Add(loaded);
+                Content = panel;
+                Content.UpdateLayout();
+
+                notYetLoaded = new ScrollViewer() { Content = new Button() { Content = "later" } };
+                notYetLoaded.Loaded += (object sender, RoutedEventArgs e) => { notYetLoadedLoadedCount++; };
+
+                RecordingAnimationHandler handler = new RecordingAnimationHandler();
+                ScrollViewerIRefreshInfoProviderAdapter adapter = new ScrollViewerIRefreshInfoProviderAdapter(RefreshPullDirection.TopToBottom, handler);
+                Verify.IsNotNull(adapter.Adapt(notYetLoaded, new Size(100.0, 100.0)), "Adapting a ScrollViewer that is not loaded yet defers the interaction source");
+                Verify.IsNotNull(adapter.Adapt(loaded, new Size(100.0, 100.0)));
+                adapter.SetAnimations(container);
+                tracker = handler.Trackers.Single();
+                Verify.IsTrue(object.ReferenceEquals(loadedContent, handler.TrackerInfoProviders.Single()));
+                Verify.AreEqual(1, tracker.InteractionSources.Count, "Precondition: one interaction source for the loaded ScrollViewer");
+
+                panel.Children.Add(notYetLoaded);
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, notYetLoadedLoadedCount, "Precondition: the first ScrollViewer has now loaded");
+                Verify.AreEqual(1, tracker.InteractionSources.Count, "The first ScrollViewer's Loaded no longer reaches the adapter");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "InteractionTracker position changes are converted to an InteractionRatio (pull distance / visualizer size, clamped to 1) published in the composition property set; InteractionRatioChanged is throttled except near 0 and the execution ratio. A custom tracker animation drives the ratio without being treated as user interaction.")]
         public void InteractionRatioFollowsTrackerPositionAndIsThrottled()
         {
             RecordingAnimationHandler handler = new RecordingAnimationHandler();
@@ -251,6 +357,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsLessThan(Math.Abs(observed[0] - 0.8), 0.001);
                 Verify.IsLessThan(Math.Abs(observed[1] - 0.0), 0.001);
                 Verify.IsFalse(provider.IsInteractingForRefresh, "Programmatic tracker moves are not user interaction");
+            });
+
+            // A custom (programmatic) tracker animation also drives the ratio, and is not user interaction either.
+            int interactingChanges = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                provider.IsInteractingForRefreshChanged += (IRefreshInfoProvider sender, object args) => { interactingChanges++; };
+                Vector3KeyFrameAnimation animation = tracker.Compositor.CreateVector3KeyFrameAnimation();
+                animation.InsertKeyFrame(1.0f, new Vector3(0.0f, -80.0f, 0.0f));
+                animation.Duration = TimeSpan.FromMilliseconds(200);
+                tracker.TryUpdatePositionWithAnimation(animation);
+            });
+            WaitForRatio(provider, 0.8f, "custom tracker animation to y=-80");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(provider.IsInteractingForRefresh, "A custom tracker animation is not user interaction");
+                Verify.AreEqual(0, interactingChanges, "IsInteractingForRefreshChanged is not raised by a custom animation");
             });
         }
 
@@ -336,6 +459,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static void MoveTrackerAndWaitForRatio(InteractionTracker tracker, IRefreshInfoProvider provider, float y, float expectedRatio)
         {
             RunOnUIThread.Execute(() => { tracker.TryUpdatePosition(new Vector3(0.0f, y, 0.0f)); });
+            WaitForRatio(provider, expectedRatio, "tracker position " + y);
+        }
+
+        private static void WaitForRatio(IRefreshInfoProvider provider, float expectedRatio, string context)
+        {
             float ratio = float.NaN;
             DateTime deadline = DateTime.Now.AddSeconds(5);
             while (DateTime.Now < deadline)
@@ -354,8 +482,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
                 Thread.Sleep(50);
             }
-            Log.Comment("Tracker y=" + y + " -> InteractionRatio " + ratio);
-            Verify.IsLessThan(Math.Abs(ratio - expectedRatio), c_tolerance, "InteractionRatio for tracker position " + y);
+            Log.Comment(context + " -> InteractionRatio " + ratio);
+            Verify.IsLessThan(Math.Abs(ratio - expectedRatio), c_tolerance, "InteractionRatio for " + context);
             IdleSynchronizer.Wait();
         }
 

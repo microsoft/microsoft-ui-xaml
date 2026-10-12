@@ -251,6 +251,65 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
+        [TestProperty("Description", "If the adapted ScrollViewer scrolls beyond the pull threshold while a touch pull is Interacting, the pull stops being a refresh interaction: the visualizer returns from Interacting to Idle, never reaches Pending/Refreshing, and no refresh is requested on release.")]
+        public void ScrollingAwayDuringPullCancelsRefreshInteraction()
+        {
+            using (var setup = new TestSetupHelper("PTR Tests")) // This literally clicks the button corresponding to the test page.
+            {
+                Wait.ForIdle();
+                UIObject refreshContainerButtonUIObject = FindElement.ByName("RefreshContainerPageButton");
+                Verify.IsNotNull(refreshContainerButtonUIObject, "Verifying that we found a UIElement called RefreshContainerPageButton");
+                InputHelper.Tap(refreshContainerButtonUIObject);
+                Wait.ForIdle();
+
+                UIObject listViewItem1 = FindElement.ByName("listViewItem1");
+                Verify.IsNotNull(listViewItem1, "Verifying that we found a UIElement called listViewItem1");
+                Edit refreshCount = new Edit(FindElement.ByName("RefreshCount"));
+                Edit transitions = new Edit(FindElement.ByName("StateTransitions"));
+                Edit scrollerOffset = new Edit(FindElement.ById("ScrollerOffset"));
+                CheckBox scrollAway = new CheckBox(FindElement.ByName("ScrollAwayDuringPullCheckBox"));
+                string initialRefreshCount = refreshCount.Value;
+
+                scrollAway.Check();
+                Wait.ForIdle();
+                Verify.AreEqual(ToggleState.On, scrollAway.ToggleState, "Precondition: the scroll-away hook is armed");
+                Verify.AreEqual("", transitions.Value, "Precondition: no transitions recorded yet");
+
+                InputHelper.DragDistance(listViewItem1, 450, Direction.South, 800);
+                Wait.ForIdle();
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(
+                    () => { return transitions.Value.EndsWith("->Idle;"); },
+                    retryTimoutByMilliseconds: 5000);
+                Log.Comment("State transitions: " + transitions.Value);
+                Log.Comment("Scroller offset: " + scrollerOffset.Value);
+
+                double offset = double.Parse(scrollerOffset.Value, System.Globalization.CultureInfo.InvariantCulture);
+                Verify.IsTrue(offset >= 200.0, "Precondition: the hook scrolled the list (far beyond the 1px pull threshold) during the pull; offset " + offset);
+                Verify.IsTrue(transitions.Value.StartsWith("Idle->Interacting;Interacting->Idle;"), "The pull leaves Interacting for Idle once the list scrolls away");
+                Verify.IsFalse(transitions.Value.Contains("Pending"), "The pull never reaches Pending");
+                Verify.IsFalse(transitions.Value.Contains("Refreshing"), "No refresh starts");
+                Verify.AreEqual(initialRefreshCount, refreshCount.Value, "No refresh was requested");
+
+                // The pull ratio kept growing after the cancel: the finger was still dragging, so the interaction was ended
+                // by the view change and not by the end of the manipulation.
+                string trace = new Edit(FindElement.ByName("ScrollAwayTrace")).Value;
+                Log.Comment("Scroll-away trace: " + trace);
+                System.Text.RegularExpressions.Match ratios = System.Text.RegularExpressions.Regex.Match(trace, @"ratioAtCancel=([0-9.]+);maxRatioAfterCancel=([0-9.]+)");
+                Verify.IsTrue(ratios.Success, "Ratios were recorded around the cancel");
+                double ratioAtCancel = double.Parse(ratios.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+                double maxRatioAfterCancel = double.Parse(ratios.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture);
+                Verify.IsTrue(ratioAtCancel <= 0.8, "Cancelled before reaching the execution ratio: " + ratioAtCancel);
+                Verify.IsTrue(maxRatioAfterCancel > ratioAtCancel, "The pull continued after the cancel: " + maxRatioAfterCancel + " > " + ratioAtCancel);
+
+                scrollAway.Uncheck();
+                Wait.ForIdle();
+                Log.Comment("Returning to the main PTR test page");
+                TestSetupHelper.GoBack();
+            }
+        }
+
         //Issue #6649 Some tests fail when run on OS 21H1 
         [TestMethod]
         [TestProperty("Ignore", "True")] // 24178380. Still failing on a desktop test VM (2026-10): after RotateButton installs a new TestUI ImageIRefreshInfoProviderAdapter, the horizontal drag on the image crashes the test app (E_INVALIDARG 0x80070057 raised in Microsoft.UI.Xaml.dll, 0xC000027B).

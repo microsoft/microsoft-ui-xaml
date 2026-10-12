@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Common;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -104,6 +105,78 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 map.Layers.RemoveAt(0);
                 Verify.AreEqual(0, map.Layers.Count);
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Without a template, clearing MapControl.Layers empties it and it can be refilled; Layers and MapElementsLayer.MapElements can be replaced with app collections, which the getters then return.")]
+        public void LayersAndElementsCanBeReplacedAndCleared()
+        {
+            RunOnUIThreadGuarded(() =>
+            {
+                MapControl map = new MapControl();
+                IList<MapLayer> original = map.Layers;
+                map.Layers.Add(CreateNamedLayer("a"));
+                map.Layers.Add(CreateNamedLayer("b"));
+                Verify.AreEqual(2, map.Layers.Count);
+
+                map.Layers.Clear();
+                Verify.AreEqual(0, map.Layers.Count, "Clear empties the layers");
+                map.Layers.Add(CreateNamedLayer("c"));
+                Verify.AreEqual(1, map.Layers.Count, "Only the layer added after Clear remains");
+                Verify.AreEqual("c", AutomationProperties.GetName(map.Layers[0]));
+
+                List<MapLayer> replacement = new List<MapLayer>() { CreateNamedLayer("x"), CreateNamedLayer("y") };
+                map.Layers = replacement;
+                Verify.AreEqual(2, map.Layers.Count, "The getter returns the assigned collection");
+                Verify.AreEqual("x", AutomationProperties.GetName(map.Layers[0]));
+                Verify.AreEqual("y", AutomationProperties.GetName(map.Layers[1]));
+                Verify.AreEqual(1, original.Count, "The original collection is not modified by the replacement");
+                Verify.AreEqual("c", AutomationProperties.GetName(original[0]));
+
+                MapElementsLayer layer = new MapElementsLayer();
+                Verify.AreEqual(0, layer.MapElements.Count);
+                List<MapElement> elements = new List<MapElement>() { new MapIcon() { Location = CreatePoint(11, 12) }, new MapIcon() { Location = CreatePoint(13, 14) } };
+                layer.MapElements = elements;
+                VerifyElements(layer, (MapIcon)elements[0], (MapIcon)elements[1]);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "The MapControl activation factories report their runtime class names and reject parameterless IActivationFactory::ActivateInstance with E_NOTIMPL (the classes are composable).")]
+        public void MapActivationFactoriesReportRuntimeClassNames()
+        {
+            VerifyActivationFactory("Microsoft.UI.Xaml.Controls.MapControl");
+            VerifyActivationFactory("Microsoft.UI.Xaml.Controls.MapElementsLayer");
+            VerifyActivationFactory("Microsoft.UI.Xaml.Controls.MapIcon");
+        }
+
+        private static void VerifyActivationFactory(string runtimeClassName)
+        {
+            Guid IID_IActivationFactory = new Guid("00000035-0000-0000-C000-000000000046");
+            using (global::WinRT.IObjectReference factory = global::WinRT.ActivationFactory.Get(runtimeClassName, IID_IActivationFactory))
+            {
+                Verify.AreEqual(runtimeClassName, new global::WinRT.IInspectable(factory).GetRuntimeClassName(), "Factory runtime class name");
+                IntPtr instance;
+                int hr = ActivateInstance(factory.ThisPtr, out instance);
+                Verify.AreEqual(unchecked((int)0x80004001) /* E_NOTIMPL */, hr, runtimeClassName + ": parameterless activation is not supported");
+                Verify.AreEqual(IntPtr.Zero, instance, runtimeClassName + ": no instance is returned");
+            }
+        }
+
+        // Calls IActivationFactory::ActivateInstance directly. CsWinRT activates these composable classes through their
+        // IXxxFactory::CreateInstance, never through ActivateInstance, so this is the only way to observe the answer.
+        // Vtable layout: IUnknown (slots 0-2), IInspectable (3-5), IActivationFactory::ActivateInstance (6).
+        private static unsafe int ActivateInstance(IntPtr activationFactory, out IntPtr instance)
+        {
+            IntPtr result = IntPtr.Zero;
+            void** vtable = *(void***)activationFactory;
+            int hr = ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int>)vtable[6])(activationFactory, &result);
+            instance = result;
+            if (result != IntPtr.Zero)
+            {
+                global::System.Runtime.InteropServices.Marshal.Release(result);
+            }
+            return hr;
         }
 
         private static void VerifyElements(MapElementsLayer layer, params MapIcon[] expected)

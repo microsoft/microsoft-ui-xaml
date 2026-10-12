@@ -100,8 +100,141 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Content.UpdateLayout();
                 Verify.IsNotNull(refreshVisualizer.Content);
                 Verify.AreEqual<Symbol>(Symbol.Refresh, ((SymbolIcon)(refreshVisualizer.Content)).Symbol);
+                SymbolIcon defaultIndicator = (SymbolIcon)refreshVisualizer.Content;
                 refreshVisualizer.Content = new SymbolIcon(Symbol.Cancel);
                 Verify.AreEqual<Symbol>(Symbol.Cancel, ((SymbolIcon)(refreshVisualizer.Content)).Symbol);
+
+                // The replacement is what the template hosts, centered, and the default indicator is removed.
+                Grid root = (Grid)VisualTreeHelper.GetChild(refreshVisualizer, 0);
+                Verify.AreEqual("Root", root.Name);
+                Verify.AreEqual(1, root.Children.Count, "Only the new content is hosted");
+                Verify.IsTrue(object.ReferenceEquals(refreshVisualizer.Content, root.Children[0]), "Root hosts the replaced content");
+                Verify.IsNull(VisualTreeHelper.GetParent(defaultIndicator), "The previous indicator is removed from Root");
+                Verify.AreEqual(HorizontalAlignment.Center, ((FrameworkElement)refreshVisualizer.Content).HorizontalAlignment);
+                Verify.AreEqual(VerticalAlignment.Center, ((FrameworkElement)refreshVisualizer.Content).VerticalAlignment);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Content assigned before the template is applied is hosted, centered, in the template's Root instead of a default indicator.")]
+        public void ContentSetBeforeTemplateIsCenteredInRoot()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                RefreshVisualizer refreshVisualizer = new RefreshVisualizer();
+                Border content = new Border() { Width = 50, Height = 30 };
+                refreshVisualizer.Content = content;
+                Verify.IsNull(VisualTreeHelper.GetParent(content), "Precondition: not hosted before the template is applied");
+                Verify.AreEqual(HorizontalAlignment.Stretch, content.HorizontalAlignment, "Precondition: default alignment");
+
+                Content = refreshVisualizer;
+                Content.UpdateLayout();
+
+                Grid root = (Grid)VisualTreeHelper.GetChild(refreshVisualizer, 0);
+                Verify.AreEqual("Root", root.Name);
+                Verify.AreEqual(1, root.Children.Count, "No default indicator is added next to the app content");
+                Verify.IsTrue(object.ReferenceEquals(content, root.Children[0]), "The early content is hosted in Root");
+                Verify.IsTrue(object.ReferenceEquals(content, refreshVisualizer.Content));
+                Verify.AreEqual(HorizontalAlignment.Center, content.HorizontalAlignment);
+                Verify.AreEqual(VerticalAlignment.Center, content.VerticalAlignment);
+                Verify.AreEqual(50.0, content.ActualWidth);
+                Verify.AreEqual(30.0, content.ActualHeight);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Without a template the visualizer still runs its state machine on its explicit Content: interacting below the execution ratio is Interacting with the minimum indicator opacity.")]
+        public void InteractingWithoutTemplateFadesIndicator()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                // Never added to the tree, so OnApplyTemplate never runs and there is no Root.
+                RefreshVisualizer refreshVisualizer = new RefreshVisualizer();
+                Border content = new Border() { Width = 30, Height = 30 };
+                refreshVisualizer.Content = content;
+                RefreshInfoProviderImpl provider = new RefreshInfoProviderImpl(ElementCompositionPreview.GetElementVisual(refreshVisualizer).Compositor);
+                ((IRefreshVisualizerPrivate)refreshVisualizer).InfoProvider = provider;
+                List<string> transitions = RecordTransitions(refreshVisualizer);
+                Visual indicator = ElementCompositionPreview.GetElementVisual(content);
+                Verify.AreEqual(0, VisualTreeHelper.GetChildrenCount(refreshVisualizer), "Precondition: no template");
+
+                SetInteracting(provider, true);
+                provider.RaiseInteractionRatioChangedEvent(0.1f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Interacting, c_minimumIndicatorOpacity);
+
+                provider.RaiseInteractionRatioChangedEvent(0.0f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Idle, c_minimumIndicatorOpacity);
+                SetInteracting(provider, false);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Idle, c_minimumIndicatorOpacity);
+
+                VerifyTransitions(new string[] { "Idle->Interacting", "Interacting->Idle" }, transitions);
+                Verify.AreEqual(0, VisualTreeHelper.GetChildrenCount(refreshVisualizer), "Still untemplated");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "With an (out-of-range) negative ExecutionRatio, a Pending pull falls back to Idle once the ratio drops to zero or below while staying above the execution ratio, and to Interacting at or below the execution ratio.")]
+        public void NegativeExecutionRatioFallsBackFromPendingToIdle()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                RefreshVisualizer refreshVisualizer = new RefreshVisualizer();
+                Content = refreshVisualizer;
+                Content.UpdateLayout();
+
+                RefreshInfoProviderImpl provider = new RefreshInfoProviderImpl(ElementCompositionPreview.GetElementVisual(refreshVisualizer).Compositor);
+                // The visualizer reads ExecutionRatio when the provider is assigned.
+                provider.ExecutionRatio = -0.5;
+                ((IRefreshVisualizerPrivate)refreshVisualizer).InfoProvider = provider;
+                List<string> transitions = RecordTransitions(refreshVisualizer);
+                Visual indicator = ElementCompositionPreview.GetElementVisual(refreshVisualizer.Content);
+                SetInteracting(provider, true);
+
+                // From zero, any ratio above -0.5 is past the execution ratio.
+                provider.RaiseInteractionRatioChangedEvent(0.1f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Pending, c_fullIndicatorOpacity);
+                // Above the execution ratio but not positive: Idle.
+                provider.RaiseInteractionRatioChangedEvent(-0.2f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Idle, c_minimumIndicatorOpacity);
+
+                // Back at zero, then Pending again; at or below the execution ratio it is Interacting instead.
+                provider.RaiseInteractionRatioChangedEvent(0.0f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Idle, c_minimumIndicatorOpacity);
+                provider.RaiseInteractionRatioChangedEvent(0.1f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Pending, c_fullIndicatorOpacity);
+                provider.RaiseInteractionRatioChangedEvent(-0.6f);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Interacting, c_minimumIndicatorOpacity);
+
+                SetInteracting(provider, false);
+                VerifyState(refreshVisualizer, indicator, RefreshVisualizerState.Idle, c_minimumIndicatorOpacity);
+                Verify.AreEqual(0, provider.OnRefreshStartedCalls, "No refresh was requested");
+                VerifyTransitions(new string[] {
+                    "Idle->Pending", "Pending->Idle", "Idle->Pending", "Pending->Interacting", "Interacting->Idle" }, transitions);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "PullToRefreshHelperTestApi creates RefreshStateChangedEventArgs with exactly the given states and RefreshRequestedEventArgs whose deferral completes only after every deferral taken from it is completed.")]
+        public void HelperTestApiCreatesEventArgsWithTheGivenValues()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                RefreshStateChangedEventArgs idleToPending = PullToRefreshHelperTestApi.CreateRefreshStateChangedEventArgsInstance(RefreshVisualizerState.Idle, RefreshVisualizerState.Pending);
+                Verify.AreEqual(RefreshVisualizerState.Idle, idleToPending.OldState);
+                Verify.AreEqual(RefreshVisualizerState.Pending, idleToPending.NewState);
+                RefreshStateChangedEventArgs refreshingToPeeking = PullToRefreshHelperTestApi.CreateRefreshStateChangedEventArgsInstance(RefreshVisualizerState.Refreshing, RefreshVisualizerState.Peeking);
+                Verify.AreEqual(RefreshVisualizerState.Refreshing, refreshingToPeeking.OldState);
+                Verify.AreEqual(RefreshVisualizerState.Peeking, refreshingToPeeking.NewState);
+
+                int completed = 0;
+                RefreshRequestedEventArgs args = PullToRefreshHelperTestApi.CreateRefreshRequestedEventArgsInstance(new Deferral(() => { completed++; }));
+                Verify.IsNotNull(args);
+                Deferral first = args.GetDeferral();
+                Deferral second = args.GetDeferral();
+                first.Complete();
+                Verify.AreEqual(0, completed, "One deferral is still outstanding");
+                second.Complete();
+                Verify.AreEqual(1, completed, "The supplied deferral completes once the last deferral is completed");
             });
         }
 
@@ -247,16 +380,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             int refreshStateChangedCount = 0;
             List<string> transitions = new List<string>();
+            RefreshVisualizer visualizer = null;
+            TypedEventHandler<RefreshVisualizer, RefreshStateChangedEventArgs> handler = (RefreshVisualizer sender, RefreshStateChangedEventArgs args) =>
+            {
+                refreshStateChangedCount++;
+                transitions.Add(args.OldState + "->" + args.NewState);
+                Verify.AreEqual(args.NewState, sender.State, "State already reflects NewState when the event is raised");
+            };
 
             RunOnUIThread.Execute(() =>
             {
                 RefreshVisualizer refreshVisualizer = new RefreshVisualizer();
-                refreshVisualizer.RefreshStateChanged += (RefreshVisualizer sender, RefreshStateChangedEventArgs args) =>
-                {
-                    refreshStateChangedCount++;
-                    transitions.Add(args.OldState + "->" + args.NewState);
-                    Verify.AreEqual(args.NewState, sender.State, "State already reflects NewState when the event is raised");
-                };
+                visualizer = refreshVisualizer;
+                refreshVisualizer.RefreshStateChanged += handler;
                 refreshVisualizer.RequestRefresh();
             });
 
@@ -266,6 +402,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual<int>(2, refreshStateChangedCount);
                 VerifyTransitions(new string[] { "Idle->Refreshing", "Refreshing->Idle" }, transitions);
+
+                // A removed handler is no longer invoked; a handler added afterwards is.
+                visualizer.RefreshStateChanged -= handler;
+                visualizer.RequestRefresh();
+                Verify.AreEqual(RefreshVisualizerState.Idle, visualizer.State, "The refresh completed");
+                Verify.AreEqual<int>(2, refreshStateChangedCount, "The removed handler was not invoked");
+
+                List<string> laterTransitions = RecordTransitions(visualizer);
+                visualizer.RequestRefresh();
+                VerifyTransitions(new string[] { "Idle->Refreshing", "Refreshing->Idle" }, laterTransitions);
+                Verify.AreEqual<int>(2, refreshStateChangedCount, "The removed handler stays removed");
             });
         }
 

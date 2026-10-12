@@ -74,6 +74,18 @@
                 <TextBlock>Web message injection (no network or key needed)</TextBlock>
                 <Button Content="Inject Web Messages" AutomationProperties.AutomationId="InjectWebMessagesButton" Click="InjectWebMessagesButton_Click" />
                 <TextBox x:Name="webMessageResults" AutomationProperties.AutomationId="WebMessageResults" IsReadOnly="true" TextWrapping="Wrap" Width="300" Text="Not run"/>
+
+                <StackPanel Height="20"/>
+
+                <!-- Records the calls MapControl makes into map.html (no network or key needed). Each button is meant for a fresh page. -->
+                <TextBlock>Map page protocol checks</TextBlock>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Protocol" AutomationProperties.AutomationId="RunProtocolChecksButton" Click="RunProtocolChecksButton_Click" />
+                    <Button Content="Center" AutomationProperties.AutomationId="RunCenterCheckButton" Click="RunCenterCheckButton_Click" />
+                    <Button Content="Remove layer" AutomationProperties.AutomationId="RunRemoveMiddleLayerCheckButton" Click="RunRemoveMiddleLayerCheckButton_Click" />
+                    <Button Content="Move pin" AutomationProperties.AutomationId="RunMovePinCheckButton" Click="RunMovePinCheckButton_Click" />
+                </StackPanel>
+                <TextBox x:Name="protocolResults" AutomationProperties.AutomationId="ProtocolResults" IsReadOnly="true" TextWrapping="Wrap" Width="300" Text="Not run"/>
             </StackPanel>
         </StackPanel>
     </Grid>

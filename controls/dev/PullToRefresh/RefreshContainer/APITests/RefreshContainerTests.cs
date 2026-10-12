@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 using MUXControlsTestApp.Utilities;
@@ -12,6 +13,7 @@ using Microsoft.UI.Private.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 using Common;
@@ -440,6 +442,235 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsNull(((IRefreshVisualizerPrivate)tooDeep.Visualizer).InfoProvider, "A provider 11 levels deep is not found");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A Visualizer assigned before the template is applied is hosted alone in the presenter, gets the adapted ScrollViewer as its InfoProvider, and is positioned but not resized by a PullDirection change.")]
+        public void VisualizerSetBeforeTemplateIsHostedAdaptedAndKeepsItsSize()
+        {
+            RefreshContainer refreshContainer = null;
+            RefreshVisualizer custom = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                custom = new RefreshVisualizer();
+                refreshContainer = new RefreshContainer() { Width = c_containerSize, Height = c_containerSize, Content = CreateScrollViewer() };
+                refreshContainer.Visualizer = custom;
+                Verify.IsNull(VisualTreeHelper.GetParent(custom), "Precondition: not hosted before the template is applied");
+                Content = refreshContainer;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(object.ReferenceEquals(custom, refreshContainer.Visualizer), "The app's visualizer is kept, no default is created");
+                Grid presenter = GetPresenter(refreshContainer);
+                Verify.AreEqual(1, presenter.Children.Count, "The visualizer is hosted exactly once");
+                Verify.IsTrue(object.ReferenceEquals(custom, presenter.Children[0]));
+                Verify.AreEqual(VerticalAlignment.Top, presenter.VerticalAlignment);
+                Verify.AreEqual(HorizontalAlignment.Stretch, presenter.HorizontalAlignment);
+                IRefreshInfoProvider provider = ((IRefreshVisualizerPrivate)custom).InfoProvider;
+                Verify.IsNotNull(provider, "The content ScrollViewer is adapted for the early visualizer");
+                Verify.IsLessThan(Math.Abs(c_defaultExecutionRatio - provider.ExecutionRatio), 0.0001, "ExecutionRatio");
+                Verify.IsTrue(double.IsNaN(custom.Width), "Precondition: Auto width");
+
+                refreshContainer.PullDirection = RefreshPullDirection.LeftToRight;
+                Content.UpdateLayout();
+                Verify.AreEqual(HorizontalAlignment.Left, presenter.HorizontalAlignment);
+                Verify.AreEqual(VerticalAlignment.Stretch, presenter.VerticalAlignment);
+                Verify.IsTrue(double.IsNaN(custom.Width), "An app-provided visualizer is not resized to the default pull width (100)");
+                Verify.AreEqual(c_defaultPullDimension, custom.Height, "An app-provided visualizer keeps its (style) height");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "An IRefreshInfoProvider in the template is used before any adapter: a provider that is the first child of the template Root is taken without calling the adapter, and a Root that is itself a provider is found by the tree search when there is no ScrollViewer to adapt.")]
+        public void TemplateProvidersAreUsedBeforeAdapterAndTreeSearch()
+        {
+            RefreshContainer refreshContainer = null;
+            RefreshInfoProviderGrid firstChild = null;
+            RefreshContainer customTemplated = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                refreshContainer = CreateLoadedContainer(RefreshPullDirection.TopToBottom, CreateScrollViewer());
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Grid root = (Grid)VisualTreeHelper.GetChild(refreshContainer, 0);
+                Verify.AreEqual("Root", root.Name);
+                firstChild = new RefreshInfoProviderGrid();
+                root.Children.Insert(0, firstChild);
+
+                RecordingRefreshInfoProviderAdapter adapter = new RecordingRefreshInfoProviderAdapter(null);
+                ((IRefreshContainerPrivate)refreshContainer).RefreshInfoProviderAdapter = adapter;
+
+                IRefreshVisualizerPrivate visualizerPrivate = (IRefreshVisualizerPrivate)refreshContainer.Visualizer;
+                Verify.IsTrue(object.ReferenceEquals(firstChild, visualizerPrivate.InfoProvider), "The first template child is the InfoProvider");
+                Verify.AreEqual(0, adapter.AdaptedRoots.Count, "The adapter is not asked to adapt");
+                Verify.AreEqual(0, adapter.AnimatedContainers.Count, "The adapter is not asked to animate");
+                firstChild.RaiseInteractionRatioChangedEvent(0.3f);
+                Verify.AreEqual(RefreshVisualizerState.Peeking, refreshContainer.Visualizer.State);
+                firstChild.RaiseInteractionRatioChangedEvent(0.0f);
+                Verify.AreEqual(RefreshVisualizerState.Idle, refreshContainer.Visualizer.State);
+
+                // A template whose Root panel is itself the provider (RefreshInfoProviderPanel is a TestUI type).
+                ControlTemplate template = (ControlTemplate)XamlReader.Load(
+                    @"<ControlTemplate
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:local='using:MUXControlsTestApp'
+                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'
+                        TargetType='controls:RefreshContainer'>
+                        <local:RefreshInfoProviderPanel x:Name='Root'>
+                            <ContentPresenter Content='{TemplateBinding Content}'/>
+                            <Grid x:Name='RefreshVisualizerPresenter'/>
+                        </local:RefreshInfoProviderPanel>
+                    </ControlTemplate>");
+                customTemplated = new RefreshContainer() {
+                    Template = template,
+                    Width = c_containerSize,
+                    Height = c_containerSize,
+                    Content = new Border() { Background = new SolidColorBrush(Microsoft.UI.Colors.LightGray) }
+                };
+                Content = customTemplated;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                MUXControlsTestApp.RefreshInfoProviderPanel rootPanel = VisualTreeHelper.GetChild(customTemplated, 0) as MUXControlsTestApp.RefreshInfoProviderPanel;
+                Verify.IsNotNull(rootPanel, "The custom template is applied");
+                Verify.AreEqual("Root", rootPanel.Name);
+                IRefreshVisualizerPrivate visualizerPrivate = (IRefreshVisualizerPrivate)customTemplated.Visualizer;
+                Verify.IsTrue(object.ReferenceEquals(rootPanel, visualizerPrivate.InfoProvider), "Without a ScrollViewer the tree search returns the template Root");
+                rootPanel.RaiseInteractionRatioChangedEvent(0.3f);
+                Verify.AreEqual(RefreshVisualizerState.Peeking, customTemplated.Visualizer.State);
+                rootPanel.RaiseInteractionRatioChangedEvent(0.0f);
+                Verify.AreEqual(RefreshVisualizerState.Idle, customTemplated.Visualizer.State);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Once a loaded RefreshContainer with an adapted ScrollViewer is removed and released, the container, its visualizer and the ScrollViewer content are collected (nothing keeps them alive). Each is tracked through a managed Tag object that the native object holds, so a native leak would keep the sentinel alive.")]
+        public void RemovedContainerVisualizerAndAdaptedScrollViewerAreCollected()
+        {
+            var objects = new Dictionary<string, WeakReference>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // The native objects hold these managed Tag values, so a sentinel lives as long as its native owner.
+                // (The projected wrappers themselves would be collectable even if the native objects leaked.)
+                object containerSentinel = new object();
+                object visualizerSentinel = new object();
+                object scrollContentSentinel = new object();
+                StackPanel scrollContent = new StackPanel() { Height = 1000, Tag = scrollContentSentinel };
+                RefreshVisualizer visualizer = new RefreshVisualizer() { Tag = visualizerSentinel };
+                RefreshContainer refreshContainer = new RefreshContainer() {
+                    Width = c_containerSize,
+                    Height = c_containerSize,
+                    Content = new ScrollViewer() { Content = scrollContent },
+                    Tag = containerSentinel
+                };
+                refreshContainer.Visualizer = visualizer;
+                Content = refreshContainer;
+                Content.UpdateLayout();
+                Verify.IsNotNull(((IRefreshVisualizerPrivate)visualizer).InfoProvider, "Precondition: the ScrollViewer was adapted");
+                objects["container"] = new WeakReference(containerSentinel);
+                objects["visualizer"] = new WeakReference(visualizerSentinel);
+                objects["scrollContent"] = new WeakReference(scrollContentSentinel);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var pair in objects)
+                {
+                    Verify.IsTrue(pair.Value.IsAlive, "Precondition: " + pair.Key + " is alive while loaded");
+                }
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+
+            for (int i = 0; i < 5 && objects.Values.Any(w => w.IsAlive); i++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                IdleSynchronizer.Wait();
+            }
+
+            foreach (var pair in objects)
+            {
+                Verify.IsFalse(pair.Value.IsAlive, pair.Key + " is collected");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "The PullToRefresh activation factories report their runtime class names and reject parameterless IActivationFactory::ActivateInstance with E_NOTIMPL; the event args report their own runtime class names.")]
+        public void ActivationFactoriesAndEventArgsReportRuntimeClassNames()
+        {
+            VerifyActivationFactory("Microsoft.UI.Xaml.Controls.RefreshContainer");
+            VerifyActivationFactory("Microsoft.UI.Xaml.Controls.RefreshVisualizer");
+            VerifyActivationFactory("Microsoft.UI.Private.Controls.ScrollViewerIRefreshInfoProviderAdapter");
+            VerifyActivationFactory("Microsoft.UI.Private.Controls.PullToRefreshHelperTestApi");
+
+            RunOnUIThread.Execute(() =>
+            {
+                RefreshVisualizer refreshVisualizer = new RefreshVisualizer();
+                var requested = new List<RefreshRequestedEventArgs>();
+                var stateChanged = new List<RefreshStateChangedEventArgs>();
+                refreshVisualizer.RefreshRequested += (RefreshVisualizer sender, RefreshRequestedEventArgs args) => { requested.Add(args); };
+                refreshVisualizer.RefreshStateChanged += (RefreshVisualizer sender, RefreshStateChangedEventArgs args) => { stateChanged.Add(args); };
+                refreshVisualizer.RequestRefresh();
+                Verify.AreEqual(1, requested.Count);
+                Verify.AreEqual(2, stateChanged.Count);
+
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.RefreshRequestedEventArgs", GetNativeRuntimeClassName(requested[0]));
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.RefreshStateChangedEventArgs", GetNativeRuntimeClassName(stateChanged[0]));
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.RefreshInteractionRatioChangedEventArgs",
+                    GetNativeRuntimeClassName(PullToRefreshHelperTestApi.CreateRefreshInteractionRatioChangedEventArgsInstance(0.25)));
+            });
+        }
+
+        // IInspectable::GetRuntimeClassName of the native object behind a projected object. CsWinRT never asks a sealed
+        // class's instance for it (it wraps by static type), so the test asks explicitly.
+        private static string GetNativeRuntimeClassName(object projected)
+        {
+            return new global::WinRT.IInspectable(((global::WinRT.IWinRTObject)projected).NativeObject).GetRuntimeClassName();
+        }
+
+        private static void VerifyActivationFactory(string runtimeClassName)
+        {
+            Guid IID_IActivationFactory = new Guid("00000035-0000-0000-C000-000000000046");
+            using (global::WinRT.IObjectReference factory = global::WinRT.ActivationFactory.Get(runtimeClassName, IID_IActivationFactory))
+            {
+                Verify.AreEqual(runtimeClassName, new global::WinRT.IInspectable(factory).GetRuntimeClassName(), "Factory runtime class name");
+                IntPtr instance;
+                int hr = ActivateInstance(factory.ThisPtr, out instance);
+                Verify.AreEqual(unchecked((int)0x80004001) /* E_NOTIMPL */, hr, runtimeClassName + ": parameterless activation is not supported");
+                Verify.AreEqual(IntPtr.Zero, instance, runtimeClassName + ": no instance is returned");
+            }
+        }
+
+        // Calls IActivationFactory::ActivateInstance directly. CsWinRT never calls it for these classes (they are composable,
+        // need constructor arguments, or are static-only), so this is the only way to observe the factory's answer.
+        // Vtable layout: IUnknown (slots 0-2), IInspectable (3-5), IActivationFactory::ActivateInstance (6).
+        private static unsafe int ActivateInstance(IntPtr activationFactory, out IntPtr instance)
+        {
+            IntPtr result = IntPtr.Zero;
+            void** vtable = *(void***)activationFactory;
+            int hr = ((delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int>)vtable[6])(activationFactory, &result);
+            instance = result;
+            if (result != IntPtr.Zero)
+            {
+                global::System.Runtime.InteropServices.Marshal.Release(result);
+            }
+            return hr;
         }
 
         private void VerifyDefaultTemplate(RefreshPullDirection direction, VerticalAlignment expectedVertical, HorizontalAlignment expectedHorizontal, float expectedRotation)
