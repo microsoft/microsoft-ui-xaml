@@ -408,6 +408,107 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Page Down first moves to the last fully visible row without scrolling, then pages one viewport; Page Up mirrors it (dev-spec Keyboard, ListView paging).")]
+        public void PageDownLandsOnLastVisibleRowThenPages()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(ScrollingTable);
+                if (rowsHost == null) { return; }
+                if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized rows to measure movement."); return; }
+
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.AreEqual(1, FocusedPositionInSet(), "Precondition: focus should start on the first row of the set.");
+
+                int rowsPerViewport = ReadScrollingRowsPerViewport();
+                if (rowsPerViewport < 0) { return; }
+                string offsets = ReadScrollOffsets();
+                double viewport = ReadScrollOffsetComponent(offsets, "VH");
+                double rowHeight = ReadScrollOffsetComponent(offsets, "RowH");
+                // At V=0 the last fully visible row (half a DIP of slack, as the product) is exact.
+                int lastVisible = (int)Math.Floor((viewport + 0.5) / rowHeight);
+
+                KeyboardHelper.PressKey(Key.PageDown);
+                Wait.ForIdle();
+                int firstPage = FocusedPositionInSet();
+                Verify.AreEqual(lastVisible, firstPage, "The first PageDown must focus the last fully visible row.");
+                Verify.AreEqual(VerticalOffsetOf(offsets), VerticalOffsetOf(ReadScrollOffsets()),
+                    "The first PageDown must not scroll: its target is already in view.");
+
+                KeyboardHelper.PressKey(Key.PageDown);
+                Wait.ForIdle();
+                int secondPage = FocusedPositionInSet();
+                Log.Comment("PageDown: {0} -> {1}; rows per viewport {2}.", firstPage, secondPage, rowsPerViewport);
+                Verify.IsTrue(Math.Abs((secondPage - firstPage) - (rowsPerViewport - 1)) <= 1,
+                    string.Format("The second PageDown must page one viewport less one row: travelled {0}, rows per viewport {1}.",
+                        secondPage - firstPage, rowsPerViewport));
+                VerifyScrollingRowInView(secondPage, "after the second PageDown");
+
+                // The second page aligned its row to the bottom, so the viewport now holds the same number of whole rows.
+                string offsetsBeforeUp = ReadScrollOffsets();
+                KeyboardHelper.PressKey(Key.PageUp);
+                Wait.ForIdle();
+                int firstPageUp = FocusedPositionInSet();
+                Verify.AreEqual(secondPage - firstPage + 1, firstPageUp, "The first PageUp must focus the first fully visible row.");
+                Verify.AreEqual(VerticalOffsetOf(offsetsBeforeUp), VerticalOffsetOf(ReadScrollOffsets()),
+                    "The first PageUp must not scroll: its target is already in view.");
+
+                KeyboardHelper.PressKey(Key.PageUp);
+                Wait.ForIdle();
+                int secondPageUp = FocusedPositionInSet();
+                Log.Comment("PageUp: {0} -> {1}.", firstPageUp, secondPageUp);
+                Verify.IsTrue(Math.Abs((firstPageUp - secondPageUp) - Math.Min(rowsPerViewport - 1, firstPageUp - 1)) <= 1,
+                    string.Format("The second PageUp must page one viewport less one row: travelled {0}, rows per viewport {1}.",
+                        firstPageUp - secondPageUp, rowsPerViewport));
+                VerifyScrollingRowInView(secondPageUp, "after the second PageUp");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Repeated Page Down keeps the focused row in view and travels a viewport less one row per press.")]
+        public void HeldPageDownKeepsFocusInView()
+        {
+            // No waits between presses, like key auto-repeat.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(ScrollingTable);
+                if (rowsHost == null) { return; }
+                if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized rows to measure movement."); return; }
+
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.AreEqual(1, FocusedPositionInSet(), "Precondition: focus should start on the first row of the set.");
+
+                int rowsPerViewport = ReadScrollingRowsPerViewport();
+                if (rowsPerViewport < 0) { return; }
+                string offsets = ReadScrollOffsets();
+                int lastVisible = (int)Math.Floor(
+                    (ReadScrollOffsetComponent(offsets, "VH") + 0.5) / ReadScrollOffsetComponent(offsets, "RowH"));
+
+                const int presses = 5;
+                for (int press = 0; press < presses; press++)
+                {
+                    KeyboardHelper.PressKey(Key.PageDown);
+                }
+                Wait.ForIdle();
+
+                // Each page travels the whole rows a viewport holds, less the row it starts from.
+                int position = FocusedPositionInSet();
+                int expectedTravel = presses * (lastVisible - 1);
+                Log.Comment("{0} PageDowns reached {1}; expected travel {2}; rows per viewport {3}.",
+                    presses, position, expectedTravel, rowsPerViewport);
+                Verify.IsTrue(Math.Abs((position - 1) - expectedTravel) <= 2,
+                    string.Format("{0} PageDowns must travel about {1} rows: travelled {2}.", presses, expectedTravel, position - 1));
+                VerifyScrollingRowInView(position, "after repeated PageDown");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Tab leaves the table downstream in a single press instead of walking cell by cell (dev-spec:165).")]
         public void TabMovesFocusOutOfTable()
         {

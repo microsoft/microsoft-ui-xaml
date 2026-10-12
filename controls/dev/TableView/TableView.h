@@ -1211,6 +1211,10 @@ private:
     winrt::guid m_focusEntryRedirectCorrelationId{};
     bool m_hasFocusEntryRedirect{ false };
 
+    // ListView paging: the viewport edge row first, then one page past it.
+    int32_t GetPageTargetRow(int32_t currentRow, bool pageDown, int32_t rowCount);
+    // Focus is exactly on one of this table's rows, group headers or cells, not on hosted content.
+    bool IsFocusExactlyOnBodyItem() const;
     bool RowShowsCurrentItemInternal(winrt::TableViewRow const& row) const;
 
     // Row-level Left/Right drill between row and cells; group headers use Left/Right for expand/collapse.
