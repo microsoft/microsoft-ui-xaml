@@ -856,6 +856,101 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // In High Contrast every state below paints an opaque SystemColorHighlightColor fill that a
+        // text backplate fights.
+        [TestMethod]
+        public void VerifyPointerOverAndPressedRowsSuppressHighContrastBackplate()
+        {
+            foreach (var state in new[] { "PointerOver", "Pressed", "Selected", "SelectedPointerOver", "SelectedPressed" })
+            {
+                TableView tableView = null;
+                TableViewRow row = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateThemingTable();
+                    LoadContent(tableView);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    row = GetRealizedRows(tableView).FirstOrDefault();
+                    if (row == null)
+                    {
+                        Verify.Fail("The TableView should realize at least one row.");
+                        return;
+                    }
+
+                    Verify.IsTrue(VisualStateManager.GoToState(row, state, false), $"The row template must define the {state} state.");
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var presenter = row?.FindVisualChildByName("PART_CellForegroundPresenter") as ContentPresenter;
+                    if (presenter == null)
+                    {
+                        Verify.Fail("The row template must contain PART_CellForegroundPresenter.");
+                        return;
+                    }
+
+                    Verify.AreEqual(ElementHighContrastAdjustment.None, presenter.HighContrastAdjustment,
+                        $"The {state} state must turn off the High Contrast text backplate.");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyPointerOverAndPressedGroupHeadersSuppressHighContrastBackplate()
+        {
+            foreach (var state in new[] { "PointerOver", "Pressed" })
+            {
+                TableView tableView = null;
+                TableViewGroupHeader groupHeader = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateGroupedThemingTable();
+                    LoadContent(tableView);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    groupHeader = FindVisualChildrenByType<TableViewGroupHeader>(tableView).FirstOrDefault();
+                    if (groupHeader == null)
+                    {
+                        Verify.Fail("A grouped TableView should realize at least one TableViewGroupHeader.");
+                        return;
+                    }
+
+                    Verify.IsTrue(VisualStateManager.GoToState(groupHeader, state, false), $"The group header template must define the {state} state.");
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var partName in new[] { "PART_ContentPresenter", "PART_ExpanderIcon" })
+                    {
+                        var part = groupHeader?.FindVisualChildByName(partName) as UIElement;
+                        if (part == null)
+                        {
+                            Verify.Fail($"The group header template must contain {partName}.");
+                            return;
+                        }
+
+                        Verify.AreEqual(ElementHighContrastAdjustment.None, part.HighContrastAdjustment,
+                            $"The {state} state must turn off the High Contrast text backplate on {partName}.");
+                    }
+                });
+            }
+        }
+
         #endregion
 
         #region 13.3 Density
