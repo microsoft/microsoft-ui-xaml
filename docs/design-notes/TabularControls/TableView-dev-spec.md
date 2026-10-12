@@ -84,6 +84,8 @@ Each `TableViewCellsPanel` measures its cells unconstrained and arranges them at
 
 Custom templates using a `Border` for `PART_HeaderRow` must supply its gridline `BorderThickness` through a style setter rather than a local value, so `GridLinesVisibility` can restore it with `ClearValue` for `Horizontal` or `All`.
 
+**Pointer feedback.** A sortable header (`CanUserSortColumns` and `TableViewColumn.CanSort`) reacts to the pointer like a row: on hover it paints `TabularSurfaceHeaderBackgroundPointerOverBrush`, while pressed `TabularSurfaceHeaderBackgroundPressedBrush`, and it returns to its transparent fill on exit, release, capture loss or cancel. In High Contrast the default header text presenter also takes `TabularSurfaceHeaderForegroundPointerOverBrush` / `TabularSurfaceHeaderForegroundPressedBrush` (`SystemColorHighlightColor` fill, `SystemColorHighlightTextColor` text); in Light and Dark those foreground keys equal `TabularSurfaceHeaderForegroundBrush` and the fills equal the row pointer-over/pressed fills. Brushes are looked up on each state change. A header that cannot sort shows no feedback, the pointer events are never marked handled (click-to-sort and focus are unchanged), and a press on the resize gripper stays with the gripper.
+
 ## Body band
 
 `ScrollViewer` `PART_BodyScroller` → `Grid` `PART_BodyContent` → `ItemsRepeater` `PART_RowsRepeater`.
@@ -389,7 +391,9 @@ need no new base API or re-plumbing.
 `Border`; cell *content* is customized via the column's template / `GenerateElementCore`, matching
 WPF where `CellStyle` targets `DataGridCell`, not the content); `ColumnHeaderStyle` the generated
 header cell. They form a cohesive set and land together, since shipping one alone would leave an
-asymmetric styling surface.
+asymmetric styling surface. Header restyling beyond the `TabularSurfaceHeader*` keys (for example
+replacing the pointer-over/pressed visuals) needs a public templated header type and
+`ColumnHeaderStyle`, both of which require API review; today's header cell is an internal `Grid`.
 
 **Why per-element Styles + theme resources, not a monolithic `TableStyle`:** per-element `Style`s
 compose with the standard WinUI `Style`/`Setter`/`ControlTemplate` machinery and scale to any

@@ -544,6 +544,11 @@ winrt::Brush TableView::GetGridLineBrush()
     return brush;
 }
 
+winrt::Brush TableView::LookupHeaderStateBrush(std::wstring_view key)
+{
+    return LookupElementResource(*this, key, IsHighContrast()).try_as<winrt::Brush>();
+}
+
 TableView::~TableView()
 {
     // Must run while this control still holds the selector: once anything has been recycled the

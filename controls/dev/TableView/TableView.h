@@ -232,6 +232,12 @@ public:
     // density/font accessors above.
     winrt::Brush GetGridLineBrush();
 
+    // Header pointer-state brushes; looked up per state change, so not cached.
+    winrt::Brush LookupHeaderStateBrush(std::wstring_view key);
+
+    // Code-created, so its Name is in no XAML namescope and FindName cannot resolve it.
+    static winrt::SortIndicator FindSortIndicator(const winrt::Panel& root);
+
     // Per-instance resource cache (density metrics + gridline brush); accessed by the
     // file-scope resource helpers in TableView.cpp through this owner pointer.
     TableViewResourceCache& GetResourceCacheInternal() { return m_resourceCache; }
@@ -1013,9 +1019,6 @@ private:
     void QueueClearSortAfterColumnRemoval();
     bool m_clearSortAfterColumnRemovalQueued{ false };
     void AppendSortIndicatorVisual(const winrt::Panel& host, const winrt::TableViewColumn& column);
-    // The chevron is code-created into a nested host panel, so its programmatic Name is not in any
-    // XAML namescope and FindName cannot resolve it. Locate it by type via a child walk instead.
-    static winrt::SortIndicator FindSortIndicator(const winrt::Panel& root);
     static winrt::SortIndicatorDirection ToSortIndicatorDirection(winrt::SortDirection direction);
 
     // v1 is single-column sort, so this holds at most one entry. It stays a vector because the
