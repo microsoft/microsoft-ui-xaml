@@ -606,6 +606,123 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a forced teardown rolls back a pending value that fails validation instead of leaving it on the item.")]
+        public void VerifyForcedTeardownRollsBackInvalidPendingValue()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                items[0].RejectPrefix = InvalidPrefix;
+
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // A rejected value holds the edit open, so the editor stays in the tree.
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), InvalidPrefix + "Nope");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: an edit is open.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
+                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
+                editors[0].Text = InvalidPrefix + "NopeX";
+
+                tableView.ItemsSource = new List<EditablePerson>();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha", items[0].Name, "A forced teardown must not leave a rejected value on the item.");
+                Verify.IsFalse(tableView.IsEditing, "A forced teardown must close the edit.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies recycling the edited row during layout rolls back a pending value that fails validation.")]
+        public void VerifyRecycleDuringLayoutRollsBackInvalidPendingValue()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            Button focusSink = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var names = new string[200];
+                names[0] = "Asha";
+                for (int i = 1; i < names.Length; i++)
+                {
+                    names[i] = "Person " + i;
+                }
+                items = MakeEditableItems(names);
+                items[0].RejectPrefix = InvalidPrefix;
+
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                focusSink = new Button { Content = "Sink" };
+                var host = new StackPanel();
+                host.Children.Add(focusSink);
+                host.Children.Add(tableView);
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), InvalidPrefix + "Nope");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: an edit is open.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            // ItemsRepeater never recycles the row holding focus, so move focus off the editor. The
+            // focus-loss commit of an invalid value is rejected and leaves the edit open.
+            RunOnUIThread.Execute(() =>
+            {
+                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
+                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
+                editors[0].Text = InvalidPrefix + "NopeX";
+                focusSink.Focus(FocusState.Programmatic);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreNotEqual(FocusState.Unfocused, focusSink.FocusState, "Precondition: focus left the editor.");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the rejected focus-loss commit keeps the edit open.");
+
+                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
+                Verify.AreEqual(1, editors.Count, "The edited row must still host its editor TextBox.");
+                editors[0].Text = InvalidPrefix + "NopeY";
+            });
+
+            // Row 0 leaves the realization window, so the repeater recycles it inside measure.
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 3000);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha", items[0].Name, "Recycling the edited row must not leave a rejected value on the item.");
+                Verify.IsFalse(tableView.IsEditing, "Recycling the edited row must close the edit.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the text column's editor TextBox takes its UIA name from the column header text.")]
         public void VerifyTextColumnEditorNameComesFromHeader()
         {

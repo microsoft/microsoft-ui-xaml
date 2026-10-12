@@ -707,18 +707,56 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
             // teardown and fail-fasts with 0xc0000420 in an Auto-width column.
             //
             // The one case that DOES need it: a commit already wrote to the item and validation
-            // then rejected the value, leaving the edit open. There the editor has to be restored
+            // then rejected the value, leaving the edit open, or a forced teardown transferred a
+            // value that failed validation. There the editor has to be restored
             // and re-committed so the item stops holding a value the control rejected.
             if (m_editSourceWritten)
             {
-                try
+                if (m_insideLayoutPass)
                 {
-                    winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, m_editUneditedValue.get());
-                    winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement);
+                    // Restoring the editor here is the layout re-entrancy above, so post it. By then
+                    // the editor is detached and has no inherited DataContext, so pin it to our item.
+                    auto weakThis = get_weak();
+                    auto const uneditedValue = m_editUneditedValue.get();
+                    auto const queue = DispatcherQueue();
+                    if (!queue || !queue.TryEnqueue([weakThis, column, editingElement, item, uneditedValue]()
+                        {
+                            auto strongThis = weakThis.get();
+                            bool restored = false;
+                            if (strongThis)
+                            {
+                                try
+                                {
+                                    editingElement.DataContext(item);
+                                    winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, uneditedValue);
+                                    restored = winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement);
+                                }
+                                catch (...)
+                                {
+                                }
+                                try { editingElement.ClearValue(winrt::FrameworkElement::DataContextProperty()); }
+                                catch (...) {}
+                            }
+                            if (!restored)
+                            {
+                                TVDiag::LogRetailF(L"[TableView] A rejected value could not be rolled back; the item still holds it.");
+                            }
+                        }))
+                    {
+                        TVDiag::LogRetailF(L"[TableView] A rejected value could not be rolled back; the item still holds it.");
+                    }
                 }
-                catch (...)
+                else
                 {
-                    LogConsumerHandlerThrow(L"CancelCellEdit");
+                    try
+                    {
+                        winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, m_editUneditedValue.get());
+                        winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement);
+                    }
+                    catch (...)
+                    {
+                        LogConsumerHandlerThrow(L"CancelCellEdit");
+                    }
                 }
 
                 m_editSourceWritten = false;
@@ -854,6 +892,7 @@ bool TableView::TerminateEditForReset(bool force, bool sourceReplaced)
                 try
                 {
                     wrote = winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement);
+                    m_editSourceWritten = m_editSourceWritten || wrote;
                 }
                 catch (...)
                 {
