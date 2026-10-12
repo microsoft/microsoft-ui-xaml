@@ -305,7 +305,8 @@ void TableView::CaptureContainerFocusForRestore(winrt::UIElement const& containe
     }
 
     // A data row's focus is usually on an inner cell/editor, so read the focused element's state.
-    auto const stateSource = container.try_as<winrt::TableViewRow>()
+    const bool isDataRow = static_cast<bool>(container.try_as<winrt::TableViewRow>());
+    auto const stateSource = isDataRow
         ? focused.try_as<winrt::Control>()
         : container.try_as<winrt::Control>();
 
@@ -318,6 +319,14 @@ void TableView::CaptureContainerFocusForRestore(winrt::UIElement const& containe
         {
             m_pendingGroupFocusIdentity = identity;
             m_pendingGroupFocusState = state;
+        }
+        else if (isDataRow && state == winrt::FocusState::Pointer)
+        {
+            // A data row is different: a pointer-focused tree row still owns keyboard focus (the
+            // next arrow key acts on it), and a subtree expand rebuilds the projection, recycling
+            // it. Replay as Programmatic, as the re-shape restore does.
+            m_pendingGroupFocusIdentity = identity;
+            m_pendingGroupFocusState = GetRestoreFocusStateFor(control);
         }
     }
 }
