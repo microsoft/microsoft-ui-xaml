@@ -462,6 +462,11 @@ void TableViewSource::ResumeHeldLiveShaping()
     m_engine->ResumeHeldLiveShaping();
 }
 
+bool TableViewSource::CanApplySort() const
+{
+    return m_engine->CanProjectWithRowIdentity();
+}
+
 void TableViewSource::NotifyOwnerProjectionChanged()
 {
     if (m_projectionChanged)

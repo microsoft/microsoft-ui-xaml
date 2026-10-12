@@ -616,11 +616,13 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     Boolean CanUserSortColumns { get; set; };
 
     // Clears any other sort state, then sets this column's SortDirection. Pass SortDirection.None
-    // to clear. Returns true when the sort state changed.
+    // to clear. Returns true when the sort state changed; returns false when the rows include a
+    // null item or the same object twice.
     Boolean SortByColumn(MU_XC_NAMESPACE.TableViewColumn column, SortDirection direction);
 
     // Cycles the trigger column's direction per SortCycle, clearing any other sort state first.
-    // Returns true when the sort state changed.
+    // Returns true when the sort state changed; returns false when the rows include a null item
+    // or the same object twice.
     Boolean ToggleSortDirection(MU_XC_NAMESPACE.TableViewColumn column);
 
     // Clears every column's sort state in one batch. Returns true when anything was cleared.
