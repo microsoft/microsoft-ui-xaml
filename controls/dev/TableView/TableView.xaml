@@ -146,6 +146,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -155,6 +158,9 @@
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -229,7 +235,7 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <!-- Suppress the High Contrast text backplate only while selected, where it fights the selection fill. -->
+                                        <!-- Suppress the High Contrast text backplate wherever the row paints a state fill (hover, press, selection). -->
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -402,6 +408,8 @@
                                         <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceRowBackgroundPointerOverBrush}" />
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
                                         <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
+                                        <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
+                                        <Setter Target="PART_ExpanderIcon.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -409,6 +417,8 @@
                                         <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceRowBackgroundPressedBrush}" />
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
                                         <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
+                                        <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
+                                        <Setter Target="PART_ExpanderIcon.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
