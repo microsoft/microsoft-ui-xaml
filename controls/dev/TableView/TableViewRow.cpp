@@ -33,14 +33,6 @@ namespace
     constexpr winrt::Thickness s_verticalThickness{ 0, 0, 1, 0 };
     constexpr winrt::Thickness s_zeroThickness{ 0, 0, 0, 0 };
 
-    // Shared transparent fill for cell wrappers. Cached because rows and cells are rebuilt on every
-    // scroll, and a fresh brush per cell is pure allocation for a value that never varies.
-    winrt::Brush TransparentBrush()
-    {
-        static const winrt::SolidColorBrush s_transparent{ winrt::Colors::Transparent() };
-        return s_transparent;
-    }
-
     bool WantsHorizontalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
     {
         return visibility == winrt::TableViewGridLinesVisibility::Horizontal ||
@@ -2011,7 +2003,11 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
 
         // A null Background does not hit-test; Transparent keeps the full cell pressable so clicks
         // in padding still set current cell and support double-click-to-edit.
-        cellWrapper.Background(TransparentBrush());
+        if (!m_cellWrapperBackground)
+        {
+            m_cellWrapperBackground = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
+        }
+        cellWrapper.Background(m_cellWrapperBackground);
 
         // No local DataContext anywhere on the cell path: cells inherit the row item so recycled
         // rows update reactively. Custom columns must also bind to inherited DataContext, not bake

@@ -222,6 +222,8 @@ private:
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
     // Chevron hit target. Null if a re-template drops the part (indent still applies).
     tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
+    // Transparent cell wrapper fill, created on first use and shared by this row's cells.
+    winrt::Brush m_cellWrapperBackground{ nullptr };
     winrt::UIElement::PointerPressed_revoker m_gutterPointerPressedRevoker{};
     winrt::UIElement::PointerReleased_revoker m_gutterPointerReleasedRevoker{};
     winrt::UIElement::PointerExited_revoker m_gutterPointerExitedRevoker{};
