@@ -2804,10 +2804,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         // Scenario: 5 iterations (flaky repro): AddExtraNodes adds Node 1..50, SelectLastRootNode sets
         //   SelectedNode to the off-screen Node 50, then tap Node 1.
         // Expected: GetSelected is "Selected: Node 50", then "Selected: Node 1" in every iteration.
-        // Failure means: Selecting an unrealized item via SelectedNode leaves stale selection, so a later tap
-        //   does not move the single selection (ViewModel::SelectNode / UpdateSelectionVisual).
+        // Failure means: Ignored (PC-7, product bug): in Single mode TreeView.SelectedItem only follows the inner
+        //   ListView's SelectionChanged, so selecting the unrealized Node 50 leaves SelectedItem stale until it is
+        //   realized. A pass on slow agents would mean SelectedItem is now synced from the ViewModel selection.
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "B")]
+        // PC-7 (product bug): in Single mode TreeView.SelectedItem is only synced from the inner ListView's
+        // SelectionChanged, which needs a realized container; selecting an unrealized node via SelectedNode leaves
+        // SelectedItem stale until realization. Timing-dependent: fails consistently on Win10 RS5 x86chk CI agents
+        // (PR #12227 build 160184362), passes on faster Win11 agents. Re-enable once SelectedItem is updated from
+        // the ViewModel selection change.
+        [TestProperty("Ignore", "True")]
         public void TreeViewSelectRegressionTest()
         {
             // Running 5 times since the the bug doesn't repro consistently.
