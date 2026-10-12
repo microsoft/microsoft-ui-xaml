@@ -3841,8 +3841,9 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
         {
             // Exchange items between Primary and Overflow
             {
-                m_topDataProvider.MoveItemsToPrimaryList(itemsToBeAdded);
+                // Avoid temporarily emptying overflow and collapsing its button during the exchange.
                 m_topDataProvider.MoveItemsOutOfPrimaryList(itemsToBeRemoved);
+                m_topDataProvider.MoveItemsToPrimaryList(itemsToBeAdded);
             }
 
             if (NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(selectedOverflowItemIndex))
