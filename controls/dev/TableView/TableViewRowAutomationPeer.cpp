@@ -562,11 +562,11 @@ int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
     {
         auto const tableImpl = winrt::get_self<TableView>(tableView);
 
-        int32_t positionInSet = 0;
-        int32_t sizeOfSet = 0;
-        if (TryGetGroupedRowSetMetadata(tableImpl, index, positionInSet, sizeOfSet))
+        int32_t groupPosition = 0;
+        int32_t groupSize = 0;
+        if (TryGetGroupedRowSetMetadata(tableImpl, index, groupPosition, groupSize))
         {
-            return positionInSet;
+            return groupPosition;
         }
 
         return tableImpl->GetDataRowPositionInSetInternal(index);
@@ -593,11 +593,11 @@ int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
     {
         auto const tableImpl = winrt::get_self<TableView>(tableView);
 
-        int32_t positionInSet = 0;
-        int32_t sizeOfSet = 0;
-        if (TryGetGroupedRowSetMetadata(tableImpl, GetRowIndex(), positionInSet, sizeOfSet))
+        int32_t groupPosition = 0;
+        int32_t groupSize = 0;
+        if (TryGetGroupedRowSetMetadata(tableImpl, GetRowIndex(), groupPosition, groupSize))
         {
-            return sizeOfSet;
+            return groupSize;
         }
 
         if (const auto count = tableImpl->GetDataRowSizeOfSetInternal(); count > 0)
