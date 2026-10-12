@@ -41,10 +41,15 @@ public sealed class ProcessItem : INotifyPropertyChanged
 
     public bool IsEfficiency { get; set; }
 
+    // Process id and parent process id: the relation the Hierarchy shaping modes nest by.
+    public int Pid { get; set; }
+
+    public int? ParentPid { get; set; }
+
     public bool IsSuspended => StatusText == Suspended;
 
-    // Child processes (browser tabs, WebView2 helpers) are not rows: their values are summed into
-    // the parent's metrics on every tick. They become expandable rows when hierarchy ships.
+    // Child processes (browser tabs, WebView2 helpers): their values are summed into the parent's
+    // metrics on every tick. They are rows only in the Hierarchy shaping modes, nested by ParentPid.
     public ObservableCollection<ProcessItem> Children { get; set; } = new();
 
     // Behaviour hints for the simulation.

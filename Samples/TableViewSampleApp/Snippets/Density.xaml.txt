@@ -1,10 +1,14 @@
-<!-- DensityPage.xaml. Density is one table-level property; the template cells take the
-     new row height with no change of their own. -->
+<!-- Template cells follow Density with no change of their own. -->
 <tv:TableView
     x:Name="PeopleTable"
+    AutomationProperties.AutomationId="DensityTable"
+    AutomationProperties.Name="People density"
     ItemsSource="{x:Bind Source}"
     Density="Standard"
-    SelectionMode="Single">
+    SelectionMode="Single"
+    SelectionChanged="OnSelectionChanged"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
     <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
     <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
     <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
@@ -12,8 +16,11 @@
     <tv:TableViewTextColumn Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}"/>
 </tv:TableView>
 
+<!-- … -->
+
 <ComboBox
     x:Name="DensitySelector"
+    AutomationProperties.AutomationId="DensitySelector"
     Header="Density"
     SelectedIndex="1"
     SelectionChanged="OnDensityChanged"

@@ -3,19 +3,20 @@
 
 namespace TableViewSampleApp.Models;
 
-/// <summary>One row of the File properties page: a named value, the section it is listed under and where it was read from.</summary>
+/// <summary>One row of the File properties page: a named value, the section it is listed under, where it was read from and the property it details.</summary>
 public sealed class FilePropertyEntry
 {
     public const string VersionResource = "Version resource";
     public const string FileSystem = "File system";
 
-    public FilePropertyEntry(string section, string property, string value, string source, bool isDate = false)
+    public FilePropertyEntry(string section, string property, string value, string source, bool isDate = false, string? parentProperty = null)
     {
         Section = section;
         Property = property;
         Value = value;
         Source = source;
         IsDate = isDate;
+        ParentProperty = parentProperty;
     }
 
     // Settable: the page's "Move selected to next section" action rewrites it.
@@ -29,4 +30,7 @@ public sealed class FilePropertyEntry
     public string Source { get; }
 
     public bool IsDate { get; }
+
+    // The Property this one details (Size on disk details Size), or null for a top-level property.
+    public string? ParentProperty { get; }
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Data;
@@ -11,7 +12,8 @@ namespace TableViewSampleApp.Data;
 /// <summary>
 /// Deterministic support-ticket queue for the Headers visibility page: six queues, four
 /// priorities and a few resolved tickets, so grouping by queue or priority gives buckets a reader
-/// recognises. Due dates are relative to today.
+/// recognises. Seven tickets are sub-tasks of a parent ticket in their queue. Due dates are
+/// relative to today.
 /// </summary>
 public static class TicketData
 {
@@ -21,26 +23,39 @@ public static class TicketData
     private static readonly (string Queue, string Summary, string Assignee, string Priority, int DueInDays, bool Resolved)[] s_seed =
     {
         ("Identity",      "SSO sign-in loops after password reset",           "Marta Oyelaran",  "Sev 1", 0,  false),
-        ("Identity",      "MFA push notifications arrive twice",              "Devin Ashworth",  "Sev 3", 6,  false),
+        ("Identity",      "MFA push arrives twice during the SSO loop",       "Devin Ashworth",  "Sev 3", 6,  false),
         ("Identity",      "Service principal secret expired in staging",      "Priya Raghunath", "Sev 2", 2,  true),
         ("Billing",       "Invoice PDF renders blank for EU customers",       "Tomas Lindqvist", "Sev 2", 1,  false),
         ("Billing",       "Proration miscalculated on mid-cycle upgrade",     "Hana Okabe",      "Sev 2", 4,  false),
-        ("Billing",       "Refund webhook retries forever on 409",            "Marta Oyelaran",  "Sev 3", 9,  true),
+        ("Billing",       "Refunds for misprorated upgrades retry on 409",    "Marta Oyelaran",  "Sev 3", 9,  true),
         ("Platform",      "Deploy ring 2 stuck behind a wedged health probe", "Owen Castellano", "Sev 1", 0,  false),
-        ("Platform",      "Container image pull throttled in west region",    "Priya Raghunath", "Sev 2", 3,  false),
-        ("Platform",      "Log ingestion lagging by eleven minutes",          "Devin Ashworth",  "Sev 3", 7,  false),
+        ("Platform",      "Ring 2 image pulls throttled in west region",      "Priya Raghunath", "Sev 2", 3,  false),
+        ("Platform",      "Health probe logs lagging by eleven minutes",      "Devin Ashworth",  "Sev 3", 7,  false),
         ("Platform",      "Nightly backup job skipped two shards",            "Hana Okabe",      "Sev 2", 2,  true),
         ("Data",          "Daily export drops rows with null tenant id",      "Tomas Lindqvist", "Sev 2", 5,  false),
         ("Data",          "Schema migration lock blocks reporting reads",     "Owen Castellano", "Sev 1", 1,  false),
-        ("Data",          "Stale materialized view after timezone change",    "Marta Oyelaran",  "Sev 4", 14, true),
+        ("Data",          "Reporting views stale behind the migration lock",  "Marta Oyelaran",  "Sev 4", 14, true),
         ("Support tools", "Agent console loses draft on tab switch",          "Hana Okabe",      "Sev 3", 8,  false),
-        ("Support tools", "Macro insert strips trailing whitespace",          "Devin Ashworth",  "Sev 4", 12, true),
+        ("Support tools", "Macro insert into a draft strips whitespace",      "Devin Ashworth",  "Sev 4", 12, true),
         ("Support tools", "Queue filter resets when the page refreshes",      "Priya Raghunath", "Sev 3", 6,  false),
         ("Mobile",        "Attachment upload fails over cellular",            "Owen Castellano", "Sev 2", 3,  false),
         ("Mobile",        "Push token not refreshed after reinstall",         "Tomas Lindqvist", "Sev 3", 10, false),
         ("Mobile",        "Dark theme contrast fails on the detail sheet",    "Marta Oyelaran",  "Sev 4", 15, true),
-        ("Mobile",        "Offline queue replays in the wrong order",         "Hana Okabe",      "Sev 2", 4,  false),
+        ("Mobile",        "Queued attachment uploads replay out of order",    "Hana Okabe",      "Sev 2", 4,  false),
     };
+
+    // Sub-task seed index -> parent seed index, always in the same queue: each sub-task is a symptom
+    // or follow-up the parent ticket tracks.
+    private static readonly Dictionary<int, int> s_parentOf = new()
+    {
+        [1] = 0, [5] = 4, [7] = 6, [8] = 6, [12] = 11, [14] = 13, [19] = 16,
+    };
+
+    /// <summary>A ticket under the ticket it is a sub-task of (TableViewSource.ParentBy selectors).</summary>
+    public static ParentRelation ParentTicket { get; } = new(
+        "Parent ticket",
+        row => (row as SupportTicket)?.TicketId,
+        row => (row as SupportTicket)?.ParentTicketId);
 
     // Tickets the "File a new ticket" action adds, in turn.
     private static readonly (string Queue, string Summary, string Assignee)[] s_incoming =
@@ -65,6 +80,7 @@ public static class TicketData
             {
                 TicketId = TicketId(FirstTicketNumber + i),
                 Summary = seed.Summary,
+                ParentTicketId = s_parentOf.TryGetValue(i, out var parent) ? TicketId(FirstTicketNumber + parent) : null,
                 Queue = seed.Queue,
                 Assignee = seed.Assignee,
                 Priority = seed.Priority,
@@ -93,6 +109,21 @@ public static class TicketData
             Due = new DateTimeOffset(DateTimeOffset.Now.Date.AddDays(3)),
         };
     }
+
+    // <snippet HeadersVisibility>
+    // Never empty: GroupBy fails fast on an empty group identity.
+    public static object GroupKeyOf(SupportTicket? ticket, string key)
+    {
+        var value = key switch
+        {
+            nameof(SupportTicket.Priority) => ticket?.Priority,
+            nameof(SupportTicket.Assignee) => ticket?.Assignee,
+            _ => ticket?.Queue,
+        };
+
+        return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
+    }
+    // </snippet>
 
     private static string TicketId(int number) => "INC-" + number;
 }
