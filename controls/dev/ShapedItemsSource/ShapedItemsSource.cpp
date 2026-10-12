@@ -1325,6 +1325,10 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
         filteredSource.erase(filteredSource.begin() + removal.SourceIndex);
         m_shapingState.Items.erase(m_shapingState.Items.begin() + removal.RowIndex);
         UntrackFlatItemPropertyChanged(removal.Item);
+        if (m_rowsReleasedHook)
+        {
+            m_rowsReleasedHook(removal.Item, {});
+        }
         m_rows.RemoveAt(removal.RowIndex);
         return true;
     };
@@ -1780,6 +1784,10 @@ void ShapedItemsSource::Refresh()
         auto const authoritativeSource = m_source;
         m_refreshSourceStamp = m_sourceChangeStamp;
         auto rows = Materialize(authoritativeSource);
+        if (m_rowsReleasedHook)
+        {
+            m_rowsReleasedHook(nullptr, rows);
+        }
         RefreshLiveShapingSubscriptions(rows);
 
         // All snapshots were just recaptured, so any pending live restore is satisfied.

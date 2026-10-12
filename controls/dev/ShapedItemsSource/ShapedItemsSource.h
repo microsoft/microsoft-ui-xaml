@@ -180,6 +180,10 @@ public:
     // item may have changed untracked).
     void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook) { m_liveItemChangedHook = std::move(hook); }
 
+    // Lets the owner drop per-row state (comparer ranks) for rows that left the source: called with the
+    // removed item after an in-place sorted removal, or with null and every source row after a rebuild.
+    void SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook) { m_rowsReleasedHook = std::move(hook); }
+
 private:
     void SubscribeToSourceCollectionChanges();
     void UnsubscribeFromSourceCollectionChanges();
@@ -429,6 +433,7 @@ private:
     // A restore found the hold on and parked; ResumeHeldLiveShaping re-posts it.
     bool m_liveShapingHeld{ false };
     std::function<bool(winrt::IInspectable const&, bool)> m_liveItemChangedHook{};
+    std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> m_rowsReleasedHook{};
 
     // Both set or both null; m_parentKeySelector is the "hierarchy declared" test.
     ShapingHelpers::KeySelector m_keySelector{ nullptr };

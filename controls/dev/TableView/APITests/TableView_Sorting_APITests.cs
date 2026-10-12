@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 using WEX.Logging.Interop;
 using WEX.TestExecution;
@@ -1311,6 +1312,72 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySequence(new[] { "Bea", "Cal", "Zoe" }, RowValues(tableView, person => person.Name),
                     "the rows must sort once every row is a distinct object");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a CustomSortComparer's ranks do not keep a removed row alive.")]
+        public void VerifyCustomSortReleasesRemovedRow()
+        {
+            VerifyCustomSortReleasesRemovedRowCore(filtered: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a CustomSortComparer's ranks do not keep a row removed under a filter alive.")]
+        public void VerifyCustomSortReleasesRowRemovedUnderFilter()
+        {
+            VerifyCustomSortReleasesRemovedRowCore(filtered: true);
+        }
+
+        private void VerifyCustomSortReleasesRemovedRowCore(bool filtered)
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            WeakReference weak = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>();
+                for (int i = 0; i < 199; i++)
+                {
+                    items.Add(new ShapedPerson($"P{i:D3}", "Engineer", "Platform"));
+                }
+                // Longest name, so the comparer sorts it last, and last in the source: never realized.
+                weak = AddUntracked(items, "Zed-last-row");
+
+                object source = filtered ? (object)TableViewSource.From(items).Filter(_ => true) : items;
+                tableView = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 600, height: 150);
+                tableView.Columns[0].CustomSortComparer = new LengthThenOrdinalComparer();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending),
+                    "Precondition: the comparer sort applies."));
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => items.RemoveAt(items.Count - 1));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+
+                Verify.IsFalse(weak.IsAlive, "A removed row must not stay alive in the comparer's ranks.");
+                GC.KeepAlive(tableView);
+            });
+        }
+
+        // Not inlined, so no local here keeps the item alive for the caller's GC.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static WeakReference AddUntracked(ObservableCollection<ShapedPerson> items, string name)
+        {
+            var person = new ShapedPerson(name, "Engineer", "Platform");
+            items.Add(person);
+            return new WeakReference(person);
         }
 
         #endregion
