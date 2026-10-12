@@ -46,7 +46,6 @@ static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"s
 // missing or unusable.
 static constexpr double c_sortIndicatorSizeFallback{ 16.0 };
 static constexpr std::wstring_view s_ControlCornerRadiusKey{ L"ControlCornerRadius"sv };
-// Matches the Fluent ControlCornerRadius; used only when that key is missing or unusable.
 static constexpr winrt::CornerRadius c_controlCornerRadiusFallback{ 4.0, 4.0, 4.0, 4.0 };
 
 namespace
@@ -2447,8 +2446,7 @@ void TableView::OnRowElementClearing(
         }
 
         auto const rowImpl = winrt::get_self<TableViewRow>(row);
-        // About to show another record, so it stops being the drilled row; the cursor level and
-        // column survive for re-entry.
+        // No longer the drilled row; the cursor level and column survive for re-entry.
         if (auto const drilled = m_cellLevelRow.get(); drilled && IsSameObject(row, drilled))
         {
             m_cellLevelRow = nullptr;
@@ -2560,13 +2558,12 @@ void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t
 }
 
 // One header-text extraction per column, shared by the header cell's automation name and the
-// gripper's OwnerName. Defined in TableView.h so TableViewTextColumn can name its cell editor
-// from the same source.
+// gripper's OwnerName.
 using TableViewDetails::GetColumnHeaderText;
 
-// GetColumnHeaderText (TableView.h) renders any IStringable for automation purposes, but only a
-// genuine string may be swapped for a TextBlock -- a UIElement or a type with an implicit
-// DataTemplate must keep the ContentPresenter's content model.
+// GetColumnHeaderText renders any IStringable for automation purposes, but only a genuine string
+// may be swapped for a TextBlock -- a UIElement or a type with an implicit DataTemplate must keep
+// the ContentPresenter's content model.
 static bool IsPlainStringHeader(const winrt::TableViewColumn& column)
 {
     const auto propValue = column.Header().try_as<winrt::IPropertyValue>();
@@ -2635,8 +2632,7 @@ void TableView::RebuildHeaders()
     {
         cachedSortIndicatorWidth = c_sortIndicatorSizeFallback;
     }
-    // The system focus visual takes its corners from the focused Grid's CornerRadius, so without
-    // this the header focus rect is square while row focus (TableViewRow style) is rounded.
+    // The system focus visual takes its corners from the focused Grid's CornerRadius.
     const auto cachedHeaderCellCornerRadius = winrt::unbox_value_or<winrt::CornerRadius>(
         LookupElementResource(*this, s_ControlCornerRadiusKey), c_controlCornerRadiusFallback);
     const bool canUserSortColumns = CanUserSortColumns();
@@ -3129,11 +3125,8 @@ void TableView::OnTableViewUnloaded()
 
 void TableView::ReleaseThemeSettings()
 {
-    // At window close the HWND is already gone, so ~ThemeSettings fails to detach its window feature
-    // and throws out of Release(). Assigning nullptr (and revoke()) are noexcept, which turns that
-    // throw into a fail-fast (0xC0000409), so release through ::IUnknown where it can be caught.
-    // Release first: once the object is gone the revoker's weak_ref is stale and revoke() is a no-op,
-    // so remove_Changed is never called against a half-torn-down feature.
+    // ~ThemeSettings throws at window close and nullptr assignment is noexcept (fail-fast), so release
+    // inside try/catch. Release before revoke() so a dead object's stale weak_ref makes it a no-op.
     if (auto const themeSettings = static_cast<::IUnknown*>(winrt::detach_abi(m_themeSettings)))
     {
         try

@@ -124,8 +124,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies the TableView's UIA BoundingRectangle ends at its own layout box, not at the realized cache rows below the body viewport.")]
         public void TableViewBoundingRectangleExcludesRowsBelowViewport()
         {
-            // ScrollOffsetTextBlock follows the table in the same StackPanel, so its top is a scale-free bound on
-            // where the table really ends.
+            // ScrollOffsetTextBlock follows the table in the same StackPanel, so its top bounds the table's end.
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem))

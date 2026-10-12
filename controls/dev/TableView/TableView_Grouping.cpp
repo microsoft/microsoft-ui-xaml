@@ -322,9 +322,8 @@ void TableView::CaptureContainerFocusForRestore(
 
     if (auto const control = stateSource)
     {
-        // Headers restore pointer focus too: a band click focuses then collapses the header, and that
-        // focus location matters. Data rows keep keyboard/programmatic only, because the row restore
-        // always focuses with Keyboard state. A known gesture decides the restored state.
+        // Headers restore pointer focus too (a band click focuses then collapses); data rows only
+        // keyboard/programmatic, since the row restore always focuses with Keyboard state.
         const bool isHeader = container.try_as<winrt::TableViewGroupHeader>() != nullptr;
         const auto state = gestureState != winrt::FocusState::Unfocused ? gestureState : control.FocusState();
         const bool restorable = isHeader
@@ -347,8 +346,7 @@ bool TableView::CanRestoreContainerFocus(winrt::UIElement const& capturedContain
         return false;
     }
 
-    // Leave focus the user moved outside the table alone. ItemsRepeater moves focus off a cleared
-    // container to a realized neighbour, which is still inside.
+    // ItemsRepeater moves focus off a cleared container to a realized neighbour, still inside.
     auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
     if (!focused)
     {

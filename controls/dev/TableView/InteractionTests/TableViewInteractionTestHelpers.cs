@@ -610,7 +610,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return double.NaN;
         }
 
-        // Returns the whole readout if it has no "V=" field.
         internal static string VerticalOffsetOf(string offsets)
         {
             foreach (string field in offsets.Split(';'))

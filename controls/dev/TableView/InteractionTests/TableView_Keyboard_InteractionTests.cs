@@ -554,7 +554,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Shift+Tab back into the body from the control after the table resumes the cell that last had focus, not a control hosted in another row's template cell.")]
         public void ShiftTabReentryResumesRememberedCell()
         {
-            // Without the redirect, reverse tab search lands on the last realized row's hosted "Open" button.
             // Focus leaves through UIA SetFocus: forward Tab out of the body is blocked (see TabMovesFocusOutOfTable).
             using (var setup = new TestSetupHelper(PageName))
             {
@@ -708,7 +707,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 string offsetsBeforeScroll = ReadScrollOffsets();
                 WheelAtPoint(CentreOf(tableView), -10 * 120);
-                Wait.ForIdle(); // let the wheel's scroll animation settle before the baseline read
+                Wait.ForIdle();
                 string offsetsBeforeReentry = ReadScrollOffsets();
                 Log.Comment("Body offsets '{0}' -> '{1}' after the wheel.", offsetsBeforeScroll, offsetsBeforeReentry);
                 Verify.AreNotEqual(offsetsBeforeScroll, offsetsBeforeReentry, "Precondition: the wheel must scroll the body.");

@@ -108,9 +108,7 @@ winrt::AutomationControlType TableViewAutomationPeer::GetAutomationControlTypeCo
     return winrt::AutomationControlType::DataGrid;
 }
 
-// The default bounds union every realized descendant, including cache rows the scroller clips, so
-// intersect with the table's layout box. Best-effort: if the two rects can't be reconciled (e.g. the
-// coordinate spaces disagree under a popup, island or transform) the base result wins.
+// The default bounds include cache rows the scroller clips; best-effort clip to the layout box.
 winrt::Rect TableViewAutomationPeer::GetBoundingRectangleCore()
 {
     auto const bounds = __super::GetBoundingRectangleCore();
@@ -138,7 +136,6 @@ winrt::Rect TableViewAutomationPeer::GetBoundingRectangleCore()
     winrt::Rect layoutBounds{};
     try
     {
-        // Same DIP -> physical mapping as InkCanvasAutomationPeer.
         layoutBounds = SharedHelpers::ConvertDipsToPhysical(
             owner, owner.TransformToVisual(nullptr).TransformBounds(localBounds));
     }

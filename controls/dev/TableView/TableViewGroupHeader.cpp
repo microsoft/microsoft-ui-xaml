@@ -315,8 +315,7 @@ void TableViewGroupHeader::OnPointerPressed(winrt::PointerRoutedEventArgs const&
     // A reshape between press and release can recycle this container onto another group.
     m_pressedGroupIdentity = GetGroupIdentity();
 
-    // Focus is taken on release: moving focus off an open editor commits it on a later turn,
-    // which can reshape the table mid-gesture.
+    // Focus on release, not press: leaving an open editor commits it later and can reshape mid-gesture.
 
     // The band owns the gesture: mark it handled so a press on a group header never reaches the
     // row's selection handling.
@@ -338,7 +337,8 @@ void TableViewGroupHeader::OnPointerReleased(winrt::PointerRoutedEventArgs const
     m_pressedGroupIdentity.clear();
     UpdateVisualStates(true /* useTransitions */);
 
-    // Only a release inside the band, on the same group, activates.
+    // Toggle on release-inside, the standard click semantic: a press that drags off the band
+    // does not activate.
     if (!wasPressed || !m_isPointerOver || pressedIdentity != GetGroupIdentity())
     {
         return;

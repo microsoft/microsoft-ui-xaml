@@ -1664,8 +1664,7 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
 
     if (m_currentCellRow >= 0)
     {
-        // m_currentCellRow is a bare index that reshapes don't renumber, so follow the remembered
-        // item instead.
+        // m_currentCellRow isn't renumbered by reshapes, so follow the remembered item.
         auto const rememberedItem = m_currentItem.get();
         winrt::IInspectable itemAtRememberedRow{ nullptr };
         auto const stillTheSameRecord =
@@ -1673,7 +1672,7 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
             TryGetItemAtRowIndex(m_currentCellRow, itemAtRememberedRow) &&
             SameInspectableIdentity(itemAtRememberedRow, rememberedItem);
 
-        // Realized rows only, so this never forces a realization.
+        // Realized rows only, so entry never forces a realization or a scroll.
         if (auto const remembered = stillTheSameRecord
                 ? GetRealizedRowAt(m_currentCellRow)
                 : FindRealizedRowForItem(rememberedItem))
@@ -1682,8 +1681,7 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
         }
     }
 
-    // XAML aims at the first/last realized row, which with a vertical cache is outside the
-    // viewport and would scroll. Land on the viewport edge row instead, matching ItemsView.
+    // XAML aims at a cache row outside the viewport, which would scroll; match ItemsView instead.
     if (auto const edge = FindViewportEdgeRowInternal(direction == winrt::FocusNavigationDirection::Previous))
     {
         return edge;
@@ -1824,7 +1822,6 @@ void TableView::ArmCellLevelRowInternal(winrt::TableViewRow const& row)
         return;
     }
 
-    // Only one row may have its cells armed.
     if (auto const previous = m_cellLevelRow.get(); previous && previous != row)
     {
         winrt::get_self<TableViewRow>(previous)->SetCellLevelInternal(false);

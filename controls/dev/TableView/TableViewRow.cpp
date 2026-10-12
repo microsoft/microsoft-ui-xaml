@@ -33,8 +33,7 @@ namespace
     constexpr winrt::Thickness s_verticalThickness{ 0, 0, 1, 0 };
     constexpr winrt::Thickness s_zeroThickness{ 0, 0, 0, 0 };
 
-    // A target the focus manager refuses can be substituted by one that lands back on a row and
-    // re-enters the redirect.
+    // A refused target can be substituted by one that lands back on a row and re-enters the redirect.
     bool IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner)
     {
         if (!target || !target.XamlRoot() || target.Visibility() != winrt::Visibility::Visible || !target.IsTabStop())
@@ -831,9 +830,6 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
-    // Entry from outside: XAML aims at the first/last realized tab stop (often a cache row), so
-    // resume the remembered record or the viewport edge row instead. At most one redirect per
-    // CorrelationId, so stale state can never cause a redirect loop in the focus manager.
     const auto correlationId = args.CorrelationId();
     if (ownerImpl->HasRedirectedFocusEntry(correlationId))
     {

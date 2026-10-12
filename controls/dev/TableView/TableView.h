@@ -21,12 +21,7 @@
 
 namespace TableViewDetails
 {
-    // Header-text extraction, shared by the header cell's automation name, the resize gripper's
-    // OwnerName and the name stamped on a text column's cell editor. Lives here rather than in a
-    // .cpp so every consumer derives the same answer for the same header content.
-    //
-    // Takes the header content rather than the column so a column implementation can call it with
-    // its own Header() without needing a projected TableViewColumn.
+    // Shared with TableViewTextColumn so its cell editor name matches the header's automation name.
     inline winrt::hstring GetHeaderContentText(const winrt::IInspectable& header)
     {
         if (header)
@@ -307,8 +302,7 @@ public:
     // Up/Down move between while the user has not drilled into cells.
     bool FocusRowContainer(int32_t rowIndex);
 
-    // Entry from outside returns to the remembered record, else the viewport edge row rather than
-    // the cache row XAML aimed at (focusing that would scroll).
+    // Entry from outside resumes the remembered record, else the viewport edge row (not a cache row).
     winrt::TableViewRow ResolveFocusEntryRow(
         winrt::TableViewRow const& row,
         winrt::DependencyObject const& oldFocusedElement,
@@ -326,8 +320,7 @@ public:
         winrt::DependencyObject const& oldFocusedElement,
         winrt::FocusNavigationDirection direction);
 
-    // A redirect re-raises GettingFocus with the same CorrelationId; redirecting at most once per
-    // operation keeps the handler from looping inside the focus manager.
+    // A redirect re-raises GettingFocus with the same CorrelationId; redirect once to avoid a loop.
     bool HasRedirectedFocusEntry(winrt::guid const& correlationId) const noexcept
     {
         return m_hasFocusEntryRedirect && m_focusEntryRedirectCorrelationId == correlationId;
@@ -921,10 +914,8 @@ private:
     // Keyboard-driven group toggle loses focus without this: the Enter/Space toggle defers a
     // structural reshape that recycles the focused header container, dropping focus (and its
     // visual) to nothing. Capture the header's identity + FocusState at gesture time, then restore
-    // focus to the same group's header once the reshape's relayout has settled, unless focus has
-    // meanwhile moved outside the table.
-    // Same for keyboard/programmatic-focused hierarchical data rows whose container a reset
-    // recycles; re-focused only when focus did not survive.
+    // focus to the same group's header once the reshape's relayout has settled, unless focus left
+    // the table. Same for focused hierarchical data rows whose container a reset recycles.
     void CaptureContainerFocusForRestore(
         winrt::UIElement const& container,
         winrt::hstring const& identity,
@@ -1217,8 +1208,7 @@ private:
     // Weak: cells are recycled on every scroll.
     winrt::weak_ref<winrt::FrameworkElement> m_cellInteractionCell{ nullptr };
     // The row currently drilled in, so the cursor can pop it back to row level when it moves on.
-    // Weak: rows are recycled on every scroll. Cleared on recycle; the cursor level and column
-    // survive so re-entry can re-arm whichever container shows the remembered record next.
+    // Weak: rows are recycled on every scroll.
     winrt::weak_ref<winrt::TableViewRow> m_cellLevelRow{ nullptr };
 
     winrt::guid m_focusEntryRedirectCorrelationId{};

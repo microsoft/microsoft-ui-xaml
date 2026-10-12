@@ -85,8 +85,7 @@ public:
 
     void ResetPointerStateInternal();
 
-    // The gesture that triggered the expansion in flight, consumed once by RequestGroupExpansion
-    // so the focus restore uses the gesture's state rather than the state focus arrived with.
+    // Consumed once by RequestGroupExpansion so the focus restore uses the gesture's state.
     void SetGestureFocusStateInternal(winrt::FocusState state) noexcept { m_gestureFocusState = state; }
     winrt::FocusState TakeGestureFocusStateInternal() noexcept
     {
@@ -108,7 +107,6 @@ private:
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
     bool m_suppressBottomGridLine{ false };
-    // Captured on press; the release toggles only if the container still shows this group.
     winrt::hstring m_pressedGroupIdentity{};
     winrt::FocusState m_gestureFocusState{ winrt::FocusState::Unfocused };
 

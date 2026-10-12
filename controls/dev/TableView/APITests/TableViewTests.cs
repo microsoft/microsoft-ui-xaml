@@ -754,8 +754,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies closing the window that hosts a loaded TableView does not fail-fast while ThemeSettings is torn down.")]
         public void VerifyClosingHostWindowDoesNotCrash()
         {
-            // Regression for https://task.ms/64512990: Loaded subscribes to ThemeSettings for the hosting
-            // window; closing that window must release it without terminating the process.
             Window window = null;
             var loaded = new global::System.Threading.AutoResetEvent(false);
 

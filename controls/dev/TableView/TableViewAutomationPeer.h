@@ -18,7 +18,6 @@ public:
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     hstring GetClassNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
-    // Clipped to the table's layout box: the default unions cache rows the scroller clips away.
     winrt::Rect GetBoundingRectangleCore();
 
     // IGridProvider / ITableProvider expose visible logical columns.
