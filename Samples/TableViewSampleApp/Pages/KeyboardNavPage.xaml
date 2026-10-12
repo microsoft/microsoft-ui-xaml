@@ -52,7 +52,7 @@
                 <!-- snippet -->
                 <!-- Focus sentinels either side make the tab order in and out checkable without a mouse. -->
                 <!-- Activating a sentinel only reports where it is, so it never looks like a broken button. -->
-                <Button Grid.Row="0" Content="Before table" HorizontalAlignment="Left" Click="OnFocusSentinelClick"
+                <Button Grid.Row="0" Content="Before table" HorizontalAlignment="Left"
                         AutomationProperties.AutomationId="KeyboardNavBeforeTable"
                         AutomationProperties.HelpText="Focus sentinel just before the table, so you can check the tab order into the table."/>
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}">
@@ -74,7 +74,7 @@
                         <tv:TableViewTemplateColumn Header="Details" Width="{StaticResource ColWidthAction}" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False"/>
                     </tv:TableView>
                 </Border>
-                <Button Grid.Row="2" Content="After table" HorizontalAlignment="Left" Click="OnFocusSentinelClick"
+                <Button Grid.Row="2" Content="After table" HorizontalAlignment="Left"
                         AutomationProperties.AutomationId="KeyboardNavAfterTable"
                         AutomationProperties.HelpText="Focus sentinel just after the table, so you can check the tab order out of the table."/>
                 <!-- /snippet -->
@@ -88,7 +88,7 @@
                         Text="A small, synthetic assessment fixture, not an automated accessibility result. Reset it before each scenario. Use Narrator and a UI Automation inspector to record the actual names, patterns, focus, events and contrast; the Status readouts report app and model state only. Press Home once focus is in the table to reach its first row. Ctrl+Up and Ctrl+Down move without selecting; Space selects the focused data row in Single mode."
                         Style="{StaticResource SectionDescriptionTextStyle}"
                         TextWrapping="Wrap"/>
-                    <Button Content="Before fixture table" HorizontalAlignment="Left" Click="OnFocusSentinelClick"
+                    <Button Content="Before fixture table" HorizontalAlignment="Left"
                             AutomationProperties.AutomationId="A11yBeforeTable"
                             AutomationProperties.HelpText="Focus sentinel just before the fixture table."/>
                     <Border Style="{StaticResource TableHostBorderStyle}">
@@ -106,7 +106,7 @@
                             Height="248"/>
                         <!-- /snippet -->
                     </Border>
-                    <Button Content="After fixture table" HorizontalAlignment="Left" Click="OnFocusSentinelClick"
+                    <Button Content="After fixture table" HorizontalAlignment="Left"
                             AutomationProperties.AutomationId="A11yAfterTable"
                             AutomationProperties.HelpText="Focus sentinel just after the fixture table."/>
                     <TextBlock AutomationProperties.HeadingLevel="Level3" Text="What to check in this scenario"

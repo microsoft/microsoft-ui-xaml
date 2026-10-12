@@ -44,7 +44,6 @@
                                   MinWidth="160"
                                   AutomationProperties.AutomationId="ThemeModeCombo"
                                   AutomationProperties.Name="App theme"
-                                  AutomationProperties.HelpText="Select which app theme to display."
                                   SelectionChanged="OnThemeSelectionChanged">
                             <ComboBoxItem x:Name="ThemeItemLight"
                                           AutomationProperties.AutomationId="ThemeItemLight"

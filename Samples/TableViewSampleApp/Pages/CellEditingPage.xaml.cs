@@ -156,8 +156,12 @@ public sealed partial class CellEditingPage : SamplePageBase
             EditLog.RemoveAt(EditLog.Count - 1);
         }
 
-        // The edit log is not a live region; Last action announces the new entry.
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Edit log: {0}", entry));
+        // The edit log is not a live region. When the write lands while the editor is still open,
+        // OnCellEditEnding's "Committed …" message carries the entry; otherwise announce it here.
+        if (_openEdit == "(none)")
+        {
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Edit log: {0}", entry));
+        }
     }
 
     private bool IsFocusWithinTable()

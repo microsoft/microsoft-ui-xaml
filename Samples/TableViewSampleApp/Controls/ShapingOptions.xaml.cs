@@ -90,20 +90,7 @@ public sealed partial class ShapingOptions : UserControl
 
     public static readonly DependencyProperty DescriptionProperty =
         DependencyProperty.Register(nameof(Description), typeof(string), typeof(ShapingOptions),
-            new PropertyMetadata(null, (d, e) => ((ShapingOptions)d).OnDescriptionChanged((string?)e.NewValue)));
-
-    private void OnDescriptionChanged(string? description)
-    {
-        DescriptionText.Text = description ?? string.Empty;
-        if (string.IsNullOrEmpty(description))
-        {
-            ClearValue(AutomationProperties.FullDescriptionProperty);
-        }
-        else
-        {
-            AutomationProperties.SetFullDescription(this, description);
-        }
-    }
+            new PropertyMetadata(null, (d, e) => ((ShapingOptions)d).DescriptionText.Text = (string?)e.NewValue ?? string.Empty));
 
     public string InitialMode
     {

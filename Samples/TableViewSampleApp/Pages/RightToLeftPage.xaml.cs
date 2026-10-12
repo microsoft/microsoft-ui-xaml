@@ -195,7 +195,6 @@ public sealed partial class RightToLeftPage : SamplePageBase
     private void OnResetColumnOrderClick(object sender, RoutedEventArgs e)
     {
         var columns = PeopleTable.Columns;
-        var moved = false;
         for (var target = 0; target < _originalColumnOrder.Length; target++)
         {
             var current = columns.IndexOf(_originalColumnOrder[target]);
@@ -204,13 +203,9 @@ public sealed partial class RightToLeftPage : SamplePageBase
                 var column = columns[current];
                 columns.RemoveAt(current);
                 columns.Insert(target, column);
-                moved = true;
             }
         }
 
-        // Report a no-op too, so the button never appears to do nothing.
-        SetLastAction(!moved
-            ? "Column order is already the original order; nothing to reset"
-            : "Restored the original column order");
+        SetLastAction("Reset the column order");
     }
 }

@@ -182,10 +182,9 @@ screen reader user skims a page, so a visually-styled heading without one is a r
 
 **Every action reports its outcome.** A button, toggle or selector that changes the page calls
 `SetLastAction` with what happened, in words a listener can act on: "Hid the Bio column", "showing
-3 of 60 rows", not just the API name. That includes the no-op case: a reset with nothing to reset
-says so. A control that does nothing perceivable is reported as broken, so a sample never ships an
-inert button. Focus sentinels and similar test aids say what they are when activated.
-`SetLastAction` re-announces a repeated message, so pressing the same button twice is not silent.
+3 of 60 rows", not just the API name. One action, one announcement: don't announce the same
+outcome from two handlers. `SetLastAction` re-announces a repeated message, so pressing the same
+button twice is not silent.
 
 **Announce only what changed.** In the status panel only Last action is a live region, raised once
 per new message. A readout that must be announced on its own sets
@@ -201,9 +200,10 @@ When the slider means something else (pixels, milliseconds), say so: put the uni
 or `HelpText`, and set `AutomationProperties.ItemStatus` to the current value with its unit, as
 `ColumnLayoutPage` does.
 
-**Group rail options with `RailSection`.** It reports a UIA Group named after its visible heading,
-with its description as `FullDescription`. Build new option groups from it rather than a bare
-`StackPanel`, which has no peer and leaves the group name unannounced.
+**Group rail options with `RailSection`.** It reports a UIA Group named after its visible heading.
+Build new option groups from it rather than a bare `StackPanel`, which has no peer and leaves the
+group name unannounced. Don't copy the visible description into `FullDescription` or `HelpText`:
+it is already readable, and repeating it makes every entry into the group long.
 
 **Survive text scaling and reflow.** Do not put a fixed `Width` or `Height` on anything that renders
 text. Use `MinWidth`/`MaxWidth` with `TextWrapping`, and let height be `Auto`; layout must hold at
@@ -234,13 +234,25 @@ goes before it is removed.
 **Know what is not ours to fix.** Some findings are stock WinUI behaviour and reproduce without
 TableView — the `TextBox` clear button is `IsTabStop="False"` and `AccessibilityView="Raw"` by
 design, tooltips that Esc will not dismiss, and the "popup window" announcement for `ComboBox` and
-`Flyout`. File those upstream against the framework. Do not add a sample-local workaround that
-diverges from platform behaviour just to clear a bug.
+`Flyout`, and `NavigationViewItem` labels that trim at 200% text. File those upstream against the
+framework. Do not add a sample-local workaround that diverges from platform behaviour just to clear
+a bug.
+
+**Fix failures, not findings.** A test-pass bug is a claim, not a requirement. Before changing
+anything, check that the behaviour fails the cited WCAG/MAS criterion and that the "expected"
+behaviour is right for Windows. Reject the bug instead of changing the sample when it asks for
+something no criterion requires (arrow keys between independent buttons, HelpText that repeats a
+visible label, an announcement for a control that did nothing, a different glyph on hidden
+decoration), when a stock control behaves that way on purpose, or when the fix would add cost for
+everyone (an extra Tab stop on every page, a longer announcement). Keyboard access is met when every
+control is reachable by Tab and scrolled into view; a `Slider` or selector owning the arrow keys
+is correct.
 
 **Do not "fix" the fixtures.** `Pages\KeyboardNavPage.xaml` deliberately contains an unnamed
-template button next to an explicitly-named one, so the two can be compared in a UIA inspector. It
-carries a comment saying so. The same applies to any element whose comment records an intentional
-asymmetry — read the comment before changing the markup.
+template button next to an explicitly-named one, so the two can be compared in a UIA inspector, and
+Before/After table buttons that exist only as focus sentinels. Leave them as they are. The same
+applies to any element whose comment records an intentional asymmetry — read the comment before
+changing the markup.
 
 **Check it before you claim it.** Automated scans (Accessibility Insights / Fast Pass) catch a
 minority of these; most need Narrator, Tab-only navigation, 400% scaling and a portrait window.

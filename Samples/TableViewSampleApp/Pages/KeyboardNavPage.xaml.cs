@@ -263,11 +263,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 
     private void OnResetClick(object sender, RoutedEventArgs e) => ResetFixture(announce: true);
 
-    // The sentinels exist to take focus; activating one only says so.
-    private void OnFocusSentinelClick(object sender, RoutedEventArgs e) =>
-        SetLastAction(string.Format(CultureInfo.CurrentCulture,
-            "{0} is a focus sentinel with no action; Tab and Shift+Tab move between it and the table.", (sender as Button)?.Content));
-
     // <snippet>
     private void OnGroupingToggled(object sender, RoutedEventArgs e)
     {

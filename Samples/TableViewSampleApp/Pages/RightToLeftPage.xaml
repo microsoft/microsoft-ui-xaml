@@ -13,7 +13,7 @@
         Description="Setting FlowDirection to RightToLeft on a TableView mirrors the whole grid: the first column moves to the right edge, resize grippers and sort glyphs swap sides, and template cells such as the chip, the checkbox and the date picker mirror with it. A few people have Arabic or Hebrew names and notes, so you can judge right-to-left text and the caret while editing a name (F2). Sorting, filtering and grouping all stay available, because right-to-left bugs show up in the adornments those features add."
         Snippet="RightToLeft"
         StretchExample="True"
-        TryIt="Turn Right-to-left layout off and on and watch the columns, the chip dots and the checkboxes mirror. Click the First name header to sort, select an Arabic or Hebrew name and press F2 to edit it, then type in Filter and set Shaping to Grouped to see the group headers mirrored too."
+        TryIt="Turn FlowDirection off and on and watch the columns, the chip dots and the checkboxes mirror. Click the First name header to sort, select an Arabic or Hebrew name and press F2 to edit it, then type in Filter and set Shaping to Grouped to see the group headers mirrored too."
         WhatToLookFor="In right-to-left the Photo column sits at the right edge, resize grippers sit on the left of each header, the sort glyph and group chevrons mirror, and the chip dot moves to the right of its label. Arabic and Hebrew names read right-to-left in either direction; Latin names stay left-to-right inside a mirrored grid, and the caret follows the text, not the grid, while editing.">
 
         <controls:SamplePresenter.Example>
@@ -51,7 +51,7 @@
                     <ToggleSwitch
                         x:Name="RtlToggle"
                         AutomationProperties.AutomationId="RightToLeftFlowDirectionToggle"
-                        Header="Right-to-left layout"
+                        Header="FlowDirection"
                         IsOn="True"
                         OnContent="RightToLeft"
                         OffContent="LeftToRight"

@@ -155,18 +155,13 @@
                         AutomationProperties.AutomationId="RailInfoTab"
                         AutomationProperties.Name="Info"/>
                 </SelectorBar>
-                <!-- A tab stop so Up/Down and Page Up/Down scroll the rail when focus would otherwise sit
-                     on a Slider or selector that consumes them (64479175, 64480152). -->
                 <ScrollViewer
                     Grid.Row="1"
                     VerticalScrollMode="Auto"
                     VerticalScrollBarVisibility="Auto"
                     HorizontalScrollMode="Disabled"
                     HorizontalScrollBarVisibility="Disabled"
-                    IsVerticalScrollChainingEnabled="False"
-                    IsTabStop="True"
-                    UseSystemFocusVisuals="True"
-                    AutomationProperties.Name="Sample panel content">
+                    IsVerticalScrollChainingEnabled="False">
                     <!-- Right padding clears the overlay scrollbar when it expands (64478783). -->
                     <Grid Padding="16,8,24,16">
                         <ContentControl

@@ -48,7 +48,7 @@
                                     <ColumnDefinition Width="12"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="•" VerticalAlignment="Top" Foreground="{ThemeResource TextFillColorSecondaryBrush}" AutomationProperties.AccessibilityView="Raw"/>
+                                <TextBlock Grid.Column="0" Text="·" VerticalAlignment="Top" Foreground="{ThemeResource TextFillColorSecondaryBrush}" AutomationProperties.AccessibilityView="Raw"/>
                                 <TextBlock Grid.Column="1" Text="{x:Bind Mode=OneWay}" TextWrapping="Wrap" Style="{ThemeResource BodyTextBlockStyle}"/>
                             </Grid>
                         </DataTemplate>
@@ -83,12 +83,9 @@
                     Text="One shortcut per feature page, in navigation order."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
-                <!-- One tab stop for the whole set; arrow keys move between the shortcuts. -->
                 <VariableSizedWrapGrid
                     x:Name="ShortcutGrid"
                     AutomationProperties.Name="Sample pages"
-                    XYFocusKeyboardNavigation="Enabled"
-                    TabFocusNavigation="Once"
                     Orientation="Horizontal"
                     ItemWidth="240"
                     ItemHeight="44"

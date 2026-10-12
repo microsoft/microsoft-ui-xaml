@@ -57,13 +57,7 @@ public sealed partial class SelectionPage : SamplePageBase
 
         var single = SampleShaping.SelectedTag(SelectionModeSelector, "Single") == "Single";
         PeopleTable.SelectionMode = single ? TableViewSelectionMode.Single : TableViewSelectionMode.None;
-        // Report what the change did, once the control has settled the selection. // snippet:skip
-        EnqueueIfLoaded(() => SetLastAction(string.Format( // snippet:skip
-            CultureInfo.CurrentCulture, // snippet:skip
-            single // snippet:skip
-                ? "Selection mode -> Single: Select first and Select last are available; selected item is {0}" // snippet:skip
-                : "Selection mode -> None: Select first and Select last are unavailable; selected item is {0}", // snippet:skip
-            Describe(PeopleTable.SelectedItem)))); // snippet:skip
+        SetLastAction(single ? "Selection mode -> Single" : "Selection mode -> None");
     }
 
     private bool IsSingleMode => PeopleTable.SelectionMode == TableViewSelectionMode.Single;
