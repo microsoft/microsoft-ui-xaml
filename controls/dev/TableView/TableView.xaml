@@ -32,8 +32,6 @@
         <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceRowForegroundBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGridLineBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <Setter Property="Template">
@@ -119,10 +117,8 @@
              the way back out. That is what keeps the body ONE tab stop in BOTH directions - see the
              comment on SetCellLevelInternal for why the framework's tab walk forces the trade. -->
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />        
-        <Setter Property="MinHeight" Value="40" />
-        <Setter Property="Padding" Value="0" />        
+        <Setter Property="MinHeight" Value="{ThemeResource TableViewRowMinHeight}" />
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGridLineBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />

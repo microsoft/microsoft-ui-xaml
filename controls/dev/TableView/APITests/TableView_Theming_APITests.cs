@@ -75,8 +75,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
 
                 Verify.IsNotNull(row.Template, "TableViewRow must resolve its default ControlTemplate.");
-                Verify.AreEqual(new Thickness(0), row.Padding,
-                    "TableViewRow's default style sets Padding to 0; the row itself adds no inset, cells carry the density padding.");
+                Verify.AreEqual(new Thickness(0, 0, 0, 1), row.BorderThickness,
+                    "TableViewRow's default style sets BorderThickness to 0,0,0,1, the bottom grid line the default GridLinesVisibility keeps.");
 
                 var groupHeader = FindVisualChildrenByType<TableViewGroupHeader>(tableView).FirstOrDefault();
                 if (groupHeader == null)
