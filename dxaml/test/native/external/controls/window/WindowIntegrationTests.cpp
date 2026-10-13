@@ -14,10 +14,13 @@
 #include <TestCleanupWrapper.h>
 #include <ControlHelper.h>
 #include <WindowAutoCloser.h>
+#include <Versioning.h>
 #include <microsoft.ui.xaml.window.h> // for IWindowNative
+#include <wrl.h>
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #pragma comment(lib, "comctl32.lib")
@@ -25,7 +28,100 @@
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
 
-namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace Window {
+namespace
+{
+    HWND GetWindowHandle(xaml::Window^ window)
+    {
+        Microsoft::WRL::ComPtr<IWindowNative> windowNative;
+        VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window)->QueryInterface(IID_PPV_ARGS(&windowNative)));
+        VERIFY_IS_NOT_NULL(windowNative.Get());
+
+        HWND windowHandle = nullptr;
+        VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+        VERIFY_IS_TRUE(windowHandle != nullptr);
+        return windowHandle;
+    }
+
+    HWND FindDesktopChildSiteBridge(HWND parentWindow)
+    {
+        HWND bridgeWindow = nullptr;
+        ::EnumChildWindows(
+            parentWindow,
+            [](HWND childWindow, LPARAM result) -> BOOL
+            {
+                wchar_t className[128]{};
+                if (::GetClassNameW(childWindow, className, ARRAYSIZE(className)) > 0 &&
+                    wcscmp(className, L"Microsoft.UI.Content.DesktopChildSiteBridge") == 0)
+                {
+                    *reinterpret_cast<HWND*>(result) = childWindow;
+                    return FALSE;
+                }
+
+                return TRUE;
+            },
+            reinterpret_cast<LPARAM>(&bridgeWindow));
+
+        return bridgeWindow;
+    }
+
+    int GetDesktopChildSiteBridgeTopOffset(HWND parentWindow)
+    {
+        const HWND bridgeWindow = FindDesktopChildSiteBridge(parentWindow);
+        VERIFY_IS_TRUE(bridgeWindow != nullptr, L"The Window should host XAML in a DesktopChildSiteBridge.");
+
+        POINT clientOrigin{};
+        VERIFY_IS_TRUE(!!::ClientToScreen(parentWindow, &clientOrigin));
+
+        RECT bridgeRect{};
+        VERIFY_IS_TRUE(!!::GetWindowRect(bridgeWindow, &bridgeRect));
+        return bridgeRect.top - clientOrigin.y;
+    }
+
+    // Send WM_ERASEBKGND with an in-memory bitmap and return the colors painted at
+    // (0, 0) and (0, 1): the top row and the background immediately below it.
+    // This captures WinUI's GDI painting, not the final DWM-composited border color,
+    // so screen occlusion and DWM timing do not affect the result.
+    std::pair<COLORREF, COLORREF> GetColorsForEraseBackgroundMessage(HWND windowHandle)
+    {
+        // Use the screen's device context (DC) to create a compatible off-screen drawing context.
+        const HDC screenDC = ::GetDC(nullptr);
+        VERIFY_IS_TRUE(screenDC != nullptr);
+        auto releaseScreenDC = wil::scope_exit([&]() { ::ReleaseDC(nullptr, screenDC); });
+        wil::unique_hdc memoryDC(::CreateCompatibleDC(screenDC));
+        VERIFY_IS_TRUE(memoryDC != nullptr);
+
+        // Create a 1x2, 32-bit bitmap; negative height puts row 0 at the top.
+        BITMAPINFO bitmapInfo{};
+        bitmapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+        bitmapInfo.bmiHeader.biWidth = 1;
+        bitmapInfo.bmiHeader.biHeight = -2;
+        bitmapInfo.bmiHeader.biPlanes = 1;
+        bitmapInfo.bmiHeader.biBitCount = 32;
+        bitmapInfo.bmiHeader.biCompression = BI_RGB;
+        void* pixels = nullptr;
+        wil::unique_hbitmap bitmap(::CreateDIBSection(screenDC, &bitmapInfo, DIB_RGB_COLORS, &pixels, nullptr, 0));
+        VERIFY_IS_TRUE(bitmap != nullptr);
+        VERIFY_IS_TRUE(pixels != nullptr);
+
+        // Select our bitmap as the drawing target, then restore the old one before cleanup.
+        const HGDIOBJ previousBitmap = ::SelectObject(memoryDC.get(), bitmap.get());
+        VERIFY_IS_TRUE(previousBitmap != nullptr && previousBitmap != HGDI_ERROR);
+        auto restoreBitmap = wil::scope_exit([&]() { ::SelectObject(memoryDC.get(), previousBitmap); });
+
+        // Start with magenta so any pixel the erase handler leaves untouched fails the test.
+        VERIFY_IS_TRUE(!!::SetPixelV(memoryDC.get(), 0, 0, RGB(255, 0, 255)));
+        VERIFY_IS_TRUE(!!::SetPixelV(memoryDC.get(), 0, 1, RGB(255, 0, 255)));
+
+        // Ask the window to erase into our bitmap instead of its on-screen client area.
+        VERIFY_ARE_EQUAL(static_cast<LRESULT>(1),
+            ::SendMessageW(windowHandle, WM_ERASEBKGND, reinterpret_cast<WPARAM>(memoryDC.get()), 0));
+
+        const COLORREF top = ::GetPixel(memoryDC.get(), 0, 0);
+        const COLORREF below = ::GetPixel(memoryDC.get(), 0, 1);
+        VERIFY_ARE_NOT_EQUAL(CLR_INVALID, top);
+        VERIFY_ARE_NOT_EQUAL(CLR_INVALID, below);
+        return { top, below };
+    }
 
     void LogWindowGeometry(const wchar_t* label, HWND windowHandle, xaml::Window^ window)
     {
@@ -67,6 +163,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             outerWidthInDips - windowWidth,
             outerHeightInDips - windowHeight);
     }
+}
+
+namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace Window {
 
     bool WindowIntegrationTests::ClassSetup()
     {
@@ -279,6 +378,141 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             auto systemBackdropBrush = compositionSupportsSystemBackdrop->SystemBackdrop;
             VERIFY_IS_NOT_NULL(systemBackdropBrush);
         });
+    }
+
+    // - Check top offsets and erase colors across title-bar, presenter, and border changes.
+    // - Windows 10: paint eligible top rows black for DWM.
+    // - Windows 11: use normal background erasing; DWM handles the border.
+    // - Deliberately test GDI output in memory, not DWM pixels in a screenshot.
+    //   Screenshots depend on occlusion and composition timing.
+    void WindowIntegrationTests::WindowTopBorderPainting()
+    {
+        TestCleanupWrapper cleanup;
+        const COLORREF borderColor = RGB(0, 0, 0);
+
+        for (const bool ecitbBeforeActivation : { false, true })
+        {
+            for (const bool useAppWindow : { false, true })
+            {
+                LOG_OUTPUT(L"ECITB entry point: %s, before activation: %d",
+                    useAppWindow ? L"AppWindow" : L"Window", ecitbBeforeActivation);
+                WindowAutoCloser window;
+                HWND windowHandle = nullptr;
+                const COLORREF backgroundColor = RGB(255, 255, 255);
+                // Windows 11 starts at build 22000; only Windows 10 needs the workaround.
+                const bool needsDwmWorkaround = !IsOSBuildAtLeast(22000);
+                auto setECITBOnUIThread = [&](bool value)
+                {
+                    if (useAppWindow)
+                    {
+                        window->AppWindow->TitleBar->ExtendsContentIntoTitleBar = value;
+                    }
+                    else
+                    {
+                        window->ExtendsContentIntoTitleBar = value;
+                    }
+                };
+                RunOnUIThread([&]()
+                {
+                    window.Attach(ref new xaml::Window());
+                    auto content = ref new xaml_controls::Grid();
+                    content->RequestedTheme = xaml::ElementTheme::Light;
+                    window->Content = content;
+                    if (ecitbBeforeActivation)
+                    {
+                        setECITBOnUIThread(true);
+                    }
+                    window->Activate();
+                    windowHandle = GetWindowHandle(window.get());
+
+                    LOG_OUTPUT(L"DWM top-border workaround required: %d", needsDwmWorkaround);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                auto verifyPainting = [&](int expectedOffset, bool hasNativeBorder)
+                {
+                    RunOnUIThread([&]()
+                    {
+                        const int actualOffset = GetDesktopChildSiteBridgeTopOffset(windowHandle);
+                        LOG_OUTPUT(L"Top-border state: Window ECITB=%d AppWindow ECITB=%d presenter=%d nativeBorder=%d expectedOffset=%d actualOffset=%d",
+                            window->ExtendsContentIntoTitleBar, window->AppWindow->TitleBar->ExtendsContentIntoTitleBar,
+                            static_cast<int>(window->AppWindow->Presenter->Kind), hasNativeBorder, expectedOffset, actualOffset);
+                        VERIFY_ARE_EQUAL(expectedOffset, actualOffset);
+                        const auto colors = GetColorsForEraseBackgroundMessage(windowHandle);
+                        const bool paintBorder = needsDwmWorkaround && hasNativeBorder && expectedOffset != 0;
+                        VERIFY_ARE_EQUAL(paintBorder ? borderColor : backgroundColor, colors.first, L"Top row");
+                        VERIFY_ARE_EQUAL(backgroundColor, colors.second, L"Background below the top row");
+                    });
+                };
+                auto setECITB = [&](bool value)
+                {
+                    RunOnUIThread([&]()
+                    {
+                        setECITBOnUIThread(value);
+                    });
+                    TestServices::WindowHelper->WaitForIdle();
+                };
+
+                const int extendedOffset = useAppWindow ? 0 : 1;
+                verifyPainting(ecitbBeforeActivation ? extendedOffset : 0, true);
+                setECITB(true);
+                verifyPainting(extendedOffset, true);
+                // Exercise the no-change path as well as the initial margin update.
+                setECITB(true);
+                verifyPainting(extendedOffset, true);
+                if (!useAppWindow)
+                {
+                    RunOnUIThread([&]() { ::ShowWindow(windowHandle, SW_MAXIMIZE); });
+                    TestServices::WindowHelper->WaitForIdle();
+                    verifyPainting(0, true);
+                    RunOnUIThread([&]() { ::ShowWindow(windowHandle, SW_RESTORE); });
+                    TestServices::WindowHelper->WaitForIdle();
+                    verifyPainting(1, true);
+                }
+
+                RunOnUIThread([&]()
+                {
+                    window->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                verifyPainting(extendedOffset, false);
+                setECITB(false);
+                // Frameless transitions can leave the bridge at its last position
+                // until a subsequent frame/size change, even with ECITB disabled.
+                verifyPainting(extendedOffset, false);
+                setECITB(true);
+                verifyPainting(extendedOffset, false);
+                RunOnUIThread([&]()
+                {
+                    window->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::Overlapped);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                verifyPainting(extendedOffset, true);
+
+                for (const bool hasBorder : { false, true })
+                {
+                    RunOnUIThread([&]()
+                    {
+                        auto presenter = safe_cast<Microsoft::UI::Windowing::OverlappedPresenter^>(window->AppWindow->Presenter);
+                        presenter->SetBorderAndTitleBar(hasBorder, false);
+                    });
+                    TestServices::WindowHelper->WaitForIdle();
+                    verifyPainting(extendedOffset, hasBorder);
+                    setECITB(false);
+                    verifyPainting(hasBorder ? 0 : extendedOffset, hasBorder);
+                    setECITB(true);
+                    verifyPainting(extendedOffset, hasBorder);
+                    RunOnUIThread([&]()
+                    {
+                        auto presenter = safe_cast<Microsoft::UI::Windowing::OverlappedPresenter^>(window->AppWindow->Presenter);
+                        presenter->SetBorderAndTitleBar(true, true);
+                    });
+                    TestServices::WindowHelper->WaitForIdle();
+                    verifyPainting(extendedOffset, true);
+                }
+                setECITB(false);
+                verifyPainting(0, true);
+            }
+        }
     }
 
 #ifdef MUX_PRERELEASE
