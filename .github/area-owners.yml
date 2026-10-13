@@ -17,7 +17,7 @@ areas:
   - id: P1
     name: XAML Core - Object Model, Parser & Metadata
     tier: Tier 1 - Platform / Framework core
-    reviewers: [godlytalias, Hemantxk, akanpatel2206, JesseCol, codendone]
+    reviewers: [godlytalias, Hemantxk, akanpatel2206, JesseCol, codendone, SatwikKrSharma]
     paths:
       - dxaml/xcp/components/**
       - dxaml/xcp/core/core/**
@@ -75,7 +75,7 @@ areas:
   - id: P4
     name: Codegen & Metadata Tooling
     tier: Tier 1 - Platform / Framework core
-    reviewers: [godlytalias]
+    reviewers: [godlytalias, SatwikKrSharma]
     paths:
       - dxaml/xcp/tools/**
       - dxaml/xcp/dxaml/tools/**
