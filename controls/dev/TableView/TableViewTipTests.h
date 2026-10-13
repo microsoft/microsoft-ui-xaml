@@ -12,8 +12,8 @@ namespace TableViewTelemetry
     enum class Operation : uint32_t
     {
         InitialLayout = 0, ReplaceSource = 1, Sort = 2, HeaderRefresh = 3, Layout = 4,
-        Filter = 5, GroupConfiguration = 6, GroupExpansion = 7, Selection = 8,
-        BeginEdit = 9, CommitEdit = 10, CancelEdit = 11, Scroll = 12
+        Filter = 5, GroupConfiguration = 6, Selection = 8,
+        BeginEdit = 9, CommitEdit = 10, CancelEdit = 11
     };
     enum class Origin : uint32_t { Template = 0, Loaded = 1 };
     enum class Content : uint32_t { Empty = 0, Rows = 1, GroupHeaders = 2 };
@@ -23,7 +23,7 @@ namespace TableViewTelemetry
         Unloaded = 104, Retemplated = 105, Stale = 106,
         DeferredOrUnproven = 107, ApplicationFault = 108, ObservationLimit = 109, UnattributedFault = 110
     };
-    enum class AppFaultKind : uint32_t { None = 0, Callback = 1, Binding = 2, Validation = 3, Write = 4, Factory = 5, Data = 6 };
+    enum class AppFaultKind : uint32_t { None = 0, Callback = 1, Validation = 3, Write = 4, Factory = 5, Data = 6 };
 
     constexpr bool IsMeasuredOperation(Operation operation) noexcept
     {
@@ -46,8 +46,8 @@ namespace TableViewTelemetry
     enum class TableViewTipReason : unsigned short
     {
         scenario_completed = 1, scenario_not_completed = 2,
-        template_failure = 10, source_failure = 11, shaping_failure = 12, realization_failure = 13,
-        selection_failure = 14, editing_failure = 15, scroll_failure = 16, internal_failure = 17,
+        source_failure = 11, shaping_failure = 12,
+        selection_failure = 14, editing_failure = 15, internal_failure = 17,
         cancelled = 100, vetoed = 101, validation_rejected = 102, superseded = 103,
         unloaded = 104, retemplated = 105, stale = 106,
         deferred_or_unproven = 107, application_fault = 108, observation_limit = 109, unattributed_fault = 110
@@ -82,9 +82,8 @@ namespace TableViewTelemetry
         bool diagnosticHResultAvailable{};
         AppFaultKind appFaultKind{};
 
-        TIP_require_all_flags_clear(reason::template_failure, reason::source_failure, reason::shaping_failure,
-            reason::realization_failure, reason::selection_failure, reason::editing_failure,
-            reason::scroll_failure, reason::internal_failure);
+        TIP_require_all_flags_clear(reason::source_failure, reason::shaping_failure,
+            reason::selection_failure, reason::editing_failure, reason::internal_failure);
 
         void evaluate()
         {
@@ -122,9 +121,8 @@ namespace TableViewTelemetry
         bool diagnosticHResultAvailable{};
         AppFaultKind appFaultKind{};
 
-        TIP_require_all_flags_clear(reason::template_failure, reason::source_failure, reason::shaping_failure,
-            reason::realization_failure, reason::selection_failure, reason::editing_failure,
-            reason::scroll_failure, reason::internal_failure);
+        TIP_require_all_flags_clear(reason::source_failure, reason::shaping_failure,
+            reason::selection_failure, reason::editing_failure, reason::internal_failure);
 
         void evaluate()
         {

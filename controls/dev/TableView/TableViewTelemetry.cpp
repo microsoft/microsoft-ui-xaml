@@ -77,7 +77,6 @@ namespace TableViewTelemetry
                 auto const operation = static_cast<uint32_t>(state.operation);
                 Increment(session, session.counts[operation], operation);
             }
-            else if (reason == IgnoreReason::ApplicationFault) { Increment(session, session.appFaultCount, 13); }
             else if (reason == IgnoreReason::DeferredOrUnproven) { Increment(session, session.deferredCount, 14); }
             else if (reason == IgnoreReason::UnattributedFault) { Increment(session, session.unattributedFaultCount, 15); }
         }
@@ -89,13 +88,11 @@ namespace TableViewTelemetry
             case Operation::ReplaceSource: return Stage::Source;
             case Operation::Sort: return Stage::Sort;
             case Operation::Filter: return Stage::Filter;
-            case Operation::GroupConfiguration:
-            case Operation::GroupExpansion: return Stage::Grouping;
+            case Operation::GroupConfiguration: return Stage::Grouping;
             case Operation::Selection: return Stage::Selection;
             case Operation::BeginEdit:
             case Operation::CommitEdit:
             case Operation::CancelEdit: return Stage::Editing;
-            case Operation::Scroll: return Stage::Scroll;
             case Operation::InitialLayout:
             case Operation::Layout: return Stage::Layout;
             case Operation::HeaderRefresh: return Stage::HeaderRefresh;
@@ -119,23 +116,16 @@ namespace TableViewTelemetry
                 }
                 switch (stage)
                 {
-                case Stage::Template:
-                case Stage::HeaderRefresh:
-                    test.set_flag(TIP_reason(TableViewTipReason::template_failure)); break;
                 case Stage::Source:
                     test.set_flag(TIP_reason(TableViewTipReason::source_failure)); break;
                 case Stage::Sort:
                 case Stage::Filter:
                 case Stage::Grouping:
                     test.set_flag(TIP_reason(TableViewTipReason::shaping_failure)); break;
-                case Stage::Layout:
-                    test.set_flag(TIP_reason(TableViewTipReason::realization_failure)); break;
                 case Stage::Selection:
                     test.set_flag(TIP_reason(TableViewTipReason::selection_failure)); break;
                 case Stage::Editing:
                     test.set_flag(TIP_reason(TableViewTipReason::editing_failure)); break;
-                case Stage::Scroll:
-                    test.set_flag(TIP_reason(TableViewTipReason::scroll_failure)); break;
                 default:
                     test.set_flag(TIP_reason(TableViewTipReason::internal_failure)); break;
                 }
@@ -210,7 +200,7 @@ namespace TableViewTelemetry
         auto const& session = state.session;
         TraceLoggingWriteActivity(g_hTelemetryProvider, "TableView_SessionSummary",
             g_TelemetryProviderActivityId != GUID{} ? &g_TelemetryProviderActivityId : nullptr, nullptr, TABLEVIEW_INFO_FIELDS,
-            TraceLoggingUInt32(3, "SessionSummaryVersion"),
+            TraceLoggingUInt32(4, "SessionSummaryVersion"),
             TraceLoggingUInt32(static_cast<uint32_t>(state.initialOutcome), "InitialOutcome"),
             TraceLoggingUInt32(session.counts[1], "ReplaceSourceCount"),
             TraceLoggingUInt32(session.counts[2], "SortCount"),
@@ -220,7 +210,6 @@ namespace TableViewTelemetry
             TraceLoggingUInt32(session.counts[9], "BeginEditCount"),
             TraceLoggingUInt32(session.counts[10], "CommitEditCount"),
             TraceLoggingUInt32(session.counts[11], "CancelEditCount"),
-            TraceLoggingUInt32(session.appFaultCount, "AppFaultCount"),
             TraceLoggingUInt32(session.deferredCount, "DeferredCount"),
             TraceLoggingUInt32(session.unattributedFaultCount, "UnattributedFaultCount"),
             TraceLoggingUInt32(session.overflowMask, "CounterOverflowMask"),
@@ -275,7 +264,7 @@ namespace TableViewTelemetry
 
     uint64_t BeginOperation(OperationState& state, Operation operation) noexcept
     {
-        if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(Operation::Scroll))
+        if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(Operation::CancelEdit))
         {
             OutputDebugStringW(L"TableView telemetry: invalid operation.\n");
             return 0;
@@ -357,7 +346,7 @@ namespace TableViewTelemetry
     void ReportError(OperationState& state, Operation operation, Stage stage, bool recoverable,
         Attribution attribution, std::optional<HRESULT> error, AppFaultKind kind) noexcept
     {
-        if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(Operation::Scroll))
+        if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(Operation::CancelEdit))
         {
             OutputDebugStringW(L"TableView telemetry: invalid error operation.\n");
             return;

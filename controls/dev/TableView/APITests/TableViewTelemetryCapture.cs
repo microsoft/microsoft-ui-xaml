@@ -124,6 +124,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             internal bool IsTip(uint measure) =>
                 Provider == TipProvider && fields.ContainsKey("testCaseId") && Number("testCaseId") == measure;
 
+            internal bool Has(string field) => fields.ContainsKey(field);
+
             internal uint Number(string field)
             {
                 switch (fields[field])

@@ -281,13 +281,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => Verify.IsTrue(GetProjectedItems(table).SequenceEqual(items)));
             var events = UnloadAndRead(capture);
             VerifyInitialization(events);
-            VerifyTip(events, operation: 2, kind: 4, reason: 108, count: 1);
-            VerifyTip(events, operation: 2, kind: 1, reason: 1, count: 1);
-            Verify.IsTrue(events.Any(e => e.Provider == TableViewTelemetryCapture.DebugProvider &&
-                e.Number("Attribution") == 2 && e.Number("AppFaultKind") == 2));
-            var summary = Summary(events);
-            Verify.AreEqual(1u, summary.Number("SortCount"));
-            Verify.AreEqual(1u, summary.Number("AppFaultCount"));
+            // The resolver already recovers from a bad path (null key), so the sort completes normally.
+            VerifyTip(events, operation: 2, kind: 1, reason: 1, count: 2);
+            Verify.AreEqual(2, events.Count(e => e.IsTip(64477774) && e.Number("metricsBucket") == 2),
+                "A recovered binding fault must not add an ignored or failed result.");
+            Verify.IsFalse(events.Any(e => e.Provider == TableViewTelemetryCapture.DebugProvider),
+                "A recovered binding fault is application data; nothing is recorded for it.");
+            Verify.AreEqual(2u, Summary(events).Number("SortCount"));
             VerifyNoProductFailures(events);
         }
 
@@ -337,7 +337,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var summary = events.Single(e => e.Name == "TableView_SessionSummary");
             Verify.AreEqual(5u, summary.Number("SchemaVersion"));
-            Verify.AreEqual(3u, summary.Number("SessionSummaryVersion"));
+            Verify.AreEqual(4u, summary.Number("SessionSummaryVersion"));
+            Verify.IsFalse(summary.Has("AppFaultCount"), "Application faults are not counted in the summary.");
             Verify.IsTrue(summary.Flag("UTCReplace_AppSessionGuid"),
                 "Use the existing provider collection-context directive, not a control identity lookup.");
             return summary;

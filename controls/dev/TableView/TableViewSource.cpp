@@ -313,11 +313,7 @@ winrt::TableViewSource TableViewSource::Sort(winrt::hstring const& sortMemberPat
     // One resolver per axis, captured by the selector and reused across every comparison: the
     // binding is built once per path, so steady-state cost is a DataContext write plus a property
     // read rather than a fresh binding per item.
-    auto resolver = std::make_shared<SortMemberPathResolver>(sortMemberPath,
-        [weakThis = get_weak()](HRESULT error) noexcept
-        {
-            if (auto self = weakThis.get()) { self->ObserveShapingFailure(error, TableViewTelemetry::AppFaultKind::Binding); }
-        });
+    auto resolver = std::make_shared<SortMemberPathResolver>(sortMemberPath);
     winrt::TableViewKeySelector key{
         [resolver](winrt::IInspectable const& item) -> winrt::IInspectable
         {

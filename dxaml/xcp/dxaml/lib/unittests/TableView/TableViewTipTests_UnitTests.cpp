@@ -54,10 +54,9 @@ public:
     {
         if (!TableViewTipTestHelpers::RequireNativeAbi()) { return; }
         const auto failures = {
-            TableViewTipReason::template_failure, TableViewTipReason::source_failure,
-            TableViewTipReason::shaping_failure, TableViewTipReason::realization_failure,
+            TableViewTipReason::source_failure, TableViewTipReason::shaping_failure,
             TableViewTipReason::selection_failure, TableViewTipReason::editing_failure,
-            TableViewTipReason::scroll_failure, TableViewTipReason::internal_failure };
+            TableViewTipReason::internal_failure };
         for (auto reason : failures)
         {
             auto test = tip::start<TableViewOperationTest>();
@@ -153,7 +152,7 @@ public:
             custom.operation = nonzero ? Operation::CommitEdit : Operation::InitialLayout;
             custom.diagnosticHResult = nonzero ? E_INVALIDARG : S_OK;
             custom.diagnosticHResultAvailable = nonzero;
-            custom.appFaultKind = nonzero ? AppFaultKind::Binding : AppFaultKind::None;
+            custom.appFaultKind = nonzero ? AppFaultKind::Callback : AppFaultKind::None;
             auto const expectedOperation = custom.operation;
             tson::write_buffer customBuffer;
             tson::output_archive customOutput(customBuffer, 3);
@@ -167,7 +166,7 @@ public:
             VERIFY_IS_TRUE(custom.operation == expectedOperation);
             VERIFY_ARE_EQUAL(nonzero ? E_INVALIDARG : S_OK, custom.diagnosticHResult);
             VERIFY_ARE_EQUAL(nonzero, custom.diagnosticHResultAvailable);
-            VERIFY_IS_TRUE(custom.appFaultKind == (nonzero ? AppFaultKind::Binding : AppFaultKind::None));
+            VERIFY_IS_TRUE(custom.appFaultKind == (nonzero ? AppFaultKind::Callback : AppFaultKind::None));
             VERIFY_IS_FALSE(custom.failureHResultAvailable);
         }
     }
@@ -193,7 +192,8 @@ public:
         VERIFY_IS_FALSE(IsMeasuredOperation(Operation::InitialLayout));
         VERIFY_IS_FALSE(IsMeasuredOperation(Operation::HeaderRefresh));
         VERIFY_IS_FALSE(IsMeasuredOperation(Operation::Layout));
-        VERIFY_IS_FALSE(IsMeasuredOperation(Operation::GroupExpansion));
-        VERIFY_IS_FALSE(IsMeasuredOperation(Operation::Scroll));
+        // Former group expansion (7) and scroll (12) values stay unmeasured.
+        VERIFY_IS_FALSE(IsMeasuredOperation(static_cast<Operation>(7)));
+        VERIFY_IS_FALSE(IsMeasuredOperation(static_cast<Operation>(12)));
     }
 };

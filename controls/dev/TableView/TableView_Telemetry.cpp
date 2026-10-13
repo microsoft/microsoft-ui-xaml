@@ -232,8 +232,7 @@ void TableView::AttachSourceTelemetry(winrt::TableViewSource const& source)
         {
             if (auto self = weakThis.get(); self && self->m_activeSource.get() == weakSource.get())
             {
-                TableViewTelemetry::ReportError(self->m_telemetry, operation, TableViewTelemetry::Stage::Source,
-                    kind == TableViewTelemetry::AppFaultKind::Binding,
+                TableViewTelemetry::ReportError(self->m_telemetry, operation, TableViewTelemetry::Stage::Source, false,
                     kind == TableViewTelemetry::AppFaultKind::None ? TableViewTelemetry::Attribution::Unknown :
                         TableViewTelemetry::Attribution::Application, error, kind);
             }

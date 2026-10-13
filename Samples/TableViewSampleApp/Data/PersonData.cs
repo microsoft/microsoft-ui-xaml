@@ -19,6 +19,8 @@ namespace TableViewSampleApp.Data;
 public static class PersonData
 {
     private const int Seed = 8163;
+    private const int FirstEmployeeId = 1001;
+    private const int ReportsPerManager = 4;
 
     private static readonly string[] s_firstNames =
     {
@@ -99,6 +101,18 @@ public static class PersonData
 
     private static List<Person>? s_cache;
 
+    /// <summary>EmployeeId of the head of <paramref name="department"/> (a root of the org chart), or null.</summary>
+    public static int? DepartmentHeadId(string department) =>
+        All.FirstOrDefault(p => p.ManagerId is null && string.Equals(p.Department, department, StringComparison.Ordinal))?.EmployeeId;
+
+    /// <summary>
+    /// For a row added to <paramref name="people"/>: reports to the head of its department there (a
+    /// row with no manager), or becomes a head itself, so the manager hierarchy never dangles.
+    /// </summary>
+    public static void ReportToDepartmentHead(Person person, IEnumerable<Person> people) =>
+        person.ManagerId = people.FirstOrDefault(p => p.ManagerId is null && !ReferenceEquals(p, person)
+            && string.Equals(p.Department, person.Department, StringComparison.Ordinal))?.EmployeeId;
+
     /// <summary>
     /// Returns the cached canonical dataset (1000 deterministic entries).
     /// Pages then take a slice of any size from this list.
@@ -133,6 +147,7 @@ public static class PersonData
                 IsActive = p.IsActive,
                 AvatarPath = p.AvatarPath,
                 EmployeeId = p.EmployeeId,
+                ManagerId = p.ManagerId,
                 Office = p.Office,
             });
         }
@@ -167,6 +182,8 @@ public static class PersonData
                 IsActive = p.IsActive,
                 AvatarPath = (i % 4 == 0) ? $"ms-appx:///Assets/avatar{(i / 4) % 3 + 1}.png" : null,
                 EmployeeId = firstId + i,
+                // Each block of 1,000 repeats the canonical org chart under its own ids.
+                ManagerId = p.ManagerId is { } managerId ? firstId + (i - (i % seed.Count)) + (managerId - FirstEmployeeId) : null,
                 Office = p.Office,
             });
         }
@@ -178,6 +195,7 @@ public static class PersonData
     {
         var random = new Random(Seed);
         var list = new List<Person>(count);
+        var departmentMembers = new Dictionary<string, List<int>>(StringComparer.Ordinal);
         var today = DateTimeOffset.Now.Date;
         for (int i = 0; i < count; i++)
         {
@@ -208,6 +226,17 @@ public static class PersonData
             // ten bios in turn because 3 and 10 are coprime.
             _ = random.Next(s_bios.Length);
 
+            // Org chart: the first person of a department heads it (a root); later members report to an
+            // earlier member of the same department, four each. A manager always has a lower index, so
+            // every Take(n) prefix is a complete tree.
+            if (!departmentMembers.TryGetValue(dept.Department, out var members))
+            {
+                departmentMembers[dept.Department] = members = new List<int>();
+            }
+
+            int? managerId = members.Count == 0 ? null : FirstEmployeeId + members[(members.Count - 1) / ReportsPerManager];
+            members.Add(i);
+
             list.Add(new Person
             {
                 FirstName = first,
@@ -222,7 +251,8 @@ public static class PersonData
                 IsActive = random.NextDouble() > 0.07,
 
                 // Index-derived, no extra Random draws, so existing values are unchanged.
-                EmployeeId = 1001 + i,
+                EmployeeId = FirstEmployeeId + i,
+                ManagerId = managerId,
                 Office = Offices[(i * 7 + 3) % Offices.Count],
                 // Every 4th person has a photo; the rest show initials, so both states appear.
                 AvatarPath = (i % 4 == 0) ? $"ms-appx:///Assets/avatar{(i / 4) % 3 + 1}.png" : null,

@@ -61,6 +61,17 @@ struct ITableViewRowMetadataProvider
 
     // Expands a tree node and all descendants. No-op for group keys or non-hierarchical sources.
     virtual void ExpandSubtree(winrt::hstring const&) {}
+
+    // 1-based position among data rows between adjacent header bands, and that count. Returns false
+    // if `rows` isn't the provider's projection, or for flat sources, headers, or out of range.
+    virtual bool TryGetGroupMembership(
+        winrt::Windows::Foundation::IInspectable const& /*rows*/,
+        int32_t /*index*/,
+        int32_t& /*positionInGroup*/,
+        int32_t& /*groupSize*/)
+    {
+        return false;
+    }
 };
 
 using TableViewRowMetadataProvider = std::shared_ptr<ITableViewRowMetadataProvider>;

@@ -434,14 +434,7 @@ winrt::TableViewKeySelector TableView::GetTableViewSourceSortKeySelector(
     if (!m_tableViewSourceSort.KeySelector || sortMemberPathChanged)
     {
         auto customSortState = m_tableViewSourceSort.CustomSortState;
-        auto sortMemberPathResolver = std::make_shared<SortMemberPathResolver>(sortMemberPath,
-            [weakSource = winrt::make_weak(ShapingSourceInternal())](HRESULT error) noexcept
-            {
-                if (auto source = weakSource.get())
-                {
-                    winrt::get_self<::TableViewSource>(source)->ObserveShapingFailure(error, TableViewTelemetry::AppFaultKind::Binding);
-                }
-            });
+        auto sortMemberPathResolver = std::make_shared<SortMemberPathResolver>(sortMemberPath);
         m_tableViewSourceSort.KeySelector = winrt::TableViewKeySelector{
             [sortMemberPathResolver, customSortState](const winrt::IInspectable& item) -> winrt::IInspectable
             {

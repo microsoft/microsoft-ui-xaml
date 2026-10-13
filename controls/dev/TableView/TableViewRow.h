@@ -10,6 +10,7 @@
 #include "TableViewRow.properties.h"
 
 #include <optional>
+#include <vector>
 
 class TableViewRow :
     public ReferenceTracker<TableViewRow, winrt::implementation::TableViewRowT>,
@@ -35,7 +36,7 @@ public:
     void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
-    // Right/Left expand and collapse a tree row, mirrored under RTL.
+    // Keeps the body one tab stop, and expands a tree row's subtree; see the definition.
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
     // Updates the weak owner ref, column subscription, and realized cells.
@@ -144,7 +145,13 @@ private:
     void ApplyFocusLevelInternal();
     void SetCellsTabStopInternal(bool isTabStop);
 
-    // Redirects body Tab entry from the first row to the remembered row; entry is always row-level.
+    bool IsGridLevelFocusInternal();
+
+    // Temporarily removes cell content from the tab order for one Tab walk; see the definition.
+    void SuppressCellContentTabStopsForTabWalkInternal();
+    void RestoreCellContentTabStopsInternal();
+
+    // Resolves body Tab entry to the remembered row, or its remembered-column cell at cell level.
     void OnRowGettingFocus(
         const winrt::UIElement& sender,
         const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
@@ -220,6 +227,7 @@ private:
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     winrt::UIElement::GotFocus_revoker m_gotFocusRevoker{};
+    winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
     winrt::IObservableVector<winrt::TableViewColumn>::VectorChanged_revoker m_columnsVectorChangedRevoker{};
     weak_ref<winrt::IObservableVector<winrt::TableViewColumn>> m_observedColumns{};
@@ -236,6 +244,15 @@ private:
 
     // False = row-level focus; true = cell-level focus. Recycled rows return at row level.
     bool m_isCellLevel{ false };
+
+    // originalLocalValue: raw local value (UnsetValue, boxed bool, or BindingExpression).
+    struct SuppressedContentTabStop
+    {
+        winrt::weak_ref<winrt::UIElement> element{ nullptr };
+        winrt::IInspectable originalLocalValue{ nullptr };
+    };
+
+    std::vector<SuppressedContentTabStop> m_suppressedContentTabStops{};
 
     // Prevent DataContextChanged re-entry while RebuildCells updates child DCs.
     bool m_isRebuildingCells{ false };

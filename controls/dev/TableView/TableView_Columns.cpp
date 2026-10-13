@@ -213,6 +213,9 @@ void TableView::OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedE
             winrt::get_self<TableViewRow>(row)->RefreshColumnsSubscriptionInternal();
         });
     }
+
+    // Replacing the whole vector raises no VectorChanged, so announce the shape change here.
+    QueueRaiseColumnsStructureChanged();
 }
 
 void TableView::OnColumnsVectorChanged(
@@ -324,6 +327,9 @@ void TableView::OnColumnsVectorChanged(
 
     QueueRebuildHeaders();
 
+    // QueueRebuildHeaders updates visuals only; UIA clients must be told the grid shape changed.
+    QueueRaiseColumnsStructureChanged();
+
     // Realized rows observe Columns directly; no TableView broadcast is needed.
     if (change == winrt::CollectionChange::Reset)
     {
@@ -373,6 +379,10 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
     // `changed` gate stays false and would never re-pin. Refresh it directly.
     InvalidateMeasure();
     RefreshFrozenColumns();
+
+    // UIA addresses only visible columns (IsVisibleColumn), so a visibility flip shifts column
+    // indices just like an add/remove.
+    QueueRaiseColumnsStructureChanged();
 }
 
 void TableView::OnColumnWidthChanged(const winrt::TableViewColumn& column)

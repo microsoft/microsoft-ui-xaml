@@ -15,7 +15,7 @@ namespace TableViewTelemetry
     enum class Stage : uint32_t
     {
         None = 0, Template = 1, Layout = 2, Source = 3, Sort = 4, HeaderRefresh = 5,
-        Selection = 6, Editing = 7, Filter = 8, Grouping = 9, Scroll = 10
+        Selection = 6, Editing = 7, Filter = 8, Grouping = 9
     };
     enum class InitialState { NotStarted, Started, Finished };
     enum class InitialOutcome : uint32_t { NotObserved = 0, TemplateInitialized = 1, Failure = 2, Ignored = 3 };
@@ -41,9 +41,8 @@ namespace TableViewTelemetry
 
     struct Session
     {
-        std::array<uint32_t, 13> counts{};
+        std::array<uint32_t, 12> counts{};
         uint64_t generation{};
-        uint32_t appFaultCount{};
         uint32_t deferredCount{};
         uint32_t unattributedFaultCount{};
         uint32_t overflowMask{};

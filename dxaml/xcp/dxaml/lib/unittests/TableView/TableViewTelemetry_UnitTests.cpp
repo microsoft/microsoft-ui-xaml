@@ -68,11 +68,12 @@ public:
     {
         State state;
         BeginSession(state);
-        VERIFY_ARE_EQUAL(uint64_t{ 0 }, BeginOperation(state, Operation::Scroll));
-        VERIFY_ARE_EQUAL(uint64_t{ 0 }, BeginOperation(state, Operation::GroupExpansion));
+        // Former group expansion (7) and scroll (12) values are rejected, as is incidental layout.
+        VERIFY_ARE_EQUAL(uint64_t{ 0 }, BeginOperation(state, static_cast<Operation>(12)));
+        VERIFY_ARE_EQUAL(uint64_t{ 0 }, BeginOperation(state, static_cast<Operation>(7)));
+        VERIFY_ARE_EQUAL(uint64_t{ 0 }, BeginOperation(state, Operation::Layout));
         VERIFY_IS_FALSE(IsOperationStarted(state));
-        VERIFY_ARE_EQUAL(0u, state.session.counts[7]);
-        VERIFY_ARE_EQUAL(0u, state.session.counts[12]);
+        for (auto const count : state.session.counts) { VERIFY_ARE_EQUAL(0u, count); }
         AbandonSession(state);
     }
 
@@ -145,14 +146,14 @@ public:
         State state;
         BeginSession(state);
         state.session.counts[8] = (std::numeric_limits<uint32_t>::max)();
-        state.session.appFaultCount = (std::numeric_limits<uint32_t>::max)();
+        state.session.deferredCount = (std::numeric_limits<uint32_t>::max)();
         auto const success = BeginOperation(state, Operation::Selection);
         CompleteOperation(state, success, Result::Success);
-        auto const app = BeginOperation(state, Operation::CommitEdit);
-        IgnoreOperation(state, app, IgnoreReason::ApplicationFault, E_INVALIDARG, AppFaultKind::Write);
+        auto const deferred = BeginOperation(state, Operation::Sort);
+        IgnoreOperation(state, deferred, IgnoreReason::DeferredOrUnproven);
         VERIFY_ARE_EQUAL((std::numeric_limits<uint32_t>::max)(), state.session.counts[8]);
-        VERIFY_ARE_EQUAL((std::numeric_limits<uint32_t>::max)(), state.session.appFaultCount);
-        VERIFY_ARE_EQUAL((1u << 8) | (1u << 13), state.session.overflowMask);
+        VERIFY_ARE_EQUAL((std::numeric_limits<uint32_t>::max)(), state.session.deferredCount);
+        VERIFY_ARE_EQUAL((1u << 8) | (1u << 14), state.session.overflowMask);
         AbandonSession(state);
     }
 
@@ -169,7 +170,7 @@ public:
             VERIFY_ARE_EQUAL(TableViewTipTestHelpers::HasNativeAbi(), static_cast<bool>(observed));
 #endif
             IgnoreOperation(state, generation, reason, E_INVALIDARG,
-                reason == IgnoreReason::ApplicationFault ? AppFaultKind::Binding : AppFaultKind::None);
+                reason == IgnoreReason::ApplicationFault ? AppFaultKind::Callback : AppFaultKind::None);
 #if TABLEVIEW_TIP_REAL_LIBRARY
             if (TableViewTipTestHelpers::HasNativeAbi())
             {
@@ -183,9 +184,10 @@ public:
             VERIFY_IS_FALSE(IsOperationStarted(state));
         }
         VERIFY_ARE_EQUAL(0u, state.session.counts[2]);
-        VERIFY_ARE_EQUAL(1u, state.session.appFaultCount);
         VERIFY_ARE_EQUAL(1u, state.session.deferredCount);
         VERIFY_ARE_EQUAL(1u, state.session.unattributedFaultCount);
+        // Application faults only close the operation as ignored; no session counter records them.
+        for (auto const count : state.session.counts) { VERIFY_ARE_EQUAL(0u, count); }
         AbandonSession(state);
     }
 
@@ -198,7 +200,6 @@ public:
         IgnoreOperation(state, old, IgnoreReason::ApplicationFault, E_FAIL, AppFaultKind::Callback);
         FailOperation(state, Operation::Sort, old, Stage::Sort, E_FAIL);
         VERIFY_IS_TRUE(IsOperationStarted(state));
-        VERIFY_ARE_EQUAL(0u, state.session.appFaultCount);
         CompleteOperation(state, current, Result::Success);
         VERIFY_ARE_EQUAL(0u, state.session.counts[2]);
         VERIFY_ARE_EQUAL(1u, state.session.counts[5]);
@@ -217,7 +218,6 @@ public:
         VERIFY_IS_FALSE(IsOperationHandled(state, Operation::Filter, old));
         VERIFY_IS_FALSE(IsOperationHandled(state, Operation::Sort, 0));
         VERIFY_ARE_EQUAL(0u, state.reportedErrors);
-        VERIFY_ARE_EQUAL(1u, state.session.appFaultCount);
         VERIFY_ARE_EQUAL(0u, state.session.unattributedFaultCount);
         auto const current = BeginOperation(state, Operation::Sort);
         VERIFY_IS_FALSE(IsOperationHandled(state, Operation::Sort, current));
