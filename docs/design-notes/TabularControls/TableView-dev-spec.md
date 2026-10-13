@@ -458,6 +458,8 @@ Cell resolution walks up from `OriginalSource` to the cell wrapper (`TableViewCe
 
 Editing bindings use `UpdateSourceTrigger=Explicit`, so the typed value lives in the editor until the control pushes it. That is what lets a cancel restore something and a validation failure hold the edit open. On commit the control calls `UpdateSource()` on the binding expressions discovered from the editing element; validation runs **after** the write, and a blocked commit undoes it.
 
+A forced close (the source changes under the edit, or the control turns read-only) commits a valid pending value while the edited item is still in the source and passes the filter, and reports `Cancel` on a failed write or validation error. If the item was removed, filtered out, or `ItemsSource` was replaced, it reports `Cancel` and writes nothing, as WPF `DataGrid` does; an item that is only under a collapsed group or node has not been removed. A forced close during a pending commit deferral can finish as `Cancel` without a second `CellEditEnding`.
+
 Rollback prefers `ITableViewEditableItem` on the data item. Without it the control snapshots the value at the column's `GetEditingPropertyPathCore()` path, falling back to scraping the editor's bindings — inherently incomplete for an arbitrary editor, so the inability to capture anything is recorded and reported rather than silently ignored.
 
 ## Re-entrancy rules (load-bearing)

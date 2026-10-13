@@ -126,10 +126,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies an open edit whose row is recycled out from under it is closed by the control: the pending value is committed to the edited item, CellEditEnding reports Commit, and no editor survives in any row.")]
-        public void OpenEditIsClosedWhenItsRowIsRecycledByRemovingItsItem()
+        [TestProperty("Description", "Verifies removing the edited item force-closes its edit as a Cancel: the pending value is not written to the removed item, and no editor survives in any row.")]
+        public void OpenEditIsCancelledWhenItsItemIsRemoved()
         {
-            // Removing the item bypasses that focus pin, so the recycle force-closes the edit, committing to the edited item.
+            // Removing the item bypasses that focus pin, so the recycle force-closes the edit; the item is gone, so nothing is written.
             using (var setup = new TestSetupHelper(new[] { PageName, VirtualizationFacts.NavigateButton }))
             {
                 UIObject table = GetTable(VirtualizationFacts.LargeTable);
@@ -164,12 +164,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     "Recycling the edited row must close the edit (TableView::OnRowElementClearing).");
                 Verify.AreEqual(VirtualizationFacts.NoneValue, Field(readout, VirtualizationFacts.EditorsField),
                     "No realized row may keep the editor; a recycled row carrying it would edit a different item.");
-                Verify.AreEqual("Commit/0", Field(readout, VirtualizationFacts.EditEndingField),
-                    "The forced close must raise exactly one CellEditEnding, a Commit for the edited item (TerminateEditForReset).");
-                Verify.AreEqual("Typed", Field(readout, VirtualizationFacts.FirstItemField),
-                    "A forced close commits the pending value to the item the edit was opened on.");
-                Verify.AreEqual("0", Field(readout, VirtualizationFacts.ModifiedField),
-                    "The value must not land on any other item - in particular not on the item now shown by the recycled row.");
+                Verify.AreEqual("Cancel/0", Field(readout, VirtualizationFacts.EditEndingField),
+                    "The forced close must raise exactly one CellEditEnding, a Cancel for the removed item (TerminateEditForReset).");
+                Verify.AreEqual(VirtualizationFacts.ItemName(0), Field(readout, VirtualizationFacts.FirstItemField),
+                    "A forced close must not write the pending value into an item that has left the source.");
+                Verify.AreEqual(VirtualizationFacts.NoneValue, Field(readout, VirtualizationFacts.ModifiedField),
+                    "No item may change - neither the removed one nor the item now shown by the recycled row.");
             }
         }
 

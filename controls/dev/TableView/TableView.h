@@ -382,7 +382,8 @@ public:
     bool CancelEditInternal(EditingUnit unit);
 
     // Forced teardown (source-driven reset / ItemsSource replacement / unload). Cannot be vetoed.
-    bool TerminateEditForReset(bool force);
+    // sourceReplaced: the edited item belongs to a data set the control is leaving.
+    bool TerminateEditForReset(bool force, bool sourceReplaced = false);
     // Same, but leaves the edited row's visuals alone. For callers inside a layout pass, where
     // restoring the display child would mutate the tree during measure.
     //
@@ -391,7 +392,7 @@ public:
     // ItemsRepeater's measure, and a handler that touches the tree or invalidates layout
     // re-enters the pass we are standing in and fail-fasts. Pass true only from a genuine layout
     // pass - the DP-change callers are re-entrant for FOCUS reasons, not layout ones.
-    bool TerminateEditWithoutVisualRestore(bool insideLayoutPass = false);
+    bool TerminateEditWithoutVisualRestore(bool insideLayoutPass = false, bool sourceReplaced = false);
 
     // Runs an app-visible notification now, or on the dispatcher when we are inside a layout pass.
     void PostEditNotification(std::function<void()> notify);

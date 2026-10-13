@@ -1186,7 +1186,7 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     // a dependency-property change callback, and moving focus from one re-enters the framework.
     if (IsEditing())
     {
-        TerminateEditWithoutVisualRestore();
+        TerminateEditWithoutVisualRestore(false /* insideLayoutPass */, true /* sourceReplaced */);
     }
 
     // The current cell belongs to the old data set. Left alone, CurrentItem keeps returning an item

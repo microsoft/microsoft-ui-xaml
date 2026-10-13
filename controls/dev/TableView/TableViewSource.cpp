@@ -6,6 +6,7 @@
 #include "TableViewSource.h"
 #include "RowMetadataProvider.h"
 #include "GroupedSourceAdapter.h"
+#include "HierarchicalSourceAdapter.h"
 #include "ShapedItemsSource.h"
 #include "SortMemberPathResolver.h"
 #include "SharedHelpers.h"
@@ -215,6 +216,38 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
 bool TableViewSource::IsGrouped() const
 {
     return m_engine->IsProjectedAsGrouped();
+}
+
+bool TableViewSource::ContainsShapedItem(winrt::IInspectable const& item) const
+{
+    if (!item)
+    {
+        return false;
+    }
+
+    // Decided by the published index, not Kind(): a rebuild publishes the index (or releases it)
+    // before raising the Reset that closes the edit, while Kind() is only updated afterwards.
+    if (auto const adapter = m_engine->HierarchicalAdapter(); adapter && adapter->HasIndex())
+    {
+        // Rows() is only a snapshot of the visible rows here; the index holds every filtered node.
+        return adapter->IndexContainsItem(item);
+    }
+
+    // Rows() is the shaped data without headers and ignores group expansion.
+    auto const rows = m_engine->Rows();
+    if (!rows)
+    {
+        return false;
+    }
+    auto const identity = item.as<winrt::Windows::Foundation::IUnknown>();
+    for (auto const& row : rows)
+    {
+        if (row && row.as<winrt::Windows::Foundation::IUnknown>() == identity)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 winrt::ItemsSourceView TableViewSource::GetItemsSourceView()
