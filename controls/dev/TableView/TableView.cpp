@@ -732,6 +732,21 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
             // Changed is raised on this UI thread, so the handler can touch XAML directly.
             m_themeSettingsChangedRevoker = m_themeSettings.Changed(
                 winrt::auto_revoke, { get_weak(), &TableView::OnThemeSettingsChanged });
+
+            // A deferred Unloaded runs after the window is destroyed, when removing the handler
+            // throws inside ThemeSettings (noexcept, fail-fast). Release while the window exists.
+            if (auto appWindow = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(env.AppWindowId()))
+            {
+                m_appWindowDestroyingToken = appWindow.Destroying(
+                    [weakThis = get_weak()](auto const&, auto const&)
+                    {
+                        if (auto strongThis = weakThis.get())
+                        {
+                            strongThis->ReleaseThemeSettings();
+                        }
+                    });
+                m_appWindow = std::move(appWindow);
+            }
         }
     }
     catch (...)
@@ -3142,8 +3157,13 @@ void TableView::OnTableViewUnloaded()
 
 void TableView::ReleaseThemeSettings()
 {
-    // ~ThemeSettings throws at window close and nullptr assignment is noexcept (fail-fast), so release
-    // inside try/catch. Release before revoke() so a dead object's stale weak_ref makes it a no-op.
+    if (auto appWindow = std::exchange(m_appWindow, nullptr))
+    {
+        appWindow.Destroying(std::exchange(m_appWindowDestroyingToken, {}));
+    }
+
+    // nullptr assignment is noexcept, so release inside try/catch.
+    // Release before revoke() so a dead object's stale weak_ref makes it a no-op.
     if (auto const themeSettings = static_cast<::IUnknown*>(winrt::detach_abi(m_themeSettings)))
     {
         try

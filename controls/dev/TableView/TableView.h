@@ -1093,6 +1093,10 @@ private:
     // the constructor, and torn down on Unloaded.
     winrt::Microsoft::UI::System::ThemeSettings m_themeSettings{ nullptr };
     winrt::Microsoft::UI::System::ThemeSettings::Changed_revoker m_themeSettingsChangedRevoker{}; // Runtime HC toggles must refresh cached HC-dependent brushes.
+    // ThemeSettings' remove_Changed fail-fasts once its window is gone, so release it on Destroying.
+    // AppWindow has no weak reference support, so this can't use an auto_revoke revoker.
+    winrt::Microsoft::UI::Windowing::AppWindow m_appWindow{ nullptr };
+    winrt::event_token m_appWindowDestroyingToken{};
     // Cached HC state: kept fresh by ThemeSettings.Changed while loaded and read by IsHighContrast().
     // Only touched on the UI thread now, so no atomic is required.
     bool m_isHighContrast{ false };
