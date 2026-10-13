@@ -10,7 +10,7 @@
 </MenuFlyout>
 
 <!-- The row menu is the fallback for every cell without its own CellContextFlyout, and for
-     blank space past the last column. -->
+     blank space past the last column. An implicit TableViewRow style sets it on every row. -->
 <MenuFlyout x:Key="RowMenu">
     <MenuFlyoutItem Text="Copy row" Click="OnCopyRowClick">
         <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8C8;"/></MenuFlyoutItem.Icon>
@@ -32,9 +32,14 @@
     AutomationProperties.Name="People with context menus"
     ItemsSource="{x:Bind Source}"
     SelectionMode="Single"
-    RowContextFlyout="{StaticResource RowMenu}"
     VerticalAlignment="Stretch"
     MinHeight="320">
+    <!-- Rows get their menu from an implicit style, like any other row property. -->
+    <tv:TableView.Resources>
+        <Style TargetType="tv:TableViewRow">
+            <Setter Property="ContextFlyout" Value="{StaticResource RowMenu}"/>
+        </Style>
+    </tv:TableView.Resources>
     <!-- The table's own menu: the final fallback, e.g. for group headers. -->
     <tv:TableView.ContextFlyout>
         <MenuFlyout>

@@ -18,7 +18,7 @@ namespace TableViewSampleApp.Pages;
 // Experiment, --verify-row-style-menu=templates: a ContextFlyout declared inside a column's
 // CellTemplate (Department) and HeaderTemplate (Name, Salary). Counts flyout instances, checks the
 // item after recycling, and records which menu wins once the column's CellContextFlyout /
-// HeaderContextFlyout and the table's RowContextFlyout are set as well.
+// HeaderContextFlyout are set as well. The page's row style menu stays on throughout.
 public sealed partial class ContextMenusPage
 {
     private const string CellTemplateKind = "CELL TEMPLATE";
@@ -61,7 +61,6 @@ public sealed partial class ContextMenusPage
     {
         // Phase 1: only the template menus (and the table's fallback) in play.
         var departmentApiMenu = MakeLabelledMenu("Department CellContextFlyout");
-        PeopleTable.RowContextFlyout = null;
         NameColumn.CellContextFlyout = null;
         foreach (var column in PeopleTable.Columns)
         {
@@ -69,7 +68,7 @@ public sealed partial class ContextMenusPage
         }
 
         Label(PeopleTable.ContextFlyout, "TABLE");
-        Label(_rowMenu!, "ROW (RowContextFlyout)");
+        Label(_rowMenu!, "ROW (row style)");
         Label(departmentApiMenu, "DEPT CELL (CellContextFlyout)");
         Label(_headerMenus[NameColumn], "NAME HEADER (HeaderContextFlyout)");
         Label(_headerMenus[SalaryColumn], "SALARY HEADER (HeaderContextFlyout)");
@@ -89,7 +88,6 @@ public sealed partial class ContextMenusPage
 
         // Phase 2: the properties for the same targets set as well.
         DepartmentColumn.CellContextFlyout = departmentApiMenu;
-        PeopleTable.RowContextFlyout = _rowMenu;
         NameColumn.HeaderContextFlyout = _headerMenus[NameColumn];
         SalaryColumn.HeaderContextFlyout = _headerMenus[SalaryColumn];
         await Task.Delay(300);
@@ -103,7 +101,6 @@ public sealed partial class ContextMenusPage
 
         // Phase 3: recycling, template menus only again.
         DepartmentColumn.CellContextFlyout = null;
-        PeopleTable.RowContextFlyout = null;
         await Task.Delay(200);
 
         var scroller = Descendants(PeopleTable).OfType<ScrollViewer>().First(s => s.Name == "PART_BodyScroller");

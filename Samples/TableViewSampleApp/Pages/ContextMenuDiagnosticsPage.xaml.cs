@@ -112,11 +112,6 @@ public sealed partial class ContextMenuDiagnosticsPage : Page
             failures.Add("Name.Header!=null");
         }
 
-        if (Table.RowContextFlyout is not null)
-        {
-            failures.Add("Table.Row!=null");
-        }
-
         if (TableViewColumn.CellContextFlyoutProperty is null)
         {
             failures.Add("CellDP=null");
@@ -125,11 +120,6 @@ public sealed partial class ContextMenuDiagnosticsPage : Page
         if (TableViewColumn.HeaderContextFlyoutProperty is null)
         {
             failures.Add("HeaderDP=null");
-        }
-
-        if (TableView.RowContextFlyoutProperty is null)
-        {
-            failures.Add("RowDP=null");
         }
 
         _apiDefaults = failures.Count == 0
@@ -156,7 +146,7 @@ public sealed partial class ContextMenuDiagnosticsPage : Page
             Table.Columns.Add(column);
         }
 
-        Table.RowContextFlyout = null;
+        Table.Resources.Remove(typeof(TableViewRow));
         _name.CellContextFlyout = null;
         _name.HeaderContextFlyout = null;
         _city.HeaderContextFlyout = null;
@@ -174,7 +164,10 @@ public sealed partial class ContextMenuDiagnosticsPage : Page
         _name.CellContextFlyout = nameMenu;
         _name.HeaderContextFlyout = Menu("HEADER");
         _city.HeaderContextFlyout = Menu("OFFICE HEADER");
-        Table.RowContextFlyout = Menu("ROW", true);
+        Table.Resources[typeof(TableViewRow)] = new Style(typeof(TableViewRow))
+        {
+            Setters = { new Setter(UIElement.ContextFlyoutProperty, Menu("ROW", true)) },
+        };
         Table.ContextFlyout = Menu("NATIVE");
         Table.ItemsSource = _items;
         Hint.Text = "Right-click First name, Office or a header. Reset keeps direct element menus; navigate away/back to remove them.";
@@ -341,7 +334,7 @@ public sealed partial class ContextMenuDiagnosticsPage : Page
 
     private void OnClearRow(object sender, RoutedEventArgs e)
     {
-        Table.RowContextFlyout = null;
+        Table.Resources.Remove(typeof(TableViewRow));
         Report();
     }
 

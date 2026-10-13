@@ -18,8 +18,8 @@ using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Pages;
 
-// Experiment: can an app give rows a context menu without RowContextFlyout, through an implicit
-// TableViewRow style? Run with --page=ContextMenus and one of
+// Experiment: an app gives rows a context menu through an implicit TableViewRow style, which
+// replaces the page's own row style. Run with --page=ContextMenus and one of
 //   --verify-row-style-menu=setter    Style Setter Property="ContextFlyout" with a MenuFlyout value
 //   --verify-row-style-menu=template  Style Setter Property="Template" whose root has a ContextFlyout
 // Logs how many flyout instances the realized rows hold, and for each request which instance
@@ -114,7 +114,6 @@ public sealed partial class ContextMenusPage
         }
 
         // Leave only the experiment's menu and the table's own fallback in play.
-        PeopleTable.RowContextFlyout = null;
         NameColumn.CellContextFlyout = null;
         _menuLabels[PeopleTable.ContextFlyout] = "TABLE";
         PeopleTable.ContextFlyout.Opened += OnExperimentFlyoutOpened;
@@ -144,30 +143,20 @@ public sealed partial class ContextMenusPage
         await Task.Delay(300);
         await ExpectExperimentAsync("R6 Shift+F10, current cell Office row 1", () => SendKeys(VkShift, VkF10), rows[1]);
 
-        // Precedence: the column's CellContextFlyout and the table's RowContextFlyout back on.
+        // Precedence: the column's CellContextFlyout back on wins over the row's own ContextFlyout.
         _menuLabels[_nameCellMenu!] = "NAME CELL";
         _nameCellMenu!.Opened += OnExperimentFlyoutOpened;
-        _menuLabels[_rowMenu!] = "ROW (RowContextFlyout)";
-        _rowMenu!.Opened += OnExperimentFlyoutOpened;
 
         NameColumn.CellContextFlyout = _nameCellMenu;
         await Task.Delay(200);
-        await ExpectExperimentAsync("P1 cell menu on: mouse Name cell row 0", () => RightClick(Cell(0, NameColumn)), rows[0]);
+        await ExpectExperimentAsync("P1 cell menu on: mouse Name cell row 0", () => RightClick(Cell(0, NameColumn)), rows[0], "NAME CELL");
         LeftClick(Cell(2, NameColumn));
         await Task.Delay(300);
-        await ExpectExperimentAsync("P2 cell menu on: Shift+F10, current cell Name row 2", () => SendKeys(VkShift, VkF10), rows[2]);
+        await ExpectExperimentAsync("P2 cell menu on: Shift+F10, current cell Name row 2", () => SendKeys(VkShift, VkF10), rows[2], "NAME CELL");
         await ExpectExperimentAsync("P3 cell menu on: mouse Office cell row 3", () => RightClick(Cell(3, OfficeColumn)), rows[3]);
 
-        PeopleTable.RowContextFlyout = _rowMenu;
-        await Task.Delay(200);
-        await ExpectExperimentAsync("P4 cell+row menus on: mouse Name cell row 1", () => RightClick(Cell(1, NameColumn)), rows[1]);
-        await ExpectExperimentAsync("P5 cell+row menus on: mouse Office cell row 1", () => RightClick(Cell(1, OfficeColumn)), rows[1]);
-        LeftClick(Cell(3, OfficeColumn));
-        await Task.Delay(300);
-        await ExpectExperimentAsync("P6 cell+row menus on: Shift+F10, current cell Office row 3", () => SendKeys(VkShift, VkF10), rows[3]);
 
         // Recycling: scroll far enough that containers are reused for other items, then back.
-        PeopleTable.RowContextFlyout = null;
         NameColumn.CellContextFlyout = null;
         await RunRecyclingCasesAsync();
     }

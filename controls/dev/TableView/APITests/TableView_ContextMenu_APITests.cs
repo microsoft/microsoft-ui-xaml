@@ -28,9 +28,9 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    // Context menus: TableView.RowContextFlyout, TableViewColumn.CellContextFlyout and
-    // HeaderContextFlyout, the native TableView.ContextFlyout fallback, and ContextFlyouts set in cell
-    // or header content and on rows (implicit style or template).
+    // Context menus: TableViewColumn.CellContextFlyout and HeaderContextFlyout, the row's own
+    // ContextFlyout (implicit style or template), the native TableView.ContextFlyout fallback, and
+    // ContextFlyouts set in cell or header content.
     //
     // Test IDs match controls\dev\TableView\docs\context-menu-test-design.md. Every request is raised
     // through an automation peer's ShowContextMenu (no position, like a keyboard request). Real mouse
@@ -45,7 +45,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // ---- A. Body precedence -------------------------------------------------------------
 
         [TestMethod]
-        [TestProperty("Description", "A1: a column's CellContextFlyout wins over RowContextFlyout and anchors to the cell.")]
+        [TestProperty("Description", "A1: a column's CellContextFlyout wins over the row style menu and anchors to the cell.")]
         public void CellMenuWinsOverRowMenu()
         {
             var f = LoadFixture();
@@ -57,14 +57,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A2: a cell without a CellContextFlyout         falls back to RowContextFlyout, anchored to the requested cell.")]
+        [TestProperty("Description", "A2: a cell without a CellContextFlyout falls back to the row style menu, anchored to the row.")]
         public void RowMenuUsedWhenColumnHasNoCellMenu()
         {
             var f = LoadFixture();
 
             RequestOnCell(f, 3, OfficeCol);
 
-                    VerifyOpened(f, "RowMenu", () => CellOf(f, 3, OfficeCol), f.P(3), "UIA on row 3 / Office");
+            VerifyOpened(f, "RowMenu", () => RowOf(f, 3), f.P(3), "UIA on row 3 / Office");
             CloseMenus(f);
         }
 
@@ -72,11 +72,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "A3: with no cell or row menu the native TableView.ContextFlyout opens.")]
         public void TableMenuUsedWhenNoCellOrRowMenu()
         {
-            var f = LoadFixture(configure: x => x.Table.RowContextFlyout = null);
+            var f = LoadFixture(configure: x => x.Table.Resources.Remove(typeof(TableViewRow)));
 
             RequestOnCell(f, 3, OfficeCol);
 
-            VerifyOpened(f, "TableMenu", () => f.Table, expectedItem: null, "UIA on row 3 / Office, no RowContextFlyout");
+            VerifyOpened(f, "TableMenu", () => f.Table, expectedItem: null, "UIA on row 3 / Office, no row style menu");
             CloseMenus(f);
         }
 
@@ -115,7 +115,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() => f.NameColumn.CellContextFlyout = null);
             RequestOnCell(f, 3, NameCol);
-            VerifyOpened(f, "RowMenu", () => CellOf(f, 3, NameCol), f.P(3), "after clearing CellContextFlyout");
+            VerifyOpened(f, "RowMenu", () => RowOf(f, 3), f.P(3), "after clearing CellContextFlyout");
             CloseMenus(f);
         }
 
@@ -298,18 +298,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RequestOnCell(f, 3, DepartmentCol);
 
             VerifyOpened(f, "ContentMenu", () => content, f.P(3), "UIA on row 3 / Department");
-            CloseMenus(f);
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "A18: an app-set row ContextFlyout (implicit style) wins over RowContextFlyout.")]
-        public void RowStyleMenuWinsOverRowContextFlyout()
-        {
-            var f = LoadFixture(rowStyle: RowStyleWithFlyout());
-
-            RequestOnCell(f, 3, OfficeCol);
-
-            VerifyOpened(f, "RowStyleMenu", () => RowOf(f, 3), f.P(3), "UIA on row 3 / Office");
             CloseMenus(f);
         }
 
@@ -602,7 +590,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => target = f.P(4));
 
             RequestOnCell(f, 4, OfficeCol);
-            VerifyOpened(f, "RowMenu", () => CellOf(f, 4, OfficeCol), target, "UIA on row 4 / Office");
+            VerifyOpened(f, "RowMenu", () => RowOf(f, 4), target, "UIA on row 4 / Office");
 
             RunOnUIThread.Execute(() =>
             {
@@ -677,7 +665,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var f = LoadFixture(configure: x =>
             {
-                x.Table.RowContextFlyout = null;
                 x.Table.Resources[typeof(TableViewRow)] = (Style)XamlReader.Load(RowTemplateStyleXaml);
             });
             RunOnUIThread.Execute(() => TrackNamedMenu(f, RowOf(f, 3), "TemplateRoot", "RowTemplateMenu"));
@@ -806,7 +793,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             IdleSynchronizer.Wait();
 
-            VerifyOpened(f, "RowMenu", () => CellOf(f, 3, DepartmentCol), f.P(3), "UIA on Department content tagged with the Name column");
+            VerifyOpened(f, "RowMenu", () => RowOf(f, 3), f.P(3), "UIA on Department content tagged with the Name column");
             CloseMenus(f);
         }
 
@@ -907,7 +894,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     }
 
     // Three columns over 10 people: Name (text, CellMenu, HeaderMenu), Department (template) and
-    // Office (text). RowMenu is the RowContextFlyout and TableMenu the TableView.ContextFlyout.
+    // Office (text). RowMenu is set on every row by an implicit row style and TableMenu is the TableView.ContextFlyout.
     // OuterMenu is created but only attached to Root by tests that need it.
     internal sealed class ContextMenuFixture
     {
@@ -1032,9 +1019,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             f.NameColumn.CellContextFlyout = f.CellMenu;
             f.NameColumn.HeaderContextFlyout = f.HeaderMenu;
-            f.Table.RowContextFlyout = f.RowMenu;
             f.Table.ContextFlyout = f.TableMenu;
+            f.Table.Resources[typeof(TableViewRow)] = new Style(typeof(TableViewRow))
+            {
+                Setters = { new Setter(UIElement.ContextFlyoutProperty, f.RowMenu) },
+            };
 
+            // A test's own row style replaces the fixture's.
             if (rowStyle != null)
             {
                 f.Recorder.Track("RowStyleMenu", SetterFlyout(rowStyle));
@@ -1049,7 +1040,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             f.NameColumn.CellContextFlyout = null;
             f.NameColumn.HeaderContextFlyout = null;
-            f.Table.RowContextFlyout = null;
+            f.Table.Resources.Remove(typeof(TableViewRow));
             f.Table.ContextFlyout = null;
         }
 
