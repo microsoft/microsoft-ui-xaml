@@ -123,28 +123,28 @@ not app architecture.
 The **Context menus** page (`ContextMenus`) demonstrates per-column cell/header
 flyouts and row fallback with the shared people data: a **Name** cell menu whose
 items bind to the row item, a shared row menu (**Copy row**, **Move to next
-department**, **Remove from list**), per-column header menus that hide columns,
+department**, **Remove from list**) set through an implicit `TableViewRow` style,
+per-column header menus that hide columns,
 and the table's own `ContextFlyout` as the final fallback. The rail switches the
 cell, row and header menus off.
 
-Column cell menus take precedence over `RowContextFlyout`; the native
-`TableView.ContextFlyout` is the final fallback. A column header uses its
+There is no row menu property: rows get their menu from their own `ContextFlyout`,
+set through an implicit `TableViewRow` style or a row template. Column cell menus
+take precedence over it; the native `TableView.ContextFlyout` is the final
+fallback. A column header uses its
 `HeaderContextFlyout`, otherwise native fallback. Group headers always use native
-fallback. Setting a menu property to null removes that candidate.
+fallback. Setting a menu property to null (or removing the row style) removes that
+candidate.
 
 Keyboard requests (Shift+F10, Menu key) follow the focus level: with focus on a
 cell, that cell's menu opens; with focus on the row itself (press Left from the
 first cell), the row menu opens even if the remembered current column has a cell
 menu. UI Automation `ShowContextMenu` on a row peer likewise opens the row menu.
 
-A `ContextFlyout` you set yourself always wins over these properties, for mouse,
-keyboard (Shift+F10, Menu key) and UI Automation alike:
-
-- Inside a cell or header (`CellTemplate`, `HeaderTemplate`, or an implicit
-  style): it covers the whole cell or header, padding included. A cell-content
-  menu also beats a row style/template menu.
-- On the row (an implicit `TableViewRow` style or template): it beats
-  `CellContextFlyout` and `RowContextFlyout`.
+A `ContextFlyout` you set inside a cell or header (`CellTemplate`,
+`HeaderTemplate`, or an implicit style) always wins over the column properties,
+for mouse, keyboard (Shift+F10, Menu key) and UI Automation alike. It covers the
+whole cell or header, padding included.
 
 The built-in copy/select flyouts on text controls don't count.
 

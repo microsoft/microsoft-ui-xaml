@@ -25,7 +25,6 @@ GlobalDependencyProperty TableViewProperties::s_HeadersVisibilityProperty{ nullp
 GlobalDependencyProperty TableViewProperties::s_IsReadOnlyProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_ItemsSourceProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_RowBackgroundProperty{ nullptr };
-GlobalDependencyProperty TableViewProperties::s_RowContextFlyoutProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectedIndexProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectedItemProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectionModeProperty{ nullptr };
@@ -174,17 +173,6 @@ void TableViewProperties::EnsureProperties()
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnRowBackgroundPropertyChanged));
     }
-    if (!s_RowContextFlyoutProperty)
-    {
-        s_RowContextFlyoutProperty =
-            InitializeDependencyProperty(
-                L"RowContextFlyout",
-                winrt::name_of<winrt::FlyoutBase>(),
-                winrt::name_of<winrt::TableView>(),
-                false /* isAttached */,
-                ValueHelper<winrt::FlyoutBase>::BoxedDefaultValue(),
-                nullptr);
-    }
     if (!s_SelectedIndexProperty)
     {
         s_SelectedIndexProperty =
@@ -234,7 +222,6 @@ void TableViewProperties::ClearProperties()
     s_IsReadOnlyProperty = nullptr;
     s_ItemsSourceProperty = nullptr;
     s_RowBackgroundProperty = nullptr;
-    s_RowContextFlyoutProperty = nullptr;
     s_SelectedIndexProperty = nullptr;
     s_SelectedItemProperty = nullptr;
     s_SelectionModeProperty = nullptr;
@@ -498,19 +485,6 @@ void TableViewProperties::RowBackground(winrt::Brush const& value)
 winrt::Brush TableViewProperties::RowBackground()
 {
     return ValueHelper<winrt::Brush>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_RowBackgroundProperty));
-}
-
-void TableViewProperties::RowContextFlyout(winrt::FlyoutBase const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<TableView*>(this)->SetValue(s_RowContextFlyoutProperty, ValueHelper<winrt::FlyoutBase>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::FlyoutBase TableViewProperties::RowContextFlyout()
-{
-    return ValueHelper<winrt::FlyoutBase>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_RowContextFlyoutProperty));
 }
 
 void TableViewProperties::SelectedIndex(int value)

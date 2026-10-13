@@ -162,6 +162,38 @@ namespace
         return !IsTextControl(element) ||
             element.ReadLocalValue(winrt::UIElement::ContextFlyoutProperty()) != winrt::DependencyProperty::UnsetValue();
     }
+
+    // The row's own XAML menu: the first app ContextFlyout from just above the cell (or the row
+    // itself, for a row target) up to and including the row. Covers a row style setter and row
+    // template elements, anchored on the element that owns it, as the framework would show it.
+    TableViewDetails::ContextMenuCandidate FindRowContextFlyout(TableViewDetails::ContextMenuTarget const& target)
+    {
+        if (!target.Row)
+        {
+            return {};
+        }
+
+        winrt::DependencyObject const row = target.Row;
+        auto node = target.Column && target.Anchor
+            ? winrt::VisualTreeHelper::GetParent(target.Anchor)
+            : row;
+        while (node)
+        {
+            if (auto const element = node.try_as<winrt::FrameworkElement>(); element && HasAppContextFlyout(element))
+            {
+                return { element.ContextFlyout(), element };
+            }
+
+            if (node == row)
+            {
+                break;
+            }
+
+            node = winrt::VisualTreeHelper::GetParent(node);
+        }
+
+        return {};
+    }
 }
 
 TableViewDetails::ContextMenuCandidate TableViewDetails::FindContentContextFlyout(
@@ -238,7 +270,10 @@ TableViewDetails::ContextMenuCandidate TableView::ResolveContextFlyout(
         }
     }
 
-    return { RowContextFlyout(), target.Anchor };
+    // Handling the request here stops the framework from showing the row's own ContextFlyout, so
+    // resolve it at the same place it would have won natively: after the cell's own menus. With
+    // nothing found the request stays Unhandled and bubbles to the table's ContextFlyout.
+    return FindRowContextFlyout(target);
 }
 
 void TableView::ShowContextFlyout(
@@ -249,7 +284,7 @@ void TableView::ShowContextFlyout(
     options.Placement(winrt::FlyoutPlacementMode::Auto);
 
     winrt::Point point{};
-    if (args.TryGetPosition(candidate.Anchor, point))
+    if (args && args.TryGetPosition(candidate.Anchor, point))
     {
         options.Position(point);
     }
@@ -264,7 +299,8 @@ TableViewDetails::ContextMenuResult TableView::ProcessContextMenuRequest(
     using TableViewDetails::ContextMenuResult;
     using TableViewDetails::ContextMenuTargetKind;
 
-    if (args.Handled())
+    // args is null for a row automation peer request, which has no routed event.
+    if (args && args.Handled())
     {
         return ContextMenuResult::Unhandled;
     }

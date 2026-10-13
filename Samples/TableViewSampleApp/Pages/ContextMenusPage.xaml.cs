@@ -20,8 +20,8 @@ namespace TableViewSampleApp.Pages;
 /// <list type="bullet">
 ///   <item><description><c>TableViewColumn.CellContextFlyout</c> and <c>HeaderContextFlyout</c>:
 ///     per-column menus for body cells and the column header.</description></item>
-///   <item><description><c>TableView.RowContextFlyout</c>: the fallback for every body cell without
-///     its own cell menu.</description></item>
+///   <item><description>The row's own <c>ContextFlyout</c>, set through an implicit
+///     <c>TableViewRow</c> style: the fallback for every body cell without its own cell menu.</description></item>
 ///   <item><description>The inherited <c>TableView.ContextFlyout</c>: the final fallback.</description></item>
 /// </list>
 /// The menus are not stamped on cells: a menu item's DataContext is the requested row item.
@@ -31,6 +31,7 @@ public sealed partial class ContextMenusPage : SamplePageBase
     private readonly Dictionary<TableViewColumn, FlyoutBase> _headerMenus = new();
     private FlyoutBase? _nameCellMenu;
     private FlyoutBase? _rowMenu;
+    private Style? _rowMenuStyle;
 
     public ContextMenusPage()
     {
@@ -38,7 +39,8 @@ public sealed partial class ContextMenusPage : SamplePageBase
         InitializeComponent();
 
         _nameCellMenu = NameColumn.CellContextFlyout;
-        _rowMenu = PeopleTable.RowContextFlyout;
+        _rowMenuStyle = (Style)PeopleTable.Resources[typeof(TableViewRow)];
+        _rowMenu = (FlyoutBase)((Setter)_rowMenuStyle.Setters[0]).Value;
         AttachHeaderMenus();
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         AttachVerification();
@@ -166,6 +168,8 @@ public sealed partial class ContextMenusPage : SamplePageBase
         SetLastAction(NameMenuToggle.IsOn ? "Name cell menu on" : "Name cell menu off (Name cells use the row menu)");
     }
 
+    // The row menu lives in an implicit row style. Removing or adding an implicit style updates
+    // the realized rows on the next layout pass; recycled rows pick it up when they are reused.
     private void OnRowMenuToggled(object sender, RoutedEventArgs e)
     {
         if (!IsLoaded)
@@ -173,7 +177,12 @@ public sealed partial class ContextMenusPage : SamplePageBase
             return;
         }
 
-        PeopleTable.RowContextFlyout = RowMenuToggle.IsOn ? _rowMenu : null;
+        PeopleTable.Resources.Remove(typeof(TableViewRow));
+        if (RowMenuToggle.IsOn)
+        {
+            PeopleTable.Resources[typeof(TableViewRow)] = _rowMenuStyle;
+        }
+
         SetLastAction(RowMenuToggle.IsOn ? "Row menu on" : "Row menu off (cells fall through to ContextFlyout)");
     }
 
