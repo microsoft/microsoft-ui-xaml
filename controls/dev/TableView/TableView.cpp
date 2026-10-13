@@ -2557,7 +2557,25 @@ void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t
         rowInfo.IsExpanded);
 }
 
-using TableViewDetails::GetColumnHeaderText;
+// One header-text extraction per column, shared by the header cell's automation name and the
+// gripper's OwnerName.
+static winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
+{
+    if (auto const header = column.Header())
+    {
+        if (auto const stringable = header.try_as<winrt::IStringable>())
+        {
+            return stringable.ToString();
+        }
+        if (auto const propValue = header.try_as<winrt::IPropertyValue>();
+            propValue && propValue.Type() == winrt::PropertyType::String)
+        {
+            return propValue.GetString();
+        }
+    }
+
+    return {};
+}
 
 // GetColumnHeaderText renders any IStringable for automation purposes, but only a genuine string
 // may be swapped for a TextBlock -- a UIElement or a type with an implicit DataTemplate must keep

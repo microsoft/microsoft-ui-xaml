@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableViewTextColumn.h"
 #include "TableView.h"
+#include "TableViewAutomationHelpers.h"
 
 TableViewTextColumn::TableViewTextColumn()
 {
@@ -127,9 +128,9 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
 
     winrt::BindingOperations::SetBinding(textBox, winrt::TextBox::TextProperty(), editingBinding);
 
-    if (auto const headerText = TableViewDetails::GetHeaderContentText(Header()); !headerText.empty())
+    if (auto const headerText = TryGetColumnHeaderString(*this); headerText && !headerText->empty())
     {
-        winrt::AutomationProperties::SetName(textBox, headerText);
+        winrt::AutomationProperties::SetName(textBox, *headerText);
     }
 
     return textBox;

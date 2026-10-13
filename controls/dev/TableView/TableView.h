@@ -19,33 +19,6 @@
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
 #include <winrt/Microsoft.UI.System.h>
 
-namespace TableViewDetails
-{
-    inline winrt::hstring GetHeaderContentText(const winrt::IInspectable& header)
-    {
-        if (header)
-        {
-            if (auto const stringable = header.try_as<winrt::IStringable>())
-            {
-                return stringable.ToString();
-            }
-            if (auto const propValue = header.try_as<winrt::IPropertyValue>();
-                propValue && propValue.Type() == winrt::PropertyType::String)
-            {
-                return propValue.GetString();
-            }
-        }
-
-        return {};
-    }
-
-    // Shared by the header cell's automation name and the gripper's OwnerName.
-    inline winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
-    {
-        return GetHeaderContentText(column.Header());
-    }
-}
-
 struct ColumnResizeBounds
 {
     double Min{ 0.0 };
