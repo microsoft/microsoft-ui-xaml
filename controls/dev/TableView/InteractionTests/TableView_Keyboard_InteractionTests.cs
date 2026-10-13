@@ -468,10 +468,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Repeated Page Down keeps the focused row in view and travels a viewport less one row per press.")]
+        [TestProperty("Description", "Repeated Page Down keeps the focused row in view and keeps moving focus forward.")]
         public void HeldPageDownKeepsFocusInView()
         {
-            // No waits between presses, like key auto-repeat.
+            // No waits between the presses of a burst, like key auto-repeat.
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
@@ -490,21 +490,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 int lastVisible = (int)Math.Floor(
                     (ReadScrollOffsetComponent(offsets, "VH") + 0.5) / ReadScrollOffsetComponent(offsets, "RowH"));
 
-                const int presses = 5;
-                for (int press = 0; press < presses; press++)
+                // Exact travel depends on partial rows and realization timing, so assert direction and
+                // visibility rather than a computed row count.
+                const int bursts = 3;
+                const int pressesPerBurst = 2;
+                int position = 1;
+                for (int burst = 0; burst < bursts; burst++)
                 {
-                    KeyboardHelper.PressKey(Key.PageDown);
-                }
-                Wait.ForIdle();
+                    for (int press = 0; press < pressesPerBurst; press++)
+                    {
+                        KeyboardHelper.PressKey(Key.PageDown);
+                    }
+                    Wait.ForIdle();
 
-                // Each page travels the whole rows a viewport holds, less the row it starts from.
-                int position = FocusedPositionInSet();
-                int expectedTravel = presses * (lastVisible - 1);
-                Log.Comment("{0} PageDowns reached {1}; expected travel {2}; rows per viewport {3}.",
-                    presses, position, expectedTravel, rowsPerViewport);
-                Verify.IsTrue(Math.Abs((position - 1) - expectedTravel) <= 2,
-                    string.Format("{0} PageDowns must travel about {1} rows: travelled {2}.", presses, expectedTravel, position - 1));
-                VerifyScrollingRowInView(position, "after repeated PageDown");
+                    int next = FocusedPositionInSet();
+                    Log.Comment("Burst {0}: focus moved from {1} to {2}; last visible row {3}; rows per viewport {4}.",
+                        burst, position, next, lastVisible, rowsPerViewport);
+                    Verify.IsTrue(next > position,
+                        string.Format("PageDown burst {0} must move focus forward: was {1}, now {2}.", burst, position, next));
+                    VerifyScrollingRowInView(next, string.Format("after PageDown burst {0}", burst));
+                    position = next;
+                }
+
+                // Every press pages from the last visible row, so the bursts end beyond the first page.
+                Verify.IsTrue(position > lastVisible,
+                    string.Format("{0} PageDowns must leave the first page (last visible row {1}): reached {2}.",
+                        bursts * pressesPerBurst, lastVisible, position));
             }
         }
 

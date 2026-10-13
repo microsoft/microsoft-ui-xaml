@@ -22,6 +22,8 @@ public:
         PointerReleased({ this, &TableViewHeaderCell::OnPointerReleased });
         PointerCaptureLost({ this, &TableViewHeaderCell::OnPointerLost });
         PointerCanceled({ this, &TableViewHeaderCell::OnPointerLost });
+        // Theme brushes are resolved per state, so a theme change while hovered must re-resolve them.
+        ActualThemeChanged({ this, &TableViewHeaderCell::OnActualThemeChanged });
     }
 
     winrt::hstring GetRuntimeClassName() const
@@ -68,11 +70,38 @@ private:
         UpdatePointerVisualState();
     }
 
-    void OnPointerLost(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs&)
+    void OnPointerLost(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
     {
+        // The resize gripper captures the pointer for its drag; that capture ending bubbles here
+        // while the pointer is still over the header, so it must not reset the hover state.
+        if (IsInsideResizeGripper(args.OriginalSource()))
+        {
+            return;
+        }
+
         m_isPointerOver = false;
         m_isPressed = false;
         UpdatePointerVisualState();
+    }
+
+    void OnActualThemeChanged(const winrt::FrameworkElement&, const winrt::IInspectable&)
+    {
+        UpdatePointerVisualState(true /* force */);
+    }
+
+    bool IsInsideResizeGripper(const winrt::IInspectable& source)
+    {
+        winrt::Panel const self = *this;
+        for (auto current = source.try_as<winrt::DependencyObject>();
+             current && current != self;
+             current = winrt::VisualTreeHelper::GetParent(current))
+        {
+            if (current.try_as<winrt::ResizeGripper>())
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     bool IsSortable() const
@@ -82,7 +111,7 @@ private:
         return table && column && table.CanUserSortColumns() && column.CanSort();
     }
 
-    void UpdatePointerVisualState()
+    void UpdatePointerVisualState(bool force = false)
     {
         auto state = PointerVisualState::Normal;
         if (IsSortable())
@@ -92,7 +121,7 @@ private:
                 : PointerVisualState::Normal;
         }
 
-        if (state == m_visualState)
+        if (state == m_visualState && !force)
         {
             return;
         }

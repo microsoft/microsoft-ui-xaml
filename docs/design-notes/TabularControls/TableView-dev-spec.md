@@ -84,7 +84,7 @@ Each `TableViewCellsPanel` measures its cells unconstrained and arranges them at
 
 Custom templates using a `Border` for `PART_HeaderRow` must supply its gridline `BorderThickness` through a style setter rather than a local value, so `GridLinesVisibility` can restore it with `ClearValue` for `Horizontal` or `All`.
 
-**Pointer feedback.** A sortable header (`CanUserSortColumns` and `TableViewColumn.CanSort`) reacts to the pointer like a row: on hover it paints `TabularSurfaceHeaderBackgroundPointerOverBrush`, while pressed `TabularSurfaceHeaderBackgroundPressedBrush`, and it returns to its transparent fill on exit, release, capture loss or cancel. In High Contrast only, the default header text presenter and sort indicator also take `TabularSurfaceHeaderForegroundPointerOverBrush` / `TabularSurfaceHeaderForegroundPressedBrush` (`SystemColorHighlightTextColor` on a `SystemColorHighlightColor` fill). In Light and Dark the header text keeps its inherited foreground, so an app-set `TableView.Foreground`, `HeaderTemplate` foreground or `SortIndicatorForeground` is not overridden on hover; there those foreground keys equal the default rest foreground (`TabularSurfaceRowForegroundBrush`), and the fills equal the row pointer-over/pressed fills. Brushes are looked up on each state change. A header that cannot sort shows no feedback, the pointer events are never marked handled (click-to-sort and focus are unchanged), and a press on the resize gripper stays with the gripper.
+**Pointer feedback.** A sortable header (`CanUserSortColumns` and `TableViewColumn.CanSort`) reacts to the pointer like a row: on hover it paints `TabularSurfaceHeaderBackgroundPointerOverBrush`, while pressed `TabularSurfaceHeaderBackgroundPressedBrush`, and it returns to its transparent fill on exit, release, capture loss or cancel (a capture loss or cancel from the resize gripper's own drag capture is ignored, so a header still under the pointer stays hovered). In High Contrast only, the default header text presenter and sort indicator also take `TabularSurfaceHeaderForegroundPointerOverBrush` / `TabularSurfaceHeaderForegroundPressedBrush` (`SystemColorHighlightTextColor` on a `SystemColorHighlightColor` fill). In Light and Dark the header text keeps its inherited foreground, so an app-set `TableView.Foreground`, `HeaderTemplate` foreground or `SortIndicatorForeground` is not overridden on hover; there those foreground keys equal the default rest foreground (`TabularSurfaceRowForegroundBrush`), and the fills equal the row pointer-over/pressed fills. Brushes are looked up on each state change, and again when the header's `ActualTheme` changes. A header that cannot sort shows no feedback, the pointer events are never marked handled (click-to-sort and focus are unchanged), and a press on the resize gripper stays with the gripper.
 
 ## Body band
 
@@ -155,7 +155,7 @@ This yields three outcomes:
 | `*` present, no donor, dragged column is `*` | **Pinned** — the divider does not move |
 | `*` present, no donor, dragged column is `Pixel`/`Auto` | **Shrink-only** — may narrow to its own `MinWidth`, may not grow |
 
-A pinned column shows no gripper. A column whose `MinWidth` is at least its `MaxWidth` can never change width, so it is pinned too, and a fixed-width `*` column is not a donor. Availability is re-evaluated when `Width`, `MinWidth`, `MaxWidth`, `Visibility` or `CanResize` changes, never mid-drag. `IsColumnResizePinned` is the one rule shared by the drag bounds and the gripper's visibility; the collapsed gripper stays in the header cell, so `Alt+Arrow` still reaches it and is clamped the same way.
+A pinned column shows no gripper. A column whose `MinWidth` is at least its `MaxWidth` can never change width, so it is pinned too, and a fixed-width `*` column is not a donor. Availability is re-evaluated when `Width`, `MinWidth`, `MaxWidth`, `Visibility` or `CanResize` changes. Size changes (`Width`, `MinWidth`, `MaxWidth`) are not re-evaluated mid-drag — the drag itself converts columns to `Pixel` — and are refreshed once on `DragCompleted`; a `Visibility` change re-evaluates immediately, even during a drag. `IsColumnResizePinned` is the one rule shared by the drag bounds and the gripper's visibility; the collapsed gripper stays in the header cell, so `Alt+Arrow` still reaches it and is clamped the same way.
 
 What each other column reserves: a donor reserves its `MinWidth`; a `Pixel` column its pixel width; an `Auto` column its content width; a locked `*` column its share of the **authored** layout, so a neighbour's drag cannot move it.
 
@@ -215,7 +215,7 @@ Keyboard handling is cell-aware and follows the WAI-ARIA treegrid model. `TableV
   - `Tab` into a scrolled body from the column header band lands on the first fully visible enabled row or group header in the body viewport (a partially visible one if none is fully visible), or the last one for `Shift+Tab`; for a row at cell level, on the cell in the current column. Landing on a group header from the band, scrolled or not, leaves cell level, but the column cursor is kept. If no enabled element is in the viewport, the framework's target is kept. It never targets a cache row, so the body scrolls no further than the focus bring-into-view padding.
 - **Rows.**
   - Unhandled `Up`, `Down`, `PageUp` and `PageDown` keep the starting level: row to row, or cell to cell in the same visible column. `Up` from the first row moves to the header band.
-  - `PageDown` pages like `ListView`: it first moves to the last fully visible row, and from there one viewport (less one row) further, aligning that row to the bottom. `PageUp` mirrors it towards the top. The table handles both keys itself, so the body scroller does not page on its own.
+  - `PageDown` pages like `ListView`: it first moves to the last visible row, and from there one viewport (less one row) further, aligning that row to the bottom. `PageUp` mirrors it towards the first visible row and the top. The visible row is the last (or first) fully visible enabled data row, falling back to a partially visible one when none is fully visible; group headers and disabled rows are skipped. While focus is on a row or a cell the table handles both keys itself, so the body scroller does not page on its own; when focus is inside hosted cell content (or an open editor) the keys are left to that content and the body scroller's native paging.
   - A row that keyboard navigation focuses is scrolled fully into view, including a row that is not realized yet, such as the last row on `End`.
   - From a focused row, `Right` drills into the first cell. `Left` on the first cell returns to the row. `Left` on a row does nothing. On a row, `Left`/`Right` are handled before the body scroller sees them, so they never scroll the body on their own; only a newly focused cell is brought into view.
   - At cell level, `Left`/`Right` move the cell cursor within the focused row without wrapping. `Home`/`End` move to the first/last cell of the current row, and `Ctrl+Home`/`Ctrl+End` move to the first/last cell of the table. All horizontal keys mirror under RTL.
@@ -251,7 +251,7 @@ Theme values resolve through `TabularSurfaces` resources and re-resolve across t
 
 `TableView.xaml` does not redeclare the `TabularSurface*` brush keys: generic-style fallbacks would shadow the canonical palette and bypass its HighContrast system-color brushes. Consumers merge `TabularControlsResources` as documented by the sample.
 
-Template naming unwraps realized presenters and reads public visible text or peer names, with an eight-level/32-element budget per cell. Explicit names and labels win. Name-based item search rechecks the realized public name instead of treating item text as an alias. Text edits capture only an existing cached cell peer; changed Value/Name notifications are deferred until teardown, guarded against recycling/newer values, and never cause peer creation. Space header activation is disarmed on completed focus loss, header replacement, template replacement and unload; autorepeat is consumed only while the same header remains armed. A column header's text is a string `Header`, or an untemplated non-`UIElement` header's `ToString`; a `UIElement` header or one shown through `HeaderTemplate`/`HeaderTemplateSelector` is named from its realized header content only, never from the grid line, sort indicator or resize gripper. Sort announcements use that same header name.
+Template naming unwraps realized presenters and reads public visible text or peer names, with an eight-level/32-element budget per cell. Explicit names and labels win. Name-based item search rechecks the realized public name instead of treating item text as an alias. Text edits capture only an existing cached cell peer; changed Value/Name notifications are deferred until teardown, guarded against recycling/newer values, and never cause peer creation. Space header activation is disarmed on completed focus loss, header replacement, template replacement and unload; autorepeat is consumed only while the same header remains armed. A column header's text is a string `Header`, or an untemplated non-`UIElement` header's `ToString` unless that is just the object's runtime class name (CsWinRT's default, typical of a header rendered by an implicit `DataType` template); otherwise — a `UIElement` header, one shown through `HeaderTemplate`/`HeaderTemplateSelector`, or a class-name `ToString` — it is named from its realized header content only, never from the grid line, sort indicator or resize gripper. Sort announcements use that same header name.
 
 ## Sort ownership and reconciliation
 
@@ -272,6 +272,16 @@ Reconciliation rules:
   column lights that column and raises `Sorted` with it; otherwise every `SortDirection` is
   cleared and `Sorted` carries a null column.
 - `ClearSort()` clears every axis, including one the app declared.
+
+**Single owner.** A `TableViewSource` has exactly one owning `TableView`. A second `TableView`
+bound to a source another table already owns is refused and renders empty until the owner releases
+it — by assigning a different `ItemsSource` or being unloaded. A table releases its source on
+`Unloaded` and reclaims it on `Loaded` (reconciling its sort state then), so a navigation that loads
+the new page before unloading the old one resolves on its own. While refused, a table cannot sort.
+
+**Refused sorts.** `SortByColumn` and `ToggleSortDirection` return `false`, with no state changed,
+when the sort cannot be applied: besides a canceled `Sorting` or an edit that will not close, a
+source containing a null row object or the same object on two rows has no row identity to sort by.
 
 Without this, the earlier-declared axis would silently outrank the later one while the chevron
 advertised the loser. WPF splits the same way: `SortDescriptions` carry a property name, which is
@@ -307,10 +317,12 @@ ship apps whose grouping mysteriously does nothing, with no diagnostic. (Two dis
 instances *may* map to one identity when the app supplied a `groupIdentitySelector`; supplying one
 is the opt-in that makes the collapse intentional.)
 
-Only **row** identity degrades, and the asymmetry is deliberate: a row identity the engine cannot
-derive is a property of the app's data that the app may not control, and the `Unshaped` mirror
-still shows every row; a bad *group* identity comes from the `GroupBy(...)` selector the app just
-wrote, and an ungrouped table is an outcome it would not notice.
+Only **row** identity degrades instead of throwing, and the asymmetry is deliberate: a row identity
+the engine cannot derive is a property of the app's data that the app may not control, so the
+`Unshaped` mirror still shows every row — it just cannot be sorted by the control, and
+`SortByColumn`/`ToggleSortDirection` return `false` up front; a bad *group* identity
+comes from the `GroupBy(...)` selector the app just wrote, and an ungrouped table is an outcome it
+would not notice.
 
 **Composition order is meaningful.** A sort declared **before** `GroupBy` orders the groups; a
 sort declared **after** `GroupBy` orders rows within each bucket
@@ -471,7 +483,7 @@ Cell resolution walks up from `OriginalSource` to the cell wrapper (`TableViewCe
 
 Editing bindings use `UpdateSourceTrigger=Explicit`, so the typed value lives in the editor until the control pushes it. That is what lets a cancel restore something and a validation failure hold the edit open. On commit the control calls `UpdateSource()` on the binding expressions discovered from the editing element; validation runs **after** the write, and a blocked commit undoes it.
 
-A forced close (the source changes under the edit, or the control turns read-only) commits a valid pending value while the edited item is still in the source and passes the filter, and reports `Cancel` on a failed write or validation error. If the item was removed, filtered out, or `ItemsSource` was replaced, it reports `Cancel` and writes nothing, as WPF `DataGrid` does; an item that is only under a collapsed group or node has not been removed. A forced close during a pending commit deferral can finish as `Cancel` without a second `CellEditEnding`.
+A forced close (the source changes under the edit, or the control turns read-only) commits a valid pending value while the edited item is still in the source and passes the filter, and reports `Cancel` on a failed write or validation error. Because the pending value is still in the editor, a forced close first transfers it to the item, then validates; a value that fails validation is rolled back to the pre-edit value, so the item never keeps a value the control rejected. Inside a layout pass (a recycled or rebuilt row) restoring the editor would re-enter layout, so that rollback is posted to the dispatcher, and it is skipped if the item's value has changed in the meantime — another edit of the same cell is open, or the property no longer holds the rejected value — so a newer write is never overwritten. If the item was removed, filtered out, or `ItemsSource` was replaced, it reports `Cancel` and writes nothing, as WPF `DataGrid` does; an item that is only under a collapsed group or node has not been removed. A forced close during a pending commit deferral can finish as `Cancel` without a second `CellEditEnding`.
 
 Rollback prefers `ITableViewEditableItem` on the data item. Without it the control snapshots the value at the column's `GetEditingPropertyPathCore()` path, falling back to scraping the editor's bindings — inherently incomplete for an arbitrary editor, so the inability to capture anything is recorded and reported rather than silently ignored.
 

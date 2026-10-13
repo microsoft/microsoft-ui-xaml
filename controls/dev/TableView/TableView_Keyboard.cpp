@@ -759,11 +759,38 @@ void TableView::OnPreviewKeyDownForNavigation(
     if ((args.Key() == winrt::Windows::System::VirtualKey::PageUp ||
             args.Key() == winrt::Windows::System::VirtualKey::PageDown) &&
         !args.Handled() &&
-        !IsEditing() &&
+        !IsFocusInsideEditingElement() &&
         IsFocusExactlyOnBodyItem())
     {
         args.Handled(true);
     }
+}
+
+// Shared by the Preview and bubbling navigation handlers so both agree on who owns a paging key.
+bool TableView::IsFocusInsideEditingElement() const
+{
+    if (!IsEditing())
+    {
+        return false;
+    }
+
+    auto const editingElement = CurrentEditingElement();
+    auto const root = XamlRoot();
+    if (!editingElement || !root)
+    {
+        return false;
+    }
+
+    auto focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+    while (focused)
+    {
+        if (focused == editingElement)
+        {
+            return true;
+        }
+        focused = winrt::VisualTreeHelper::GetParent(focused);
+    }
+    return false;
 }
 
 void TableView::OnKeyDownForNavigation(
@@ -772,23 +799,9 @@ void TableView::OnKeyDownForNavigation(
 {
     // While editing, let the editor own keys; otherwise PageUp/PageDown can recycle the edited row
     // mid-edit. WPF DataGrid does the same.
-    if (IsEditing())
+    if (IsFocusInsideEditingElement())
     {
-        if (auto const editingElement = CurrentEditingElement())
-        {
-            if (auto const root = XamlRoot())
-            {
-                auto focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
-                while (focused)
-                {
-                    if (focused == editingElement)
-                    {
-                        return;
-                    }
-                    focused = winrt::VisualTreeHelper::GetParent(focused);
-                }
-            }
-        }
+        return;
     }
 
     // After the editing guard so an open editor keeps its arrow keys; Alt+Arrow cannot shadow the
@@ -1373,6 +1386,7 @@ void TableView::RestoreBodyFocusAfterReshape()
 
     m_pendingReshapeFocusRow = row;
     m_pendingReshapeFocusAlign.reset();
+    m_pendingBodyFocusItem = nullptr;
 
     m_reshapeFocusArmedThisTurn = true;
     if (auto const queue = DispatcherQueue())
@@ -1462,6 +1476,7 @@ void TableView::ArmReshapeFocusAttempt()
 void TableView::CancelReshapeFocusRestore()
 {
     m_pendingReshapeFocusRow = -1;
+    m_pendingBodyFocusItem = nullptr;
     m_reshapeFocusAttemptsLeft = 0;
     if (m_reshapeFocusLayoutToken.value)
     {
@@ -1548,6 +1563,21 @@ bool TableView::TryLandReshapeFocus()
         return true;
     }
 
+    if (m_pendingBodyFocusItem)
+    {
+        // Add/Remove/Move above the target shift indices without a Reset; follow the item, and
+        // give up once it leaves the projection.
+        if (!IsPendingBodyFocusItemAt(m_pendingReshapeFocusRow))
+        {
+            const int32_t resolved = FindEntryIndexForDataItem(m_pendingBodyFocusItem);
+            if (resolved < 0)
+            {
+                return true;
+            }
+            m_pendingReshapeFocusRow = resolved;
+        }
+    }
+
     // A filter can shorten the projection past the captured position; clamp to stay in the body.
     const int32_t target = std::clamp(m_pendingReshapeFocusRow, 0, rowCount - 1);
 
@@ -1606,8 +1636,25 @@ void TableView::BeginPendingBodyFocus(int32_t row, int32_t column, bool cellLeve
     m_pendingReshapeFocusCellLevel = cellLevel;
     m_pendingReshapeFocusState = winrt::FocusState::Keyboard;
     m_pendingReshapeFocusAlign = alignRatio;
+    m_pendingBodyFocusItem = nullptr;
+    if (m_rowsItemsSourceView && row >= 0 && row < m_rowsItemsSourceView.Count())
+    {
+        m_pendingBodyFocusItem = m_rowsItemsSourceView.GetAt(row);
+    }
     m_reshapeFocusAttemptsLeft = s_reshapeFocusRestoreAttempts;
     ArmReshapeFocusAttempt();
+}
+
+bool TableView::IsPendingBodyFocusItemAt(int32_t row) const
+{
+    if (!m_rowsItemsSourceView || row < 0 || row >= m_rowsItemsSourceView.Count())
+    {
+        return false;
+    }
+
+    auto const target = m_pendingBodyFocusItem.try_as<::IUnknown>();
+    auto const candidate = m_rowsItemsSourceView.GetAt(row).try_as<::IUnknown>();
+    return target && candidate && target.get() == candidate.get();
 }
 
 bool TableView::IsRowElementArranged(winrt::UIElement const& element)
@@ -1644,10 +1691,12 @@ bool TableView::IsRowElementInViewport(winrt::UIElement const& element) const
         return false;
     }
 
-    // Same slack as FindViewportEdgeRowInternal; a row taller than the viewport counts once top-aligned.
+    // Same slack as FindViewportEdgeRowInternal; a row taller than the viewport counts once top-aligned
+    // or once it covers the whole viewport (a bottom-aligned PageDown target leaves its top negative).
     constexpr double slack = 0.5;
     const double bottom = top + frameworkElement.ActualHeight();
-    return top >= -slack && (bottom <= viewportHeight + slack || top <= slack);
+    return (top >= -slack && (bottom <= viewportHeight + slack || top <= slack)) ||
+        (top <= slack && bottom >= viewportHeight - slack);
 }
 
 bool TableView::BringRowElementIntoView(winrt::UIElement const& element, std::optional<double> alignRatio)

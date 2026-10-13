@@ -652,6 +652,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a forced teardown that keeps the edited item in the source transfers an invalid pending value, rejects it and leaves the item unchanged.")]
+        public void VerifyForcedTeardownWithItemPresentRollsBackInvalidPendingValue()
+        {
+            var items = MakeEditableItems();
+            items[0].RejectPrefix = InvalidPrefix;
+            var tableView = LoadEditableTable(items);
+
+            // The vetoed commit wrote nothing, so the only invalid value is the one typed below.
+            var actions = OpenEditHoldingValidValue(tableView, items[0], "Zed");
+
+            RunOnUIThread.Execute(() =>
+            {
+                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
+                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
+                editors[0].Text = InvalidPrefix + "Nope";
+
+                // Forced and outside layout, with the item still in the source: the pending value is
+                // transferred, then rejected by validation.
+                tableView.IsReadOnly = true;
+            });
+            IdleSynchronizer.Wait();
+
+            VerifyForcedClose(tableView, actions, TableViewEditAction.Cancel, items[0], "Asha", "an invalid pending value must be rolled back off an item that stays in the source");
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies recycling the edited row during layout rolls back a pending value that fails validation.")]
         public void VerifyRecycleDuringLayoutRollsBackInvalidPendingValue()
         {

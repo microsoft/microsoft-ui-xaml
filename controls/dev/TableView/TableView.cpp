@@ -1833,6 +1833,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
         if (IsLoaded())
         {
             // The source may have been sorted while another table owned it.
+            m_rerankCustomSortOnReconcile = reclaimActiveSource;
             QueueReconcileSortStateWithSource();
         }
         else
@@ -2953,19 +2954,59 @@ void TableView::RestoreHeaderFocus(const winrt::TableViewColumn& column, winrt::
         return;
     }
 
+    // Whatever holds focus now is what the rebuild left behind; anything else later is a user/app move.
+    winrt::weak_ref<winrt::DependencyObject> weakFocusAtSchedule{ nullptr };
+    if (auto const root = XamlRoot())
+    {
+        if (auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>())
+        {
+            weakFocusAtSchedule = winrt::make_weak(focused);
+        }
+    }
+
     auto weakThis = get_weak();
     m_headerFocusRestoreLayoutToken = LayoutUpdated(
-        [weakThis, weakColumn = winrt::make_weak(column), focusState](winrt::IInspectable const&, winrt::IInspectable const&)
+        [weakThis, weakColumn = winrt::make_weak(column), focusState, weakFocusAtSchedule](winrt::IInspectable const&, winrt::IInspectable const&)
         {
             if (auto strongThis = weakThis.get())
             {
                 strongThis->CancelHeaderFocusRestore();
+                if (!strongThis->CanRestoreHeaderFocus(weakFocusAtSchedule.get()))
+                {
+                    return;
+                }
                 if (auto const liveColumn = weakColumn.get())
                 {
                     strongThis->TryFocusHeaderCell(liveColumn, focusState);
                 }
             }
         });
+}
+
+// Focus the user or app moved elsewhere while the restore was pending is never pulled back.
+bool TableView::CanRestoreHeaderFocus(const winrt::DependencyObject& focusAtSchedule) const
+{
+    auto const root = XamlRoot();
+    if (!root)
+    {
+        return false;
+    }
+
+    auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+    if (!focused || focused == focusAtSchedule)
+    {
+        return true;
+    }
+
+    auto const headerHost = m_headerHost.get();
+    for (auto current = focused; current; current = winrt::VisualTreeHelper::GetParent(current))
+    {
+        if (headerHost && current == headerHost)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool TableView::TryFocusHeaderCell(const winrt::TableViewColumn& column, winrt::FocusState focusState)
@@ -3251,6 +3292,13 @@ void TableView::ReclaimItemsSource()
 
 void TableView::OnTableViewUnloaded()
 {
+    // A re-parent can raise Loaded before the stale Unloaded; tearing down now would leave a live
+    // table detached from its source, drained repeater, scrollers and ThemeSettings.
+    if (IsLoaded())
+    {
+        return;
+    }
+
     m_headerSortSpaceArmedColumn = nullptr;
     // Neither a pending restore nor a remembered position may outlive this tree.
     CancelReshapeFocusRestore();

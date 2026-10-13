@@ -569,6 +569,13 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
     // header container during the next layout pass; focusing now would land on a container layout
     // is about to recycle, dropping focus a second time. A one-shot LayoutUpdated fires once the
     // tree has settled.
+    ArmContainerFocusRestore(identity, focusState, fromPointerGesture, s_containerFocusRestoreAttempts);
+}
+
+// Re-armed while the header is still unarranged after the relayout; the last attempt focuses anyway.
+void TableView::ArmContainerFocusRestore(
+    winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, int32_t attemptsLeft)
+{
     if (m_pendingGroupFocusLayoutToken.value)
     {
         LayoutUpdated(m_pendingGroupFocusLayoutToken);
@@ -577,7 +584,7 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
 
     auto weakThis = get_weak();
     m_pendingGroupFocusLayoutToken = LayoutUpdated(
-        [weakThis, identity, focusState, fromPointerGesture](winrt::IInspectable const&, winrt::IInspectable const&)
+        [weakThis, identity, focusState, fromPointerGesture, attemptsLeft](winrt::IInspectable const&, winrt::IInspectable const&)
         {
             auto strongThis = weakThis.get();
             if (!strongThis)
@@ -602,7 +609,11 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
                     return;
                 }
 
-                strongThis->FocusContainerByIdentity(identity, focusState, fromPointerGesture);
+                const bool finalAttempt = attemptsLeft <= 1;
+                if (!strongThis->FocusContainerByIdentity(identity, focusState, fromPointerGesture, finalAttempt))
+                {
+                    strongThis->ArmContainerFocusRestore(identity, focusState, fromPointerGesture, attemptsLeft - 1);
+                }
             }
             catch (...)
             {
@@ -611,23 +622,25 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
         });
 }
 
-void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture)
+// Returns false only when a non-final attempt found the group header not yet arranged.
+bool TableView::FocusContainerByIdentity(
+    winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, bool finalAttempt)
 {
     if (identity.empty() || !m_tableViewSourceRowMetadata)
     {
-        return;
+        return true;
     }
 
     int32_t index = -1;
     if (!m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, index) || index < 0)
     {
-        return;
+        return true;
     }
 
     auto repeater = m_rowsRepeater.get();
     if (!repeater)
     {
-        return;
+        return true;
     }
 
     // The metadata provider and repeater own separate views that can absorb reshapes at different
@@ -636,7 +649,7 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
     auto const sourceView = repeater.ItemsSourceView();
     if (!sourceView || index >= sourceView.Count())
     {
-        return;
+        return true;
     }
 
     // Data row: a splice keeps focus in place; restore only if the Reset recycled the container.
@@ -652,7 +665,7 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
                 {
                     if (repeater.GetElementIndex(row) == index)
                     {
-                        return;
+                        return true;
                     }
                     break;
                 }
@@ -660,28 +673,28 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
         }
 
         FocusRow(index);
-        return;
+        return true;
     }
 
     auto element = repeater.GetOrCreateElement(index);
     if (!element)
     {
-        return;
+        return true;
     }
 
     // Only a group header is a valid target: after a re-sort or source swap the identity's index
     // could now name a data row, and focusing that with a header's intent would be wrong.
     if (!element.try_as<winrt::TableViewGroupHeader>())
     {
-        return;
+        return true;
     }
 
     if (!IsRowElementArranged(element))
     {
         element.UpdateLayout();
-        if (!IsRowElementArranged(element))
+        if (!IsRowElementArranged(element) && !finalAttempt)
         {
-            return;
+            return false;
         }
     }
 
@@ -695,6 +708,7 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
     {
         BringRowElementIntoView(element, std::nullopt);
     }
+    return true;
 }
 
 void TableView::ExpandAllGroups()

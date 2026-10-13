@@ -11,6 +11,7 @@
 #include "TableViewBeginningEditEventArgs.h"
 #include "TableViewCellEditEndingEventArgs.h"
 #include "TVDiag.h"
+#include "SortMemberPathResolver.h"
 
 #include <atomic>
 #include <string>
@@ -131,6 +132,53 @@ namespace
             L"[TableView] Cancel cannot revert this edit (%ls). Implement ITableViewEditableItem "
             L"on the data item to make rollback reliable.",
             reason);
+    }
+
+    // Value-typed properties come back as a fresh box on every read, so compare those by value.
+    // Returns nullopt when the values can't be compared (enums, structs, managed-only value types
+    // such as decimal, or other non-identical objects), since a fresh box can't be told apart from
+    // a newer write.
+    std::optional<bool> SameEditValue(winrt::IInspectable const& left, winrt::IInspectable const& right)
+    {
+        if (TableView::SameInspectableIdentity(left, right))
+        {
+            return true;
+        }
+        if (!left || !right)
+        {
+            return false;
+        }
+
+        const auto leftValue = left.try_as<winrt::IPropertyValue>();
+        const auto rightValue = right.try_as<winrt::IPropertyValue>();
+        if (!leftValue || !rightValue)
+        {
+            return std::nullopt;
+        }
+        if (leftValue.Type() != rightValue.Type())
+        {
+            return false;
+        }
+
+        switch (leftValue.Type())
+        {
+        case winrt::PropertyType::Boolean: return leftValue.GetBoolean() == rightValue.GetBoolean();
+        case winrt::PropertyType::Char16: return leftValue.GetChar16() == rightValue.GetChar16();
+        case winrt::PropertyType::UInt8: return leftValue.GetUInt8() == rightValue.GetUInt8();
+        case winrt::PropertyType::Int16: return leftValue.GetInt16() == rightValue.GetInt16();
+        case winrt::PropertyType::UInt16: return leftValue.GetUInt16() == rightValue.GetUInt16();
+        case winrt::PropertyType::Int32: return leftValue.GetInt32() == rightValue.GetInt32();
+        case winrt::PropertyType::UInt32: return leftValue.GetUInt32() == rightValue.GetUInt32();
+        case winrt::PropertyType::Int64: return leftValue.GetInt64() == rightValue.GetInt64();
+        case winrt::PropertyType::UInt64: return leftValue.GetUInt64() == rightValue.GetUInt64();
+        case winrt::PropertyType::Single: return leftValue.GetSingle() == rightValue.GetSingle();
+        case winrt::PropertyType::Double: return leftValue.GetDouble() == rightValue.GetDouble();
+        case winrt::PropertyType::String: return leftValue.GetString() == rightValue.GetString();
+        case winrt::PropertyType::Guid: return leftValue.GetGuid() == rightValue.GetGuid();
+        case winrt::PropertyType::DateTime: return leftValue.GetDateTime() == rightValue.GetDateTime();
+        case winrt::PropertyType::TimeSpan: return leftValue.GetTimeSpan() == rightValue.GetTimeSpan();
+        default: return std::nullopt;
+        }
     }
 }
 
@@ -716,15 +764,33 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
                 {
                     // Restoring the editor here is the layout re-entrancy above, so post it. By then
                     // the editor is detached and has no inherited DataContext, so pin it to our item.
+                    //
+                    // Snapshot the rejected value now: if the item no longer holds it when the
+                    // rollback runs, something newer (another edit, an app or live write) owns the
+                    // property and restoring the pre-edit value would overwrite it.
                     auto weakThis = get_weak();
                     auto const uneditedValue = m_editUneditedValue.get();
+                    auto const editingPath = ResolveEditingPropertyPath(column);
+                    auto const resolver = std::make_shared<SortMemberPathResolver>(editingPath);
+                    auto const rejectedValue = resolver->Resolve(item);
                     auto const queue = DispatcherQueue();
-                    if (!queue || !queue.TryEnqueue([weakThis, column, editingElement, item, uneditedValue]()
+                    if (!queue || !queue.TryEnqueue([weakThis, column, editingElement, item, uneditedValue, editingPath, resolver, rejectedValue]()
                         {
                             auto strongThis = weakThis.get();
                             bool restored = false;
                             if (strongThis)
                             {
+                                const bool newerEditOpen =
+                                    strongThis->m_editState != EditState::None &&
+                                    strongThis->m_currentEditColumn.get() == column &&
+                                    SameInspectableIdentity(strongThis->m_currentEditItem.get(), item);
+                                if (newerEditOpen ||
+                                    (!editingPath.empty() && SameEditValue(resolver->Resolve(item), rejectedValue) == false))
+                                {
+                                    TVDiag::LogRetailF(L"[TableView] Skipped a posted edit rollback: the value changed after the rejected commit.");
+                                    return;
+                                }
+
                                 try
                                 {
                                     editingElement.DataContext(item);
@@ -733,6 +799,7 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
                                 }
                                 catch (...)
                                 {
+                                    LogConsumerHandlerThrow(L"CancelCellEdit");
                                 }
                                 try { editingElement.ClearValue(winrt::FrameworkElement::DataContextProperty()); }
                                 catch (...) {}

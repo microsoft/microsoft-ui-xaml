@@ -26,6 +26,7 @@
 #include "Utils.h"
 #include "ShapingHelpers.h"
 #include "SortMemberPathResolver.h"
+#include "TVDiag.h"
 
 #include <algorithm>
 #include <numeric>
@@ -76,6 +77,41 @@ void TableView::ReleaseCustomSortRows(const winrt::IInspectable& item, const std
     else
     {
         state->RetainOnly(liveRows);
+    }
+}
+
+// Rank() starts from the current rows, so it drops ranks rooted while released and re-reads values
+// edited meanwhile; re-declaring the axis makes the projection read the new keys.
+void TableView::RerankCustomSortAfterReclaim()
+{
+    auto const& state = m_tableViewSourceSort.CustomSortState;
+    if (!state || !state->HasComparer() || m_sortedColumns.size() != 1)
+    {
+        return;
+    }
+    auto const column = m_sortedColumns.front().get();
+    if (!column || !column.CustomSortComparer())
+    {
+        return;
+    }
+    const auto direction = column.SortDirection();
+    if (direction == winrt::SortDirection::None || !CanApplySortTo(direction))
+    {
+        return;
+    }
+
+    const auto preservedSelection = SelectedItemInternal();
+    try
+    {
+        if (SyncTableViewSourceSort(column, direction) && preservedSelection)
+        {
+            ApplySelection(FindEntryIndexForDataItem(preservedSelection));
+        }
+    }
+    catch (...)
+    {
+        // Dispatcher callback: best-effort, the previous order stands.
+        TVDiag::LogRetailF(L"[TableView] Re-ranking the custom sort after reclaim failed.");
     }
 }
 
@@ -150,9 +186,26 @@ bool TableView::IsSortClearStillValid() const
     return !m_sortedColumns.empty();
 }
 
+// Refused a source another table owns: there is nothing to sort until it is released, and the
+// columns keep their state for the reconcile that follows.
+bool TableView::CanSortColumnNow(const winrt::TableViewColumn& column) const
+{
+    return !m_awaitedSource.get() && CanSortColumn(column);
+}
+
+bool TableView::CanApplySortTo(winrt::SortDirection direction) const
+{
+    if (direction == winrt::SortDirection::None)
+    {
+        return true;
+    }
+    auto const source = ShapingSourceInternal();
+    return !source || winrt::get_self<::TableViewSource>(source)->CanApplySort();
+}
+
 bool TableView::IsSortRequestStillValid(const winrt::TableViewColumn& column) const
 {
-    if (!column || !CanSortColumn(column))
+    if (!column || !CanSortColumnNow(column))
     {
         return false;
     }
@@ -174,7 +227,7 @@ bool TableView::IsSortRequestStillValid(const winrt::TableViewColumn& column) co
 
 bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDirection direction)
 {
-    if (!CanSortColumn(column))
+    if (!CanSortColumnNow(column))
     {
         return false;
     }
@@ -196,12 +249,9 @@ bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDi
     }
 
     // A null item or one object on two rows can't be sorted; refuse before any state changes.
-    if (direction != winrt::SortDirection::None)
+    if (!CanApplySortTo(direction))
     {
-        if (auto const source = ShapingSourceInternal(); source && !winrt::get_self<::TableViewSource>(source)->CanApplySort())
-        {
-            return false;
-        }
+        return false;
     }
 
     // An open editor is showing a row at an index that is about to move. Close it first; if it
@@ -227,7 +277,8 @@ bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDi
         return false;
     }
 
-    if (!IsSortRequestStillValid(column))
+    // The edit commit and the Sorting handler are app code that can change the rows.
+    if (!IsSortRequestStillValid(column) || !CanApplySortTo(direction))
     {
         return false;
     }
@@ -240,7 +291,7 @@ bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDi
 
 bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
 {
-    if (!CanSortColumn(column))
+    if (!CanSortColumnNow(column))
     {
         return false;
     }
@@ -283,12 +334,9 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
         next = opening;
     }
 
-    if (next != winrt::SortDirection::None)
+    if (!CanApplySortTo(next))
     {
-        if (auto const source = ShapingSourceInternal(); source && !winrt::get_self<::TableViewSource>(source)->CanApplySort())
-        {
-            return false;
-        }
+        return false;
     }
 
     if (!TryTerminateEditForControlInitiatedReshape())
@@ -312,7 +360,7 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
         return false;
     }
 
-    if (!IsSortRequestStillValid(column))
+    if (!IsSortRequestStillValid(column) || !CanApplySortTo(next))
     {
         return false;
     }
@@ -579,7 +627,17 @@ bool TableView::SyncTableViewSourceSort(
     {
         // Replacing rather than adding: re-sorting a column must swap its axis, not stack a
         // second one on top of the first.
-        tableViewSourceImpl->SortReplacing(m_tableViewSourceSort.AxisToken, sortAxisToken, keySelector, axisSortMemberPath, direction);
+        try
+        {
+            tableViewSourceImpl->SortReplacing(m_tableViewSourceSort.AxisToken, sortAxisToken, keySelector, axisSortMemberPath, direction);
+        }
+        catch (...)
+        {
+            // The axis is declared before the projection fails; keep owning it so the next sort
+            // replaces it instead of stacking on an orphan.
+            m_tableViewSourceSort.AxisToken = sortAxisToken;
+            throw;
+        }
         tableViewSourceImpl->ClearSortsExcept(sortAxisToken);
     }
 
@@ -777,6 +835,7 @@ void TableView::ReconcileSortStateWithSource()
     {
         return;
     }
+    const bool rerankCustomSort = std::exchange(m_rerankCustomSortOnReconcile, false);
 
     auto const& ownToken = m_tableViewSourceSort.AxisToken;
     auto tableViewSourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
@@ -801,6 +860,10 @@ void TableView::ReconcileSortStateWithSource()
     if (ownAxisPresent && primaryForeignAxis == nullptr)
     {
         // The control's axis is still the only sort: chevrons already describe it.
+        if (rerankCustomSort)
+        {
+            RerankCustomSortAfterReclaim();
+        }
         return;
     }
 

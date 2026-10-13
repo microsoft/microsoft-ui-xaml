@@ -14,8 +14,8 @@ public sealed partial class KeyboardReference : RailSection
     private static readonly (string Keys, string Action)[] CommonKeys =
     {
         ("Up / Down", "Previous / next row"),
-        ("Right / Left", "On a row: Right moves into its first cell; Left on the first cell returns to the row; Left on a row does nothing"),
-        ("Left / Right", "Previous / next cell in the focused row"),
+        ("Right / Left", "On a row: Right moves into its first cell; Left does nothing"),
+        ("Left / Right", "At cell level: previous / next cell in the focused row (no wrap); Left on the first cell returns to the row"),
         ("Home / End", "First / last row; at cell level, first / last cell of the focused row"),
         ("Ctrl+Home / Ctrl+End", "First / last cell of the table"),
         ("Page Up / Page Down", "First / last visible row, then one page further"),
