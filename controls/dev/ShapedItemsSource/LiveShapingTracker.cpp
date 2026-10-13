@@ -74,6 +74,20 @@ void LiveShapingTracker::Subscribe(winrt::IInspectable const& item)
     }
 }
 
+LiveShapingTracker::Subscription& LiveShapingTracker::Subscription::operator=(Subscription&& other) noexcept
+{
+    if (this != &other)
+    {
+        Revoke();
+        Item = std::move(other.Item);
+        CanResolveItem = std::exchange(other.CanResolveItem, false);
+        Revoker = std::move(other.Revoker);
+        StrongSource = std::move(other.StrongSource);
+        Token = std::exchange(other.Token, {});
+    }
+    return *this;
+}
+
 void LiveShapingTracker::Subscription::Revoke() noexcept
 {
     Revoker.revoke();

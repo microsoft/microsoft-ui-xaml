@@ -101,8 +101,9 @@ runtimeclass TableViewSource
     // each item's unique key, parentKeySelector its parent's key (null or empty for a root; an
     // unknown parent key makes an orphan root). Null selectors, duplicate/empty keys, self-parent
     // and cycles throw E_INVALIDARG and keep the previous projection. Value-typed keys compare by
-    // value and type; other objects by reference. Rows start collapsed; sort applies per sibling
-    // set, filter keeps matching rows plus their ancestors, and GroupBy buckets the roots.
+    // value and type; other objects (including app-defined enums and structs) by reference, never
+    // by Equals. Rows start collapsed; sort applies per sibling set, filter keeps matching rows plus
+    // their ancestors, and GroupBy buckets the roots.
     // See docs/design-notes/TabularControls/Hierarchical-Data-Rows-Parent-Key-Design.md.
     TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
 

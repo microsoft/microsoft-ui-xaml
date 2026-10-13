@@ -647,6 +647,63 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies collapsing the group of the selected row clears selection, and neither re-expanding nor a later reshape restores it.")]
+        public void VerifyGroupCollapseDropsSelectionOfHiddenRow()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            var changes = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                source.GroupBy(o => Person(o).Role);
+
+                tableView = CreateGroupedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.SelectionChanged += (s, e) => changes++;
+                tableView.Select(GetProjectedLabels(tableView, includeCount: false).IndexOf("Asha"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha", Person(tableView.SelectedItem)?.Name, "Asha is selected.");
+                Verify.AreEqual(1, changes, "One SelectionChanged for the select.");
+                GetExpandCollapseProvider(tableView, 0).Collapse();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(tableView.SelectedItem, "Collapsing Designer hides Asha and clears selection.");
+                Verify.AreEqual(2, changes, "One SelectionChanged for the clear.");
+                tableView.ExpandAllGroups();
+            });
+
+            SettleLayout(tableView);
+
+            // A Reset-driven reshape must not resurrect the selection the collapse cleared.
+            RunOnUIThread.Execute(() => source.Sort(o => Person(o).Name, SortDirection.Ascending));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(tableView.SelectedItem, "Re-expanding and reshaping must not restore the selection.");
+                Verify.AreEqual(2, changes, "No further SelectionChanged.");
+            });
+        }
+
         #endregion
 
         #region 9.4 Group edge cases

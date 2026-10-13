@@ -243,7 +243,8 @@ Every item has exactly one parent, and the app supplies the key, so no path key 
 - It is also the row identity for the metadata provider (`GetIdentity`), so selection re-anchors on
   it too.
 - Selection follows the presented row. When a collapse hides the selected row, the selection is
-  cleared rather than held for the hidden row, and expanding again does not restore it.
+  cleared rather than held for the hidden row, and neither expanding again nor a later reshape
+  restores it. Collapsing a group behaves the same way.
 
 ### 5.2 Baseline, bulk verbs, and redeclaration
 
