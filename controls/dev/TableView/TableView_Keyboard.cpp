@@ -1679,9 +1679,11 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
         // A reshape that only moved the item is recoverable: FindRealizedRowForItem searches
         // realized rows only, so this never forces a realization or a surprise scroll. When the
         // item is gone or off-screen, entry falls back to the viewport edge row.
-        if (auto const remembered = stillTheSameRecord
-                ? GetRealizedRowAt(m_currentCellRow)
-                : FindRealizedRowForItem(rememberedItem))
+        // A disabled row can't take focus; fall through to the viewport edge row.
+        auto const remembered = stillTheSameRecord
+            ? GetRealizedRowAt(m_currentCellRow)
+            : FindRealizedRowForItem(rememberedItem);
+        if (remembered && remembered.IsEnabled())
         {
             return remembered;
         }
@@ -1724,7 +1726,7 @@ winrt::TableViewRow TableView::FindViewportEdgeRowInternal(bool last) const
     for (int32_t i = 0; i < childCount; ++i)
     {
         auto const row = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::TableViewRow>();
-        if (!row || row.Visibility() != winrt::Visibility::Visible)
+        if (!row || row.Visibility() != winrt::Visibility::Visible || !row.IsEnabled())
         {
             continue;
         }
