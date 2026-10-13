@@ -1204,6 +1204,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(focusKeptShift, "Alt+Shift+Right must resize, not move focus off the Name header.");
                 Verify.IsTrue(deltaShift > deltaPlain,
                     string.Format("Alt+Shift+Right should grow by a larger step than Alt+Right ({0}px vs {1}px).", deltaShift, deltaPlain));
+
+                MoveFocusOffTableBeforeTeardown();
             }
         }
 
@@ -2111,6 +2113,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Right, numPresses: (uint)headerCount);
                 Wait.ForIdle();
                 VerifyFocusedHeader(BasicTable, lastHeaderName, "Right past the last header must leave the last header focused.");
+
+                MoveFocusOffTableBeforeTeardown();
             }
         }
 
@@ -2148,6 +2152,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Enter, numPresses: 2); // None -> Ascending -> Descending
                 Wait.ForIdle();
                 Verify.IsLessThan(IndexOfSelectedRow(BasicTable), bottomIndex, "Positive control: Enter twice on Age must sort Descending and lift the bottom row.");
+
+                MoveFocusOffTableBeforeTeardown();
             }
         }
 

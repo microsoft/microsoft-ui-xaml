@@ -582,6 +582,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Call last inside the TestSetupHelper scope of a test that leaves a column header focused. On 25H2 the UIA
+        // call after GoBack (back-button InvokeAndWait, or the next test's page lookup) has blocked until the TAEF
+        // timeout when the page was torn down with a header holding keyboard focus; the app itself stayed responsive.
+        // Parking focus on a page button and settling first keeps that teardown off the header path. Best-effort.
+        internal static void MoveFocusOffTableBeforeTeardown()
+        {
+            UIObject outside = TryFindElement.ById(DummyButton);
+            if (outside == null)
+            {
+                Log.Comment(DummyButton + " was not found; leaving focus where it is for teardown.");
+                return;
+            }
+
+            outside.SetFocus();
+            Wait.ForIdle();
+            if (!outside.HasKeyboardFocus)
+            {
+                Log.Comment("Could not move keyboard focus to " + DummyButton + " before teardown.");
+            }
+        }
+
         // Selects a Pivot item by invoking the page's GoTo<Item>Button, found by AutomationId rather than by header
         // name. Returns false if the button could not be found; the caller decides whether that fails the test.
         internal static bool SelectPivotItem(string pivotItem)
