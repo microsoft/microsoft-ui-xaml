@@ -6510,6 +6510,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         FlyoutHelper::HideFlyout(menuFlyout);
     }
 
+    void MenuFlyoutIntegrationTests::MenuFlyoutRemainsInBoundsWhenShownTwiceUAP()
+    {
+        MenuFlyoutRemainsInBoundsWhenShownTwice();
+    }
+
+    void MenuFlyoutIntegrationTests::MenuFlyoutRemainsInBoundsWhenShownTwiceNoOptimizeApplyStyles()
+    {
+        MenuFlyoutRemainsInBoundsWhenShownTwice();
+    }
+
+    void MenuFlyoutIntegrationTests::MenuFlyoutRemainsInBoundsWhenShownTwiceNoOptimizeApplyStylesUAP()
+    {
+        MenuFlyoutRemainsInBoundsWhenShownTwice();
+    }
+
     // Shows the same MenuFlyout twice in a row, without closing it, attempting to position it beyond the screen's boundaries.
     // Ensures it is moved within the screen's boundaries.
     void MenuFlyoutIntegrationTests::MenuFlyoutRemainsInBoundsWhenShownTwice()
@@ -6550,16 +6565,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             menuFlyout = safe_cast<xaml_controls::MenuFlyout^>(xaml_controls::MenuFlyout::GetAttachedFlyout(rootGrid));
             VERIFY_IS_NOT_NULL(menuFlyout);
 
-            openedRegistration.Attach(menuFlyout, ref new wf::EventHandler<Platform::Object^>([rootGrid, menuFlyout, menuFlyoutOpenedEvent, &initialMenuItemPosition](Platform::Object^, Platform::Object^)
+            openedRegistration.Attach(menuFlyout, ref new wf::EventHandler<Platform::Object^>([menuFlyoutOpenedEvent](Platform::Object^, Platform::Object^)
             {
                 LOG_OUTPUT(L"MenuFlyout.Opened event raised");
-
-                xaml_controls::MenuFlyoutItem^ menuItem = safe_cast<xaml_controls::MenuFlyoutItem^>(menuFlyout->Items->GetAt(0));
-                VERIFY_IS_NOT_NULL(menuItem);
-
-                initialMenuItemPosition = menuItem->TransformToVisual(rootGrid)->TransformPoint(wf::Point(0, 0));
-                LOG_OUTPUT(L"Initial MenuFlyoutItem position in MenuFlyout.Opened event handler: %f, %f.", initialMenuItemPosition.X, initialMenuItemPosition.Y);
-
                 menuFlyoutOpenedEvent->Set();
             }));
 
@@ -6575,11 +6583,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         LOG_OUTPUT(L"Waiting for root Grid to load.");
         loadedEvent->WaitForDefault();
 
+        LOG_OUTPUT(L"Clicking at 0, 0 before showing the MenuFlyout.");
+        TestServices::InputHelper->LeftMouseClick(wf::Point(0, 0));
+        TestServices::WindowHelper->WaitForIdle();
+
         RunOnUIThread([&]()
         {
             showAtPosition.X = static_cast<float>(rootGrid->ActualWidth) - 25.0f;
             showAtPosition.Y = static_cast<float>(rootGrid->ActualHeight) - 25.0f;
 
+            LOG_OUTPUT(L"Root Grid size: %f, %f.", rootGrid->ActualWidth, rootGrid->ActualHeight);
             LOG_OUTPUT(L"Showing MenuFlyout at position %f, %f.", showAtPosition.X, showAtPosition.Y);
             menuFlyout->ShowAt(rootGrid, showAtPosition);
         });
@@ -6590,6 +6603,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         RunOnUIThread([&]()
         {
+            xaml_controls::MenuFlyoutItem^ menuItem = safe_cast<xaml_controls::MenuFlyoutItem^>(menuFlyout->Items->GetAt(0));
+            VERIFY_IS_NOT_NULL(menuItem);
+
+            // Focus-driven padding changes can trigger layout after Opened.
+            initialMenuItemPosition = menuItem->TransformToVisual(rootGrid)->TransformPoint(wf::Point(0, 0));
+            LOG_OUTPUT(L"Initial MenuFlyoutItem position after settling: %f, %f.", initialMenuItemPosition.X, initialMenuItemPosition.Y);
+            LOG_OUTPUT(L"Initial MenuFlyoutItem height=%f, FocusState=%d (Unfocused=0, Pointer=1, Keyboard=2, Programmatic=3).",
+                menuItem->ActualHeight, static_cast<int>(menuItem->FocusState));
+
             LOG_OUTPUT(L"Showing MenuFlyout at position %f, %f again.", showAtPosition.X, showAtPosition.Y);
             menuFlyout->ShowAt(rootGrid, showAtPosition);
         });
@@ -6605,6 +6627,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             wf::Point finalMenuItemPosition = menuItem->TransformToVisual(rootGrid)->TransformPoint(wf::Point(0, 0));
             LOG_OUTPUT(L"Final MenuFlyoutItem position: %f, %f.", finalMenuItemPosition.X, finalMenuItemPosition.Y);
+            LOG_OUTPUT(L"Final MenuFlyoutItem height=%f, FocusState=%d (Unfocused=0, Pointer=1, Keyboard=2, Programmatic=3).",
+                menuItem->ActualHeight, static_cast<int>(menuItem->FocusState));
 
             LOG_OUTPUT(L"Verifying initial and final MenuFlyoutItem positions are identical.");
             VERIFY_ARE_EQUAL(finalMenuItemPosition.X, initialMenuItemPosition.X);
