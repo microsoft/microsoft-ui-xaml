@@ -254,7 +254,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(MinMaxSizeAfterClose)
+        BEGIN_TEST_METHOD(MinMaxSizeFrozenAfterClose)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that WinUI Window Min/Max size values freeze at close: getters still work, valid sets do nothing, invalid values still throw, and calls from another thread still throw.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()

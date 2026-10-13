@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -3820,24 +3820,24 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         RunOnUIThread([&]()
         {
-            VERIFY_IS_TRUE(std::abs(200.0 - window1->Bounds.Height) <= 2.0);
+            VERIFY_IS_TRUE(ControlHelper::AreClose(200.0f, window1->Bounds.Height, 2.0f /*tolerance*/));
 
             // Turning ExtendsContentIntoTitleBar off moves the caption back out of the client area, so the
             // window chrome grows. If window1 kept the old maximum, which was computed for the smaller chrome,
             // the window would be clamped and the client would lose about one caption height.
             window1->ExtendsContentIntoTitleBar = false;
             LOG_OUTPUT(L"Client height after ExtendsContentIntoTitleBar off: %f", window1->Bounds.Height);
-            VERIFY_IS_TRUE(std::abs(200.0 - window1->Bounds.Height) <= 2.0);
+            VERIFY_IS_TRUE(ControlHelper::AreClose(200.0f, window1->Bounds.Height, 2.0f /*tolerance*/));
         });
         TestServices::WindowHelper->WaitForIdle();
 
         RunOnUIThread([&]()
         {
-            VERIFY_IS_TRUE(std::abs(200.0 - window1->Bounds.Height) <= 2.0);
+            VERIFY_IS_TRUE(ControlHelper::AreClose(200.0f, window1->Bounds.Height, 2.0f /*tolerance*/));
         });
     }
 
-    void WindowIntegrationTests::MinMaxSizeAfterClose()
+    void WindowIntegrationTests::MinMaxSizeFrozenAfterClose()
     {
         TestCleanupWrapper cleanup;
 
