@@ -273,6 +273,10 @@ void NavigationView::OnOverflowItemsSourceCollectionChanged(const winrt::IInspec
     {
         SetOverflowButtonVisibility(winrt::Visibility::Collapsed);
     }
+    else
+    {
+        SetOverflowButtonVisibility(winrt::Visibility::Visible);
+    }
 }
 
 void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)
@@ -3841,9 +3845,8 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
         {
             // Exchange items between Primary and Overflow
             {
-                // Avoid temporarily emptying overflow and collapsing its button during the exchange.
-                m_topDataProvider.MoveItemsOutOfPrimaryList(itemsToBeRemoved);
                 m_topDataProvider.MoveItemsToPrimaryList(itemsToBeAdded);
+                m_topDataProvider.MoveItemsOutOfPrimaryList(itemsToBeRemoved);
             }
 
             if (NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(selectedOverflowItemIndex))
