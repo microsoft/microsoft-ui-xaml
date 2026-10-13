@@ -8,6 +8,7 @@
 #include "XamlIsland_Partial.h"
 #include "XamlIslandRoot_Partial.h"
 #include "XamlShutdownCompletedOnThreadEventArgs.g.h"
+#include "WinUIProcessShutdownCompletedEventArgs.g.h"
 
 #include <XamlOneCoreTransforms.h>
 #include <DependencyLocator.h>
@@ -26,7 +27,120 @@
 using namespace ctl;
 using namespace DirectUI;
 
+void EnsureWinUIInitialized();
+void EnsureWinUIUninitialized();
+
 namespace DirectUI {
+
+namespace
+{
+class WinUIProcessShutdownEvents
+{
+public:
+    using UntypedHandlerType = wf::IEventHandler<IInspectable*>;
+    using CompletedHandlerType =
+        wf::IEventHandler<xaml_hosting::WinUIProcessShutdownCompletedEventArgs*>;
+    using FireAllEventSourceOptions =
+        Microsoft::WRL::InvokeModeOptions<Microsoft::WRL::FireAll>;
+
+    template<typename HandlerType>
+    using FireAllEventSource =
+        Microsoft::WRL::EventSource<HandlerType, FireAllEventSourceOptions>;
+
+    _Check_return_ HRESULT AddStartingHandler(
+        _In_ UntypedHandlerType* handler,
+        _Out_ EventRegistrationToken* token)
+    {
+        return m_startingEventSource.Add(handler, token);
+    }
+
+    _Check_return_ HRESULT RemoveStartingHandler(EventRegistrationToken token)
+    {
+        return m_startingEventSource.Remove(token);
+    }
+
+    _Check_return_ HRESULT AddCompletedHandler(
+        _In_ CompletedHandlerType* handler,
+        _Out_ EventRegistrationToken* token)
+    {
+        return m_completedEventSource.Add(handler, token);
+    }
+
+    _Check_return_ HRESULT RemoveCompletedHandler(EventRegistrationToken token)
+    {
+        return m_completedEventSource.Remove(token);
+    }
+
+    _Check_return_ HRESULT AddDllUnloadPreparingHandler(
+        _In_ UntypedHandlerType* handler,
+        _Out_ EventRegistrationToken* token)
+    {
+        return m_dllUnloadPreparingEventSource.Add(handler, token);
+    }
+
+    _Check_return_ HRESULT RemoveDllUnloadPreparingHandler(EventRegistrationToken token)
+    {
+        return m_dllUnloadPreparingEventSource.Remove(token);
+    }
+
+    _Check_return_ HRESULT AddDllUnloadPreparationCompleteHandler(
+        _In_ UntypedHandlerType* handler,
+        _Out_ EventRegistrationToken* token)
+    {
+        return m_dllUnloadPreparationCompleteEventSource.Add(handler, token);
+    }
+
+    _Check_return_ HRESULT RemoveDllUnloadPreparationCompleteHandler(EventRegistrationToken token)
+    {
+        return m_dllUnloadPreparationCompleteEventSource.Remove(token);
+    }
+
+    void RaiseStarting()
+    {
+        IFCFAILFAST(m_startingEventSource.InvokeAll(nullptr, nullptr));
+    }
+
+    bool RaiseCompleted()
+    {
+        ctl::ComPtr<WinUIProcessShutdownCompletedEventArgs> args;
+        IFCFAILFAST(ctl::make(&args));
+        IFCFAILFAST(m_completedEventSource.InvokeAll(nullptr, args.Get()));
+
+        BOOLEAN requestDllUnload = false;
+        IFCFAILFAST(args->get_RequestDllUnload(&requestDllUnload));
+        return !!requestDllUnload;
+    }
+
+    void RaiseDllUnloadPreparing()
+    {
+        IFCFAILFAST(m_dllUnloadPreparingEventSource.InvokeAll(nullptr, nullptr));
+    }
+
+    void RaiseDllUnloadPreparationComplete()
+    {
+        IFCFAILFAST(m_dllUnloadPreparationCompleteEventSource.InvokeAll(nullptr, nullptr));
+    }
+
+private:
+    FireAllEventSource<UntypedHandlerType> m_startingEventSource;
+    FireAllEventSource<CompletedHandlerType> m_completedEventSource;
+    FireAllEventSource<UntypedHandlerType> m_dllUnloadPreparingEventSource;
+    FireAllEventSource<UntypedHandlerType> m_dllUnloadPreparationCompleteEventSource;
+};
+
+WinUIProcessShutdownEvents& GetWinUIProcessShutdownEvents()
+{
+    static WinUIProcessShutdownEvents events;
+    return events;
+}
+
+void PrepareForDllUnload()
+{
+    GetWinUIProcessShutdownEvents().RaiseDllUnloadPreparing();
+    EnsureWinUIUninitialized();
+    GetWinUIProcessShutdownEvents().RaiseDllUnloadPreparationComplete();
+}
+}
 
 // This class implements the "legacy" shutdown mode, which was the mode for WinAppSDK 1.4.
 // There's a private API to re-enable this.  In the future, we'll delete this.
@@ -46,7 +160,7 @@ public:
         auto it = std::find(m_managers.begin(), m_managers.end(), manager);
         if (it == m_managers.end())
         {
-            m_managers.push_back(manager);        
+            m_managers.push_back(manager);
         }
     }
 
@@ -127,16 +241,24 @@ public:
     {
         return false;
     }
-    
+
     _Check_return_ HRESULT OnFrameworkShutdownStarting(
         _In_ msy::IDispatcherQueueShutdownStartingEventArgs* args) override
     {
         auto managerStrongRef = m_manager;
+        auto core = WindowsXamlManager::tls_xamlCore;
+        bool shouldRaiseProcessShutdownEvents = false;
 
-        // WARNING: "this" will be invalid after Close() returns!
-        this->Close();
+        IGNOREHR(core->Close(&shouldRaiseProcessShutdownEvents));
 
         managerStrongRef->RaiseXamlShutdownCompletedOnThreadEvent(args);
+
+        core->RecordThreadShutdownCompleted();
+
+        if (shouldRaiseProcessShutdownEvents)
+        {
+            core->RaiseProcessShutdownEvents();
+        }
 
         return S_OK;
     }
@@ -201,7 +323,7 @@ _Check_return_ HRESULT WindowsXamlManagerFactory::InitializeForCurrentThreadImpl
         IFC_RETURN(make<WindowsXamlManager>(&newManager));
         IFC_RETURN(newManager.CopyTo(ppReturnValue));
     }
-    
+
     return S_OK;
 }
 
@@ -215,15 +337,75 @@ _Check_return_ HRESULT WindowsXamlManagerFactory::GetForCurrentThreadImpl(_Outpt
     {
         *ppReturnValue = nullptr;
     }
-    
+
     return S_OK;
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::add_WinUIProcessShutdownStarting(
+    _In_ wf::IEventHandler<IInspectable*>* value,
+    _Out_ EventRegistrationToken* token)
+{
+    ARG_VALIDRETURNPOINTER(token);
+    ARG_NOTNULL_RETURN(value, "value");
+
+    return GetWinUIProcessShutdownEvents().AddStartingHandler(value, token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::remove_WinUIProcessShutdownStarting(EventRegistrationToken token)
+{
+    return GetWinUIProcessShutdownEvents().RemoveStartingHandler(token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::add_WinUIProcessShutdownCompleted(
+    _In_ wf::IEventHandler<xaml_hosting::WinUIProcessShutdownCompletedEventArgs*>* value,
+    _Out_ EventRegistrationToken* token)
+{
+    ARG_VALIDRETURNPOINTER(token);
+    ARG_NOTNULL_RETURN(value, "value");
+
+    return GetWinUIProcessShutdownEvents().AddCompletedHandler(value, token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::remove_WinUIProcessShutdownCompleted(EventRegistrationToken token)
+{
+    return GetWinUIProcessShutdownEvents().RemoveCompletedHandler(token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::add_DllUnloadPreparing(
+    _In_ wf::IEventHandler<IInspectable*>* value,
+    _Out_ EventRegistrationToken* token)
+{
+    ARG_VALIDRETURNPOINTER(token);
+    ARG_NOTNULL_RETURN(value, "value");
+
+    return GetWinUIProcessShutdownEvents().AddDllUnloadPreparingHandler(value, token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::remove_DllUnloadPreparing(EventRegistrationToken token)
+{
+    return GetWinUIProcessShutdownEvents().RemoveDllUnloadPreparingHandler(token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::add_DllUnloadPreparationComplete(
+    _In_ wf::IEventHandler<IInspectable*>* value,
+    _Out_ EventRegistrationToken* token)
+{
+    ARG_VALIDRETURNPOINTER(token);
+    ARG_NOTNULL_RETURN(value, "value");
+
+    return GetWinUIProcessShutdownEvents().AddDllUnloadPreparationCompleteHandler(value, token);
+}
+
+IFACEMETHODIMP WindowsXamlManagerFactory::remove_DllUnloadPreparationComplete(EventRegistrationToken token)
+{
+    return GetWinUIProcessShutdownEvents().RemoveDllUnloadPreparationCompleteHandler(token);
 }
 
 /*static*/ ctl::ComPtr<WindowsXamlManager> WindowsXamlManager::GetForCurrentThread()
 {
     if (tls_xamlCore)
     {
-        return tls_xamlCore->GetForCurrentThread();    
+        return tls_xamlCore->GetForCurrentThread();
     }
     return nullptr;
 }
@@ -252,7 +434,19 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Initialize(msy::IDispatcher
         // Take the lock here to ensure FrameworkApplication::ReleaseCurrent isn't happening on another thread while
         //  we're starting up the Application (see XamlCore::Close)
         CApplicationLock lock;
+        if (s_processShutdownInProgress || s_dllUnloadPreparationInProgress)
+        {
+            IFC_RETURN(ErrorHelper::OriginateError(
+                HRESULT_FROM_WIN32(ERROR_INVALID_STATE),
+                XSTRING_PTR_EPHEMERAL(
+                    L"Xaml cannot be initialized while process shutdown or DLL unload preparation is in progress."
+                ), true /*outputToDebugger*/));
+        }
         ++s_instancesInProcess;
+        if (FrameworkApplication::GetCurrentShutdownModel() == xaml::ShutdownModel_Version2)
+        {
+            ++s_threadShutdownCompletionsPending;
+        }
 
         frameworkApplication = FrameworkApplication::GetCurrentNoRef();
         if (frameworkApplication)
@@ -304,6 +498,8 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Initialize(msy::IDispatcher
 
 _Check_return_ HRESULT WindowsXamlManager::Initialize()
 {
+    EnsureWinUIInitialized();
+
     IFC_RETURN(WeakReferenceSourceNoThreadId::Initialize());
 
     wrl::ComPtr<msy::IDispatcherQueueStatics> dispatcherQueueStatics;
@@ -335,7 +531,7 @@ _Check_return_ HRESULT WindowsXamlManager::Initialize()
             tls_xamlCore = std::make_shared<XamlCoreNewShutdown>();
         }
 
-        // We need to call RegisterManager here to make sure we're tracking it for the current thread before the 
+        // We need to call RegisterManager here to make sure we're tracking it for the current thread before the
         // below call to Initialize().  This is because Initialize() will call Application.OnLaunched(), which calls
         // out to app code, which may call WindowsXamlManager.InitializeForCurrentThread().
         tls_xamlCore->RegisterManager(this);
@@ -371,7 +567,12 @@ _Check_return_ HRESULT WindowsXamlManager::EnqueueClose()
         // Close if we're still in the Closing state.
         if (core->GetState() == XamlCore::State::Closing)
         {
-            IFC_RETURN(core->Close());
+            bool shouldRaiseProcessShutdownEvents = false;
+            IFC_RETURN(core->Close(&shouldRaiseProcessShutdownEvents));
+            if (shouldRaiseProcessShutdownEvents)
+            {
+                core->RaiseProcessShutdownEvents();
+            }
         }
         return S_OK;
     });
@@ -401,7 +602,7 @@ void WindowsXamlManager::RaiseXamlShutdownCompletedOnThreadEvent(_In_ msy::IDisp
         IFCFAILFAST(ctl::make<XamlShutdownCompletedOnThreadEventArgs>(&args));
 
         args->SetDispatcherQueueShutdownStartingEventArgs(shutdownStartingArgs);
-        
+
         ctl::ComPtr<xaml_hosting::IXamlShutdownCompletedOnThreadEventArgs> argsInterface;
         IFCFAILFAST(args.As(&argsInterface));
 
@@ -419,8 +620,9 @@ WindowsXamlManager::XamlCore::~XamlCore()
     ASSERT(m_state == State::Closed);
 }
 
-_Check_return_ HRESULT WindowsXamlManager::XamlCore::Close()
+_Check_return_ HRESULT WindowsXamlManager::XamlCore::Close(_Out_ bool* shouldRaiseProcessShutdownEvents)
 {
+    *shouldRaiseProcessShutdownEvents = false;
     SetState(XamlCore::State::Closed);
 
     if (m_dispatcherQueue && m_frameworkShutdownStartingToken.value)
@@ -518,37 +720,99 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Close()
     // Conveniently, we know when the last instance is going away because we're tracking the XamlCore instance count in
     // s_instancesInProcess.
     //
+    bool lastInstanceInProcess = false;
     {
         CApplicationLock applicationLock;
 
         --s_instancesInProcess;
-        const bool lastInstanceInProcess = (s_instancesInProcess == 0);
-
-        if (lastInstanceInProcess)
+        if (s_instancesInProcess == 0)
         {
-            // MetadataAPI::Reset() is called in FrameworkApplication::ReleaseCurrent when m_metadataRef is reset
-            FrameworkApplication::ReleaseCurrent();
-
-            // ActivationFactoryCache is a process-wide singleton (DependencyLocator StoragePolicyFlags::None). It caches
-            // shared WinRT static factories (DragDropManager, ContentIsland, InputActivationListener, ...) and holds
-            // module locks for Microsoft.UI.Input/Composition/Dispatching. Its shared references must be released exactly
-            // once per process, and while holding the CApplicationLock so concurrent XamlCore::Close calls on different
-            // UI threads are serialized.
-            //
-            // Previously ResetCache() ran on every thread's XamlCore::Close, outside this lock. When an app hosted XAML
-            // on multiple UI threads that shut down concurrently, two threads could enter ResetCache() at the same time
-            // and double-release the same cached factory / module lock. That drove the Microsoft.UI.Input module-lock
-            // refcount below zero and tripped FAIL_FAST_FATAL_APP_EXIT (0xc0000409). Gating on lastInstanceInProcess and
-            // holding the lock removes both the redundant per-thread teardown and the race. See AB#57997833.
-            ActivationFactoryCache::GetActivationFactoryCache()->ResetCache();
+            s_processShutdownInProgress = true;
+            lastInstanceInProcess = true;
         }
+    }
+
+    if (lastInstanceInProcess)
+    {
+        CApplicationLock applicationLock;
+
+        // MetadataAPI::Reset() is called in FrameworkApplication::ReleaseCurrent when m_metadataRef is reset
+        FrameworkApplication::ReleaseCurrent();
+
+        // ActivationFactoryCache is a process-wide singleton (DependencyLocator StoragePolicyFlags::None). It caches
+        // shared WinRT static factories (DragDropManager, ContentIsland, InputActivationListener, ...) and holds
+        // module locks for Microsoft.UI.Input/Composition/Dispatching. Its shared references must be released exactly
+        // once per process, and while holding the CApplicationLock so concurrent XamlCore::Close calls on different
+        // UI threads are serialized.
+        //
+        // Previously ResetCache() ran on every thread's XamlCore::Close, outside this lock. When an app hosted XAML
+        // on multiple UI threads that shut down concurrently, two threads could enter ResetCache() at the same time
+        // and double-release the same cached factory / module lock. That drove the Microsoft.UI.Input module-lock
+        // refcount below zero and tripped FAIL_FAST_FATAL_APP_EXIT (0xc0000409). Gating on lastInstanceInProcess and
+        // holding the lock removes both the redundant per-thread teardown and the race. See AB#57997833.
+        ActivationFactoryCache::GetActivationFactoryCache()->ResetCache();
     }
 
     DependencyLocator::UninitializeThread();
 
     // "this" ptr may be null after this next line
     tls_xamlCore = nullptr;
+
+    *shouldRaiseProcessShutdownEvents = lastInstanceInProcess;
     return S_OK;
+}
+
+void WindowsXamlManager::XamlCore::RecordThreadShutdownCompleted()
+{
+    PrepareForDllUnloadIfReady(false /*requestDllUnload*/, true /*threadShutdownCompleted*/);
+}
+
+void WindowsXamlManager::XamlCore::PrepareForDllUnloadIfReady(
+    bool requestDllUnload,
+    bool threadShutdownCompleted)
+{
+    bool shouldPrepareForDllUnload = false;
+    {
+        CApplicationLock applicationLock;
+
+        if (threadShutdownCompleted)
+        {
+            FAIL_FAST_ASSERT(s_threadShutdownCompletionsPending > 0);
+            --s_threadShutdownCompletionsPending;
+        }
+
+        s_dllUnloadRequested |= requestDllUnload;
+
+        if (s_dllUnloadRequested &&
+            !s_processShutdownInProgress &&
+            s_instancesInProcess == 0 &&
+            s_threadShutdownCompletionsPending == 0)
+        {
+            s_dllUnloadRequested = false;
+            s_dllUnloadPreparationInProgress = true;
+            shouldPrepareForDllUnload = true;
+        }
+    }
+
+    if (shouldPrepareForDllUnload)
+    {
+        PrepareForDllUnload();
+    }
+}
+
+void WindowsXamlManager::XamlCore::RaiseProcessShutdownEvents()
+{
+    GetWinUIProcessShutdownEvents().RaiseStarting();
+
+    {
+        CApplicationLock applicationLock;
+        FAIL_FAST_ASSERT(s_instancesInProcess == 0);
+        FAIL_FAST_ASSERT(s_processShutdownInProgress);
+        s_processShutdownInProgress = false;
+    }
+
+    const bool requestDllUnload = GetWinUIProcessShutdownEvents().RaiseCompleted();
+    PrepareForDllUnloadIfReady(requestDllUnload, false /*threadShutdownCompleted*/);
 }
 
 _Check_return_ HRESULT WindowsXamlManager::Close()
@@ -592,8 +856,13 @@ _Check_return_ HRESULT WindowsXamlManager::CloseImpl(bool synchronous)
             // callback runs (see EnqueueClose), it will check to make sure the object still needs to be closed
             // before doing anything.
             tls_xamlCore->SetState(XamlCore::State::Closing);
-            IFC_RETURN(tls_xamlCore->Close());
-            tls_xamlCore = nullptr; // Close() already does this, but adding here for clarity.
+            auto core = tls_xamlCore;
+            bool shouldRaiseProcessShutdownEvents = false;
+            IFC_RETURN(core->Close(&shouldRaiseProcessShutdownEvents));
+            if (shouldRaiseProcessShutdownEvents)
+            {
+                core->RaiseProcessShutdownEvents();
+            }
         }
         else
         {

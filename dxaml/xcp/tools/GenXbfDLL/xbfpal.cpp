@@ -464,20 +464,15 @@ IPALCoreServices *GetPALCoreServices()
     return &coreServices;
 }
 
-_Check_return_ HRESULT
+_Ret_maybenull_ IPlatformServices*
 ObtainPlatformServices(
 #if DBG
-    _Outptr_ IPlatformServices **ppInterface,
     XUINT8 testMode
-#else
-    _Outptr_ IPlatformServices **ppInterface
 #endif // #if DBG
 )
 {
-    HRESULT hr = S_OK;
-
     //static XbfPlatformServices xbfPal;
-    //*ppInterface = &xbfPal;
+    //return &xbfPal;
 
-    RRETURN(hr);
+    return nullptr;
 }
