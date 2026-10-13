@@ -82,6 +82,8 @@ HRESULT DirectUI::UIElementGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outpt
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IUIElementFeature_Xaml2018>(this);
     }
 #endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+#endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementFeature_XamlMotionSystemHoldbacks)) && Feature_XamlMotionSystemHoldbacks::IsEnabled())
     {
@@ -6261,6 +6263,12 @@ HRESULT DirectUI::UIElementFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IUIElementStaticsPrivate*>(this);
     }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementStaticsFeature_ExperimentalApi)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IUIElementStaticsFeature_ExperimentalApi*>(this);
+    }
+#endif
     else
     {
         RRETURN(ctl::BetterAggregableAbstractCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
@@ -6851,6 +6859,23 @@ Cleanup:
     if (EventEnabledApiFunctionCallStop())
     {
         XamlTelemetry::PublicApiCall(false, 0, "UIElement_RegisterAsScrollPort", hr);
+    }
+    RRETURN(hr);
+}
+IFACEMETHODIMP DirectUI::UIElementFactory::InvalidateViewport(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, 0, "UIElement_InvalidateViewport", 0);
+    }
+    ARG_NOTNULL(pElement, "element");
+    IFC(CheckActivationAllowed());
+    IFC(InvalidateViewportImpl(pElement));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, 0, "UIElement_InvalidateViewport", hr);
     }
     RRETURN(hr);
 }
