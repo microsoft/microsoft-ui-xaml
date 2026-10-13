@@ -17,7 +17,7 @@ areas:
   - id: P1
     name: XAML Core - Object Model, Parser & Metadata
     tier: Tier 1 - Platform / Framework core
-    reviewers: [godlytalias, Hemantxk, akanpatel2206]
+    reviewers: [godlytalias, Hemantxk, akanpatel2206, JesseCol, codendone]
     paths:
       - dxaml/xcp/components/**
       - dxaml/xcp/core/core/**
@@ -37,7 +37,7 @@ areas:
   - id: P2
     name: XAML Core - Render, Layout, Input & Text
     tier: Tier 1 - Platform / Framework core
-    reviewers: [godlytalias, Hemantxk, subhajitm]
+    reviewers: [godlytalias, Hemantxk, subhajitm, codendone, gegao18]
     paths:
       - dxaml/xcp/core/text/**
       - dxaml/xcp/core/inc/**
@@ -61,7 +61,7 @@ areas:
   - id: P3
     name: XAML Framework Layer (DXaml lib)
     tier: Tier 1 - Platform / Framework core
-    reviewers: [godlytalias, Hemantxk]
+    reviewers: [godlytalias, Hemantxk, JesseCol, gegao18]
     paths:
       - dxaml/xcp/dxaml/lib/**
       - dxaml/xcp/dxaml/idl/**
@@ -92,7 +92,7 @@ areas:
   - id: P5
     name: XAML Compiler
     tier: Tier 1 - Platform / Framework core
-    reviewers: [SatwikKrSharma, Hemantxk, akanpatel2206]
+    reviewers: [SatwikKrSharma, Hemantxk, akanpatel2206, evelynwu-msft]
     paths:
       - src/XamlCompiler/**
       - src/projection/**
@@ -101,7 +101,7 @@ areas:
   - id: C1
     name: Lists & Repeater
     tier: Tier 2 - WinUI Controls
-    reviewers: [hiteshkrmsft, iamAbhi-916]
+    reviewers: [hiteshkrmsft, himgoyalmicro]
     paths:
       - controls/dev/Repeater/**
       - controls/dev/Collections/**
@@ -112,7 +112,7 @@ areas:
   - id: C2
     name: Items & Selection
     tier: Tier 2 - WinUI Controls
-    reviewers: [iamAbhi-916]
+    reviewers: [dipeshmsft, himgoyalmicro]
     paths:
       - controls/dev/ItemsView/**
       - controls/dev/TreeView/**
@@ -126,7 +126,7 @@ areas:
   - id: C3
     name: Scrolling
     tier: Tier 2 - WinUI Controls
-    reviewers: [godlytalias, Saharsh979]
+    reviewers: [Saharsh979, subhajitm]
     paths:
       - controls/dev/ScrollPresenter/**
       - controls/dev/ScrollView/**
@@ -134,7 +134,7 @@ areas:
   - id: C4
     name: Navigation & Panes
     tier: Tier 2 - WinUI Controls
-    reviewers: [ayushjai19, iamAbhi-916]
+    reviewers: [ayushjai19, sakshisharma150905, himgoyalmicro]
     paths:
       - controls/dev/NavigationView/**
       - controls/dev/TabView/**
@@ -146,7 +146,7 @@ areas:
   - id: C5
     name: Styles & Chrome
     tier: Tier 2 - WinUI Controls
-    reviewers: [vinnarayana-msft]
+    reviewers: [Nitin-100, hiteshkrmsft]
     paths:
       - controls/dev/CommonStyles/**
       - controls/dev/Common/**
@@ -157,7 +157,7 @@ areas:
   - id: C6
     name: Media & Visuals
     tier: Tier 2 - WinUI Controls
-    reviewers: [vinnarayana-msft]
+    reviewers: [Nitin-100, harshit7962]
     paths:
       - controls/dev/Materials/**
       - controls/dev/AnimatedIcon/**
@@ -176,7 +176,7 @@ areas:
   - id: C7
     name: Interactions & Flyouts
     tier: Tier 2 - WinUI Controls
-    reviewers: [HariniMalothu17]
+    reviewers: [harshit7962, sakshisharma150905]
     paths:
       - controls/dev/CommandBarFlyout/**
       - controls/dev/TeachingTip/**
@@ -190,7 +190,7 @@ areas:
   - id: C8
     name: Input, Pickers & Simple
     tier: Tier 2 - WinUI Controls
-    reviewers: [SatwikKrSharma]
+    reviewers: [sakshisharma150905, subhajitm]
     paths:
       - controls/dev/WebView2/**
       - controls/dev/ColorPicker/**
@@ -226,7 +226,7 @@ areas:
   - id: C10
     name: TableView
     tier: Tier 2 - WinUI Controls
-    reviewers: [dipeshmsft]
+    reviewers: [dipeshmsft, Saharsh979]
     paths:
       - controls/dev/TableView/**
       - controls/dev/ResizeGripper/**
@@ -234,7 +234,7 @@ areas:
   - id: C11
     name: Tabular Data Shaping
     tier: Tier 2 - WinUI Controls
-    reviewers: [sundaramramaswamy]
+    reviewers: [dipeshmsft]
     paths:
       - controls/dev/TabularShaping/**
       - controls/dev/ShapedItemsSource/**
@@ -311,7 +311,7 @@ areas:
   - id: M1
     name: Documentation
     tier: Tier 4 - Docs / Repo Meta
-    reviewers: [HariniMalothu17]
+    reviewers: [dipeshmsft]
     paths:
       - docs/**
       - README.md
@@ -337,3 +337,11 @@ areas:
       - .gitignore
       - .gitmodules
       - controls/.GitHubCommitSyncedTo
+
+  # Overlaps M2 on purpose: changes to this map also need the area-assignment owners.
+  - id: M3
+    name: Area Ownership Map
+    tier: Tier 4 - Docs / Repo Meta
+    reviewers: [beth-panx, mukundanb-msft]
+    paths:
+      - .github/area-owners.yml
