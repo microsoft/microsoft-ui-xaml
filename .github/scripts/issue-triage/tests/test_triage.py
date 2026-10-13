@@ -659,6 +659,148 @@ class CoreParentRoutingTests(TriageFixture):
                 self.assertEqual(client.writes, [])
 
 
+class TeamParentConfigurationTests(unittest.TestCase):
+    def setUp(self):
+        self.client = FakeGitHub()
+        self.client.catalog["team-Design"] = ""
+        self.mapping = copy.deepcopy(MAPPING)
+        self.mapping["area-Binding"].update(team="team-Markup", confidence="high")
+
+    def prepare_with_parents(self, parents):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "team-parent-map.json"
+            path.write_text(json.dumps(parents), encoding="utf-8")
+            with patch.object(t, "TEAM_PARENT_MAP_PATH", path):
+                return t.prepare(self.client, event(), self.mapping)
+
+    def plan(self, evidence):
+        result = t.validate(agent_output(evidence, area="area-Binding"), evidence)
+        return t.planned_labels(result, evidence, self.mapping)
+
+    def test_checked_in_parent_map_declares_exactly_the_requested_relationships(self):
+        parents = t.read_json(str(t.TEAM_PARENT_MAP_PATH))
+        self.assertEqual(parents, {
+            "team-Markup": "team-Core",
+            "team-Reach": "team-Core",
+            "team-Rendering": "team-Core",
+        })
+        t.validate_team_parents(parents, self.client.catalog)
+
+    def test_changing_only_json_changes_the_derived_parent(self):
+        evidence = self.prepare_with_parents({"team-Markup": "team-Design"})
+        self.assertEqual(self.plan(evidence), ["area-Binding", "team-Design", "team-Markup"])
+        self.assertNotIn("team-Core", self.plan(evidence))
+
+    def test_empty_map_disables_inheritance_without_a_hardcoded_fallback(self):
+        evidence = self.prepare_with_parents({})
+        self.assertEqual(self.plan(evidence), ["area-Binding", "team-Markup"])
+
+    def test_json_can_define_a_parent_for_another_team(self):
+        self.mapping["area-Binding"]["team"] = "team-Controls"
+        evidence = self.prepare_with_parents({"team-Controls": "team-Design"})
+        self.assertEqual(self.plan(evidence), ["area-Binding", "team-Controls", "team-Design"])
+
+    def test_ancestor_compatibility_uses_the_configured_relationship(self):
+        self.client.issue["labels"].append({"name": "team-Design"})
+        evidence = self.prepare_with_parents({"team-Markup": "team-Design"})
+        self.assertEqual(self.plan(evidence), ["area-Binding", "team-Markup"])
+
+    def test_configured_sibling_is_not_overridden(self):
+        self.client.issue["labels"] += [{"name": "team-Design"}, {"name": "team-Controls"}]
+        evidence = self.prepare_with_parents({
+            "team-Markup": "team-Design", "team-Controls": "team-Design",
+        })
+        self.assertEqual(self.plan(evidence), [])
+
+    def test_parent_chains_are_expanded_once_and_rendered_consistently(self):
+        parents = {"team-Markup": "team-Rendering", "team-Rendering": "team-Core"}
+        evidence = self.prepare_with_parents(parents)
+        result = t.validate(agent_output(evidence, area="area-Binding"), evidence)
+        self.assertEqual(
+            self.plan(evidence), ["area-Binding", "team-Core", "team-Markup", "team-Rendering"]
+        )
+        body = t.render(result, evidence, self.mapping)
+        for label in ("team-Core", "team-Markup", "team-Rendering"):
+            self.assertIn(f"`{label}`", body.split("<details", 1)[0])
+        t.publish(self.client, result, evidence, self.mapping, write=True)
+        refreshed = self.prepare_with_parents(parents)
+        result = t.validate(agent_output(refreshed, area="area-Binding"), refreshed)
+        self.client.writes.clear()
+        t.publish(self.client, result, refreshed, self.mapping, write=True)
+        self.assertEqual(self.client.writes, [])
+
+    def test_multiple_configured_ancestors_allow_only_an_evidenced_descendant(self):
+        self.client.issue["labels"] += [{"name": "team-Rendering"}, {"name": "team-Core"}]
+        evidence = self.prepare_with_parents({
+            "team-Markup": "team-Rendering", "team-Rendering": "team-Core",
+        })
+        self.assertEqual(self.plan(evidence), ["area-Binding", "team-Markup"])
+        unknown = t.validate(agent_output(evidence, area="None", area_confidence="NONE"), evidence)
+        self.assertEqual(t.planned_labels(unknown, evidence, self.mapping), [])
+
+    def test_fresh_preparation_reloads_the_trusted_config_not_agent_data(self):
+        original = self.prepare_with_parents({"team-Markup": "team-Core"})
+        output = agent_output(original, area="area-Binding")
+        refreshed = self.prepare_with_parents({"team-Markup": "team-Design"})
+        result = t.validate(output, refreshed)
+        self.assertEqual(
+            t.planned_labels(result, refreshed, self.mapping),
+            ["area-Binding", "team-Design", "team-Markup"],
+        )
+
+    def test_parent_metadata_is_not_model_input_or_accepted_model_output(self):
+        evidence = self.prepare_with_parents({"team-Markup": "team-Core"})
+        public = json.loads(t.format_model_context(evidence))
+        self.assertNotIn("_team_parents", public)
+        self.assertNotIn("team_parents", public)
+        for field in ("_team_parents", "team_parents", "parent_labels"):
+            with self.subTest(field=field), self.assertRaises(t.TriageError):
+                t.validate(agent_output(evidence, **{field: {"team-Markup": "team-Design"}}), evidence)
+
+    def test_invalid_shapes_non_team_labels_and_unknown_labels_fail_closed(self):
+        for parents in (
+            None, [], "team-Core",
+            {"area-Binding": "team-Core"},
+            {"team-Markup": "needs-author-feedback"},
+            {"team-Invented": "team-Core"},
+            {"team-Markup": "team-Invented"},
+            {"team-Markup": ["team-Core"]},
+            {"team-Markup": None},
+            {"team-Markup": False},
+            {"team-Markup": {"team": "team-Core"}},
+        ):
+            with self.subTest(parents=parents), self.assertRaises(t.TriageError):
+                t.validate_team_parents(parents, self.client.catalog)
+
+    def test_self_parent_and_multi_team_cycles_fail_closed(self):
+        for parents in (
+            {"team-Markup": "team-Markup"},
+            {"team-Markup": "team-Core", "team-Core": "team-Markup"},
+            {"team-Markup": "team-Rendering", "team-Rendering": "team-Core", "team-Core": "team-Markup"},
+        ):
+            with self.subTest(parents=parents), self.assertRaisesRegex(t.TriageError, "cycle"):
+                t.validate_team_parents(parents, self.client.catalog)
+
+    def test_missing_parent_is_rejected_before_candidate_retrieval_or_writes(self):
+        self.client.catalog.pop("team-Core")
+        with self.assertRaises(t.TriageError):
+            self.prepare_with_parents({"team-Markup": "team-Core"})
+        self.assertEqual(self.client.searches, [])
+        self.assertEqual(self.client.writes, [])
+
+    def test_missing_or_malformed_file_never_silently_disables_inheritance(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "team-parent-map.json"
+            with patch.object(t, "TEAM_PARENT_MAP_PATH", path):
+                with self.assertRaises(FileNotFoundError):
+                    t.prepare(self.client, event(), self.mapping)
+                path.write_text("not valid JSON", encoding="utf-8")
+                with self.assertRaises(json.JSONDecodeError):
+                    t.prepare(self.client, event(), self.mapping)
+        self.assertEqual(self.client.searches, [])
+        self.assertEqual(self.client.writes, [])
+
+
 class MappingConfigurationTests(unittest.TestCase):
     def test_invalid_shapes_and_confidence_fail_closed(self):
         for entry in (

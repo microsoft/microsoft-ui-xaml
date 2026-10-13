@@ -234,14 +234,6 @@ If there is one existing area label, retain it and assess its routing rules
 rather than suggesting a replacement. Existing area and team labels always take
 precedence over automated proposals.
 
-`team-Core` is the parent label for `team-Reach`, `team-Rendering`, and
-`team-Markup`. The publisher adds `team-Core` alongside any of those specific
-teams, including when a child-team label is already present. Keep the specific
-team: the parent label does not replace it. When only `team-Core` is present,
-use the area's normal routing rules to identify its specific owner; do not
-guess a child from the parent label alone. `team-Controls`, `team-CompInput`,
-and `team-Design` do not imply `team-Core`.
-
 Use HIGH only when the primary area is clear. Otherwise use MEDIUM or LOW for an
 advisory suggestion, or `None` with NONE confidence. This is separate from the
 mapping's ownership `confidence`; low ownership confidence does not make a
@@ -343,7 +335,6 @@ Call `publish_triage_summary` with:
 Use plain text without mentions, URLs, HTML, or Markdown in prose fields.
 Do not claim confirmed root causes, assign severity or priority, make roadmap
 commitments, or request a reporter close their issue. The deterministic publisher
-alone may add one existing area, its configured team and the `team-Core` parent
-when applicable, `needs-triage` when routing requires review, and `needs-repro`.
-It never adds `needs-author-feedback`, creates labels, or removes any existing
-label.
+alone may add one existing area, its configured team, `needs-triage` when routing
+requires review, and `needs-repro`. It never adds `needs-author-feedback`, creates
+labels, or removes any existing label.

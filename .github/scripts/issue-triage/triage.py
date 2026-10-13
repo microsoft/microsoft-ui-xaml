@@ -27,11 +27,11 @@ from find_duplicates import (
 
 MARKER = "<!-- winui-ai-triage:canonical:v1 -->"
 MAP_PATH = Path(__file__).with_name("area-team-map.json")
+TEAM_PARENT_MAP_PATH = Path(__file__).with_name("team-parent-map.json")
 MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 MAX_COMMENTS = 1000
 MAX_AUTHOR_COMMENTS = 10
 MAX_COMMENT_BODY = 2000
-CORE_TEAMS = {"team-Markup", "team-Reach", "team-Rendering"}
 
 
 class TriageError(RuntimeError):
@@ -267,6 +267,28 @@ def validate_mapping(mapping: dict, catalog: dict) -> None:
             check_team(rule["team"], area)
 
 
+def team_ancestors(team: str | None, parents: dict) -> set[str]:
+    ancestors = set()
+    parent = parents.get(team)
+    while parent is not None:
+        if parent == team or parent in ancestors:
+            raise TriageError("Team-parent configuration contains a cycle")
+        ancestors.add(parent)
+        parent = parents.get(parent)
+    return ancestors
+
+
+def validate_team_parents(parents: dict, catalog: dict) -> None:
+    if not isinstance(parents, dict):
+        raise TriageError("Team-parent configuration must be an object")
+    for child, parent in parents.items():
+        for label in (child, parent):
+            if not isinstance(label, str) or not label.startswith("team-") or label not in catalog:
+                raise TriageError("Team-parent configuration references an invalid or missing team")
+    for child in parents:
+        team_ancestors(child, parents)
+
+
 def prepare(client: GitHub, event: dict, mapping: dict) -> dict:
     number = issue_number(event, client.repository)
     current = snapshot(client, number)
@@ -281,6 +303,8 @@ def prepare(client: GitHub, event: dict, mapping: dict) -> dict:
     if not areas:
         raise TriageError("No existing area labels were found")
     validate_mapping(mapping, catalog)
+    parents = read_json(str(TEAM_PARENT_MAP_PATH))
+    validate_team_parents(parents, catalog)
 
     content = current["content"]
     author_comments = content["author_comments"]
@@ -319,6 +343,7 @@ def prepare(client: GitHub, event: dict, mapping: dict) -> dict:
     # Private to the deterministic publisher; never accepted from agent output.
     result["_snapshot"] = current
     result["_catalog"] = catalog
+    result["_team_parents"] = parents
     return result
 
 
@@ -507,6 +532,7 @@ def route_team(mapping: dict, area: str, rule_id: str) -> str | None:
 
 
 def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
+    parents = evidence["_team_parents"]
     existing = set(evidence["existing_labels"])
     areas = sorted(label for label in existing if label.startswith("area-"))
     teams = {label for label in existing if label.startswith("team-")}
@@ -516,24 +542,24 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
         area = result["area"]
         mapped_team = route_team(mapping, area, result["routing_rule"])
         compatible = not teams or not mapped_team or mapped_team in teams
-        compatible |= teams == {"team-Core"} and mapped_team in CORE_TEAMS
+        compatible |= teams <= team_ancestors(mapped_team, parents)
         if compatible:
             area_to_add = area
     effective_areas = areas or ([area_to_add] if area_to_add else [])
     effective_area = effective_areas[0] if len(effective_areas) == 1 else None
     entry = mapping.get(effective_area, {})
-    if effective_area and (not teams or teams == {"team-Core"}):
+    if effective_area:
         candidate_team = None
         if result["area"] == effective_area and result["area_confidence"] == "HIGH":
             candidate_team = route_team(mapping, effective_area, result["routing_rule"])
         elif not entry.get("overrides"):
             candidate_team = entry.get("team")
         # A conditional owner cannot be inferred from a different/uncertain area.
-        if not teams or candidate_team in CORE_TEAMS:
+        if not teams or teams <= team_ancestors(candidate_team, parents):
             team_to_add = candidate_team
     team_labels = teams | ({team_to_add} if team_to_add else set())
-    if team_labels & CORE_TEAMS:
-        team_labels.add("team-Core")
+    for team in tuple(team_labels):
+        team_labels.update(team_ancestors(team, parents))
     needs_triage = (
         not effective_areas
         or (not teams and not team_to_add)

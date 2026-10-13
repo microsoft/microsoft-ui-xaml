@@ -75,12 +75,29 @@ conditional routes: eight declared override rules and the explicit
 AnimatedVisualPlayer compositor case. Teams are derived from this configuration,
 never accepted as arbitrary model output.
 
-`team-Core` is the parent of `team-Reach`, `team-Rendering`, and `team-Markup`.
-The deterministic publisher includes the parent whenever one of those child
-labels is present or proposed, and the comment shows both labels. Existing
-specific teams are preserved; a parent-only issue can gain an evidenced child
-without being reassigned to a sibling. `team-Controls`, `team-CompInput`, and
-`team-Design` do not add the parent. Adding a missing parent alone does not
+Parent relationships are maintained separately in `team-parent-map.json`:
+
+```json
+{
+  "team-Markup": "team-Core",
+  "team-Reach": "team-Core",
+  "team-Rendering": "team-Core"
+}
+```
+
+Each entry maps one child label to one parent. No entry means no parent.
+The trusted scripts load this file, validate all names against the live label
+catalog, and reject cycles before analysis or publication. Parent chains are
+expanded deterministically and duplicate ancestors are added only once.
+The mapping stays out of the model's evidence and prompt; the LLM neither
+chooses nor needs to know the parent labels. Editing this JSON changes parent
+routing without changing the LLM instructions or Python code.
+
+The publisher includes configured parents of existing or proposed team labels,
+and the comment shows the same final label set. Existing specific teams are
+preserved; an ancestor-only issue can gain an area-evidenced child without
+being reassigned to a sibling. Under the current configuration, Controls,
+CompInput, and Design have no parent. Adding a missing parent alone does not
 restart a completed human triage decision. This applies on normal eligible
 triage runs, not as a bulk relabeling operation.
 
@@ -197,10 +214,10 @@ stale handling, or the maintainer's acceptance/closure process.
   additive label writes. GitHub does not provide a transaction across these
   operations; a concurrent edit can stop label publication after the comment
   was written. A later run safely refreshes the single comment.
-- Only allowlisted routing labels, `needs-triage`, and `needs-repro` can be added,
-  at most five per run (one area, its specific team, the optional parent, and
-  the two workflow-state labels). The publisher uses additive label writes,
-  never replacement.
+- Only allowlisted routing labels, `needs-triage`, and `needs-repro` can be added.
+  The current parent configuration permits at most five additions per run (one
+  area, its specific team, the optional parent, and the two workflow-state
+  labels). The publisher uses additive label writes, never replacement.
 - Per-issue concurrency cancels superseded runs. `on.roles: all` permits external
   issue authors: pre-activation is not a Microsoft organization-membership gate.
   Its repository-permission lookup only exempts `admin`, `maintain`, and `write`
