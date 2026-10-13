@@ -33,6 +33,8 @@ param(
     [switch]$MoveSessionToConsole,
     [switch]$RefreshPayload,
     [switch]$ForceReinstrument,
+    # Skip the pre-check that lists the matching tests in the payload before instrumenting.
+    [switch]$SkipTestCheck,
     [switch]$SkipFunctionCoverage
 )
 $ErrorActionPreference = 'Stop'
@@ -55,6 +57,32 @@ try {
             Push-Location $RepoRoot
             try { & .\initrun.ps1 -Flavor $Flavor .\test\CreateTestPayload.ps1 -Platform $plat -Configuration $cfg -Mode DevTestSuite -SkipSymbols -Quiet }
             finally { Pop-Location }
+        }
+
+        # Fail fast, before the long instrumentation, if the payload that will be deployed has no
+        # tests matching a filter (for example because the build predates the component's tests).
+        # Uses the same selection as runtests.ps1 on the VM.
+        $payloadDir = Join-Path $RepoRoot "TestPayload\$payloadFlavor"
+        if (-not $SkipTestCheck -and (Test-Path (Join-Path $payloadDir 'te.exe'))) {
+            Push-Location $payloadDir
+            # TAEF needs /select:"<query>" passed verbatim; PowerShell 7's default quoting turns the
+            # query into a file name (TAEF then lists every test).
+            $savedArgPassing = $PSNativeCommandArgumentPassing
+            $PSNativeCommandArgumentPassing = 'Legacy'
+            try {
+                $testDlls = @(Get-ChildItem Test -Filter 'Microsoft.UI.Xaml.Tests.*.dll' -EA SilentlyContinue | ForEach-Object { "Test\$($_.Name)" }) +
+                    @('Test\MUXControls.Test.dll', 'Test\UnpackagedApps\MUXControlsTestApp\MUXControlsTestApp.dll' | Where-Object { Test-Path $_ })
+                foreach ($f in $TestFilter) {
+                    $select = "@Name='*$f' and (@TestPass:IncludeOnlyOn='*Desktop*' OR (NOT(@TestPass:IncludeOnlyOn=*) AND NOT(@TestPass:ExcludeOn='*Desktop*')))"
+                    $nameRx = '^' + ([regex]::Escape("*$f") -replace '\\\*', '.*') + '$'
+                    $count = @(& .\te.exe @testDlls /list "/select:`"$select`"" 2>&1 | ForEach-Object { "$_".Trim() } | Where-Object { $_ -match $nameRx }).Count
+                    Write-Host "== Test check: '$f' matches $count test(s) in TestPayload\$payloadFlavor"
+                    if (-not $count) {
+                        throw "No tests in TestPayload\$payloadFlavor match '$f'. Check the filter, and that the build is current and contains the component's tests (rebuild, then use -RefreshPayload). Use -SkipTestCheck to bypass this check."
+                    }
+                }
+            }
+            finally { $PSNativeCommandArgumentPassing = $savedArgPassing; Pop-Location }
         }
 
         Write-Host "== Step 1: instrumentable $Module"

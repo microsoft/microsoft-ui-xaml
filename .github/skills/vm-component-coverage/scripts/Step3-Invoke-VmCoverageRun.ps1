@@ -152,6 +152,21 @@ try {
     } -ArgumentList $vmRoot, $sid | ForEach-Object { Info "  $_" }
 
     # ---- 4. run the tests with the repo's VM runner (payload already instrumented) -------------
+    # run-tests-on-vm.ps1 deploys incrementally using a size+mtime manifest of what it copied last
+    # time. Step 4 restores the VM without updating that manifest, and static_covrun*.dll keep the
+    # tool's own timestamp, so a later run would skip them: the VM keeps the original DLL (empty
+    # coverage) or gets the instrumented DLL without its runtime (the app fails to activate MUXC
+    # types). Drop those entries so the instrumented files are always deployed.
+    $instrumentedRel = @($state.copies.relativePath) + @($state.runtimesAdded)
+    $manifestPattern = ".deploy-manifest-$($VMName -replace '[^a-zA-Z0-9]', '_')-*.json"
+    foreach ($mf in Get-ChildItem (Join-Path $RepoRoot 'TestPayload') -Filter $manifestPattern -File -EA SilentlyContinue) {
+        $entries = Get-Content $mf.FullName -Raw | ConvertFrom-Json
+        $keep = [ordered]@{}
+        foreach ($p in $entries.PSObject.Properties) {
+            if ($instrumentedRel -notcontains $p.Name -and $p.Name -notmatch '(^|\\)static_covrun\w*\.dll$') { $keep[$p.Name] = $p.Value }
+        }
+        ($keep | ConvertTo-Json -Depth 1) | Set-Content $mf.FullName -Encoding UTF8
+    }
     $testLog = Join-Path $rawDir 'vm-test.log'
     Info "running tests: run-tests-on-vm.ps1 -SkipPayload $TestFilter (log: $testLog)"
     Push-Location $RepoRoot
@@ -160,6 +175,12 @@ try {
             Tee-Object -FilePath $testLog | Where-Object { "$_" -match 'Summary:|EndGroup:|Tests (PASSED|FAILED)|Error|\[\d/3\]' } | ForEach-Object { Write-Host "    $_" }
     } finally { Pop-Location }
     $summary = Select-String $testLog -Pattern 'Summary:\s+Total=' | Select-Object -Last 1
+    if (-not $summary) {
+        if (Select-String $testLog -Pattern 'selection criteria did not match any tests' -Quiet) {
+            throw "No tests matched '$TestFilter' in the deployed payload. Check the filter, and that the build (and TestPayload) is current and contains the component's tests."
+        }
+        throw "The test run produced no TAEF summary; see $testLog."
+    }
     Info "test summary: $($summary.Line.Trim())"
 }
 finally {

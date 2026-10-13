@@ -79,6 +79,10 @@ username or password from memory, an earlier session, or an earlier run without 
    `BuildOutput\obj\<flavor>\controls\dev\dll\generated\...\<RC>.g.cpp/.h` files.
 4. Show the resolved plan (folder, test classes, filter(s), regex), then proceed. Ask only if
    something is ambiguous.
+5. The build must contain those tests. Before instrumenting, the orchestrator lists the matching tests in
+   `TestPayload\<flavor>` with TAEF (the same selection `runtests` uses on the VM) and stops in seconds if a
+   filter matches none. That usually means `BuildOutput` was built from an older commit or another branch.
+   Tell the user, ask before rebuilding (`.\initrun.ps1 .\build.cmd /q`), then rerun with `-RefreshPayload`.
 
 **B. Not in `controls\dev`: investigate `dxaml` (MUX, `Microsoft.ui.xaml.dll`) and get approval**
 
@@ -99,7 +103,7 @@ username or password from memory, an earlier session, or an earlier run without 
 - Output: `<repo>\CodeCoverageOutput\<Component>` (already ignored by `.gitignore`).
 - Add `-RefreshPayload` if `TestPayload\x64chk` is missing or older than the build output.
 - Add `-MoveSessionToConsole` when the host is an RDP or Cloud PC session (`$env:SESSIONNAME -like 'RDP-*'`).
-- Tell the user the expected time first (about 30-45 min the first time for MUXC, about 6 min with the cache).
+- Tell the user the expected time first (about 30-60 min the first time for MUXC, mostly instrumentation; about 6 min with the cache).
   Run it async with a long wait. **Never stop the process during Step 2 or 3**; the restore runs in `finally`.
 
 Run from the repo root in PowerShell, invoking the script directly. Don't use `pwsh -File`: it turns
@@ -182,7 +186,7 @@ Open `<OutputDir>\report-<timestamp>\coverage-summary.md`. Other outputs in that
 | Step | Script | Notes |
 |---|---|---|
 | 1 | `Step1-New-InstrumentableDll.ps1` | **MUXC only.** chk MUXC is not instrumentable: the tool prints "*Unable to obtain debug information. Link with the /PROFILE linker switch.*" and then **exits 0** with the image untouched. It needs `/DEBUGTYPE:CV,FIXUP` with `/INCREMENTAL:NO` at link time, and this skill never edits repo files, so the script re-runs the **exact link command MSBuild recorded** (`link.command.1.tlog`) with `/DEBUGTYPE:CV,FIXUP` added and `/INCREMENTAL:NO`. `/OUT`, `/PDB`, `/IMPLIB` and `/MAP` are redirected to `work\relink`, and `/WINMD:NO` is set. It takes about 15 s, and BuildOutput is never touched. MUX (`Microsoft.ui.xaml.dll`) already links with `/debugtype:cv,fixup,pdata` and skips this step. |
-| 2 | `Step2-Instrument-Payload.ps1` | Static native instrumentation with a fresh 16-hex session id. **This is slow for a 38 MB chk DLL (about 20 min)**, so the result is cached in `work\instrumented`, keyed by the input DLL's SHA256, and reused on later runs together with its baked-in session id. The cache is reused only while the tool that instrumented it still exists at the same version. The script catches the "exit 0 but not instrumented" case. It backs up and then overwrites **every** payload copy of the DLL, plus `static_covrun64.dll`, because each test app loads its own co-located copy (`Test\UnpackagedApps\MUXControlsTestApp\`). Backups are refreshed from the payload whenever a copy isn't instrumented, so a rebuilt payload is never restored to an older DLL. |
+| 2 | `Step2-Instrument-Payload.ps1` | Static native instrumentation with a fresh 16-hex session id. **This is slow for a 38 MB chk DLL (about 20-50 min)**, so the result is cached in `work\instrumented`, keyed by the input DLL's SHA256, and reused on later runs together with its baked-in session id. The cache is reused only while the tool that instrumented it still exists at the same version. The script catches the "exit 0 but not instrumented" case. It backs up and then overwrites **every** payload copy of the DLL, plus `static_covrun64.dll`, because each test app loads its own co-located copy (`Test\UnpackagedApps\MUXControlsTestApp\`). Backups are refreshed from the payload whenever a copy isn't instrumented, so a rebuilt payload is never restored to an older DLL. |
 | 3 | `Step3-Invoke-VmCoverageRun.ps1` | Stages the collector on the VM once. It starts `collect --server-mode --session-id <sid>` as the VM user through an interactive scheduled task, waits for `\\.\pipe\CodeCoverage.pipe.<sid>`, and sets a NULL DACL on it. It then runs `initrun.ps1 .\tools\run-tests-on-vm.ps1 -SkipPayload <filter>`, which deploys the instrumented payload and runs the tests on the desktop. In `finally` it calls `shutdown <sid>` so the collector writes the `.coverage` file, downloads it and the collector log (also when the run failed), and closes the VM session. |
 | 4 | `Step4-Restore-Payload.ps1` | Always runs, from `finally`. It restores every original DLL, hash-verified, removes `static_covrun*.dll`, and does the same in the VM's deployed payload. Each distinct original is restored to its own copies. If any VM copy doesn't match afterwards, it fails and keeps `instrument-state.json`, so you can simply run it again. |
 | 5 | `Step5-Get-ComponentCoverage.ps1` | Merges the coverage to Cobertura (`dotnet-coverage merge -f cobertura`) and applies the per-module (file, line) dedup (`lib\Split-CoverageByModule.ps1`), the same correction that matches the ADO tab. It then filters to the component by `-ComponentPathRegex` and optionally compares with a baseline `corrected-per-file.csv`. Paths are matched repo-relative: the checkout root (`-RepoRoot`) or a build-agent root such as `C:\__w\1\s\` is removed, and `x86chk` versus `amd64chk` doesn't matter. It also produces function-level coverage (`lib\Get-FunctionCoverage.ps1`) and the HTML tree (`lib\Build-CoverageTreeReport.ps1`). |
@@ -191,7 +195,7 @@ You can run the steps one at a time. Each writes its state or results under `<Ou
 
 ## Timing
 
-- **First run:** about 30-45 min, almost all of it Step 2 instrumenting a 38 MB chk MUXC. The rest is a few seconds to relink, then deploy, the tests, flush and the report.
+- **First run:** about 30-60 min, almost all of it Step 2 instrumenting a 38 MB chk MUXC (20-50 min; it runs on a single core). The rest is a few seconds to relink, then deploy, the tests, flush and the report.
 - **Later runs with an unchanged build:** about 6 min. The relink and the instrumented DLL are both reused from `<OutputDir>\work`.
 - **Report:** parsing the Cobertura and native XML takes about 1-2 min each; skip the second with `-SkipFunctionCoverage`.
 
@@ -211,7 +215,9 @@ Of 45 functions in the TitleBar `.cpp` files, 40 are fully covered, 4 partially,
 ## Gotchas (learned the hard way)
 
 - **Host session disconnects (Cloud PC / RDP):** if the host's session disconnects, the Hyper-V *enhanced session* stops delivering input. UI tests then fail with `InjectMouseInput ... Access is denied` and "Test window lost focus". Use `-MoveSessionToConsole`, which runs `tscon <id> /dest:console` as SYSTEM inside the VM, so the VM desktop stays interactive. Reconnecting with vmconnect moves the session back.
-- **Instrumenting is slow:** about 20 min and about 3 GB RAM for chk MUXC. Don't interrupt it; later runs reuse the cache. Use `-ForceReinstrument` after a rebuild if the hash didn't change but you want a new session id.
+- **Instrumenting is slow:** about 20-50 min and about 3 GB RAM for chk MUXC. Don't interrupt it; later runs reuse the cache. Use `-ForceReinstrument` after a rebuild if the hash didn't change but you want a new session id.
+- **Stale build:** if `BuildOutput` comes from another branch or an older commit, the payload may not contain the component's tests. The test check before Step 1 catches this; without it, TAEF reports "The selection criteria did not match any tests" on the VM and Step 3 fails after the long instrumentation.
+- **Incremental deploy manifest:** `tools\run-tests-on-vm.ps1` only copies files whose size or timestamp changed since its last deploy (`TestPayload\.deploy-manifest-<VM>-<flavor>.json`). Step 4 restores the VM behind its back, and `static_covrun*.dll` always keep the tool's timestamp, so Step 3 removes the instrumented files from that manifest before every run. Without that, a rerun silently tests the original DLL (empty coverage), or the instrumented DLL is deployed without `static_covrun64.dll` and the test app crashes with "ClassFactory cannot supply requested class".
 - **Session id must match:** the DLL the test process loads must carry the collector's session id. If the coverage file is tiny or empty, check `work\raw\<run>\collector.log` and confirm the app-local copy (`MUXControlsTestApp\Microsoft.UI.Xaml.Controls.dll`) is the instrumented one.
 - **Rebuilds overwrite the instrumented copy:** rebuilding `MUXControlsTestApp` re-stages an older Controls DLL into `BuildOutput\...\UnpackagedApps\MUXControlsTestApp`. That doesn't matter here because Step 2 overwrites the *payload* copies, but don't run `run-tests-on-vm.ps1` **without** `-SkipPayload` in between, because that recreates the payload.
 - **Expected failures still count toward coverage:** failing or ignored tests still execute product code until they fail, and Ignored tests don't run at all.
@@ -239,6 +245,7 @@ Of 45 functions in the TitleBar `.cpp` files, 40 are fully covered, 4 partially,
 | `-MoveSessionToConsole` | off | Recommended on Cloud PC / RDP hosts |
 | `-RefreshPayload` | off | Run `test\CreateTestPayload.ps1` first |
 | `-ForceReinstrument` | off | Ignore the instrumented-DLL cache |
+| `-SkipTestCheck` | off | Skip listing the matching tests in the payload before instrumenting |
 | `-SkipFunctionCoverage` | off | Skip the function-level merge |
 
 ## Files in this skill
