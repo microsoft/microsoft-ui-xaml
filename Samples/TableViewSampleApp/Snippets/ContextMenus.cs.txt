@@ -105,6 +105,8 @@ private void OnNameMenuToggled(object sender, RoutedEventArgs e)
     NameColumn.CellContextFlyout = NameMenuToggle.IsOn ? _nameCellMenu : null;
 }
 
+// The row menu lives in an implicit row style. Removing or adding an implicit style updates
+// the realized rows on the next layout pass; recycled rows pick it up when they are reused.
 private void OnRowMenuToggled(object sender, RoutedEventArgs e)
 {
     if (!IsLoaded)
@@ -112,7 +114,11 @@ private void OnRowMenuToggled(object sender, RoutedEventArgs e)
         return;
     }
 
-    PeopleTable.RowContextFlyout = RowMenuToggle.IsOn ? _rowMenu : null;
+    PeopleTable.Resources.Remove(typeof(TableViewRow));
+    if (RowMenuToggle.IsOn)
+    {
+        PeopleTable.Resources[typeof(TableViewRow)] = _rowMenuStyle;
+    }
 }
 
 private void OnHeaderMenuToggled(object sender, RoutedEventArgs e)

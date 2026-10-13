@@ -22,7 +22,7 @@
         </MenuFlyout>
 
         <!-- The row menu is the fallback for every cell without its own CellContextFlyout, and for
-             blank space past the last column. -->
+             blank space past the last column. An implicit TableViewRow style sets it on every row. -->
         <MenuFlyout x:Key="RowMenu">
             <MenuFlyoutItem Text="Copy row" Click="OnCopyRowClick">
                 <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8C8;"/></MenuFlyoutItem.Icon>
@@ -40,7 +40,7 @@
 
     <controls:SamplePresenter
         Header="Context menus"
-        Description="TableView picks one context menu per request. A column's CellContextFlyout wins over the table's RowContextFlyout, and a column's HeaderContextFlyout covers its header. When neither applies, the request falls through to the table's own ContextFlyout. Menu items inherit the requested row item as their DataContext. Opening a menu moves keyboard focus to the row but never changes the selection."
+        Description="TableView picks one context menu per request. A column's CellContextFlyout wins over the row's own ContextFlyout, set here through an implicit TableViewRow style, and a column's HeaderContextFlyout covers its header. When none applies, the request falls through to the table's own ContextFlyout. Menu items inherit the requested row item as their DataContext. Opening a menu moves keyboard focus to the row but never changes the selection."
         Snippet="ContextMenus"
         StretchExample="True"
         TryIt="Right-click a Name cell for its own menu, then any other cell for the row menu. Right-click a header and hide that column. Press Shift+F10 or the Menu key on a focused row or header. Group by Department and right-click a group header: it has no row, so the table's own menu opens."
@@ -55,9 +55,14 @@
                     AutomationProperties.Name="People with context menus"
                     ItemsSource="{x:Bind Source}"
                     SelectionMode="Single"
-                    RowContextFlyout="{StaticResource RowMenu}"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
+                    <!-- Rows get their menu from an implicit style, like any other row property. -->
+                    <tv:TableView.Resources>
+                        <Style TargetType="tv:TableViewRow">
+                            <Setter Property="ContextFlyout" Value="{StaticResource RowMenu}"/>
+                        </Style>
+                    </tv:TableView.Resources>
                     <!-- The table's own menu: the final fallback, e.g. for group headers. -->
                     <tv:TableView.ContextFlyout>
                         <MenuFlyout>
@@ -88,7 +93,7 @@
                 <controls:RailSection
                     IsFirst="True"
                     Header="Menus"
-                    Description="Turn a menu off by setting its property to null. Without the Name cell menu, Name cells use the row menu. Without the row menu, cells fall through to the table's own ContextFlyout. Without header menus, headers do too.">
+                    Description="Turn a menu off by setting its property to null, or for rows by swapping the implicit row style. Without the Name cell menu, Name cells use the row menu. Without the row menu, cells fall through to the table's own ContextFlyout. Without header menus, headers do too.">
                     <StackPanel Spacing="4">
                         <ToggleSwitch
                             x:Name="NameMenuToggle"
@@ -99,7 +104,7 @@
                         <ToggleSwitch
                             x:Name="RowMenuToggle"
                             AutomationProperties.AutomationId="ContextMenusRowMenuToggle"
-                            Header="Row menu (RowContextFlyout)"
+                            Header="Row menu (row style ContextFlyout)"
                             IsOn="True"
                             Toggled="OnRowMenuToggled"/>
                         <ToggleSwitch
