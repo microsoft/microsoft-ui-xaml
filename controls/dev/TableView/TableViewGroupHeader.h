@@ -92,6 +92,10 @@ public:
         return std::exchange(m_gestureFocusState, winrt::FocusState::Unfocused);
     }
 
+    // Internal: see TableViewRow::IsStyleFromSelectorInternal.
+    bool IsStyleFromSelectorInternal() const { return m_styleFromSelector; }
+    void SetStyleFromSelectorInternal(bool value) { m_styleFromSelector = value; }
+
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateTerminalBottomGridLineSuppression();
@@ -118,4 +122,5 @@ private:
     // Guards against double-hooking when the same container is prepared many times after pool
     // recycling: one subscription per container lifetime, not per prepare.
     bool m_toggleHooked{ false };
+    bool m_styleFromSelector{ false };
 };
