@@ -92,6 +92,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies AllResourceKeys lists exactly the TableView* resources in the control's resource subtree, so a newly added string cannot go uncovered.")]
+        public void VerifyAllResourceKeysMatchesTheResourceMap()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                RequireTableViewResourceMap();
+                var inMap = EnumerateTableViewResourceKeys();
+                Log.Comment($"TableView* keys in the resource map: {string.Join(", ", inMap)}");
+
+                var unlisted = inMap.Except(AllResourceKeys, StringComparer.Ordinal).ToList();
+                var absent = AllResourceKeys.Except(inMap, StringComparer.Ordinal).ToList();
+
+                Verify.AreEqual(0, unlisted.Count,
+                    $"Resources missing from AllResourceKeys (add them, and to FormatResources if they take arguments): {string.Join(", ", unlisted)}.");
+                Verify.AreEqual(0, absent.Count,
+                    $"AllResourceKeys entries with no resource in the map: {string.Join(", ", absent)}.");
+            });
+        }
+
         #endregion
 
         #region 17.2 Localized values exist for the locales the control ships
@@ -130,16 +150,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsGreaterThan(resolvedSomewhere, 0,
                     "No TableView resource resolved in any non-default language. The test payload appears to carry no localized resources at all, so per-locale coverage cannot be judged.");
 
-                // Known gap: six automation strings exist only in en-US. This is a ceiling that must not
-                // grow; tighten KnownUnlocalizedKeysPerLocale as localization lands.
-                var ceiling = MaxKnownUnlocalizedCount();
+                // Known gap: six automation strings exist only in en-US. Every gap must be on the allow-list, and
+                // allow-list entries that now resolve are reported so the list can be tightened.
+                var unexpected = gaps.Where(gap => !KnownUnlocalized.Contains(gap)).ToList();
 
-                Verify.IsLessThanOrEqual(gaps.Count, ceiling,
-                    $"The set of unlocalized TableView strings must not grow beyond the {ceiling} known gaps. Found {gaps.Count}: {string.Join(", ", gaps)}.");
+                Verify.AreEqual(0, unexpected.Count,
+                    $"TableView strings unlocalized beyond the known gaps: {string.Join(", ", unexpected)}.");
 
-                if (gaps.Count < ceiling)
+                foreach (var translated in KnownUnlocalized.Where(entry => !gaps.Contains(entry, StringComparer.OrdinalIgnoreCase)))
                 {
-                    Log.Comment($"Localization improved: {gaps.Count} gaps against a ceiling of {ceiling}. Tighten KnownUnlocalizedKeysPerLocale / KnownEmptyLocales.");
+                    Log.Comment($"{translated} now resolves; remove it from KnownUnlocalizedKeysByLocale / KnownEmptyLocales.");
                 }
             });
         }
@@ -187,7 +207,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #region 17.3 Format strings survive translation
 
         [TestMethod]
-        [TestProperty("Description", "Verifies every FormatString-style resource keeps the placeholder count the product substitutes into it.")]
+        [TestProperty("Description", "Verifies every FormatString-style resource keeps exactly the placeholder indices the product substitutes into it.")]
         public void VerifyFormatStringPlaceholderArityIsPreserved()
         {
             RunOnUIThread.Execute(() =>
@@ -199,17 +219,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var value = TryResolve(map, format.Key);
                     Verify.IsFalse(string.IsNullOrWhiteSpace(value), $"{format.Key} must resolve before its arity can be checked.");
 
-                    var actual = CountPlaceholders(value, format.Style);
-                    Log.Comment($"{format.Key} = '{value}' -> {actual} placeholder(s), expected {format.ExpectedPlaceholders}.");
+                    var actual = FormatIndices(PlaceholderIndices(value, format.Style));
+                    var expected = FormatIndices(format.ExpectedIndices);
+                    Log.Comment($"{format.Key} = '{value}' -> placeholders {actual}, expected {expected}.");
 
-                    Verify.AreEqual(format.ExpectedPlaceholders, actual,
-                        $"{format.Key} must keep {format.ExpectedPlaceholders} placeholder(s); resolved value was '{value}'.");
+                    Verify.AreEqual(expected, actual,
+                        $"{format.Key} must keep exactly the placeholders {expected}; resolved value was '{value}'.");
                 }
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies translated format strings keep their placeholder arity in every shipped locale.")]
+        [TestProperty("Description", "Verifies translated format strings keep exactly their placeholder indices in every shipped locale.")]
         public void VerifyFormatStringPlaceholderArityIsPreservedAcrossLocales()
         {
             RunOnUIThread.Execute(() =>
@@ -227,10 +248,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             continue;
                         }
 
-                        var actual = CountPlaceholders(value, format.Style);
+                        var actual = FormatIndices(PlaceholderIndices(value, format.Style));
+                        var expected = FormatIndices(format.ExpectedIndices);
 
-                        Verify.AreEqual(format.ExpectedPlaceholders, actual,
-                            $"{language}/{format.Key} must keep {format.ExpectedPlaceholders} placeholder(s); resolved value was '{value}'.");
+                        Verify.AreEqual(expected, actual,
+                            $"{language}/{format.Key} must keep exactly the placeholders {expected}; resolved value was '{value}'.");
                     }
                 }
             });
@@ -359,39 +381,64 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             "mi-NZ",
         };
 
-        internal const int KnownUnlocalizedKeysPerLocale = 6;
+        // Per locale, the keys allowed to fall back to en-US. Remove entries as translations land.
+        private static readonly string[] EnglishOnlyKeys =
+        {
+            "TableViewBooleanFalse",
+            "TableViewBooleanTrue",
+            "TableViewCellLocalizedControlType",
+            "TableViewCellNameFormat",
+            "TableViewCellTextSeparator",
+            "TableViewGroupHeaderNameFormat",
+        };
+
+        internal static readonly Dictionary<string, string[]> KnownUnlocalizedKeysByLocale = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["fr-FR"] = EnglishOnlyKeys,
+            ["de-DE"] = EnglishOnlyKeys,
+            ["ja-JP"] = EnglishOnlyKeys,
+            ["ar-SA"] = EnglishOnlyKeys,
+            ["he-IL"] = EnglishOnlyKeys,
+            ["ru-RU"] = EnglishOnlyKeys,
+            ["zh-CN"] = EnglishOnlyKeys,
+            ["mi-NZ"] = EnglishOnlyKeys,
+        };
 
         // Locales allowed to resolve no TableView string at all.
         internal static readonly string[] KnownEmptyLocales = { };
 
-        internal static int MaxKnownUnlocalizedCount()
-        {
-            var emptyCount = RepresentativeLocales.Count(l => KnownEmptyLocales.Contains(l, StringComparer.OrdinalIgnoreCase));
-            var partialCount = RepresentativeLocales.Length - emptyCount;
-
-            return (partialCount * KnownUnlocalizedKeysPerLocale) + (emptyCount * AllResourceKeys.Length);
-        }
+        // "locale/key" pairs allowed to be unlocalized.
+        internal static readonly HashSet<string> KnownUnlocalized = new HashSet<string>(
+            KnownUnlocalizedKeysByLocale.SelectMany(entry => entry.Value.Select(key => $"{entry.Key}/{key}"))
+                .Concat(KnownEmptyLocales.SelectMany(locale => AllResourceKeys.Select(key => $"{locale}/{key}"))),
+            StringComparer.OrdinalIgnoreCase);
 
         internal enum PlaceholderStyle
         {
+            // %1!s!, numbered from 1.
             FormatMessage,
 
+            // {0}, numbered from 0.
             DotNet,
         }
 
         internal struct FormatResource
         {
             public string Key;
-            public int ExpectedPlaceholders;
+            public int[] ExpectedIndices;
             public PlaceholderStyle Style;
         }
 
         internal static readonly FormatResource[] FormatResources =
         {
-            new FormatResource { Key = "TableViewCellNameFormat", ExpectedPlaceholders = 2, Style = PlaceholderStyle.FormatMessage },
-            new FormatResource { Key = "TableViewGroupHeaderNameFormat", ExpectedPlaceholders = 2, Style = PlaceholderStyle.FormatMessage },
-            new FormatResource { Key = "TableViewColumnHeaderHelpTextFormat", ExpectedPlaceholders = 2, Style = PlaceholderStyle.FormatMessage },
-            new FormatResource { Key = "TableViewGroupHeaderCountFormat", ExpectedPlaceholders = 1, Style = PlaceholderStyle.DotNet },
+            new FormatResource { Key = "TableViewCellNameFormat", ExpectedIndices = new[] { 1, 2 }, Style = PlaceholderStyle.FormatMessage },
+            new FormatResource { Key = "TableViewGroupHeaderNameFormat", ExpectedIndices = new[] { 1, 2 }, Style = PlaceholderStyle.FormatMessage },
+            new FormatResource { Key = "TableViewColumnHeaderHelpTextFormat", ExpectedIndices = new[] { 1, 2 }, Style = PlaceholderStyle.FormatMessage },
+            new FormatResource { Key = "TableViewColumnWidthChanged", ExpectedIndices = new[] { 1, 2 }, Style = PlaceholderStyle.FormatMessage },
+            new FormatResource { Key = "TableViewSortedAscending", ExpectedIndices = new[] { 1 }, Style = PlaceholderStyle.FormatMessage },
+            new FormatResource { Key = "TableViewSortedDescending", ExpectedIndices = new[] { 1 }, Style = PlaceholderStyle.FormatMessage },
+            new FormatResource { Key = "TableViewSortCleared", ExpectedIndices = new[] { 1 }, Style = PlaceholderStyle.FormatMessage },
+            new FormatResource { Key = "TableViewGroupHeaderCountFormat", ExpectedIndices = new[] { 0 }, Style = PlaceholderStyle.DotNet },
         };
 
         private static Microsoft.Windows.ApplicationModel.Resources.ResourceManager s_manager;
@@ -436,6 +483,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         internal static string FindResourcePath(string key)
             => ResourcePathsByKey().TryGetValue(key, out var path) ? path : null;
+
+        // Every TableView* leaf under the subtree(s) where the known keys were found.
+        internal static List<string> EnumerateTableViewResourceKeys()
+        {
+            var subtrees = new HashSet<string>(ResourcePathsByKey().Values.Select(SubtreeOf), StringComparer.Ordinal);
+            var keys = new SortedSet<string>(StringComparer.Ordinal);
+            var main = Manager.MainResourceMap;
+
+            for (uint i = 0; i < main.ResourceCount; i++)
+            {
+                var path = main.GetValueByIndex(i).Key;
+
+                if (!string.IsNullOrEmpty(path) && subtrees.Contains(SubtreeOf(path)))
+                {
+                    var leaf = LeafOf(path);
+
+                    if (leaf.StartsWith("TableView", StringComparison.Ordinal))
+                    {
+                        keys.Add(leaf);
+                    }
+                }
+            }
+
+            return keys.ToList();
+        }
 
         internal static Microsoft.Windows.ApplicationModel.Resources.ResourceMap RequireTableViewResourceMap()
         {
@@ -521,12 +593,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return false;
                 }
 
-                return language.StartsWith(resolved, StringComparison.OrdinalIgnoreCase)
-                    || resolved.StartsWith(language, StringComparison.OrdinalIgnoreCase);
+                return SameLanguage(language, resolved);
             }
             catch
             {
                 return false;
+            }
+        }
+
+        // Compares BCP-47 tags by language, script and region rather than by prefix, so "zh-CN" matches a "zh-Hans"
+        // candidate but not "zh-TW", and "ar-SA" does not match "arn". A region on only one side matches any region.
+        internal static bool SameLanguage(string requested, string resolved)
+        {
+            ParseTag(requested, out var requestedLanguage, out var requestedScript, out var requestedRegion);
+            ParseTag(resolved, out var resolvedLanguage, out var resolvedScript, out var resolvedRegion);
+
+            return string.Equals(requestedLanguage, resolvedLanguage, StringComparison.OrdinalIgnoreCase)
+                && (requestedScript == null || resolvedScript == null || string.Equals(requestedScript, resolvedScript, StringComparison.OrdinalIgnoreCase))
+                && (requestedRegion == null || resolvedRegion == null || string.Equals(requestedRegion, resolvedRegion, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static void ParseTag(string tag, out string language, out string script, out string region)
+        {
+            var parts = tag.Split('-', '_');
+            language = parts[0];
+            script = null;
+            region = null;
+
+            foreach (var part in parts.Skip(1))
+            {
+                if (script == null && region == null && part.Length == 4 && part.All(char.IsLetter))
+                {
+                    script = part;
+                }
+                else if (region == null && ((part.Length == 2 && part.All(char.IsLetter)) || (part.Length == 3 && part.All(char.IsDigit))))
+                {
+                    region = part;
+                }
+            }
+
+            // Chinese tags often omit the script; infer it from the region so zh-CN and zh-Hans compare equal.
+            if (script == null && region != null && string.Equals(language, "zh", StringComparison.OrdinalIgnoreCase))
+            {
+                script = (region.Equals("TW", StringComparison.OrdinalIgnoreCase)
+                       || region.Equals("HK", StringComparison.OrdinalIgnoreCase)
+                       || region.Equals("MO", StringComparison.OrdinalIgnoreCase)) ? "Hant" : "Hans";
             }
         }
 
@@ -547,39 +658,60 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return slash < 0 ? string.Empty : resourcePath.Substring(0, slash);
         }
 
-        internal static int CountPlaceholders(string value, PlaceholderStyle style)
+        // The distinct placeholder indices in value, multi-digit included; escaped "%%" / "{{" are skipped.
+        internal static SortedSet<int> PlaceholderIndices(string value, PlaceholderStyle style)
         {
+            var indices = new SortedSet<int>();
+
             if (string.IsNullOrEmpty(value))
             {
-                return 0;
+                return indices;
             }
 
-            var seen = new HashSet<int>();
+            var open = style == PlaceholderStyle.FormatMessage ? '%' : '{';
 
             for (var i = 0; i < value.Length; i++)
             {
-                if (style == PlaceholderStyle.FormatMessage)
+                if (value[i] != open)
                 {
-                    if (value[i] != '%' || i + 1 >= value.Length || !char.IsDigit(value[i + 1]))
-                    {
-                        continue;
-                    }
-
-                    seen.Add(value[i + 1] - '0');
+                    continue;
                 }
-                else
+
+                if (i + 1 < value.Length && value[i + 1] == open)
                 {
-                    if (value[i] != '{' || i + 2 >= value.Length || !char.IsDigit(value[i + 1]) || value[i + 2] != '}')
-                    {
-                        continue;
-                    }
-
-                    seen.Add(value[i + 1] - '0');
+                    i++;
+                    continue;
                 }
+
+                var end = i + 1;
+                var index = 0;
+
+                while (end < value.Length && value[end] >= '0' && value[end] <= '9')
+                {
+                    index = (index * 10) + (value[end] - '0');
+                    end++;
+                }
+
+                if (end == i + 1)
+                {
+                    continue;
+                }
+
+                // A .NET item is "{index}", "{index,alignment}" or "{index:format}".
+                if (style == PlaceholderStyle.DotNet && (end >= value.Length || (value[end] != '}' && value[end] != ',' && value[end] != ':')))
+                {
+                    continue;
+                }
+
+                indices.Add(index);
+                i = end - 1;
             }
 
-            return seen.Count;
+            return indices;
         }
+
+        internal static string FormatIndices(IEnumerable<int> indices)
+            => "{" + string.Join(",", indices.OrderBy(index => index)) + "}";
 
         internal static string SeparatorOf(string format)
         {
