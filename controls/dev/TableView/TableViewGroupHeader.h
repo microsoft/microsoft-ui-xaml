@@ -102,6 +102,7 @@ private:
     void SyncExpansionToContent();
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
+    winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
 
     bool m_isPointerOver{ false };

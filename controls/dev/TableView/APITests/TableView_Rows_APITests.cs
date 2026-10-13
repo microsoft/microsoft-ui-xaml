@@ -203,6 +203,120 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "Tab entry must land on a row inside the viewport, not on a cache row.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab from the header band into a scrolled body lands on a row inside the viewport without scrolling.")]
+        public void VerifyTabFromHeaderBandLandsOnFirstViewportRow()
+        {
+            TableView tableView = null;
+            double offset = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewWithColumns(MakeManyItems(200), height: 200);
+                var panel = new StackPanel();
+                panel.Children.Add(tableView);
+                panel.Children.Add(new Button { Content = "After" });
+                LoadContent(panel);
+            });
+
+            SettleLayout(tableView);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 2000.0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                offset = GetBodyScroller(tableView).VerticalOffset;
+                var headerCell = GetHeaderCell(tableView, 0);
+                Verify.IsTrue(headerCell.Focus(FocusState.Keyboard), "Precondition: a header cell takes focus.");
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Next,
+                    new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }), "Tab from the header band must move focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                var row = FocusManager.GetFocusedElement(tableView.XamlRoot) as TableViewRow;
+                Verify.IsNotNull(row, "Tab from the header band must land on a row.");
+                // Keyboard focus brings the element into view with XAML's 20 DIP padding; only that nudge is allowed.
+                Verify.IsLessThanOrEqual(Math.Abs(scroller.VerticalOffset - offset), 20.5, "Tab from the header band must not scroll the body.");
+
+                var top = row.TransformToVisual(scroller).TransformPoint(new Point(0.0, 0.0)).Y;
+                Log.Comment($"Focused row top {top}, height {row.ActualHeight}, viewport {scroller.ViewportHeight}.");
+                Verify.IsTrue(top >= -0.5 && top + row.ActualHeight <= scroller.ViewportHeight + 0.5,
+                    "Tab from the header band must land on a row inside the viewport, not on a cache row.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab from the header band into a scrolled grouped body lands inside the viewport when a cache group header is the first realized element.")]
+        public void VerifyTabFromHeaderBandLandsInViewportInGroupedTable()
+        {
+            TableView tableView = null;
+            double offset = 0.0;
+            bool cachedHeaderFirst = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // One row per group, so headers and rows alternate.
+                var source = TableViewSource.From(MakeManyItems(200));
+                source.GroupBy(o => ((Person)o).Role);
+                tableView = CreateTableViewWithColumns(source, height: 200);
+                var panel = new StackPanel();
+                panel.Children.Add(tableView);
+                panel.Children.Add(new Button { Content = "After" });
+                LoadContent(panel);
+            });
+
+            SettleLayout(tableView);
+
+            // Find an offset whose first realized element is a group header above the viewport.
+            for (double target = 2000.0; target < 2200.0 && !cachedHeaderFirst; target += 8.0)
+            {
+                ScrollBodyTo(tableView, ScrollAxis.Vertical, target);
+                RunOnUIThread.Execute(() =>
+                {
+                    var repeater = GetRowsRepeater(tableView);
+                    var scroller = GetBodyScroller(tableView);
+                    var first = Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(repeater))
+                        .Select(i => VisualTreeHelper.GetChild(repeater, i) as FrameworkElement)
+                        .Where(e => e != null && repeater.GetElementIndex(e) >= 0)
+                        .OrderBy(e => repeater.GetElementIndex(e))
+                        .FirstOrDefault();
+                    cachedHeaderFirst = first is TableViewGroupHeader header &&
+                        header.TransformToVisual(scroller).TransformPoint(new Point(0.0, 0.0)).Y + header.ActualHeight <= 0.5;
+                });
+            }
+
+            Verify.IsTrue(cachedHeaderFirst, "Precondition: a cache group header is the first realized element.");
+
+            RunOnUIThread.Execute(() =>
+            {
+                offset = GetBodyScroller(tableView).VerticalOffset;
+                var headerCell = GetHeaderCell(tableView, 0);
+                Verify.IsTrue(headerCell.Focus(FocusState.Keyboard), "Precondition: a header cell takes focus.");
+                Verify.IsTrue(FocusManager.TryMoveFocus(FocusNavigationDirection.Next,
+                    new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content }), "Tab from the header band must move focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as Control;
+                Log.Comment($"Focused {focused?.GetType().Name}.");
+                Verify.IsTrue(focused is TableViewRow || focused is TableViewGroupHeader,
+                    "Tab from the header band must land on a row or group header.");
+                // Keyboard focus brings the element into view with XAML's 20 DIP padding; only that nudge is allowed.
+                Verify.IsLessThanOrEqual(Math.Abs(scroller.VerticalOffset - offset), 20.5, "Tab from the header band must not scroll the body.");
+
+                var top = focused.TransformToVisual(scroller).TransformPoint(new Point(0.0, 0.0)).Y;
+                Verify.IsTrue(top >= -0.5 && top + focused.ActualHeight <= scroller.ViewportHeight + 0.5,
+                    "Tab from the header band must land inside the viewport, not on a cache group header.");
+            });
+        }
     }
 
     // Category 5.2 of the TableView test plan: generated cell content.

@@ -33,37 +33,6 @@ namespace
     constexpr winrt::Thickness s_verticalThickness{ 0, 0, 1, 0 };
     constexpr winrt::Thickness s_zeroThickness{ 0, 0, 0, 0 };
 
-    // A refused target can be substituted by one that lands back on a row and re-enters the redirect.
-    bool IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner)
-    {
-        if (!target || !target.XamlRoot() || target.Visibility() != winrt::Visibility::Visible || !target.IsTabStop())
-        {
-            return false;
-        }
-
-        if (!SharedHelpers::IsAncestor(target, owner, true /* checkVisibility */))
-        {
-            return false;
-        }
-
-        // Cells are Grids, not Controls, so a disabled ancestor row does not show in the target's own state.
-        winrt::DependencyObject current = target;
-        while (current)
-        {
-            if (auto const control = current.try_as<winrt::Control>(); control && !control.IsEnabled())
-            {
-                return false;
-            }
-            if (current == owner)
-            {
-                break;
-            }
-            current = winrt::VisualTreeHelper::GetParent(current);
-        }
-
-        return true;
-    }
-
     // Shared transparent fill for cell wrappers. Cached because rows and cells are rebuilt on every
     // scroll, and a fresh brush per cell is pure allocation for a value that never varies.
     winrt::Brush TransparentBrush()
@@ -782,6 +751,11 @@ void TableViewRow::OnRowGettingFocus(
         oldFocus == ownerObject ||
         SharedHelpers::IsAncestor(oldFocus, ownerObject, false /* checkVisibility */);
 
+    if (focusCameFromWithinTable && ownerImpl->TryRedirectBandEntryToViewport(*this, args))
+    {
+        return;
+    }
+
     // The bands share one column cursor: a cell-level cursor re-enters on the cell in that column.
     if (focusCameFromWithinTable && ownerImpl->IsCellCursorActiveInternal())
     {
@@ -868,7 +842,7 @@ void TableViewRow::OnRowGettingFocus(
     const bool targetWasCellLevel = targetRowImpl->IsCellLevelInternal();
     targetRowImpl->SetCellLevelInternal(entry.CellLevel);
 
-    if (!IsEntryRedirectTargetFocusable(targetElement, ownerObject) ||
+    if (!TableView::IsEntryRedirectTargetFocusable(targetElement, ownerObject) ||
         !args.TrySetNewFocusedElement(targetObject))
     {
         targetRowImpl->SetCellLevelInternal(targetWasCellLevel);

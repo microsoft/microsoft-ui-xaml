@@ -1700,6 +1700,91 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
 
 winrt::TableViewRow TableView::FindViewportEdgeRowInternal(bool last) const
 {
+    return FindViewportEdgeElementInternal(last, false /* includeGroupHeaders */).try_as<winrt::TableViewRow>();
+}
+
+bool TableView::TryRedirectBandEntryToViewport(
+    winrt::UIElement const& target,
+    winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
+{
+    auto const direction = args.Direction();
+    auto const repeater = m_rowsRepeater.get();
+    auto const oldFocus = args.OldFocusedElement();
+    winrt::DependencyObject const selfObject = *this;
+    if ((direction != winrt::FocusNavigationDirection::Next && direction != winrt::FocusNavigationDirection::Previous) ||
+        !repeater || !oldFocus || HasRedirectedFocusEntry(args.CorrelationId()) ||
+        (oldFocus != selfObject && !SharedHelpers::IsAncestor(oldFocus, selfObject, false /* checkVisibility */)) ||
+        SharedHelpers::IsAncestor(oldFocus, repeater, false /* checkVisibility */))
+    {
+        return false;
+    }
+
+    // XAML aims at the first or last realized tab stop, which can be a cache row or group header.
+    auto const first = FindViewportEdgeElementInternal(false, true /* includeGroupHeaders */);
+    auto const last = FindViewportEdgeElementInternal(true, true /* includeGroupHeaders */);
+    const int32_t index = repeater.GetElementIndex(target);
+    if (!first || !last || index < 0 ||
+        (index >= repeater.GetElementIndex(first) && index <= repeater.GetElementIndex(last)))
+    {
+        return false;
+    }
+
+    // Land at row level; the redirected row's own GettingFocus re-enters the column cursor's cell.
+    auto const edge = direction == winrt::FocusNavigationDirection::Previous ? last : first;
+    auto const edgeRow = edge.try_as<winrt::TableViewRow>();
+    auto const edgeRowImpl = edgeRow ? winrt::get_self<TableViewRow>(edgeRow) : nullptr;
+    const bool edgeWasCellLevel = edgeRowImpl && edgeRowImpl->IsCellLevelInternal();
+    if (edgeRowImpl)
+    {
+        edgeRowImpl->SetCellLevelInternal(false);
+    }
+
+    if (IsEntryRedirectTargetFocusable(edge, selfObject) && args.TrySetNewFocusedElement(edge))
+    {
+        NoteFocusEntryRedirect(args.CorrelationId());
+        return true;
+    }
+
+    if (edgeRowImpl)
+    {
+        edgeRowImpl->SetCellLevelInternal(edgeWasCellLevel);
+    }
+    return false;
+}
+
+// A refused target can be substituted by one that lands back on a row and re-enters the redirect.
+bool TableView::IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner)
+{
+    if (!target || !target.XamlRoot() || target.Visibility() != winrt::Visibility::Visible || !target.IsTabStop())
+    {
+        return false;
+    }
+
+    if (!SharedHelpers::IsAncestor(target, owner, true /* checkVisibility */))
+    {
+        return false;
+    }
+
+    // Cells are Grids, not Controls, so a disabled ancestor row does not show in the target's own state.
+    winrt::DependencyObject current = target;
+    while (current)
+    {
+        if (auto const control = current.try_as<winrt::Control>(); control && !control.IsEnabled())
+        {
+            return false;
+        }
+        if (current == owner)
+        {
+            break;
+        }
+        current = winrt::VisualTreeHelper::GetParent(current);
+    }
+
+    return true;
+}
+
+winrt::UIElement TableView::FindViewportEdgeElementInternal(bool last, bool includeGroupHeaders) const
+{
     auto const repeater = m_rowsRepeater.get();
     auto const scroller = m_bodyScroller.get();
     if (!repeater || !scroller)
@@ -1713,9 +1798,9 @@ winrt::TableViewRow TableView::FindViewportEdgeRowInternal(bool last) const
         return nullptr;
     }
 
-    winrt::TableViewRow fullyVisible{ nullptr };
+    winrt::UIElement fullyVisible{ nullptr };
     int32_t fullyVisibleIndex = -1;
-    winrt::TableViewRow partiallyVisible{ nullptr };
+    winrt::UIElement partiallyVisible{ nullptr };
     int32_t partiallyVisibleIndex = -1;
     auto const better = [last](int32_t candidate, int32_t current)
     {
@@ -1725,15 +1810,17 @@ winrt::TableViewRow TableView::FindViewportEdgeRowInternal(bool last) const
     const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
     for (int32_t i = 0; i < childCount; ++i)
     {
-        auto const row = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::TableViewRow>();
-        if (!row || row.Visibility() != winrt::Visibility::Visible || !row.IsEnabled())
+        auto const element = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::Control>();
+        const bool isCandidate = element &&
+            (element.try_as<winrt::TableViewRow>() || (includeGroupHeaders && element.try_as<winrt::TableViewGroupHeader>()));
+        if (!isCandidate || element.Visibility() != winrt::Visibility::Visible || !element.IsEnabled())
         {
             continue;
         }
 
         // Recycled containers stay parented with index -1.
-        const int32_t index = repeater.GetElementIndex(row);
-        const double height = row.ActualHeight();
+        const int32_t index = repeater.GetElementIndex(element);
+        const double height = element.ActualHeight();
         if (index < 0 || !(height > 0.0))
         {
             continue;
@@ -1742,7 +1829,7 @@ winrt::TableViewRow TableView::FindViewportEdgeRowInternal(bool last) const
         double top = 0.0;
         try
         {
-            top = row.TransformToVisual(scroller).TransformPoint({ 0.0f, 0.0f }).Y;
+            top = element.TransformToVisual(scroller).TransformPoint({ 0.0f, 0.0f }).Y;
         }
         catch (winrt::hresult_error const&)
         {
@@ -1761,13 +1848,13 @@ winrt::TableViewRow TableView::FindViewportEdgeRowInternal(bool last) const
         {
             if (better(index, fullyVisibleIndex))
             {
-                fullyVisible = row;
+                fullyVisible = element;
                 fullyVisibleIndex = index;
             }
         }
         else if (better(index, partiallyVisibleIndex))
         {
-            partiallyVisible = row;
+            partiallyVisible = element;
             partiallyVisibleIndex = index;
         }
     }

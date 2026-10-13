@@ -206,6 +206,7 @@ Keyboard handling is cell-aware and follows the WAI-ARIA treegrid model. `TableV
   - `Down` moves to the first row; `Up` stays in the band.
   - `Enter` and `Space` sort a sortable header (`Space` fires on key-up, so auto-repeat cannot re-sort). `Alt+Left`/`Alt+Right` resize it.
   - Every visible header is reachable, including one with `CanSort=False`.
+  - `Tab` into a scrolled body lands on the first enabled row or group header inside the body viewport (for a row, on its cell in the current column at cell level), never a cache row or group header, so the body does not scroll.
 - **Rows.**
   - Unhandled `Up`, `Down`, `PageUp` and `PageDown` keep the starting level: row to row, or cell to cell in the same visible column. `Up` from the first row moves to the header band.
   - From a focused row, `Right` drills into the first cell. `Left` on the first cell returns to the row. `Left` on a row does nothing.

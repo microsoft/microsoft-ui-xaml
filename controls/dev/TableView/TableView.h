@@ -320,6 +320,15 @@ public:
         winrt::DependencyObject const& oldFocusedElement,
         winrt::FocusNavigationDirection direction);
 
+    // Tab from another band onto a row or group header outside the viewport lands on the
+    // viewport edge row or group header instead. Returns true when focus was redirected.
+    bool TryRedirectBandEntryToViewport(
+        winrt::UIElement const& target,
+        winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args);
+
+    static bool IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner);
+    winrt::UIElement FindViewportEdgeElementInternal(bool last, bool includeGroupHeaders) const;
+
     // A redirect re-raises GettingFocus with the same CorrelationId; redirect once to avoid a loop.
     bool HasRedirectedFocusEntry(winrt::guid const& correlationId) const noexcept
     {
