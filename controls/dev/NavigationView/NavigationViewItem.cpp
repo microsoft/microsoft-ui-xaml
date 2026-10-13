@@ -1070,6 +1070,12 @@ void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, c
 
     m_isPressed = true;
 
+    if (IsInNavigationViewOwnedRepeater())
+    {
+        // Do not let an ancestor ScrollViewer track a press whose release we handle.
+        args.Handled(true);
+    }
+
     auto pointer = args.Pointer();
     auto presenter = GetPresenterOrItem();
 

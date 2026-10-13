@@ -34,6 +34,71 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void ToggleSwitchRetainsPointerFocusAfterNavigationViewItemClick()
+        {
+            foreach (bool topMode in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Pointer Focus Test" }))
+                {
+                    if (topMode)
+                    {
+                        FindElement.ByName<CheckBox>("Top mode").Check();
+                        Wait.ForIdle();
+                    }
+
+                    var item = FindElement.ByName("Second item");
+                    var toggle = FindElement.ByName("Focus toggle");
+                    var toggleState = FindElement.ByName<TextBlock>("Toggle state");
+
+                    for (int repetition = 0; repetition < 2; repetition++)
+                    {
+                        InputHelper.LeftClick(item);
+                        Verify.IsTrue(item.HasKeyboardFocus);
+
+                        InputHelper.LeftClick(toggle);
+                        Verify.AreEqual("True", toggleState.GetText());
+                        Verify.IsTrue(toggle.HasKeyboardFocus, "The first toggle click after item selection must retain focus.");
+
+                        InputHelper.LeftClick(toggle);
+                        Verify.AreEqual("False", toggleState.GetText());
+                        Verify.IsTrue(toggle.HasKeyboardFocus, "Subsequent toggle clicks must retain focus.");
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void PointerFocusFixPreservesOtherControlsAndKeyboardNavigation()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Pointer Focus Test" }))
+            {
+                var toggle = FindElement.ByName("Focus toggle");
+                var button = FindElement.ByName("Other button");
+                var scrollViewer = FindElement.ByName("Focusable ScrollViewer");
+                var toggleState = FindElement.ByName<TextBlock>("Toggle state");
+
+                InputHelper.LeftClick(button);
+                Verify.IsTrue(button.HasKeyboardFocus);
+                InputHelper.LeftClick(toggle);
+                Verify.IsTrue(toggle.HasKeyboardFocus);
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                Verify.IsTrue(button.HasKeyboardFocus);
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+                Verify.IsTrue(toggle.HasKeyboardFocus);
+
+                KeyboardHelper.PressKey(Key.Space);
+                Wait.ForIdle();
+                Verify.AreEqual("False", toggleState.GetText());
+
+                InputHelper.LeftClick(scrollViewer);
+                Verify.IsTrue(scrollViewer.HasKeyboardFocus, "Do not suppress legitimate ScrollViewer focus.");
+            }
+        }
+
+        [TestMethod]
         public void EnsureTopSettingsRetainsFocusAfterOrientationChanges()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
