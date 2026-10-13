@@ -1,0 +1,8 @@
+{
+  "benchmarkConfigVersion": "pr-smoke-v1",
+  "requiredSamples": 7,
+  "percentRegression": 10.0,
+  "absoluteRegressionMs": 5.0,
+  "maxCoefficientOfVariation": 0.15,
+  "requiredMetrics": ["CpuTimeMs"]
+}
