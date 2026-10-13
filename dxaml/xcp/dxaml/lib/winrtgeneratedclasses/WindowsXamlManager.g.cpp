@@ -39,6 +39,8 @@ HRESULT DirectUI::WindowsXamlManagerGenerated::QueryInterfaceImpl(_In_ REFIID ii
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager2>(this);
     }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+#endif
     else
     {
         RRETURN(ctl::WeakReferenceSource::QueryInterfaceImpl(iid, ppObject));
@@ -105,6 +107,12 @@ HRESULT DirectUI::WindowsXamlManagerFactory::QueryInterfaceImpl(_In_ REFIID iid,
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStatics2*>(this);
     }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStaticsFeature_ExperimentalApi)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStaticsFeature_ExperimentalApi*>(this);
+    }
+#endif
     else
     {
         RRETURN(ctl::AbstractActivationFactory::QueryInterfaceImpl(iid, ppObject));
