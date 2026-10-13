@@ -1717,9 +1717,16 @@ bool TableView::TryRedirectBandEntryToViewport(
     auto const first = FindViewportEdgeElementInternal(false, true /* includeGroupHeaders */);
     auto const last = FindViewportEdgeElementInternal(true, true /* includeGroupHeaders */);
     const int32_t index = repeater.GetElementIndex(target);
-    if (!first || !last || index < 0 ||
-        (index >= repeater.GetElementIndex(first) && index <= repeater.GetElementIndex(last)))
+    if (!first || !last || index < 0)
     {
+        return false;
+    }
+    if (index >= repeater.GetElementIndex(first) && index <= repeater.GetElementIndex(last))
+    {
+        if (target.try_as<winrt::TableViewGroupHeader>())
+        {
+            SetCellCursorActiveInternal(false);
+        }
         return false;
     }
 
@@ -1736,6 +1743,11 @@ bool TableView::TryRedirectBandEntryToViewport(
     if (IsEntryRedirectTargetFocusable(edge, selfObject) && args.TrySetNewFocusedElement(edge))
     {
         NoteFocusEntryRedirect(args.CorrelationId());
+        if (!edgeRow)
+        {
+            // Group headers have no cell level; the column cursor survives.
+            SetCellCursorActiveInternal(false);
+        }
         return true;
     }
 

@@ -277,8 +277,8 @@ public:
 
     // The row that body entry should land on when focus is aimed at a row CONTAINER from outside
     // the table. Used by TableViewRow's GettingFocus redirect: entering the table returns to the
-    // row the user left; a move from inside the rows repeater keeps the row it names; otherwise the
-    // viewport edge row, never an off-screen cache row.
+    // row the user left, while a move that started inside the table keeps the row it names.
+    // Otherwise falls back to the viewport edge row.
     winrt::TableViewRow ResolveFocusEntryRow(
         winrt::TableViewRow const& row,
         winrt::DependencyObject const& oldFocusedElement,
