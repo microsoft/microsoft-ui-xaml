@@ -88,6 +88,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 if (groupHeader == null) { Verify.Fail("No TableViewGroupHeader peer was found in GroupedTableView."); return; }
                 Verify.IsGreaterThan(expandedRows, 0, "Precondition: the grouped table must realize rows.");
 
+                string headerName = groupHeader.Name;
                 var expandCollapse = new ExpandCollapseImplementation(groupHeader);
                 if (!expandCollapse.IsAvailable) { Verify.Fail("The group header must expose the ExpandCollapse pattern."); return; }
                 Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState, "Precondition: the first group starts expanded.");
@@ -96,11 +97,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 AxeTestHelper.TestForAxeIssues();
 
                 expandCollapse.Collapse();
-                Wait.ForIdle();
+                groupHeader = RefetchFirstGroupHeader(tableView, headerName);
+                if (groupHeader == null) { return; }
 
-                int collapsedRows = CountRows(rowsHost);
+                int collapsedRows = CountRows(GetRowsHost(tableView));
                 Log.Comment("Realized rows: {0} expanded, {1} after collapsing the first group.", expandedRows, collapsedRows);
-                Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState, "Precondition: the first group must report Collapsed.");
+                Verify.AreEqual(ExpandCollapseState.Collapsed, new ExpandCollapseImplementation(groupHeader).ExpandCollapseState, "Precondition: the first group must report Collapsed.");
                 Verify.IsLessThan(collapsedRows, expandedRows, "Precondition: collapsing the first group must remove its rows.");
 
                 Log.Comment("Scan with the first group collapsed.");
@@ -145,15 +147,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject rowsHost = GetRowsHost(tableView);
                 int collapsedRows = CountRows(rowsHost);
 
-                UIObject ada = null;
-                foreach (UIObject child in rowsHost.Children)
-                {
-                    if (IsRow(child) && child.Name != null && child.Name.StartsWith("Ada", StringComparison.Ordinal))
-                    {
-                        ada = child;
-                        break;
-                    }
-                }
+                UIObject ada = FindRowStartingWith(rowsHost, "Ada");
                 if (ada == null) { Verify.Fail("Row 'Ada' was not found in HierarchyTable."); return; }
 
                 var expandCollapse = new ExpandCollapseImplementation(ada);
@@ -162,13 +156,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 expandCollapse.Expand();
                 Wait.ForIdle();
 
+                // The expand reshapes the rows, so Ada's container is re-read rather than reused.
                 int expandedRows = CountRows(rowsHost);
+                ada = FindRowStartingWith(GetRowsHost(tableView), "Ada");
+                if (ada == null) { Verify.Fail("Row 'Ada' must still be realized after expanding it."); return; }
                 Log.Comment("HierarchyTable realized rows: {0} collapsed, {1} after expanding Ada.", collapsedRows, expandedRows);
-                Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState, "Precondition: Ada must report Expanded.");
+                Verify.AreEqual(ExpandCollapseState.Expanded, new ExpandCollapseImplementation(ada).ExpandCollapseState, "Precondition: Ada must report Expanded.");
                 Verify.IsGreaterThan(expandedRows, collapsedRows, "Precondition: expanding Ada must realize its children.");
 
                 AxeTestHelper.TestForAxeIssues();
             }
+        }
+
+        // The realized row whose Name (its cell texts) starts with prefix, or null.
+        private static UIObject FindRowStartingWith(UIObject rowsHost, string prefix)
+        {
+            foreach (UIObject child in rowsHost.Children)
+            {
+                if (IsRow(child) && child.Name != null && child.Name.StartsWith(prefix, StringComparison.Ordinal))
+                {
+                    return child;
+                }
+            }
+
+            return null;
         }
     }
 }

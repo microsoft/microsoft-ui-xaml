@@ -117,21 +117,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     return;
                 }
 
-                var expandCollapse = new ExpandCollapseImplementation(groupHeader);
-                Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState, "Baseline: the group header should report Expanded.");
+                string headerName = groupHeader.Name;
+                Verify.AreEqual(ExpandCollapseState.Expanded, new ExpandCollapseImplementation(groupHeader).ExpandCollapseState, "Baseline: the group header should report Expanded.");
 
                 InputHelper.Tap(groupHeader);
-                Wait.ForIdle();
+                groupHeader = RefetchFirstGroupHeader(tableView, headerName);
+                if (groupHeader == null) { return; }
 
-                int collapsedRows = CountRows(rowsHost);
+                int collapsedRows = CountRows(GetRowsHost(tableView));
                 Verify.IsLessThan(collapsedRows, baselineRows, "Tapping the group header must collapse its group and drop the realized row count.");
-                Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState, "After the tap the header must report Collapsed.");
+                Verify.AreEqual(ExpandCollapseState.Collapsed, new ExpandCollapseImplementation(groupHeader).ExpandCollapseState, "After the tap the header must report Collapsed.");
 
                 InputHelper.Tap(groupHeader);
-                Wait.ForIdle();
+                groupHeader = RefetchFirstGroupHeader(tableView, headerName);
+                if (groupHeader == null) { return; }
 
-                Verify.AreEqual(baselineRows, CountRows(rowsHost), "A second tap must restore the original realized row count.");
-                Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState, "After the second tap the header must report Expanded again.");
+                Verify.AreEqual(baselineRows, CountRows(GetRowsHost(tableView)), "A second tap must restore the original realized row count.");
+                Verify.AreEqual(ExpandCollapseState.Expanded, new ExpandCollapseImplementation(groupHeader).ExpandCollapseState, "After the second tap the header must report Expanded again.");
             }
         }
 

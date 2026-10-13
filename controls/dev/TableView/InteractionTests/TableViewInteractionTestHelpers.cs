@@ -115,6 +115,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         internal static UIObject GetFirstGroupHeader(UIObject rowsHost) => GetGroupHeaderAt(rowsHost, 0);
 
+        // A collapse or expand recycles the group header container, so callers re-read the header after each toggle
+        // instead of reusing the UIObject captured before it. Fails (and returns null) if it is gone or names another group.
+        internal static UIObject RefetchFirstGroupHeader(UIObject tableView, string expectedName)
+        {
+            Wait.ForIdle();
+            ElementCache.Clear();
+            UIObject header = GetFirstGroupHeader(GetRowsHost(tableView));
+            if (header == null)
+            {
+                Verify.Fail("The first group header must still be realized after the toggle.");
+                return null;
+            }
+
+            Verify.AreEqual(expectedName, header.Name, "The first group header must still name the same group.");
+            return header;
+        }
+
         // The index-th group header among the rows host's own children, or null.
         internal static UIObject GetGroupHeaderAt(UIObject rowsHost, int index)
         {
