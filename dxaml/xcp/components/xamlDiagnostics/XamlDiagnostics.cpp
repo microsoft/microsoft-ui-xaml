@@ -717,8 +717,14 @@ XamlDiagnostics::GetIInspectableFromHandle(
         std::shared_ptr<RuntimeObject> object;
         if (TryFindObjectFromHandle(instanceHandle, object))
         {
-            *ppInstance = object->GetBackingObject().Detach();
-            return S_OK;
+            // Resolve once. Roots are observed weakly, so a handle can outlive its backing
+            // object. When that has happened, fall through rather than reporting success with
+            // a null instance.
+            if (auto backingObject = object->GetBackingObject())
+            {
+                *ppInstance = backingObject.Detach();
+                return S_OK;
+            }
         }
     }
 
@@ -842,7 +848,9 @@ XamlDiagnostics::GetUiLayerForXamlRoot(
     IFCPTR_RETURN(ppLayer);
     *ppLayer = nullptr;
 
-    IInspectable* rootElement = nullptr;
+    // Hold the reference rather than a raw pointer off a temporary: for a weakly observed root,
+    // GetBackingObject() resolves into a new ComPtr that would be released immediately.
+    wrl::ComPtr<IInspectable> rootElement;
 
     if (instanceHandle != 0u)
     {
@@ -855,13 +863,17 @@ XamlDiagnostics::GetUiLayerForXamlRoot(
             RETURN_HR(E_INVALIDARG);
         }
 
-        rootElement = rootObject->GetBackingObject().Get();
+        rootElement = rootObject->GetBackingObject();
+        if (!rootElement)
+        {
+            RETURN_HR(E_NOTFOUND);
+        }
     }
     
     // Always grab the diagnostics root for the current thread. This way, VS can draw
     // on the correct window when debuggin an app with multiple window support.
     wrl::ComPtr<xaml::IDependencyObject> spDO;
-    IFC_RETURN(m_spDiagInterop->GetVisualDiagnosticRoot(rootElement, &spDO));
+    IFC_RETURN(m_spDiagInterop->GetVisualDiagnosticRoot(rootElement.Get(), &spDO));
 
     *ppLayer = spDO.Detach();
     return S_OK;
@@ -880,7 +892,9 @@ XamlDiagnostics::HitTestForXamlRoot(
     IFCPTR_RETURN(pCount);
     *pCount = 0;
 
-    IInspectable* rootElement = nullptr;
+    // Hold the reference rather than a raw pointer off a temporary: for a weakly observed root,
+    // GetBackingObject() resolves into a new ComPtr that would be released immediately.
+    wrl::ComPtr<IInspectable> rootElement;
     if (instanceHandle != 0u)
     {
         // Get the object for the Xaml root we're hit testing for - for Xaml islands scenarios
@@ -892,11 +906,15 @@ XamlDiagnostics::HitTestForXamlRoot(
             RETURN_HR(E_INVALIDARG);
         }
         
-        rootElement = rootObject->GetBackingObject().Get();
+        rootElement = rootObject->GetBackingObject();
+        if (!rootElement)
+        {
+            RETURN_HR(E_NOTFOUND);
+        }
     }
 
     ComValueCollectionTranslator<xaml::IDependencyObject*, InstanceHandle> hits;
-    IFC_RETURN(m_spDiagInterop->HitTest(rootElement, rect, &hits));
+    IFC_RETURN(m_spDiagInterop->HitTest(rootElement.Get(), rect, &hits));
 
     *pCount = hits.GetSize();
     *ppInstanceHandles = hits.RealizeAndDetach([&](xaml::IDependencyObject* pDO)
@@ -918,13 +936,22 @@ XamlDiagnostics::PopulateDOPropertyChain(
     _Inout_ std::vector<wil::unique_propertychainsource>& sources,
     _Inout_ std::vector<wil::unique_propertychainvalue>& values)
 {
+    wrl::ComPtr<xaml::IDependencyObject> backingDO;
+
+    // Keep the backing object alive through the type check and property evaluation.
+    const auto backingObject = obj->GetBackingObject();
+    if (!backingObject)
+    {
+        // The handle is no longer backed by a live object.
+        return E_NOTFOUND;
+    }
+
     if (!obj->IsDependencyObject())
     {
         XAML_FAIL_FAST();
     }
 
-    wrl::ComPtr<xaml::IDependencyObject> backingDO;
-    IFCFAILFAST(obj->GetBackingObject().As(&backingDO));
+    IFCFAILFAST(backingObject.As(&backingDO));
 
     Diagnostics::PropertyChainEvaluator evaluator(static_cast<DirectUI::DependencyObject*>(backingDO.Get()));
     values.reserve(evaluator.GetMaxPropertyCount());
