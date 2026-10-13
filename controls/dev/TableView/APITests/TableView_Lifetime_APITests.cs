@@ -20,8 +20,7 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewLifetimeTestH
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    // Category 18 of the TableView test plan: lifetime.
-    // Each test keeps the would-be rooter (items source / items / peers) alive and asserts the TableView itself is collected; dropping both proves nothing.
+    // Each test keeps the would-be rooter (source, items, peers) alive; dropping both would prove nothing.
     [TestClass]
     public class TableViewLifetimeTests : TableViewApiTestBase
     {

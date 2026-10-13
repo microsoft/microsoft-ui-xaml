@@ -18,10 +18,8 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewLocalizationT
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    // Category 17 of the TableView test plan: localization and resource resolution.
-    // LocalizedOrFallbackForTableViewAutomation / FormatLocalizedOrFallback fall back to hard-coded
-    // English, so asserting on the automation peer alone cannot detect a failed lookup (#12070).
-    // These tests therefore read the resource map directly.
+    // The automation strings fall back to hard-coded English, so a peer cannot reveal a failed lookup
+    // (#12070); these tests read the resource map directly.
     [TestClass]
     public class TableViewLocalizationTests : TableViewApiTestBase
     {

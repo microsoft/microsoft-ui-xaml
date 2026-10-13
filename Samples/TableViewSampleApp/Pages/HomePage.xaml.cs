@@ -63,7 +63,7 @@ public sealed partial class HomePage : Page
             ReportIssueUri.AbsoluteUri);
         ReportIssueFallbackText.Visibility = Visibility.Visible;
 
-        // TextBlock does not raise LiveRegionChanged on a text change; raise it once for this message.
+        // TextBlock does not raise LiveRegionChanged on a text change; raise it once.
         ReportIssueFallbackText.UpdateLayout();
         (FrameworkElementAutomationPeer.FromElement(ReportIssueFallbackText)
             ?? FrameworkElementAutomationPeer.CreatePeerForElement(ReportIssueFallbackText))

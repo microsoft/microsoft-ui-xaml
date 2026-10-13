@@ -665,7 +665,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // A rejected value holds the edit open, so the editor stays in the tree.
                 CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), InvalidPrefix + "Nope");
                 Verify.IsTrue(tableView.IsEditing, "Precondition: an edit is open.");
             });

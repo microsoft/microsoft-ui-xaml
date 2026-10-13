@@ -733,8 +733,6 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
             m_themeSettingsChangedRevoker = m_themeSettings.Changed(
                 winrt::auto_revoke, { get_weak(), &TableView::OnThemeSettingsChanged });
 
-            // A deferred Unloaded runs after the window is destroyed, when removing the handler
-            // throws inside ThemeSettings (noexcept, fail-fast). Release while the window exists.
             if (auto appWindow = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(env.AppWindowId()))
             {
                 m_appWindowDestroyingToken = appWindow.Destroying(

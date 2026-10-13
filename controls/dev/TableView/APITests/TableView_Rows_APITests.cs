@@ -239,7 +239,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var scroller = GetBodyScroller(tableView);
                 var row = FocusManager.GetFocusedElement(tableView.XamlRoot) as TableViewRow;
                 Verify.IsNotNull(row, "Tab from the header band must land on a row.");
-                // Keyboard focus brings the element into view with XAML's 20 DIP padding; only that nudge is allowed.
                 Verify.IsLessThanOrEqual(Math.Abs(scroller.VerticalOffset - offset), 20.5, "Tab from the header band must not scroll the body.");
 
                 var top = row.TransformToVisual(scroller).TransformPoint(new Point(0.0, 0.0)).Y;
@@ -309,7 +308,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment($"Focused {focused?.GetType().Name}.");
                 Verify.IsTrue(focused is TableViewRow || focused is TableViewGroupHeader,
                     "Tab from the header band must land on a row or group header.");
-                // Keyboard focus brings the element into view with XAML's 20 DIP padding; only that nudge is allowed.
                 Verify.IsLessThanOrEqual(Math.Abs(scroller.VerticalOffset - offset), 20.5, "Tab from the header band must not scroll the body.");
 
                 var top = focused.TransformToVisual(scroller).TransformPoint(new Point(0.0, 0.0)).Y;

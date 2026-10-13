@@ -18,8 +18,7 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewRecyclingTest
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    // Category 5.3 of the TableView test plan, continued: recycling across grouping, templating and automation.
-    // An open edit surviving a recycle is not tested: there is no programmatic BeginEdit, so it belongs in the interaction tests.
+    // An open edit surviving a recycle needs BeginEdit, which has no API, so the interaction tests cover it.
     [TestClass]
     public class TableViewGroupHeaderRecyclingTests : TableViewApiTestBase
     {
@@ -120,7 +119,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
-    // Category 12 crossed with recycling: automation peers must describe the item a recycled container now hosts.
+    // Automation peers must describe the item a recycled container now hosts.
     [TestClass]
     public class TableViewAutomationRecyclingTests : TableViewApiTestBase
     {
@@ -260,7 +259,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
-    // Category 15 crossed with grouping, sorting and automation: shaping must not defeat virtualization.
+    // Grouping and sorting must not defeat virtualization.
     [TestClass]
     public class TableViewVirtualizationAcrossFeaturesTests : TableViewApiTestBase
     {
@@ -502,8 +501,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var after = GetCellPeer(row, 0);
 
-                // Peers are per container, not per item: a container rehosting a different item drops its cell-peer
-                // cache (TableViewRow::EnsureOwningTableViewInternal), so only value equality is guaranteed here.
+                // Peers are per container: rehosting another item drops the cell-peer cache, so only value equality holds.
                 Log.Comment($"Re-acquired peer is {(ReferenceEquals(before, after) ? "the same" : "a different")} instance.");
 
                 Verify.AreEqual(nameBefore, after.GetName(),

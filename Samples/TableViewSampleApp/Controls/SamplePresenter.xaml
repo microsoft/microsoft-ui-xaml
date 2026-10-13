@@ -76,9 +76,8 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition x:Name="ExampleHostRow" Height="Auto"/>
                 </Grid.RowDefinitions>
-                <!-- Try it callout, styled like an informational InfoBar. Not an InfoBar: InfoBar announces
-                     its title and message when it opens (64477279), and this one opens on every navigation.
-                     Unnamed, like the InfoBar it replaces: WinUI reports an unset AutomationId as the x:Name. -->
+                <!-- Not an InfoBar: InfoBar announces when it opens (64477279), and this opens on every navigation.
+                     Unnamed because WinUI reports an unset AutomationId as the x:Name. -->
                 <Border
                     Grid.Row="0"
                     MinHeight="104"

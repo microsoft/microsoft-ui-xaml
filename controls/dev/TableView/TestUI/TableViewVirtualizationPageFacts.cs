@@ -3,13 +3,10 @@
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
 {
-    // What TableViewVirtualizationPage authors, compiled into both the test app and the interaction tests so
-    // expectations are computed from the same values the page is built from (see TableViewTestPageFacts).
+    // Shared by the test app and the interaction tests so expectations use the page's own values.
     // Column widths mirror the XAML by hand.
     internal static class TableViewVirtualizationPageFacts
     {
-        // ---- Navigation and elements (AutomationId; the navigation button is found by Name) ----
-
         internal const string NavigateButton = "navigateToVirtualization";
         internal const string LargeTable = "LargeEditableTable";
         internal const string RemoveFirstItemButton = "RemoveFirstItemButton";
@@ -36,8 +33,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string OffsetField = "offset";
         internal const string NoneValue = "none";
 
-        // ---- LargeEditableTable columns, in visible order ----
-
         internal static readonly string[] Columns = { "Name", "Quantity", "Code" };
         internal static readonly int[] ColumnWidths = { 200, 120, 160 };
 
@@ -54,8 +49,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
             }
             return left + (ColumnWidths[column] / 2);
         }
-
-        // ---- Data ----
 
         internal const int ItemCount = 2000;
 

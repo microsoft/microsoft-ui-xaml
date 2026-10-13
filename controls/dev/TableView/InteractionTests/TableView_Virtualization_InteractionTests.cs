@@ -23,16 +23,12 @@ using VirtualizationFacts = Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    // TableView large-data / virtualization interaction tests, on TableViewVirtualizationPage: one editable
-    // 2000-item table in a fixed-height frame, so only a viewport's worth of rows is ever realized.
-    //
-    // All state is read from the page's in-process readout (format: TableViewVirtualizationPageFacts.Readout).
-    // Which item a realized row shows, whether a row holds an editor, and which rows are on screen are not
-    // observable from UIA without walking every row's cells, and the page computes them from the visual tree.
+    // State comes from the page's readout (TableViewVirtualizationPageFacts.Readout): which item a row shows,
+    // which rows hold editors and which are on screen are not observable from UIA alone.
     [TestClass]
     public class TableViewVirtualizationInteractionTests
     {
-        // One mouse-wheel notch. Matches the WHEEL_DELTA the input stack injects.
+        // One wheel notch (WHEEL_DELTA).
         private const int mouseWheelDelta = 120;
 
         // Far beyond the first viewport plus ItemsRepeater's cache on either side, so every row that was
@@ -62,7 +58,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies an open edit whose row is scrolled far out of view stays open on its own item, leaks no editor into recycled rows, and commits to that item when scrolled back.")]
         public void OpenEditSurvivesScrollingItsRowOutOfViewAndBack()
         {
-            // Contract: ItemsRepeater pins the focused editor's row (ViewManager::UpdateFocusedElement), so TableView::OnRowElementClearing never runs and scrolling must not end, move or write the edit.
+            // ItemsRepeater keeps the focused editor's row realized while recycling, so scrolling must not end, move or write the edit.
             using (var setup = new TestSetupHelper(new[] { PageName, VirtualizationFacts.NavigateButton }))
             {
                 UIObject table = GetTable(VirtualizationFacts.LargeTable);
@@ -133,7 +129,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies an open edit whose row is recycled out from under it is closed by the control: the pending value is committed to the edited item, CellEditEnding reports Commit, and no editor survives in any row.")]
         public void OpenEditIsClosedWhenItsRowIsRecycledByRemovingItsItem()
         {
-            // Contract: removing the item bypasses the focus pin, so TableView::OnRowElementClearing force-closes the edit (TerminateEditForReset), committing to the edited item; the button is focus-neutral.
+            // Removing the item bypasses that focus pin, so the recycle force-closes the edit, committing to the edited item.
             using (var setup = new TestSetupHelper(new[] { PageName, VirtualizationFacts.NavigateButton }))
             {
                 UIObject table = GetTable(VirtualizationFacts.LargeTable);
@@ -212,9 +208,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return dash > 0 && int.TryParse(visible.Substring(0, dash), out id) ? id : -1;
         }
 
-        // Rotates the wheel over the table body, a step at a time, until the readout satisfies done or the step
-        // budget runs out. Aimed at the table's centre, which is below row 0, so the pointer never sits on the
-        // editor. Returns the last readout.
+        // Aimed at the table's centre, below row 0, so the pointer never sits on the editor.
         private static string WheelUntil(UIObject table, int deltaPerStep, Func<string, bool> done)
         {
             Point centre = CentreOf(table);

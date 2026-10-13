@@ -1,5 +1,5 @@
-<!-- Template cells that wrap rather than trim, so a long value such as Folder path stays
-     readable under text scaling; the row grows to fit. Padding matches a Compact text cell. -->
+<!-- Cells wrap rather than trim so long values stay readable under text scaling.
+     Padding matches a Compact text cell. -->
 <DataTemplate x:Key="PropertyNameTemplate" x:DataType="models:FilePropertyEntry">
     <TextBlock Text="{x:Bind Property}" TextWrapping="Wrap" Padding="8,2,8,2" VerticalAlignment="Center"/>
 </DataTemplate>

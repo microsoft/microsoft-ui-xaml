@@ -294,8 +294,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "MaxWidth of {0} -> {1:N0}", _activeColumn.Header, e.NewValue));
     }
 
-    // Narrator reads a Slider's RangeValue as a percentage of its range (162 of 0-500 is "32%"),
-    // while these sliders mean pixels. ItemStatus carries the pixel value Narrator reads on focus.
+    // Narrator reads a Slider's value as a percentage of its range; ItemStatus carries the pixels.
     private static void DescribePixels(Slider slider, double value) =>
         AutomationProperties.SetItemStatus(slider, string.Format(CultureInfo.CurrentCulture, "{0:N0} pixels", value));
 

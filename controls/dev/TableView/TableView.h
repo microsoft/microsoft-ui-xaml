@@ -277,9 +277,8 @@ public:
 
     // The row that body entry should land on when focus is aimed at a row CONTAINER from outside
     // the table. Used by TableViewRow's GettingFocus redirect: entering the table returns to the
-    // row the user left; a move from inside the rows repeater keeps the row it names; a move from
-    // another band (outside the rows repeater) lands on the viewport edge instead of an off-screen
-    // cache row (TryRedirectBandEntryToViewport). Otherwise falls back to the viewport edge row.
+    // row the user left; a move from inside the rows repeater keeps the row it names; otherwise the
+    // viewport edge row, never an off-screen cache row.
     winrt::TableViewRow ResolveFocusEntryRow(
         winrt::TableViewRow const& row,
         winrt::DependencyObject const& oldFocusedElement,
@@ -902,10 +901,8 @@ private:
     // Keyboard-driven group toggle loses focus without this: the Enter/Space toggle defers a
     // structural reshape that recycles the focused header container, dropping focus (and its
     // visual) to nothing. Capture the header's identity + FocusState at gesture time, then restore
-    // focus to the same group's header once the reshape's relayout has settled, unless focus left
-    // the table. Headers restore with the gesture's focus state. Same for focused hierarchical data
-    // rows whose container a reset recycles; re-focused only when focus did not survive, and only
-    // from keyboard / programmatic focus.
+    // focus to the same group's header after the relayout settles, unless focus left the table.
+    // Also covers focused hierarchical rows a reset recycles (keyboard / programmatic focus only).
     void CaptureContainerFocusForRestore(
         winrt::UIElement const& container,
         winrt::hstring const& identity,
@@ -1093,8 +1090,8 @@ private:
     // the constructor, and torn down on Unloaded.
     winrt::Microsoft::UI::System::ThemeSettings m_themeSettings{ nullptr };
     winrt::Microsoft::UI::System::ThemeSettings::Changed_revoker m_themeSettingsChangedRevoker{}; // Runtime HC toggles must refresh cached HC-dependent brushes.
-    // ThemeSettings' remove_Changed fail-fasts once its window is gone, so release it on Destroying.
-    // AppWindow has no weak reference support, so this can't use an auto_revoke revoker.
+    // ThemeSettings' remove_Changed fail-fasts once its window is gone (e.g. a deferred Unloaded), so
+    // release it on Destroying. A token, not auto_revoke: AppWindow has no weak reference support.
     winrt::Microsoft::UI::Windowing::AppWindow m_appWindow{ nullptr };
     winrt::event_token m_appWindowDestroyingToken{};
     // Cached HC state: kept fresh by ThemeSettings.Changed while loaded and read by IsHighContrast().

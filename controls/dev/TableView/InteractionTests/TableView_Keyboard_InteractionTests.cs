@@ -613,7 +613,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(1, IndexOfFocusedCell(GetRowsHost(ScrollingTable).Children[1]),
                     "Precondition: the second cell of the anchor row should hold focus.");
 
-                // Moves focus to AfterTableButton, then disables the row that held it.
                 var disable = FindElement.ById<Button>(DisableFocusedRowButton);
                 if (disable == null) { Verify.Fail(DisableFocusedRowButton + " was not found."); return; }
                 disable.InvokeAndWait();

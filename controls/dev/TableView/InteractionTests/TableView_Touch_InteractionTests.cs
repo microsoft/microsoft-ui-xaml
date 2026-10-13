@@ -23,9 +23,7 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPa
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    // TableView touch interaction tests, on TableViewTouchPage (reached through TableViewPage's navigateToTouch
-    // button). They prove injected touch reaches the same selection, group toggle and scroll-sync paths the pointer
-    // and layout tests cover with the mouse.
+    // Injected touch must reach the same selection, group toggle and scroll-sync paths the mouse tests cover.
     [TestClass]
     public class TableViewTouchInteractionTests
     {

@@ -9,8 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <!-- Everything stays inside the 1024px lab frame. The table is the only physically-clicked target; the
-         button below is invoked through UIA only. -->
+    <!-- Stays inside the 1024px lab frame; the button below is invoked through UIA only. -->
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RowSpacing="8" Padding="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -41,8 +40,7 @@
                  IsTabStop="False"
                  Text="" />
 
-        <!-- 2000 items in a 360px-tall table: only a viewport's worth of rows (plus the repeater's cache) is
-             ever realized. -->
+        <!-- 2000 items in a 360px-tall table, so only a viewport of rows (plus cache) is realized. -->
         <controls:TableView x:Name="LargeEditableTable"
                             Grid.Row="2"
                             AutomationProperties.Name="LargeEditableTable"
