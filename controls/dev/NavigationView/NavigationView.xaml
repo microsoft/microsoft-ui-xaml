@@ -186,7 +186,7 @@
               </Grid.RowDefinitions>
               <Grid x:Name="TogglePaneTopPadding" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}" />
               <Grid x:Name="ButtonHolderGrid" Grid.Row="1" Margin="{ThemeResource NavigationViewButtonHolderGridMargin}">
-                <Button x:Name="NavigationViewBackButton" Style="{StaticResource NavigationBackButtonNormalStyle}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneToggleButtonWidth}" Height="44" Margin="0,-4,0,0" Padding="4,6,4,2" FocusVisualMargin="4,6,4,2" VerticalAlignment="Top" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.BackButtonVisibility}" IsEnabled="{TemplateBinding IsBackEnabled}">
+                <Button x:Name="NavigationViewBackButton" Style="{StaticResource NavigationBackButtonNormalStyle}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneToggleButtonWidth}" Height="Auto" Margin="0,-4,0,0" Padding="4,6,4,2" FocusVisualMargin="4,6,4,2" VerticalAlignment="Top" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.BackButtonVisibility}" IsEnabled="{TemplateBinding IsBackEnabled}">
                   <ToolTipService.ToolTip>
                     <ToolTip x:Name="NavigationViewBackButtonToolTip" />
                   </ToolTipService.ToolTip>

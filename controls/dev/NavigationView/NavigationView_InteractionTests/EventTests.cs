@@ -248,6 +248,65 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void BackButtonCornerClickRaisesBackRequestedTest()
+        {
+            // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/5306:
+            // the back button's hit area must extend to the NavigationView's top-left corner.
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                TextBlock textBlock = new TextBlock(FindElement.ByName("BackRequestedStateTextBlock"));
+                CheckBox checkBox = new CheckBox(FindElement.ByName("BackButtonEnabledCheckbox"));
+                Button resetButton = new Button(FindElement.ByName("BackRequestedStateResetButton"));
+
+                checkBox.Check();
+                Wait.ForIdle();
+
+                foreach (var paneDisplayMode in new[] { "Left", "LeftMinimal" })
+                {
+                    Log.Comment("PaneDisplayMode: " + paneDisplayMode);
+                    var paneDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                    paneDisplayModeComboBox.SelectItemByName(paneDisplayMode);
+                    Wait.ForIdle();
+
+                    UIObject navView = FindElement.ById("NavView");
+                    Button backButton = new Button(FindElement.ByName("NavigationViewBackButton"));
+                    Button toggleButton = new Button(FindElement.ById("TogglePaneButton"));
+
+                    var navViewBounds = navView.BoundingRectangle;
+                    var backBounds = backButton.BoundingRectangle;
+                    var toggleBounds = toggleButton.BoundingRectangle;
+                    Log.Comment($"NavView: {navViewBounds}, BackButton: {backBounds}, TogglePaneButton: {toggleBounds}");
+
+                    Log.Comment("Verify the back button's bounds start at the NavigationView's top-left corner");
+                    Verify.IsLessThanOrEqual(Math.Abs(backBounds.X - navViewBounds.X), 1);
+                    Verify.IsLessThanOrEqual(Math.Abs(backBounds.Y - navViewBounds.Y), 1);
+
+                    // Pane toggle button offsets from the NavigationView corner, in epx; these are unchanged by
+                    // the larger back button hit area. Bounds are in physical pixels, so derive the scale from the
+                    // back button's 44 epx height.
+                    double scale = backBounds.Height / 44.0;
+                    Log.Comment("Verify the pane toggle button has not moved");
+                    if (paneDisplayMode == "Left")
+                    {
+                        Verify.IsLessThanOrEqual(Math.Abs(toggleBounds.Y - navViewBounds.Y - 46 * scale), 2.0);
+                    }
+                    else
+                    {
+                        Verify.IsLessThanOrEqual(Math.Abs(toggleBounds.X - navViewBounds.X - 44 * scale), 2.0);
+                    }
+
+                    resetButton.Invoke();
+                    Wait.ForIdle();
+                    Verify.AreEqual("Test reset", textBlock.DocumentText);
+
+                    Log.Comment("Click the back button's top-left corner (formerly the margin area)");
+                    InputHelper.LeftClick(backButton, 1, 1);
+                    Verify.AreEqual("Back was requested", textBlock.DocumentText);
+                }
+            }
+        }
+
+        [TestMethod]
         public void MenuItemInvokedTest()
         {
             var testScenarios = RegressionTestScenario.BuildTopNavRegressionTestScenarios();
