@@ -909,7 +909,7 @@ private:
     winrt::hstring CaptureFocusedContainerForRestore();
     void RestoreContainerFocusIfPending(winrt::hstring const& identity);
     void FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture);
-    bool CanRestoreContainerFocus(winrt::UIElement const& capturedContainer);
+    bool CanRestoreContainerFocus();
     // Row identity for a realized container. Identity is index-independent once captured.
     winrt::hstring TryGetContainerIdentity(winrt::UIElement const& container);
 
@@ -1012,8 +1012,6 @@ private:
     winrt::hstring m_pendingGroupFocusIdentity{};
     winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
     bool m_pendingGroupFocusFromPointerGesture{ false };
-    // Weak: pooled and recycled.
-    winrt::weak_ref<winrt::UIElement> m_pendingGroupFocusContainer{ nullptr };
     winrt::event_token m_pendingGroupRowRefreshLayoutToken{};
     // Count changes refresh both empty state and the terminal row separator.
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceCollectionChangedRevoker{};
