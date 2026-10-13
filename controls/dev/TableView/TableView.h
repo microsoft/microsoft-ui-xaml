@@ -173,6 +173,9 @@ public:
     double GetCellFontSize();
     double GetHeaderFontSize();
     winrt::Windows::UI::Text::FontWeight GetHeaderFontWeight();
+    void AttachFocusCornerRadius(winrt::Grid const& target);
+    void ApplyFocusCornerRadius(winrt::Grid const& target);
+    void NoteFocusInputDevice(bool keyboard);
 
     // Per-level indent from the TableViewRowIndentSize resource, cached for rows.
     double GetRowIndentSize();
@@ -1208,6 +1211,7 @@ private:
 
     winrt::guid m_focusEntryRedirectCorrelationId{};
     bool m_hasFocusEntryRedirect{ false };
+    bool m_lastInputWasKeyboard{ false };
 
     bool RowShowsCurrentItemInternal(winrt::TableViewRow const& row) const;
 

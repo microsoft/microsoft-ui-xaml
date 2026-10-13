@@ -390,6 +390,7 @@
              handles Enter/Space (toggle) and Right/Left (expand/collapse), matching TreeViewItem. -->
         <Setter Property="IsTabStop" Value="True" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="ContentTemplate" Value="{StaticResource TableViewDefaultGroupHeaderContentTemplate}" />
         <Setter Property="Template">
             <Setter.Value>

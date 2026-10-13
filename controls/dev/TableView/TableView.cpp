@@ -624,6 +624,7 @@ TableView::TableView()
         {
             if (auto strongThis = weakThis.get())
             {
+                strongThis->NoteFocusInputDevice(true /* keyboard */);
                 strongThis->OnPreviewKeyDownForNavigation(sender, args);
             }
         });
@@ -638,6 +639,7 @@ TableView::TableView()
             {
                 if (auto strongThis = weakThis.get())
                 {
+                    strongThis->NoteFocusInputDevice(false /* keyboard */);
                     strongThis->CancelReshapeFocusRestoreForUserInput();
                 }
             })),
@@ -2274,6 +2276,56 @@ winrt::Windows::UI::Text::FontWeight TableView::GetHeaderFontWeight()
     return cache.font.headerFontWeight;
 }
 
+// The system focus visual takes its corners from the focused Grid's CornerRadius, but a rounded Grid
+// also clips its children and hit-testing, so round only while focus is keyboard-shown.
+void TableView::AttachFocusCornerRadius(winrt::Grid const& target)
+{
+    auto const handler = [weakThis = get_weak()](winrt::IInspectable const& sender, winrt::RoutedEventArgs const&)
+    {
+        auto const grid = sender.as<winrt::Grid>();
+        if (auto const self = weakThis.get())
+        {
+            self->ApplyFocusCornerRadius(grid);
+        }
+        else
+        {
+            grid.ClearValue(winrt::Grid::CornerRadiusProperty());
+        }
+    };
+    target.GotFocus(handler);
+    target.LostFocus(handler);
+}
+
+void TableView::ApplyFocusCornerRadius(winrt::Grid const& target)
+{
+    // Programmatic focus shows the focus rect only after keyboard input.
+    auto const state = target.FocusState();
+    if (state == winrt::FocusState::Keyboard || (state == winrt::FocusState::Programmatic && m_lastInputWasKeyboard))
+    {
+        target.CornerRadius(winrt::unbox_value_or<winrt::CornerRadius>(
+            LookupElementResource(*this, s_ControlCornerRadiusKey), c_controlCornerRadiusFallback));
+    }
+    else
+    {
+        target.ClearValue(winrt::Grid::CornerRadiusProperty());
+    }
+}
+
+// A key press starts showing the focus rect on an element that holds programmatic focus, without a focus event.
+void TableView::NoteFocusInputDevice(bool keyboard)
+{
+    m_lastInputWasKeyboard = keyboard;
+    if (auto const root = XamlRoot())
+    {
+        if (auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::Grid>();
+            focused && winrt::VisualTreeHelper::GetParent(focused).try_as<winrt::TableViewCellsPanel>() &&
+            SharedHelpers::IsAncestor(focused, *this))
+        {
+            ApplyFocusCornerRadius(focused);
+        }
+    }
+}
+
 double TableView::GetRowIndentSize()
 {
     // Cached: hit per realized row on every pass, and resource lookup walks the whole tree. Cleared
@@ -2702,9 +2754,6 @@ void TableView::RebuildHeaders()
     {
         cachedSortIndicatorWidth = c_sortIndicatorSizeFallback;
     }
-    // The system focus visual takes its corners from the focused Grid's CornerRadius.
-    const auto cachedHeaderCellCornerRadius = winrt::unbox_value_or<winrt::CornerRadius>(
-        LookupElementResource(*this, s_ControlCornerRadiusKey), c_controlCornerRadiusFallback);
     const bool canUserSortColumns = CanUserSortColumns();
 
     // XAML mirrors an RTL subtree with one transform where FlowDirection changes, so logical Right
@@ -2734,7 +2783,7 @@ void TableView::RebuildHeaders()
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
             headerCell.IsTabStop(true);
             headerCell.UseSystemFocusVisuals(true);
-            headerCell.CornerRadius(cachedHeaderCellCornerRadius);
+            AttachFocusCornerRadius(headerCell);
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {
