@@ -770,7 +770,7 @@
 <#+         if (ba.BindUniverse.IsFileRoot) { #>
                 GetDataRoot().FindName(L"<#=element.ElementName#>");
 <#+         } else { #>
-                <#=ba.BindUniverse.RootElement.ReferenceExpression#>.FindName(L"<#=element.ElementName#>");
+                <#=ba.BindUniverse.LoadRootElement.ReferenceExpression#>.FindName(L"<#=element.ElementName#>");
 <#+         }#>
             }
             else
