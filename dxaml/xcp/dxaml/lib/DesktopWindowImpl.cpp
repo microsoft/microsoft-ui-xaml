@@ -2326,12 +2326,13 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplySizeConstraintsToPresenterIfOverl
     // After each write, onWritten does two things:
     //  - Remembers the first failure. We keep going so the other constraints still get applied, then
     //    return that first failure. Nothing gets rolled back.
-    //  - If the app reset the property to its default and the null write succeeded, gives ownership back
-    //    to the app (see m_minWidth in the header).
+    //  - If this was a successful null write and the value is still the default, gives ownership back to
+    //    the app (see m_minWidth in the header). We check wroteNull because a SizeChanged handler can reset
+    //    the value during a non-null write. That write didn't clear the presenter, so we keep ownership.
     HRESULT firstError = S_OK;
-    auto onWritten = [&firstError](HRESULT hr, std::optional<double>& member, double defaultValue)
+    auto onWritten = [&firstError](HRESULT hr, bool wroteNull, std::optional<double>& member, double defaultValue)
     {
-        if (SUCCEEDED(hr) && member == defaultValue)
+        if (SUCCEEDED(hr) && wroteNull && member == defaultValue)
         {
             member.reset();
         }
@@ -2349,7 +2350,7 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplySizeConstraintsToPresenterIfOverl
         {
             IFC_RETURN(transformToPixelsAndBox(*m_minWidth, chromeWidth, ref));
         }
-        onWritten(presenter->put_PreferredMinimumWidth(ref.Get()), m_minWidth, 0.0);
+        onWritten(presenter->put_PreferredMinimumWidth(ref.Get()), /*wroteNull*/ !ref, m_minWidth, 0.0);
     }
     if (m_minHeight.has_value() && !m_bIsClosed)
     {
@@ -2358,7 +2359,7 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplySizeConstraintsToPresenterIfOverl
         {
             IFC_RETURN(transformToPixelsAndBox(*m_minHeight, chromeHeight, ref));
         }
-        onWritten(presenter->put_PreferredMinimumHeight(ref.Get()), m_minHeight, 0.0);
+        onWritten(presenter->put_PreferredMinimumHeight(ref.Get()), /*wroteNull*/ !ref, m_minHeight, 0.0);
     }
     if (m_maxWidth.has_value() && !m_bIsClosed)
     {
@@ -2367,7 +2368,7 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplySizeConstraintsToPresenterIfOverl
         {
             IFC_RETURN(transformToPixelsAndBox(*m_maxWidth, chromeWidth, ref));
         }
-        onWritten(presenter->put_PreferredMaximumWidth(ref.Get()), m_maxWidth, infinity);
+        onWritten(presenter->put_PreferredMaximumWidth(ref.Get()), /*wroteNull*/ !ref, m_maxWidth, infinity);
     }
     if (m_maxHeight.has_value() && !m_bIsClosed)
     {
@@ -2376,7 +2377,7 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplySizeConstraintsToPresenterIfOverl
         {
             IFC_RETURN(transformToPixelsAndBox(*m_maxHeight, chromeHeight, ref));
         }
-        onWritten(presenter->put_PreferredMaximumHeight(ref.Get()), m_maxHeight, infinity);
+        onWritten(presenter->put_PreferredMaximumHeight(ref.Get()), /*wroteNull*/ !ref, m_maxHeight, infinity);
     }
 
     IFC_RETURN(firstError);
