@@ -45,6 +45,9 @@ public:
     void RowBackground(winrt::Brush const& value);
     winrt::Brush RowBackground();
 
+    void RowStyleSelector(winrt::StyleSelector const& value);
+    winrt::StyleSelector RowStyleSelector();
+
     void SelectedIndex(int value);
     int SelectedIndex();
 
@@ -66,6 +69,7 @@ public:
     static winrt::DependencyProperty IsReadOnlyProperty() { return s_IsReadOnlyProperty; }
     static winrt::DependencyProperty ItemsSourceProperty() { return s_ItemsSourceProperty; }
     static winrt::DependencyProperty RowBackgroundProperty() { return s_RowBackgroundProperty; }
+    static winrt::DependencyProperty RowStyleSelectorProperty() { return s_RowStyleSelectorProperty; }
     static winrt::DependencyProperty SelectedIndexProperty() { return s_SelectedIndexProperty; }
     static winrt::DependencyProperty SelectedItemProperty() { return s_SelectedItemProperty; }
     static winrt::DependencyProperty SelectionModeProperty() { return s_SelectionModeProperty; }
@@ -82,6 +86,7 @@ public:
     static GlobalDependencyProperty s_IsReadOnlyProperty;
     static GlobalDependencyProperty s_ItemsSourceProperty;
     static GlobalDependencyProperty s_RowBackgroundProperty;
+    static GlobalDependencyProperty s_RowStyleSelectorProperty;
     static GlobalDependencyProperty s_SelectedIndexProperty;
     static GlobalDependencyProperty s_SelectedItemProperty;
     static GlobalDependencyProperty s_SelectionModeProperty;
@@ -151,6 +156,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnRowBackgroundPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnRowStyleSelectorPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
