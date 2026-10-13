@@ -40,6 +40,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
+        // Scenario: on the MapControl test page, wait for the map, add a layer and two pins at (0,0) and (10,10) with
+        //           the page's text boxes and Add Pin button.
+        // Expected: the map's web content exposes exactly 1 UI Automation element before and 5 after the two pins are
+        //           added (within 3 seconds).
+        // A failure means: pins added through MapControl are not shown on the map (or not exposed to UI Automation).
         [TestMethod]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)]
         public void AddMultipleElementsOnMap()
@@ -89,6 +94,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: on the MapControl test page, add a layer and a pin at latitude 10, longitude 20, then left-click
+        //           the pin.
+        // Expected: the map content has 3 UI Automation elements after the pin is added and 1 after the click (the page
+        //           removes the clicked pin); the output contains "Layer Clicked" and "Map Clicked at" a location
+        //           within 0.1 of (10, 20).
+        // A failure means: clicking a pin does not raise MapElementClick on the map and the layer, or reports a wrong
+        //                  or swapped location.
         [TestMethod]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)]
         public void ValidadePinClickEvent()
@@ -155,6 +167,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: on the MapControl test page, run the Inject web messages scenario: post map.html-shaped messages
+        //           into the WebView2 (a pin click, a script error, twelve malformed messages, a click for a null layer
+        //           entry and a sentinel click). No network access or map key is needed.
+        // Expected: the result string is exactly: 2 map clicks and 2 layer clicks, the first at 47.6,-122.3 with a null
+        //           element and the second at 10,20; one MapServiceErrorOccurred
+        //           "javascriptError,MapControlUiTest,marker-5821 [REDACTED]" with the token never present; event args
+        //           of runtime classes MapControlMapServiceErrorOccurredEventArgs and MapElementClickEventArgs.
+        // A failure means: messages from the web map are not turned into the right MapControl events, malformed
+        //                  messages raise events, or the service token leaks into error reports.
         [TestMethod]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)]
         [TestProperty("Description", "Web messages posted into the map's WebView2 the way map.html posts them raise MapElementClick (map and layer) with the pin location and a map.html script error raises MapServiceErrorOccurred with the service token redacted; malformed messages and a click for a null layer entry raise nothing; the raised event args report their own runtime class names. Needs no network access or map key.")]
@@ -181,6 +202,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: after map.html loaded, record its JavaScript calls; add an empty layer and an icon a1, add a layer
+        //           that already holds b1 and b2, set ZoomLevel 7, Center (latitude 10, longitude 20) and a test
+        //           MapServiceToken; then reload the page with an offline stand-in for the Azure Maps SDK.
+        // Expected: exactly 16 recorded calls: addPoint(longitude, latitude, name) for a1, b1 and b2 twice each,
+        //           addSymbolLayer() 4 times, interactiveControlsVisible(false), updateCenter{10,20} twice
+        //           (order-insensitive), the token update once and updateZoom(7) twice; the token is sent before the
+        //           layers are re-sent; the reload re-creates the map at [20,10] with 2 marker layers and the points
+        //           a1, b1, b2.
+        // A failure means: changes made after the map loaded are not sent to the web map, a new token does not re-send
+        //                  the map state, or a page reload loses layers or pins.
         [TestMethod]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)]
         [TestProperty("Description", "After the map page loaded, adding layers (empty or already holding icons) and icons, and changing ZoomLevel, Center and MapServiceToken send the matching calls to map.html; a new token re-sends every layer, icon, the controls, center and zoom; reloading the page re-adds every layer and icon. Recorded in the page itself, so no network access or map key is needed.")]
@@ -203,6 +234,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: after map.html loaded, replace its map object with a recorder of setCamera calls, then set Center
+        //           to latitude 10, longitude 20.
+        // Expected: (correct behaviour) the map camera is centered on [20,10] ([longitude, latitude]).
+        // A failure means: the bug is still present: the camera is centered on swapped coordinates ([10,20]).
+        // Ignored: reproduces BUG-MAP-2 (MapControl calls updateCenter(longitude, latitude) but map.html takes
+        //          (latitude, longitude)); remove the Ignore once fixed.
         [TestMethod]
         [TestProperty("Ignore", "True")] // BUG-MAP-2: MapControl calls updateCenter(longitude, latitude) but map.html declares updateCenter(latitude, longitude), so the camera is centered on swapped coordinates.
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)]
@@ -216,6 +253,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: after map.html loaded, add three layers (recorded as L1, L2, L3) and remove the middle one.
+        // Expected: (correct behaviour) the page receives clearLayer("L2").
+        // A failure means: the bug is still present: the next layer (L3) is cleared instead.
+        // Ignored: reproduces BUG-MAP-5 (OnLayersVectorChanged reads the layer at the removed index after the removal);
+        //          remove the Ignore once fixed.
         [TestMethod]
         [TestProperty("Ignore", "True")] // BUG-MAP-5: OnLayersVectorChanged reads Layers().GetAt(index) after the removal, so removing a middle layer clears the NEXT layer in the page.
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)]
@@ -229,6 +271,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: after map.html loaded, add a pin at latitude 1, longitude 2 and then set its Location to latitude
+        //           7, longitude 8.
+        // Expected: (correct behaviour) the page receives updatePoint(8,7).
+        // A failure means: the bug is still present: moving a pin never reaches the map.
+        // Ignored: reproduces BUG-MAP-7 (MapIcon looks for its MapControl through the visual tree, where a MapIcon
+        //          never is); remove the Ignore once fixed.
         [TestMethod]
         [TestProperty("Ignore", "True")] // BUG-MAP-7: MapIcon.OnPropertyChanged looks for its MapControl with VisualTreeHelper, but a MapIcon is never in the visual tree, so moving a pin never reaches the page.
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)]

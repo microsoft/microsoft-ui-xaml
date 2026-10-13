@@ -35,6 +35,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
+        // Scenario: on the ScrollViewerAdapter test page, adapt a ScrollViewer before it is loaded, remove it, force a
+        //           GC and run the page's leak check.
+        // Expected: the leak check result is "Not checked" at first and "No leaks" afterwards.
+        // A failure means: a ScrollViewer adapted before it loaded is kept alive after it is removed (a memory leak).
         [TestMethod]
         public void DeconstructionHandlesCorrectlyTest()
         {

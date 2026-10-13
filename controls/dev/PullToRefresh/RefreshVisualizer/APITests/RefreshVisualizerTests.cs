@@ -38,6 +38,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private const float c_tolerance = 0.001f;
         private const float c_halfPi = (float)(Math.PI / 2);
 
+        // Scenario: put a default RefreshVisualizer in the test window and wait for its Loaded event.
+        // Expected: Loaded is raised within the wait time; State is Idle, Orientation is Auto, there is no
+        //           InfoProvider, the default style height is 100, and the default content is a SymbolIcon showing
+        //           Symbol.Refresh at the idle indicator opacity 0.4.
+        // A failure means: the visualizer cannot be created or loaded, or its defaults (state, orientation, height,
+        //                  refresh icon, idle opacity) changed.
         [TestMethod]
         public void CanInstantiate()
         {
@@ -70,6 +76,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: give an untemplated visualizer an IRefreshInfoProvider test double and call RequestRefresh with no
+        //           RefreshRequested handler.
+        // Expected: the provider's OnRefreshStarted and OnRefreshCompleted go from 0 calls to exactly 1 call each.
+        // A failure means: the visualizer no longer tells its info provider (for example the ScrollViewer adapter) when
+        //                  a refresh starts and ends, so the pulled content is not held and released around the
+        //                  refresh.
         [TestMethod]
         public void RefreshPropagatesToInfoProvider()
         {
@@ -87,6 +99,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: create a visualizer, load it, then replace its default indicator with SymbolIcon(Cancel).
+        // Expected: Content is null before the template is applied and the default SymbolIcon(Refresh) after load;
+        //           after the replacement the template's Root grid hosts exactly the new content (one child, the same
+        //           instance), the previous indicator has no parent, and the new content is centered horizontally and
+        //           vertically.
+        // A failure means: replacing the refresh indicator does not show the app's content in its place, leaves the old
+        //                  indicator behind, or positions the new content wrongly.
         [TestMethod]
         public void ContentIsUpdatable()
         {
@@ -115,6 +134,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: set Content to a 50x30 Border before the visualizer is in the tree, then load it.
+        // Expected: before load the Border has no parent and Stretch alignment; after load Root hosts only that Border
+        //           (no default indicator), Content is still the Border, it is centered both ways and keeps its 50x30
+        //           actual size.
+        // A failure means: content set before the template is applied is lost, shown next to a default indicator, or
+        //                  not centered or sized as the app set it.
         [TestMethod]
         [TestProperty("Description", "Content assigned before the template is applied is hosted, centered, in the template's Root instead of a default indicator.")]
         public void ContentSetBeforeTemplateIsCenteredInRoot()
@@ -142,6 +167,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: never add the visualizer to the tree (no template), give it a 30x30 Border as Content and a
+        //           provider test double, start interacting at ratio 0.1, drop the ratio to 0 and release.
+        // Expected: Interacting at 0.1, Idle at 0 and after release, indicator opacity 0.4 throughout, transitions
+        //           exactly [Idle->Interacting, Interacting->Idle], and the visualizer still has no template children.
+        // A failure means: the pull state machine or the indicator fade depends on the template being applied, so an
+        //                  untemplated visualizer crashes or skips states.
         [TestMethod]
         [TestProperty("Description", "Without a template the visualizer still runs its state machine on its explicit Content: interacting below the execution ratio is Interacting with the minimum indicator opacity.")]
         public void InteractingWithoutTemplateFadesIndicator()
@@ -172,6 +203,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: give the provider an out-of-range ExecutionRatio of -0.5, start interacting and send the ratios
+        //           0.1, -0.2, 0, 0.1, exactly 0, 0.1 and -0.6, then release.
+        // Expected: Pending (opacity 1.0) at 0.1; Idle at -0.2 and at 0; Pending at 0.1; Idle at exactly 0 from
+        //           Pending; Pending at 0.1; Interacting at -0.6 (at or below the execution ratio); Idle on release; no
+        //           refresh is started; transitions exactly [Idle->Pending, Pending->Idle, Idle->Pending,
+        //           Pending->Idle, Idle->Pending, Pending->Interacting, Interacting->Idle].
+        // A failure means: pulling back from an armed refresh no longer returns to the right state (Idle once the ratio
+        //                  is zero or below, Interacting at or below the execution ratio).
         [TestMethod]
         [TestProperty("Description", "With an (out-of-range) negative ExecutionRatio, a Pending pull falls back to Idle once the ratio drops to zero or below while staying above the execution ratio, and to Interacting at or below the execution ratio.")]
         public void NegativeExecutionRatioFallsBackFromPendingToIdle()
@@ -218,6 +257,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: use the private PullToRefreshHelperTestApi to create RefreshStateChangedEventArgs (Idle->Pending
+        //           and Refreshing->Peeking) and RefreshRequestedEventArgs that wrap a Deferral, take two deferrals
+        //           from those args and complete them one after the other.
+        // Expected: OldState/NewState are exactly the pairs given; the wrapped deferral has completed 0 times after the
+        //           first deferral completes and exactly once after the second.
+        // A failure means: the test helper builds event args with wrong or swapped states, or RefreshRequestedEventArgs
+        //                  completes the refresh before every deferral taken from it is done (a refresh would end
+        //                  early).
         [TestMethod]
         [TestProperty("Description", "PullToRefreshHelperTestApi creates RefreshStateChangedEventArgs with exactly the given states and RefreshRequestedEventArgs whose deferral completes only after every deferral taken from it is completed.")]
         public void HelperTestApiCreatesEventArgsWithTheGivenValues()
@@ -243,6 +290,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a visualizer, set Content to SymbolIcon(Cancel), then set it to null and request a refresh.
+        // Expected: Root hosts the Cancel icon; after null the Content property stays null but Root hosts exactly one
+        //           default 30x30 SymbolIcon(Refresh); the refresh completes synchronously with transitions exactly
+        //           [Idle->Refreshing, Refreshing->Idle].
+        // A failure means: clearing the content crashes, leaves no indicator or two indicators, or breaks refreshing.
         [TestMethod]
         [TestProperty("Description", "Setting Content to null after the template is applied keeps the property null but hosts a default refresh indicator, and refreshes still cycle Idle -> Refreshing -> Idle.")]
         public void NullContentDoesNotCrash()
@@ -275,6 +327,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: refresh once with a provider test double, clear InfoProvider, refresh again, then raise a ratio
+        //           change (0.5) on the removed provider.
+        // Expected: the provider sees exactly 1 start and 1 completion (the first refresh only); InfoProvider is null;
+        //           the second refresh goes [Idle->Refreshing, Refreshing->Idle]; the removed provider's event changes
+        //           nothing (still Idle, still 2 transitions).
+        // A failure means: clearing the info provider breaks refreshing, keeps notifying the old provider, or keeps
+        //                  reacting to its events.
         [TestMethod]
         [TestProperty("Description", "After the InfoProvider is cleared, refreshes still complete and the previous provider is no longer notified.")]
         public void NullInfoProviderDoesNotCrash()
@@ -304,6 +363,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: call RequestRefresh on a visualizer whose RefreshRequested handler takes no deferral.
+        // Expected: the event is raised exactly once with the visualizer as sender, non-null args and State Refreshing
+        //           during the event; afterwards State is back to Idle.
+        // A failure means: apps are not told that a refresh was requested, see the wrong sender or state, or the
+        //                  refresh does not complete when no deferral is taken.
         [TestMethod]
         public void RefreshRequestedEventFires()
         {
@@ -337,6 +401,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: give a visualizer that is never added to the tree a counting IRefreshInfoProvider that the test
+        //           keeps alive, drop the visualizer and force garbage collection (up to 5 passes, waiting for the UI
+        //           thread to go idle).
+        // Expected: while the visualizer lives the provider has 1 InteractionRatioChanged and 1
+        //           IsInteractingForRefreshChanged subscriber; after release the visualizer's Tag sentinel is
+        //           collected, both counts are 0 and exactly 2 handlers were removed (the InfoProvider never changes,
+        //           so only the destructor can remove them).
+        // A failure means: a destroyed RefreshVisualizer leaves its handlers on a provider that outlives it, which can
+        //                  later call into freed memory.
         [TestMethod]
         [TestProperty("Description", "A RefreshVisualizer that is released while its InfoProvider is still alive unsubscribes from the provider's IsInteractingForRefreshChanged and InteractionRatioChanged events when it is destroyed.")]
         // Runs in its own test host. In the shared API-test host this test twice crashed the host during its first forced GC,
@@ -396,6 +469,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return new WeakReference(sentinel);
         }
 
+        // Scenario: place a visualizer in the test window with a provider test double and a RefreshRequested handler
+        //           that takes a deferral and completes it on a thread-pool thread, then request a refresh.
+        // Expected: OnRefreshStarted is called once and OnRefreshCompleted is never called: a deferral completed off
+        //           the UI thread does not complete the refresh (the current, documented-by-test behaviour).
+        // A failure means: the behaviour of a deferral completed off the UI thread changed (the refresh now completes,
+        //                  or its start is not reported).
         [TestMethod]
         public void RefreshCompletedDeferralCompletedOffUIThread()
         {
@@ -439,6 +518,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         }
 
+        // Scenario: subscribe a RefreshStateChanged handler and request a refresh; remove the handler and refresh
+        //           again; then add a new recording handler and refresh a third time.
+        // Expected: the first refresh raises exactly 2 events [Idle->Refreshing, Refreshing->Idle] with State already
+        //           equal to NewState in each; after removal the count stays 2 while the refresh still completes; the
+        //           new handler sees exactly [Idle->Refreshing, Refreshing->Idle].
+        // A failure means: state-change notifications are missing, out of order or raised before State is updated, or
+        //                  removing a handler does not stop it.
         [TestMethod]
         public void RefreshStateChangedEventFires()
         {
@@ -480,6 +566,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a visualizer and drive a provider test double (ExecutionRatio 0.8) through a full pull: start
+        //           interacting, ratios 0.5, 0.9, 0.6, 0, 0.9, release (the RefreshRequested handler takes a deferral),
+        //           ratio 0.3 plus another press and release while refreshing, complete the deferral, then
+        //           not-interacting ratios 0.2 and 0, a pull to 0.5 that is released, and a new press that starts at
+        //           ratio 0.4.
+        // Expected: every step has the expected state and indicator opacity (0.4 for Idle/Interacting, 1.0 for
+        //           Pending/Refreshing/Peeking); no refresh while still interacting; releasing in Pending starts
+        //           exactly one refresh (1 deferral, OnRefreshStarted 1) that ratio changes and another release do not
+        //           interrupt; completing the deferral returns to Idle with OnRefreshCompleted 1; the 13 transitions
+        //           match exactly.
+        // A failure means: the pull-to-refresh state machine or its indicator feedback changed, for example a refresh
+        //                  starts too early, twice, or not on release.
         [TestMethod]
         [TestProperty("Description", "Drives the interaction state machine through an IRefreshInfoProvider test double and verifies every transition, the RefreshStateChanged arguments, the indicator opacity of each state and the refresh started on release from Pending.")]
         public void InteractionRatioAndInteractingChangesDriveRefreshStates()
@@ -569,6 +667,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: with the default ExecutionRatio 0.8 (exactly 0.8f), send the ratios 0.8 (from Idle), 0.8 again,
+        //           0.81, 0.8, 0, then 0.81 from zero, 0 and 0.
+        // Expected: exactly 0.8 is Interacting every time (from Idle, from Interacting and when falling back from
+        //           Pending); only 0.81 is Pending; transitions exactly [Idle->Interacting, Interacting->Pending,
+        //           Pending->Interacting, Interacting->Idle, Idle->Pending, Pending->Interacting, Interacting->Idle].
+        // A failure means: a pull arms the refresh at the threshold instead of only beyond it (an off-by-one in the
+        //                  comparison).
         [TestMethod]
         [TestProperty("Description", "The ExecutionRatio is an exclusive threshold: a ratio exactly equal to it is Interacting (from zero, from Interacting and when falling back from Pending); only a larger ratio is Pending.")]
         public void ExecutionRatioIsAnExclusivePendingThreshold()
@@ -614,6 +719,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: assign provider A and then provider B (ExecutionRatio 0.5); drive A (interacting, 0.6), then B
+        //           (interacting, 0.6 then 0.45); clear InfoProvider, release B and request a refresh.
+        // Expected: A's events change nothing (Idle, no transitions); with B, 0.6 is Pending and 0.45 Interacting (B's
+        //           0.5 is used, not 0.8); after clearing, B's release no longer changes the state; RequestRefresh
+        //           still completes and neither provider is told; transitions exactly [Idle->Pending,
+        //           Pending->Interacting, Interacting->Refreshing, Refreshing->Idle].
+        // A failure means: the visualizer keeps listening to a provider it no longer uses, or uses a stale execution
+        //                  ratio.
         [TestMethod]
         [TestProperty("Description", "The visualizer uses the ExecutionRatio of its current InfoProvider and ignores events from a provider it no longer uses.")]
         public void ReplacedInfoProviderIsIgnoredAndNewExecutionRatioIsUsed()
@@ -657,6 +770,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a visualizer and set combinations of Orientation and the internal pull direction.
+        // Expected: indicator RotationAngle: Auto gives 0 for TopToBottom and BottomToTop, -pi/2 for LeftToRight and
+        //           +pi/2 for RightToLeft; Normal with LeftToRight gives 0; Rotate270DegreesCounterclockwise gives
+        //           -pi/2 and Rotate90DegreesCounterclockwise +pi/2 (TopToBottom); changing only Orientation to Normal
+        //           gives 0; the indicator's CenterPoint is half its rendered width and height.
+        // A failure means: the refresh icon points the wrong way for the pull direction or Orientation, or rotates
+        //                  around the wrong point.
         [TestMethod]
         [TestProperty("Description", "Orientation and the internal pull direction determine the idle rotation of the refresh indicator.")]
         public void OrientationAndPullDirectionDetermineIndicatorRotation()
@@ -687,6 +807,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a visualizer (height 100, stretched width) with a provider (ExecutionRatio 0.8) and a handler
+        //           that takes a deferral; for each pull direction request a refresh and complete it; finally clear the
+        //           provider and refresh TopToBottom.
+        // Expected: the indicator Translation is zero while idle; while refreshing it is (1 - 0.8) / 2 = 0.1 of the
+        //           visualizer size along the pull axis (+0.1 x height TopToBottom, -0.1 x height BottomToTop, +0.1 x
+        //           width LeftToRight, -0.1 x width RightToLeft); it returns to zero after the refresh; without a
+        //           provider the full height is used.
+        // A failure means: the indicator is placed wrongly while a refresh runs, or is not reset afterwards.
         [TestMethod]
         [TestProperty("Description", "While refreshing, the indicator is translated along the pull axis by (1 - ExecutionRatio) / 2 of the visualizer size (negative for far pull directions) and reset when idle.")]
         public void RefreshingTranslationFollowsExecutionRatioAndPullDirection()
@@ -721,6 +849,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: use a 40x20 Grid as Content, load the visualizer and set the pull direction to TopToBottom.
+        // Expected: (correct behaviour) the indicator CenterPoint is (rendered width / 2, rendered height / 2, 0).
+        // A failure means: the bug is still present: a non-square indicator rotates and scales around the wrong point.
+        // Ignored: reproduces BUG-PTR-2 (RefreshVisualizer sets the CenterPoint to (Height/2, Width/2), swapping the
+        //          axes); remove the Ignore once fixed.
         [TestMethod]
         [TestProperty("Ignore", "True")] // BUG-PTR-2: RefreshVisualizer sets the indicator CenterPoint to (Height/2, Width/2); non-square content pivots around the wrong point.
         [TestProperty("Description", "A non-square indicator should rotate and scale around its center (Width/2, Height/2).")]

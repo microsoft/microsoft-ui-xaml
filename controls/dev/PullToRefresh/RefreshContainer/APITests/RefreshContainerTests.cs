@@ -33,6 +33,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private const double c_defaultExecutionRatio = 0.8;
         private const float c_tolerance = 0.001f;
 
+        // Scenario: create a RefreshContainer that is never loaded, subscribe RefreshRequested and call RequestRefresh.
+        // Expected: PullDirection is TopToBottom, Visualizer is null, the default adapter is a
+        //           ScrollViewerIRefreshInfoProviderAdapter, RefreshRequested is raised 0 times and Visualizer stays
+        //           null.
+        // A failure means: the container's defaults changed, or a refresh can be requested (and an app handler run)
+        //                  before there is a visualizer to show it.
         [TestMethod]
         [TestProperty("Description", "Before its template is applied a RefreshContainer pulls TopToBottom, has no Visualizer, uses a ScrollViewer adapter and ignores RequestRefresh.")]
         public void DefaultsBeforeTemplateAndRequestRefreshIsANoOp()
@@ -54,6 +60,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: for each of the four pull directions, load a 300x300 container whose content is a ScrollViewer.
+        // Expected: the template Root has an InsetClip; a default visualizer is created and hosted alone in the
+        //           presenter, which is aligned to the pulled edge (Top, Bottom, Left or Right, stretched on the other
+        //           axis); the visualizer is 100 along the pull axis and Auto (300 actual) across it; the indicator is
+        //           rotated 0, 0, -pi/2 or +pi/2; the ScrollViewer is adapted into an InfoProvider with ExecutionRatio
+        //           0.8, composition property "InteractionRatio", not interacting; the state is Idle.
+        // A failure means: the default pull-to-refresh layout is wrong for a direction (indicator at the wrong edge,
+        //                  size or angle), or the ScrollViewer is not hooked up so pulling it does nothing.
         [TestMethod]
         [TestProperty("Description", "For each pull direction the default template places a default RefreshVisualizer at the pulled edge, sizes it 100 along the pull axis, rotates its indicator and adapts the content ScrollViewer into the visualizer's InfoProvider.")]
         public void DefaultTemplatePlacesSizesAndAdaptsForEachPullDirection()
@@ -64,6 +78,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyDefaultTemplate(RefreshPullDirection.RightToLeft, VerticalAlignment.Stretch, HorizontalAlignment.Right, (float)(Math.PI / 2));
         }
 
+        // Scenario: load a TopToBottom container, then change PullDirection to LeftToRight.
+        // Expected: the presenter moves to the left edge (stretched vertically); the visualizer becomes 100 wide with
+        //           Auto height (100x300 actual); the ScrollViewer is adapted again into a new InfoProvider with
+        //           ExecutionRatio 0.8.
+        // A failure means: changing the pull direction at runtime leaves the indicator at the old edge or size, or
+        //                  keeps the provider for the old direction so the new pull does not work.
         [TestMethod]
         [TestProperty("Description", "Changing PullDirection after load moves and resizes the default visualizer and re-adapts the ScrollViewer into a new InfoProvider.")]
         public void PullDirectionChangeAfterLoadRepositionsVisualizerAndReadapts()
@@ -103,6 +123,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a 100x100 container (so the default visualizer is square) with a ScrollViewer, then change
+        //           PullDirection to LeftToRight and then to BottomToTop.
+        // Expected: (correct behaviour) each change synchronously creates a new default ScrollViewer adapter and a new
+        //           InfoProvider (ExecutionRatio 0.8) for the visualizer; after layout it stays 100x100 and is not
+        //           adapted again; SizeChanged is never raised.
+        // A failure means: the bug is still present (the PullDirection setter throws), or a square visualizer is not
+        //                  re-adapted for the new direction.
+        // Ignored: reproduces BUG-PTR-4 (changing PullDirection while the default visualizer is exactly 100x100 throws
+        //          ArgumentException / E_INVALIDARG from the setter); remove the Ignore once fixed.
         [TestMethod]
         [TestProperty("Ignore", "True")] // BUG-PTR-4: changing PullDirection while the default visualizer is exactly 100x100 runs the container's own re-adapt path, which throws ArgumentException (E_INVALIDARG) out of the PullDirection setter.
         [TestProperty("Description", "When the default visualizer is exactly 100x100 a PullDirection change does not resize it (no SizeChanged), so the container itself must replace the default adapter and re-adapt the ScrollViewer for the new direction.")]
@@ -168,6 +197,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a LeftToRight container (100x300 default visualizer) and flip PullDirection to RightToLeft.
+        // Expected: the presenter moves to the right edge (stretched vertically), the visualizer keeps Width 100 and
+        //           Auto height (100x300 actual), the indicator rotation is +pi/2, the ScrollViewer is still adapted
+        //           and the state is Idle.
+        // A failure means: flipping the pull direction on the same axis leaves the indicator at the old edge, resizes
+        //                  it, or loses the adapted ScrollViewer.
         [TestMethod]
         [TestProperty("Description", "Flipping PullDirection along the same axis (LeftToRight -> RightToLeft) keeps the 100x300 default visualizer size, moves it to the opposite edge and rotates its indicator; the square-visualizer re-adapt path is not taken for a non-square visualizer.")]
         public void SameAxisPullDirectionFlipMovesNonSquareVisualizer()
@@ -202,6 +237,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: for each pull direction, load a container, add two RefreshRequested handlers that each take a
+        //           deferral, call RequestRefresh on the container, complete the deferrals one by one, then request a
+        //           refresh on the visualizer and complete its deferrals in the other order.
+        // Expected: each handler is raised exactly once per refresh with the container as sender and the visualizer
+        //           Refreshing; one outstanding deferral keeps it Refreshing and the last one returns it to Idle; a
+        //           refresh requested on the visualizer is forwarded to the container's handlers; transitions are
+        //           exactly "Idle->Refreshing, Refreshing->Idle, Idle->Refreshing, Refreshing->Idle" and the
+        //           ScrollViewer stays adapted.
+        // A failure means: a refresh ends before every app handler has finished its work, handlers run the wrong number
+        //                  of times, or a refresh started from the visualizer does not reach the container's handlers.
         [TestMethod]
         [TestProperty("Description", "RequestRefresh on the container (and on its visualizer) raises RefreshContainer.RefreshRequested once per handler, keeps the visualizer Refreshing until every deferral completes and then returns to Idle, for every pull direction.")]
         public void RequestRefreshCompletesOnlyAfterAllDeferralsComplete()
@@ -271,6 +316,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: load a container, replace its Visualizer with a new RefreshVisualizer, request a refresh, then
+        //           change PullDirection to LeftToRight.
+        // Expected: the presenter hosts only the new visualizer and the old one has no parent; the ScrollViewer is
+        //           adapted for the new one; the refresh (one deferral) makes the new visualizer Refreshing while the
+        //           old one stays Idle, then Idle again; after the direction change the presenter is at the left edge
+        //           but the app's visualizer keeps Auto width and its style height 100.
+        // A failure means: an app-provided visualizer is not shown or used, the old one keeps refreshing, or the
+        //                  container overwrites the app's visualizer size.
         [TestMethod]
         [TestProperty("Description", "Replacing the Visualizer after load hosts the new visualizer in the presenter, adapts the ScrollViewer for it, routes refreshes to it and does not force the default pull size onto it.")]
         public void ReplacingVisualizerAfterLoadHostsAndUsesTheNewVisualizer()
@@ -322,6 +375,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: assign a Visualizer before the container's template is applied, load it and request one refresh.
+        // Expected: (correct behaviour) RefreshContainer.RefreshRequested is raised exactly once.
+        // A failure means: the bug is still present: the app's refresh handler runs twice per refresh.
+        // Ignored: reproduces BUG-PTR-1 (RefreshContainer never stores or removes its Visualizer event tokens, so a
+        //          Visualizer set before the template is subscribed twice); remove the Ignore once fixed.
         [TestMethod]
         [TestProperty("Ignore", "True")] // BUG-PTR-1: RefreshContainer never stores/removes its Visualizer event tokens, so a Visualizer set before the template is applied is subscribed twice and RefreshRequested is raised twice.
         [TestProperty("Description", "A Visualizer assigned before the template is applied raises RefreshContainer.RefreshRequested once per refresh.")]
@@ -346,6 +404,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: on a loaded container, install a recording IRefreshInfoProviderAdapter that returns a provider test
+        //           double, drive the provider, then change PullDirection so the visualizer is resized.
+        // Expected: the adapter is asked once to adapt the template Root (the container's child) with the visualizer
+        //           size 300x100, receives SetAnimations once with the visualizer, and its provider becomes the
+        //           InfoProvider (ratio 0.3 -> Peeking, 0 -> Idle); after the resize to 100 wide the same adapter and
+        //           provider are kept and the adapter is not asked to adapt again.
+        // A failure means: a custom adapter is not used, gets the wrong root or size, or is silently replaced when the
+        //                  visualizer is resized.
         [TestMethod]
         [TestProperty("Description", "A custom IRefreshInfoProviderAdapter is asked to adapt the template root with the visualizer size, its provider becomes the visualizer's InfoProvider, it receives SetAnimations, and it is not replaced when the visualizer is resized.")]
         public void CustomAdapterAdaptsTemplateRootAndIsKeptAcrossResize()
@@ -398,6 +464,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: use container content without a ScrollViewer: an IRefreshInfoProvider Grid 10 levels below the
+        //           template Root (wrapped in 8 Borders); then clear InfoProvider and remove the adapter; finally load
+        //           another container with the provider 11 levels deep.
+        // Expected: the provider 10 levels deep becomes the InfoProvider and drives the visualizer (0.25 -> Peeking, 0
+        //           -> Idle); removing the adapter (null) repeats the tree search and re-assigns it; the provider 11
+        //           levels deep is not found (InfoProvider null).
+        // A failure means: content that implements IRefreshInfoProvider itself is not found within the documented
+        //                  10-level depth, is found beyond it, or a null adapter breaks the fallback.
         [TestMethod]
         [TestProperty("Description", "Without a ScrollViewer to adapt, the container searches its tree (10 levels below the template root) for an element implementing IRefreshInfoProvider; deeper providers or a null adapter are handled.")]
         public void TreeSearchFindsContentProviderWithinTenLevels()
@@ -444,6 +518,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: assign an app RefreshVisualizer before the template is applied, load the container, then change
+        //           PullDirection to LeftToRight.
+        // Expected: no default visualizer is created; the presenter hosts the app's visualizer exactly once at the top
+        //           edge; it gets the adapted ScrollViewer provider (ExecutionRatio 0.8); after the direction change
+        //           the presenter is at the left edge but the visualizer keeps Auto width and its style height 100.
+        // A failure means: a visualizer set early is replaced, hosted twice, not connected to the ScrollViewer, or
+        //                  resized by the container.
         [TestMethod]
         [TestProperty("Description", "A Visualizer assigned before the template is applied is hosted alone in the presenter, gets the adapted ScrollViewer as its InfoProvider, and is positioned but not resized by a PullDirection change.")]
         public void VisualizerSetBeforeTemplateIsHostedAdaptedAndKeepsItsSize()
@@ -484,6 +565,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: insert an IRefreshInfoProvider Grid as the first child of a loaded container's template Root and
+        //           install a recording adapter; then load a container whose custom template's Root panel is itself an
+        //           IRefreshInfoProvider (RefreshInfoProviderPanel, a TestUI type) and whose content has no
+        //           ScrollViewer.
+        // Expected: the first-child provider becomes the InfoProvider without the adapter being asked to adapt or
+        //           animate, and drives the visualizer (0.3 -> Peeking, 0 -> Idle); with the custom template the tree
+        //           search returns the Root panel, which also drives the visualizer.
+        // A failure means: providers placed in the template are ignored or overridden by the adapter, so custom
+        //                  templates cannot supply their own pull source.
         [TestMethod]
         [TestProperty("Description", "An IRefreshInfoProvider in the template is used before any adapter: a provider that is the first child of the template Root is taken without calling the adapter, and a Root that is itself a provider is found by the tree search when there is no ScrollViewer to adapt.")]
         public void TemplateProvidersAreUsedBeforeAdapterAndTreeSearch()
@@ -555,6 +645,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a container with an app visualizer and an adapted ScrollViewer; tag the container, visualizer
+        //           and scroll content with managed sentinel objects (held by the native objects); force a GC while
+        //           loaded; remove the container and force up to 5 more GC passes.
+        // Expected: all three sentinels are alive after the GC while loaded and all three are collected after removal.
+        // A failure means: removing a RefreshContainer leaks the container, its visualizer or the ScrollViewer content
+        //                  (for example through a cycle with the adapter or the InteractionTracker).
         [TestMethod]
         [TestProperty("Description", "Once a loaded RefreshContainer with an adapted ScrollViewer is removed and released, the container, its visualizer and the ScrollViewer content are collected (nothing keeps them alive). Each is tracked through a managed Tag object that the native object holds, so a native leak would keep the sentinel alive.")]
         public void RemovedContainerVisualizerAndAdaptedScrollViewerAreCollected()
@@ -617,6 +713,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: get the activation factories of RefreshContainer, RefreshVisualizer,
+        //           ScrollViewerIRefreshInfoProviderAdapter and PullToRefreshHelperTestApi and call
+        //           IActivationFactory::ActivateInstance directly; request a refresh to get real event args, and create
+        //           RefreshInteractionRatioChangedEventArgs through the helper test API.
+        // Expected: each factory reports its exact runtime class name and ActivateInstance returns E_NOTIMPL
+        //           (0x80004001) with no instance; the refresh raises 1 RefreshRequested and 2 RefreshStateChanged
+        //           events; the event args report exactly Microsoft.UI.Xaml.Controls.RefreshRequestedEventArgs,
+        //           RefreshStateChangedEventArgs and RefreshInteractionRatioChangedEventArgs.
+        // A failure means: the generated WinRT activation or type-name plumbing for these classes is broken (wrong
+        //                  class names, or parameterless activation unexpectedly succeeds or fails differently).
         [TestMethod]
         [TestProperty("Description", "The PullToRefresh activation factories report their runtime class names and reject parameterless IActivationFactory::ActivateInstance with E_NOTIMPL; the event args report their own runtime class names.")]
         public void ActivationFactoriesAndEventArgsReportRuntimeClassNames()

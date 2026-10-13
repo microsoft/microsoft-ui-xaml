@@ -28,6 +28,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private const double c_defaultExecutionRatio = 0.8;
         private const float c_tolerance = 0.001f;
 
+        // Scenario: create an adapter and call AdaptFromTree on a loaded tree without a ScrollViewer, then on a tree
+        //           with a ScrollViewer nested in a Border.
+        // Expected: the adapter is created; the first call returns null; the second returns a provider with
+        //           ExecutionRatio 0.8.
+        // A failure means: the ScrollViewer adapter cannot be created, adapts something that is not a ScrollViewer, or
+        //                  misses a nested one.
         [TestMethod]
         [TestProperty("Description", "An adapter adapts the first ScrollViewer found in a tree and returns null when the tree has none.")]
         public void CanInstantiate()
@@ -54,6 +60,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: call AdaptFromTree on a Grid whose ScrollViewer is exactly 10 levels down, on one where it is 11
+        //           levels down, and on a root that is itself a ScrollViewer containing another ScrollViewer.
+        // Expected: the 10-level ScrollViewer is adapted (ExecutionRatio 0.8); the 11-level one is not (null); the root
+        //           ScrollViewer is adapted itself, and SetAnimations animates its own content, not the nested
+        //           ScrollViewer's.
+        // A failure means: the tree search depth changed, or the wrong ScrollViewer is adapted when a ScrollViewer is
+        //                  the root.
         [TestMethod]
         [TestProperty("Description", "AdaptFromTree searches at most 10 levels below a root that is not itself a ScrollViewer: a ScrollViewer exactly 10 levels down is adapted, one 11 levels down is not. A root that is a ScrollViewer is adapted itself, not a ScrollViewer nested in its content.")]
         public void AdaptFromTreeSearchesTenLevelsBelowTheRoot()
@@ -121,6 +134,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return current == null ? -1 : distance;
         }
 
+        // Scenario: call Adapt(null).
+        // Expected: an ArgumentException is thrown.
+        // A failure means: invalid input is accepted silently or crashes instead of being reported.
         [TestMethod]
         public void AdaptOnNullThrows()
         {
@@ -132,6 +148,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a ScrollViewer whose Content is the integer 1 and call Adapt on it.
+        // Expected: an ArgumentException is thrown.
+        // A failure means: a ScrollViewer that cannot be animated (non-UIElement content) is accepted silently or
+        //                  crashes.
         [TestMethod]
         public void AdaptOnSVWithNonUIElementContentThrows()
         {
@@ -147,6 +167,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a ScrollViewer without content and call Adapt on it.
+        // Expected: Content is null and an ArgumentException is thrown.
+        // A failure means: a ScrollViewer without content is accepted silently or crashes.
         [TestMethod]
         public void AdaptOnSVWithoutContentThrows()
         {
@@ -164,6 +187,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: load a ScrollViewer with a Button as content and adapt it.
+        // Expected: the provider is not null, has ExecutionRatio 0.8, is not interacting, publishes the
+        //           "InteractionRatio" composition property and has a CompositionProperties set.
+        // A failure means: adapting a normal ScrollViewer does not produce a usable pull-to-refresh provider.
         [TestMethod]
         [TestProperty("Description", "Adapting a loaded ScrollViewer returns a provider that is not interacting, uses the default execution ratio and publishes the InteractionRatio composition property.")]
         public void AdaptOnSV()
@@ -185,6 +212,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: adapt a ScrollViewer before it is loaded, then load it, drop every reference, remove it and force a
+        //           GC.
+        // Expected: both the ScrollViewer and the adapter are collected.
+        // A failure means: adapting a ScrollViewer before it loads leaks it or the adapter (for example through its
+        //                  pending Loaded handler).
         [TestMethod]
         public void AdaptOnSVWithoutWaitingForLoaded()
         {
@@ -212,6 +244,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => CheckLeaks(objects));
         }
 
+        // Scenario: for TopToBottom and LeftToRight, adapt one ScrollViewer with a recording animation handler, call
+        //           SetAnimations, start and complete a refresh through the provider, call SetAnimations(null), then
+        //           adapt a second ScrollViewer and refresh through both providers.
+        // Expected: Adapt alone does not animate; SetAnimations hands the handler the visualizer stand-in, the
+        //           ScrollViewer content and an InteractionTracker (min/max position zero, scale 1, one source with
+        //           CapableTouchpadOnly redirection, scale disabled, position input with inertia and chaining Never
+        //           only on the pull axis, chaining Auto on the other); refresh started/completed reach the handler
+        //           with the content and ExecutionRatio 0.8; SetAnimations(null) throws ArgumentException without
+        //           reaching the handler; after re-adapting, only the new provider drives the handler.
+        // A failure means: the pull is not wired to the content animation, touch input is configured for the wrong
+        //                  axis, or an old ScrollViewer keeps driving the animation.
         [TestMethod]
         [TestProperty("Description", "The adapter hands its InteractionTracker and the ScrollViewer content to the animation handler, configures the interaction source for the pull axis, forwards refresh started/completed with the execution ratio, rejects a null animation container, and stops forwarding from a provider it no longer adapts.")]
         public void AdapterDrivesAnimationHandlerForEachPullAxis()
@@ -220,6 +263,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyAnimationHandlerContract(RefreshPullDirection.LeftToRight);
         }
 
+        // Scenario: call SetAnimations before any Adapt with a recording handler; then use the default handler on
+        //           another container before and after adapting a ScrollViewer.
+        // Expected: the recording handler gets the container with no content and no tracker; the default handler
+        //           enables a zero Translation on the container but not on the content before Adapt, and on the content
+        //           after Adapt.
+        // A failure means: setting up animations before adapting crashes, or the default animation handler animates the
+        //                  wrong elements.
         [TestMethod]
         [TestProperty("Description", "SetAnimations before any Adapt hands the animation handler the container with no content and no InteractionTracker; the default handler then only enables Translation on the container, and animates the content once a ScrollViewer is adapted.")]
         public void SetAnimationsBeforeAdaptHasNoContentOrTracker()
@@ -265,6 +315,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: adapt a ScrollViewer that is not loaded yet, then adapt a loaded one and call SetAnimations;
+        //           afterwards load the first ScrollViewer.
+        // Expected: both Adapt calls return a provider; the tracker has one interaction source and animates the loaded
+        //           ScrollViewer's content; after the first ScrollViewer loads (Loaded raised once) the tracker still
+        //           has exactly 1 interaction source.
+        // A failure means: a stale Loaded handler from an earlier Adapt hooks a ScrollViewer that is no longer adapted
+        //                  into the pull input.
         [TestMethod]
         [TestProperty("Description", "Adapting another ScrollViewer before the first one is loaded drops the pending Loaded handling: when the first ScrollViewer loads later, no interaction source is added to the adapter's InteractionTracker.")]
         public void ReadaptBeforeLoadedDropsThePendingLoadedHandler()
@@ -309,6 +366,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: adapt a ScrollViewer for a 100x100 visualizer, move its InteractionTracker to y = -80, -50, -150
+        //           and 0, then run a 200 ms custom tracker animation to y = -80.
+        // Expected: the published ratio is 0.8, 0.5, 1.0 (clamped) and 0; InteractionRatioChanged is raised only for
+        //           0.8 and 0 (exactly 2 events); IsInteractingForRefresh stays false; the animation reaches ratio 0.8
+        //           without raising IsInteractingForRefreshChanged.
+        // A failure means: the pull distance is converted to the wrong ratio, the event throttling changed, or
+        //                  programmatic tracker moves are treated as a user pull.
         [TestMethod]
         [TestProperty("Description", "InteractionTracker position changes are converted to an InteractionRatio (pull distance / visualizer size, clamped to 1) published in the composition property set; InteractionRatioChanged is throttled except near 0 and the execution ratio. A custom tracker animation drives the ratio without being treated as user interaction.")]
         public void InteractionRatioFollowsTrackerPositionAndIsThrottled()

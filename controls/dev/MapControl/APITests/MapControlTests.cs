@@ -21,6 +21,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Synthetic, secret-free token: these tests never need a real Azure Maps key or network access.
         private const string c_serviceToken = "mapcontrol-apitest-token-4f1c9e";
 
+        // Scenario: create an untemplated MapControl, check its defaults, set its properties, add and remove event
+        //           handlers, and edit three layers and their MapIcons (add, insert, replace, remove, clear, move an
+        //           icon, remove a middle layer).
+        // Expected: defaults are no layers, ZoomLevel 0, controls hidden, no token and no Center; set values read back
+        //           exactly (12.5, true, the token, 47.64/-122.13); icon lists are exactly [c,a,b], [c,d,b], [d,b],
+        //           then [a] after Clear; a moved icon keeps its new location; removing the middle layer leaves [first,
+        //           last]; no event handler is called.
+        // A failure means: basic MapControl properties or layer/icon collections do not behave like normal collections
+        //                  before the map is shown.
         [TestMethod]
         [TestProperty("Description", "Without a template, MapControl exposes its defaults, round-trips its properties and keeps its layer and element collections consistent through add, insert, replace, remove and clear.")]
         public void PropertiesLayersAndElementsWorkWithoutTemplate()
@@ -93,6 +102,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: add one layer to an untemplated MapControl and remove it.
+        // Expected: (correct behaviour) the removal succeeds and Layers is empty.
+        // A failure means: the bug is still present: removing the last layer throws an out-of-bounds error.
+        // Ignored: reproduces BUG-MAP-5 (OnLayersVectorChanged reads the layer at the removed index after the removal,
+        //          so removing the last layer throws E_BOUNDS); remove the Ignore once fixed.
         [TestMethod]
         [TestProperty("Ignore", "True")] // BUG-MAP-5: OnLayersVectorChanged reads Layers().GetAt(index) after the item was removed, so removing the last layer throws E_BOUNDS to the caller.
         [TestProperty("Description", "Removing the last (or only) layer from MapControl.Layers succeeds.")]
@@ -107,6 +121,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: without a template, clear and refill Layers, replace Layers with an app List, then on a layer owned
+        //           by another map replace MapElements with an app List and clear the original MapElements collection.
+        // Expected: Clear empties Layers and only the layer added afterwards remains; the getter returns the assigned
+        //           List (x, y) while the original collection still holds [c]; the replaced MapElements returns exactly
+        //           the icons at (11,12) and (13,14) while the original keeps its 1 icon; clearing the original leaves
+        //           it empty, the current elements, the assigned List (2) and the map's single "owned" layer untouched.
+        // A failure means: replacing or clearing map collections corrupts the collections the map is actually using.
         [TestMethod]
         [TestProperty("Description", "Without a template, clearing MapControl.Layers empties it and it can be refilled; Layers and MapElementsLayer.MapElements can be replaced with app collections, which the getters then return; clearing a layer's replaced original MapElements collection leaves the current elements untouched.")]
         public void LayersAndElementsCanBeReplacedAndCleared()
@@ -165,6 +186,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: get the activation factories of MapControl, MapElementsLayer and MapIcon and call
+        //           IActivationFactory::ActivateInstance directly.
+        // Expected: each factory reports its exact runtime class name and ActivateInstance returns E_NOTIMPL
+        //           (0x80004001) with no instance.
+        // A failure means: the generated WinRT activation or type-name plumbing for the map classes is broken.
         [TestMethod]
         [TestProperty("Description", "The MapControl activation factories report their runtime class names and reject parameterless IActivationFactory::ActivateInstance with E_NOTIMPL (the classes are composable).")]
         public void MapActivationFactoriesReportRuntimeClassNames()

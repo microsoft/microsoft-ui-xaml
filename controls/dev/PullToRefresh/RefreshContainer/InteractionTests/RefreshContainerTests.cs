@@ -36,6 +36,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
         
+        // Scenario: on the RefreshContainer test page (with the page's refresh delay toggled), refresh with the
+        //           Refresh-on-container and Refresh-on-visualizer buttons, then touch-drag the list 450 px in each
+        //           pull direction (rotating the pull direction and alignment in between), including one drag from a
+        //           list that is not scrolled to its edge.
+        // Expected: RefreshCount goes 1, 2 (buttons), 3 (pull down), 4 (pull right); the drag that starts away from the
+        //           edge only peeks and leaves it at 4; then 5 (pull up) and 6 (pull left).
+        // A failure means: touch pull-to-refresh or programmatic refresh does not work for some pull direction, or a
+        //                  pull that does not start at the edge refreshes.
         [TestMethod]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
         public void BasicInteractionTest()
@@ -161,6 +169,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: on the RefreshContainer test page, refresh with both buttons while toggling the page's
+        //           RefreshRequested handlers on the container and on the visualizer (container only, both, visualizer
+        //           only, neither).
+        // Expected: RefreshCount goes 1, 2 with the container handler; 4, 6 with both (each refresh counted twice); 7,
+        //           8 with the visualizer handler only; and stays 8 with neither.
+        // A failure means: RefreshRequested is not raised on the container or the visualizer (or is raised the wrong
+        //                  number of times) when apps subscribe on either one or both.
         [TestMethod]
         public void RefreshRequestedHandlersWorkOnEitherContainerOrVisualizerOrBoth()
         {
@@ -251,6 +266,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: arm the page's scroll-away hook and touch-drag the list down 450 px; when the visualizer enters
+        //           Interacting the hook scrolls the list to 200 and, once that scroll lands, to 250 (DIPs).
+        // Expected: transitions start with Idle->Interacting;Interacting->Idle, never reach Pending or Refreshing,
+        //           RefreshCount is unchanged and the final offset is at least 200; the pull ratio at the cancel is at
+        //           most 0.8 and keeps growing by at least 0.1 afterwards (the finger was still dragging); the pull is
+        //           still active after the first scroll (which started inside the 1 DIP threshold) and is cancelled at
+        //           an offset of at least 249.
+        // A failure means: scrolling the content during a pull no longer cancels the refresh interaction, or cancels it
+        //                  while the view is still within the threshold.
         [TestMethod]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
         [TestProperty("Description", "If the adapted ScrollViewer scrolls beyond the pull threshold while a touch pull is Interacting, the pull stops being a refresh interaction: the visualizer returns from Interacting to Idle, never reaches Pending/Refreshing, and no refresh is requested on release.")]
@@ -319,6 +343,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         //Issue #6649 Some tests fail when run on OS 21H1 
+        // Scenario: on the RefreshContainer-on-image page (a TestUI adapter adapts an Image), refresh with the
+        //           container button, then with the visualizer button (after moving the page's handler), then
+        //           touch-drag the image 450 px in all four directions, rotating the pull direction and alignment in
+        //           between.
+        // Expected: RefreshCount goes 1, 2, then 3, 4, 5 and 6 after the four drags.
+        // A failure means: the issue is still present (the app crashes on the horizontal drag), or pull-to-refresh with
+        //                  a custom IRefreshInfoProviderAdapter does not refresh.
+        // Ignored: tracked by 24178380 (after RotateButton installs a new TestUI adapter, the horizontal drag crashes
+        //          the test app with E_INVALIDARG); remove the Ignore once fixed.
         [TestMethod]
         [TestProperty("Ignore", "True")] // 24178380. Still failing on a desktop test VM (2026-10): after RotateButton installs a new TestUI ImageIRefreshInfoProviderAdapter, the horizontal drag on the image crashes the test app (E_INVALIDARG 0x80070057 raised in Microsoft.UI.Xaml.dll, 0xC000027B).
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -328,6 +361,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         //Issue #6649 Some tests fail when run on OS 21H1 
+        // Scenario: same as InteractionOnImageTest, but first tap AdaptButton so the page re-adapts the image and
+        //           assigns the visualizer's InfoProvider itself, and re-adapt after each rotation.
+        // Expected: RefreshCount goes 1, 2, then 3, 4, 5 and 6 after the four drags (interaction ratios are logged).
+        // A failure means: the issue is still present (tapping AdaptButton crashes the app), or a custom InfoProvider
+        //                  set by the app does not drive the refresh.
+        // Ignored: tracked by task 24429465 (tapping AdaptButton crashes the test app with E_INVALIDARG); remove the
+        //          Ignore once fixed.
         [TestMethod]
         [TestProperty("Ignore", "True")] //Task 24429465: DCPP: Multiple MUXControls interaction tests failing after IXP integration. Still failing on a desktop test VM (2026-10), also when run alone: tapping AdaptButton (TestUI ImageIRefreshInfoProviderAdapter re-adapting the image) crashes the test app (E_INVALIDARG 0x80070057 raised in Microsoft.UI.Xaml.dll, 0xC000027B).
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
