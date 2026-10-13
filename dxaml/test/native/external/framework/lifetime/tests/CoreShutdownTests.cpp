@@ -38,6 +38,26 @@ bool CoreShutdownTests::TestCleanup()
     return true;
 }
 
+void CoreShutdownTests::OffThreadReleaseBeforeIslandCreation()
+{
+    TestServices::WindowHelper->InitializeXaml();
+    auto shutdownGuard = wil::scope_exit([]
+    {
+        TestServices::WindowHelper->ShutdownXaml();
+    });
+
+    xaml::RoutedEventArgs^ args = nullptr;
+    RunOnUIThread([&]
+    {
+        VERIFY_IS_NULL(TestServices::WindowHelper->WindowContent);
+        args = ref new xaml::RoutedEventArgs();
+    });
+
+    // Releasing off the UI thread queues cleanup, but there is no XAML island to tick build-tree work.
+    args = nullptr;
+    TestServices::WindowHelper->WaitForIdle();
+}
+
 // Exposed an edge case in our peer cleanup
 // When the core is shutdown, we walk all the DOs, and disconnect the framework peers from the core
 // objects, which gives the core objects a chance to tear down with an intact core.

@@ -60,6 +60,7 @@ _Check_return_ HRESULT UIAffinityReleaseQueue::RequestCleanupWake(
     {
         state->pending.store(false, std::memory_order_release);
         IFC_RETURN(hr);
+        // Queue shutdown rejects new work without failing; core shutdown still drains the release queue.
     }
     return S_OK;
 }
@@ -70,6 +71,7 @@ _Check_return_ HRESULT UIAffinityReleaseQueue::OnPlatformCleanupWake(const std::
     if (!core || !core->IsInitialized())
     {
         state->pending.store(false, std::memory_order_release);
+        // A queued wake may outlive the core; teardown performs synchronous cleanup.
         return S_OK;
     }
 
@@ -91,6 +93,13 @@ _Check_return_ HRESULT UIAffinityReleaseQueue::OnCleanupWake(std::shared_ptr<Cle
     auto core = DXamlCore::GetCurrentNoCreate();
     if (!core || !core->IsInitialized())
     {
+        return S_OK;
+    }
+    auto coreServices = core->GetHandle();
+    if (coreServices->GetInitializationType() == InitializationType::IslandsOnly
+        && !coreServices->HasXamlIslandRoots())
+    {
+        // Without an island, BuildTreeService cannot tick. Preserve cleanup on the first frame or shutdown.
         return S_OK;
     }
     auto weakTarget = state->target;

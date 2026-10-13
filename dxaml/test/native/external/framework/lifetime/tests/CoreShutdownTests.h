@@ -37,5 +37,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(OffThreadReleaseBeforeIslandCreation)
+            TEST_METHOD_PROPERTY(L"Description", L"Queued releases must not leave frame-dependent work pending before a WPF host creates a XAML island.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
+        END_TEST_METHOD()
     };
 } } } } } }

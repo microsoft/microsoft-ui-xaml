@@ -98,6 +98,7 @@ namespace MUXControlsTestApp.Utilities
             {
                 throw new InvalidOperationException("The UI dispatcher rejected the release-queue test callback.");
             }
+            // This is a timeout ceiling: a completed callback wins immediately, without waiting 30 seconds.
             if (await Task.WhenAny(completion.Task, Task.Delay(TimeSpan.FromSeconds(30))).ConfigureAwait(false) != completion.Task)
             {
                 throw new TimeoutException("The UI dispatcher stalled during background GC.");
