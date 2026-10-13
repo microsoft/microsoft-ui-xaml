@@ -33,7 +33,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableViewVirtualizationPage.xaml.cs">
       <DependentUpon>TableViewVirtualizationPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)TableViewVirtualizationPageFacts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableViewTestPageFacts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewVirtualizationPageFacts.cs" />
   </ItemGroup>
 </Project>
