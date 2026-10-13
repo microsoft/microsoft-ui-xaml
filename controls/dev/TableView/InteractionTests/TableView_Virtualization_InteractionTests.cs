@@ -62,19 +62,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies an open edit whose row is scrolled far out of view stays open on its own item, leaks no editor into recycled rows, and commits to that item when scrolled back.")]
         public void OpenEditSurvivesScrollingItsRowOutOfViewAndBack()
         {
-            // Contract, from the code:
-            // - The editor holds focus (EditorGetsFocusOnBeginEdit). ItemsRepeater pins the child that contains
-            //   focus (Repeater/ViewManager.cpp:959-1011, UpdateFocusedElement) and a pinned element is moved to
-            //   the pinned pool instead of being cleared (ViewManager.cpp:98-106 and 928-950), so
-            //   TableView::OnRowElementClearing (TableView.cpp:2409-2438) is NOT reached for the edited row and
-            //   the edit is not terminated by scrolling.
-            // - Nothing else ends the edit on scroll: focus never leaves the editor, so the click-away commit
-            //   (TableView_EditingInput.cpp:98-198) does not run, and CellEditEnding is raised only by a close
-            //   (TableView_Editing.cpp:232-264).
-            // - The editing binding is Explicit, so the typed value stays in the editor until commit
-            //   (TableView_Editing.cpp:835-837).
-            // What the user must see: the typed text is not lost, no recycled row - each now showing a
-            // different item - ever shows an editor, and Enter writes to the item that was edited and no other.
+            // Contract: ItemsRepeater pins the focused editor's row (ViewManager::UpdateFocusedElement), so TableView::OnRowElementClearing never runs and scrolling must not end, move or write the edit.
             using (var setup = new TestSetupHelper(new[] { PageName, VirtualizationFacts.NavigateButton }))
             {
                 UIObject table = GetTable(VirtualizationFacts.LargeTable);
@@ -145,20 +133,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies an open edit whose row is recycled out from under it is closed by the control: the pending value is committed to the edited item, CellEditEnding reports Commit, and no editor survives in any row.")]
         public void OpenEditIsClosedWhenItsRowIsRecycledByRemovingItsItem()
         {
-            // Contract, from the code:
-            // - Removing the item clears its row with isClearedDueToCollectionChange, which bypasses the focus
-            //   pin (Repeater/ViewManager.cpp:597 and 931-932, ClearElementToPinnedPool), so TableView's ElementClearing
-            //   handler (registered TableView.cpp:940-945) runs for the edited row.
-            // - OnRowElementClearing (TableView.cpp:2409-2438) calls TerminateEditWithoutVisualRestore(true)
-            //   (TableView_Editing.cpp:512-532), which is TerminateEditForReset(force = true)
-            //   (TableView_Editing.cpp:822-871): a forced close that cannot be vetoed, transfers the editor's
-            //   value to the EDITED item first, and reports Commit unless nothing was written or the item has
-            //   blocking validation errors (this item has none). It is NOT a cancel.
-            // - CellEditEnding is raised once, with that action, and because the close happens inside a layout
-            //   pass it is posted to the dispatcher rather than raised inline (TableView_Editing.cpp:232-264,
-            //   545-574). FinishEditTeardown does not write a second time (TableView_Editing.cpp:640-646).
-            // The removal is driven from a focus-neutral page button, so nothing but the recycle can close the
-            // edit: a focus move would close it through the click-away commit instead and prove nothing here.
+            // Contract: removing the item bypasses the focus pin, so TableView::OnRowElementClearing force-closes the edit (TerminateEditForReset), committing to the edited item; the button is focus-neutral.
             using (var setup = new TestSetupHelper(new[] { PageName, VirtualizationFacts.NavigateButton }))
             {
                 UIObject table = GetTable(VirtualizationFacts.LargeTable);
@@ -190,11 +165,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(1, VisibleFirstId(readout),
                     "Precondition: item 0 must be gone from the rows, with item 1 now first; otherwise its row was never recycled.");
                 Verify.AreEqual("False", Field(readout, VirtualizationFacts.EditingField),
-                    "Recycling the edited row must close the edit (TableView.cpp:2409-2438).");
+                    "Recycling the edited row must close the edit (TableView::OnRowElementClearing).");
                 Verify.AreEqual(VirtualizationFacts.NoneValue, Field(readout, VirtualizationFacts.EditorsField),
                     "No realized row may keep the editor; a recycled row carrying it would edit a different item.");
                 Verify.AreEqual("Commit/0", Field(readout, VirtualizationFacts.EditEndingField),
-                    "The forced close must raise exactly one CellEditEnding, a Commit for the edited item (TableView_Editing.cpp:822-871).");
+                    "The forced close must raise exactly one CellEditEnding, a Commit for the edited item (TerminateEditForReset).");
                 Verify.AreEqual("Typed", Field(readout, VirtualizationFacts.FirstItemField),
                     "A forced close commits the pending value to the item the edit was opened on.");
                 Verify.AreEqual("0", Field(readout, VirtualizationFacts.ModifiedField),
