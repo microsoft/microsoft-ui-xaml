@@ -11,6 +11,8 @@ issue changes. The Markdown workflow is the source of truth; its compiled
 | --- | --- |
 | Clear primary area, no existing area label | Add one existing `area-*` label at HIGH confidence. |
 | One area with a configured owner, no existing team label | Derive and add its `team-*` label from the selected configured routing rule. |
+| Existing or newly selected `team-Reach`, `team-Rendering`, or `team-Markup` | Add `team-Core` if missing, without replacing the specific team label. |
+| Only `team-Core` is present | Add a specific child only when the area's routing rules identify one; never infer a child from the parent alone. |
 | Evidence clearly meets an area's conditional rule | Use that rule's configured owner rather than the default; the model cannot invent a team. |
 | Uncertain area or an unmapped team | Comment with the suggestion; leave the uncertain routing to a maintainer. |
 | Low-confidence or unresolved automatic routing | Keep or add `needs-triage` for human confirmation. Already-established human routing is not reset. |
@@ -72,6 +74,15 @@ It also provides keyword guidance, ownership confidence, and nine
 conditional routes: eight declared override rules and the explicit
 AnimatedVisualPlayer compositor case. Teams are derived from this configuration,
 never accepted as arbitrary model output.
+
+`team-Core` is the parent of `team-Reach`, `team-Rendering`, and `team-Markup`.
+The deterministic publisher includes the parent whenever one of those child
+labels is present or proposed, and the comment shows both labels. Existing
+specific teams are preserved; a parent-only issue can gain an evidenced child
+without being reassigned to a sibling. `team-Controls`, `team-CompInput`, and
+`team-Design` do not add the parent. Adding a missing parent alone does not
+restart a completed human triage decision. This applies on normal eligible
+triage runs, not as a bulk relabeling operation.
 
 Each area entry contains:
 
@@ -187,7 +198,9 @@ stale handling, or the maintainer's acceptance/closure process.
   operations; a concurrent edit can stop label publication after the comment
   was written. A later run safely refreshes the single comment.
 - Only allowlisted routing labels, `needs-triage`, and `needs-repro` can be added,
-  at most four per run. The publisher uses additive label writes, never replacement.
+  at most five per run (one area, its specific team, the optional parent, and
+  the two workflow-state labels). The publisher uses additive label writes,
+  never replacement.
 - Per-issue concurrency cancels superseded runs. `on.roles: all` permits external
   issue authors: pre-activation is not a Microsoft organization-membership gate.
   Its repository-permission lookup only exempts `admin`, `maintain`, and `write`

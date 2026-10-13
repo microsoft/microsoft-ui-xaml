@@ -522,12 +522,18 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
     effective_areas = areas or ([area_to_add] if area_to_add else [])
     effective_area = effective_areas[0] if len(effective_areas) == 1 else None
     entry = mapping.get(effective_area, {})
-    if effective_area and not teams:
+    if effective_area and (not teams or teams == {"team-Core"}):
+        candidate_team = None
         if result["area"] == effective_area and result["area_confidence"] == "HIGH":
-            team_to_add = route_team(mapping, effective_area, result["routing_rule"])
+            candidate_team = route_team(mapping, effective_area, result["routing_rule"])
         elif not entry.get("overrides"):
-            team_to_add = entry.get("team")
+            candidate_team = entry.get("team")
         # A conditional owner cannot be inferred from a different/uncertain area.
+        if not teams or candidate_team in CORE_TEAMS:
+            team_to_add = candidate_team
+    team_labels = teams | ({team_to_add} if team_to_add else set())
+    if team_labels & CORE_TEAMS:
+        team_labels.add("team-Core")
     needs_triage = (
         not effective_areas
         or (not teams and not team_to_add)
@@ -539,15 +545,16 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
         "effective_area": effective_area,
         "area_to_add": area_to_add,
         "team_to_add": team_to_add,
+        "team_labels": sorted(team_labels),
         "needs_triage": needs_triage,
     }
 
 
 def planned_labels(result: dict, evidence: dict, mapping: dict) -> list[str]:
     decision = routing_decision(result, evidence, mapping)
-    additions = {
-        label for label in (decision["area_to_add"], decision["team_to_add"]) if label
-    }
+    additions = set(decision["team_labels"]) - set(decision["existing_teams"])
+    if decision["area_to_add"]:
+        additions.add(decision["area_to_add"])
     if decision["needs_triage"] or result["review_notes"]:
         additions.add("needs-triage")
     if result["needs_repro"]:
@@ -581,9 +588,7 @@ def render(result: dict, evidence: dict, mapping: dict) -> str:
     route_areas = decision["existing_areas"] or (
         [decision["area_to_add"]] if decision["area_to_add"] else []
     )
-    route_teams = decision["existing_teams"] or (
-        [decision["team_to_add"]] if decision["team_to_add"] else []
-    )
+    route_teams = decision["team_labels"]
     kind_badges = {
         "BUG": "\U0001f41e Bug",
         "FEATURE": "\u2728 Feature proposal",

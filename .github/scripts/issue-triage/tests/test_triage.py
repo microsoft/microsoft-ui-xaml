@@ -309,7 +309,7 @@ class RoutingTests(TriageFixture):
 
     def test_existing_team_is_preserved_and_conflicting_area_is_not_added(self):
         self.evidence["existing_labels"] += ["team-Markup"]
-        self.assertEqual(t.planned_labels(self.result(), self.evidence, MAPPING), [])
+        self.assertEqual(t.planned_labels(self.result(), self.evidence, MAPPING), ["team-Core"])
 
     def test_multiple_existing_areas_are_not_collapsed(self):
         self.evidence["existing_labels"] += ["area-Expander", "area-Binding"]
@@ -370,7 +370,7 @@ class ConditionalRoutingTests(TriageFixture):
         )
         self.assertEqual(
             t.planned_labels(self.conditional_result(), self.evidence, self.mapping),
-            ["area-Expander", "team-Rendering"],
+            ["area-Expander", "team-Core", "team-Rendering"],
         )
 
     def test_unknown_rule_is_rejected(self):
@@ -407,22 +407,22 @@ class ConditionalRoutingTests(TriageFixture):
         self.evidence["existing_labels"].append("team-Rendering")
         self.assertEqual(
             t.planned_labels(self.conditional_result(), self.evidence, self.mapping),
-            ["area-Expander"],
+            ["area-Expander", "team-Core"],
         )
-        self.assertEqual(t.planned_labels(self.result(), self.evidence, self.mapping), [])
+        self.assertEqual(t.planned_labels(self.result(), self.evidence, self.mapping), ["team-Core"])
 
     def test_parent_team_is_preserved_for_a_conditional_child_owner(self):
         self.evidence["existing_labels"].append("team-Core")
         self.assertEqual(
             t.planned_labels(self.conditional_result(), self.evidence, self.mapping),
-            ["area-Expander"],
+            ["area-Expander", "team-Rendering"],
         )
 
     def test_existing_area_uses_its_assessed_condition(self):
         self.evidence["existing_labels"].append("area-Expander")
         self.assertEqual(
             t.planned_labels(self.conditional_result(), self.evidence, self.mapping),
-            ["team-Rendering"],
+            ["team-Core", "team-Rendering"],
         )
 
     def test_unassessed_conditional_area_does_not_guess_default_team(self):
@@ -505,6 +505,158 @@ class ConditionalRoutingTests(TriageFixture):
             refreshed, self.mapping, write=True,
         )
         self.assertEqual(self.client.writes, [])
+
+
+class CoreParentRoutingTests(TriageFixture):
+    def setUp(self):
+        super().setUp()
+        self.mapping = copy.deepcopy(MAPPING)
+        self.mapping["area-Binding"].update(team="team-Markup", confidence="high")
+        self.client.catalog["team-Design"] = ""
+        self.evidence = t.prepare(self.client, event(), self.mapping)
+
+    def binding_result(self, **changes):
+        return self.result(area="area-Binding", **changes)
+
+    def test_each_new_core_child_keeps_its_specific_label_and_adds_the_parent(self):
+        for team in ("team-Reach", "team-Rendering", "team-Markup"):
+            with self.subTest(team=team):
+                self.mapping["area-Binding"]["team"] = team
+                self.assertEqual(
+                    t.planned_labels(self.binding_result(), self.evidence, self.mapping),
+                    sorted(["area-Binding", team, "team-Core"]),
+                )
+
+    def test_existing_child_gets_only_its_missing_parent_even_when_area_is_unclear(self):
+        for team in ("team-Reach", "team-Rendering", "team-Markup"):
+            with self.subTest(team=team):
+                self.evidence["existing_labels"] = ["bug", "needs-triage", "area-Binding", team]
+                result = self.result(area="None", area_confidence="NONE")
+                self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), ["team-Core"])
+
+    def test_existing_parent_does_not_block_an_evidence_based_child(self):
+        self.evidence["existing_labels"].append("team-Core")
+        self.assertEqual(
+            t.planned_labels(self.binding_result(), self.evidence, self.mapping),
+            ["area-Binding", "team-Markup"],
+        )
+
+    def test_existing_parent_and_area_can_supply_the_missing_child(self):
+        self.evidence["existing_labels"] += ["team-Core", "area-Binding"]
+        result = self.result(area="None", area_confidence="NONE")
+        self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), ["team-Markup"])
+
+    def test_parent_alone_never_implies_a_child_or_all_siblings(self):
+        self.evidence["existing_labels"].append("team-Core")
+        result = self.result(area="None", area_confidence="NONE")
+        self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), [])
+
+    def test_uncertain_new_child_does_not_add_either_team_label(self):
+        for confidence in ("MEDIUM", "LOW"):
+            with self.subTest(confidence=confidence):
+                result = self.binding_result(area_confidence=confidence)
+                self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), [])
+
+    def test_non_core_routes_do_not_gain_a_parent(self):
+        for team in ("team-Controls", "team-CompInput", "team-Design"):
+            with self.subTest(team=team):
+                self.mapping["area-Binding"]["team"] = team
+                self.assertEqual(
+                    t.planned_labels(self.binding_result(), self.evidence, self.mapping),
+                    ["area-Binding", team],
+                )
+
+    def test_core_only_route_does_not_guess_a_child(self):
+        self.mapping["area-Binding"]["team"] = "team-Core"
+        self.assertEqual(
+            t.planned_labels(self.binding_result(), self.evidence, self.mapping),
+            ["area-Binding", "team-Core"],
+        )
+
+    def test_parent_only_does_not_authorize_a_conflicting_non_core_owner(self):
+        self.evidence["existing_labels"] += ["team-Core", "area-Expander"]
+        self.assertEqual(t.planned_labels(self.result(), self.evidence, self.mapping), [])
+
+    def test_existing_sibling_is_preserved_instead_of_replaced(self):
+        self.evidence["existing_labels"] += ["area-Binding", "team-Reach"]
+        self.assertEqual(
+            t.planned_labels(self.binding_result(), self.evidence, self.mapping),
+            ["team-Core"],
+        )
+        self.evidence["existing_labels"].append("team-Core")
+        self.assertEqual(t.planned_labels(self.binding_result(), self.evidence, self.mapping), [])
+
+    def test_multiple_existing_areas_and_teams_get_one_parent_without_new_routing(self):
+        self.evidence["existing_labels"] += [
+            "area-Expander", "area-Binding", "team-Rendering", "team-Markup", "team-Controls",
+        ]
+        self.assertEqual(
+            t.planned_labels(self.binding_result(), self.evidence, self.mapping),
+            ["team-Core"],
+        )
+
+    def test_parent_backfill_does_not_reset_completed_human_triage(self):
+        self.mapping["area-Binding"]["confidence"] = "low"
+        self.evidence["existing_labels"] = ["bug", "area-Binding", "team-Markup"]
+        self.assertEqual(
+            t.planned_labels(self.binding_result(), self.evidence, self.mapping),
+            ["team-Core"],
+        )
+
+    def test_missing_parent_in_catalog_fails_before_any_write(self):
+        self.evidence["_catalog"].pop("team-Core")
+        with self.assertRaises(t.TriageError):
+            t.publish(self.client, self.binding_result(), self.evidence, self.mapping, write=True)
+        self.assertEqual(self.client.writes, [])
+
+    def test_parent_and_child_share_the_comment_and_preview_label_plan(self):
+        plan = t.publish(self.client, self.binding_result(), self.evidence, self.mapping, write=False)
+        self.assertEqual(plan["add_labels"], ["area-Binding", "team-Core", "team-Markup"])
+        metadata = plan["comment"].split("<details", 1)[0]
+        self.assertIn("`team-Markup`", metadata)
+        self.assertIn("`team-Core`", metadata)
+        self.assertNotIn("`team-Reach`", metadata)
+        self.assertNotIn("`team-Rendering`", metadata)
+        self.assertFalse(plan["published"])
+        self.assertEqual(self.client.writes, [])
+
+    def test_parent_child_and_review_repro_labels_fit_the_maximum_five_additions(self):
+        self.mapping["area-Binding"]["confidence"] = "low"
+        self.evidence["existing_labels"] = ["bug"]
+        result = self.binding_result(
+            reproduction="INSUFFICIENT", missing_information="Please provide concrete steps.",
+        )
+        self.assertEqual(
+            t.planned_labels(result, self.evidence, self.mapping),
+            ["area-Binding", "needs-repro", "needs-triage", "team-Core", "team-Markup"],
+        )
+
+    def test_parent_addition_respects_freshness_before_publication(self):
+        self.client.issue["labels"] += [{"name": "area-Binding"}, {"name": "team-Markup"}]
+        self.evidence = t.prepare(self.client, event(), self.mapping)
+        result = self.binding_result()
+        self.client.issue["labels"].append({"name": "team-Controls"})
+        with self.assertRaises(t.TriageError):
+            t.publish(self.client, result, self.evidence, self.mapping, write=True)
+        self.assertEqual(self.client.writes, [])
+
+    def test_new_and_existing_parent_child_combinations_are_idempotent(self):
+        for teams in ([], ["team-Core"], ["team-Markup"], ["team-Core", "team-Markup"]):
+            with self.subTest(teams=teams):
+                client = FakeGitHub()
+                client.issue["labels"] += [{"name": "area-Binding"}] + [
+                    {"name": team} for team in teams
+                ]
+                evidence = t.prepare(client, event(), self.mapping)
+                result = t.validate(agent_output(evidence, area="area-Binding"), evidence)
+                t.publish(client, result, evidence, self.mapping, write=True)
+                self.assertTrue({"team-Core", "team-Markup"} <= t.label_names(client.issue))
+                self.assertEqual(len(client.comments), 1)
+                refreshed = t.prepare(client, event(), self.mapping)
+                result = t.validate(agent_output(refreshed, area="area-Binding"), refreshed)
+                client.writes.clear()
+                t.publish(client, result, refreshed, self.mapping, write=True)
+                self.assertEqual(client.writes, [])
 
 
 class MappingConfigurationTests(unittest.TestCase):
