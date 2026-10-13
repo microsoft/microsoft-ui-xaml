@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Common;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
@@ -619,6 +620,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.IsTrue(FindElement.ById(AfterTableButton).HasKeyboardFocus, "Precondition: focus should have left the table.");
 
+                // Enabled rows intersecting the body viewport (below the header band, inside the table's box).
+                UIObject table = GetTable(ScrollingTable);
+                int viewportTop = GetHeaderHost(table).BoundingRectangle.Bottom;
+                int viewportBottom = table.BoundingRectangle.Bottom;
+                var viewportRows = new List<string>();
+                foreach (UIObject candidate in GetRowsHost(table).Children)
+                {
+                    var bounds = candidate.BoundingRectangle;
+                    if (IsRow(candidate) && candidate.IsEnabled && bounds.Bottom > viewportTop && bounds.Top < viewportBottom)
+                    {
+                        viewportRows.Add(candidate.Name);
+                    }
+                }
+                Log.Comment("Enabled viewport rows before re-entry: {0}.", string.Join(", ", viewportRows));
+                Verify.IsTrue(viewportRows.Count > 0, "Precondition: enabled rows intersect the viewport.");
+
                 string offsetsBeforeReentry = ReadScrollOffsets();
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
@@ -630,6 +647,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(focusedRow, "Shift+Tab must land on a row of the body at row level.");
                 Verify.IsTrue(focusedRow.IsEnabled, "Re-entry must not land on the disabled row.");
                 Verify.AreEqual(-1, IndexOfFocusedCell(focusedRow), "With the remembered cell unreachable, re-entry is row-level.");
+                Verify.IsTrue(viewportRows.Contains(focusedRow.Name),
+                    "With the remembered cell unreachable, re-entry falls back to an enabled row that was in the viewport, not a cache row.");
                 // Keyboard focus brings the row into view with XAML's 20 DIP padding; only that nudge is allowed.
                 double verticalTravel = Math.Abs(ReadScrollOffsetComponent(offsetsAfterReentry, "V") - ReadScrollOffsetComponent(offsetsBeforeReentry, "V"));
                 Verify.IsFalse(double.IsNaN(verticalTravel), "Precondition: the page must publish the vertical offset.");
