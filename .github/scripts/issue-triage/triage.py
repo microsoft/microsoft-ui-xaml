@@ -31,7 +31,6 @@ MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 MAX_COMMENTS = 1000
 MAX_AUTHOR_COMMENTS = 10
 MAX_COMMENT_BODY = 2000
-CORE_TEAMS = {"team-Markup", "team-Reach", "team-Rendering"}
 
 
 class TriageError(RuntimeError):
@@ -516,7 +515,6 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
         area = result["area"]
         mapped_team = route_team(mapping, area, result["routing_rule"])
         compatible = not teams or not mapped_team or mapped_team in teams
-        compatible |= teams == {"team-Core"} and mapped_team in CORE_TEAMS
         if compatible:
             area_to_add = area
     effective_areas = areas or ([area_to_add] if area_to_add else [])

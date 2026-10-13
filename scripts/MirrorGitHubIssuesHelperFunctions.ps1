@@ -439,9 +439,7 @@ function Get-AzureDevOpsAreaPath
     # If we didn't find an area label, we'll next consider team labels, and use those if one is found.
     $teamLabelToAreaPathDictionary = @{
         "team-Controls" = $controlsAreaPath
-        "team-Markup" = $markupAreaPath
-        "team-Reach" = $lifetimeAreaPath
-        "team-Rendering" = $renderingAreaPath
+        "team-Core" = $baseAreaPath
     }
 
     foreach ($label in $gitHubIssue.labels)

@@ -23,8 +23,7 @@ MAPPING = {
 CATALOG = {
     "bug": "", "feature proposal": "", "needs-triage": "", "needs-repro": "",
     "needs-author-feedback": "", "area-Expander": "", "area-Binding": "",
-    "team-Controls": "", "team-Core": "", "team-Markup": "", "team-Rendering": "",
-    "team-CompInput": "", "team-Reach": "",
+    "team-Controls": "", "team-Core": "", "team-CompInput": "",
 }
 
 
@@ -308,7 +307,7 @@ class RoutingTests(TriageFixture):
         self.assertEqual(t.planned_labels(self.result(area="None", area_confidence="NONE"), self.evidence, MAPPING), ["team-Controls"])
 
     def test_existing_team_is_preserved_and_conflicting_area_is_not_added(self):
-        self.evidence["existing_labels"] += ["team-Markup"]
+        self.evidence["existing_labels"] += ["team-Core"]
         self.assertEqual(t.planned_labels(self.result(), self.evidence, MAPPING), [])
 
     def test_multiple_existing_areas_are_not_collapsed(self):
@@ -337,7 +336,7 @@ class RoutingTests(TriageFixture):
 
     def test_checked_in_map_is_explicit_and_uses_existing_team_names(self):
         mapping = t.read_json(str(t.MAP_PATH))
-        teams = {"team-Controls", "team-Core", "team-Markup", "team-Reach", "team-Rendering", "team-Design", "team-CompInput"}
+        teams = {"team-Controls", "team-Core", "team-Design", "team-CompInput"}
         t.validate_mapping(mapping, dict.fromkeys(set(mapping) | teams, ""))
         self.assertEqual(
             {area for area, entry in mapping.items() if entry["team"] is None},
@@ -352,7 +351,7 @@ class ConditionalRoutingTests(TriageFixture):
         self.mapping["area-Expander"]["overrides"] = [{
             "id": "rendering-artifact",
             "when": "The failure is in visual composition.",
-            "team": "team-Rendering",
+            "team": "team-Core",
         }]
         self.evidence = t.prepare(self.client, event(), self.mapping)
 
@@ -370,7 +369,7 @@ class ConditionalRoutingTests(TriageFixture):
         )
         self.assertEqual(
             t.planned_labels(self.conditional_result(), self.evidence, self.mapping),
-            ["area-Expander", "team-Rendering"],
+            ["area-Expander", "team-Core"],
         )
 
     def test_unknown_rule_is_rejected(self):
@@ -397,32 +396,25 @@ class ConditionalRoutingTests(TriageFixture):
 
     def test_model_cannot_supply_a_team_directly(self):
         with self.assertRaises(t.TriageError):
-            self.result(team="team-Rendering")
+            self.result(team="team-Core")
 
     def test_medium_confidence_does_not_apply_an_override(self):
         result = self.conditional_result(area_confidence="MEDIUM")
         self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), [])
 
     def test_team_compatibility_uses_the_selected_override_not_the_default(self):
-        self.evidence["existing_labels"].append("team-Rendering")
+        self.evidence["existing_labels"].append("team-Core")
         self.assertEqual(
             t.planned_labels(self.conditional_result(), self.evidence, self.mapping),
             ["area-Expander"],
         )
         self.assertEqual(t.planned_labels(self.result(), self.evidence, self.mapping), [])
 
-    def test_parent_team_is_preserved_for_a_conditional_child_owner(self):
-        self.evidence["existing_labels"].append("team-Core")
-        self.assertEqual(
-            t.planned_labels(self.conditional_result(), self.evidence, self.mapping),
-            ["area-Expander"],
-        )
-
     def test_existing_area_uses_its_assessed_condition(self):
         self.evidence["existing_labels"].append("area-Expander")
         self.assertEqual(
             t.planned_labels(self.conditional_result(), self.evidence, self.mapping),
-            ["team-Rendering"],
+            ["team-Core"],
         )
 
     def test_unassessed_conditional_area_does_not_guess_default_team(self):
@@ -467,7 +459,7 @@ class ConditionalRoutingTests(TriageFixture):
 
     def test_rendered_team_agrees_with_the_conditional_label_plan(self):
         body = t.render(self.conditional_result(), self.evidence, self.mapping)
-        self.assertIn("`team-Rendering`", body)
+        self.assertIn("`team-Core`", body)
         self.assertNotIn("`team-Controls`", body)
         self.assertIn("composition clipping", body)
 
@@ -527,7 +519,7 @@ class MappingConfigurationTests(unittest.TestCase):
                 }, CATALOG)
 
     def test_invalid_conditional_rules_fail_closed(self):
-        rule = {"id": "visual", "when": "Visual composition is affected.", "team": "team-Rendering"}
+        rule = {"id": "visual", "when": "Visual composition is affected.", "team": "team-Core"}
         for overrides in (
             {}, [None], [{**rule, "id": "default"}], [rule, rule],
             [{**rule, "id": " visual"}], [{**rule, "id": "visual;command"}],
@@ -547,11 +539,11 @@ class MappingConfigurationTests(unittest.TestCase):
             "area-TableView": "team-Controls",
             "area-Charting": "team-Controls",
             "area-Inking": "team-Controls",
-            "area-CoreFramework": "team-Markup",
-            "area-Tooling": "team-Markup",
-            "area-WebView": "team-Rendering",
-            "area-Accessibility": "team-Reach",
-            "area-Islands": "team-Reach",
+            "area-CoreFramework": "team-Core",
+            "area-Tooling": "team-Core",
+            "area-WebView": "team-Core",
+            "area-Accessibility": "team-Core",
+            "area-Islands": "team-Core",
             "area-Windowing": "team-CompInput",
             "area-SystemBackdropEement": "team-CompInput",
             "area-C++/WinRT": "team-Core",
@@ -567,13 +559,13 @@ class MappingConfigurationTests(unittest.TestCase):
         mapping = t.read_json(str(t.MAP_PATH))
         expected = {
             "area-AnimatedVisualPlayer": ("compositor-failure", "team-CompInput"),
-            "area-Flyouts": ("rendering-artifact", "team-Rendering"),
-            "area-Icon": ("glyph-rendering", "team-Rendering"),
-            "area-Popup": ("composition-layering", "team-Rendering"),
+            "area-Flyouts": ("rendering-artifact", "team-Core"),
+            "area-Icon": ("glyph-rendering", "team-Core"),
+            "area-Popup": ("composition-layering", "team-Core"),
             "area-Scrolling": ("compositor-input", "team-CompInput"),
             "area-Layouts": ("layout-engine", "team-Core"),
             "area-Materials": ("compositor-resource", "team-CompInput"),
-            "area-AppWindow": ("xaml-hosting", "team-Reach"),
+            "area-AppWindow": ("xaml-hosting", "team-Core"),
             "area-TitleBar": ("pointer-handling", "team-CompInput"),
         }
         self.assertEqual(

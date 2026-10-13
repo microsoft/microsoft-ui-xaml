@@ -11,8 +11,8 @@ class AssessmentRecoveryTests(unittest.TestCase):
         self.mapping = t.read_json(str(t.MAP_PATH))
         self.client.catalog.update(dict.fromkeys(self.mapping, ""))
         self.client.catalog.update(dict.fromkeys({
-            "team-Controls", "team-Markup", "team-Rendering", "team-Reach",
-            "team-CompInput", "team-Design", "team-Core",
+            "team-Controls", "team-Core",
+            "team-CompInput", "team-Design",
         }, ""))
         self.evidence = t.prepare(self.client, event(), self.mapping)
 
@@ -231,7 +231,7 @@ class AssessmentRecoveryTests(unittest.TestCase):
     def test_ambiguous_foreign_rule_name_cannot_be_recovered(self):
         evidence = copy.deepcopy(self.evidence)
         evidence["area_guidance"]["area-Expander"]["overrides"] = [{
-            "id": "compositor-resource", "when": "Different condition", "team": "team-Rendering",
+            "id": "compositor-resource", "when": "Different condition", "team": "team-Core",
         }]
         with self.assertRaises(t.TriageError):
             t.validate(agent_output(

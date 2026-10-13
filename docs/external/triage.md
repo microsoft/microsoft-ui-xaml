@@ -45,13 +45,11 @@ The temporary `needs-assignee-attention` label is intended for issues which need
 Shortcuts to triage queries for the team. Note that these include closed issues because external comments on closed issues may not be
 noticed, so we have a bot rule that adds `needs-triage` to closed issues too.
 
-* [Controls Triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Aneeds-triage+-label%3Ateam-framework+-label%3Ateam-reach+-label%3Ateam-rendering+-label%3Ateam-ink+-label%3Ateam-compinput++-label%3Ateam-markup+)
+* [Controls Triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Aneeds-triage+-label%3Ateam-framework+-label%3Ateam-core+-label%3Ateam-ink+-label%3Ateam-compinput+)
 * [Framework Triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Ateam-Framework+label%3Aneeds-triage+)
-* [Markup Triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Ateam-Markup+label%3Aneeds-triage+)
-* [Reach Triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Ateam-Reach+label%3Aneeds-triage+)
-* [Rendering Triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Ateam-Rendering+label%3Aneeds-triage+)
+* [Core Triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Ateam-Core+label%3Aneeds-triage+)
 
-* [Root node triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Aneeds-triage+-label%3Ateam-controls+-label%3Ateam-framework+-label%3Ateam-reach+-label%3Ateam-rendering+-label%3Ateam-ink+-label%3Ateam-compinput++-label%3Ateam-markup+) -- issues not assigned to a team yet.
+* [Root node triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Aneeds-triage+-label%3Ateam-controls+-label%3Ateam-framework+-label%3Ateam-core+-label%3Ateam-ink+-label%3Ateam-compinput+) -- issues not assigned to a team yet.
 
 We also need to monitor:
 * [needs-assignee-attention](https://github.com/microsoft/microsoft-ui-xaml/labels/needs-assignee-attention)
@@ -76,4 +74,3 @@ We also need to monitor:
 1. Remove `needs-triage` label when an issue is closed.
 1. Remove `needs-triage` when a closed issue has a reply by someone with write access to the repo.
 1. Replace `needs-author-feedback` label with `needs-assignee-attention` (if assigned) or `needs-triage` (if unassigned).
-
