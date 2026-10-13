@@ -1167,11 +1167,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     UIObject itemsViewUIObject = FindElement.ById("markupItemsView");
                     Verify.IsNotNull(itemsViewUIObject, "Verifying that itemsView was found");
 
+                    Log.Comment("Retrieving PART_ScrollPresenter");
+                    UIObject scrollPresenter = FindElement.ById("PART_ScrollPresenter");
+                    Verify.IsNotNull(scrollPresenter, "Verifying that PART_ScrollPresenter was found");
+                    Verify.IsTrue(scrollPresenter.Children.Count > 0, "Verifying that the first item container was realized");
+                    UIObject firstItemContainer = scrollPresenter.Children[0];
+                    Verify.AreEqual("ItemContainer", firstItemContainer.Name, "Verifying that the target is an ItemContainer");
+
                     int currentItemIndex = GetCurrentItemIndex();
                     Verify.AreEqual(-1, currentItemIndex, "Verifying CurrentItemIndex is initially -1");
 
                     Log.Comment("Clicking on ItemsView to select first item.");
-                    itemsViewUIObject.Click(PointerButtons.Primary, 40.0, 40.0);
+                    InputHelper.LeftClick(firstItemContainer);
                     Wait.ForIdle();
 
                     LogScrollViewInfo(itemsViewUIObject, expectedVerticalOffset: null, getScrollViewView: false);
@@ -1179,7 +1186,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.AreEqual(0, currentItemIndex, "Verifying CurrentItemIndex is 0");
 
                     Log.Comment("Clicking on ItemsView to focus item again.");
-                    itemsViewUIObject.Click(PointerButtons.Primary, 40.0, 40.0);
+                    InputHelper.LeftClick(firstItemContainer);
                     Wait.ForIdle();
 
                     Log.Comment("Pressing End key");
@@ -1263,17 +1270,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsNotNull(btnGetExtentWidthUIObject, "Verifying that btnGetExtentWidth was found");
                     Button btnGetExtentWidth = new Button(btnGetExtentWidthUIObject);
 
-                    Log.Comment("Invoking btnGetExtentWidth");
-                    btnGetExtentWidth.InvokeAndWait();
-
-                    Log.Comment("Invoking btnGetExtentHeight");
-                    btnGetExtentHeight.InvokeAndWait();
-
-                    Log.Comment($"ScrollView.ExtentWidth={txtExtentWidth.Value}");
-                    Log.Comment($"ScrollView.ExtentHeight={txtExtentHeight.Value}");
-
-                    double extentWidth = double.Parse(txtExtentWidth.Value);
-                    double extentHeight = double.Parse(txtExtentHeight.Value);
+                    (double extentWidth, double extentHeight) = WaitForExpectedExtent(
+                        btnGetExtentWidth,
+                        txtExtentWidth,
+                        btnGetExtentHeight,
+                        txtExtentHeight,
+                        expectedWidth: 500.0,
+                        minimumHeight: 50000.0);
 
                     Verify.AreEqual(extentWidth, 500.0);
                     Verify.IsGreaterThan(extentHeight, 50000.0);
@@ -1281,6 +1284,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     ResetItemsView(cmbItemsSource, cmbLayout);
                 }
             }
+        }
+
+        private (double width, double height) WaitForExpectedExtent(
+            Button getExtentWidthButton,
+            Edit extentWidthTextBox,
+            Button getExtentHeightButton,
+            Edit extentHeightTextBox,
+            double expectedWidth,
+            double minimumHeight)
+        {
+            const int maxAttempts = 10;
+            double extentWidth = 0.0;
+            double extentHeight = 0.0;
+
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                getExtentWidthButton.InvokeAndWait();
+                getExtentHeightButton.InvokeAndWait();
+
+                extentWidth = double.Parse(extentWidthTextBox.Value);
+                extentHeight = double.Parse(extentHeightTextBox.Value);
+                Log.Comment("Extent attempt {0}: Width={1}, Height={2}", attempt, extentWidth, extentHeight);
+
+                if (extentWidth == expectedWidth && extentHeight > minimumHeight)
+                {
+                    return (extentWidth, extentHeight);
+                }
+
+                Wait.ForIdle();
+            }
+
+            return (extentWidth, extentHeight);
         }
 
         [TestMethod]
@@ -1316,9 +1351,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Button btnRemoveItems = new Button(FindElement.ById("btnRemoveItems"));
                 Verify.IsNotNull(btnRemoveItems, "Verifying that btnRemoveItems was found");
 
-                Log.Comment("Retrieving itemsView");
-                UIObject itemsViewUIObject = FindElement.ByName("itemsView");
-                Verify.IsNotNull(itemsViewUIObject, "Verifying that itemsView was found");
+                Log.Comment("Retrieving txtStatus");
+                Edit statusTextBox = new Edit(FindElement.ById("txtStatus"));
+                Verify.IsNotNull(statusTextBox, "Verifying that txtStatus was found");
 
                 Log.Comment("Changing cmbLayout selection to 'LinedFlowLayout'");
                 cmbLayout.SelectItemByName("LinedFlowLayout");
@@ -1337,17 +1372,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 Log.Comment("Removing the first 3 items");
-                btnRemoveItems.Invoke();
+                InvokeButtonAndWaitForStatus(btnRemoveItems, statusTextBox, "RemoveItems. Done.");
                 Wait.ForIdle();
 
                 Log.Comment("Inserting the first 3 items");
-                btnInsertItems.Invoke();
+                InvokeButtonAndWaitForStatus(btnInsertItems, statusTextBox, "InsertItems. Done.");
                 Wait.ForIdle();
+
+                Log.Comment("Retrieving PART_ScrollPresenter");
+                UIObject scrollPresenter = FindElement.ById("PART_ScrollPresenter");
+                Verify.IsNotNull(scrollPresenter, "Verifying that PART_ScrollPresenter was found");
+                Verify.IsTrue(scrollPresenter.Children.Count >= 4, "Verifying that at least 4 item containers were realized");
 
                 for (int index = 0; index < 4; index++)
                 {
-                    Log.Comment("Clicking on ItemsView item {0} to select it.", index);
-                    itemsViewUIObject.Click(PointerButtons.Primary, 40.0 + (100 * index), 40.0);
+                    UIObject itemContainer = scrollPresenter.Children[index];
+                    Verify.AreEqual("ItemContainer", itemContainer.Name, "Verifying that the target is an ItemContainer");
+
+                    Log.Comment("Clicking on ItemsView item {0} to select it. Bounds={1}", index, itemContainer.BoundingRectangle);
+                    InputHelper.LeftClick(itemContainer);
                     Wait.ForIdle();
                     int currentItemIndex = GetCurrentItemIndex();
                     Verify.AreEqual(index, currentItemIndex, "Verifying CurrentItemIndex is " + index);
@@ -1356,6 +1399,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 ResetItemsView(cmbItemsSource, cmbLayout);
 
                 // Output-debug-string-level "None" is automatically restored when landing back on the ScrollView test page.
+            }
+        }
+
+        private void InvokeButtonAndWaitForStatus(Button button, Edit statusTextBox, string expectedStatus)
+        {
+            using (var waiter = new ValueChangedEventWaiter(statusTextBox, expectedStatus))
+            {
+                button.Invoke();
+
+                if (statusTextBox.Value != expectedStatus &&
+                    !waiter.TryWait(TimeSpan.FromSeconds(4)))
+                {
+                    Verify.AreEqual(expectedStatus, statusTextBox.Value, "Verifying operation completion status");
+                }
             }
         }
 
