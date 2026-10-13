@@ -109,9 +109,9 @@
                     </TextBlock>
                     <StackPanel Spacing="8">
                         <HyperlinkButton x:Name="ReportIssueButton" Content="Report an issue on GitHub"
-                                AutomationProperties.AutomationId="AboutReportIssueButton"
-                                AutomationProperties.HelpText="Opens the public Microsoft UI XAML bug report template in a browser."
-                                ToolTipService.ToolTip="Opens the public Microsoft UI XAML bug report template on GitHub."/>
+                                         AutomationProperties.AutomationId="AboutReportIssueButton"
+                                         AutomationProperties.HelpText="Opens the public Microsoft UI XAML bug report template in a browser."
+                                         ToolTipService.ToolTip="Opens the public Microsoft UI XAML bug report template on GitHub."/>
                         <Button x:Name="CopyAutoFillButton"
                                 AutomationProperties.AutomationId="AboutCopyAutoFillButton"
                                 AutomationProperties.Name="Copy auto-fill details"

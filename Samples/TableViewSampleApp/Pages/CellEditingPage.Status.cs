@@ -11,6 +11,7 @@ public sealed partial class CellEditingPage
     private int _editsCommitted;
     private int _editsAtBeginEdit;
     private string _openEdit = "(none)";
+    private bool _isEditOpen;
 
     protected override void RefreshReadouts()
     {

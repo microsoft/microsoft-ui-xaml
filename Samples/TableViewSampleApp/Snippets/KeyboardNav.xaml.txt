@@ -15,7 +15,6 @@
 <!-- … -->
 
 <!-- Focus sentinels either side make the tab order in and out checkable without a mouse. -->
-<!-- Activating a sentinel only reports where it is, so it never looks like a broken button. -->
 <Button Grid.Row="0" Content="Before table" HorizontalAlignment="Left"
         AutomationProperties.AutomationId="KeyboardNavBeforeTable"
         AutomationProperties.HelpText="Focus sentinel just before the table, so you can check the tab order into the table."/>

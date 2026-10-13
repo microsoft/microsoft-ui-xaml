@@ -126,7 +126,7 @@ A page holds only the TableView behaviour it demonstrates; the generic parts are
   tail. Only Last action is a live region (Polite, raised once per new message); a readout that
   must be announced on its own sets `AutomationProperties.LiveSetting` itself. `ShapingOptions.TimeCall` lets a page
   time the GroupBy / ClearGroupBy and Expand / Collapse all calls. `SamplePresenter.TryIt` renders
-    the Try it callout. The rail has two tabs (`RailTabs`: `RailOptionsTab`, default, and
+  the Try it callout. The rail has two tabs (`RailTabs`: `RailOptionsTab`, default, and
   `RailInfoTab`) and scrolls on its own, bounded to the Example row (`Controls\RailHost.cs`).
   Options holds `SamplePresenter.Options`; Info holds `WhatToLookFor`, the page's `InfoExtras` and
   the shared `Controls\KeyboardReference.cs` (hierarchy keys with a parent relation or

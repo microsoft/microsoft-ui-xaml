@@ -51,7 +51,6 @@
                 </Grid.RowDefinitions>
                 <!-- snippet -->
                 <!-- Focus sentinels either side make the tab order in and out checkable without a mouse. -->
-                <!-- Activating a sentinel only reports where it is, so it never looks like a broken button. -->
                 <Button Grid.Row="0" Content="Before table" HorizontalAlignment="Left"
                         AutomationProperties.AutomationId="KeyboardNavBeforeTable"
                         AutomationProperties.HelpText="Focus sentinel just before the table, so you can check the tab order into the table."/>
@@ -83,7 +82,7 @@
                      an offscreen candidate; its actual visibility must be checked, not
                      inferred from its source index. -->
                 <StackPanel Grid.Row="3" Spacing="12" Margin="0,12,0,0">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Assessment fixture" Style="{StaticResource SectionHeaderTextStyle}" TextWrapping="Wrap"/>
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Assessment fixture" Style="{StaticResource SectionHeaderTextStyle}"/>
                     <TextBlock
                         Text="A small, synthetic assessment fixture, not an automated accessibility result. Reset it before each scenario. Use Narrator and a UI Automation inspector to record the actual names, patterns, focus, events and contrast; the Status readouts report app and model state only. Press Home once focus is in the table to reach its first row. Ctrl+Up and Ctrl+Down move without selecting; Space selects the focused data row in Single mode."
                         Style="{StaticResource SectionDescriptionTextStyle}"
@@ -110,7 +109,7 @@
                             AutomationProperties.AutomationId="A11yAfterTable"
                             AutomationProperties.HelpText="Focus sentinel just after the fixture table."/>
                     <TextBlock AutomationProperties.HeadingLevel="Level3" Text="What to check in this scenario"
-                                                   Style="{StaticResource SectionHeaderTextStyle}" TextWrapping="Wrap"/>
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
                     <TextBlock x:Name="ExpectedObservationsText" TextWrapping="Wrap"
                                AutomationProperties.LiveSetting="Polite"
                                AutomationProperties.AutomationId="A11yExpectedObservations"/>
@@ -134,7 +133,7 @@
             <controls:RailSection
                 IsFirst="True"
                 Header="Keyboard"
-                Description="The shortcuts the first table supports. The table body is a single tab stop: Tab and Shift+Tab move between the Before table button, the table and the After table button, and the arrow keys move inside it.">
+                Description="The shortcuts the first table supports. The column headers and the table body are one tab stop each: Tab moves to the headers, then the body, then out, and the arrow keys move inside it. Shift+Tab back into the body resumes the row or cell you left.">
                 <Grid Style="{StaticResource StatusGridStyle}">
                     <!-- Proportional, not Auto: at 200% text the key column must not starve the descriptions. -->
                     <Grid.ColumnDefinitions>

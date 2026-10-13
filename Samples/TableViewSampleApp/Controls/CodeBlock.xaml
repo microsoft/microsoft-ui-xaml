@@ -49,7 +49,7 @@
                 pushed the rest of the page off-screen. MaxHeight (CodeMaxHeight) keeps a
                 standalone block a predictable size; SamplePresenter lifts the cap because its
                 own Source scroller is already bounded, so there is only one vertical scroller.
-                IsTabStop keeps it keyboard-reachable; UseSystemFocusVisuals shows where that focus is.
+                IsTabStop keeps it keyboard-reachable.
             -->
             <ScrollViewer
                 x:Name="CodeScroller"
