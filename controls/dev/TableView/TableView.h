@@ -1087,11 +1087,11 @@ private:
     // ThemeSettings (lifted WinUI3) reports the system High Contrast setting and raises Changed on the
     // control's UI thread -- unlike AccessibilitySettings.HighContrastChanged, which could be delivered
     // off-thread. It requires a WindowId, so it is created on Loaded (once a XamlRoot exists), not in
-    // the constructor, and torn down on Unloaded.
+    // the constructor, and released on Unloaded, AppWindow.Destroying, or destruction.
     winrt::Microsoft::UI::System::ThemeSettings m_themeSettings{ nullptr };
     winrt::Microsoft::UI::System::ThemeSettings::Changed_revoker m_themeSettingsChangedRevoker{}; // Runtime HC toggles must refresh cached HC-dependent brushes.
-    // ThemeSettings' remove_Changed fail-fasts once its window is gone (e.g. a deferred Unloaded), so
-    // release it on Destroying. A token, not auto_revoke: AppWindow has no weak reference support.
+    // remove_Changed fail-fasts once the window is gone, hence the Destroying release. A token, not
+    // auto_revoke: AppWindow has no weak reference support.
     winrt::Microsoft::UI::Windowing::AppWindow m_appWindow{ nullptr };
     winrt::event_token m_appWindowDestroyingToken{};
     // Cached HC state: kept fresh by ThemeSettings.Changed while loaded and read by IsHighContrast().

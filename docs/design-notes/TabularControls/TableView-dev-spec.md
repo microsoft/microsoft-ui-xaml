@@ -190,6 +190,8 @@ The render pipeline is `TableView.ItemsSource` → `PART_RowsRepeater` → `Tabl
 
 `TableView` owns `PART_RowsRepeater.ItemsSource` (the template does not bind it directly). `Unloaded` clears the repeater source so queued repeater cache-build work cannot run against a detached subtree.
 
+`ThemeSettings` (high-contrast tracking) is released on `Unloaded`, or earlier on the host `AppWindow.Destroying`, because removing its `Changed` handler after the window is destroyed fails fast. Hosts without an `AppWindow`, or whose top-level window belongs to another thread, use the `Unloaded` path.
+
 Cell generation is column-specific:
 
 - `TableViewTextColumn` creates a `TextBlock` and applies `Binding`.

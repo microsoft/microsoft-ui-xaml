@@ -23,6 +23,9 @@
 #include <limits>
 #include <algorithm>
 
+// Not in CppWinRTIncludes.h: Microsoft.UI.h's WindowId conflicts with Microsoft.UI.Content.h's.
+#include <winrt\Microsoft.UI.Interop.h>
+
 static constexpr std::wstring_view s_RowsRepeaterPartName{ L"PART_RowsRepeater"sv };
 static constexpr std::wstring_view s_HeaderRowPartName{ L"PART_HeaderRow"sv };
 static constexpr std::wstring_view s_HeaderHostPartName{ L"PART_HeaderHost"sv };
@@ -558,7 +561,7 @@ TableView::~TableView()
         winrt::get_self<::TableViewRowTemplateSelector>(selector)->Detach();
     }
 
-    // Unloaded may not have run; member destruction would release ThemeSettings in a noexcept context.
+    // Unloaded may not have run; release ThemeSettings and drop the Destroying subscription.
     ReleaseThemeSettings();
 }
 
@@ -733,7 +736,14 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
             m_themeSettingsChangedRevoker = m_themeSettings.Changed(
                 winrt::auto_revoke, { get_weak(), &TableView::OnThemeSettingsChanged });
 
-            if (auto appWindow = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(env.AppWindowId()))
+            // Destroying is raised on the window's thread; a cross-thread host keeps the Unloaded-path release.
+            auto const appWindowId = env.AppWindowId();
+            auto const hwnd = winrt::Microsoft::UI::GetWindowFromWindowId(appWindowId);
+            if (::GetWindowThreadProcessId(hwnd, nullptr) != ::GetCurrentThreadId())
+            {
+                return;
+            }
+            if (auto appWindow = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(appWindowId))
             {
                 m_appWindowDestroyingToken = appWindow.Destroying(
                     [weakThis = get_weak()](auto const&, auto const&)
@@ -3157,10 +3167,16 @@ void TableView::ReleaseThemeSettings()
 {
     if (auto appWindow = std::exchange(m_appWindow, nullptr))
     {
-        appWindow.Destroying(std::exchange(m_appWindowDestroyingToken, {}));
+        try
+        {
+            appWindow.Destroying(std::exchange(m_appWindowDestroyingToken, {}));
+        }
+        catch (...)
+        {
+        }
     }
 
-    // nullptr assignment is noexcept, so release inside try/catch.
+    // Release can surface a teardown failure; keep it off the noexcept path.
     // Release before revoke() so a dead object's stale weak_ref makes it a no-op.
     if (auto const themeSettings = static_cast<::IUnknown*>(winrt::detach_abi(m_themeSettings)))
     {
