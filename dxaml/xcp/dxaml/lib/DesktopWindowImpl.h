@@ -140,6 +140,7 @@ namespace DirectUI
         void OpenSystemMenu(const int cursorX, const int cursorY) const noexcept;
         _Check_return_ HRESULT OnNonClientRegionButtonUp(WPARAM wParam, const int cursorX, const int cursorY);
         _Check_return_ HRESULT OnClosed();
+        bool TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF backgroundColor);
 
         void OnSetFocus();
         void RegisterDesktopWindowClass();

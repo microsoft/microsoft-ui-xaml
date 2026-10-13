@@ -1,8 +1,8 @@
-namespace ChartAppCppUnpackaged
+namespace ChartsSample
 {
     [default_interface]
     runtimeclass MainWindow : Microsoft.UI.Xaml.Window
     {
-        MainWindow();
+        MainWindow(String variant);
     }
 }

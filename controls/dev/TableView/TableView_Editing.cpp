@@ -7,6 +7,7 @@
 #include "TableViewColumn.h"
 #include "TableViewTextColumn.h"
 #include "TableViewRow.h"
+#include "TableViewSource.h"
 #include "TableViewBeginningEditEventArgs.h"
 #include "TableViewCellEditEndingEventArgs.h"
 #include "TVDiag.h"
@@ -912,6 +913,16 @@ void TableView::ClearCoalescedEditReshape()
 
 void TableView::DrainCoalescedEditReshape()
 {
+    // Every edit close lands here. Release a held live reshape unconditionally: it is posted, so
+    // safe even inside a layout pass.
+    if (!IsEditing())
+    {
+        if (auto const source = m_activeSource.get())
+        {
+            winrt::get_self<::TableViewSource>(source)->ResumeHeldLiveShaping();
+        }
+    }
+
     // Never replay inside a layout pass. The queued operations are app-supplied callables that
     // reshape the source; running one from ItemsRepeater's element-clearing/measure callback
     // re-enters the repeater mid-pass. m_suppressEditVisualRestore is exactly the "we are inside

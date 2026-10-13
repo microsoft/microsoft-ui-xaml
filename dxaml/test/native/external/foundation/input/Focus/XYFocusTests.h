@@ -139,19 +139,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"A Toggle button is special because it's focusable area does not scale with it's header, meaning that our hittesting logic needs to be special cased.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")  // DCPP Test: XYFocusTests::ToggleSwitchWithLongHeaderStillGainsFocus is unreliable in WPF hosting mode
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateScopedSearch)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we always honor the search scope passed into focusmgr irrespective of concepts of engagement and multiple visual roots")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash in test dll
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(EngagedElementCanStillNavigateThroughPopupsOpenedDuringEngagement)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that when a popup is opened during engagement, we include it in the candidate list when finding the next focusable element")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Event timed out
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(EngagedElementDoesNotNavigateThroughPopupsOpenedBeforeEngagement)
@@ -168,7 +168,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(EngagedElementCanNavigateToPopupOpenedByAnotherPopup)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that popups opened from other popups are still considered if it happened during engagement")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Event timed out
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(EnsureClipBoundsBeingUsedWhenScoringElementsInsideSplitView)
@@ -189,7 +189,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(CandidatesThatAreFullyContainedWithinElementShouldBeIgnored)
                 TEST_METHOD_PROPERTY(L"Description", L"When an element is fully within the focused element, we should ignore it due to the focus cone")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash in WUX.dll
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(UsingFocusHintRectShouldIncludeFocusedElement)

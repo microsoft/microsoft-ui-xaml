@@ -12,14 +12,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace FixMasters
 {
     class Program
     {
-        static int Main(string[] args)
+        internal static int Main(string[] args)
         {
             // Generated paths in a deep enlistment can exceed .NET Framework's legacy MAX_PATH limit.
             AppContext.SetSwitch("Switch.System.IO.UseLegacyPathHandling", false);
@@ -194,29 +193,33 @@ namespace FixMasters
             string stagingDirectory = Path.Combine(mastersParentDirectory, ".masters-new-" + uniqueSuffix);
             string backupDirectory = Path.Combine(mastersParentDirectory, ".masters-old-" + uniqueSuffix);
             Directory.CreateDirectory(stagingDirectory);
+            var displacedFiles = new List<string>();
+            var installedFiles = new List<string>();
+            bool installed = false;
             try
             {
                 commonMasters.WriteToDirectory(Path.Combine(stagingDirectory, Flavor.Common));
                 chkSpecificMasters.WriteToDirectory(Path.Combine(stagingDirectory, Flavor.Chk));
                 freSpecificMasters.WriteToDirectory(Path.Combine(stagingDirectory, Flavor.Fre));
 
-                MoveDirectoryWithRetry(mastersRoot, backupDirectory);
-                try
-                {
-                    MoveDirectoryWithRetry(stagingDirectory, mastersRoot);
-                }
-                catch
-                {
-                    // Restore the original tree if the staged tree cannot take its place.
-                    Console.Error.WriteLine("Could not install staged masters. Destination exists: {0}; backup: {1}",
-                        Directory.Exists(mastersRoot), backupDirectory);
-                    MoveDirectoryWithRetry(backupDirectory, mastersRoot);
-                    throw;
-                }
+                // A mapped file prevents renaming its directory, but individual file moves preserve
+                // the reader's snapshot. Keep every displaced file until installation completes.
+                MoveFiles(mastersRoot, backupDirectory, displacedFiles);
+                MoveFiles(stagingDirectory, mastersRoot, installedFiles);
+                installed = true;
                 Directory.Delete(backupDirectory, true);
             }
             finally
             {
+                if (!installed)
+                {
+                    RestoreMovedFiles(stagingDirectory, mastersRoot, installedFiles);
+                    RestoreMovedFiles(mastersRoot, backupDirectory, displacedFiles);
+                    if (Directory.Exists(backupDirectory))
+                    {
+                        Directory.Delete(backupDirectory, true);
+                    }
+                }
                 if (Directory.Exists(stagingDirectory))
                 {
                     Directory.Delete(stagingDirectory, true);
@@ -227,21 +230,25 @@ namespace FixMasters
                 $"{chkSpecificMasters.Count} {Flavor.Chk}-only, {freSpecificMasters.Count} {Flavor.Fre}-only.");
         }
 
-        // Directory.Move can fail while another process briefly holds a tree open; retry only
-        // when the failed move left the source intact and the destination absent.
-        static void MoveDirectoryWithRetry(string source, string destination)
+        static void MoveFiles(string source, string destination, List<string> movedFiles)
         {
-            for (int attempt = 0; ; attempt++)
+            Directory.CreateDirectory(destination);
+            foreach (string path in Directory.GetFiles(source, "*", SearchOption.AllDirectories))
             {
-                try
-                {
-                    Directory.Move(source, destination);
-                    return;
-                }
-                catch (IOException) when (attempt < 10 && Directory.Exists(source) && !Directory.Exists(destination))
-                {
-                    Thread.Sleep(100 * (attempt + 1));
-                }
+                string relativePath = path.Substring(source.Length + 1);
+                string destinationPath = Path.Combine(destination, relativePath);
+                Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+                File.Move(path, destinationPath);
+                movedFiles.Add(relativePath);
+            }
+        }
+
+        static void RestoreMovedFiles(string source, string destination, List<string> movedFiles)
+        {
+            for (int index = movedFiles.Count - 1; index >= 0; index--)
+            {
+                string relativePath = movedFiles[index];
+                File.Move(Path.Combine(destination, relativePath), Path.Combine(source, relativePath));
             }
         }
 

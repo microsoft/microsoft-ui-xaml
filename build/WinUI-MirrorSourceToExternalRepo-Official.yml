@@ -60,7 +60,7 @@ resources:
     - repository: WinAppSDK
       type: git
       name: OS/WinAppSDK
-      ref: refs/heads/release/dev/monobuild
+      ref: refs/heads/release/main
   pipelines:
     - pipeline: sourcePipeline
       source: \OneBranch\microsoft-ui-xaml-lift\WinUI-Xaml-Official (OneBranch)

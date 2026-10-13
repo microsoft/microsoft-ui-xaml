@@ -226,7 +226,7 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
         
         private void InitTypeTables()
         {
-            _typeNameTable = new string[65];
+            _typeNameTable = new string[76];
             _typeNameTable[0] = "BindTestbedModel.DoubleToIntConverter";
             _typeNameTable[1] = "Object";
             _typeNameTable[2] = "BindTestbedModel.BoolToVisibilityConverter";
@@ -251,49 +251,60 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             _typeNameTable[21] = "BindTestbed.DisableXBindTests";
             _typeNameTable[22] = "BindTestbed.EventTests";
             _typeNameTable[23] = "BindTestbed.FunctionTests";
-            _typeNameTable[24] = "BindTestbed.INotifyDataErrorInfoTests";
-            _typeNameTable[25] = "BindTestbed.Templates";
-            _typeNameTable[26] = "Microsoft.UI.Xaml.ResourceDictionary";
-            _typeNameTable[27] = "BindTestbed.subfolder.SubDictionary";
-            _typeNameTable[28] = "BindTestbed.ListAndTemplateTests";
-            _typeNameTable[29] = "Microsoft.UI.Xaml.Controls.ListViewItem";
-            _typeNameTable[30] = "BindTestbedModel.Circle";
-            _typeNameTable[31] = "Microsoft.UI.Xaml.FrameworkElement";
-            _typeNameTable[32] = "BindTestbedModel.Diameter";
-            _typeNameTable[33] = "BindTestbed.LoadAndCreateFromStringTests";
-            _typeNameTable[34] = "BindTestbed.LonelyStaticBinding";
-            _typeNameTable[35] = "BindTestbed.MainPage";
-            _typeNameTable[36] = "BindTestbed.TwoWayTests";
-            _typeNameTable[37] = "BindTestbed.PhasingTests";
-            _typeNameTable[38] = "BindTestbed.TestsPage2";
-            _typeNameTable[39] = "BindTestbedModel.IEmployee";
-            _typeNameTable[40] = "BindTestbedModel.IManager";
-            _typeNameTable[41] = "BindTestbed.xPropertiesTest";
-            _typeNameTable[42] = "Microsoft.UI.Xaml.Controls.Button";
-            _typeNameTable[43] = "BindTestbed.NullableTests";
-            _typeNameTable[44] = "Microsoft.UI.Xaml.Controls.GridViewItem";
-            _typeNameTable[45] = "BindTestbed.MyUserControl1";
-            _typeNameTable[46] = "BindTestbed.NamedRootsPage.NamedPageRootWithCompiledBindingUserChild";
-            _typeNameTable[47] = "Windows.UI.Color";
-            _typeNameTable[48] = "Byte";
-            _typeNameTable[49] = "BindTestbedModel.NullablePropertiesButton";
-            _typeNameTable[50] = "Microsoft.UI.Xaml.Controls.ContentControl";
-            _typeNameTable[51] = "System.Nullable`1<Double>";
-            _typeNameTable[52] = "System.Nullable`1<Windows.UI.Color>";
-            _typeNameTable[53] = "System.Nullable`1<BindTestbedModel.TShirtSize>";
-            _typeNameTable[54] = "BindTestbedModel.TShirtSize";
-            _typeNameTable[55] = "System.Enum";
-            _typeNameTable[56] = "Microsoft.UI.Xaml.Controls.TextBox";
-            _typeNameTable[57] = "BindTestbedModel.EmployeeCollection";
-            _typeNameTable[58] = "Microsoft.UI.Xaml.Media.ImageSource";
-            _typeNameTable[59] = "BindTestbedModel.AttachedProperties";
-            _typeNameTable[60] = "Microsoft.UI.Xaml.Controls.TextBlock";
-            _typeNameTable[61] = "BindTestbedModel.ColorToStringConverter";
-            _typeNameTable[62] = "BindTestbedModel.EmployeeTextBlock";
-            _typeNameTable[63] = "Microsoft.UI.Xaml.Controls.TreeViewNode";
-            _typeNameTable[64] = "System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>";
+            _typeNameTable[24] = "Microsoft.UI.Xaml.Controls.ItemsRepeater";
+            _typeNameTable[25] = "Microsoft.UI.Xaml.FrameworkElement";
+            _typeNameTable[26] = "Microsoft.UI.Xaml.Media.Brush";
+            _typeNameTable[27] = "Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider";
+            _typeNameTable[28] = "Microsoft.UI.Xaml.Controls.ItemsSourceView";
+            _typeNameTable[29] = "Microsoft.UI.Xaml.Controls.Layout";
+            _typeNameTable[30] = "BindTestbed.InitOnlyRecordTests";
+            _typeNameTable[31] = "System.Collections.ObjectModel.ObservableCollection`1<BindTestbed.BlogPost>";
+            _typeNameTable[32] = "System.Collections.ObjectModel.Collection`1<BindTestbed.BlogPost>";
+            _typeNameTable[33] = "BindTestbed.BlogPost";
+            _typeNameTable[34] = "System.Uri";
+            _typeNameTable[35] = "System.DateTime";
+            _typeNameTable[36] = "BindTestbed.INotifyDataErrorInfoTests";
+            _typeNameTable[37] = "BindTestbed.Templates";
+            _typeNameTable[38] = "Microsoft.UI.Xaml.ResourceDictionary";
+            _typeNameTable[39] = "BindTestbed.subfolder.SubDictionary";
+            _typeNameTable[40] = "BindTestbed.ListAndTemplateTests";
+            _typeNameTable[41] = "Microsoft.UI.Xaml.Controls.ListViewItem";
+            _typeNameTable[42] = "BindTestbedModel.Circle";
+            _typeNameTable[43] = "BindTestbedModel.Diameter";
+            _typeNameTable[44] = "BindTestbed.LoadAndCreateFromStringTests";
+            _typeNameTable[45] = "BindTestbed.LonelyStaticBinding";
+            _typeNameTable[46] = "BindTestbed.MainPage";
+            _typeNameTable[47] = "BindTestbed.TwoWayTests";
+            _typeNameTable[48] = "BindTestbed.PhasingTests";
+            _typeNameTable[49] = "BindTestbed.TestsPage2";
+            _typeNameTable[50] = "BindTestbedModel.IEmployee";
+            _typeNameTable[51] = "BindTestbedModel.IManager";
+            _typeNameTable[52] = "BindTestbed.xPropertiesTest";
+            _typeNameTable[53] = "Microsoft.UI.Xaml.Controls.Button";
+            _typeNameTable[54] = "BindTestbed.NullableTests";
+            _typeNameTable[55] = "Microsoft.UI.Xaml.Controls.GridViewItem";
+            _typeNameTable[56] = "BindTestbed.MyUserControl1";
+            _typeNameTable[57] = "BindTestbed.NamedRootsPage.NamedPageRootWithCompiledBindingUserChild";
+            _typeNameTable[58] = "Windows.UI.Color";
+            _typeNameTable[59] = "Byte";
+            _typeNameTable[60] = "BindTestbedModel.NullablePropertiesButton";
+            _typeNameTable[61] = "Microsoft.UI.Xaml.Controls.ContentControl";
+            _typeNameTable[62] = "System.Nullable`1<Double>";
+            _typeNameTable[63] = "System.Nullable`1<Windows.UI.Color>";
+            _typeNameTable[64] = "System.Nullable`1<BindTestbedModel.TShirtSize>";
+            _typeNameTable[65] = "BindTestbedModel.TShirtSize";
+            _typeNameTable[66] = "System.Enum";
+            _typeNameTable[67] = "Microsoft.UI.Xaml.Controls.TextBox";
+            _typeNameTable[68] = "BindTestbedModel.EmployeeCollection";
+            _typeNameTable[69] = "Microsoft.UI.Xaml.Media.ImageSource";
+            _typeNameTable[70] = "BindTestbedModel.AttachedProperties";
+            _typeNameTable[71] = "Microsoft.UI.Xaml.Controls.TextBlock";
+            _typeNameTable[72] = "BindTestbedModel.ColorToStringConverter";
+            _typeNameTable[73] = "BindTestbedModel.EmployeeTextBlock";
+            _typeNameTable[74] = "Microsoft.UI.Xaml.Controls.TreeViewNode";
+            _typeNameTable[75] = "System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>";
 
-            _typeTable = new global::System.Type[65];
+            _typeTable = new global::System.Type[76];
             _typeTable[0] = typeof(global::BindTestbedModel.DoubleToIntConverter);
             _typeTable[1] = typeof(global::System.Object);
             _typeTable[2] = typeof(global::BindTestbedModel.BoolToVisibilityConverter);
@@ -318,47 +329,58 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             _typeTable[21] = typeof(global::BindTestbed.DisableXBindTests);
             _typeTable[22] = typeof(global::BindTestbed.EventTests);
             _typeTable[23] = typeof(global::BindTestbed.FunctionTests);
-            _typeTable[24] = typeof(global::BindTestbed.INotifyDataErrorInfoTests);
-            _typeTable[25] = typeof(global::BindTestbed.Templates);
-            _typeTable[26] = typeof(global::Microsoft.UI.Xaml.ResourceDictionary);
-            _typeTable[27] = typeof(global::BindTestbed.subfolder.SubDictionary);
-            _typeTable[28] = typeof(global::BindTestbed.ListAndTemplateTests);
-            _typeTable[29] = typeof(global::Microsoft.UI.Xaml.Controls.ListViewItem);
-            _typeTable[30] = typeof(global::BindTestbedModel.Circle);
-            _typeTable[31] = typeof(global::Microsoft.UI.Xaml.FrameworkElement);
-            _typeTable[32] = typeof(global::BindTestbedModel.Diameter);
-            _typeTable[33] = typeof(global::BindTestbed.LoadAndCreateFromStringTests);
-            _typeTable[34] = typeof(global::BindTestbed.LonelyStaticBinding);
-            _typeTable[35] = typeof(global::BindTestbed.MainPage);
-            _typeTable[36] = typeof(global::BindTestbed.TwoWayTests);
-            _typeTable[37] = typeof(global::BindTestbed.PhasingTests);
-            _typeTable[38] = typeof(global::BindTestbed.TestsPage2);
-            _typeTable[39] = typeof(global::BindTestbedModel.IEmployee);
-            _typeTable[40] = typeof(global::BindTestbedModel.IManager);
-            _typeTable[41] = typeof(global::BindTestbed.xPropertiesTest);
-            _typeTable[42] = typeof(global::Microsoft.UI.Xaml.Controls.Button);
-            _typeTable[43] = typeof(global::BindTestbed.NullableTests);
-            _typeTable[44] = typeof(global::Microsoft.UI.Xaml.Controls.GridViewItem);
-            _typeTable[45] = typeof(global::BindTestbed.MyUserControl1);
-            _typeTable[46] = typeof(global::BindTestbed.NamedRootsPage.NamedPageRootWithCompiledBindingUserChild);
-            _typeTable[47] = typeof(global::Windows.UI.Color);
-            _typeTable[48] = typeof(global::System.Byte);
-            _typeTable[49] = typeof(global::BindTestbedModel.NullablePropertiesButton);
-            _typeTable[50] = typeof(global::Microsoft.UI.Xaml.Controls.ContentControl);
-            _typeTable[51] = typeof(global::System.Nullable<global::System.Double>);
-            _typeTable[52] = typeof(global::System.Nullable<global::Windows.UI.Color>);
-            _typeTable[53] = typeof(global::System.Nullable<global::BindTestbedModel.TShirtSize>);
-            _typeTable[54] = typeof(global::BindTestbedModel.TShirtSize);
-            _typeTable[55] = typeof(global::System.Enum);
-            _typeTable[56] = typeof(global::Microsoft.UI.Xaml.Controls.TextBox);
-            _typeTable[57] = typeof(global::BindTestbedModel.EmployeeCollection);
-            _typeTable[58] = typeof(global::Microsoft.UI.Xaml.Media.ImageSource);
-            _typeTable[59] = typeof(global::BindTestbedModel.AttachedProperties);
-            _typeTable[60] = typeof(global::Microsoft.UI.Xaml.Controls.TextBlock);
-            _typeTable[61] = typeof(global::BindTestbedModel.ColorToStringConverter);
-            _typeTable[62] = typeof(global::BindTestbedModel.EmployeeTextBlock);
-            _typeTable[63] = typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode);
-            _typeTable[64] = typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>);
+            _typeTable[24] = typeof(global::Microsoft.UI.Xaml.Controls.ItemsRepeater);
+            _typeTable[25] = typeof(global::Microsoft.UI.Xaml.FrameworkElement);
+            _typeTable[26] = typeof(global::Microsoft.UI.Xaml.Media.Brush);
+            _typeTable[27] = typeof(global::Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider);
+            _typeTable[28] = typeof(global::Microsoft.UI.Xaml.Controls.ItemsSourceView);
+            _typeTable[29] = typeof(global::Microsoft.UI.Xaml.Controls.Layout);
+            _typeTable[30] = typeof(global::BindTestbed.InitOnlyRecordTests);
+            _typeTable[31] = typeof(global::System.Collections.ObjectModel.ObservableCollection<global::BindTestbed.BlogPost>);
+            _typeTable[32] = typeof(global::System.Collections.ObjectModel.Collection<global::BindTestbed.BlogPost>);
+            _typeTable[33] = typeof(global::BindTestbed.BlogPost);
+            _typeTable[34] = typeof(global::System.Uri);
+            _typeTable[35] = typeof(global::System.DateTime);
+            _typeTable[36] = typeof(global::BindTestbed.INotifyDataErrorInfoTests);
+            _typeTable[37] = typeof(global::BindTestbed.Templates);
+            _typeTable[38] = typeof(global::Microsoft.UI.Xaml.ResourceDictionary);
+            _typeTable[39] = typeof(global::BindTestbed.subfolder.SubDictionary);
+            _typeTable[40] = typeof(global::BindTestbed.ListAndTemplateTests);
+            _typeTable[41] = typeof(global::Microsoft.UI.Xaml.Controls.ListViewItem);
+            _typeTable[42] = typeof(global::BindTestbedModel.Circle);
+            _typeTable[43] = typeof(global::BindTestbedModel.Diameter);
+            _typeTable[44] = typeof(global::BindTestbed.LoadAndCreateFromStringTests);
+            _typeTable[45] = typeof(global::BindTestbed.LonelyStaticBinding);
+            _typeTable[46] = typeof(global::BindTestbed.MainPage);
+            _typeTable[47] = typeof(global::BindTestbed.TwoWayTests);
+            _typeTable[48] = typeof(global::BindTestbed.PhasingTests);
+            _typeTable[49] = typeof(global::BindTestbed.TestsPage2);
+            _typeTable[50] = typeof(global::BindTestbedModel.IEmployee);
+            _typeTable[51] = typeof(global::BindTestbedModel.IManager);
+            _typeTable[52] = typeof(global::BindTestbed.xPropertiesTest);
+            _typeTable[53] = typeof(global::Microsoft.UI.Xaml.Controls.Button);
+            _typeTable[54] = typeof(global::BindTestbed.NullableTests);
+            _typeTable[55] = typeof(global::Microsoft.UI.Xaml.Controls.GridViewItem);
+            _typeTable[56] = typeof(global::BindTestbed.MyUserControl1);
+            _typeTable[57] = typeof(global::BindTestbed.NamedRootsPage.NamedPageRootWithCompiledBindingUserChild);
+            _typeTable[58] = typeof(global::Windows.UI.Color);
+            _typeTable[59] = typeof(global::System.Byte);
+            _typeTable[60] = typeof(global::BindTestbedModel.NullablePropertiesButton);
+            _typeTable[61] = typeof(global::Microsoft.UI.Xaml.Controls.ContentControl);
+            _typeTable[62] = typeof(global::System.Nullable<global::System.Double>);
+            _typeTable[63] = typeof(global::System.Nullable<global::Windows.UI.Color>);
+            _typeTable[64] = typeof(global::System.Nullable<global::BindTestbedModel.TShirtSize>);
+            _typeTable[65] = typeof(global::BindTestbedModel.TShirtSize);
+            _typeTable[66] = typeof(global::System.Enum);
+            _typeTable[67] = typeof(global::Microsoft.UI.Xaml.Controls.TextBox);
+            _typeTable[68] = typeof(global::BindTestbedModel.EmployeeCollection);
+            _typeTable[69] = typeof(global::Microsoft.UI.Xaml.Media.ImageSource);
+            _typeTable[70] = typeof(global::BindTestbedModel.AttachedProperties);
+            _typeTable[71] = typeof(global::Microsoft.UI.Xaml.Controls.TextBlock);
+            _typeTable[72] = typeof(global::BindTestbedModel.ColorToStringConverter);
+            _typeTable[73] = typeof(global::BindTestbedModel.EmployeeTextBlock);
+            _typeTable[74] = typeof(global::Microsoft.UI.Xaml.Controls.TreeViewNode);
+            _typeTable[75] = typeof(global::System.Collections.Generic.IList<global::Microsoft.UI.Xaml.Controls.TreeViewNode>);
         }
 
         private int LookupTypeIndexByName(string typeName)
@@ -405,58 +427,75 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
         private object Activate_21_DisableXBindTests() { return new global::BindTestbed.DisableXBindTests(); }
         private object Activate_22_EventTests() { return new global::BindTestbed.EventTests(); }
         private object Activate_23_FunctionTests() { return new global::BindTestbed.FunctionTests(); }
-        private object Activate_24_INotifyDataErrorInfoTests() { return new global::BindTestbed.INotifyDataErrorInfoTests(); }
-        private object Activate_25_Templates() { return new global::BindTestbed.Templates(); }
-        private object Activate_27_SubDictionary() { return new global::BindTestbed.subfolder.SubDictionary(); }
-        private object Activate_28_ListAndTemplateTests() { return new global::BindTestbed.ListAndTemplateTests(); }
-        private object Activate_30_Circle() { return new global::BindTestbedModel.Circle(); }
-        private object Activate_32_Diameter() { return new global::BindTestbedModel.Diameter(); }
-        private object Activate_33_LoadAndCreateFromStringTests() { return new global::BindTestbed.LoadAndCreateFromStringTests(); }
-        private object Activate_34_LonelyStaticBinding() { return new global::BindTestbed.LonelyStaticBinding(); }
-        private object Activate_35_MainPage() { return new global::BindTestbed.MainPage(); }
-        private object Activate_36_TwoWayTests() { return new global::BindTestbed.TwoWayTests(); }
-        private object Activate_37_PhasingTests() { return new global::BindTestbed.PhasingTests(); }
-        private object Activate_38_TestsPage2() { return new global::BindTestbed.TestsPage2(); }
-        private object Activate_41_xPropertiesTest() { return new global::BindTestbed.xPropertiesTest(); }
-        private object Activate_43_NullableTests() { return new global::BindTestbed.NullableTests(); }
-        private object Activate_45_MyUserControl1() { return new global::BindTestbed.MyUserControl1(); }
-        private object Activate_46_NamedPageRootWithCompiledBindingUserChild() { return new global::BindTestbed.NamedRootsPage.NamedPageRootWithCompiledBindingUserChild(); }
-        private object Activate_49_NullablePropertiesButton() { return new global::BindTestbedModel.NullablePropertiesButton(); }
-        private object Activate_57_EmployeeCollection() { return new global::BindTestbedModel.EmployeeCollection(); }
-        private object Activate_61_ColorToStringConverter() { return new global::BindTestbedModel.ColorToStringConverter(); }
-        private object Activate_62_EmployeeTextBlock() { return new global::BindTestbedModel.EmployeeTextBlock(); }
-        private object Activate_63_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
+        private object Activate_24_ItemsRepeater() { return new global::Microsoft.UI.Xaml.Controls.ItemsRepeater(); }
+        private object Activate_27_ItemCollectionTransitionProvider() { return new global::Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider(); }
+        private object Activate_30_InitOnlyRecordTests() { return new global::BindTestbed.InitOnlyRecordTests(); }
+        private object Activate_31_ObservableCollection() { return new global::System.Collections.ObjectModel.ObservableCollection<global::BindTestbed.BlogPost>(); }
+        private object Activate_32_Collection() { return new global::System.Collections.ObjectModel.Collection<global::BindTestbed.BlogPost>(); }
+        private object Activate_36_INotifyDataErrorInfoTests() { return new global::BindTestbed.INotifyDataErrorInfoTests(); }
+        private object Activate_37_Templates() { return new global::BindTestbed.Templates(); }
+        private object Activate_39_SubDictionary() { return new global::BindTestbed.subfolder.SubDictionary(); }
+        private object Activate_40_ListAndTemplateTests() { return new global::BindTestbed.ListAndTemplateTests(); }
+        private object Activate_42_Circle() { return new global::BindTestbedModel.Circle(); }
+        private object Activate_43_Diameter() { return new global::BindTestbedModel.Diameter(); }
+        private object Activate_44_LoadAndCreateFromStringTests() { return new global::BindTestbed.LoadAndCreateFromStringTests(); }
+        private object Activate_45_LonelyStaticBinding() { return new global::BindTestbed.LonelyStaticBinding(); }
+        private object Activate_46_MainPage() { return new global::BindTestbed.MainPage(); }
+        private object Activate_47_TwoWayTests() { return new global::BindTestbed.TwoWayTests(); }
+        private object Activate_48_PhasingTests() { return new global::BindTestbed.PhasingTests(); }
+        private object Activate_49_TestsPage2() { return new global::BindTestbed.TestsPage2(); }
+        private object Activate_52_xPropertiesTest() { return new global::BindTestbed.xPropertiesTest(); }
+        private object Activate_54_NullableTests() { return new global::BindTestbed.NullableTests(); }
+        private object Activate_56_MyUserControl1() { return new global::BindTestbed.MyUserControl1(); }
+        private object Activate_57_NamedPageRootWithCompiledBindingUserChild() { return new global::BindTestbed.NamedRootsPage.NamedPageRootWithCompiledBindingUserChild(); }
+        private object Activate_60_NullablePropertiesButton() { return new global::BindTestbedModel.NullablePropertiesButton(); }
+        private object Activate_68_EmployeeCollection() { return new global::BindTestbedModel.EmployeeCollection(); }
+        private object Activate_72_ColorToStringConverter() { return new global::BindTestbedModel.ColorToStringConverter(); }
+        private object Activate_73_EmployeeTextBlock() { return new global::BindTestbedModel.EmployeeTextBlock(); }
+        private object Activate_74_TreeViewNode() { return new global::Microsoft.UI.Xaml.Controls.TreeViewNode(); }
         private void StaticInitializer_3_BasicTests() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.BasicTests).TypeHandle);
         private void StaticInitializer_6_DataModel() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.DataModel).TypeHandle);
         private void StaticInitializer_8_DOModel() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.DOModel).TypeHandle);
         private void StaticInitializer_19_DetectLeaksPage() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.DetectLeaksPage).TypeHandle);
-        private void StaticInitializer_30_Circle() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.Circle).TypeHandle);
-        private void StaticInitializer_38_TestsPage2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.TestsPage2).TypeHandle);
-        private void StaticInitializer_49_NullablePropertiesButton() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.NullablePropertiesButton).TypeHandle);
-        private void StaticInitializer_59_AttachedProperties() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.AttachedProperties).TypeHandle);
-        private void StaticInitializer_61_ColorToStringConverter() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.ColorToStringConverter).TypeHandle);
-        private void StaticInitializer_62_EmployeeTextBlock() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.EmployeeTextBlock).TypeHandle);
-        private void MapAdd_25_Templates(object instance, object key, object item)
+        private void StaticInitializer_42_Circle() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.Circle).TypeHandle);
+        private void StaticInitializer_49_TestsPage2() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbed.TestsPage2).TypeHandle);
+        private void StaticInitializer_60_NullablePropertiesButton() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.NullablePropertiesButton).TypeHandle);
+        private void StaticInitializer_70_AttachedProperties() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.AttachedProperties).TypeHandle);
+        private void StaticInitializer_72_ColorToStringConverter() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.ColorToStringConverter).TypeHandle);
+        private void StaticInitializer_73_EmployeeTextBlock() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(global::BindTestbedModel.EmployeeTextBlock).TypeHandle);
+        private void VectorAdd_31_ObservableCollection(object instance, object item)
+        {
+            var collection = (global::System.Collections.Generic.ICollection<global::BindTestbed.BlogPost>)instance;
+            var newItem = (global::BindTestbed.BlogPost)item;
+            collection.Add(newItem);
+        }
+        private void VectorAdd_32_Collection(object instance, object item)
+        {
+            var collection = (global::System.Collections.Generic.ICollection<global::BindTestbed.BlogPost>)instance;
+            var newItem = (global::BindTestbed.BlogPost)item;
+            collection.Add(newItem);
+        }
+        private void MapAdd_37_Templates(object instance, object key, object item)
         {
             var collection = (global::System.Collections.Generic.IDictionary<global::System.Object, global::System.Object>)instance;
             var newKey = (global::System.Object)key;
             var newItem = (global::System.Object)item;
             collection.Add(newKey, newItem);
         }
-        private void MapAdd_27_SubDictionary(object instance, object key, object item)
+        private void MapAdd_39_SubDictionary(object instance, object key, object item)
         {
             var collection = (global::System.Collections.Generic.IDictionary<global::System.Object, global::System.Object>)instance;
             var newKey = (global::System.Object)key;
             var newItem = (global::System.Object)item;
             collection.Add(newKey, newItem);
         }
-        private void VectorAdd_57_EmployeeCollection(object instance, object item)
+        private void VectorAdd_68_EmployeeCollection(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::BindTestbedModel.IEmployee>)instance;
             var newItem = (global::BindTestbedModel.IEmployee)item;
             collection.Add(newItem);
         }
-        private void VectorAdd_64_IList(object instance, object item)
+        private void VectorAdd_75_IList(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Microsoft.UI.Xaml.Controls.TreeViewNode>)instance;
             var newItem = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)item;
@@ -639,36 +678,122 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 24:   //  BindTestbed.INotifyDataErrorInfoTests
-                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_24_INotifyDataErrorInfoTests;
-                userType.SetIsLocalType();
+            case 24:   //  Microsoft.UI.Xaml.Controls.ItemsRepeater
+                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.FrameworkElement"));
+                userType.Activator = Activate_24_ItemsRepeater;
+                userType.SetContentPropertyName("Microsoft.UI.Xaml.Controls.ItemsRepeater.ItemTemplate");
+                userType.AddMemberName("ItemTemplate");
+                userType.AddMemberName("ItemsSource");
+                userType.AddMemberName("Background");
+                userType.AddMemberName("HorizontalCacheLength");
+                userType.AddMemberName("ItemTransitionProvider");
+                userType.AddMemberName("ItemsSourceView");
+                userType.AddMemberName("Layout");
+                userType.AddMemberName("VerticalCacheLength");
                 xamlType = userType;
                 break;
 
-            case 25:   //  BindTestbed.Templates
-                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.ResourceDictionary"));
-                userType.Activator = Activate_25_Templates;
-                userType.DictionaryAdd = MapAdd_25_Templates;
-                userType.SetIsLocalType();
-                xamlType = userType;
-                break;
-
-            case 26:   //  Microsoft.UI.Xaml.ResourceDictionary
+            case 25:   //  Microsoft.UI.Xaml.FrameworkElement
                 xamlType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 27:   //  BindTestbed.subfolder.SubDictionary
-                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.ResourceDictionary"));
-                userType.Activator = Activate_27_SubDictionary;
-                userType.DictionaryAdd = MapAdd_27_SubDictionary;
+            case 26:   //  Microsoft.UI.Xaml.Media.Brush
+                xamlType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 27:   //  Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider
+                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
+                userType.SetIsReturnTypeStub();
+                xamlType = userType;
+                break;
+
+            case 28:   //  Microsoft.UI.Xaml.Controls.ItemsSourceView
+                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
+                userType.SetIsReturnTypeStub();
+                xamlType = userType;
+                break;
+
+            case 29:   //  Microsoft.UI.Xaml.Controls.Layout
+                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
+                userType.SetIsReturnTypeStub();
+                xamlType = userType;
+                break;
+
+            case 30:   //  BindTestbed.InitOnlyRecordTests
+                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
+                userType.Activator = Activate_30_InitOnlyRecordTests;
+                userType.AddMemberName("PrivateSetText");
+                userType.AddMemberName("BlogPosts");
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 28:   //  BindTestbed.ListAndTemplateTests
+            case 31:   //  System.Collections.ObjectModel.ObservableCollection`1<BindTestbed.BlogPost>
+                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.Collections.ObjectModel.Collection`1<BindTestbed.BlogPost>"));
+                userType.CollectionAdd = VectorAdd_31_ObservableCollection;
+                userType.SetIsReturnTypeStub();
+                xamlType = userType;
+                break;
+
+            case 32:   //  System.Collections.ObjectModel.Collection`1<BindTestbed.BlogPost>
+                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
+                userType.Activator = Activate_32_Collection;
+                userType.CollectionAdd = VectorAdd_32_Collection;
+                xamlType = userType;
+                break;
+
+            case 33:   //  BindTestbed.BlogPost
+                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
+                userType.AddMemberName("Title");
+                userType.AddMemberName("Teaser");
+                userType.AddMemberName("Url");
+                userType.AddMemberName("Published");
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 34:   //  System.Uri
+                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
+                userType.SetIsReturnTypeStub();
+                xamlType = userType;
+                break;
+
+            case 35:   //  System.DateTime
+                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
+                userType.SetIsReturnTypeStub();
+                xamlType = userType;
+                break;
+
+            case 36:   //  BindTestbed.INotifyDataErrorInfoTests
+                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
+                userType.Activator = Activate_36_INotifyDataErrorInfoTests;
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 37:   //  BindTestbed.Templates
+                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.ResourceDictionary"));
+                userType.Activator = Activate_37_Templates;
+                userType.DictionaryAdd = MapAdd_37_Templates;
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 38:   //  Microsoft.UI.Xaml.ResourceDictionary
+                xamlType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 39:   //  BindTestbed.subfolder.SubDictionary
+                userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.ResourceDictionary"));
+                userType.Activator = Activate_39_SubDictionary;
+                userType.DictionaryAdd = MapAdd_39_SubDictionary;
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 40:   //  BindTestbed.ListAndTemplateTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_28_ListAndTemplateTests;
+                userType.Activator = Activate_40_ListAndTemplateTests;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
                 userType.AddMemberName("LanguageModel");
@@ -677,33 +802,29 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 29:   //  Microsoft.UI.Xaml.Controls.ListViewItem
+            case 41:   //  Microsoft.UI.Xaml.Controls.ListViewItem
                 xamlType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 30:   //  BindTestbedModel.Circle
+            case 42:   //  BindTestbedModel.Circle
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.FrameworkElement"));
-                userType.Activator = Activate_30_Circle;
-                userType.StaticInitializer = StaticInitializer_30_Circle;
+                userType.Activator = Activate_42_Circle;
+                userType.StaticInitializer = StaticInitializer_42_Circle;
                 userType.AddMemberName("Diameter");
                 userType.AddMemberName("TestStringProperty");
                 xamlType = userType;
                 break;
 
-            case 31:   //  Microsoft.UI.Xaml.FrameworkElement
-                xamlType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
-                break;
-
-            case 32:   //  BindTestbedModel.Diameter
+            case 43:   //  BindTestbedModel.Diameter
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.FrameworkElement"));
                 userType.CreateFromStringMethod = global::BindTestbedModel.Diameter.MakeNewDiameter;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
-            case 33:   //  BindTestbed.LoadAndCreateFromStringTests
+            case 44:   //  BindTestbed.LoadAndCreateFromStringTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_33_LoadAndCreateFromStringTests;
+                userType.Activator = Activate_44_LoadAndCreateFromStringTests;
                 userType.CreateFromStringMethod = global::BindTestbed.LoadAndCreateFromStringTests.Factory.MakeNewInstance;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
@@ -712,16 +833,16 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 34:   //  BindTestbed.LonelyStaticBinding
+            case 45:   //  BindTestbed.LonelyStaticBinding
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_34_LonelyStaticBinding;
+                userType.Activator = Activate_45_LonelyStaticBinding;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 35:   //  BindTestbed.MainPage
+            case 46:   //  BindTestbed.MainPage
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_35_MainPage;
+                userType.Activator = Activate_46_MainPage;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
                 userType.AddMemberName("LanguageModel");
@@ -729,9 +850,9 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 36:   //  BindTestbed.TwoWayTests
+            case 47:   //  BindTestbed.TwoWayTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_36_TwoWayTests;
+                userType.Activator = Activate_47_TwoWayTests;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
                 userType.AddMemberName("LanguageModel");
@@ -739,17 +860,17 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 37:   //  BindTestbed.PhasingTests
+            case 48:   //  BindTestbed.PhasingTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_37_PhasingTests;
+                userType.Activator = Activate_48_PhasingTests;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 38:   //  BindTestbed.TestsPage2
+            case 49:   //  BindTestbed.TestsPage2
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_38_TestsPage2;
-                userType.StaticInitializer = StaticInitializer_38_TestsPage2;
+                userType.Activator = Activate_49_TestsPage2;
+                userType.StaticInitializer = StaticInitializer_49_TestsPage2;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
                 userType.AddMemberName("LanguageModel");
@@ -761,7 +882,7 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 39:   //  BindTestbedModel.IEmployee
+            case 50:   //  BindTestbedModel.IEmployee
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, null);
                 userType.AddMemberName("FirstName");
                 userType.AddMemberName("LastName");
@@ -777,15 +898,15 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 40:   //  BindTestbedModel.IManager
+            case 51:   //  BindTestbedModel.IManager
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, null);
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
-            case 41:   //  BindTestbed.xPropertiesTest
+            case 52:   //  BindTestbed.xPropertiesTest
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_41_xPropertiesTest;
+                userType.Activator = Activate_52_xPropertiesTest;
                 userType.AddMemberName("TestStr");
                 userType.AddMemberName("TestInt");
                 userType.AddMemberName("TestComplexDefaultValue");
@@ -795,39 +916,39 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 42:   //  Microsoft.UI.Xaml.Controls.Button
+            case 53:   //  Microsoft.UI.Xaml.Controls.Button
                 xamlType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 43:   //  BindTestbed.NullableTests
+            case 54:   //  BindTestbed.NullableTests
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_43_NullableTests;
+                userType.Activator = Activate_54_NullableTests;
                 userType.AddMemberName("Model");
                 userType.AddMemberName("DOModel");
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 44:   //  Microsoft.UI.Xaml.Controls.GridViewItem
+            case 55:   //  Microsoft.UI.Xaml.Controls.GridViewItem
                 xamlType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 45:   //  BindTestbed.MyUserControl1
+            case 56:   //  BindTestbed.MyUserControl1
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_45_MyUserControl1;
+                userType.Activator = Activate_56_MyUserControl1;
                 userType.AddMemberName("Tag");
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 46:   //  BindTestbed.NamedRootsPage.NamedPageRootWithCompiledBindingUserChild
+            case 57:   //  BindTestbed.NamedRootsPage.NamedPageRootWithCompiledBindingUserChild
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_46_NamedPageRootWithCompiledBindingUserChild;
+                userType.Activator = Activate_57_NamedPageRootWithCompiledBindingUserChild;
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 47:   //  Windows.UI.Color
+            case 58:   //  Windows.UI.Color
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
                 userType.AddMemberName("A");
                 userType.AddMemberName("R");
@@ -836,16 +957,16 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 48:   //  Byte
+            case 59:   //  Byte
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
-            case 49:   //  BindTestbedModel.NullablePropertiesButton
+            case 60:   //  BindTestbedModel.NullablePropertiesButton
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.Button"));
-                userType.Activator = Activate_49_NullablePropertiesButton;
-                userType.StaticInitializer = StaticInitializer_49_NullablePropertiesButton;
+                userType.Activator = Activate_60_NullablePropertiesButton;
+                userType.StaticInitializer = StaticInitializer_60_NullablePropertiesButton;
                 userType.AddMemberName("NullableDoubleDP");
                 userType.AddMemberName("NullableBool");
                 userType.AddMemberName("NullableColor");
@@ -853,11 +974,11 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 50:   //  Microsoft.UI.Xaml.Controls.ContentControl
+            case 61:   //  Microsoft.UI.Xaml.Controls.ContentControl
                 xamlType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 51:   //  System.Nullable`1<Double>
+            case 62:   //  System.Nullable`1<Double>
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
                 userType.SetBoxedType(GetXamlTypeByName("Double"));
                 userType.BoxInstance = userType.BoxType<global::System.Double>;
@@ -865,7 +986,7 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 52:   //  System.Nullable`1<Windows.UI.Color>
+            case 63:   //  System.Nullable`1<Windows.UI.Color>
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
                 userType.SetBoxedType(GetXamlTypeByName("Windows.UI.Color"));
                 userType.BoxInstance = userType.BoxType<global::Windows.UI.Color>;
@@ -873,7 +994,7 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 53:   //  System.Nullable`1<BindTestbedModel.TShirtSize>
+            case 64:   //  System.Nullable`1<BindTestbedModel.TShirtSize>
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
                 userType.SetBoxedType(GetXamlTypeByName("BindTestbedModel.TShirtSize"));
                 userType.BoxInstance = userType.BoxType<global::BindTestbedModel.TShirtSize>;
@@ -881,7 +1002,7 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 54:   //  BindTestbedModel.TShirtSize
+            case 65:   //  BindTestbedModel.TShirtSize
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.Enum"));
                 userType.AddEnumValue("XtraSmall", global::BindTestbedModel.TShirtSize.XtraSmall);
                 userType.AddEnumValue("Small", global::BindTestbedModel.TShirtSize.Small);
@@ -891,59 +1012,59 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 55:   //  System.Enum
+            case 66:   //  System.Enum
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.ValueType"));
                 xamlType = userType;
                 break;
 
-            case 56:   //  Microsoft.UI.Xaml.Controls.TextBox
+            case 67:   //  Microsoft.UI.Xaml.Controls.TextBox
                 xamlType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 57:   //  BindTestbedModel.EmployeeCollection
+            case 68:   //  BindTestbedModel.EmployeeCollection
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.Activator = Activate_57_EmployeeCollection;
-                userType.CollectionAdd = VectorAdd_57_EmployeeCollection;
+                userType.Activator = Activate_68_EmployeeCollection;
+                userType.CollectionAdd = VectorAdd_68_EmployeeCollection;
                 userType.AddMemberName("Count");
                 userType.AddMemberName("IsReadOnly");
                 xamlType = userType;
                 break;
 
-            case 58:   //  Microsoft.UI.Xaml.Media.ImageSource
+            case 69:   //  Microsoft.UI.Xaml.Media.ImageSource
                 xamlType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 59:   //  BindTestbedModel.AttachedProperties
+            case 70:   //  BindTestbedModel.AttachedProperties
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.StaticInitializer = StaticInitializer_59_AttachedProperties;
+                userType.StaticInitializer = StaticInitializer_70_AttachedProperties;
                 userType.AddMemberName("AttachedBool");
                 userType.AddMemberName("AttachedEmployee");
                 userType.AddMemberName("AttachedString");
                 xamlType = userType;
                 break;
 
-            case 60:   //  Microsoft.UI.Xaml.Controls.TextBlock
+            case 71:   //  Microsoft.UI.Xaml.Controls.TextBlock
                 xamlType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 61:   //  BindTestbedModel.ColorToStringConverter
+            case 72:   //  BindTestbedModel.ColorToStringConverter
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.Activator = Activate_61_ColorToStringConverter;
-                userType.StaticInitializer = StaticInitializer_61_ColorToStringConverter;
+                userType.Activator = Activate_72_ColorToStringConverter;
+                userType.StaticInitializer = StaticInitializer_72_ColorToStringConverter;
                 xamlType = userType;
                 break;
 
-            case 62:   //  BindTestbedModel.EmployeeTextBlock
+            case 73:   //  BindTestbedModel.EmployeeTextBlock
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.Controls.UserControl"));
-                userType.Activator = Activate_62_EmployeeTextBlock;
-                userType.StaticInitializer = StaticInitializer_62_EmployeeTextBlock;
+                userType.Activator = Activate_73_EmployeeTextBlock;
+                userType.StaticInitializer = StaticInitializer_73_EmployeeTextBlock;
                 userType.AddMemberName("Employee");
                 xamlType = userType;
                 break;
 
-            case 63:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
+            case 74:   //  Microsoft.UI.Xaml.Controls.TreeViewNode
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Microsoft.UI.Xaml.DependencyObject"));
-                userType.Activator = Activate_63_TreeViewNode;
+                userType.Activator = Activate_74_TreeViewNode;
                 userType.AddMemberName("Children");
                 userType.AddMemberName("Content");
                 userType.AddMemberName("Depth");
@@ -955,9 +1076,9 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 64:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
+            case 75:   //  System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
                 userType = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType(this, typeName, type, null);
-                userType.CollectionAdd = VectorAdd_64_IList;
+                userType.CollectionAdd = VectorAdd_75_IList;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
@@ -1259,546 +1380,651 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
             var that = (global::BindTestbed.FunctionTests)instance;
             that.LanguageModel = (global::BindTestbed.LanguageSpecific)Value;
         }
-        private object get_25_ListAndTemplateTests_Model(object instance)
+        private object get_25_ItemsRepeater_ItemTemplate(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            return that.ItemTemplate;
+        }
+        private void set_25_ItemsRepeater_ItemTemplate(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            that.ItemTemplate = (global::System.Object)Value;
+        }
+        private object get_26_ItemsRepeater_ItemsSource(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            return that.ItemsSource;
+        }
+        private void set_26_ItemsRepeater_ItemsSource(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            that.ItemsSource = (global::System.Object)Value;
+        }
+        private object get_27_ItemsRepeater_Background(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            return that.Background;
+        }
+        private void set_27_ItemsRepeater_Background(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            that.Background = (global::Microsoft.UI.Xaml.Media.Brush)Value;
+        }
+        private object get_28_ItemsRepeater_HorizontalCacheLength(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            return that.HorizontalCacheLength;
+        }
+        private void set_28_ItemsRepeater_HorizontalCacheLength(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            that.HorizontalCacheLength = (global::System.Double)Value;
+        }
+        private object get_29_ItemsRepeater_ItemTransitionProvider(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            return that.ItemTransitionProvider;
+        }
+        private void set_29_ItemsRepeater_ItemTransitionProvider(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            that.ItemTransitionProvider = (global::Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider)Value;
+        }
+        private object get_30_ItemsRepeater_ItemsSourceView(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            return that.ItemsSourceView;
+        }
+        private object get_31_ItemsRepeater_Layout(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            return that.Layout;
+        }
+        private void set_31_ItemsRepeater_Layout(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            that.Layout = (global::Microsoft.UI.Xaml.Controls.Layout)Value;
+        }
+        private object get_32_ItemsRepeater_VerticalCacheLength(object instance)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            return that.VerticalCacheLength;
+        }
+        private void set_32_ItemsRepeater_VerticalCacheLength(object instance, object Value)
+        {
+            var that = (global::Microsoft.UI.Xaml.Controls.ItemsRepeater)instance;
+            that.VerticalCacheLength = (global::System.Double)Value;
+        }
+        private object get_33_InitOnlyRecordTests_PrivateSetText(object instance)
+        {
+            var that = (global::BindTestbed.InitOnlyRecordTests)instance;
+            return that.PrivateSetText;
+        }
+        private object get_34_InitOnlyRecordTests_BlogPosts(object instance)
+        {
+            var that = (global::BindTestbed.InitOnlyRecordTests)instance;
+            return that.BlogPosts;
+        }
+        private object get_35_BlogPost_Title(object instance)
+        {
+            var that = (global::BindTestbed.BlogPost)instance;
+            return that.Title;
+        }
+        private object get_36_BlogPost_Teaser(object instance)
+        {
+            var that = (global::BindTestbed.BlogPost)instance;
+            return that.Teaser;
+        }
+        private object get_37_BlogPost_Url(object instance)
+        {
+            var that = (global::BindTestbed.BlogPost)instance;
+            return that.Url;
+        }
+        private object get_38_BlogPost_Published(object instance)
+        {
+            var that = (global::BindTestbed.BlogPost)instance;
+            return that.Published;
+        }
+        private object get_39_ListAndTemplateTests_Model(object instance)
         {
             var that = (global::BindTestbed.ListAndTemplateTests)instance;
             return that.Model;
         }
-        private void set_25_ListAndTemplateTests_Model(object instance, object Value)
+        private void set_39_ListAndTemplateTests_Model(object instance, object Value)
         {
             var that = (global::BindTestbed.ListAndTemplateTests)instance;
             that.Model = (global::BindTestbedModel.DataModel)Value;
         }
-        private object get_26_ListAndTemplateTests_DOModel(object instance)
+        private object get_40_ListAndTemplateTests_DOModel(object instance)
         {
             var that = (global::BindTestbed.ListAndTemplateTests)instance;
             return that.DOModel;
         }
-        private void set_26_ListAndTemplateTests_DOModel(object instance, object Value)
+        private void set_40_ListAndTemplateTests_DOModel(object instance, object Value)
         {
             var that = (global::BindTestbed.ListAndTemplateTests)instance;
             that.DOModel = (global::BindTestbedModel.DOModel)Value;
         }
-        private object get_27_ListAndTemplateTests_LanguageModel(object instance)
+        private object get_41_ListAndTemplateTests_LanguageModel(object instance)
         {
             var that = (global::BindTestbed.ListAndTemplateTests)instance;
             return that.LanguageModel;
         }
-        private void set_27_ListAndTemplateTests_LanguageModel(object instance, object Value)
+        private void set_41_ListAndTemplateTests_LanguageModel(object instance, object Value)
         {
             var that = (global::BindTestbed.ListAndTemplateTests)instance;
             that.LanguageModel = (global::BindTestbed.LanguageSpecific)Value;
         }
-        private void set_28_ListAndTemplateTests_SomeButtonContent(object instance, object Value)
+        private void set_42_ListAndTemplateTests_SomeButtonContent(object instance, object Value)
         {
             var that = (global::BindTestbed.ListAndTemplateTests)instance;
             that.SomeButtonContent = (global::System.Object)Value;
         }
-        private object get_29_Circle_Diameter(object instance)
+        private object get_43_Circle_Diameter(object instance)
         {
             var that = (global::BindTestbedModel.Circle)instance;
             return that.Diameter;
         }
-        private void set_29_Circle_Diameter(object instance, object Value)
+        private void set_43_Circle_Diameter(object instance, object Value)
         {
             var that = (global::BindTestbedModel.Circle)instance;
             that.Diameter = (global::BindTestbedModel.Diameter)Value;
         }
-        private object get_30_Circle_TestStringProperty(object instance)
+        private object get_44_Circle_TestStringProperty(object instance)
         {
             var that = (global::BindTestbedModel.Circle)instance;
             return that.TestStringProperty;
         }
-        private void set_30_Circle_TestStringProperty(object instance, object Value)
+        private void set_44_Circle_TestStringProperty(object instance, object Value)
         {
             var that = (global::BindTestbedModel.Circle)instance;
             that.TestStringProperty = (global::System.String)Value;
         }
-        private object get_31_LoadAndCreateFromStringTests_Model(object instance)
+        private object get_45_LoadAndCreateFromStringTests_Model(object instance)
         {
             var that = (global::BindTestbed.LoadAndCreateFromStringTests)instance;
             return that.Model;
         }
-        private void set_31_LoadAndCreateFromStringTests_Model(object instance, object Value)
+        private void set_45_LoadAndCreateFromStringTests_Model(object instance, object Value)
         {
             var that = (global::BindTestbed.LoadAndCreateFromStringTests)instance;
             that.Model = (global::BindTestbedModel.DataModel)Value;
         }
-        private object get_32_LoadAndCreateFromStringTests_DOModel(object instance)
+        private object get_46_LoadAndCreateFromStringTests_DOModel(object instance)
         {
             var that = (global::BindTestbed.LoadAndCreateFromStringTests)instance;
             return that.DOModel;
         }
-        private void set_32_LoadAndCreateFromStringTests_DOModel(object instance, object Value)
+        private void set_46_LoadAndCreateFromStringTests_DOModel(object instance, object Value)
         {
             var that = (global::BindTestbed.LoadAndCreateFromStringTests)instance;
             that.DOModel = (global::BindTestbedModel.DOModel)Value;
         }
-        private object get_33_LoadAndCreateFromStringTests_LanguageModel(object instance)
+        private object get_47_LoadAndCreateFromStringTests_LanguageModel(object instance)
         {
             var that = (global::BindTestbed.LoadAndCreateFromStringTests)instance;
             return that.LanguageModel;
         }
-        private void set_33_LoadAndCreateFromStringTests_LanguageModel(object instance, object Value)
+        private void set_47_LoadAndCreateFromStringTests_LanguageModel(object instance, object Value)
         {
             var that = (global::BindTestbed.LoadAndCreateFromStringTests)instance;
             that.LanguageModel = (global::BindTestbed.LanguageSpecific)Value;
         }
-        private object get_34_MainPage_Model(object instance)
+        private object get_48_MainPage_Model(object instance)
         {
             var that = (global::BindTestbed.MainPage)instance;
             return that.Model;
         }
-        private void set_34_MainPage_Model(object instance, object Value)
+        private void set_48_MainPage_Model(object instance, object Value)
         {
             var that = (global::BindTestbed.MainPage)instance;
             that.Model = (global::BindTestbedModel.DataModel)Value;
         }
-        private object get_35_MainPage_DOModel(object instance)
+        private object get_49_MainPage_DOModel(object instance)
         {
             var that = (global::BindTestbed.MainPage)instance;
             return that.DOModel;
         }
-        private void set_35_MainPage_DOModel(object instance, object Value)
+        private void set_49_MainPage_DOModel(object instance, object Value)
         {
             var that = (global::BindTestbed.MainPage)instance;
             that.DOModel = (global::BindTestbedModel.DOModel)Value;
         }
-        private object get_36_MainPage_LanguageModel(object instance)
+        private object get_50_MainPage_LanguageModel(object instance)
         {
             var that = (global::BindTestbed.MainPage)instance;
             return that.LanguageModel;
         }
-        private void set_36_MainPage_LanguageModel(object instance, object Value)
+        private void set_50_MainPage_LanguageModel(object instance, object Value)
         {
             var that = (global::BindTestbed.MainPage)instance;
             that.LanguageModel = (global::BindTestbed.LanguageSpecific)Value;
         }
-        private object get_37_TwoWayTests_Model(object instance)
+        private object get_51_TwoWayTests_Model(object instance)
         {
             var that = (global::BindTestbed.TwoWayTests)instance;
             return that.Model;
         }
-        private void set_37_TwoWayTests_Model(object instance, object Value)
+        private void set_51_TwoWayTests_Model(object instance, object Value)
         {
             var that = (global::BindTestbed.TwoWayTests)instance;
             that.Model = (global::BindTestbedModel.DataModel)Value;
         }
-        private object get_38_TwoWayTests_DOModel(object instance)
+        private object get_52_TwoWayTests_DOModel(object instance)
         {
             var that = (global::BindTestbed.TwoWayTests)instance;
             return that.DOModel;
         }
-        private void set_38_TwoWayTests_DOModel(object instance, object Value)
+        private void set_52_TwoWayTests_DOModel(object instance, object Value)
         {
             var that = (global::BindTestbed.TwoWayTests)instance;
             that.DOModel = (global::BindTestbedModel.DOModel)Value;
         }
-        private object get_39_TwoWayTests_LanguageModel(object instance)
+        private object get_53_TwoWayTests_LanguageModel(object instance)
         {
             var that = (global::BindTestbed.TwoWayTests)instance;
             return that.LanguageModel;
         }
-        private void set_39_TwoWayTests_LanguageModel(object instance, object Value)
+        private void set_53_TwoWayTests_LanguageModel(object instance, object Value)
         {
             var that = (global::BindTestbed.TwoWayTests)instance;
             that.LanguageModel = (global::BindTestbed.LanguageSpecific)Value;
         }
-        private object get_40_TestsPage2_Model(object instance)
+        private object get_54_TestsPage2_Model(object instance)
         {
             var that = (global::BindTestbed.TestsPage2)instance;
             return that.Model;
         }
-        private void set_40_TestsPage2_Model(object instance, object Value)
+        private void set_54_TestsPage2_Model(object instance, object Value)
         {
             var that = (global::BindTestbed.TestsPage2)instance;
             that.Model = (global::BindTestbedModel.DataModel)Value;
         }
-        private object get_41_TestsPage2_DOModel(object instance)
+        private object get_55_TestsPage2_DOModel(object instance)
         {
             var that = (global::BindTestbed.TestsPage2)instance;
             return that.DOModel;
         }
-        private void set_41_TestsPage2_DOModel(object instance, object Value)
+        private void set_55_TestsPage2_DOModel(object instance, object Value)
         {
             var that = (global::BindTestbed.TestsPage2)instance;
             that.DOModel = (global::BindTestbedModel.DOModel)Value;
         }
-        private object get_42_TestsPage2_LanguageModel(object instance)
+        private object get_56_TestsPage2_LanguageModel(object instance)
         {
             var that = (global::BindTestbed.TestsPage2)instance;
             return that.LanguageModel;
         }
-        private void set_42_TestsPage2_LanguageModel(object instance, object Value)
+        private void set_56_TestsPage2_LanguageModel(object instance, object Value)
         {
             var that = (global::BindTestbed.TestsPage2)instance;
             that.LanguageModel = (global::BindTestbed.LanguageSpecific)Value;
         }
-        private object get_43_TestsPage2_Person(object instance)
+        private object get_57_TestsPage2_Person(object instance)
         {
             var that = (global::BindTestbed.TestsPage2)instance;
             return that.Person;
         }
-        private void set_43_TestsPage2_Person(object instance, object Value)
+        private void set_57_TestsPage2_Person(object instance, object Value)
         {
             var that = (global::BindTestbed.TestsPage2)instance;
             that.Person = (global::BindTestbedModel.IEmployee)Value;
         }
-        private object get_44_TestsPage2_MyInt(object instance)
+        private object get_58_TestsPage2_MyInt(object instance)
         {
             var that = (global::BindTestbed.TestsPage2)instance;
             return that.MyInt;
         }
-        private void set_44_TestsPage2_MyInt(object instance, object Value)
+        private void set_58_TestsPage2_MyInt(object instance, object Value)
         {
             var that = (global::BindTestbed.TestsPage2)instance;
             that.MyInt = (global::System.Int32)Value;
         }
-        private object get_45_TestsPage2_DPOnPage(object instance)
+        private object get_59_TestsPage2_DPOnPage(object instance)
         {
             var that = (global::BindTestbed.TestsPage2)instance;
             return that.DPOnPage;
         }
-        private void set_45_TestsPage2_DPOnPage(object instance, object Value)
+        private void set_59_TestsPage2_DPOnPage(object instance, object Value)
         {
             var that = (global::BindTestbed.TestsPage2)instance;
             that.DPOnPage = (global::System.String)Value;
         }
-        private object get_46_TestsPage2_NiceManager(object instance)
+        private object get_60_TestsPage2_NiceManager(object instance)
         {
             var that = (global::BindTestbed.TestsPage2)instance;
             return that.NiceManager;
         }
-        private object get_47_xPropertiesTest_TestStr(object instance)
+        private object get_61_xPropertiesTest_TestStr(object instance)
         {
             var that = (global::BindTestbed.xPropertiesTest)instance;
             return that.TestStr;
         }
-        private void set_47_xPropertiesTest_TestStr(object instance, object Value)
+        private void set_61_xPropertiesTest_TestStr(object instance, object Value)
         {
             var that = (global::BindTestbed.xPropertiesTest)instance;
             that.TestStr = (global::System.String)Value;
         }
-        private object get_48_xPropertiesTest_TestInt(object instance)
+        private object get_62_xPropertiesTest_TestInt(object instance)
         {
             var that = (global::BindTestbed.xPropertiesTest)instance;
             return that.TestInt;
         }
-        private object get_49_xPropertiesTest_TestComplexDefaultValue(object instance)
+        private object get_63_xPropertiesTest_TestComplexDefaultValue(object instance)
         {
             var that = (global::BindTestbed.xPropertiesTest)instance;
             return that.TestComplexDefaultValue;
         }
-        private void set_49_xPropertiesTest_TestComplexDefaultValue(object instance, object Value)
+        private void set_63_xPropertiesTest_TestComplexDefaultValue(object instance, object Value)
         {
             var that = (global::BindTestbed.xPropertiesTest)instance;
             that.TestComplexDefaultValue = (global::BindTestbedModel.Circle)Value;
         }
-        private object get_50_xPropertiesTest_TestMultilineDefaultValue(object instance)
+        private object get_64_xPropertiesTest_TestMultilineDefaultValue(object instance)
         {
             var that = (global::BindTestbed.xPropertiesTest)instance;
             return that.TestMultilineDefaultValue;
         }
-        private void set_50_xPropertiesTest_TestMultilineDefaultValue(object instance, object Value)
+        private void set_64_xPropertiesTest_TestMultilineDefaultValue(object instance, object Value)
         {
             var that = (global::BindTestbed.xPropertiesTest)instance;
             that.TestMultilineDefaultValue = (global::Microsoft.UI.Xaml.Controls.Button)Value;
         }
-        private object get_51_xPropertiesTest_TestCreateFromString(object instance)
+        private object get_65_xPropertiesTest_TestCreateFromString(object instance)
         {
             var that = (global::BindTestbed.xPropertiesTest)instance;
             return that.TestCreateFromString;
         }
-        private void set_51_xPropertiesTest_TestCreateFromString(object instance, object Value)
+        private void set_65_xPropertiesTest_TestCreateFromString(object instance, object Value)
         {
             var that = (global::BindTestbed.xPropertiesTest)instance;
             that.TestCreateFromString = (global::BindTestbedModel.Diameter)Value;
         }
-        private object get_52_NullableTests_Model(object instance)
+        private object get_66_NullableTests_Model(object instance)
         {
             var that = (global::BindTestbed.NullableTests)instance;
             return that.Model;
         }
-        private void set_52_NullableTests_Model(object instance, object Value)
+        private void set_66_NullableTests_Model(object instance, object Value)
         {
             var that = (global::BindTestbed.NullableTests)instance;
             that.Model = (global::BindTestbedModel.DataModel)Value;
         }
-        private object get_53_NullableTests_DOModel(object instance)
+        private object get_67_NullableTests_DOModel(object instance)
         {
             var that = (global::BindTestbed.NullableTests)instance;
             return that.DOModel;
         }
-        private void set_53_NullableTests_DOModel(object instance, object Value)
+        private void set_67_NullableTests_DOModel(object instance, object Value)
         {
             var that = (global::BindTestbed.NullableTests)instance;
             that.DOModel = (global::BindTestbedModel.DOModel)Value;
         }
-        private object get_54_MyUserControl1_Tag(object instance)
+        private object get_68_MyUserControl1_Tag(object instance)
         {
             var that = (global::BindTestbed.MyUserControl1)instance;
             return that.Tag;
         }
-        private void set_54_MyUserControl1_Tag(object instance, object Value)
+        private void set_68_MyUserControl1_Tag(object instance, object Value)
         {
             var that = (global::BindTestbed.MyUserControl1)instance;
             that.Tag = (global::System.String)Value;
         }
-        private object get_55_Color_A(object instance)
+        private object get_69_Color_A(object instance)
         {
             var that = (global::Windows.UI.Color)instance;
             return that.A;
         }
-        private void set_55_Color_A(object instance, object Value)
+        private void set_69_Color_A(object instance, object Value)
         {
             var that = (global::Windows.UI.Color)instance;
             that.A = (global::System.Byte)Value;
         }
-        private object get_56_Color_R(object instance)
+        private object get_70_Color_R(object instance)
         {
             var that = (global::Windows.UI.Color)instance;
             return that.R;
         }
-        private void set_56_Color_R(object instance, object Value)
+        private void set_70_Color_R(object instance, object Value)
         {
             var that = (global::Windows.UI.Color)instance;
             that.R = (global::System.Byte)Value;
         }
-        private object get_57_Color_G(object instance)
+        private object get_71_Color_G(object instance)
         {
             var that = (global::Windows.UI.Color)instance;
             return that.G;
         }
-        private void set_57_Color_G(object instance, object Value)
+        private void set_71_Color_G(object instance, object Value)
         {
             var that = (global::Windows.UI.Color)instance;
             that.G = (global::System.Byte)Value;
         }
-        private object get_58_Color_B(object instance)
+        private object get_72_Color_B(object instance)
         {
             var that = (global::Windows.UI.Color)instance;
             return that.B;
         }
-        private void set_58_Color_B(object instance, object Value)
+        private void set_72_Color_B(object instance, object Value)
         {
             var that = (global::Windows.UI.Color)instance;
             that.B = (global::System.Byte)Value;
         }
-        private object get_59_NullablePropertiesButton_NullableDoubleDP(object instance)
+        private object get_73_NullablePropertiesButton_NullableDoubleDP(object instance)
         {
             var that = (global::BindTestbedModel.NullablePropertiesButton)instance;
             return that.NullableDoubleDP;
         }
-        private void set_59_NullablePropertiesButton_NullableDoubleDP(object instance, object Value)
+        private void set_73_NullablePropertiesButton_NullableDoubleDP(object instance, object Value)
         {
             var that = (global::BindTestbedModel.NullablePropertiesButton)instance;
             that.NullableDoubleDP = (global::System.Nullable<global::System.Double>)Value;
         }
-        private object get_60_NullablePropertiesButton_NullableBool(object instance)
+        private object get_74_NullablePropertiesButton_NullableBool(object instance)
         {
             var that = (global::BindTestbedModel.NullablePropertiesButton)instance;
             return that.NullableBool;
         }
-        private void set_60_NullablePropertiesButton_NullableBool(object instance, object Value)
+        private void set_74_NullablePropertiesButton_NullableBool(object instance, object Value)
         {
             var that = (global::BindTestbedModel.NullablePropertiesButton)instance;
             that.NullableBool = (global::System.Nullable<global::System.Boolean>)Value;
         }
-        private object get_61_NullablePropertiesButton_NullableColor(object instance)
+        private object get_75_NullablePropertiesButton_NullableColor(object instance)
         {
             var that = (global::BindTestbedModel.NullablePropertiesButton)instance;
             return that.NullableColor;
         }
-        private void set_61_NullablePropertiesButton_NullableColor(object instance, object Value)
+        private void set_75_NullablePropertiesButton_NullableColor(object instance, object Value)
         {
             var that = (global::BindTestbedModel.NullablePropertiesButton)instance;
             that.NullableColor = (global::System.Nullable<global::Windows.UI.Color>)Value;
         }
-        private object get_62_NullablePropertiesButton_NullableEnum(object instance)
+        private object get_76_NullablePropertiesButton_NullableEnum(object instance)
         {
             var that = (global::BindTestbedModel.NullablePropertiesButton)instance;
             return that.NullableEnum;
         }
-        private void set_62_NullablePropertiesButton_NullableEnum(object instance, object Value)
+        private void set_76_NullablePropertiesButton_NullableEnum(object instance, object Value)
         {
             var that = (global::BindTestbedModel.NullablePropertiesButton)instance;
             that.NullableEnum = (global::System.Nullable<global::BindTestbedModel.TShirtSize>)Value;
         }
-        private object get_63_IEmployee_FirstName(object instance)
+        private object get_77_IEmployee_FirstName(object instance)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             return that.FirstName;
         }
-        private void set_63_IEmployee_FirstName(object instance, object Value)
+        private void set_77_IEmployee_FirstName(object instance, object Value)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             that.FirstName = (global::System.String)Value;
         }
-        private object get_64_IEmployee_LastName(object instance)
+        private object get_78_IEmployee_LastName(object instance)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             return that.LastName;
         }
-        private void set_64_IEmployee_LastName(object instance, object Value)
+        private void set_78_IEmployee_LastName(object instance, object Value)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             that.LastName = (global::System.String)Value;
         }
-        private object get_65_IEmployee_DirectManager(object instance)
+        private object get_79_IEmployee_DirectManager(object instance)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             return that.DirectManager;
         }
-        private void set_65_IEmployee_DirectManager(object instance, object Value)
+        private void set_79_IEmployee_DirectManager(object instance, object Value)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             that.DirectManager = (global::BindTestbedModel.IManager)Value;
         }
-        private object get_66_IEmployee_IsManager(object instance)
+        private object get_80_IEmployee_IsManager(object instance)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             return that.IsManager;
         }
-        private object get_67_IEmployee_Title(object instance)
+        private object get_81_IEmployee_Title(object instance)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             return that.Title;
         }
-        private object get_68_IEmployee_Name(object instance)
+        private object get_82_IEmployee_Name(object instance)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             return that.Name;
         }
-        private object get_69_IEmployee_Visibility(object instance)
+        private object get_83_IEmployee_Visibility(object instance)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             return that.Visibility;
         }
-        private void set_69_IEmployee_Visibility(object instance, object Value)
+        private void set_83_IEmployee_Visibility(object instance, object Value)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             that.Visibility = (global::System.Boolean)Value;
         }
-        private object get_70_IEmployee_NullStringProperty(object instance)
+        private object get_84_IEmployee_NullStringProperty(object instance)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             return that.NullStringProperty;
         }
-        private object get_71_IEmployee_NullImageSource(object instance)
+        private object get_85_IEmployee_NullImageSource(object instance)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             return that.NullImageSource;
         }
-        private object get_72_IEmployee_TShirt(object instance)
+        private object get_86_IEmployee_TShirt(object instance)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             return that.TShirt;
         }
-        private void set_72_IEmployee_TShirt(object instance, object Value)
+        private void set_86_IEmployee_TShirt(object instance, object Value)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             that.TShirt = (global::BindTestbedModel.TShirtSize)Value;
         }
-        private object get_73_IEmployee_IsEmployeeOfTheMonth(object instance)
+        private object get_87_IEmployee_IsEmployeeOfTheMonth(object instance)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             return that.IsEmployeeOfTheMonth;
         }
-        private void set_73_IEmployee_IsEmployeeOfTheMonth(object instance, object Value)
+        private void set_87_IEmployee_IsEmployeeOfTheMonth(object instance, object Value)
         {
             var that = (global::BindTestbedModel.IEmployee)instance;
             that.IsEmployeeOfTheMonth = (global::System.Boolean)Value;
         }
-        private object get_74_EmployeeCollection_Count(object instance)
+        private object get_88_EmployeeCollection_Count(object instance)
         {
             var that = (global::BindTestbedModel.EmployeeCollection)instance;
             return that.Count;
         }
-        private object get_75_EmployeeCollection_IsReadOnly(object instance)
+        private object get_89_EmployeeCollection_IsReadOnly(object instance)
         {
             var that = (global::BindTestbedModel.EmployeeCollection)instance;
             return that.IsReadOnly;
         }
-        private object get_76_AttachedProperties_AttachedBool(object instance)
+        private object get_90_AttachedProperties_AttachedBool(object instance)
         {
             return global::BindTestbedModel.AttachedProperties.GetAttachedBool((global::Microsoft.UI.Xaml.Controls.TextBlock)instance);
         }
-        private void set_76_AttachedProperties_AttachedBool(object instance, object Value)
+        private void set_90_AttachedProperties_AttachedBool(object instance, object Value)
         {
             global::BindTestbedModel.AttachedProperties.SetAttachedBool((global::Microsoft.UI.Xaml.Controls.TextBlock)instance, (global::System.Boolean)Value);
         }
-        private object get_77_AttachedProperties_AttachedEmployee(object instance)
+        private object get_91_AttachedProperties_AttachedEmployee(object instance)
         {
             return global::BindTestbedModel.AttachedProperties.GetAttachedEmployee((global::Microsoft.UI.Xaml.Controls.TextBlock)instance);
         }
-        private void set_77_AttachedProperties_AttachedEmployee(object instance, object Value)
+        private void set_91_AttachedProperties_AttachedEmployee(object instance, object Value)
         {
             global::BindTestbedModel.AttachedProperties.SetAttachedEmployee((global::Microsoft.UI.Xaml.Controls.TextBlock)instance, (global::BindTestbedModel.IEmployee)Value);
         }
-        private object get_78_AttachedProperties_AttachedString(object instance)
+        private object get_92_AttachedProperties_AttachedString(object instance)
         {
             return global::BindTestbedModel.AttachedProperties.GetAttachedString((global::Microsoft.UI.Xaml.DependencyObject)instance);
         }
-        private void set_78_AttachedProperties_AttachedString(object instance, object Value)
+        private void set_92_AttachedProperties_AttachedString(object instance, object Value)
         {
             global::BindTestbedModel.AttachedProperties.SetAttachedString((global::Microsoft.UI.Xaml.DependencyObject)instance, (global::System.String)Value);
         }
-        private object get_79_EmployeeTextBlock_Employee(object instance)
+        private object get_93_EmployeeTextBlock_Employee(object instance)
         {
             var that = (global::BindTestbedModel.EmployeeTextBlock)instance;
             return that.Employee;
         }
-        private void set_79_EmployeeTextBlock_Employee(object instance, object Value)
+        private void set_93_EmployeeTextBlock_Employee(object instance, object Value)
         {
             var that = (global::BindTestbedModel.EmployeeTextBlock)instance;
             that.Employee = (global::BindTestbedModel.IEmployee)Value;
         }
-        private object get_80_TreeViewNode_Children(object instance)
+        private object get_94_TreeViewNode_Children(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.Children;
         }
-        private object get_81_TreeViewNode_Content(object instance)
+        private object get_95_TreeViewNode_Content(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.Content;
         }
-        private void set_81_TreeViewNode_Content(object instance, object Value)
+        private void set_95_TreeViewNode_Content(object instance, object Value)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             that.Content = (global::System.Object)Value;
         }
-        private object get_82_TreeViewNode_Depth(object instance)
+        private object get_96_TreeViewNode_Depth(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.Depth;
         }
-        private object get_83_TreeViewNode_HasChildren(object instance)
+        private object get_97_TreeViewNode_HasChildren(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.HasChildren;
         }
-        private object get_84_TreeViewNode_HasUnrealizedChildren(object instance)
+        private object get_98_TreeViewNode_HasUnrealizedChildren(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.HasUnrealizedChildren;
         }
-        private void set_84_TreeViewNode_HasUnrealizedChildren(object instance, object Value)
+        private void set_98_TreeViewNode_HasUnrealizedChildren(object instance, object Value)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             that.HasUnrealizedChildren = (global::System.Boolean)Value;
         }
-        private object get_85_TreeViewNode_IsExpanded(object instance)
+        private object get_99_TreeViewNode_IsExpanded(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.IsExpanded;
         }
-        private void set_85_TreeViewNode_IsExpanded(object instance, object Value)
+        private void set_99_TreeViewNode_IsExpanded(object instance, object Value)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             that.IsExpanded = (global::System.Boolean)Value;
         }
-        private object get_86_TreeViewNode_Parent(object instance)
+        private object get_100_TreeViewNode_Parent(object instance)
         {
             var that = (global::Microsoft.UI.Xaml.Controls.TreeViewNode)instance;
             return that.Parent;
@@ -1962,314 +2188,405 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlMember.Getter = get_24_FunctionTests_LanguageModel;
                 xamlMember.Setter = set_24_FunctionTests_LanguageModel;
                 break;
+            case "Microsoft.UI.Xaml.Controls.ItemsRepeater.ItemTemplate":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.ItemsRepeater");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "ItemTemplate", "Object");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_25_ItemsRepeater_ItemTemplate;
+                xamlMember.Setter = set_25_ItemsRepeater_ItemTemplate;
+                break;
+            case "Microsoft.UI.Xaml.Controls.ItemsRepeater.ItemsSource":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.ItemsRepeater");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "ItemsSource", "Object");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_26_ItemsRepeater_ItemsSource;
+                xamlMember.Setter = set_26_ItemsRepeater_ItemsSource;
+                break;
+            case "Microsoft.UI.Xaml.Controls.ItemsRepeater.Background":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.ItemsRepeater");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Background", "Microsoft.UI.Xaml.Media.Brush");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_27_ItemsRepeater_Background;
+                xamlMember.Setter = set_27_ItemsRepeater_Background;
+                break;
+            case "Microsoft.UI.Xaml.Controls.ItemsRepeater.HorizontalCacheLength":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.ItemsRepeater");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "HorizontalCacheLength", "Double");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_28_ItemsRepeater_HorizontalCacheLength;
+                xamlMember.Setter = set_28_ItemsRepeater_HorizontalCacheLength;
+                break;
+            case "Microsoft.UI.Xaml.Controls.ItemsRepeater.ItemTransitionProvider":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.ItemsRepeater");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "ItemTransitionProvider", "Microsoft.UI.Xaml.Controls.ItemCollectionTransitionProvider");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_29_ItemsRepeater_ItemTransitionProvider;
+                xamlMember.Setter = set_29_ItemsRepeater_ItemTransitionProvider;
+                break;
+            case "Microsoft.UI.Xaml.Controls.ItemsRepeater.ItemsSourceView":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.ItemsRepeater");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "ItemsSourceView", "Microsoft.UI.Xaml.Controls.ItemsSourceView");
+                xamlMember.Getter = get_30_ItemsRepeater_ItemsSourceView;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "Microsoft.UI.Xaml.Controls.ItemsRepeater.Layout":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.ItemsRepeater");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Layout", "Microsoft.UI.Xaml.Controls.Layout");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_31_ItemsRepeater_Layout;
+                xamlMember.Setter = set_31_ItemsRepeater_Layout;
+                break;
+            case "Microsoft.UI.Xaml.Controls.ItemsRepeater.VerticalCacheLength":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.ItemsRepeater");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "VerticalCacheLength", "Double");
+                xamlMember.SetIsDependencyProperty();
+                xamlMember.Getter = get_32_ItemsRepeater_VerticalCacheLength;
+                xamlMember.Setter = set_32_ItemsRepeater_VerticalCacheLength;
+                break;
+            case "BindTestbed.InitOnlyRecordTests.PrivateSetText":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.InitOnlyRecordTests");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "PrivateSetText", "String");
+                xamlMember.Getter = get_33_InitOnlyRecordTests_PrivateSetText;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "BindTestbed.InitOnlyRecordTests.BlogPosts":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.InitOnlyRecordTests");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "BlogPosts", "System.Collections.ObjectModel.ObservableCollection`1<BindTestbed.BlogPost>");
+                xamlMember.Getter = get_34_InitOnlyRecordTests_BlogPosts;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "BindTestbed.BlogPost.Title":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.BlogPost");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Title", "String");
+                xamlMember.Getter = get_35_BlogPost_Title;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "BindTestbed.BlogPost.Teaser":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.BlogPost");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Teaser", "String");
+                xamlMember.Getter = get_36_BlogPost_Teaser;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "BindTestbed.BlogPost.Url":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.BlogPost");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Url", "System.Uri");
+                xamlMember.Getter = get_37_BlogPost_Url;
+                xamlMember.SetIsReadOnly();
+                break;
+            case "BindTestbed.BlogPost.Published":
+                userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.BlogPost");
+                xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Published", "System.DateTime");
+                xamlMember.Getter = get_38_BlogPost_Published;
+                xamlMember.SetIsReadOnly();
+                break;
             case "BindTestbed.ListAndTemplateTests.Model":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.ListAndTemplateTests");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Model", "BindTestbedModel.DataModel");
-                xamlMember.Getter = get_25_ListAndTemplateTests_Model;
-                xamlMember.Setter = set_25_ListAndTemplateTests_Model;
+                xamlMember.Getter = get_39_ListAndTemplateTests_Model;
+                xamlMember.Setter = set_39_ListAndTemplateTests_Model;
                 break;
             case "BindTestbed.ListAndTemplateTests.DOModel":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.ListAndTemplateTests");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "DOModel", "BindTestbedModel.DOModel");
-                xamlMember.Getter = get_26_ListAndTemplateTests_DOModel;
-                xamlMember.Setter = set_26_ListAndTemplateTests_DOModel;
+                xamlMember.Getter = get_40_ListAndTemplateTests_DOModel;
+                xamlMember.Setter = set_40_ListAndTemplateTests_DOModel;
                 break;
             case "BindTestbed.ListAndTemplateTests.LanguageModel":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.ListAndTemplateTests");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "LanguageModel", "BindTestbed.LanguageSpecific");
-                xamlMember.Getter = get_27_ListAndTemplateTests_LanguageModel;
-                xamlMember.Setter = set_27_ListAndTemplateTests_LanguageModel;
+                xamlMember.Getter = get_41_ListAndTemplateTests_LanguageModel;
+                xamlMember.Setter = set_41_ListAndTemplateTests_LanguageModel;
                 break;
             case "BindTestbed.ListAndTemplateTests.SomeButtonContent":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.ListAndTemplateTests");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "SomeButtonContent", "Object");
-                xamlMember.Setter = set_28_ListAndTemplateTests_SomeButtonContent;
+                xamlMember.Setter = set_42_ListAndTemplateTests_SomeButtonContent;
                 break;
             case "BindTestbedModel.Circle.Diameter":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.Circle");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Diameter", "BindTestbedModel.Diameter");
-                xamlMember.Getter = get_29_Circle_Diameter;
-                xamlMember.Setter = set_29_Circle_Diameter;
+                xamlMember.Getter = get_43_Circle_Diameter;
+                xamlMember.Setter = set_43_Circle_Diameter;
                 break;
             case "BindTestbedModel.Circle.TestStringProperty":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.Circle");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "TestStringProperty", "String");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_30_Circle_TestStringProperty;
-                xamlMember.Setter = set_30_Circle_TestStringProperty;
+                xamlMember.Getter = get_44_Circle_TestStringProperty;
+                xamlMember.Setter = set_44_Circle_TestStringProperty;
                 break;
             case "BindTestbed.LoadAndCreateFromStringTests.Model":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.LoadAndCreateFromStringTests");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Model", "BindTestbedModel.DataModel");
-                xamlMember.Getter = get_31_LoadAndCreateFromStringTests_Model;
-                xamlMember.Setter = set_31_LoadAndCreateFromStringTests_Model;
+                xamlMember.Getter = get_45_LoadAndCreateFromStringTests_Model;
+                xamlMember.Setter = set_45_LoadAndCreateFromStringTests_Model;
                 break;
             case "BindTestbed.LoadAndCreateFromStringTests.DOModel":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.LoadAndCreateFromStringTests");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "DOModel", "BindTestbedModel.DOModel");
-                xamlMember.Getter = get_32_LoadAndCreateFromStringTests_DOModel;
-                xamlMember.Setter = set_32_LoadAndCreateFromStringTests_DOModel;
+                xamlMember.Getter = get_46_LoadAndCreateFromStringTests_DOModel;
+                xamlMember.Setter = set_46_LoadAndCreateFromStringTests_DOModel;
                 break;
             case "BindTestbed.LoadAndCreateFromStringTests.LanguageModel":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.LoadAndCreateFromStringTests");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "LanguageModel", "BindTestbed.LanguageSpecific");
-                xamlMember.Getter = get_33_LoadAndCreateFromStringTests_LanguageModel;
-                xamlMember.Setter = set_33_LoadAndCreateFromStringTests_LanguageModel;
+                xamlMember.Getter = get_47_LoadAndCreateFromStringTests_LanguageModel;
+                xamlMember.Setter = set_47_LoadAndCreateFromStringTests_LanguageModel;
                 break;
             case "BindTestbed.MainPage.Model":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.MainPage");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Model", "BindTestbedModel.DataModel");
-                xamlMember.Getter = get_34_MainPage_Model;
-                xamlMember.Setter = set_34_MainPage_Model;
+                xamlMember.Getter = get_48_MainPage_Model;
+                xamlMember.Setter = set_48_MainPage_Model;
                 break;
             case "BindTestbed.MainPage.DOModel":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.MainPage");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "DOModel", "BindTestbedModel.DOModel");
-                xamlMember.Getter = get_35_MainPage_DOModel;
-                xamlMember.Setter = set_35_MainPage_DOModel;
+                xamlMember.Getter = get_49_MainPage_DOModel;
+                xamlMember.Setter = set_49_MainPage_DOModel;
                 break;
             case "BindTestbed.MainPage.LanguageModel":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.MainPage");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "LanguageModel", "BindTestbed.LanguageSpecific");
-                xamlMember.Getter = get_36_MainPage_LanguageModel;
-                xamlMember.Setter = set_36_MainPage_LanguageModel;
+                xamlMember.Getter = get_50_MainPage_LanguageModel;
+                xamlMember.Setter = set_50_MainPage_LanguageModel;
                 break;
             case "BindTestbed.TwoWayTests.Model":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.TwoWayTests");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Model", "BindTestbedModel.DataModel");
-                xamlMember.Getter = get_37_TwoWayTests_Model;
-                xamlMember.Setter = set_37_TwoWayTests_Model;
+                xamlMember.Getter = get_51_TwoWayTests_Model;
+                xamlMember.Setter = set_51_TwoWayTests_Model;
                 break;
             case "BindTestbed.TwoWayTests.DOModel":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.TwoWayTests");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "DOModel", "BindTestbedModel.DOModel");
-                xamlMember.Getter = get_38_TwoWayTests_DOModel;
-                xamlMember.Setter = set_38_TwoWayTests_DOModel;
+                xamlMember.Getter = get_52_TwoWayTests_DOModel;
+                xamlMember.Setter = set_52_TwoWayTests_DOModel;
                 break;
             case "BindTestbed.TwoWayTests.LanguageModel":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.TwoWayTests");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "LanguageModel", "BindTestbed.LanguageSpecific");
-                xamlMember.Getter = get_39_TwoWayTests_LanguageModel;
-                xamlMember.Setter = set_39_TwoWayTests_LanguageModel;
+                xamlMember.Getter = get_53_TwoWayTests_LanguageModel;
+                xamlMember.Setter = set_53_TwoWayTests_LanguageModel;
                 break;
             case "BindTestbed.TestsPage2.Model":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.TestsPage2");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Model", "BindTestbedModel.DataModel");
-                xamlMember.Getter = get_40_TestsPage2_Model;
-                xamlMember.Setter = set_40_TestsPage2_Model;
+                xamlMember.Getter = get_54_TestsPage2_Model;
+                xamlMember.Setter = set_54_TestsPage2_Model;
                 break;
             case "BindTestbed.TestsPage2.DOModel":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.TestsPage2");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "DOModel", "BindTestbedModel.DOModel");
-                xamlMember.Getter = get_41_TestsPage2_DOModel;
-                xamlMember.Setter = set_41_TestsPage2_DOModel;
+                xamlMember.Getter = get_55_TestsPage2_DOModel;
+                xamlMember.Setter = set_55_TestsPage2_DOModel;
                 break;
             case "BindTestbed.TestsPage2.LanguageModel":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.TestsPage2");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "LanguageModel", "BindTestbed.LanguageSpecific");
-                xamlMember.Getter = get_42_TestsPage2_LanguageModel;
-                xamlMember.Setter = set_42_TestsPage2_LanguageModel;
+                xamlMember.Getter = get_56_TestsPage2_LanguageModel;
+                xamlMember.Setter = set_56_TestsPage2_LanguageModel;
                 break;
             case "BindTestbed.TestsPage2.Person":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.TestsPage2");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Person", "BindTestbedModel.IEmployee");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_43_TestsPage2_Person;
-                xamlMember.Setter = set_43_TestsPage2_Person;
+                xamlMember.Getter = get_57_TestsPage2_Person;
+                xamlMember.Setter = set_57_TestsPage2_Person;
                 break;
             case "BindTestbed.TestsPage2.MyInt":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.TestsPage2");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "MyInt", "Int32");
-                xamlMember.Getter = get_44_TestsPage2_MyInt;
-                xamlMember.Setter = set_44_TestsPage2_MyInt;
+                xamlMember.Getter = get_58_TestsPage2_MyInt;
+                xamlMember.Setter = set_58_TestsPage2_MyInt;
                 break;
             case "BindTestbed.TestsPage2.DPOnPage":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.TestsPage2");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "DPOnPage", "String");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_45_TestsPage2_DPOnPage;
-                xamlMember.Setter = set_45_TestsPage2_DPOnPage;
+                xamlMember.Getter = get_59_TestsPage2_DPOnPage;
+                xamlMember.Setter = set_59_TestsPage2_DPOnPage;
                 break;
             case "BindTestbed.TestsPage2.NiceManager":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.TestsPage2");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "NiceManager", "BindTestbedModel.IManager");
-                xamlMember.Getter = get_46_TestsPage2_NiceManager;
+                xamlMember.Getter = get_60_TestsPage2_NiceManager;
                 xamlMember.SetIsReadOnly();
                 break;
             case "BindTestbed.xPropertiesTest.TestStr":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.xPropertiesTest");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "TestStr", "String");
-                xamlMember.Getter = get_47_xPropertiesTest_TestStr;
-                xamlMember.Setter = set_47_xPropertiesTest_TestStr;
+                xamlMember.Getter = get_61_xPropertiesTest_TestStr;
+                xamlMember.Setter = set_61_xPropertiesTest_TestStr;
                 break;
             case "BindTestbed.xPropertiesTest.TestInt":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.xPropertiesTest");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "TestInt", "Int32");
-                xamlMember.Getter = get_48_xPropertiesTest_TestInt;
+                xamlMember.Getter = get_62_xPropertiesTest_TestInt;
                 xamlMember.SetIsReadOnly();
                 break;
             case "BindTestbed.xPropertiesTest.TestComplexDefaultValue":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.xPropertiesTest");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "TestComplexDefaultValue", "BindTestbedModel.Circle");
-                xamlMember.Getter = get_49_xPropertiesTest_TestComplexDefaultValue;
-                xamlMember.Setter = set_49_xPropertiesTest_TestComplexDefaultValue;
+                xamlMember.Getter = get_63_xPropertiesTest_TestComplexDefaultValue;
+                xamlMember.Setter = set_63_xPropertiesTest_TestComplexDefaultValue;
                 break;
             case "BindTestbed.xPropertiesTest.TestMultilineDefaultValue":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.xPropertiesTest");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "TestMultilineDefaultValue", "Microsoft.UI.Xaml.Controls.Button");
-                xamlMember.Getter = get_50_xPropertiesTest_TestMultilineDefaultValue;
-                xamlMember.Setter = set_50_xPropertiesTest_TestMultilineDefaultValue;
+                xamlMember.Getter = get_64_xPropertiesTest_TestMultilineDefaultValue;
+                xamlMember.Setter = set_64_xPropertiesTest_TestMultilineDefaultValue;
                 break;
             case "BindTestbed.xPropertiesTest.TestCreateFromString":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.xPropertiesTest");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "TestCreateFromString", "BindTestbedModel.Diameter");
-                xamlMember.Getter = get_51_xPropertiesTest_TestCreateFromString;
-                xamlMember.Setter = set_51_xPropertiesTest_TestCreateFromString;
+                xamlMember.Getter = get_65_xPropertiesTest_TestCreateFromString;
+                xamlMember.Setter = set_65_xPropertiesTest_TestCreateFromString;
                 break;
             case "BindTestbed.NullableTests.Model":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.NullableTests");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Model", "BindTestbedModel.DataModel");
-                xamlMember.Getter = get_52_NullableTests_Model;
-                xamlMember.Setter = set_52_NullableTests_Model;
+                xamlMember.Getter = get_66_NullableTests_Model;
+                xamlMember.Setter = set_66_NullableTests_Model;
                 break;
             case "BindTestbed.NullableTests.DOModel":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.NullableTests");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "DOModel", "BindTestbedModel.DOModel");
-                xamlMember.Getter = get_53_NullableTests_DOModel;
-                xamlMember.Setter = set_53_NullableTests_DOModel;
+                xamlMember.Getter = get_67_NullableTests_DOModel;
+                xamlMember.Setter = set_67_NullableTests_DOModel;
                 break;
             case "BindTestbed.MyUserControl1.Tag":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbed.MyUserControl1");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Tag", "String");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_54_MyUserControl1_Tag;
-                xamlMember.Setter = set_54_MyUserControl1_Tag;
+                xamlMember.Getter = get_68_MyUserControl1_Tag;
+                xamlMember.Setter = set_68_MyUserControl1_Tag;
                 break;
             case "Windows.UI.Color.A":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Windows.UI.Color");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "A", "Byte");
-                xamlMember.Getter = get_55_Color_A;
-                xamlMember.Setter = set_55_Color_A;
+                xamlMember.Getter = get_69_Color_A;
+                xamlMember.Setter = set_69_Color_A;
                 break;
             case "Windows.UI.Color.R":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Windows.UI.Color");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "R", "Byte");
-                xamlMember.Getter = get_56_Color_R;
-                xamlMember.Setter = set_56_Color_R;
+                xamlMember.Getter = get_70_Color_R;
+                xamlMember.Setter = set_70_Color_R;
                 break;
             case "Windows.UI.Color.G":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Windows.UI.Color");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "G", "Byte");
-                xamlMember.Getter = get_57_Color_G;
-                xamlMember.Setter = set_57_Color_G;
+                xamlMember.Getter = get_71_Color_G;
+                xamlMember.Setter = set_71_Color_G;
                 break;
             case "Windows.UI.Color.B":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Windows.UI.Color");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "B", "Byte");
-                xamlMember.Getter = get_58_Color_B;
-                xamlMember.Setter = set_58_Color_B;
+                xamlMember.Getter = get_72_Color_B;
+                xamlMember.Setter = set_72_Color_B;
                 break;
             case "BindTestbedModel.NullablePropertiesButton.NullableDoubleDP":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.NullablePropertiesButton");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "NullableDoubleDP", "System.Nullable`1<Double>");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_59_NullablePropertiesButton_NullableDoubleDP;
-                xamlMember.Setter = set_59_NullablePropertiesButton_NullableDoubleDP;
+                xamlMember.Getter = get_73_NullablePropertiesButton_NullableDoubleDP;
+                xamlMember.Setter = set_73_NullablePropertiesButton_NullableDoubleDP;
                 break;
             case "BindTestbedModel.NullablePropertiesButton.NullableBool":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.NullablePropertiesButton");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "NullableBool", "System.Nullable`1<Boolean>");
-                xamlMember.Getter = get_60_NullablePropertiesButton_NullableBool;
-                xamlMember.Setter = set_60_NullablePropertiesButton_NullableBool;
+                xamlMember.Getter = get_74_NullablePropertiesButton_NullableBool;
+                xamlMember.Setter = set_74_NullablePropertiesButton_NullableBool;
                 break;
             case "BindTestbedModel.NullablePropertiesButton.NullableColor":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.NullablePropertiesButton");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "NullableColor", "System.Nullable`1<Windows.UI.Color>");
-                xamlMember.Getter = get_61_NullablePropertiesButton_NullableColor;
-                xamlMember.Setter = set_61_NullablePropertiesButton_NullableColor;
+                xamlMember.Getter = get_75_NullablePropertiesButton_NullableColor;
+                xamlMember.Setter = set_75_NullablePropertiesButton_NullableColor;
                 break;
             case "BindTestbedModel.NullablePropertiesButton.NullableEnum":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.NullablePropertiesButton");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "NullableEnum", "System.Nullable`1<BindTestbedModel.TShirtSize>");
-                xamlMember.Getter = get_62_NullablePropertiesButton_NullableEnum;
-                xamlMember.Setter = set_62_NullablePropertiesButton_NullableEnum;
+                xamlMember.Getter = get_76_NullablePropertiesButton_NullableEnum;
+                xamlMember.Setter = set_76_NullablePropertiesButton_NullableEnum;
                 break;
             case "BindTestbedModel.IEmployee.FirstName":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.IEmployee");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "FirstName", "String");
-                xamlMember.Getter = get_63_IEmployee_FirstName;
-                xamlMember.Setter = set_63_IEmployee_FirstName;
+                xamlMember.Getter = get_77_IEmployee_FirstName;
+                xamlMember.Setter = set_77_IEmployee_FirstName;
                 break;
             case "BindTestbedModel.IEmployee.LastName":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.IEmployee");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "LastName", "String");
-                xamlMember.Getter = get_64_IEmployee_LastName;
-                xamlMember.Setter = set_64_IEmployee_LastName;
+                xamlMember.Getter = get_78_IEmployee_LastName;
+                xamlMember.Setter = set_78_IEmployee_LastName;
                 break;
             case "BindTestbedModel.IEmployee.DirectManager":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.IEmployee");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "DirectManager", "BindTestbedModel.IManager");
-                xamlMember.Getter = get_65_IEmployee_DirectManager;
-                xamlMember.Setter = set_65_IEmployee_DirectManager;
+                xamlMember.Getter = get_79_IEmployee_DirectManager;
+                xamlMember.Setter = set_79_IEmployee_DirectManager;
                 break;
             case "BindTestbedModel.IEmployee.IsManager":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.IEmployee");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "IsManager", "Boolean");
-                xamlMember.Getter = get_66_IEmployee_IsManager;
+                xamlMember.Getter = get_80_IEmployee_IsManager;
                 xamlMember.SetIsReadOnly();
                 break;
             case "BindTestbedModel.IEmployee.Title":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.IEmployee");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Title", "String");
-                xamlMember.Getter = get_67_IEmployee_Title;
+                xamlMember.Getter = get_81_IEmployee_Title;
                 xamlMember.SetIsReadOnly();
                 break;
             case "BindTestbedModel.IEmployee.Name":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.IEmployee");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Name", "String");
-                xamlMember.Getter = get_68_IEmployee_Name;
+                xamlMember.Getter = get_82_IEmployee_Name;
                 xamlMember.SetIsReadOnly();
                 break;
             case "BindTestbedModel.IEmployee.Visibility":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.IEmployee");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Visibility", "Boolean");
-                xamlMember.Getter = get_69_IEmployee_Visibility;
-                xamlMember.Setter = set_69_IEmployee_Visibility;
+                xamlMember.Getter = get_83_IEmployee_Visibility;
+                xamlMember.Setter = set_83_IEmployee_Visibility;
                 break;
             case "BindTestbedModel.IEmployee.NullStringProperty":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.IEmployee");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "NullStringProperty", "String");
-                xamlMember.Getter = get_70_IEmployee_NullStringProperty;
+                xamlMember.Getter = get_84_IEmployee_NullStringProperty;
                 xamlMember.SetIsReadOnly();
                 break;
             case "BindTestbedModel.IEmployee.NullImageSource":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.IEmployee");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "NullImageSource", "Microsoft.UI.Xaml.Media.ImageSource");
-                xamlMember.Getter = get_71_IEmployee_NullImageSource;
+                xamlMember.Getter = get_85_IEmployee_NullImageSource;
                 xamlMember.SetIsReadOnly();
                 break;
             case "BindTestbedModel.IEmployee.TShirt":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.IEmployee");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "TShirt", "BindTestbedModel.TShirtSize");
-                xamlMember.Getter = get_72_IEmployee_TShirt;
-                xamlMember.Setter = set_72_IEmployee_TShirt;
+                xamlMember.Getter = get_86_IEmployee_TShirt;
+                xamlMember.Setter = set_86_IEmployee_TShirt;
                 break;
             case "BindTestbedModel.IEmployee.IsEmployeeOfTheMonth":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.IEmployee");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "IsEmployeeOfTheMonth", "Boolean");
-                xamlMember.Getter = get_73_IEmployee_IsEmployeeOfTheMonth;
-                xamlMember.Setter = set_73_IEmployee_IsEmployeeOfTheMonth;
+                xamlMember.Getter = get_87_IEmployee_IsEmployeeOfTheMonth;
+                xamlMember.Setter = set_87_IEmployee_IsEmployeeOfTheMonth;
                 break;
             case "BindTestbedModel.EmployeeCollection.Count":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.EmployeeCollection");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Count", "Int32");
-                xamlMember.Getter = get_74_EmployeeCollection_Count;
+                xamlMember.Getter = get_88_EmployeeCollection_Count;
                 xamlMember.SetIsReadOnly();
                 break;
             case "BindTestbedModel.EmployeeCollection.IsReadOnly":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.EmployeeCollection");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "IsReadOnly", "Boolean");
-                xamlMember.Getter = get_75_EmployeeCollection_IsReadOnly;
+                xamlMember.Getter = get_89_EmployeeCollection_IsReadOnly;
                 xamlMember.SetIsReadOnly();
                 break;
             case "BindTestbedModel.AttachedProperties.AttachedBool":
@@ -2277,76 +2594,76 @@ namespace BindTestbedCS.BindTestbedCS_XamlTypeInfo
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "AttachedBool", "Boolean");
                 xamlMember.SetTargetTypeName("Microsoft.UI.Xaml.Controls.TextBlock");
                 xamlMember.SetIsAttachable();
-                xamlMember.Getter = get_76_AttachedProperties_AttachedBool;
-                xamlMember.Setter = set_76_AttachedProperties_AttachedBool;
+                xamlMember.Getter = get_90_AttachedProperties_AttachedBool;
+                xamlMember.Setter = set_90_AttachedProperties_AttachedBool;
                 break;
             case "BindTestbedModel.AttachedProperties.AttachedEmployee":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.AttachedProperties");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "AttachedEmployee", "BindTestbedModel.IEmployee");
                 xamlMember.SetTargetTypeName("Microsoft.UI.Xaml.Controls.TextBlock");
                 xamlMember.SetIsAttachable();
-                xamlMember.Getter = get_77_AttachedProperties_AttachedEmployee;
-                xamlMember.Setter = set_77_AttachedProperties_AttachedEmployee;
+                xamlMember.Getter = get_91_AttachedProperties_AttachedEmployee;
+                xamlMember.Setter = set_91_AttachedProperties_AttachedEmployee;
                 break;
             case "BindTestbedModel.AttachedProperties.AttachedString":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.AttachedProperties");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "AttachedString", "String");
                 xamlMember.SetTargetTypeName("Microsoft.UI.Xaml.DependencyObject");
                 xamlMember.SetIsAttachable();
-                xamlMember.Getter = get_78_AttachedProperties_AttachedString;
-                xamlMember.Setter = set_78_AttachedProperties_AttachedString;
+                xamlMember.Getter = get_92_AttachedProperties_AttachedString;
+                xamlMember.Setter = set_92_AttachedProperties_AttachedString;
                 break;
             case "BindTestbedModel.EmployeeTextBlock.Employee":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("BindTestbedModel.EmployeeTextBlock");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Employee", "BindTestbedModel.IEmployee");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_79_EmployeeTextBlock_Employee;
-                xamlMember.Setter = set_79_EmployeeTextBlock_Employee;
+                xamlMember.Getter = get_93_EmployeeTextBlock_Employee;
+                xamlMember.Setter = set_93_EmployeeTextBlock_Employee;
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.Children":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Children", "System.Collections.Generic.IList`1<Microsoft.UI.Xaml.Controls.TreeViewNode>");
-                xamlMember.Getter = get_80_TreeViewNode_Children;
+                xamlMember.Getter = get_94_TreeViewNode_Children;
                 xamlMember.SetIsReadOnly();
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.Content":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Content", "Object");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_81_TreeViewNode_Content;
-                xamlMember.Setter = set_81_TreeViewNode_Content;
+                xamlMember.Getter = get_95_TreeViewNode_Content;
+                xamlMember.Setter = set_95_TreeViewNode_Content;
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.Depth":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Depth", "Int32");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_82_TreeViewNode_Depth;
+                xamlMember.Getter = get_96_TreeViewNode_Depth;
                 xamlMember.SetIsReadOnly();
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.HasChildren":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "HasChildren", "Boolean");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_83_TreeViewNode_HasChildren;
+                xamlMember.Getter = get_97_TreeViewNode_HasChildren;
                 xamlMember.SetIsReadOnly();
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.HasUnrealizedChildren":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "HasUnrealizedChildren", "Boolean");
-                xamlMember.Getter = get_84_TreeViewNode_HasUnrealizedChildren;
-                xamlMember.Setter = set_84_TreeViewNode_HasUnrealizedChildren;
+                xamlMember.Getter = get_98_TreeViewNode_HasUnrealizedChildren;
+                xamlMember.Setter = set_98_TreeViewNode_HasUnrealizedChildren;
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.IsExpanded":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "IsExpanded", "Boolean");
                 xamlMember.SetIsDependencyProperty();
-                xamlMember.Getter = get_85_TreeViewNode_IsExpanded;
-                xamlMember.Setter = set_85_TreeViewNode_IsExpanded;
+                xamlMember.Getter = get_99_TreeViewNode_IsExpanded;
+                xamlMember.Setter = set_99_TreeViewNode_IsExpanded;
                 break;
             case "Microsoft.UI.Xaml.Controls.TreeViewNode.Parent":
                 userType = (global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Microsoft.UI.Xaml.Controls.TreeViewNode");
                 xamlMember = new global::BindTestbedCS.BindTestbedCS_XamlTypeInfo.XamlMember(this, "Parent", "Microsoft.UI.Xaml.Controls.TreeViewNode");
-                xamlMember.Getter = get_86_TreeViewNode_Parent;
+                xamlMember.Getter = get_100_TreeViewNode_Parent;
                 xamlMember.SetIsReadOnly();
                 break;
             }

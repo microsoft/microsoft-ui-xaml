@@ -478,7 +478,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("Description", "Validates textbox control BeforeTextChanging event re-entrancy call does not crash")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void TextBoxBeforeTextChangingReentrancyCheck()
         {
             const string rootPanelXaml =
@@ -713,7 +713,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyTextBoxPlaceholderForegroundHC()
         {
             const string rootPanelXaml =
@@ -821,7 +821,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestMethod]
         [TestProperty("Description", "Validates that text alignment can be set on placeholder text.")]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]  // release queue not empty issue still happens in catgates run, blocking it for now
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyPlaceholderTextAlignment()
         {
             const string rootPanelXaml =
