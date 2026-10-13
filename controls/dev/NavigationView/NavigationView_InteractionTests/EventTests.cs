@@ -146,6 +146,68 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void NavigationViewItemPenTapDoesNotDragOnHover()
+        {
+            VerifyNavigationViewItemTapDoesNotDragOnHover(PointerInputType.Pen);
+        }
+
+        [TestMethod]
+        public void NavigationViewItemMouseClickDoesNotDragOnHover()
+        {
+            VerifyNavigationViewItemTapDoesNotDragOnHover(PointerInputType.Mouse);
+        }
+
+        private static void VerifyNavigationViewItemTapDoesNotDragOnHover(PointerInputType inputType)
+        {
+            using var inputController = InputController.Activate(inputType);
+            foreach (bool topMode in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
+                {
+                    if (topMode)
+                    {
+                        new CheckBox(FindElement.ById("TopMode")).Check();
+                        Wait.ForIdle();
+                    }
+
+                    var source = FindElement.ById("DragItem");
+                    var bounds = source.BoundingRectangle;
+                    for (int attempt = 1; attempt <= 3; ++attempt)
+                    {
+                        PointerInput.Move(new System.Drawing.Point(
+                            (int)(bounds.Left + bounds.Width / 2), (int)(bounds.Top + bounds.Height / 2)));
+                        PointerInput.Press(PointerButtons.Primary);
+                        PointerInput.Release(PointerButtons.Primary);
+                        Wait.ForIdle();
+                        Verify.AreEqual(inputType.ToString(), new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                        Verify.AreEqual(attempt.ToString(), new TextBlock(FindElement.ById("InvocationCount")).GetText());
+
+                        int hoverMoves = int.Parse(new TextBlock(FindElement.ById("HoverMoveCount")).GetText());
+                        foreach (double fraction in new[] { 0.7, 0.3 })
+                        {
+                            PointerInput.Move(new System.Drawing.Point(
+                                (int)(bounds.Left + bounds.Width * fraction), (int)(bounds.Top + bounds.Height / 2)));
+                            Wait.ForIdle();
+                        }
+                        Verify.IsTrue(int.Parse(new TextBlock(FindElement.ById("HoverMoveCount")).GetText()) > hoverMoves);
+                        Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
+                        Verify.AreEqual(attempt.ToString(), new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                        VerifyNavigationViewDragStateReset();
+                    }
+
+                    InputHelper.MouseDragToTarget(source, FindElement.ById("DropTarget"));
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("DragCount")).GetText());
+                    Verify.AreEqual("3", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+
+                    InputHelper.LeftClick(source);
+                    Verify.AreEqual("4", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+                }
+            }
+        }
+
+        [TestMethod]
         public void NavigationViewItemPenDragWithinBounds()
         {
             using var inputController = InputController.Activate(PointerInputType.Pen);

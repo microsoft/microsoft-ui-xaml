@@ -17,6 +17,7 @@ namespace MUXControlsTestApp
         private int dragCount;
         private int invocationCount;
         private int retemplateCount;
+        private int hoverMoveCount;
         private DragOperationDeferral dragDeferral;
 
         public NavigationViewDragPage()
@@ -39,6 +40,15 @@ namespace MUXControlsTestApp
             {
                 item.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
                     LastPointerDevice.Text = args.Pointer.PointerDeviceType.ToString()), true);
+                item.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler((sender, args) =>
+                {
+                    var point = args.GetCurrentPoint(item);
+                    if (args.Pointer.PointerDeviceType.ToString() == LastPointerDevice.Text &&
+                        !point.IsInContact && !point.Properties.IsLeftButtonPressed)
+                    {
+                        HoverMoveCount.Text = (++hoverMoveCount).ToString();
+                    }
+                }), true);
                 item.DragStarting += (sender, args) =>
                 {
                     DragStartPointerOver.Text = Descendants((DependencyObject)sender)

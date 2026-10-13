@@ -155,7 +155,12 @@ AutomaticDragHelper::RegisterDragPointerEvents()
                 xaml_input::IPointerRoutedEventArgs>(m_pOwnerNoRef, &UIElement::OnPointerReleased));
 
 
-            IFC_RETURN(m_pOwnerNoRef->add_PointerReleased(spDragDropPointerReleasedHandler.Get(), &m_dragDropPointerReleasedToken));
+            // Controls can handle release while invoking a click. Drag tracking must
+            // still end, even if releasing pen capture raises no PointerCaptureLost.
+            UIElement::PointerReleasedEventSourceType* pointerReleasedEventSource = nullptr;
+            IFC_RETURN(m_pOwnerNoRef->GetPointerReleasedEventSourceNoRef(&pointerReleasedEventSource));
+            IFC_RETURN(pointerReleasedEventSource->AddHandler(spDragDropPointerReleasedHandler.Get(), true /* handledEventsToo */));
+            m_dragDropPointerReleasedToken.value = reinterpret_cast<INT64>(spDragDropPointerReleasedHandler.Get());
         }
 
         if (m_dragDropPointerCaptureLostToken.value == 0)

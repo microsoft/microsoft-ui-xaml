@@ -45,6 +45,7 @@
             <TextBlock x:Name="RetemplateCount" Text="0"/>
             <TextBlock x:Name="LastPointerDevice" Text="None"/>
             <TextBlock x:Name="DragStartPointerOver" Text="Not read"/>
+            <TextBlock x:Name="HoverMoveCount" Text="0"/>
             <Button x:Name="CompleteDragDeferral" Content="Complete drag deferral" IsEnabled="False"
                     Click="CompleteDragDeferral_Click"/>
         </StackPanel>
