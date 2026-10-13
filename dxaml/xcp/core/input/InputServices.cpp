@@ -47,6 +47,8 @@
 
 #include <ReentrancyGuard.h>
 #include <Windowing.h>
+#include <msctf.h>
+#include <imm.h>
 
 #undef max
 #undef min
@@ -65,6 +67,197 @@ using namespace Focus;
 #define ExitOnSetContactFailure(x) if (x) { goto Cleanup; }
 
 using namespace RuntimeFeatureBehavior;
+
+// ---------------------------------------------------------------------------
+// ImeFocusPark
+//
+// Owns the per-thread TSF thread manager and a permanent keyboard-disabled document. When no
+// text-editable control is focused, TSF thread-manager focus is parked on that document so IMM never
+// falls back to the CUAS default input context (which would let legacy IMEs consume keys / open
+// composition UI over non-text UI). This is the Chromium/WPF "park focus on a benign document" pattern;
+// it lets XAML re-enable legacy IMEs (by not calling ImmDisableLegacyIME) without ambiguating text-input
+// focus. See ImeFocusPark.h and RuntimeEnabledFeature::EnableLegacyImeAuxiliaryUi.
+// ---------------------------------------------------------------------------
+struct ImeFocusPark::Impl
+{
+    Microsoft::WRL::ComPtr<ITfThreadMgr2> threadMgr;
+    // Same underlying TF_ThreadMgr object, QI'd to the v1 interface which exposes AssociateFocus (used to
+    // bind the disabled document to the focus HWND). ITfThreadMgr2 does not derive from ITfThreadMgr.
+    Microsoft::WRL::ComPtr<ITfThreadMgr> threadMgrForAssoc;
+    Microsoft::WRL::ComPtr<ITfDocumentMgr> disabledDocMgr;
+    TfClientId clientId = TF_CLIENTID_NULL;
+    bool activated = false;
+    bool parked = false;
+    // HWND currently associated with disabledDocMgr via AssociateFocus (nullptr when none). Tracked so we
+    // move/remove the association as focus changes.
+    HWND associatedHwnd = nullptr;
+};
+
+ImeFocusPark::ImeFocusPark() = default;
+
+ImeFocusPark::~ImeFocusPark()
+{
+    Shutdown();
+}
+
+bool ImeFocusPark::IsInitialized() const
+{
+    return m_impl != nullptr;
+}
+
+_Check_return_ HRESULT ImeFocusPark::Initialize()
+{
+    // Idempotent: only one park per CInputServices / UI thread.
+    if (m_impl != nullptr)
+    {
+        return S_OK;
+    }
+
+    auto impl = std::make_unique<Impl>();
+
+    // Acquire the per-thread TSF thread manager. A distinct COM wrapper still routes through the same
+    // per-thread focus state that RichEdit / CUAS use, so parking focus here is observed by IMM.
+    IFC_RETURN(CoCreateInstance(
+        CLSID_TF_ThreadMgr,
+        nullptr,
+        CLSCTX_INPROC_SERVER,
+        IID_PPV_ARGS(impl->threadMgr.GetAddressOf())));
+
+    IFC_RETURN(impl->threadMgr->Activate(&impl->clientId));
+    impl->activated = true;
+
+    // Create the permanent "no editing here" document: a document manager with a single context that has
+    // no text store and is explicitly keyboard-disabled, so IMEs treat this focus as non-editable.
+    IFC_RETURN(impl->threadMgr->CreateDocumentMgr(impl->disabledDocMgr.GetAddressOf()));
+
+    Microsoft::WRL::ComPtr<ITfContext> context;
+    TfEditCookie editCookie = 0;
+    IFC_RETURN(impl->disabledDocMgr->CreateContext(
+        impl->clientId,
+        0,
+        nullptr,
+        context.GetAddressOf(),
+        &editCookie));
+
+    Microsoft::WRL::ComPtr<ITfCompartmentMgr> compartmentMgr;
+    IFC_RETURN(context.As(&compartmentMgr));
+
+    Microsoft::WRL::ComPtr<ITfCompartment> keyboardDisabled;
+    IFC_RETURN(compartmentMgr->GetCompartment(GUID_COMPARTMENT_KEYBOARD_DISABLED, keyboardDisabled.GetAddressOf()));
+
+    VARIANT disabledValue = {};
+    disabledValue.vt = VT_I4;
+    disabledValue.lVal = 1;
+    IFC_RETURN(keyboardDisabled->SetValue(impl->clientId, &disabledValue));
+
+    IFC_RETURN(impl->disabledDocMgr->Push(context.Get()));
+
+    // QI the same thread-manager object for the v1 interface, which exposes AssociateFocus. Optional: if
+    // it is unavailable we still park via SetFocus (TSF-aware IMEs), we just lose the per-HWND CUAS gate.
+    IGNOREHR(impl->threadMgr.As(&impl->threadMgrForAssoc));
+
+    m_impl = std::move(impl);
+    return S_OK;
+}
+
+void ImeFocusPark::Shutdown()
+{
+    if (m_impl == nullptr)
+    {
+        return;
+    }
+
+    if (m_impl->threadMgr != nullptr)
+    {
+        // Remove any per-HWND association we installed so we never leave the disabled document bound to a
+        // window (which would block keyboard input there).
+        if (m_impl->associatedHwnd != nullptr && m_impl->threadMgrForAssoc != nullptr)
+        {
+            Microsoft::WRL::ComPtr<ITfDocumentMgr> prev;
+            IGNOREHR(m_impl->threadMgrForAssoc->AssociateFocus(m_impl->associatedHwnd, nullptr, prev.GetAddressOf()));
+            m_impl->associatedHwnd = nullptr;
+        }
+
+        if (m_impl->parked)
+        {
+            // Relinquish the parked focus before tearing down.
+            IGNOREHR(m_impl->threadMgr->SetFocus(nullptr));
+            m_impl->parked = false;
+        }
+
+        if (m_impl->disabledDocMgr != nullptr)
+        {
+            IGNOREHR(m_impl->disabledDocMgr->Pop(TF_POPF_ALL));
+        }
+
+        if (m_impl->activated)
+        {
+            IGNOREHR(m_impl->threadMgr->Deactivate());
+        }
+    }
+
+    m_impl.reset();
+}
+
+void ImeFocusPark::OnFocusedElementChanged(bool isFocusedElementTextEditable, HWND inputHwnd)
+{
+    if (m_impl == nullptr || m_impl->threadMgr == nullptr)
+    {
+        return;
+    }
+
+    if (!isFocusedElementTextEditable)
+    {
+        // Focus is on a non-text element (or nothing editable). Two complementary actions:
+        //
+        // 1) Park TSF thread focus on the disabled document (covers TSF-aware IMEs and the moment before
+        //    the next WM_SETFOCUS).
+        if (!m_impl->parked)
+        {
+            if (SUCCEEDED(m_impl->threadMgr->SetFocus(m_impl->disabledDocMgr.Get())))
+            {
+                m_impl->parked = true;
+            }
+        }
+
+        // 2) Bind the keyboard-disabled document to the focus window. TSF re-activates the document
+        //    *associated with the focused HWND* on every WM_SETFOCUS, so - unlike a one-time SetFocus,
+        //    which CUAS overrides when it hands the window its default input context - this keeps the
+        //    legacy (IMM/CUAS) IME disabled for as long as a non-text control holds focus. This is the
+        //    action that actually stops composition / candidate / mode UI over non-text controls.
+        if (m_impl->threadMgrForAssoc != nullptr && inputHwnd != nullptr && m_impl->associatedHwnd != inputHwnd)
+        {
+            // Focus HWND changed: drop the stale association first so we never bind two windows.
+            if (m_impl->associatedHwnd != nullptr)
+            {
+                Microsoft::WRL::ComPtr<ITfDocumentMgr> prev;
+                IGNOREHR(m_impl->threadMgrForAssoc->AssociateFocus(m_impl->associatedHwnd, nullptr, prev.GetAddressOf()));
+                m_impl->associatedHwnd = nullptr;
+            }
+
+            Microsoft::WRL::ComPtr<ITfDocumentMgr> prev;
+            if (SUCCEEDED(m_impl->threadMgrForAssoc->AssociateFocus(inputHwnd, m_impl->disabledDocMgr.Get(), prev.GetAddressOf())))
+            {
+                m_impl->associatedHwnd = inputHwnd;
+            }
+        }
+    }
+    else
+    {
+        // A text-editable control is focused: RichEdit owns TSF focus (and shows the legacy IME UI) while
+        // editing. Stand down and, critically, REMOVE our disabled-document association from the window so
+        // TSF returns to the default (RichEdit-driven) context - otherwise the disabled document would keep
+        // suppressing input while the user is trying to type.
+        m_impl->parked = false;
+
+        if (m_impl->threadMgrForAssoc != nullptr && m_impl->associatedHwnd != nullptr)
+        {
+            Microsoft::WRL::ComPtr<ITfDocumentMgr> prev;
+            IGNOREHR(m_impl->threadMgrForAssoc->AssociateFocus(m_impl->associatedHwnd, nullptr, prev.GetAddressOf()));
+            m_impl->associatedHwnd = nullptr;
+        }
+    }
+}
 
 CInputServices::CInputServices(_In_ CCoreServices *pCoreService)
     : m_pVisualTree(pCoreService->GetMainVisualTree())
@@ -129,6 +322,8 @@ void CInputServices::Reset()
     // Cleanup all create pointer objects
     DestroyPointerObjects();
 
+    m_imeFocusPark.Shutdown();
+
     m_pCoreService = nullptr;
 }
 
@@ -162,6 +357,28 @@ void CInputServices::RegisterIslandInputSite(_In_ InputSiteHelper::IIslandInputS
             // Transfer the pending callback to the registration entry we just added.
             m_islandInputSiteRegistrations.at(0).ShouldRegisterDMViewportCallback(true);
             m_shouldRegisterPrimaryDMViewportCallback = false;
+        }
+
+        // Install the legacy-IME focus park for WinUI 3 desktop / island apps. These apps have NO CoreWindow
+        // (see DXamlCore::ConfigureJupiterWindow: "CoreWindow does not exist in Win32/ Islands"), so
+        // CInputServices::SetCoreWindow - the CoreWindow-only path that installs the park for UWP - is never
+        // called, and without this the park would never initialize and NotifyFocusChangedForImePark would be
+        // a no-op on desktop. Island input arrives here instead, so this is the desktop-equivalent install
+        // point. Best-effort and idempotent (Initialize() no-ops if already installed); gated on the same
+        // per-app opt-in and TSF3 requirement as the CoreWindow path. Runs on the UI thread (island
+        // registration is UI-thread affine), which the TSF thread manager requires.
+        if (m_pCoreService->ShouldInstallImeFocusPark() && m_pCoreService->IsTSF3Enabled() && !m_imeFocusPark.IsInitialized())
+        {
+            IGNOREHR(m_imeFocusPark.Initialize());
+
+            // Engage immediately so we don't leave a startup window (before the first focus change) where
+            // nothing is parked. At island-registration time nothing text-editable is focused yet, so park
+            // on the disabled document by default; subsequent real focus changes (driven by
+            // CInputManager::NotifyFocusChanged) re-evaluate with the actual focused element.
+            if (m_imeFocusPark.IsInitialized())
+            {
+                NotifyFocusChangedForImePark(nullptr);
+            }
         }
     }
 }
@@ -3075,6 +3292,105 @@ CInputServices::IsTextEditableControl(_In_ const CDependencyObject* const pObjec
     }
 
     return isEditableControl;
+}
+
+void
+CInputServices::NotifyFocusChangedForImePark(_In_opt_ CDependencyObject* pFocusedElement)
+{
+    // Gate on the per-app opt-in (EnableLegacyImeAuxiliaryUi), NOT on the TSF park being initialized.
+    //
+    // Root cause of the original defect: this feature targets the LEGACY IME path, and in that
+    // configuration TSF3 is disabled (IsTSF3Enabled()==false). The TSF focus park is only installed when
+    // TSF3 is enabled, so it never initializes here - which meant the old `if (!IsInitialized()) return;`
+    // guard turned this entire method (including the IMM disable below, the layer that actually stops a
+    // legacy IMM/CUAS IME like 2345 Pinyin) into dead code. The IMM disable does not depend on the TSF
+    // park at all, so it must run whenever the feature is on.
+    const bool featureEnabled = (m_pCoreService != nullptr) && m_pCoreService->ShouldInstallImeFocusPark();
+
+    if (!featureEnabled)
+    {
+        return;
+    }
+
+    const bool isTextEditable = (pFocusedElement != nullptr) && (IsTextEditableControl(pFocusedElement) != FALSE);
+
+    // Resolve the HWND that owns TSF text-input for this focus. This is the island input HWND - the same
+    // window RichEdit's TextServicesHost uses (TxGetWindow / ImmGetContext), so it is also the window whose
+    // *default IMM context* the legacy IME composes into. GetElementIslandInputSite never returns null for a
+    // live element (it falls back to the XamlIslandRoot's site or the primary registered site), so this is
+    // valid for non-text controls (Button/Slider) too.
+    wrl::ComPtr<InputSiteHelper::IIslandInputSite> islandInputSite =
+        (pFocusedElement != nullptr)
+            ? pFocusedElement->GetElementIslandInputSite()
+            : GetPrimaryRegisteredIslandInputSite();
+    HWND inputHwnd = GetUnderlyingInputHwndFromIslandInputSite(islandInputSite.Get());
+
+    // Layer 1 (TSF-aware IMEs): park TSF focus on / associate the keyboard-disabled document with the input
+    // window. This is the "correct" layer for well-behaved TSF IMEs, but only applies when the TSF park was
+    // actually installed (TSF3 enabled). In the legacy-IME configuration this is skipped and Layer 2 does
+    // the work.
+    if (m_imeFocusPark.IsInitialized())
+    {
+        m_imeFocusPark.OnFocusedElementChanged(isTextEditable, inputHwnd);
+    }
+
+    // Layer 2 (legacy IMM / CUAS IMEs like 2345 Pinyin): with EnableLegacyImeAuxiliaryUi ON we skip the
+    // process-wide ImmDisableLegacyIME(), so the legacy IME composes into the *default IMM context* of the
+    // focused window (RichEdit reads exactly this via ImmGetContext(inputHwnd)). The TSF park alone does not
+    // stop a legacy IMM IME - it hangs its context off the Win32 focus window - so we must act on the IMM
+    // context directly. On non-text focus, cancel any composition and REMOVE the context association so the
+    // IME has nothing to compose into; on text focus, restore the default context so editing works again.
+    //
+    // Apply across every window the IME could be hanging its context off, because the composition/candidate
+    // UI has been observed appearing "outside" the island (i.e. tied to the top-level / foreground window):
+    //   - ::GetFocus()            : the Win32 focus window on this (UI) thread
+    //   - inputHwnd               : the XAML island input window (RichEdit's own IME window)
+    //   - GA_ROOT of inputHwnd    : the top-level host window
+    //   - ::GetForegroundWindow() : whatever the shell considers foreground
+    // The IMM calls are idempotent, so covering all of them is safe.
+    HWND candidateHwnds[4] = {};
+    int candidateCount = 0;
+    auto addCandidate = [&](HWND hwnd)
+    {
+        if (hwnd == nullptr) { return; }
+        for (int k = 0; k < candidateCount; ++k)
+        {
+            if (candidateHwnds[k] == hwnd) { return; }
+        }
+        if (candidateCount < ARRAYSIZE(candidateHwnds))
+        {
+            candidateHwnds[candidateCount++] = hwnd;
+        }
+    };
+    addCandidate(::GetFocus());
+    addCandidate(inputHwnd);
+    if (inputHwnd != nullptr) { addCandidate(::GetAncestor(inputHwnd, GA_ROOT)); }
+    addCandidate(::GetForegroundWindow());
+
+    for (int i = 0; i < candidateCount; ++i)
+    {
+        HWND hwnd = candidateHwnds[i];
+
+        if (isTextEditable)
+        {
+            ImmAssociateContextEx(hwnd, nullptr, IACE_DEFAULT);
+            if (HIMC himc = ImmGetContext(hwnd))
+            {
+                ImmSetOpenStatus(himc, TRUE);
+                ImmReleaseContext(hwnd, himc);
+            }
+        }
+        else
+        {
+            if (HIMC himc = ImmGetContext(hwnd))
+            {
+                ImmNotifyIME(himc, NI_COMPOSITIONSTR, CPS_CANCEL, 0);
+                ImmSetOpenStatus(himc, FALSE);
+                ImmReleaseContext(hwnd, himc);
+            }
+            ImmAssociateContextEx(hwnd, nullptr, 0);
+        }
+    }
 }
 
 // static
@@ -14850,12 +15166,29 @@ void CInputServices::SetCoreWindow(_In_ wuc::ICoreWindow* pCoreWindow)
     if (m_pCoreService->IsTSF3Enabled())
     {
         m_textInputProducerHelper.Init(pCoreWindow);
+
+        // Install the legacy-IME focus park when the per-app opt-in was set at DXamlCore init. Best-effort:
+        // if TSF is unavailable the park stays uninitialized and simply doesn't run.
+        if (m_pCoreService->ShouldInstallImeFocusPark())
+        {
+            IGNOREHR(m_imeFocusPark.Initialize());
+        }
     }
 
     CContentRoot* contentRoot = m_pCoreService->GetContentRootCoordinator()->Unsafe_IslandsIncompatible_CoreWindowContentRoot();
     FocusObserver* focusObserver = contentRoot->GetFocusManagerNoRef()->GetFocusObserverNoRef();
 
     IFCFAILFAST(focusObserver->Init(pCoreWindow));
+
+    // If the legacy-IME focus park was installed, engage it immediately based on the current focus so we
+    // don't leave a window at startup (before the first focus change) where nothing is parked and IMM
+    // could reach the CUAS default input context. If a text-editable control is already focused, this
+    // stands down and RichEdit keeps TSF focus.
+    if (m_imeFocusPark.IsInitialized())
+    {
+        CDependencyObject* focusedElement = contentRoot->GetFocusManagerNoRef()->GetFocusedElementNoRef();
+        NotifyFocusChangedForImePark(focusedElement);
+    }
 }
 
 wuc::ICoreWindow* CInputServices::GetCoreWindow() const

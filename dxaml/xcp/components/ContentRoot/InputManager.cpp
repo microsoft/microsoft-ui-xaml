@@ -5,6 +5,7 @@
 
 #include "InputManager.h"
 #include "ContentRoot.h"
+#include "InputServices.h"
 
 #include "KeyboardEventArgs.h"
 
@@ -221,6 +222,14 @@ _Check_return_ HRESULT CInputManager::RegisterFrameworkInputView()
 _Check_return_ HRESULT CInputManager::NotifyFocusChanged(_In_opt_ CDependencyObject* pFocusedElement, _In_ bool bringIntoView, _In_ bool animateIfBringIntoView)
 {
     IFC_RETURN(m_inputPaneProcessor.NotifyFocusChanged(pFocusedElement, bringIntoView, animateIfBringIntoView));
+
+    // Drive the legacy-IME focus park (installed only under the per-app opt-in) from this central
+    // focus-changed notification, so TSF focus is parked whenever a non-text element is focused.
+    if (CInputServices* inputServices = m_coreServices.GetInputServices())
+    {
+        inputServices->NotifyFocusChangedForImePark(pFocusedElement);
+    }
+
     return S_OK;
 }
 
