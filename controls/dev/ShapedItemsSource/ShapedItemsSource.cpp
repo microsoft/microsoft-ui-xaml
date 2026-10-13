@@ -81,24 +81,30 @@ void ShapedItemsSource::Start()
 {
     // Not in the constructor: needs weak_from_this so an off-thread handler cannot outlive us.
     m_liveShaping->SetChangeHandler(
-        [weakThis = weak_from_this(), queue = m_ownerQueue, ownerThreadId = m_ownerThreadId](winrt::IInspectable const& item, winrt::hstring const& propertyName)
+        [weakThis = weak_from_this(), queue = m_ownerQueue, ownerThreadId = m_ownerThreadId, dropped = m_liveShapingChangeDropped](winrt::IInspectable const& item, winrt::hstring const& propertyName)
         {
             if (queue && !queue.HasThreadAccess())
             {
                 // Off-thread: all touched state belongs to the owning thread, so marshal it.
-                queue.TryEnqueue([weakThis, item, propertyName]()
+                const bool posted = queue.TryEnqueue([weakThis, item, propertyName]()
                     {
                         if (auto const strongThis = weakThis.lock())
                         {
                             strongThis->OnLiveShapedItemChanged(item, propertyName);
                         }
                     });
+                if (!posted)
+                {
+                    dropped->store(true);
+                }
                 return;
             }
 
             if (!queue && ::GetCurrentThreadId() != ownerThreadId)
             {
-                // No queue to marshal to; drop it. The next owner-thread reshape re-reads items.
+                // No queue to marshal to. Flag it; the owner's next live change forces a full
+                // restore, which re-reads every item.
+                dropped->store(true);
                 return;
             }
 
@@ -142,6 +148,11 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
     {
         ClearLiveShapingSubscriptions();
 
+        // Nothing live is pending any more; a later re-enable starts from a fresh restore. A
+        // restore still queued finds the flag clear and returns.
+        m_liveShapingDirty = false;
+        m_liveShapingHeld = false;
+        m_liveShapingChangeDropped->store(false);
         // Sort-key tracking owns staleness again. The projection is current (live shaping kept it
         // so), hence tracking restarts with nothing dirty.
         if (m_kind == ProjectionKind::Flat && m_shapingState.HasProjection)
@@ -1748,8 +1759,10 @@ void ShapedItemsSource::Refresh()
         auto rows = Materialize(authoritativeSource);
         RefreshLiveShapingSubscriptions(rows);
 
-        // All snapshots were just recaptured, so any pending live restore is satisfied.
+        // All snapshots were just recaptured, so any pending live restore is satisfied -- unless
+        // the rebuild below throws, in which case the catch re-marks it.
         m_liveShapingDirty = false;
+        m_liveShapingChangeDropped->store(false);
 
         if (!HasAnyShapingVerb())
         {
@@ -1822,11 +1835,26 @@ void ShapedItemsSource::Refresh()
     }
     catch (...)
     {
+        // The snapshots may already describe data the kept projection does not show (a transient
+        // duplicate key, say). Stay dirty without posting, so the next live change retries the
+        // full rebuild instead of matching the fresh snapshots and dropping the change.
+        if (IsLiveShapingEnabled())
+        {
+            m_liveShapingDirty = true;
+        }
+
         // A request that arrived during the failed pass describes newer state; post it (inline
         // would throw into the same app call). Only such requests replay, so bad data cannot loop.
+        // Contained: a scheduling failure must not replace the actionable exception rethrown below.
         if (runPendingRefresh)
         {
-            ScheduleRefreshReplay();
+            try
+            {
+                ScheduleRefreshReplay();
+            }
+            catch (...)
+            {
+            }
         }
 
         // An in-pass ClearParentBy must still take effect; its rebuild just failed.
@@ -2303,11 +2331,11 @@ void ShapedItemsSource::ReleaseHierarchyProjection()
 {
     if (m_hierarchicalAdapter)
     {
-        // Replacement may fail: keep visible rows for the inert fallback (see
+        // Replacement may fail: keep every row for the inert fallback (see
         // CompleteDeferredHierarchyTeardown). Grouped trees keep rows in the slices.
         if (m_pendingHierarchyTeardown && m_kind == ProjectionKind::Hierarchical)
         {
-            m_releasedHierarchyRows = VisibleHierarchicalRows();
+            m_releasedHierarchyRows = HierarchyFallbackRows();
         }
 
         // Callback first: nothing below may drive a re-slice on the way out.
@@ -2327,6 +2355,27 @@ void ShapedItemsSource::ReleaseHierarchyProjection()
     m_rootBucketIndex.clear();
     // Holds every source row alive; a later relation rebuilds it anyway.
     m_hierarchyStructure.reset();
+}
+
+std::vector<winrt::IInspectable> ShapedItemsSource::HierarchyFallbackRows() const
+{
+    // The flat view of the last good structure: every row in source order, so descendants of a
+    // collapsed node are not lost with the tree. Filtered as a flat source would be, best-effort.
+    if (!m_hierarchyStructure)
+    {
+        return VisibleHierarchicalRows();
+    }
+
+    auto rows = m_hierarchyStructure->Rows;
+    try
+    {
+        ApplyFilter(rows);
+    }
+    catch (...)
+    {
+        rows = m_hierarchyStructure->Rows;
+    }
+    return rows;
 }
 
 std::vector<winrt::IInspectable> ShapedItemsSource::VisibleHierarchicalRows() const
@@ -2508,15 +2557,15 @@ void ShapedItemsSource::TryCompleteDeferredHierarchyTeardown()
         {
             if (m_hierarchicalAdapter)
             {
-                m_releasedHierarchyRows = VisibleHierarchicalRows();
+                m_releasedHierarchyRows = HierarchyFallbackRows();
             }
-            auto const visibleRows = std::move(m_releasedHierarchyRows);
+            auto const flatRows = std::move(m_releasedHierarchyRows);
             m_releasedHierarchyRows.clear();
             ReleaseHierarchyProjection();
             m_releasedHierarchyRows.clear();
             InvalidateShapingState();
             ClearFlatRowIdentityTracking();
-            m_rows.ReplaceAll(visibleRows);
+            m_rows.ReplaceAll(flatRows);
             // Degraded: later changes re-shape through Refresh.
             m_kind = ProjectionKind::Unshaped;
         }
@@ -2723,8 +2772,9 @@ void ShapedItemsSource::AddLiveShapingSubscription(winrt::IInspectable const& it
 
 void ShapedItemsSource::RemoveLiveShapingSubscription(winrt::IInspectable const& item)
 {
-    // Not gated on IsLiveShapingEnabled: pruning leftovers is always correct.
-    if (!item)
+    // Not gated on IsLiveShapingEnabled: pruning leftovers is always correct. Gated on there being
+    // anything to prune, so a source that never went live pays no identity QI per removal.
+    if (!item || (m_liveShaping->Empty() && m_liveShapeSnapshots.empty()))
     {
         return;
     }
@@ -2818,6 +2868,13 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
         return;
     }
 
+    // A change the owner could not be told about off-thread: snapshots cannot reveal it, so force
+    // the full restore, which re-reads every item.
+    if (m_liveShapingChangeDropped->exchange(false))
+    {
+        MarkLiveShapingDirty();
+    }
+
     // Before the coalescing early-out: the owner must see every changed item.
     if (m_liveItemChangedHook && m_liveItemChangedHook(item, m_liveShapingDirty))
     {
@@ -2825,14 +2882,12 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
         return;
     }
 
-    // A full restore is already posted; skip snapshot capture so bulk edits cost one capture.
+    // A full restore is already pending; skip snapshot capture so bulk edits cost one capture.
+    // Still re-arm it: an earlier post may have been refused, failed, or parked behind a hold
+    // that has since lifted.
     if (m_liveShapingDirty)
     {
-        if (m_liveShapingHeld)
-        {
-            // Lets MarkLiveShapingDirty re-post a restore whose hold lifted without a resume.
-            MarkLiveShapingDirty();
-        }
+        EnsureLiveShapingRestore();
         return;
     }
 
@@ -2851,50 +2906,66 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
 
 void ShapedItemsSource::MarkLiveShapingDirty()
 {
-    if (m_liveShapingDirty)
+    m_liveShapingDirty = true;
+    EnsureLiveShapingRestore();
+}
+
+void ShapedItemsSource::EnsureLiveShapingRestore()
+{
+    if (!m_liveShapingDirty || m_liveShapingRestorePosted)
+    {
+        return;
+    }
+
+    if (m_liveShapingHeld)
     {
         // A held restore normally waits for ResumeHeldLiveShaping. If the hold has since lifted
         // without one (the owner was destroyed mid-edit), re-post so live shaping does not stall.
-        if (m_liveShapingHeld && !(m_liveShapingHold && m_liveShapingHold()))
+        if (m_liveShapingHold && m_liveShapingHold())
         {
-            ResumeHeldLiveShaping();
+            return;
         }
-        return;
+        m_liveShapingHeld = false;
     }
-    m_liveShapingDirty = true;
 
-    // Post where possible: coalesces a turn's writes into one rebuild and stays out of the app's
+    // Posted: coalesces a turn's writes into one rebuild and stays out of the app's
     // PropertyChanged handler.
     PostLiveShapingRestore();
 }
 
 void ShapedItemsSource::PostLiveShapingRestore()
 {
-    auto weakThis = weak_from_this();
-    if (auto const queue = winrt::DispatcherQueue::GetForCurrentThread())
+    if (m_liveShapingRestorePosted)
     {
-        if (queue.TryEnqueue([weakThis]()
+        return;
+    }
+
+    if (m_ownerQueue)
+    {
+        auto weakThis = weak_from_this();
+        // A refused post means the owner's queue is shutting down. Stay dirty rather than rebuild
+        // inside the app's PropertyChanged; the next change re-arms it.
+        m_liveShapingRestorePosted = m_ownerQueue.TryEnqueue([weakThis]()
             {
                 if (auto const strongThis = weakThis.lock())
                 {
+                    strongThis->m_liveShapingRestorePosted = false;
                     try
                     {
                         strongThis->RestoreLiveShaping();
                     }
                     catch (...)
                     {
-                        // No app call to receive this; as in ScheduleRefreshReplay.
+                        // No app call to receive this; Refresh left the source dirty, so the
+                        // next live change retries.
                     }
                 }
-            }))
-        {
-            return;
-        }
+            });
+        return;
     }
 
-    // Couldn't post (no dispatcher, or its queue is shutting down): restore now rather than leave
-    // the projection stale. This can run inside the app's PropertyChanged, so contain failures as
-    // the posted path does.
+    // The owner thread has no dispatcher at all (test host), so there is no later turn to post to.
+    // This is the one case that restores inside the caller; contain failures as the posted path does.
     try
     {
         RestoreLiveShaping();

@@ -244,35 +244,35 @@
                             </VisualStateGroup>
 
                             <!-- Hierarchy groups. Inert for flat/grouped sources (Level 0). -->
-                            <VisualStateGroup x:Name="ExpansionStates">
-                                <VisualState x:Name="Collapsed">
+                            <VisualStateGroup x:Name="RowExpansionStates">
+                                <VisualState x:Name="RowCollapsed">
                                     <VisualState.Setters>
                                         <Setter Target="PART_RowExpanderIcon.Glyph" Value="&#xE76C;" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="Expanded">
+                                <VisualState x:Name="RowExpanded">
                                     <VisualState.Setters>
                                         <Setter Target="PART_RowExpanderIcon.Glyph" Value="&#xE70D;" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="ExpandabilityStates">
-                                <VisualState x:Name="Expandable" />
+                            <VisualStateGroup x:Name="RowExpandabilityStates">
+                                <VisualState x:Name="RowExpandable" />
                                 <!-- Only the glyph hides; the gutter keeps its width so leaf text
                                      aligns with sibling branch text. -->
-                                <VisualState x:Name="NotExpandable">
+                                <VisualState x:Name="RowNotExpandable">
                                     <VisualState.Setters>
                                         <Setter Target="PART_RowExpanderIcon.Visibility" Value="Collapsed" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="HierarchyStates">
+                            <VisualStateGroup x:Name="RowHierarchyStates">
                                 <!-- TableViewRow sets gutter Visibility directly; these states exist
                                      for retemplating apps to key off. -->
-                                <VisualState x:Name="NotHierarchical" />
-                                <VisualState x:Name="Hierarchical" />
+                                <VisualState x:Name="RowNotHierarchical" />
+                                <VisualState x:Name="RowHierarchical" />
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 

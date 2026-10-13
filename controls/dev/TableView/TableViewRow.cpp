@@ -1311,6 +1311,15 @@ void TableViewRow::SetHierarchyStateInternal(int32_t level, bool isExpandable, b
     ApplyHierarchyAffordance();
 
     RaiseExpandCollapseStateChanged(oldState, HierarchyExpandCollapseState());
+
+    // Only an existing peer can have handed a client cached set metadata.
+    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    {
+        if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TableViewRowAutomationPeer>())
+        {
+            winrt::get_self<TableViewRowAutomationPeer>(rowPeer)->RaiseHierarchyPositionChanged();
+        }
+    }
 }
 
 // Computed here, not on the peer, so transitions are measurable without forcing a peer.
@@ -1376,11 +1385,11 @@ void TableViewRow::ApplyHierarchyAffordance()
     const bool isHierarchical = level > 0;
 
     winrt::VisualStateManager::GoToState(
-        *this, isHierarchical ? L"Hierarchical" : L"NotHierarchical", false /* useTransitions */);
+        *this, isHierarchical ? L"RowHierarchical" : L"RowNotHierarchical", false /* useTransitions */);
     winrt::VisualStateManager::GoToState(
-        *this, IsExpandable() ? L"Expandable" : L"NotExpandable", false /* useTransitions */);
+        *this, IsExpandable() ? L"RowExpandable" : L"RowNotExpandable", false /* useTransitions */);
     winrt::VisualStateManager::GoToState(
-        *this, IsExpanded() ? L"Expanded" : L"Collapsed", false /* useTransitions */);
+        *this, IsExpanded() ? L"RowExpanded" : L"RowCollapsed", false /* useTransitions */);
 
     const double indent = HierarchyIndent();
 

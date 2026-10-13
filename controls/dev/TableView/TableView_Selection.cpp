@@ -350,9 +350,10 @@ void TableView::OnSelectionModelSelectionChanged(
         return;
     }
 
-    // Outside a restore, a model clear means the row left the view (e.g. subtree collapse). Drop the
-    // anchor so a later Reset doesn't resurrect it.
-    if (newIndex < 0)
+    // Outside a restore, a model clear on a hierarchical source means the row left the view (e.g.
+    // subtree collapse). Drop the anchor so a later Reset doesn't resurrect it. A flat source keeps
+    // the anchor, as before hierarchy: a Reset-driven clear relies on it for the identity restore.
+    if (newIndex < 0 && m_tableViewSourceRowMetadata && m_tableViewSourceRowMetadata->IsHierarchicalSource())
     {
         m_stickySelectedItem.set(nullptr);
         m_stickySelectedIdentity.clear();

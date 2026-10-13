@@ -29,6 +29,7 @@ public:
     // Revokes every subscription whose item is not in `live`.
     void RetainOnly(std::unordered_set<void const*> const& live);
     void UnsubscribeAll() noexcept;
+    bool Empty() const noexcept { return m_subscriptions.empty(); }
 
 private:
     struct Subscription

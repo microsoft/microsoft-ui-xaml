@@ -14,6 +14,7 @@ using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
+using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using MUXTestInfra.Shared.Infra;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.TableViewInteractionTestHelpers;
@@ -203,6 +204,65 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsLessThanOrEqual(Math.Abs(after.Height - before.Height), 1, "Scrolling must not change the table's height.");
                 Verify.IsLessThanOrEqual(after.Bottom, nextBounds.Top + 1,
                     "The scrolled table's bounding rectangle must still end above the element laid out after it.");
+            }
+        }
+
+        #endregion
+
+        #region Group expansion structure events
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies collapsing and re-expanding a group in a flat grouped table each raise StructureChanged to a UIA client, and a no-op expand does not.")]
+        public void GroupExpansionRaisesStructureChangedForEachRealChange()
+        {
+            // Contract: RaiseGroupStructureChanged fires when, and only when, a group's expansion actually
+            //   changed. RowMetadataProvider::SetGroupExpandedCore reports "changed", not the resulting state.
+            //   Before hierarchy it returned the resulting state, so a collapse (state false) never raised and
+            //   a client kept the collapsed rows in its cached tree.
+            // Failure means: a screen reader keeps reading rows a collapse removed, or re-reads a tree that a
+            //   no-op expand never changed.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = SelectGroupedPivotAndGetTable();
+                if (tableView == null)
+                {
+                    return;
+                }
+
+                UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
+                UIObject groupHeader = GetFirstGroupHeader(rowsHost);
+                if (groupHeader == null)
+                {
+                    Verify.Fail("No TableViewGroupHeader peer was found under the rows host of the grouped table.");
+                    return;
+                }
+
+                var expandCollapse = new ExpandCollapseImplementation(groupHeader);
+                Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState, "Precondition: the first group starts expanded.");
+
+                using (var waiter = new StructureChangedEventWaiter(tableView, Scope.Element))
+                {
+                    expandCollapse.Collapse();
+                    Wait.ForIdle();
+                    bool collapseRaised = waiter.TryWait(TimeSpan.FromSeconds(5));
+
+                    waiter.Reset();
+                    expandCollapse.Expand();
+                    Wait.ForIdle();
+                    bool expandRaised = waiter.TryWait(TimeSpan.FromSeconds(5));
+
+                    waiter.Reset();
+                    expandCollapse.Expand();
+                    Wait.ForIdle();
+                    bool noOpRaised = waiter.TryWait(TimeSpan.FromSeconds(2));
+
+                    Log.Comment("StructureChanged observed: collapse={0} expand={1} no-op expand={2}.",
+                        collapseRaised, expandRaised, noOpRaised);
+
+                    Verify.IsTrue(collapseRaised, "Collapsing a group must raise StructureChanged.");
+                    Verify.IsTrue(expandRaised, "Re-expanding a group must raise StructureChanged.");
+                    Verify.IsFalse(noOpRaised, "Expanding an already-expanded group changes nothing and must not raise StructureChanged.");
+                }
             }
         }
 

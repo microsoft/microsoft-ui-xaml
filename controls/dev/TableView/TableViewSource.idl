@@ -111,7 +111,9 @@ runtimeclass TableViewSource
 
     // Opt-in: reshapes when an item's sort key, group key, filter result or parent relation changes
     // (PropertyChanged), coalesced to one reshape per dispatcher turn and deferred while a cell is
-    // being edited.
+    // being edited. Each reshape re-reads every item (O(n) in the source size), however few
+    // changed. A PropertyChanged raised off the UI thread is marshalled to it; one that cannot be
+    // is picked up by the next live change on the UI thread.
     Boolean IsLiveShaping{ get; set; };
 
 }

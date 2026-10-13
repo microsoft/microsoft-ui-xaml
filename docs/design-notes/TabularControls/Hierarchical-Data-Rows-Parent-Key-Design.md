@@ -478,8 +478,8 @@ press is left unhandled for the row. A press on a leaf's gutter is also left unh
 selects the row.
 
 **Template contract.** `PART_RowExpanderGutter` and `PART_RowExpanderIcon` are optional, but a
-template declares them together with the `HierarchyStates`, `ExpandabilityStates` and
-`ExpansionStates` groups or not at all: the groups are entered on every row (flat and grouped
+template declares them together with the `RowHierarchyStates`, `RowExpandabilityStates` and
+`RowExpansionStates` groups or not at all: the groups are entered on every row (flat and grouped
 tables included) and the default template's states resolve `PART_RowExpanderIcon` by name, so
 groups without the part fail at state application, while neither is fine. Code null-checks the
 gutter, so omitting it loses only the pointer gesture and visible chevron (keyboard and the

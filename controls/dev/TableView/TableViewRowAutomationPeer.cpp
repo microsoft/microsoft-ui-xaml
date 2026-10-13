@@ -537,6 +537,13 @@ std::wstring TableViewRowAutomationPeer::ComposeCellTexts(
 
 int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
 {
+    const int32_t value = ComputePositionInSet();
+    m_lastRaisedPositionInSet = value;
+    return value;
+}
+
+int32_t TableViewRowAutomationPeer::ComputePositionInSet()
+{
     // An app-set AutomationProperties value wins, as in every dxaml peer that computes this.
     if (const auto provided = __super::GetPositionInSetCore(); provided > 0)
     {
@@ -576,6 +583,13 @@ int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
 }
 
 int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
+{
+    const int32_t value = ComputeSizeOfSet();
+    m_lastRaisedSizeOfSet = value;
+    return value;
+}
+
+int32_t TableViewRowAutomationPeer::ComputeSizeOfSet()
 {
     if (const auto provided = __super::GetSizeOfSetCore(); provided > 0)
     {
@@ -785,7 +799,44 @@ void TableViewRowAutomationPeer::RaiseExpandCollapseAutomationEvent(
 
 // ----- IAutomationPeerOverrides3 -----
 
+void TableViewRowAutomationPeer::RaiseHierarchyPositionChanged()
+{
+    if (!IsHierarchicalRow())
+    {
+        return;
+    }
+
+    try
+    {
+        // Compare against what this peer last reported to a client (recorded by the Get*Core
+        // overrides). -1 means never reported, so no client can hold a stale value.
+        auto raiseIfChanged = [this](winrt::AutomationProperty const& property, int32_t& last, int32_t current)
+        {
+            if (last >= 0 && last != current)
+            {
+                RaisePropertyChangedEvent(property, box_value(last), box_value(current));
+                last = current;
+            }
+        };
+
+        raiseIfChanged(winrt::AutomationElementIdentifiers::LevelProperty(), m_lastRaisedLevel, ComputeLevel());
+        raiseIfChanged(winrt::AutomationElementIdentifiers::PositionInSetProperty(), m_lastRaisedPositionInSet, ComputePositionInSet());
+        raiseIfChanged(winrt::AutomationElementIdentifiers::SizeOfSetProperty(), m_lastRaisedSizeOfSet, ComputeSizeOfSet());
+    }
+    catch (...)
+    {
+        // best-effort: the tree may be tearing down.
+    }
+}
+
 int32_t TableViewRowAutomationPeer::GetLevelCore()
+{
+    const int32_t value = ComputeLevel();
+    m_lastRaisedLevel = value;
+    return value;
+}
+
+int32_t TableViewRowAutomationPeer::ComputeLevel()
 {
     // An app-set AutomationProperties.Level wins, as in GetPositionInSetCore/GetSizeOfSetCore.
     if (const auto provided = __super::GetLevelCore(); provided > 0)
