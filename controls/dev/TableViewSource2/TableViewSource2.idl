@@ -1,0 +1,35 @@
+namespace MU_XC_NAMESPACE
+{
+
+// Scaffold for the shaping redesign (docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md).
+// Mirrors TableViewSource's public verb surface so the two can be compared side by side; every verb
+// is a stub until the new engine lands. Reuses TableViewPredicate, TableViewKeySelector,
+// TableViewIdentitySelector (TableViewSource.idl) and SortDirection (SortDirection.idl).
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewSource2
+{
+    // Accepts the same collection interfaces as TableViewSource.From. Throws E_INVALIDARG when
+    // items is null.
+    static TableViewSource2 From(Object items);
+
+    TableViewSource2 Filter(TableViewPredicate predicate);
+
+    [default_overload] [method_name("GroupBy")]
+    TableViewSource2 GroupBy(TableViewKeySelector keySelector);
+
+    [method_name("GroupByWithIdentity")]
+    TableViewSource2 GroupBy(TableViewKeySelector keySelector, TableViewIdentitySelector groupIdentitySelector);
+
+    [method_name("SortByPath")]
+    TableViewSource2 Sort(String sortMemberPath, SortDirection direction);
+
+    [default_overload] [method_name("Sort")]
+    TableViewSource2 Sort(TableViewKeySelector keySelector, SortDirection direction);
+
+    TableViewSource2 ClearFilter();
+    TableViewSource2 ClearGroupBy();
+    TableViewSource2 ClearSort();
+}
+
+}
