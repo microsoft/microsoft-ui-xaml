@@ -175,6 +175,24 @@ public sealed partial class ContextMenusPage
         await Task.Delay(300);
         await ExpectAsync("K3 Shift+F10, current cell Office row 2", () => SendKeys(VkShift, VkF10), "ROW", row2);
 
+        // Two-level keyboard focus: at row level (Left out of the first cell) a request targets the
+        // row even though the remembered current column has a cell menu; drilling back into the Name
+        // cell (Right, Right) targets that cell again.
+        LeftClick(Cell(3, NameColumn));
+        await Task.Delay(300);
+        SendKeys(VkLeft);
+        await Task.Delay(150);
+        SendKeys(VkLeft);
+        await Task.Delay(300);
+        await ExpectAsync("K4 Shift+F10, row-level focus row 3 (current column Name)", () => SendKeys(VkShift, VkF10), "ROW", row3);
+        await ExpectAsync("K5 Menu key, row-level focus row 3", () => SendKeys(VkApps), "ROW", row3);
+        SendKeys(VkRight);
+        await Task.Delay(150);
+        SendKeys(VkRight);
+        await Task.Delay(300);
+        await ExpectAsync("K6 Shift+F10, drilled back into Name row 3", () => SendKeys(VkShift, VkF10), "NAME CELL", row3);
+        await ExpectAsync("U0 uia row peer row 3 (current column Name)", () => ShowRowContextMenu(3), "ROW", row3);
+
         // UIA ShowContextMenu targets one specific cell, with no position.
         await ExpectAsync("U1 uia Name cell row 0 (current cell Office row 2)", () => ShowContextMenu(0, NameColumn), "NAME CELL", row0);
         await ExpectAsync("U2 uia Office cell row 1", () => ShowContextMenu(1, OfficeColumn), "ROW", row1);
@@ -336,6 +354,14 @@ public sealed partial class ContextMenusPage
         cellPeer.ShowContextMenu();
     }
 
+    private void ShowRowContextMenu(int rowIndex)
+    {
+        var row = Row(rowIndex);
+        var rowPeer = FrameworkElementAutomationPeer.FromElement(row) ?? FrameworkElementAutomationPeer.CreatePeerForElement(row)
+            ?? throw new InvalidOperationException($"no row peer for row {rowIndex}");
+        rowPeer.ShowContextMenu();
+    }
+
     private void RightClick(FrameworkElement element, double xFraction = 0.5) =>
         Click(element, xFraction, MouseEventFRightDown, MouseEventFRightUp);
 
@@ -391,6 +417,8 @@ public sealed partial class ContextMenusPage
     private const ushort VkShift = 0x10;
     private const ushort VkF10 = 0x79;
     private const ushort VkApps = 0x5D;
+    private const ushort VkLeft = 0x25;
+    private const ushort VkRight = 0x27;
 
     [StructLayout(LayoutKind.Sequential)]
     private struct NativePoint
