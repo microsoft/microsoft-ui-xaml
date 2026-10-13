@@ -91,6 +91,11 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderSurvivesReopen(
     VerifyWindowedPopupProviderLifetime(PopupHostChange::None);
 }
 
+void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderCreatedWithStructureListenerSurvivesReopen()
+{
+    VerifyWindowedPopupProviderLifetime(PopupHostChange::None, true /* createWithStructureListener */);
+}
+
 void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderIsRecreatedAfterHostChange()
 {
     VerifyWindowedPopupProviderLifetime(PopupHostChange::NewPopup);
@@ -101,13 +106,34 @@ void PopupAutomationIntegrationTests::VerifyPopupProviderIsRecreatedAfterWindowe
     VerifyWindowedPopupProviderLifetime(PopupHostChange::NonWindowed);
 }
 
-void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange)
+void PopupAutomationIntegrationTests::VerifyInlinePopupProviderUsesAncestorWindowedHost()
 {
-    TestCleanupWrapper cleanup;
+    VerifyWindowedPopupProviderLifetime(PopupHostChange::NestedInline);
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange, bool createWithStructureListener)
+{
+    wrl::ComPtr<AutomationClient::AutomationStructureChangeHandler> structureHandler;
+    TestCleanupWrapper cleanup([&]()
+    {
+        if (structureHandler)
+        {
+            UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+            {
+                structureHandler->RemoveEventHandler();
+            });
+        }
+        TestServices::WindowHelper->WaitForIdle();
+        TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+    });
     xaml_controls::Grid^ root;
     xaml_controls::Button^ button;
+    xaml_controls::Button^ mainAnchor;
+    xaml_controls::Button^ popupAnchor;
     xaml_primitives::Popup^ popup;
     xaml_primitives::Popup^ previousPopup;
+    xaml_primitives::Popup^ inlinePopup = nullptr;
+    HWND popupWindow = nullptr;
     wrl::ComPtr<IRawElementProviderFragment> retainedProvider;
     wrl::ComPtr<IRawElementProviderFragmentRoot> retainedRoot;
 
@@ -118,6 +144,9 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
             xaml_automation_peers::AutomationEvents::StructureChanged));
 
         root = ref new xaml_controls::Grid();
+        mainAnchor = ref new xaml_controls::Button();
+        mainAnchor->Content = L"Main host anchor";
+        root->Children->Append(mainAnchor);
         TestServices::WindowHelper->WindowContent = root;
         button = ref new xaml_controls::Button();
         button->Content = ref new Platform::String(s_automationPopupButtonName);
@@ -126,7 +155,22 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
         popup = ref new xaml_primitives::Popup();
         popup->ShouldConstrainToRootBounds = false;
         popup->XamlRoot = root->XamlRoot;
-        popup->Child = button;
+        auto popupContent = ref new xaml_controls::StackPanel();
+        popupAnchor = ref new xaml_controls::Button();
+        popupAnchor->Content = L"Popup host anchor";
+        popupContent->Children->Append(popupAnchor);
+        if (hostChange == PopupHostChange::NestedInline)
+        {
+            inlinePopup = ref new xaml_primitives::Popup();
+            inlinePopup->ShouldConstrainToRootBounds = true;
+            inlinePopup->Child = button;
+            popupContent->Children->Append(inlinePopup);
+        }
+        else
+        {
+            popupContent->Children->Append(button);
+        }
+        popup->Child = popupContent;
         xaml_automation::AutomationProperties::SetName(popup, ref new Platform::String(s_automationName));
         if (hostChange == PopupHostChange::NonWindowed)
         {
@@ -134,14 +178,54 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
         }
     });
     TestServices::WindowHelper->WaitForIdle();
-    PopupHelper::OpenPopup(popup);
 
     AutomationClient::UIAElementInfo uiaInfo;
     uiaInfo.m_Name = s_automationPopupButtonName;
+    AutomationClient::UIAElementInfo popupAnchorInfo;
+    popupAnchorInfo.m_Name = L"Popup host anchor";
+    AutomationClient::UIAElementInfo mainAnchorInfo;
+    mainAnchorInfo.m_Name = L"Main host anchor";
     std::shared_ptr<AutomationClient::AutomationClientManager> client;
+    std::shared_ptr<AutomationClient::AutomationClientManager> popupAnchorClient;
+    std::shared_ptr<AutomationClient::AutomationClientManager> mainAnchorClient;
     UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
     {
-        client = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromOpenPopup(uiaInfo, popup);
+        mainAnchorClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(mainAnchorInfo);
+        if (createWithStructureListener)
+        {
+            auto windowClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromWindow();
+            auto event = std::make_shared<Event>();
+            structureHandler.Attach(new AutomationClient::AutomationStructureChangeHandler(windowClient, event, TreeScope_Subtree));
+            structureHandler->Init(StructureChangeType_ChildAdded);
+            structureHandler->AttachEventHandler();
+        }
+    });
+    if (createWithStructureListener)
+    {
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(xaml_automation_peers::AutomationPeer::ListenerExists(
+                xaml_automation_peers::AutomationEvents::StructureChanged));
+        });
+    }
+    PopupHelper::OpenPopup(popup);
+    if (inlinePopup)
+    {
+        PopupHelper::OpenPopup(inlinePopup);
+    }
+    RunOnUIThread([&]()
+    {
+        popupWindow = reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popup));
+        VERIFY_IS_NOT_NULL(popupWindow);
+    });
+    UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+    {
+        popupAnchorClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, popupAnchorInfo);
+        client = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, uiaInfo);
+        if (structureHandler)
+        {
+            structureHandler->RemoveEventHandler();
+        }
     });
 
     RunOnUIThread([&]()
@@ -162,7 +246,7 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
             (hostChange == PopupHostChange::NonWindowed && cycle == 0);
         RunOnUIThread([&]()
         {
-            popup->IsOpen = false;
+            (inlinePopup ? inlinePopup : popup)->IsOpen = false;
         });
         TestServices::WindowHelper->WaitForIdle();
 
@@ -170,28 +254,43 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
         {
             if (hostChange == PopupHostChange::NewPopup)
             {
-                popup->Child = nullptr;
+                safe_cast<xaml_controls::StackPanel^>(popup->Child)->Children->RemoveAt(1);
                 previousPopup = popup;
                 popup = ref new xaml_primitives::Popup();
                 popup->ShouldConstrainToRootBounds = false;
                 popup->XamlRoot = root->XamlRoot;
-                popup->Child = button;
+                auto popupContent = ref new xaml_controls::StackPanel();
+                popupAnchor = ref new xaml_controls::Button();
+                popupAnchor->Content = L"Popup host anchor";
+                popupContent->Children->Append(popupAnchor);
+                popupContent->Children->Append(button);
+                popup->Child = popupContent;
                 xaml_automation::AutomationProperties::SetName(popup, ref new Platform::String(s_automationName));
             }
             else if (hostChange == PopupHostChange::NonWindowed && cycle == 0)
             {
                 auto rotation = ref new xaml_media::RotateTransform();
                 rotation->Angle = 15;
-                button->RenderTransform = rotation;
+                popup->Child->RenderTransform = rotation;
             }
         });
-        PopupHelper::OpenPopup(popup);
+        PopupHelper::OpenPopup(inlinePopup ? inlinePopup : popup);
+        RunOnUIThread([&]()
+        {
+            if (hostChange != PopupHostChange::NonWindowed)
+            {
+                popupWindow = reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popup));
+            }
+        });
 
         UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
         {
+            popupAnchorClient = hostChange == PopupHostChange::NonWindowed ?
+                AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(popupAnchorInfo) :
+                AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, popupAnchorInfo);
             client = hostChange == PopupHostChange::NonWindowed ?
                 AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(uiaInfo) :
-                AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromOpenPopup(uiaInfo, popup);
+                AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, uiaInfo);
         });
 
         RunOnUIThread([&]()
@@ -218,6 +317,36 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
             CheckUIAElementName(currentProvider, s_automationPopupButtonName);
             wrl::ComPtr<IRawElementProviderFragmentRoot> currentRoot;
             LogThrow_IfFailed(currentProvider->get_FragmentRoot(&currentRoot));
+
+            // The independently discovered anchor stays in the destination host. Its UIA
+            // client is retained so QI cannot fall back to creating an island-rooted wrapper.
+            auto expectedHostPeer = xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(
+                hostChange == PopupHostChange::NonWindowed ? mainAnchor : popupAnchor);
+            VERIFY_IS_NOT_NULL(expectedHostPeer);
+            wrl::ComPtr<IInspectable> expectedInspectable(reinterpret_cast<IInspectable*>(expectedHostPeer));
+            wrl::ComPtr<IRawElementProviderFragment> expectedProvider;
+            wrl::ComPtr<IRawElementProviderFragmentRoot> expectedRoot;
+            LogThrow_IfFailed(expectedInspectable.As(&expectedProvider));
+            LogThrow_IfFailed(expectedProvider->get_FragmentRoot(&expectedRoot));
+            wrl::ComPtr<IUnknown> currentRootIdentity;
+            wrl::ComPtr<IUnknown> expectedRootIdentity;
+            LogThrow_IfFailed(currentRoot.As(&currentRootIdentity));
+            LogThrow_IfFailed(expectedRoot.As(&expectedRootIdentity));
+            VERIFY_ARE_EQUAL(expectedRootIdentity, currentRootIdentity,
+                L"The provider must use the current popup host, or the main host after non-windowed fallback.");
+            if (hostChange != PopupHostChange::NonWindowed)
+            {
+                auto mainPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(mainAnchor);
+                wrl::ComPtr<IInspectable> mainInspectable(reinterpret_cast<IInspectable*>(mainPeer));
+                wrl::ComPtr<IRawElementProviderFragment> mainProvider;
+                wrl::ComPtr<IRawElementProviderFragmentRoot> mainRoot;
+                wrl::ComPtr<IUnknown> mainRootIdentity;
+                LogThrow_IfFailed(mainInspectable.As(&mainProvider));
+                LogThrow_IfFailed(mainProvider->get_FragmentRoot(&mainRoot));
+                LogThrow_IfFailed(mainRoot.As(&mainRootIdentity));
+                VERIFY_ARE_NOT_EQUAL(mainRootIdentity, currentRootIdentity,
+                    L"A windowed-popup item must not be recreated against the main root.");
+            }
             if (!changeHost)
             {
                 VERIFY_ARE_EQUAL(retainedProvider, currentProvider);
@@ -235,6 +364,10 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
 
     RunOnUIThread([&]()
     {
+        if (inlinePopup)
+        {
+            inlinePopup->IsOpen = false;
+        }
         popup->IsOpen = false;
         retainedProvider.Reset();
         retainedRoot.Reset();

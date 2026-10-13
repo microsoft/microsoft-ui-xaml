@@ -745,27 +745,30 @@ _Check_return_ HRESULT CDependencyObject::TryReCreateUIAWrapper()
                 CUIAWindow* oldUIAWindow = static_cast<CUIAWrapper*>(wrapper)->GetUIAWindow();
                 CUIAWindow* uiaWindow = GetContext()->GetUIAWindowForElementRootNoRef(visualTree->GetRootElementNoRef());
 
-                // A windowed popup can use a different UIA window from its VisualTree root.
+                // Use the destination popup host for both comparison and provider creation.
+                xref_ptr<CPopup> popup(do_pointer_cast<CPopup>(this));
+                if (!popup || !popup->IsOpen() || !popup->IsWindowed())
+                {
+                    popup = GetFirstAncestorPopup(true /* windowedPopupOnly */);
+                }
+                if (popup && popup->IsOpen() && popup->IsWindowed())
+                {
+                    popup->EnsureUIAWindow();
+                    if (auto popupWindow = popup->GetUIAWindow())
+                    {
+                        uiaWindow = popupWindow;
+                    }
+                }
+
                 if (oldUIAWindow != uiaWindow)
                 {
-                    xref_ptr<CPopup> popup;
-                    if (auto element = do_pointer_cast<CUIElement>(this))
-                    {
-                        IFC_RETURN(CPopupRoot::GetOpenPopupForElement(element, popup.ReleaseAndGetAddressOf()));
-                    }
+                    currentAP->InvalidateUIAWrapper();
+                    wrapper->Invalidate();
 
-                    // Popup descendants can already have a wrapper rooted to the popup's UIA host.
-                    // Re-entering that same popup does not change their automation host.
-                    if (!popup || !popup->IsWindowed() || oldUIAWindow != popup->GetUIAWindow())
+                    if (uiaWindow)
                     {
-                        currentAP->InvalidateUIAWrapper();
-                        wrapper->Invalidate();
-
-                        if (uiaWindow)
-                        {
-                            xref_ptr<CUIAWrapper> spWrapper;
-                            IFC_RETURN(uiaWindow->CreateProviderForAP(currentAP, spWrapper.ReleaseAndGetAddressOf()));
-                        }
+                        xref_ptr<CUIAWrapper> spWrapper;
+                        IFC_RETURN(uiaWindow->CreateProviderForAP(currentAP, spWrapper.ReleaseAndGetAddressOf()));
                     }
                 }
             }

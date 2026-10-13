@@ -68,6 +68,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyWindowedPopupProviderCreatedWithStructureListenerSurvivesReopen)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a provider initially created for structure events uses the popup host and survives reopening.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyWindowedPopupProviderIsRecreatedAfterHostChange)
             TEST_METHOD_PROPERTY(L"Description", L"Verify a retained provider is invalidated when its content moves to another popup host.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
@@ -78,13 +83,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyInlinePopupProviderUsesAncestorWindowedHost)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify inline popup content uses its nearest enclosing windowed popup root.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
     private:
-        enum class PopupHostChange { None, NewPopup, NonWindowed };
+        enum class PopupHostChange { None, NewPopup, NonWindowed, NestedInline };
 
         wrl::ComPtr<IRawElementProviderFragment> GetUIAWindow();
         void CheckUIAElementName(_In_ wrl::ComPtr<IRawElementProviderFragment> uiaElement, _In_ const WCHAR* expectedName);
         void VerifyParentlessPopupAutomationTreeCommon(bool hasFrameAP);
-        void VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange);
+        void VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange, bool createWithStructureListener = false);
 
         static WCHAR s_automationName[];
         static WCHAR s_automationId[];

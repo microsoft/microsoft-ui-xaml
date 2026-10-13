@@ -2957,7 +2957,41 @@ HRESULT CUIAWindow::CreateProviderForAP(CAutomationPeer* pAP, CUIAWrapper** ppRe
 
     IFCPTR_RETURN(pAP);
 
-    IFC_RETURN(CUIAWrapper::Create(m_uiaHostEnvironmentInfo, m_pHost, this, pAP, m_pUIAIds, wrapper.ReleaseAndGetAddressOf()));
+    CUIAWindow* providerWindow = this;
+    if (auto root = pAP->GetRootNoRef())
+    {
+        if (auto rootWindow = pAP->GetContext()->GetUIAWindowForElementRootNoRef(root))
+        {
+            providerWindow = rootWindow;
+        }
+    }
+    if (auto owner = pAP->GetDONoRef())
+    {
+        xref_ptr<CPopup> popup(do_pointer_cast<CPopup>(owner));
+        if (!popup || !popup->IsOpen() || !popup->IsWindowed())
+        {
+            popup = owner->GetFirstAncestorPopup(true /* windowedPopupOnly */);
+        }
+
+        // Event delivery and peer QI can start at the island window. Newly exposed
+        // popup providers must use the same host as providers discovered by navigation.
+        if (popup && popup->IsOpen() && popup->IsWindowed())
+        {
+            popup->EnsureUIAWindow();
+            if (auto popupWindow = popup->GetUIAWindow())
+            {
+                providerWindow = popupWindow;
+            }
+        }
+    }
+
+    IFC_RETURN(CUIAWrapper::Create(
+        providerWindow->m_uiaHostEnvironmentInfo,
+        providerWindow->m_pHost,
+        providerWindow,
+        pAP,
+        providerWindow->m_pUIAIds,
+        wrapper.ReleaseAndGetAddressOf()));
 
     *ppRet = wrapper.detach();
 
