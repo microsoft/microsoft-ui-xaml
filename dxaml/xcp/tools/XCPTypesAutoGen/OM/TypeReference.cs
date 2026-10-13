@@ -514,6 +514,19 @@ namespace OM
             }
         }
 
+        /// <summary>
+        /// Gets whether a reference to this type defaults to tracked storage (TrackerPtr) so it
+        /// is visible to the reference-tracker GC walk. Forwards to the underlying type's
+        /// TypeDefinition.IsTrackerTarget. See PropertyDefinition.FrameworkFieldTypeName.
+        /// </summary>
+        public bool IsTrackerTarget
+        {
+            get
+            {
+                return IdlInfo.Type.IsTrackerTarget;
+            }
+        }
+
         public bool IsVoid
         {
             get;

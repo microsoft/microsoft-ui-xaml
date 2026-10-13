@@ -49,6 +49,12 @@ namespace XamlGen.Templates.Code.Framework.Bodies
             this.Write(", &");
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.FrameworkFieldName));
             this.Write("));\r\n");
+ } else if (Model.XamlPropertyFlags.WeakRef) { 
+            this.Write("    IFC(ctl::AsWeak(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.PropertyType.AbiParameterName));
+            this.Write(", &");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.FrameworkFieldName));
+            this.Write("));\r\n");
  } else if (Model.XamlPropertyFlags.UseComPtr) { 
             this.Write("    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.FrameworkFieldName));
