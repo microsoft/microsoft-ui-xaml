@@ -872,9 +872,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Scenario: on a loaded ColorPicker with the More button, toggle it, switch RGB/HSV and type valid/invalid hex
-        //     (focused or not, alpha on/off); also re-template a picker with a plain Button as MoreButton.
+        //     (unfocused, then in two separate focus sessions, alpha on/off); also re-template a picker with a plain Button
+        //     as MoreButton.
         // Expected: More label/name and TextEntryGrid follow the toggle (or each click); the hex box name follows the
-        //     model; valid hex sets Color, invalid hex keeps it and is replaced by the last valid color on focus loss.
+        //     model; valid hex sets Color and is kept on focus loss; invalid hex keeps Color and is replaced by the last
+        //     valid value on focus loss.
         // Failure means: ColorPicker::UpdateMoreButton / OnMoreButton*, OnColorRepresentationComboBoxSelectionChanged,
         //     OnHexTextChanging validation or the OnTextBoxLostFocus rollback regressed.
         [TestMethod]
@@ -998,7 +1000,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(Microsoft.UI.ColorHelper.FromArgb(0x80, 0xFF, 0x00, 0x00), colorPicker.Color, "An unparsable hex string must not change the color.");
                 Verify.AreEqual("#xyz", hexTextBox.Text, "Invalid text stays in the box until it loses focus.");
 
-                // Focus edit: the box gets focus showing #800000FF, a valid edit applies, then the edit ends with invalid text.
+                // Focus session 1: the box gets focus showing #800000FF, a valid edit applies, and focus leaves with valid text.
                 colorPicker.Color = Microsoft.UI.ColorHelper.FromArgb(0x80, 0x00, 0x00, 0xFF);
                 Verify.AreEqual("#800000FF", hexTextBox.Text);
                 Verify.IsTrue(hexTextBox.Focus(FocusState.Programmatic), "The hex box should take focus.");
@@ -1017,6 +1019,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(Microsoft.UI.ColorHelper.FromArgb(0xFF, 0x00, 0xFF, 0x00), colorPicker.Color, "A valid hex edit applies while the box has focus.");
+                Verify.IsTrue(moreButton.Focus(FocusState.Programmatic), "The More button should take focus from the hex box.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("#FF00FF00", hexTextBox.Text, "Valid hex text is kept when the box loses focus.");
+                Verify.AreEqual(Microsoft.UI.ColorHelper.FromArgb(0xFF, 0x00, 0xFF, 0x00), colorPicker.Color, "Losing focus with valid text keeps the edited color.");
+
+                // Focus session 2 starts from the last valid value, so the rollback target and the current color agree.
+                // (Within a single session, a valid edit followed by invalid text rolls back to the text the box had when it
+                // got focus on some OS versions, e.g. RS5, but keeps the valid edit on Windows 11; see the PR's product
+                // concerns. This test doesn't pin either behavior.)
+                Verify.IsTrue(hexTextBox.Focus(FocusState.Programmatic), "The hex box should take focus again.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreNotEqual(FocusState.Unfocused, hexTextBox.FocusState, "The hex box should have focus again.");
                 hexTextBox.Text = "#xyz";
             });
 
@@ -1032,7 +1056,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // Losing focus discards the invalid text: the box shows the current color, which is the last valid edit.
+                // Losing focus discards the invalid text: the box shows the last valid value again.
                 Verify.AreEqual("#FF00FF00", hexTextBox.Text, "Invalid hex text should be replaced when the box loses focus.");
                 Verify.AreEqual(Microsoft.UI.ColorHelper.FromArgb(0xFF, 0x00, 0xFF, 0x00), colorPicker.Color, "Losing focus with invalid text should keep the last valid color.");
 
