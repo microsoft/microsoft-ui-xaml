@@ -29,6 +29,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateStaggeredEntranceVisibilityTiming)
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateItemsControlTransitionTimingHelper)

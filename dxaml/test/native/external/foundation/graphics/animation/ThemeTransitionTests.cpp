@@ -744,6 +744,11 @@ void ThemeTransitionTests::ValidateStaggeredEntranceVisibilityTiming()
 
                 VERIFY_ARE_EQUAL(staggeringEnabled ? 3u : 0u, delayedStoryboards);
             });
+
+            if (staggeringEnabled && reload == 1)
+            {
+                TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
+            }
         }
     }
 }
