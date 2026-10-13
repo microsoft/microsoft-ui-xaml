@@ -219,6 +219,20 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             ContentDialogStyleSource::ExplicitInCode);
     }
 
+    void ContentDialogIntegrationTests::ShowingAnimationPlaysWithBuiltInStyleWithoutOptimizeApplyStyles()
+    {
+        ShowingAnimationPlaysWorker(
+            false /* expectOptimizeApplyStylesEnabled */,
+            ContentDialogStyleSource::BuiltIn);
+    }
+
+    void ContentDialogIntegrationTests::ShowingAnimationPlaysWithBuiltInStyleAndOptimizeApplyStyles()
+    {
+        ShowingAnimationPlaysWorker(
+            true /* expectOptimizeApplyStylesEnabled */,
+            ContentDialogStyleSource::BuiltIn);
+    }
+
     void ContentDialogIntegrationTests::ApplyTemplateUsesMarkupExplicitAndApplicationImplicitStylesWithoutOptimizeApplyStyles()
     {
         ApplyTemplateUsesMarkupExplicitAndApplicationImplicitStylesWorker(false /* expectOptimizeApplyStylesEnabled */);
@@ -258,8 +272,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         // enabled the entrance animation stopped playing.
 
         xaml_controls::ContentDialog^ contentDialog = nullptr;
-        auto contentDialogStyle = safe_cast<xaml::Style^>(
-            LoadXamlFileOnUIThread(GetResourcesPath() + L"ContentDialogWithSmokeBackgroundPart.xaml"));
+
+        // For the BuiltIn case we intentionally supply no style at all so the ContentDialog uses its
+        // real built-in (default) style. The original GitHub #11257 repro used an explicit Style set in
+        // markup; this case adds coverage for the built-in default style path, where the built-in style
+        // (which provides the Template) was likewise applied too late under OptimizeApplyStyles.
+        const bool useCustomStyle = styleSource != ContentDialogStyleSource::BuiltIn;
+
+        xaml::Style^ contentDialogStyle = nullptr;
+        if (useCustomStyle)
+        {
+            contentDialogStyle = safe_cast<xaml::Style^>(
+                LoadXamlFileOnUIThread(GetResourcesPath() + L"ContentDialogWithSmokeBackgroundPart.xaml"));
+        }
         auto windowLoadedEvent = std::make_shared<Event>();
         auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::Grid, Loaded);
         Platform::String^ styleMarker = L"ShowingAnimationCustomStyle";
@@ -269,8 +294,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             auto windowContent = ref new xaml_controls::Grid();
             windowContent->Background = ref new SolidColorBrush(Microsoft::UI::Colors::White);
 
-            contentDialogStyle->Setters->Append(
-                ref new xaml::Setter(xaml_controls::ContentDialog::TagProperty, styleMarker));
+            if (useCustomStyle)
+            {
+                contentDialogStyle->Setters->Append(
+                    ref new xaml::Setter(xaml_controls::ContentDialog::TagProperty, styleMarker));
+            }
 
             loadedRegistration.Attach(windowContent, ref new xaml::RoutedEventHandler(
                 [windowLoadedEvent](Platform::Object^, xaml::RoutedEventArgs^) { windowLoadedEvent->Set(); }));
@@ -358,10 +386,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         RunOnUIThread([&]()
         {
-            VERIFY_ARE_EQUAL(
-                styleMarker,
-                safe_cast<Platform::String^>(contentDialog->Tag),
-                L"The custom ContentDialog style should be applied.");
+            if (useCustomStyle)
+            {
+                VERIFY_ARE_EQUAL(
+                    styleMarker,
+                    safe_cast<Platform::String^>(contentDialog->Tag),
+                    L"The custom ContentDialog style should be applied.");
+            }
         });
 
         VERIFY_IS_TRUE(

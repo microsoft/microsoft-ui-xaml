@@ -69,6 +69,20 @@ public:
         TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(ShowingAnimationPlaysWithBuiltInStyleWithoutOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays with the control's built-in (default) style when OptimizeApplyStyles is disabled (compat mode).")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:false}")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ShowingAnimationPlaysWithBuiltInStyleAndOptimizeApplyStyles)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog entrance animation plays with the control's built-in (default) style when OptimizeApplyStyles is enabled. Regression coverage for GitHub #11257.")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(ApplyTemplateUsesMarkupExplicitAndApplicationImplicitStylesWithoutOptimizeApplyStyles)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that ApplyTemplate uses markup-explicit and Application implicit styles when OptimizeApplyStyles is disabled.")
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
@@ -484,7 +498,8 @@ private:
     {
         ExplicitInMarkup,
         ExplicitInCode,
-        Implicit
+        Implicit,
+        BuiltIn
     };
 
     struct ValidateFootprintExpectedValues
