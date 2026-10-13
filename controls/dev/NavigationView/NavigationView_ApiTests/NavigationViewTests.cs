@@ -938,6 +938,224 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyProgrammaticSelectionOfNonSelectingItem()
+        {
+            VerifyProgrammaticSelectionOfNonSelectingItem(selectBeforeLoad: false);
+        }
+
+        [TestMethod]
+        public void VerifyProgrammaticSelectionOfNonSelectingItemBeforeLoad()
+        {
+            VerifyProgrammaticSelectionOfNonSelectingItem(selectBeforeLoad: true);
+        }
+
+        private void VerifyProgrammaticSelectionOfNonSelectingItem(bool selectBeforeLoad)
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                foreach (var hasPreviousSelection in new[] { false, true })
+                {
+                    foreach (var useFooter in new[] { false, true })
+                    {
+                        NavigationView navView = null;
+                        NavigationViewItem previousItem = null;
+                        NavigationViewItem targetItem = null;
+                        int invokedCount = 0;
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Log.Comment($"PaneDisplayMode={paneDisplayMode}, SelectBeforeLoad={selectBeforeLoad}, HasPreviousSelection={hasPreviousSelection}, UseFooter={useFooter}");
+                            previousItem = new NavigationViewItem { Content = "Previous" };
+                            targetItem = new NavigationViewItem { Content = "Target", SelectsOnInvoked = false };
+                            navView = new NavigationView { PaneDisplayMode = paneDisplayMode, Width = 1008 };
+                            navView.MenuItems.Add(previousItem);
+                            (useFooter ? navView.FooterMenuItems : navView.MenuItems).Add(targetItem);
+                            if (!selectBeforeLoad)
+                            {
+                                Content = navView;
+                                Content.UpdateLayout();
+                            }
+
+                            navView.SelectedItem = hasPreviousSelection ? previousItem : null;
+                            navView.ItemInvoked += (sender, args) => invokedCount++;
+                            navView.SelectedItem = targetItem;
+
+                            Verify.AreEqual(targetItem, navView.SelectedItem);
+                            Verify.IsTrue(targetItem.IsSelected);
+                            Verify.IsFalse(previousItem.IsSelected);
+                            Verify.AreEqual(0, invokedCount, "Programmatic selection must not invoke the item.");
+
+                            if (selectBeforeLoad)
+                            {
+                                Content = navView;
+                            }
+                            Content.UpdateLayout();
+                        });
+                        IdleSynchronizer.Wait();
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual(targetItem, navView.SelectedItem, "Selection must survive container realization.");
+                            Verify.IsTrue(targetItem.IsSelected);
+                            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(targetItem);
+                            var provider = peer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                            Verify.IsNotNull(provider);
+                            Verify.IsTrue(provider.IsSelected);
+                            Verify.AreEqual(0, invokedCount);
+
+                            navView.SelectedItem = null;
+                            Verify.IsFalse(targetItem.IsSelected);
+                            targetItem.IsSelected = true;
+                            Verify.AreEqual(targetItem, navView.SelectedItem, "Explicit IsSelected must also be honored.");
+                            navView.SelectedItem = previousItem;
+                            Verify.IsFalse(targetItem.IsSelected);
+                            Verify.IsTrue(previousItem.IsSelected);
+                            Verify.AreEqual(0, invokedCount);
+                        });
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyProgrammaticSelectionOfNonSelectingOverflowItem()
+        {
+            NavigationView navView = null;
+            NavigationViewItem targetItem = null;
+            int invokedCount = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView { PaneDisplayMode = NavigationViewPaneDisplayMode.Top, Width = 350 };
+                for (int index = 0; index < 8; index++)
+                {
+                    navView.MenuItems.Add(new NavigationViewItem { Content = $"Menu item {index}" });
+                }
+                targetItem = new NavigationViewItem { Content = "Target", SelectsOnInvoked = false };
+                navView.MenuItems.Add(targetItem);
+                navView.ItemInvoked += (sender, args) => invokedCount++;
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var primaryItems = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                Verify.AreEqual(-1, primaryItems.GetElementIndex(targetItem), "The target must start outside the primary items.");
+                var overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                overflowButton.Flyout.ShowAt(overflowButton);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                targetItem.IsSelected = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(targetItem, navView.SelectedItem);
+                Verify.IsTrue(targetItem.IsSelected);
+                Verify.AreEqual(0, invokedCount);
+                var primaryItems = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                Verify.IsGreaterThanOrEqual(primaryItems.GetElementIndex(targetItem), 0, "The selected item must move into the primary items.");
+            });
+            Verify.IsTrue(ItemHasSelectionIndicator(navView, "Target"));
+        }
+
+        [TestMethod]
+        public void VerifyProgrammaticSelectionOfNonSelectingDataItem()
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                foreach (var selectBeforeLoad in new[] { false, true })
+                {
+                    NavigationView navView = null;
+                    var targetItem = new Category("Target", "TargetItem", null, null, false);
+                    int invokedCount = 0;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        navView = new NavigationView
+                        {
+                            PaneDisplayMode = paneDisplayMode,
+                            Width = 1008,
+                            MenuItemsSource = new[] { targetItem },
+                            MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
+<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+    <NavigationViewItem Content='{Binding Content}' SelectsOnInvoked='{Binding SelectsOnInvoked}'/>
+</DataTemplate>")
+                        };
+                        navView.ItemInvoked += (sender, args) => invokedCount++;
+                        if (selectBeforeLoad)
+                        {
+                            navView.SelectedItem = targetItem;
+                        }
+                        Content = navView;
+                        Content.UpdateLayout();
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var container = (NavigationViewItem)navView.ContainerFromMenuItem(targetItem);
+                        Verify.IsNotNull(container);
+                        Verify.IsFalse(container.SelectsOnInvoked);
+                        if (!selectBeforeLoad)
+                        {
+                            navView.SelectedItem = targetItem;
+                        }
+                        Verify.AreEqual(targetItem, navView.SelectedItem);
+                        Verify.IsTrue(container.IsSelected);
+                        Verify.AreEqual(0, invokedCount);
+                    });
+                    IdleSynchronizer.Wait();
+                    Verify.IsTrue(ItemHasSelectionIndicator(navView, "Target"));
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyNonSelectingItemCanBeSelectedInItemInvokedHandler()
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var previousItem = new NavigationViewItem { Content = "Previous" };
+                    var targetItem = new NavigationViewItem { Content = "Target", SelectsOnInvoked = false };
+                    var navView = new NavigationView { PaneDisplayMode = paneDisplayMode, Width = 1008 };
+                    navView.MenuItems.Add(previousItem);
+                    navView.MenuItems.Add(targetItem);
+                    Content = navView;
+                    Content.UpdateLayout();
+                    navView.SelectedItem = previousItem;
+
+                    int invokedCount = 0;
+                    navView.ItemInvoked += (sender, args) =>
+                    {
+                        invokedCount++;
+                        Verify.AreEqual(targetItem, args.InvokedItemContainer);
+                        // Bound reentry so a regression fails instead of overflowing the stack.
+                        if (invokedCount == 1)
+                        {
+                            navView.SelectedItem = targetItem;
+                        }
+                    };
+                    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(targetItem);
+                    var provider = peer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                    Verify.IsNotNull(provider);
+                    provider.Select();
+
+                    Verify.AreEqual(1, invokedCount);
+                    Verify.AreEqual(targetItem, navView.SelectedItem);
+                    Verify.IsTrue(targetItem.IsSelected);
+                    Verify.IsFalse(previousItem.IsSelected);
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyAutomationPeerInvokesNonSelectingItemOnce()
         {
             VerifyAutomationPeerSelectionInvocation(selectsOnInvoked: false);
