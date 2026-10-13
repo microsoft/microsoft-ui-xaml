@@ -52,6 +52,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls
                 injectMockDComp: true,
                 resetDevice: true))
             {
+                TestServices.WindowHelper.SetWindowSizeOverride(new Size(800, 600));
+
                 const string rootPageXaml =
                     @"<Page xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
                             <RichTextBlock x:Name = 'richTextBlock'>
@@ -116,4 +118,3 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
     }
 }
-

@@ -57,7 +57,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(TFS_2524409)
                 TEST_METHOD_PROPERTY(L"Description", L"Regression test that verifies changing the plateau scale with certain key properties being used and ensuring the image is rendered correctly.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Zoom scale not applied
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -70,7 +70,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(TFS_6697031)
                 TEST_METHOD_PROPERTY(L"Description", L"Regression test that verifies setting DecodePixelHeight with DecodePixelType=Logical using a large plateau scale and an image with rotated EXIF data.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Zoom scale not applied
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -123,4 +123,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     } } }
 } } } }
-

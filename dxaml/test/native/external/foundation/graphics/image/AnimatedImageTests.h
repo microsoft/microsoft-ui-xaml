@@ -102,7 +102,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(PlateauScale)
                 TEST_METHOD_PROPERTY(L"Description", L"Check that animation is not interrupted by plateau scale change.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // TODO: ETWWaiterProxy does not detect an ImageAnimationEndInfo_value event in WPF hosting mode.
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // TODO: ETWWaiterProxy does not detect an ImageAnimationEndInfo_value event in WPF hosting mode.
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
 
             END_TEST_METHOD()
@@ -121,4 +121,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     } } }
 } } } }
-

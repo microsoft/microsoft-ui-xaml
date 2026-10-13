@@ -5,11 +5,11 @@
       <Visual />
       <Visual />
       <Visual Tag="PrependVisual">
-        <Visual Tag="PrimaryVisual" SizeX="1024" SizeY="697">
+        <Visual Tag="PrimaryVisual" SizeX="800" SizeY="600">
           <Visual Tag="ContentVisual">
-            <Visual Tag="PrependVisual" SizeX="1024" SizeY="697">
+            <Visual Tag="PrependVisual" SizeX="800" SizeY="600">
               <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
-              <Visual PixelSnappingEnabled="True" VisualId="1" Tag="PrimaryVisual" SizeX="1024" SizeY="697">
+              <Visual PixelSnappingEnabled="True" VisualId="1" Tag="PrimaryVisual" SizeX="800" SizeY="600">
                 <TransformMatrix>
                   <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
                     <ReferenceParameter Name="LOCAL">
@@ -38,19 +38,16 @@
                   </ExpressionAnimation>
                 </TransformMatrix>
                 <Visual Tag="ContentVisual">
-                  <wucSpriteVisual SizeX="1024" SizeY="697" BorderMode="Soft">
+                  <wucSpriteVisual SizeX="800" SizeY="600" BorderMode="Soft">
                     <ColorBrush Color="Argb {0, 1, 1, 1}" />
                   </wucSpriteVisual>
-                  <wucSpriteVisual SizeX="28" SizeY="19" BorderMode="Soft" OffsetX="271" OffsetY="40" OffsetZ="0">
+                  <wucSpriteVisual SizeX="26" SizeY="20" BorderMode="Soft" OffsetX="298" OffsetY="40" OffsetZ="0">
                     <ColorBrush Color="rgb {0.3569, 0.1804, 0.7725}" />
                   </wucSpriteVisual>
                   <wucSpriteVisual SizeX="63.28" SizeY="0.8133" BorderMode="Soft" OffsetX="284.7" OffsetY="19" OffsetZ="0">
                     <ColorBrush Color="rgb {0.651, 0.8471, 1}" />
                   </wucSpriteVisual>
-                  <wucSpriteVisual SizeX="65.23" SizeY="0.8133" BorderMode="Soft" OffsetX="937.1" OffsetY="131" OffsetZ="0">
-                    <ColorBrush Color="rgb {0.651, 0.8471, 1}" />
-                  </wucSpriteVisual>
-                  <wucSpriteVisual SizeX="87.31" SizeY="0.8133" BorderMode="Soft" OffsetX="0" OffsetY="150" OffsetZ="0">
+                  <wucSpriteVisual SizeX="156.4" SizeY="0.8133" BorderMode="Soft" OffsetX="616.5" OffsetY="169" OffsetZ="0">
                     <ColorBrush Color="rgb {0.651, 0.8471, 1}" />
                   </wucSpriteVisual>
                   <wucSpriteVisual SizeX="111" SizeY="14" BorderMode="Hard" OffsetX="0" OffsetY="5" OffsetZ="0">
@@ -83,7 +80,7 @@
                       </Mask>
                     </MaskBrush>
                   </wucSpriteVisual>
-                  <wucSpriteVisual SizeX="1010" SizeY="52" BorderMode="Hard" OffsetX="-1" OffsetY="7" OffsetZ="0">
+                  <wucSpriteVisual SizeX="797" SizeY="53" BorderMode="Hard" OffsetX="-1" OffsetY="7" OffsetZ="0">
                     <MaskBrush>
                       <Source>
                         <ColorBrush Color="#ffffffff" />
@@ -93,7 +90,7 @@
                       </Mask>
                     </MaskBrush>
                   </wucSpriteVisual>
-                  <wucSpriteVisual SizeX="29" SizeY="9" BorderMode="Hard" OffsetX="271" OffsetY="47" OffsetZ="0">
+                  <wucSpriteVisual SizeX="27" SizeY="12" BorderMode="Hard" OffsetX="297" OffsetY="45" OffsetZ="0">
                     <MaskBrush>
                       <Source>
                         <ColorBrush Color="#ffffffff" />
@@ -103,7 +100,7 @@
                       </Mask>
                     </MaskBrush>
                   </wucSpriteVisual>
-                  <wucSpriteVisual SizeX="1026" SizeY="90" BorderMode="Hard" OffsetX="-1" OffsetY="44" OffsetZ="0">
+                  <wucSpriteVisual SizeX="798" SizeY="126" BorderMode="Hard" OffsetX="-2" OffsetY="45" OffsetZ="0">
                     <MaskBrush>
                       <Source>
                         <ColorBrush Color="#ffffffff" />
@@ -113,7 +110,7 @@
                       </Mask>
                     </MaskBrush>
                   </wucSpriteVisual>
-                  <wucSpriteVisual SizeX="1003" SizeY="33" BorderMode="Hard" OffsetX="0" OffsetY="119" OffsetZ="0">
+                  <wucSpriteVisual SizeX="159" SizeY="15" BorderMode="Hard" OffsetX="615" OffsetY="156" OffsetZ="0">
                     <MaskBrush>
                       <Source>
                         <ColorBrush Color="rgb {0.651, 0.8471, 1}" />
@@ -126,14 +123,14 @@
                 </Visual>
               </Visual>
             </Visual>
-            <wucSpriteVisual SizeX="1024" SizeY="697" BorderMode="Soft">
+            <wucSpriteVisual SizeX="800" SizeY="600" BorderMode="Soft">
               <ColorBrush Color="#00000000" />
             </wucSpriteVisual>
             <Visual TransformParentVisualId="1" Tag="PrependVisual">
               <Visual Tag="PrimaryVisual">
                 <Visual Tag="ContentVisual">
                   <Visual Tag="PrependVisual">
-                    <Visual Tag="PrimaryVisual" SizeX="18" SizeY="37" OffsetX="262.2" OffsetY="40.28" OffsetZ="0">
+                    <Visual Tag="PrimaryVisual" SizeX="18" SizeY="37" OffsetX="289.5" OffsetY="40.66" OffsetZ="0">
                       <Visual Tag="ContentVisual">
                         <wucSpriteVisual SizeX="19" SizeY="19" BorderMode="Soft" OffsetX="0" OffsetY="18.62" OffsetZ="0">
                           <MaskBrush>
@@ -198,7 +195,7 @@
               <Visual Tag="PrimaryVisual">
                 <Visual Tag="ContentVisual">
                   <Visual Tag="PrependVisual">
-                    <Visual Tag="PrimaryVisual" SizeX="18" SizeY="37" OffsetX="289.4" OffsetY="40.28" OffsetZ="0">
+                    <Visual Tag="PrimaryVisual" SizeX="18" SizeY="37" OffsetX="314" OffsetY="40.66" OffsetZ="0">
                       <Visual Tag="ContentVisual">
                         <wucSpriteVisual SizeX="19" SizeY="19" BorderMode="Soft" OffsetX="0" OffsetY="18.62" OffsetZ="0">
                           <MaskBrush>
@@ -265,10 +262,10 @@
       </Visual>
     </Visual>
   </CompositionTarget>
-  <CompositionTarget HwndLeft="290" HwndTop="1" HwndWidth="129" HwndHeight="80">
+  <CompositionTarget HwndLeft="290" HwndTop="2" HwndWidth="129" HwndHeight="80">
     <Visual Tag="WindowedPopup_ContentIslandRootVisual">
       <TransformMatrix>
-        <Translate X="-290" Y="22" />
+        <Translate X="-290" Y="21" />
       </TransformMatrix>
       <Visual Tag="WindowedPopup_AnimationRootVisual">
         <Visual Tag="PrependVisual">
@@ -289,7 +286,7 @@
                     </NineGridBrush>
                   </wucSpriteVisual>
                 </Visual>
-                <Visual VisualId="3" Tag="PrimaryVisual" SizeX="109" SizeY="60" OffsetX="300" OffsetY="-20" OffsetZ="0">
+                <Visual VisualId="3" Tag="PrimaryVisual" SizeX="109" SizeY="60" OffsetX="300" OffsetY="-19" OffsetZ="0">
                   <Visual Tag="ContentVisual">
                     <Visual Tag="PrependVisual">
                       <Visual Tag="PrimaryVisual" SizeX="109" SizeY="60">
