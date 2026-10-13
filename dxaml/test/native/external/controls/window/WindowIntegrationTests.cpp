@@ -1217,9 +1217,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
 
                     window1->Width = 800.0;
+                    expectedWidth = 800.0;
                     VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
                     VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
                     window1->Height = 600.0;
+                    expectedHeight = 600.0;
                     VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
                     VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
                     window1->Close();
@@ -1312,6 +1314,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                             else
                             {
                                 VERIFY_NO_THROW(window1->Height = value);
+                            }
+                            if (assignWidth)
+                            {
+                                expectedWidth = value;
+                            }
+                            else
+                            {
+                                expectedHeight = value;
                             }
                             VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
                             VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
