@@ -1,0 +1,84 @@
+// CellTemplatingPage.xaml.cs. The source is created once and reshaped in place.
+public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+
+public TableViewSource? Source => _source;
+
+public CellTemplatingPage()
+{
+    _source = TableViewSource.From(People);
+    InitializeComponent();
+    Loaded += OnPageLoaded;
+    Unloaded += OnPageUnloaded;
+}
+
+// Swap a column's CellTemplate at run time; the visible rows regenerate their cells.
+private void OnJoinDateEditorChanged(object sender, SelectionChangedEventArgs e)
+{
+    // Fires during InitializeComponent (SelectedIndex="0"), when the XAML already shows the
+    // compact editor and the column is not attached to the table yet.
+    if (JoinDateColumn is null || !IsLoaded)
+    {
+        return;
+    }
+
+    var full = SampleShaping.SelectedTag(JoinDateEditorSelector, "calendar") == "datepicker";
+    var resources = Application.Current.Resources;
+    JoinDateColumn.CellTemplate = (DataTemplate)resources[full ? "JoinDatePickerTemplate" : "JoinCalendarDateTemplate"];
+    JoinDateColumn.Width = new GridLength((double)resources[full ? "ColWidthDatePicker" : "ColWidthCalendarDate"]);
+}
+
+// The editors are two-way bound, so nothing commits them by hand. The page only observes the
+// model to report each commit. Handlers attached in Loaded are detached in Unloaded.
+private void OnPageLoaded(object sender, RoutedEventArgs e)
+{
+    foreach (var person in People)
+    {
+        person.PropertyChanged += OnPersonChanged;
+    }
+
+    PersonCellTemplates.DetailsOpened += OnDetailsOpened;
+}
+
+private void OnPageUnloaded(object sender, RoutedEventArgs e)
+{
+    foreach (var person in People)
+    {
+        person.PropertyChanged -= OnPersonChanged;
+    }
+
+    PersonCellTemplates.DetailsOpened -= OnDetailsOpened;
+}
+
+// GroupBy takes a delegate, not a property path, so the control cannot re-bucket a row when the
+// grouped-on value changes. Re-apply the grouping on the same source instead.
+private void OnChangeDepartmentClick(object sender, RoutedEventArgs e)
+{
+    if (PeopleTable.SelectedItem is not Person person)
+    {
+        SetLastAction("No row selected.");
+        return;
+    }
+
+    person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
+    ReapplyIfGroupedOn(nameof(Person.Department));
+}
+
+private void ApplyShaping(bool announce)
+{
+    var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+    var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+    var selected = PeopleTable.SelectedItem;
+
+    if (mode == "grouped")
+    {
+        // The key selector receives the ROW; the identity selector receives the KEY.
+        _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+    }
+    else
+    {
+        _source.ClearGroupBy();
+    }
+
+    // Selection is index-only (TableView.Select); restore it by identity after the reshape.
+    SampleShaping.Reselect(PeopleTable, selected, People.Count + PersonData.Departments.Count + PersonData.Offices.Count, RefreshReadouts);
+}

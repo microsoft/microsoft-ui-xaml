@@ -10,8 +10,6 @@
 #include "SortMemberPathResolver.h"
 #include "SharedHelpers.h"
 
-#include <algorithm>
-
 namespace
 {
     namespace tabularPrimitives = winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives::implementation;
@@ -230,35 +228,54 @@ winrt::TableViewSource TableViewSource::ClearGroupBy()
     return *this;
 }
 
+winrt::TableViewSource TableViewSource::ParentBy(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector)
+{
+    if (!keySelector || !parentKeySelector)
+    {
+        throw winrt::hresult_invalid_argument(L"ParentBy: keySelector and parentKeySelector are required.");
+    }
+
+    m_engine->SetParent(
+        [keySelector](winrt::IInspectable const& item) { return keySelector(item); },
+        [parentKeySelector](winrt::IInspectable const& item) { return parentKeySelector(item); });
+    return *this;
+}
+
+winrt::TableViewSource TableViewSource::ClearParentBy()
+{
+    m_engine->ClearParentBy();
+    return *this;
+}
+
 winrt::TableViewSource TableViewSource::ClearSort()
 {
-    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort, !m_engine->ActiveSortAxisInfos().empty() };
+    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort };
     operation.Apply([&]() { m_engine->ClearSorts(); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSort(winrt::hstring const& sortAxisToken)
 {
-    auto const axes = m_engine->ActiveSortAxisInfos();
-    const bool meaningful = std::any_of(axes.begin(), axes.end(), [&sortAxisToken](auto const& axis)
-    {
-        return sortAxisToken.empty() || axis.AxisToken == sortAxisToken;
-    });
-    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort, meaningful };
+    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort };
     operation.Apply([&]() { m_engine->ClearSort(sortAxisToken); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSortsExcept(winrt::hstring const& sortAxisToken)
 {
-    auto const axes = m_engine->ActiveSortAxisInfos();
-    const bool meaningful = std::any_of(axes.begin(), axes.end(), [&sortAxisToken](auto const& axis)
-    {
-        return sortAxisToken.empty() || axis.AxisToken != sortAxisToken;
-    });
-    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort, meaningful };
+    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort };
     operation.Apply([&]() { m_engine->ClearSortsExcept(sortAxisToken); });
     return *this;
+}
+
+bool TableViewSource::IsLiveShaping() const
+{
+    return m_engine->IsLiveShapingEnabled();
+}
+
+void TableViewSource::IsLiveShaping(bool value)
+{
+    m_engine->SetLiveShaping(value);
 }
 
 std::vector<TableViewSource::ActiveSortAxisInfo> TableViewSource::ActiveSortAxisInfos() const
@@ -334,18 +351,7 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
     }
 
     auto const keyIdentity = key.as<winrt::Windows::Foundation::IUnknown>();
-    // Untokenized None cannot be proven to address a live delegate without mirroring the recipe.
-    bool meaningful = direction != winrt::SortDirection::None;
-    if (!meaningful)
-    {
-        auto const axes = m_engine->ActiveSortAxisInfos();
-        meaningful = std::any_of(axes.begin(), axes.end(), [&](auto const& axis)
-        {
-            return (!sortAxisToken.empty() && axis.AxisToken == sortAxisToken) ||
-                (!previousSortAxisToken.empty() && previousSortAxisToken != sortAxisToken && axis.AxisToken == previousSortAxisToken);
-        });
-    }
-    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort, meaningful };
+    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort };
     // The engine stores a std::function, which cannot be compared, so the delegate itself is
     // handed over as the axis identity. The wrapping lambda holds a strong ref to that same
     // delegate, so the identity stays valid for as long as the axis lives.
@@ -379,13 +385,6 @@ bool TableViewSource::IsGrouped() const
     return m_engine->IsProjectedAsGrouped();
 }
 
-std::optional<uint32_t> TableViewSource::DataRowCount() const
-{
-    if (m_engine->Kind() == ShapedItemsSource::ProjectionKind::None) { return {}; }
-    if (auto const rows = m_engine->Rows()) { return rows.Size(); }
-    return {};
-}
-
 winrt::ItemsSourceView TableViewSource::GetItemsSourceView()
 {
     return m_itemsSourceView.get();
@@ -406,9 +405,47 @@ void TableViewSource::OnProjectionRebuilt()
     case ::ShapedItemsSource::ProjectionKind::Grouped:
     {
         auto const adapter = m_engine->GroupedAdapter();
+        if (!adapter)
+        {
+            // A projection kind without its adapter is never published coherently; keep the
+            // previous projection until the engine publishes again.
+            MUX_ASSERT_MSG(false, L"TableViewSource: Grouped projection published without a grouped adapter.");
+            return;
+        }
         // No wrap: the grouped view IS an ItemsSourceView, so ItemsRepeater consumes it directly.
         m_itemsSourceView.set(adapter->Entries());
         m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForGroupedRows(adapter, MakeIdentitySelector());
+        break;
+    }
+    case ::ShapedItemsSource::ProjectionKind::Hierarchical:
+    {
+        auto const adapter = m_engine->HierarchicalAdapter();
+        if (!adapter)
+        {
+            MUX_ASSERT_MSG(false, L"TableViewSource: Hierarchical projection published without a hierarchical adapter.");
+            return;
+        }
+        // Same as grouped: consumed directly.
+        m_itemsSourceView.set(adapter->Entries());
+        m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForHierarchicalRows(adapter, MakeIdentitySelector());
+        break;
+    }
+    case ::ShapedItemsSource::ProjectionKind::GroupedHierarchical:
+    {
+        // Grouped adapter supplies the presented axis (header rows); hierarchy adapter supplies
+        // level and expansion.
+        auto const groupedAdapter = m_engine->GroupedAdapter();
+        auto const hierarchicalAdapter = m_engine->HierarchicalAdapter();
+        if (!groupedAdapter || !hierarchicalAdapter)
+        {
+            MUX_ASSERT_MSG(false, L"TableViewSource: GroupedHierarchical projection published without both adapters.");
+            return;
+        }
+        m_itemsSourceView.set(groupedAdapter->Entries());
+        m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForGroupedHierarchicalRows(
+            groupedAdapter,
+            hierarchicalAdapter,
+            MakeIdentitySelector());
         break;
     }
     case ::ShapedItemsSource::ProjectionKind::Flat:
@@ -512,7 +549,27 @@ void TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
         m_projectionChanged = nullptr;
         m_shapingChanged = nullptr;
         m_shapingTelemetryHandlers.reset();
+        // A restore held for the former owner's editor must not wait on an edit it will no longer
+        // hear the end of.
+        m_engine->SetLiveShapingHold(nullptr);
+        m_engine->SetLiveItemChangedHook(nullptr);
+        m_engine->ResumeHeldLiveShaping();
     }
+}
+
+void TableViewSource::SetLiveShapingHold(std::function<bool()> isHeld)
+{
+    m_engine->SetLiveShapingHold(std::move(isHeld));
+}
+
+void TableViewSource::SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook)
+{
+    m_engine->SetLiveItemChangedHook(std::move(hook));
+}
+
+void TableViewSource::ResumeHeldLiveShaping()
+{
+    m_engine->ResumeHeldLiveShaping();
 }
 
 void TableViewSource::NotifyOwnerProjectionChanged()

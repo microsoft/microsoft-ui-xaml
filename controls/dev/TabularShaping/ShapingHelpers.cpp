@@ -1107,12 +1107,39 @@ namespace ShapingHelpers
         ++m_generation;
         m_ranks.clear();
         m_rankByIdentity.clear();
+        m_evicted.clear();
+        m_rerankAllPending = false;
+    }
+
+    void* CustomSortRankAdapter::IdentityOf(winrt::IInspectable const& item)
+    {
+        // The entry's Item keeps the object alive, so the raw identity stays valid while ranked.
+        auto const unknown = item.try_as<::IUnknown>();
+        return unknown ? unknown.get() : nullptr;
+    }
+
+    void CustomSortRankAdapter::AddRanked(winrt::IInspectable const& item, int32_t rank)
+    {
+        void* const identity = IdentityOf(item);
+        m_ranks.push_back({ item, rank, identity });
+        if (identity)
+        {
+            m_rankByIdentity[identity] = rank;
+        }
     }
 
     void CustomSortRankAdapter::Reset()
     {
         m_comparer = nullptr;
         ClearRanks();
+    }
+
+    void CustomSortRankAdapter::InvalidateRanks() noexcept
+    {
+        if (m_comparer && !m_ranks.empty())
+        {
+            m_rerankAllPending = true;
+        }
     }
 
     void CustomSortRankAdapter::Rank(
@@ -1138,8 +1165,13 @@ namespace ShapingHelpers
         {
             return;
         }
-        const auto generation = m_generation;
+        PopulateRanks(rows, m_generation);
+    }
 
+    void CustomSortRankAdapter::PopulateRanks(
+        std::vector<winrt::IInspectable> const& rows,
+        uint64_t generation)
+    {
         std::vector<size_t> order;
         if (!StableMergeSortOrder(order, rows, generation))
         {
@@ -1164,12 +1196,7 @@ namespace ShapingHelpers
                 }
             }
 
-            auto const& item = rows[order[i]];
-            m_ranks.push_back({ item, rank });
-            if (auto unknown = item.try_as<::IUnknown>())
-            {
-                m_rankByIdentity[unknown.get()] = rank;
-            }
+            AddRanked(rows[order[i]], rank);
         }
     }
 
@@ -1191,6 +1218,11 @@ namespace ShapingHelpers
             m_comparerActive = false;
         });
 
+        if (m_rerankAllPending || !m_evicted.empty())
+        {
+            PlaceEvicted();
+        }
+
         const auto generation = m_generation;
 
         if (auto unknown = item.try_as<::IUnknown>())
@@ -1202,9 +1234,26 @@ namespace ShapingHelpers
             }
         }
 
-        // A row the rank pass never saw - added after the sort was applied. Find where it belongs
-        // among the existing ranks and insert it there, shifting the ranks above it.
+        // A row the rank pass never saw - added after the sort was applied.
         int32_t rank = 0;
+        bool tied = false;
+        if (!PlaceUnranked(item, generation, rank, tied))
+        {
+            return nullptr;
+        }
+        return winrt::box_value(rank);
+    }
+
+    bool CustomSortRankAdapter::PlaceUnranked(
+        winrt::IInspectable const& item,
+        uint64_t generation,
+        int32_t& rank,
+        bool& tied)
+    {
+        // Find where the item belongs among the existing ranks and insert it there, shifting the
+        // ranks above it.
+        rank = 0;
+        tied = false;
         for (size_t i = 0; i < m_ranks.size(); ++i)
         {
             auto const entryItem = m_ranks[i].Item;
@@ -1212,11 +1261,14 @@ namespace ShapingHelpers
             const int32_t comparison = SafeCompare(entryItem, item);
             if (m_generation != generation)
             {
-                return nullptr;
+                return false;
             }
             if (comparison == 0)
             {
-                return winrt::box_value(entryRank);
+                rank = entryRank;
+                tied = true;
+                AddRanked(item, rank);
+                return true;
             }
             if (comparison < 0)
             {
@@ -1224,28 +1276,184 @@ namespace ShapingHelpers
             }
         }
 
-        if (m_generation != generation)
-        {
-            return nullptr;
-        }
-
         for (auto& entry : m_ranks)
         {
             if (entry.Rank >= rank)
             {
                 ++entry.Rank;
-                if (auto unknown = entry.Item.try_as<::IUnknown>())
+                if (entry.Identity)
                 {
-                    m_rankByIdentity[unknown.get()] = entry.Rank;
+                    m_rankByIdentity[entry.Identity] = entry.Rank;
                 }
             }
         }
 
-        m_ranks.push_back({ item, rank });
-        if (auto unknown = item.try_as<::IUnknown>())
+        AddRanked(item, rank);
+        return true;
+    }
+
+    bool CustomSortRankAdapter::Reposition(winrt::IInspectable const& item, bool deferPlacement)
+    {
+        // A comparer call that mutates its inputs must not reshuffle the ranks under the pass
+        // that is reading them.
+        if (!m_comparer || m_comparerActive || !item)
         {
-            m_rankByIdentity[unknown.get()] = rank;
+            return false;
         }
-        return winrt::box_value(rank);
+
+        if (deferPlacement)
+        {
+            // A full re-rank is already due, and it re-orders this item too.
+            if (m_rerankAllPending)
+            {
+                return false;
+            }
+
+            int32_t oldRank = 0;
+            bool wasShared = false;
+            EvictEntry(item, oldRank, wasShared);
+            m_rerankAllPending = ShouldRerankAll();
+            return false;
+        }
+
+        m_comparerActive = true;
+        auto comparerGuard = wil::scope_exit([this]() noexcept
+        {
+            m_comparerActive = false;
+        });
+
+        // Items left over from a coalesced batch whose reshape never asked for a key; settle them
+        // first so the comparison below is against a complete ranking.
+        const bool hadPending = m_rerankAllPending || !m_evicted.empty();
+        if (hadPending)
+        {
+            PlaceEvicted();
+        }
+
+        int32_t oldRank = 0;
+        bool wasShared = false;
+        if (!EvictEntry(item, oldRank, wasShared))
+        {
+            return hadPending;
+        }
+        m_evicted.pop_back();
+
+        const auto generation = m_generation;
+        int32_t newRank = 0;
+        bool tied = false;
+        if (!PlaceUnranked(item, generation, newRank, tied))
+        {
+            return true;
+        }
+
+        // The item's own key is not enough: an item that leaves a tie for a slot just below its
+        // old partner keeps its rank while the partner's moves up. Every other row keeps its key
+        // only when the item lands on the same rank the same way it left it.
+        return hadPending || newRank != oldRank || tied != wasShared;
+    }
+
+    bool CustomSortRankAdapter::EvictEntry(
+        winrt::IInspectable const& item,
+        int32_t& oldRank,
+        bool& wasShared)
+    {
+
+        void* const identity = IdentityOf(item);
+        auto const found = std::find_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry)
+        {
+            return entry.Item == item || (identity && entry.Identity == identity);
+        });
+        if (found == m_ranks.end())
+        {
+            return false;
+        }
+
+        const int32_t rank = found->Rank;
+        oldRank = rank;
+        m_ranks.erase(found);
+        if (identity)
+        {
+            m_rankByIdentity.erase(identity);
+        }
+
+        // Keep the ranks dense: re-placing an item that did not move must hand every row back the
+        // key it had, or the reshape would see a change where there was none.
+        const bool rankStillHeld = std::any_of(m_ranks.begin(), m_ranks.end(), [rank](RankEntry const& entry)
+        {
+            return entry.Rank == rank;
+        });
+        wasShared = rankStillHeld;
+        if (!rankStillHeld)
+        {
+            for (auto& entry : m_ranks)
+            {
+                if (entry.Rank > rank)
+                {
+                    --entry.Rank;
+                    if (entry.Identity)
+                    {
+                        m_rankByIdentity[entry.Identity] = entry.Rank;
+                    }
+                }
+            }
+        }
+
+        m_evicted.push_back(item);
+        return true;
+    }
+
+    bool CustomSortRankAdapter::ShouldRerankAll() const noexcept
+    {
+        // Re-placing costs about n comparer calls per item, a full re-rank about n log n.
+        size_t log2Count = 0;
+        for (size_t remaining = m_ranks.size(); remaining > 0; remaining >>= 1)
+        {
+            ++log2Count;
+        }
+        return m_evicted.size() > log2Count;
+    }
+
+    void CustomSortRankAdapter::PlaceEvicted()
+    {
+        if (m_rerankAllPending || ShouldRerankAll())
+        {
+            RerankAll();
+            return;
+        }
+
+        auto evicted = std::move(m_evicted);
+        m_evicted.clear();
+        const auto generation = m_generation;
+        for (auto const& item : evicted)
+        {
+            int32_t rank = 0;
+            bool tied = false;
+            if (!PlaceUnranked(item, generation, rank, tied))
+            {
+                return;
+            }
+        }
+    }
+
+    void CustomSortRankAdapter::RerankAll()
+    {
+        std::stable_sort(m_ranks.begin(), m_ranks.end(), [](RankEntry const& left, RankEntry const& right)
+        {
+            return left.Rank < right.Rank;
+        });
+
+        std::vector<winrt::IInspectable> rows;
+        rows.reserve(m_ranks.size() + m_evicted.size());
+        for (auto const& entry : m_ranks)
+        {
+            rows.push_back(entry.Item);
+        }
+        for (auto const& item : m_evicted)
+        {
+            rows.push_back(item);
+        }
+
+        ClearRanks();
+        PopulateRanks(rows, m_generation);
     }
 }

@@ -70,7 +70,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         if (!record.IsTip(64477764) && !record.IsTip(64477774)) { return; }
                         using var payload = JsonDocument.Parse(record.Text("data"));
-                        int expectedVersion = record.IsTip(64477764) ? 3 : 2;
+                        int expectedVersion = record.IsTip(64477764) ? 4 : 3;
                         if (payload.RootElement.GetProperty("version").GetInt32() != expectedVersion)
                         {
                             throw new InvalidDataException("Unexpected TableView TiP custom data version.");

@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using Windows.Foundation.Metadata;
 using Windows.UI.ViewManagement;
 using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Markup;
@@ -872,6 +873,247 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetAutomationControlType());
                 // Tabs should only provide SelectionItem pattern but not Invoke pattern
                 Verify.IsNull(NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetPattern(PatternInterface.Invoke));
+            });
+        }
+
+        [TestMethod]
+        public void VerifyAutomationPeerInvokesNonSelectingItemOnce()
+        {
+            VerifyAutomationPeerSelectionInvocation(selectsOnInvoked: false);
+        }
+
+        [TestMethod]
+        public void VerifyAutomationPeerInvokesSelectingItemOnce()
+        {
+            VerifyAutomationPeerSelectionInvocation(selectsOnInvoked: true);
+        }
+
+        private void VerifyAutomationPeerSelectionInvocation(bool selectsOnInvoked)
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                foreach (var hasPreviousSelection in new[] { false, true })
+                {
+                    foreach (var addToSelection in new[] { false, true })
+                    {
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Log.Comment($"PaneDisplayMode={paneDisplayMode}, SelectsOnInvoked={selectsOnInvoked}, HasPreviousSelection={hasPreviousSelection}, AddToSelection={addToSelection}");
+                            var previousItem = new NavigationViewItem { Content = "Previous" };
+                            var targetItem = new NavigationViewItem { Content = "Target", SelectsOnInvoked = selectsOnInvoked };
+                            var navView = new NavigationView { PaneDisplayMode = paneDisplayMode, Width = 1008 };
+                            navView.MenuItems.Add(previousItem);
+                            navView.MenuItems.Add(targetItem);
+                            Content = navView;
+                            Content.UpdateLayout();
+                            navView.SelectedItem = hasPreviousSelection ? previousItem : null;
+
+                            var invokedItems = new List<NavigationViewItemBase>();
+                            navView.ItemInvoked += (sender, args) => invokedItems.Add(args.InvokedItemContainer);
+                            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(targetItem);
+                            var provider = peer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                            Verify.IsNotNull(provider);
+
+                            for (int invocation = 0; invocation < 3; invocation++)
+                            {
+                                invokedItems.Clear();
+                                // Keyboard accelerators use the SelectionItem pattern when Invoke is unavailable.
+                                if (addToSelection)
+                                {
+                                    provider.AddToSelection();
+                                }
+                                else
+                                {
+                                    provider.Select();
+                                }
+
+                                Verify.AreEqual(1, invokedItems.Count, "Each automation action should invoke exactly once.");
+                                Verify.AreEqual(targetItem, invokedItems[0], "Only the target item should be invoked.");
+                                Verify.AreEqual(selectsOnInvoked ? targetItem : (hasPreviousSelection ? previousItem : null), navView.SelectedItem);
+                                Verify.AreEqual(selectsOnInvoked, targetItem.IsSelected);
+                                Verify.AreEqual(selectsOnInvoked, provider.IsSelected);
+                                Verify.AreEqual(!selectsOnInvoked && hasPreviousSelection, previousItem.IsSelected);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyNonSelectingInvocationDoesNotAffectSubsequentSelectionChanges()
+        {
+            VerifyInvocationDoesNotAffectSubsequentSelectionChanges(selectsOnInvoked: false);
+        }
+
+        [TestMethod]
+        public void VerifySelectedItemInvocationDoesNotAffectSubsequentSelectionChanges()
+        {
+            VerifyInvocationDoesNotAffectSubsequentSelectionChanges(selectsOnInvoked: true);
+        }
+
+        private void VerifyInvocationDoesNotAffectSubsequentSelectionChanges(bool selectsOnInvoked)
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                foreach (var addToSelection in new[] { false, true })
+                {
+                    foreach (var removeSelection in new[] { false, true })
+                    {
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Log.Comment($"PaneDisplayMode={paneDisplayMode}, SelectsOnInvoked={selectsOnInvoked}, AddToSelection={addToSelection}, RemoveSelection={removeSelection}");
+                            var previousItem = new NavigationViewItem { Content = "Previous" };
+                            var targetItem = new NavigationViewItem { Content = "Target", SelectsOnInvoked = selectsOnInvoked };
+                            var nextItem = new NavigationViewItem { Content = "Next" };
+                            var navView = new NavigationView { PaneDisplayMode = paneDisplayMode, Width = 1008 };
+                            navView.MenuItems.Add(previousItem);
+                            navView.MenuItems.Add(targetItem);
+                            navView.MenuItems.Add(nextItem);
+                            Content = navView;
+                            Content.UpdateLayout();
+                            var selectedItem = selectsOnInvoked ? targetItem : previousItem;
+                            navView.SelectedItem = selectedItem;
+
+                            var invokedItems = new List<NavigationViewItemBase>();
+                            navView.ItemInvoked += (sender, args) => invokedItems.Add(args.InvokedItemContainer);
+                            var provider = FrameworkElementAutomationPeer.CreatePeerForElement(targetItem)
+                                .GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                            Verify.IsNotNull(provider);
+                            if (addToSelection)
+                            {
+                                provider.AddToSelection();
+                            }
+                            else
+                            {
+                                provider.Select();
+                            }
+
+                            Verify.AreEqual(1, invokedItems.Count);
+                            Verify.AreEqual(targetItem, invokedItems[0]);
+                            Verify.AreEqual(selectedItem, navView.SelectedItem);
+
+                            if (removeSelection)
+                            {
+                                var selectedProvider = FrameworkElementAutomationPeer.CreatePeerForElement(selectedItem)
+                                    .GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                                Verify.IsNotNull(selectedProvider);
+                                selectedProvider.RemoveFromSelection();
+                            }
+                            else
+                            {
+                                navView.SelectedItem = nextItem;
+                            }
+
+                            Verify.AreEqual(1, invokedItems.Count, "A later selection change must not invoke another item.");
+                            Verify.AreEqual(removeSelection ? null : nextItem, navView.SelectedItem);
+                            Verify.IsFalse(selectedItem.IsSelected);
+                            Verify.AreEqual(!removeSelection, nextItem.IsSelected);
+                        });
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyItemInvokedHandlerCanChangeSelectionWithoutInvokingAgain()
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                foreach (var selectsOnInvoked in new[] { false, true })
+                {
+                    foreach (var clearSelection in new[] { false, true })
+                    {
+                        NavigationView navView = null;
+                        NavigationViewItem previousItem = null;
+                        NavigationViewItem targetItem = null;
+                        NavigationViewItem nextItem = null;
+                        var events = new List<string>();
+                        using var selectionChangedEvent = new ManualResetEvent(false);
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Log.Comment($"PaneDisplayMode={paneDisplayMode}, SelectsOnInvoked={selectsOnInvoked}, ClearSelection={clearSelection}");
+                            previousItem = new NavigationViewItem { Content = "Previous" };
+                            targetItem = new NavigationViewItem { Content = "Target", SelectsOnInvoked = selectsOnInvoked };
+                            nextItem = new NavigationViewItem { Content = "Next" };
+                            navView = new NavigationView { PaneDisplayMode = paneDisplayMode, Width = 1008 };
+                            navView.MenuItems.Add(previousItem);
+                            navView.MenuItems.Add(targetItem);
+                            navView.MenuItems.Add(nextItem);
+                            Content = navView;
+                            Content.UpdateLayout();
+                            navView.SelectedItem = selectsOnInvoked ? targetItem : previousItem;
+                        });
+
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            var invokedItems = new List<NavigationViewItemBase>();
+                            navView.SelectionChanged += (sender, args) =>
+                            {
+                                events.Add("SelectionChanged");
+                                selectionChangedEvent.Set();
+                            };
+                            navView.ItemInvoked += (sender, args) =>
+                            {
+                                invokedItems.Add(args.InvokedItemContainer);
+                                events.Add("ItemInvoked");
+                                if (invokedItems.Count == 1)
+                                {
+                                    navView.SelectedItem = clearSelection ? null : nextItem;
+                                }
+                            };
+
+                            // The peer implements Invoke even though it does not expose the UIA Invoke pattern.
+                            // Call it directly to exercise the shared invocation path without reselecting the item.
+                            var provider = FrameworkElementAutomationPeer.CreatePeerForElement(targetItem) as IInvokeProvider;
+                            Verify.IsNotNull(provider);
+                            provider.Invoke();
+
+                            Verify.AreEqual(1, invokedItems.Count, "Selection changes inside ItemInvoked must not invoke another item.");
+                            Verify.AreEqual(targetItem, invokedItems[0]);
+                            Verify.AreEqual(clearSelection ? null : nextItem, navView.SelectedItem);
+                            Verify.IsFalse(previousItem.IsSelected);
+                            Verify.IsFalse(targetItem.IsSelected);
+                            Verify.AreEqual(!clearSelection, nextItem.IsSelected);
+                        });
+
+                        Verify.IsTrue(selectionChangedEvent.WaitOne(TimeSpan.FromSeconds(5)), "SelectionChanged should be raised for the handler's selection change.");
+                        IdleSynchronizer.Wait();
+                        RunOnUIThread.Execute(() =>
+                        {
+                            Verify.AreEqual("ItemInvoked,SelectionChanged", string.Join(",", events));
+                        });
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyAutomationPeerCanRemoveNonSelectingItemFromSelection()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var targetItem = new NavigationViewItem { Content = "Target" };
+                var navView = new NavigationView { PaneDisplayMode = NavigationViewPaneDisplayMode.Left, Width = 1008 };
+                navView.MenuItems.Add(targetItem);
+                Content = navView;
+                Content.UpdateLayout();
+                navView.SelectedItem = targetItem;
+                targetItem.SelectsOnInvoked = false;
+                Verify.IsTrue(targetItem.IsSelected);
+
+                int invocationCount = 0;
+                navView.ItemInvoked += (sender, args) => invocationCount++;
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(targetItem);
+                var provider = peer.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                Verify.IsNotNull(provider);
+                provider.RemoveFromSelection();
+
+                Verify.IsFalse(targetItem.IsSelected);
+                Verify.IsFalse(provider.IsSelected);
+                Verify.IsNull(navView.SelectedItem);
+                Verify.AreEqual(0, invocationCount, "Removing selection should not invoke the item.");
             });
         }
 

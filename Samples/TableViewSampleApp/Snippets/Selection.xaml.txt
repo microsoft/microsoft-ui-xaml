@@ -1,0 +1,35 @@
+<ComboBox x:Name="SelectionModeSelector"
+          AutomationProperties.AutomationId="SelectionSelectionModeSelector"
+          Header="Selection mode" SelectedIndex="1"
+          SelectionChanged="OnSelectionModeChanged">
+    <ComboBoxItem Content="None" Tag="None"/>
+    <ComboBoxItem Content="Single" Tag="Single"/>
+</ComboBox>
+
+<!-- Every cell template comes from the shared Templates\PersonCellTemplates.xaml.
+     Name is the one * column. Template columns sort by SortMemberPath, the value behind
+     the control; Photo and Details are not sortable. -->
+<tv:TableView x:Name="PeopleTable"
+              AutomationProperties.AutomationId="SelectionTable"
+              AutomationProperties.Name="People selection"
+              SelectionMode="Single">
+    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                                CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
+                            Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}"
+                                CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}"
+                                CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+    <tv:TableViewTemplateColumn Header="Office" Width="{StaticResource ColWidthCombo}"
+                                CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office"/>
+    <tv:TableViewTemplateColumn Header="Details" Width="{StaticResource ColWidthAction}"
+                                CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False"/>
+</tv:TableView>
+
+<Button x:Name="SelectLastButton" AutomationProperties.AutomationId="SelectionSelectLastButton"
+        Content="Select last" Click="OnSelectLastClick"/>
+<Button x:Name="InsertAboveButton" AutomationProperties.AutomationId="SelectionInsertAboveButton"
+        Content="Insert a row above the selection" Click="OnInsertAboveClick"/>
+<Button x:Name="RemoveSelectedButton" AutomationProperties.AutomationId="SelectionRemoveSelectedButton"
+        Content="Remove the selected row" Click="OnRemoveSelectedClick"/>

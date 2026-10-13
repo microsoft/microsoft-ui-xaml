@@ -24,7 +24,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class TableViewTelemetryTests : TableViewApiTestBase
     {
         [TestMethod]
-        public void VerifyHostedInitializationAndSelectionNoOp()
+        public void VerifyTemplateSetupAndSelectionNoOp()
         {
             using var capture = new TableViewTelemetryCapture();
             TableView table = null;
@@ -45,26 +45,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifySingleSelection(events);
             var summary = Summary(events);
             Verify.AreEqual(1u, summary.Number("SelectionCount"));
-            Verify.AreEqual(1u, summary.Number("ContentKind"));
-            Verify.IsTrue(summary.Flag("RowCountAvailable"));
             Verify.AreEqual(1, events.Count(e => e.Provider == TableViewTelemetryCapture.SdkProvider),
                 "Selection must not add per-action SDK spans or feature-use events.");
         }
 
         [TestMethod]
-        public void VerifyInitializationDoesNotWaitForRectangleClipReveal()
+        public void VerifyTemplateSetupDoesNotWaitForRectangleClipReveal()
         {
-            VerifyClipRecovery(changeTransform: false);
+            VerifyTemplateIgnoresClipReveal(changeTransform: false);
         }
 
         [TestMethod]
-        public void VerifyInitializationDoesNotWaitForClipTransformReveal()
+        public void VerifyTemplateSetupDoesNotWaitForClipTransformReveal()
         {
-            VerifyClipRecovery(changeTransform: true);
+            VerifyTemplateIgnoresClipReveal(changeTransform: true);
         }
 
         [TestMethod]
-        public void VerifyMutableTransformGroupDoesNotDelayInitialization()
+        public void VerifyMutableTransformGroupDoesNotDelayTemplateSetup()
         {
             using var capture = new TableViewTelemetryCapture();
             TableView table = null;
@@ -89,12 +87,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
             var events = UnloadAndRead(capture);
             Verify.IsTrue(events.Single(e => e.IsTip(64477764)).TimestampQpc < changed,
-                "Arrangement must finish before the application's later transform collection change.");
+                "Template setup must finish before the application's later transform collection change.");
             VerifyInitialization(events);
         }
 
         [TestMethod]
-        public void VerifyVisibleTransformGroupDoesNotNeedObservation()
+        public void VerifyTemplateSetupWithVisibleTransformGroup()
         {
             using var capture = new TableViewTelemetryCapture();
             RunOnUIThread.Execute(() =>
@@ -112,7 +110,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyInitializationDoesNotReadUnsupportedClipProjection()
+        public void VerifyTemplateSetupDoesNotReadUnsupportedClipProjection()
         {
             using var capture = new TableViewTelemetryCapture();
             TableView table = null;
@@ -131,7 +129,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyInitializationDoesNotWaitForOpacityReveal()
+        public void VerifyTemplateSetupDoesNotWaitForOpacityReveal()
         {
             using var capture = new TableViewTelemetryCapture();
             TableView table = null;
@@ -151,7 +149,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
             var events = UnloadAndRead(capture);
             Verify.IsTrue(events.Single(e => e.IsTip(64477764)).TimestampQpc < reveal,
-                "Arrangement latency must not include waiting for the app to show an opaque control.");
+                "Template-setup latency must not include waiting for the app to show the control.");
             VerifyInitialization(events);
         }
 
@@ -200,7 +198,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsNotNull(CaptureSetValue(GetValueProvider(table, items[0], 0), "Invalid:value"));
                 Verify.IsTrue(table.IsEditing, "Rejected validation must retain the edit.");
-                Verify.AreEqual("Invalid:value", items[0].Name, "Validation occurs after the write.");
+                Verify.AreEqual("Asha", items[0].Name, "A rejected value must be rolled back off the item.");
                 Verify.IsTrue(table.CancelEdit());
                 Verify.AreEqual("Asha", items[0].Name);
                 Verify.IsFalse(table.IsEditing);
@@ -293,7 +291,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyNoProductFailures(events);
         }
 
-        private void VerifyClipRecovery(bool changeTransform)
+        private void VerifyTemplateIgnoresClipReveal(bool changeTransform)
         {
             using var capture = new TableViewTelemetryCapture();
             TableView table = null;
@@ -324,7 +322,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
             var events = UnloadAndRead(capture);
             Verify.IsTrue(events.Single(e => e.IsTip(64477764)).TimestampQpc < reveal,
-                "Arrangement must finish before the application's later clip reveal.");
+                "Template setup must finish before the application's later clip reveal.");
             VerifyInitialization(events);
         }
 
@@ -338,8 +336,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static TableViewTelemetryCapture.Record Summary(IReadOnlyList<TableViewTelemetryCapture.Record> events)
         {
             var summary = events.Single(e => e.Name == "TableView_SessionSummary");
-            Verify.AreEqual(4u, summary.Number("SchemaVersion"));
-            Verify.AreEqual(2u, summary.Number("SessionSummaryVersion"));
+            Verify.AreEqual(5u, summary.Number("SchemaVersion"));
+            Verify.AreEqual(3u, summary.Number("SessionSummaryVersion"));
+            Verify.IsTrue(summary.Flag("UTCReplace_AppSessionGuid"),
+                "Use the existing provider collection-context directive, not a control identity lookup.");
             return summary;
         }
 

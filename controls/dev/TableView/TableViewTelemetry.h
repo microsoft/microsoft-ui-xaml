@@ -18,7 +18,7 @@ namespace TableViewTelemetry
         Selection = 6, Editing = 7, Filter = 8, Grouping = 9, Scroll = 10
     };
     enum class InitialState { NotStarted, Started, Finished };
-    enum class InitialOutcome : uint32_t { NotObserved = 0, Arranged = 1, Failure = 2, Ignored = 3 };
+    enum class InitialOutcome : uint32_t { NotObserved = 0, TemplateInitialized = 1, Failure = 2, Ignored = 3 };
     enum class Attribution : uint32_t { Unknown = 0, Product = 1, Application = 2 };
 
     struct ShapingObservation
@@ -46,22 +46,8 @@ namespace TableViewTelemetry
         uint32_t appFaultCount{};
         uint32_t deferredCount{};
         uint32_t unattributedFaultCount{};
-        uint32_t retemplateCount{};
         uint32_t overflowMask{};
         bool active{};
-        bool collectorEnabledAtLoad{};
-        bool collectorEverEnabled{};
-        bool collectorObservedDisabled{};
-    };
-
-    struct Configuration
-    {
-        Content content{};
-        uint32_t columnCountBucket{};
-        bool grouped{};
-        bool available{ true };
-        uint32_t rowCountBucket{};
-        bool rowCountAvailable{};
     };
 
     struct State;
@@ -74,7 +60,6 @@ namespace TableViewTelemetry
         OperationState& operator=(OperationState const&) = delete;
 
         TableViewOperationTest operationTest;
-        Configuration configuration{ Content::Empty, 0, false, false };
         State& usageOwner;
         Origin origin{};
         uint64_t operationGeneration{};
@@ -104,12 +89,10 @@ namespace TableViewTelemetry
     void BeginSession(State& state) noexcept;
     void EndSession(State& state) noexcept;
     void AbandonSession(State& state) noexcept;
-    void RecordRetemplate(State& state) noexcept;
     void BeginInitial(State& state, Origin origin) noexcept;
     void CompleteInitial(State& state, Result result, Stage stage = Stage::None, std::optional<HRESULT> error = {}) noexcept;
     void IgnoreInitial(State& state, IgnoreReason reason, Stage stage = Stage::None,
         std::optional<HRESULT> error = {}, AppFaultKind kind = AppFaultKind::None) noexcept;
-    bool UpdateConfiguration(OperationState& state, Configuration const& configuration) noexcept;
     uint64_t BeginOperation(OperationState& state, Operation operation) noexcept;
     void CompleteOperation(OperationState& state, uint64_t generation, Result result, std::optional<HRESULT> error = {}) noexcept;
     void IgnoreOperation(OperationState& state, uint64_t generation, IgnoreReason reason,
@@ -118,5 +101,4 @@ namespace TableViewTelemetry
     void ReportError(OperationState& state, Operation operation, Stage stage, bool recoverable,
         Attribution attribution = Attribution::Unknown, std::optional<HRESULT> error = {},
         AppFaultKind kind = AppFaultKind::None) noexcept;
-    uint32_t CountBucket(uint32_t count) noexcept;
 }

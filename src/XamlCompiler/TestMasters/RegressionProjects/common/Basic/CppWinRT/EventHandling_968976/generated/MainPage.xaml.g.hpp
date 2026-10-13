@@ -69,6 +69,24 @@ namespace winrt::EventHandling_968976::implementation
                         ::winrt::get_self<D>(t)->FourthHandler(p0);
                     }
                 });
+                targetElement.GuidCharPass([weakThis](::winrt::array_view<::winrt::guid const> p0, ::winrt::array_view<char16_t const> p1){
+                    if (auto t = weakThis.get())
+                    {
+                        ::winrt::get_self<D>(t)->GuidCharPassHandler(p0, p1);
+                    }
+                });
+                targetElement.GuidCharFill([weakThis](::winrt::array_view<::winrt::guid> p0, ::winrt::array_view<char16_t> p1){
+                    if (auto t = weakThis.get())
+                    {
+                        ::winrt::get_self<D>(t)->GuidCharFillHandler(p0, p1);
+                    }
+                });
+                targetElement.GuidCharReceive([weakThis](::winrt::com_array<::winrt::guid>& p0, ::winrt::com_array<char16_t>& p1){
+                    if (auto t = weakThis.get())
+                    {
+                        ::winrt::get_self<D>(t)->GuidCharReceiveHandler(p0, p1);
+                    }
+                });
             }
             break;
         }

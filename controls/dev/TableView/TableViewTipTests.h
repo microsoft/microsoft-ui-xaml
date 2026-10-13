@@ -33,12 +33,10 @@ namespace TableViewTelemetry
         case Operation::Sort:
         case Operation::Filter:
         case Operation::GroupConfiguration:
-        case Operation::GroupExpansion:
         case Operation::Selection:
         case Operation::BeginEdit:
         case Operation::CommitEdit:
         case Operation::CancelEdit:
-        case Operation::Scroll:
             return true;
         default:
             return false;
@@ -62,24 +60,18 @@ namespace TableViewTelemetry
         uint32_t productMinor{ WINDOWSAPPSDK_RELEASE_MINOR };
         uint32_t componentBuild{ WINUI_BUILD_VERSION };
         Origin origin{};
-        Content content{};
-        uint32_t rowCountBucket{};
-        uint32_t columnCountBucket{};
-        bool configurationAvailable{};
-        bool rowCountAvailable{};
 
         template<class Archive>
         void serialize(Archive& archive)
         {
             archive(TIP_value(componentMajor), TIP_value(productMajor), TIP_value(productMinor),
-                TIP_value(componentBuild), TIP_value(origin), TIP_value(content), TIP_value(rowCountBucket),
-                TIP_value(columnCountBucket), TIP_value(configurationAvailable), TIP_value(rowCountAvailable));
+                TIP_value(componentBuild), TIP_value(origin));
         }
     };
 
     TIP_declare_test(TableViewInitializationTest, 64477764)
     {
-        TIP_set_data_version(3);
+        TIP_set_data_version(4);
         TIP_set_metrics_enabled();
         using reason = TableViewTipReason;
 
@@ -118,7 +110,7 @@ namespace TableViewTelemetry
 
     TIP_declare_test(TableViewOperationTest, 64477774)
     {
-        TIP_set_data_version(2);
+        TIP_set_data_version(3);
         TIP_set_metrics_enabled();
         using reason = TableViewTipReason;
 

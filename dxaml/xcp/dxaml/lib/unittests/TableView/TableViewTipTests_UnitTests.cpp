@@ -6,6 +6,7 @@
 #include <string>
 #include <TableViewTipTests.h>
 #include <WexTestClass.h>
+#include "TableViewTipTestHelpers.h"
 
 using namespace TableViewTelemetry;
 
@@ -33,6 +34,7 @@ public:
 #if TABLEVIEW_TIP_REAL_LIBRARY
     TEST_METHOD(InitializationRequiresPositiveCompletion)
     {
+        if (!TableViewTipTestHelpers::RequireNativeAbi()) { return; }
         auto success = tip::start<TableViewInitializationTest>();
         VERIFY_IS_TRUE(static_cast<bool>(success));
         VERIFY_IS_TRUE(success.test_id() != GUID{});
@@ -50,6 +52,7 @@ public:
 
     TEST_METHOD(FailureFlagsAreAuthoritative)
     {
+        if (!TableViewTipTestHelpers::RequireNativeAbi()) { return; }
         const auto failures = {
             TableViewTipReason::template_failure, TableViewTipReason::source_failure,
             TableViewTipReason::shaping_failure, TableViewTipReason::realization_failure,
@@ -69,6 +72,7 @@ public:
 
     TEST_METHOD(IgnoreDoesNotRequireSuccessFlags)
     {
+        if (!TableViewTipTestHelpers::RequireNativeAbi()) { return; }
         const auto ignores = {
             TableViewTipReason::cancelled, TableViewTipReason::vetoed,
             TableViewTipReason::validation_rejected, TableViewTipReason::superseded,
@@ -87,6 +91,7 @@ public:
 
     TEST_METHOD(ConcurrentInstancesAndRepeatedCompletion)
     {
+        if (!TableViewTipTestHelpers::RequireNativeAbi()) { return; }
         auto first = tip::start<TableViewOperationTest>();
         auto second = tip::start<TableViewOperationTest>();
         VERIFY_IS_TRUE(static_cast<bool>(first) && static_cast<bool>(second));
@@ -105,8 +110,8 @@ public:
         const auto operation = TableViewOperationTest::info();
         VERIFY_ARE_EQUAL(64477764u, initial.testCaseId);
         VERIFY_ARE_EQUAL(64477774u, operation.testCaseId);
-        VERIFY_ARE_EQUAL(static_cast<unsigned char>(3), initial.version);
-        VERIFY_ARE_EQUAL(static_cast<unsigned char>(2), operation.version);
+        VERIFY_ARE_EQUAL(static_cast<unsigned char>(4), initial.version);
+        VERIFY_ARE_EQUAL(static_cast<unsigned char>(3), operation.version);
         VERIFY_IS_TRUE(initial.storage == TestStorage::Process && operation.storage == TestStorage::Process);
         constexpr auto forbidden = TestProperties::ExtendedLifetime | TestProperties::RuntimeExtended |
             TestProperties::RuntimeMax | TestProperties::PerfTrack | TestProperties::KeyMoment |
@@ -121,55 +126,42 @@ public:
         {
             TableViewTipDimensions dimensions;
             dimensions.origin = nonzero ? Origin::Loaded : Origin::Template;
-            dimensions.content = nonzero ? Content::GroupHeaders : Content::Empty;
-            dimensions.rowCountBucket = nonzero ? 3u : 0u;
-            dimensions.columnCountBucket = nonzero ? 4u : 0u;
-            dimensions.configurationAvailable = nonzero;
-            dimensions.rowCountAvailable = nonzero;
             auto const expected = dimensions;
 
             tson::write_buffer buffer;
-            tson::output_archive output(buffer, 2);
+            tson::output_archive output(buffer, 3);
             output(TIP_value(dimensions));
             VERIFY_SUCCEEDED(output.finish());
 
             dimensions = {};
-            dimensions.rowCountBucket = 4;
-            dimensions.columnCountBucket = 4;
-            dimensions.configurationAvailable = true;
-            dimensions.rowCountAvailable = true;
             tson::read_buffer inputBuffer(buffer.data(), buffer.size());
-            tson::input_archive input(inputBuffer, 2);
+            tson::input_archive input(inputBuffer, 3);
             input(TIP_value(dimensions));
             VERIFY_SUCCEEDED(input.finish());
-            VERIFY_IS_TRUE(dimensions.origin == expected.origin && dimensions.content == expected.content);
-            VERIFY_ARE_EQUAL(expected.rowCountBucket, dimensions.rowCountBucket);
-            VERIFY_ARE_EQUAL(expected.columnCountBucket, dimensions.columnCountBucket);
-            VERIFY_ARE_EQUAL(expected.configurationAvailable, dimensions.configurationAvailable);
-            VERIFY_ARE_EQUAL(expected.rowCountAvailable, dimensions.rowCountAvailable);
+            VERIFY_IS_TRUE(dimensions.origin == expected.origin);
             VERIFY_ARE_EQUAL(expected.componentMajor, dimensions.componentMajor);
             VERIFY_ARE_EQUAL(expected.productMajor, dimensions.productMajor);
             VERIFY_ARE_EQUAL(expected.productMinor, dimensions.productMinor);
             VERIFY_ARE_EQUAL(expected.componentBuild, dimensions.componentBuild);
 
             tson::read_buffer wrongVersionBuffer(buffer.data(), buffer.size());
-            tson::input_archive wrongVersion(wrongVersionBuffer, 1);
+            tson::input_archive wrongVersion(wrongVersionBuffer, 2);
             VERIFY_FAILED(wrongVersion.finish());
 
             TableViewOperationTest::tip_test_data custom;
             custom.dimensions = expected;
-            custom.operation = nonzero ? Operation::Scroll : Operation::InitialLayout;
+            custom.operation = nonzero ? Operation::CommitEdit : Operation::InitialLayout;
             custom.diagnosticHResult = nonzero ? E_INVALIDARG : S_OK;
             custom.diagnosticHResultAvailable = nonzero;
             custom.appFaultKind = nonzero ? AppFaultKind::Binding : AppFaultKind::None;
             auto const expectedOperation = custom.operation;
             tson::write_buffer customBuffer;
-            tson::output_archive customOutput(customBuffer, 2);
+            tson::output_archive customOutput(customBuffer, 3);
             custom.serialize(customOutput);
             VERIFY_SUCCEEDED(customOutput.finish());
             custom = {};
             tson::read_buffer customInputBuffer(customBuffer.data(), customBuffer.size());
-            tson::input_archive customInput(customInputBuffer, 2);
+            tson::input_archive customInput(customInputBuffer, 3);
             custom.serialize(customInput);
             VERIFY_SUCCEEDED(customInput.finish());
             VERIFY_IS_TRUE(custom.operation == expectedOperation);
@@ -193,13 +185,15 @@ public:
     TEST_METHOD(OperationKindsExcludeIncidentalLayout)
     {
         for (auto operation : { Operation::ReplaceSource, Operation::Sort, Operation::Filter,
-            Operation::GroupConfiguration, Operation::GroupExpansion, Operation::Selection,
-            Operation::BeginEdit, Operation::CommitEdit, Operation::CancelEdit, Operation::Scroll })
+            Operation::GroupConfiguration, Operation::Selection,
+            Operation::BeginEdit, Operation::CommitEdit, Operation::CancelEdit })
         {
             VERIFY_IS_TRUE(IsMeasuredOperation(operation));
         }
         VERIFY_IS_FALSE(IsMeasuredOperation(Operation::InitialLayout));
         VERIFY_IS_FALSE(IsMeasuredOperation(Operation::HeaderRefresh));
         VERIFY_IS_FALSE(IsMeasuredOperation(Operation::Layout));
+        VERIFY_IS_FALSE(IsMeasuredOperation(Operation::GroupExpansion));
+        VERIFY_IS_FALSE(IsMeasuredOperation(Operation::Scroll));
     }
 };

@@ -21,6 +21,101 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void Schema_CppWinRTArrayTypeNames()
+        {
+            var elementNames = new Dictionary<Type, string>
+            {
+                { typeof(int), "int32_t" },
+                { typeof(ushort), "uint16_t" },
+                { typeof(string), "::winrt::hstring" },
+                { typeof(object), "::winrt::Windows::Foundation::IInspectable" },
+                { typeof(TimeSpan), "::winrt::Windows::Foundation::TimeSpan" },
+                { typeof(Guid), "::winrt::guid" },
+                { typeof(char), "char16_t" },
+            };
+
+            foreach (bool globalized in new[] { false, true })
+            {
+                foreach (var entry in elementNames)
+                {
+                    Assert.AreEqual(entry.Value,
+                        XamlSchemaCodeInfo.GetFullGenericNestedName(entry.Key, "CppWinRT", globalized));
+                    Assert.AreEqual($"::winrt::com_array<{entry.Value}>",
+                        XamlSchemaCodeInfo.GetFullGenericNestedName(entry.Key.MakeArrayType(), "CppWinRT", globalized));
+                }
+            }
+        }
+
+        [TestMethod]
+        public void Schema_CppCXPrimitiveTypeNames()
+        {
+            var elementNames = new Dictionary<Type, string>
+            {
+                { typeof(Guid), "Platform::Guid" },
+                { typeof(char), "default::char16" },
+            };
+
+            foreach (bool globalized in new[] { false, true })
+            {
+                string prefix = globalized ? "::" : "";
+                foreach (var entry in elementNames)
+                {
+                    Assert.AreEqual(prefix + entry.Value,
+                        XamlSchemaCodeInfo.GetFullGenericNestedName(entry.Key, "C++", globalized));
+                    Assert.AreEqual(prefix + entry.Value + "[]",
+                        XamlSchemaCodeInfo.GetFullGenericNestedName(entry.Key.MakeArrayType(), "C++", globalized));
+                }
+            }
+        }
+
+        [TestMethod]
+        public void Schema_CppWinRTArrayElementQualification()
+        {
+            foreach (bool globalized in new[] { false, true })
+            {
+                string prefix = globalized ? "::winrt::" : "";
+                string elementName = prefix + "System::Collections::Generic::List<int32_t>";
+                Assert.AreEqual(elementName,
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(List<int>), "CppWinRT", globalized));
+                Assert.AreEqual($"::winrt::com_array<{elementName}>",
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(List<int>[]), "CppWinRT", globalized));
+            }
+        }
+
+        [TestMethod]
+        public void Schema_ArrayTypeNamesPreserveOtherLanguages()
+        {
+            var expectedNames = new[]
+            {
+                new { Language = "WinRT", Int32 = "Int32[]", String = "String[]", Guid = "Guid[]", Char = "Char[]" },
+                new { Language = "C#", Int32 = "global::System.Int32[]", String = "global::System.String[]", Guid = "global::System.Guid[]", Char = "global::System.Char[]" },
+                new { Language = "VB", Int32 = "Global.System.Int32()", String = "Global.System.String()", Guid = "Global.System.Guid()", Char = "Global.System.Char()" },
+                new { Language = "C++", Int32 = "::default::int32[]", String = "::Platform::String[]", Guid = "::Platform::Guid[]", Char = "::default::char16[]" },
+            };
+
+            foreach (var entry in expectedNames)
+            {
+                Assert.AreEqual(entry.Int32,
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(int[]), entry.Language, true));
+                Assert.AreEqual(entry.String,
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(string[]), entry.Language, true));
+                Assert.AreEqual(entry.Guid,
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(Guid[]), entry.Language, true));
+                Assert.AreEqual(entry.Char,
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(char[]), entry.Language, true));
+            }
+        }
+
+        [TestMethod]
+        public void Schema_CppWinRTArrayTypeNamesDoNotFlattenUnsupportedShapes()
+        {
+            Assert.AreEqual("int32_t[,]",
+                XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(int[,]), "CppWinRT", true));
+            Assert.AreEqual("int32_t[][]",
+                XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(int[][]), "CppWinRT", true));
+        }
+
+        [TestMethod]
         public void Thrown_XamlSchemaError_AmbiguousCollectionAdd()
         {
             string xaml = @"

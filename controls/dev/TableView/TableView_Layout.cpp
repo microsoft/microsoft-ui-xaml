@@ -118,69 +118,10 @@ namespace
 
 winrt::Size TableView::MeasureOverride(winrt::Size const& availableSize)
 {
-    const auto telemetryGeneration = m_telemetry.operationGeneration;
-    const auto scrollGeneration = m_scrollTelemetry.operationGeneration;
-    try
-    {
-        auto desired = __super::MeasureOverride(availableSize);
-        ResolveColumnWidths();
-        QueueTerminalGridLineRefresh();
-        if (!m_scrollTelemetryViewport.known && !m_headerScrollTelemetryOffset &&
-            !TableViewTelemetry::IsOperationStarted(m_scrollTelemetry))
-        {
-            if (auto const scroller = m_bodyScroller.get()) { ObserveScrollTelemetry(scroller, false, false); }
-        }
-        return desired;
-    }
-    catch (...)
-    {
-        IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::Layout,
-            telemetryGeneration, TableViewTelemetry::Stage::Layout, winrt::to_hresult());
-        if (TableViewTelemetry::IsOperationStarted(m_scrollTelemetry) &&
-            TableViewTelemetry::UpdateConfiguration(m_scrollTelemetry,
-                SnapshotTelemetryConfiguration()))
-        {
-            TableViewTelemetry::IgnoreOperation(m_scrollTelemetry, scrollGeneration,
-                TableViewTelemetry::IgnoreReason::UnattributedFault, winrt::to_hresult());
-        }
-        throw;
-    }
-}
-
-winrt::Size TableView::ArrangeOverride(winrt::Size const& finalSize)
-{
-    BeginInitializationTelemetry(TableViewTelemetry::Origin::Loaded);
-    auto const lifetime = m_telemetryLifetimeGeneration;
-    auto const generation = m_telemetry.operationGeneration;
-    try
-    {
-        auto arranged = __super::ArrangeOverride(finalSize);
-        if (lifetime == m_telemetryLifetimeGeneration && TableViewTelemetry::IsInitializing(m_telemetry))
-        {
-            RefreshTelemetryConfiguration();
-            if (lifetime == m_telemetryLifetimeGeneration)
-            {
-                if (m_rowsRepeater.get())
-                {
-                    TableViewTelemetry::CompleteInitial(m_telemetry, TableViewTelemetry::Result::Success);
-                }
-                else
-                {
-                    TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::DeferredOrUnproven);
-                }
-            }
-        }
-        return arranged;
-    }
-    catch (...)
-    {
-        if (lifetime == m_telemetryLifetimeGeneration)
-        {
-            IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::Layout,
-                generation, TableViewTelemetry::Stage::Layout, winrt::to_hresult());
-        }
-        throw;
-    }
+    auto desired = __super::MeasureOverride(availableSize);
+    ResolveColumnWidths();
+    QueueTerminalGridLineRefresh();
+    return desired;
 }
 
 // Requested from a cell panel's MeasureOverride when a realized cell's own measured width changed

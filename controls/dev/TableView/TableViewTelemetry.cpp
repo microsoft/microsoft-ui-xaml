@@ -13,7 +13,7 @@ namespace TableViewTelemetry
 {
     namespace
     {
-        constexpr uint32_t schemaVersion = 4;
+        constexpr uint32_t schemaVersion = 5;
         constexpr ULONGLONG measuresKeyword = MICROSOFT_KEYWORD_MEASURES | KEYWORD_TABLEVIEW;
 
 #define TABLEVIEW_COMMON_FIELDS \
@@ -32,11 +32,6 @@ namespace TableViewTelemetry
         {
             TableViewTipDimensions dimensions;
             dimensions.origin = state.origin;
-            dimensions.content = state.configuration.content;
-            dimensions.rowCountBucket = state.configuration.rowCountBucket;
-            dimensions.columnCountBucket = state.configuration.columnCountBucket;
-            dimensions.configurationAvailable = state.configuration.available;
-            dimensions.rowCountAvailable = state.configuration.rowCountAvailable;
             return dimensions;
         }
 
@@ -61,12 +56,6 @@ namespace TableViewTelemetry
             }
         }
 
-        void ObserveCollector(Session& session, bool enabled) noexcept
-        {
-            session.collectorEverEnabled = session.collectorEverEnabled || enabled;
-            session.collectorObservedDisabled = session.collectorObservedDisabled || !enabled;
-        }
-
         void Increment(Session& session, uint32_t& count, uint32_t bit) noexcept
         {
             if (count == (std::numeric_limits<uint32_t>::max)()) { session.overflowMask |= uint32_t{ 1 } << bit; }
@@ -83,7 +72,6 @@ namespace TableViewTelemetry
         {
             auto& session = state.usageOwner.session;
             if (!OwnsSession(state) || !IsMeasuredOperation(state.operation)) { return; }
-            ObserveCollector(session, IsEnabled());
             if (result == Result::Success)
             {
                 auto const operation = static_cast<uint32_t>(state.operation);
@@ -159,7 +147,7 @@ namespace TableViewTelemetry
         void StopInitial(State& state, Result result) noexcept
         {
             state.initial = InitialState::Finished;
-            state.initialOutcome = result == Result::Success ? InitialOutcome::Arranged :
+            state.initialOutcome = result == Result::Success ? InitialOutcome::TemplateInitialized :
                 result == Result::Failure ? InitialOutcome::Failure : InitialOutcome::Ignored;
             state.initialTipPending = false;
         }
@@ -209,8 +197,6 @@ namespace TableViewTelemetry
         state.session.generation = generation;
         state.session.active = true;
         state.reportedErrors = 0;
-        state.session.collectorEnabledAtLoad = IsEnabled();
-        ObserveCollector(state.session, state.session.collectorEnabledAtLoad);
     }
 
     void EndSession(State& state) noexcept
@@ -219,40 +205,26 @@ namespace TableViewTelemetry
         IgnoreInitial(state, IgnoreReason::Unloaded);
         IgnoreOperation(state, state.operationGeneration, IgnoreReason::Unloaded);
         auto const enabled = IsEnabled();
-        ObserveCollector(state.session, enabled);
         state.session.active = false;
         if (!enabled) { return; }
         auto const& session = state.session;
-        auto const& configuration = state.configuration;
         TraceLoggingWriteActivity(g_hTelemetryProvider, "TableView_SessionSummary",
             g_TelemetryProviderActivityId != GUID{} ? &g_TelemetryProviderActivityId : nullptr, nullptr, TABLEVIEW_INFO_FIELDS,
-            TraceLoggingUInt32(2, "SessionSummaryVersion"),
+            TraceLoggingUInt32(3, "SessionSummaryVersion"),
             TraceLoggingUInt32(static_cast<uint32_t>(state.initialOutcome), "InitialOutcome"),
-            TraceLoggingUInt32(static_cast<uint32_t>(configuration.content), "ContentKind"),
-            TraceLoggingUInt32(configuration.columnCountBucket, "ColumnCountBucket"),
-            TraceLoggingUInt32(configuration.rowCountBucket, "RowCountBucket"),
-            TraceLoggingBoolean(configuration.rowCountAvailable, "RowCountAvailable"),
-            TraceLoggingBoolean(configuration.available, "ConfigurationAvailable"),
-            TraceLoggingBoolean(configuration.grouped, "IsGrouped"),
             TraceLoggingUInt32(session.counts[1], "ReplaceSourceCount"),
             TraceLoggingUInt32(session.counts[2], "SortCount"),
             TraceLoggingUInt32(session.counts[5], "FilterCount"),
             TraceLoggingUInt32(session.counts[6], "GroupConfigurationCount"),
-            TraceLoggingUInt32(session.counts[7], "GroupExpansionCount"),
             TraceLoggingUInt32(session.counts[8], "SelectionCount"),
             TraceLoggingUInt32(session.counts[9], "BeginEditCount"),
             TraceLoggingUInt32(session.counts[10], "CommitEditCount"),
             TraceLoggingUInt32(session.counts[11], "CancelEditCount"),
-            TraceLoggingUInt32(session.counts[12], "ScrollCount"),
             TraceLoggingUInt32(session.appFaultCount, "AppFaultCount"),
             TraceLoggingUInt32(session.deferredCount, "DeferredCount"),
             TraceLoggingUInt32(session.unattributedFaultCount, "UnattributedFaultCount"),
-            TraceLoggingUInt32(session.retemplateCount, "RetemplateCount"),
             TraceLoggingUInt32(session.overflowMask, "CounterOverflowMask"),
-            TraceLoggingBoolean(session.collectorEnabledAtLoad, "CollectorEnabledAtLoad"),
-            TraceLoggingBoolean(enabled, "CollectorEnabledAtUnload"),
-            TraceLoggingBoolean(session.collectorEverEnabled, "CollectorEverEnabled"),
-            TraceLoggingBoolean(session.collectorObservedDisabled, "CollectorObservedDisabled"),
+            TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage));
     }
 
@@ -261,13 +233,6 @@ namespace TableViewTelemetry
         state.session.active = false;
         IgnoreInitial(state, IgnoreReason::Unloaded);
         IgnoreOperation(state, state.operationGeneration, IgnoreReason::Unloaded);
-    }
-
-    void RecordRetemplate(State& state) noexcept
-    {
-        if (!state.session.active) { return; }
-        ObserveCollector(state.session, IsEnabled());
-        Increment(state.session, state.session.retemplateCount, 16);
     }
 
     void BeginInitial(State& state, Origin origin) noexcept
@@ -308,22 +273,6 @@ namespace TableViewTelemetry
         StopInitial(state, Result::Cancelled);
     }
 
-    bool UpdateConfiguration(OperationState& state, Configuration const& configuration) noexcept
-    {
-        if (configuration.rowCountBucket > 4 || configuration.columnCountBucket > 4 ||
-            static_cast<uint32_t>(configuration.content) > static_cast<uint32_t>(Content::GroupHeaders))
-        {
-            OutputDebugStringW(L"TableView telemetry: invalid configuration buckets.\n");
-            return false;
-        }
-        state.configuration = configuration;
-        auto const dimensions = GetDimensions(state);
-        auto& owner = state.usageOwner;
-        if (&state == &owner && owner.initialTipPending) { owner.initialTest->dimensions = dimensions; }
-        if (state.operationTipPending) { state.operationTest->dimensions = dimensions; }
-        return true;
-    }
-
     uint64_t BeginOperation(OperationState& state, Operation operation) noexcept
     {
         if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(Operation::Scroll))
@@ -339,7 +288,6 @@ namespace TableViewTelemetry
         state.operation = operation;
         auto& session = state.usageOwner.session;
         state.operationSessionGeneration = session.active ? session.generation : 0;
-        if (session.active) { ObserveCollector(session, IsEnabled()); }
         {
             auto data = state.operationTest.data();
             data->dimensions = GetDimensions(state);
@@ -433,13 +381,6 @@ namespace TableViewTelemetry
             TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance));
     }
 
-    uint32_t CountBucket(uint32_t count) noexcept
-    {
-        if (count <= 1) { return count; }
-        if (count <= 4) { return 2; }
-        if (count <= 16) { return 3; }
-        return 4;
-    }
 #undef TABLEVIEW_INFO_FIELDS
 #undef TABLEVIEW_COMMON_FIELDS
 }

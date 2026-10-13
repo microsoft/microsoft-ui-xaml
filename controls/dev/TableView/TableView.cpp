@@ -16,12 +16,12 @@
 #include "SortIndicator.h"
 #include "RuntimeProfiler.h"
 #include "TVDiag.h"
+#include "TabularControlsResources.h"
 
 #include <string>
 #include <cmath>
 #include <limits>
 #include <algorithm>
-#include <exception>
 
 static constexpr std::wstring_view s_RowsRepeaterPartName{ L"PART_RowsRepeater"sv };
 static constexpr std::wstring_view s_HeaderRowPartName{ L"PART_HeaderRow"sv };
@@ -32,6 +32,14 @@ static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGri
 // Matches TableViewResizeGripperWidth in the theme dictionaries; used when that key is missing or
 // unusable.
 static constexpr double c_resizeGripperWidthFallback{ 8.0 };
+
+// Fallbacks mirroring the resources shipped in TableView.xaml.
+static constexpr double c_defaultRowIndentSize{ 16.0 };
+static constexpr double c_defaultRowExpanderSize{ 24.0 };
+static constexpr double c_defaultGroupExpanderSize{ 24.0 };
+
+// The ColumnSpacing of the Grid hosting PART_ExpanderGutter in the group-header template.
+static constexpr double c_groupHeaderExpanderSpacing{ 6.0 };
 static constexpr std::wstring_view s_SortIndicatorName{ L"TableViewSortIndicator"sv };
 static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"sv };
 // Matches SortIndicatorSize in SortIndicator_themeresources.xaml; used only when that key is
@@ -228,6 +236,9 @@ namespace
         cache.density.hasHeaderCellPadding = false;
         cache.font.hasCellFontSize = false;
         cache.font.hasHeaderFontSize = false;
+        cache.hierarchy.hasRowIndentSize = false;
+        cache.hierarchy.hasRowExpanderSize = false;
+        cache.hierarchy.hasGroupExpanderSize = false;
         cache.gridLine.hasBrush = false;
     }
 
@@ -330,6 +341,17 @@ TableView::TableView()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TableView);
 
     SetDefaultStyleKey(this);
+
+    // Construction is only a setup heuristic; equivalent resources or custom templates are valid.
+    static thread_local bool s_reportedMissingResources{ false };
+    if (!TabularControlsResources::HasBeenCreatedOnCurrentThread() && !s_reportedMissingResources)
+    {
+        s_reportedMissingResources = TVDiag::LogDebugger(
+            L"TableView setup: if using the default template, merge "
+            L"<TabularControlsResources xmlns=\"using:Microsoft.UI.Xaml.Controls.Tabular\" /> into "
+            L"App.xaml > Application.Resources.MergedDictionaries after XamlControlsResources, before overrides. "
+            L"Equivalent resources or a complete custom template are also supported.");
+    }
 
     // Columns must be observable; OnColumnsPropertyChanged owns the VectorChanged subscription to avoid duplicate callbacks.
     auto columns = winrt::single_threaded_observable_vector<winrt::TableViewColumn>();
@@ -451,8 +473,6 @@ TableView::TableView()
 void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
     TableViewTelemetry::BeginSession(m_telemetry);
-    RefreshTelemetryConfiguration();
-    BeginInitializationTelemetry(TableViewTelemetry::Origin::Loaded);
     // ThemeSettings requires a WindowId, so it can only be created once we have a XamlRoot.
     if (m_themeSettings)
     {
@@ -503,16 +523,16 @@ void TableView::OnThemeSettingsChanged(
         RebuildHeaders();
         RefreshGridLinesOnRealizedRows();
         QueueTerminalGridLineRefresh();
+        // Lead-cell padding and indent are imperative; re-derive from the new metrics.
+        RefreshRealizedRowHierarchyState();
     }
 }
 
 void TableView::OnApplyTemplate()
 {
     m_headerSortSpaceArmedColumn = nullptr;
-    if (m_telemetryTemplateApplied) { TableViewTelemetry::RecordRetemplate(m_telemetry); }
-    m_telemetryTemplateApplied = true;
     IgnoreTelemetry(TableViewTelemetry::IgnoreReason::Retemplated, TableViewTelemetry::Stage::Template);
-    BeginInitializationTelemetry(TableViewTelemetry::Origin::Template);
+    TableViewTelemetry::BeginInitial(m_telemetry, TableViewTelemetry::Origin::Template);
     bool completed = false;
     auto telemetryFailure = wil::scope_exit([this, &completed]() noexcept
     {
@@ -763,6 +783,8 @@ void TableView::OnApplyTemplate()
                     strongThis->RebuildHeaders();
                     strongThis->RefreshGridLinesOnRealizedRows();
                     strongThis->QueueTerminalGridLineRefresh();
+                    // Re-apply indent and lead-cell reservation against the new theme's metrics.
+                    strongThis->RefreshRealizedRowHierarchyState();
                 }
                 catch (...)
                 {
@@ -771,336 +793,7 @@ void TableView::OnApplyTemplate()
             });
     }
     completed = true;
-}
-
-TableView::ActionTelemetry::ActionTelemetry(
-    TableView& owner, TableViewTelemetry::Operation operation, TableViewTelemetry::Stage stage, bool admitted) noexcept :
-    m_owner(owner), m_state(owner.m_telemetry), m_stage(stage), m_lifetimeGeneration(owner.m_telemetryLifetimeGeneration),
-    m_exceptions(std::uncaught_exceptions())
-{
-    try
-    {
-        if (admitted && owner.IsLoaded() && !owner.m_rowsSourceDrained)
-        {
-            m_state.origin = owner.m_telemetry.origin;
-            if (TableViewTelemetry::UpdateConfiguration(m_state, owner.m_telemetry.configuration))
-            {
-                m_controlGenerationAtAdmission = owner.m_telemetry.operationGeneration;
-                m_generation = TableViewTelemetry::BeginOperation(m_state, operation);
-                if (m_generation) { m_previousAction = std::exchange(owner.m_activeActionTelemetry, this); }
-            }
-        }
-    }
-    catch (...)
-    {
-        OutputDebugStringW(L"TableView telemetry: action attachment check failed.\n");
-    }
-}
-
-TableView::ActionTelemetry::~ActionTelemetry()
-{
-    if (!m_generation) { return; }
-    m_owner.m_activeActionTelemetry = m_previousAction;
-    if (m_lifetimeGeneration != m_owner.m_telemetryLifetimeGeneration)
-    {
-        TableViewTelemetry::IgnoreOperation(m_state, m_generation, m_owner.m_telemetryCancellationReason);
-        return;
-    }
-    auto const sourceGeneration = m_owner.m_rowMetadataGeneration;
-    auto const selectionVersion = m_owner.m_selectionVersion;
-    auto const editGeneration = m_owner.m_editGeneration;
-    auto const configuration = m_owner.SnapshotTelemetryConfiguration();
-    if (m_lifetimeGeneration != m_owner.m_telemetryLifetimeGeneration)
-    {
-        TableViewTelemetry::IgnoreOperation(m_state, m_generation, m_owner.m_telemetryCancellationReason);
-        return;
-    }
-    if (sourceGeneration != m_owner.m_rowMetadataGeneration ||
-        selectionVersion != m_owner.m_selectionVersion || editGeneration != m_owner.m_editGeneration)
-    {
-        TableViewTelemetry::IgnoreOperation(m_state, m_generation, TableViewTelemetry::IgnoreReason::Superseded);
-        return;
-    }
-    if (!TableViewTelemetry::UpdateConfiguration(m_state, configuration))
-    {
-        TableViewTelemetry::IgnoreOperation(m_state, m_generation, TableViewTelemetry::IgnoreReason::Stale);
-        return;
-    }
-    if (m_appFaultKind != TableViewTelemetry::AppFaultKind::None)
-    {
-        TableViewTelemetry::IgnoreOperation(m_state, m_generation, TableViewTelemetry::IgnoreReason::ApplicationFault, m_error, m_appFaultKind);
-        TableViewTelemetry::ReportError(m_state, m_state.operation, m_stage, true,
-            TableViewTelemetry::Attribution::Application, m_error, m_appFaultKind);
-    }
-    else if (m_failed)
-    {
-        TableViewTelemetry::FailOperation(m_state, m_state.operation, m_generation, m_stage, m_error);
-    }
-    else if (std::uncaught_exceptions() > m_exceptions)
-    {
-        TableViewTelemetry::IgnoreOperation(m_state, m_generation, TableViewTelemetry::IgnoreReason::UnattributedFault);
-        TableViewTelemetry::ReportError(m_state, m_state.operation, m_stage, false);
-    }
-    else if (m_completed)
-    {
-        TableViewTelemetry::CompleteOperation(m_state, m_generation, TableViewTelemetry::Result::Success);
-    }
-    else
-    {
-        TableViewTelemetry::IgnoreOperation(m_state, m_generation, m_ignoreReason);
-    }
-}
-
-void TableView::ActionTelemetry::Fail(std::optional<HRESULT> error) noexcept
-{
-    if (!m_failed) { m_error = error; }
-    m_failed = true;
-}
-
-void TableView::ActionTelemetry::ApplicationFault(TableViewTelemetry::AppFaultKind kind, std::optional<HRESULT> error) noexcept
-{
-    if (m_appFaultKind == TableViewTelemetry::AppFaultKind::None)
-    {
-        m_appFaultKind = kind;
-        m_error = error;
-    }
-}
-
-TableView::ApplicationCalloutTelemetry::ApplicationCalloutTelemetry(
-    TableView& owner, TableViewTelemetry::Stage stage, TableViewTelemetry::AppFaultKind kind) noexcept :
-    m_owner(owner), m_action(owner.m_activeActionTelemetry &&
-        (!TableViewTelemetry::IsOperationStarted(owner.m_telemetry) ||
-            owner.m_activeActionTelemetry->ControlGenerationAtAdmission() == owner.m_telemetry.operationGeneration) ?
-        owner.m_activeActionTelemetry : nullptr),
-    m_operation(TableViewTelemetry::IsOperationStarted(owner.m_telemetry) ?
-        owner.m_telemetry.operation : TableViewTelemetry::Operation::InitialLayout),
-    m_stage(stage), m_kind(kind), m_generation(owner.m_telemetry.operationGeneration),
-    m_lifetime(owner.m_telemetryLifetimeGeneration)
-{
-}
-
-void TableView::ApplicationCalloutTelemetry::Fault(std::optional<HRESULT> error) noexcept
-{
-    if (m_lifetime != m_owner.m_telemetryLifetimeGeneration) { return; }
-    if (m_action)
-    {
-        m_action->ApplicationFault(m_kind, error);
-    }
-    else if (m_generation == m_owner.m_telemetry.operationGeneration)
-    {
-        TableViewTelemetry::IgnoreOperation(m_owner.m_telemetry, m_generation,
-            TableViewTelemetry::IgnoreReason::ApplicationFault, error, m_kind);
-        TableViewTelemetry::IgnoreInitial(m_owner.m_telemetry, TableViewTelemetry::IgnoreReason::ApplicationFault, m_stage, error, m_kind);
-        TableViewTelemetry::ReportError(m_owner.m_telemetry, m_operation, m_stage, true,
-            TableViewTelemetry::Attribution::Application, error, m_kind);
-    }
-}
-
-void TableView::IgnoreTelemetry(TableViewTelemetry::IgnoreReason reason, TableViewTelemetry::Stage stage) noexcept
-{
-    ++m_telemetryLifetimeGeneration;
-    m_telemetryCancellationReason = reason;
-    TableViewTelemetry::IgnoreInitial(m_telemetry, reason, stage);
-    TableViewTelemetry::IgnoreOperation(m_telemetry, m_telemetry.operationGeneration, reason);
-    IgnoreScrollTelemetry(reason);
-}
-
-void TableView::BeginInitializationTelemetry(TableViewTelemetry::Origin origin) noexcept
-{
-    if (m_telemetry.initial != TableViewTelemetry::InitialState::NotStarted) { return; }
-    try
-    {
-        if (origin == TableViewTelemetry::Origin::Loaded && !m_rowsRepeater.get()) { return; }
-        if (XamlRoot()) { TableViewTelemetry::BeginInitial(m_telemetry, origin); }
-    }
-    catch (...)
-    {
-        OutputDebugStringW(L"TableView telemetry: unable to inspect attachment.\n");
-    }
-}
-
-TableViewTelemetry::Configuration TableView::SnapshotTelemetryConfiguration() noexcept
-{
-    TableViewTelemetry::Configuration configuration{ TableViewTelemetry::Content::Empty, 0, false, false };
-    try
-    {
-        auto const columns = Columns();
-        configuration.columnCountBucket = TableViewTelemetry::CountBucket(columns ? columns.Size() : 0);
-        if (auto const source = m_activeSource.get())
-        {
-            auto const sourceImpl = winrt::get_self<::TableViewSource>(source);
-            configuration.grouped = sourceImpl->IsGrouped();
-            if (auto const count = sourceImpl->DataRowCount())
-            {
-                configuration.rowCountBucket = TableViewTelemetry::CountBucket(*count);
-                configuration.rowCountAvailable = true;
-                if (auto const view = sourceImpl->GetItemsSourceView())
-                {
-                    if (view.Count() == 0)
-                    {
-                        configuration.content = TableViewTelemetry::Content::Empty;
-                        configuration.available = true;
-                    }
-                    else if (!configuration.grouped)
-                    {
-                        configuration.content = TableViewTelemetry::Content::Rows;
-                        configuration.available = true;
-                    }
-                    else
-                    {
-                        // Header-free shaped data includes collapsed rows; it cannot certify presented content.
-                        configuration.content = TableViewTelemetry::Content::GroupHeaders;
-                    }
-                }
-            }
-        }
-        else if (!ItemsSource())
-        {
-            configuration.rowCountAvailable = true;
-            configuration.content = TableViewTelemetry::Content::Empty;
-            configuration.available = true;
-        }
-    }
-    catch (...)
-    {
-        OutputDebugStringW(L"TableView telemetry: configuration snapshot unavailable.\n");
-    }
-    return configuration;
-}
-
-uint64_t TableView::BeginOperationTelemetry(TableViewTelemetry::Operation operation, bool admitted) noexcept
-{
-    ++m_telemetryMutationDepth;
-    if (!admitted) { return 0; }
-    IgnoreScrollTelemetry(TableViewTelemetry::IgnoreReason::Superseded);
-    try
-    {
-        if (IsLoaded() && !m_rowsSourceDrained)
-        {
-            RefreshTelemetryConfiguration();
-            return TableViewTelemetry::BeginOperation(m_telemetry, operation);
-        }
-    }
-    catch (...) { OutputDebugStringW(L"TableView telemetry: operation attachment check failed.\n"); }
-    return 0;
-}
-
-void TableView::EndOperationTelemetry() noexcept
-{
-    --m_telemetryMutationDepth;
-}
-
-void TableView::InvalidateOperationTelemetry() noexcept
-{
-    IgnoreScrollTelemetry(TableViewTelemetry::IgnoreReason::Superseded);
-    if (!TableViewTelemetry::IsOperationStarted(m_telemetry)) { return; }
-    // Control-owned sort writes notify inside their own scope; a Sorted handler can reshape
-    // after that scope ends but before the enclosing telemetry operation unwinds.
-    if (m_telemetryMutationDepth &&
-        (m_telemetry.operation != TableViewTelemetry::Operation::Sort ||
-            m_isApplyingControlInitiatedSort || m_telemetrySourceMutationDepth))
-    {
-        return;
-    }
-    TableViewTelemetry::IgnoreOperation(m_telemetry, m_telemetry.operationGeneration, TableViewTelemetry::IgnoreReason::Superseded);
-}
-
-void TableView::IgnoreUnattributedTelemetry(
-    TableViewTelemetry::Operation operation, uint64_t generation, TableViewTelemetry::Stage stage, std::optional<HRESULT> error) noexcept
-{
-    if (generation != m_telemetry.operationGeneration &&
-        !(operation == TableViewTelemetry::Operation::InitialLayout && generation == 0)) { return; }
-    if (TableViewTelemetry::IsOperationHandled(m_telemetry, operation, generation)) { return; }
-    auto const lifetime = m_telemetryLifetimeGeneration;
-    auto const currentGeneration = m_telemetry.operationGeneration;
-    auto const configuration = SnapshotTelemetryConfiguration();
-    if (lifetime == m_telemetryLifetimeGeneration && currentGeneration == m_telemetry.operationGeneration &&
-        !TableViewTelemetry::IsOperationHandled(m_telemetry, operation, generation) &&
-        TableViewTelemetry::UpdateConfiguration(m_telemetry, configuration))
-    {
-        TableViewTelemetry::IgnoreOperation(m_telemetry, generation, TableViewTelemetry::IgnoreReason::UnattributedFault, error);
-        TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::UnattributedFault, stage, error);
-        TableViewTelemetry::ReportError(m_telemetry, operation, stage, false, TableViewTelemetry::Attribution::Unknown, error);
-    }
-}
-
-void TableView::RefreshTelemetryConfiguration() noexcept
-{
-    if (m_telemetry.session.active || TableViewTelemetry::IsInitializing(m_telemetry) ||
-        TableViewTelemetry::IsOperationStarted(m_telemetry))
-    {
-        TableViewTelemetry::UpdateConfiguration(m_telemetry,
-            SnapshotTelemetryConfiguration());
-    }
-}
-
-void TableView::CompleteOperationTelemetry(uint64_t generation) noexcept
-{
-    if (!generation || generation != m_telemetry.operationGeneration ||
-        !TableViewTelemetry::IsOperationStarted(m_telemetry)) { return; }
-    auto const lifetime = m_telemetryLifetimeGeneration;
-    RefreshTelemetryConfiguration();
-    if (lifetime == m_telemetryLifetimeGeneration)
-    {
-        TableViewTelemetry::CompleteOperation(m_telemetry, generation, TableViewTelemetry::Result::Success);
-    }
-}
-
-void TableView::IgnoreScrollTelemetry(TableViewTelemetry::IgnoreReason reason) noexcept
-{
-    TableViewTelemetry::IgnoreOperation(m_scrollTelemetry, m_scrollTelemetry.operationGeneration, reason);
-    m_scrollTelemetrySettled = false;
-    m_scrollTelemetryViewport.known = false;
-    m_headerScrollTelemetryOffset.reset();
-    ++m_scrollTelemetryVersion;
-}
-
-void TableView::ObserveScrollTelemetry(winrt::ScrollViewer const& scroller, bool intermediate, bool admit) noexcept
-{
-    try
-    {
-        ScrollTelemetryViewport const viewport{
-            scroller.HorizontalOffset(), scroller.VerticalOffset(), scroller.ExtentWidth(), scroller.ExtentHeight(),
-            scroller.ViewportWidth(), scroller.ViewportHeight(), scroller.ZoomFactor(), true };
-        auto const& previous = m_scrollTelemetryViewport;
-        auto const areClose = [](double left, double right) { return std::abs(left - right) < 0.5; };
-        const bool horizontalChanged = !areClose(previous.horizontalOffset, viewport.horizontalOffset);
-        const bool verticalChanged = !areClose(previous.verticalOffset, viewport.verticalOffset);
-        const bool changed = horizontalChanged || verticalChanged || previous.zoomFactor != viewport.zoomFactor;
-        const bool sameGeometry = areClose(previous.extentWidth, viewport.extentWidth) &&
-            areClose(previous.extentHeight, viewport.extentHeight) &&
-            areClose(previous.width, viewport.width) && areClose(previous.height, viewport.height);
-        const bool headerSync = m_headerScrollTelemetryOffset && !verticalChanged &&
-            areClose(*m_headerScrollTelemetryOffset, viewport.horizontalOffset);
-        if (!admit || !previous.known || !sameGeometry || headerSync || !IsLoaded() || m_rowsSourceDrained)
-        {
-            IgnoreScrollTelemetry(TableViewTelemetry::IgnoreReason::Superseded);
-            m_scrollTelemetryViewport = viewport;
-            return;
-        }
-        m_scrollTelemetryViewport = viewport;
-        if (changed)
-        {
-            m_headerScrollTelemetryOffset.reset();
-            ++m_scrollTelemetryVersion;
-            if (!TableViewTelemetry::IsOperationStarted(m_scrollTelemetry))
-            {
-                m_scrollTelemetry.origin = m_telemetry.origin;
-                if (!TableViewTelemetry::UpdateConfiguration(m_scrollTelemetry,
-                    SnapshotTelemetryConfiguration())) { return; }
-                TableViewTelemetry::BeginOperation(m_scrollTelemetry, TableViewTelemetry::Operation::Scroll);
-            }
-        }
-        if (TableViewTelemetry::IsOperationStarted(m_scrollTelemetry))
-        {
-            m_scrollTelemetrySettled = !intermediate;
-        }
-    }
-    catch (...)
-    {
-        IgnoreScrollTelemetry(TableViewTelemetry::IgnoreReason::Stale);
-        OutputDebugStringW(L"TableView telemetry: scroll viewport observation failed.\n");
-    }
+    TableViewTelemetry::CompleteInitial(m_telemetry, TableViewTelemetry::Result::Success);
 }
 
 void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
@@ -1139,7 +832,6 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
         m_bodyScroller.set(scroller);
         if (auto bodyScroller = m_bodyScroller.get())
         {
-            ObserveScrollTelemetry(bodyScroller, false, false);
             auto weakThis = get_weak();
             m_bodyScrollerViewChangedToken = bodyScroller.ViewChanged(
                 [weakThis](winrt::IInspectable const& sender, winrt::ScrollViewerViewChangedEventArgs const& args)
@@ -1172,73 +864,53 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
 }
 
 void TableView::OnBodyScrollerViewChanged(
-    const winrt::IInspectable& sender,
-    const winrt::ScrollViewerViewChangedEventArgs& args)
+    const winrt::IInspectable& /*sender*/,
+    const winrt::ScrollViewerViewChangedEventArgs& /*args*/)
 {
     auto bodyScroller = m_bodyScroller.get();
-    if (!bodyScroller || sender != bodyScroller)
+    if (!bodyScroller)
     {
         return;
     }
 
-    ObserveScrollTelemetry(bodyScroller, args.IsIntermediate());
-    auto const generation = m_scrollTelemetry.operationGeneration;
-    auto const version = m_scrollTelemetryVersion;
-    auto const lifetime = m_telemetryLifetimeGeneration;
-    try
+    const double bodyHOffset = bodyScroller.HorizontalOffset();
+
+    // Re-pin leading-frozen columns only when horizontal scroll moves.
+    if (ShouldRefreshFrozenColumnsForScroll(this, bodyHOffset))
     {
-        const double bodyHOffset = bodyScroller.HorizontalOffset();
-
-        // Re-pin leading-frozen columns only when horizontal scroll moves.
-        if (ShouldRefreshFrozenColumnsForScroll(this, bodyHOffset))
-        {
-            RefreshFrozenColumns();
-        }
-
-        const double bodyVOffset = bodyScroller.VerticalOffset();
-        const bool horizontalMoved =
-            !std::isfinite(m_terminalGridLineHorizontalOffset) ||
-            std::abs(m_terminalGridLineHorizontalOffset - bodyHOffset) >= 0.25;
-        const bool verticalMoved =
-            !std::isfinite(m_terminalGridLineVerticalOffset) ||
-            std::abs(m_terminalGridLineVerticalOffset - bodyVOffset) >= 0.25;
-
-        if (horizontalMoved || verticalMoved)
-        {
-            m_terminalGridLineHorizontalOffset = bodyHOffset;
-            m_terminalGridLineVerticalOffset = bodyVOffset;
-            m_terminalGridLineGeometryRetryAvailable = true;
-            RefreshTerminalGridLines();
-        }
-
-        if (auto headerScroller = m_headerScroller.get();
-            headerScroller && std::abs(headerScroller.HorizontalOffset() - bodyHOffset) >= 0.5)
-        {
-            // Instant tracking, without near-equal ViewChanged ping-pong.
-            headerScroller.ChangeView(bodyHOffset, nullptr, nullptr, true);
-        }
+        RefreshFrozenColumns();
     }
-    catch (...)
+
+    const double bodyVOffset = bodyScroller.VerticalOffset();
+    const bool horizontalMoved =
+        !std::isfinite(m_terminalGridLineHorizontalOffset) ||
+        std::abs(m_terminalGridLineHorizontalOffset - bodyHOffset) >= 0.25;
+    const bool verticalMoved =
+        !std::isfinite(m_terminalGridLineVerticalOffset) ||
+        std::abs(m_terminalGridLineVerticalOffset - bodyVOffset) >= 0.25;
+
+    if (horizontalMoved || verticalMoved)
     {
-        if (TableViewTelemetry::UpdateConfiguration(m_scrollTelemetry,
-            SnapshotTelemetryConfiguration()))
-        {
-            TableViewTelemetry::IgnoreOperation(m_scrollTelemetry, generation,
-                TableViewTelemetry::IgnoreReason::UnattributedFault, winrt::to_hresult());
-        }
-        throw;
+        m_terminalGridLineHorizontalOffset = bodyHOffset;
+        m_terminalGridLineVerticalOffset = bodyVOffset;
+        m_terminalGridLineGeometryRetryAvailable = true;
+        RefreshTerminalGridLines();
     }
-    if (m_scrollTelemetrySettled && version == m_scrollTelemetryVersion && lifetime == m_telemetryLifetimeGeneration)
+
+    auto headerScroller = m_headerScroller.get();
+    if (!headerScroller)
     {
-        auto const configuration = SnapshotTelemetryConfiguration();
-        if (version == m_scrollTelemetryVersion && lifetime == m_telemetryLifetimeGeneration &&
-            generation == m_scrollTelemetry.operationGeneration &&
-            TableViewTelemetry::UpdateConfiguration(m_scrollTelemetry, configuration))
-        {
-            TableViewTelemetry::CompleteOperation(m_scrollTelemetry, generation, TableViewTelemetry::Result::Success);
-            if (version == m_scrollTelemetryVersion) { m_scrollTelemetrySettled = false; }
-        }
+        return;
     }
+
+    if (std::abs(headerScroller.HorizontalOffset() - bodyHOffset) < 0.5)
+    {
+        // Skip near-equal offsets to avoid ViewChanged ping-pong.
+        return;
+    }
+
+    // Instant tracking keeps header and body visually glued.
+    headerScroller.ChangeView(bodyHOffset, nullptr, nullptr, true);
 }
 
 winrt::AutomationPeer TableView::OnCreateAutomationPeer()
@@ -1765,37 +1437,12 @@ void TableView::QueueGroupExpansionRowRefresh()
                 strongThis->m_pendingGroupRowRefreshLayoutToken = {};
             }
 
-            // This coalesced phase repairs the current realized rows, not the projection that
-            // first queued it. Bind failure ownership before any row factory can re-enter.
-            const auto telemetryGeneration = strongThis->m_telemetry.operationGeneration;
-            const auto scrollGeneration = strongThis->m_scrollTelemetry.operationGeneration;
-            const auto lifetime = strongThis->m_telemetryLifetimeGeneration;
-            strongThis->BeginOperationTelemetry(TableViewTelemetry::Operation::Layout, false);
-            auto telemetryCompletion = wil::scope_exit([&strongThis]() noexcept
-            {
-                strongThis->EndOperationTelemetry();
-            });
             try
             {
                 strongThis->RefreshRealizedRowsAfterGroupExpansion();
             }
             catch (...)
             {
-                const auto error = winrt::to_hresult();
-                if (lifetime == strongThis->m_telemetryLifetimeGeneration)
-                {
-                    strongThis->IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::Layout,
-                        telemetryGeneration, TableViewTelemetry::Stage::Layout, error);
-                    if (lifetime == strongThis->m_telemetryLifetimeGeneration &&
-                        scrollGeneration == strongThis->m_scrollTelemetry.operationGeneration &&
-                        TableViewTelemetry::IsOperationStarted(strongThis->m_scrollTelemetry) &&
-                        TableViewTelemetry::UpdateConfiguration(strongThis->m_scrollTelemetry,
-                            strongThis->SnapshotTelemetryConfiguration()))
-                    {
-                        TableViewTelemetry::IgnoreOperation(strongThis->m_scrollTelemetry, scrollGeneration,
-                            TableViewTelemetry::IgnoreReason::UnattributedFault, error);
-                    }
-                }
                 // Best-effort repair after a deferred grouped reshape.
             }
         });
@@ -1869,75 +1516,19 @@ void TableView::AdoptItemsSource()
                 strongThis->OnTableViewSourceShapingChanged(reorderOnly);
             }
         });
-        auto const weakSource = winrt::make_weak(tableViewSource);
-        sourceImpl->SetShapingOperationHandlers(*this,
-            [weakThis, weakSource](TableViewTelemetry::Operation operation, bool admitted) noexcept -> uint64_t
-            {
-                if (auto self = weakThis.get())
-                {
-                    ++self->m_telemetrySourceMutationDepth;
-                    if (self->m_activeSource.get() != weakSource.get())
-                    {
-                        ++self->m_telemetryMutationDepth;
-                        return 0;
-                    }
-                    if (operation == TableViewTelemetry::Operation::Sort && self->m_isApplyingControlInitiatedSort)
-                    {
-                        ++self->m_telemetryMutationDepth;
-                        return admitted && self->m_controlSortTelemetryGeneration &&
-                            self->m_controlSortTelemetryGeneration == self->m_telemetry.operationGeneration &&
-                            self->m_telemetry.operation == operation &&
-                            TableViewTelemetry::IsOperationStarted(self->m_telemetry) ?
-                            self->m_controlSortTelemetryGeneration : 0;
-                    }
-                    return self->BeginOperationTelemetry(operation, admitted);
-                }
-                return 0;
-            },
-            [weakThis, weakSource](TableViewTelemetry::Operation operation, uint64_t generation,
-                std::optional<TableViewTelemetry::IgnoreReason> reason, std::optional<HRESULT> error,
-                TableViewTelemetry::AppFaultKind kind) noexcept
-            {
-                if (auto self = weakThis.get())
-                {
-                    auto completeScope = gsl::finally([&self]() noexcept
-                    {
-                        --self->m_telemetrySourceMutationDepth;
-                        self->EndOperationTelemetry();
-                    });
-                    if (!generation || self->m_activeSource.get() != weakSource.get() ||
-                        generation != self->m_telemetry.operationGeneration) { return; }
-                    auto const stage = operation == TableViewTelemetry::Operation::Filter ? TableViewTelemetry::Stage::Filter :
-                        operation == TableViewTelemetry::Operation::Sort ? TableViewTelemetry::Stage::Sort : TableViewTelemetry::Stage::Grouping;
-                    if (reason)
-                    {
-                        TableViewTelemetry::IgnoreOperation(self->m_telemetry, generation, *reason, error, kind);
-                        if (*reason == TableViewTelemetry::IgnoreReason::ApplicationFault ||
-                            *reason == TableViewTelemetry::IgnoreReason::UnattributedFault)
-                        {
-                            TableViewTelemetry::IgnoreInitial(self->m_telemetry, *reason, stage, error, kind);
-                            TableViewTelemetry::ReportError(self->m_telemetry, operation, stage, false,
-                                kind == TableViewTelemetry::AppFaultKind::None ? TableViewTelemetry::Attribution::Unknown :
-                                    TableViewTelemetry::Attribution::Application, error, kind);
-                        }
-                    }
-                    else if (operation == TableViewTelemetry::Operation::Sort && self->m_isApplyingControlInitiatedSort)
-                    {
-                        self->m_controlSortPublishedGeneration = generation;
-                    }
-                    else { self->CompleteOperationTelemetry(generation); }
-                }
-            },
-            [weakThis, weakSource](TableViewTelemetry::Operation operation, TableViewTelemetry::AppFaultKind kind, HRESULT error) noexcept
-            {
-                if (auto self = weakThis.get(); self && self->m_activeSource.get() == weakSource.get())
-                {
-                    TableViewTelemetry::ReportError(self->m_telemetry, operation, TableViewTelemetry::Stage::Source,
-                        kind == TableViewTelemetry::AppFaultKind::Binding,
-                        kind == TableViewTelemetry::AppFaultKind::None ? TableViewTelemetry::Attribution::Unknown :
-                            TableViewTelemetry::Attribution::Application, error, kind);
-                }
-            });
+        AttachSourceTelemetry(tableViewSource);
+        // Live reshape must not end the user's edit; DrainCoalescedEditReshape resumes it.
+        sourceImpl->SetLiveShapingHold([weakThis]()
+        {
+            auto strongThis = weakThis.get();
+            return strongThis && strongThis->IsEditing();
+        });
+        // CustomSortComparer ranks are frozen at header sort; re-place the edited row.
+        sourceImpl->SetLiveItemChangedHook([weakThis](winrt::IInspectable const& item, bool reshapePending)
+        {
+            auto strongThis = weakThis.get();
+            return strongThis && strongThis->RepositionCustomSortItem(item, reshapePending);
+        });
     }
 }
 
@@ -1991,6 +1582,7 @@ void TableView::RefreshRowsPipeline()
 
         UpdateItemsSourceCollectionChangedSubscription();
         UpdateEmptyState();
+        UpdateRowHierarchyResetSubscription();
 
         // Re-point selection at the new source. SelectionModel::Source clears unconditionally, so a
         // swap always drops the selection; then drain anything requested before a source existed.
@@ -2002,7 +1594,6 @@ void TableView::RefreshRowsPipeline()
 void TableView::OnTableViewSourceProjectionChanged()
 {
     InvalidateOperationTelemetry();
-    RefreshTelemetryConfiguration();
     // A shaping verb swapped the projected shape after we bound, so the cached view and row
     // metadata describe the previous projection. Re-read them and re-drive the rows.
     if (IsEditing())
@@ -2014,12 +1605,80 @@ void TableView::OnTableViewSourceProjectionChanged()
 
     RefreshRowsPipeline();
     QueueGroupExpansionRowRefresh();
+
+    // In-place projection rewrites (e.g. declaring a hierarchy over the same view) re-prepare no
+    // rows, so restamp them. Deferred until the repeater reconciles.
+    QueueRefreshRealizedRowHierarchyState();
+}
+
+void TableView::UpdateRowHierarchyResetSubscription()
+{
+    winrt::ItemsSourceView view{ nullptr };
+    if (auto const repeater = m_rowsRepeater.get())
+    {
+        view = repeater.ItemsSourceView();
+    }
+
+    if (m_rowHierarchyResetRevoker && SameInspectableIdentity(view, m_rowHierarchyResetView))
+    {
+        return;
+    }
+
+    m_rowHierarchyResetRevoker = {};
+    m_rowHierarchyResetView = nullptr;
+
+    if (view)
+    {
+        m_rowHierarchyResetRevoker = view.CollectionChanged(
+            winrt::auto_revoke, { this, &TableView::OnRowsSourceResetForHierarchy });
+        m_rowHierarchyResetView = view;
+    }
+}
+
+void TableView::OnRowsSourceResetForHierarchy(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::NotifyCollectionChangedEventArgs& args)
+{
+    // Reset only: splices restamp via ElementIndexChanged or the toggling verb. A Reset may
+    // republish metadata for the same rows (e.g. a collapsed node losing its last child).
+    if (!args || args.Action() != winrt::NotifyCollectionChangedAction::Reset)
+    {
+        return;
+    }
+
+    QueueRefreshRealizedRowHierarchyState();
+}
+
+void TableView::QueueRefreshRealizedRowHierarchyState()
+{
+    // Deferred and coalesced: raised mid-rebuild, before the repeater reconciles indices.
+    if (m_rowHierarchyRefreshQueued)
+    {
+        return;
+    }
+    m_rowHierarchyRefreshQueued = true;
+
+    auto weakThis = get_weak();
+    if (auto const queue = winrt::DispatcherQueue::GetForCurrentThread())
+    {
+        queue.TryEnqueue([weakThis]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->m_rowHierarchyRefreshQueued = false;
+                strongThis->RefreshRealizedRowHierarchyState();
+            }
+        });
+    }
+    else
+    {
+        m_rowHierarchyRefreshQueued = false;
+    }
 }
 
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
 {
     InvalidateOperationTelemetry();
-    RefreshTelemetryConfiguration();
     if (!reorderOnly)
     {
         QueueGroupExpansionRowRefresh();
@@ -2090,7 +1749,6 @@ void TableView::UpdateItemsSourceCollectionChangedSubscription()
 void TableView::OnItemsSourceCollectionChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
 {
     InvalidateOperationTelemetry();
-    RefreshTelemetryConfiguration();
     UpdateEmptyState();
     QueueTerminalGridLineRefresh();
 }
@@ -2283,6 +1941,78 @@ double TableView::GetHeaderFontSize()
     return cache.font.headerFontSize;
 }
 
+double TableView::GetRowIndentSize()
+{
+    // Cached: hit per realized row on every pass, and resource lookup walks the whole tree. Cleared
+    // by density/theme/HC invalidation; other runtime swaps need rows re-prepared.
+    auto& cache = GetTableViewResourceCache(this);
+    if (cache.hierarchy.hasRowIndentSize)
+    {
+        return cache.hierarchy.rowIndentSize;
+    }
+
+    double resolved = c_defaultRowIndentSize;
+    if (auto raw = LookupElementResource(*this, L"TableViewRowIndentSize"))
+    {
+        const double value = winrt::unbox_value_or<double>(raw, c_defaultRowIndentSize);
+        // Negative or non-finite indent would pull content under the chevron; fall back.
+        if (std::isfinite(value) && value >= 0.0)
+        {
+            resolved = value;
+        }
+    }
+
+    cache.hierarchy.rowIndentSize = resolved;
+    cache.hierarchy.hasRowIndentSize = true;
+    return resolved;
+}
+
+double TableView::GetRowExpanderSize()
+{
+    auto& cache = GetTableViewResourceCache(this);
+    if (cache.hierarchy.hasRowExpanderSize)
+    {
+        return cache.hierarchy.rowExpanderSize;
+    }
+
+    double resolved = c_defaultRowExpanderSize;
+    if (auto raw = LookupElementResource(*this, L"TableViewRowExpanderSize"))
+    {
+        const double value = winrt::unbox_value_or<double>(raw, c_defaultRowExpanderSize);
+        if (std::isfinite(value) && value >= 0.0)
+        {
+            resolved = value;
+        }
+    }
+
+    cache.hierarchy.rowExpanderSize = resolved;
+    cache.hierarchy.hasRowExpanderSize = true;
+    return resolved;
+}
+
+// Group header content start (expander gutter + column spacing), so root rows align with it.
+double TableView::GetGroupHeaderContentOffset()
+{
+    auto& cache = GetTableViewResourceCache(this);
+    if (!cache.hierarchy.hasGroupExpanderSize)
+    {
+        double resolved = c_defaultGroupExpanderSize;
+        if (auto raw = LookupElementResource(*this, L"TableViewGroupExpanderSize"))
+        {
+            const double value = winrt::unbox_value_or<double>(raw, c_defaultGroupExpanderSize);
+            if (std::isfinite(value) && value >= 0.0)
+            {
+                resolved = value;
+            }
+        }
+
+        cache.hierarchy.groupExpanderSize = resolved;
+        cache.hierarchy.hasGroupExpanderSize = true;
+    }
+
+    return cache.hierarchy.groupExpanderSize + c_groupHeaderExpanderSpacing;
+}
+
 void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (args.OldValue() == args.NewValue())
@@ -2388,6 +2118,7 @@ void TableView::OnRowElementPrepared(
             .suppressTrailing = m_suppressTrailingGridLine,
             .suppressBottom = false });
         rowImpl->RefreshRowBackground();
+        RefreshRowHierarchyState(row, args.Index());
         RefreshRowSelectionState(row);
         InvalidateMeasure();
         QueueTerminalGridLineRefresh();
@@ -2499,10 +2230,44 @@ void TableView::OnRowElementIndexChanged(
         rowImpl->RefreshRowBackground();
     }
 
+    // ...and so must hierarchy state: a moved row may be at a new depth.
+    RefreshRowHierarchyState(row, args.NewIndex());
+
     // ...and so must selected chrome. The element keeps its item here (only its index moved), so
     // this normally re-derives the same answer - it is the cheap guarantee that a row whose index
     // shifted under an insert cannot end up disagreeing with the model.
     RefreshRowSelectionState(row);
+}
+
+// Pushes this index's hierarchy metadata onto the row (Level 0 for flat/grouped sources).
+void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t index)
+{
+    if (!row)
+    {
+        return;
+    }
+
+    TableViewRowInfo rowInfo{};
+    // Use only data-row metadata: a recycled row can be re-prepared at an index that just became
+    // a group header (same guard as PrepareGroupHeaderElement).
+    const bool hasRowInfo =
+        TryGetTableViewSourceRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::Data;
+
+    auto const rowImpl = winrt::get_self<TableViewRow>(row);
+    if (!hasRowInfo)
+    {
+        rowImpl->SetHierarchyStateInternal(0, false, false);
+        return;
+    }
+
+    // Ask the source whether it is a tree: a leaf root (Level 1, not expandable) looks like a
+    // grouped data row but must still reserve chevron width.
+    const bool isHierarchicalRow =
+        m_tableViewSourceRowMetadata && m_tableViewSourceRowMetadata->IsHierarchicalSource();
+    rowImpl->SetHierarchyStateInternal(
+        isHierarchicalRow ? (std::max)(1, rowInfo.Level) : 0,
+        rowInfo.IsExpandable,
+        rowInfo.IsExpanded);
 }
 
 // One header-text extraction per column, shared by the header cell's automation name and the
@@ -2890,7 +2655,8 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
     QueueRebuildHeaders();
 }
 
-void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column){
+void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
+{
     // A column that just opted out must not keep an active sort applied to it.
     if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None)
     {
@@ -2969,7 +2735,6 @@ void TableView::QueueRebuildHeaders()
 void TableView::OnTableViewUnloaded()
 {
     m_headerSortSpaceArmedColumn = nullptr;
-    RefreshTelemetryConfiguration();
     IgnoreTelemetry(TableViewTelemetry::IgnoreReason::Unloaded);
     TableViewTelemetry::EndSession(m_telemetry);
     if (m_pendingFocusLayoutToken.value)
@@ -3116,11 +2881,7 @@ void TableView::OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequest
         // ancestor scrollers, so a TableView below the fold never scrolled into view on header
         // focus. The header scroller cannot scroll itself anyway (HorizontalScrollMode=Disabled).
         args.Handled(true);
-        m_headerScrollTelemetryOffset = std::min(offset, bodyScroller.ScrollableWidth());
-        if (!bodyScroller.ChangeView(offset, nullptr, nullptr, true /* disableAnimation */))
-        {
-            m_headerScrollTelemetryOffset.reset();
-        }
+        bodyScroller.ChangeView(offset, nullptr, nullptr, true /* disableAnimation */);
     }
 }
 

@@ -1,0 +1,36 @@
+<!-- ShowcasePage.xaml. A tinted template cell: the converter reads the bound value, so a live
+     update recolors only the cell whose value changed. -->
+<DataTemplate x:Key="ShowcaseSalaryTemplate" x:DataType="models:Person">
+    <Border Background="{x:Bind Salary, Mode=OneWay, Converter={StaticResource ShowcaseSalaryTintConverter}}"
+            CornerRadius="4" Padding="8,2" Margin="2,2" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+        <TextBlock Text="{x:Bind Salary, Mode=OneWay, Converter={StaticResource SalaryTextConverter}}"
+                   VerticalAlignment="Center" HorizontalAlignment="Right"
+                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+    </Border>
+</DataTemplate>
+
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.AutomationId="ShowcaseTable"
+    AutomationProperties.Name="People directory"
+    ItemsSource="{x:Bind Source}"
+    AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
+    Sorted="OnPeopleTableSorted"
+    SelectionChanged="OnSelectionChanged"
+    SelectionMode="Single"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <!-- Visible by default: fits the table width at the default window size. -->
+    <tv:TableViewTemplateColumn x:Name="AvatarColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource ShowcaseDepartmentPillTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" CanResize="False" HeaderToolTip="Fixed width: this column sets CanResize to False."/>
+    <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+    <tv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource ShowcaseSalaryTemplate}" SortMemberPath="Salary"/>
+    <!-- Hidden by default; the Columns section turns them on. -->
+    <tv:TableViewTemplateColumn x:Name="ShiftColumn" Header="Shift" Width="{StaticResource ColWidthTimeCompact}" CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart" Visibility="Collapsed"/>
+    <tv:TableViewTemplateColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthCombo}" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office" Visibility="Collapsed"/>
+    <tv:TableViewTextColumn x:Name="EmailColumn" Header="Email" Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" Visibility="Collapsed"/>
+    <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" Visibility="Collapsed"/>
+    <tv:TableViewTemplateColumn x:Name="DetailsColumn" Header="Details" Width="{StaticResource ColWidthAction}" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False" Visibility="Collapsed"/>
+</tv:TableView>

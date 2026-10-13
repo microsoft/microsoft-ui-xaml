@@ -2,7 +2,7 @@
 
 `TableView` is the minimal, display-only tabular base control for `Microsoft.UI.Xaml.Controls.Tabular.dll`. It renders an `ItemsSource` as virtualized rows and uses `Columns` to generate one cell per realized row/column intersection.
 
-This is the minimal, display-only base of the control, and it is read-only. It establishes column ownership, header/body layout, row virtualization, cell generation, leading frozen columns, basic row keyboard navigation, automation peers, density/theming hooks, and the lifetime patterns later work builds on. The interactive v1 features land additively on top of it: selection, filtering, single-column sort and single-level grouping are delivered; two-level hierarchy and column resize/reorder are still outstanding.
+This is the minimal, display-only base of the control, and it is read-only. It establishes column ownership, header/body layout, row virtualization, cell generation, leading frozen columns, basic row keyboard navigation, automation peers, density/theming hooks, and the lifetime patterns later work builds on. The interactive v1 features land additively on top of it: selection, filtering, single-column sort, single-level grouping and hierarchical rows are delivered; column resize/reorder is still outstanding.
 
 Feature-level requirements and the v1-vs-deferred breakdown are in [`TableView-functional-spec.md`](./TableView-functional-spec.md).
 
@@ -22,9 +22,9 @@ The API preserves migration-compatible concepts where useful:
 
 Frozen columns are limited to a contiguous leading prefix in v1. `TableViewFrozenEdge.Trailing` is reserved.
 
-Single-level grouping is delivered (see *Grouping model* below): group headers are their own container kind interleaved into the flat row projection, not a second nesting level in the layout. Two-level hierarchical presentation is still deferred, because a real nesting level requires different layout, virtualization, focus and accessibility models than a banded header does. Hierarchy deeper than two levels is out of scope for v1.
+Single-level grouping is delivered (see *Grouping model* below): group headers are their own container kind interleaved into the flat row projection, not a second nesting level in the layout. Hierarchical rows are delivered through `TableViewSource.ParentBy(keySelector, parentKeySelector)` over a flat source, with no depth limit: each visible row carries its level and expansion state, and the row's lead cell is indented with an expander gutter, so the layout stays a flat virtualized list. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md).
 
-`TableViewRow` is intentionally a public `unsealed` `Control` despite carrying no v1 dependency properties: it is the realized row container (mirroring `ListViewItem`/`DataGridRow`) and is referenced by the public `TableViewRowAutomationPeer` and `TableViewCellAutomationPeer` constructors, so it cannot be internalized without collapsing the public accessibility surface. Row-level features layer onto it: selection already does, and hierarchy will. Grouping deliberately does **not** — a group header is a `TableViewGroupHeader`, a separate container kind chosen by `TableViewRowTemplateSelector`, so `TableViewRow` never grows an "am I a header?" adaptive branch.
+`TableViewRow` is intentionally a public `unsealed` `Control` despite carrying no v1 dependency properties: it is the realized row container (mirroring `ListViewItem`/`DataGridRow`) and is referenced by the public `TableViewRowAutomationPeer` and `TableViewCellAutomationPeer` constructors, so it cannot be internalized without collapsing the public accessibility surface. Row-level features layer onto it: selection and hierarchy already do. Grouping deliberately does **not** — a group header is a `TableViewGroupHeader`, a separate container kind chosen by `TableViewRowTemplateSelector`, so `TableViewRow` never grows an "am I a header?" adaptive branch.
 
 
 ## Column model: `TextColumn` vs `TemplateColumn`
@@ -132,7 +132,7 @@ Interactive column resize is a **policy split** between a framework-internal pri
 
 **Axis and RTL.** `DragOrientation` is the axis the drag is **measured along**, which for a divider is perpendicular to how it looks: `Horizontal` drags left/right. It is named `DragOrientation` rather than `Orientation` precisely because the primitive owns no shape — the host sizes it — so the control's own layout axis is not something it can describe. This is also the opposite of the Windows Community Toolkit's `SizerBase.Orientation`, which describes the bar; the distinct name prevents a silent mix-up. The primitive normalizes to a **logical** delta, so positive always grows in reading order and both input paths agree; only the horizontal axis mirrors under RTL.
 
-**Keyboard.** The header cell, not the gripper, is the keyboard target — column commands belong there, and one tab stop per column would sit between the user and the data. The table therefore sets `IsTabStop(false)` on the gripper and routes Left/Right into `TryKeyboardStep(VirtualKey)`, which owns direction, the RTL mirror, `KeyboardIncrement` and the Shift multiplier so both keyboard paths cannot drift apart.
+**Keyboard.** The header cell, not the gripper, is the keyboard target. Column commands belong there, and one tab stop per column would sit between the user and the data. The table therefore sets `IsTabStop(false)` on the gripper and routes **`Alt+Left`/`Alt+Right`** on a focused header into `TryKeyboardStep(VirtualKey)`. That function owns direction, the RTL mirror, `KeyboardIncrement` and the Shift multiplier (`Alt+Shift+Arrow` is the large step), so the pointer and keyboard paths cannot drift apart. `Alt` is the **only** resize modifier: `Ctrl+Arrow` on a header does nothing, and bare `Left`/`Right` move focus between headers (see *Keyboard* below). The binding matches WPF `DataGrid`.
 
 ### Resize policy — what each column configuration does
 
@@ -198,7 +198,28 @@ Cell generation is column-specific:
 
 `RowBackground` and `AlternatingRowBackground` provide opt-in row banding; when both are null, rows stay unbanded. `GridLinesVisibility` controls row/cell gridline borders. `Density` selects row minimum height and built-in cell/header padding for `Compact`, `Standard`, or `Comfortable`.
 
-Keyboard handling is cell-aware. `TableView` listens to bubbling `KeyDown` so template-column descendants handle input first; unhandled `Up`, `Down`, `PageUp`, and `PageDown` move to the same visible column in another row, while `Left`/`Right` move the cell cursor within the focused row. `Home`/`End` move to the first/last cell of the current row once a cell has focus; `Ctrl+Home`/`Ctrl+End` move to the first/last cell of the table. `Enter` and `Space` on the focused column header sort that column. The internal `GridCoordinateHelper` performs the row/column ↔ flat-index math, wrap behavior, and overflow guards.
+Keyboard handling is cell-aware and follows the WAI-ARIA treegrid model. `TableView` listens to bubbling `KeyDown` so template-column descendants handle input first. The table itself is not a tab stop (`IsTabStop=False`). It has **two tab stops**: the header band, then the body. The two share one column cursor, so Tab and Shift+Tab between them keep the current column.
+
+- **Header band.**
+  - The band is entered at the remembered column, or at the first header when no column has been chosen.
+  - `Left`/`Right` move between visible headers and do not wrap (mirrored under RTL).
+  - `Down` moves to the first row; `Up` stays in the band.
+  - `Enter` and `Space` sort a sortable header (`Space` fires on key-up, so auto-repeat cannot re-sort). `Alt+Left`/`Alt+Right` resize it.
+  - Every visible header is reachable, including one with `CanSort=False`.
+- **Rows.**
+  - Unhandled `Up`, `Down`, `PageUp` and `PageDown` keep the starting level: row to row, or cell to cell in the same visible column. `Up` from the first row moves to the header band.
+  - From a focused row, `Right` drills into the first cell. `Left` on the first cell returns to the row. `Left` on a row does nothing.
+  - At cell level, `Left`/`Right` move the cell cursor within the focused row without wrapping. `Home`/`End` move to the first/last cell of the current row, and `Ctrl+Home`/`Ctrl+End` move to the first/last cell of the table. All horizontal keys mirror under RTL.
+- **Selection.**
+  - Selection follows keyboard focus.
+  - `Ctrl` plus a navigation key moves focus without selecting.
+  - `Space` (without `Alt` or `Ctrl`) selects the focused row from row or cell level.
+- **Cell content.** `Enter` on a cell that hosts a focusable control moves focus into that control, and arrow keys then stay inside it. `Escape` returns to the cell. `F2` remains the begin-edit key.
+- **Re-entry.** Tabbing back into the body returns to the same **record** that last had focus, even after a sort or filter has moved it. A record that is no longer realized falls back to the row the framework targets.
+- **Re-shape while focused.** When a sort or filter re-shapes the rows while focus is **inside** the body, focus stays at the same **position**, the same projected row index, and so lands on whichever row now occupies it. This also applies when the focused record was filtered out.
+- **Gamepad.** Gamepad, D-pad and XY-focus navigation are not supported. Only the keyboard routing above is specified.
+
+The internal `GridCoordinateHelper` performs the row/column ↔ flat-index math, wrap behavior, and overflow guards.
 
 Accessibility exposes a UIA grid/table model:
 
@@ -206,7 +227,7 @@ Accessibility exposes a UIA grid/table model:
 - `TableViewRowAutomationPeer`: `DataItem` control type, `ISelectionItemProvider`, composed name and group-relative `PositionInSet`/`SizeOfSet`; no grid/table provider (exposes its cell peers as children)
 - `TableViewCellAutomationPeer`: `IGridItemProvider`, `ITableItemProvider`, `IValueProvider`, `Custom` control type with localized `cell`
 - `TableViewColumnHeaderAutomationPeer`: column-header name/bounds, `IInvokeProvider` (sort), `PositionInSet`/`SizeOfSet`
-- `TableViewGroupHeaderAutomationPeer`: `IExpandCollapseProvider`, `IGridItemProvider`, `Level`
+- `TableViewGroupHeaderAutomationPeer`: `IExpandCollapseProvider`, `IGridItemProvider`. It computes **no** `Level`: grouping is single-level, so the band reports `0` ("not specified") unless the app sets `AutomationProperties.Level`.
 
 `ScrollItem` is not implemented explicitly on any of these — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer.
 
@@ -424,9 +445,11 @@ The split is what lets a future keyboard or selection layer change gesture routi
 
 Begin-edit is driven from **`PointerPressed` with click-count tracking**, not a `DoubleTapped` handler. Marking `PointerPressed` handled suppresses XAML's gesture recognizer, so it never produces `Tapped`/`DoubleTapped` for that element — and a row that participates in selection has to mark the press handled. A `DoubleTapped` handler would therefore work today and silently stop working the moment a selection layer lands. The handler is registered with `handledEventsToo` so it survives that.
 
-The same handler is the only place a pointer establishes the **current cell**, which is also what makes keyboard editing reachable: pointer focus lands on the row, not on a tagged cell, so without it the current column stays null and the no-argument `BeginEdit()` silently fails.
+The same handler is the only place a pointer establishes the **current cell**, which is also what makes keyboard editing reachable. A primary-button press on a cell drills its row to cell level and focuses **that cell**, so keyboard focus, the UIA focused element, and the current cell all name the cell under the pointer. A press on the row's empty strip, past the last column, focuses the row itself.
 
-Cell resolution walks up from `OriginalSource` to the cell wrapper `Border` (whose `Tag` carries the column) and on to the `TableViewRow`. When the walk cannot reach a wrapper — which happens once the row has focus and the press arrives with the row itself as source — it falls back to hit-testing at the pointer position.
+Selection is applied on **release**, and only when the release lands on the row that was pressed. A press that is dragged off and released elsewhere selects nothing. A secondary-button (right) press never selects, because it is the context-menu gesture.
+
+Cell resolution walks up from `OriginalSource` to the cell wrapper (`TableViewCell`, a `Grid` whose `Tag` carries the column) and on to the `TableViewRow`. When the walk cannot reach a wrapper — which happens once the row has focus and the press arrives with the row itself as source — it falls back to hit-testing at the pointer position.
 
 ## Value transfer and rollback
 
@@ -461,11 +484,11 @@ Row recycling, cell rebuild and dependency-property change callbacks can all run
 
 ## Non-goals
 
-`TableView` v1 does not attempt to replace `DataGrid`. The true v1 non-goals are marquee selection, multi-column sort, column virtualization, row headers, hierarchy deeper than two levels, and spreadsheet-like interaction. (Selection, single-column sort, filtering, grouping, and two-level hierarchy are v1 features, not non-goals; selection, sort, filtering and single-level grouping are delivered, and two-level hierarchy lands later. Cell editing is delivered by this PR.)
+`TableView` v1 does not attempt to replace `DataGrid`. The true v1 non-goals are marquee selection, multi-column sort, column virtualization, row headers, and spreadsheet-like interaction. (Selection, single-column sort, filtering, grouping, and hierarchical rows are v1 features, not non-goals, and are delivered. Cell editing is delivered by this PR.)
 
 ## Out of Scope
 
-Delivered later in the v1 stack: two-level hierarchy · column reorder · navigation-state persistence · samples · tests · theme-XBF emission.
+Delivered later in the v1 stack: column reorder · navigation-state persistence · samples · tests · theme-XBF emission.
 
 Already delivered in the v1 stack: row selection · shaping primitives · filtering · single-column sort · single-level grouping.
 

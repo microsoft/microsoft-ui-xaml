@@ -5,6 +5,7 @@
 #include <TableViewTelemetry.h>
 #include <WexTestClass.h>
 #include <limits>
+#include "TableViewTipTestHelpers.h"
 
 TRACELOGGING_DEFINE_PROVIDER(g_hTelemetryProvider, "Microsoft.UI.Xaml.Controls.Tabular",
     (0x80a0b321, 0x304c, 0x576e, 0xc0, 0xf8, 0xc5, 0x93, 0xc3, 0xe7, 0xcf, 0x86));
@@ -41,8 +42,9 @@ public:
         State state;
         BeginInitial(state, Origin::Loaded);
 #if TABLEVIEW_TIP_REAL_LIBRARY
-        VERIFY_IS_TRUE(state.initialTipPending && IsInitializing(state));
+        VERIFY_ARE_EQUAL(TableViewTipTestHelpers::HasNativeAbi(), state.initialTipPending);
 #endif
+        VERIFY_IS_TRUE(IsInitializing(state));
         CompleteInitial(state, Result::Success);
         auto const generation = BeginOperation(state, Operation::Filter);
         VERIFY_IS_FALSE(IsInitializing(state));
@@ -56,10 +58,22 @@ public:
         VERIFY_IS_TRUE(state.initial == InitialState::Started);
         CompleteInitial(state, Result::Success);
         VERIFY_IS_TRUE(state.initial == InitialState::Finished);
-        VERIFY_IS_TRUE(state.initialOutcome == InitialOutcome::Arranged);
+        VERIFY_IS_TRUE(state.initialOutcome == InitialOutcome::TemplateInitialized);
         IgnoreInitial(state, IgnoreReason::Unloaded);
         BeginInitial(state, Origin::Template);
-        VERIFY_IS_TRUE(state.initialOutcome == InitialOutcome::Arranged);
+        VERIFY_IS_TRUE(state.initialOutcome == InitialOutcome::TemplateInitialized);
+    }
+
+    TEST_METHOD(ContinuousAndScanDependentOperationsAreNotAdmitted)
+    {
+        State state;
+        BeginSession(state);
+        VERIFY_ARE_EQUAL(uint64_t{ 0 }, BeginOperation(state, Operation::Scroll));
+        VERIFY_ARE_EQUAL(uint64_t{ 0 }, BeginOperation(state, Operation::GroupExpansion));
+        VERIFY_IS_FALSE(IsOperationStarted(state));
+        VERIFY_ARE_EQUAL(0u, state.session.counts[7]);
+        VERIFY_ARE_EQUAL(0u, state.session.counts[12]);
+        AbandonSession(state);
     }
 
 #ifdef KEYWORD_TABLEVIEW
@@ -83,15 +97,12 @@ public:
         CompleteOperation(state, incidental, Result::Success);
         VERIFY_ARE_EQUAL(1u, state.session.counts[8]);
         VERIFY_ARE_EQUAL(0u, state.session.counts[4]);
-        RecordRetemplate(state);
-        VERIFY_ARE_EQUAL(1u, state.session.retemplateCount);
         EndSession(state);
         EndSession(state);
         VERIFY_IS_FALSE(state.session.active);
         BeginSession(state);
         VERIFY_IS_TRUE(state.session.generation > epoch);
         VERIFY_ARE_EQUAL(0u, state.session.counts[8]);
-        VERIFY_ARE_EQUAL(0u, state.session.retemplateCount);
         AbandonSession(state);
         VERIFY_IS_FALSE(state.session.active);
     }
@@ -119,8 +130,11 @@ public:
         BeginSession(owner);
         FailOperation(lateFailure, Operation::CommitEdit, failureGeneration, Stage::Editing, E_FAIL);
 #if TABLEVIEW_TIP_REAL_LIBRARY
-        VERIFY_IS_TRUE(observedFailure->state().completionKind == TestCompletionKind::Ignored);
-        VERIFY_ARE_EQUAL(static_cast<unsigned short>(IgnoreReason::Stale), observedFailure->state().reason);
+        if (TableViewTipTestHelpers::HasNativeAbi())
+        {
+            VERIFY_IS_TRUE(observedFailure->state().completionKind == TestCompletionKind::Ignored);
+            VERIFY_ARE_EQUAL(static_cast<unsigned short>(IgnoreReason::Stale), observedFailure->state().reason);
+        }
 #endif
         VERIFY_ARE_EQUAL(0u, owner.session.counts[10]);
         AbandonSession(owner);
@@ -152,16 +166,19 @@ public:
             auto const generation = BeginOperation(state, Operation::Sort);
 #if TABLEVIEW_TIP_REAL_LIBRARY
             auto observed = state.operationTest;
-            VERIFY_IS_TRUE(static_cast<bool>(observed));
+            VERIFY_ARE_EQUAL(TableViewTipTestHelpers::HasNativeAbi(), static_cast<bool>(observed));
 #endif
             IgnoreOperation(state, generation, reason, E_INVALIDARG,
                 reason == IgnoreReason::ApplicationFault ? AppFaultKind::Binding : AppFaultKind::None);
 #if TABLEVIEW_TIP_REAL_LIBRARY
-            VERIFY_IS_TRUE(observed->state().completionKind == TestCompletionKind::Ignored);
-            VERIFY_ARE_EQUAL(static_cast<unsigned short>(reason), observed->state().reason);
-            VERIFY_IS_TRUE(observed->diagnosticHResultAvailable);
-            VERIFY_ARE_EQUAL(E_INVALIDARG, observed->diagnosticHResult);
-            VERIFY_IS_FALSE(observed->failureHResultAvailable);
+            if (TableViewTipTestHelpers::HasNativeAbi())
+            {
+                VERIFY_IS_TRUE(observed->state().completionKind == TestCompletionKind::Ignored);
+                VERIFY_ARE_EQUAL(static_cast<unsigned short>(reason), observed->state().reason);
+                VERIFY_IS_TRUE(observed->diagnosticHResultAvailable);
+                VERIFY_ARE_EQUAL(E_INVALIDARG, observed->diagnosticHResult);
+                VERIFY_IS_FALSE(observed->failureHResultAvailable);
+            }
 #endif
             VERIFY_IS_FALSE(IsOperationStarted(state));
         }

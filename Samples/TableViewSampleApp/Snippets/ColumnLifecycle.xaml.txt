@@ -1,0 +1,40 @@
+<!-- The columns are declared in XAML; the page then moves, hides, adds and removes them in code.
+     Template columns sort by SortMemberPath, the value behind the control. -->
+
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.AutomationId="ColumnLifecycleTable"
+    AutomationProperties.Name="People with dynamic columns"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <tv:TableViewTemplateColumn x:Name="ColAvatar" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                                 CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn x:Name="ColName" Header="Name" Width="{StaticResource ColWidthShortName}"
+                             Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn x:Name="ColDepartment" Header="Department" Width="{StaticResource ColWidthChip}"
+                                 CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTextColumn x:Name="ColRole" Header="Role" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
+                             Binding="{Binding Role}"/>
+    <tv:TableViewTextColumn x:Name="ColSalary" Header="Salary" Width="{StaticResource ColWidthNumber}"
+                             Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+    <tv:TableViewTemplateColumn x:Name="ColActive" Header="Active" Width="{StaticResource ColWidthBoolean}"
+                                 CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"
+                                 HeaderToolTip="Whether the person is currently on staff. Editable."/>
+    <!-- Starts hidden: TableViewColumn.Visibility, not removal from the vector. -->
+    <tv:TableViewTemplateColumn x:Name="ColShift" Header="Shift" Width="{StaticResource ColWidthTimeCompact}"
+                                 CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart"
+                                 Visibility="Collapsed"
+                                 HeaderToolTip="Start of the daily shift, 24-hour clock. Editable."/>
+</tv:TableView>
+
+<!-- One checkbox per column sets TableViewColumn.Visibility. -->
+
+<CheckBox x:Name="VisShiftCheckBox" AutomationProperties.AutomationId="ColumnLifecycleVisShiftCheckBox" Content="Shift" Tag="6" IsChecked="False" Checked="OnColumnToggle" Unchecked="OnColumnToggle"/>
+
+<ComboBox
+    x:Name="ColumnPicker"
+    AutomationProperties.AutomationId="ColumnLifecycleColumnSelector"
+    Header="Column"
+    HorizontalAlignment="Stretch"/>

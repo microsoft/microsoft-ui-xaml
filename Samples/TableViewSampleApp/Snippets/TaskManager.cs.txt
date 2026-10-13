@@ -1,0 +1,76 @@
+// TaskManagerPage.xaml.cs. The source is created once; search, sort and grouping reshape it in place.
+public ObservableCollection<ProcessItem> Processes { get; } = new();
+
+public TableViewSource? Source => _source;
+
+public TaskManagerPage()
+{
+    PopulateProcesses();
+    _source = TableViewSource.From(Processes);
+    InitializeComponent();
+    // Metrics open descending, as in Task Manager: the busiest process comes first.
+    foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColumn })
+    {
+        column.SortCycle = TableViewSortCycle.DescendingAscending;
+    }
+
+    _timer.Tick += OnTimerTick;
+    Loaded += OnPageLoaded;      // starts the timer
+    Unloaded += OnPageUnloaded;  // stops it
+}
+
+// A value change raised through INotifyPropertyChanged updates the cell but does not move the
+// row: the projection re-sorts on collection changes only. Re-declaring the active sort with
+// the column's own path re-sorts the same source and keeps that column's sort indicator.
+private void ResortIfMetricSorted()
+{
+    var column = ActiveSortColumn();
+    if (_source is null || column is null || column.SortMemberPath is not
+        (nameof(ProcessItem.CpuPercent) or nameof(ProcessItem.MemoryMB) or nameof(ProcessItem.DiskMBps) or nameof(ProcessItem.NetworkMbps)))
+    {
+        return;
+    }
+
+    _source.Sort(column.SortMemberPath, column.SortDirection);
+}
+
+// Search filters the same source; clearing the text removes the predicate.
+var text = _searchText;
+_source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
+
+// End task reports when nothing is selected instead of doing nothing.
+private void OnEndTaskClick(object sender, RoutedEventArgs e)
+{
+    if (ProcessTable.SelectedItem is not ProcessItem process)
+    {
+        SetLastAction("No process selected.");
+        return;
+    }
+
+    Processes.Remove(process);
+    UpdateTotals();
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Ended {0} ({1})", process.Name, process.Category));
+}
+
+// GroupBy: the key selector receives the ROW; the identity selector receives the KEY.
+_source.GroupBy(item => KeyOf(item as ProcessItem, key), SampleShaping.GroupIdentity);
+
+// Heat-map tint: one blue hue whose opacity deepens with load; no tint in high contrast.
+public object Convert(object value, Type targetType, object parameter, string language)
+{
+    if (ChipBrushes.IsHighContrast)
+    {
+        return ChipBrushes.Transparent;
+    }
+
+    var thresholds = (parameter as string) switch
+    {
+        "Memory" => s_memory,
+        "Disk" => s_disk,
+        "Network" => s_network,
+        _ => s_cpu,
+    };
+
+    var load = value is double d ? d : 0;
+    return s_levels[thresholds.Count(threshold => load > threshold)];
+}

@@ -1,0 +1,45 @@
+<!-- GroupsPage.xaml: the table. The Department ComboBox and the Active CheckBox are the values
+     the page groups on, so editing one moves the row to another group. -->
+<tv:TableView x:Name="PeopleTable"
+              AutomationProperties.AutomationId="GroupsTable"
+              AutomationProperties.Name="Grouped people"
+              ItemsSource="{x:Bind Source}"
+              SelectionMode="Single"
+              EmptyTemplate="{StaticResource GroupsEmptyTemplate}"
+              VerticalAlignment="Stretch" MinHeight="320">
+    <tv:TableViewTemplateColumn Header="Photo"      Width="{StaticResource ColWidthAvatar}"       CellTemplate="{StaticResource AvatarTemplate}"           CanSort="False"/>
+    <tv:TableViewTextColumn     Header="Name"       Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthCombo}"        CellTemplate="{StaticResource DeptComboTemplate}"        SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Active"     Width="{StaticResource ColWidthBoolean}"      CellTemplate="{StaticResource ActiveCheckBoxTemplate}"   SortMemberPath="IsActive"/>
+    <tv:TableViewTemplateColumn Header="Join date"  Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+    <tv:TableViewTextColumn     Header="Salary"     Width="{StaticResource ColWidthNumber}"       Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+</tv:TableView>
+
+<!-- TableView.GroupHeaderTemplate fills the header's content region; the control keeps the
+     expander and the band. The template binds TableViewGroupInfo. -->
+<DataTemplate x:Key="CustomGroupHeaderTemplate" x:DataType="tv:TableViewGroupInfo">
+    <StackPanel Orientation="Horizontal" Spacing="10" Padding="0,6" VerticalAlignment="Center">
+        <TextBlock Text="{x:Bind KeyText, Mode=OneWay}" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+        <TextBlock Text="{x:Bind ItemCount, Mode=OneWay, Converter={StaticResource GroupCountTextConverter}}"
+                   Style="{ThemeResource CaptionTextBlockStyle}"/>
+        <Border Padding="8,2" CornerRadius="10" Background="{ThemeResource ControlAltFillColorSecondaryBrush}">
+            <TextBlock Text="{x:Bind IsExpanded, Mode=OneWay, Converter={StaticResource GroupExpansionTextConverter}}"
+                       Style="{ThemeResource CaptionTextBlockStyle}"/>
+        </Border>
+    </StackPanel>
+</DataTemplate>
+
+<ComboBox x:Name="ShapingModeSelector" Header="Shaping mode" SelectedIndex="1"
+          SelectionChanged="OnShapingModeChanged">
+    <ComboBoxItem Content="Flat" Tag="flat"/>
+    <ComboBoxItem Content="Grouped" Tag="grouped"/>
+    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"/>
+    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"/>
+</ComboBox>
+<ComboBox x:Name="GroupKeySelector" Header="Group key" SelectedIndex="0"
+          SelectionChanged="OnGroupKeyChanged">
+    <ComboBoxItem Content="Department" Tag="Department"/>
+    <ComboBoxItem Content="Office" Tag="Office"/>
+    <ComboBoxItem Content="Role" Tag="Role"/>
+    <ComboBoxItem Content="Active" Tag="IsActive"/>
+</ComboBox>

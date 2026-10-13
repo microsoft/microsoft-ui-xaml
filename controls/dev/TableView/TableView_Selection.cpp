@@ -167,6 +167,25 @@ bool TableView::ShouldDeferSelectionRequest()
 void TableView::ClearPendingSelection()
 {
     m_pendingSelectedItem.set(nullptr);
+    m_pendingSelectedIdentity.clear();
+}
+
+winrt::hstring TableView::HierarchyIdentityForIndex(int32_t index) const
+{
+    if (index < 0 || !m_tableViewSourceRowMetadata || !m_tableViewSourceRowMetadata->IsHierarchicalSource())
+    {
+        return {};
+    }
+
+    try
+    {
+        return m_tableViewSourceRowMetadata->GetIdentity(index);
+    }
+    catch (...)
+    {
+        // Mid-reshape the row may not be addressable; the object anchor still applies.
+        return {};
+    }
 }
 
 bool TableView::DrainPendingSelection()
@@ -178,8 +197,25 @@ bool TableView::DrainPendingSelection()
 
     if (auto const pendingItem = m_pendingSelectedItem.get())
     {
+        auto const pendingIdentity = m_pendingSelectedIdentity;
         ClearPendingSelection();
-        ApplySelection(IndexOfItem(pendingItem));
+
+        // Tree: re-anchor on node key first (app may have replaced the object); object identity is
+        // the fallback.
+        int32_t index = -1;
+        if (!pendingIdentity.empty() && m_tableViewSourceRowMetadata &&
+            m_tableViewSourceRowMetadata->IsHierarchicalSource())
+        {
+            int32_t candidate = -1;
+            TableViewRowInfo info{};
+            if (m_tableViewSourceRowMetadata->TryGetIndexForIdentity(pendingIdentity, candidate) &&
+                TryGetTableViewSourceRowInfo(candidate, info) && info.Kind == TableViewRowKind::Data)
+            {
+                index = candidate;
+            }
+        }
+
+        ApplySelection(index >= 0 ? index : IndexOfItem(pendingItem));
         return true;
     }
 
@@ -227,26 +263,30 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
 
 void TableView::ApplySelection(int32_t index, bool reportTelemetry)
 {
-    const bool accepted = reportTelemetry && !m_isRestoringSelection && CanSelectRows() && HasRowsSource() &&
-        index >= -1 && index < GetItemsSourceCount() && SelectedIndexInternal() != index;
-    const auto version = m_selectionVersion;
-    const auto sourceGeneration = m_rowMetadataGeneration;
-    ActionTelemetry telemetry{ *this, TableViewTelemetry::Operation::Selection, TableViewTelemetry::Stage::Selection, accepted };
+    bool validRequest = index >= -1;
     if (!CanSelectRows())
     {
         index = -1;
+        validRequest = false;
     }
 
     if (index >= 0 && index >= GetItemsSourceCount())
     {
         index = -1;
+        validRequest = false;
     }
 
+    const bool accepted = m_telemetry.session.active && reportTelemetry && !m_isRestoringSelection &&
+        validRequest && m_lastPublishedIndex != index;
+    const auto version = m_selectionVersion;
+    const auto sourceGeneration = m_rowMetadataGeneration;
+    ActionTelemetry telemetry{ *this, TableViewTelemetry::Operation::Selection, TableViewTelemetry::Stage::Selection, accepted };
     if (index < 0 && !m_selectionModel)
     {
         // Nothing selected and no model yet - nothing to clear, but publish so the projections
         // start out agreeing with the model.
         m_stickySelectedItem.set(nullptr);
+        m_stickySelectedIdentity.clear();
         PushSelectionProperties();
         return;
     }
@@ -263,10 +303,11 @@ void TableView::ApplySelection(int32_t index, bool reportTelemetry)
     }
 
     // Capture the intentional selection by object identity. This is the single selection writer, so
-    // every user gesture / programmatic set / restore passes through here and nowhere else moves the
-    // sticky anchor - which is exactly why a Reset-driven model clear (which does NOT call this)
-    // leaves it intact for the identity restore.
+    // every gesture / programmatic set / restore passes through here; the anchor otherwise moves only
+    // in OnSelectionModelSelectionChanged (incremental clear outside a restore). A Reset-driven clear
+    // runs under the restore flag, keeping it for the identity restore.
     m_stickySelectedItem.set(index >= 0 ? SelectedItemForIndex(index) : nullptr);
+    m_stickySelectedIdentity = (index >= 0 && m_stickySelectedItem.get()) ? HierarchyIdentityForIndex(index) : winrt::hstring{};
 
     // The model raises SelectionChanged only when the selection actually moved; publish here too so
     // a rejected write still leaves the DPs agreeing with the model.
@@ -274,7 +315,7 @@ void TableView::ApplySelection(int32_t index, bool reportTelemetry)
     if (accepted)
     {
         if (m_selectionVersion == version + 1 && m_rowMetadataGeneration == sourceGeneration &&
-            SelectedIndexInternal() == index && SelectedIndex() == index && m_lastPublishedIndex == index)
+            m_lastPublishedIndex == index)
         {
             telemetry.Complete();
         }
@@ -327,6 +368,14 @@ void TableView::OnSelectionModelSelectionChanged(
     if (m_isRestoringSelection)
     {
         return;
+    }
+
+    // Outside a restore, a model clear means the row left the view (e.g. subtree collapse). Drop the
+    // anchor so a later Reset doesn't resurrect it.
+    if (newIndex < 0)
+    {
+        m_stickySelectedItem.set(nullptr);
+        m_stickySelectedIdentity.clear();
     }
 
     PushSelectionProperties();
@@ -586,6 +635,7 @@ void TableView::OnSelectionSourceReset(
     // transient clear the model is about to publish, so the restore reads as one atomic event (or
     // as silence when the same row is re-selected) rather than a clear-then-reselect pair.
     m_pendingSelectedItem.set(sticky);
+    m_pendingSelectedIdentity = m_stickySelectedIdentity;
     m_isRestoringSelection = true;
     m_resetSelectionRestorePending = true;
 }

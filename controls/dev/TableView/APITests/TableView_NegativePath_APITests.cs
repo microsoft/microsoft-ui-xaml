@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using System;
 using Windows.Foundation;
@@ -30,7 +31,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // SUBJECT. Bad input and reentrant calls that arrive through public API only - a null entry in
     // Columns, non-finite width constraints, a degenerate host size, a source mutated from inside
     // an event handler, and an app handler that throws. Gesture-driven teardown (a pending resize
-    // drag) lives in the interaction plan.
+    // drag) lives in the interaction tests.
     //
     // SCOPE. Plan section 16.0 records why eleven backlog items are not here. The short version:
     // an item whose expected result reads "leaves coherent state" or "per contract" has no
@@ -39,6 +40,70 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class TableViewNegativePathTests : TableViewApiTestBase
     {
+        [TestMethod]
+        [TestProperty("IsolationLevel", "Method")]
+        [TestProperty("Description", "Missing resources in the stock deferred TableView template retain the generic parse diagnostic.")]
+        public void VerifyDeferredTemplateResourceMissKeepsGenericDiagnostic()
+        {
+            Grid host = null;
+            RunOnUIThread.Execute(() =>
+            {
+                host = new Grid();
+                Content = host;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(host.IsLoaded, "Attaching to a loaded host must resolve the stock style before ApplyTemplate.");
+                var originalResources = Application.Current.Resources;
+                var resources = new ResourceDictionary();
+                resources.MergedDictionaries.Add(new XamlControlsResources());
+                resources["TabularSurfaceRowBackgroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.White);
+                resources["TabularSurfaceRowForegroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Black);
+                resources["TabularSurfaceGridLineBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Gray);
+
+                try
+                {
+                    Application.Current.Resources = resources;
+                    var tableView = new TableView { Width = 400, Height = 200 };
+                    tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                    host.Children.Add(tableView);
+                    Verify.IsNotNull(tableView.Template, "The regression must exercise the stock deferred template.");
+
+                    Exception error = null;
+                    try
+                    {
+                        tableView.ApplyTemplate();
+                    }
+                    catch (Exception exception)
+                    {
+                        error = exception;
+                    }
+
+                    Verify.IsNotNull(error, "The missing header brush must fail during stock template realization.");
+                    Verify.AreEqual(unchecked((int)0x802B000A), error.HResult, "Stock template resource misses retain the parse HRESULT.");
+                    Verify.IsTrue(error.Message.Contains("TabularSurfaceHeaderBackgroundBrush"), "The missing header brush confirms the stock deferred-template path was exercised.");
+                    Verify.IsTrue(error.Message.Contains("Cannot find a Resource with the Name/Key "), "The exception retains the generic resource-error prefix.");
+                    Verify.IsTrue(error.Message.Contains("[Line: "), "The parse diagnostic retains its location.");
+                    Verify.IsFalse(error.Message.Contains("TabularControlsResources"), "Setup guidance is separate debug output, not part of the exception.");
+                }
+                finally
+                {
+                    try
+                    {
+                        host.Children.Clear();
+                        Content = null;
+                    }
+                    finally
+                    {
+                        Application.Current.Resources = originalResources;
+                    }
+                }
+            });
+        }
+
         #region 16.1 Malformed input through public API
 
         [TestMethod]

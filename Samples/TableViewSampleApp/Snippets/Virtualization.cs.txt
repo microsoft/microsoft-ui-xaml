@@ -1,0 +1,46 @@
+// There is nothing to switch on: TableView virtualizes by default. The lesson is how not to
+// defeat it.
+
+// DON'T: per-item Add into an already-bound collection. Each Add raises a CollectionChanged
+// notification on the UI thread, so 50,000 rows means 50,000 notifications and a frozen window.
+//     foreach (var person in rows) { _people.Add(person); }
+
+// DO: build the whole list first, then hand it to the table in one assignment.
+_people = new ObservableCollection<Person>(PersonData.Many(count));
+_source = TableViewSource.From(_people);
+PeopleTable.ItemsSource = _source;
+
+// A new source starts flat; give it the current shaping.
+if (_appliedMode == "grouped")
+{
+    ApplyShaping(announce: false);
+}
+
+// Grouping the large set reshapes the same source in place. The key selector receives the
+// ROW; the identity selector receives the KEY.
+_source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+
+// Reading realization: the control exposes no realized-row count, so the readout walks the
+// visual tree for TableViewRow (a public type). A row counts as realized when it is visible and
+// its bounds intersect the body viewport; containers parked off screen or hidden by Collapse
+// all count toward the pool only.
+private static bool InViewport(TableViewRow row, ScrollViewer scroller)
+{
+    if (row.Visibility != Visibility.Visible || row.ActualHeight <= 0)
+    {
+        return false;
+    }
+
+    var bounds = row.TransformToVisual(scroller).TransformBounds(new Rect(0, 0, row.ActualWidth, row.ActualHeight));
+    return bounds.Bottom > 0 && bounds.Top < scroller.ViewportHeight;
+}
+
+// There is no ScrollIntoView in this release: select by display index, scroll the body
+// ScrollViewer to an estimate, correct it from a realized row, then bring the row into view.
+PeopleTable.Select(targetIndex);
+scroller.ChangeView(null, Math.Max(0, offset), null, disableAnimation: true);
+PeopleTable.UpdateLayout();
+if (FindRealizedRow(target) is { } row)
+{
+    row.StartBringIntoView();
+}

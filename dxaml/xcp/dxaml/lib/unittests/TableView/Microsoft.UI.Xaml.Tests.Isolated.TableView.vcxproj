@@ -20,6 +20,7 @@
     <ClCompile Include="TableViewTelemetry_UnitTests.cpp" />
     <ClCompile Include="$(MuxControlsPath)\dev\TableView\TableViewTelemetry.cpp" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TableViewTipTestHelpers.h" />
   </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>

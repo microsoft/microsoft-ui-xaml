@@ -1,0 +1,37 @@
+<!-- HeadersVisibility gates the COLUMN header strip only. Group header bands are a separate
+     surface and stay when it is None. IsReadOnly gates the built-in text editors; the Due and
+     Resolved template editors stay editable. -->
+<tv:TableView x:Name="TicketsTable"
+              ItemsSource="{x:Bind Source}"
+              SelectionMode="Single"
+              IsReadOnly="True">
+    <tv:TableViewTextColumn Header="Ticket" Width="{StaticResource ColWidthId}" Binding="{Binding TicketId}"/>
+    <tv:TableViewTemplateColumn Header="Assignee" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AssigneeTemplate}" SortMemberPath="Assignee" CellToolTipBinding="{Binding Assignee}"/>
+    <tv:TableViewTextColumn Header="Summary" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Summary}" CellToolTipBinding="{Binding Summary}"/>
+    <tv:TableViewTemplateColumn Header="Priority" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource PriorityChipTemplate}" SortMemberPath="Priority"/>
+    <tv:TableViewTemplateColumn x:Name="DueColumn" Header="Due" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource DueDateTemplate}" SortMemberPath="Due"/>
+    <tv:TableViewTemplateColumn Header="Resolved" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ResolvedTemplate}" SortMemberPath="IsResolved"/>
+</tv:TableView>
+
+<!-- With the headers hidden, each editor's own name is the only column context a screen
+     reader announces, so every template names its column and its ticket. -->
+<DataTemplate x:Key="DueDateTemplate" x:DataType="models:SupportTicket">
+    <CalendarDatePicker
+        Date="{x:Bind DueOrNull, Mode=TwoWay}"
+        DateFormat="{}{day.integer} {month.abbreviated} {year.full}"
+        AutomationProperties.Name="{x:Bind DueAutomationName, Mode=OneWay}"/>
+</DataTemplate>
+
+<DataTemplate x:Key="ResolvedTemplate" x:DataType="models:SupportTicket">
+    <CheckBox
+        IsChecked="{x:Bind IsResolved, Mode=TwoWay}"
+        AutomationProperties.Name="{x:Bind ResolvedAutomationName, Mode=OneWay}"/>
+</DataTemplate>
+
+<ComboBox x:Name="HeadersVisibilitySelector"
+          Header="Headers"
+          SelectedIndex="0"
+          SelectionChanged="OnHeadersVisibilityChanged">
+    <ComboBoxItem Content="Column" Tag="Column"/>
+    <ComboBoxItem Content="None" Tag="None"/>
+</ComboBox>

@@ -1,0 +1,153 @@
+private void OnColumnToggle(object sender, RoutedEventArgs e)
+{
+    // IsChecked="True" raises Checked during InitializeComponent, before _canonical is
+    // assigned; the XAML already matches. Reset also writes IsChecked and reports itself.
+    if (_canonical is null || _isBulkUpdate || sender is not CheckBox { Tag: string tag } box || !int.TryParse(tag, out var index))
+    {
+        return;
+    }
+
+    var column = _canonical[index];
+    var visible = box.IsChecked == true;
+    column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} the {1} column", visible ? "Showed" : "Hid", column.Header));
+}
+
+private void MoveSelectedColumn(int direction)
+{
+    if (SelectedColumn() is not { } column)
+    {
+        SetLastAction("No column chosen.");
+        return;
+    }
+
+    var from = PeopleTable.Columns.IndexOf(column);
+    var to = from + direction;
+    if (to < 0 || to >= PeopleTable.Columns.Count)
+    {
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} is already the {1} column.", column.Header, direction < 0 ? "first" : "last"));
+        return;
+    }
+
+    // Moving the entry in the observable Columns vector IS the reorder; the header band and
+    // the realized rows follow. The instance is reused, so its width travels with it.
+    PeopleTable.Columns.RemoveAt(from);
+    PeopleTable.Columns.Insert(to, column);
+
+    PopulateColumnPicker();
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from position {1} to {2}", column.Header, from + 1, to + 1));
+}
+
+private void OnAddJoinDateColumnClick(object sender, RoutedEventArgs e)
+{
+    if (FindColumn(JoinDateHeader) is not null)
+    {
+        SetLastAction("The Join date column is already there.");
+        return;
+    }
+
+    // A template column added at run time through the same vector the text columns live in.
+    // SortMemberPath makes it sortable by the date value behind the picker.
+    var resources = Application.Current.Resources;
+    PeopleTable.Columns.Add(new TableViewTemplateColumn
+    {
+        Header = JoinDateHeader,
+        Width = new GridLength((double)resources["ColWidthDatePicker"]),
+        CellTemplate = (DataTemplate)resources["JoinDatePickerTemplate"],
+        SortMemberPath = nameof(Person.JoinDate),
+        HeaderToolTip = "Date the person joined. Editable; sorts by the JoinDate value.",
+    });
+
+    PopulateColumnPicker();
+    SetLastAction("Added the Join date column at the end");
+}
+
+private void OnMoveRowClick(object sender, RoutedEventArgs e)
+{
+    if (PeopleTable.SelectedItem is not Person person)
+    {
+        SetLastAction("No row selected.");
+        return;
+    }
+
+    var key = ActionKey;
+    var from = SampleShaping.KeyOf(person, key);
+    _isBulkUpdate = true;
+    try
+    {
+        switch (key)
+        {
+            case nameof(Person.IsActive):
+                person.IsActive = !person.IsActive;
+                break;
+            case nameof(Person.Role):
+                // Cycle through the roles already in the table, so the row joins an existing group.
+                person.Role = SampleShaping.Next(ExistingValues(p => p.Role), person.Role);
+                break;
+            default:
+                person.Department = SampleShaping.Next(ExistingValues(p => p.Department), person.Department);
+                break;
+        }
+    }
+    finally
+    {
+        _isBulkUpdate = false;
+    }
+
+    // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
+    // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+    ReapplyIfGroupedOn(key);
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
+}
+
+private void ApplyShaping(bool announce)
+{
+    // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
+    // later-declared elements exist. Guard every element this path touches.
+    if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
+        || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
+    {
+        return;
+    }
+
+    var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+    var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+    var selected = PeopleTable.SelectedItem;
+
+    switch (mode)
+    {
+        case "grouped":
+            // The key selector receives the ROW; the identity selector receives the KEY.
+            // The Columns vector is untouched by a reshape.
+            _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+            break;
+        // case "hierarchy":
+        // case "groupedHierarchy":
+        //     Hierarchical (tree) rows are not available in this release, so the two matching
+        //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+        //     member today. When hierarchy ships, apply it to this same source here, composed
+        //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
+        //     after the call returns.
+        default:
+            _source.ClearGroupBy();
+            mode = "flat";
+            break;
+    }
+
+    _appliedMode = mode;
+    _appliedKey = key;
+
+    // Re-applying GroupBy can drop the selection when the selected row changed group.
+    SampleShaping.Reselect(PeopleTable, selected, (People.Count * 2) + 2, RefreshReadouts);
+    UpdateShapingGating();
+    if (announce)
+    {
+        SetLastAction(mode == "grouped"
+            ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+            : "Shaping -> Flat");
+    }
+    else
+    {
+        RefreshReadouts();
+    }
+}
