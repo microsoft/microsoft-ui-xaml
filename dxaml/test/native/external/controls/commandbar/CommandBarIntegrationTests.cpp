@@ -60,6 +60,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanEnterAndLeaveLiveTree()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;
@@ -97,6 +100,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanReapplyTemplate()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;
@@ -620,6 +626,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanResizeCommandBarAfterOpeningAndClosing()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::Page^ page = nullptr;
@@ -680,6 +689,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanUseLargeAppBarButton()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
 
@@ -1122,6 +1134,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateArrowKeys()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;
@@ -1536,6 +1551,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateFirstElementIsNotFocusedWhenClosingCommandBar()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::TextBox^ textBox = nullptr;
@@ -1680,6 +1698,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanReopenInClosedHandler()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;
@@ -1922,6 +1943,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::DoesCycleFocusWhenOpen()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         auto expectedFocusSequence = L"[S1][P1][P2][P3][M][P3][P2][P1][S1][M]";
         DoesCycleFocusWhenOpenWorker(Location::Inline, 5, expectedFocusSequence);
         DoesCycleFocusWhenOpenWorker(Location::Top, 5, expectedFocusSequence);
@@ -2040,6 +2064,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::CanTabIntoOverflowMenuWhenTopOrBottom()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::Page^ page = nullptr;
@@ -2625,6 +2652,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDefaultLayoutPositionPropagates()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;
@@ -2860,6 +2890,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     // Validate the dynamic overflow behavior with on and off IsDynamicOverflowEnabled property
     void CommandBarIntegrationTests::ValidateDynamicOverflowOnOff()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         const unsigned int numButtonsToAddExtraToPrimary = 5;
@@ -2899,6 +2932,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowByChangingWindowsSizeOverride()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         unsigned int numButtonsToAddExtraToPrimary = 0;
@@ -2917,6 +2953,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowAddRemovePrimaryItems()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         const unsigned int numButtonsToAddExtraToPrimary = 5;
@@ -2972,6 +3011,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowAppBarSeparator()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         unsigned int numButtonsToAddExtraToPrimary = 0;
@@ -3036,6 +3078,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateFireDynamicOverflowItemsChangingEvent()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         unsigned int numButtonsToAddExtraToPrimary = 2;
@@ -3082,6 +3127,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowOrderBasic()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         unsigned int numButtonsToAddExtraToPrimary = 2;
@@ -3168,6 +3216,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateDynamicOverflowWithContentControl()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         const unsigned int numButtonsToAddExtraToPrimary = 5;
@@ -4394,6 +4445,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarIntegrationTests::ValidateMoreButtonCanShowWithoutSizeChanging()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;

@@ -194,6 +194,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void FlyoutAutomationIntegrationTests::VerifyUIAFocusEntersFlyoutWithContentControl()
     {
+        // WPF shutdown reports the CUIAHostWindow created for the XamlIslandRoot
+        // automation provider during the flyout focus checks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::Button^ flyoutButton = nullptr;

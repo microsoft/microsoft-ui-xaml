@@ -129,6 +129,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void FloatieContextMenuTests::TextBoxProofingMenu_MisspelledWord()
         {
+            // WPF shutdown reports MenuFlyoutItem allocations from CreateProofingMenuItem,
+            // plus text/style and XamlProperty/KnownXamlType allocations after showing the proofing menu.
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup;
 
             ::Windows::Foundation::Size size(400, 400);
@@ -246,6 +250,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void FloatieContextMenuTests::TextBoxProofingMenu_RepeatedWord()
         {
+            // WPF shutdown reports MenuFlyoutItem allocations from CreateProofingMenuItem,
+            // plus text/style and XamlProperty/KnownXamlType allocations after showing the proofing menu.
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup;
 
             ::Windows::Foundation::Size size(400, 400);
@@ -532,6 +540,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void FloatieContextMenuTests::RichEditBoxProofingMenu_MisspelledWord()
         {
+            // WPF shutdown reports MenuFlyoutItem allocations from CreateProofingMenuItem,
+            // plus text/style and XamlProperty/KnownXamlType allocations after showing the proofing menu.
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup;
 
             ::Windows::Foundation::Size size(400, 400);
@@ -654,6 +666,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void FloatieContextMenuTests::RichEditBoxProofingMenu_RepeatedWord()
         {
+            // WPF shutdown reports MenuFlyoutItem allocations from CreateProofingMenuItem,
+            // plus text/style and XamlProperty/KnownXamlType allocations after showing the proofing menu.
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             TestCleanupWrapper cleanup;
 
             ::Windows::Foundation::Size size(400, 400);

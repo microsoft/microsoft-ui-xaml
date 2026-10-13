@@ -30,6 +30,7 @@
         <ClInclude Include="InfrastructureIntegrationTests.h"/>
 
         <ClCompile Include="InfrastructureIntegrationTests.cpp"/>
+        <ClCompile Include="InfrastructureLeakDetectionTests.cpp" Condition="'$(Configuration)'=='Debug'"/>
         <ClCompile Include="ErrorHandlingTests.cpp"/>
     </ItemGroup>
 

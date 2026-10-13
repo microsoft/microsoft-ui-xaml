@@ -39,6 +39,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             return true;
         }
 
+        bool XamlBindingHelperTests::TestSetup()
+        {
+            // Each cleanup replaces the WPF host; initialize the next test's core and allocation baseline.
+            TestServices::WindowHelper->InitializeXaml();
+            return true;
+        }
+
         bool XamlBindingHelperTests::TestCleanup()
         {
             test_infra::TestServices::WindowHelper->ShutdownXaml();

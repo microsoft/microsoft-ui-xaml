@@ -56,6 +56,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                 TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
+            BEGIN_TEST_METHOD(ValidateWpfShutdownLeakDetection)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates default shutdown-time leak detection, callback lifetime, and input after WPF host replacement.")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+                TEST_METHOD_PROPERTY(L"Data:HostInitialization", L"{Default,Dpi}")
+                TEST_METHOD_PROPERTY(L"Data:DpiAwarenessContext", L"{PerMonitorV2}")
+            END_TEST_METHOD()
         };
     }
 } } } }

@@ -24,6 +24,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             TEST_CLASS_SETUP(ClassSetup)
             TEST_CLASS_CLEANUP(ClassCleanup)
+            TEST_METHOD_SETUP(TestSetup)
             TEST_METHOD_CLEANUP(TestCleanup)
 
             BEGIN_TEST_METHOD(ValidateSetWidthOnGrid)

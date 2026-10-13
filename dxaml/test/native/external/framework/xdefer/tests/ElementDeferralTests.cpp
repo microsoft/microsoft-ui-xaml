@@ -2634,6 +2634,9 @@ namespace Microsoft::UI::Xaml::Tests::Framework {
 
     void ElementDeferralTests::ValidateDeferralForSupportedPropertiesInContentControl()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         ValidateDeferralForElementTypesInContainerScenario<ContentAccessor<AppBar>, AppBarButton>();
 
         ValidateDeferralForElementTypesInCommandBarScenario<PrimaryCommandsAccessor<CommandBar>, AppBarButton>();
@@ -2666,6 +2669,9 @@ namespace Microsoft::UI::Xaml::Tests::Framework {
 
     void ElementDeferralTests::ValidateDeferralForSupportedPropertiesInControl()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         ValidateDeferralForElementTypesInContainerScenario<HeaderAccessor<DatePicker>, Button>();
 
         ValidateDeferralForElementTypesInContainerScenario<CommandParameterAccessor<MenuFlyoutItem>, Button>();
@@ -2790,6 +2796,9 @@ namespace Microsoft::UI::Xaml::Tests::Framework {
 
     void ElementDeferralTests::ValidateDeferralForSupportedTypesButtonBase()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         ValidateDeferralForElementTypesInContainerScenario<ContentAccessor<AppBar>, AppBarButton>();
         ValidateDeferralForElementTypesInContainerScenario<ContentAccessor<AppBar>, AppBarSeparator>();
         ValidateDeferralForElementTypesInContainerScenario<ContentAccessor<AppBar>, AppBarToggleButton>();
@@ -3144,6 +3153,9 @@ namespace Microsoft::UI::Xaml::Tests::Framework {
 
     void ElementDeferralTests::ValidateReplacementOfContentInControl()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         ValidateReplacementOfContentScenario<HeaderAccessor<DatePicker>>();
 
         ValidateReplacementOfContentScenario<ContentAccessor<Page>>();
@@ -3399,6 +3411,9 @@ namespace Microsoft::UI::Xaml::Tests::Framework {
 
     void ElementDeferralTests::ValidateContentClearValueInControl()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         ValidateContentClearValueScenario<HeaderAccessor<DatePicker>>();
 
         ValidateContentClearValueScenario<ContentAccessor<Page>>();

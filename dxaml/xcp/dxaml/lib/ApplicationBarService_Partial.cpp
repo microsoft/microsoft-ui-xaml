@@ -218,6 +218,11 @@ Cleanup:
 void ApplicationBarService::SetXamlRoot(_In_ DirectUI::XamlRoot* xamlRoot)
 {
     IFCFAILFAST(ctl::AsWeak(xamlRoot, &m_weakXamlRoot));
+
+    // The helper forwards XamlRoot size changes to OnBoundsChanged, even when no
+    // full-window Page has registered a layout-bounds callback. Ensure it exists
+    // when the service is created rather than relying on Page teardown to create it.
+    xamlRoot->GetLayoutBoundsHelperNoRef();
 }
 
 // registers an applicationbar so it can be toggled globally

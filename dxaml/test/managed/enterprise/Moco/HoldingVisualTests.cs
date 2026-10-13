@@ -43,6 +43,12 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [ClassCleanup]
         public void ClassCleanup()
         {
+            if (TestServices.Utilities.IsWPF)
+            {
+                // Managed tests check for leaks during class cleanup, not after each test.
+                TestServices.ErrorHandlingHelper.IgnoreLeaksForTest();
+            }
+
             base.CommonClassCleanup();
         }
 
