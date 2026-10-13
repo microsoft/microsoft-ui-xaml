@@ -275,7 +275,11 @@ public:
     // Up/Down move between while the user has not drilled into cells.
     bool FocusRowContainer(int32_t rowIndex);
 
-    // Entry from outside resumes the remembered record, else the viewport edge row (not a cache row).
+    // The row that body entry should land on when focus is aimed at a row CONTAINER from outside
+    // the table. Used by TableViewRow's GettingFocus redirect: entering the table returns to the
+    // row the user left; a move from inside the rows repeater keeps the row it names; a move from
+    // another band (outside the rows repeater) lands on the viewport edge instead of an off-screen
+    // cache row (TryRedirectBandEntryToViewport). Otherwise falls back to the viewport edge row.
     winrt::TableViewRow ResolveFocusEntryRow(
         winrt::TableViewRow const& row,
         winrt::DependencyObject const& oldFocusedElement,

@@ -660,7 +660,7 @@ void TableViewRow::RestoreCellContentTabStopsInternal()
 
 // The body is one tab stop; Enter is the route into cell content. The move is left to XAML:
 // FocusManager::TryMoveFocus ignores ItemsRepeater's KeyboardNavigationMode::Once, so Shift+Tab
-// would land in the previous row's content. Multiply expands the subtree (as in Win32 TreeView);
+// would land in the previous row's content. Multiply expands the subtree (as TreeViewItem);
 // Left/Right belong to TableView::TryHandleRowLevelDrillKey to avoid double handling, and Space
 // stays row selection.
 void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
