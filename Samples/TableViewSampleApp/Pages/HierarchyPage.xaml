@@ -13,7 +13,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:pages="using:TableViewSampleApp.Pages"
-    xmlns:controls="using:TableViewSampleApp.Controls">
+    xmlns:controls="using:TableViewSampleApp.Controls"
+    xmlns:helpers="using:TableViewSampleApp.Helpers">
 
     <Page.Resources>
         <!-- GroupBy buckets only ROOTS; descendants stay under their parent. -->
@@ -34,7 +35,7 @@
         Snippet="Hierarchy"
         ShowHierarchyKeys="True"
         StretchExample="True"
-        TryIt="Expand a row with its chevron or the Right arrow; Left collapses it or moves to the parent, and * expands the whole subtree. Select a row and choose Reparent, Rename or Next department: with Live shaping on, both trees reshape in place."
+        TryIt="Expand a row with its chevron or the Right arrow; Left collapses it or moves to the parent, and * expands the whole subtree. Select a row and choose Reparent, Rename or Next department: with Live shaping on, both trees reshape in place. Right-click a row in the Manager table: managers (rows with reports) and individual contributors show different menus, and with grouping on, department headers show a third."
         WhatToLookFor="The same person sits at a different depth in each table. A filter keeps every match and its ancestors; the ancestors are ordinary rows (selectable, counted, announced like any row) and nothing marks them as context. Code can expand or collapse only every row at once (ExpandAllRows / CollapseAllRows): there is no per-row expand API in this release, so the chevron, the keyboard and UI Automation are the only ways to open a single row. Known control issue: under a filter, a match whose descendants also match stays collapsed (type Ada: Ada A1 stays closed), so those descendants stay hidden until you expand it.">
 
         <controls:SamplePresenter.Example>
@@ -65,7 +66,41 @@
                         MinHeight="320">
                         <tv:TableView.Resources>
                             <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
+                            <!-- Per-row-kind context menus: individual contributors, managers
+                                 (rows with reports) and department headers (Group on). -->
+                            <MenuFlyout x:Key="LeafRowMenu">
+                                <MenuFlyoutItem Text="Open profile" Click="OnRowMenuItemClick"/>
+                                <MenuFlyoutItem Text="Remove" Click="OnRowMenuItemClick"/>
+                            </MenuFlyout>
+                            <MenuFlyout x:Key="ManagerRowMenu">
+                                <MenuFlyoutItem Text="Open profile" Click="OnRowMenuItemClick"/>
+                                <MenuFlyoutItem Text="Email team" Click="OnRowMenuItemClick"/>
+                            </MenuFlyout>
+                            <MenuFlyout x:Key="DeptGroupMenu" Opening="OnGroupMenuOpening">
+                                <MenuFlyoutItem Text="Email department" Click="OnRowMenuItemClick"/>
+                            </MenuFlyout>
                         </tv:TableView.Resources>
+                        <!-- TableView asks again whenever a row's hierarchy state changes, so a
+                             row that gains its first report switches menus in place. -->
+                        <tv:TableView.RowStyleSelector>
+                            <helpers:RowKindStyleSelector>
+                                <helpers:RowKindStyleSelector.LeafRow>
+                                    <Style TargetType="tv:TableViewRow">
+                                        <Setter Property="ContextFlyout" Value="{StaticResource LeafRowMenu}"/>
+                                    </Style>
+                                </helpers:RowKindStyleSelector.LeafRow>
+                                <helpers:RowKindStyleSelector.ExpandableRow>
+                                    <Style TargetType="tv:TableViewRow">
+                                        <Setter Property="ContextFlyout" Value="{StaticResource ManagerRowMenu}"/>
+                                    </Style>
+                                </helpers:RowKindStyleSelector.ExpandableRow>
+                                <helpers:RowKindStyleSelector.GroupHeader>
+                                    <Style TargetType="tv:TableViewGroupHeader">
+                                        <Setter Property="ContextFlyout" Value="{StaticResource DeptGroupMenu}"/>
+                                    </Style>
+                                </helpers:RowKindStyleSelector.GroupHeader>
+                            </helpers:RowKindStyleSelector>
+                        </tv:TableView.RowStyleSelector>
                     </tv:TableView>
                     <!-- /snippet -->
                 </Grid>

@@ -107,7 +107,9 @@ visible on purpose.
   filter, sort and grouping, and `IsLiveShaping` reshaping both trees when a row's property changes.
   The table pages' Shaping section also offers Hierarchy and Grouped hierarchy (ParentBy, plus
   GroupBy on the roots) over their own data: people by manager, files by folder, processes by app;
-  pages whose rows have no parent relation show those modes disabled with the reason
+  pages whose rows have no parent relation show those modes disabled with the reason. The Manager
+  table shows per-row-kind context menus through `TableView.RowStyleSelector` (leaf rows,
+  expandable rows and group headers each get their own `Style`)
 - Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
 - `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
   sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing
@@ -129,7 +131,8 @@ and the table's own `ContextFlyout` as the final fallback. The rail switches the
 cell, row and header menus off.
 
 There is no row menu property: rows get their menu from their own `ContextFlyout`,
-set through an implicit `TableViewRow` style or a row template. Column cell menus
+set through an implicit `TableViewRow` style, a row template, or a `Style` picked per
+row kind by `TableView.RowStyleSelector` (see the Hierarchy page). Column cell menus
 take precedence over it; the native `TableView.ContextFlyout` is the final
 fallback. A column header uses its
 `HeaderContextFlyout`, otherwise native fallback. Group headers always use native

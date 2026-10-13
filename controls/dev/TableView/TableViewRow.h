@@ -68,6 +68,11 @@ public:
     // Owner-only writer for the read-only hierarchy DPs. Level 0 clears (flat/grouped sources).
     void SetHierarchyStateInternal(int32_t level, bool isExpandable, bool isExpanded);
 
+    // Internal: true while Style holds a value written by TableView.RowStyleSelector, so a later
+    // null answer clears only what the selector wrote.
+    bool IsStyleFromSelectorInternal() const { return m_styleFromSelector; }
+    void SetStyleFromSelectorInternal(bool value) { m_styleFromSelector = value; }
+
     // Re-applies indent and chevron; template apply and cell rebuild both discard prior layout.
     void ApplyHierarchyAffordance();
     void ApplyHierarchyIndentToCells();
@@ -275,6 +280,7 @@ private:
 
     // False = row-level focus; true = cell-level focus. Recycled rows return at row level.
     bool m_isCellLevel{ false };
+    bool m_styleFromSelector{ false };
 
     // originalLocalValue: raw local value (UnsetValue, boxed bool, or BindingExpression).
     struct SuppressedContentTabStop

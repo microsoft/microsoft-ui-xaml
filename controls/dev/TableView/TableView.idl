@@ -523,6 +523,15 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate { get; set; };
 
+    // Picks a Style for each realized row container: TableViewRow for data rows (leaf or
+    // expandable) and TableViewGroupHeader for group headers. item is the data item for a row and
+    // the TableViewGroupInfo for a group header. Re-evaluated whenever the row's hierarchy state is
+    // refreshed (prepare, expand, collapse, collection change) and when this property changes. A
+    // returned Style replaces the app's implicit style for that container type, so chain with
+    // BasedOn to keep it; returning null restores the implicit style.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Microsoft.UI.Xaml.Controls.StyleSelector RowStyleSelector { get; set; };
+
     // Vertical density preset for row height and built-in cell/header padding.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::TableViewDensity::Standard")]
@@ -653,6 +662,7 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty GroupHeaderTemplateProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty RowStyleSelectorProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty DensityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SelectionModeProperty { get; };

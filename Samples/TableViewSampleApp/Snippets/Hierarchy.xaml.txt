@@ -12,5 +12,39 @@
     MinHeight="320">
     <tv:TableView.Resources>
         <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
+        <!-- Per-row-kind context menus: individual contributors, managers
+             (rows with reports) and department headers (Group on). -->
+        <MenuFlyout x:Key="LeafRowMenu">
+            <MenuFlyoutItem Text="Open profile" Click="OnRowMenuItemClick"/>
+            <MenuFlyoutItem Text="Remove" Click="OnRowMenuItemClick"/>
+        </MenuFlyout>
+        <MenuFlyout x:Key="ManagerRowMenu">
+            <MenuFlyoutItem Text="Open profile" Click="OnRowMenuItemClick"/>
+            <MenuFlyoutItem Text="Email team" Click="OnRowMenuItemClick"/>
+        </MenuFlyout>
+        <MenuFlyout x:Key="DeptGroupMenu" Opening="OnGroupMenuOpening">
+            <MenuFlyoutItem Text="Email department" Click="OnRowMenuItemClick"/>
+        </MenuFlyout>
     </tv:TableView.Resources>
+    <!-- TableView asks again whenever a row's hierarchy state changes, so a
+         row that gains its first report switches menus in place. -->
+    <tv:TableView.RowStyleSelector>
+        <helpers:RowKindStyleSelector>
+            <helpers:RowKindStyleSelector.LeafRow>
+                <Style TargetType="tv:TableViewRow">
+                    <Setter Property="ContextFlyout" Value="{StaticResource LeafRowMenu}"/>
+                </Style>
+            </helpers:RowKindStyleSelector.LeafRow>
+            <helpers:RowKindStyleSelector.ExpandableRow>
+                <Style TargetType="tv:TableViewRow">
+                    <Setter Property="ContextFlyout" Value="{StaticResource ManagerRowMenu}"/>
+                </Style>
+            </helpers:RowKindStyleSelector.ExpandableRow>
+            <helpers:RowKindStyleSelector.GroupHeader>
+                <Style TargetType="tv:TableViewGroupHeader">
+                    <Setter Property="ContextFlyout" Value="{StaticResource DeptGroupMenu}"/>
+                </Style>
+            </helpers:RowKindStyleSelector.GroupHeader>
+        </helpers:RowKindStyleSelector>
+    </tv:TableView.RowStyleSelector>
 </tv:TableView>
