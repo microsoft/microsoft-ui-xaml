@@ -591,13 +591,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Shift+Tab back into the body does not resume the remembered cell once its row is disabled; focus still lands in the body.")]
+        [TestProperty("Description", "Shift+Tab back into the body does not resume the remembered cell once its row is disabled; focus lands on a row inside the viewport without scrolling.")]
         public void ShiftTabReentrySkipsCellInDisabledRow()
         {
+            // Uses the 200-item ScrollingTableView: the framework aims Shift+Tab at a cache row below the viewport,
+            // which only the scroll offset readout can tell apart from a viewport row.
             using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost(BasicTable);
-                if (rowsHost == null) { Verify.Fail(BasicTable + " exposed no rows host."); return; }
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost(ScrollingTable);
+                if (rowsHost == null) { Verify.Fail(ScrollingTable + " exposed no rows host."); return; }
                 if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
 
                 rowsHost.Children[1].SetFocus();
@@ -606,8 +610,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                Verify.AreEqual(AgeColumn, IndexOfFocusedCell(GetRowsHost(BasicTable).Children[1]),
-                    "Precondition: the Age cell of the anchor row should hold focus.");
+                Verify.AreEqual(1, IndexOfFocusedCell(GetRowsHost(ScrollingTable).Children[1]),
+                    "Precondition: the second cell of the anchor row should hold focus.");
 
                 // Moves focus to AfterTableButton, then disables the row that held it.
                 var disable = FindElement.ById<Button>(DisableFocusedRowButton);
@@ -616,15 +620,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.IsTrue(FindElement.ById(AfterTableButton).HasKeyboardFocus, "Precondition: focus should have left the table.");
 
+                string offsetsBeforeReentry = ReadScrollOffsets();
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
+                string offsetsAfterReentry = ReadScrollOffsets();
 
-                rowsHost = GetRowsHost(BasicTable);
+                rowsHost = GetRowsHost(ScrollingTable);
                 UIObject focusedRow = FindFocusedRow(rowsHost);
-                Log.Comment("After Shift+Tab: focused element {0}.", DescribeFocused());
+                Log.Comment("After Shift+Tab: focused element {0}; offsets '{1}' -> '{2}'.", DescribeFocused(), offsetsBeforeReentry, offsetsAfterReentry);
                 Verify.IsNotNull(focusedRow, "Shift+Tab must land on a row of the body at row level.");
                 Verify.IsTrue(focusedRow.IsEnabled, "Re-entry must not land on the disabled row.");
                 Verify.AreEqual(-1, IndexOfFocusedCell(focusedRow), "With the remembered cell unreachable, re-entry is row-level.");
+                // Keyboard focus brings the row into view with XAML's 20 DIP padding; only that nudge is allowed.
+                double verticalTravel = Math.Abs(ReadScrollOffsetComponent(offsetsAfterReentry, "V") - ReadScrollOffsetComponent(offsetsBeforeReentry, "V"));
+                Verify.IsFalse(double.IsNaN(verticalTravel), "Precondition: the page must publish the vertical offset.");
+                Verify.IsLessThanOrEqual(verticalTravel, 20.5,
+                    "With the remembered cell unreachable, re-entry falls back to a viewport row, not a cache row that scrolls the body.");
             }
         }
 

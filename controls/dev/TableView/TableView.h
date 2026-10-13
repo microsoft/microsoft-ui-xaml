@@ -342,6 +342,8 @@ public:
 
     void ArmCellLevelRowInternal(winrt::TableViewRow const& row);
 
+    winrt::TableViewRow FindViewportEdgeRowInternal(bool last) const;
+
     winrt::hstring GetContainerIdentityInternal(winrt::UIElement const& container)
     {
         return TryGetContainerIdentity(container);
@@ -1226,7 +1228,6 @@ private:
     winrt::guid m_focusEntryRedirectCorrelationId{};
     bool m_hasFocusEntryRedirect{ false };
 
-    winrt::TableViewRow FindViewportEdgeRowInternal(bool last) const;
     bool RowShowsCurrentItemInternal(winrt::TableViewRow const& row) const;
 
     // Row-level Left/Right drill between row and cells; group headers use Left/Right for expand/collapse.

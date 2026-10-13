@@ -820,17 +820,15 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
-    auto const entry = ownerImpl->ResolveFocusEntryTarget(*this, oldFocus, direction);
-    auto const targetElement = entry.Element;
-    auto const targetRow = entry.Row;
-    if (!targetElement || !targetRow)
+    auto entry = ownerImpl->ResolveFocusEntryTarget(*this, oldFocus, direction);
+    if (!entry.Element || !entry.Row)
     {
         return;
     }
 
     // Redirecting to an ancestor cell of the proposed element starts a loop. A row target still
     // takes focus from content hosted inside it.
-    winrt::DependencyObject const targetObject = targetElement;
+    winrt::DependencyObject targetObject = entry.Element;
     if (newFocus == targetObject ||
         (entry.CellLevel && SharedHelpers::IsAncestor(newFocus, targetObject, false /* checkVisibility */)))
     {
@@ -838,12 +836,37 @@ void TableViewRow::OnRowGettingFocus(
     }
 
     // Arm the target's level first (only one level is a tab stop); undo on failure.
-    auto const targetRowImpl = winrt::get_self<TableViewRow>(targetRow);
-    const bool targetWasCellLevel = targetRowImpl->IsCellLevelInternal();
+    auto targetRowImpl = winrt::get_self<TableViewRow>(entry.Row);
+    bool targetWasCellLevel = targetRowImpl->IsCellLevelInternal();
     targetRowImpl->SetCellLevelInternal(entry.CellLevel);
 
-    if (!TableView::IsEntryRedirectTargetFocusable(targetElement, ownerObject) ||
-        !args.TrySetNewFocusedElement(targetObject))
+    if (!TableView::IsEntryRedirectTargetFocusable(entry.Element, ownerObject))
+    {
+        targetRowImpl->SetCellLevelInternal(targetWasCellLevel);
+
+        // The remembered target can't take focus; the viewport edge row still avoids a cache row.
+        auto const edgeRow = ownerImpl->FindViewportEdgeRowInternal(direction == winrt::FocusNavigationDirection::Previous);
+        winrt::DependencyObject const edgeObject = edgeRow;
+        if (!edgeRow || edgeObject == newFocus || edgeObject == targetObject)
+        {
+            return;
+        }
+
+        entry.Row = edgeRow;
+        entry.Element = edgeRow;
+        entry.CellLevel = false;
+        targetObject = edgeObject;
+        targetRowImpl = winrt::get_self<TableViewRow>(edgeRow);
+        targetWasCellLevel = targetRowImpl->IsCellLevelInternal();
+        targetRowImpl->SetCellLevelInternal(false);
+        if (!TableView::IsEntryRedirectTargetFocusable(edgeRow, ownerObject))
+        {
+            targetRowImpl->SetCellLevelInternal(targetWasCellLevel);
+            return;
+        }
+    }
+
+    if (!args.TrySetNewFocusedElement(targetObject))
     {
         targetRowImpl->SetCellLevelInternal(targetWasCellLevel);
         return;
@@ -852,7 +875,7 @@ void TableViewRow::OnRowGettingFocus(
     ownerImpl->NoteFocusEntryRedirect(correlationId);
     if (entry.CellLevel)
     {
-        ownerImpl->ArmCellLevelRowInternal(targetRow);
+        ownerImpl->ArmCellLevelRowInternal(entry.Row);
     }
     else
     {
