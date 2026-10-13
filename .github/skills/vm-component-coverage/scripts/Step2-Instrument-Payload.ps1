@@ -3,18 +3,22 @@
     Step 2 - Statically instrument the module and broadcast it into the local test payload.
 
 .DESCRIPTION
-    Mirrors Helix\common\pipeline\coverage\Instrument-CoveragePayload.ps1 from microsoft-ui-xaml-lift
-    PR 16435603, adapted for a local payload that is deployed to a Hyper-V VM:
+    Static native instrumentation of one product DLL for a local payload that is deployed to a
+    Hyper-V VM:
 
       * Instruments ONE copy (VS Microsoft.CodeCoverage.Console.exe, static native instrumentation,
         a fresh 16-hex session id) - this is slow for a 38 MB chk DLL (~10-20 min), so the result is
         CACHED in <WorkDir>\instrumented keyed by the SHA256 of the input DLL and reused next time
-        (together with the session id that is baked into it).
+        (together with the session id that is baked into it). The cache is only reused while the
+        coverage tool that instrumented it still exists at the same file version, because the
+        collector (Step 3) must be that same tool.
       * Detects "fails while exiting 0" (no /PROFILE-style debug info) by checking the tool output
         and that the image grew, and requires static_covrun*.dll to be produced.
-      * Backs up every payload copy of the module to <WorkDir>\payload-backup (once), then copies
-        the instrumented DLL + static_covrun*.dll over every copy (a test app loads its own
-        co-located copy, e.g. Test\UnpackagedApps\MUXControlsTestApp\).
+      * Backs up every payload copy of the module to <WorkDir>\payload-backup, then copies the
+        instrumented DLL + static_covrun*.dll over every copy (a test app loads its own co-located
+        copy, e.g. Test\UnpackagedApps\MUXControlsTestApp\). The backup is refreshed from the payload
+        whenever that copy is not instrumented, so a rebuilt payload is never restored to an older
+        build's DLL; an existing backup is kept only while the copy is still instrumented.
       * Writes <WorkDir>\instrument-state.json (session id, copies, backups, runtimes added) used by
         the run and restore steps.
 
@@ -57,13 +61,17 @@ $srcHash = (Get-FileHash $SourceDll).Hash
 # ---- 1. instrument (or reuse cache) ---------------------------------------------------------
 $cache = if (Test-Path $cacheFile) { Get-Content $cacheFile -Raw | ConvertFrom-Json } else { $null }
 $instrDll = Join-Path $instrDir $moduleName
-if (-not $ForceReinstrument -and $cache -and $cache.sourceHash -eq $srcHash -and (Test-Path $instrDll) -and
-    (Get-FileHash $instrDll).Hash -eq $cache.instrumentedHash) {
+$cacheHit = -not $ForceReinstrument -and $cache -and $cache.sourceHash -eq $srcHash -and (Test-Path $instrDll) -and
+    (Get-FileHash $instrDll).Hash -eq $cache.instrumentedHash
+# The collector must come from the same tool (and version) that instrumented the binary.
+$cacheToolOk = $cache -and $cache.coverageTool -and (Test-Path $cache.coverageTool) -and
+    "$((Get-Item $cache.coverageTool).VersionInfo.FileVersion)" -eq "$($cache.toolVersion)"
+if ($cacheHit -and $cacheToolOk) {
     $sessionId = $cache.sessionId
-    # The collector must come from the same tool that instrumented the binary.
-    if ($cache.coverageTool -and (Test-Path $cache.coverageTool)) { $CoverageConsole = $cache.coverageTool; $toolVersion = $cache.toolVersion }
+    $CoverageConsole = $cache.coverageTool; $toolVersion = $cache.toolVersion
     Info "reusing cached instrumented DLL (session $sessionId, tool $toolVersion)"
 } else {
+    if ($cacheHit) { Info "cached DLL was instrumented by '$($cache.coverageTool)' $($cache.toolVersion), which is no longer available at that version; re-instrumenting" }
     Remove-Item $instrDir -Recurse -Force -EA SilentlyContinue
     New-Item -ItemType Directory -Force $instrDir | Out-Null
     Copy-Item $SourceDll, $pdb $instrDir
@@ -100,7 +108,7 @@ if (-not $ForceReinstrument -and $cache -and $cache.sourceHash -eq $srcHash -and
 }
 $runtimes = @(Get-ChildItem $instrDir -Filter 'static_covrun*.dll')
 
-# ---- 2. broadcast into the payload (backup originals once) ----------------------------------
+# ---- 2. broadcast into the payload (back up originals) --------------------------------------
 $payload = Join-Path $RepoRoot "TestPayload\$PayloadFlavor"
 if (-not (Test-Path (Join-Path $payload 'runtests.cmd'))) { throw "Test payload not found at $payload. Run tools\run-tests-on-vm.ps1 (or test\CreateTestPayload.ps1) once first." }
 $backupRoot = Join-Path $WorkDir 'payload-backup'
@@ -111,15 +119,22 @@ if ($state -and $state.payloadDir -ne $payload) { throw "instrument-state.json b
 $copies = @(Get-ChildItem $payload -Recurse -Filter $moduleName -File)
 if (-not $copies) { throw "No copies of $moduleName under $payload" }
 $instrHash = (Get-FileHash $instrDll).Hash
+$knownInstrumented = @($instrHash, $(if ($state) { $state.instrumentedHash })) | Where-Object { $_ }
 $entries = @()
 $runtimesAdded = @()
 foreach ($c in $copies) {
     $rel = $c.FullName.Substring($payload.Length + 1)
     $bak = Join-Path $backupRoot $rel
-    if (-not (Test-Path $bak)) {
-        if ((Get-FileHash $c.FullName).Hash -eq $instrHash) { throw "$rel is already instrumented but has no backup; recreate the payload." }
+    # A copy that is not instrumented is the payload's current original (possibly from a newer build
+    # than an earlier backup), so always back it up. Keep an existing backup only while the copy is
+    # still instrumented (e.g. an earlier run was not restored yet).
+    $isInstrumented = ($knownInstrumented -contains (Get-FileHash $c.FullName).Hash) -or
+        [bool](Get-ChildItem $c.DirectoryName -Filter 'static_covrun*.dll' -File -EA SilentlyContinue)
+    if (-not $isInstrumented) {
         New-Item -ItemType Directory -Force (Split-Path $bak) | Out-Null
-        Copy-Item $c.FullName $bak
+        Copy-Item $c.FullName $bak -Force
+    } elseif (-not (Test-Path $bak)) {
+        throw "$rel is already instrumented but has no backup; recreate the payload."
     }
     Copy-Item $instrDll $c.FullName -Force
     foreach ($rt in $runtimes) {

@@ -41,7 +41,7 @@ param(
     [string]$Title = "Code Coverage Report",
 
     # Regex matched against the START of each file path and stripped before display (the
-    # "boilerplate" build-agent prefix). Default matches the OneBranch convention
+    # "boilerplate" build-agent prefix). Default matches the Azure Pipelines agent convention
     # (e.g. C:\__w\1\s\, D:\a\3\s\ etc. - a drive letter, "__w" or "a", a numeric leg id, then
     # "s\") case-insensitively, on either slash direction. If a given path doesn't match, it is
     # left completely unchanged - this is a display-only trim, never a hard requirement.
@@ -194,8 +194,8 @@ if (-not $summary) {
 }
 
 # Resolve which DLL(s) this report is measuring: an explicit -ModuleNames wins; otherwise fall
-# back to the "InstrumentedModules" field already recorded in corrected-summary.json (as passed
-# through from Get-PipelineCodeCoverage.ps1's -Module parameter); if neither is available the
+# back to the "InstrumentedModules" field already recorded in corrected-summary.json (when the
+# producer recorded one); if neither is available the
 # report simply omits the module line rather than guessing at a DLL name.
 $resolvedModuleNames = @($ModuleNames)
 if ($resolvedModuleNames.Count -eq 0 -and $summary.PSObject.Properties.Name -contains 'InstrumentedModules') {

@@ -18,10 +18,10 @@ All commands run from the repo root. `<skill>` = `.github\skills\vm-component-co
 
 | Check | How | If missing |
 |---|---|---|
-| Local build of the flavor (default `amd64chk`) | `BuildOutput\bin\amd64chk\Product\Microsoft.UI.Xaml.Controls.dll` and `BuildOutput\obj\amd64chk\controls\dev\dll\**\link.command.1.tlog` exist | Follow the **build** skill. Ask before starting a full build (10+ min). |
+| Local build of the flavor (default `amd64chk`) | `BuildOutput\bin\amd64chk\Product\Microsoft.UI.Xaml.Controls.dll` and `BuildOutput\obj\amd64chk\controls\dev\dll\**\link.command.1.tlog` exist | Ask before building (10+ min), then run `.\initrun.ps1 .\build.cmd /q` from the repo root. |
 | VS Enterprise code coverage | `Microsoft.CodeCoverage.Console.exe` under `%ProgramFiles%\Microsoft Visual Studio` | Stop; the user must install it. |
 | `dotnet-coverage` | `Get-Command dotnet-coverage` | Tell the user: `dotnet tool install --global dotnet-coverage` |
-| Hyper-V rights | `Get-VM` succeeds | Follow the permission steps in the **test-on-vm** skill. Never elevate or add group members yourself. |
+| Hyper-V rights | `Get-VM` succeeds | Stop. Ask the user to add their account (from `whoami`) to **Hyper-V Administrators** in an elevated PowerShell window, then sign out and back in. Never elevate or add group members yourself. |
 
 ### Gate 1 - VM details (strict: never start a run without them)
 
@@ -29,14 +29,20 @@ All commands run from the repo root. `<skill>` = `.github\skills\vm-component-co
 session.** Never pick a VM silently, even if only one credential is cached. Never reuse a VM name,
 username or password from memory, an earlier session, or an earlier run without asking again.
 
-1. Look for cached credentials. This shows the VM file and username only, never the password:
+1. Look for cached credentials. Match them against the real VM names, because the cache file name
+   replaces non-alphanumeric characters with `_` and can't be turned back into the VM name. This
+   shows the username only, never the password:
    ```powershell
-   Get-ChildItem "$env:USERPROFILE\.winui-test\vmcred-*.xml" -EA SilentlyContinue |
-       ForEach-Object { [pscustomobject]@{ VM = $_.BaseName -replace '^vmcred-'; UserName = (Import-Clixml $_.FullName).UserName } }
+   Get-VM | ForEach-Object {
+       $f = Join-Path $env:USERPROFILE ".winui-test\vmcred-$($_.Name -replace '[^a-zA-Z0-9]','_').xml"
+       if (Test-Path $f) { [pscustomobject]@{ VM = $_.Name; State = $_.State; UserName = (Import-Clixml $f).UserName; CacheFile = Split-Path $f -Leaf } }
+   }
    ```
+   If two VMs share one `CacheFile` (for example `Test-VM` and `Test_VM`), don't offer the cache for
+   either; ask for details and re-enter the password (`-Force`).
 2. Use `ask_user` every time:
-   - **Cached credentials exist:** ask "Is this the VM to use?" Offer one choice per cached VM and
-     username, plus **"Enter different VM details"**.
+   - **Cached credentials exist:** ask "Is this the VM to use?" Offer one choice per VM and
+     username listed above, plus **"Enter different VM details"**.
    - **No cache, or the user chooses different details:** ask for the **VM name** and **VM username**
      (the plain account name as shown on the VM, with no `.\` or `VM\` prefix).
    - If the user declines or cancels, stop. Do not continue with a default.
@@ -66,8 +72,11 @@ username or password from memory, an earlier session, or an earlier run without 
    - If no single wildcard covers them all, pass several filters (`-TestFilter 'a','b'`). Each runs
      with its own collector, and the results are merged and deduplicated in the report.
    - If the folder has no tests, tell the user and ask which tests to run.
-3. `-ComponentPathRegex`: `\\controls\\dev\\<F>\\` plus `\\controls\\dev\\Generated\\(<RC1>|<RC2>|...)\.`
-   for each `runtimeclass` in `controls\dev\<F>\*.idl` that has a generated file in `controls\dev\Generated`.
+3. `-ComponentPathRegex`: take every `runtimeclass` `<RC>` declared in `controls\dev\<F>\*.idl` and match
+   the folder plus both kinds of generated sources:
+   `\\controls\\dev\\<F>\\|\\controls\\dev\\Generated\\(<RC1>|<RC2>|...)\.|\\dll\\generated\\(.+\\)?(<RC1>|<RC2>|...)\.g\.`
+   The second part covers `controls\dev\Generated\<RC>.properties.*` and the third covers the build-generated
+   `BuildOutput\obj\<flavor>\controls\dev\dll\generated\...\<RC>.g.cpp/.h` files.
 4. Show the resolved plan (folder, test classes, filter(s), regex), then proceed. Ask only if
    something is ambiguous.
 
@@ -106,25 +115,34 @@ Run from the repo root in PowerShell, invoking the script directly. Don't use `p
 ### Report
 
 - Confirm Step 4 restored the payload. If the log shows `RESTORE FAILED`, tell the user prominently.
+  `instrument-state.json` is kept in that case, so offer to rerun
+  `<skill>\scripts\Step4-Restore-Payload.ps1 -RepoRoot <repo> -WorkDir <OutputDir>\work -VMName <vm>`.
 - From `report-<ts>\coverage-summary.md`, present the component total, the per-file table, and the
   uncovered and partially covered functions. Point to `TreeReport\coverage-tree.html` and the CSVs.
 - Check the test summary. If `Total=0`, the filter matched nothing; fix the filter instead of reporting 0 %.
 
 ---
 
-# Reference (original skill documentation)
+# Reference
 
 Measures **which lines of one component your selected tests execute**. It doesn't need a pipeline
 run: it uses your local build and the same Hyper-V VM and runner (`tools\run-tests-on-vm.ps1`) you
-already use for WinUI tests.
+already use for WinUI tests. Everything it needs is in this folder.
 
-It's built from three references:
+## How it works
 
-| Reference | What was reused |
-|---|---|
-| `microsoft-ui-xaml-lift` PR **16435603** ("Add focused code coverage pipeline") | How to make MUXC instrumentable (`/debugtype:cv,fixup` + `/INCREMENTAL:NO`, commit `2919de62`). Static instrumentation with a per-module session id, broadcast to every payload copy plus `static_covrun*.dll`. A server-mode collector with a NULL-DACL pipe (`Set-CoveragePipeAcl.ps1`, copied unmodified into `scripts\lib`). Shutdown to flush. |
-| `WinUITestInventory\SkillToGetCodeCoverageFromPipeline` | The (file, line) dedup fix that makes numbers match the ADO Code Coverage tab (`Split-CoverageByModule.ps1`), the HTML tree report, and function-level coverage. These scripts are copied **unmodified** into `scripts\lib`. |
-| `WinUITestInventory\CoverageReportFromScripts` | The same merge flow (`dotnet-coverage merge` to Cobertura), and the note that the PDB is only needed at instrument time. |
+- **Instrumentable MUXC:** static native instrumentation needs CV and FIXUP debug info
+  (`/DEBUGTYPE:CV,FIXUP` with `/INCREMENTAL:NO`), which a chk MUXC link doesn't emit. Step 1 relinks a
+  copy with those flags from the recorded link command, without touching the repo or `BuildOutput`.
+- **Collection:** the DLL is instrumented once with a per-module session id and copied over every
+  payload copy, together with `static_covrun*.dll`. On the VM, a server-mode collector listens on a named pipe
+  that `lib\Set-CoveragePipeAcl.ps1` opens to low-integrity test processes. Shutting the collector down
+  flushes the `.coverage` file.
+- **Accurate numbers:** merging native `.coverage` files to Cobertura repeats every line once per input
+  file, so naive totals undercount coverage. `lib\Repair-CoverageDuplicates.ps1` and
+  `lib\Split-CoverageByModule.ps1` keep one entry per (file, line), which matches the Azure DevOps Code
+  Coverage tab. `lib\Get-FunctionCoverage.ps1` adds per-function detail from the native XML merge, and the
+  `Build-*TreeReport.ps1` scripts render single-file HTML reports. The PDB is only needed at instrument time.
 
 ## Quick start
 
@@ -138,8 +156,8 @@ cd <repo-root>\.github\skills\vm-component-coverage\scripts
     -ComponentPathRegex '\\controls\\dev\\TitleBar\\|\\Generated\\TitleBar|\\generated\\Controls\\TitleBar' `
     -OutputDir  <repo-root>\CodeCoverageOutput\TitleBar `
     -MoveSessionToConsole `
-    -BaselinePerFileCsv '<pipeline-skill-output>\PerModule\Microsoft.UI.Xaml.Controls\corrected-per-file.csv' `
-    -BaselineLabel 'CI build 157731159 (all tests)'
+    -BaselinePerFileCsv '<baseline-run>\PerModule\Microsoft.UI.Xaml.Controls\corrected-per-file.csv' `
+    -BaselineLabel 'Full test pass'
 ```
 
 Open `<OutputDir>\report-<timestamp>\coverage-summary.md`. Other outputs in that folder:
@@ -163,11 +181,11 @@ Open `<OutputDir>\report-<timestamp>\coverage-summary.md`. Other outputs in that
 
 | Step | Script | Notes |
 |---|---|---|
-| 1 | `Step1-New-InstrumentableDll.ps1` | **MUXC only.** chk MUXC is not instrumentable: the tool prints "*Unable to obtain debug information. Link with the /PROFILE linker switch.*" and then **exits 0** with the image untouched. The lift PR fixes this with an opt-in `EnableCodeCoverageLinkOptions` MSBuild property, which this checkout may not have, and repo files must not be edited. So the script re-runs the **exact link command MSBuild recorded** (`link.command.1.tlog`) with `/DEBUGTYPE:CV,FIXUP` added and `/INCREMENTAL:NO`. `/OUT`, `/PDB`, `/IMPLIB` and `/MAP` are redirected to `work\relink`, and `/WINMD:NO` is set. It takes about 15 s, and BuildOutput is never touched. MUX (`Microsoft.ui.xaml.dll`) already links with `/debugtype:cv,fixup,pdata` and skips this step. |
-| 2 | `Step2-Instrument-Payload.ps1` | Static native instrumentation with a fresh 16-hex session id. **This is slow for a 38 MB chk DLL (about 20 min)**, so the result is cached in `work\instrumented`, keyed by the input DLL's SHA256, and reused on later runs together with its baked-in session id. The script catches the "exit 0 but not instrumented" case. It backs up and then overwrites **every** payload copy of the DLL, plus `static_covrun64.dll`, because each test app loads its own co-located copy (`Test\UnpackagedApps\MUXControlsTestApp\`). |
-| 3 | `Step3-Invoke-VmCoverageRun.ps1` | Stages the collector on the VM once. It starts `collect --server-mode --session-id <sid>` as the VM user through an interactive scheduled task, waits for `\\.\pipe\CodeCoverage.pipe.<sid>`, and sets a NULL DACL on it. It then runs `initrun.ps1 .\tools\run-tests-on-vm.ps1 -SkipPayload <filter>`, which deploys the instrumented payload and runs the tests on the desktop. In `finally` it calls `shutdown <sid>` so the collector writes the `.coverage` file, then downloads it. |
-| 4 | `Step4-Restore-Payload.ps1` | Always runs, from `finally`. It restores every original DLL, hash-verified, removes `static_covrun*.dll`, and does the same in the VM's deployed payload. Each distinct original is restored to its own copies. |
-| 5 | `Step5-Get-ComponentCoverage.ps1` | Merges the coverage to Cobertura (`dotnet-coverage merge -f cobertura`) and applies the per-module (file, line) dedup (`lib\Split-CoverageByModule.ps1`), the same correction that matches the ADO tab. It then filters to the component by `-ComponentPathRegex` and optionally compares with a baseline `corrected-per-file.csv`. Paths are matched repo-relative, so `C:\__w\1\s\...` versus `C:\Repos\...` and `x86chk` versus `amd64chk` don't matter. It also produces function-level coverage (`lib\Get-FunctionCoverage.ps1`) and the HTML tree (`lib\Build-CoverageTreeReport.ps1`). |
+| 1 | `Step1-New-InstrumentableDll.ps1` | **MUXC only.** chk MUXC is not instrumentable: the tool prints "*Unable to obtain debug information. Link with the /PROFILE linker switch.*" and then **exits 0** with the image untouched. It needs `/DEBUGTYPE:CV,FIXUP` with `/INCREMENTAL:NO` at link time, and this skill never edits repo files, so the script re-runs the **exact link command MSBuild recorded** (`link.command.1.tlog`) with `/DEBUGTYPE:CV,FIXUP` added and `/INCREMENTAL:NO`. `/OUT`, `/PDB`, `/IMPLIB` and `/MAP` are redirected to `work\relink`, and `/WINMD:NO` is set. It takes about 15 s, and BuildOutput is never touched. MUX (`Microsoft.ui.xaml.dll`) already links with `/debugtype:cv,fixup,pdata` and skips this step. |
+| 2 | `Step2-Instrument-Payload.ps1` | Static native instrumentation with a fresh 16-hex session id. **This is slow for a 38 MB chk DLL (about 20 min)**, so the result is cached in `work\instrumented`, keyed by the input DLL's SHA256, and reused on later runs together with its baked-in session id. The cache is reused only while the tool that instrumented it still exists at the same version. The script catches the "exit 0 but not instrumented" case. It backs up and then overwrites **every** payload copy of the DLL, plus `static_covrun64.dll`, because each test app loads its own co-located copy (`Test\UnpackagedApps\MUXControlsTestApp\`). Backups are refreshed from the payload whenever a copy isn't instrumented, so a rebuilt payload is never restored to an older DLL. |
+| 3 | `Step3-Invoke-VmCoverageRun.ps1` | Stages the collector on the VM once. It starts `collect --server-mode --session-id <sid>` as the VM user through an interactive scheduled task, waits for `\\.\pipe\CodeCoverage.pipe.<sid>`, and sets a NULL DACL on it. It then runs `initrun.ps1 .\tools\run-tests-on-vm.ps1 -SkipPayload <filter>`, which deploys the instrumented payload and runs the tests on the desktop. In `finally` it calls `shutdown <sid>` so the collector writes the `.coverage` file, downloads it and the collector log (also when the run failed), and closes the VM session. |
+| 4 | `Step4-Restore-Payload.ps1` | Always runs, from `finally`. It restores every original DLL, hash-verified, removes `static_covrun*.dll`, and does the same in the VM's deployed payload. Each distinct original is restored to its own copies. If any VM copy doesn't match afterwards, it fails and keeps `instrument-state.json`, so you can simply run it again. |
+| 5 | `Step5-Get-ComponentCoverage.ps1` | Merges the coverage to Cobertura (`dotnet-coverage merge -f cobertura`) and applies the per-module (file, line) dedup (`lib\Split-CoverageByModule.ps1`), the same correction that matches the ADO tab. It then filters to the component by `-ComponentPathRegex` and optionally compares with a baseline `corrected-per-file.csv`. Paths are matched repo-relative: the checkout root (`-RepoRoot`) or a build-agent root such as `C:\__w\1\s\` is removed, and `x86chk` versus `amd64chk` doesn't matter. It also produces function-level coverage (`lib\Get-FunctionCoverage.ps1`) and the HTML tree (`lib\Build-CoverageTreeReport.ps1`). |
 
 You can run the steps one at a time. Each writes its state or results under `<OutputDir>\work`.
 
@@ -179,9 +197,9 @@ You can run the steps one at a time. Each writes its state or results under `<Ou
 
 ## Verified result (TitleBar, 2026-10-06)
 
-`-TestFilter '*.TitleBarTests.*'` on a local Hyper-V VM (Win11 26688, amd64chk): 24/24 tests passed, and the collector produced an 88 MB `.coverage` file. These are the numbers from the full skill run:
+`-TestFilter '*.TitleBarTests.*'` on a local Hyper-V VM (Windows 11, amd64chk): 24/24 tests passed, and the collector produced an 88 MB `.coverage` file. These are the numbers from the full skill run, next to a baseline from a CI coverage run of all tests:
 
-| File | TitleBar tests only (this skill) | CI build 157731159 (all tests, pipeline skill) |
+| File | TitleBar tests only (this skill) | CI coverage run (all tests) |
 |---|---|---|
 | `controls\dev\TitleBar\TitleBar.cpp` | **98.07 %** (507/517) | 10.64 % (55/517) |
 | `controls\dev\TitleBar\TitleBarAutomationPeer.cpp` | **100 %** (17/17) | 0 % (0/17) |
@@ -197,13 +215,13 @@ Of 45 functions in the TitleBar `.cpp` files, 40 are fully covered, 4 partially,
 - **Session id must match:** the DLL the test process loads must carry the collector's session id. If the coverage file is tiny or empty, check `work\raw\<run>\collector.log` and confirm the app-local copy (`MUXControlsTestApp\Microsoft.UI.Xaml.Controls.dll`) is the instrumented one.
 - **Rebuilds overwrite the instrumented copy:** rebuilding `MUXControlsTestApp` re-stages an older Controls DLL into `BuildOutput\...\UnpackagedApps\MUXControlsTestApp`. That doesn't matter here because Step 2 overwrites the *payload* copies, but don't run `run-tests-on-vm.ps1` **without** `-SkipPayload` in between, because that recreates the payload.
 - **Expected failures still count toward coverage:** failing or ignored tests still execute product code until they fail, and Ignored tests don't run at all.
-- **Known crash at exit (PC-3) is harmless:** TitleBar runs fail-fast at app exit, which shows as cleanup errors. Coverage still flushes because the collector is out of process.
+- **Known crash at exit is harmless:** TitleBar runs fail-fast at app exit, which shows as cleanup errors. Coverage still flushes because the collector is out of process.
 - **Numbers differ from CI:** a local VM run uses a different OS build, flavor (x64 vs CI's x86) and test subset. Compare per file, not the module total.
 - **NULL DACL:** the collector pipe is open to every local user until shutdown. That's fine on a test VM, but avoid it on shared machines.
 - **`cmd /c` quoting:** starting the collector via `cmd /c "<exe>" ... > "<log>"` silently fails, because cmd strips the outer quotes. Step 3 therefore writes a `.cmd` wrapper. If the collector pipe never appears, check that wrapper and `C:\WinUICoverage\out\collector-<run>.log` on the VM.
-- **Same tool for instrument and collect:** the collector must be the same `Microsoft.CodeCoverage.Console.exe` version that instrumented the DLL. Step 2 records the tool, and Step 3 stages that exact version to `C:\WinUICoverage\CoverageTool\<version>`. When several VS installs exist, the highest file version wins; path string order is not used.
+- **Same tool for instrument and collect:** the collector must be the same `Microsoft.CodeCoverage.Console.exe` version that instrumented the DLL. Step 2 records the tool, and Step 3 stages that exact version to `C:\WinUICoverage\CoverageTool\<version>`. If that tool is gone or changed version (for example after a VS update), Step 2 re-instruments instead of reusing the cache. When several VS installs exist, the highest file version wins; path string order is not used.
 - **Relink is not byte-deterministic:** Step 1 therefore reuses its previous output while the recorded link inputs are unchanged. Otherwise the Step 2 cache, keyed by DLL hash, would miss and re-instrument for 45 minutes.
-- **Single-file bug in `lib\Get-FunctionCoverage.ps1`:** with a single `.coverage` input, the script's own merge produces an empty `<results/>`. An if-expression unwraps the one-element array, so `@inputFiles` splats nothing. Step 5 works around this by pre-merging (`dotnet-coverage merge -f xml`) and calling the script with `-SkipMerge`. The copied script is left unmodified.
+- **Single-file bug in `lib\Get-FunctionCoverage.ps1`:** with a single `.coverage` input, the script's own merge produces an empty `<results/>`. An if-expression unwraps the one-element array, so `@inputFiles` splats nothing. Step 5 works around this by pre-merging (`dotnet-coverage merge -f xml`) and calling the script with `-SkipMerge`, so the script itself is left as is.
 - **Host suspends pause the run:** a Cloud PC host that sleeps or suspends pauses instrumentation; it resumes and finishes afterwards. Keep the host awake for predictable timing.
 
 ## Parameters (`Invoke-WinUIVmCoverage.ps1`)
@@ -217,7 +235,7 @@ Of 45 functions in the TitleBar `.cpp` files, 40 are fully covered, 4 partially,
 | `-ComponentName` / `-ComponentPathRegex` | TitleBar | Regex on the source path selecting the component's files |
 | `-Module` | `Microsoft.UI.Xaml.Controls.dll` | or `Microsoft.ui.xaml.dll` |
 | `-Flavor` | `amd64chk` | Build flavor; payload `x64chk` |
-| `-BaselinePerFileCsv` / `-BaselineLabel` | none | e.g. a CI `corrected-per-file.csv` from the pipeline skill |
+| `-BaselinePerFileCsv` / `-BaselineLabel` | none | A `corrected-per-file.csv` from another coverage run to compare with, e.g. `PerModule\<Module>\corrected-per-file.csv` from an earlier run of this skill, or `lib\Split-CoverageByModule.ps1` run over a CI build's merged Cobertura file |
 | `-MoveSessionToConsole` | off | Recommended on Cloud PC / RDP hosts |
 | `-RefreshPayload` | off | Run `test\CreateTestPayload.ps1` first |
 | `-ForceReinstrument` | off | Ignore the instrumented-DLL cache |
@@ -234,6 +252,8 @@ Of 45 functions in the TitleBar `.cpp` files, 40 are fully covered, 4 partially,
 | `scripts\Step4-Restore-Payload.ps1` | Restores the payload and the VM copies, hash-verified. |
 | `scripts\Set-VmCredential.ps1` | Gate 1 helper: validates the VM, takes the password in a separate window, writes the encrypted credential cache, and checks the logon and the active desktop. |
 | `scripts\Step5-Get-ComponentCoverage.ps1` | Merge, per-module dedup, component filter, baseline comparison, function coverage, HTML tree and `coverage-summary.md`. |
-| `scripts\lib\Set-CoveragePipeAcl.ps1` | Unmodified copy from lift PR 16435603 (`Helix\common\pipeline\coverage\`). |
-| `scripts\lib\Split-CoverageByModule.ps1`, `Repair-CoverageDuplicates.ps1`, `Build-CoverageTreeReport.ps1`, `Get-FunctionCoverage.ps1`, `Build-FunctionCoverageTreeReport.ps1` | Unmodified copies from `WinUITestInventory\SkillToGetCodeCoverageFromPipeline\scripts`. |
+| `scripts\lib\Set-CoveragePipeAcl.ps1` | Puts a NULL DACL on the collector's named pipe so low-integrity TAEF test processes can connect. |
+| `scripts\lib\Repair-CoverageDuplicates.ps1`, `Split-CoverageByModule.ps1` | Deduplicate merged Cobertura by (file, line), overall and per module, so the numbers match the Azure DevOps Code Coverage tab. |
+| `scripts\lib\Get-FunctionCoverage.ps1` | Per-function coverage from the native XML merge. |
+| `scripts\lib\Build-CoverageTreeReport.ps1`, `Build-FunctionCoverageTreeReport.ps1` | Single-file HTML folder/file (and function) tree reports. |
 

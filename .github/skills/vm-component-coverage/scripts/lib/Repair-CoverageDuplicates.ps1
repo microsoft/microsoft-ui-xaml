@@ -10,7 +10,8 @@
 # THE BUG: when `<tool> merge <n .coverage files> -f cobertura` merges multiple raw .coverage
 # files that all instrument the SAME native module (e.g. one module instrumented once, then
 # exercised by N separate collector processes on N separate machines - exactly what happens when
-# a test pass is split into parallel Helix/lab slices with one collector per slice), the merge
+# a test pass is split into parallel slices with one collector per slice, or when one module is
+# collected by several separate test runs), the merge
 # does NOT consolidate matching (file, line-number) entries into one. Instead it appends a
 # fresh copy of that class's <line> elements per contributing input file. This was verified to
 # be 100% systemic (every single <class> element in a real merged report exhibited it) and to
@@ -35,8 +36,7 @@
 #      publish task, etc.) will read back with the SAME correct numbers.
 #
 # This script is self-contained and works on ANY Cobertura XML produced by dotnet-coverage /
-# Microsoft.CodeCoverage.Console's merge - not just ones produced by the sibling
-# Get-PipelineCodeCoverage.ps1 script in this skill.
+# Microsoft.CodeCoverage.Console's merge.
 
 [CmdletBinding()]
 param(

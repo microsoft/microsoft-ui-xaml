@@ -7,12 +7,11 @@
     Static native instrumentation (Microsoft.CodeCoverage.Console instrument) needs the CV + FIXUP
     debug streams. MUXC's Debug (chk) link does not emit them, so instrumenting the normal chk DLL
     prints "Unable to obtain debug information. Link with the /PROFILE linker switch." and exits 0
-    with the image untouched (see microsoft-ui-xaml-lift PR 16435603, commit 2919de62:
-    "Make MUXC instrumentable for code coverage by emitting CV/FIXUP debug info", which adds
-    /debugtype:cv,fixup + /INCREMENTAL:NO behind an opt-in EnableCodeCoverageLinkOptions property).
+    with the image untouched. Emitting them needs /DEBUGTYPE:CV,FIXUP with /INCREMENTAL:NO at link
+    time.
 
-    That property does not exist in every checkout, and this skill must not edit repo files, so this
-    script re-runs the EXACT link command MSBuild last recorded (link.command.1.tlog) with:
+    This skill must not edit repo files, so instead of changing the build this script re-runs the
+    EXACT link command MSBuild last recorded (link.command.1.tlog) with:
       * /DEBUGTYPE:CV,FIXUP added (and /INCREMENTAL:NO enforced),
       * /OUT, /PDB, /IMPLIB, /MAP redirected into -OutputDir,
       * /WINMD disabled (the .winmd is not needed for coverage).
@@ -23,7 +22,7 @@
     this step and instrument BuildOutput\bin\<flavor>\Product\Microsoft.ui.xaml.dll directly.
 
 .EXAMPLE
-    .\Step1-New-InstrumentableDll.ps1 -RepoRoot C:\Repos\WinUiGitHubRepo\microsoft-ui-xaml -OutputDir C:\cov\work\relink
+    .\Step1-New-InstrumentableDll.ps1 -RepoRoot C:\src\microsoft-ui-xaml -OutputDir C:\cov\work\relink
 #>
 [CmdletBinding()]
 param(

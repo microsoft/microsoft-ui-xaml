@@ -3,8 +3,8 @@
 #
 # Set-CoveragePipeAcl.ps1 - Put a NULL DACL on the code-coverage collector's named pipe.
 #
-# This sets the DACL in-process via P/Invoke, so the lab path never has to ship a native
-# helper to the test agents.  TAEF's te.processhost runs at
+# This sets the DACL in-process via P/Invoke, so no native helper has to be shipped to the
+# test machine.  TAEF's te.processhost runs at
 # low integrity (Centennial); by default it cannot connect to the collector's pipe and
 # coverage comes back empty with ACCESS_DENIED.  A NULL DACL opens the gate.
 #

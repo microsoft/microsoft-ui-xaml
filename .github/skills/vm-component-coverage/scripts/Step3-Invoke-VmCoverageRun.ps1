@@ -4,8 +4,7 @@
     download the resulting .coverage file.
 
 .DESCRIPTION
-    Collector mechanics follow microsoft-ui-xaml-lift PR 16435603
-    (Helix\common\pipeline\RunTestPassSliceOnBuildAgent.ps1 -CollectCodeCoverage):
+    How the collector is wired up:
       1. Stage the VS code-coverage tools (CodeCoverage.Console + Dynamic Code Coverage Tools +
          InstrumentationEngine) on the VM once (C:\WinUICoverage\CoverageTool), no VS/dotnet needed.
       2. Start "Microsoft.CodeCoverage.Console.exe collect --session-id <sid> --server-mode --output <file>"
@@ -15,7 +14,8 @@
       4. Run the tests with the repo's own tools\run-tests-on-vm.ps1 -SkipPayload (deploys the
          instrumented payload incrementally and runs runtests.cmd on the interactive desktop).
       5. "Microsoft.CodeCoverage.Console.exe shutdown <sid>" -> collector finalizes the .coverage.
-      6. Copy the .coverage + collector logs back to <WorkDir>\raw.
+      6. Copy the .coverage + collector logs back to <WorkDir>\raw (also when the run fails), and
+         always close the PowerShell Direct session.
 
     Precondition: the VM user's desktop must be interactive. If the host is a Cloud PC / RDP session
     that can disconnect, use -MoveSessionToConsole so input does not depend on vmconnect's enhanced
@@ -176,14 +176,17 @@ finally {
         } -ArgumentList $vmTool, $sid, $vmOut, $FlushTimeoutSec
         Info ("collector shutdown: {0}; coverage size {1:N0} bytes" -f $flush.shutdown, $flush.size)
     } catch { Write-Warning "collector shutdown failed: $_" }
+
+    # ---- 6. download (also on failure, so the collector log is kept) and always close the session -
+    # Copy errors are not raised here (they would hide the original failure); a missing or empty
+    # coverage file is reported below.
+    $local = Join-Path $rawDir (Split-Path $vmOut -Leaf)
+    try {
+        Copy-Item $vmOut $local -FromSession $session -Force -EA SilentlyContinue
+        Copy-Item $vmLog (Join-Path $rawDir 'collector.log') -FromSession $session -Force -EA SilentlyContinue
+    } finally { Remove-PSSession $session -EA SilentlyContinue }
 }
 
-# ---- 6. download -------------------------------------------------------------------------------
-try {
-    $local = Join-Path $rawDir (Split-Path $vmOut -Leaf)
-    Copy-Item $vmOut $local -FromSession $session -Force
-    Copy-Item $vmLog (Join-Path $rawDir 'collector.log') -FromSession $session -Force -EA SilentlyContinue
-} finally { Remove-PSSession $session }
 if (-not (Test-Path $local) -or (Get-Item $local).Length -lt 1024) {
     throw "Coverage file missing or empty ($local). Check $rawDir\collector.log and that the test process loaded the instrumented DLL (session $sid)."
 }

@@ -40,7 +40,7 @@
 # physical lines - each instantiation is legitimately "using" the same textual lines as its
 # siblings. Because of this, DO NOT use this script's per-function rows to re-derive a file's
 # true aggregate line coverage - use the existing, Azure-DevOps-verified `corrected-per-file.csv`
-# (from Repair-CoverageDuplicates.ps1 / Get-PipelineCodeCoverage.ps1) for that; pass it via
+# (from Repair-CoverageDuplicates.ps1 / Split-CoverageByModule.ps1) for that; pass it via
 # -ExistingPerFileCsv to have this script merge those authoritative file totals alongside the new
 # per-function/function-count breakdown in corrected-per-file-function-summary.csv.
 #
@@ -60,19 +60,19 @@
 #                                          authoritative FileTotalLines/FileCoveredLines/
 #                                          FileLineCoveragePct joined in from corrected-per-file.csv.
 #
-# EXAMPLE (reusing a prior Get-PipelineCodeCoverage.ps1 run's already-downloaded slices, joining
-# in the authoritative per-file totals it already computed)
-#   .\Get-FunctionCoverage.ps1 -SliceDir C:\Coverage\154383932\SliceCoverage `
-#       -OutputDir C:\Coverage\154383932\FunctionCoverage `
-#       -ExistingPerFileCsv C:\Coverage\154383932\CorrectedReport\corrected-per-file.csv
+# EXAMPLE (all .coverage files under a folder, joining in the authoritative per-file totals that
+# Split-CoverageByModule.ps1 already computed for them)
+#   .\Get-FunctionCoverage.ps1 -SliceDir C:\cov\run1\raw `
+#       -OutputDir C:\cov\run1\FunctionCoverage `
+#       -ExistingPerFileCsv C:\cov\run1\PerModule\Microsoft.UI.Xaml.Controls\corrected-per-file.csv
 #
 # EXAMPLE (explicit list of .coverage files)
 #   .\Get-FunctionCoverage.ps1 -CoverageFiles file1.coverage,file2.coverage -OutputDir .\out
 
 [CmdletBinding(DefaultParameterSetName = 'FromSliceDir')]
 param(
-    # Directory to search recursively for raw *.coverage files (e.g. the SliceCoverage folder
-    # that Get-PipelineCodeCoverage.ps1 populates). All matches are merged together.
+    # Directory to search recursively for raw *.coverage files (e.g. a folder holding one
+    # .coverage file per test run or slice). All matches are merged together.
     [Parameter(Mandatory = $true, ParameterSetName = 'FromSliceDir')]
     [string]$SliceDir,
 
@@ -102,13 +102,12 @@ param(
     [bool]$TreatPartialAsCovered = $true,
 
     # Keep NativeMerge\merged-native.xml after the run instead of leaving it (it is NOT deleted
-    # by default - unlike Get-PipelineCodeCoverage.ps1's small per-slice temp zips, this file is
-    # the expensive-to-regenerate one, so it is kept unless this switch is explicitly reversed by
-    # passing -KeepIntermediateXml:$false).
+    # by default - this file is the expensive-to-regenerate one, so it is kept unless this switch
+    # is explicitly reversed by passing -KeepIntermediateXml:$false).
     [bool]$KeepIntermediateXml = $true,
 
     # Optional path to an existing corrected-per-file.csv (as produced by
-    # Repair-CoverageDuplicates.ps1 / Get-PipelineCodeCoverage.ps1). When supplied, that file's
+    # Repair-CoverageDuplicates.ps1 / Split-CoverageByModule.ps1). When supplied, that file's
     # already Azure-DevOps-verified per-file TotalLines/CoveredLines/LineCoverage are joined into
     # corrected-per-file-function-summary.csv as FileTotalLines/FileCoveredLines/
     # FileLineCoveragePct, alongside this script's own function-count columns. Recommended -
@@ -125,7 +124,7 @@ New-Item -ItemType Directory -Force -Path $OutputDir, $nativeMergeDir | Out-Null
 $nativeXmlPath = Join-Path $nativeMergeDir 'merged-native.xml'
 
 # ---------------------------------------------------------------------------------------------
-# 1. Resolve a coverage merge tool (same resolution order as Get-PipelineCodeCoverage.ps1).
+# 1. Resolve a coverage merge tool (dotnet-coverage on PATH, else VS's console tool, else install).
 # ---------------------------------------------------------------------------------------------
 function Resolve-CoverageTool {
     param([string]$Explicit)

@@ -3,8 +3,7 @@
     Step 5 - Turn the downloaded .coverage file(s) into a component-scoped coverage report.
 
 .DESCRIPTION
-    Reuses the (unmodified) scripts from the SkillToGetCodeCoverageFromPipeline skill, copied into
-    .\lib:
+    Uses the scripts in .\lib:
       * dotnet-coverage merge -f cobertura           -> merged.cobertura.xml
       * lib\Split-CoverageByModule.ps1               -> per-module, (file,line)-deduplicated numbers
                                                         (same correction that makes numbers match ADO)
@@ -13,8 +12,8 @@
     and adds:
       * component filtering (-ComponentPathRegex, matched against the source path),
       * an optional before/after comparison against a baseline corrected-per-file.csv (e.g. from a
-        CI coverage build), matched on the repo-relative path so build-agent prefixes
-        (C:\__w\1\s\...) and flavors (x86chk/amd64chk) do not matter,
+        CI coverage build), matched on the repo-relative path so checkout roots, build-agent
+        prefixes (C:\__w\1\s\...) and flavors (x86chk/amd64chk) do not matter,
       * coverage-summary.md + component-per-file.csv + component-functions.csv.
 #>
 [CmdletBinding()]
@@ -28,6 +27,8 @@ param(
     [string]$BaselinePerFileCsv = '',
     [string]$BaselineLabel = 'Baseline',
     [string]$RunLabel = 'This run',
+    # Root of the checkout that produced the coverage; used to make its paths repo-relative.
+    [string]$RepoRoot = '',
     [switch]$SkipFunctionCoverage
 )
 $ErrorActionPreference = 'Stop'
@@ -53,10 +54,15 @@ if (-not $modDir) { throw "Module $Module not found in coverage (modules: $((Get
 $modCsv = Join-Path $modDir.FullName 'corrected-per-file.csv'
 $modSummary = Get-Content (Join-Path $modDir.FullName 'corrected-summary.json') -Raw | ConvertFrom-Json
 
+$rootKey = if ($RepoRoot) { ($RepoRoot.ToLowerInvariant() -replace '/', '\').TrimEnd('\') + '\' } else { '' }
 function Get-RepoKey([string]$p) {
-    # repo-relative key: strip everything up to the repo root, and normalize build flavor dirs
+    # repo-relative key: strip the checkout root (this run), else a build-agent root (e.g. a CI
+    # baseline: C:\__w\1\s\), else everything up to the first top-level repo folder; then
+    # normalize build flavor dirs.
     $k = $p.ToLowerInvariant() -replace '/', '\'
-    $k = $k -replace '^.*?\\(?=(controls|dxaml|buildoutput|src|test)\\)', ''
+    if ($rootKey -and $k.StartsWith($rootKey)) { $k = $k.Substring($rootKey.Length) }
+    elseif ($k -match '^[a-z]:\\+(__w|a)\\+\d+\\+s\\+') { $k = $k.Substring($Matches[0].Length) }
+    else { $k = $k -replace '^.*?\\(?=(controls|dxaml|buildoutput|src|test)\\)', '' }
     $k -replace '\\obj\\(x86|amd64|arm64)(chk|fre)\\', '\obj\<flavor>\'
 }
 
@@ -85,7 +91,7 @@ $tot = ($comp | Measure-Object TotalLines -Sum).Sum
 $cov = ($comp | Measure-Object CoveredLines -Sum).Sum
 $pct = if ($tot) { [math]::Round(100.0 * $cov / $tot, 2) } else { 0 }
 
-# HTML tree for the component (reuses the pipeline skill renderer; it needs File,CoveredLines,TotalLines)
+# HTML tree for the component (lib\Build-CoverageTreeReport.ps1; it needs File,CoveredLines,TotalLines)
 $treeCsv = Join-Path $OutputDir 'component-tree-input.csv'
 $comp | Select-Object @{n='File';e={$_.SourcePath}}, CoveredLines, TotalLines, LineCoverage | Export-Csv $treeCsv -NoTypeInformation
 & (Join-Path $lib 'Build-CoverageTreeReport.ps1') -InputCsv $treeCsv -OutputDir (Join-Path $OutputDir 'TreeReport') `
@@ -132,7 +138,8 @@ foreach ($c in $comp) {
     [void]$md.AppendLine("| ``$($c.File)`` | $($c.CoveredLines) / $($c.TotalLines) | **$($c.LineCoverage) %** | $bp |")
 }
 if ($funcRows) {
-    $hand = $funcRows | Where-Object { $_.File -match '\\controls\\dev\\' + [regex]::Escape($ComponentName) + '\\[^\\]+\.cpp$' }
+    # Hand-written .cpp files of the component (works for controls\dev and dxaml components alike).
+    $hand = $funcRows | Where-Object { $_.File -match '\.cpp$' -and $_.File -notmatch '\\generated\\|\\winrtgeneratedclasses\\|\.g\.cpp$' }
     $unc = @($hand | Where-Object { [int]$_.CoveredLines -eq 0 })
     $part = @($hand | Where-Object { [int]$_.CoveredLines -gt 0 -and [int]$_.CoveredLines -lt [int]$_.TotalLines })
     [void]$md.AppendLine()

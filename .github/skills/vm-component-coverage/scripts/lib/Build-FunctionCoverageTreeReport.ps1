@@ -37,7 +37,7 @@
 [CmdletBinding()]
 param(
     # Path to corrected-per-file.csv, as produced by Repair-CoverageDuplicates.ps1 /
-    # Get-PipelineCodeCoverage.ps1. Drives the folder/file levels of the tree (authoritative
+    # Split-CoverageByModule.ps1. Drives the folder/file levels of the tree (authoritative
     # totals - matches the Azure DevOps Code Coverage tab).
     [Parameter(Mandatory = $true)]
     [string]$InputPerFileCsv,
