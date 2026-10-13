@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using System;
@@ -1074,7 +1075,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies header cells carry ControlCornerRadius so their system focus visual is rounded.")]
+        [TestProperty("Description", "Verifies header cells are rounded only while keyboard-focused, so their system focus visual is rounded without clipping.")]
         public void VerifyHeaderCellCornerRadiusMatchesControlCornerRadius()
         {
             TableView tableView = null;
@@ -1087,16 +1088,124 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
 
+            VerifyRoundedOnlyWhileKeyboardFocused(tableView,
+                () => GetHeaderCell(tableView, 0) as Grid, () => GetHeaderCell(tableView, 1), "header cell");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies data cells are rounded only while keyboard-focused, so their system focus visual is rounded without clipping.")]
+        public void VerifyCellCornerRadiusMatchesControlCornerRadius()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            VerifyRoundedOnlyWhileKeyboardFocused(tableView,
+                () => GetRowCell(FindVisualChildrenByType<TableViewRow>(tableView).First(), 0),
+                () => GetHeaderCell(tableView, 0), "cell");
+        }
+
+        // A rounded Grid clips its children and hit-testing, so it may round only while keyboard-focused.
+        private static void VerifyRoundedOnlyWhileKeyboardFocused(
+            TableView tableView, Func<Grid> getTarget, Func<UIElement> getOther, string what)
+        {
+            var expected = new CornerRadius(0);
+
             RunOnUIThread.Execute(() =>
             {
                 var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
                 Verify.IsNotNull(row, "The TableView should realize at least one row.");
-                var headerCell = GetHeaderCell(tableView, 0) as Grid;
-                Verify.IsNotNull(headerCell, "Header cells should be Grids.");
-                Verify.IsTrue(headerCell.UseSystemFocusVisuals, "Header cells should use the system focus visual.");
+                expected = row.CornerRadius;
+                Verify.AreNotEqual(new CornerRadius(0), expected, "The row style should round row focus.");
+
+                var target = getTarget();
+                Verify.IsNotNull(target, $"The {what} should be a Grid.");
+                Verify.IsTrue(target.UseSystemFocusVisuals, $"The {what} should use the system focus visual.");
+                Verify.AreEqual(new CornerRadius(0), target.CornerRadius,
+                    $"An unfocused {what} must stay square: a rounded Grid clips its children.");
+                target.IsTabStop = true;
+                Verify.IsTrue(target.Focus(FocusState.Keyboard), $"Precondition: the {what} takes keyboard focus.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var target = getTarget();
+                Verify.IsTrue(ReferenceEquals(target, FocusManager.GetFocusedElement(target.XamlRoot)),
+                    $"Precondition: keyboard focus stays on the {what}.");
+                Verify.AreEqual(expected, target.CornerRadius,
+                    $"A keyboard-focused {what} must be rounded like the rows' focus rect.");
+                Verify.IsTrue(getOther().Focus(FocusState.Programmatic), "Precondition: focus moves elsewhere.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var target = getTarget();
+                Verify.AreEqual(new CornerRadius(0), target.CornerRadius, $"The {what} must drop its radius when it loses focus.");
+                target.IsTabStop = true;
+                Verify.IsTrue(target.Focus(FocusState.Pointer), $"Precondition: the {what} takes pointer focus.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(new CornerRadius(0), getTarget().CornerRadius,
+                    $"Pointer focus shows no focus rect, so the {what} must stay square.");
+                Verify.IsTrue(getOther().Focus(FocusState.Programmatic), "Precondition: focus moves elsewhere.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var target = getTarget();
+                target.IsTabStop = true;
+                Verify.IsTrue(target.Focus(FocusState.Programmatic), $"Precondition: the {what} takes programmatic focus.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(new CornerRadius(0), getTarget().CornerRadius,
+                    $"Programmatic focus without keyboard input shows no focus rect, so the {what} must stay square.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies group headers carry ControlCornerRadius so their system focus visual is rounded.")]
+        public void VerifyGroupHeaderCornerRadiusMatchesRowCornerRadius()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
+                var groupHeader = FindVisualChildrenByType<TableViewGroupHeader>(tableView).FirstOrDefault();
+                Verify.IsNotNull(row, "A grouped TableView should realize at least one row.");
+                Verify.IsNotNull(groupHeader, "A grouped TableView should realize at least one group header.");
+                Verify.IsTrue(groupHeader.UseSystemFocusVisuals, "Group headers should use the system focus visual.");
                 Verify.AreNotEqual(new CornerRadius(0), row.CornerRadius, "The row style should round row focus.");
-                Verify.AreEqual(row.CornerRadius, headerCell.CornerRadius,
-                    "Header cells must carry ControlCornerRadius so the keyboard focus rect is rounded like the rows'.");
+                Verify.AreEqual(row.CornerRadius, groupHeader.CornerRadius,
+                    "Group headers must carry ControlCornerRadius so the keyboard focus rect is rounded like the rows'.");
             });
         }
 

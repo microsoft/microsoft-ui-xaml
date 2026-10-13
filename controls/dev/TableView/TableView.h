@@ -173,6 +173,7 @@ public:
     double GetCellFontSize();
     double GetHeaderFontSize();
     winrt::Windows::UI::Text::FontWeight GetHeaderFontWeight();
+    void AttachFocusCornerRadius(winrt::Grid const& target);
 
     // Per-level indent from the TableViewRowIndentSize resource, cached for rows.
     double GetRowIndentSize();

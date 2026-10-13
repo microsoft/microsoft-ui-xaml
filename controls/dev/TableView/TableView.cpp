@@ -48,8 +48,6 @@ static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"s
 // Matches SortIndicatorSize in SortIndicator_themeresources.xaml; used only when that key is
 // missing or unusable.
 static constexpr double c_sortIndicatorSizeFallback{ 16.0 };
-static constexpr std::wstring_view s_ControlCornerRadiusKey{ L"ControlCornerRadius"sv };
-static constexpr winrt::CornerRadius c_controlCornerRadiusFallback{ 4.0, 4.0, 4.0, 4.0 };
 
 namespace
 {
@@ -2272,6 +2270,28 @@ winrt::Windows::UI::Text::FontWeight TableView::GetHeaderFontWeight()
     return cache.font.headerFontWeight;
 }
 
+// The system focus visual takes its corners from the focused Grid's CornerRadius, but a rounded Grid
+// also clips its children and hit-testing, so round only while the focus rect shows. Programmatic
+// focus is coerced to Keyboard or Pointer by the last input device, so Keyboard is exactly that case.
+void TableView::AttachFocusCornerRadius(winrt::Grid const& target)
+{
+    target.RegisterPropertyChangedCallback(winrt::UIElement::FocusStateProperty(),
+        [weakThis = get_weak()](winrt::DependencyObject const& sender, winrt::DependencyProperty const&)
+        {
+            auto const grid = sender.as<winrt::Grid>();
+            auto const self = weakThis.get();
+            if (self && grid.FocusState() == winrt::FocusState::Keyboard)
+            {
+                // The TableView style sets CornerRadius from ControlCornerRadius, so the value stays in XAML.
+                grid.CornerRadius(self->CornerRadius());
+            }
+            else
+            {
+                grid.ClearValue(winrt::Grid::CornerRadiusProperty());
+            }
+        });
+}
+
 double TableView::GetRowIndentSize()
 {
     // Cached: hit per realized row on every pass, and resource lookup walks the whole tree. Cleared
@@ -2700,9 +2720,6 @@ void TableView::RebuildHeaders()
     {
         cachedSortIndicatorWidth = c_sortIndicatorSizeFallback;
     }
-    // The system focus visual takes its corners from the focused Grid's CornerRadius.
-    const auto cachedHeaderCellCornerRadius = winrt::unbox_value_or<winrt::CornerRadius>(
-        LookupElementResource(*this, s_ControlCornerRadiusKey), c_controlCornerRadiusFallback);
     const bool canUserSortColumns = CanUserSortColumns();
 
     // XAML mirrors an RTL subtree with one transform where FlowDirection changes, so logical Right
@@ -2732,7 +2749,7 @@ void TableView::RebuildHeaders()
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
             headerCell.IsTabStop(true);
             headerCell.UseSystemFocusVisuals(true);
-            headerCell.CornerRadius(cachedHeaderCellCornerRadius);
+            AttachFocusCornerRadius(headerCell);
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {

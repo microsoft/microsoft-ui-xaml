@@ -2000,6 +2000,7 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         cellWrapper.Tag(column);
         cellWrapper.Visibility(column.Visibility());
         cellWrapper.MinHeight(rowMinHeight);
+        ownerImpl->AttachFocusCornerRadius(cellWrapper);
 
         // A null Background does not hit-test; Transparent keeps the full cell pressable so clicks
         // in padding still set current cell and support double-click-to-edit.
