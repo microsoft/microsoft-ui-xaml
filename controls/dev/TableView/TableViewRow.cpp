@@ -2656,11 +2656,12 @@ std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextM
     auto* ownerImpl = winrt::get_self<TableView>(owner);
     winrt::Point hostPoint{};
     bool const hasPosition = args.TryGetPosition(nullptr, hostPoint);
-    // Without a position (keyboard, UIA ShowContextMenu) the cell the request came from decides;
-    // a request raised on the row itself falls back to the current cell.
+    // Without a position (keyboard, UIA ShowContextMenu) the focus level decides: a request from a
+    // cell targets that cell, and one raised on the row itself (row-level focus, row peer) targets
+    // the row. The remembered current column is stale at row level and must not pick a cell menu.
     auto column = hasPosition
         ? ResolvePressedColumn(args.OriginalSource(), hostPoint)
-        : (sourceColumn ? sourceColumn : ownerImpl->CurrentColumn());
+        : sourceColumn;
     uint32_t index{};
     if (column && (column.Visibility() != winrt::Visibility::Visible ||
         winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != owner ||

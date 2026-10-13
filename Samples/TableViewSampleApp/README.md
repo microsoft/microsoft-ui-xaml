@@ -132,6 +132,11 @@ Column cell menus take precedence over `RowContextFlyout`; the native
 `HeaderContextFlyout`, otherwise native fallback. Group headers always use native
 fallback. Setting a menu property to null removes that candidate.
 
+Keyboard requests (Shift+F10, Menu key) follow the focus level: with focus on a
+cell, that cell's menu opens; with focus on the row itself (press Left from the
+first cell), the row menu opens even if the remembered current column has a cell
+menu. UI Automation `ShowContextMenu` on a row peer likewise opens the row menu.
+
 A `ContextFlyout` you set yourself always wins over these properties, for mouse,
 keyboard (Shift+F10, Menu key) and UI Automation alike:
 
