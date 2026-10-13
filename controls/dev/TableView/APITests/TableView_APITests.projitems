@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Selection_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Editing_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_AutomationPeer_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_ContextMenu_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Theming_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_ToolTips_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableViewSource_APITests.cs" />
