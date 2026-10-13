@@ -25,7 +25,7 @@ For each issue with `needs-triage`:
      - Assigned owner is responsible for following the feature process
 * Everything else:
   - If author needs to provide more info, ask in comments and add `needs-author-feedback`
-  - Add a team label (`team-Controls`, `team-Framework`, etc) if missing
+  - Add a team label (`team-Controls`, `team-Core`, etc) if missing
   - Add area tag(s)
   - Add tags for type of issue (`bug`, `test issue`, `spec issue`, `documentation`)
   - Change labels to `question` or `discussion` if appropriate
@@ -45,11 +45,10 @@ The temporary `needs-assignee-attention` label is intended for issues which need
 Shortcuts to triage queries for the team. Note that these include closed issues because external comments on closed issues may not be
 noticed, so we have a bot rule that adds `needs-triage` to closed issues too.
 
-* [Controls Triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Aneeds-triage+-label%3Ateam-framework+-label%3Ateam-core+-label%3Ateam-ink+-label%3Ateam-compinput+)
-* [Framework Triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Ateam-Framework+label%3Aneeds-triage+)
-* [Core Triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Ateam-Core+label%3Aneeds-triage+)
+* [Controls Triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Aneeds-triage+-label%3Ateam-framework+-label%3Ateam-markup+-label%3Ateam-reach+-label%3Ateam-rendering+-label%3Ateam-core+-label%3Ateam-ink+-label%3Ateam-compinput+)
+* [Core Triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Aneeds-triage+%28label%3Ateam-Core+OR+label%3Ateam-Framework+OR+label%3Ateam-Markup+OR+label%3Ateam-Reach+OR+label%3Ateam-Rendering%29)
 
-* [Root node triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Aneeds-triage+-label%3Ateam-controls+-label%3Ateam-framework+-label%3Ateam-core+-label%3Ateam-ink+-label%3Ateam-compinput+) -- issues not assigned to a team yet.
+* [Root node triage](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Aneeds-triage+-label%3Ateam-controls+-label%3Ateam-framework+-label%3Ateam-markup+-label%3Ateam-reach+-label%3Ateam-rendering+-label%3Ateam-core+-label%3Ateam-ink+-label%3Ateam-compinput+) -- issues not assigned to a team yet.
 
 We also need to monitor:
 * [needs-assignee-attention](https://github.com/microsoft/microsoft-ui-xaml/labels/needs-assignee-attention)

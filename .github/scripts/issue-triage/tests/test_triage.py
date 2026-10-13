@@ -24,6 +24,7 @@ CATALOG = {
     "bug": "", "feature proposal": "", "needs-triage": "", "needs-repro": "",
     "needs-author-feedback": "", "area-Expander": "", "area-Binding": "",
     "team-Controls": "", "team-Core": "", "team-CompInput": "",
+    "team-Framework": "", "team-Markup": "", "team-Reach": "", "team-Rendering": "",
 }
 
 
@@ -409,6 +410,24 @@ class ConditionalRoutingTests(TriageFixture):
             ["area-Expander"],
         )
         self.assertEqual(t.planned_labels(self.result(), self.evidence, self.mapping), [])
+
+    def test_legacy_core_team_labels_are_treated_as_core(self):
+        self.assertEqual(
+            t.LEGACY_CORE_TEAMS,
+            {"team-Framework", "team-Markup", "team-Reach", "team-Rendering"},
+        )
+        for team in sorted(t.LEGACY_CORE_TEAMS):
+            with self.subTest(team=team):
+                evidence = copy.deepcopy(self.evidence)
+                evidence["existing_labels"].append(team)
+                self.assertEqual(
+                    t.planned_labels(self.conditional_result(), evidence, self.mapping),
+                    ["area-Expander"],
+                )
+                self.assertEqual(
+                    t.planned_labels(self.result(), evidence, self.mapping),
+                    [],
+                )
 
     def test_existing_area_uses_its_assessed_condition(self):
         self.evidence["existing_labels"].append("area-Expander")

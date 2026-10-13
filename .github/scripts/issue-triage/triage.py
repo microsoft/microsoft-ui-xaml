@@ -31,6 +31,12 @@ MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 MAX_COMMENTS = 1000
 MAX_AUTHOR_COMMENTS = 10
 MAX_COMMENT_BODY = 2000
+LEGACY_CORE_TEAMS = frozenset({
+    "team-Framework",
+    "team-Markup",
+    "team-Reach",
+    "team-Rendering",
+})
 
 
 class TriageError(RuntimeError):
@@ -508,7 +514,11 @@ def route_team(mapping: dict, area: str, rule_id: str) -> str | None:
 def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
     existing = set(evidence["existing_labels"])
     areas = sorted(label for label in existing if label.startswith("area-"))
-    teams = {label for label in existing if label.startswith("team-")}
+    existing_teams = {label for label in existing if label.startswith("team-")}
+    teams = {
+        "team-Core" if label in LEGACY_CORE_TEAMS else label
+        for label in existing_teams
+    }
     area_to_add = None
     team_to_add = None
     if not areas and result["area_confidence"] == "HIGH":
@@ -533,7 +543,7 @@ def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
     )
     return {
         "existing_areas": areas,
-        "existing_teams": sorted(teams),
+        "existing_teams": sorted(existing_teams),
         "effective_area": effective_area,
         "area_to_add": area_to_add,
         "team_to_add": team_to_add,

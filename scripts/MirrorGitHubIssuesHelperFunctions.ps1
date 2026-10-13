@@ -440,6 +440,10 @@ function Get-AzureDevOpsAreaPath
     $teamLabelToAreaPathDictionary = @{
         "team-Controls" = $controlsAreaPath
         "team-Core" = $baseAreaPath
+        "team-Framework" = $baseAreaPath
+        "team-Markup" = $baseAreaPath
+        "team-Reach" = $baseAreaPath
+        "team-Rendering" = $baseAreaPath
     }
 
     foreach ($label in $gitHubIssue.labels)

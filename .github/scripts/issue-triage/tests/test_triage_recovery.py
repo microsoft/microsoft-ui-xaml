@@ -13,6 +13,7 @@ class AssessmentRecoveryTests(unittest.TestCase):
         self.client.catalog.update(dict.fromkeys({
             "team-Controls", "team-Core",
             "team-CompInput", "team-Design",
+            "team-Framework", "team-Markup", "team-Reach", "team-Rendering",
         }, ""))
         self.evidence = t.prepare(self.client, event(), self.mapping)
 
