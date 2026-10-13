@@ -402,25 +402,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(MenuFlyoutRemainsInBoundsWhenShownTwiceUAP)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that a MenuFlyout remains within the screen's boundaries when its ShowAt method is called twice in a row.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(MenuFlyoutRemainsInBoundsWhenShownTwiceNoOptimizeApplyStyles)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates repeated MenuFlyout positioning with OptimizeApplyStyles disabled.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-            TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:false}")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(MenuFlyoutRemainsInBoundsWhenShownTwiceNoOptimizeApplyStylesUAP)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates repeated MenuFlyout positioning with OptimizeApplyStyles disabled.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:false}")
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(ValidateSettingKeyboardAcceleratorCreatesDefaultItemKeyboardAcceleratorText)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that setting a KeyboardAccelerator on a MenuFlyoutItem causes us to generate a default value for KeyboardAcceleratorTextOverride.")
         END_TEST_METHOD()

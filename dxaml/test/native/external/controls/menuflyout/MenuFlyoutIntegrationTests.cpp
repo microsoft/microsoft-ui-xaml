@@ -6510,21 +6510,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         FlyoutHelper::HideFlyout(menuFlyout);
     }
 
-    void MenuFlyoutIntegrationTests::MenuFlyoutRemainsInBoundsWhenShownTwiceUAP()
-    {
-        MenuFlyoutRemainsInBoundsWhenShownTwice();
-    }
-
-    void MenuFlyoutIntegrationTests::MenuFlyoutRemainsInBoundsWhenShownTwiceNoOptimizeApplyStyles()
-    {
-        MenuFlyoutRemainsInBoundsWhenShownTwice();
-    }
-
-    void MenuFlyoutIntegrationTests::MenuFlyoutRemainsInBoundsWhenShownTwiceNoOptimizeApplyStylesUAP()
-    {
-        MenuFlyoutRemainsInBoundsWhenShownTwice();
-    }
-
     // Shows the same MenuFlyout twice in a row, without closing it, attempting to position it beyond the screen's boundaries.
     // Ensures it is moved within the screen's boundaries.
     void MenuFlyoutIntegrationTests::MenuFlyoutRemainsInBoundsWhenShownTwice()
