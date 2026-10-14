@@ -1,0 +1,33 @@
+<TextBlock Text="Files" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
+<Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Width="220" VerticalAlignment="Stretch">
+    <ListView
+        x:Name="FileList"
+        AutomationProperties.AutomationId="FilePropertiesFileList"
+        AutomationProperties.Name="Files"
+        SelectionMode="Single"
+        SelectionChanged="OnFileSelectionChanged">
+        <ListView.ItemTemplate>
+            <DataTemplate x:DataType="io:FileInfo">
+                <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Name}"/>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
+</Border>
+
+<TextBlock Grid.Column="1" Text="Properties" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
+<Border Grid.Row="1" Grid.Column="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+    <tv:TableView
+        x:Name="PropTable"
+        AutomationProperties.AutomationId="FilePropertiesTable"
+        AutomationProperties.Name="File properties"
+        ItemsSource="{x:Bind Source}"
+        SelectionMode="Single"
+        IsReadOnly="True"
+        SelectionChanged="OnPropSelectionChanged"
+        VerticalAlignment="Stretch"
+        MinHeight="320">
+        <!-- Not Auto: an Auto column is measured from the realized rows only, so it changes width while you scroll. -->
+        <tv:TableViewTextColumn Header="Property" Width="{StaticResource ColWidthPropertyName}" Binding="{Binding Property}"/>
+        <tv:TableViewTextColumn Header="Value" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Value}"/>
+    </tv:TableView>
+</Border>

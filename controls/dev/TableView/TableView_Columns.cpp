@@ -213,6 +213,9 @@ void TableView::OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedE
             winrt::get_self<TableViewRow>(row)->RefreshColumnsSubscriptionInternal();
         });
     }
+
+    // Replacing the whole vector raises no VectorChanged, so announce the shape change here.
+    QueueRaiseColumnsStructureChanged();
 }
 
 void TableView::OnColumnsVectorChanged(
@@ -324,6 +327,9 @@ void TableView::OnColumnsVectorChanged(
 
     QueueRebuildHeaders();
 
+    // QueueRebuildHeaders updates visuals only; UIA clients must be told the grid shape changed.
+    QueueRaiseColumnsStructureChanged();
+
     // Realized rows observe Columns directly; no TableView broadcast is needed.
     if (change == winrt::CollectionChange::Reset)
     {
@@ -364,11 +370,19 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
         winrt::get_self<TableViewRow>(row)->RefreshColumnVisibility(column, visibility);
     });
 
+    // Visibility can move the terminal column. Evaluate after layout so Auto and Star widths,
+    // transforms, and the body viewport are final.
+    QueueTerminalGridLineRefresh();
+
     // Keep a synchronous RefreshFrozenColumns here: collapsing a column changes the leading
     // frozen-band width without changing any surviving column's ActualWidth, so ResolveColumnWidths'
     // `changed` gate stays false and would never re-pin. Refresh it directly.
     InvalidateMeasure();
     RefreshFrozenColumns();
+
+    // UIA addresses only visible columns (IsVisibleColumn), so a visibility flip shifts column
+    // indices just like an add/remove.
+    QueueRaiseColumnsStructureChanged();
 }
 
 void TableView::OnColumnWidthChanged(const winrt::TableViewColumn& column)
@@ -391,6 +405,7 @@ void TableView::OnColumnWidthChanged(const winrt::TableViewColumn& column)
     InvalidateMeasure();
     InvalidateCellPanels();
     RefreshFrozenColumns();
+    QueueTerminalGridLineRefresh();
 }
 
 void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column)
