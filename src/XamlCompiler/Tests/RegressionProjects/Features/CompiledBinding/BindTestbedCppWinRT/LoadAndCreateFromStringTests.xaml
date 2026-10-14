@@ -10,8 +10,6 @@
     mc:Ignorable="d"
     xmlns:model="using:BindTestbedModel"
     Tag="This is a tag">
-    <!--TODO: Convert BindTestbedModelCX to C++/WinRT-->
-    <!--xmlns:modelCx="using:BindTestbedCXModel"-->
     <UserControl.Resources>
         <ResourceDictionary>
             <Style x:Key="Stylish" TargetType="ListViewItem">
@@ -144,8 +142,6 @@
                 <model:Circle Diameter="{x:Bind test1.TestStringProperty,TargetNullValue=375, FallbackValue=395}" x:Name="test2" Height="10" TestStringProperty="50"/>
                 <model:Circle Diameter="{x:Bind test2.TestStringProperty}" x:Name="test3" Height="10"/>
                 <model:Circle Diameter="{x:Bind Model.StringPropertyDP, Mode=OneWay}" x:Name="test4" Height="10" />
-                <!--<modelCx:StarCx Coords="1,2" x:Name="test5" TestString="1,2" Height="10"/>
-                <modelCx:StarCx Coords="{x:Bind test5.TestString}" x:Name="test6" Height="10"/>-->
 
                 <TextBlock Style="{StaticResource Note}">TargetNullValue Binding test: this should display 375</TextBlock>
                 <TextBlock Text="{x:Bind test2.Diameter.Width}" x:Name="testText2"/>
@@ -157,10 +153,6 @@
                 <TextBlock Style="{StaticResource Note}">Click UpdateValues to make them initially appear.</TextBlock>
                 <TextBlock Text="{x:Bind Model.StringPropertyDP, Mode=OneWay}"></TextBlock>
                 <TextBlock Text="{x:Bind test4.Diameter.Width, Mode=OneWay}" x:Name="testText4"/>
-
-                <TextBlock Style="{StaticResource Note}">Value struct binding tests: these should display 1</TextBlock>
-                <!--<TextBlock Text="{x:Bind test5.Coords.x}" x:Name="testText5"/>
-                <TextBlock Text="{x:Bind test6.Coords.x}" x:Name="testText6"/>-->
 
                 <StackPanel Orientation="Horizontal" Margin="10">
                     <Button Click="UpdateValuesClick" >Update Values</Button>

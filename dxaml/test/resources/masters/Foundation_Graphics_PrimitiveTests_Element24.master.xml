@@ -40,8 +40,8 @@
                 <wucSpriteVisual SizeX="5000" SizeY="5000" BorderMode="Soft">
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="5100" SizeY="34" BorderMode="Hard" OffsetX="21" OffsetY="38" OffsetZ="0">
-                  <Clip ClipLeft="-1" ClipTop="-18" ClipRight="141" ClipBottom="-12" TransformMatrix="Identity" />
+                <wucSpriteVisual SizeX="5102" SizeY="36" BorderMode="Hard" OffsetX="20" OffsetY="37" OffsetZ="0">
+                  <Clip ClipLeft="0" ClipTop="-17" ClipRight="142" ClipBottom="-11" TransformMatrix="Identity" />
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="rgb {1, 0, 0}" />
