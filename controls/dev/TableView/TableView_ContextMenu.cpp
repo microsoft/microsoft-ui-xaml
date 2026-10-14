@@ -351,17 +351,49 @@ TableViewDetails::ContextMenuResult TableView::ProcessContextMenuRequest(
             return invalidatedResult;
         }
 
-        // Focus the row only when focus is outside it. Pulling focus off a focused cell would make
-        // the flyout's focus restore land on the row's first cell and move the current cell there.
-        winrt::DependencyObject const rowObject = target.Row;
-        auto const root = XamlRoot();
-        auto const focused = root
-            ? winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>()
-            : nullptr;
-        if (!focused ||
-            (focused != rowObject && !SharedHelpers::IsAncestor(focused, rowObject, false /* checkVisibility */)))
+        // Focus the exact target, so the flyout's focus restore returns to it: the cell for a cell
+        // request (unless focus is already inside that cell, e.g. on its content), the row itself
+        // for a row request. Both go through the two-level focus helpers so the cursor level follows.
+        auto const focusedElement = [this]() -> winrt::DependencyObject
         {
-            target.Row.Focus(winrt::FocusState::Programmatic);
+            auto const root = XamlRoot();
+            return root
+                ? winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>()
+                : nullptr;
+        };
+        winrt::DependencyObject const rowObject = target.Row;
+        auto focused = focusedElement();
+
+        if (target.Column)
+        {
+            // Entering the row from outside lands on the row first. App code reacting to that focus
+            // change (removing the item, say) recycles the row back to row level, which would leave a
+            // direct cell focus aimed at a cell that is no longer focusable.
+            if (!focused ||
+                (focused != rowObject && !SharedHelpers::IsAncestor(focused, rowObject, false /* checkVisibility */)))
+            {
+                FocusRowContainerInternal(target.Row, winrt::FocusState::Programmatic);
+                if (!requestIsCurrent())
+                {
+                    return invalidatedResult;
+                }
+                focused = focusedElement();
+            }
+
+            winrt::DependencyObject const cellObject = target.Anchor;
+            if (!focused ||
+                (focused != cellObject && !SharedHelpers::IsAncestor(focused, cellObject, false /* checkVisibility */)))
+            {
+                auto const rowImpl = winrt::get_self<TableViewRow>(target.Row);
+                if (int32_t const column = rowImpl->GetVisibleCellIndexInternal(target.Anchor); column >= 0)
+                {
+                    FocusRealizedRowCell(target.Row, column, winrt::FocusState::Programmatic);
+                }
+            }
+        }
+        else if (focused != rowObject)
+        {
+            FocusRowContainerInternal(target.Row, winrt::FocusState::Programmatic);
         }
 
         if (!requestIsCurrent())
