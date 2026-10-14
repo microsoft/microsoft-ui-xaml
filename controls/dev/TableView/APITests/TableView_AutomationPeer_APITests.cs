@@ -2503,6 +2503,64 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
+
+        #region Teardown
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a keyboard-focused header cell's peer still answers after its TableView leaves the tree.")]
+        public void VerifyFocusedHeaderPeerAnswersAfterTableLeavesTree()
+        {
+            TableView tableView = null;
+            StackPanel host = null;
+            FrameworkElement headerCell = null;
+            AutomationPeer headerPeer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                host = new StackPanel();
+                host.Children.Add(new Button { Content = "Sink" });
+                host.Children.Add(tableView);
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                headerCell = GetHeaderCell(tableView, 1);
+                Verify.IsTrue(headerCell.Focus(FocusState.Keyboard), "Precondition: header cell 1 takes keyboard focus.");
+                headerPeer = FrameworkElementAutomationPeer.CreatePeerForElement(headerCell);
+                Verify.IsNotNull(headerPeer, "Precondition: the header cell has a peer.");
+                Verify.AreEqual("Role", headerPeer.GetName(), "Precondition: the live header peer is named by its column.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => host.Children.Remove(tableView));
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Exception error = null;
+                try
+                {
+                    Log.Comment($"Detached header peer name: '{headerPeer.GetName()}'");
+                    Verify.AreEqual(AutomationControlType.HeaderItem, headerPeer.GetAutomationControlType(),
+                        "A detached header peer must still report its control type.");
+                    Log.Comment($"Detached header peer has keyboard focus: {headerPeer.HasKeyboardFocus()}");
+                }
+                catch (Exception e)
+                {
+                    error = e;
+                }
+
+                Verify.IsTrue(error == null, $"Querying a detached header peer must not throw. Instead: {error?.Message}");
+            });
+        }
+
+        #endregion
     }
 
     internal static class TableViewAutomationTestHelpers

@@ -14,6 +14,7 @@
 #include "SortMemberPathResolver.h"
 
 #include <atomic>
+#include <memory>
 #include <string>
 #include <string_view>
 
@@ -180,6 +181,35 @@ namespace
         default: return std::nullopt;
         }
     }
+
+    // Records whether the edited item raised PropertyChanged for the edited property between a
+    // posted rollback being queued and running. The handler holds this weakly, so the posted work
+    // owns it and dropping that work revokes the subscription.
+    struct RollbackSupersededWatch
+    {
+        winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged Source{ nullptr };
+        winrt::event_token Token{};
+        std::atomic<bool> Superseded{ false };
+
+        RollbackSupersededWatch() = default;
+        RollbackSupersededWatch(RollbackSupersededWatch const&) = delete;
+        RollbackSupersededWatch& operator=(RollbackSupersededWatch const&) = delete;
+
+        ~RollbackSupersededWatch()
+        {
+            Revoke();
+        }
+
+        void Revoke() noexcept
+        {
+            if (auto const source = Source)
+            {
+                Source = nullptr;
+                try { source.PropertyChanged(Token); }
+                catch (...) {}
+            }
+        }
+    };
 }
 
 // ----- Editing lifecycle (opt-in via IsReadOnly=false) -----
@@ -773,37 +803,74 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
                     auto const editingPath = ResolveEditingPropertyPath(column);
                     auto const resolver = std::make_shared<SortMemberPathResolver>(editingPath);
                     auto const rejectedValue = resolver->Resolve(item);
-                    auto const queue = DispatcherQueue();
-                    if (!queue || !queue.TryEnqueue([weakThis, column, editingElement, item, uneditedValue, editingPath, resolver, rejectedValue]()
+                    // The snapshot cannot tell a fresh box from a newer write for enums, structs or
+                    // an empty path, so also watch the item: any change to the edited property
+                    // before the rollback runs supersedes it. Revoked when the posted work runs or
+                    // is dropped.
+                    auto const watch = std::make_shared<RollbackSupersededWatch>();
+                    if (auto const observable = item ? item.try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>() : nullptr)
+                    {
+                        std::wstring_view const pathView{ editingPath };
+                        auto const firstSegmentEnd = pathView.find_first_of(L".[(");
+                        const bool anyProperty = pathView.empty() || firstSegmentEnd != std::wstring_view::npos;
+                        std::weak_ptr<RollbackSupersededWatch> weakWatch = watch;
+                        try
                         {
-                            auto strongThis = weakThis.get();
-                            bool restored = false;
-                            if (strongThis)
+                            watch->Token = observable.PropertyChanged(
+                                [weakWatch, anyProperty, editingPath](winrt::IInspectable const&, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
+                                {
+                                    if (auto const strongWatch = weakWatch.lock())
+                                    {
+                                        auto const changed = args.PropertyName();
+                                        if (anyProperty || changed.empty() || changed == editingPath)
+                                        {
+                                            strongWatch->Superseded = true;
+                                        }
+                                    }
+                                });
+                            watch->Source = observable;
+                        }
+                        catch (...)
+                        {
+                        }
+                    }
+                    auto const queue = DispatcherQueue();
+                    if (!queue || !queue.TryEnqueue([weakThis, column, editingElement, item, uneditedValue, editingPath, resolver, rejectedValue, watch]()
+                        {
+                            // Before the rollback write, which raises PropertyChanged itself.
+                            watch->Revoke();
+
+                            // Column, editor and item are held strongly, so the rollback still runs
+                            // after the table is gone; only the newer-edit check needs the table.
+                            bool newerEditOpen = false;
+                            if (auto const strongThis = weakThis.get())
                             {
-                                const bool newerEditOpen =
+                                newerEditOpen =
                                     strongThis->m_editState != EditState::None &&
                                     strongThis->m_currentEditColumn.get() == column &&
                                     SameInspectableIdentity(strongThis->m_currentEditItem.get(), item);
-                                if (newerEditOpen ||
-                                    (!editingPath.empty() && SameEditValue(resolver->Resolve(item), rejectedValue) == false))
-                                {
-                                    TVDiag::LogRetailF(L"[TableView] Skipped a posted edit rollback: the value changed after the rejected commit.");
-                                    return;
-                                }
-
-                                try
-                                {
-                                    editingElement.DataContext(item);
-                                    winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, uneditedValue);
-                                    restored = winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement);
-                                }
-                                catch (...)
-                                {
-                                    LogConsumerHandlerThrow(L"CancelCellEdit");
-                                }
-                                try { editingElement.ClearValue(winrt::FrameworkElement::DataContextProperty()); }
-                                catch (...) {}
                             }
+                            if (newerEditOpen || watch->Superseded ||
+                                (!editingPath.empty() && SameEditValue(resolver->Resolve(item), rejectedValue) == false))
+                            {
+                                TVDiag::LogRetailF(L"[TableView] Skipped a posted edit rollback: the value changed after the rejected commit.");
+                                return;
+                            }
+
+                            bool restored = false;
+                            try
+                            {
+                                editingElement.DataContext(item);
+                                winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, uneditedValue);
+                                restored = winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement);
+                            }
+                            catch (...)
+                            {
+                                LogConsumerHandlerThrow(L"CancelCellEdit");
+                            }
+                            try { editingElement.ClearValue(winrt::FrameworkElement::DataContextProperty()); }
+                            catch (...) {}
+
                             if (!restored)
                             {
                                 TVDiag::LogRetailF(L"[TableView] A rejected value could not be rolled back; the item still holds it.");

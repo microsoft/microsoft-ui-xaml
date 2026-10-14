@@ -442,32 +442,7 @@ winrt::hstring TableViewCellAutomationPeer::ReadDisplayName(winrt::TableView con
 
 winrt::hstring TableViewCellAutomationPeer::GetColumnHeaderText(winrt::TableView const& table)
 {
-    auto const column = m_column.get();
-    if (auto const headerString = TableViewDetails::TryGetColumnHeaderText(column))
-    {
-        return *headerString;
-    }
-
-    // Hidden headers collapse their header cells, so read an element header's own name first.
-    if (auto const headerElement = column ? column.Header().try_as<winrt::FrameworkElement>() : nullptr)
-    {
-        uint32_t remaining = 32;
-        if (auto const name = GetCellContentName(headerElement, false /* allowPeerCreation */, 8, remaining); !name.empty())
-        {
-            return name;
-        }
-    }
-
-    // An object or templated header has no string form; use the name its header item exposes.
-    if (table)
-    {
-        if (auto const headerPeer = GetRealizedColumnHeaderPeer(table, column))
-        {
-            return headerPeer.GetName();
-        }
-    }
-
-    return {};
+    return ResolveColumnAccessibleName(table, m_column.get());
 }
 
 bool TableViewCellAutomationPeer::IsColumnHeaderReachable(winrt::TableView const& table)

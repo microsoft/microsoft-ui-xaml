@@ -166,7 +166,9 @@ private:
         ApplyStateForeground(content, indicator, foreground);
     }
 
-    // The chevron needs the same HC foreground as the text, or it vanishes on the highlight fill.
+    // The chevron needs the same HC foreground as the text, or it vanishes on the highlight fill. The
+    // text backplate is turned off with it, as the row and group header templates do, so it does not
+    // fight the highlight fill.
     static void ApplyStateForeground(
         winrt::ContentPresenter const& content,
         winrt::SortIndicator const& indicator,
@@ -177,10 +179,12 @@ private:
             if (foreground)
             {
                 content.Foreground(foreground);
+                content.HighContrastAdjustment(winrt::ElementHighContrastAdjustment::None);
             }
             else
             {
                 content.ClearValue(winrt::ContentPresenter::ForegroundProperty());
+                content.ClearValue(winrt::UIElement::HighContrastAdjustmentProperty());
             }
         }
         if (indicator)
@@ -188,10 +192,12 @@ private:
             if (foreground)
             {
                 indicator.Foreground(foreground);
+                indicator.HighContrastAdjustment(winrt::ElementHighContrastAdjustment::None);
             }
             else
             {
                 indicator.ClearValue(winrt::Control::ForegroundProperty());
+                indicator.ClearValue(winrt::UIElement::HighContrastAdjustmentProperty());
             }
         }
     }

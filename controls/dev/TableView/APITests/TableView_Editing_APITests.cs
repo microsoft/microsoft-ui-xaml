@@ -749,6 +749,94 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a rollback posted from a layout pass does not overwrite a value the app wrote before it ran, when the column's value cannot be snapshotted.")]
+        public void VerifyPostedRollbackDoesNotOverwriteNewerAppWrite()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            Button focusSink = null;
+            int appWrites = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var names = new string[200];
+                names[0] = "Asha";
+                for (int i = 1; i < names.Length; i++)
+                {
+                    names[i] = "Person " + i;
+                }
+                items = MakeEditableItems(names);
+                items[0].RejectPrefix = InvalidPrefix;
+
+                // An explicit binding Source leaves the control no editing path, so it cannot compare
+                // the item's value at rollback time - the same blind spot as an enum or decimal path.
+                tableView = CreateTableViewShell(items, 500, 300);
+                tableView.Columns.Add(new TableViewTextColumn
+                {
+                    Header = "Name",
+                    Binding = new Binding { Path = new PropertyPath("Name"), Source = items[0], Mode = BindingMode.OneWay },
+                });
+                tableView.IsReadOnly = false;
+
+                // A forced close from layout delivers CellEditEnding on the dispatcher ahead of the
+                // posted rollback, so this is an app write landing between the two.
+                tableView.CellEditEnding += (s, e) =>
+                {
+                    if (e.EditAction == TableViewEditAction.Cancel && appWrites == 0)
+                    {
+                        appWrites++;
+                        items[0].Name = "Rewritten";
+                    }
+                };
+
+                focusSink = new Button { Content = "Sink" };
+                var host = new StackPanel();
+                host.Children.Add(focusSink);
+                host.Children.Add(tableView);
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), InvalidPrefix + "Nope");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: an edit is open.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
+                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
+                editors[0].Text = InvalidPrefix + "NopeX";
+                focusSink.Focus(FocusState.Programmatic);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the rejected focus-loss commit keeps the edit open.");
+                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
+                Verify.AreEqual(1, editors.Count, "The edited row must still host its editor TextBox.");
+                editors[0].Text = InvalidPrefix + "NopeY";
+            });
+
+            // Recycling row 0 inside measure transfers the invalid value and posts its rollback.
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 3000);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(tableView.IsEditing, "Recycling the edited row must close the edit.");
+                Verify.AreEqual(1, appWrites, "Precondition: the app wrote while the rollback was pending.");
+                Verify.AreEqual("Rewritten", items[0].Name, "A posted rollback must not overwrite a newer app write.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the text column's editor TextBox takes its UIA name from the column header text.")]
         public void VerifyTextColumnEditorNameComesFromHeader()
         {
@@ -781,6 +869,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
                 Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
                 Verify.AreEqual("Name", AutomationProperties.GetName(editors[0]), "The editor's UIA name must be the column header text.");
+            });
+
+            RunOnUIThread.Execute(() => tableView.CancelEdit());
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the text column's editor TextBox is named from a templated object header's rendered text.")]
+        public void VerifyTextColumnEditorNameComesFromTemplatedObjectHeader()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                items[0].RejectPrefix = InvalidPrefix;
+
+                tableView = CreateTableViewShell(items, 500, 300);
+                tableView.Columns.Add(new TableViewTextColumn
+                {
+                    Header = new TitledColumnHeader { Title = "Full name" },
+                    HeaderTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock Text=""{Binding Title}"" />
+                          </DataTemplate>"),
+                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                });
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), InvalidPrefix + "Nope");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: an edit is open.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
+                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
+                Verify.AreEqual("Full name", AutomationProperties.GetName(editors[0]),
+                    "An object header has no string form; the editor must take the name its rendered header exposes.");
+                Verify.AreEqual("Full name", FrameworkElementAutomationPeer.CreatePeerForElement(editors[0]).GetName(),
+                    "The editor's peer must report the same name.");
             });
 
             RunOnUIThread.Execute(() => tableView.CancelEdit());

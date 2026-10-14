@@ -346,6 +346,37 @@ inline winrt::hstring GetCellContentName(
     return {};
 }
 
+// The name UIA uses for a column: its string header, else an element header's own name (hidden
+// headers collapse their header cells), else the name its realized header item exposes, which is
+// the only source for an object or templated header. Shared by the cell peer and the built-in
+// editor so both name the column the same way.
+inline winrt::hstring ResolveColumnAccessibleName(winrt::TableView const& table, winrt::TableViewColumn const& column)
+{
+    if (auto const headerString = TableViewDetails::TryGetColumnHeaderText(column))
+    {
+        return *headerString;
+    }
+
+    if (auto const headerElement = column ? column.Header().try_as<winrt::FrameworkElement>() : nullptr)
+    {
+        uint32_t remaining = 32;
+        if (auto const name = GetCellContentName(headerElement, false /* allowPeerCreation */, 8, remaining); !name.empty())
+        {
+            return name;
+        }
+    }
+
+    if (table)
+    {
+        if (auto const headerPeer = GetRealizedColumnHeaderPeer(table, column))
+        {
+            return headerPeer.GetName();
+        }
+    }
+
+    return {};
+}
+
 inline winrt::FrameworkElement GetCellContentElement(winrt::FrameworkElement const& cell)
 {
     if (!cell)

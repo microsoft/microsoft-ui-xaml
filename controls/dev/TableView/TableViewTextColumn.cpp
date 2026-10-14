@@ -128,7 +128,7 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
 
     winrt::BindingOperations::SetBinding(textBox, winrt::TextBox::TextProperty(), editingBinding);
 
-    if (auto const headerText = TableViewDetails::GetColumnHeaderText(*this); !headerText.empty())
+    if (auto const headerText = ResolveColumnAccessibleName(owner, *this); !headerText.empty())
     {
         winrt::AutomationProperties::SetName(textBox, headerText);
     }
