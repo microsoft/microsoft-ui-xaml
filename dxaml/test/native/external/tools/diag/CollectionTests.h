@@ -51,6 +51,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestCommandBarCollectionOperations)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that XamlDiagnostics collection methods work with CommandBar collections")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
@@ -62,16 +63,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestStyleSetterChangeThroughCollection)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that editing a Style's Setters through XamlDiag's collection APIs work")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestNonDependencyObjectCollection)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that our collection APIs work for an IVector which isn't a DependencyObject")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CanFindNamedElementAddedToCollectionInTemplate)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can find named elements added to a control template.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
@@ -83,22 +87,27 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AddingMergedDictionaryUpdatesReferences)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(RemovingMergedDictionaryUpdatesReferences)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ClearingMergedDictionariesUpdatesReferences)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AddingMergedDictionaryDoesntOverrideParent)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
             
             BEGIN_TEST_METHOD(RemovingMergedDictionaryDoesntOverrideParent)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
@@ -118,6 +127,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CanAddGroupedStyle)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
@@ -127,10 +137,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateAddingSetterToStyleWithBasedOnWhileInvalid)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CanAddNamedListBoxItem)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
         };

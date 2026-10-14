@@ -42,6 +42,7 @@ public:
     void SetL3StencilItemCheck(winrt::InkToolbarStencilKind stencilKind, bool check);
     void SetAllStencilItemsCheck(bool check);
     unsigned NumberOfStencils();
+    bool HasL3() override { return NumberOfStencils() > 1 && InkToolbarMenuButton::HasL3(); }
     bool IsAnyStencilSelected();
     void HookUpToStencilEvents(winrt::RoutedEventHandler const& handler, bool& eventHookedUp, winrt::event_token& token);
     void UpdateIcon(winrt::InkToolbarStencilKind kind);
@@ -50,9 +51,11 @@ protected:
     // IMenuButtonDerived override hooks (localized names are lift resource gaps -> empty).
     winrt::hstring GetLocalizedToolName() override;
     winrt::hstring GetFlyoutName() override;
+    winrt::hstring GetPersistentToolName() override;
 
 private:
     void OnL3ItemsVisibilitiesChanged();
+    void UpdateStencilFlyoutItems();
     void OnSelectedStencilChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void SetupL3(wchar_t const* itemName);
     bool GetIsItemVisible(winrt::InkToolbarStencilKind kind);
@@ -65,4 +68,3 @@ private:
 
     winrt::event_token m_stencilItemCheckedRegistrationToken{};
 };
-
