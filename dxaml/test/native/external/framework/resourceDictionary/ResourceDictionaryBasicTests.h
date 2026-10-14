@@ -221,7 +221,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VSLooseGenericXaml)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AccentColorChangeUpdatesGlobalThemes)
@@ -235,7 +235,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(MergedDictionariesInThemeDictionaries)
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(PageThemeResourceMultiplePagesOneOverride)
@@ -267,7 +267,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CorrectThemeChangesForMergedDictionaryInAppResources)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyDictionaryReentryOnThemeChange)
@@ -290,7 +290,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(FollowPopupsInThemeResourceResolution)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyThatThemeResourceAliasesDontExist)
@@ -313,6 +313,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(VerifyXamlResourceReferenceTraceResourceDictionarySource)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify XAML resource reference lookup tracing when a ResourceDictionary set "
                     L"through the 'Source' property is in the search path.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(VerifyXamlResourceReferenceTraceDeferredTemplateStaticResource)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a compiled deferred StaticResource miss traces its saved source path.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(VerifyXamlResourceReferenceTraceDeferredTemplateThemeResource)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a compiled deferred ThemeResource miss traces its saved source path.")
             END_TEST_METHOD()
 
 

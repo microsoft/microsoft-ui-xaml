@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="TableViewSampleApp.Controls.CodeBlock"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Border
+        Background="{ThemeResource ControlAltFillColorQuarternaryBrush}"
+        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+        BorderThickness="1"
+        CornerRadius="6"
+        Padding="0">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Padding="12,8" Background="{ThemeResource SubtleFillColorSecondaryBrush}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    x:Name="CaptionText"
+                    Grid.Column="0"
+                    FontWeight="SemiBold"
+                    AutomationProperties.HeadingLevel="Level3"
+                    VerticalAlignment="Center"/>
+                <Button
+                    x:Name="CopyButton"
+                    Grid.Column="1"
+                    Click="OnCopyClick"
+                    AutomationProperties.AutomationId="CopyCodeButton"
+                    AutomationProperties.Name="Copy code"
+                    Style="{ThemeResource SubtleButtonStyle}"
+                    Padding="8,4">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon x:Name="CopyIcon" Glyph="&#xE8C8;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+                        <TextBlock x:Name="CopyText" Text="Copy" FontSize="12"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!--
+                Code scrolls in both axes inside a capped viewport. Vertical scroll was
+                previously Disabled, so a long snippet grew the block without limit and
+                pushed the rest of the page off-screen. MaxHeight (CodeMaxHeight) keeps a
+                standalone block a predictable size; SamplePresenter lifts the cap because its
+                own Source scroller is already bounded, so there is only one vertical scroller.
+                IsTabStop keeps it keyboard-reachable.
+            -->
+            <ScrollViewer
+                x:Name="CodeScroller"
+                Grid.Row="1"
+                MaxHeight="360"
+                HorizontalScrollMode="Auto"
+                HorizontalScrollBarVisibility="Auto"
+                VerticalScrollMode="Auto"
+                VerticalScrollBarVisibility="Auto"
+                IsTabStop="True"
+                AutomationProperties.Name="Code">
+                <TextBlock
+                    x:Name="CodeText"
+                    Padding="14,12"
+                    FontFamily="Cascadia Mono, Consolas"
+                    FontSize="12"
+                    IsTextSelectionEnabled="True"
+                    TextWrapping="NoWrap"/>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>
