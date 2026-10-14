@@ -1,20 +1,34 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+using Microsoft.UI;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using Windows.UI;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 
 namespace LibManagedDll
 {
     public class AnotherClassForPathing
     {
         public string StringFunction() { return "StringFunction"; }
+
+        public string Format(string value) { return String.Format("Format: {0}", value); }
+
+        public string Describe(AnotherClassForPathing other) { return other == null ? "null" : "self"; }
+    }
+
+    public class NamedElementForPathing : FrameworkElement
+    {
+        public string Value { get; set; }
+
+        public string Format(string value) { return String.Format("Format: {0}", value); }
     }
 
     public class BindPathParserClass
     {
+        public static BindPathParserClass Instance { get; } = new BindPathParserClass();
+
         public Color[] Rainbow = {
             Colors.Red, Colors.Orange, Colors.Yellow, Colors.Violet, Colors.Black, Colors.Indigo, Colors.Green
         };
@@ -27,12 +41,18 @@ namespace LibManagedDll
         public string Value;
 
         public String StringProperty { get; set; }
+        public String ReadOnlyStringProperty { get; }
+        public String InitOnlyStringProperty { get; init; }
+        public String PrivateSetStringProperty { get; private set; }
         public static String StringPropertyStatic { get; set; }
 
         public String PropertyWithNoGetAccessor { set { } }
+        public readonly String ReadOnlyStringField;
 
         public string GetTipOfTheDay() { return "Tip of the day"; }
         public static string GetTipOfTheDayStatic() { return "Tip of the day static"; }
+
+        public static IList<string> GetReadOnlyItems(DependencyObject obj) { return null; }
 
         public string FormatPosition(int value) { return String.Format("Position: {0}", value); }
         public string FormatPositionFloat(float value) { return String.Format("Position: {0}", value); }
@@ -86,7 +106,7 @@ namespace LibManagedDll
 
         public static explicit operator Thickness(BindPathParserClass instance)
         {
-            return ThicknessHelper.FromUniformLength(20);
+            return new Thickness(20);
         }
 
         public Button SomeButton { get; }

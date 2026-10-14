@@ -50,7 +50,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyCtrlAltKeys)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // ALT key is eaten by WPF
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Description", L"Validates Ctrl-Alt+e and verify keydown-up events correctly")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
