@@ -2,7 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using WEX.TestExecution;
-using Private.Infrastructure;
+using WEX.TestExecution.Markup;
+using Microsoft.UI.Xaml.Tests.Common;
 
 using XamlControls = Microsoft.UI.Xaml.Controls;
 
