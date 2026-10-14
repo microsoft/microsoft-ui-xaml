@@ -72,7 +72,6 @@ namespace TableViewTelemetry
             TraceLoggingUInt32(session.counts[10], "CommitEditCount"),
             TraceLoggingUInt32(session.counts[11], "CancelEditCount"),
             TraceLoggingUInt32(session.deferredCount, "DeferredCount"),
-            TraceLoggingUInt32(session.unattributedFaultCount, "UnattributedFaultCount"),
             TraceLoggingUInt32(session.overflowMask, "CounterOverflowMask"),
             TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage));
@@ -88,7 +87,6 @@ namespace TableViewTelemetry
             Increment(session, session.counts[index], index);
         }
         else if (*ignored == TableViewTip::IgnoreReason::DeferredOrUnproven) { Increment(session, session.deferredCount, 14); }
-        else if (*ignored == TableViewTip::IgnoreReason::UnattributedFault) { Increment(session, session.unattributedFaultCount, 15); }
     }
 
     void ReportError(Session& session, uint64_t startedIn, TableViewTip::Operation operation, TableViewTip::Stage stage,

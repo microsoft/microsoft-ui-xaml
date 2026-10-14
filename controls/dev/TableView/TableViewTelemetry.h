@@ -18,7 +18,6 @@ namespace TableViewTelemetry
         std::array<uint32_t, 12> counts{};
         uint64_t generation{};
         uint32_t deferredCount{};
-        uint32_t unattributedFaultCount{};
         uint32_t overflowMask{};
         uint64_t reportedErrors{};
         bool active{};

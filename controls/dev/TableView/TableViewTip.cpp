@@ -23,7 +23,6 @@ namespace TableViewTip
             case IgnoreReason::Stale: return "stale";
             case IgnoreReason::DeferredOrUnproven: return "deferred_or_unproven";
             case IgnoreReason::ApplicationFault: return "application_fault";
-            case IgnoreReason::UnattributedFault: return "unattributed_fault";
             default:
                 OutputDebugStringW(L"TableView TiP: invalid ignore reason.\n");
                 return nullptr;

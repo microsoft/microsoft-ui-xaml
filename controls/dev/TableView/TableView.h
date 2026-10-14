@@ -788,7 +788,6 @@ private:
     uint64_t BeginTipOperation(TableViewTip::Operation operation, bool admitted = true) noexcept;
     void EndTipOperation() noexcept;
     void SupersedeTipOperation() noexcept;
-    void IgnoreUnattributedTipOperation(TableViewTip::Operation operation, uint64_t generation, TableViewTip::Stage stage, std::optional<HRESULT> error = {}) noexcept;
     void CompleteTipOperation(uint64_t generation) noexcept;
     void IgnoreTip(TableViewTip::IgnoreReason reason) noexcept;
 

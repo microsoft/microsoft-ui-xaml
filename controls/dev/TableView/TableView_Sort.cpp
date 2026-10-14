@@ -663,7 +663,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     {
         if (measureTip && !completed)
         {
-            IgnoreUnattributedTipOperation(TableViewTip::Operation::Sort, tipGeneration, TableViewTip::Stage::Sort);
+            TableViewTip::FailOperation(m_tip, tipGeneration, TableViewTip::Stage::Sort, {});
         }
         else if (measureTip && m_controlSortPublishedGeneration == tipGeneration)
         {

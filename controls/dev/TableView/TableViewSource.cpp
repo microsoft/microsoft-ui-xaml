@@ -35,9 +35,10 @@ struct TableViewSource::ShapingTip
         source.m_shapingTip = previous;
         if (handlers)
         {
-            auto const reason = ownerGeneration == source.m_ownerGeneration ?
-                observation.Outcome() : std::optional{ TableViewTip::IgnoreReason::Stale };
-            handlers->complete(kind, generation, reason, observation.error, observation.appFaultKind);
+            auto const stale = ownerGeneration != source.m_ownerGeneration;
+            handlers->complete(kind, generation, !stale && observation.Failed(),
+                stale ? std::optional{ TableViewTip::IgnoreReason::Stale } : observation.Ignored(),
+                observation.error, observation.appFaultKind);
         }
     }
 

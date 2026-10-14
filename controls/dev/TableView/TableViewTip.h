@@ -20,11 +20,12 @@ namespace TableViewTip
         AppFaultKind appFaultKind{};
         std::optional<HRESULT> error;
 
-        std::optional<IgnoreReason> Outcome() const noexcept
+        // TableView's own work threw or never ran; app faults are tagged, so they are not failures.
+        bool Failed() const noexcept { return appFaultKind == AppFaultKind::None && (error.has_value() || !completed); }
+
+        std::optional<IgnoreReason> Ignored() const noexcept
         {
             if (appFaultKind != AppFaultKind::None) { return IgnoreReason::ApplicationFault; }
-            if (error.has_value()) { return IgnoreReason::UnattributedFault; }
-            if (!completed) { return IgnoreReason::UnattributedFault; }
             if (!published || unproven) { return IgnoreReason::DeferredOrUnproven; }
             return {};
         }

@@ -113,7 +113,7 @@ public:
     // Raised when a shaping verb rewrote the projection. `reorderOnly` is true when membership is
     // unchanged and only the order moved.
     void SetShapingChangedHandler(std::function<void(bool)> handler) { m_shapingChanged = std::move(handler); }
-    using ShapingTipCompleted = std::function<void(TableViewTip::Operation, uint64_t,
+    using ShapingTipCompleted = std::function<void(TableViewTip::Operation, uint64_t, bool failed,
         std::optional<TableViewTip::IgnoreReason>, std::optional<HRESULT>, TableViewTip::AppFaultKind)>;
     void SetShapingTipHandlers(
         winrt::IInspectable const& owner,

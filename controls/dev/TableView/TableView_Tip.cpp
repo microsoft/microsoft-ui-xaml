@@ -37,14 +37,10 @@ TableView::ActionTip::~ActionTip()
         TableViewTelemetry::ReportError(m_state.session, m_state.operationSessionGeneration, m_state.operation, m_stage, true,
             TableViewTip::Attribution::Application, m_error, m_appFaultKind);
     }
-    else if (m_failed)
+    else if (m_failed || std::uncaught_exceptions() > m_exceptions)
     {
+        // App callouts are tagged above, so anything else that escapes is TableView's own failure.
         TableViewTip::FailOperation(m_state, m_generation, m_stage, m_error);
-    }
-    else if (std::uncaught_exceptions() > m_exceptions)
-    {
-        TableViewTip::IgnoreOperation(m_state, m_generation, TableViewTip::IgnoreReason::UnattributedFault);
-        TableViewTelemetry::ReportError(m_state.session, m_state.operationSessionGeneration, m_state.operation, m_stage, false);
     }
     else if (m_completed)
     {
@@ -139,15 +135,6 @@ void TableView::SupersedeTipOperation() noexcept
     TableViewTip::IgnoreOperation(m_tip, m_tip.operationGeneration, TableViewTip::IgnoreReason::Superseded);
 }
 
-void TableView::IgnoreUnattributedTipOperation(
-    TableViewTip::Operation operation, uint64_t generation, TableViewTip::Stage stage, std::optional<HRESULT> error) noexcept
-{
-    if (!generation || generation != m_tip.operationGeneration) { return; }
-    if (TableViewTip::IsOperationHandled(m_tip, operation, generation)) { return; }
-    TableViewTip::IgnoreOperation(m_tip, generation, TableViewTip::IgnoreReason::UnattributedFault, error);
-    TableViewTelemetry::ReportError(m_telemetrySession, 0, operation, stage, false, TableViewTip::Attribution::Unknown, error);
-}
-
 void TableView::CompleteTipOperation(uint64_t generation) noexcept
 {
     if (!generation || generation != m_tip.operationGeneration ||
@@ -186,7 +173,7 @@ void TableView::AttachSourceTip(winrt::TableViewSource const& source)
             }
             return 0;
         },
-        [weakThis, weakSource](TableViewTip::Operation operation, uint64_t generation,
+        [weakThis, weakSource](TableViewTip::Operation operation, uint64_t generation, bool failed,
             std::optional<TableViewTip::IgnoreReason> reason, std::optional<HRESULT> error,
             TableViewTip::AppFaultKind kind) noexcept
         {
@@ -199,24 +186,26 @@ void TableView::AttachSourceTip(winrt::TableViewSource const& source)
                 });
                 if (!generation || self->m_activeSource.get() != weakSource.get() ||
                     generation != self->m_tip.operationGeneration) { return; }
+                // A callout that already closed this operation has reported the fault.
+                if (TableViewTip::IsOperationHandled(self->m_tip, operation, generation)) { return; }
                 auto const stage = operation == TableViewTip::Operation::Filter ? TableViewTip::Stage::Filter :
                     operation == TableViewTip::Operation::Sort ? TableViewTip::Stage::Sort : TableViewTip::Stage::Grouping;
-                if (reason)
+                if (failed)
+                {
+                    TableViewTip::FailOperation(self->m_tip, generation, stage, error);
+                }
+                else if (reason)
                 {
                     if (*reason == TableViewTip::IgnoreReason::DeferredOrUnproven &&
                         operation == TableViewTip::Operation::Sort && self->m_isApplyingControlInitiatedSort)
                     {
                         return;
                     }
-                    // A callout that already closed this operation has reported the fault.
-                    if (TableViewTip::IsOperationHandled(self->m_tip, operation, generation)) { return; }
                     TableViewTip::IgnoreOperation(self->m_tip, generation, *reason, error, kind);
-                    if (*reason == TableViewTip::IgnoreReason::ApplicationFault ||
-                        *reason == TableViewTip::IgnoreReason::UnattributedFault)
+                    if (*reason == TableViewTip::IgnoreReason::ApplicationFault)
                     {
                         TableViewTelemetry::ReportError(self->m_telemetrySession, 0, operation, stage, false,
-                            kind == TableViewTip::AppFaultKind::None ? TableViewTip::Attribution::Unknown :
-                                TableViewTip::Attribution::Application, error, kind);
+                            TableViewTip::Attribution::Application, error, kind);
                     }
                 }
                 else if (operation == TableViewTip::Operation::Sort && self->m_isApplyingControlInitiatedSort)

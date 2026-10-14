@@ -19,7 +19,7 @@ namespace TableViewTip
     {
         Cancelled = 100, Vetoed = 101, ValidationRejected = 102, Superseded = 103,
         Unloaded = 104, Retemplated = 105, Stale = 106,
-        DeferredOrUnproven = 107, ApplicationFault = 108, UnattributedFault = 110
+        DeferredOrUnproven = 107, ApplicationFault = 108
     };
     enum class AppFaultKind : uint32_t { None = 0, Callback = 1, Validation = 3, Write = 4, Factory = 5, Data = 6 };
     // Where a fault happened and whose it was; recorded on the TableView_Error diagnostic.
