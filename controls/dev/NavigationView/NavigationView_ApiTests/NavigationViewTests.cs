@@ -49,6 +49,95 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class NavigationViewTests : ApiTestBase
     {
+        [TestMethod]
+        public void VerifyPaneToggleRetainsCurrentFocusState()
+        {
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.LeftMinimal })
+            {
+                var navView = SetupNavigationView(mode);
+                Button toggleButton = null;
+                IInvokeProvider invokeProvider = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    navView.IsPaneOpen = false;
+                    Content.UpdateLayout();
+                    toggleButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                    invokeProvider = (IInvokeProvider)new ButtonAutomationPeer(toggleButton).GetPattern(PatternInterface.Invoke);
+                    Verify.IsTrue(toggleButton.Focus(FocusState.Pointer));
+                    invokeProvider.Invoke();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(navView.IsPaneOpen);
+                    Verify.AreEqual(toggleButton, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot));
+                    Verify.AreEqual(FocusState.Pointer, toggleButton.FocusState);
+                    Verify.IsTrue(toggleButton.Focus(FocusState.Keyboard));
+                    invokeProvider.Invoke();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(navView.IsPaneOpen);
+                    Verify.AreEqual(toggleButton, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot));
+                    Verify.AreEqual(FocusState.Keyboard, toggleButton.FocusState,
+                        "Closing with keyboard focus must not restore the Pointer state saved when opening.");
+                    invokeProvider.Invoke();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(navView.IsPaneOpen);
+                    Verify.AreEqual(toggleButton, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot));
+                    Verify.AreEqual(FocusState.Keyboard, toggleButton.FocusState);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyCompactItemRetainsFocusAfterInvocation()
+        {
+            foreach (bool alreadySelected in new[] { false, true })
+            {
+                var navView = SetupNavigationView(NavigationViewPaneDisplayMode.LeftCompact);
+                NavigationViewItem item = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    navView.IsPaneOpen = false;
+                    Content.UpdateLayout();
+                    var toggleButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                    Verify.IsTrue(toggleButton.Focus(FocusState.Pointer));
+                    navView.IsPaneOpen = true;
+                    item = (NavigationViewItem)navView.MenuItems[1];
+                    if (alreadySelected)
+                    {
+                        navView.SelectedItem = item;
+                        navView.IsPaneOpen = true;
+                    }
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(item.Focus(FocusState.Keyboard));
+                    var peer = new NavigationViewItemAutomationPeer(item);
+                    ((ISelectionItemProvider)peer.GetPattern(PatternInterface.SelectionItem)).Select();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(navView.IsPaneOpen);
+                    Verify.AreEqual(item, navView.SelectedItem);
+                    Verify.AreEqual(item, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot));
+                    Verify.AreEqual(FocusState.Keyboard, item.FocusState);
+                });
+            }
+        }
+
         private NavigationView SetupNavigationView(NavigationViewPaneDisplayMode paneDisplayMode = NavigationViewPaneDisplayMode.Auto)
         {
             NavigationView navView = null;
