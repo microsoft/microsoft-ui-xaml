@@ -58,8 +58,13 @@ namespace UnitTests
         private void TestParsePathExpectSuccess(string xaml)
         {
             var classCodeInfo = GetClassCodeInfo(xaml);
-            var errors = classCodeInfo.BindUniverses[0].Parse(classCodeInfo);
-            Assert.AreEqual(0, errors.Count(), string.Format("Expected success, received {0} errors", errors.Count()));
+            var errors = classCodeInfo.BindUniverses[0].Parse(classCodeInfo).ToList();
+            Assert.AreEqual(
+                0,
+                errors.Count,
+                string.Format(
+                    "Expected success, received: {0}",
+                    string.Join("; ", errors.Select(error => string.Format("{0}: {1}", error.ErrorCode, error.Message)))));
         }
 
         [TestMethod]
@@ -183,6 +188,92 @@ namespace UnitTests
         {
             TestParsePathExpectOneError("<TextBlock Margin='{x:Bind (Thickness), Mode=TwoWay}' />",
                 "WMC1121", "Invalid binding assignment : TwoWay binding is invalid when the binding expression ends with a cast");
+        }
+
+        [TestMethod]
+        public void ParsePath_TwoWayReadOnlyPropertyError()
+        {
+            TestParsePathExpectOneError("<TextBox Text='{x:Bind ReadOnlyStringProperty, Mode=TwoWay}' />",
+                "WMC1121", "Invalid binding assignment : TwoWay binding path 'ReadOnlyStringProperty' cannot write to read-only source member 'ReadOnlyStringProperty'");
+        }
+
+        [TestMethod]
+        public void ParsePath_TwoWayInitOnlyPropertyError()
+        {
+            TestParsePathExpectOneError("<TextBox Text='{x:Bind InitOnlyStringProperty, Mode=TwoWay}' />",
+                "WMC1121", "Invalid binding assignment : TwoWay binding path 'InitOnlyStringProperty' cannot write to read-only source member 'InitOnlyStringProperty'");
+        }
+
+        [TestMethod]
+        public void ParsePath_TwoWayReadOnlyFieldError()
+        {
+            TestParsePathExpectOneError("<TextBox Text='{x:Bind ReadOnlyStringField, Mode=TwoWay}' />",
+                "WMC1121", "Invalid binding assignment : TwoWay binding path 'ReadOnlyStringField' cannot write to read-only source member 'ReadOnlyStringField'");
+        }
+
+        [TestMethod]
+        public void ParsePath_TwoWayReadOnlyAttachedPropertyError()
+        {
+            TestParsePathExpectOneError("<Grid Tag='{x:Bind SomeButton.(dll:BindPathParserClass.ReadOnlyItems), Mode=TwoWay}' />",
+                "WMC1121", "Invalid binding assignment : TwoWay binding path 'SomeButton.(dll:BindPathParserClass.ReadOnlyItems)' cannot write to read-only source member 'ReadOnlyItems'");
+        }
+
+        [TestMethod]
+        public void ParsePath_TwoWayReadOnlyDependencyPropertyError()
+        {
+            TestParsePathExpectOneError("<TextBox Text='{x:Bind SomeButton.ActualWidth, Mode=TwoWay}' />",
+                "WMC1121", "Invalid binding assignment : TwoWay binding path 'SomeButton.ActualWidth' cannot write to read-only source member 'ActualWidth'");
+        }
+
+        [TestMethod]
+        public void ParsePath_TwoWayQualifiedReadOnlyPropertyError()
+        {
+            TestParsePathExpectOneError("<TextBox Text='{x:Bind NullObject.(dll:BindPathParserClass.ReadOnlyStringProperty), Mode=TwoWay}' />",
+                "WMC1121", "Invalid binding assignment : TwoWay binding path 'NullObject.(dll:BindPathParserClass.ReadOnlyStringProperty)' cannot write to read-only source member 'ReadOnlyStringProperty'");
+        }
+
+        [TestMethod]
+        public void ParsePath_TwoWayQualifiedReadOnlyFieldError()
+        {
+            TestParsePathExpectOneError("<TextBox Text='{x:Bind NullObject.(dll:BindPathParserClass.ReadOnlyStringField), Mode=TwoWay}' />",
+                "WMC1121", "Invalid binding assignment : TwoWay binding path 'NullObject.(dll:BindPathParserClass.ReadOnlyStringField)' cannot write to read-only source member 'ReadOnlyStringField'");
+        }
+
+        [TestMethod]
+        public void ParsePath_TwoWayAllowsPrivateSetterOnXamlRoot()
+        {
+            TestParsePathExpectSuccess("<TextBox Text='{x:Bind PrivateSetStringProperty, Mode=TwoWay}' />");
+        }
+
+        [TestMethod]
+        public void ParsePath_TwoWayAllowsReadOnlyIntermediateProperty()
+        {
+            TestParsePathExpectSuccess("<TextBox Text='{x:Bind dll:BindPathParserClass.Instance.StringProperty, Mode=TwoWay}' />");
+        }
+
+        [TestMethod]
+        public void ParsePath_TwoWayAllowsWritableAttachedProperty()
+        {
+            TestParsePathExpectSuccess("<TextBox Text='{x:Bind SomeButton.(AutomationProperties.Name), Mode=TwoWay}' />");
+        }
+
+        [TestMethod]
+        public void ParsePath_TwoWayAllowsMapIndex()
+        {
+            TestParsePathExpectSuccess(
+                "<Rectangle><Rectangle.Fill><SolidColorBrush Color=\"{x:Bind RainbowAsString['red'], Mode=TwoWay}\" /></Rectangle.Fill></Rectangle>");
+        }
+
+        [TestMethod]
+        public void ParsePath_OneTimeAllowsReadOnlyProperty()
+        {
+            TestParsePathExpectSuccess("<TextBox Text='{x:Bind ReadOnlyStringProperty}' />");
+        }
+
+        [TestMethod]
+        public void ParsePath_OneTimeAllowsSystemXamlReadOnlyAttachedCollection()
+        {
+            TestParsePathExpectSuccess("<Grid Tag='{x:Bind SomeButton.(dll:BindPathParserClass.ReadOnlyItems)}' />");
         }
 
         [TestMethod]
