@@ -1122,7 +1122,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var items = MakeEditableItems();
             var parent = items[0];
             var edited = items[1];
-            var source = ParentEditedUnder(items, parent, edited);
+            var source = ParentEditedUnder(items, parent, edited, items[2]);
             var tableView = LoadExpandedTable(source);
             var actions = OpenEditHoldingValidValue(tableView, edited, "Zed");
 
@@ -1139,7 +1139,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var items = new ObservableCollection<EditablePerson>(MakeEditableItems());
             var parent = items[0];
             var edited = items[1];
-            var source = ParentEditedUnder(items, parent, edited);
+            var source = ParentEditedUnder(items, parent, edited, items[2]);
             var tableView = LoadExpandedTable(source);
             var actions = OpenEditHoldingValidValue(tableView, edited, "Zed");
 
@@ -1149,12 +1149,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyForcedClose(tableView, actions, TableViewEditAction.Cancel, edited, "Diego", "a removed child must not receive the pending value");
         }
 
-        private static TableViewSource ParentEditedUnder(IEnumerable<EditablePerson> items, EditablePerson parent, EditablePerson child)
+        // The sibling keeps the parent's child list non-empty once the edited child leaves it.
+        private static TableViewSource ParentEditedUnder(IEnumerable<EditablePerson> items, EditablePerson parent, EditablePerson child, EditablePerson sibling)
         {
             var source = SourceFrom(items);
             RunOnUIThread.Execute(() => source.ParentBy(
                 new TableViewKeySelector(o => o),
-                new TableViewKeySelector(o => ReferenceEquals(o, child) ? parent : null)));
+                new TableViewKeySelector(o => ReferenceEquals(o, child) || ReferenceEquals(o, sibling) ? parent : null)));
             return source;
         }
 
