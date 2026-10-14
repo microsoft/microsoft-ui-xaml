@@ -109,7 +109,8 @@ visible on purpose.
   GroupBy on the roots) over their own data: people by manager, files by folder, processes by app;
   pages whose rows have no parent relation show those modes disabled with the reason. The Manager
   table shows per-row-kind context menus through `TableView.RowStyleSelector` (leaf rows,
-  expandable rows and group headers each get their own `Style`)
+    expandable rows and group headers each get their own `Style`; the group header style also
+    restyles the band, and the leaf menu's items bind `IsEnabled` / `Visibility` to the row's item)
 - Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
 - `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
   sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing

@@ -35,7 +35,7 @@
         Snippet="Hierarchy"
         ShowHierarchyKeys="True"
         StretchExample="True"
-        TryIt="Expand a row with its chevron or the Right arrow; Left collapses it or moves to the parent, and * expands the whole subtree. Select a row and choose Reparent, Rename or Next department: with Live shaping on, both trees reshape in place. Right-click a row in the Manager table: managers (rows with reports) and individual contributors show different menus, and with grouping on, department headers show a third."
+        TryIt="Expand a row with its chevron or the Right arrow; Left collapses it or moves to the parent, and * expands the whole subtree. Select a row and choose Reparent, Rename or Next department: with Live shaping on, both trees reshape in place. Right-click a row in the Manager table: managers (rows with reports) and individual contributors show different menus, and with grouping on, department headers show a third. In an individual contributor's menu, Promote is enabled only for Engineers, and Assign mentor or Remove mentor shows depending on whether the person has a mentor: the items bind to the row's Employee."
         WhatToLookFor="The same person sits at a different depth in each table. A filter keeps every match and its ancestors; the ancestors are ordinary rows (selectable, counted, announced like any row) and nothing marks them as context. Code can expand or collapse only every row at once (ExpandAllRows / CollapseAllRows): there is no per-row expand API in this release, so the chevron, the keyboard and UI Automation are the only ways to open a single row. Known control issue: under a filter, a match whose descendants also match stays collapsed (type Ada: Ada A1 stays closed), so those descendants stay hidden until you expand it.">
 
         <controls:SamplePresenter.Example>
@@ -67,9 +67,20 @@
                         <tv:TableView.Resources>
                             <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
                             <!-- Per-row-kind context menus: individual contributors, managers
-                                 (rows with reports) and department headers (Group on). -->
+                                 (rows with reports) and department headers (Group on). Menu items
+                                 inherit the row's Employee as DataContext, so their state can bind
+                                 to it: Promote is disabled unless CanPromote, and exactly one of
+                                 Assign / Remove mentor shows, depending on HasMentor. -->
                             <MenuFlyout x:Key="LeafRowMenu">
                                 <MenuFlyoutItem Text="Open profile" Click="OnRowMenuItemClick"/>
+                                <MenuFlyoutItem Text="Promote" Click="OnPromoteClick"
+                                                IsEnabled="{Binding CanPromote}"/>
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem Text="Assign mentor" Click="OnAssignMentorClick"
+                                                Visibility="{Binding HasMentor, Converter={StaticResource InvertedBoolToVisibilityConverter}}"/>
+                                <MenuFlyoutItem Text="Remove mentor" Click="OnRemoveMentorClick"
+                                                Visibility="{Binding HasMentor, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <MenuFlyoutSeparator/>
                                 <MenuFlyoutItem Text="Remove" Click="OnRowMenuItemClick"/>
                             </MenuFlyout>
                             <MenuFlyout x:Key="ManagerRowMenu">
@@ -94,9 +105,14 @@
                                         <Setter Property="ContextFlyout" Value="{StaticResource ManagerRowMenu}"/>
                                     </Style>
                                 </helpers:RowKindStyleSelector.ExpandableRow>
+                                <!-- The style owns the band chrome; GroupHeaderTemplate (set in
+                                     code) still owns the content. -->
                                 <helpers:RowKindStyleSelector.GroupHeader>
                                     <Style TargetType="tv:TableViewGroupHeader">
                                         <Setter Property="ContextFlyout" Value="{StaticResource DeptGroupMenu}"/>
+                                        <Setter Property="Background" Value="{ThemeResource SystemFillColorAttentionBackgroundBrush}"/>
+                                        <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                                        <Setter Property="Padding" Value="8,10,16,10"/>
                                     </Style>
                                 </helpers:RowKindStyleSelector.GroupHeader>
                             </helpers:RowKindStyleSelector>

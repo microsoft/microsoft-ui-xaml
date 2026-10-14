@@ -36,9 +36,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // through an automation peer's ShowContextMenu (no position, like a keyboard request). Real mouse
     // and keyboard input, the chevron, and the current cell (internal; observable only through
     // keyboard behavior) are covered by the interaction tests.
-    //
-    // Red tests encode a known product gap and are expected to fail until it is fixed:
-    // A15, C6.
     [TestClass]
     public class TableViewContextMenuTests : TableViewApiTestBase
     {
@@ -253,7 +250,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A15 (Red): the content search stops at a nested items control, like it does at a nested TableView.")]
+        [TestProperty("Description", "A15: the content search stops at a nested items control, like it does at a nested TableView.")]
         public void NestedItemsControlFlyoutNotPicked()
         {
             var f = LoadFixture(
@@ -393,7 +390,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "C4: a header request leaves body selection and focus unchanged.")]
+        [TestProperty("Description", "C4: a header request focuses the header and leaves body selection unchanged; focus returns to the header when the menu closes.")]
         public void HeaderRequestDoesNotMoveBodyState()
         {
             var f = LoadFixture();
@@ -407,12 +404,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreSame(f.P(2), f.Table.SelectedItem, "A header menu must not change the selection.");
-                VerifyFocusWithin(f, RowOf(f, 2), "after the header menu closes");
+                VerifyFocusWithin(f, HeaderOf(f, NameCol), "after the header menu closes");
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "C6 (Red): a header peer for a collapsed column must not open any menu.")]
+        [TestProperty("Description", "C6: a header peer for a collapsed column must not open any menu.")]
         public void CollapsedColumnHeaderPeerOpensNoMenu()
         {
             var f = LoadFixture(configure: x => x.OfficeColumn.HeaderContextFlyout = x.HeaderMenu);
@@ -437,6 +434,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             CloseMenus(f);
             RunOnUIThread.Execute(() => VerifyFocusWithin(f, RowOf(f, 2), "after the request"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "C10: a TableView-owned header peer (public constructor) forwards ShowContextMenu to the realized header, so the column's header menu opens rather than the table menu.")]
+        public void TableOwnedHeaderPeerOpensHeaderMenu()
+        {
+            var f = LoadFixture();
+
+            RunOnUIThread.Execute(() => new TableViewColumnHeaderAutomationPeer(f.Table, f.NameColumn).ShowContextMenu());
+            IdleSynchronizer.Wait();
+
+            VerifyOpened(f, "HeaderMenu", () => HeaderOf(f, NameCol), expectedItem: null, "UIA on a TableView-owned Name header peer");
+            CloseMenus(f);
         }
 
         [TestMethod]

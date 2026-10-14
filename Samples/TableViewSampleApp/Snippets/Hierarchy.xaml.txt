@@ -13,9 +13,20 @@
     <tv:TableView.Resources>
         <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
         <!-- Per-row-kind context menus: individual contributors, managers
-             (rows with reports) and department headers (Group on). -->
+             (rows with reports) and department headers (Group on). Menu items
+             inherit the row's Employee as DataContext, so their state can bind
+             to it: Promote is disabled unless CanPromote, and exactly one of
+             Assign / Remove mentor shows, depending on HasMentor. -->
         <MenuFlyout x:Key="LeafRowMenu">
             <MenuFlyoutItem Text="Open profile" Click="OnRowMenuItemClick"/>
+            <MenuFlyoutItem Text="Promote" Click="OnPromoteClick"
+                            IsEnabled="{Binding CanPromote}"/>
+            <MenuFlyoutSeparator/>
+            <MenuFlyoutItem Text="Assign mentor" Click="OnAssignMentorClick"
+                            Visibility="{Binding HasMentor, Converter={StaticResource InvertedBoolToVisibilityConverter}}"/>
+            <MenuFlyoutItem Text="Remove mentor" Click="OnRemoveMentorClick"
+                            Visibility="{Binding HasMentor, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <MenuFlyoutSeparator/>
             <MenuFlyoutItem Text="Remove" Click="OnRowMenuItemClick"/>
         </MenuFlyout>
         <MenuFlyout x:Key="ManagerRowMenu">
@@ -40,9 +51,14 @@
                     <Setter Property="ContextFlyout" Value="{StaticResource ManagerRowMenu}"/>
                 </Style>
             </helpers:RowKindStyleSelector.ExpandableRow>
+            <!-- The style owns the band chrome; GroupHeaderTemplate (set in
+                 code) still owns the content. -->
             <helpers:RowKindStyleSelector.GroupHeader>
                 <Style TargetType="tv:TableViewGroupHeader">
                     <Setter Property="ContextFlyout" Value="{StaticResource DeptGroupMenu}"/>
+                    <Setter Property="Background" Value="{ThemeResource SystemFillColorAttentionBackgroundBrush}"/>
+                    <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                    <Setter Property="Padding" Value="8,10,16,10"/>
                 </Style>
             </helpers:RowKindStyleSelector.GroupHeader>
         </helpers:RowKindStyleSelector>

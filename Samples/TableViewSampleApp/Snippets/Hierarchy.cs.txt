@@ -177,6 +177,53 @@ private void OnRowMenuItemClick(object sender, RoutedEventArgs e)
     var target = menuItem.DataContext is Employee employee ? employee.Name : _menuGroup?.KeyText ?? "?";
 }
 
+private void OnPromoteClick(object sender, RoutedEventArgs e)
+{
+    if (((FrameworkElement)sender).DataContext is not Employee { CanPromote: true } employee)
+    {
+        return;
+    }
+
+    var from = employee.Title;
+    employee.Title = from == "Associate" ? "Engineer" : "Senior";
+}
+
+private void OnRemoveMentorClick(object sender, RoutedEventArgs e)
+{
+    if (((FrameworkElement)sender).DataContext is Employee employee)
+    {
+        employee.MentorId = null;
+    }
+}
+
+// Mentor = the employee's manager, unless that would put the employee in its own mentor chain.
+private void OnAssignMentorClick(object sender, RoutedEventArgs e)
+{
+    if (((FrameworkElement)sender).DataContext is not Employee employee)
+    {
+        return;
+    }
+
+    var mentorOf = _employees.ToDictionary(x => x.Id, x => x.MentorId);
+    int? id = employee.ManagerId;
+    for (int hops = 0; id is int current && hops <= _employees.Count; hops++)
+    {
+        if (current == employee.Id)
+        {
+            return;
+        }
+
+        id = mentorOf.GetValueOrDefault(current);
+    }
+
+    if (employee.ManagerId is not int managerId)
+    {
+        return;
+    }
+
+    employee.MentorId = managerId;
+}
+
 // …
 
 // From Helpers\RowKindStyleSelector.cs
