@@ -76,7 +76,7 @@
                       </ExpressionAnimation>
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="31" SizeY="15" BorderMode="Hard" ScaleX="0.6667" ScaleY="0.6667" OffsetX="1.333" OffsetY="5.333" OffsetZ="0">
+                      <wucSpriteVisual SizeX="33" SizeY="17" BorderMode="Hard" ScaleX="0.6667" ScaleY="0.6667" OffsetX="0.6667" OffsetY="4.667" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="rgb {0, 0.502, 0}" />

@@ -22,7 +22,14 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(CommonFilesPath)AppPreamble.cpp.props" />
 
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>DISABLE_XAML_GENERATED_MAIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
+    <ClInclude Include="ArrayProperties.h" />
     <ClInclude Include="App.h">
       <DependentUpon>App.xaml</DependentUpon>
     </ClInclude>
@@ -31,6 +38,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ArrayProperties.cpp" />
+    <ClCompile Include="MetadataTests.cpp" />
     <ClCompile Include="App.cpp">
       <DependentUpon>App.xaml</DependentUpon>
     </ClCompile>
@@ -65,5 +74,5 @@
     <Image Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
 
-  <Import Project="$(CommonFilesPath)RuntimeComponentPostamble.cpp.props" />
+  <Import Project="$(CommonFilesPath)AppPostamble.cpp.props" />
 </Project>

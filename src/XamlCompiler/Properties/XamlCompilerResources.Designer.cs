@@ -203,6 +203,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Properties {
                 return ResourceManager.GetString("BindAssignment_RequiresConditionalNamespace", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to TwoWay binding path &apos;{0}&apos; cannot write to read-only source member &apos;{1}&apos;.
+        /// </summary>
+        internal static string BindAssignment_TwoWaySourceNotWritable {
+            get {
+                return ResourceManager.GetString("BindAssignment_TwoWaySourceNotWritable", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to &apos;Explicit&apos; is not a supported value for &apos;UpdateSourceTrigger&apos;.

@@ -30,4 +30,22 @@ namespace winrt::EventHandling_968976::implementation
     void MainPage::FourthHandler(winrt::hstring& /* args */)
     {
     }
+
+    void MainPage::GuidCharPassHandler(
+        winrt::array_view<winrt::guid const> /* guidArgs */,
+        winrt::array_view<char16_t const> /* charArgs */)
+    {
+    }
+
+    void MainPage::GuidCharFillHandler(
+        winrt::array_view<winrt::guid> /* guidArgs */,
+        winrt::array_view<char16_t> /* charArgs */)
+    {
+    }
+
+    void MainPage::GuidCharReceiveHandler(
+        winrt::com_array<winrt::guid>& /* guidArgs */,
+        winrt::com_array<char16_t>& /* charArgs */)
+    {
+    }
 }
