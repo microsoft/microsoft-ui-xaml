@@ -1042,14 +1042,14 @@ void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, c
 {
     const bool ignorePointerId = IgnorePointerId(args);
     NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, ignorePointerId);
+    const auto deviceType = args.Pointer().PointerDeviceType();
     if (ignorePointerId)
     {
         // FUTURE: Remove this workaround, which always switches to a new Touch or Pen input
         //         in case a previous touch/input got lost due to a missing PointerCaptureLost event.
-        auto const& pointerDeviceType = args.Pointer().PointerDeviceType();
         if (
-            pointerDeviceType == winrt::PointerDeviceType::Touch ||
-            pointerDeviceType == winrt::PointerDeviceType::Pen)
+            deviceType == winrt::PointerDeviceType::Touch ||
+            deviceType == winrt::PointerDeviceType::Pen)
         {
             m_isPressed = false;
             m_isPointerOver = false;
@@ -1085,11 +1085,10 @@ void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, c
 
     // Automatic mouse/pen dragging must capture the CanDrag element itself.
     // Sharing that owner preserves press tracking without blocking drag detection.
-    const auto deviceType = pointer.PointerDeviceType();
     const bool captureOnItem = CanDrag() &&
         (deviceType == winrt::PointerDeviceType::Mouse || deviceType == winrt::PointerDeviceType::Pen);
     auto owner = captureOnItem ? this->try_as<winrt::UIElement>() : presenter;
-    if (captureOnItem && owner != presenter && !m_itemPointerReleasedRevoker)
+    if (owner != presenter && !m_itemPointerReleasedRevoker)
     {
         // Item-captured events do not route through the presenter. Subscribe only
         // when needed, and filter on the owned pointer to exclude child captures.
