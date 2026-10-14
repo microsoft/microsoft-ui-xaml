@@ -93,13 +93,45 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyWindowedPopupListViewDataPeerCreatedBeforeNavigationUsesPopupHost)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a main-window peer reference creates a ListView item data provider against its popup host before popup navigation.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
     private:
         enum class PopupHostChange { None, NewPopup, NonWindowed, NestedInline };
+
+        ref class PeerReferenceAutomationPeer sealed : public xaml_automation_peers::ButtonAutomationPeer
+        {
+        public:
+            PeerReferenceAutomationPeer(xaml_controls::Button^ owner) : ButtonAutomationPeer(owner) {}
+            property xaml_automation_peers::AutomationPeer^ ReferencedPeer;
+
+        protected:
+            xaml_automation_peers::AutomationPeer^ GetLabeledByCore() override { return ReferencedPeer; }
+        };
+
+        ref class PeerReferenceButton sealed : public xaml_controls::Button
+        {
+        public:
+            void SetReferencedPeer(xaml_automation_peers::AutomationPeer^ peer)
+            {
+                safe_cast<PeerReferenceAutomationPeer^>(
+                    xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(this))->ReferencedPeer = peer;
+            }
+
+        protected:
+            xaml_automation_peers::AutomationPeer^ OnCreateAutomationPeer() override
+            {
+                return ref new PeerReferenceAutomationPeer(this);
+            }
+        };
 
         wrl::ComPtr<IRawElementProviderFragment> GetUIAWindow();
         void CheckUIAElementName(_In_ wrl::ComPtr<IRawElementProviderFragment> uiaElement, _In_ const WCHAR* expectedName);
         void VerifyParentlessPopupAutomationTreeCommon(bool hasFrameAP);
         void VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange, bool createWithStructureListener = false);
+        void VerifyWindowedPopupListViewDataPeerHost(bool createBeforeNavigation);
 
         static WCHAR s_automationName[];
         static WCHAR s_automationId[];

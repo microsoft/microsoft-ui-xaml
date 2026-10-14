@@ -113,11 +113,23 @@ void PopupAutomationIntegrationTests::VerifyInlinePopupProviderUsesAncestorWindo
 
 void PopupAutomationIntegrationTests::VerifyWindowedPopupListViewDataPeerUsesPopupHost()
 {
+    VerifyWindowedPopupListViewDataPeerHost(false /* createBeforeNavigation */);
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupListViewDataPeerCreatedBeforeNavigationUsesPopupHost()
+{
+    VerifyWindowedPopupListViewDataPeerHost(true /* createBeforeNavigation */);
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupListViewDataPeerHost(bool createBeforeNavigation)
+{
     TestCleanupWrapper cleanup;
     xaml_controls::Button^ mainAnchor;
     xaml_controls::Button^ popupAnchor;
     xaml_controls::ListView^ listView;
     xaml_primitives::Popup^ popup;
+    PeerReferenceButton^ dataReference;
+    PeerReferenceButton^ popupReference;
     RunOnUIThread([&]()
     {
         VERIFY_IS_FALSE(xaml_automation_peers::AutomationPeer::ListenerExists(
@@ -126,6 +138,15 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupListViewDataPeerUsesPop
         mainAnchor = ref new xaml_controls::Button();
         mainAnchor->Content = L"Main host anchor";
         root->Children->Append(mainAnchor);
+        if (createBeforeNavigation)
+        {
+            dataReference = ref new PeerReferenceButton();
+            popupReference = ref new PeerReferenceButton();
+            xaml_automation::AutomationProperties::SetName(dataReference, L"Data peer reference");
+            xaml_automation::AutomationProperties::SetName(popupReference, L"Popup peer reference");
+            root->Children->Append(dataReference);
+            root->Children->Append(popupReference);
+        }
         TestServices::WindowHelper->WindowContent = root;
 
         popupAnchor = ref new xaml_controls::Button();
@@ -153,9 +174,25 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupListViewDataPeerUsesPop
     std::shared_ptr<AutomationClient::AutomationClientManager> mainClient;
     std::shared_ptr<AutomationClient::AutomationClientManager> anchorClient;
     std::shared_ptr<AutomationClient::AutomationClientManager> itemClient;
+    wrl::ComPtr<IUIAutomationElement> dataReferenceElement;
+    wrl::ComPtr<IUIAutomationElement> popupReferenceElement;
+    wrl::ComPtr<IUIAutomationElement> directlyCreatedItem;
+    wrl::ComPtr<IUIAutomationElement> directlyCreatedAnchor;
     UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
     {
         mainClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(mainInfo);
+        if (createBeforeNavigation)
+        {
+            AutomationClient::UIAElementInfo referenceInfo{};
+            referenceInfo.m_Name = L"Data peer reference";
+            auto referenceClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(referenceInfo);
+            referenceClient->GetCurrentUIAutomationElement(&dataReferenceElement);
+            referenceInfo.m_Name = L"Popup peer reference";
+            referenceClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(referenceInfo);
+            referenceClient->GetCurrentUIAutomationElement(&popupReferenceElement);
+            VERIFY_IS_NOT_NULL(dataReferenceElement.Get());
+            VERIFY_IS_NOT_NULL(popupReferenceElement.Get());
+        }
     });
 
     for (int cycle = 0; cycle < 4; cycle++)
@@ -166,13 +203,42 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupListViewDataPeerUsesPop
         {
             popupWindow = reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popup));
             VERIFY_IS_NOT_NULL(popupWindow);
+            if (createBeforeNavigation)
+            {
+                auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(listView);
+                auto children = peer->GetChildren();
+                VERIFY_ARE_EQUAL(1u, children->Size);
+                auto dataPeer = dynamic_cast<xaml_automation_peers::ListViewItemDataAutomationPeer^>(children->GetAt(0));
+                VERIFY_IS_NOT_NULL(dataPeer);
+                dataReference->SetReferencedPeer(dataPeer);
+                popupReference->SetReferencedPeer(xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(popupAnchor));
+            }
         });
         UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
         {
-            anchorClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, anchorInfo);
-            itemClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, itemInfo);
+            if (createBeforeNavigation)
+            {
+                // These main-window property queries create providers without navigating
+                // into the popup. Retain the returned clients through the root checks.
+                LogThrow_IfFailed(dataReferenceElement->get_CurrentLabeledBy(directlyCreatedItem.ReleaseAndGetAddressOf()));
+                LogThrow_IfFailed(popupReferenceElement->get_CurrentLabeledBy(directlyCreatedAnchor.ReleaseAndGetAddressOf()));
+                VERIFY_IS_NOT_NULL(directlyCreatedItem.Get());
+                VERIFY_IS_NOT_NULL(directlyCreatedAnchor.Get());
+            }
+            else
+            {
+                anchorClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, anchorInfo);
+                itemClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, itemInfo);
+            }
             wrl::ComPtr<IUIAutomationElement> itemElement;
-            itemClient->GetCurrentUIAutomationElement(&itemElement);
+            if (createBeforeNavigation)
+            {
+                itemElement = directlyCreatedItem;
+            }
+            else
+            {
+                itemClient->GetCurrentUIAutomationElement(&itemElement);
+            }
             VERIFY_IS_NOT_NULL(itemElement.Get());
             CONTROLTYPEID controlType;
             LogThrow_IfFailed(itemElement->get_CurrentControlType(&controlType));
@@ -192,7 +258,7 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupListViewDataPeerUsesPop
                 LogThrow_IfFailed(fragmentRoot.As(&identity));
                 return identity;
             };
-            // Retain clients discovered through the popup so peer QI uses existing wrappers.
+            // Retained clients ensure peer QI checks the existing wrappers.
             auto popupRoot = rootIdentity(xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(popupAnchor));
             auto mainRoot = rootIdentity(xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(mainAnchor));
             VERIFY_ARE_NOT_EQUAL(mainRoot, popupRoot);
