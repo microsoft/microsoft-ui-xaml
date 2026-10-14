@@ -75,6 +75,15 @@ namespace TableViewTip
             state.operationPending = false;
             state.operationTipPending = false;
         }
+
+        // Ends the setup run; returns whether its TiP test was running and still needs closing.
+        bool StopSetup(State& state) noexcept
+        {
+            auto const tipPending = state.setupTipPending;
+            state.setupPending = false;
+            state.setupTipPending = false;
+            return tipPending;
+        }
     }
 
     bool IsOperationHandled(OperationState const& state, Operation operation, uint64_t generation) noexcept
@@ -84,33 +93,32 @@ namespace TableViewTip
     }
 
     // Every template application is one setup run; OnApplyTemplate ignores an unfinished one first.
+    // The run is tracked even when TiP is unavailable, so a setup failure still gets its diagnostic.
     void StartSetup(State& state) noexcept
     {
+        state.setupPending = true;
         state.setupTipPending = state.setupTest.start() != GUID{};
     }
 
     void CompleteSetup(State& state) noexcept
     {
-        if (!state.setupTipPending) { return; }
-        state.setupTipPending = false;
-        CloseCompleted(state.setupTest);
+        if (!state.setupPending) { return; }
+        if (StopSetup(state)) { CloseCompleted(state.setupTest); }
     }
 
     void FailSetup(State& state, HRESULT error) noexcept
     {
-        if (!state.setupTipPending) { return; }
-        state.setupTipPending = false;
-        CloseFailed(state.setupTest, error);
+        if (!state.setupPending) { return; }
+        if (StopSetup(state)) { CloseFailed(state.setupTest, error); }
         TableViewTelemetry::ReportError(state.session, 0, Operation::Setup, Stage::Template, false, Attribution::Product, error);
     }
 
     void IgnoreSetup(State& state, IgnoreReason reason, std::optional<HRESULT> error, AppFaultKind kind) noexcept
     {
-        if (!state.setupTipPending) { return; }
+        if (!state.setupPending) { return; }
         auto const name = GetIgnoreName(reason);
         if (!name) { return; }
-        state.setupTipPending = false;
-        CloseIgnored(state.setupTest, reason, name, error, kind);
+        if (StopSetup(state)) { CloseIgnored(state.setupTest, reason, name, error, kind); }
     }
 
     uint64_t BeginOperation(OperationState& state, Operation operation) noexcept

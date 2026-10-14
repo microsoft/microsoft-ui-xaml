@@ -52,6 +52,7 @@ namespace TableViewTip
     {
         using OperationState::OperationState;
         TableViewInitializationTest setupTest;
+        bool setupPending{};
         bool setupTipPending{};
     };
 
