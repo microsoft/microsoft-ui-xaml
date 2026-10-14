@@ -1,0 +1,59 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.TableViewVirtualizationPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <!-- Stays inside the 1024px lab frame; the button below is invoked through UIA only. -->
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RowSpacing="8" Padding="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Focus-neutral: nothing can move focus onto it, so an editor open in the table keeps focus while
+             the source mutates underneath it. -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+            <Button Content="Remove First Item (focus-neutral)"
+                    AutomationProperties.Name="RemoveFirstItemButton"
+                    AutomationProperties.AutomationId="RemoveFirstItemButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnRemoveFirstItemClick" />
+        </StackPanel>
+
+        <!-- Format documented on TableViewVirtualizationPageFacts.Readout. -->
+        <TextBox x:Name="VirtualizationReadout"
+                 Grid.Row="1"
+                 AutomationProperties.Name="VirtualizationReadout"
+                 AutomationProperties.AutomationId="VirtualizationReadout"
+                 HorizontalAlignment="Left"
+                 Width="900"
+                 TextWrapping="Wrap"
+                 IsReadOnly="True"
+                 IsTabStop="False"
+                 Text="" />
+
+        <!-- 2000 items in a 360px-tall table, so only a viewport of rows (plus cache) is realized. -->
+        <controls:TableView x:Name="LargeEditableTable"
+                            Grid.Row="2"
+                            AutomationProperties.Name="LargeEditableTable"
+                            AutomationProperties.AutomationId="LargeEditableTable"
+                            Height="360"
+                            Width="520"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            IsReadOnly="False"
+                            SelectionMode="Single">
+            <controls:TableViewTextColumn Header="Name" Width="200" Binding="{Binding Name}" />
+            <controls:TableViewTextColumn Header="Quantity" Width="120" Binding="{Binding Quantity}" />
+            <controls:TableViewTextColumn Header="Code" Width="160" IsReadOnly="True" Binding="{Binding Code}" />
+        </controls:TableView>
+    </Grid>
+</local:TestPage>
