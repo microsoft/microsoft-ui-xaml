@@ -1187,6 +1187,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var target = getTarget();
                 Verify.IsTrue(ReferenceEquals(target, FocusManager.GetFocusedElement(target.XamlRoot)),
                     $"Precondition: keyboard focus stays on the {what}.");
+                Verify.AreEqual(FocusState.Keyboard, target.FocusState, $"Precondition: the {what} is keyboard-focused.");
                 Verify.AreEqual(expected, target.CornerRadius,
                     $"A keyboard-focused {what} must be rounded like the rows' focus rect.");
                 Verify.IsTrue(getOther().Focus(FocusState.Programmatic), "Precondition: focus moves elsewhere.");
@@ -1224,8 +1225,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(new CornerRadius(0), getTarget().CornerRadius,
-                    $"Programmatic focus without keyboard input shows no focus rect, so the {what} must stay square.");
+                // XAML coerces programmatic focus to Keyboard or Pointer from the content root's last
+                // input device, which earlier tests or the harness may have left as keyboard; the
+                // focus rect, and so the radius, follows the coerced state.
+                var target = getTarget();
+                var state = target.FocusState;
+                Log.Comment($"Programmatic focus on the {what} was coerced to {state}.");
+                Verify.IsTrue(state == FocusState.Keyboard || state == FocusState.Pointer,
+                    $"Precondition: programmatic focus on the {what} is coerced to Keyboard or Pointer.");
+                Verify.AreEqual(state == FocusState.Keyboard ? expected : new CornerRadius(0), target.CornerRadius,
+                    $"Programmatic focus shows the focus rect only after keyboard input, so the {what} is rounded only then.");
             });
         }
 

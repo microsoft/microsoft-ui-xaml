@@ -1070,6 +1070,7 @@ private:
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
     // Keeps the header band locked to the body when focus moves to an off-screen header.
     winrt::UIElement::BringIntoViewRequested_revoker m_headerBringIntoViewRevoker{};
+    winrt::UIElement::BringIntoViewRequested_revoker m_bodyBringIntoViewRevoker{};
     tracker_ref<winrt::ScrollViewer> m_bodyScroller{ this };
 
     winrt::event_token m_rowElementPreparedToken{};
@@ -1277,6 +1278,7 @@ private:
     // Redirects a header's bring-into-view onto the body scroller, so the header cannot scroll
     // independently of the columns it labels.
     void OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args);
+    void OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args);
 
     // Pre-key focus snapshots are needed because XAML directional navigation can move focus before
     // bubbling handlers run.

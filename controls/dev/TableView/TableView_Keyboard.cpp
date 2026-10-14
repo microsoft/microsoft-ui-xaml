@@ -1760,6 +1760,63 @@ bool TableView::BringRowElementIntoView(winrt::UIElement const& element, std::op
     return true;
 }
 
+// XAML pads a keyboard-focus bring-into-view by 20 DIPs (or the focus visual margin), so focusing a
+// row that is already fully in view would still nudge the body, e.g. a first PageDown would scroll.
+// Drop only the vertical padding; the horizontal request still reveals a focused cell.
+void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args)
+{
+    auto const repeater = m_rowsRepeater.get();
+    auto const target = args.TargetElement().try_as<winrt::FrameworkElement>();
+    if (!repeater || !target || !std::isnan(args.VerticalAlignmentRatio()) || args.VerticalOffset() != 0.0)
+    {
+        return;
+    }
+
+    auto const root = XamlRoot();
+    if (!root || winrt::FocusManager::GetFocusedElement(root) != target)
+    {
+        return;
+    }
+
+    // Only the containers and cells the table focuses itself; hosted content keeps XAML's behavior.
+    winrt::UIElement container{ nullptr };
+    if (target.try_as<winrt::TableViewRow>() || target.try_as<winrt::TableViewGroupHeader>())
+    {
+        container = target;
+    }
+    else if (winrt::VisualTreeHelper::GetParent(target).try_as<winrt::TableViewCellsPanel>())
+    {
+        for (auto node = winrt::VisualTreeHelper::GetParent(target); node; node = winrt::VisualTreeHelper::GetParent(node))
+        {
+            if (auto const row = node.try_as<winrt::TableViewRow>())
+            {
+                container = row;
+                break;
+            }
+        }
+    }
+    if (!container || winrt::VisualTreeHelper::GetParent(container) != repeater || !IsRowElementInViewport(container))
+    {
+        return;
+    }
+
+    auto rect = args.TargetRect();
+    const float height = static_cast<float>(target.ActualHeight());
+    if (!(rect.Height > 0.0f) || !(height > 0.0f))
+    {
+        return;
+    }
+
+    const float top = std::max(rect.Y, 0.0f);
+    const float bottom = std::min(rect.Y + rect.Height, height);
+    if (bottom > top && (top != rect.Y || bottom != rect.Y + rect.Height))
+    {
+        rect.Y = top;
+        rect.Height = bottom - top;
+        args.TargetRect(rect);
+    }
+}
+
 bool TableView::IsBodyFocusAtRow(int32_t rowIndex) const
 {
     if (rowIndex < 0)

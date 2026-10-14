@@ -891,6 +891,7 @@ void TableView::OnApplyTemplate()
     m_headerScroller.set(nullptr);
     m_bodyScroller.set(nullptr);
 
+    m_bodyBringIntoViewRevoker.revoke();
     m_rowsRepeater.set(GetTemplateChild(hstring{ s_RowsRepeaterPartName }).try_as<winrt::ItemsRepeater>());
     m_headerRow.set(GetTemplateChild(hstring{ s_HeaderRowPartName }).try_as<winrt::FrameworkElement>());
     m_headerHost.set(GetTemplateChild(hstring{ s_HeaderHostPartName }).try_as<winrt::Panel>());
@@ -962,6 +963,15 @@ void TableView::OnApplyTemplate()
         winrt::get_self<::TableViewRowTemplateSelector>(selector)->SetOwningTableViewInternal(*this);
         m_rowTemplateSelector.set(selector);
         repeater.ItemTemplate(selector);
+
+        m_bodyBringIntoViewRevoker = repeater.BringIntoViewRequested(winrt::auto_revoke,
+            [weakThis](winrt::IInspectable const& /*sender*/, winrt::BringIntoViewRequestedEventArgs const& args)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->OnBodyBringIntoViewRequested(args);
+                }
+            });
 
         m_rowElementPreparedToken = repeater.ElementPrepared(
             [weakThis](winrt::ItemsRepeater const& sender, winrt::ItemsRepeaterElementPreparedEventArgs const& args)
