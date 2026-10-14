@@ -38,7 +38,7 @@ public:
 
     BEGIN_TEST_METHOD(RenderedEventShouldNotRequestFrame)
         TEST_METHOD_PROPERTY(L"Description", L"Verify registering for CompositionTarget.Rendered event will not force rendering a frame.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Passes first iteration but fails the rest - completedEvent was set and shouldn't be
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(RenderedEvent1)
