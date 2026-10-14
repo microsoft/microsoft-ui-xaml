@@ -7,6 +7,7 @@
 #include "TableViewColumn.h"
 #include "TableViewTextColumn.h"
 #include "TableViewRow.h"
+#include "TableViewSource.h"
 #include "TableViewBeginningEditEventArgs.h"
 #include "TableViewCellEditEndingEventArgs.h"
 #include "TVDiag.h"
@@ -508,7 +509,7 @@ void TableView::EndEditVisual(winrt::TableViewEditAction action)
     m_currentEditRow.set(nullptr);
 }
 
-bool TableView::TerminateEditWithoutVisualRestore(bool insideLayoutPass)
+bool TableView::TerminateEditWithoutVisualRestore(bool insideLayoutPass, bool sourceReplaced)
 {
     if (m_editState == EditState::None)
     {
@@ -527,7 +528,7 @@ bool TableView::TerminateEditWithoutVisualRestore(bool insideLayoutPass)
         }
     });
 
-    return TerminateEditForReset(true /* force */);
+    return TerminateEditForReset(true /* force */, sourceReplaced);
 }
 
 // App code must not run inside ItemsRepeater's measure. A CellEditEnding / EditEnded handler is
@@ -818,7 +819,7 @@ bool TableView::EndCurrentEdit(EditingUnit unit, winrt::TableViewEditAction acti
     return CompleteEditEnd(unit, action, honorCancel, result == EditEndingResult::Vetoed);
 }
 
-bool TableView::TerminateEditForReset(bool force)
+bool TableView::TerminateEditForReset(bool force, bool sourceReplaced)
 {
     if (m_editState == EditState::None)
     {
@@ -827,10 +828,18 @@ bool TableView::TerminateEditForReset(bool force)
 
     // Forced teardown (source-driven reset / ItemsSource replacement / unload) cannot be
     // vetoed: commit the pending value if it is valid, otherwise report Cancel and restore
-    // the edit snapshot. Control-initiated (non-forced) reshapes stay cancelable.
+    // the edit snapshot. An item that has left the source (removed, filtered out, source
+    // replaced) is reported as Cancel with nothing written, as WPF DataGrid does, so a deleted
+    // record is never written back. Control-initiated (non-forced) reshapes stay cancelable.
     auto action = winrt::TableViewEditAction::Commit;
     if (force)
     {
+        // Asked of the active source, not the repeater: a projection swap is reported before the
+        // repeater re-binds, and an item under a collapsed group or node is still present.
+        auto const source = m_activeSource.get();
+        const bool itemLeftSource = sourceReplaced || !source ||
+            !winrt::get_self<::TableViewSource>(source)->ContainsShapedItem(UnwrapEditingDataItem(m_currentEditItem.get()));
+
         // Transfer the pending editor value to the source BEFORE validating. The editing
         // bindings use UpdateSourceTrigger::Explicit, so until this runs the typed value is
         // still sitting in the editor and validation would only ever re-check the pre-edit
@@ -841,7 +850,7 @@ bool TableView::TerminateEditForReset(bool force)
         // FinishEditTeardown must not repeat this write; it detects the forced case via
         // honorCancel == false.
         bool wrote = false;
-        if (auto const column = m_currentEditColumn.get())
+        if (auto const column = m_currentEditColumn.get(); column && !itemLeftSource)
         {
             if (auto const editingElement = CurrentEditingElement())
             {
@@ -912,6 +921,16 @@ void TableView::ClearCoalescedEditReshape()
 
 void TableView::DrainCoalescedEditReshape()
 {
+    // Every edit close lands here. Release a held live reshape unconditionally: it is posted, so
+    // safe even inside a layout pass.
+    if (!IsEditing())
+    {
+        if (auto const source = m_activeSource.get())
+        {
+            winrt::get_self<::TableViewSource>(source)->ResumeHeldLiveShaping();
+        }
+    }
+
     // Never replay inside a layout pass. The queued operations are app-supplied callables that
     // reshape the source; running one from ItemsRepeater's element-clearing/measure callback
     // re-enters the repeater mid-pass. m_suppressEditVisualRestore is exactly the "we are inside

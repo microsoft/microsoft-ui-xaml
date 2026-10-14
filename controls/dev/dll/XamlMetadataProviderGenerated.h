@@ -4674,6 +4674,26 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Primitives.InkToolbarStrokeWidthSlider",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.InkToolbarStrokeWidthSlider",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Slider",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IInkToolbarStrokeWidthSliderFactory>(L"Microsoft.UI.Xaml.Controls.Primitives.InkToolbarStrokeWidthSlider"); },
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.Primitives.MonochromaticOverlayPresenter",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -4969,6 +4989,11 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"VerticalScrollRailMode", L"Microsoft.UI.Xaml.Controls.ScrollingRailMode", statics.VerticalScrollRailModeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ZoomChainMode", L"Microsoft.UI.Xaml.Controls.ScrollingChainMode", statics.ZoomChainModeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ZoomMode", L"Microsoft.UI.Xaml.Controls.ScrollingZoomMode", statics.ZoomModeProperty(), false /* isContent */);
+                    }
+
+                    winrt::IScrollPresenterStatics2 statics2 = GetFactory<winrt::IScrollPresenterStatics2>(L"Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter");
+                    {
+                        xamlType.AddDPMember(L"CanContentRenderOutsideBounds", L"Boolean", statics2.CanContentRenderOutsideBoundsProperty(), false /* isContent */);
                     }
 
                     xamlType.AddMember(
@@ -5871,6 +5896,11 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"VerticalScrollRailMode", L"Microsoft.UI.Xaml.Controls.ScrollingRailMode", statics.VerticalScrollRailModeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ZoomChainMode", L"Microsoft.UI.Xaml.Controls.ScrollingChainMode", statics.ZoomChainModeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ZoomMode", L"Microsoft.UI.Xaml.Controls.ScrollingZoomMode", statics.ZoomModeProperty(), false /* isContent */);
+                    }
+
+                    winrt::IScrollViewStatics2 statics2 = GetFactory<winrt::IScrollViewStatics2>(L"Microsoft.UI.Xaml.Controls.ScrollView");
+                    {
+                        xamlType.AddDPMember(L"CanContentRenderOutsideBounds", L"Boolean", statics2.CanContentRenderOutsideBoundsProperty(), false /* isContent */);
                     }
 
                     xamlType.AddMember(

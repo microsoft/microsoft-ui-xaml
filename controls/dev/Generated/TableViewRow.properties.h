@@ -9,12 +9,27 @@ class TableViewRowProperties
 public:
     TableViewRowProperties();
 
+    void IsExpandable(bool value);
+    bool IsExpandable();
+
+    void IsExpanded(bool value);
+    bool IsExpanded();
+
     void IsSelected(bool value);
     bool IsSelected();
 
-    static winrt::DependencyProperty IsSelectedProperty() { return s_IsSelectedProperty; }
+    void Level(int value);
+    int Level();
 
+    static winrt::DependencyProperty IsExpandableProperty() { return s_IsExpandableProperty; }
+    static winrt::DependencyProperty IsExpandedProperty() { return s_IsExpandedProperty; }
+    static winrt::DependencyProperty IsSelectedProperty() { return s_IsSelectedProperty; }
+    static winrt::DependencyProperty LevelProperty() { return s_LevelProperty; }
+
+    static GlobalDependencyProperty s_IsExpandableProperty;
+    static GlobalDependencyProperty s_IsExpandedProperty;
     static GlobalDependencyProperty s_IsSelectedProperty;
+    static GlobalDependencyProperty s_LevelProperty;
 
     static void EnsureProperties();
     static void ClearProperties();

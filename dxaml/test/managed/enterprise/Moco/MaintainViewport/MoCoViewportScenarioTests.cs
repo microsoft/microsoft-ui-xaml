@@ -42,25 +42,28 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateChatScenarioHorizontal()
         {
             ValidateChatScenario(Orientation.Horizontal, false);
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateChatScenarioVertical()
         {
             ValidateChatScenario(Orientation.Vertical, false);
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateChatScenarioHorizontalBottomRightAligned()
         {
             ValidateChatScenario(Orientation.Horizontal, true);
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateChatScenarioVerticalBottomRightAligned()
         {
             ValidateChatScenario(Orientation.Vertical, true);
@@ -332,6 +335,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
         // element. In the logging scenario, we still track the last element but the panel and ItemsPresenter are top
         // aligned.
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateLoggingScenario()
         {
             ListView list = null;

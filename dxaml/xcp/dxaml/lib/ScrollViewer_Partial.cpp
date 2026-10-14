@@ -5532,6 +5532,12 @@ ScrollViewer::OnVerticalScrollbarPointerExited(
 {
     m_isPointerOverVerticalScrollbar = FALSE;
 
+    // The indicator storyboard may have completed while the pointer was over the scrollbar.
+    if (!m_keepIndicatorsShowing && !m_isPointerOverHorizontalScrollbar)
+    {
+        IFC_RETURN(UpdateVisualState());
+    }
+
     return S_OK;
 }
 
@@ -5553,6 +5559,11 @@ ScrollViewer::OnHorizontalScrollbarPointerExited(
     _In_ xaml_input::IPointerRoutedEventArgs* /*pArgs unused*/)
 {
     m_isPointerOverHorizontalScrollbar = FALSE;
+
+    if (!m_keepIndicatorsShowing && !m_isPointerOverVerticalScrollbar)
+    {
+        IFC_RETURN(UpdateVisualState());
+    }
 
     return S_OK;
 }
