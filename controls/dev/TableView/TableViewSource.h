@@ -106,7 +106,15 @@ public:
     // sits below the control in the shaping stack. For the same reason the owner INSTALLS the two
     // handlers below rather than being called back into by name - the same shape as the handlers
     // this class installs on its own engine.
-    void SetOwningTableView(winrt::IInspectable const& owner);
+    //
+    // Returns false, and leaves the existing owner bound, when a different live TableView owns it.
+    bool SetOwningTableView(winrt::IInspectable const& owner);
+    // Detaches `owner`; a no-op when another TableView owns this source.
+    void ReleaseOwningTableView(winrt::IInspectable const& owner);
+    // A refused TableView waits here. On release, waiters run in order until one claims the
+    // source; each waiter that runs is dropped. Keyed by the waiter's identity, one entry each.
+    void AddOwnerReleasedHandler(winrt::IInspectable const& waiter, std::function<void()> handler);
+    void RemoveOwnerReleasedHandler(winrt::IInspectable const& waiter);
     // Raised after a rebuild changed the projected shape (grouped <-> flat), which swaps the
     // ItemsSourceView and row-metadata provider the owner cached.
     void SetProjectionChangedHandler(std::function<void()> handler) { m_projectionChanged = std::move(handler); }
@@ -126,6 +134,11 @@ public:
     // Lets the owner refresh a custom comparer's ranks as items change (see
     // ShapedItemsSource::SetLiveItemChangedHook).
     void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook);
+    // Lets the owner drop comparer ranks for rows that left the source (see
+    // ShapedItemsSource::SetRowsReleasedHook).
+    void SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook);
+    // False when sorting would fail because the rows include a null item or one object twice.
+    bool CanApplySort() const;
 
 private:
     struct ShapingTip;
@@ -160,6 +173,12 @@ private:
     uint32_t m_notificationDepth{};
     bool m_hasFilter{};
     bool m_hasGroup{};
+    struct OwnerReleasedWaiter
+    {
+        winrt::weak_ref<winrt::IInspectable> Waiter;
+        std::function<void()> Handler;
+    };
+    std::vector<OwnerReleasedWaiter> m_ownerReleasedWaiters{};
     // tracker_ref so the GC can walk this strong reference into the (possibly managed) projected
     // rows and collect any cycle; also swaps to null safely during finalization.
     tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };

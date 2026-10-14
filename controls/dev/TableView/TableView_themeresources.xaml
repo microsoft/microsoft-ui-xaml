@@ -13,6 +13,7 @@
                  duplicate-key build failure when the theme-XBF pages merge. -->
             <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
+            <FontWeight x:Key="TableViewHeaderFontWeight">SemiBold</FontWeight>
             <x:Double x:Key="TableViewCellFontSize">14</x:Double>
             <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
 
@@ -30,6 +31,7 @@
             <!-- TabularSurface* brushes intentionally omitted; see the Light dictionary note. -->
             <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
+            <FontWeight x:Key="TableViewHeaderFontWeight">SemiBold</FontWeight>
             <x:Double x:Key="TableViewCellFontSize">14</x:Double>
             <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
             <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
@@ -46,6 +48,7 @@
                  canonical HighContrast System*Color brushes live in TabularSurfaces_themeresources.xaml. -->
             <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
+            <FontWeight x:Key="TableViewHeaderFontWeight">SemiBold</FontWeight>
             <x:Double x:Key="TableViewCellFontSize">14</x:Double>
             <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
             <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>

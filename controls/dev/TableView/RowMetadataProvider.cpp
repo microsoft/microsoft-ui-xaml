@@ -479,24 +479,22 @@ bool RowMetadataProvider::SetGroupExpandedCore(winrt::IInspectable const& group,
     return adapter->IsGroupExpanded(group) != before;
 }
 
-void RowMetadataProvider::Expand(winrt::hstring const& key)
+bool RowMetadataProvider::Expand(winrt::hstring const& key)
 {
     if (IsNodeExpansionKey(key))
     {
-        SetNodeExpandedCore(key, true);
-        return;
+        return SetNodeExpandedCore(key, true);
     }
-    SetGroupExpandedCore(ResolveGroupFromKey(key), true);
+    return SetGroupExpandedCore(ResolveGroupFromKey(key), true);
 }
 
-void RowMetadataProvider::Collapse(winrt::hstring const& key)
+bool RowMetadataProvider::Collapse(winrt::hstring const& key)
 {
     if (IsNodeExpansionKey(key))
     {
-        SetNodeExpandedCore(key, false);
-        return;
+        return SetNodeExpandedCore(key, false);
     }
-    SetGroupExpandedCore(ResolveGroupFromKey(key), false);
+    return SetGroupExpandedCore(ResolveGroupFromKey(key), false);
 }
 
 bool RowMetadataProvider::Toggle(winrt::hstring const& key)

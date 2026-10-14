@@ -80,30 +80,29 @@
                     </Button>
                 </Grid>
 
-                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                    <!-- snippet -->
-                    <tv:TableView
-                        x:Name="FileTable"
-                        AutomationProperties.AutomationId="FileExplorerTable"
-                        AutomationProperties.Name="Folder contents"
-                        ItemsSource="{x:Bind Source}"
-                        SelectionMode="Single"
-                        IsReadOnly="True"
-                        Sorted="OnTableSorted"
-                        SelectionChanged="OnSelectionChanged"
-                        DoubleTapped="OnRowDoubleTapped"
-                        VerticalAlignment="Stretch"
-                        MinHeight="320">
-                        <!-- Name, Type and Size sort by a folders-first key (FileSystemEntry.*SortKey);
-                             Date modified sorts by the DateModified value, not by its display text.
-                             The control sorts by itself and the header shows the direction. -->
-                        <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" CellTemplate="{StaticResource FileNameTemplate}" SortMemberPath="NameSortKey"/>
-                        <tv:TableViewTextColumn Header="Type" Width="{StaticResource ColWidthType}" Binding="{Binding TypeDisplay}" SortMemberPath="TypeSortKey"/>
-                        <tv:TableViewTextColumn x:Name="DateModifiedColumn" Header="Date modified" Width="{StaticResource ColWidthDateTime}" Binding="{Binding DateModifiedDisplay}" SortMemberPath="DateModified"/>
-                        <tv:TableViewTextColumn Header="Size" Width="{StaticResource ColWidthNumber}" Binding="{Binding SizeDisplay}" SortMemberPath="SizeSortKey"/>
-                    </tv:TableView>
-                    <!-- /snippet -->
-                </Border>
+                <!-- snippet -->
+                <tv:TableView
+                    x:Name="FileTable"
+                    Grid.Row="1"
+                    AutomationProperties.AutomationId="FileExplorerTable"
+                    AutomationProperties.Name="Folder contents"
+                    ItemsSource="{x:Bind Source}"
+                    SelectionMode="Single"
+                    IsReadOnly="True"
+                    Sorted="OnTableSorted"
+                    SelectionChanged="OnSelectionChanged"
+                    DoubleTapped="OnRowDoubleTapped"
+                    VerticalAlignment="Stretch"
+                    MinHeight="320">
+                    <!-- Name, Type and Size sort by a folders-first key (FileSystemEntry.*SortKey);
+                         Date modified sorts by the DateModified value, not by its display text.
+                         The control sorts by itself and the header shows the direction. -->
+                    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" CellTemplate="{StaticResource FileNameTemplate}" SortMemberPath="NameSortKey"/>
+                    <tv:TableViewTextColumn Header="Type" Width="{StaticResource ColWidthType}" Binding="{Binding TypeDisplay}" SortMemberPath="TypeSortKey"/>
+                    <tv:TableViewTextColumn x:Name="DateModifiedColumn" Header="Date modified" Width="{StaticResource ColWidthDateTime}" Binding="{Binding DateModifiedDisplay}" SortMemberPath="DateModified"/>
+                    <tv:TableViewTextColumn Header="Size" Width="{StaticResource ColWidthNumber}" Binding="{Binding SizeDisplay}" SortMemberPath="SizeSortKey"/>
+                </tv:TableView>
+                <!-- /snippet -->
             </Grid>
         </controls:SamplePresenter.Example>
 

@@ -119,7 +119,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(ExpandCollapseState.Expanded, new ExpandCollapseImplementation(groupHeader).ExpandCollapseState, "Baseline: the group header should report Expanded.");
 
                 InputHelper.Tap(groupHeader);
-                groupHeader = RefetchFirstGroupHeader(tableView, headerName);
+                groupHeader = WaitForFirstGroupHeaderState(tableView, headerName, ExpandCollapseState.Collapsed);
                 if (groupHeader == null) { return; }
 
                 int collapsedRows = CountRows(GetRowsHost(tableView));
@@ -127,7 +127,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(ExpandCollapseState.Collapsed, new ExpandCollapseImplementation(groupHeader).ExpandCollapseState, "After the tap the header must report Collapsed.");
 
                 InputHelper.Tap(groupHeader);
-                groupHeader = RefetchFirstGroupHeader(tableView, headerName);
+                groupHeader = WaitForFirstGroupHeaderState(tableView, headerName, ExpandCollapseState.Expanded);
                 if (groupHeader == null) { return; }
 
                 Verify.AreEqual(baselineRows, CountRows(GetRowsHost(tableView)), "A second tap must restore the original realized row count.");

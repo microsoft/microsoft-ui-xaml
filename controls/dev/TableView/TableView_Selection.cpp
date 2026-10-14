@@ -370,8 +370,8 @@ void TableView::OnSelectionModelSelectionChanged(
         return;
     }
 
-    // Outside a restore, a model clear means the row left the view (e.g. subtree collapse). Drop the
-    // anchor so a later Reset doesn't resurrect it.
+    // Outside a restore, a model clear means the row left the view (a removal, or a group or subtree
+    // collapse). Drop the anchor so a later Reset doesn't resurrect it.
     if (newIndex < 0)
     {
         m_stickySelectedItem.set(nullptr);

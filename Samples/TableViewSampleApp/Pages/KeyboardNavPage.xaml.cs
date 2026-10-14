@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
@@ -124,6 +125,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
         }
 
         _updating = true;
+        var previousObservations = ExpectedObservationsText.Text;
         try
         {
             AssessmentTable.DeselectAll();
@@ -148,9 +150,20 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 
         if (announce)
         {
+            if (ExpectedObservationsText.Text != previousObservations)
+            {
+                AnnounceExpectedObservations();
+            }
+
             SetLastAction("Reset the fixture to its baseline; no rows selected by the app.");
         }
     }
+
+    // TextBlock does not raise LiveRegionChanged on a text change; raise it for the user's change only.
+    private void AnnounceExpectedObservations() =>
+        (FrameworkElementAutomationPeer.FromElement(ExpectedObservationsText)
+            ?? FrameworkElementAutomationPeer.CreatePeerForElement(ExpectedObservationsText))
+            ?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
 
     // <snippet>
     private void ConfigureColumns()
@@ -217,7 +230,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
         {
             "Intrinsic" =>
                 "Two template columns only. With baseline values, check whether the row names contain Record 01 and Design, " +
-                "and whether the Record cell name reads Record, Record 01. The inner buttons take their names from the displayed text. " +
+                "and whether the Record cell name reads Record 01, with Record reported once as its column header item. The inner buttons take their names from the displayed text. " +
                 "Activate one to log an app Click event in Last action. Template cells do not offer the cell Value pattern in this preview, " +
                 "even when text editing is allowed; inspect the buttons' Invoke pattern separately.",
             "Explicit" =>
@@ -234,8 +247,8 @@ public sealed partial class KeyboardNavPage : SamplePageBase
             _ =>
                 "Baseline: 24 source records and two text columns. Inspect the app-provided table Name " +
                 "Accessibility regression records and the AutomationId KeyboardNavFixtureTable. For the first flat row, check whether the row " +
-                "name reads Record 01, Design and the cell name Record, Record 01. With text editing allowed, plain text cells " +
-                "can offer the Value pattern with the displayed text (Record 01), not the composed cell name. Turning editing off removes " +
+                "name reads Record 01, Design and the cell name Record 01, with Record reported once as its column header item. With text editing allowed, plain text cells " +
+                "can offer the Value pattern with the displayed text (Record 01). Turning editing off removes " +
                 "that editable Value pattern; verify it with an inspector rather than assuming a read-only Value provider exists.",
         };
 
@@ -258,6 +271,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
         }
 
         ConfigureColumns();
+        AnnounceExpectedObservations();
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Fixture scenario -> {0}; source objects kept.", SampleShaping.Label(ScenarioSelector)));
     }
 
