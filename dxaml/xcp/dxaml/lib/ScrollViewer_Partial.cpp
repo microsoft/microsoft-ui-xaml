@@ -308,6 +308,7 @@ _Check_return_ HRESULT ScrollViewer::Initialize()
     ctl::ComPtr<wf::ITypedEventHandler<xaml::UIElement*, xaml::BringIntoViewRequestedEventArgs*>> spBringIntoViewRequestedEventHandler;
     ctl::ComPtr<xaml::IRoutedEventHandler> spLoadedEventHandler;
     ctl::ComPtr<xaml::IRoutedEventHandler> spUnloadedEventHandler;
+    ctl::ComPtr<xaml_input::IPointerEventHandler> spPointerReleasedEventHandler;
     EventRegistrationToken token1;
     EventRegistrationToken token2;
 
@@ -337,6 +338,17 @@ _Check_return_ HRESULT ScrollViewer::Initialize()
         IInspectable,
         xaml::IRoutedEventArgs >(this, &ScrollViewer::OnUnloaded, true /* subscribingToSelf */));
     IFC_RETURN(add_Unloaded(spUnloadedEventHandler.Get(), &token2));
+
+    spPointerReleasedEventHandler.Attach(
+        new ClassMemberEventHandler<
+        ScrollViewer,
+        xaml_controls::IScrollViewer,
+        xaml_input::IPointerEventHandler,
+        IInspectable,
+        xaml_input::IPointerRoutedEventArgs>(this, &ScrollViewer::OnPointerReleasedCleanup, true /* subscribingToSelf */));
+    PointerReleasedEventSourceType* pointerReleasedEventSource = nullptr;
+    IFC_RETURN(GetPointerReleasedEventSourceNoRef(&pointerReleasedEventSource));
+    IFC_RETURN(pointerReleasedEventSource->AddHandler(spPointerReleasedEventHandler.Get(), true /* handledEventsToo */));
 
     if (!IsRootScrollViewer())
     {
@@ -2582,6 +2594,29 @@ IFACEMETHODIMP ScrollViewer::OnPointerReleased(
 
 Cleanup:
     RRETURN(hr);
+}
+
+_Check_return_ HRESULT ScrollViewer::OnPointerReleasedCleanup(
+    _In_ IInspectable*,
+    _In_ xaml_input::IPointerRoutedEventArgs*)
+{
+    if (m_isPointerLeftButtonPressed)
+    {
+        auto& pointerStates = GetHandle()->GetContext()->GetInputServices()->GetMapPointerState();
+        const bool pointerIsDown = std::any_of(
+            pointerStates.begin(), pointerStates.end(),
+            [](const auto& entry)
+            {
+                return entry.second && entry.second->IsPointerDown();
+            });
+
+        // A handled release skips OnPointerReleased. Preserve any held or reentrant press.
+        if (!pointerIsDown)
+        {
+            m_isPointerLeftButtonPressed = FALSE;
+        }
+    }
+    return S_OK;
 }
 
 // RightTappedUnhandled event handler.

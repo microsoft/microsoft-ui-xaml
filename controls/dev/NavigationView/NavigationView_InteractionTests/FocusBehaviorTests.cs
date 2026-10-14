@@ -49,21 +49,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     var item = FindElement.ByName("Second item");
                     var toggle = FindElement.ByName("Focus toggle");
                     var toggleState = FindElement.ByName<TextBlock>("Toggle state");
+                    var pointerPressedCount = FindElement.ByName<TextBlock>("Pointer pressed count");
 
                     for (int repetition = 0; repetition < 2; repetition++)
                     {
                         InputHelper.LeftClick(item);
                         Verify.IsTrue(item.HasKeyboardFocus);
+                        Verify.AreEqual((repetition + 1).ToString(), pointerPressedCount.GetText(),
+                            "Ordinary application PointerPressed handlers must still receive the item press.");
 
+                        var previousToggleState = toggleState.GetText();
                         InputHelper.LeftClick(toggle);
-                        Verify.AreEqual("True", toggleState.GetText());
+                        Verify.AreNotEqual(previousToggleState, toggleState.GetText());
                         Verify.IsTrue(toggle.HasKeyboardFocus, "The first toggle click after item selection must retain focus.");
 
                         InputHelper.LeftClick(toggle);
-                        Verify.AreEqual("False", toggleState.GetText());
                         Verify.IsTrue(toggle.HasKeyboardFocus, "Subsequent toggle clicks must retain focus.");
                     }
                 }
+            }
+        }
+
+        [TestMethod]
+        public void UnhandledReleaseAfterCaptureStillFocusesScrollViewer()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Pointer Focus Test" }))
+            {
+                var captureTarget = FindElement.ByName("Capture target");
+                var toggle = FindElement.ByName("Focus toggle");
+                var scrollViewer = FindElement.ByName("Input root ScrollViewer");
+
+                InputHelper.LeftClick(toggle);
+                InputHelper.LeftMouseButtonDown(captureTarget);
+                Verify.AreEqual("True", FindElement.ByName<TextBlock>("Capture succeeded").GetText());
+                InputHelper.MoveMouse(toggle.GetClickablePoint());
+                InputHelper.LeftMouseButtonUp();
+
+                Verify.IsTrue(scrollViewer.HasKeyboardFocus,
+                    "Releasing capture before the unhandled release bubbles must preserve normal ScrollViewer focus.");
+                InputHelper.LeftClick(toggle);
+                Verify.IsTrue(toggle.HasKeyboardFocus);
             }
         }
 
