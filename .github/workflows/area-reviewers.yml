@@ -1,0 +1,52 @@
+# Suggests optional area reviewers on a PR. Never blocks a merge - CODEOWNERS
+# (`* @microsoft/tm-winui`) remains the authoritative reviewer requirement.
+#
+# Runs as `pull_request_target` so the workflow, script and area map are always
+# read from the default branch and fork PRs still get a writable token. No code
+# from the PR is checked out or executed.
+
+name: Area Reviewers
+
+on:
+  pull_request_target:
+    # `synchronize` covers pushes; the script only adds owners of newly touched
+    # areas and never re-requests anyone who was already asked.
+    types: [opened, synchronize, ready_for_review, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: read # PR timeline, to skip people who were requested before
+
+# Serialize runs per PR so two quick events cannot both request the same people.
+# Every run evaluates the whole PR, so a newer queued run superseding an older one
+# loses nothing.
+concurrency:
+  group: area-reviewers-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  suggest:
+    name: Suggest area reviewers
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.pull_request.draft != true
+    steps:
+      # pull_request_target checks out the base branch, never the PR head.
+      - name: Checkout base
+        uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Install dependencies
+        working-directory: .github/scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Suggest reviewers
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AREA_REVIEWERS_DRY_RUN: ${{ vars.AREA_REVIEWERS_DRY_RUN || 'true' }}
+        run: node .github/scripts/area-reviewers.mjs

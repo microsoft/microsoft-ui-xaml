@@ -1053,9 +1053,10 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
         UpdateSelectionModelSelection(ip);
     }
 
-    // Item was invoked but already selected, so raise event here.
+    // Selection did not change, so consume the pending invocation before raising the event directly.
     if (selectedItem == SelectedItem())
     {
+        m_shouldRaiseItemInvokedAfterSelection = false;
         RaiseItemInvokedForNavigationViewItem(nvi);
     }
 
@@ -2070,8 +2071,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
                 areElementsAtSameDepth = prevPosPoint.X == nextPosPoint.X;
             }
 
-            winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
-            winrt::CompositionScopedBatch scopedBatch = visual.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+            // Creating the batch must not request the NavigationView's non-strict handoff visual.
+            winrt::CompositionScopedBatch scopedBatch = winrt::CompositionTarget::GetCompositorForCurrentThread().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
 
             if (!areElementsAtSameDepth)
             {
