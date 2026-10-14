@@ -8,30 +8,36 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-<#  if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
+<#  if(!ProjectInfo.BuildXamlModules && !String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
 #include "<#=ProjectInfo.PrecompiledHeaderFile#>"
 <#  }#>
-
+<#=GetCppWinRTConsumerPreamble()#>
+<#  if (!ProjectInfo.BuildXamlModules) { #>
 #include <unknwn.h>
 #include <memory>
 #include <string>
 #include <regex>
 #include <mutex>
 #include <cstdint>
+<#  } else { #>
+import std;
+<#  } #>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
-<#  if (ProjectInfo.UseCppWinRTNamedModules) { #>
-<#=GetCppWinRTModuleCompatibilityDefinition()#>
-<#  } else { #>
 <#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundation)#>
 <#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsXamlInterop)#>
 <#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlMarkup)#>
-<#  } #>
+
+<#  if (!ProjectInfo.BuildXamlModules) { #>
 #include "XamlTypeInfo.xaml.g.h"
 #include "XamlMetaDataProvider.h"
+<#  } else { #>
+import <#=CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)#>.Support;
+import <#=CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)#>;
+<#  } #>
 
 namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 {

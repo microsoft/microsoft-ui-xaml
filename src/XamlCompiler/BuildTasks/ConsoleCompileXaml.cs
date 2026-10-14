@@ -128,6 +128,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
         {
             CompilerOutputs co = new CompilerOutputs();
             co.GeneratedCodeFiles = core.GeneratedCodeFiles;
+            co.GeneratedModuleNames = core.GeneratedModuleNames;
             co.GeneratedXamlFiles = core.GeneratedXamlFiles;
             co.GeneratedXamlPagesFiles = core.GeneratedXamlPagesFiles;
             co.GeneratedXbfFiles = core.GeneratedXbfFiles;

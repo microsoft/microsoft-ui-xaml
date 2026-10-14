@@ -3,6 +3,7 @@
 #define WINRT_IMPORT_MODULE
 import winrt.Windows.Foundation;
 import winrt.Microsoft.UI.Xaml;
+import XamlCppWinRTModulesSample.Application_Xaml.MainWindow;
 
 #include "MainWindow.xaml.h"
 

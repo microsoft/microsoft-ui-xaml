@@ -31,31 +31,33 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 // </auto-generated>
 //------------------------------------------------------------------------------
 #pragma once
+#ifndef XAML_IMPL_MODULE
+#include <unknwn.h>
+#undef GetCurrentTime
+#include <functional>
+#include <map>
+#include <memory>
+#include <vector>
+#include ""XamlTypeInfo.xaml.g.h""
+#include ""XamlMetaDataProvider.g.h""
+#endif
 
-");
-  if (ProjectInfo.UseCppWinRTNamedModules) { 
-            this.Write("import std;\r\n");
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTNamedModuleImportDirective(ProjectInfo.RootNamespace)));
-            this.Write("\r\n");
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTNamedModuleImportDirective(KnownNamespaces.XamlMarkup)));
-            this.Write("\r\n");
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTNamedModuleImportDirective(KnownNamespaces.WindowsXamlInterop)));
-            this.Write("\r\n");
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTModuleCompatibilityDefinition()));
-            this.Write("\r\n");
-  } else { 
-            this.Write("#include <functional>\r\n#include <map>\r\n#include <memory>\r\n#include <vector>\r\n#inc" +
-                    "lude <unknwn.h>\r\n\r\n// Undefine GetCurrentTime macro to prevent\r\n// conflict with" +
-                    " Storyboard::GetCurrentTime\r\n#undef GetCurrentTime\r\n");
-  } 
-            this.Write("#include \"XamlTypeInfo.xaml.g.h\"\r\n#include \"XamlMetaDataProvider.g.h\"\r\n\r\n/*\r\n    " +
-                    "If the file above was not generated, you may be missing a declaration\r\n    for t" +
-                    "he XamlMetaDataProvider runtimeclass in your IDL.\r\n\r\n    namespace ");
+#ifdef XAML_IMPL_MODULE
+#define XAML_EXPORT export extern ""C++""
+#else
+#define XAML_EXPORT
+#endif
+
+/*
+    If the file above was not generated, you may be missing a declaration
+    for the XamlMetaDataProvider runtimeclass in your IDL.
+
+    namespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ProjectInfo.RootNamespace));
             this.Write("\r\n    {\r\n        runtimeclass XamlMetaDataProvider : ");
             this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.XamlMarkup));
             this.Write(".IXamlMetadataProvider\r\n        {\r\n            XamlMetaDataProvider();\r\n        }" +
-                    ";\r\n    }\r\n*/\r\n\r\nnamespace winrt::");
+                    ";\r\n    }\r\n*/\r\n\r\nXAML_EXPORT namespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(ProjectInfo.RootNamespace)));
             this.Write("::implementation\r\n{\r\n    using IXamlMember = ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlMarkup)));
@@ -76,12 +78,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write("::IXamlMetadataProvider otherProvider);\r\n");
   }
             this.Write("\r\n    private:\r\n        std::shared_ptr<XamlTypeInfoProvider> _provider;\r\n       " +
-                    " std::shared_ptr<XamlTypeInfoProvider> Provider();\r\n    };\r\n}\r\n\r\nnamespace winrt" +
-                    "::");
+                    " std::shared_ptr<XamlTypeInfoProvider> Provider();\r\n    };\r\n}\r\n\r\nXAML_EXPORT nam" +
+                    "espace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(ProjectInfo.RootNamespace)));
             this.Write("::factory_implementation\r\n{\r\n    struct XamlMetaDataProvider : XamlMetaDataProvid" +
                     "erT<XamlMetaDataProvider, implementation::XamlMetaDataProvider>\r\n    {\r\n    };\r\n" +
-                    "}\r\n");
+                    "}\r\n\r\n#undef XAML_EXPORT\r\n");
             return this.GenerationEnvironment.ToString();
         }
     }

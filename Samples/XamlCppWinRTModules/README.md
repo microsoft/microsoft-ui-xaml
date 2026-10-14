@@ -1,51 +1,169 @@
 # XamlC + C++/WinRT named modules sample
 
-This repo-local sample demonstrates the normal application shape for XamlC's C++/WinRT
-3.x named-module support.
+This repo-local sample validates the C++/WinRT 3.x module-first XamlC design implemented by this branch. It is a contributor validation sample; the feature is not yet part of a released Windows App SDK.
 
-For the architecture and migration details, see
-[`docs/design-notes/xamlc-cppwinrt-named-modules.md`](../../docs/design-notes/xamlc-cppwinrt-named-modules.md).
+The sample uses `YexuanXiao.CppWinRTPlus 3.1.260928.1` and `CppWinRTBuildModule=true`.
 
-> This sample targets the implementation on `feat/xamlccppmodule/phase1`. Until that
-> compiler work ships in a Windows App SDK release, build it against this repository.
-> Phase 1 is currently in integration hardening; the public module contract is established,
-> while the final VS2026/MSVC v145 focused validation gate is still being closed.
+## The contract being validated
 
-For implementation ownership, exact source files, MSBuild ordering, failure signatures and
-phase-1 acceptance criteria, see
-[`xamlc-cppwinrt-named-modules-implementation-guide.md`](../../docs/design-notes/xamlc-cppwinrt-named-modules-implementation-guide.md).
+C++/WinRT still owns WinRT projection modules and its producer scaffolding. XamlC adds a named-module declaration layer for each XAML class:
 
-The sample currently uses `YexuanXiao.CppWinRTPlus 3.1.260928.1`, based on the
-C++/WinRT 3.x module implementation. Its provider-wrapper target checks whether PCH
-is enabled, addressing the missing `pch.h` failure in
-[fork #30](https://github.com/hoshiizumiya/microsoft-ui-xaml/issues/30).
-This package choice supports integration validation; the full gate still needs to pass.
+```text
+IDL
+  -> C++/WinRT winrt.<Namespace> modules
+  -> C++/WinRT <Class>.g.h producer scaffold
 
-## What the sample demonstrates
+XAML
+  -> XamlC <Class>.xaml.g.ixx
+       export module <Root>.Application_Xaml.<Class>
+       imports winrt.* modules
+       absorbs <Class>.g.h when the class has a C++/WinRT producer scaffold
+       exports the XamlC <Class>T declaration
 
-- `CppWinRTBuildModule=true`.
-- C++/WinRT 3.x.
-- `/std:c++latest` and STL modules.
-- No WinRT projection headers in a PCH.
-- A normal XAML class that relies on the generated
-  `.g.h -> .xaml.g.h -> Application_Xaml` bridge.
-- x:Bind to a runtime class in the separate
-  `XamlCppWinRTModulesSample.Models` projection namespace.
-- A separate source file that explicitly imports the public project XAML module.
+all XAML classes
+  -> Application_Xaml.g.ixx
+       export module <Root>.Application_Xaml
+       export import <Root>.Application_Xaml.<Class> ...
 
-The public XAML module is:
+XamlC shared declarations
+  -> XamlBindingInfo.xaml.g.ixx
+  -> XamlTypeInfo.xaml.g.ixx
+
+XamlC Pass 2
+  -> ordinary generated .cpp translation units
+       textual STL/system headers first
+       WINRT_IMPORT_MODULE
+       import winrt_base / winrt.* / XamlC modules
+       no `module;`
+       no `import std;`
+```
+
+There is deliberately no public `Application_Xaml.Support` module.
+
+## User-authored XAML implementation
+
+The important user-facing pattern is the same implementation style used by C++/WinRT 3.x: an ordinary `.cpp` translation unit imports the generated modules explicitly and then includes its ordinary producer header.
+
+`MainWindow.xaml.cpp` is the concrete example:
+
+```cpp
+#include <windows.h>
+
+#define WINRT_IMPORT_MODULE
+import winrt.Windows.Foundation;
+import winrt.Microsoft.UI.Xaml;
+import XamlCppWinRTModulesSample.Application_Xaml.MainWindow;
+
+#include "MainWindow.xaml.h"
+
+#if __has_include("MainWindow.g.cpp")
+#include "MainWindow.g.cpp"
+#endif
+```
+
+`MainWindow.xaml.h` contains the authored class and includes the normal C++/WinRT producer scaffold:
+
+```cpp
+#pragma once
+#include "MainWindow.g.h"
+
+namespace winrt::XamlCppWinRTModulesSample::implementation
+{
+    struct MainWindow : MainWindowT<MainWindow>
+    {
+        MainWindow();
+    };
+}
+```
+
+The authored code does **not** include `MainWindow.xaml.g.h` in module mode. `MainWindowT` arrives through the imported XamlC per-class module.
+
+`App` is a special case: it normally has no `App.idl` and therefore no `App.g.h` producer scaffold. Its generated XamlC module directly exports `AppT`. The authored `App.xaml.h` only includes `App.xaml.g.h` when `WINRT_IMPORT_MODULE` is not active so legacy header builds can still use the same source file.
+
+## Public project XAML module
+
+Consumers that need all generated XAML class declarations can import one root aggregator:
 
 ```cpp
 import XamlCppWinRTModulesSample.Application_Xaml;
 ```
 
-Normal `App.xaml.cpp` and `MainWindow.xaml.cpp` do **not** write that import.
+The root contains only `export import` declarations for the independent per-class modules. `XamlModuleSmoke.cpp` validates that importing the root makes `MainWindowT` usable without any XamlC header or macro.
+
+`XamlBindingInfo` and `XamlTypeInfo` are implementation-facing generated modules. They are imported explicitly by generated implementation translation units and are not re-exported from the public root.
+
+## Why ordinary generated `.cpp` files do not import `std`
+
+C++/WinRT 3.x implementation sources are ordinary translation units, not named-module implementation units. XamlC follows that model.
+
+A generated implementation source establishes all STL/system textual ownership before its first module import:
+
+```cpp
+#include <windows.h>
+#include <unknwn.h>
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+// ...
+
+#define WINRT_IMPORT_MODULE
+import winrt_base;
+import winrt.Windows.Foundation;
+import XamlCppWinRTModulesSample.Application_Xaml.MainWindow;
+```
+
+This avoids the invalid ownership pattern that caused MSVC STL redefinition failures:
+
+```cpp
+import std;
+#include <list>
+#include <unordered_map>
+```
+
+`import std;` remains appropriate inside the generated `.ixx` module interfaces, where the standard library is owned by the module interface rather than mixed with later textual STL includes.
+
+## x:Bind dependency closure
+
+`MainWindow.xaml` binds to `XamlCppWinRTModulesSample.Models.GreetingModel`. XamlC records projection dependencies while analyzing the declaration and binding graph. The generated per-class interface and Pass 2 implementation therefore import the WinRT projection modules they actually need; authored code does not maintain a parallel hand-written list for XAML-discovered types.
+
+## Generated artifacts
+
+For the sample, the important module-mode outputs are:
+
+```text
+Application_Xaml.g.ixx
+App.xaml.g.ixx
+MainWindow.xaml.g.ixx
+XamlBindingInfo.xaml.g.ixx
+XamlTypeInfo.xaml.g.ixx
+
+App.xaml.g.h                 # declaration-free sentinel in module mode
+MainWindow.xaml.g.h          # declaration-free sentinel in module mode
+
+*.xaml.g.cpp                 # ordinary Pass 2 consumers
+XamlTypeInfo.g.cpp
+XamlTypeInfo.Impl.g.cpp
+
+$(IntDir)XamlModules\*.ifc
+```
+
+Expected module identities include:
+
+```text
+XamlCppWinRTModulesSample.Application_Xaml
+XamlCppWinRTModulesSample.Application_Xaml.App
+XamlCppWinRTModulesSample.Application_Xaml.MainWindow
+XamlCppWinRTModulesSample.Application_Xaml.BindingInfo
+XamlCppWinRTModulesSample.Application_Xaml.TypeInfo
+```
+
+There must be no `Application_Xaml.Support.g.ixx` or `Application_Xaml.Support.ifc`.
 
 ## Build
 
-For the current C++/WinRT 3.x development branch, use a Visual Studio 2026
-developer prompt. The focused repository validation uses MSVC v145 and the hosted
-runner's installed Windows SDK 10.0.26100.0:
+Use a Visual Studio 2026 developer prompt for the current C++/WinRT 3.x development branch. Repository focused validation currently uses MSVC v145 and Windows SDK 10.0.26100.0:
 
 ```bat
 init.cmd x64chk /nopgo
@@ -61,14 +179,9 @@ msbuild Samples\XamlCppWinRTModules\XamlCppWinRTModules.vcxproj ^
   /p:WindowsTargetPlatformVersion=10.0.26100.0
 ```
 
-The SDK 26100 override above is a repository-validation detail for the current VS2026
-hosted image. It does not change WinUI's normal product SDK package baseline.
+`UseXamlCompiler=true` makes this repository sample consume the compiler built from the checkout. That property is a repository-development detail.
 
-`UseXamlCompiler=true` in the project makes the sample use the compiler built from this
-repository. That property is only needed for repo development; a future SDK containing
-this feature supplies its own XamlC.
-
-## Important project settings
+## Relevant project settings
 
 ```xml
 <PropertyGroup>
@@ -87,136 +200,25 @@ this feature supplies its own XamlC.
 </ItemDefinitionGroup>
 ```
 
-`CppWinRTBuildModule` is the feature switch. The other settings make the sample's
-C++/WinRT and compiler environment unambiguous.
+## Header-mode coexistence
 
-## What gets generated
-
-Using `MainWindow` as the example:
-
-```text
-GreetingModel.idl / MainWindow.idl
-        |
-        +-- C++/WinRT -> GreetingModel.g.h, MainWindow.g.h, projection modules
-
-MainWindow.xaml
-        |
-        +-- XamlC Pass1 -> MainWindow.xaml.g.h
-        |                    partition of XamlCppWinRTModulesSample.Application_Xaml
-        |
-        +-- XamlC shared Pass1 -> XamlBindingInfo.xaml.g.h
-        |                         primary Application_Xaml interface
-        |
-        +-- MSVC -> $(IntDir)XamlModules\*.ifc
-        |
-        +-- XamlC Pass2 -> *.xaml.g.hpp / metadata-provider implementation
-```
-
-At compile time, `MainWindow.g.h` detects `MainWindow.xaml.g.h`; the XAML companion
-imports the project umbrella. This is the key hand-off between C++/WinRT component
-generation and XamlC module generation.
-
-## Normal source consumption
-
-`MainWindow.xaml.cpp` uses platform projection modules and then includes the normal
-authored component header:
-
-```cpp
-#include <windows.h>
-
-#define WINRT_IMPORT_MODULE
-import winrt.Windows.Foundation;
-import winrt.Microsoft.UI.Xaml;
-
-#include "MainWindow.xaml.h"
-```
-
-There is no explicit:
-
-```cpp
-import XamlCppWinRTModulesSample.Application_Xaml;
-```
-
-The generated C++/WinRT component header probes for
-`MainWindow.xaml.g.h`. In module mode, that generated XAML companion imports the project
-umbrella instead of textually redeclaring the XAML surface.
-
-## Direct module consumption
-
-`XamlModuleSmoke.cpp` intentionally bypasses the component-header bridge:
-
-```cpp
-#define WINRT_IMPORT_MODULE
-import XamlCppWinRTModulesSample.Application_Xaml;
-
-static_assert(
-    sizeof(winrt::XamlCppWinRTModulesSample::implementation::XamlBindings) > 0);
-```
-
-This is useful for libraries and for validating the public module contract, but it is not
-required in ordinary Page/Window implementation source.
-
-## x:Bind and projection closure
-
-`MainWindow.xaml` binds to:
+Setting:
 
 ```xml
-<TextBlock Text="{x:Bind Model.Message, Mode=OneWay}" />
+<CppWinRTBuildModule>false</CppWinRTBuildModule>
 ```
 
-`Model` is `XamlCppWinRTModulesSample.Models.GreetingModel`, not a type in the
-MainWindow namespace. XamlC records that semantic WinRT namespace while analyzing the
-binding graph. A local runtimeclass can still be unresolved during Pass1 because the
-intermediate component WinMD does not exist yet; Pass2 sees the completed metadata and
-emits the fully resolved projection dependency directly in the generated
-`MainWindow.xaml.g.hpp`.
+returns XamlC to the classic header output. The module build instead turns the `.xaml.g.h` files into declaration-free probe/sentinel files and moves the XamlC declarations into `.xaml.g.ixx` interfaces. Mode switching also removes stale XAML IFCs.
 
-The point is that application code does not maintain an extra list of
-`import winrt....;` statements for types discovered by XAML/x:Bind.
+## Migration from the old `/FI` workaround
 
-## What to inspect after a build
+For an existing C++/WinRT 3.x XAML app:
 
-The exact intermediate root is controlled by repository MSBuild properties, but the
-important generated artifacts are:
+1. Enable `CppWinRTBuildModule=true`.
+2. Remove the application-owned `/FI ModulePreamble.h` workaround used only to make old XamlC-generated files see projection modules.
+3. Import the relevant generated per-class XamlC module in each authored XAML implementation `.cpp` before including its authored header.
+4. Keep `WINRT_IMPORT_MODULE` enabled for the ordinary producer-header path.
+5. Do not include XamlC `.xaml.g.h` from module-mode authored code.
+6. Import `<Root>.Application_Xaml` only when a consumer needs the complete project XAML declaration set.
 
-```text
-$(GeneratedFilesDir)XamlBindingInfo.xaml.g.h
-$(GeneratedFilesDir)App.xaml.g.h
-$(GeneratedFilesDir)MainWindow.xaml.g.h
-$(GeneratedFilesDir)XamlTypeInfo.xaml.g.h   (when TypeInfo is generated)
-
-$(IntDir)XamlModules\*.ifc
-```
-
-`XamlBindingInfo.xaml.g.h` is the primary
-`XamlCppWinRTModulesSample.Application_Xaml` interface. App/MainWindow are partitions.
-
-## Switching back to header mode
-
-For comparison:
-
-```bat
-msbuild Samples\XamlCppWinRTModules\XamlCppWinRTModules.vcxproj ^
-  /p:Configuration=Debug ^
-  /p:Platform=x64 ^
-  /p:CppWinRTBuildModule=false
-```
-
-XamlC returns to `#include <winrt/...h>` projection emission and removes the old
-`$(IntDir)XamlModules\` output so stale IFCs cannot survive the mode transition.
-
-## Migration checklist
-
-If an existing module-enabled XAML app has an application-owned workaround:
-
-1. Keep/enable `CppWinRTBuildModule=true`.
-2. Remove the custom XAML `/FI` module preamble.
-3. Remove hand-maintained generated-XAML source lists used only to inject imports.
-4. Keep WinRT projection headers out of the PCH, or otherwise avoid mixing textual
-   declarations with later imports.
-5. Let normal component `.g.h` headers reach the XAML umbrella through their generated
-   `.xaml.g.h` companion.
-6. Use an explicit `import <RootNamespace>.Application_Xaml;` only when a source really
-   consumes the umbrella directly.
-
-For static libraries and incremental details, see the design document.
+For implementation details and incremental-build invariants, see the design notes under `docs/design-notes/`.

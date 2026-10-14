@@ -31,59 +31,19 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+#pragma once
+#ifndef XAML_IMPL_MODULE
+#include <unknwn.h>
+#undef GetCurrentTime
+#include <cstdint>
+#include <memory>
 ");
-  if (ProjectInfo.UseCppWinRTNamedModules) { 
-            this.Write("#ifdef WINRT_XAML_MODULE_INTERFACE\r\nmodule;\r\n#include <unknwn.h>\r\n\r\nexport module" +
-                    " ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)));
-            this.Write(";\r\n\r\n#define WINRT_IMPORT_MODULE\r\nimport std;\r\nexport import ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsFoundation)));
-            this.Write(";\r\nexport import ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsFoundationCollections)));
-            this.Write(";\r\nexport import ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.Xaml)));
-            this.Write(";\r\nexport import ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlControls)));
-            this.Write(";\r\nexport import ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlData)));
-            this.Write(";\r\nexport import ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlMarkup)));
-            this.Write(";\r\nexport import ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlInterop)));
-            this.Write(";\r\n\r\n");
-  foreach (var xamlClassName in ProjectInfo.XamlClassNames) { 
-            this.Write("export import :");
-            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetXamlPartitionName(xamlClassName)));
-            this.Write(";\r\n");
+  foreach (var projectionNamespace in CppWinRTProjectionDependency.BindingSupportNamespaces) { 
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionHeaderDirective(projectionNamespace, optionalHeader: true)));
+            this.Write("\r\n");
   } 
-  if (ProjectInfo.ShouldGenerateTypeInfoCode) { 
-            this.Write("export import :XamlTypeInfo;\r\n");
-  } 
-            this.Write("\r\n#undef WINRT_XAML_MODULE_INTERFACE\r\n#define WINRT_XAML_EXPORT export extern \"C+" +
-                    "+\"\r\n#else\r\n#pragma once\r\n#ifndef WINRT_IMPORT_MODULE\r\n#define WINRT_IMPORT_MODUL" +
-                    "E\r\n#endif\r\nimport ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)));
-            this.Write(";\r\n#define WINRT_XAML_SKIP_BODY\r\n#endif\r\n");
-  } else { 
-            this.Write("#pragma once\r\n#include <unknwn.h>\r\n\r\n// Undefine GetCurrentTime macro to prevent\r" +
-                    "\n// conflict with Storyboard::GetCurrentTime\r\n#undef GetCurrentTime\r\n\r\n#include " +
-                    "<cstdint>\r\n#include <memory>\r\n\r\n");
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundation)));
-            this.Write("\r\n");
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundationCollections)));
-            this.Write("\r\n");
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.Xaml)));
-            this.Write("\r\n");
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlControls)));
-            this.Write("\r\n");
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlData)));
-            this.Write("\r\n");
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlMarkup)));
-            this.Write("\r\n");
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlInterop)));
-            this.Write("\r\n\r\n#define WINRT_XAML_EXPORT\r\n");
-  } 
-            this.Write("\r\n#ifndef WINRT_XAML_SKIP_BODY\r\nWINRT_XAML_EXPORT namespace winrt::");
+            this.Write("#endif\r\n\r\n#ifdef XAML_IMPL_MODULE\r\n#define XAML_EXPORT export extern \"C++\"\r\n#else" +
+                    "\r\n#define XAML_EXPORT\r\n#endif\r\n\r\nXAML_EXPORT namespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(ProjectInfo.RootNamespace)));
             this.Write("::implementation\r\n{\r\n    using DataContextChangedEventArgs = ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.Xaml)));
@@ -261,9 +221,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                     "    }\r\n            return false;\r\n        }\r\n\r\n        virtual void Update() ove" +
                     "rride\r\n        {\r\n            this->Update_(this->GetDataRoot(), this->NOT_PHASE" +
                     "D);\r\n            this->_isInitialized = true;\r\n        }\r\n\r\n    private:\r\n      " +
-                    "  T _dataRoot;\r\n    };\r\n}\r\n#endif // WINRT_XAML_SKIP_BODY\r\n\r\n#ifdef WINRT_XAML_E" +
-                    "XPORT\r\n#undef WINRT_XAML_EXPORT\r\n#endif\r\n#ifdef WINRT_XAML_SKIP_BODY\r\n#undef WIN" +
-                    "RT_XAML_SKIP_BODY\r\n#endif\r\n");
+                    "  T _dataRoot;\r\n    };\r\n}\r\n#undef XAML_EXPORT\r\n");
             return this.GenerationEnvironment.ToString();
         }
     }

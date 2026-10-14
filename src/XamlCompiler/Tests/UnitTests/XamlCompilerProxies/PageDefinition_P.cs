@@ -47,6 +47,14 @@ namespace Win8Xaml.CompilerProxies
             }
         }
 
+        public List<string> DeclarationCppWinRTProjectionNamespaces
+        {
+            get
+            {
+                return new List<string>((IEnumerable<string>)_pageDefinitionType.GetProperty("DeclarationCppWinRTProjectionNamespaces").GetValue(_instance, null));
+            }
+        }
+
         public List<string> NeededCppWinRTProjectionNamespaces
         {
             get

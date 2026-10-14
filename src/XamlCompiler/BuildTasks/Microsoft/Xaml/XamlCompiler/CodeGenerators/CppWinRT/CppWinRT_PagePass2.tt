@@ -12,24 +12,24 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 //------------------------------------------------------------------------------
-<#  if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
+<#  if(!ProjectInfo.BuildXamlModules && !String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
 #include "<#=ProjectInfo.PrecompiledHeaderFile#>"
 <#  }#>
+<#=GetCppWinRTConsumerPreamble()#>
 
 #include <cstdint>
 #include <memory>
 #include <type_traits>
 #include <utility>
 
-<#  if (ProjectInfo.UseCppWinRTNamedModules) { #>
-<#=GetCppWinRTModuleCompatibilityDefinition()#>
+<#  if (!ProjectInfo.BuildXamlModules) { #>
+<#      foreach (var includeFile in Model.NeededLocalXamlHeaderFiles) { #>
+#include "<#=includeFile#>"
+<#      }#>
 <#  } #>
 <#  foreach (var projectionNamespace in Model.NeededCppWinRTProjectionNamespaces) { #>
 <#=GetCppWinRTProjectionDependencyDirective(projectionNamespace, optionalHeader: true)#>
 <#  } #>
-<#  foreach (var includeFile in Model.NeededLocalXamlHeaderFiles) { #>
-#include "<#=includeFile#>"
-<#  }#>
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter

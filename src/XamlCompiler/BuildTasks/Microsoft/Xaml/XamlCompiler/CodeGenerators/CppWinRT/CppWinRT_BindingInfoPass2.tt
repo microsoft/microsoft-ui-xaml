@@ -8,16 +8,16 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-<#  if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
+<#  if (!ProjectInfo.BuildXamlModules) { #>
+<#      if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
 #include "<#=ProjectInfo.PrecompiledHeaderFile#>"
-<#  }#>
-
+<#      }#>
 #include <cstdint>
 #include <memory>
 #include <utility>
 
-<#=GetCppWinRTModuleCompatibilityDefinition()#>
 #include "XamlBindingInfo.xaml.g.h"
+<#  } #>
 
 namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 {
@@ -48,7 +48,7 @@ XamlBindings::XamlBindings(std::shared_ptr<IXamlBindings>&& pBindings)
 void XamlBindings::Initialize()
 {
     if (!_pBindings->IsInitialized())
-    { 
+    {
         _pBindings->Update();
     }
 }
@@ -144,7 +144,7 @@ void XamlBindingTrackingBase::SetListener(IXamlBindingTracking* pBindings)
 
 void XamlBindingTrackingBase::PropertyChanged(
     IInspectable const& sender,
-    PropertyChangedEventArgs const&  e)
+    PropertyChangedEventArgs const& e)
 {
     if (_pBindingsTrackingWeakRef)
     {
@@ -195,7 +195,7 @@ void XamlBindingTrackingBase::MapChanged(
 
 void XamlBindingTrackingBase::ErrorsChanged(
     IInspectable const& sender,
-    DataErrorsChangedEventArgs const&  e)
+    DataErrorsChangedEventArgs const& e)
 {
     if (_pBindingsTrackingWeakRef)
     {
@@ -275,7 +275,7 @@ void XamlBindingTrackingBase::UpdateDependencyPropertyChangedListener(
     if (!cache && obj)
     {
         cache = obj;
-        token = obj.RegisterPropertyChangedCallback(property, 
+        token = obj.RegisterPropertyChangedCallback(property,
             { this, &XamlBindingTrackingBase::DependencyPropertyChanged });
     }
 }
@@ -297,7 +297,7 @@ void XamlBindingTrackingBase::UpdateDependencyPropertyChangedListener(
     if (!cache && obj)
     {
         cacheRef = cache = obj;
-        token = obj.RegisterPropertyChangedCallback(property, 
+        token = obj.RegisterPropertyChangedCallback(property,
             { this, &XamlBindingTrackingBase::DependencyPropertyChanged });
     }
 }

@@ -12,46 +12,64 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-<#  if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
+<#  if(!ProjectInfo.BuildXamlModules && !String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
 #include "<#=ProjectInfo.PrecompiledHeaderFile#>"
 <#  }#>
+<#=GetCppWinRTConsumerPreamble()#>
+<#  if (!ProjectInfo.BuildXamlModules) { #>
 #include <unknwn.h>
+<#  } #>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
+#include <map>
 #include <memory>
 #include <mutex>
+#include <regex>
+#include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
+<#  if (ProjectInfo.BuildXamlModules) { #>
+#ifndef WINRT_IMPORT_MODULE
+#define WINRT_IMPORT_MODULE
+#endif
+<#  } #>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
-<#  if (ProjectInfo.UseCppWinRTNamedModules) { #>
-<#=GetCppWinRTModuleCompatibilityDefinition()#>
-<#  } else { #>
-<#      foreach (var projectionNamespace in Model.NeededCppWinRTProjectionNamespaces) { #>
-<#=GetCppWinRTProjectionDependencyDirective(projectionNamespace, optionalHeader: true)#>
-<#      }#>
+<#  if (!ProjectInfo.GenerateIncrementalTypeInfo) { #>
+<#      foreach(var additionalHeader in ProjectInfo.AdditionalXamlTypeInfoIncludes) { #>
+#include "<#=additionalHeader.ItemSpec#>"
+<#      } #>
+<#      if (!ProjectInfo.BuildXamlModules) { #>
+<#          foreach(string includeFile in ProjectInfo.ClassToHeaderFileMap.Values) { #>
+#include "<#=includeFile#>"
+<#          } #>
+<#      } #>
 <#  } #>
-
 <#  if (ProjectInfo.GenerateIncrementalTypeInfo) { #>
 #ifdef XAML_TYPE_INFO_INC
 #include XAML_TYPE_INFO_INC
 #endif
 <#  } #>
+<#  foreach (var projectionNamespace in Model.NeededCppWinRTProjectionNamespaces) { #>
+<#=GetCppWinRTProjectionDependencyDirective(projectionNamespace, optionalHeader: true)#>
+<#  } #>
+<#  if (!ProjectInfo.BuildXamlModules) { #>
 #include "XamlTypeInfo.xaml.g.h"
-
-<#  if (!ProjectInfo.GenerateIncrementalTypeInfo) { #>
-<#      foreach(string includeFile in Model.AllLocalXamlHeaderFiles) { #>
-#include "<#=includeFile#>"
-<#      } #>
+#include "XamlBindingInfo.xaml.g.h"
+<#  } else { #>
+import <#=CppWinRTProjectionDependency.GetTypeInfoModuleName(ProjectInfo.RootNamespace)#>;
+import <#=CppWinRTProjectionDependency.GetBindingInfoModuleName(ProjectInfo.RootNamespace)#>;
+import <#=CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)#>;
 <#  } #>
 #include "XamlBindingInfo.xaml.g.hpp"
 <#  if (!ProjectInfo.GenerateIncrementalTypeInfo) { #>
-<#      foreach(string includeFile in Model.AllLocalHppGeneratedFiles) #>
-<#      { #>
+<#      foreach(string includeFile in Model.AllLocalHppGeneratedFiles) { #>
 #include "<#=includeFile.Replace(".g.hpp", ".xaml.g.hpp")#>"
 <#      } #>
 <#  } #>

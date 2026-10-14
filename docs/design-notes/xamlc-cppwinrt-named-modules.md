@@ -1,841 +1,473 @@
 # XamlC and C++/WinRT named modules
 
-C++/WinRT named-module generation is implemented on the product integration branch.
-The pre-rebase phase2 gate completed native compilation, linking, packaging,
-incremental transitions, static-library consumption, and all 10 focused module
-unit tests in [run 36811821254](https://github.com/hoshiizumiya/microsoft-ui-xaml/actions/runs/36811821254).
-The rebased tree requires a new Windows run. The full unit suite is a separate
-validation effort and has not passed.
+This document describes the current product design for C++/WinRT 3.x named-module XAML builds. It is a contributor contract for this branch, not a statement about a released Windows App SDK version.
 
-This is a contributor contract, not a feature shipped in a Windows App SDK release.
-The implementation guide documents source ownership and validation limits:
-[xamlc-cppwinrt-named-modules-implementation-guide.md](xamlc-cppwinrt-named-modules-implementation-guide.md).
+## Goal
 
-Related issues: [named modules #11524](https://github.com/microsoft/microsoft-ui-xaml/issues/11524)
-and the separate [physical companion-header mapping #11525](https://github.com/microsoft/microsoft-ui-xaml/issues/11525).
-
-## Summary
-
-C++/WinRT 3.x can generate C++20 named modules for WinRT projections. Before this
-work, XamlC still assumed that every projected WinRT dependency was consumed as a
-physical header such as:
-
-```cpp
-#include <winrt/Microsoft.UI.Xaml.Controls.h>
-```
-
-That mismatch forced module-enabled applications to own extra build glue, commonly a
-forced-include preamble for XAML-generated translation units.
-
-The new model is:
-
-> **XamlC discovers semantic WinRT projection dependencies; the C++/WinRT backend
-> decides whether those dependencies are materialized as headers or named-module
-> imports.**
-
-For a C++/WinRT project with:
+When a native XAML project enables:
 
 ```xml
 <CppWinRTBuildModule>true</CppWinRTBuildModule>
 ```
 
-XamlC now participates directly in the named-module build. The public XAML module for a
-project is:
+the whole generated-code chain is module-first:
 
-```cpp
-import <RootNamespace>.Application_Xaml;
+```text
+IDL / WinMD
+    -> C++/WinRT projection modules (`winrt.<Namespace>`)
+    -> C++/WinRT producer scaffold (`<Class>.g.h`)
+
+XAML class
+    -> XamlC per-class declaration module
+    -> XamlC ordinary Pass2 implementation TU
+
+all XAML classes
+    -> project `Application_Xaml` declaration aggregator
+
+shared XAML implementation declarations
+    -> BindingInfo module
+    -> TypeInfo module
 ```
 
-Normal application source generally does **not** need to write that import explicitly.
-The existing C++/WinRT generated-component-header bridge reaches the corresponding
-`*.xaml.g.h`, which imports the XAML umbrella automatically.
+The important boundary is that XamlC modules replace XamlC textual declaration consumption. They do **not** replace C++/WinRT's own producer scaffold.
 
-A repository sample is available at
-[`Samples/XamlCppWinRTModules`](../../Samples/XamlCppWinRTModules/README.md).
+## Generated module graph
 
----
+For `RootNamespace=MyApp` and XAML classes `MyApp.App`, `MyApp.MainWindow`, and `MyApp.Views.SettingsPage`, XamlC generates:
 
-## Prerequisites
+```text
+MyApp.Application_Xaml                         public declaration aggregator
+  export import MyApp.Application_Xaml.App
+  export import MyApp.Application_Xaml.MainWindow
+  export import MyApp.Application_Xaml.Views.SettingsPage
 
-Named-module XAML builds require:
+MyApp.Application_Xaml.App                     independent App declaration module
+MyApp.Application_Xaml.MainWindow              independent class declaration module
+MyApp.Application_Xaml.Views.SettingsPage      independent class declaration module
 
-- C++/WinRT 3.x with named-module support.
-- A C++/WinRT-3.x-compatible MSVC module toolchain. The current focused repository
-  validation uses Visual Studio 2026 / MSVC v145.
-- `CppWinRTBuildModule=true`.
-- A module-capable language mode; the sample uses `/std:c++latest`.
-- STL module support when generated code imports `std`; the sample sets
-  `BuildStlModules=true`.
-- A valid `RootNamespace`. It is part of the public module identity.
+MyApp.Application_Xaml.BindingInfo             generated implementation-facing module
+MyApp.Application_Xaml.TypeInfo                generated implementation-facing module
+```
 
-The WinUI product PR build remains on its existing VS2022/toolset and SDK package
-baseline. Only the focused C++/WinRT 3.x named-module validation uses VS2026/v145.
-The current `windows-2025-vs2026` hosted image exposes Windows SDK 10.0.26100.0, so
-that gate overrides its installed target SDK to 26100 without changing the repository-wide
-SDK package baseline.
+There is no `Application_Xaml.Support` module and no partition/self-import topology.
 
-For this repository branch, the sample also sets `UseXamlCompiler=true` so it consumes
-the in-repo XamlC implementation. That property is a repository-development detail, not
-a customer migration requirement for a future SDK that already contains this compiler.
+The root interface is only an aggregator:
 
-### PCH rule
+```cpp
+export module MyApp.Application_Xaml;
+export import MyApp.Application_Xaml.App;
+export import MyApp.Application_Xaml.MainWindow;
+export import MyApp.Application_Xaml.Views.SettingsPage;
+```
 
-Do not use a precompiled header that textually includes the WinRT projection headers that
-the same translation unit later consumes as modules. A simple migration strategy is to
-keep the PCH limited to native/platform headers and put projection imports in the source
-file:
+BindingInfo and TypeInfo are not part of the public root contract. Generated implementation translation units import them explicitly when needed.
+
+## Per-class declaration interface
+
+A normal runtimeclass XAML page/window produces `<Class>.xaml.g.ixx`. Conceptually:
+
+```cpp
+module;
+#include <unknwn.h>
+#include <winrt/base_macros.h>
+#undef GetCurrentTime
+
+export module MyApp.Application_Xaml.MainWindow;
+import std;
+import winrt_base;
+export import winrt.Windows.Foundation;
+export import winrt.Microsoft.UI.Xaml;
+export import winrt.Microsoft.UI.Xaml.Markup;
+export import winrt.MyApp;
+
+#define WINRT_IMPORT_MODULE
+#include "MainWindow.g.h"
+#undef WINRT_IMPORT_MODULE
+
+#define XAML_IMPL_MODULE
+// XamlC MainWindowT declarations
+#undef XAML_IMPL_MODULE
+```
+
+The interface has two different declaration owners:
+
+1. `<Class>.g.h` is C++/WinRT's producer scaffold. It owns `<Class>_base`, factory scaffolding, and ABI producer details.
+2. XamlC owns the XAML extension template such as `MainWindowT`.
+
+The per-class module combines them under one BMI without making the XamlC `.xaml.g.h` a module interface.
+
+### Projection namespace for the producer
+
+A producer scaffold must see the projection module for the runtimeclass namespace that owns `x:Class`.
+
+For:
+
+```text
+x:Class = MyApp.Views.SettingsPage
+```
+
+the generated class module imports:
+
+```cpp
+export import winrt.MyApp.Views;
+```
+
+It must not assume that a separate `winrt.MyApp` module exists. This matters for projects whose WinMD contains only nested namespaces.
+
+### App is different
+
+`App.xaml` normally has no `App.idl` and therefore no C++/WinRT `App.g.h` producer scaffold. Its XamlC module exports `AppT` directly from the XamlC App template and must not synthesize or require `App.g.h`.
+
+## The `.xaml.g.h` file in module mode
+
+C++/WinRT probes for `<Class>.xaml.g.h` while generating/including its normal component scaffold. XamlC therefore keeps the physical file in module mode, but it is only a declaration-free sentinel:
+
+```cpp
+#pragma once
+// XamlC named-module sentinel.
+// Real XAML declarations are owned by MyApp.Application_Xaml.MainWindow.
+```
+
+The sentinel does not include WinRT projection headers, does not declare `MainWindowT`, and does not contain `export module`.
+
+In classic header mode, `.xaml.g.h` remains the normal textual declaration header.
+
+## User-authored implementation model
+
+C++/WinRT 3.x component implementations are ordinary C++ translation units with explicit imports. XamlC follows the same model.
+
+A module-enabled authored XAML source looks like:
 
 ```cpp
 #include <windows.h>
-
 #define WINRT_IMPORT_MODULE
+
+import winrt_base;
 import winrt.Windows.Foundation;
 import winrt.Microsoft.UI.Xaml;
+import MyApp.Application_Xaml.MainWindow;
 
 #include "MainWindow.xaml.h"
+#include "MainWindow.g.cpp"
 ```
 
-The sample deliberately does not use a WinRT projection PCH. The focused
-`SimpleCppWinRTModules` regression fixture is entirely PCH-free. It defines
-`WINRT_IMPORT_MODULE` through compile-item metadata only for ordinary consumers,
-after module interface registration; module producers do not receive this consumer guard.
-It deliberately avoids a shared import-everything preamble so the direct umbrella smoke
-test can expose missing generated dependencies.
-
----
-
-## Project configuration
-
-The minimum feature switch is:
-
-```xml
-<PropertyGroup>
-  <CppWinRTBuildModule>true</CppWinRTBuildModule>
-</PropertyGroup>
-```
-
-A typical project also has:
-
-```xml
-<PropertyGroup>
-  <CppWinRTEnabled>true</CppWinRTEnabled>
-  <CppWinRTOptimized>true</CppWinRTOptimized>
-</PropertyGroup>
-
-<ItemDefinitionGroup>
-  <ClCompile>
-    <LanguageStandard>stdcpplatest</LanguageStandard>
-    <BuildStlModules>true</BuildStlModules>
-  </ClCompile>
-</ItemDefinitionGroup>
-```
-
-The sample additionally pins C++/WinRT 3.x so the required module targets are present.
-
----
-
-## Generated module contract
-
-XamlC reuses the existing Pass1 generated `*.xaml.g.h` files as C++ module interface
-units. It does not create a parallel `.ixx` code generator.
-
-For a project whose root namespace is `MyApp`, the logical graph is:
-
-```text
-MyApp.Application_Xaml                     primary module
-|
-+-- :MyApp.App                             App partition
-+-- :MyApp.MainWindow                      XAML class partition
-+-- :MyApp.Pages.SettingsPage              XAML class partition
-+-- :XamlTypeInfo                          optional TypeInfo partition
-```
-
-The primary interface is generated by:
-
-```text
-XamlBindingInfo.xaml.g.h
-```
-
-App/Page/Window and TypeInfo Pass1 headers provide interface partitions.
-
-### Why the root namespace is part of the module name
-
-A bare `Application_Xaml` identity would collide if a consumer references more than one
-XAML-producing static library. Root qualification makes the module identity project
-specific:
+The authored header can continue to include the ordinary C++/WinRT producer header:
 
 ```cpp
-import ControlsLibrary.Application_Xaml;
-import MyApplication.Application_Xaml;
+#pragma once
+#include "MainWindow.g.h"
+
+namespace winrt::MyApp::implementation
+{
+    struct MainWindow : MainWindowT<MainWindow>
+    {
+        MainWindow();
+    };
+}
 ```
 
----
+`MainWindowT` comes from the imported XamlC module. The authored code does not include `MainWindow.xaml.g.h` in module mode.
 
-## End-to-end generation example
-
-For a sample class:
-
-```text
-x:Class = XamlCppWinRTModulesSample.MainWindow
-RootNamespace = XamlCppWinRTModulesSample
-```
-
-the build is conceptually:
-
-```text
-MainWindow.idl
-    |
-    +-- C++/WinRT metadata/component generation
-    |      |
-    |      +-- MainWindow.g.h
-    |      +-- MainWindow.g.cpp
-    |      +-- projection module/interface data
-    |
-MainWindow.xaml
-    |
-    +-- XamlC Pass1
-    |      |
-    |      +-- MainWindow.xaml.g.h
-    |      |      module partition:
-    |      |      XamlCppWinRTModulesSample.Application_Xaml
-    |      |          :XamlCppWinRTModulesSample.MainWindow
-    |      |
-    |      +-- XamlBindingInfo.xaml.g.h
-    |             primary module:
-    |             XamlCppWinRTModulesSample.Application_Xaml
-    |             export-imports MainWindow/App/TypeInfo partitions
-    |
-    +-- XamlCppWinRTAddModuleInterfaces
-    |      |
-    |      +-- registers the Pass1 *.xaml.g.h files as CompileAsCppModule
-    |
-    +-- MSVC module dependency scan / compile
-    |      |
-    |      +-- $(IntDir)XamlModules\*.ifc
-    |
-    +-- XamlC Pass2
-           |
-           +-- MainWindow.xaml.g.hpp and late generated C++ implementation
-           +-- XamlMetaDataProvider.cpp / TypeInfo implementation as needed
-                  |
-                  +-- compile using the already produced projection/XAML BMIs
-```
-
-Authored source then consumes the result through the existing component-header path:
-
-```text
-MainWindow.xaml.cpp
-    |
-    +-- #define WINRT_IMPORT_MODULE
-    +-- include MainWindow.xaml.h
-           |
-           +-- include MainWindow.g.h        (C++/WinRT)
-                  |
-                  +-- __has_include("MainWindow.xaml.g.h")
-                         |
-                         +-- include MainWindow.xaml.g.h   (XamlC)
-                                |
-                                +-- import
-                                    XamlCppWinRTModulesSample.Application_Xaml
-```
-
-There is one source of type metadata (IDL/WinMD), one XAML compiler pipeline, and one
-public XAML umbrella. The module path does not introduce a second set of handwritten
-XAML declarations or a parallel `.ixx` generator.
-
-## The generated-header bridge
-
-C++/WinRT component headers already probe for XAML companion output:
+For App, a source-compatible authored header may keep a header-mode fallback:
 
 ```cpp
-#if __has_include("MainWindow.xaml.g.h")
-#include "MainWindow.xaml.g.h"
+#pragma once
+#ifndef WINRT_IMPORT_MODULE
+#include "App.xaml.g.h"
 #endif
+
+namespace winrt::MyApp::implementation
+{
+    struct App : AppT<App>
+    {
+        App();
+    };
+}
 ```
 
-XamlC uses this existing bridge instead of requiring every authored source file to import
-the project XAML module manually.
+The module-mode `App.cpp` imports `MyApp.Application_Xaml.App` before including this header.
 
-Conceptually, a generated XAML companion behaves like this:
+### Why imports precede the authored implementation headers
+
+The authored `.cpp` is an ordinary translation unit (one independently compiled source
+file), not a named-module implementation unit: it has no `module MyApp...;` declaration.
+There is no blanket C++ rule requiring every `import` to precede every `#include` in
+such a file. The order follows the declarations that each header needs:
 
 ```cpp
-#ifdef WINRT_XAML_MODULE_INTERFACE
+// Native declarations and any textual STL dependencies come first.
+#include <windows.h>
+#include <memory>
+#define WINRT_IMPORT_MODULE
 
-export module MyApp.Application_Xaml:MyApp.MainWindow;
+// Make the base/template declarations available before defining the derived class.
+import winrt_base;
+import winrt.Windows.Foundation;
+import winrt.Microsoft.UI.Xaml;
+import MyApp.Application_Xaml.MainWindow;
 
-// projection dependencies needed by this XAML class
-export import winrt.Microsoft.UI.Xaml;
-export import winrt.Some.Other.Namespace;
+#include "MainWindow.xaml.h"
+#include "MainWindow.g.cpp"
+```
 
-// exported XAML declarations...
+`#include "MainWindow.xaml.h"` textually inserts `struct MainWindow :
+MainWindowT<MainWindow>` at that point. Name lookup must already find `MainWindowT`,
+which is exported by `MyApp.Application_Xaml.MainWindow`. A later import cannot
+make that earlier base-class declaration valid retroactively. The producer `.g.cpp`
+then needs the complete authored implementation class, so it follows the `.h`.
 
-#else
+`WINRT_IMPORT_MODULE` is a preprocessor switch for the producer-header path, not a
+module import. It suppresses redundant textual WinRT projection includes; it does
+not provide `MainWindowT` or any other C++ declaration. A named-module import also
+does not import macros, which is why this switch and native macro headers remain
+explicit. See the C++ draft's [import declaration rules](https://eel.is/c++draft/module.import).
+
+A generated `.ixx` is different: it *is* a named-module interface unit. Its native
+headers belong after `module;` in the global module fragment (the region before
+`export module ...;`), and its imports precede the module's declaration body.
+
+## Ordinary generated implementation translation units
+
+XamlC Pass2, BindingInfo implementation, and TypeInfo implementation are **ordinary translation units**, not named-module implementation units.
+
+They therefore do not emit:
+
+```cpp
+module;
+module MyApp.Application_Xaml;
+```
+
+and they do not import the standard-library module.
+
+Instead the generated TU establishes textual native/STL ownership first:
+
+```cpp
+#include <windows.h>
+#include <unknwn.h>
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+// other STL headers used by generated/local code
 
 #define WINRT_IMPORT_MODULE
-import MyApp.Application_Xaml;
-
-#endif
+import winrt_base;
+import winrt.Windows.Foundation;
+import winrt.Microsoft.UI.Xaml;
+import MyApp.Application_Xaml.MainWindow;
 ```
 
-The exact generated body varies by App/Page/BindingInfo/TypeInfo template, but the
-important rule is stable:
+This follows the C++/WinRT 3.x implementation pattern. It avoids the MSVC ownership conflict caused by:
 
-- when compiled as a module interface, the file defines the partition;
-- when included through a normal C++/WinRT generated component header, it imports the
-  project umbrella instead of textually redefining the XAML declarations.
+```cpp
+import std;
+#include <list>
+#include <unordered_map>
+```
 
-This is why normal authored source does not need:
+`WINRT_IMPORT_MODULE` allows ordinary C++/WinRT producer headers included after the imports to suppress duplicate textual WinRT projection declarations.
+
+`import std;` remains valid in generated `.ixx` module interfaces, where the interface itself owns that module dependency and does not subsequently textually include STL headers.
+
+### Why ordinary generated sources retain STL includes
+
+`import std;` can supply standard C++ names such as `std::vector`, `std::map` and
+`std::shared_ptr`; it does not replace native Windows headers, C++/WinRT macro
+headers, standard-library macros, or arbitrary user implementation headers.
+Microsoft documents these limits in [the standard-library module tutorial](https://learn.microsoft.com/en-us/cpp/cpp/tutorial-import-stl-named-module?view=msvc-170).
+
+The C++ standard does not generally prohibit combining standard-library modules
+and headers. However, the MSVC native consumer validation for this branch has
+already exposed declaration/redefinition failures when `import std` is followed
+by textual STL includes reached through authored/producer headers. Those headers
+can change independently of XamlC, so replacing the generated implementation
+preamble with `import std` would require validating their complete include closure
+(every header reached transitively), not only the visible generated `.cpp`.
+`WINRT_IMPORT_MODULE` suppresses WinRT projection includes; it cannot suppress
+unrelated `<vector>`, `<list>`, third-party headers or their macros.
+
+For that reason, ordinary generated implementation sources establish their
+required textual STL declarations before WinRT/XamlC imports. Header sets remain
+specific to the generated source kind: for example a page implementation needs
+`cstdint`, `memory`, `type_traits` and `utility`, while TypeInfo also needs the
+lookup containers, locks and algorithms used by its metadata implementation.
+The declaration interfaces already use `import std`, and do not embed the
+inactive legacy-header preamble. A future all-module implementation option needs
+separate compiler/include-closure acceptance evidence; it is not a formatting change.
+
+## Generated native file layout
+
+Module-mode native outputs use CRLF consistently, matching this repository's
+native-source `.gitattributes` policy, regardless of the host newline convention
+or the newline spelling in the T4 body. The `.ixx` extension is covered by the
+same policy. Normalization happens after the complete source is assembled, so
+the preamble, local-header list and template body cannot retain mixed line endings.
+
+Every generated module-mode native file has one auto-generated banner at the
+top. Declaration interfaces keep the declaration body from the shared header
+templates, without their duplicate banners, `#pragma once`, or inactive
+`#ifndef XAML_IMPL_MODULE` include preambles. Header-mode output is unchanged.
+
+## BindingInfo and TypeInfo
+
+XamlC generates independent shared interfaces:
+
+```text
+XamlBindingInfo.xaml.g.ixx -> MyApp.Application_Xaml.BindingInfo
+XamlTypeInfo.xaml.g.ixx    -> MyApp.Application_Xaml.TypeInfo
+```
+
+They are implementation-facing dependencies, not exports of `MyApp.Application_Xaml`.
+
+TypeInfo implementation TUs explicitly import:
 
 ```cpp
 import MyApp.Application_Xaml;
+import MyApp.Application_Xaml.BindingInfo;
+import MyApp.Application_Xaml.TypeInfo;
 ```
 
-A direct import remains valid and is useful for libraries, diagnostics, and smoke tests.
+and import the semantic `winrt.*` projection dependencies discovered by XamlC.
 
----
+Local authored implementation headers are included only after the generated TU has established textual STL ownership and imported the named WinRT/XamlC modules. `WINRT_IMPORT_MODULE` keeps their normal C++/WinRT header chain compatible with those imports.
 
 ## Semantic projection dependencies
 
-The compiler no longer stores a WinRT dependency primarily as a header path.
+XamlC tracks WinRT dependencies as namespaces, not as hard-coded header paths.
 
-Old representation:
-
-```text
-winrt/Microsoft.UI.Xaml.Controls.h
-```
-
-New representation:
+For example:
 
 ```text
 Microsoft.UI.Xaml.Controls
 ```
 
-The C++/WinRT backend lowers that semantic namespace according to the active mode.
-
-Header mode:
+is lowered to:
 
 ```cpp
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 ```
 
-Module mode:
+in header mode, and:
 
 ```cpp
 import winrt.Microsoft.UI.Xaml.Controls;
 ```
 
-This separation is important because XamlC has three different dependency categories:
+in module mode.
 
-1. **WinRT projection dependency**  
-   A semantic namespace. It may become a header include or a named-module import.
+Dependency collection includes generated Page/App scaffolding, field types, connection-id target types, x:Bind path/value/parameter types, collection/map tracking types, member owner/type information, and unresolved local runtimeclass namespace fallbacks available during Pass1.
 
-2. **Local implementation dependency**  
-   Files such as `Foo.h`, `Foo.g.h`, or `Foo.xaml.g.hpp`. These remain textual
-   includes where appropriate.
+This is necessary because module builds cannot rely on the accidental transitive visibility that textual projection headers often provide.
 
-3. **Native/STL/COM dependency**  
-   Examples include `<cstdint>`, `<unknwn.h>`, or `std`. These follow their own
-   native/module rules and are not treated as WinRT projection namespaces.
+## Module naming
 
-For a local field such as `<local:PropBag x:Name="propertyBagObject" />`, Pass1
-can lack a reflection `Type` while already knowing `FieldTypePath = "Simple"` and
-`FieldTypeShortName = "PropBag"`. `CppWinRTProjectionDependency.GetNamespaces(Type,
-string)` uses that namespace only when `Type` is null; a resolved type still follows
-the recursive projection closure. The generated `winrt::Simple::PropBag` field
-therefore requires `winrt.Simple` even before the intermediate component WinMD exists.
-
----
-
-## x:Bind dependency closure
-
-Module builds expose transitive-header assumptions that header mode can accidentally hide.
-The Page generator therefore tracks every projected type that generated x:Bind C++ can
-actually spell.
-
-The closure includes:
-
-- the binding data-root type;
-- every bind-path step value type;
-- observable-vector/map item types when tracking code uses them;
-- function owner, declared parameter, parameter value, and assignment types;
-- the concrete connection-id target element type, including elements without `x:Name`;
-- the target member type and declaring type;
-- dependency-property owner types.
-
-Pass1 can only export projection dependencies that are resolvable before the intermediate
-component WinMD exists. Local runtimeclasses in a separate project namespace may therefore
-still be unresolved during Pass1. After the intermediate WinMD is available, Pass2
-recomputes the same semantic closure and materializes the fully resolved dependencies as
-direct `import winrt....;` declarations in module mode (or projection-header includes in
-header mode).
-
-The regression project intentionally uses independent namespaces on both sides of a
-binding graph and checks the generated `MainPage.xaml.g.hpp` for both imports. This
-prevents a same-namespace or transitive-header accident from hiding a missing Pass2
-dependency.
-
----
-
-## App and metadata-provider split
-
-The App Pass1 module interface cannot require the concrete generated
-`XamlMetaDataProvider` implementation to be complete while the interface itself is being
-built.
-
-Module mode therefore keeps provider-dependent App members as declarations in Pass1.
-Pass2, after including the complete metadata-provider definition, supplies definitions for
-operations such as:
-
-- App default construction and destruction;
-- `GetXamlType`;
-- `GetXmlnsDefinitions`;
-- construction/access of the generated metadata provider.
-
-This keeps implementation-only provider dependencies out of the App partition interface.
-
-Both special members must be declared in Pass1 and defaulted in Pass2. Moving only
-the destructor is insufficient: constructing `AppT<App>` in authored `App.cpp` can
-instantiate exception cleanup of its `com_ptr<XamlMetaDataProvider>` member. Pass2
-includes the complete provider and explicitly instantiates the App specialization.
-
----
-
-## Page implementation bases
-
-A XAML Page partition must not pull C++/WinRT component implementation `.g.h` files into
-named-module purview. Instead, Page Pass1 forward-declares the cppwinrt
-`<Type>_base` templates needed by generated declarations.
-
-That preserves the existing implementation-header model while keeping the module
-interface free from component implementation ownership and redefinition problems.
-
----
-
-## TypeInfo and legacy COM
-
-The TypeInfo partition exports XamlC metadata-provider implementation types and may use
-legacy COM concepts such as `IUnknown`.
-
-Native COM declarations are provided from the global module fragment where required.
-The interop targets also enable `WINRT_ENABLE_LEGACY_COM` while compiling
-C++/WinRT's base module: TypeInfo uses `IXamlUserType : ::IUnknown` in
-`winrt::implements`, and including `<unknwn.h>` in a later XAML partition alone
-cannot enable that support retroactively. WinRT projection dependencies are tracked
-semantically and emitted as explicit module imports.
-
-The current regression suite also imports the final XAML umbrella from an independent
-consumer translation unit and requires the exported BindingInfo, TypeInfo, and
-legacy-COM-backed types to be complete. This tests importer-side reachability rather than
-only checking that the module interface can compile itself.
-
----
-
-## Build pipeline
-
-The important Pass1/module ordering is:
+The class module name preserves the full `x:Class` identity relative to the project root:
 
 ```text
-ResolveProjectReferences
-        |
-CppWinRTResolveModuleReferences
-        |
-MarkupCompilePass1
-        |
-XamlCppWinRTAddModuleInterfaces
-        |
-CppWinRTAddModuleInterfaces
-        |
-XamlCppWinRTNormalizeModuleCompileItems
-        |
-FixupCLCompileOptions / MSVC dependency scanning
-        |
-C++ compilation
+MyApp.Views.SettingsPage
+    -> MyApp.Application_Xaml.Views.SettingsPage
+
+MyApp.Controls.SettingsPage
+    -> MyApp.Application_Xaml.Controls.SettingsPage
 ```
 
-`XamlCppWinRTAddModuleInterfaces` takes the Pass1 `*.xaml.g.h` outputs and registers
-them as `ClCompile` module-interface items with:
+Normal C++ identifier segments remain readable. Keywords and invalid segments are escaped deterministically and injectively. Unicode identifiers remain deterministic. Same-short-name classes in different namespaces therefore do not collide.
+
+## MSBuild integration
+
+XamlC writes the logical module name for every generated `.g.ixx` into `GeneratedModuleNames`. The MSBuild task exposes that as `XamlModuleName` metadata.
+
+`XamlCppWinRTAddModuleInterfaces` then registers those files as:
 
 ```text
 CompileAs=CompileAsCppModule
 ModulesSupported=true
 PrecompiledHeader=NotUsing
-WINRT_XAML_MODULE_INTERFACE
-ModuleOutputFile=$(IntDir)XamlModules\
+ModuleOutputFile=$(XamlCppWinRTModuleIfcDir)<XamlModuleName>.ifc
 ```
 
-C++/WinRT-resolved projection BMI search directories are propagated to these items.
+The generated interfaces include:
 
-### Pass2 / late-generated C++ items
+- every active per-class `.xaml.g.ixx`;
+- `XamlBindingInfo.xaml.g.ixx`;
+- optional `XamlTypeInfo.xaml.g.ixx`;
+- `Application_Xaml.g.ixx`.
 
-Pass2 adds generated C++ translation units after the project's primary module-reference
-resolution has already run. XamlC therefore applies the required BMI search directories
-to late generated items such as:
+`AdditionalBMIDirectories` only makes existing IFC/BMI files discoverable. It does not make declarations visible and is never treated as a substitute for an explicit `import` statement.
 
-- Page Pass2 output;
-- `XamlMetaDataProvider.cpp`;
-- other `CompileXamlGeneratedFiles` items.
+### Relative intermediate paths
 
-The search path includes the local projection `$(IntDir)`, the dedicated XAML module
-directory, and the projection BMI directories already resolved on normal compile items.
+The generated-source dependency resolver anchors all IFC directories to
+`MSBuildProjectDirectory`, normalizes them to absolute paths and removes duplicate
+directory aliases before creating `/reference "Module=Path.ifc"` mappings. This
+matches the absolute paths produced by the C++ dependency scanner. Without that
+normalization, the default relative application `IntDir` can supply both
+`x64\Debug\...ifc` and `C:\...\x64\Debug\...ifc` for one module, causing MSVC
+`C7684` (ambiguous IFC resolution). Applications do not need to override `IntDir`
+to work around that product bug.
 
----
+The external product-sample gate builds Debug and Release with both an explicit
+absolute `IntDir` and the actual evaluated default relative `IntDir`. It also
+rebuilds the latter without changing sources, retains text logs/binlogs, and
+rejects `C7684` and `LNK4042`. These are validation requirements; new HEADs are
+not considered verified until those native builds complete.
 
-## IFC/BMI output
+## Incremental lifetime
 
-MSVC's compiled module interface format is IFC. “BMI” is the generic term for the binary
-module interface; IFC is the MSVC representation.
+`XamlModules.list` records the active logical module identities. Generated-source and IFC cleanup use the complete saved XAML project state, not only the current harvest workset.
 
-XAML module IFCs are kept in:
+Validation covers:
 
-```text
-$(IntDir)XamlModules\
-```
-
-rather than mixing them into the directory that C++/WinRT uses for projection IFCs.
-
-This makes XAML module lifetime explicit and lets XamlC clean module output when the
-project leaves module mode.
-
-The directory can be overridden for diagnostics with:
-
-```xml
-<XamlCppWinRTModuleIfcDir>...</XamlCppWinRTModuleIfcDir>
-```
-
----
-
-## Static libraries and cross-project consumption
-
-Do not invent a second XamlC-specific ProjectReference protocol.
-
-For a C++ static library, VC/MSBuild already propagates named-module BMIs through the
-normal ProjectReference graph. Static-library BMIs are public by default through
-`AllProjectBMIsArePublic` / `ReferencedModuleBMIs`.
-
-A consumer can therefore import:
-
-```cpp
-import ControlsLibrary.Application_Xaml;
-```
-
-through the normal static-library ProjectReference.
-
-A pure consumer with no local IDL or XAML uses `CppWinRTBuildModule=false`:
-it imports the provider's modules through the native graph without generating its
-own projection interfaces. The flag controls projection production, not whether
-ordinary C++ source may use `import`. Namespace exclusion alone does not prevent
-the package from generating `winrt_base` and `winrt_numerics`.
-
-C++/WinRT projection-module policy remains independent. If the provider's projection BMI
-is already propagated from the static library, prevent the consumer from generating a
-duplicate module for the same namespace:
-
-```xml
-<CppWinRTModuleExclude>ControlsLibrary</CppWinRTModuleExclude>
-```
-
-Do **not** use `CppWinRTConsumeModule` to mean “consume this component's XAML module”.
-That C++/WinRT metadata is the platform/reference-module-builder contract.
-
----
-
-## Incremental behavior
-
-Named modules make stale generated state much more visible, so XamlC now treats changes
-to the project XAML item set and module mode as first-class invalidation inputs.
-
-### Feature-mode changes
-
-`CppWinRTBuildModule=true` is propagated into XamlC as the
-`CppWinRTNamedModules` feature-control flag. Feature-control flags are part of saved
-state, so switching:
-
-```text
-module -> header -> module
-```
-
-invalidates generated output instead of silently reusing the previous mode's code.
-
-### Removed XAML items
-
-Removing a Page/App item:
-
-- invalidates the no-change shortcut;
-- removes its saved-state entry;
-- forces shared BindingInfo/TypeInfo/module state to regenerate;
-- deletes orphaned Pass1/Pass2 generated class files and backups.
-
-The physical deletion matters because C++/WinRT uses `__has_include("<Type>.xaml.g.h")`.
-A stale header would otherwise create a “ghost” XAML bridge for a class that is no longer
-in the project.
-
-### No XAML or header mode
-
-`$(IntDir)XamlModules\` is removed when either:
-
-- `CppWinRTBuildModule` is no longer true; or
-- the project no longer has a Page or ApplicationDefinition.
-
-This prevents stale `Application_Xaml` IFCs from advertising a module the current
-project no longer produces.
-
-### NoPageCodeGen
-
-`NoPageCodeGen` suppresses non-Application Page codegen but keeps the App partition.
-Suppressed Page `*.xaml.g.h/.g.hpp` files are deleted in normal builds so they cannot be
-found through the C++/WinRT generated-header bridge.
-
-### NoTypeInfoCodeGen
-
-`NoTypeInfoCodeGen` removes the optional `:XamlTypeInfo` partition and the primary
-interface no longer exports it after the mode transition.
-The regression gate checks this contract with `MarkupCompilePass1`, then restores
-TypeInfo generation and performs a full provider build before the cross-project
-consumer test. The flag suppresses generated TypeInfo implementation; it does not
-supply a replacement for the metadata-provider runtimeclass that C++/WinRT still
-projects for this fixture.
-
----
-
-## Migration from the old module workaround
-
-A project that previously followed an application-owned XAML module workaround can
-usually simplify substantially.
-
-### Remove
-
-Remove project-owned logic that exists only to make generated XAML C++ see modules:
-
-- forced-include (`/FI`) XAML module preambles;
-- custom lists of `XamlTypeInfo.g.cpp`, `XamlMetaDataProvider.cpp`, or generated Page
-  files whose only purpose is to inject imports;
-- hand-maintained projection-import lists derived from XAML types;
-- manual project-level `Application_Xaml` imports in every normal implementation TU.
-
-### Keep or add
-
-Keep/add the real C++/WinRT module configuration:
-
-```xml
-<CppWinRTBuildModule>true</CppWinRTBuildModule>
-```
-
-Use a compatible language/STL module configuration, for example:
-
-```xml
-<LanguageStandard>stdcpplatest</LanguageStandard>
-<BuildStlModules>true</BuildStlModules>
-```
-
-Use `WINRT_IMPORT_MODULE` in authored C++ where C++/WinRT's generated textual component
-headers need to coexist with imported projections:
-
-```cpp
-#define WINRT_IMPORT_MODULE
-import winrt.Microsoft.UI.Xaml;
-
-#include "MainWindow.xaml.h"
-```
-
-The macro is **not** a replacement for importing the needed projection modules. It tells
-legacy C++/WinRT projection headers to take the module-compatible path when they are
-encountered later in the include graph.
-
-### PCH migration
-
-If the old PCH contains many `<winrt/...h>` projection headers, move those dependencies
-to imports in the translation units that use them, or otherwise ensure the PCH does not
-textually predeclare the same projections that are later imported as modules.
-
----
-
-## What application authors should import
-
-### Normal XAML implementation source
-
-Import the projection namespaces used by the authored implementation and its headers:
-
-```cpp
-#include <windows.h>
-
-#define WINRT_IMPORT_MODULE
-import winrt.Windows.Foundation;
-import winrt.Microsoft.UI.Xaml;
-
-#include "MainWindow.xaml.h"
-```
-
-For example, the fixture's `MainPage.h` declares a `Simple.Models.BindModel` member.
-Sources that include it import `winrt.Simple.Models`; authored uses of XAML Input
-types likewise require `winrt.Microsoft.UI.Xaml.Input`. XamlC does not inspect an
-authored header to infer these dependencies. XamlC collects dependencies of the code
-it generates: partitions expose declaration dependencies, while Pass2 imports the
-dependencies needed by generated implementation.
-
-Do not add `import MyApp.Application_Xaml;` merely because the file implements a XAML
-class. The generated-header bridge already provides that.
-
-### Explicit umbrella consumer
-
-Use the public module directly when a source file is intentionally testing/consuming the
-whole XAML surface without going through a component header:
-
-```cpp
-#define WINRT_IMPORT_MODULE
-import MyApp.Application_Xaml;
-
-static_assert(sizeof(winrt::MyApp::implementation::XamlBindings) > 0);
-```
-
----
-
-## Generated files: what owns what
-
-| Generated file | Role in module mode |
-| --- | --- |
-| `XamlBindingInfo.xaml.g.h` | Primary `<Root>.Application_Xaml` interface |
-| `App.xaml.g.h` | App interface partition |
-| `<Page>.xaml.g.h` | XAML class interface partition / normal include shim |
-| `XamlTypeInfo.xaml.g.h` | Optional `:XamlTypeInfo` partition |
-| `*.xaml.g.hpp` | Pass2 implementation output, not a public module interface |
-| `XamlMetaDataProvider.h/.cpp` | Generated metadata-provider implementation surface |
-| `$(IntDir)XamlModules\*.ifc` | MSVC compiled XAML module interfaces |
-
-The checked-in C# files generated from C++/WinRT T4 templates are implementation
-artifacts, not the source of truth.
-
----
-
-## XamlC contributor workflow
-
-The C++/WinRT T4 templates under:
-
-```text
-src/XamlCompiler/BuildTasks/Microsoft/Xaml/XamlCompiler/CodeGenerators/CppWinRT/
-```
-
-are the source of truth.
-
-Do not manually edit the checked-in generated `.cs` files.
-
-The PR workflow:
-
-1. runs T4 regeneration on the VS18 toolchain;
-2. verifies that only valid generated `.cs` files changed;
-3. commits synchronized generated output when necessary;
-4. dispatches validation again;
-5. performs product validation on the VS2022 / MSBuild 17.x toolchain;
-6. runs the focused named-module path separately with VS2026 / MSVC v145.
-
-The focused module validation currently targets the VS2026 hosted image's installed
-Windows SDK 10.0.26100.0. That override is intentionally local to module validation.
-
-A repository-local workflow-dispatch file also exists for a shorter module-only inner
-loop. GitHub's Actions UI only exposes `workflow_dispatch` for workflows present on the
-default branch, so a workflow introduced only on this feature branch cannot yet be used
-as a normal manual Actions entry. This is a CI iteration limitation, not part of the
-XamlC design.
-
-This split exists because the T4 tooling, product compiler baseline, and C++/WinRT 3.x
-named-module validation have different toolchain requirements.
-
----
-
-## Validation coverage
-
-The focused regression suite is implemented with the coverage below. The final VS2026/v145/SDK26100 end-to-end gate is still the remaining acceptance step.
-
-The focused x64 Debug module gate covers:
-
-- module clean build;
 - no-change rebuild;
-- one-Page change;
-- Page remove and restore without cleaning;
-- stale `*.xaml.g.h` deletion;
-- `NoPageCodeGen` partition/output behavior;
-- restoring normal Page codegen;
+- one-page declaration change;
+- add/remove/restore page;
+- rename page;
+- same-short-name classes in different namespaces;
+- `NoPageCodeGen`;
+- `NoTypeInfoCodeGen`;
 - module -> header -> module switching;
-- physical XAML IFC cleanup/regeneration;
-- source-side and target-side x:Bind projection closure;
-- recursive generic projection-namespace closure;
-- `NoTypeInfoCodeGen` partition removal;
-- static-library provider and cross-project module consumer;
-- no-XAML stale-module cleanup;
-- importer-side completeness of BindingInfo/TypeInfo/legacy-COM declarations.
+- static-library producer/consumer graphs.
 
----
+Obsolete `Application_Xaml.Support` filenames remain in cleanup lists only so builds upgraded from earlier development revisions cannot retain stale source/IFC artifacts. They are not generated or consumed by the current graph.
 
-## Validation and integration boundaries
+## Header-mode coexistence
 
-[Run 36811821254](https://github.com/hoshiizumiya/microsoft-ui-xaml/actions/runs/36811821254)
-validated the original phase2 tree: all six product configurations and the complete
-focused named-module job passed. The job covers clean/no-change/one-page rebuilds,
-Page removal/restoration, NoPage/NoTypeInfo Pass1 generation, module/header/module
-switching, stale IFC removal, and native static-library consumer propagation.
-The NoPage and NoTypeInfo checks intentionally exercise Pass1; they do not establish
-that an application which depends on suppressed code can link with those flags.
+When:
 
-Product integration is rebased on upstream `4f7cd8dc`, including test modernization
-[#11837](https://github.com/microsoft/microsoft-ui-xaml/pull/11837).
-That rebase moves proxy sources under `Tests/UnitTests/XamlCompilerProxies` and retains
-upstream test dependency staging and SDK discovery. It needs fresh Windows validation;
-the earlier successful run cannot establish the rebased tree's correctness.
-
-Native module fixtures and fork workflows are maintained on a separate validation
-branch, so the normal test solution and product toolchain remain aligned with upstream.
-Those fixtures currently use `YexuanXiao.CppWinRTPlus 3.1.260928.1` to work around the
-Microsoft package's PCH-free metadata-provider wrapper defect. Their projection-mode
-cache target is a fixture workaround for a separate C++/WinRT incremental defect.
-Neither workaround changes the product-wide C++/WinRT package pin.
-
-The legacy unfiltered unit run failed with missing Microsoft.Build runtime dependencies
-and several assertions. Upstream #11837 restores the runtime closure and fixes many
-of those assertions; its own reported validation still has four known succinct-collection
-failures. The migrated unfiltered runner must report its actual results without filters
-or additional ignored tests. Generated-code comparison masters are not updated merely
-to hide a difference: any changed output needs review and regeneration by the owning tools.
-
----
-
-## Known boundary: physical XAML companion paths
-
-This module work does **not** solve
-[microsoft-ui-xaml#11525](https://github.com/microsoft/microsoft-ui-xaml/issues/11525).
-
-C++/WinRT may calculate a logical companion include such as:
-
-```text
-<Type>.xaml.g.h
+```xml
+<CppWinRTBuildModule>false</CppWinRTBuildModule>
 ```
 
-while a project can place XAML at a physical path that cannot be reconstructed from
-WinRT metadata alone.
+existing C++/WinRT XAML header generation remains active. XamlC emits normal `.xaml.g.h` / legacy Pass2 outputs and removes stale XAML module interfaces/IFCs.
 
-That is a separate mapping problem: XamlC already knows the physical XAML item path and
-needs a contract that lets the C++/WinRT companion-header lookup consume that mapping.
-Do not hide that problem by changing the module naming contract.
+The module and header modes are selected at XamlC generation time through `ProjectInfo.BuildXamlModules`. There is no `XAML_USE_MODULE` preprocessor switch controlling generated-source semantics.
 
----
+## Validation layers
 
-## PR decomposition
+The PR validates the design at several levels:
 
-The [issue/commit/dependency index](xamlc-cppwinrt-named-modules-pr-decomposition.md)
-separates common compiler fixes, module implementation, native build integration,
-regression work and independently owned build defects. It records evidence and
-remaining acceptance boundaries for extracting reviewable PRs from the development
-branch.
+1. T4 source/companion synchronization.
+2. Focused generator unit tests.
+3. `SimpleCppWinRTModules` real native regression build.
+4. Independent static-library module producer/consumer build.
+5. A real NuGet consumer built against the freshly packaged WinUI artifacts.
+6. A separate product sample using C++/WinRT 3.x authored per-class imports.
+7. Incremental add/remove/rename and header/module mode switching.
+8. The normal six product configurations (`x86/x64/arm64`, free/chk) remain real builds and are not skipped to make module CI green.
 
----
+The focused tests explicitly reject ordinary generated `.cpp` files that contain `module;` or `import std;`, reject a public Support module, and require direct per-class imports rather than relying on BMI search paths as implicit declaration visibility.
 
-## Sample
+## Migration from the old `/FI` workaround
 
-See [`Samples/XamlCppWinRTModules/README.md`](../../Samples/XamlCppWinRTModules/README.md).
+C++/WinRT 3.x documented a forced-include module preamble as a workaround for generated XAML sources that were outside its control. With XamlC itself module-aware, an application should instead:
 
-The sample demonstrates:
+1. enable `CppWinRTBuildModule=true`;
+2. remove the XAML-only `/FI ModulePreamble.h` workaround;
+3. import the generated XamlC per-class module from each authored XAML implementation TU;
+4. keep `WINRT_IMPORT_MODULE` for the ordinary C++/WinRT producer-header path;
+5. stop including XamlC `.xaml.g.h` from module-mode authored code;
+6. import `<Root>.Application_Xaml` only when a consumer needs the whole project XAML declaration set.
 
-- the minimum project properties for C++/WinRT 3.x module mode;
-- a module-friendly no-projection-PCH source layout;
-- normal generated-header XAML module consumption;
-- an x:Bind model from a different WinRT namespace;
-- a direct `<RootNamespace>.Application_Xaml` smoke import;
-- where the generated `*.xaml.g.h` and `XamlModules\*.ifc` outputs come from.
+The design deliberately does not introduce wrapper `.module.cpp` files or a second XamlC-specific project-reference protocol.
+

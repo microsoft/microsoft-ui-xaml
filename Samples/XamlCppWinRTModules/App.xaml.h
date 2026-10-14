@@ -1,6 +1,8 @@
 #pragma once
 
+#ifndef WINRT_IMPORT_MODULE
 #include "App.xaml.g.h"
+#endif
 
 namespace winrt::XamlCppWinRTModulesSample::implementation
 {

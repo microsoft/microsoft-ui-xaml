@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
@@ -82,6 +82,41 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             {
                 EnsureNeededXamlHeaderFilesCalculated();
                 return _neededLocalXamlHeaderFiles;
+            }
+        }
+
+        public IEnumerable<string> DeclarationCppWinRTProjectionNamespaces
+        {
+            get
+            {
+                var namespaces = new HashSet<string>(StringComparer.Ordinal)
+                {
+                    KnownNamespaces.WindowsFoundation, KnownNamespaces.Xaml, KnownNamespaces.XamlMarkup
+                };
+                if (CodeInfo == null || String.IsNullOrWhiteSpace(CodeInfo.BaseTypeName))
+                {
+                    // A missing class/base is an unharvested model, not an empty declaration.
+                    throw new InvalidOperationException("XAML class and base type must be harvested before collecting declaration dependencies.");
+                }
+                string baseTypeName = CodeInfo.BaseTypeName;
+                int separator = baseTypeName.LastIndexOf('.');
+                string baseNamespace = separator > 0 ? baseTypeName.Substring(0, separator) : null;
+                foreach (var ns in CppWinRTProjectionDependency.GetNamespaces(CodeInfo.BaseType?.UnderlyingType, baseNamespace))
+                {
+                    namespaces.Add(ns);
+                }
+                foreach (var field in CodeInfo.FieldDeclarations)
+                {
+                    foreach (var ns in CppWinRTProjectionDependency.GetNamespaces(field.FieldXamlType?.UnderlyingType, field.FieldTypePath))
+                    {
+                        namespaces.Add(ns);
+                    }
+                }
+                if (CodeInfo.IsApplication)
+                {
+                    namespaces.Add(KnownNamespaces.WindowsXamlInterop);
+                }
+                return namespaces.OrderBy(ns => ns, StringComparer.Ordinal);
             }
         }
 

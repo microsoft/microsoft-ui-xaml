@@ -31,27 +31,37 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 // </auto-generated>
 //------------------------------------------------------------------------------
 ");
-  if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { 
+  if(!ProjectInfo.BuildXamlModules && !String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { 
             this.Write("#include \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(ProjectInfo.PrecompiledHeaderFile));
             this.Write("\"\r\n");
   }
-            this.Write("\r\n#include <unknwn.h>\r\n#include <memory>\r\n#include <string>\r\n#include <regex>\r\n#i" +
-                    "nclude <mutex>\r\n#include <cstdint>\r\n\r\n// Undefine GetCurrentTime macro to preven" +
-                    "t\r\n// conflict with Storyboard::GetCurrentTime\r\n#undef GetCurrentTime\r\n\r\n");
-  if (ProjectInfo.UseCppWinRTNamedModules) { 
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTModuleCompatibilityDefinition()));
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTConsumerPreamble()));
             this.Write("\r\n");
+  if (!ProjectInfo.BuildXamlModules) { 
+            this.Write("#include <unknwn.h>\r\n#include <memory>\r\n#include <string>\r\n#include <regex>\r\n#inc" +
+                    "lude <mutex>\r\n#include <cstdint>\r\n");
   } else { 
+            this.Write("import std;\r\n");
+  } 
+            this.Write("\r\n// Undefine GetCurrentTime macro to prevent\r\n// conflict with Storyboard::GetCu" +
+                    "rrentTime\r\n#undef GetCurrentTime\r\n\r\n");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundation)));
             this.Write("\r\n");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsXamlInterop)));
             this.Write("\r\n");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlMarkup)));
-            this.Write("\r\n");
+            this.Write("\r\n\r\n");
+  if (!ProjectInfo.BuildXamlModules) { 
+            this.Write("#include \"XamlTypeInfo.xaml.g.h\"\r\n#include \"XamlMetaDataProvider.h\"\r\n");
+  } else { 
+            this.Write("import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)));
+            this.Write(".Support;\r\nimport ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)));
+            this.Write(";\r\n");
   } 
-            this.Write("#include \"XamlTypeInfo.xaml.g.h\"\r\n#include \"XamlMetaDataProvider.h\"\r\n\r\nnamespace " +
-                    "winrt::");
+            this.Write("\r\nnamespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(ProjectInfo.RootNamespace)));
             this.Write("::implementation\r\n{\r\n    using namespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlMarkup)));

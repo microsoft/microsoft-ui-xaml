@@ -334,6 +334,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Tasks
                 // File Paths need to be "escaped".  If they have URL escapes in them like %23
                 // they will get processed, and we want to leave them alone
                 TaskItem genFile = new TaskItem(ProjectCollection.Escape(file));
+                if (wrapper.GeneratedModuleNames.TryGetValue(file, out string moduleName))
+                {
+                    genFile.SetMetadata("XamlModuleName", moduleName);
+                }
                 this._generatedCodeFiles.Add(genFile);
             }
 

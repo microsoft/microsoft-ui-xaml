@@ -30,39 +30,23 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 
+#pragma once
+#ifndef XAML_IMPL_MODULE
+#include <unknwn.h>
+#undef GetCurrentTime
+#include <cstdint>
 ");
-  if (ProjectInfo.UseCppWinRTNamedModules) { 
-            this.Write("#ifdef WINRT_XAML_MODULE_INTERFACE\r\nmodule;\r\n#include <unknwn.h>\r\n\r\nexport module" +
-                    " ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetXamlPartitionModuleName(ProjectInfo.RootNamespace, Model.CodeInfo.ClassName.FullName)));
-            this.Write(";\r\n\r\n#define WINRT_IMPORT_MODULE\r\nimport std;\r\n");
-  foreach (var projectionNamespace in Model.NeededCppWinRTProjectionNamespaces) { 
-            this.Write("export import ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(projectionNamespace)));
-            this.Write(";\r\n");
-  }
-            this.Write("#undef WINRT_XAML_MODULE_INTERFACE\r\n#define WINRT_XAML_EXPORT export extern \"C++\"" +
-                    "\r\n#else\r\n#pragma once\r\n#ifndef WINRT_IMPORT_MODULE\r\n#define WINRT_IMPORT_MODULE\r" +
-                    "\n#endif\r\nimport ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)));
-            this.Write(";\r\n#define WINRT_XAML_SKIP_BODY\r\n#endif\r\n");
-  } else { 
-            this.Write("#pragma once\r\n#include <unknwn.h>\r\n\r\n// Undefine GetCurrentTime macro to prevent\r" +
-                    "\n// conflict with Storyboard::GetCurrentTime\r\n#undef GetCurrentTime\r\n\r\n#include " +
-                    "<cstdint>\r\n\r\n");
-  foreach (var projectionNamespace in Model.NeededCppWinRTProjectionNamespaces) { 
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(projectionNamespace, optionalHeader: true)));
+  foreach (var projectionNamespace in Model.DeclarationCppWinRTProjectionNamespaces) { 
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionHeaderDirective(projectionNamespace, optionalHeader: true)));
             this.Write("\r\n");
-  }
-            this.Write("\r\n");
+  } 
   if (Model.CodeInfo.BindStatus != BindStatus.None) { 
             this.Write("#include \"XamlBindingInfo.xaml.g.h\"\r\n");
   } 
-            this.Write("\r\n#define WINRT_XAML_EXPORT\r\n");
-  } 
-            this.Write("\r\n#ifndef WINRT_XAML_SKIP_BODY\r\n");
+            this.Write("#endif\r\n\r\n#ifdef XAML_IMPL_MODULE\r\n#define XAML_EXPORT export extern \"C++\"\r\n#else" +
+                    "\r\n#define XAML_EXPORT\r\n#endif\r\n\r\n");
   if (Model.CodeInfo.BindStatus != BindStatus.None) { 
-            this.Write("WINRT_XAML_EXPORT namespace winrt::");
+            this.Write("XAML_EXPORT namespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(ProjectInfo.RootNamespace)));
             this.Write("::implementation\r\n{\r\n    struct XamlBindings;\r\n}\r\n");
   } 
@@ -73,13 +57,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         var baseTypeNamespace = baseTypeName.Substring(0, baseTypeSeparator);
         var baseTypeShortName = baseTypeName.Substring(baseTypeSeparator + 1);
 
-            this.Write("WINRT_XAML_EXPORT namespace winrt::");
+            this.Write("XAML_EXPORT namespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(baseTypeNamespace)));
             this.Write("::implementation\r\n{\r\n    struct ");
             this.Write(this.ToStringHelper.ToStringWithCulture(baseTypeShortName));
             this.Write(";\r\n}\r\n");
   } 
-            this.Write("\r\nWINRT_XAML_EXPORT namespace winrt::");
+            this.Write("\r\nXAML_EXPORT namespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(Model.CodeInfo.ClassName.Namespace)));
             this.Write("::implementation\r\n{\r\n");
   if (Model.CodeInfo.HasInComponentBase) { 
@@ -175,9 +159,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write("#pragma warning(pop)\r\n");
       }
   }
-            this.Write("    };\r\n}\r\n#endif // WINRT_XAML_SKIP_BODY\r\n\r\n#ifdef WINRT_XAML_EXPORT\r\n#undef WIN" +
-                    "RT_XAML_EXPORT\r\n#endif\r\n#ifdef WINRT_XAML_SKIP_BODY\r\n#undef WINRT_XAML_SKIP_BODY" +
-                    "\r\n#endif\r\n\r\n");
+            this.Write("    };\r\n}\r\n#undef XAML_EXPORT\r\n");
             return this.GenerationEnvironment.ToString();
         }
     }
