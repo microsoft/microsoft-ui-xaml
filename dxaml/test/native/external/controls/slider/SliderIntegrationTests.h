@@ -49,7 +49,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateUIETreeVertical)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the UI element tree of a Vertical Slider in various visual states ")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
@@ -60,7 +60,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateThumbTooltip)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the slider's tooltip goes away when the property value is changed.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateCanMoveSliderUsingKeyboardVertical)
@@ -89,7 +89,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyToolTipShowAndHideForKeyboardAndGamePad)
             TEST_METHOD_PROPERTY(L"Description", L"ToolTip should show on focus with keyboard, but should only show on engagement with GamePad or Remote.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifySmallRange)

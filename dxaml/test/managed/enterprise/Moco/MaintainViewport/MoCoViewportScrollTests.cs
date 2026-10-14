@@ -236,7 +236,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
         /// 
         [TestMethod]
         [Priority(1)]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void TestGroupedDataManipulationsAndScroll()
         {
             ListViewBase list = null; // List control under tests
