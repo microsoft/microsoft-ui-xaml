@@ -1,0 +1,32 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
+# WinUI-CheckApiChanges-Wrapper.yml
+#
+# Dispatches the shared API-change-check steps template by build context, so WinUI's templates have no
+# dependence on the legacy WindowsAppSDKConfig repo and stay consistent with the other components'
+# wrapper pattern:
+#   * Monobuild (IsMonobuild=true): the queued pipeline's `self` IS the WinAppSDK monorepo, so the
+#     template resolves via @self.
+#   * Standalone WinUI pipeline: `self` is the WinUI repo, so the template resolves via the @WinAppSDK
+#     repository resource (declared in the WinUI entry pipelines, pointing at the monorepo).
+# Callers reference this wrapper via a same-repo relative path so it travels with them in both contexts
+# and no @self/@WinAppSDK dispatch is needed at the call site.
+#
+# IsMonobuild is declared untyped (string) to match the eq(parameters.X, 'true') convention used by the
+# WinUI step templates (see WinUI-BuildMUXProject-Steps.yml for the full rationale).
+
+parameters:
+  - name: IsMonobuild
+    default: false
+  - name: InnerParams
+    type: object
+    default: {}
+
+steps:
+  - ${{ if eq(parameters.IsMonobuild, 'true') }}:
+    - template: Build/WindowsAppSDK/AzurePipelinesTemplates/WindowsAppSDK-CheckApiChanges-Steps.yml@self
+      parameters: ${{ parameters.InnerParams }}
+  - ${{ else }}:
+    - template: Build/WindowsAppSDK/AzurePipelinesTemplates/WindowsAppSDK-CheckApiChanges-Steps.yml@WinAppSDK
+      parameters: ${{ parameters.InnerParams }}
