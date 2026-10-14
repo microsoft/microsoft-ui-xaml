@@ -19,6 +19,7 @@ namespace Private { namespace Infrastructure {
             IFACEMETHOD(VerifyEventTracedById)(_In_ int eventId, _In_ UINT count);
             IFACEMETHOD(VerifyEventTracedMoreThanOnce)(_In_ int eventId);
             IFACEMETHOD(EnableTracingByEventId)(_In_ int eventId);
+            IFACEMETHOD(BeginCountingForCurrentProcess)();
         };
     }
 }

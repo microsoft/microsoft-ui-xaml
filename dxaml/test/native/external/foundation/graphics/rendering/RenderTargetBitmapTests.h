@@ -39,7 +39,7 @@ public:
     BEGIN_TEST_METHOD(PopupChildRTBWUCFull)
         TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a Popup child visual tree and consumes the result in an Image.")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash - failed to assign Popup.Child
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(PopupRTBWUCFull)
