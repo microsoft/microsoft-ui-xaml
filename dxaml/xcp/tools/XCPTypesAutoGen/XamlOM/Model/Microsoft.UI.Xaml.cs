@@ -3921,6 +3921,7 @@ namespace Microsoft.UI.Xaml
     }
 
     [NativeName("CSetter")]
+    [ContentProperty("Value")]
     [Guids(ClassGuid = "7c425f15-7da5-4f20-b7cc-39527248803b")]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.WinAppSDK_2_2)]
     public sealed class Setter

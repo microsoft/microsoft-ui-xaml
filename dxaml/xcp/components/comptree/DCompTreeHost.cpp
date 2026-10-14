@@ -855,6 +855,20 @@ void DCompTreeHost::EnsureRootConnected()
         IFCFAILFAST(SetRootForCorrectContext(hwndVisualAsVisual.Get()));
         m_disconnectedHWndVisual.Reset();
     }
+
+    for (auto& islandData : GetXamlIslandRenderData())
+    {
+        CXamlIslandRoot* xamlIslandRoot = islandData.first;
+        XamlIslandRenderData& renderData = islandData.second;
+        if (renderData.m_disconnectedRootVisual != nullptr)
+        {
+            ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+            IFCFAILFAST(xamlIslandRoot->GetContentIsland()->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
+            IFCFAILFAST(contentIslandExperimental->put_Root(renderData.m_islandRootVisual.Get()));
+            xamlIslandRoot->SetRootVisual(renderData.m_islandRootVisual.Get());
+            renderData.m_disconnectedRootVisual.Reset();
+        }
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -868,7 +882,35 @@ void DCompTreeHost::EnsureRootConnected()
 //-----------------------------------------------------------------------------
 _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In_ const XRECTF &backgroundRect)
 {
-    if (m_disconnectedHWndVisual == nullptr && HasDCompTarget())
+    for (auto& islandData : GetXamlIslandRenderData())
+    {
+        CXamlIslandRoot* xamlIslandRoot = islandData.first;
+        XamlIslandRenderData& renderData = islandData.second;
+        if (renderData.m_disconnectedRootVisual == nullptr && renderData.m_islandRootVisual != nullptr)
+        {
+            wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
+            IFCFAILFAST(GetCompositor()->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
+            IFCFAILFAST(colorBrush->put_Color(ColorUtils::GetWUColor(backgroundColor)));
+            wrl::ComPtr<WUComp::ICompositionBrush> brush;
+            IFCFAILFAST(colorBrush.As(&brush));
+
+            ComPtr<WUComp::ISpriteVisual> spriteVisual;
+            IFCFAILFAST(GetCompositor()->CreateSpriteVisual(&spriteVisual));
+            IFCFAILFAST(spriteVisual->put_Brush(brush.Get()));
+            IFCFAILFAST(spriteVisual.As(&renderData.m_disconnectedRootVisual));
+
+            const wf::Size islandSize = xamlIslandRoot->GetSize();
+            wfn::Vector2 size = { islandSize.Width, islandSize.Height };
+            IFCFAILFAST(renderData.m_disconnectedRootVisual->put_Size(size));
+
+            ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+            IFCFAILFAST(xamlIslandRoot->GetContentIsland()->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
+            IFC_RETURN(contentIslandExperimental->put_Root(renderData.m_disconnectedRootVisual.Get()));
+            xamlIslandRoot->SetRootVisual(renderData.m_disconnectedRootVisual.Get());
+        }
+    }
+
+    if (m_disconnectedHWndVisual == nullptr && m_hwndVisual != nullptr)
     {
         wrl::ComPtr<WUComp::ICompositionBrush> brush;
         wrl::ComPtr<WUComp::ICompositionColorBrush> colorBrush;
@@ -1010,6 +1052,7 @@ _Check_return_ HRESULT DCompTreeHost::ConnectXamlIslandTargetRoots()
                 IFC_RETURN(contentIslandExperimental->put_Root(wucVisual));
 
                 xamlIslandRoot->SetRootVisual(wucVisual);
+                renderData.m_islandRootVisual = wucVisual;
 
                 renderData.contentConnected = true;
 

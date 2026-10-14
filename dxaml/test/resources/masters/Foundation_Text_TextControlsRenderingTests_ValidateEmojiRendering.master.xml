@@ -62,7 +62,7 @@
                             </Mask>
                           </MaskBrush>
                         </wucSpriteVisual>
-                        <wucSpriteVisual SizeX="34" SizeY="10" BorderMode="Hard" OffsetX="13" OffsetY="11" OffsetZ="0">
+                        <wucSpriteVisual SizeX="36" SizeY="12" BorderMode="Hard" OffsetX="12" OffsetY="10" OffsetZ="0">
                           <MaskBrush>
                             <Source>
                               <ColorBrush Color="#ffffffff" />
@@ -161,7 +161,7 @@
                       </ExpressionAnimation>
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="13" SizeY="14" BorderMode="Hard" OffsetX="0" OffsetY="7" OffsetZ="0">
+                      <wucSpriteVisual SizeX="15" SizeY="16" BorderMode="Hard" OffsetX="-1" OffsetY="6" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
@@ -171,7 +171,7 @@
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="23" SizeY="24" BorderMode="Hard" OffsetX="15" OffsetY="2" OffsetZ="0">
+                      <wucSpriteVisual SizeX="25" SizeY="26" BorderMode="Hard" OffsetX="14" OffsetY="1" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ff000000" />
@@ -181,7 +181,7 @@
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="20" SizeY="20" BorderMode="Hard" OffsetX="17" OffsetY="4" OffsetZ="0">
+                      <wucSpriteVisual SizeX="22" SizeY="22" BorderMode="Hard" OffsetX="16" OffsetY="3" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="rgb {1, 0.7843, 0.2392}" />
@@ -191,7 +191,7 @@
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="13" SizeY="13" BorderMode="Hard" OffsetX="20" OffsetY="9" OffsetZ="0">
+                      <wucSpriteVisual SizeX="15" SizeY="15" BorderMode="Hard" OffsetX="19" OffsetY="8" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ff000000" />
@@ -201,7 +201,7 @@
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="11" SizeY="6" BorderMode="Hard" OffsetX="21" OffsetY="15" OffsetZ="0">
+                      <wucSpriteVisual SizeX="13" SizeY="8" BorderMode="Hard" OffsetX="20" OffsetY="14" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
@@ -211,7 +211,7 @@
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="9" SizeY="14" BorderMode="Hard" OffsetX="42" OffsetY="7" OffsetZ="0">
+                      <wucSpriteVisual SizeX="11" SizeY="16" BorderMode="Hard" OffsetX="41" OffsetY="6" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
@@ -221,7 +221,7 @@
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="23" SizeY="19" BorderMode="Hard" OffsetX="54" OffsetY="4" OffsetZ="0">
+                      <wucSpriteVisual SizeX="25" SizeY="21" BorderMode="Hard" OffsetX="53" OffsetY="3" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ff000000" />
@@ -231,7 +231,7 @@
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="21" SizeY="16" BorderMode="Hard" OffsetX="55" OffsetY="6" OffsetZ="0">
+                      <wucSpriteVisual SizeX="23" SizeY="18" BorderMode="Hard" OffsetX="54" OffsetY="5" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="rgb {0.9216, 0.6392, 0}" />
@@ -241,7 +241,7 @@
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="12" SizeY="3" BorderMode="Hard" OffsetX="64" OffsetY="9" OffsetZ="0">
+                      <wucSpriteVisual SizeX="14" SizeY="5" BorderMode="Hard" OffsetX="63" OffsetY="8" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="rgb {0.8314, 0.549, 0}" />
@@ -251,7 +251,7 @@
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="11" SizeY="14" BorderMode="Hard" OffsetX="56" OffsetY="7" OffsetZ="0">
+                      <wucSpriteVisual SizeX="13" SizeY="16" BorderMode="Hard" OffsetX="55" OffsetY="6" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="rgb {1, 0.8392, 0.4745}" />
@@ -261,7 +261,7 @@
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="11" SizeY="14" BorderMode="Hard" OffsetX="80" OffsetY="7" OffsetZ="0">
+                      <wucSpriteVisual SizeX="13" SizeY="16" BorderMode="Hard" OffsetX="79" OffsetY="6" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />

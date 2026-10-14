@@ -1,0 +1,28 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Must be registered as a ThemeResources page (ResizeGripper.vcxitems), or these keys are
+         missing at runtime and the gripper template throws. -->
+
+    <Thickness x:Key="ResizeGripperSeparatorThickness">0,0,2,0</Thickness>
+    <Thickness x:Key="ResizeGripperSeparatorThicknessVertical">0,0,0,2</Thickness>
+
+    <ResourceDictionary.ThemeDictionaries>
+        <!-- Once any theme dictionary defines "Light", "Default" means Dark. -->
+        <ResourceDictionary x:Key="Light">
+            <!-- AccentFillColorDefaultBrush's Light tier. {ThemeResource} on the colour, not a
+                 StaticResource alias: aliases don't resolve reliably across merged dictionaries. -->
+            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="{ThemeResource SystemAccentColorDark1}" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Default">
+            <!-- AccentFillColorDefaultBrush's Dark tier. -->
+            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="{ThemeResource SystemAccentColorLight2}" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <!-- Not the accent brush: under High Contrast it matches the window background. -->
+            <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>
