@@ -14,11 +14,26 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TableViewTouchPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TableViewVirtualizationPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)TableViewPage.xaml.cs">
       <DependentUpon>TableViewPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewTouchPage.xaml.cs">
+      <DependentUpon>TableViewTouchPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewVirtualizationPage.xaml.cs">
+      <DependentUpon>TableViewVirtualizationPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)TableViewTestPageFacts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewVirtualizationPageFacts.cs" />
   </ItemGroup>
 </Project>

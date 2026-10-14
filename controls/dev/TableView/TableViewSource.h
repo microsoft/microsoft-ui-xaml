@@ -92,6 +92,9 @@ public:
     // this to decide how to interpret a row DataContext, so reporting intent here would make them
     // read a flat item as a GroupedEntry.
     bool IsGrouped() const;
+    // True when `item` (by object identity) is in the shaped, filtered rows, regardless of group or
+    // node expansion. Header rows never match.
+    bool ContainsShapedItem(winrt::IInspectable const& item) const;
 
     // Internal: the owning TableView caches the projection (ItemsSourceView, row metadata and
     // grouped-ness) when it binds, so it must be told when a shaping verb swaps that projection

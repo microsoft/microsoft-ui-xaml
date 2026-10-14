@@ -115,6 +115,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         internal static UIObject GetFirstGroupHeader(UIObject rowsHost) => GetGroupHeaderAt(rowsHost, 0);
 
+        // A collapse or expand recycles the group header container, so callers re-read the header after each toggle
+        // instead of reusing the UIObject captured before it. Fails (and returns null) if it is gone or names another group.
+        internal static UIObject RefetchFirstGroupHeader(UIObject tableView, string expectedName)
+        {
+            Wait.ForIdle();
+            ElementCache.Clear();
+            UIObject header = GetFirstGroupHeader(GetRowsHost(tableView));
+            if (header == null)
+            {
+                Verify.Fail("The first group header must still be realized after the toggle.");
+                return null;
+            }
+
+            Verify.AreEqual(expectedName, header.Name, "The first group header must still name the same group.");
+            return header;
+        }
+
         // The index-th group header among the rows host's own children, or null.
         internal static UIObject GetGroupHeaderAt(UIObject rowsHost, int index)
         {
@@ -383,6 +400,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // ---------- Pointer (absolute screen points) ----------
 
+        internal static string DescribeFocused()
+        {
+            try
+            {
+                UIObject focused = UIObject.Focused;
+                return focused == null ? "<none>" : string.Format("'{0}' [{1}]", focused.Name, focused.ClassName);
+            }
+            catch (Exception e)
+            {
+                return "<unavailable: " + e.GetType().Name + ">";
+            }
+        }
+
+        // Vertical only: MITA has no horizontal wheel and Shift does not make one; use DragHorizontalScrollBar.
+        internal static void WheelAtPoint(Point point, int delta)
+        {
+            Log.Comment("Rotate wheel by {0} at ({1}, {2}).", delta, point.X, point.Y);
+
+            PointerInput.Move(point);
+            MouseWheelInput.RotateWheel(delta);
+            Wait.ForIdle();
+        }
+
         internal static Point CentreOf(UIObject element)
         {
             var bounds = element.BoundingRectangle;
@@ -585,6 +625,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
             return double.NaN;
+        }
+
+        internal static string VerticalOffsetOf(string offsets)
+        {
+            foreach (string field in offsets.Split(';'))
+            {
+                if (field.StartsWith("V=", StringComparison.Ordinal))
+                {
+                    return field;
+                }
+            }
+            return offsets;
         }
     }
 }

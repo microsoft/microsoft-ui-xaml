@@ -83,19 +83,33 @@ public:
     bool IsToggleHooked() const { return m_toggleHooked; }
     void SetToggleHooked() { m_toggleHooked = true; }
 
+    void ResetPointerStateInternal();
+
+    // Consumed once by RequestGroupExpansion so the focus restore uses the gesture's state.
+    void SetGestureFocusStateInternal(winrt::FocusState state) noexcept { m_gestureFocusState = state; }
+    winrt::FocusState TakeGestureFocusStateInternal() noexcept
+    {
+        return std::exchange(m_gestureFocusState, winrt::FocusState::Unfocused);
+    }
+
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateTerminalBottomGridLineSuppression();
+
+    winrt::hstring GetGroupIdentity();
 
     // Mirror the authoritative IsExpandable/IsExpanded DPs onto the bound projection.
     void SyncExpansionToContent();
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
+    winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
 
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
     bool m_suppressBottomGridLine{ false };
+    winrt::hstring m_pressedGroupIdentity{};
+    winrt::FocusState m_gestureFocusState{ winrt::FocusState::Unfocused };
 
     winrt::weak_ref<winrt::TableView> m_owningTableView{ nullptr };
 

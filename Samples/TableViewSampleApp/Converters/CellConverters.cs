@@ -197,11 +197,12 @@ public sealed partial class SalaryTextConverter : IValueConverter
 /// for <c>PersonPicture.ProfilePicture</c>. Null, blank or malformed input returns null, so
 /// PersonPicture falls back to initials from its DisplayName and the cell is never blank.
 /// Never bind a raw string to an ImageSource: an empty string throws inside the generated
-/// bindings and blanks the whole template. One BitmapImage is cached per distinct path.
+/// bindings and blanks the whole template. Each call returns a new BitmapImage: PersonPictures
+/// must not share one.
 /// </summary>
 public sealed partial class AvatarImageConverter : IValueConverter
 {
-    private static readonly Dictionary<string, BitmapImage> s_cache = new(StringComparer.Ordinal);
+    private static readonly Dictionary<string, Uri> s_uris = new(StringComparer.Ordinal);
 
     public object? Convert(object value, Type targetType, object parameter, string language) =>
         FromPath(value as string);
@@ -216,26 +217,23 @@ public sealed partial class AvatarImageConverter : IValueConverter
             return null;
         }
 
-        if (s_cache.TryGetValue(path, out var cached))
+        if (!s_uris.TryGetValue(path, out var uri))
         {
-            return cached;
-        }
-
-        if (!Uri.TryCreate(path, UriKind.Absolute, out var uri))
-        {
-            return null;
+            if (!Uri.TryCreate(path, UriKind.Absolute, out uri))
+            {
+                return null;
+            }
+            s_uris[path] = uri;
         }
 
         try
         {
-            var image = new BitmapImage
+            return new BitmapImage
             {
                 DecodePixelWidth = 56,
                 DecodePixelType = DecodePixelType.Logical,
                 UriSource = uri,
             };
-            s_cache[path] = image;
-            return image;
         }
         catch (Exception)
         {

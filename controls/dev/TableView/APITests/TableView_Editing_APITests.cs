@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
@@ -12,6 +13,7 @@ using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 
@@ -604,6 +606,85 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the text column's editor TextBox takes its UIA name from the column header text.")]
+        public void VerifyTextColumnEditorNameComesFromHeader()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                items[0].RejectPrefix = InvalidPrefix;
+
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // A rejected value holds the edit open, so the editor stays in the tree.
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), InvalidPrefix + "Nope");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: an edit is open.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
+                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
+                Verify.AreEqual("Name", AutomationProperties.GetName(editors[0]), "The editor's UIA name must be the column header text.");
+            });
+
+            RunOnUIThread.Execute(() => tableView.CancelEdit());
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies FontWeight set on the TableView reaches the text column's editor TextBox.")]
+        public void VerifyTableViewFontWeightReachesTextEditor()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                items[0].RejectPrefix = InvalidPrefix;
+
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                tableView.FontWeight = Microsoft.UI.Text.FontWeights.Bold;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), InvalidPrefix + "Nope");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: an edit is open.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
+                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
+                Verify.AreEqual(Microsoft.UI.Text.FontWeights.Bold.Weight, editors[0].FontWeight.Weight,
+                    "The editor must not set a local FontWeight that blocks the TableView's value.");
+            });
+
+            RunOnUIThread.Execute(() => tableView.CancelEdit());
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a cell blocked by validation recovers: a subsequent acceptable value commits and closes the edit.")]
         public void VerifyClearingValidationErrorAllowsTheCommit()
         {
@@ -754,6 +835,205 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual("Nadia Okoye", replacement[0].Name, "The post-reset edit must commit normally.");
                 Verify.AreEqual("Asha", items[0].Name, "The abandoned edit must not have written to the discarded item.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies removing the edited item from the source force-closes the edit as a Cancel and writes nothing to the removed item.")]
+        public void VerifyForcedCloseCancelsWhenEditedItemIsRemoved()
+        {
+            var items = new ObservableCollection<EditablePerson>(MakeEditableItems());
+            var tableView = LoadEditableTable(items);
+            var edited = items[0];
+            var actions = OpenEditHoldingValidValue(tableView, edited, "Zed");
+
+            RunOnUIThread.Execute(() => items.Remove(edited));
+            IdleSynchronizer.Wait();
+
+            VerifyForcedClose(tableView, actions, TableViewEditAction.Cancel, edited, "Asha", "a removed item must not receive the pending value");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies filtering the edited item out of the projection force-closes the edit as a Cancel and writes nothing to it.")]
+        public void VerifyForcedCloseCancelsWhenEditedItemIsFilteredOut()
+        {
+            var items = MakeEditableItems();
+            var source = SourceFrom(items);
+            var tableView = LoadEditableTable(source);
+            var edited = items[0];
+            var actions = OpenEditHoldingValidValue(tableView, edited, "Zed");
+
+            RunOnUIThread.Execute(() => source.Filter(new TableViewPredicate(o => ((EditablePerson)o).Name != "Asha")));
+            IdleSynchronizer.Wait();
+
+            VerifyForcedClose(tableView, actions, TableViewEditAction.Cancel, edited, "Asha", "a filtered-out item must not receive the pending value");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies replacing ItemsSource force-closes a valid pending edit as a Cancel and writes nothing to the old item.")]
+        public void VerifyForcedCloseCancelsWhenItemsSourceIsReplaced()
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            var edited = items[0];
+            var actions = OpenEditHoldingValidValue(tableView, edited, "Zed");
+
+            RunOnUIThread.Execute(() => tableView.ItemsSource = MakeEditableItems("Nadia", "Omar", "Priya"));
+            IdleSynchronizer.Wait();
+
+            VerifyForcedClose(tableView, actions, TableViewEditAction.Cancel, edited, "Asha", "an item from the replaced source must not receive the pending value");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a forced close that keeps the edited item (an app sort on the source) still commits a valid pending value.")]
+        public void VerifyForcedCloseCommitsValidValueWhenItemStillPresent()
+        {
+            var items = MakeEditableItems();
+            var source = SourceFrom(items);
+            var tableView = LoadEditableTable(source);
+            var edited = items[0];
+            var actions = OpenEditHoldingValidValue(tableView, edited, "Zed");
+
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Descending));
+            IdleSynchronizer.Wait();
+
+            VerifyForcedClose(tableView, actions, TableViewEditAction.Commit, edited, "Zed", "an item still in the source must receive the valid pending value");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a forced close that leaves the edited item only under a collapsed parent (an app ParentBy) still commits a valid pending value.")]
+        public void VerifyForcedCloseCommitsWhenEditedItemIsOnlyCollapsed()
+        {
+            var items = MakeEditableItems();
+            var source = SourceFrom(items);
+            var tableView = LoadEditableTable(source);
+            var parent = items[0];
+            var edited = items[1];
+            var actions = OpenEditHoldingValidValue(tableView, edited, "Zed");
+
+            // Nodes start collapsed, so the edited child leaves the visible rows but stays in the tree.
+            RunOnUIThread.Execute(() => source.ParentBy(
+                new TableViewKeySelector(o => o),
+                new TableViewKeySelector(o => ReferenceEquals(o, edited) ? parent : null)));
+            IdleSynchronizer.Wait();
+
+            VerifyForcedClose(tableView, actions, TableViewEditAction.Commit, edited, "Zed", "an item only hidden under a collapsed parent must receive the valid pending value");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies removing the edited item from a grouped source force-closes the edit as a Cancel and writes nothing to the removed item.")]
+        public void VerifyForcedCloseCancelsWhenEditedItemIsRemovedWhileGrouped()
+        {
+            var items = new ObservableCollection<EditablePerson>(MakeEditableItems("Asha", "Diego", "Mei", "Ravi"));
+            var source = GroupByRole(items);
+            var tableView = LoadEditableTable(source);
+            var edited = items[0];
+            var actions = OpenEditHoldingValidValue(tableView, edited, "Zed");
+
+            RunOnUIThread.Execute(() => items.Remove(edited));
+            IdleSynchronizer.Wait();
+
+            VerifyForcedClose(tableView, actions, TableViewEditAction.Cancel, edited, "Asha", "a removed item must not receive the pending value");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies filtering the edited item out of a grouped projection force-closes the edit as a Cancel and writes nothing to it.")]
+        public void VerifyForcedCloseCancelsWhenEditedItemIsFilteredOutWhileGrouped()
+        {
+            var items = MakeEditableItems("Asha", "Diego", "Mei", "Ravi");
+            var source = GroupByRole(items);
+            var tableView = LoadEditableTable(source);
+            var edited = items[0];
+            var actions = OpenEditHoldingValidValue(tableView, edited, "Zed");
+
+            RunOnUIThread.Execute(() => source.Filter(new TableViewPredicate(o => ((EditablePerson)o).Name != "Asha")));
+            IdleSynchronizer.Wait();
+
+            VerifyForcedClose(tableView, actions, TableViewEditAction.Cancel, edited, "Asha", "a filtered-out item must not receive the pending value");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies clearing the parent relation while editing an item that stays in the flat projection still commits a valid pending value.")]
+        public void VerifyForcedCloseCommitsWhenClearParentByKeepsEditedItem()
+        {
+            var items = MakeEditableItems();
+            var parent = items[0];
+            var child = items[1];
+            var source = SourceFrom(items);
+            RunOnUIThread.Execute(() => source.ParentBy(
+                new TableViewKeySelector(o => o),
+                new TableViewKeySelector(o => ReferenceEquals(o, child) ? parent : null)));
+            var tableView = LoadEditableTable(source);
+            var actions = OpenEditHoldingValidValue(tableView, parent, "Zed");
+
+            RunOnUIThread.Execute(() => source.ClearParentBy());
+            IdleSynchronizer.Wait();
+
+            VerifyForcedClose(tableView, actions, TableViewEditAction.Commit, parent, "Zed", "an item still in the flat projection must receive the valid pending value");
+        }
+
+        // TableViewSource must be created on the UI thread.
+        private static TableViewSource SourceFrom(object items)
+        {
+            TableViewSource source = null;
+            RunOnUIThread.Execute(() => source = TableViewSource.From(items));
+            return source;
+        }
+
+        private static TableViewSource GroupByRole(IEnumerable<EditablePerson> items)
+        {
+            var source = SourceFrom(items);
+            RunOnUIThread.Execute(() => source.GroupBy(o => ((EditablePerson)o).Role));
+            return source;
+        }
+
+        private TableView LoadEditableTable(object itemsSource)
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(itemsSource, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+            return tableView;
+        }
+
+        // A vetoed commit keeps the editor open holding a valid value that has not reached the item, so
+        // only the forced close decides whether it is written.
+        private static List<TableViewEditAction> OpenEditHoldingValidValue(TableView tableView, EditablePerson item, string pendingValue)
+        {
+            var actions = new List<TableViewEditAction>();
+            bool veto = true;
+            RunOnUIThread.Execute(() =>
+            {
+                var originalName = item.Name;
+                tableView.CellEditEnding += (s, e) =>
+                {
+                    actions.Add(e.EditAction);
+                    e.Cancel = veto;
+                };
+
+                CaptureSetValue(GetValueProvider(tableView, item, columnIndex: 0), pendingValue);
+                veto = false;
+
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the vetoed commit keeps the edit open.");
+                Verify.AreEqual(originalName, item.Name, "Precondition: the vetoed commit wrote nothing.");
+                actions.Clear();
+            });
+            IdleSynchronizer.Wait();
+            return actions;
+        }
+
+        private static void VerifyForcedClose(TableView tableView, List<TableViewEditAction> actions, TableViewEditAction expected, EditablePerson item, string expectedName, string reason)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(tableView.IsEditing, "The forced close must end the edit.");
+                Verify.AreEqual(1, actions.Count, "The forced close must raise CellEditEnding exactly once.");
+                Verify.AreEqual(expected, actions[0], "The forced close must report " + expected + ".");
+                Verify.AreEqual(expectedName, item.Name, "After a forced close " + reason + ".");
             });
         }
 

@@ -1981,8 +1981,8 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     std::unordered_set<winrt::hstring> liveKeys;
 
     // The flat shaped rows kept under grouping: every kept row, in group order, with the
-    // per-bucket sort applied and no header entries. Accumulated here rather than re-derived
-    // afterwards because this loop already walks the buckets in their final order. This keeps
+    // per-bucket sort applied and no header entries. Accumulated while the per-bucket sort walks
+    // the buckets in their final order. This keeps
     // Rows() coherent as the flat shaped projection even while the presented row axis is the
     // grouped adapter.
     std::vector<winrt::IInspectable> flatRows;
@@ -1992,15 +1992,7 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     {
         ApplySort(bucket.Items, m_pipeline.GroupOrder(), -1);
         flatRows.insert(flatRows.end(), bucket.Items.begin(), bucket.Items.end());
-
-        auto group = AcquireCachedGroup(bucket);
-        group->SetItems(bucket.Items);
-        groups.push_back(group.as<winrt::IInspectable>());
-        liveKeys.insert(bucket.Identity);
     }
-
-    PruneGroupCache(liveKeys);
-    AttachGroupSource(groups);
 
     // The presented row axis under grouping is the adapter's computed ItemsSourceView, which has
     // no vector form. Keep Rows() maintained as the flat shaped projection anyway: without this
@@ -2011,7 +2003,21 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     // Expansion is deliberately not applied: this is the shaped DATA. Collapsing a group hides
     // rows from the presented row axis without removing them from the projection, and a flat
     // vector whose size changed when a chevron is clicked would be reporting UI state.
+    //
+    // Written before the groups are filled: the adapter's Reset below closes an open edit, which
+    // asks Rows() whether the edited item is still present.
     m_rows.ReplaceAll(flatRows);
+
+    for (auto& bucket : keyedBuckets)
+    {
+        auto group = AcquireCachedGroup(bucket);
+        group->SetItems(bucket.Items);
+        groups.push_back(group.as<winrt::IInspectable>());
+        liveKeys.insert(bucket.Identity);
+    }
+
+    PruneGroupCache(liveKeys);
+    AttachGroupSource(groups);
 
     m_kind = ProjectionKind::Grouped;
     m_projectedAsGrouped = true;

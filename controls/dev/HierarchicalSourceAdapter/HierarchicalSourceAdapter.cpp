@@ -710,6 +710,43 @@ HierarchicalSourceAdapter::NodeRow const* HierarchicalSourceAdapter::TryGetNodeR
     return &m_descriptors[static_cast<size_t>(found->second)];
 }
 
+bool HierarchicalSourceAdapter::IndexContainsItem(winrt::IInspectable const& item) const
+{
+    if (!item || !m_index || !m_index->Structure)
+    {
+        return false;
+    }
+
+    auto const& structure = *m_index->Structure;
+    auto const* const key = m_index->TryGetKey(item);
+    if (!key)
+    {
+        return false;
+    }
+
+    const auto position = structure.IndexByKey.find(*key);
+    if (position == structure.IndexByKey.end())
+    {
+        return false;
+    }
+
+    // The filter keeps a node in its parent's sibling list (or the roots), so look only there.
+    const size_t parent = structure.ParentIndex[position->second];
+    std::vector<winrt::IInspectable> const* siblings = &m_index->Roots;
+    if (parent != ShapingHelpers::ParentStructure::Root)
+    {
+        siblings = m_index->TryGetChildren(*structure.NodeKeys[parent]);
+        if (!siblings)
+        {
+            return false;
+        }
+    }
+
+    auto const* const target = winrt::get_abi(structure.Rows[position->second]);
+    return std::any_of(siblings->begin(), siblings->end(),
+        [target](winrt::IInspectable const& sibling) { return winrt::get_abi(sibling) == target; });
+}
+
 void HierarchicalSourceAdapter::EnsureItemIndex() const
 {
     if (m_indexByItemValid)

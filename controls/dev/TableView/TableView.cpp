@@ -23,6 +23,9 @@
 #include <limits>
 #include <algorithm>
 
+// Not in CppWinRTIncludes.h: Microsoft.UI.h's WindowId conflicts with Microsoft.UI.Content.h's.
+#include <winrt\Microsoft.UI.Interop.h>
+
 static constexpr std::wstring_view s_RowsRepeaterPartName{ L"PART_RowsRepeater"sv };
 static constexpr std::wstring_view s_HeaderRowPartName{ L"PART_HeaderRow"sv };
 static constexpr std::wstring_view s_HeaderHostPartName{ L"PART_HeaderHost"sv };
@@ -45,6 +48,8 @@ static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"s
 // Matches SortIndicatorSize in SortIndicator_themeresources.xaml; used only when that key is
 // missing or unusable.
 static constexpr double c_sortIndicatorSizeFallback{ 16.0 };
+static constexpr std::wstring_view s_ControlCornerRadiusKey{ L"ControlCornerRadius"sv };
+static constexpr winrt::CornerRadius c_controlCornerRadiusFallback{ 4.0, 4.0, 4.0, 4.0 };
 
 namespace
 {
@@ -555,6 +560,9 @@ TableView::~TableView()
     {
         winrt::get_self<::TableViewRowTemplateSelector>(selector)->Detach();
     }
+
+    // Unloaded may not have run; release ThemeSettings and drop the Destroying subscription.
+    ReleaseThemeSettings();
 }
 
 TableView::TableView()
@@ -727,6 +735,26 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
             // Changed is raised on this UI thread, so the handler can touch XAML directly.
             m_themeSettingsChangedRevoker = m_themeSettings.Changed(
                 winrt::auto_revoke, { get_weak(), &TableView::OnThemeSettingsChanged });
+
+            // Destroying is raised on the window's thread; a cross-thread host keeps the Unloaded-path release.
+            auto const appWindowId = env.AppWindowId();
+            auto const hwnd = winrt::Microsoft::UI::GetWindowFromWindowId(appWindowId);
+            if (::GetWindowThreadProcessId(hwnd, nullptr) != ::GetCurrentThreadId())
+            {
+                return;
+            }
+            if (auto appWindow = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(appWindowId))
+            {
+                m_appWindowDestroyingToken = appWindow.Destroying(
+                    [weakThis = get_weak()](auto const&, auto const&)
+                    {
+                        if (auto strongThis = weakThis.get())
+                        {
+                            strongThis->ReleaseThemeSettings();
+                        }
+                    });
+                m_appWindow = std::move(appWindow);
+            }
         }
     }
     catch (...)
@@ -1158,7 +1186,7 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     // a dependency-property change callback, and moving focus from one re-enters the framework.
     if (IsEditing())
     {
-        TerminateEditWithoutVisualRestore();
+        TerminateEditWithoutVisualRestore(false /* insideLayoutPass */, true /* sourceReplaced */);
     }
 
     // The current cell belongs to the old data set. Left alone, CurrentItem keeps returning an item
@@ -2400,6 +2428,8 @@ void TableView::OnRowElementPrepared(
     }
     else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
     {
+        // A pooled container must not carry a press that began on its previous group.
+        winrt::get_self<TableViewGroupHeader>(header)->ResetPointerStateInternal();
         PrepareGroupHeaderElement(header, args.Index());
         InvalidateMeasure();
         QueueTerminalGridLineRefresh();
@@ -2439,6 +2469,11 @@ void TableView::OnRowElementClearing(
         }
 
         auto const rowImpl = winrt::get_self<TableViewRow>(row);
+        // No longer the drilled row; the cursor level and column survive for re-entry.
+        if (auto const drilled = m_cellLevelRow.get(); drilled && IsSameObject(row, drilled))
+        {
+            m_cellLevelRow = nullptr;
+        }
         // Release app-supplied tooltip content rather than pinning it in the recycle pool.
         rowImpl->ReleaseCellToolTips();
         rowImpl->SetTerminalGridLineSuppression({});
@@ -2636,6 +2671,9 @@ void TableView::RebuildHeaders()
     {
         cachedSortIndicatorWidth = c_sortIndicatorSizeFallback;
     }
+    // The system focus visual takes its corners from the focused Grid's CornerRadius.
+    const auto cachedHeaderCellCornerRadius = winrt::unbox_value_or<winrt::CornerRadius>(
+        LookupElementResource(*this, s_ControlCornerRadiusKey), c_controlCornerRadiusFallback);
     const bool canUserSortColumns = CanUserSortColumns();
 
     // XAML mirrors an RTL subtree with one transform where FlowDirection changes, so logical Right
@@ -2676,6 +2714,7 @@ void TableView::RebuildHeaders()
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
             headerCell.IsTabStop(true);
             headerCell.UseSystemFocusVisuals(true);
+            headerCell.CornerRadius(cachedHeaderCellCornerRadius);
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {
@@ -3089,6 +3128,7 @@ void TableView::OnTableViewUnloaded()
     m_terminalGridLineVerticalOffset = std::numeric_limits<double>::quiet_NaN();
     m_pendingGroupFocusIdentity.clear();
     m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+    m_pendingGroupFocusFromPointerGesture = false;
 
     // Null ItemsSource on unload to release repeater cache work before it ticks on a detached subtree.
     // OnRowsRepeaterLoaded re-sources cached pages when they return.
@@ -3120,17 +3160,34 @@ void TableView::OnTableViewUnloaded()
     // Drop the ThemeSettings subscription and instance so a subsequent Loaded re-creates it against
     // the (possibly different) window's WindowId. IsHighContrast falls back to AccessibilitySettings
     // while detached.
-    //
-    // Order matters. The auto_revoke revoker holds only a weak_ref to ThemeSettings and its revoke()
-    // is noexcept: if remove_Changed throws (which it does at app shutdown, where this Unloaded runs
-    // from DispatcherQueueController::ShutdownQueue and ThemeSettings' underlying window feature is
-    // already detaching, surfacing RPC_E_WRONG_THREAD), the exception escapes the noexcept boundary
-    // and terminates the process -- a try/catch here can never intercept it. So we release our strong
-    // reference FIRST. If it was the last one the object dies, the revoker's weak_ref goes stale and
-    // revoke() becomes a no-op (no ABI call, no throw); if the framework still holds the object it is
-    // alive and remove_Changed succeeds normally. Either way remove_Changed is never called against a
-    // half-torn-down feature.
-    m_themeSettings = nullptr;
+    ReleaseThemeSettings();
+}
+
+void TableView::ReleaseThemeSettings()
+{
+    if (auto appWindow = std::exchange(m_appWindow, nullptr))
+    {
+        try
+        {
+            appWindow.Destroying(std::exchange(m_appWindowDestroyingToken, {}));
+        }
+        catch (...)
+        {
+        }
+    }
+
+    // Release can surface a teardown failure; keep it off the noexcept path.
+    // Release before revoke() so a dead object's stale weak_ref makes it a no-op.
+    if (auto const themeSettings = static_cast<::IUnknown*>(winrt::detach_abi(m_themeSettings)))
+    {
+        try
+        {
+            themeSettings->Release();
+        }
+        catch (...)
+        {
+        }
+    }
     m_themeSettingsChangedRevoker.revoke();
 }
 
