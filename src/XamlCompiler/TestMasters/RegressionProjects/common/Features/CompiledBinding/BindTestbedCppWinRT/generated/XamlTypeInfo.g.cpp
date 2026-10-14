@@ -7,39 +7,24 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "pch.h"
-#include <memory>
+
 #include <unknwn.h>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <regex>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
-
-#if __has_include(<winrt/BindTestbed.h>)
-#include <winrt/BindTestbed.h>
-#endif
-#if __has_include(<winrt/BindTestbed.NamedRootsPage.h>)
-#include <winrt/BindTestbed.NamedRootsPage.h>
-#endif
-#if __has_include(<winrt/BindTestbed.subfolder.h>)
-#include <winrt/BindTestbed.subfolder.h>
-#endif
-#if __has_include(<winrt/BindTestbedModel.h>)
-#include <winrt/BindTestbedModel.h>
-#endif
-#if __has_include(<winrt/BindTestbedModel.BindTestbedModel_XamlTypeInfo.h>)
-#include <winrt/BindTestbedModel.BindTestbedModel_XamlTypeInfo.h>
-#endif
-#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
-#include <winrt/Microsoft.UI.Xaml.Controls.h>
-#endif
-#if __has_include(<winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>)
-#include <winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>
-#endif
-#if __has_include(<winrt/Windows.Foundation.Collections.h>)
-#include <winrt/Windows.Foundation.Collections.h>
-#endif
-
-#include "XamlTypeInfo.xaml.g.h"
 
 #include "BasicTests.h"
 #include "CastingTests.h"
@@ -62,6 +47,50 @@
 #include "DisableXBindTests.h"
 #include "NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.h"
 #include "xPropertiesTest.h"
+#if __has_include(<winrt/BindTestbed.h>)
+#include <winrt/BindTestbed.h>
+#endif
+#if __has_include(<winrt/BindTestbed.NamedRootsPage.h>)
+#include <winrt/BindTestbed.NamedRootsPage.h>
+#endif
+#if __has_include(<winrt/BindTestbed.subfolder.h>)
+#include <winrt/BindTestbed.subfolder.h>
+#endif
+#if __has_include(<winrt/BindTestbedModel.h>)
+#include <winrt/BindTestbedModel.h>
+#endif
+#if __has_include(<winrt/BindTestbedModel.BindTestbedModel_XamlTypeInfo.h>)
+#include <winrt/BindTestbedModel.BindTestbedModel_XamlTypeInfo.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Media.h>)
+#include <winrt/Microsoft.UI.Xaml.Media.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>)
+#include <winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.Collections.h>)
+#include <winrt/Windows.Foundation.Collections.h>
+#endif
+#if __has_include(<winrt/Windows.UI.h>)
+#include <winrt/Windows.UI.h>
+#endif
+#if __has_include(<winrt/Windows.UI.Xaml.Interop.h>)
+#include <winrt/Windows.UI.Xaml.Interop.h>
+#endif
+#include "XamlTypeInfo.xaml.g.h"
+#include "XamlBindingInfo.xaml.g.h"
 #include "XamlBindingInfo.xaml.g.hpp"
 #include "BasicTests.xaml.g.hpp"
 #include "CastingTests.xaml.g.hpp"
@@ -1620,7 +1649,7 @@ const TypeInfo TypeInfos[] =
     TypeInfo_Flags_None,
 };
 
-constexpr uint32_t TypeInfoLookup[] = { 
+constexpr std::uint32_t TypeInfoLookup[] = { 
       0,   //   0
       0,   //   1
       0,   //   2
@@ -1772,7 +1801,7 @@ const MemberInfo MemberInfos[] =
     false, false, false,
     //   5 - BindTestbed.BasicTests.MyInt
     L"MyInt",
-    &GetValueTypeMember_MyInt<::winrt::BindTestbed::BasicTests, int32_t>,
+    &GetValueTypeMember_MyInt<::winrt::BindTestbed::BasicTests, std::int32_t>,
     nullptr,
     0, // Int32
     -1,
@@ -1863,8 +1892,8 @@ const MemberInfo MemberInfos[] =
     false, false, false,
     //  18 - BindTestbed.TestsPage2.MyInt
     L"MyInt",
-    &GetValueTypeMember_MyInt<::winrt::BindTestbed::TestsPage2, int32_t>,
-    &SetValueTypeMember_MyInt<::winrt::BindTestbed::TestsPage2, int32_t>,
+    &GetValueTypeMember_MyInt<::winrt::BindTestbed::TestsPage2, std::int32_t>,
+    &SetValueTypeMember_MyInt<::winrt::BindTestbed::TestsPage2, std::int32_t>,
     0, // Int32
     -1,
     false, false, false,
@@ -1877,8 +1906,8 @@ const MemberInfo MemberInfos[] =
     false, false, false,
     //  20 - BindTestbed.TestsPage2.IntPropNoINPC
     L"IntPropNoINPC",
-    &GetValueTypeMember_IntPropNoINPC<::winrt::BindTestbed::TestsPage2, int32_t>,
-    &SetValueTypeMember_IntPropNoINPC<::winrt::BindTestbed::TestsPage2, int32_t>,
+    &GetValueTypeMember_IntPropNoINPC<::winrt::BindTestbed::TestsPage2, std::int32_t>,
+    &SetValueTypeMember_IntPropNoINPC<::winrt::BindTestbed::TestsPage2, std::int32_t>,
     0, // Int32
     -1,
     false, false, false,
@@ -1947,8 +1976,8 @@ const MemberInfo MemberInfos[] =
     false, false, false,
     //  30 - BindTestbed.TwoWayTests.IntPropNoINPC
     L"IntPropNoINPC",
-    &GetValueTypeMember_IntPropNoINPC<::winrt::BindTestbed::TwoWayTests, int32_t>,
-    &SetValueTypeMember_IntPropNoINPC<::winrt::BindTestbed::TwoWayTests, int32_t>,
+    &GetValueTypeMember_IntPropNoINPC<::winrt::BindTestbed::TwoWayTests, std::int32_t>,
+    &SetValueTypeMember_IntPropNoINPC<::winrt::BindTestbed::TwoWayTests, std::int32_t>,
     0, // Int32
     -1,
     false, false, false,
@@ -2010,8 +2039,8 @@ const MemberInfo MemberInfos[] =
     false, false, false,
     //  39 - BindTestbed.CastingModel.IntVal
     L"IntVal",
-    &GetValueTypeMember_IntVal<::winrt::BindTestbed::CastingModel, int32_t>,
-    &SetValueTypeMember_IntVal<::winrt::BindTestbed::CastingModel, int32_t>,
+    &GetValueTypeMember_IntVal<::winrt::BindTestbed::CastingModel, std::int32_t>,
+    &SetValueTypeMember_IntVal<::winrt::BindTestbed::CastingModel, std::int32_t>,
     0, // Int32
     -1,
     false, false, false,
@@ -2283,7 +2312,7 @@ const MemberInfo MemberInfos[] =
     false, false, true, 
     //  78 - BindTestbedModel.ObservableEmployees.Size
     L"Size",
-    &GetValueTypeMember_Size<::winrt::BindTestbedModel::ObservableEmployees, uint32_t>,
+    &GetValueTypeMember_Size<::winrt::BindTestbedModel::ObservableEmployees, std::uint32_t>,
     nullptr,
     4, // UInt32
     -1,
@@ -2332,7 +2361,7 @@ const MemberInfo MemberInfos[] =
     true,  false, false,
     //  85 - Microsoft.UI.Xaml.Controls.TreeViewNode.Depth
     L"Depth",
-    &GetValueTypeMember_Depth<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, int32_t>,
+    &GetValueTypeMember_Depth<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, std::int32_t>,
     nullptr,
     0, // Int32
     -1,
@@ -2438,7 +2467,7 @@ const wchar_t* GetShortName(const wchar_t* longName)
 
 const TypeInfo* GetTypeInfo(::winrt::hstring const& typeName)
 {
-    size_t typeNameLength = typeName.size();
+    std::size_t typeNameLength = typeName.size();
     if (typeNameLength < _countof(TypeInfoLookup) - 1)
     {
         const auto begin = TypeInfos + TypeInfoLookup[typeNameLength];

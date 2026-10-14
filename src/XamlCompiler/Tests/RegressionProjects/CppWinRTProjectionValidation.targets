@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    The module-only fixtures deliberately use the VS2026/C++/WinRT 3.x projection package
+    instead of the common native test preamble. Before the upstream test-payload rebase,
+    Tests/Directory.Build.props imported consumebinaries.props, whose Reference items supplied
+    the repo's canonical WinUI metadata closure to ResolveAssemblyReferences.
+
+    Restore only that reference contract here. Importing the whole legacy props file would also
+    restore its v142 toolset and output-path overrides, while injecting packaging WinMDs directly
+    into ReferencePath bypasses RAR and can duplicate metadata already supplied by WinUIDetails.
+  -->
+  <ItemGroup>
+    <Reference Include="@(WinUIWinMDReferences)" />
+    <Reference Include="$(NugetPackageDirectory)\$(WebView2PackageName).$(WebView2Version)\lib\Microsoft.Web.WebView2.Core.winmd"
+               Condition="Exists('$(NugetPackageDirectory)\$(WebView2PackageName).$(WebView2Version)\lib\Microsoft.Web.WebView2.Core.winmd')" />
+  </ItemGroup>
+
+  <!-- C++/WinRT's projection cache does not track command-line module-mode changes. -->
+  <Target Name="TrackCppWinRTProjectionModuleMode"
+          BeforeTargets="CppWinRTMakePlatformProjection;CppWinRTMakeReferenceProjection;CppWinRTMakeComponentProjection">
+    <PropertyGroup>
+      <_CppWinRTProjectionModeFile>$(IntDir)$(MSBuildProjectFile).cppwinrt_mode.cache</_CppWinRTProjectionModeFile>
+      <_CppWinRTProjectionMode>headers</_CppWinRTProjectionMode>
+      <_CppWinRTProjectionMode Condition="'$(CppWinRTBuildModule)' == 'true'">modules</_CppWinRTProjectionMode>
+    </PropertyGroup>
+    <MakeDir Directories="$(IntDir)" />
+    <WriteLinesToFile File="$(_CppWinRTProjectionModeFile)" Lines="$(_CppWinRTProjectionMode)"
+                      Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <CustomAdditionalPlatformWinMDInputs Include="$(_CppWinRTProjectionModeFile)" />
+      <CustomAdditionalReferenceWinMDInputs Include="$(_CppWinRTProjectionModeFile)" />
+      <CustomAdditionalComponentWinMDInputs Include="$(_CppWinRTProjectionModeFile)" />
+      <FileWrites Include="$(_CppWinRTProjectionModeFile)" />
+    </ItemGroup>
+  </Target>
+</Project>

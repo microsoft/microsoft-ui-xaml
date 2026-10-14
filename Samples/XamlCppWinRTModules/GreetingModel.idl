@@ -1,0 +1,8 @@
+namespace XamlCppWinRTModulesSample.Models
+{
+    runtimeclass GreetingModel
+    {
+        GreetingModel();
+        String Message { get; };
+    }
+}

@@ -1,0 +1,17 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace Simple.Models
+{
+    runtimeclass BindItem
+    {
+        BindItem();
+        String Name { get; };
+    };
+
+    runtimeclass BindModel
+    {
+        BindModel();
+        BindItem CurrentItem { get; };
+    };
+}

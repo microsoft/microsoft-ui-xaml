@@ -5,14 +5,12 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 //------------------------------------------------------------------------------
+
 #pragma once
-
+#ifndef XAML_IMPL_MODULE
 #include <unknwn.h>
-
-// Undefine GetCurrentTime macro to prevent
-// conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
-
+#include <cstdint>
 #if __has_include(<winrt/BindTestbedModel.h>)
 #include <winrt/BindTestbedModel.h>
 #endif
@@ -22,23 +20,35 @@
 #if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 #endif
-#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
-#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
-#endif
 #if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
 #include <winrt/Microsoft.UI.Xaml.Markup.h>
-#endif
-#if __has_include(<winrt/Microsoft.UI.Xaml.Media.h>)
-#include <winrt/Microsoft.UI.Xaml.Media.h>
 #endif
 #if __has_include(<winrt/Microsoft.UI.Xaml.Shapes.h>)
 #include <winrt/Microsoft.UI.Xaml.Shapes.h>
 #endif
-
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 #include "XamlBindingInfo.xaml.g.h"
+#endif
 
-namespace winrt::BindTestbed::implementation
+#ifdef XAML_IMPL_MODULE
+#define XAML_EXPORT export extern "C++"
+#else
+#define XAML_EXPORT
+#endif
+
+XAML_EXPORT namespace winrt::BindTestbed::implementation
 {
+    struct XamlBindings;
+}
+
+
+XAML_EXPORT namespace winrt::BindTestbed::implementation
+{
+    template <typename D, typename... I>
+    struct TestsPage2_base;
+
     using IInspectable = ::winrt::Windows::Foundation::IInspectable;
 
     template <typename D, typename ... I>
@@ -51,10 +61,10 @@ namespace winrt::BindTestbed::implementation
         using class_type = typename TestsPage2T::class_type;
 
         void InitializeComponent();
-        virtual void Connect(int32_t connectionId, IInspectable const& target);
-        virtual ::winrt::Microsoft::UI::Xaml::Markup::IComponentConnector GetBindingConnector(int32_t connectionId, IInspectable const& target);
+        virtual void Connect(std::int32_t connectionId, IInspectable const& target);
+        virtual ::winrt::Microsoft::UI::Xaml::Markup::IComponentConnector GetBindingConnector(std::int32_t connectionId, IInspectable const& target);
         void UnloadObject(::winrt::Microsoft::UI::Xaml::DependencyObject const& dependencyObject);
-        void DisconnectUnloadedObject(int32_t connectionId);
+        void DisconnectUnloadedObject(std::int32_t connectionId);
 
         ::winrt::BindTestbedModel::ObservableEmployees NiceEmployees()
         {
@@ -187,4 +197,5 @@ namespace winrt::BindTestbed::implementation
         ::winrt::Microsoft::UI::Xaml::Controls::Slider _OneTimeSlider3{nullptr};
     };
 }
+#undef XAML_EXPORT
 

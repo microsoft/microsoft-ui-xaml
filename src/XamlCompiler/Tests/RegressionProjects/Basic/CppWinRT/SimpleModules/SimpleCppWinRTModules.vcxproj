@@ -1,0 +1,238 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <CppWinRTBuildModule>true</CppWinRTBuildModule>
+    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
+    <UseXamlCompiler>true</UseXamlCompiler>
+  </PropertyGroup>
+  <Import Project="..\..\..\..\..\..\..\packages\YexuanXiao.CppWinRTPlus.3.1.260928.1\build\native\YexuanXiao.CppWinRTPlus.props" Condition="Exists('..\..\..\..\..\..\..\packages\YexuanXiao.CppWinRTPlus.3.1.260928.1\build\native\YexuanXiao.CppWinRTPlus.props')" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D8F9A5C2-1E47-4A16-A7B6-3B85C23D5E91}</ProjectGuid>
+    <RootNamespace>Simple</RootNamespace>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>true</AppContainerApplication>
+    <CppWinRTEnabled>true</CppWinRTEnabled>
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <ProjectName>SimpleCppWinRTModules</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <BuildStlModules>true</BuildStlModules>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>WindowsApp.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="EmptyPage.h">
+      <DependentUpon>EmptyPage.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="App.h">
+      <DependentUpon>App.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="MainPageBase.h">
+      <DependentUpon>MainPageBase.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="BindItem.h">
+      <DependentUpon>Models.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="BindModel.h">
+      <DependentUpon>Models.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="BindTarget.h">
+      <DependentUpon>Targets.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="MainPage.h">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="PropBag.h">
+      <DependentUpon>PropBag.idl</DependentUpon>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Views\PanelPage.xaml" />
+    <Midl Include="Views\PanelPage.idl"><MetadataFileName>$(IntDir)Unmerged\Views.PanelPage.winmd</MetadataFileName><HeaderFileName>$(IntDir)Views.PanelPage.h</HeaderFileName><DependentUpon>Views\PanelPage.xaml</DependentUpon></Midl>
+    <ClInclude Include="Views\PanelPage.h"><DependentUpon>Views\PanelPage.xaml</DependentUpon></ClInclude>
+    <ClCompile Include="Views\PanelPage.cpp"><DependentUpon>Views\PanelPage.xaml</DependentUpon><ObjectFileName>$(IntDir)Views.PanelPage.obj</ObjectFileName><ModuleDependenciesFile>$(IntDir)Views.PanelPage.module.json</ModuleDependenciesFile></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Controls\PanelPage.xaml" />
+    <Midl Include="Controls\PanelPage.idl"><MetadataFileName>$(IntDir)Unmerged\Controls.PanelPage.winmd</MetadataFileName><HeaderFileName>$(IntDir)Controls.PanelPage.h</HeaderFileName><DependentUpon>Controls\PanelPage.xaml</DependentUpon></Midl>
+    <ClInclude Include="Controls\PanelPage.h"><DependentUpon>Controls\PanelPage.xaml</DependentUpon></ClInclude>
+    <ClCompile Include="Controls\PanelPage.cpp"><DependentUpon>Controls\PanelPage.xaml</DependentUpon><ObjectFileName>$(IntDir)Controls.PanelPage.obj</ObjectFileName><ModuleDependenciesFile>$(IntDir)Controls.PanelPage.module.json</ModuleDependenciesFile></ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Page Include="EmptyPage.xaml" Condition="'$(IncludeIncrementalEmptyPage)' != 'false'">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MainPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\LockScreenLogo.scale-200.png" />
+    <Image Include="Assets\SplashScreen.scale-200.png" />
+    <Image Include="Assets\Square150x150Logo.scale-200.png" />
+    <Image Include="Assets\Square44x44Logo.scale-200.png" />
+    <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Image Include="Assets\StoreLogo.png" />
+    <Image Include="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="App.cpp">
+      <DependentUpon>App.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="XamlModuleSmoke.cpp" Condition="'$(CppWinRTBuildModule)' == 'true'" />
+    <ClCompile Include="EmptyPage.cpp">
+      <DependentUpon>EmptyPage.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="MainPage.cpp">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="MainPageBase.cpp">
+      <DependentUpon>MainPageBase.idl</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="BindItem.cpp">
+      <DependentUpon>Models.idl</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="BindModel.cpp">
+      <DependentUpon>Models.idl</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="BindTarget.cpp">
+      <DependentUpon>Targets.idl</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="PropBag.cpp">
+      <DependentUpon>PropBag.idl</DependentUpon>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="EmptyPage.idl">
+      <DependentUpon>EmptyPage.xaml</DependentUpon>
+    </Midl>
+    <Midl Include="MainPage.idl">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </Midl>
+    <Midl Include="MainPageBase.idl" />
+    <Midl Include="Models.idl" />
+    <Midl Include="Targets.idl" />
+    <Midl Include="PropBag.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\..\..\..\..\..\packages\YexuanXiao.CppWinRTPlus.3.1.260928.1\build\native\YexuanXiao.CppWinRTPlus.targets" Condition="Exists('..\..\..\..\..\..\..\packages\YexuanXiao.CppWinRTPlus.3.1.260928.1\build\native\YexuanXiao.CppWinRTPlus.targets')" />
+  </ImportGroup>
+  <Import Project="..\..\..\CppWinRTProjectionValidation.targets" />
+  <Target Name="ConfigureCppWinRTModuleConsumerCompileItems"
+          Condition="'$(CppWinRTBuildModule)' == 'true'"
+          AfterTargets="CppWinRTAddModuleInterfaces;XamlCppWinRTAddModuleInterfaces"
+          BeforeTargets="FixupCLCompileOptions">
+    <ItemGroup>
+      <ClCompile Condition="'%(ClCompile.CompileAs)' != 'CompileAsCppModule' and ('%(ClCompile.Identity)' != 'EmptyPage.cpp' or '$(IncludeIncrementalEmptyPage)' != 'false')">
+        <PreprocessorDefinitions>WINRT_IMPORT_MODULE;%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
+      </ClCompile>
+    </ItemGroup>
+  </Target>
+  <Target Name="ValidateXamlModuleConsumerPreprocessorDefinitions"
+          Condition="'$(CppWinRTBuildModule)' == 'true'"
+          AfterTargets="XamlCppWinRTApplyGeneratedModuleReferences">
+    <ItemGroup>
+      <_XamlConsumersWithModuleInterfaceDefinitions Include="@(ClCompile)"
+          Condition="'%(ClCompile.CompilerIteration)' == 'XamlGenerated' and $([System.String]::Copy(';%(ClCompile.PreprocessorDefinitions);').Contains(';XAML_IMPL_MODULE;'))" />
+    </ItemGroup>
+    <Error Condition="'@(_XamlConsumersWithModuleInterfaceDefinitions)' != ''"
+           Text="XAML Pass2 consumers inherited module-interface producer definitions: @(_XamlConsumersWithModuleInterfaceDefinitions)" />
+  </Target>
+  <Target Name="CompileOnlyGeneratedXamlInterfaces"
+          Condition="'$(ValidateXamlInterfacesOnly)' == 'true'"
+          DependsOnTargets="CppWinRTAddModuleInterfaces;XamlCppWinRTAddModuleInterfaces"
+          BeforeTargets="FixupCLCompileOptions">
+    <ItemGroup>
+      <ClCompile Remove="@(ClCompile)" Condition="'%(ClCompile.CompileAs)' != 'CompileAsCppModule'" />
+    </ItemGroup>
+  </Target>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\..\..\..\..\packages\YexuanXiao.CppWinRTPlus.3.1.260928.1\build\native\YexuanXiao.CppWinRTPlus.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\..\packages\YexuanXiao.CppWinRTPlus.3.1.260928.1\build\native\YexuanXiao.CppWinRTPlus.props'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\..\packages\YexuanXiao.CppWinRTPlus.3.1.260928.1\build\native\YexuanXiao.CppWinRTPlus.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\..\packages\YexuanXiao.CppWinRTPlus.3.1.260928.1\build\native\YexuanXiao.CppWinRTPlus.targets'))" />
+  </Target>
+</Project>

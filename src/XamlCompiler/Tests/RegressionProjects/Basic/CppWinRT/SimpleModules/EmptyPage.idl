@@ -1,0 +1,11 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace Simple
+{
+    runtimeclass EmptyPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        EmptyPage();
+        String Marker { get; };
+    };
+}

@@ -1,0 +1,8 @@
+namespace Simple.Controls
+{
+    runtimeclass PanelPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        PanelPage();
+        String Marker { get; };
+    };
+}

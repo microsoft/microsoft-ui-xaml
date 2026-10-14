@@ -1,0 +1,25 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)..\'))" />
+
+  <!-- Artifact-only validation restores the product projection, not its source project's
+       intermediate reference assembly. BuildProjectReferences=false alone still asks that
+       project for its TargetRefPath, so replace only this reference before SDK resolution. -->
+  <PropertyGroup Condition="'$(UseXamlCompilerValidationProjection)' == 'true'">
+    <!-- BuildOutputRoot is the initialized Obj root. The product projection is binplaced
+         under the binary root evaluated by eng/folderpaths.props for this project. -->
+    <XamlCompilerValidationProjectionDir>$(ArtifactsBinDir)Product\</XamlCompilerValidationProjectionDir>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(UseXamlCompilerValidationProjection)' == 'true'">
+    <ProjectReference Remove="$(ProjectRoot)src\projection\Microsoft.WinUI.csproj" />
+    <Reference Include="Microsoft.WinUI" Condition="'$(MSBuildProjectName)' == 'LibManagedDll' or '$(MSBuildProjectName)' == 'LibManagedWinmd'">
+      <HintPath>$(XamlCompilerValidationProjectionDir)Microsoft.WinUI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="ValidateXamlCompilerArtifactProjection" BeforeTargets="ResolveReferences" Condition="'$(UseXamlCompilerValidationProjection)' == 'true'">
+    <Error Condition="'$(ArtifactsBinDir)' == ''" Text="Artifact-only validation requires the evaluated ArtifactsBinDir." />
+    <Error Condition="!Exists('$(XamlCompilerValidationProjectionDir)Microsoft.WinUI.dll')" Text="The restored WinUI product projection is missing: $(XamlCompilerValidationProjectionDir)Microsoft.WinUI.dll" />
+  </Target>
+</Project>

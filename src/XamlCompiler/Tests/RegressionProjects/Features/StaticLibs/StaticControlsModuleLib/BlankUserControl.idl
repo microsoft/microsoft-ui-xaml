@@ -1,0 +1,11 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace StaticControlsModuleLib
+{
+    runtimeclass BlankUserControl : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        BlankUserControl();
+        String Marker { get; };
+    }
+}

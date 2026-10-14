@@ -6,7 +6,32 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "subfolder\SubDictionary.h"
+#if __has_include(<winrt/BindTestbedModel.h>)
+#include <winrt/BindTestbedModel.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -49,13 +74,13 @@ namespace winrt::BindTestbed::subfolder::implementation
     }
 
     template <typename D, typename... I>
-    void SubDictionaryT<D, I...>::Connect(int32_t, IInspectable const&)
+    void SubDictionaryT<D, I...>::Connect(std::int32_t, IInspectable const&)
     {
         _contentLoaded = true;
     }
 
     template <typename D, typename ... I>
-    void SubDictionaryT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void SubDictionaryT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -67,7 +92,7 @@ namespace winrt::BindTestbed::subfolder::implementation
     }
 
     template <typename D, typename... I>
-    IComponentConnector SubDictionaryT<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector SubDictionaryT<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<::winrt::BindTestbed::implementation::XamlBindings> bindings;
         switch (connectionId)
@@ -96,7 +121,7 @@ namespace winrt::BindTestbed::subfolder::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -124,7 +149,7 @@ namespace winrt::BindTestbed::subfolder::implementation
         {
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -157,7 +182,7 @@ namespace winrt::BindTestbed::subfolder::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbedModel::IEmployee obj, int32_t phase)
+        void Update_(::winrt::BindTestbedModel::IEmployee obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -168,7 +193,7 @@ namespace winrt::BindTestbed::subfolder::implementation
             }
         }
 
-        void Update_Name(::winrt::hstring obj, int32_t phase)
+        void Update_Name(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {

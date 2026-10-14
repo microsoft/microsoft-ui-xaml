@@ -1,0 +1,11 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace Simple.Targets
+{
+    runtimeclass BindTarget : Microsoft.UI.Xaml.Controls.ContentControl
+    {
+        BindTarget();
+        String Marker { get; };
+    };
+}

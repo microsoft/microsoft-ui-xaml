@@ -6,7 +6,32 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "MyUserControl.h"
+#if __has_include(<winrt/EventHandling_968976.h>)
+#include <winrt/EventHandling_968976.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -36,13 +61,13 @@ namespace winrt::EventHandling_968976::implementation
     }
 
     template <typename D, typename... I>
-    void MyUserControlT<D, I...>::Connect(int32_t, IInspectable const&)
+    void MyUserControlT<D, I...>::Connect(std::int32_t, IInspectable const&)
     {
         _contentLoaded = true;
     }
 
     template <typename D, typename ... I>
-    void MyUserControlT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void MyUserControlT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -55,7 +80,7 @@ namespace winrt::EventHandling_968976::implementation
 
 
     template <typename D, typename... I>
-    IComponentConnector MyUserControlT<D, I...>::GetBindingConnector(int32_t, IInspectable const&)
+    IComponentConnector MyUserControlT<D, I...>::GetBindingConnector(std::int32_t, IInspectable const&)
     {
         return nullptr;
     }

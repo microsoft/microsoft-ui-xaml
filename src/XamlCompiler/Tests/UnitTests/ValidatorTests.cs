@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Reflection;
 using Win8Xaml.CompilerProxies;
 
 namespace UnitTests
@@ -1866,6 +1868,95 @@ namespace UnitTests
             Assert.IsNull(result, result);
         }
 
+        private static Exception GetSuccinctSyntaxError(string input)
+        {
+            // Exercise the compiler's actual parser without XML attribute normalization,
+            // so line endings and escaped characters reach it unchanged.
+            var verifier = new ProxyHelper("Microsoft.UI.Xaml.Markup.Compiler.SuccinctCollectionSyntaxVerifier");
+            try
+            {
+                verifier.GetStaticMethod("Parse", 1).Invoke(null, new object[] { input });
+                return null;
+            }
+            catch (TargetInvocationException error)
+            {
+                Assert.IsNotNull(error.InnerException);
+                Assert.AreEqual("SuccinctCollectionSyntax.SuccinctCollectionSyntaxException", error.InnerException.GetType().FullName);
+                return error.InnerException;
+            }
+        }
+
+        [TestMethod]
+        public void SuccinctSyntax_AcceptsQuotedAndEscapedItemBoundaries()
+        {
+            foreach (string input in new[]
+            {
+                "'one,two', three",
+                "\"one,two\", three",
+                "  'one'  , \"two\"  ",
+                "'', \"\"",
+                "'hello \\' world', next",
+                "\"hello \\\" world\", next",
+                "one\\,two, three",
+                "one\\\\, two",
+                "\\[one\\], two",
+                "'[one,two]', three",
+                "first,\\ ",
+                "first,\n  'second'",
+                "first,\r\n  'second'",
+                "first,\r  'second'"
+            })
+            {
+                Assert.IsNull(GetSuccinctSyntaxError(input), input);
+            }
+        }
+
+        [TestMethod]
+        public void SuccinctSyntax_RejectsEmptyItemsAndIncompleteEscapes()
+        {
+            foreach (string input in new[]
+            {
+                String.Empty,
+                "   ",
+                ",first",
+                "first,,last",
+                "first,   ,last",
+                "first, ",
+                "first,\n ",
+                "first\\",
+                "'first\\",
+                "'first\\'",
+                "'first'trailing",
+                "\"first\"'second'",
+                "first[second]",
+                "'",
+                "\""
+            })
+            {
+                Assert.IsNotNull(GetSuccinctSyntaxError(input), input);
+            }
+        }
+
+        [TestMethod]
+        public void SuccinctSyntax_ReportsOriginalLineColumnAndToken()
+        {
+            foreach (string newline in new[] { "\n", "\r\n", "\r" })
+            {
+                Exception error = GetSuccinctSyntaxError("first," + newline + "  [bad]");
+                Assert.IsNotNull(error);
+                Type errorType = error.GetType();
+                Assert.AreEqual(2, (int)errorType.GetProperty("Line").GetValue(error));
+                Assert.AreEqual(2, (int)errorType.GetProperty("Col").GetValue(error));
+                Assert.AreEqual("[", (string)errorType.GetProperty("OffendingToken").GetValue(error));
+
+                error = GetSuccinctSyntaxError("first," + newline + "  'bad");
+                Assert.IsNotNull(error);
+                Assert.AreEqual(2, (int)errorType.GetProperty("Line").GetValue(error));
+                Assert.AreEqual(6, (int)errorType.GetProperty("Col").GetValue(error));
+                Assert.AreEqual("<EOF>", (string)errorType.GetProperty("OffendingToken").GetValue(error));
+            }
+        }
+
         public void WMC0155_SuccinctSyntaxStringHelper(string inputString, string [] expectedErrors = null)
         {
             string xaml = System.String.Format(@"
@@ -1937,9 +2028,9 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void WMC0155_ListViewDuplicateError()
+        public void WMC0035_ListViewDuplicateItemsAssignment()
         {
-            //Creating a ListView combining both syntaxes, should result in an error
+            // Both syntaxes assign Items; the second assignment is a duplicate member.
             string xaml = @"
 <Page
     xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
@@ -1955,7 +2046,7 @@ namespace UnitTests
 ";
             var validator = _testHelper.ValidateXAML(xaml, SchemaMode.LoadUserDll);
             string[] expectedErrors = {
-                "WMC0155"
+                "WMC0035"
             };
             string result = _testHelper.MatchErrors(validator, expectedErrors, null);
             Assert.IsNull(result, result);
@@ -2322,3 +2413,4 @@ namespace UnitTests
 
 
 }
+

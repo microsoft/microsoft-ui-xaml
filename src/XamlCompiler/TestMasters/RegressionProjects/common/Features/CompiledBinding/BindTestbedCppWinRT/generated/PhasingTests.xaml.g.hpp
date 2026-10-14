@@ -6,7 +6,35 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "PhasingTests.h"
+#if __has_include(<winrt/BindTestbed.h>)
+#include <winrt/BindTestbed.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Input.h>)
+#include <winrt/Microsoft.UI.Xaml.Input.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -50,7 +78,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void PhasingTestsT<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void PhasingTestsT<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
         switch (connectionId)
         {
@@ -151,7 +179,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void PhasingTestsT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void PhasingTestsT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -163,7 +191,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename... I>
-    IComponentConnector PhasingTestsT<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector PhasingTestsT<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<::winrt::BindTestbed::implementation::XamlBindings> bindings;
         switch (connectionId)
@@ -210,7 +238,7 @@ namespace winrt::BindTestbed::implementation
             ReleaseAllListeners();
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -376,7 +404,7 @@ namespace winrt::BindTestbed::implementation
             ::winrt::Microsoft::UI::Xaml::Markup::XamlBindingHelper::SuspendRendering(obj19);
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -483,11 +511,11 @@ namespace winrt::BindTestbed::implementation
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged> cachePC_;
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject> cacheDPC_DPOnMyItem;
         ::winrt::event_token tokenPC_ {};
-        __int64 tokenDPC_DPOnMyItem{0};
+        std::int64_t tokenDPC_DPOnMyItem{0};
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::MyItem obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::MyItem obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_, tokenPC_);
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::BindTestbed::implementation::MyItem::DPOnMyItemProperty(), cacheDPC_DPOnMyItem, tokenDPC_DPOnMyItem);
@@ -531,7 +559,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Index(int32_t obj, int32_t phase)
+        void Update_Index(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -540,7 +568,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Description(::winrt::hstring obj, int32_t phase)
+        void Update_Description(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -549,7 +577,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Title(::winrt::hstring obj, int32_t phase)
+        void Update_Title(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -568,7 +596,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Subtitle(::winrt::hstring obj, int32_t phase)
+        void Update_Subtitle(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -594,7 +622,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_OtherInfo(::winrt::BindTestbed::ExtraInfo obj, int32_t phase)
+        void Update_OtherInfo(::winrt::BindTestbed::ExtraInfo obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -605,7 +633,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_OtherInfo_Caption(::winrt::hstring obj, int32_t phase)
+        void Update_OtherInfo_Caption(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 2) | NOT_PHASED )) != 0)
             {
@@ -614,7 +642,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Info(::winrt::BindTestbed::MyInfo obj, int32_t phase)
+        void Update_Info(::winrt::BindTestbed::MyInfo obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -635,7 +663,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Info_ImageUrl(::winrt::hstring obj, int32_t phase)
+        void Update_Info_ImageUrl(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 4) | NOT_PHASED )) != 0)
             {
@@ -644,7 +672,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Info_Caption(::winrt::hstring obj, int32_t phase)
+        void Update_Info_Caption(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 4) | NOT_PHASED )) != 0)
             {
@@ -653,7 +681,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Info_Prop2(::winrt::hstring obj, int32_t phase)
+        void Update_Info_Prop2(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 4) | NOT_PHASED )) != 0)
             {
@@ -662,7 +690,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Info_Prop1(::winrt::hstring obj, int32_t phase)
+        void Update_Info_Prop1(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 5) | NOT_PHASED )) != 0)
             {
@@ -676,7 +704,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DPOnMyItem(::winrt::hstring obj, int32_t phase)
+        void Update_DPOnMyItem(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 7) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -685,7 +713,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Info_Prop3(::winrt::hstring obj, int32_t phase)
+        void Update_Info_Prop3(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 10) | NOT_PHASED )) != 0)
             {
@@ -827,7 +855,7 @@ namespace winrt::BindTestbed::implementation
             ReleaseAllListeners();
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -966,7 +994,7 @@ namespace winrt::BindTestbed::implementation
             ReleaseAllListeners();
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -1016,11 +1044,11 @@ namespace winrt::BindTestbed::implementation
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged> cachePC_;
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject> cacheDPC_DPOnMyItem;
         ::winrt::event_token tokenPC_ {};
-        __int64 tokenDPC_DPOnMyItem{0};
+        std::int64_t tokenDPC_DPOnMyItem{0};
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::MyItem obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::MyItem obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_, tokenPC_);
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::BindTestbed::implementation::MyItem::DPOnMyItemProperty(), cacheDPC_DPOnMyItem, tokenDPC_DPOnMyItem);
@@ -1061,7 +1089,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Index(int32_t obj, int32_t phase)
+        void Update_Index(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1070,7 +1098,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Description(::winrt::hstring obj, int32_t phase)
+        void Update_Description(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1079,7 +1107,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Title(::winrt::hstring obj, int32_t phase)
+        void Update_Title(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1090,7 +1118,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Subtitle(::winrt::hstring obj, int32_t phase)
+        void Update_Subtitle(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1113,7 +1141,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_OtherInfo(::winrt::BindTestbed::ExtraInfo obj, int32_t phase)
+        void Update_OtherInfo(::winrt::BindTestbed::ExtraInfo obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1124,7 +1152,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_OtherInfo_Caption(::winrt::hstring obj, int32_t phase)
+        void Update_OtherInfo_Caption(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1133,7 +1161,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Info(::winrt::BindTestbed::MyInfo obj, int32_t phase)
+        void Update_Info(::winrt::BindTestbed::MyInfo obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1153,7 +1181,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Info_ImageUrl(::winrt::hstring obj, int32_t phase)
+        void Update_Info_ImageUrl(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1162,7 +1190,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Info_Caption(::winrt::hstring obj, int32_t phase)
+        void Update_Info_Caption(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1171,7 +1199,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Info_Prop1(::winrt::hstring obj, int32_t phase)
+        void Update_Info_Prop1(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1185,7 +1213,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DPOnMyItem(::winrt::hstring obj, int32_t phase)
+        void Update_DPOnMyItem(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1194,7 +1222,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Info_Prop3(::winrt::hstring obj, int32_t phase)
+        void Update_Info_Prop3(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {

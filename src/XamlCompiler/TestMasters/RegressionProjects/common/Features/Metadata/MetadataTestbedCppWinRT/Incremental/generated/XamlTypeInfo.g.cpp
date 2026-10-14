@@ -7,31 +7,51 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "pch.h"
-#include <memory>
+
 #include <unknwn.h>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <regex>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
+#ifdef XAML_TYPE_INFO_INC
+#include XAML_TYPE_INFO_INC
+#endif
 #if __has_include(<winrt/MetadataTestbedCppWinRT.h>)
 #include <winrt/MetadataTestbedCppWinRT.h>
 #endif
 #if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 #endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
 #if __has_include(<winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>)
 #include <winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
 #endif
 #if __has_include(<winrt/Windows.Foundation.Collections.h>)
 #include <winrt/Windows.Foundation.Collections.h>
 #endif
-
-#ifdef XAML_TYPE_INFO_INC
-#include XAML_TYPE_INFO_INC
+#if __has_include(<winrt/Windows.UI.Xaml.Interop.h>)
+#include <winrt/Windows.UI.Xaml.Interop.h>
 #endif
 #include "XamlTypeInfo.xaml.g.h"
-
+#include "XamlBindingInfo.xaml.g.h"
 #include "XamlBindingInfo.xaml.g.hpp"
 
 namespace winrt::MetadataTestbedCppWinRT::implementation
@@ -66,7 +86,7 @@ using TypeKind = ::winrt::Windows::UI::Xaml::Interop::TypeKind;
 }
 void SetReferenceTypeMember_UInt16Values_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
 {
-    instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().UInt16Values(::winrt::unbox_value<::winrt::com_array<uint16_t>>(value));
+    instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().UInt16Values(::winrt::unbox_value<::winrt::com_array<std::uint16_t>>(value));
 }
 
 ::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_StringValues_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance)
@@ -102,7 +122,7 @@ void SetReferenceTypeMember_ObjectValues_MetadataTestbedCppWinRT_ArrayProperties
 }
 void SetReferenceTypeMember_Int32Values_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
 {
-    instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().Int32Values(::winrt::unbox_value<::winrt::com_array<int32_t>>(value));
+    instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().Int32Values(::winrt::unbox_value<::winrt::com_array<std::int32_t>>(value));
 }
 
 ::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_GuidValues_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance)
@@ -157,7 +177,7 @@ void SetValueTypeMember_CharValue_MetadataTestbedCppWinRT_ArrayProperties(::winr
 }
 void SetAttachableMember_AttachedValues_MetadataTestbedCppWinRT_ArrayProperties_Object_Int32__(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
 {
-    ::winrt::MetadataTestbedCppWinRT::ArrayProperties::SetAttachedValues(instance.as<::winrt::Windows::Foundation::IInspectable>(), ::winrt::unbox_value<::winrt::com_array<int32_t>>(value));
+    ::winrt::MetadataTestbedCppWinRT::ArrayProperties::SetAttachedValues(instance.as<::winrt::Windows::Foundation::IInspectable>(), ::winrt::unbox_value<::winrt::com_array<std::int32_t>>(value));
 }
 
 ::winrt::Windows::Foundation::IInspectable GetAttachableMember_AttachedCharValue_MetadataTestbedCppWinRT_ArrayProperties_Object(::winrt::Windows::Foundation::IInspectable const& instance)
@@ -213,7 +233,7 @@ void SetReferenceTypeMember_Content_Microsoft_UI_Xaml_Controls_TreeViewNode(::wi
 
 ::winrt::Windows::Foundation::IInspectable GetValueTypeMember_Depth_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value<int32_t>(instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().Depth());
+    return ::winrt::box_value<std::int32_t>(instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().Depth());
 }
 
 ::winrt::Windows::Foundation::IInspectable GetValueTypeMember_HasChildren_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance)
@@ -436,7 +456,7 @@ const TypeInfo TypeInfos[] =
     TypeInfo_Flags_None,
 };
 
-constexpr uint32_t TypeInfoLookup[] = { 
+constexpr std::uint32_t TypeInfoLookup[] = { 
       0,   //   0
       0,   //   1
       0,   //   2
@@ -700,7 +720,7 @@ const wchar_t* GetShortName(const wchar_t* longName)
 
 const TypeInfo* GetTypeInfo(::winrt::hstring const& typeName)
 {
-    size_t typeNameLength = typeName.size();
+    std::size_t typeNameLength = typeName.size();
     if (typeNameLength < _countof(TypeInfoLookup) - 1)
     {
         const auto begin = TypeInfos + TypeInfoLookup[typeNameLength];

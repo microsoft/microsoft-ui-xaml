@@ -6,7 +6,47 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "LoadAndCreateFromStringTests.h"
+#if __has_include(<winrt/BindTestbed.h>)
+#include <winrt/BindTestbed.h>
+#endif
+#if __has_include(<winrt/BindTestbedModel.h>)
+#include <winrt/BindTestbedModel.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Input.h>)
+#include <winrt/Microsoft.UI.Xaml.Input.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Media.h>)
+#include <winrt/Microsoft.UI.Xaml.Media.h>
+#endif
+#if __has_include(<winrt/System.h>)
+#include <winrt/System.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
+#if __has_include(<winrt/Windows.UI.h>)
+#include <winrt/Windows.UI.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -56,7 +96,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void LoadAndCreateFromStringTestsT<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void LoadAndCreateFromStringTestsT<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
         switch (connectionId)
         {
@@ -405,7 +445,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void LoadAndCreateFromStringTestsT<D, I...>::DisconnectUnloadedObject(int32_t connectionId)
+    void LoadAndCreateFromStringTestsT<D, I...>::DisconnectUnloadedObject(std::int32_t connectionId)
     {
         switch(connectionId)
         {
@@ -545,7 +585,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename... I>
-    IComponentConnector LoadAndCreateFromStringTestsT<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector LoadAndCreateFromStringTestsT<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<::winrt::BindTestbed::implementation::XamlBindings> bindings;
         switch (connectionId)
@@ -591,7 +631,7 @@ namespace winrt::BindTestbed::implementation
             ReleaseAllListeners();
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -664,7 +704,7 @@ namespace winrt::BindTestbed::implementation
             ReleaseAllListeners();
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -713,7 +753,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbedModel::IEmployee obj, int32_t phase)
+        void Update_(::winrt::BindTestbedModel::IEmployee obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_, tokenPC_);
             if (obj)
@@ -730,7 +770,7 @@ namespace winrt::BindTestbed::implementation
             CompleteUpdate(phase);
         }
 
-        void Update_IsEmployeeOfTheMonth(bool obj, int32_t phase)
+        void Update_IsEmployeeOfTheMonth(bool obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -752,7 +792,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Name(::winrt::hstring obj, int32_t phase)
+        void Update_Name(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -835,7 +875,7 @@ namespace winrt::BindTestbed::implementation
             ReleaseAllListeners();
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -1525,9 +1565,9 @@ namespace winrt::BindTestbed::implementation
         ::winrt::event_token tokenPC_Model {};
         ::winrt::event_token tokenPC_Model_NestedLoad {};
         ::winrt::event_token tokenPC_test4 {};
-        __int64 tokenDPC_Model_StringPropertyDP{0};
-        __int64 tokenDPC_test4_Diameter_Width{0};
-        __int64 tokenDPC_innerMostNestedPanelStaticText_Text{0};
+        std::int64_t tokenDPC_Model_StringPropertyDP{0};
+        std::int64_t tokenDPC_test4_Diameter_Width{0};
+        std::int64_t tokenDPC_innerMostNestedPanelStaticText_Text{0};
 
         bool TryGet_Model_NestedLoad_Option2Background(::winrt::Windows::UI::Color& val)
         {
@@ -1760,7 +1800,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::LoadAndCreateFromStringTests obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::LoadAndCreateFromStringTests obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1804,7 +1844,7 @@ namespace winrt::BindTestbed::implementation
             CompleteUpdate(phase);
         }
 
-        void Update_Model(::winrt::BindTestbedModel::DataModel obj, int32_t phase)
+        void Update_Model(::winrt::BindTestbedModel::DataModel obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_Model, tokenPC_Model);
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::BindTestbedModel::DataModel::StringPropertyDPProperty(), cacheDPC_Model_StringPropertyDP, tokenDPC_Model_StringPropertyDP);
@@ -1838,7 +1878,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_BoolPropWithINPCDefaultTrue(bool obj, int32_t phase)
+        void Update_Model_BoolPropWithINPCDefaultTrue(bool obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1856,7 +1896,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_BoolPropWithINPC(bool obj, int32_t phase)
+        void Update_Model_BoolPropWithINPC(bool obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1910,7 +1950,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_NestedLoad(::winrt::BindTestbedModel::NestedLoadModel obj, int32_t phase)
+        void Update_Model_NestedLoad(::winrt::BindTestbedModel::NestedLoadModel obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_Model_NestedLoad, tokenPC_Model_NestedLoad);
             if (obj)
@@ -1924,13 +1964,13 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_NestedLoad_Option2Background(::winrt::Windows::UI::Color obj, int32_t phase)
+        void Update_Model_NestedLoad_Option2Background(::winrt::Windows::UI::Color obj, std::int32_t phase)
         {
                 Update_BindTestbedModel_NestedLoadModel_M_ColorToBrush_2958337247(phase);
                 Update_BindTestbedModel_NestedLoadModel_M_IsGreen_2958337247(phase);
         }
 
-        void Update_BindTestbedModel_NestedLoadModel_M_ColorToBrush_2958337247(int32_t phase)
+        void Update_BindTestbedModel_NestedLoadModel_M_ColorToBrush_2958337247(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1939,13 +1979,13 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_NestedLoad_Option1Background(::winrt::Windows::UI::Color obj, int32_t phase)
+        void Update_Model_NestedLoad_Option1Background(::winrt::Windows::UI::Color obj, std::int32_t phase)
         {
                 Update_BindTestbedModel_NestedLoadModel_M_IsGreen_4250874340(phase);
                 Update_BindTestbedModel_NestedLoadModel_M_ColorToBrush_4250874340(phase);
         }
 
-        void Update_BindTestbedModel_NestedLoadModel_M_IsGreen_4250874340(int32_t phase)
+        void Update_BindTestbedModel_NestedLoadModel_M_IsGreen_4250874340(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1953,7 +1993,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_NullEmployee(::winrt::BindTestbedModel::IEmployee obj, int32_t phase)
+        void Update_Model_NullEmployee(::winrt::BindTestbedModel::IEmployee obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1971,7 +2011,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_NullEmployee_IsManager(bool obj, int32_t phase)
+        void Update_Model_NullEmployee_IsManager(bool obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1989,7 +2029,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_Employees(::winrt::BindTestbedModel::EmployeeCollection obj, int32_t phase)
+        void Update_Model_Employees(::winrt::BindTestbedModel::EmployeeCollection obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1998,7 +2038,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_test1(::winrt::BindTestbedModel::Circle obj, int32_t phase)
+        void Update_test1(::winrt::BindTestbedModel::Circle obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -2016,7 +2056,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_test1_TestStringProperty(::winrt::hstring obj, int32_t phase)
+        void Update_test1_TestStringProperty(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -2025,7 +2065,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_test2(::winrt::BindTestbedModel::Circle obj, int32_t phase)
+        void Update_test2(::winrt::BindTestbedModel::Circle obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -2037,7 +2077,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_test2_TestStringProperty(::winrt::hstring obj, int32_t phase)
+        void Update_test2_TestStringProperty(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -2046,7 +2086,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_StringPropertyDP(::winrt::hstring obj, int32_t phase)
+        void Update_Model_StringPropertyDP(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -2122,7 +2162,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_test2_Diameter(::winrt::BindTestbedModel::Diameter obj, int32_t phase)
+        void Update_test2_Diameter(::winrt::BindTestbedModel::Diameter obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -2133,7 +2173,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_test2_Diameter_Width(double obj, int32_t phase)
+        void Update_test2_Diameter_Width(double obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -2142,7 +2182,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_test3(::winrt::BindTestbedModel::Circle obj, int32_t phase)
+        void Update_test3(::winrt::BindTestbedModel::Circle obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -2153,7 +2193,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_test3_Diameter(::winrt::BindTestbedModel::Diameter obj, int32_t phase)
+        void Update_test3_Diameter(::winrt::BindTestbedModel::Diameter obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -2164,7 +2204,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_test3_Diameter_Width(double obj, int32_t phase)
+        void Update_test3_Diameter_Width(double obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -2173,7 +2213,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_test4(::winrt::BindTestbedModel::Circle obj, int32_t phase)
+        void Update_test4(::winrt::BindTestbedModel::Circle obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_test4, tokenPC_test4);
             if (obj)
@@ -2185,7 +2225,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_test4_Diameter(::winrt::BindTestbedModel::Diameter obj, int32_t phase)
+        void Update_test4_Diameter(::winrt::BindTestbedModel::Diameter obj, std::int32_t phase)
         {
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::Microsoft::UI::Xaml::FrameworkElement::WidthProperty(), cacheDPC_test4_Diameter_Width, tokenDPC_test4_Diameter_Width);
             if (obj)
@@ -2197,7 +2237,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_test4_Diameter_Width(double obj, int32_t phase)
+        void Update_test4_Diameter_Width(double obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -2206,13 +2246,13 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_NestedLoad_Option3Background(::winrt::Windows::UI::Color obj, int32_t phase)
+        void Update_Model_NestedLoad_Option3Background(::winrt::Windows::UI::Color obj, std::int32_t phase)
         {
                 Update_BindTestbedModel_NestedLoadModel_M_ColorToBrush_868331994(phase);
                 Update_BindTestbedModel_NestedLoadModel_M_IsGreen_868331994(phase);
         }
 
-        void Update_BindTestbedModel_NestedLoadModel_M_ColorToBrush_868331994(int32_t phase)
+        void Update_BindTestbedModel_NestedLoadModel_M_ColorToBrush_868331994(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -2222,7 +2262,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_BindTestbedModel_NestedLoadModel_M_IsGreen_2958337247(int32_t phase)
+        void Update_BindTestbedModel_NestedLoadModel_M_IsGreen_2958337247(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -2230,7 +2270,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_innerMostNestedPanelStaticText(::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj, int32_t phase)
+        void Update_innerMostNestedPanelStaticText(::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj, std::int32_t phase)
         {
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::Microsoft::UI::Xaml::Controls::TextBlock::TextProperty(), cacheDPC_innerMostNestedPanelStaticText_Text, tokenDPC_innerMostNestedPanelStaticText_Text);
             if (obj)
@@ -2249,7 +2289,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_innerMostNestedPanelStaticText_Text(::winrt::hstring obj, int32_t phase)
+        void Update_innerMostNestedPanelStaticText_Text(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -2277,7 +2317,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_BindTestbedModel_NestedLoadModel_M_IsGreen_868331994(int32_t phase)
+        void Update_BindTestbedModel_NestedLoadModel_M_IsGreen_868331994(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -2285,7 +2325,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_BindTestbedModel_NestedLoadModel_M_ColorToBrush_4250874340(int32_t phase)
+        void Update_BindTestbedModel_NestedLoadModel_M_ColorToBrush_4250874340(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {

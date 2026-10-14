@@ -7,13 +7,28 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "pch.h"
-#include <memory>
+
 #include <unknwn.h>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <regex>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
+#ifdef XAML_TYPE_INFO_INC
+#include XAML_TYPE_INFO_INC
+#endif
 #if __has_include(<winrt/BindTestbed.h>)
 #include <winrt/BindTestbed.h>
 #endif
@@ -29,21 +44,35 @@
 #if __has_include(<winrt/BindTestbedModel.BindTestbedModel_XamlTypeInfo.h>)
 #include <winrt/BindTestbedModel.BindTestbedModel_XamlTypeInfo.h>
 #endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
 #if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Media.h>)
+#include <winrt/Microsoft.UI.Xaml.Media.h>
 #endif
 #if __has_include(<winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>)
 #include <winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>
 #endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 #if __has_include(<winrt/Windows.Foundation.Collections.h>)
 #include <winrt/Windows.Foundation.Collections.h>
 #endif
-
-#ifdef XAML_TYPE_INFO_INC
-#include XAML_TYPE_INFO_INC
+#if __has_include(<winrt/Windows.UI.h>)
+#include <winrt/Windows.UI.h>
+#endif
+#if __has_include(<winrt/Windows.UI.Xaml.Interop.h>)
+#include <winrt/Windows.UI.Xaml.Interop.h>
 #endif
 #include "XamlTypeInfo.xaml.g.h"
-
+#include "XamlBindingInfo.xaml.g.h"
 #include "XamlBindingInfo.xaml.g.hpp"
 
 namespace winrt::BindTestbed::implementation
@@ -162,11 +191,11 @@ void SetValueTypeMember_IsChecked_BindTestbed_CastingModel(::winrt::Windows::Fou
 
 ::winrt::Windows::Foundation::IInspectable GetValueTypeMember_IntVal_BindTestbed_CastingModel(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value<int32_t>(instance.as<::winrt::BindTestbed::CastingModel>().IntVal());
+    return ::winrt::box_value<std::int32_t>(instance.as<::winrt::BindTestbed::CastingModel>().IntVal());
 }
 void SetValueTypeMember_IntVal_BindTestbed_CastingModel(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
 {
-    instance.as<::winrt::BindTestbed::CastingModel>().IntVal(::winrt::unbox_value<int32_t>(value));
+    instance.as<::winrt::BindTestbed::CastingModel>().IntVal(::winrt::unbox_value<std::int32_t>(value));
 }
 
 ::winrt::Windows::Foundation::IInspectable GetValueTypeMember_DoubleVal_BindTestbed_CastingModel(::winrt::Windows::Foundation::IInspectable const& instance)
@@ -570,7 +599,7 @@ void CollectionAdd_BindTestbedModel_ObservableEmployees_BindTestbedModel_IEmploy
 
 ::winrt::Windows::Foundation::IInspectable GetValueTypeMember_Size_BindTestbedModel_ObservableEmployees(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value<uint32_t>(instance.as<::winrt::BindTestbedModel::ObservableEmployees>().Size());
+    return ::winrt::box_value<std::uint32_t>(instance.as<::winrt::BindTestbedModel::ObservableEmployees>().Size());
 }
 ::winrt::Windows::Foundation::IInspectable FromStringConverter_BindTestbedModel_TShirtSize(::winrt::BindTestbed::implementation::XamlUserType const& userType, ::winrt::hstring const& input)
 {
@@ -615,7 +644,7 @@ void SetReferenceTypeMember_Content_Microsoft_UI_Xaml_Controls_TreeViewNode(::wi
 
 ::winrt::Windows::Foundation::IInspectable GetValueTypeMember_Depth_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value<int32_t>(instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().Depth());
+    return ::winrt::box_value<std::int32_t>(instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().Depth());
 }
 
 ::winrt::Windows::Foundation::IInspectable GetValueTypeMember_HasChildren_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance)
@@ -1180,7 +1209,7 @@ const TypeInfo TypeInfos[] =
     TypeInfo_Flags_None,
 };
 
-constexpr uint32_t TypeInfoLookup[] = { 
+constexpr std::uint32_t TypeInfoLookup[] = { 
       0,   //   0
       0,   //   1
       0,   //   2
@@ -1998,7 +2027,7 @@ const wchar_t* GetShortName(const wchar_t* longName)
 
 const TypeInfo* GetTypeInfo(::winrt::hstring const& typeName)
 {
-    size_t typeNameLength = typeName.size();
+    std::size_t typeNameLength = typeName.size();
     if (typeNameLength < _countof(TypeInfoLookup) - 1)
     {
         const auto begin = TypeInfos + TypeInfoLookup[typeNameLength];

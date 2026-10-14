@@ -6,7 +6,38 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "MainPage.h"
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Documents.h>)
+#include <winrt/Microsoft.UI.Xaml.Documents.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Input.h>)
+#include <winrt/Microsoft.UI.Xaml.Input.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Simple.h>)
+#include <winrt/Simple.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -49,7 +80,7 @@ namespace winrt::Simple::implementation
     }
 
     template <typename D, typename ... I>
-    void MainPageT<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void MainPageT<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
         switch (connectionId)
         {
@@ -112,7 +143,7 @@ namespace winrt::Simple::implementation
     }
 
     template <typename D, typename ... I>
-    void MainPageT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void MainPageT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -124,7 +155,7 @@ namespace winrt::Simple::implementation
     }
 
     template <typename D, typename... I>
-    IComponentConnector MainPageT<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector MainPageT<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<::winrt::Simple::implementation::XamlBindings> bindings;
         switch (connectionId)
@@ -152,7 +183,7 @@ namespace winrt::Simple::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -177,7 +208,7 @@ namespace winrt::Simple::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::Simple::MainPage obj, int32_t phase)
+        void Update_(::winrt::Simple::MainPage obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -188,7 +219,7 @@ namespace winrt::Simple::implementation
             }
         }
 
-        void Update_PageName(::winrt::hstring obj, int32_t phase)
+        void Update_PageName(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {

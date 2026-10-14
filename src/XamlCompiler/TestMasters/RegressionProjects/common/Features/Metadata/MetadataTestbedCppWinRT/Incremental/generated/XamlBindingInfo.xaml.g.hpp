@@ -7,6 +7,10 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "pch.h"
+#include <cstdint>
+#include <memory>
+#include <utility>
+
 #include "XamlBindingInfo.xaml.g.h"
 
 namespace winrt::MetadataTestbedCppWinRT::implementation
@@ -34,7 +38,7 @@ XamlBindings::XamlBindings(std::shared_ptr<IXamlBindings>&& pBindings)
 void XamlBindings::Initialize()
 {
     if (!_pBindings->IsInitialized())
-    { 
+    {
         _pBindings->Update();
     }
 }
@@ -84,7 +88,7 @@ void XamlBindings::Connect(int connectionId, IInspectable const& target)
     _pBindings->Connect(connectionId, target);
 }
 
-IComponentConnector XamlBindings::GetBindingConnector(int32_t, IInspectable const&)
+IComponentConnector XamlBindings::GetBindingConnector(std::int32_t, IInspectable const&)
 {
     return nullptr;
 }
@@ -96,7 +100,7 @@ bool XamlBindings::ProcessBinding(unsigned int)
 
 int XamlBindings::ProcessBindings(ContainerContentChangingEventArgs const& args)
 {
-    int32_t nextPhase;
+    std::int32_t nextPhase;
     _pBindings->ProcessBindings(args.Item(), args.ItemIndex(), args.Phase(), nextPhase);
     return nextPhase;
 }
@@ -107,7 +111,7 @@ void XamlBindings::ResetTemplate()
 }
 
 void XamlBindings::ProcessBindings(
-    IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+    IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
 {
     _pBindings->ProcessBindings(item, itemIndex, phase, nextPhase);
 }
@@ -130,7 +134,7 @@ void XamlBindingTrackingBase::SetListener(IXamlBindingTracking* pBindings)
 
 void XamlBindingTrackingBase::PropertyChanged(
     IInspectable const& sender,
-    PropertyChangedEventArgs const&  e)
+    PropertyChangedEventArgs const& e)
 {
     if (_pBindingsTrackingWeakRef)
     {
@@ -238,7 +242,7 @@ void XamlBindingTrackingBase::UpdateDependencyPropertyChangedListener(
     DependencyObject const& obj,
     DependencyProperty const& property,
     DependencyObject& cache,
-    int64_t& token)
+    std::int64_t& token)
 {
     if (cache && cache != obj)
     {
@@ -249,7 +253,7 @@ void XamlBindingTrackingBase::UpdateDependencyPropertyChangedListener(
     if (!cache && obj)
     {
         cache = obj;
-        token = obj.RegisterPropertyChangedCallback(property, 
+        token = obj.RegisterPropertyChangedCallback(property,
             { this, &XamlBindingTrackingBase::DependencyPropertyChanged });
     }
 }
@@ -258,7 +262,7 @@ void XamlBindingTrackingBase::UpdateDependencyPropertyChangedListener(
     DependencyObject const& obj,
     DependencyProperty const& property,
     winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject>& cacheRef,
-    int64_t& token)
+    std::int64_t& token)
 {
     DependencyObject cache = cacheRef.get();
     if (cache && cache != obj)
@@ -271,7 +275,7 @@ void XamlBindingTrackingBase::UpdateDependencyPropertyChangedListener(
     if (!cache && obj)
     {
         cacheRef = cache = obj;
-        token = obj.RegisterPropertyChangedCallback(property, 
+        token = obj.RegisterPropertyChangedCallback(property,
             { this, &XamlBindingTrackingBase::DependencyPropertyChanged });
     }
 }

@@ -5,37 +5,51 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 //------------------------------------------------------------------------------
+
 #pragma once
-
+#ifndef XAML_IMPL_MODULE
 #include <unknwn.h>
-
-// Undefine GetCurrentTime macro to prevent
-// conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
-
+#include <cstdint>
 #if __has_include(<winrt/Microsoft.UI.Xaml.h>)
 #include <winrt/Microsoft.UI.Xaml.h>
 #endif
 #if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
 #endif
-#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
-#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
-#endif
-#if __has_include(<winrt/Microsoft.UI.Xaml.Documents.h>)
-#include <winrt/Microsoft.UI.Xaml.Documents.h>
-#endif
-#if __has_include(<winrt/Microsoft.UI.Xaml.Input.h>)
-#include <winrt/Microsoft.UI.Xaml.Input.h>
-#endif
 #if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
 #include <winrt/Microsoft.UI.Xaml.Markup.h>
 #endif
-
+#if __has_include(<winrt/Simple.h>)
+#include <winrt/Simple.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 #include "XamlBindingInfo.xaml.g.h"
+#endif
 
-namespace winrt::Simple::implementation
+#ifdef XAML_IMPL_MODULE
+#define XAML_EXPORT export extern "C++"
+#else
+#define XAML_EXPORT
+#endif
+
+XAML_EXPORT namespace winrt::Simple::implementation
 {
+    struct XamlBindings;
+}
+
+XAML_EXPORT namespace winrt::Simple::implementation
+{
+    struct MainPageBase;
+}
+
+XAML_EXPORT namespace winrt::Simple::implementation
+{
+    template <typename D, typename B, typename... I>
+    struct MainPage_base;
+
     using IInspectable = ::winrt::Windows::Foundation::IInspectable;
 
     template <typename D, typename ... I>
@@ -48,10 +62,10 @@ namespace winrt::Simple::implementation
         using class_type = typename MainPageT::class_type;
 
         void InitializeComponent();
-        virtual void Connect(int32_t connectionId, IInspectable const& target);
-        virtual ::winrt::Microsoft::UI::Xaml::Markup::IComponentConnector GetBindingConnector(int32_t connectionId, IInspectable const& target);
+        virtual void Connect(std::int32_t connectionId, IInspectable const& target);
+        virtual ::winrt::Microsoft::UI::Xaml::Markup::IComponentConnector GetBindingConnector(std::int32_t connectionId, IInspectable const& target);
         void UnloadObject(::winrt::Microsoft::UI::Xaml::DependencyObject const& dependencyObject);
-        void DisconnectUnloadedObject(int32_t connectionId);
+        void DisconnectUnloadedObject(std::int32_t connectionId);
 
         ::winrt::Simple::PropBag propertyBagObject()
         {
@@ -103,4 +117,5 @@ namespace winrt::Simple::implementation
         ::winrt::Microsoft::UI::Xaml::Controls::Button _Button2{nullptr};
     };
 }
+#undef XAML_EXPORT
 

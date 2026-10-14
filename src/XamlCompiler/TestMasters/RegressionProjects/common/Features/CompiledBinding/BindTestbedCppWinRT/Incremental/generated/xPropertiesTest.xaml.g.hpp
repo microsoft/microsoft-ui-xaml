@@ -6,7 +6,35 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "xPropertiesTest.h"
+#if __has_include(<winrt/BindTestbed.h>)
+#include <winrt/BindTestbed.h>
+#endif
+#if __has_include(<winrt/BindTestbedModel.h>)
+#include <winrt/BindTestbedModel.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -49,7 +77,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void xPropertiesTestT<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void xPropertiesTestT<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
         switch (connectionId)
         {
@@ -70,7 +98,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void xPropertiesTestT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void xPropertiesTestT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -82,7 +110,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename... I>
-    IComponentConnector xPropertiesTestT<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector xPropertiesTestT<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<::winrt::BindTestbed::implementation::XamlBindings> bindings;
         switch (connectionId)
@@ -110,7 +138,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -142,7 +170,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::xPropertiesTest obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::xPropertiesTest obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -154,7 +182,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_TestStr(::winrt::hstring obj, int32_t phase)
+        void Update_TestStr(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -163,7 +191,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_TestCreateFromString(::winrt::BindTestbedModel::Diameter obj, int32_t phase)
+        void Update_TestCreateFromString(::winrt::BindTestbedModel::Diameter obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -174,7 +202,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_TestCreateFromString_Width(double obj, int32_t phase)
+        void Update_TestCreateFromString_Width(double obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {

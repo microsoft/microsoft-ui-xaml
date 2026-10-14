@@ -6,7 +6,32 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "NamedRootsPage\NamedPageRootWithCompiledBindingUserChild.h"
+#if __has_include(<winrt/BindTestbed.NamedRootsPage.h>)
+#include <winrt/BindTestbed.NamedRootsPage.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -49,13 +74,13 @@ namespace winrt::BindTestbed::NamedRootsPage::implementation
     }
 
     template <typename D, typename... I>
-    void NamedPageRootWithCompiledBindingUserChildT<D, I...>::Connect(int32_t, IInspectable const&)
+    void NamedPageRootWithCompiledBindingUserChildT<D, I...>::Connect(std::int32_t, IInspectable const&)
     {
         _contentLoaded = true;
     }
 
     template <typename D, typename ... I>
-    void NamedPageRootWithCompiledBindingUserChildT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void NamedPageRootWithCompiledBindingUserChildT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -67,7 +92,7 @@ namespace winrt::BindTestbed::NamedRootsPage::implementation
     }
 
     template <typename D, typename... I>
-    IComponentConnector NamedPageRootWithCompiledBindingUserChildT<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector NamedPageRootWithCompiledBindingUserChildT<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<::winrt::BindTestbed::implementation::XamlBindings> bindings;
         switch (connectionId)
@@ -95,7 +120,7 @@ namespace winrt::BindTestbed::NamedRootsPage::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -120,7 +145,7 @@ namespace winrt::BindTestbed::NamedRootsPage::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::NamedRootsPage::NamedPageRootWithCompiledBindingUserChild obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::NamedRootsPage::NamedPageRootWithCompiledBindingUserChild obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -131,7 +156,7 @@ namespace winrt::BindTestbed::NamedRootsPage::implementation
             }
         }
 
-        void Update_Tag(::winrt::Windows::Foundation::IInspectable obj, int32_t phase)
+        void Update_Tag(::winrt::Windows::Foundation::IInspectable obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {

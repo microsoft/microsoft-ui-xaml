@@ -189,6 +189,7 @@ namespace FixMasters
 
             // Stage the complete layout beside the existing tree and keep the old tree for rollback.
             string mastersParentDirectory = Directory.GetParent(mastersRoot).FullName;
+            CleanupCompletedBackups(mastersParentDirectory);
             string uniqueSuffix = Guid.NewGuid().ToString("N").Substring(0, 8);
             string stagingDirectory = Path.Combine(mastersParentDirectory, ".masters-new-" + uniqueSuffix);
             string backupDirectory = Path.Combine(mastersParentDirectory, ".masters-old-" + uniqueSuffix);
@@ -207,7 +208,11 @@ namespace FixMasters
                 MoveFiles(mastersRoot, backupDirectory, displacedFiles);
                 MoveFiles(stagingDirectory, mastersRoot, installedFiles);
                 installed = true;
-                Directory.Delete(backupDirectory, true);
+                // A mapped reader can also prevent deletion of the displaced snapshot. Mark
+                // only completed installations, then retry cleanup on the next refresh.
+                // Keep the marker outside the tree so partial deletion cannot lose it.
+                File.WriteAllText(backupDirectory + ".cleanup-ready", String.Empty);
+                CleanupCompletedBackups(mastersParentDirectory);
             }
             finally
             {
@@ -228,6 +233,31 @@ namespace FixMasters
 
             Console.WriteLine($"Masters: {commonMasters.Count} {Flavor.Common}, " +
                 $"{chkSpecificMasters.Count} {Flavor.Chk}-only, {freSpecificMasters.Count} {Flavor.Fre}-only.");
+        }
+
+        static void CleanupCompletedBackups(string mastersParentDirectory)
+        {
+            const string suffix = ".cleanup-ready";
+            foreach (string marker in Directory.GetFiles(mastersParentDirectory, ".masters-old-*" + suffix))
+            {
+                string backupDirectory = marker.Substring(0, marker.Length - suffix.Length);
+                try
+                {
+                    if (Directory.Exists(backupDirectory))
+                    {
+                        Directory.Delete(backupDirectory, true);
+                    }
+                    File.Delete(marker);
+                }
+                catch (IOException)
+                {
+                    Console.WriteLine("Deferred cleanup of snapshot still in use: " + backupDirectory);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    Console.WriteLine("Deferred cleanup of snapshot still in use: " + backupDirectory);
+                }
+            }
         }
 
         static void MoveFiles(string source, string destination, List<string> movedFiles)

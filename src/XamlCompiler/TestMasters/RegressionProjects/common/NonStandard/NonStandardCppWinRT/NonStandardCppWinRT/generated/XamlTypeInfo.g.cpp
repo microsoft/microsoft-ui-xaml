@@ -7,15 +7,33 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "pch.h"
-#include <memory>
+
 #include <unknwn.h>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <regex>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
+#include "App.h"
+#include "BlankPage.h++WinRT"
+#include "MainPage.xaml.h++WinRT"
 #if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
 #include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
 #endif
 #if __has_include(<winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>)
 #include <winrt/Microsoft.UI.Xaml.XamlTypeInfo.h>
@@ -23,15 +41,17 @@
 #if __has_include(<winrt/NonStandardCppWinRT.h>)
 #include <winrt/NonStandardCppWinRT.h>
 #endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 #if __has_include(<winrt/Windows.Foundation.Collections.h>)
 #include <winrt/Windows.Foundation.Collections.h>
 #endif
-
+#if __has_include(<winrt/Windows.UI.Xaml.Interop.h>)
+#include <winrt/Windows.UI.Xaml.Interop.h>
+#endif
 #include "XamlTypeInfo.xaml.g.h"
-
-#include "App.h"
-#include "BlankPage.h++WinRT"
-#include "MainPage.xaml.h++WinRT"
+#include "XamlBindingInfo.xaml.g.h"
 #include "XamlBindingInfo.xaml.g.hpp"
 #include "App.xaml.g.hpp"
 #include "BlankPage.xaml.g.hpp"
@@ -269,7 +289,7 @@ const TypeInfo TypeInfos[] =
     TypeInfo_Flags_None,
 };
 
-constexpr uint32_t TypeInfoLookup[] = { 
+constexpr std::uint32_t TypeInfoLookup[] = { 
       0,   //   0
       0,   //   1
       0,   //   2
@@ -399,7 +419,7 @@ const MemberInfo MemberInfos[] =
     true,  false, false,
     //   4 - Microsoft.UI.Xaml.Controls.TreeViewNode.Depth
     L"Depth",
-    &GetValueTypeMember_Depth<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, int32_t>,
+    &GetValueTypeMember_Depth<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, std::int32_t>,
     nullptr,
     0, // Int32
     -1,
@@ -428,7 +448,7 @@ const wchar_t* GetShortName(const wchar_t* longName)
 
 const TypeInfo* GetTypeInfo(::winrt::hstring const& typeName)
 {
-    size_t typeNameLength = typeName.size();
+    std::size_t typeNameLength = typeName.size();
     if (typeNameLength < _countof(TypeInfoLookup) - 1)
     {
         const auto begin = TypeInfos + TypeInfoLookup[typeNameLength];

@@ -6,7 +6,32 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "Namespace.CustomControl.h"
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/MultipleViewsTestbedCppWinRT.h>)
+#include <winrt/MultipleViewsTestbedCppWinRT.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -41,13 +66,13 @@ namespace winrt::MultipleViewsTestbedCppWinRT::implementation
     }
 
     template <typename D, typename... I>
-    void NamespaceT<D, I...>::Connect(int32_t, IInspectable const&)
+    void NamespaceT<D, I...>::Connect(std::int32_t, IInspectable const&)
     {
         _contentLoaded = true;
     }
 
     template <typename D, typename ... I>
-    void NamespaceT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void NamespaceT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -60,7 +85,7 @@ namespace winrt::MultipleViewsTestbedCppWinRT::implementation
 
 
     template <typename D, typename... I>
-    IComponentConnector NamespaceT<D, I...>::GetBindingConnector(int32_t, IInspectable const&)
+    IComponentConnector NamespaceT<D, I...>::GetBindingConnector(std::int32_t, IInspectable const&)
     {
         return nullptr;
     }

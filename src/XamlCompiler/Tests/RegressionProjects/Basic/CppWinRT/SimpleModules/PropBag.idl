@@ -1,0 +1,14 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace Simple
+{
+    runtimeclass PropBag
+    {
+        PropBag();
+        String StringProp;
+        Int32 IntProp;
+        Double DoubleProp;
+        Boolean BooleanProp;
+        Int16 Int16Prop;
+    };
+}

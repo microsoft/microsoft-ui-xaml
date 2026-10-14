@@ -9,6 +9,8 @@
 #include <windows.h>
 #include <type_traits>
 #include "App.h"
+#include "XamlMetaDataProvider.h"
+#include <winrt/Microsoft.UI.Xaml.h>
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
 extern "C" __declspec(dllimport) int __stdcall IsDebuggerPresent();
@@ -79,10 +81,6 @@ int __stdcall wXamlGeneratedMain()
         [](auto&&)
         {
 #ifdef DISABLE_XAML_GENERATED_MAIN
-            // The App is constructed here only when it has an accessible parameterless
-            // constructor. This lets an application that defines DISABLE_XAML_GENERATED_MAIN
-            // supply its own entry point and omit a parameterless App constructor without
-            // breaking this generated helper.
             if constexpr (has_parameterless_ctor_v<::winrt::MarkupExtensionsCppWinRT::implementation::App>)
             {
                 ::winrt::make<::winrt::MarkupExtensionsCppWinRT::implementation::App>();

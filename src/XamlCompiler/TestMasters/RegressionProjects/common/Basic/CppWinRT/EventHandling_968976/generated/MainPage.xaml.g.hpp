@@ -6,8 +6,33 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "MainPage.h"
 #include "MyUserControl.h"
+#if __has_include(<winrt/EventHandling_968976.h>)
+#include <winrt/EventHandling_968976.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -37,7 +62,7 @@ namespace winrt::EventHandling_968976::implementation
     }
 
     template <typename D, typename ... I>
-    void MainPageT<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void MainPageT<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
         switch (connectionId)
         {
@@ -45,19 +70,19 @@ namespace winrt::EventHandling_968976::implementation
             {
                 auto targetElement = target.as<::winrt::EventHandling_968976::MyUserControl>();
                 auto weakThis = ::winrt::make_weak<class_type>(*this);
-                targetElement.TheFirstEvent([weakThis](::winrt::array_view<uint32_t const> p0){
+                targetElement.TheFirstEvent([weakThis](::winrt::array_view<std::uint32_t const> p0){
                     if (auto t = weakThis.get())
                     {
                         ::winrt::get_self<D>(t)->FirstHandler(p0);
                     }
                 });
-                targetElement.TheSecondEvent([weakThis](::winrt::array_view<uint32_t> p0){
+                targetElement.TheSecondEvent([weakThis](::winrt::array_view<std::uint32_t> p0){
                     if (auto t = weakThis.get())
                     {
                         ::winrt::get_self<D>(t)->SecondHandler(p0);
                     }
                 });
-                targetElement.TheThirdEvent([weakThis](::winrt::com_array<uint32_t>& p0){
+                targetElement.TheThirdEvent([weakThis](::winrt::com_array<std::uint32_t>& p0){
                     if (auto t = weakThis.get())
                     {
                         ::winrt::get_self<D>(t)->ThirdHandler(p0);
@@ -94,7 +119,7 @@ namespace winrt::EventHandling_968976::implementation
     }
 
     template <typename D, typename ... I>
-    void MainPageT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void MainPageT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -107,7 +132,7 @@ namespace winrt::EventHandling_968976::implementation
 
 
     template <typename D, typename... I>
-    IComponentConnector MainPageT<D, I...>::GetBindingConnector(int32_t, IInspectable const&)
+    IComponentConnector MainPageT<D, I...>::GetBindingConnector(std::int32_t, IInspectable const&)
     {
         return nullptr;
     }

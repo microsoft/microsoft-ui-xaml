@@ -51,13 +51,23 @@ namespace UnitTests
                         Assert.AreEqual(0, FixMasters.Program.Main(arguments));
                         CollectionAssert.AreEqual(bytes, File.ReadAllBytes(path));
                         Assert.AreEqual(1, Directory.GetFiles(masters, "*.g.*", SearchOption.AllDirectories).Length);
-                        Assert.AreEqual(0, Directory.GetDirectories(directory, ".masters-*").Length);
+                        Assert.AreEqual(0, Directory.GetDirectories(directory, ".masters-new-*").Length);
+                        // Windows can retain the displaced file while its mapped view is open.
+                        // Every deferred snapshot must belong to a completed installation.
+                        foreach (string backup in Directory.GetDirectories(directory, ".masters-old-*"))
+                        {
+                            Assert.IsTrue(File.Exists(backup + ".cleanup-ready"));
+                        }
 
                         using (var originalReader = new StreamReader(reader, Encoding.UTF8))
                         {
                             Assert.AreEqual(original, originalReader.ReadToEnd());
                         }
                     }
+                    // Once the mapped reader closes, the next refresh removes its snapshot.
+                    Assert.AreEqual(0, FixMasters.Program.Main(arguments));
+                    Assert.AreEqual(0, Directory.GetDirectories(directory, ".masters-*").Length);
+                    Assert.AreEqual(0, Directory.GetFiles(directory, ".masters-*.cleanup-ready").Length);
                 }
                 finally
                 {

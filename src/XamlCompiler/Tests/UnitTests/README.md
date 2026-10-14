@@ -115,3 +115,15 @@ assembly's flavor; they are included in `XamlCompilerTests.sln`.
 The round trips use C++/WinRT's existing array boxing support. This projection
 fix does not add generalized boxing for enum, custom-struct, or runtime-class
 element types.
+
+## Named-module and complete candidate verification
+
+CppWinRTModuleTests and the projects documented in
+../RegressionProjects/CppWinRTModules.README.md accompany the named-module feature.
+The ordinary test solution retains its existing VS2022 toolchain; execute the native
+module runner explicitly on VS2026.
+
+The additional .github/scripts/validate-xamlc-unit-tests.ps1 runner supports
+-Configuration Debug or Release and checks the initialized chk/fre flavor. Run both
+configurations to verify the shared expected outputs against actual compiler output.
+The default full invocation has no test filter and requires zero feature failures.
