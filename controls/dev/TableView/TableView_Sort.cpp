@@ -105,7 +105,8 @@ void TableView::RerankCustomSortAfterReclaim()
     const auto preservedSelection = SelectedItemInternal();
     try
     {
-        if (SyncTableViewSourceSort(column, direction) && preservedSelection)
+        // A rerank after reclaim is control-driven, not a user sort, so it carries no TiP operation.
+        if (SyncTableViewSourceSort(column, direction, 0) && preservedSelection)
         {
             ApplySelection(FindEntryIndexForDataItem(preservedSelection));
         }
