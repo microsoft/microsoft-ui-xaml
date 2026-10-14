@@ -41,7 +41,7 @@ The transport package:
 All transport packages, including WinUI's, are aggregated by the
 WindowsAppSDK aggregation pipeline. The version
 of each transport package is conveyed in the
-[eng/Version.Details.xml](../eng/Version.Details.xml)
+[eng/Versions.props](../eng/Versions.props)
 file. The aggregation process splits each incoming transport package in two. The ***runtime*** folder contents are
 consolidated from all transport packages, and used to produce the Windows App SDK framework package. All other folders
 contain strictly build-time artifacts, which are repackaged into corresponding "thin packages", such as
