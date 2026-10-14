@@ -124,7 +124,8 @@ A page holds only the TableView behaviour it demonstrates; the generic parts are
   default to `ParentRelation.Manager`, and a page whose rows have no parent relation sets
   `HierarchyUnavailableReason`) and the Status grid with its fixed Rows → Shaping → Last action
   tail. Only Last action is a live region (Polite, raised once per new message); a readout that
-  must be announced on its own sets `AutomationProperties.LiveSetting` itself. `ShapingOptions.TimeCall` lets a page
+  must be announced on its own sets `AutomationProperties.LiveSetting` and raises
+  `LiveRegionChanged` itself (see Accessibility). `ShapingOptions.TimeCall` lets a page
   time the GroupBy / ClearGroupBy and Expand / Collapse all calls. `SamplePresenter.TryIt` renders
   the Try it callout. The rail has two tabs (`RailTabs`: `RailOptionsTab`, default, and
   `RailInfoTab`) and scrolls on its own, bounded to the Example row (`Controls\RailHost.cs`).
