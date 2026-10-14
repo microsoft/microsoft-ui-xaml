@@ -62,6 +62,14 @@
             <TextBlock Text="Visibility from bool?" Visibility="{x:Bind ((local:CastingTestsVM)DataContext).IsVisibleNullable, Mode=OneWay}" />
             <!--<TextBlock Text="Visibility from bool?" Visibility="{x:Bind ((local:CastingTestsVM)DataContext).IsVisibleNullable, Mode=TwoWay}" />--><!-- fails by design -->
 
+            <!-- bool-returning function to visibility (GitHub microsoft-ui-xaml#8644) -->
+            <TextBlock Text="Visibility from bool function" Visibility="{x:Bind ((local:CastingTestsVM)DataContext).IsChecked.Equals(x:False), Mode=OneTime}" />
+            <TextBlock Text="Visibility from bool function" Visibility="{x:Bind ((local:CastingTestsVM)DataContext).IsChecked.Equals(x:False), Mode=OneWay}" />
+
+            <!-- bool?-returning function to visibility (GitHub microsoft-ui-xaml#8644) -->
+            <TextBlock Text="Visibility from bool? function" Visibility="{x:Bind ((local:CastingTestsVM)DataContext).GetIsCheckedNullable(), Mode=OneTime}" />
+            <TextBlock Text="Visibility from bool? function" Visibility="{x:Bind ((local:CastingTestsVM)DataContext).GetIsCheckedNullable(), Mode=OneWay}" />
+
             <!-- bool? to visibility with cast -->
             <TextBlock Text="Visibility from bool?" Visibility="{x:Bind (Visibility)((local:CastingTestsVM)DataContext).IsVisibleNullable, Mode=OneTime}" />
             <TextBlock Text="Visibility from bool?" Visibility="{x:Bind (Visibility)((local:CastingTestsVM)DataContext).IsVisibleNullable, Mode=OneWay}" />

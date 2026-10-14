@@ -10,6 +10,24 @@ using Microsoft.UI.Xaml.Data;
 
 namespace LibManagedDll
 {
+    public class TemplateDictionary : ResourceDictionary
+    {
+    }
+
+    public class LoadableTemplateControl : Microsoft.UI.Xaml.Controls.Control, System.ComponentModel.INotifyPropertyChanged
+    {
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+
+        public bool IsVisible { get; private set; }
+        public string Greeting => "Hello world";
+
+        public void SetVisible(bool value)
+        {
+            IsVisible = value;
+            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(IsVisible)));
+        }
+    }
+
     public class MyDataClass
     {
         public String MyProperty { get; set; }
@@ -48,8 +66,24 @@ namespace LibManagedDll
     public class MyFieldClass
     {
         public String MyProperty { get; set; }
+    }
+
+    [Obsolete]
+    [Windows.Foundation.Metadata.CreateFromString(MethodName = "LibManagedDll.ObsoleteClass.FromString")]
+    public class ObsoleteClass : FrameworkElement
+    {
+        [Obsolete]
+        public string ObsoleteProperty { get; set; }
+
+        public static ObsoleteClass FromString(string value) => new ObsoleteClass();
 
         public String MyStringField;
+    }
+
+    public class ObsoleteClassHolder : FrameworkElement
+    {
+        [Obsolete]
+        public ObsoleteClass ObsoleteProperty { get; set; }
     }
 
     public class MyEventClass
@@ -83,6 +117,19 @@ namespace LibManagedDll
             DependencyProperty.Register("MyDependencyProperty", typeof(int), typeof(MyObservableClass), new PropertyMetadata(0));
     }
 
+
+    public class MyRefReturnClass
+    {
+        private int _backingField = 0;
+
+        // A ref-return property. Its reflected PropertyType is "System.Int32&"
+        // (IsByRef == true), which must not leak into the generated XamlTypeInfo
+        // type table as typeof(global::System.Int32&) - that is invalid C#/VB.
+        public ref int RefReturnProperty { get { return ref _backingField; } }
+
+        // A normal property that must still be collected as usual.
+        public int NormalProperty { get; set; }
+    }
 
     public class MyContentClass
     {

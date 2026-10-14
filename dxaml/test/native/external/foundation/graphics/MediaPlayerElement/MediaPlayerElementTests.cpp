@@ -370,5 +370,194 @@ void MediaPlayerElementTests::RootRasterizationScale()
     RasterizationScale(1.0, 2.0);
 }
 
+// Regression test: a XAML-auto-created MediaPlayer the app still holds must not be Closed during element teardown (a later PlaybackSession query would fail with E_ABORT).
+void MediaPlayerElementTests::RetainedMediaPlayerSurvivesElementDestruction()
+{
+    TestCleanupWrapper cleanup;
+
+    MediaPlayer^ retainedPlayer = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        auto mpe = ref new xaml_controls::MediaPlayerElement();
+
+        // Setting AutoPlay forces XAML to auto-create its default MediaPlayer - the player whose engine XAML used to force-Close on teardown.
+        mpe->AutoPlay = true;
+
+        // Reading the MediaPlayer hands the app a reference that keeps it (and its engine) alive after the element is gone.
+        retainedPlayer = mpe->MediaPlayer;
+        VERIFY_IS_NOT_NULL(retainedPlayer);
+
+        // Drop the only reference to the element so it gets destroyed.
+        mpe = nullptr;
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        // Retained player must still be alive; accessing PlaybackSession previously crashed with E_ABORT.
+        VERIFY_IS_NOT_NULL(retainedPlayer);
+        VERIFY_IS_NOT_NULL(retainedPlayer->PlaybackSession);
+
+        retainedPlayer = nullptr;
+    });
+}
+
+// Regression test for the original repro: a single XAML-auto-created MediaPlayer shared between two elements; destroying one must not Close the player the app and other element still use.
+void MediaPlayerElementTests::SharedMediaPlayerSurvivesElementDestruction()
+{
+    TestCleanupWrapper cleanup;
+
+    MediaPlayer^ sharedPlayer = nullptr;
+    xaml_controls::MediaPlayerElement^ mpe2 = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        auto mpe1 = ref new xaml_controls::MediaPlayerElement();
+
+        // Setting AutoPlay forces XAML to auto-create the default MediaPlayer, which is the player XAML used to force-Close on teardown.
+        mpe1->AutoPlay = true;
+        sharedPlayer = mpe1->MediaPlayer;
+        VERIFY_IS_NOT_NULL(sharedPlayer);
+
+        // Share the same XAML-created MediaPlayer with a second element.
+        mpe2 = ref new xaml_controls::MediaPlayerElement();
+        mpe2->SetMediaPlayer(sharedPlayer);
+
+        // Destroy the first element.
+        mpe1 = nullptr;
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        // The shared MediaPlayer must still be usable through the surviving element and the app.
+        VERIFY_IS_NOT_NULL(sharedPlayer);
+        VERIFY_IS_NOT_NULL(sharedPlayer->PlaybackSession);
+        VERIFY_ARE_EQUAL(mpe2->MediaPlayer, sharedPlayer);
+
+        mpe2 = nullptr;
+        sharedPlayer = nullptr;
+    });
+}
+
+// Documents the non-shared "read-to-configure" pattern: reading the default MediaPlayer only to configure it (not retaining it) still tears it down deterministically on element destruction because XAML holds the last reference (native only; C# RCWs defer this to GC).
+void MediaPlayerElementTests::ConfigureThenRemoveDefaultMediaPlayer()
+{
+    TestCleanupWrapper cleanup;
+
+    Platform::WeakReference weakPlayer;
+
+    RunOnUIThread([&]()
+    {
+        auto mpe = ref new xaml_controls::MediaPlayerElement();
+
+        // Setting AutoPlay forces XAML to auto-create its default MediaPlayer.
+        mpe->AutoPlay = true;
+
+        // Read the default MediaPlayer only to configure it, mimicking mpe.MediaPlayer.Volume = ...
+        // Do not retain a strong reference to the player beyond this scope.
+        {
+            MediaPlayer^ player = mpe->MediaPlayer;
+            VERIFY_IS_NOT_NULL(player);
+            player->Volume = 0.5;
+            weakPlayer = Platform::WeakReference(player);
+        }
+
+        // Drop the only reference to the element so it gets destroyed.
+        mpe = nullptr;
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        // With no surviving references, the default MediaPlayer must have been released with the element rather than kept alive.
+        VERIFY_IS_NULL(weakPlayer.Resolve<MediaPlayer>());
+    });
+}
+
+void MediaPlayerElementTests::PausesMediaPlayerWhenWindowCloses()
+{
+    auto playingEvent = std::make_shared<Event>();
+    auto pausedEvent = std::make_shared<Event>();
+    auto playbackStateChangedRegistration = CreateSafeEventRegistration(MediaPlaybackSession, PlaybackStateChanged);
+    Window^ window = nullptr;
+    xaml_controls::MediaPlayerElement^ mpe = nullptr;
+    MediaPlayer^ player = nullptr;
+    bool windowIsOpen = false;
+
+    TestCleanupWrapper cleanup([&]()
+    {
+        if (windowIsOpen)
+        {
+            RunOnUIThread([&]()
+            {
+                window->Close();
+                windowIsOpen = false;
+                window = nullptr;
+                mpe = nullptr;
+                player = nullptr;
+            });
+        }
+    });
+
+    RunOnUIThread([&]()
+    {
+        window = ref new Window();
+        mpe = ref new xaml_controls::MediaPlayerElement();
+        mpe->AutoPlay = true;
+        window->Content = mpe;
+        window->Activate();
+        windowIsOpen = true;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        player = mpe->MediaPlayer;
+        VERIFY_IS_NOT_NULL(player);
+        player->IsLoopingEnabled = true;
+
+        playbackStateChangedRegistration.Attach(
+            player->PlaybackSession,
+            ref new wf::TypedEventHandler<MediaPlaybackSession^, Platform::Object^>(
+                [&](MediaPlaybackSession^ session, Platform::Object^)
+                {
+                    if (session->PlaybackState == MediaPlaybackState::Playing)
+                    {
+                        playingEvent->Set();
+                    }
+                    else if (session->PlaybackState == MediaPlaybackState::Paused)
+                    {
+                        pausedEvent->Set();
+                    }
+                }));
+
+        mpe->Source = ::Windows::Media::Core::MediaSource::CreateFromUri(
+            ref new Uri(GetResourcesPath() + L"testfile.wmv"));
+    });
+
+    playingEvent->WaitForDefault();
+
+    RunOnUIThread([&]()
+    {
+        VERIFY_ARE_EQUAL(MediaPlaybackState::Playing, player->PlaybackSession->PlaybackState);
+        pausedEvent->Reset();
+        window->Close();
+        windowIsOpen = false;
+    });
+
+    pausedEvent->WaitForDefault();
+
+    RunOnUIThread([&]()
+    {
+        VERIFY_ARE_EQUAL(MediaPlaybackState::Paused, player->PlaybackSession->PlaybackState);
+        VERIFY_ARE_EQUAL(player, mpe->MediaPlayer);
+    });
+}
+
     } } }
 } } } }

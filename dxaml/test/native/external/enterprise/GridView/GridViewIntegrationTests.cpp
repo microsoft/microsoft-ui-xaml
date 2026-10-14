@@ -10,6 +10,7 @@
 #include <TreeHelper.h>
 #include <TestCleanupWrapper.h>
 #include "KeyboardInjectionOverride.h"
+#include <collection.h>
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
@@ -532,6 +533,188 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL(scrollViewer->VerticalOffset, 0.0);
             VERIFY_ARE_EQUAL(scrollViewer->ZoomFactor, 1.0f);
             VERIFY_ARE_EQUAL(gridView->SelectedIndex, 0);
+        });
+    }
+
+    //
+    // Code-authored DataTemplate (new DataTemplate(callback)) core-path coverage
+    //
+
+    // Orders map keys by object identity (hash) so realized elements can be used as keys.
+    struct ObjectComparator
+    {
+        bool operator()(Platform::Object^ const& left, Platform::Object^ const& right) const
+        {
+            return left->GetHashCode() < right->GetHashCode();
+        }
+    };
+
+    void GridViewIntegrationTests::CodeAuthoredItemTemplateReceivesDataContext()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::GridView^ gridView = nullptr;
+        auto items = ref new Platform::Collections::Vector<Platform::Object^>();
+        for (int i = 0; i < 5; i++)
+        {
+            items->Append(ref new Platform::String((L"Item " + std::to_wstring(i)).c_str()));
+        }
+
+        auto callbackCount = std::make_shared<int>(0);
+        // Every element the callback produces, so realized (and later recycled) roots can be confirmed to be reused.
+        auto created = ref new Platform::Collections::Vector<xaml::UIElement^>();
+        // The DataContext each element last received via DataContextChanged, keyed by the element so it can
+        // be looked up directly. Cleared before recycling to prove the event fires again on reused elements.
+        auto changedContexts = ref new Platform::Collections::Map<Platform::Object^, Platform::String^, ObjectComparator>();
+
+        RunOnUIThread([&]()
+        {
+            // A code-authored DataTemplate builds each container's tree from an app callback.
+            auto factory = ref new xaml::DataTemplateElementFactory([callbackCount, created, changedContexts]() -> xaml::UIElement^
+            {
+                (*callbackCount)++;
+                auto textBlock = ref new xaml_controls::TextBlock();
+                created->Append(textBlock);
+                // As the root enters the live tree (or is recycled to a new item) it inherits that item as
+                // its DataContext and raises DataContextChanged. App code can hook this event to push data into
+                // the subtree it created.
+                textBlock->DataContextChanged += ref new wf::TypedEventHandler<xaml::FrameworkElement^, xaml::DataContextChangedEventArgs^>(
+                    [changedContexts](xaml::FrameworkElement^ sender, xaml::DataContextChangedEventArgs^ e)
+                {
+                    changedContexts->Insert(sender, dynamic_cast<Platform::String^>(e->NewValue));
+                });
+                textBlock->SetBinding(xaml_controls::TextBlock::TextProperty, ref new Microsoft::UI::Xaml::Data::Binding());
+                return textBlock;
+            });
+
+            gridView = ref new xaml_controls::GridView();
+            gridView->Height = 500;
+            gridView->Width = 500;
+            gridView->ItemsSource = items;
+            gridView->ItemTemplate = ref new xaml::DataTemplate(factory);
+
+            TestServices::WindowHelper->WindowContent = gridView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Verifies each realized container's root reflects its item via DataContext, the {Binding} on Text,
+        // and DataContextChanged, and that every root is a distinct element the callback produced.
+        auto verifyRealizedRoots = [&]()
+        {
+            auto seen = ref new Platform::Collections::Map<Platform::Object^, bool, ObjectComparator>();
+            for (unsigned int i = 0; i < items->Size; i++)
+            {
+                auto container = dynamic_cast<xaml_controls::GridViewItem^>(gridView->ContainerFromIndex(i));
+                VERIFY_IS_NOT_NULL(container);
+
+                auto root = TreeHelper::GetVisualChildByType<xaml_controls::TextBlock>(container);
+                VERIFY_IS_NOT_NULL(root);
+
+                // The root is one the callback produced, not a fresh core-fabricated peer/tree.
+                unsigned int createdIndex = 0;
+                VERIFY_IS_TRUE(created->IndexOf(root, &createdIndex));
+
+                // Each item maps to a distinct realized element.
+                VERIFY_IS_FALSE(seen->HasKey(root));
+                seen->Insert(root, true);
+
+                // The root receives its item as DataContext, which drives classic {Binding} and x:Bind.
+                VERIFY_ARE_EQUAL(safe_cast<Platform::String^>(items->GetAt(i)), safe_cast<Platform::String^>(root->DataContext));
+
+                // The {Binding} on Text resolved against that DataContext - proof the app's peer, with its
+                // bindings, is the one in the live tree.
+                VERIFY_ARE_EQUAL(safe_cast<Platform::String^>(items->GetAt(i)), root->Text);
+
+                // DataContextChanged delivered the item - the event app code hooks to update the template.
+                VERIFY_IS_TRUE(changedContexts->HasKey(root));
+                VERIFY_ARE_EQUAL(safe_cast<Platform::String^>(items->GetAt(i)), changedContexts->Lookup(root));
+            }
+        };
+
+        int callbackCountAfterFirstRealization = 0;
+        RunOnUIThread([&]()
+        {
+            // The virtualizing panel may create extra prototype/measure elements, so assert the intent
+            // (a container tree per item came from the callback) rather than an exact callback count.
+            VERIFY_IS_TRUE(*callbackCount >= static_cast<int>(items->Size));
+            verifyRealizedRoots();
+            callbackCountAfterFirstRealization = *callbackCount;
+        });
+
+        // Recycle: clearing the source pushes the realized containers into the recycle pool.
+        RunOnUIThread([&]()
+        {
+            items->Clear();
+            changedContexts->Clear();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Re-populate with the same number of new items; the pooled containers should be reused for them.
+        RunOnUIThread([&]()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                items->Append(ref new Platform::String((L"Recycled " + std::to_wstring(i)).c_str()));
+            }
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // Recycled containers reuse pooled elements, so the callback is not invoked again.
+            VERIFY_ARE_EQUAL(callbackCountAfterFirstRealization, *callbackCount);
+
+            // Each reused root still receives its new item as DataContext, re-raises DataContextChanged, and
+            // its {Binding} updates to the new value.
+            verifyRealizedRoots();
+        });
+    }
+
+    void GridViewIntegrationTests::CodeAuthoredItemTemplateWithNullSubtreeDoesNotCrash()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::GridView^ gridView = nullptr;
+        auto items = ref new Platform::Collections::Vector<Platform::Object^>();
+        for (int i = 0; i < 5; i++)
+        {
+            items->Append(ref new Platform::String((L"Item " + std::to_wstring(i)).c_str()));
+        }
+
+        auto callbackCount = std::make_shared<int>(0);
+
+        RunOnUIThread([&]()
+        {
+            // A callback that produces no subtree (returns null) must be tolerated exactly like an
+            // empty markup <DataTemplate/>: the core path returns no root and nothing crashes.
+            auto factory = ref new xaml::DataTemplateElementFactory([callbackCount]() -> xaml::UIElement^
+            {
+                (*callbackCount)++;
+                return nullptr;
+            });
+
+            gridView = ref new xaml_controls::GridView();
+            gridView->Height = 500;
+            gridView->Width = 500;
+            gridView->ItemsSource = items;
+            gridView->ItemTemplate = ref new xaml::DataTemplate(factory);
+
+            TestServices::WindowHelper->WindowContent = gridView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // Reaching here after idle proves the null element factory result was tolerated end-to-end
+            // (realization, measure/arrange, and phasing) without crashing.
+            VERIFY_IS_TRUE(*callbackCount >= 1);
+
+            for (unsigned int i = 0; i < items->Size; i++)
+            {
+                auto container = dynamic_cast<xaml_controls::GridViewItem^>(gridView->ContainerFromIndex(i));
+                // The container itself still realizes; the null template simply contributes no factory root.
+                VERIFY_IS_NOT_NULL(container);
+            }
         });
     }
 

@@ -24,6 +24,15 @@ class CDependencyObject;
 // are what stitch the logical/visual/composition trees together. Defined in uielement.cpp.
 uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexcept;
 
+// Returns the actual heap-allocation size (in bytes) of the core object — its concrete,
+// most-derived C++ instance footprint (NOT sizeof(CUIElement), which is the base-class size and
+// identical for every element). Core objects go through the global operator new, so the allocator
+// records the true block size; the size is recovered from the debug allocator's validation header
+// in debug builds (or HeapSize in retail) for every creation path. This is only the fixed per-type
+// "core block"; the element's sparse property table and its DXaml peer are separate allocations,
+// measured on demand. 0 when obj is null. Defined in uielement.cpp alongside XamlProfilerGetPeerHandle.
+uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept;
+
 // TraceLogging provider for XAML Profiler tree-tracking events.
 // These events allow an out-of-process profiler to reconstruct and diff the logical tree,
 // visual tree, and composition tree over the lifetime of the host process.
@@ -83,13 +92,20 @@ public:
     // Label is the element's GetDebugLabel().
     // IsTemplateChild is true when the element was created by a ControlTemplate (GetTemplatedParent() != null).
     // PeerHandle is the element's DXaml-peer InstanceHandle (0 when no peer) for live highlighting.
-    DEFINE_TRACELOGGING_EVENT_PARAM6(ElementEnteredTree,
+    // CoreSize is the fixed core-object allocation size; sparse properties and the DXaml peer are separate.
+    // SourceFileUri/Line/Column are populated when source-info storage is enabled and the peer has source info.
+    // Missing source info uses an empty URI and 0 coordinates; XBF without line info also uses 0 coordinates.
+    DEFINE_TRACELOGGING_EVENT_PARAM10(ElementEnteredTree,
         uint64_t, ElementId,
         uint64_t, ParentId,
         bool,     IsLive,
         PCWSTR,   Label,
         bool,     IsTemplateChild,
         uint64_t, PeerHandle,
+        uint64_t, CoreSize,
+        PCWSTR,   SourceFileUri,
+        uint32_t, SourceLine,
+        uint32_t, SourceColumn,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a UIElement leaves the live tree.
@@ -97,6 +113,18 @@ public:
         uint64_t, ElementId,
         uint64_t, ParentId,
         bool, IsLive,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Snapshot of XAML allocator-owned CPU heap blocks. This excludes GPU texture backing and
+    // process allocations owned by other components/runtimes.
+    DEFINE_TRACELOGGING_EVENT_PARAM7(XamlHeapSnapshot,
+        uint64_t, HeapHandle,
+        bool,     IsPrivateHeap,
+        uint64_t, OutstandingBytes,
+        uint64_t, OutstandingAllocationCount,
+        uint64_t, CumulativeAllocatedBytes,
+        uint64_t, CumulativeAllocationCount,
+        uint64_t, CumulativeDeallocationCount,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // =====================================================================
@@ -250,6 +278,60 @@ public:
     // Fired when a composition target/island root is cleared (Root set to null).
     DEFINE_TRACELOGGING_EVENT_PARAM1(WucVisualRootCleared,
         uint64_t, TargetId,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // =====================================================================
+    // GPU Memory Events
+    // =====================================================================
+
+    // Reports the lifecycle and logical dimensions of a DComp surface. EstimatedSizeBytes
+    // is width-with-gutters * height-with-gutters * pixel stride. It is useful for attribution,
+    // but is not exact committed VRAM because DComp may atlas, share, or sparsely tile surfaces.
+    DEFINE_TRACELOGGING_EVENT_PARAM7(DCompSurfaceMemoryChanged,
+        uint64_t, SurfaceId,
+        bool,     IsAllocation,
+        uint64_t, EstimatedSizeBytes,
+        uint32_t, Width,
+        uint32_t, Height,
+        uint32_t, PixelStride,
+        bool,     IsVirtual,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Reports the transient D3D11 texture exposed by DComp during BeginDraw. For atlased
+    // surfaces, Width/Height describe the shared backing texture and OffsetX/OffsetY locate
+    // this surface's update region within it. The resource must not be retained after EndDraw.
+    DEFINE_TRACELOGGING_EVENT_PARAM10(DCompSurfaceTextureObserved,
+        uint64_t, SurfaceId,
+        uint64_t, ResourceId,
+        uint32_t, Width,
+        uint32_t, Height,
+        uint32_t, MipLevels,
+        uint32_t, ArraySize,
+        uint32_t, Format,
+        uint32_t, SampleCount,
+        int32_t,  OffsetX,
+        int32_t,  OffsetY,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Associates a rendered IVisual with the DComp surface used by one of its brush roles.
+    // SurfaceId == 0 clears the role. Role 0 is the brush texture; role 1 is the mask texture.
+    // VisualId joins the existing WUC events, whose OwnerCompNodeId joins CompPeerLinked.
+    DEFINE_TRACELOGGING_EVENT_PARAM3(VisualSurfaceChanged,
+        uint64_t, VisualId,
+        uint64_t, SurfaceId,
+        uint32_t, Role,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Driver-reported memory usage for this process on the D3D device's adapter. This is the
+    // closest available view of committed GPU memory, but allocations owned by DWM/DComp may
+    // be charged outside the app process.
+    DEFINE_TRACELOGGING_EVENT_PARAM6(GpuMemorySnapshot,
+        uint64_t, LocalCurrentUsage,
+        uint64_t, LocalBudget,
+        bool,     LocalAvailable,
+        uint64_t, NonLocalCurrentUsage,
+        uint64_t, NonLocalBudget,
+        bool,     NonLocalAvailable,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 };
 

@@ -66,6 +66,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewFooterMenuItemsSourcePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Regression\NavigationViewRS3Page.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -172,6 +176,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewMenuItemsSourcePage.xaml.cs">
       <DependentUpon>NavigationViewMenuItemsSourcePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewFooterMenuItemsSourcePage.xaml.cs">
+      <DependentUpon>NavigationViewFooterMenuItemsSourcePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Regression\NavigationViewRS3Page.xaml.cs">
       <DependentUpon>NavigationViewRS3Page.xaml</DependentUpon>

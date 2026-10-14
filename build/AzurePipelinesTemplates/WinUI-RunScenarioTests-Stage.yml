@@ -17,10 +17,9 @@ stages:
       pipelineKind: ${{ parameters.pipelineKind }}
       testSuite: 'ScenarioTestSuite'
       testPayloadArtifactName: 'ScenarioTestPayload'
-      # WinUIGallery scenario tests stay out of GitHub-backed validation until the
-      # Gallery-on-GitHub work (OS 62963099) lands; tracked by the scenario-test sub-issue.
+      # Include WinUIGallery on GitHub PR validation.
       ${{ if eq(parameters.pipelineKind, 'GitHubPR') }}:
-        includeWinUIGallery: false
+        includeWinUIGallery: true
 
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:

@@ -1372,14 +1372,11 @@ void CPopup::EnsureContentExternalBackdropLink()
         DCompTreeHost* dcompTreeHostNoRef = GetDCompTreeHost();
         ixp::ICompositor* compositorNoRef = dcompTreeHostNoRef->GetCompositor();
 
-        wrl::ComPtr<ixp::IContentExternalBackdropLinkStatics> backdropLinkStatics;
-        IFCFAILFAST(wf::GetActivationFactory(wrl_wrappers::HStringReference(
-            RuntimeClass_Microsoft_UI_Content_ContentExternalBackdropLink).Get(), &backdropLinkStatics));
-        IFCFAILFAST(backdropLinkStatics->Create(compositorNoRef, m_backdropLink.ReleaseAndGetAddressOf()));
+        IFCFAILFAST(ContentExternalBackdropLinkHelper::Create(compositorNoRef, m_backdropLink));
 
-        IFCFAILFAST(m_backdropLink->put_ExternalBackdropBorderMode(ixp::CompositionBorderMode::CompositionBorderMode_Soft));
+        IFCFAILFAST(m_backdropLink->SetExternalBackdropBorderMode(ixp::CompositionBorderMode::CompositionBorderMode_Soft));
 
-        IFCFAILFAST(m_backdropLink->get_PlacementVisual(m_systemBackdropPlacementVisual.ReleaseAndGetAddressOf()));
+        IFCFAILFAST(m_backdropLink->GetPlacementVisual(m_systemBackdropPlacementVisual.ReleaseAndGetAddressOf()));
         DCompTreeHost::SetTagIfEnabled(m_systemBackdropPlacementVisual.Get(), VisualDebugTags::WindowedPopup_SystemBackdropPlacementVisual);
 
         // If there's already an animation root visual, then the windowed popup is already open. Add the system backdrop
@@ -1414,7 +1411,7 @@ void CPopup::DiscardContentExternalBackdropLink()
 
         m_systemBackdropPlacementVisual.Reset();
 
-        m_backdropLink.Reset();
+        m_backdropLink.reset();
     }
 }
 
@@ -4112,7 +4109,7 @@ _Check_return_ HRESULT CPopup::GetSystemBackdrop(_Outptr_result_maybenull_ RealW
     if (m_backdropLink)
     {
         wrl::ComPtr<ixp::ICompositionSupportsSystemBackdrop> icssb;
-        IFC_RETURN(m_backdropLink.As(&icssb));
+        IFC_RETURN(m_backdropLink->AsSystemBackdropTarget(&icssb));
         IFC_RETURN(icssb->get_SystemBackdrop(systemBackdropBrush));
     }
     else
@@ -4130,7 +4127,7 @@ _Check_return_ HRESULT CPopup::SetSystemBackdrop(_In_opt_ RealWUComp::ICompositi
         EnsureContentExternalBackdropLink();
 
         wrl::ComPtr<ixp::ICompositionSupportsSystemBackdrop> icssb;
-        IFC_RETURN(m_backdropLink.As(&icssb));
+        IFC_RETURN(m_backdropLink->AsSystemBackdropTarget(&icssb));
         IFC_RETURN(icssb->put_SystemBackdrop(systemBackdropBrush));
     }
     else

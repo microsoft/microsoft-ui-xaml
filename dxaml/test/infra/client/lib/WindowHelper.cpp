@@ -1521,12 +1521,21 @@ HRESULT WindowHelper::ResetDeviceAndVisuals()
 {
     COM_START_GROUP(L"WindowHelper::ResetDeviceAndVisuals")
     {
+        LogThrow_IfFailed(ResetDeviceAndVisualsWithoutUIThreadTick());
+
+        TickUIThreadAfterDeviceLostIfNeeded();
+    }
+    COM_END
+}
+
+HRESULT WindowHelper::ResetDeviceAndVisualsWithoutUIThreadTick()
+{
+    COM_START_GROUP(L"WindowHelper::ResetDeviceAndVisualsWithoutUIThreadTick")
+    {
         RunOnUIThread([&]() {
             ResetDeviceAndVisualsHelper();
             LogThrow_IfFailed(OnSimulatedDeviceLost());
         });
-
-        TickUIThreadAfterDeviceLostIfNeeded();
     }
     COM_END
 }
@@ -2108,6 +2117,14 @@ std::vector<std::pair<xaml_settings::XamlChangeId, bool>> GetXamlOptionalChanges
             {
                 changeId = xaml_settings::XamlChangeId_DeferContextFlyoutInit;
             }
+            else if (_wcsicmp(name.c_str(), L"GamepadKeyRouting") == 0)
+            {
+                changeId = xaml_settings::XamlChangeId_GamepadKeyRouting;
+            }
+            else if (_wcsicmp(name.c_str(), L"CollectionMoveNotifications") == 0)
+            {
+                changeId = xaml_settings::XamlChangeId_CollectionMoveNotifications;
+            }
 
             if (changeId == xaml_settings::XamlChangeId__Reserved)
             {
@@ -2188,6 +2205,8 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_OptimizeApplyStyles, &mutated);
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DefaultStyleOptimizations, &mutated);
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DeferContextFlyoutInit, &mutated);
+        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_GamepadKeyRouting, &mutated);
+        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_CollectionMoveNotifications, &mutated);
 
         // Apply per-test overrides from XamlOptionalChanges test data.
         for (const auto& [changeId, enabled] : changeOverrides)

@@ -540,7 +540,7 @@ namespace XAMLPerf.ScrollingApp.CS.MUX
             items.Add(new Item("Philippines", "Quoll, eastern", Sightings.Weekly));
             items.Add(new Item("Peru", "Hare, arctic", Sightings.Monthly));
             items.Add(new Item("Madagascar", "Gelada baboon", Sightings.Yearly));
-            items.Add(new Item("North Macedonia", "Booby, masked", Sightings.Daily));
+            items.Add(new Item("Slovenia", "Booby, masked", Sightings.Daily));
             items.Add(new Item("Philippines", "Eastern box turtle", Sightings.Often));
             items.Add(new Item("Saudi Arabia", "Black swan", Sightings.Never));
             items.Add(new Item("Poland", "Cliffchat, mocking", Sightings.Often));
@@ -606,7 +606,7 @@ namespace XAMLPerf.ScrollingApp.CS.MUX
             items.Add(new Item("Guinea", "Black-necked stork", Sightings.Monthly));
             items.Add(new Item("Sri Lanka", "Flamingo, roseat", Sightings.Yearly));
             items.Add(new Item("Brazil", "Greylag goose", Sightings.Once));
-            items.Add(new Item("North Macedonia", "Crested porcupine", Sightings.Daily));
+            items.Add(new Item("Slovenia", "Crested porcupine", Sightings.Daily));
             items.Add(new Item("Sweden", "Pied butcher bird", Sightings.Often));
             items.Add(new Item("Greece", "Boa, emerald green tree", Sightings.Once));
             items.Add(new Item("Poland", "Southern lapwing", Sightings.Yearly));
@@ -1501,7 +1501,7 @@ namespace XAMLPerf.ScrollingApp.CS.MUX
             items.Add(new Item("Netherlands", "Western palm tanager", Sightings.Seldom));
             items.Add(new Item("Iran", "Bird", Sightings.Weekly));
             items.Add(new Item("China", "Bateleur eagle", Sightings.Once));
-            items.Add(new Item("North Macedonia", "Nubian bee-eater", Sightings.Daily));
+            items.Add(new Item("Slovenia", "Nubian bee-eater", Sightings.Daily));
             items.Add(new Item("Russia", "Screamer, crested", Sightings.Seldom));
             items.Add(new Item("United States", "Lilac-breasted roller", Sightings.Daily));
             items.Add(new Item("Greece", "Raccoon, common", Sightings.Weekly));
@@ -1535,7 +1535,7 @@ namespace XAMLPerf.ScrollingApp.CS.MUX
             items.Add(new Item("Sweden", "Squirrel, indian giant", Sightings.Once));
             items.Add(new Item("Pakistan", "Stilt, black-winged", Sightings.Weekly));
             items.Add(new Item("Poland", "North American porcupine", Sightings.Weekly));
-            items.Add(new Item("North Macedonia", "European spoonbill", Sightings.Seldom));
+            items.Add(new Item("Slovenia", "European spoonbill", Sightings.Seldom));
             items.Add(new Item("China", "Red-billed toucan", Sightings.Monthly));
             items.Add(new Item("China", "Red-shouldered glossy starling", Sightings.Daily));
             items.Add(new Item("Zimbabwe", "Bateleur eagle", Sightings.Seldom));
@@ -1751,7 +1751,7 @@ namespace XAMLPerf.ScrollingApp.CS.MUX
             items.Add(new Item("Serbia", "Striated heron", Sightings.Often));
             items.Add(new Item("Sweden", "Yellow-necked spurfowl", Sightings.Daily));
             items.Add(new Item("China", "Capuchin, weeper", Sightings.Weekly));
-            items.Add(new Item("North Macedonia", "African darter", Sightings.Often));
+            items.Add(new Item("Slovenia", "African darter", Sightings.Often));
             items.Add(new Item("China", "Stork, yellow-billed", Sightings.Often));
             items.Add(new Item("Indonesia", "Small-toothed palm civet", Sightings.Often));
             items.Add(new Item("Portugal", "Black-throated cardinal", Sightings.Never));
@@ -1761,7 +1761,7 @@ namespace XAMLPerf.ScrollingApp.CS.MUX
             items.Add(new Item("China", "Cobra, egyptian", Sightings.Monthly));
             items.Add(new Item("China", "Egret, great", Sightings.Daily));
             items.Add(new Item("Cameroon", "Racer, blue", Sightings.Once));
-            items.Add(new Item("North Macedonia", "Crab, sally lightfoot", Sightings.Monthly));
+            items.Add(new Item("Slovenia", "Crab, sally lightfoot", Sightings.Monthly));
             items.Add(new Item("China", "American woodcock", Sightings.Weekly));
             items.Add(new Item("China", "Bandicoot, southern brown", Sightings.Daily));
             items.Add(new Item("Philippines", "Bleu, blue-breasted cordon", Sightings.Often));

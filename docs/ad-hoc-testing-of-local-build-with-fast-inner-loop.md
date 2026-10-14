@@ -16,7 +16,7 @@ You should also be able to build this repo. See [developer guide](./building/dev
 
 # Steps
 
-## Initial Build of Lifted Xaml
+## Initial Build
 Build the repo as normal. See the [developer guide](./building/developer-guide.md) for more information.
 In short, run `init.cmd` and then run `build.cmd`. If you want you can skip building the test code by running `build.cmd product`.
 The test code is not necessary for this scenario.
@@ -27,7 +27,7 @@ Assuming the build completes sucessfully it will create a local WinUI component 
 Launch Visual Studio.  
 Create a new project.  
 Create a new "Blank App, Packaged (WinUI in Desktop)" app for either C# or C++.  
-Create this project in a regular directory on your machine - i.e. not in the lifted xaml repo.
+Create this project in a regular directory on your machine - i.e. not in this repo.
 Visual Studio will create a new WinUI app that is targetting the latest public release of WinAppSDK.  
 As a validation, verify that you can build and launch this app.
 
@@ -61,14 +61,20 @@ Add the following text to that file:
 ```
 Update the path to PackageStore so that it points to the PackageStore directory in your local WinUI repo.
 
-Adding this config does two things. First, it adds the location of the 'PackageStore' directory from your local lifted 
-xaml git repo to the list of locations that nuget.exe will search for packages. This will allow the Visual Studio project
+Adding this config does two things. First, it adds the location of the 'PackageStore' directory from your local WinUI
+git repo to the list of locations that nuget.exe will search for packages. This will allow the Visual Studio project
 to target this local build. 
 
 Second, it updates nuget to cache all its packages in a subdirectory of this directory instead of using the global package 
 cache from the machine (e.g. `C:\Users\alias\.nuget\packages`). This is important since we want to avoid the local WinUI component package 
 being cached globally since that can cause issues. It does mean that ALL the nuget packages that this project depends on 
 will get cached here, which is a little redundant, but it is a worthwhile trade-off.
+
+> [!NOTE]
+> Setting `NUGET_PACKAGES` is not supported for this fast inner-loop workflow and will cause problems with local
+> package-cache isolation. It overrides `globalPackagesFolder`, so a shared/global `NUGET_PACKAGES` location bypasses
+> the app's local `packages` folder and causes stale cached bits to be reused (NuGet treats the fixed `3.0.0-dev`
+> version as immutable). In cmd.exe, check with `set NUGET_PACKAGES`; if set, clear it and restart Visual Studio.
 
 ### Update the Project Target Platform (e.g. to x64)
 Open the .sln in Visual Studio again. 
@@ -83,16 +89,39 @@ all (x86, x64, arm64).
 ### Update the Package References
 In Visual Studio, use Tools -> Nuget Package Manager -> Manage Nuget Packages for Solution.
 Make sure you have the `Include prerelease` checkbox checked to ensure that the local WinUI component package shows up.
-Update your app to target the local WinUI component package instead of the public stable package.
+Your local build produces a *component* package named `Microsoft.WindowsAppSDK.WinUI`. This is a different package ID
+from the `Microsoft.WindowsAppSDK` meta-package that the Visual Studio template references, so this is not a version
+update: you must **remove** the `Microsoft.WindowsAppSDK` reference and **add** `Microsoft.WindowsAppSDK.WinUI`.
 
-If you prefer, instead of using the UI, you can also do this by modifying the .csproj and updating the `<PackageReference>` element.
+Instead of using the UI, you can edit the .csproj directly. Replace:
+```xml
+<PackageReference Include="Microsoft.WindowsAppSDK" Version="<template-version>" />
+```
+with the version produced by your local build (`3.0.0-dev` in the examples here):
+```xml
+<PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="3.0.0-dev" />
+```
+
+Do not reference both packages. If you do, restore will still succeed, but the build will fail with:
+```
+Microsoft.WindowsAppSDK.ComponentReference.targets(123,9): error : One or more referenced Windows App SDK components
+are newer than the versions expected by the Microsoft.WindowsAppSDK.Runtime package:
+    Microsoft.WindowsAppSDK.WinUI: Microsoft.WindowsAppSDK.Runtime expected version <version>, but version 3.0.0-dev
+    was referenced..
+```
+Neither fix suggested by that error applies here: the local package's version is fixed, and setting
+`WindowsAppSDKSelfContained` hides the symptom without correcting the package graph. Remove the meta-package instead.
+
+Note that the `nuget.config` above does not clear the default package sources, and nuget.org must remain reachable.
+Only the WinUI component package comes from your local `PackageStore`; its dependencies (`Microsoft.WindowsAppSDK.Base`,
+`.Foundation`, `.InteractiveExperiences` and `Microsoft.Web.WebView2`) are restored from nuget.org.
 
 Rebuild and launch your app with F5. 
 
 You should now have your test app running against your local build. You can try out your scenario by updating the test
 app.
 
-You will probably want to iterate on your changes in the lifted xaml repo. Below describes a good inner loop for this.
+You will probably want to iterate on your changes in this repo. Below describes a good inner loop for this.
 
 ## Inner Loop
 
@@ -115,9 +144,9 @@ like this:
 `<repo-root>\BuildOutput\obj\amd64chk\dxaml\xcp\dxaml\dllsrv\winrt\native\Microsoft.ui.xaml.pdb`. If the 
 symbols are not being loaded (or are being loaded from a different location) something is likely wrong.
 
-### Build your changes in lifted-xaml repo
+### Build your changes in the WinUI repo
 
-Make whatever code changes you need in the lifted xaml repo. Before building make sure to stop debugging your app in Visual Studio.
+Make whatever code changes you need in this repo. Before building make sure to stop debugging your app in Visual Studio.
 
 Build your changes. If you are making changes to Microsoft.UI.Xaml.dll the quickest way to rebuild that dll is
 
@@ -173,8 +202,12 @@ of the package locally in the package cache and it is those files that are used 
 
 So, after you build a new version of the local WinUI component package, you want to delete it from the cache to force Visual Studio to pick
 up the changes. Earlier in this document we described creating the nuget.config file which pointed to a local package 
-cache. Go to that directory now in Explorer and delete 'microsoft.windowsappsdk'. 
+cache. Go to that directory now in Explorer and delete `microsoft.windowsappsdk.winui\<version>`.
+
+Note that the folder is named after the component package you referenced above, not the `Microsoft.WindowsAppSDK`
+meta-package. `<version>` is the version your local build produced - the same one in your `<PackageReference>`, which
+you can confirm from the .nupkg filename in `<repo-root>\PackageStore`. Deleting only that subfolder leaves any other
+cached versions of the package intact.
 
 Now when you build, Visual Studio will pick up the new local WinUI component package from your local repo and unpack it into the local
 package cache again so you can start using the updated build.
-

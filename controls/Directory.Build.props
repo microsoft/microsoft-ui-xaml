@@ -6,8 +6,6 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <SkipXamlCompilerProjectReferences Condition="'$(SkipXamlCompilerProjectReferences)' == ''">true</SkipXamlCompilerProjectReferences>
-    <!-- Chart carries no XAML. -->
-    <UseXamlCompiler Condition="'$(MSBuildProjectName)' == 'Microsoft.UI.Xaml.Controls.Chart'">false</UseXamlCompiler>
     <UseXamlCompiler Condition="'$(UseXamlCompiler)'==''">true</UseXamlCompiler>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using System;
-using Debug=Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal.Debug;
+using Debug = System.Diagnostics.Debug;
 using System.Collections.Generic;
 using System.Reflection.Adds;
 using System.Reflection.Metadata;
@@ -512,7 +512,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
             if (returnParameter == null)
             {
-                returnParameter = this.Resolver.Policy.GetFakeParameterInfo(this, this.ReturnType, -1);
+                returnParameter = CreateSyntheticReturnParameter();
             }
             m_returnParameter = returnParameter;
 
@@ -526,6 +526,17 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
 
             return parameters;
+        }
+
+        /// <summary>
+        /// Creates the return <see cref="ParameterInfo"/> for methods that have no metadata row for it.
+        /// Compilers only emit that row when the return value has a name or attributes, so the custom
+        /// modifiers have to be taken from the signature instead. Otherwise callers would miss things
+        /// like the 'modreq(IsExternalInit)' that marks an 'init'-only property setter.
+        /// </summary>
+        private ParameterInfo CreateSyntheticReturnParameter()
+        {
+            return new SimpleParameterInfo(this, this.ReturnType, -1, m_descriptor.ReturnParameter.CustomModifiers);
         }
 
         public override ParameterInfo ReturnParameter
@@ -545,7 +556,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 //safety to make the non-readonly field be only assigned at one place.
                 if (m_returnParameter == null)
                 {
-                    return this.Resolver.Policy.GetFakeParameterInfo(this, this.ReturnType, -1);
+                    return CreateSyntheticReturnParameter();
                 }
                 else
                 {

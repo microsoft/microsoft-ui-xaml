@@ -99,6 +99,12 @@ namespace BindTestbed
             return string.Format("{0} {1}", str, number.ToString());
         }
 
+        // Returns a nullable bool so a bool?-returning function can be bound to Visibility (GitHub microsoft-ui-xaml#8644).
+        public bool? GetIsCheckedNullable()
+        {
+            return _isChecked;
+        }
+
         private void RaisePropertyChanged([CallerMemberName]string propertyName = "")
         {
             if (null != PropertyChanged)
@@ -117,11 +123,7 @@ namespace BindTestbed
 
         public static explicit operator Thickness(CastingTests inst)
         {
-#if DESKTOP
             return new Thickness(5.0,5.0,5.0,5.0);
-#else
-            return ThicknessHelper.FromUniformLength(5.0);
-#endif
         }
     }
 

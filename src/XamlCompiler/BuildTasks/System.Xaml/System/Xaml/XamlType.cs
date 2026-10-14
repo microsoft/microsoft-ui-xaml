@@ -886,6 +886,18 @@ namespace System.Xaml
             {
                 return false;
             }
+
+            // If the type has any required properties, we cannot construct it from XAML.
+            // That is because an expression such as 'new Foo()' would not compile, as it
+            // would not be setting any required properties. We can investigate adding
+            // support for this in the future, but admittedly it's an extremely niche
+            // scenario. For the vast majority of cases, correctly treating the type as
+            // not constructible is sufficient, as it will still generate valid C# code.
+            if (TypeReflector.HasRequiredMemberAttribute(underlyingType))
+            {
+                return false;
+            }
+
             // Value types have built-in default constructor
             if (underlyingType.IsValueType)
             {

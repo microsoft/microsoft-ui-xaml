@@ -10,11 +10,16 @@
 #include "InkStrokeContainer.g.h"
 #include "InkInputProcessingConfiguration.g.h"
 #include "InkInputConfiguration.g.h"
+#include "InkStrokeInput.g.h"
+#include "InkUnprocessedInput.g.h"
+#include "InkSynchronizer.g.h"
 #include "InkPresenter.g.h"
 #include <windows.ui.input.inking.h>
 #include <inkpresenterdesktop.h>
+#include <dcomp.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Storage.Streams.h>
+#include <winrt/Windows.UI.Core.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <functional>
 #include <vector>
@@ -26,13 +31,40 @@
 namespace inking = winrt::Windows::UI::Input::Inking;
 namespace muxc = winrt::Microsoft::UI::Xaml::Controls;
 
+// The IInkCommitRequestHandler the OS presenter calls (OnCommitRequested) on every wet->dry transition
+// - normal drying and custom-dry EndDry - so the host commits the shared DComposition device and the
+// change is presented. Defined here (rather than privately in InkCanvas.cpp) so the InkPresenter proxy
+// can re-create it when it re-creates the OS presenter to activate custom drying at runtime.
+struct InkCommitRequestHandler : winrt::implements<InkCommitRequestHandler, IInkCommitRequestHandler>
+{
+    InkCommitRequestHandler(winrt::com_ptr<IDCompositionDevice> device)
+        : m_device(device) {}
+
+    IFACEMETHODIMP OnCommitRequested() override
+    {
+        if (m_device)
+        {
+            return m_device->Commit();
+        }
+        return S_OK;
+    }
+
+private:
+    winrt::com_ptr<IDCompositionDevice> m_device;
+};
+
 // Marshals a work item onto the ink host thread through the owning InkPresenter proxy, passing the
 // OS presenter to the lambda. No-op if the proxy has already been destroyed. The child proxies
 // (InkStrokeContainer / InkInputProcessingConfiguration / InkInputConfiguration) call these instead
 // of reaching into the proxy's work queue directly; the queue lives on the InkPresenter proxy, which
 // is the sole owner of the thread-affine OS presenter and the ink host reference.
 void RunOnInkHostThread(winrt::weak_ref<muxc::InkPresenter> const& presenter, std::function<void(inking::InkPresenter const&)> workItem);
-void RunOnInkHostThreadSync(winrt::weak_ref<muxc::InkPresenter> const& presenter, std::function<void(inking::InkPresenter const&)> workItem, bool propagateException = false);
+// Synchronous marshal onto the ink host thread. A work-item failure is rethrown on the calling thread,
+// so ink-thread errors reach the app rather than being reported as a default-constructed result.
+// pumpMessages uses a COM-pumping wait (COWAIT_DISPATCH_CALLS) instead of a plain blocking wait -
+// required for OLE-clipboard work that can call back into the UI-thread clipboard owner while this wait
+// is in progress; a non-pumping wait would deadlock. Pass false for ordinary getters.
+void RunOnInkHostThreadSync(winrt::weak_ref<muxc::InkPresenter> const& presenter, std::function<void(inking::InkPresenter const&)> workItem, bool pumpMessages);
 
 // Snapshot of the InkStroke objects handed to InkPresenter.StrokesCollected. InkStroke is
 // agile, so the strokes are copied on the ink thread and this args object is re-raised on
@@ -87,6 +119,9 @@ public:
     winrt::Windows::Foundation::Rect SelectWithLine(winrt::Windows::Foundation::Point const& from, winrt::Windows::Foundation::Point const& to);
     winrt::Windows::Foundation::Rect SelectWithPolyLine(winrt::Windows::Foundation::Collections::IIterable<winrt::Windows::Foundation::Point> const& points);
     winrt::Windows::Foundation::Rect BoundingRect();
+    void CopySelectedToClipboard();
+    winrt::Windows::Foundation::Rect PasteFromClipboard(winrt::Windows::Foundation::Point const& position);
+    bool CanPasteFromClipboard();
 
 private:
     winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
@@ -132,6 +167,120 @@ private:
     bool m_isEraserInputEnabled{ true };
 };
 
+// Mirror of Windows.UI.Input.Inking.InkStrokeInput. Holds the app's handlers; the owning
+// InkPresenter proxy subscribes to the OS presenter's InkStrokeInput on the ink thread and calls
+// the Raise* helpers (marshaled to the UI thread) to fire these events. Agile (default), so the
+// InkPresenter can reach it from the ink thread to raise.
+class InkStrokeInput :
+    public winrt::implementation::InkStrokeInputT<InkStrokeInput>
+{
+public:
+    using Handler = winrt::Windows::Foundation::TypedEventHandler<muxc::InkStrokeInput, winrt::Windows::UI::Core::PointerEventArgs>;
+
+    winrt::event_token StrokeStarted(Handler const& h) { return m_strokeStarted.add(h); }
+    void StrokeStarted(winrt::event_token const& t) noexcept { m_strokeStarted.remove(t); }
+    winrt::event_token StrokeContinued(Handler const& h) { return m_strokeContinued.add(h); }
+    void StrokeContinued(winrt::event_token const& t) noexcept { m_strokeContinued.remove(t); }
+    winrt::event_token StrokeEnded(Handler const& h) { return m_strokeEnded.add(h); }
+    void StrokeEnded(winrt::event_token const& t) noexcept { m_strokeEnded.remove(t); }
+    winrt::event_token StrokeCanceled(Handler const& h) { return m_strokeCanceled.add(h); }
+    void StrokeCanceled(winrt::event_token const& t) noexcept { m_strokeCanceled.remove(t); }
+
+    // Internal (not on the winmd surface): raise helpers called by the InkPresenter proxy.
+    void RaiseStrokeStarted(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_strokeStarted(*this, a); }
+    void RaiseStrokeContinued(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_strokeContinued(*this, a); }
+    void RaiseStrokeEnded(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_strokeEnded(*this, a); }
+    void RaiseStrokeCanceled(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_strokeCanceled(*this, a); }
+
+    // Back-pointer to the owning presenter mirror (UWP parity). Weak, so it never keeps the owner
+    // alive; returns null once the owner is gone. Set by InkPresenter::Start (post-construction).
+    muxc::InkPresenter InkPresenter() { return m_owner.get(); }
+    void SetOwner(winrt::weak_ref<muxc::InkPresenter> const& owner) { m_owner = owner; }
+
+private:
+    winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
+    winrt::event<Handler> m_strokeStarted;
+    winrt::event<Handler> m_strokeContinued;
+    winrt::event<Handler> m_strokeEnded;
+    winrt::event<Handler> m_strokeCanceled;
+};
+
+// Mirror of Windows.UI.Input.Inking.InkUnprocessedInput. Same marshaling model as InkStrokeInput.
+class InkUnprocessedInput :
+    public winrt::implementation::InkUnprocessedInputT<InkUnprocessedInput>
+{
+public:
+    using Handler = winrt::Windows::Foundation::TypedEventHandler<muxc::InkUnprocessedInput, winrt::Windows::UI::Core::PointerEventArgs>;
+
+    winrt::event_token PointerEntered(Handler const& h) { return m_pointerEntered.add(h); }
+    void PointerEntered(winrt::event_token const& t) noexcept { m_pointerEntered.remove(t); }
+    winrt::event_token PointerHovered(Handler const& h) { return m_pointerHovered.add(h); }
+    void PointerHovered(winrt::event_token const& t) noexcept { m_pointerHovered.remove(t); }
+    winrt::event_token PointerExited(Handler const& h) { return m_pointerExited.add(h); }
+    void PointerExited(winrt::event_token const& t) noexcept { m_pointerExited.remove(t); }
+    winrt::event_token PointerPressed(Handler const& h) { return m_pointerPressed.add(h); }
+    void PointerPressed(winrt::event_token const& t) noexcept { m_pointerPressed.remove(t); }
+    winrt::event_token PointerMoved(Handler const& h) { return m_pointerMoved.add(h); }
+    void PointerMoved(winrt::event_token const& t) noexcept { m_pointerMoved.remove(t); }
+    winrt::event_token PointerReleased(Handler const& h) { return m_pointerReleased.add(h); }
+    void PointerReleased(winrt::event_token const& t) noexcept { m_pointerReleased.remove(t); }
+    winrt::event_token PointerLost(Handler const& h) { return m_pointerLost.add(h); }
+    void PointerLost(winrt::event_token const& t) noexcept { m_pointerLost.remove(t); }
+
+    // Internal (not on the winmd surface): raise helpers called by the InkPresenter proxy.
+    void RaisePointerEntered(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_pointerEntered(*this, a); }
+    void RaisePointerHovered(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_pointerHovered(*this, a); }
+    void RaisePointerExited(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_pointerExited(*this, a); }
+    void RaisePointerPressed(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_pointerPressed(*this, a); }
+    void RaisePointerMoved(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_pointerMoved(*this, a); }
+    void RaisePointerReleased(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_pointerReleased(*this, a); }
+    void RaisePointerLost(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_pointerLost(*this, a); }
+
+    // Back-pointer to the owning presenter mirror (UWP parity). Weak, so it never keeps the owner
+    // alive; returns null once the owner is gone. Set by InkPresenter::Start (post-construction).
+    muxc::InkPresenter InkPresenter() { return m_owner.get(); }
+    void SetOwner(winrt::weak_ref<muxc::InkPresenter> const& owner) { m_owner = owner; }
+
+private:
+    winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
+    winrt::event<Handler> m_pointerEntered;
+    winrt::event<Handler> m_pointerHovered;
+    winrt::event<Handler> m_pointerExited;
+    winrt::event<Handler> m_pointerPressed;
+    winrt::event<Handler> m_pointerMoved;
+    winrt::event<Handler> m_pointerReleased;
+    winrt::event<Handler> m_pointerLost;
+};
+
+// Mirror of Windows.UI.Input.Inking.InkSynchronizer, returned by InkPresenter.ActivateCustomDrying.
+// Lets the app render committed ("dry") ink itself: BeginDry hands back the strokes the presenter just
+// committed and suppresses the presenter's own dry rendering; EndDry releases the wet-ink layer once
+// the app has drawn them. UWP returns the OS InkSynchronizer directly; this mirror exists only because
+// that object is thread-affine to the ink thread, so it forwards BeginDry/EndDry through the owning
+// InkPresenter proxy's work queue and holds no dry-transaction state of its own. The InkPresenter keeps
+// this projected mirror, never the raw OS inking::InkSynchronizer.
+class InkSynchronizer :
+    public winrt::implementation::InkSynchronizerT<InkSynchronizer>
+{
+public:
+    InkSynchronizer(winrt::weak_ref<muxc::InkPresenter> const& owner) : m_owner(owner) {}
+
+    winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> BeginDry();
+    void EndDry();
+
+    // Internal (not on the winmd surface). Injects the OS InkSynchronizer (from the presenter's OS
+    // ActivateCustomDrying) into this UI-thread-created proxy. Called on the ink thread, where the OS
+    // synchronizer is valid.
+    void Initialize(inking::InkSynchronizer const& osSynchronizer) noexcept { m_osSynchronizer = osSynchronizer; }
+
+private:
+    winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
+
+    // The OS InkSynchronizer this mirror fronts (from OS ActivateCustomDrying). Thread-affine to the ink
+    // thread; only ever touched inside ink-thread work items. Null until custom drying is activated.
+    inking::InkSynchronizer m_osSynchronizer{ nullptr };
+};
+
 // Manipulable subset of Windows.UI.Input.Inking.InkPresenter. The OS presenter can only be created
 // and called on the IInkDesktopHost ink thread, so this proxy is the single owner of it: it holds
 // the ink host reference (handed in at construction by the owning InkCanvas), creates the OS
@@ -155,9 +304,16 @@ public:
 
     void SetPredefinedConfiguration(inking::InkPresenterPredefinedConfiguration const& configuration);
 
+    muxc::InkHighContrastAdjustment HighContrastAdjustment() const noexcept;
+    void HighContrastAdjustment(muxc::InkHighContrastAdjustment const& value);
+
     muxc::InkStrokeContainer StrokeContainer();
     muxc::InkInputProcessingConfiguration InputProcessingConfiguration();
     muxc::InkInputConfiguration InputConfiguration();
+    muxc::InkStrokeInput StrokeInput();
+    muxc::InkUnprocessedInput UnprocessedInput();
+
+    muxc::InkSynchronizer ActivateCustomDrying();
 
     winrt::event_token StrokesCollected(winrt::Windows::Foundation::TypedEventHandler<muxc::InkPresenter, muxc::InkStrokesCollectedEventArgs> const& handler);
     void StrokesCollected(winrt::event_token const& token);
@@ -175,7 +331,8 @@ public:
     // been created). Called by the child proxies (via RunOnInkHostThread) and by InkCanvas (for
     // SetRootVisual / SetSize).
     void QueueInkPresenterWorkItem(std::function<void(inking::InkPresenter const&)> workItem);
-    void RunInkPresenterWorkItemSync(std::function<void(inking::InkPresenter const&)> workItem, bool propagateException = false);
+    // pumpMessages uses a COM-pumping wait (see the free RunOnInkHostThreadSync); pass false for ordinary getters.
+    void RunInkPresenterWorkItemSync(std::function<void(inking::InkPresenter const&)> workItem, bool pumpMessages);
 
     // Internal (not on the winmd surface). Shows/hides the ruler / protractor stencils on the OS
     // presenter. InkPresenterRuler / InkPresenterProtractor are thread-affine, so they are created
@@ -216,15 +373,25 @@ private:
 
     // UI-thread cache of the last configured values. Initialized to the same defaults
     // InitializeOsPresenter applies on the ink thread.
-    winrt::CoreInputDeviceTypes m_inputDeviceTypes{
-        winrt::CoreInputDeviceTypes::Mouse | winrt::CoreInputDeviceTypes::Pen | winrt::CoreInputDeviceTypes::Touch };
+    winrt::CoreInputDeviceTypes m_inputDeviceTypes{ winrt::CoreInputDeviceTypes::Pen };
     bool m_isInputEnabled{ true };
     winrt::InkDrawingAttributes m_defaultDrawingAttributes{ nullptr };
+
+    // UI-thread cache of the high-contrast adjustment, mirroring the OS presenter default
+    // (UseSystemColorsWhenNecessary). Marshaled to the ink thread on set.
+    muxc::InkHighContrastAdjustment m_highContrastAdjustment{ muxc::InkHighContrastAdjustment::UseSystemColorsWhenNecessary };
 
     // Lazily created, cached child objects (stable instances, like the OS presenter).
     muxc::InkStrokeContainer m_strokeContainer{ nullptr };
     muxc::InkInputProcessingConfiguration m_inputProcessingConfiguration{ nullptr };
     muxc::InkInputConfiguration m_inputConfiguration{ nullptr };
+    muxc::InkStrokeInput m_strokeInput{ nullptr };
+    muxc::InkUnprocessedInput m_unprocessedInput{ nullptr };
+
+    // Custom drying: the synchronizer handed back by ActivateCustomDrying (UI-thread cached; repeated
+    // calls return the same instance, UWP parity). It fronts the OS InkSynchronizer; this proxy keeps
+    // only this projected wrapper, never the raw OS one.
+    muxc::InkSynchronizer m_customDrySynchronizer{ nullptr };
 
     // Ruler / protractor stencils bound to the OS presenter. Thread-affine to the ink
     // thread, so they are only ever constructed and touched inside serialized ink-thread

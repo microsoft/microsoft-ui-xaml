@@ -27,19 +27,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         //
         BEGIN_TEST_METHOD(CanHideAndShowWindow)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can hide and show the window.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanMoveWindow)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can move the window.")
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore, WindowsCore") // This scenario is not supported on OneCore. Excluded on WindowsCore due to Bug TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore, WindowsCore") // This scenario is not supported on OneCore.
             TEST_METHOD_PROPERTY(L"Ignore", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanGetSetTitle)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can get and set the window title.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         //
@@ -56,10 +56,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(WindowTopBorderPainting)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the Windows 10 Window ECITB border erase without changing either entry point's geometry.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
 #ifdef MUX_PRERELEASE
         // Experimental Width/Height properties on Window are only present in prerelease builds.
         BEGIN_TEST_METHOD(CanGetSetWindowWidthHeight)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the experimental Width/Height properties on Window can be read and written in DIPs.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowWidthHeightBeforeActivationUsesFinalConfiguration)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates exact pending sizes before activation, application with the final title-bar configuration and a sizing-capable presenter, and later native resizing.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowWidthHeightSettersPreserveOtherAxis)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates single-axis sizing, position preservation, pixel rounding, and unchanged live geometry in non-restored states.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
@@ -70,6 +85,41 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(WindowWidthHeightRejectsInvalidValues)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that put_Width/put_Height return E_INVALIDARG for negative/NaN/infinite values, with a helpful specific error message.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowWidthHeightClampsLargeFiniteValues)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the 65,535-pixel outer-size clamp for finite Width/Height requests, both title-bar modes, and realized restored sizes.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowWidthHeightAfterClose)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates frozen Width/Height and ignored assignments after close across activation, restored, minimized, maximized, and non-default presenter states.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowWidthHeightAfterCloseValidatesArguments)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates preserved pending requests, invalid arguments, and ignored finite Width/Height assignments after close, including the largest finite double.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowWidthHeightClosesDuringResize)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that closing from SizeChanged preserves resolved and pending sizes after the interrupted resize returns.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowWidthHeightSizeChangedReentrancy)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates restored sizes when SizeChanged switches presenters or toggles the title bar during a Width setter.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowWidthHeightAfterCloseChecksThread)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that Width/Height getters and setters enforce thread affinity both before and after close.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowWidthHeightDuringClose)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates pending and live sizing during Closed handlers, canceled close, and preservation of the final handler's native resize.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
@@ -119,12 +169,22 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ToggleECITBPreservesSetClientSize)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that a set Width/Height is preserved across ExtendsContentIntoTitleBar toggles - order-independent and across an on/off round-trip.")
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that setting Height preserves the client size across ExtendsContentIntoTitleBar toggles - order-independent and across an on/off round-trip.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ToggleECITBWithoutSetLeavesWindowSizeUnchanged)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that toggling ExtendsContentIntoTitleBar without ever setting Width/Height leaves the outer window size unchanged.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ToggleECITBPreservesClientHeightOnlyAfterHeightSet)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that only setting Height opts into preserving the current client height across title-bar toggles, including after a native resize.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ToggleECITBInNonRestoredStateDoesNotPreserveClientHeight)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that title-bar toggles while minimized, maximized, full screen, or compact overlay do not resize the restored window to preserve client height.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
@@ -189,6 +249,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 #endif // MUX_PRERELEASE
+
+        BEGIN_TEST_METHOD(ContentSetInMarkupIsReleasedWhenCleared)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the markup-loaded Window content tree is released (not held for the Window's lifetime) once Window.Content is cleared.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
 
     };
 

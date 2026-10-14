@@ -6,6 +6,7 @@
 #include "MediaPlayerElement.g.h"
 #include "MediaTransportControls.g.h"
 #include "NamespaceAliases.h"
+#include "MediaPlayerExtensions.h"
 #include <Windows.Media.Playback.h>
 #include <FrameworkUdk/MediaPlayerExtension.h>
 #include <FrameworkUdk/TimedMetadataTrackExtension.h>
@@ -784,9 +785,13 @@ CTimedTextSource::RemoveMediaPlayerEventRegistrations()
     {
         if (m_mediaSourceChangedToken.value != 0)
         {
-            ctl::ComPtr<wmp::IMediaPlayer3> spMediaPlayer3;
-            IFC_RETURN(m_spMediaPlayer.As(&spMediaPlayer3));
-            IFC_RETURN(spMediaPlayer3->remove_SourceChanged(m_mediaSourceChangedToken));
+            // If the app closed the underlying MediaEngine before teardown, there is nothing to unsubscribe; just drop the token.
+            if (!MediaPlayer_IsClosed(m_spMediaPlayer.Get()))
+            {
+                ctl::ComPtr<wmp::IMediaPlayer3> spMediaPlayer3;
+                IFC_RETURN(m_spMediaPlayer.As(&spMediaPlayer3));
+                IFC_RETURN(spMediaPlayer3->remove_SourceChanged(m_mediaSourceChangedToken));
+            }
             m_mediaSourceChangedToken.value = 0;
         }
     }

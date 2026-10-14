@@ -30,7 +30,11 @@ exit /b 0
 :begin
 pushd %~dp0
 
-PATH %PATH%;%~dp0\tools
+rem VsDevCmd.bat changes to the Visual Studio Installer directory and expects to
+rem run vswhere.exe by name from there. Agents set NoDefaultCurrentDirectoryInExePath=1,
+rem which disables current-directory executable lookup. Add the Installer directory
+rem to PATH so that lookup still works.
+set "PATH=%PATH%;%~dp0tools;%ProgramFiles(x86)%\Microsoft Visual Studio\Installer"
 set PrereleaseArg=
 
 setlocal enableextensions enabledelayedexpansion

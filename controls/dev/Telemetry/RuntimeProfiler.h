@@ -70,7 +70,11 @@ namespace RuntimeProfiler
         ProfId_InkCanvas,
         ProfId_SystemBackdropElement,
         ProfId_TableView,
-        ProfId_Size // ProfId_Size is the last always. 
+        ProfId_SortIndicator,
+        ProfId_ResizeGripper,
+        ProfId_GroupedSourceAdapter,
+        ProfId_HierarchicalSourceAdapter,
+        ProfId_Size // ProfId_Size is the last always.
     } ProfilerClassId;
 
     //  Ditto above...

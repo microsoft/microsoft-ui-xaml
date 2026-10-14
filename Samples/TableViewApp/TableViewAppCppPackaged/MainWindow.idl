@@ -1,0 +1,18 @@
+namespace TableViewAppCppPackaged
+{
+    [bindable]
+    [default_interface]
+    runtimeclass Person
+    {
+        Person();
+        String Name;
+        Int32 Age;
+    }
+
+    [default_interface]
+    runtimeclass MainWindow : Microsoft.UI.Xaml.Window
+    {
+        MainWindow();
+        Windows.Foundation.Collections.IObservableVector<IInspectable> People{ get; };
+    }
+}

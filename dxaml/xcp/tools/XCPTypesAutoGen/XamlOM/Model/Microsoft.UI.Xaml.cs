@@ -3773,10 +3773,18 @@ namespace Microsoft.UI.Xaml
         void RecycleElement(ElementFactoryRecycleArgs args);
     }
 
+    [DXamlIdlGroup("Controls")]
+    [CodeGen(CodeGenLevel.LookupOnly)]
+    [ReturnTypeParameterName("element")]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    public delegate Microsoft.UI.Xaml.UIElement DataTemplateElementFactory();
+
     [NativeName("CDataTemplate")]
     [Guids(ClassGuid = "2ba5f834-0618-4292-bb15-ea4f88f4ecd2")]
     [TypeTable(IsExcludedFromVisualTree = true)]
     [Implements(typeof(Microsoft.UI.Xaml.IElementFactory), 1)]
+    [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [DXamlIdlGroup("Controls")]
     [CodeGen(partial: true)]
     public class DataTemplate
@@ -3791,6 +3799,10 @@ namespace Microsoft.UI.Xaml
         }
 
         public DataTemplate() { }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [FactoryMethodName("CreateInstanceFromCallback")]
+        public DataTemplate(Microsoft.UI.Xaml.DataTemplateElementFactory elementFactory) { }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [TypeTable(IsExcludedFromCore = true)]
@@ -3909,6 +3921,7 @@ namespace Microsoft.UI.Xaml
     }
 
     [NativeName("CSetter")]
+    [ContentProperty("Value")]
     [Guids(ClassGuid = "7c425f15-7da5-4f20-b7cc-39527248803b")]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.WinAppSDK_2_2)]
     public sealed class Setter

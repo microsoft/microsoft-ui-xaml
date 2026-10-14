@@ -569,6 +569,36 @@ The Sample App Tests install, launch and interact with the Sample Apps via UI Au
 libraries as the MUXControls tests. The source code is under `controls\test\MUXControls.Test\ScenarioAppTests`. For now,
 these tests are compiled into MUXControls.Test.dll.
 
+### How is the WinUI Gallery test data produced?
+WinUI Gallery test data is generated entirely from public repository content. Initialize the
+`Samples\WinUIGallery` submodule before building:
+
+```shell
+git submodule update --init --recursive
+```
+
+The source data is
+`Samples\WinUIGallery\WinUIGallery\SampleSupport\Data\ControlInfoData.json`. The
+`GenerateWinUIGalleryTestData` target in `controls\test\MUXControls.Test\MUXControls.Test.csproj`
+runs after the test project builds when that JSON file is present. It invokes
+`controls\test\MUXControls.Test\ScenarioAppTests\GenerateWinUIGalleryTestData.ps1` and writes
+`WinUIGalleryTestData.xml` to the test output directory.
+
+The generated XML contains a table for each Gallery group and a row for each page. Each row provides
+the section name, page name, and expected page description used by
+`controls\test\MUXControls.Test\ScenarioAppTests\WinUIGalleryDesktopTests.cs`. When a scenario test payload is created,
+`test\CreateTestPayload.ps1` copies the XML next to the test binaries.
+
+The standalone WinUI Gallery tests also consume the same public JSON directly:
+
+* `Samples\WinUIGallery\tests\WinUIGallery.UnitTests` verifies that the Gallery data source loads
+  the expected groups.
+* `Samples\WinUIGallery\tests\WinUIGallery.UITests` copies the JSON to its output and uses it to
+  generate accessibility test cases for Gallery pages.
+
+No private test-data source or private storage location is required. If the submodule is not
+initialized, the MUX test-data generation target is skipped instead of failing the build.
+
 ### How do I run the Sample App Tests?
 First you need to build the sample apps. They do not build by default. Run "build.cmd samples" from the root of the repo.
 

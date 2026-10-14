@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-using Debug=Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal.Debug;
-using Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal;
+using Debug = System.Diagnostics.Debug;
 using System.Collections.Generic;
 using System;
 using System.Text;
@@ -470,14 +469,19 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             if (target.IsSubclassOf(current))
                 return true;
 
-            // true if this type a base type on one of the interface impl
-            Type[] interfaces = target.GetInterfaces();
-            for (int i = 0; i < interfaces.Length; i++)
+            // A concrete metadata class cannot be satisfied by an interface.
+            // Subclasses were checked above; System.Object is handled below.
+            if (current.GetType() != typeof(MetadataOnlyTypeDef) || current.IsInterface)
             {
-                if (interfaces[i].Equals(current))
-                    return true;
-                if (current.IsAssignableFrom(interfaces[i]))
-                    return true;
+                // true if this type a base type on one of the interface impl
+                Type[] interfaces = target.GetInterfaces();
+                for (int i = 0; i < interfaces.Length; i++)
+                {
+                    if (interfaces[i].Equals(current))
+                        return true;
+                    if (current.IsAssignableFrom(interfaces[i]))
+                        return true;
+                }
             }
 
             // if c is a generic type parameter and the current Type represents one of the constraints of c

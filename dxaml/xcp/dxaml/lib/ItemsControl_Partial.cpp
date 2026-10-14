@@ -2332,7 +2332,10 @@ _Check_return_ HRESULT ItemsControl::GetCurrentTransitionContext(
     {
         themeTransitionContext = ThemeTransitionContext::SingleDeleteList;
     }
-    // If there is Add and Delete ticks, we will consider as MultipleAppList since there is no separate Animation for Add/Delete.
+    else if (m_elementCountAddedThisLayoutTick > 0 && m_elementCountRemovedThisLayoutTick > 0)
+    {
+        themeTransitionContext = ThemeTransitionContext::MixedOperationsList;
+    }
     else if (m_elementCountAddedThisLayoutTick > 0)
     {
         // if multiple items gets added/removed

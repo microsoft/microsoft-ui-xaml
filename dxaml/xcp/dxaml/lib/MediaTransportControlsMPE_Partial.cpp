@@ -120,20 +120,24 @@ MediaTransportControls::InitializeVisualStateFromMPE()
         }
 
         IFC(GetCurrentPlaybackSession(&spPlaybackSession));
-        // Refresh cached sourceReady, isPlaying and isBuffering states
-        IFC(spPlaybackSession->get_PlaybackState(&currentState));
-
-        m_sourceLoaded = currentState != wmp::MediaPlaybackState_None &&
-            currentState != wmp::MediaPlaybackState_Opening;
-        m_isPlaying = currentState == wmp::MediaPlaybackState_Buffering ||
-            currentState == wmp::MediaPlaybackState_Playing;
-        m_isBuffering = currentState == wmp::MediaPlaybackState_Buffering;
-
-        if (m_sourceLoaded || m_isPlaying || m_isBuffering || m_isBreakPlaying)
+        // Session can be null if the underlying MediaEngine was closed (e.g. a shared player torn down by another element); guard before dereferencing.
+        if (spPlaybackSession)
         {
-            // Refresh cached NaturalDuration value
-            IFC(spPlaybackSession->get_NaturalDuration(&value));
-            m_naturalDuration.TimeSpan = value;
+            // Refresh cached sourceReady, isPlaying and isBuffering states
+            IFC(spPlaybackSession->get_PlaybackState(&currentState));
+
+            m_sourceLoaded = currentState != wmp::MediaPlaybackState_None &&
+                currentState != wmp::MediaPlaybackState_Opening;
+            m_isPlaying = currentState == wmp::MediaPlaybackState_Buffering ||
+                currentState == wmp::MediaPlaybackState_Playing;
+            m_isBuffering = currentState == wmp::MediaPlaybackState_Buffering;
+
+            if (m_sourceLoaded || m_isPlaying || m_isBuffering || m_isBreakPlaying)
+            {
+                // Refresh cached NaturalDuration value
+                IFC(spPlaybackSession->get_NaturalDuration(&value));
+                m_naturalDuration.TimeSpan = value;
+            }
         }
 
         if (SUCCEEDED(MediaPlayerExtension_GetCurrentMediaPlaybackItem(m_spMediaPlayer.Get(), &spPlaybackItem)) && spPlaybackItem.Get())
@@ -208,7 +212,11 @@ MediaTransportControls::UpdateVisualStateFromMPE(_In_ bool bUseTransitions)
             if (m_spMediaPlayer)
             {
                IFC(GetCurrentPlaybackSession(&spPlaybackSession));
-               IFC(spPlaybackSession->get_PlaybackState(&currentState));
+               // Session can be null if the underlying MediaEngine was closed (e.g. a shared player torn down by another element); guard before dereferencing.
+               if (spPlaybackSession)
+               {
+                   IFC(spPlaybackSession->get_PlaybackState(&currentState));
+               }
             }
 
             switch (currentState)
@@ -1153,6 +1161,45 @@ MediaTransportControls::UnSubscribeMediaPlayerEvents() noexcept
 {
     if (m_spMediaPlayer.Get())
     {
+        // If the app already closed the underlying MediaEngine before unload, every remove_<event> below fails; the first abort would leak the rest and propagate E_ABORT out of LeaveImpl (crash on navigate). Check state once; if the engine is gone, drop all tokens and return.
+        if (MediaPlayer_IsClosed(m_spMediaPlayer.Get()))
+        {
+            m_mediaPlayerMediaOpenedToken.value = 0;
+            m_mediaPlayerMediaFailedToken.value = 0;
+            m_mediaPlayerVolumeChangeToken.value = 0;
+            m_mediaPlayerSeekCompletedToken.value = 0;
+            m_mediaPlayerMuteChangeToken.value = 0;
+            m_mediaPlayerSourceChangeToken.value = 0;
+            m_mediaPlayerDownloadProgressChangeToken.value = 0;
+            m_mediaPlayerCurrentStateChangeToken.value = 0;
+            m_mediaPlayerNaturalDurationChangeToken.value = 0;
+            m_mediaPlayerPlaybackRateChangeToken.value = 0;
+            m_cmdManagerPlayBehaviorChangeToken.value = 0;
+            m_cmdManagerPauseBehaviorChangeToken.value = 0;
+            m_cmdManagerNextBehaviorChangeToken.value = 0;
+            m_cmdManagerPreviousBehaviorChangeToken.value = 0;
+            m_cmdManagerFastForwardBehaviorChangeToken.value = 0;
+            m_cmdManagerRewindBehaviorChangeToken.value = 0;
+            m_cmdManagerPositionBehaviorChangeToken.value = 0;
+            m_cmdManagerRateBehaviorChangeToken.value = 0;
+            m_cmdManagerAutoRepeatBehaviorChangeToken.value = 0;
+            m_brkManagerBreakStartToken.value = 0;
+            m_brkManagerBreakEndToken.value = 0;
+            m_brkManagerBreakSkippedToken.value = 0;
+            m_mediaBreakCurrentStateChangeToken.value = 0;
+            m_mediaBreakPositionChangeToken.value = 0;
+            m_mediaBreakDownloadProgressChangeToken.value = 0;
+            m_mediaPlayerItemChangedToken.value = 0;
+            m_mediaPlayerItemFailedToken.value = 0;
+            m_mediaPlayerAutoRepeatChangedToken.value = 0;
+            m_mediaPlayerBreakItemChangedToken.value = 0;
+            m_mediaPlayerPositionChangeToken.value = 0;
+            m_mediaPlayerIsLoopingEnabledToken.value = 0;
+            m_spMediaPlaybackList = nullptr;
+            m_spMediaBreakPlaybackList = nullptr;
+            return S_OK;
+        }
+
         if (m_mediaPlayerMediaOpenedToken.value > 0)
         {
             IFC_RETURN(m_spMediaPlayer->remove_MediaOpened(m_mediaPlayerMediaOpenedToken));

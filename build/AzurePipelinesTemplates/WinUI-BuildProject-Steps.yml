@@ -30,7 +30,7 @@ steps:
       targetType: filePath
       filePath: 'scripts\SystemMemory.ps1'
       arguments: '-peakCommit'
-    condition: and(always(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    condition: always()
 
   - task: MSBuild@1
     displayName: 'Build solution ${{ parameters.solutionName }}'
@@ -86,4 +86,4 @@ steps:
       targetType: filePath
       filePath: 'scripts\SystemMemory.ps1'
       arguments: '-peakCommit'
-    condition: and(always(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    condition: always()

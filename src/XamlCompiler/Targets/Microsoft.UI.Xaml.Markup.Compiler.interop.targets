@@ -668,10 +668,23 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         </ItemGroup>
 
         <ItemGroup>
+            <!-- C++/WinRT seeds this list from $(OutDir) before references are resolved. Remove
+                 entries that now have resolved counterparts before adding those paths, so an
+                 incremental build cannot load the same metadata provider twice. -->
+            <XamlReferencesToCompile Condition="'$(XamlLanguage)' == 'CppWinRT'"
+                                     Remove="@(WinMDReferenceToCompile)"
+                                     MatchOnMetadata="FileName;Extension" />
             <!-- C++ provides a filtered Item that eliminates any Managed Assemblies on the ReferencePath (from SDKs for example) -->
             <XamlReferencesToCompile Condition="'$(IsNativeLanguage)'=='true'" Include="@(WinMDReferenceToCompile)" />
             <XamlReferencesToCompile Condition="'$(IsNativeLanguage)'=='true' and Exists($(FacadeWinmdPath))" Include="$(FacadeWinmdPath)" />
             <XamlReferencesToCompile Condition="'$(IsNativeLanguage)'!='true'" Include="@(ReferencePath)" />
+        </ItemGroup>
+        <RemoveDuplicates Condition="'$(XamlLanguage)' == 'CppWinRT'" Inputs="@(XamlReferencesToCompile)">
+            <Output TaskParameter="Filtered" ItemName="_DistinctXamlReferencesToCompile" />
+        </RemoveDuplicates>
+        <ItemGroup Condition="'$(XamlLanguage)' == 'CppWinRT'">
+            <XamlReferencesToCompile Remove="@(XamlReferencesToCompile)" />
+            <XamlReferencesToCompile Include="@(_DistinctXamlReferencesToCompile)" />
         </ItemGroup>
 
         <CompileXaml Condition="'$(UseXamlCompilerExecutable)' != 'true'"
@@ -808,10 +821,29 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <Message Text="(Out) ClCompile: '@(ClCompile)'" Condition="'$(ManagedAssembly)'=='false'"/>
         <Message Text="(Out) Compile: '@(Compile)'" Condition="'$(ManagedAssembly)'!='false'"/>
 
+        <!--
+          In self-contained mode, Windows App SDK adds MICROSOFT_WINDOWSAPPSDK_SELFCONTAINED to
+          the existing ClCompile items before the ClCompile target. XamlCompiler's Pass 2 adds its
+          generated translation units afterward, so they do not inherit that item metadata. Copy
+          the preprocessor definitions from the PCH-producing source, or from the pass-1 sources
+          when no PCH exists, so both CL passes compile with the same conditional declarations.
+        -->
+        <ItemGroup>
+            <_XamlPass1PreprocessorSource Include="@(ClCompile)" Condition="'%(ClCompile.PrecompiledHeader)' == 'Create'" />
+        </ItemGroup>
+        <ItemGroup Condition="'@(_XamlPass1PreprocessorSource)' == ''">
+            <_XamlPass1PreprocessorSource Include="@(ClCompile)" Condition="'%(ClCompile.CompilerIteration)' != 'XamlGenerated'" />
+        </ItemGroup>
+        <PropertyGroup>
+            <_XamlGeneratedPreprocessorDefinitions>@(_XamlPass1PreprocessorSource->'%(PreprocessorDefinitions)'->Distinct())</_XamlGeneratedPreprocessorDefinitions>
+        </PropertyGroup>
+
         <ItemGroup>
             <ClCompile Include="@(GeneratedXamlPagesFiles)" >
                 <CompilerIteration>XamlGenerated</CompilerIteration>
+                <PreprocessorDefinitions Condition="'$(_XamlGeneratedPreprocessorDefinitions)' != ''">$(_XamlGeneratedPreprocessorDefinitions)</PreprocessorDefinitions>
             </ClCompile>
+            <_XamlPass1PreprocessorSource Remove="@(_XamlPass1PreprocessorSource)" />
         </ItemGroup>
     </Target>
 

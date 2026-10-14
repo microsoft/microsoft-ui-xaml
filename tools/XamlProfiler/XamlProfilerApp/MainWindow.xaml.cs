@@ -585,9 +585,9 @@ public sealed partial class MainWindow : Window
             {
                 if (node.Kind == TreeNodeKind.WucVisual)
                 {
-                    // WUC IVisual node: node.Id == the live IVisual* the producer stamped
-                    // into Visual.Comment ("xpid:<hex>"). The tap walks the live composition
-                    // tree to find and adorn that exact visual in place.
+                    // WUC IVisual node: node.Id is the live IVisual identity emitted by the
+                    // producer. The in-process tap walks the live composition tree and
+                    // adorns the visual with that identity.
                     _tap.HighlightVisual(node.Id);
                 }
                 else if (node.PeerHandle != 0)

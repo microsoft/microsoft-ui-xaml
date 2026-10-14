@@ -375,7 +375,11 @@ void NavigationViewItemAutomationPeer::ChangeSelection(bool isSelected)
     }
     if (auto nvi = Owner().try_as<winrt::NavigationViewItem>())
     {
-        nvi.IsSelected(isSelected);
+        // Selecting a non-selecting item after Invoke causes selection rollback and duplicate ItemInvoked events.
+        if (!isSelected || nvi.SelectsOnInvoked())
+        {
+            nvi.IsSelected(isSelected);
+        }
     }
 }
 

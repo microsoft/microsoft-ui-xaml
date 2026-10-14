@@ -409,16 +409,28 @@ End Namespace
 <#+                 foreach (BoundEventAssignment evt in element.BoundEventAssignments)#>
 <#+                 {#>
 
-            Private Sub <#=evt.EventHandlerCodeName#>(<#=evt.Parameters.Declaration()#>)
+            Private <#=evt.EventHandlerCodeName#> As <#=evt.MemberType#>
+
+            Private Sub <#=evt.EventHandlerCodeName#>Handler(<#=evt.Parameters.Declaration()#>)
 <#+                     if (!evt.PathStep.ValueType.IsDelegate())#>
 <#+                     {#>
                 <#=evt.PathStep.CodeGen().PathExpression#>
 <#+                     }#>
 <#+                     else#>
 <#+                     {#>
-                <#=evt.PathStep.CodeGen().PathExpression#>(<#=evt.Parameters.ForCall()#>);
+                <#=evt.PathStep.CodeGen().PathExpression#>(<#=evt.Parameters.ForCall()#>)
 <#+                     }#>
             End Sub
+
+            Private Function Create_<#=evt.EventHandlerCodeName#>() As <#=evt.MemberType#>
+                Dim weakBindings = New Global.System.WeakReference(Of <#=bindUniverse.BindingsClassName#>)(Me)
+                Return Sub(<#=evt.Parameters.Declaration()#>)
+                    Dim bindings As <#=bindUniverse.BindingsClassName#> = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.<#=evt.EventHandlerCodeName#>Handler(<#=evt.Parameters.ForCall()#>)
+                    End If
+                End Sub
+            End Function
 <#+                 }#>
 <#+             }#>
 
@@ -467,10 +479,10 @@ End Namespace
 <#+                         if (element.IsWeakRef)#>
 <#+                         {#>
                     If (Me.<#=element.ObjectCodeName#>.IsAlive) Then
-                        RemoveHandler DirectCast(Me.<#=element.ObjectCodeName#>.Target, <#=element.Type#>).<#=evt.MemberName#>, AddressOf <#=evt.EventHandlerCodeName#>
+                        RemoveHandler DirectCast(Me.<#=element.ObjectCodeName#>.Target, <#=element.Type#>).<#=evt.MemberName#>, Me.<#=evt.EventHandlerCodeName#>
                     End If
 <#+                         } else {#>
-                    RemoveHandler Me.<#=element.ObjectCodeName#>.<#=evt.MemberName#>, AddressOf <#=evt.EventHandlerCodeName#>
+                    RemoveHandler Me.<#=element.ObjectCodeName#>.<#=evt.MemberName#>, Me.<#=evt.EventHandlerCodeName#>
 <#+                         }#>
 <#+                     }#>
 <#+                 }#>
@@ -516,7 +528,8 @@ End Namespace
 <#+                 foreach (BoundEventAssignment evt in element.BoundEventAssignments)#>
 <#+                 {#>
 <#+                     Output_ApiInformationCall_Push(evt.ApiInformation, Indent.ThreeTabs); #>
-                        AddHandler DirectCast(target, <#=element.Type#>).<#=evt.MemberName#>, AddressOf <#=evt.EventHandlerCodeName#>
+                        Me.<#=evt.EventHandlerCodeName#> = Me.Create_<#=evt.EventHandlerCodeName#>()
+                        AddHandler DirectCast(target, <#=element.Type#>).<#=evt.MemberName#>, Me.<#=evt.EventHandlerCodeName#>
 <#+                     Output_ApiInformationCall_Pop(evt.ApiInformation, Indent.ThreeTabs); #>
 <#+                 }#>
 <#+                 if (element.CanBeInstantiatedLater && (element.HasBindAssignments || element.HasBoundEventAssignments))#>
@@ -937,7 +950,8 @@ End Namespace
                 Me.bindingsTracking.UpdateChildListeners_<#=bindStep.CodeName#>(obj)
 <#+                 }#>
 <#+                 Output_Update_Steps(bindStep.ValueType.IsNullable, "Me", bindStep.Children, true, "phase");#>
-<#+                 Output_Update_Steps(bindStep.ValueType.IsNullable, "Me", bindStep.Dependents, false, "phase");#>
+<#+                 // Dependents are function bindings: a null value is a valid argument, not an unresolved path.#>
+<#+                 Output_Update_Steps(false, "Me", bindStep.Dependents, false, "phase");#>
 <#+                 foreach (int distinctPhase in bindStep.DistinctPhases)#>
 <#+                 {#>
 <#+                     Output_Binding_Phased_SetValue(distinctPhase, true, bindStep, false);#>
@@ -1699,7 +1713,12 @@ End Namespace
                 Dim <#=param.Name#> As <#=param.ValueType#> = <#=param.CodeGen().PathExpression#>
 <#+             }#>
 <#+         }#>
-                Dim result As <#=functionStep.ValueType#> = <#= functionStep.CodeGen().PathExpression #>
+<#+         BindPathStep instanceStep = functionStep.InstanceStep;#>
+<#+         if (instanceStep != null) {#>
+                Dim <#=KnownStrings.FunctionInstanceName#> As <#=instanceStep.ValueType#> = Nothing
+                If Not <#=instanceStep.TryGetValueCodeName#>(<#=KnownStrings.FunctionInstanceName#>)<#=instanceStep.ValueType.IsNullable ? " OrElse " + KnownStrings.FunctionInstanceName + " Is Nothing" : ""#> Then Return
+<#+         }#>
+                Dim result As <#=functionStep.ValueType#> = <#= instanceStep == null ? functionStep.CodeGen().PathExpression : functionStep.CodeGen().InstanceCallExpression(KnownStrings.FunctionInstanceName) #>
 <#+         foreach (int distinctPhase in functionStep.DistinctPhases) {#>
 <#+             Output_Binding_Phased_SetValue(distinctPhase, true, functionStep, true);#>
 <#+             Output_Binding_Phased_SetValue(distinctPhase, false, functionStep, true);#>
@@ -1714,7 +1733,7 @@ End Namespace
 <#+     {#>
 
             Private Function <#=step.TryGetValueCodeName#>(<Global.System.Runtime.InteropServices.Out()> ByRef val As <#=step.ValueType#>) As Boolean
-<#+         if (step is RootStep || !step.Parent.IsIncludedInUpdate) {#>
+<#+         if (!step.IsRetrievedThroughParent) {#>
                 val = <#=step.CodeGen().PathExpression#>
                 Return True
 <#+         }#>

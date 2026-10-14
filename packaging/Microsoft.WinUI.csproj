@@ -89,5 +89,11 @@
   
   <ItemGroup>
     <ProjectReference Include="$(ProjectRoot)\MergedWinMD\MergedWinMD.vcxproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
+    <!-- Ordering only: MergedWinMD pulls in Tabular's idl project, which covers the merged winmd and
+         so the activatable-class registrations, but not the DLL those registrations name. Without
+         this the package ships registrations with no binary and every consuming .wapproj fails with
+         APPX0703. Excluded from MUXFinalRelease for the same reason as the metadata entry in
+         eng\productmetadata.props. Revisit when TableView leaves [MUX_PREVIEW]. -->
+    <ProjectReference Include="$(MuxControlsPath)\dev\dll-tabular\Microsoft.UI.Xaml.Controls.Tabular.vcxproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" Condition="'$(MUXFinalRelease)' != 'true'" />
   </ItemGroup>
 </Project>

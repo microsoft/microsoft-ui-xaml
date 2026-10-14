@@ -151,7 +151,15 @@ consists of the following sub-items:
   - `IXpWinmds`: contains the Composition and Input WinRT API
   - `MRTWinMDs`
   - `WinUIEditWinMD`: contains the WinUIEdit WinRT API
-- `WinUIWinMDReferences`: contains the merged WinUI winmds. Primarily consumed by test applications.
+- `MuxControlsWinMD`: contains the winmds of the MUXC controls themselves, which are merged into the public
+`Microsoft.UI.Xaml.winmd` rather than shipped standalone. Only `MergedWinMD` consumes this item, so adding a winmd here
+does not make the rest of the product build against it. Use this, and not `ExternalWinMDs`, for a control's metadata —
+`ExternalWinMDs` is referenced by the MUXC IDL and DLL builds, so a control placed there would be turned into a
+dependency of its own peers. Note that a control's winmd belongs here even when the control is built elsewhere and
+arrives prebuilt, as is the case for `Microsoft.UI.Xaml.Controls.Charts.winmd` from the WinUIDetails package. Each entry
+should carry `ImplementationDll` metadata, which is what drives its activatable class registrations.
+- `WinUIWinMDReferences`: contains the merged WinUI winmds. Primarily consumed by test applications. Do not add a
+pre-merge winmd here; its types already arrive via the merged `Microsoft.UI.Xaml.winmd`.
 
 Usage:
 ```xml

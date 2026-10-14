@@ -74,6 +74,39 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    Problem: Outside Visual Studio (e.g. VS Code / C# Dev Kit), design-time XAML markup compilation
+    never runs, so the language service can't see the generated code-behind (InitializeComponent,
+    etc.) and reports false "red squiggle" diagnostics.
+
+    Fix: On non-VS design-time builds, add the generated code-behind (*.g.cs / *.g.i.cs) to @(Compile).
+
+    Safeguards: Excludes files already compiled by other means (Roslyn generator output, intermediate
+    XAML, SDK AssemblyInfo / GlobalUsings, existing @(Compile)) to avoid CS0101 / CS0111 duplicates.
+
+    Limitation: Only re-surfaces files from a prior real build; it does not regenerate them, so a
+    fresh/cleaned project shows squiggles until built once.
+  -->
+  <Target Name="IncludeGeneratedXamlCompileItemsForDesignTime"
+          BeforeTargets="CoreCompile"
+          Condition="'$(UsingMicrosoftNETSdk)' == 'true' And '$(DesignTimeBuild)' == 'true' And '$(BuildingInsideVisualStudio)' != 'true' And '$(UseWPF)' != 'true' And '$(UseUwpTools)' != 'true' And Exists('$(IntermediateOutputPath)')">
+    <PropertyGroup>
+      <!--
+        Exclude Roslyn source-generator output, which the generators already add to the compilation.
+        Only build the glob when the path property is set; otherwise a bare '**\*.cs' would exclude
+        everything.
+      -->
+      <_WinUIDesignTimeCompilerGeneratedExclude Condition="'$(CompilerGeneratedFilesOutputPath)' != ''">$(CompilerGeneratedFilesOutputPath)\**\*.cs;</_WinUIDesignTimeCompilerGeneratedExclude>
+    </PropertyGroup>
+    <ItemGroup>
+      <Compile Include="$(IntermediateOutputPath)**\*.g.cs;$(IntermediateOutputPath)**\*.g.i.cs"
+               Exclude="$(_WinUIDesignTimeCompilerGeneratedExclude)$(IntermediateOutputPath)generated\**;$(IntermediateOutputPath)intermediatexaml\**;$(IntermediateOutputPath)**\*.AssemblyInfo.g.cs;$(IntermediateOutputPath)**\*.AssemblyAttributes.g.cs;$(IntermediateOutputPath)**\*.GlobalUsings.g.cs;@(Compile)">
+        <AutoGen>True</AutoGen>
+        <Visible>false</Visible>
+      </Compile>
+    </ItemGroup>
+  </Target>
+
   <!-- Emit additional messages for invalid configurations when referencing the WinUI runtime library -->
   <Target Name="CheckForInvalidWinUIReferenceInMixedScenarios"
           DependsOnTargets="ResolveAssemblyReferences"

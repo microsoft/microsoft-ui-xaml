@@ -4,7 +4,8 @@
   <PropertyGroup>
     <TargetFramework>$(SamplesTargetFrameworkMoniker)</TargetFramework>
     <Platforms>x86;x64;ARM64</Platforms>
-    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) &gt;= 8">win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')) &lt; 8">win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <NoWarn>
       8305; <!-- 'x' is for evaluation purposes only and is subject to change or removal in future updates. -->
       NU1605

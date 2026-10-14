@@ -820,11 +820,19 @@ this.Write("\r\n            \' Subs for each event bindings event handler.\r\n")
              {
                  foreach (BoundEventAssignment evt in element.BoundEventAssignments)
                  {
-this.Write("\r\n            Private Sub ");
+this.Write("\r\n            Private ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
 
-this.Write("(");
+this.Write(" As ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.MemberType));
+
+this.Write("\r\n\r\n            Private Sub ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
+
+this.Write("Handler(");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.Declaration()));
 
@@ -849,10 +857,40 @@ this.Write("(");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.ForCall()));
 
-this.Write(");\r\n");
+this.Write(")\r\n");
 
                      }
-this.Write("            End Sub\r\n");
+this.Write("            End Sub\r\n\r\n            Private Function Create_");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
+
+this.Write("() As ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.MemberType));
+
+this.Write("\r\n                Dim weakBindings = New Global.System.WeakReference(Of ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.BindingsClassName));
+
+this.Write(")(Me)\r\n                Return Sub(");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.Declaration()));
+
+this.Write(")\r\n                    Dim bindings As ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.BindingsClassName));
+
+this.Write(" = Nothing\r\n                    If weakBindings.TryGetTarget(bindings) Then\r\n    " +
+        "                    bindings.");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
+
+this.Write("Handler(");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.ForCall()));
+
+this.Write(")\r\n                    End If\r\n                End Sub\r\n            End Function\r" +
+        "\n");
 
                  }
              }
@@ -974,7 +1012,7 @@ this.Write(").");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.MemberName));
 
-this.Write(", AddressOf ");
+this.Write(", Me.");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
 
@@ -989,7 +1027,7 @@ this.Write(".");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.MemberName));
 
-this.Write(", AddressOf ");
+this.Write(", Me.");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
 
@@ -1077,7 +1115,15 @@ this.Write("                        elementWeakRefs(connectionId) = New Global.S
                  foreach (BoundEventAssignment evt in element.BoundEventAssignments)
                  {
                      Output_ApiInformationCall_Push(evt.ApiInformation, Indent.ThreeTabs); 
-this.Write("                        AddHandler DirectCast(target, ");
+this.Write("                        Me.");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
+
+this.Write(" = Me.Create_");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
+
+this.Write("()\r\n                        AddHandler DirectCast(target, ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(element.Type));
 
@@ -1085,7 +1131,7 @@ this.Write(").");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.MemberName));
 
-this.Write(", AddressOf ");
+this.Write(", Me.");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
 
@@ -1808,7 +1854,8 @@ this.Write("(obj)\r\n");
 
                  }
                  Output_Update_Steps(bindStep.ValueType.IsNullable, "Me", bindStep.Children, true, "phase");
-                 Output_Update_Steps(bindStep.ValueType.IsNullable, "Me", bindStep.Dependents, false, "phase");
+                 // Dependents are function bindings: a null value is a valid argument, not an unresolved path.
+                 Output_Update_Steps(false, "Me", bindStep.Dependents, false, "phase");
                  foreach (int distinctPhase in bindStep.DistinctPhases)
                  {
                      Output_Binding_Phased_SetValue(distinctPhase, true, bindStep, false);
@@ -3380,13 +3427,38 @@ this.Write("\r\n");
 
              }
          }
+         BindPathStep instanceStep = functionStep.InstanceStep;
+         if (instanceStep != null) {
+this.Write("                Dim ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(KnownStrings.FunctionInstanceName));
+
+this.Write(" As ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(instanceStep.ValueType));
+
+this.Write(" = Nothing\r\n                If Not ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(instanceStep.TryGetValueCodeName));
+
+this.Write("(");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(KnownStrings.FunctionInstanceName));
+
+this.Write(")");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(instanceStep.ValueType.IsNullable ? " OrElse " + KnownStrings.FunctionInstanceName + " Is Nothing" : ""));
+
+this.Write(" Then Return\r\n");
+
+         }
 this.Write("                Dim result As ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(functionStep.ValueType));
 
 this.Write(" = ");
 
-this.Write(this.ToStringHelper.ToStringWithCulture(functionStep.CodeGen().PathExpression));
+this.Write(this.ToStringHelper.ToStringWithCulture(instanceStep == null ? functionStep.CodeGen().PathExpression : functionStep.CodeGen().InstanceCallExpression(KnownStrings.FunctionInstanceName)));
 
 this.Write("\r\n");
 
@@ -3412,7 +3484,7 @@ this.Write(this.ToStringHelper.ToStringWithCulture(step.ValueType));
 
 this.Write(") As Boolean\r\n");
 
-         if (step is RootStep || !step.Parent.IsIncludedInUpdate) {
+         if (!step.IsRetrievedThroughParent) {
 this.Write("                val = ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(step.CodeGen().PathExpression));

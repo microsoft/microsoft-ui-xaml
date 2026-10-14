@@ -46,6 +46,12 @@
             <XamlProduct Include="$(XamlProductDir)Microsoft.UI.Xaml.Controls.dll">
                 <AssociatedSolution>$(ProjectRoot)controls\MUXControls.sln</AssociatedSolution>
             </XamlProduct>
+            <!-- Tabular ships beside MUXC's controls DLL, so it is validated here too. This list is
+                 an existence check, not the payload mechanism; copying is done by
+                 _UpdateMUXFilesToCopyForApp above via a wildcard. -->
+            <XamlProduct Include="$(XamlProductDir)Microsoft.UI.Xaml.Controls.Tabular.dll">
+                <AssociatedSolution>$(ProjectRoot)controls\MUXControls.sln</AssociatedSolution>
+            </XamlProduct>
         </ItemGroup>
         <Error Condition="!Exists('%(XamlProduct.Identity)')" Text="%(XamlProduct.Identity) does not exist.  Please build %(XamlProduct.AssociatedSolution) before building." />
     </Target>

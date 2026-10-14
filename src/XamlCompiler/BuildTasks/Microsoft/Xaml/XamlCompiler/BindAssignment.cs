@@ -4,7 +4,9 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Xaml;
+using System.Xaml.Schema;
 using System.Collections.Generic;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler
@@ -361,6 +363,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 !ValidateMode(issues) ||
                 !ValidateTypeCasting(issues) ||
                 !ValidateBindBackAssignment(issues) ||
+                !ValidateTwoWaySource(issues) ||
                 !ValidateConverter(issues) ||
                 !ValidateApiInformation(issues) ||
                 !ValidateUpdateSourceTrigger(issues) ||
@@ -384,6 +387,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
                 bool canAssignTo = this.ValueType.CanAssignDirectlyTo(this.MemberType) || this.ValueType.CanBoxTo(this.MemberType);
                 bool canAssignBack = this.MemberType.CanAssignDirectlyTo(this.ValueType) || this.MemberType.CanInlineConvert(this.ValueType);
+
+                // A bool/bool? function result bound to Visibility is converted inline from "result"
+                // (see GitHub issue #8644), so it needs no converter for OneTime/OneWay bindings.
+                if (this.PathStep is FunctionStep && !this.IsTrackingTarget && this.IsBoolToVisibilitySpecialCase)
+                {
+                    canAssignTo = true;
+                }
 
                 if (!dontNeedConverter && !this.IsTrackingTarget)
                 {
@@ -440,12 +450,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
 
             if ( this.PathStep is FunctionStep && 
-                !this.PathStep.ValueType.CanAssignDirectlyTo(this.MemberType))
+                !this.PathStep.ValueType.CanAssignDirectlyTo(this.MemberType) &&
+                !this.IsBoolToVisibilitySpecialCase)
             {
                 if (!this.MemberType.IsString() || this.PathStep.ValueType.IsVoid())
                 {
-                    // Function return type must match the binding target, unless the target is
-                    // a string so we can call ConvertValue on the return of the function.
                     issues.Add(new BindAssignmentValidationError(this.bindItem, ResourceUtilities.FormatString(
                         XamlCompilerResources.BindAssignment_FunctionReturnTypeInvalid,
                         this.PathStep.ValueType.UnderlyingType.FullName, this.MemberType)));
@@ -453,6 +462,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 }
             }
             return true;
+        }
+
+        private bool IsBoolToVisibilitySpecialCase
+        {
+            get
+            {
+                return this.Converter == null &&
+                    this.MemberType.UnderlyingType.FullName == KnownTypes.Visibility &&
+                    this.ValueType.IsBoolOrNullableBool();
+            }
         }
 
         private bool ValidateBindBackAssignment(IList<XamlCompileErrorBase> issues)
@@ -498,18 +517,81 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             return true;
         }
 
+        private bool ValidateTwoWaySource(IList<XamlCompileErrorBase> issues)
+        {
+            if (!this.IsTrackingTarget || this.PathStep is FunctionStep)
+            {
+                return true;
+            }
+
+            string readOnlyMemberName = null;
+            if (this.PathStep is AttachedPropertyStep attachedPropertyStep)
+            {
+                if (attachedPropertyStep.IsReadOnly)
+                {
+                    readOnlyMemberName = attachedPropertyStep.PropertyName;
+                }
+            }
+            else if (this.PathStep is FieldStep fieldStep)
+            {
+                FieldInfo fieldInfo = fieldStep.FieldInfo;
+                if (fieldInfo != null && (fieldInfo.IsInitOnly || fieldInfo.IsLiteral))
+                {
+                    readOnlyMemberName = fieldStep.FieldName;
+                }
+            }
+            else if (this.PathStep is PropertyStep propertyStep)
+            {
+                PropertyInfo propertyInfo = propertyStep.PropertyInfo;
+                if (propertyInfo != null)
+                {
+                    // Generated C# bindings are nested in the XAML root type and can legally access
+                    // that type's private setters. Other language-specific accessibility rules, such
+                    // as a private setter on a separate model type, remain enforced by the generated
+                    // code's compiler.
+                    MethodInfo setter = propertyInfo.GetSetMethod(true);
+                    if (setter == null || MemberReflector.IsInitOnly(setter))
+                    {
+                        readOnlyMemberName = propertyStep.PropertyName;
+                    }
+                }
+            }
+
+            if (readOnlyMemberName == null)
+            {
+                return true;
+            }
+
+            issues.Add(new BindAssignmentValidationError(
+                this.bindItem,
+                ResourceUtilities.FormatString(
+                    XamlCompilerResources.BindAssignment_TwoWaySourceNotWritable,
+                    GetBindingPath(this.bindItem),
+                    readOnlyMemberName)));
+            return false;
+        }
+
         // This method looks like a hack, but we did it, so we can't take it out now.
         // There's probably a better way to do this. Marking for a future TODO.
         private void ApplySpecialCaseCasting()
         {
             // artificially append a cast for bool to visibility
-            if (this.Converter == null && this.MemberType.UnderlyingType.FullName == KnownTypes.Visibility)
+            if (this.IsBoolToVisibilitySpecialCase)
             {
-                if (this.ValueType.IsBoolOrNullableBool())
+                // Functions must be the leaf of a bind path (see FunctionNotLeaf), so a FunctionStep
+                // cannot legally have a child. Appending an artificial CastStep here would produce a
+                // child whose update reads the conventional "obj" parameter, but a FunctionStep's
+                // generated update/invoke methods expose the value as "result" instead of "obj",
+                // yielding code that references an undefined "obj" (see GitHub issue #8644).
+                // The bool->Visibility conversion is a registered inline conversion, so keeping the
+                // assignment on the FunctionStep lets the value be converted directly from "result".
+                if (this.PathStep is FunctionStep)
                 {
-                    BindPathStep cast = new CastStep(this.MemberType, this.PathStep, this.ApiInformation);
-                    this.PathStep = BindUniverse.EnsureUniquePathStep(cast);
+                    return;
                 }
+
+                BindPathStep cast = new CastStep(this.MemberType, this.PathStep, this.ApiInformation);
+                this.PathStep = BindUniverse.EnsureUniquePathStep(cast);
             }
         }
 

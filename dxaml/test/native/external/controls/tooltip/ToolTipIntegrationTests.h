@@ -292,6 +292,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyRootTeardownDismissesToolTipWithStationaryPointer)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify tearing down the root dismisses an open ToolTip even when the pointer never moves.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore, OneCore, Santorini")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyPointerMoveInsideControlNotDismissToolTip)
             TEST_METHOD_PROPERTY(L"Description", L"Verify Pointer move inside control doesn't dimiss ToolTip.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore, OneCore, Santorini")

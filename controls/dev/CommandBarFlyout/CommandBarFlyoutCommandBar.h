@@ -6,6 +6,7 @@
 #include "CommandBarFlyoutCommandBar.g.h"
 #include "CommandBarFlyoutCommandBar.properties.h"
 #include "CommandBarFlyoutTrace.h"
+#include <CppWinrtContentExternalBackdropLinkHelper.h>
 
 enum class CommandBarFlyoutOpenCloseAnimationKind
 {
@@ -144,8 +145,8 @@ private:
     // These ContentExternalBackdropLink objects implement the backdrop behind the CommandBarFlyoutCommandBar. We don't
     // use the one built into Popup because we need to animate this backdrop using Storyboards in the CBFCB's template.
     // The one built into Popup is too high up in the Visual tree to be animated by a custom animation.
-    winrt::ContentExternalBackdropLink m_backdropLink{ nullptr };
-    winrt::ContentExternalBackdropLink m_overflowPopupBackdropLink{ nullptr };
+    ContentExternalLinkHelper::BackdropLink m_backdropLink{ nullptr };
+    ContentExternalLinkHelper::BackdropLink m_overflowPopupBackdropLink{ nullptr };
 
     // A copy of the value in the DependencyProperty. We need to unregister with this SystemBackdrop when this
     // CommandBarFlyoutCommandBar is deleted, but the DP value is already cleared by the time we get to Unloaded or the

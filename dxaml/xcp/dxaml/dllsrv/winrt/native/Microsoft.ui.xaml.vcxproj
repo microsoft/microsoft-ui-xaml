@@ -85,6 +85,11 @@
     <ItemGroup Condition="'@(IXPPGDFiles)' != ''">
       <BinplaceItem Include="@(IXPPGDFiles)" />
     </ItemGroup>
+    <ItemGroup Condition="Exists('$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Controls.Charts.pri')">
+      <PackageContent Include="$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Controls.Charts.pri" PackageLocation="$(NativeAssemblyPackageLocationOld)" />
+      <PackageContent Include="$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Controls.Charts.pri" PackageLocation="$(NativeAssemblyPackageLocation)" />
+      <BinplaceItem Include="$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Controls.Charts.pri" />
+    </ItemGroup>
   </Target>
   <ItemGroup>
     <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocationOld)" />

@@ -222,7 +222,7 @@ _Check_return_ HRESULT ListViewBase::OnItemPrimaryInteractionGesture(
 
     auto guard = wil::scope_exit([this]()
     {
-        m_spContainerBeingClicked = nullptr;
+        m_spContainerBeingClicked.Clear();
     });
 
     IFCPTR_RETURN(pItem);
@@ -237,7 +237,7 @@ _Check_return_ HRESULT ListViewBase::OnItemPrimaryInteractionGesture(
     // store the container as a suggestion so that any call to ContainerFromItem that is called from user code
     // during any of the below callouts, will be able to be more intelligent.
     ASSERT(m_spContainerBeingClicked.Get() == nullptr);
-    m_spContainerBeingClicked = pItem;
+    SetPtrValue(m_spContainerBeingClicked, pItem);
 
     // If we're not the ZoomedOutView of a SemanticZoom,
     // do a regular primary interaction.
@@ -325,7 +325,7 @@ _Check_return_ HRESULT ListViewBase::OnItemSecondaryInteractionGesture(
 
     auto guard = wil::scope_exit([this]()
     {
-        m_spContainerBeingClicked = nullptr;
+        m_spContainerBeingClicked.Clear();
     });
 
     IFCPTR_RETURN(pItem);
@@ -335,7 +335,7 @@ _Check_return_ HRESULT ListViewBase::OnItemSecondaryInteractionGesture(
     // store the container as a suggestion so that any call to ContainerFromItem that is called from user code
     // during any of the below callouts, will be able to be more intelligent.
     ASSERT(m_spContainerBeingClicked.Get() == nullptr);
-    m_spContainerBeingClicked = pItem;
+    SetPtrValue(m_spContainerBeingClicked, pItem);
 
     BOOLEAN isItemClickEnabled = FALSE;
     IFC_RETURN(get_IsItemClickEnabled(&isItemClickEnabled));

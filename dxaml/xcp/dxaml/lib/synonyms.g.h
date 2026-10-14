@@ -22,6 +22,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IColorPaletteResources IColorPaletteResources;
     typedef ABI::Microsoft::UI::Xaml::IDataContextChangedEventArgs IDataContextChangedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IDataTemplate IDataTemplate;
+    typedef ABI::Microsoft::UI::Xaml::IDataTemplateFeature_ExperimentalApi IDataTemplateFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::IDataTemplateKey IDataTemplateKey;
     typedef ABI::Microsoft::UI::Xaml::IDebugSettings IDebugSettings;
     typedef ABI::Microsoft::UI::Xaml::IDebugSettings2 IDebugSettings2;
