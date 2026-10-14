@@ -259,6 +259,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
 
                 VerifyMenuOpened(RowMenu, ContextMenuName(2), CellFocus(2, ContextMenuAgeColumn));
+                VerifyMenuPlacedAtCell(GetRow(GetTable(ContextMenuTable), 2).Children[ContextMenuAgeColumn], RowMenu);
                 CloseMenu();
             }
         }
@@ -309,7 +310,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         #region Editing
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a right-click on the editor of a cell being edited shows no TableView menu (the editor's own menu is left to it).")]
+        [TestProperty("Description", "Verifies a right-click on the editor of a cell being edited shows no TableView menu, and that the editor's own menu neither ends the edit while open nor when Escape closes it.")]
         public void RightClickOnEditorOpensNoTableViewMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -319,11 +320,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 if (!BeginEditOnNameCell(3)) { return; }
 
                 RightClickRow(table, 3, ContextMenuNameTextX);
-
                 VerifyNoMenuOpened();
-                Log.Comment("editing after right-click on the editor: {0}", ReadContextMenuField(EditingField));
+
+                // Escape inside the editor's menu closes only the menu; focus returns to the editor.
                 KeyboardHelper.PressKey(Key.Escape);
                 Wait.ForIdle();
+                Verify.AreEqual("True", WaitForContextMenuField(EditingField, "True"),
+                    "Closing the editor's menu must not end the edit.");
+
+                KeyboardHelper.PressKey(Key.Escape);
+                Verify.AreEqual("False", WaitForContextMenuField(EditingField, "False"),
+                    "Escape in the editor must still cancel the edit.");
             }
         }
 
@@ -485,6 +492,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Verify.AreEqual(expectedFocus, focus, "Wrong element focused when the menu opened.");
             }
+        }
+
+        // A keyboard request on a cell opens the menu at that cell - starting within the cell's columns, directly
+        // below or above it - even when the menu belongs to the row.
+        private static void VerifyMenuPlacedAtCell(UIObject cell, string menu)
+        {
+            UIObject menuItem = TryFindElement.ById(MenuItemId(menu));
+            if (cell == null || menuItem == null) { Verify.Fail("The cell or the open menu was not found."); return; }
+
+            var cellBounds = cell.BoundingRectangle;
+            var itemBounds = menuItem.BoundingRectangle;
+            Log.Comment("Cell bounds={0}; menu item bounds={1}.", cellBounds, itemBounds);
+
+            const int Tolerance = 16;
+            Verify.IsTrue(itemBounds.Left >= cellBounds.Left - Tolerance && itemBounds.Left <= cellBounds.Right,
+                "The menu must start horizontally within the focused cell, not at the row.");
+            Verify.IsTrue(itemBounds.Top >= cellBounds.Bottom - Tolerance || itemBounds.Bottom <= cellBounds.Top + Tolerance,
+                "The menu must open next to the focused cell without covering it.");
         }
 
         private static void CloseMenu()
