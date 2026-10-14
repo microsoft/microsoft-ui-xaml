@@ -5,7 +5,6 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace CustomAppXaml
 {
-    [CLSCompliant(false)]
     public sealed partial class MainPage : Page
     {
         public MainPage()
