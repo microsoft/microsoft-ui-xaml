@@ -511,6 +511,7 @@ public:
     void OnLosingFocusForEditing(
         const winrt::IInspectable& sender,
         const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args);
+    void QueueFocusLossCommit();
     void CompleteFocusLossCommit();
 
     // ----- Selection (TableView_Selection.cpp) -----
@@ -1350,6 +1351,7 @@ private:
         winrt::ContextRequestedEventArgs const& args);
     TableViewDetails::ContextMenuCandidate ResolveContextFlyout(TableViewDetails::ContextMenuTarget const& target);
     void ShowContextFlyout(
+        TableViewDetails::ContextMenuTarget const& target,
         TableViewDetails::ContextMenuCandidate const& candidate,
         winrt::ContextRequestedEventArgs const& args);
     bool m_isProcessingContextMenu{ false };
@@ -1432,6 +1434,11 @@ private:
     winrt::UIElement::LosingFocus_revoker m_editingLosingFocusRevoker{};
 
     bool m_focusLossCommitQueued{ false };
+    // Set while a focus-loss commit waits for the editor's own flyout to close.
+    winrt::FlyoutBase::Closed_revoker m_editorFlyoutClosedRevoker{};
+    winrt::FlyoutBase::Closing_revoker m_editorFlyoutClosingRevoker{};
+    // True from the editor flyout's Closing until the current input has been dispatched.
+    bool m_editorFlyoutClosing{ false };
 
     int32_t m_navAnchorRow{ -1 };
     int32_t m_navAnchorCellRow{ -1 };

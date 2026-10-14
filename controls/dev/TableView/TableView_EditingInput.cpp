@@ -33,6 +33,45 @@ namespace
         return TableViewDetails::IsWithinElementPopupAware(candidate, ancestor, ancestor.XamlRoot());
     }
 
+    // An open flyout owned by the editor or one of its descendants: a ContextFlyout, or a text
+    // control's SelectionFlyout. Its popup is not in the visual tree, so focus inside it is not
+    // within the editor.
+    winrt::FlyoutBase FindOpenEditorFlyout(winrt::DependencyObject const& element)
+    {
+        if (auto const uiElement = element.try_as<winrt::UIElement>())
+        {
+            if (auto const flyout = uiElement.ContextFlyout(); flyout && flyout.IsOpen())
+            {
+                return flyout;
+            }
+        }
+
+        winrt::FlyoutBase selectionFlyout{ nullptr };
+        if (auto const textBox = element.try_as<winrt::TextBox>())
+        {
+            selectionFlyout = textBox.SelectionFlyout();
+        }
+        else if (auto const richEditBox = element.try_as<winrt::RichEditBox>())
+        {
+            selectionFlyout = richEditBox.SelectionFlyout();
+        }
+        if (selectionFlyout && selectionFlyout.IsOpen())
+        {
+            return selectionFlyout;
+        }
+
+        const int32_t count = winrt::VisualTreeHelper::GetChildrenCount(element);
+        for (int32_t i = 0; i < count; ++i)
+        {
+            if (auto const flyout = FindOpenEditorFlyout(winrt::VisualTreeHelper::GetChild(element, i)))
+            {
+                return flyout;
+            }
+        }
+
+        return nullptr;
+    }
+
 }
 
 // F2 / Enter / Escape. Registered WITH handledEventsToo, because a single-line TextBox reports Enter
@@ -68,8 +107,9 @@ void TableView::OnKeyDownForEditing(
     case winrt::Windows::System::VirtualKey::Escape:
         // Like F2, this defers to an editor that genuinely consumed the key - a ComboBox in a
         // CellEditingTemplate swallows Escape to close its popup, and that must not also cancel
-        // and roll back the whole cell edit.
-        if (!args.Handled() && IsEditing())
+        // and roll back the whole cell edit. The same goes for the editor's own menu: Escape
+        // light-dismisses it and focus is back in the editor by the time the key routes there.
+        if (!args.Handled() && IsEditing() && !m_editorFlyoutClosing)
         {
             CancelEdit();
             args.Handled(true);
@@ -121,6 +161,11 @@ void TableView::OnLosingFocusForEditing(
         return;
     }
 
+    QueueFocusLossCommit();
+}
+
+void TableView::QueueFocusLossCommit()
+{
     m_focusLossCommitQueued = true;
 
     auto weakThis = get_weak();
@@ -147,6 +192,8 @@ void TableView::OnLosingFocusForEditing(
 void TableView::CompleteFocusLossCommit()
 {
     m_focusLossCommitQueued = false;
+    m_editorFlyoutClosedRevoker.revoke();
+    m_editorFlyoutClosingRevoker.revoke();
 
     if (!IsEditing())
     {
@@ -185,6 +232,45 @@ void TableView::CompleteFocusLossCommit()
             editingElement.Focus(winrt::FocusState::Programmatic);
             return;
         }
+    }
+
+    // Focus went into the editor's own menu (a TextBox's copy/paste flyout): the user is still
+    // working in the editor. Decide again once the menu closes - it hands focus back.
+    if (auto const flyout = FindOpenEditorFlyout(editingElement))
+    {
+        // Escape light-dismisses the menu before the key is routed, so the editor then receives
+        // that same Escape. Mark the close so the key handler leaves the edit alone; the mark
+        // lives only until the current input has been dispatched.
+        m_editorFlyoutClosingRevoker = flyout.Closing(winrt::auto_revoke,
+            [weakThis = get_weak()](auto&&, auto&&)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->m_editorFlyoutClosingRevoker.revoke();
+                    strongThis->m_editorFlyoutClosing = true;
+                    auto const dispatcher = strongThis->DispatcherQueue();
+                    if (!dispatcher || !dispatcher.TryEnqueue([weakThis]()
+                        {
+                            if (auto self = weakThis.get())
+                            {
+                                self->m_editorFlyoutClosing = false;
+                            }
+                        }))
+                    {
+                        strongThis->m_editorFlyoutClosing = false;
+                    }
+                }
+            });
+
+        m_editorFlyoutClosedRevoker = flyout.Closed(winrt::auto_revoke,
+            [weakThis = get_weak()](auto&&, auto&&)
+            {
+                if (auto strongThis = weakThis.get(); strongThis && !strongThis->m_focusLossCommitQueued)
+                {
+                    strongThis->QueueFocusLossCommit();
+                }
+            });
+        return;
     }
 
     CommitEdit();

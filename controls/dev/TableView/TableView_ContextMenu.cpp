@@ -330,6 +330,7 @@ TableViewDetails::ContextMenuCandidate TableView::ResolveContextFlyout(
 }
 
 void TableView::ShowContextFlyout(
+    TableViewDetails::ContextMenuTarget const& target,
     TableViewDetails::ContextMenuCandidate const& candidate,
     winrt::ContextRequestedEventArgs const& args)
 {
@@ -340,6 +341,17 @@ void TableView::ShowContextFlyout(
     if (args && args.TryGetPosition(candidate.Anchor, point))
     {
         options.Position(point);
+    }
+    else if (target.Column && target.Anchor && candidate.Anchor != target.Anchor)
+    {
+        // A keyboard or automation request has no pointer position. A menu owned by a larger
+        // element (the row) still opens at the focused cell, not across the whole row; the owner
+        // stays the flyout's Target.
+        auto const cell = target.Anchor;
+        auto const bounds = cell.TransformToVisual(candidate.Anchor).TransformBounds(
+            { 0.0f, 0.0f, static_cast<float>(cell.ActualWidth()), static_cast<float>(cell.ActualHeight()) });
+        options.ExclusionRect(bounds);
+        options.Position(winrt::Point{ bounds.X, bounds.Y + bounds.Height });
     }
 
     candidate.Flyout.ShowAt(candidate.Anchor, options);
@@ -486,6 +498,6 @@ bool TableView::ProcessContextMenuRequest(
         return false;
     }
 
-    ShowContextFlyout(candidate, args);
+    ShowContextFlyout(target, candidate, args);
     return true;
 }
