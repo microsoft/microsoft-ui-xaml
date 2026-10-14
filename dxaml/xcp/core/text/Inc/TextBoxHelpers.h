@@ -28,6 +28,28 @@ enum class TagConversion
     Default
 };
 
+namespace TextBoxHelpers
+{
+    namespace Details
+    {
+        inline bool TryCollapseNearZeroSelectionDimension(
+            _Inout_ XFLOAT& screenOrigin,
+            _Inout_ XFLOAT& screenFarCorner,
+            _Inout_ XFLOAT& localDimension)
+        {
+            if (fabsf(screenOrigin - screenFarCorner) >= 0.05f)
+            {
+                return false;
+            }
+
+            localDimension = 0;
+            screenOrigin = floorf(screenOrigin);
+            screenFarCorner = screenOrigin;
+            return true;
+        }
+    }
+}
+
 //---------------------------------------------------------------------------
 //
 //  CTextBoxHelpers
@@ -245,4 +267,3 @@ private:
 };
 
 #endif // TEXT_BOX_HELPERS_H
-
