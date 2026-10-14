@@ -692,6 +692,10 @@ namespace MUXControlsTestApp
             ContextMenuTable.ItemsSource = _contextMenuItems;
             ContextMenuTable.SelectionChanged += (s, args) => RefreshContextMenuReadout();
 
+            // IsEditing flips after these events return, so refresh once they have.
+            ContextMenuTable.BeginningEdit += (s, args) => DispatcherQueue.TryEnqueue(RefreshContextMenuReadout);
+            ContextMenuTable.CellEditEnding += (s, args) => DispatcherQueue.TryEnqueue(RefreshContextMenuReadout);
+
             foreach (string key in new[] { Facts.CellMenu, Facts.HeaderMenu, Facts.TemplateMenu, Facts.RowMenu, Facts.TableMenu })
             {
                 var menu = (FlyoutBase)ContextMenuTableHost.Resources[key];
@@ -759,6 +763,7 @@ namespace MUXControlsTestApp
                 Facts.ItemField + "=" + _contextMenuItem + ";" +
                 Facts.TargetField + "=" + _contextMenuTarget + ";" +
                 Facts.FocusField + "=" + _contextMenuFocus + ";" +
+                Facts.EditingField + "=" + ContextMenuTable.IsEditing + ";" +
                 Facts.SelectedField + "=" + (selected == null ? Facts.NoneValue : selected.Name);
 
             if (ContextMenuReadout.Text != text)

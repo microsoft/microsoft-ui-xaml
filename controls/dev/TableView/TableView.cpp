@@ -885,6 +885,24 @@ try
         m_headerHostGotFocusRevoker.revoke();
     }
     m_headerContextRequestedRevoker.revoke();
+    m_templateRootContextRequestedRevoker.revoke();
+
+    // Below the TableView so TableView.ContextFlyout (and any ancestor's) stays closed while a cell
+    // is editing; the framework shows an element's ContextFlyout before its own handlers run.
+    if (winrt::VisualTreeHelper::GetChildrenCount(*this) > 0)
+    {
+        if (auto const templateRoot = winrt::VisualTreeHelper::GetChild(*this, 0).try_as<winrt::UIElement>())
+        {
+            m_templateRootContextRequestedRevoker = templateRoot.ContextRequested(winrt::auto_revoke,
+                [weakThis = get_weak()](auto&&, winrt::ContextRequestedEventArgs const& args)
+                {
+                    if (auto strongThis = weakThis.get())
+                    {
+                        strongThis->SuppressContextRequestWhileEditing(args);
+                    }
+                });
+        }
+    }
     if (auto oldBodyScroller = m_bodyScroller.get())
     {
         oldBodyScroller.ViewChanged(m_bodyScrollerViewChangedToken);

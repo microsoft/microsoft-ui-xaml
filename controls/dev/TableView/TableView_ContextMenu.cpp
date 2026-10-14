@@ -158,6 +158,14 @@ std::optional<TableViewDetails::ContextMenuTarget> TableView::ResolveHeaderConte
     return std::nullopt;
 }
 
+void TableView::SuppressContextRequestWhileEditing(winrt::ContextRequestedEventArgs const& args)
+{
+    if (!args.Handled() && IsEditing())
+    {
+        args.Handled(true);
+    }
+}
+
 void TableView::OnHeaderContextRequested(winrt::ContextRequestedEventArgs const& args)
 {
     if (args.Handled())
@@ -439,9 +447,12 @@ bool TableView::ProcessContextMenuRequest(
         return true;
     }
 
-    if (target.Kind == TableViewDetails::ContextMenuTargetKind::Body && IsEditing())
+    // No TableView menu shows while a cell is editing: the request is handled with nothing shown,
+    // so the row and table menus cannot open through the native chain either. An editor with its
+    // own menu (a TextBox) has already shown it and handled the request.
+    if (IsEditing())
     {
-        return false;
+        return true;
     }
 
     if (!IsContextMenuTargetCurrent(target))
