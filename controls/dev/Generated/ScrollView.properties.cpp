@@ -13,6 +13,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "ScrollView.g.cpp"
 
+GlobalDependencyProperty ScrollViewProperties::s_CanContentRenderOutsideBoundsProperty{ nullptr };
 GlobalDependencyProperty ScrollViewProperties::s_ComputedHorizontalScrollBarVisibilityProperty{ nullptr };
 GlobalDependencyProperty ScrollViewProperties::s_ComputedHorizontalScrollModeProperty{ nullptr };
 GlobalDependencyProperty ScrollViewProperties::s_ComputedVerticalScrollBarVisibilityProperty{ nullptr };
@@ -54,6 +55,17 @@ ScrollViewProperties::ScrollViewProperties()
 
 void ScrollViewProperties::EnsureProperties()
 {
+    if (!s_CanContentRenderOutsideBoundsProperty)
+    {
+        s_CanContentRenderOutsideBoundsProperty =
+            InitializeDependencyProperty(
+                L"CanContentRenderOutsideBounds",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::ScrollView>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(ScrollView::s_defaultCanContentRenderOutsideBounds),
+                winrt::PropertyChangedCallback(&OnCanContentRenderOutsideBoundsPropertyChanged));
+    }
     if (!s_ComputedHorizontalScrollBarVisibilityProperty)
     {
         s_ComputedHorizontalScrollBarVisibilityProperty =
@@ -300,6 +312,7 @@ void ScrollViewProperties::EnsureProperties()
 
 void ScrollViewProperties::ClearProperties()
 {
+    s_CanContentRenderOutsideBoundsProperty = nullptr;
     s_ComputedHorizontalScrollBarVisibilityProperty = nullptr;
     s_ComputedHorizontalScrollModeProperty = nullptr;
     s_ComputedVerticalScrollBarVisibilityProperty = nullptr;
@@ -322,6 +335,14 @@ void ScrollViewProperties::ClearProperties()
     s_VerticalScrollRailModeProperty = nullptr;
     s_ZoomChainModeProperty = nullptr;
     s_ZoomModeProperty = nullptr;
+}
+
+void ScrollViewProperties::OnCanContentRenderOutsideBoundsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ScrollView>();
+    winrt::get_self<ScrollView>(owner)->OnPropertyChanged(args);
 }
 
 void ScrollViewProperties::OnComputedHorizontalScrollBarVisibilityPropertyChanged(
@@ -538,6 +559,19 @@ void ScrollViewProperties::OnZoomModePropertyChanged(
 {
     auto owner = sender.as<winrt::ScrollView>();
     winrt::get_self<ScrollView>(owner)->OnPropertyChanged(args);
+}
+
+void ScrollViewProperties::CanContentRenderOutsideBounds(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<ScrollView*>(this)->SetValue(s_CanContentRenderOutsideBoundsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool ScrollViewProperties::CanContentRenderOutsideBounds()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<ScrollView*>(this)->GetValue(s_CanContentRenderOutsideBoundsProperty));
 }
 
 void ScrollViewProperties::ComputedHorizontalScrollBarVisibility(winrt::Visibility const& value)

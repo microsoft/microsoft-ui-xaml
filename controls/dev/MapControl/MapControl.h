@@ -34,7 +34,7 @@ private:
     winrt::IAsyncOperation<winrt::hstring> InitializeWebMap();
     winrt::fire_and_forget SetUpWebView();
     winrt::fire_and_forget OnLayerAdded(const winrt::MapElementsLayer layer);
-    winrt::IAsyncOperation<winrt::hstring> AddMapIcon(winrt::Geopoint mapIconPoint, winrt::hstring layerId);
+    winrt::IAsyncOperation<winrt::hstring> AddMapIcon(winrt::MapIcon mapIcon, winrt::hstring layerId);
     winrt::IAsyncOperation<winrt::CoreWebView2> MapControl::GetCoreWebView2();
     winrt::fire_and_forget RemoveMapIcon(winrt::hstring pointId, winrt::hstring layerId);
     winrt::fire_and_forget ClearLayer(winrt::hstring layerId);

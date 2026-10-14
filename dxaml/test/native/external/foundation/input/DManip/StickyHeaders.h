@@ -33,14 +33,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(BasicsWUCFull)
                 TEST_METHOD_PROPERTY(L"Description", L"Creates a StickyHeader ListView and validates the DComp tree with DManip-on-DComp enabled")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp node
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ScrollIntoViewWUCFull)
                 TEST_METHOD_PROPERTY(L"Description", L"Pans a StickyHeader ListView and validates the DComp tree with DManip-on-DComp enabled")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp node
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
