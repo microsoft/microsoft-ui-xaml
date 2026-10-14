@@ -1429,7 +1429,14 @@ LRESULT DesktopWindowImpl::OnMessage(
         case WM_SIZE:
             return LResultFromHResult(OnSizeChanged(wParam, lParam));
         case WM_SHOWWINDOW:
-            return LResultFromHResult(OnShowWindow(wParam, lParam));
+        {
+            // WM_SHOWWINDOW is delivered before DefWindowProc updates the window's
+            // visibility. Process the default behavior first so the event observes
+            // the same state reported by Window.Visible.
+            const auto result = BaseWindow::OnMessage(uMsg, wParam, lParam);
+            const HRESULT hr = OnShowWindow(wParam, lParam);
+            return FAILED(hr) ? LResultFromHResult(hr) : result;
+        }
         case WM_ACTIVATE:
             return LResultFromHResult(OnActivate(wParam, lParam));
         case WM_NCRBUTTONUP:
