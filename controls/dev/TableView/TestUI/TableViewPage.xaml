@@ -93,6 +93,24 @@
                     IsTabStop="False"
                     AllowFocusOnInteraction="False"
                     Click="OnFilterSourceClick" />
+            <Button Content="Disable Focused Row (focus-neutral)"
+                    AutomationProperties.Name="DisableFocusedRowButton"
+                    AutomationProperties.AutomationId="DisableFocusedRowButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnDisableFocusedRowClick" />
+            <Button x:Name="navigateToTouch"
+                    Content="Touch Page"
+                    AutomationProperties.Name="navigateToTouch"
+                    AutomationProperties.AutomationId="navigateToTouch"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False" />
+            <Button x:Name="navigateToVirtualization"
+                    Content="Virtualization"
+                    AutomationProperties.Name="navigateToVirtualization"
+                    AutomationProperties.AutomationId="navigateToVirtualization"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False" />
         </StackPanel>
 
         <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in
@@ -289,7 +307,8 @@
         </Grid>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
-            <Button Content="After Table Button"
+            <Button x:Name="AfterTableButton"
+                    Content="After Table Button"
                     AutomationProperties.Name="AfterTableButton"
                     AutomationProperties.AutomationId="AfterTableButton" />
             <Button Content="Basic"

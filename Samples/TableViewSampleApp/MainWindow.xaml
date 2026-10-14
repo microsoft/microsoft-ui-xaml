@@ -31,7 +31,8 @@
                         VerticalAlignment="Center">
                     <muxc:FontIcon Glyph="&#xE80A;" FontSize="12"
                                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   AutomationProperties.AccessibilityView="Raw"/>
                 </Border>
                 <TextBlock x:Name="AppTitleTextBlock"
                            Text="WinUI TableView Samples"
@@ -50,7 +51,7 @@
                     ToolTipService.ToolTip="Toggle theme (Use system setting → Light → Dark)"
                     AutomationProperties.Name="Toggle theme"
                     Click="OnThemeToggleClick">
-                <muxc:FontIcon x:Name="ThemeToggleIcon" Glyph="&#xE793;" FontSize="14"/>
+                <muxc:FontIcon x:Name="ThemeToggleIcon" Glyph="&#xE793;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
             </Button>
         </Grid>
 

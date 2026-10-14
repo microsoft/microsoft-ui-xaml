@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
@@ -606,6 +607,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(labels.Contains("Asha"),
                     $"The collapsed group must still contribute no data rows; saw [{string.Join(", ", labels)}].");
                 Verify.IsTrue(labels.Contains("Nadia"), "The added row must appear in its own group.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a collapse does not pull focus back to its header once focus has left the table.")]
+        public void VerifyGroupFocusRestoreSkippedWhenFocusLeftTable()
+        {
+            TableView tableView = null;
+            Button button = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                button = new Button { Content = "Outside" };
+                var panel = new StackPanel();
+                panel.Children.Add(tableView);
+                panel.Children.Add(button);
+                LoadContent(panel);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // The collapse captures the focused header for a restore after the deferred reshape.
+                Verify.IsTrue(GetGroupHeader(tableView, 0).Focus(FocusState.Keyboard), "Precondition: the header takes keyboard focus.");
+                GetExpandCollapseProvider(tableView, 0).Collapse();
+                Verify.IsTrue(button.Focus(FocusState.Programmatic), "Precondition: the button takes focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(ReferenceEquals(button, FocusManager.GetFocusedElement(tableView.XamlRoot)),
+                    "Focus that has left the table must not be pulled back to the collapsed header.");
+                Verify.IsFalse(GetGroupInfo(tableView, 0)?.IsExpanded ?? true, "The group must still collapse.");
             });
         }
 

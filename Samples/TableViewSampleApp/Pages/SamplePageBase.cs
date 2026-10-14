@@ -74,7 +74,15 @@ public partial class SamplePageBase : Page
     {
         if (_status is not null)
         {
-            _status.LastAction = message;
+            if (string.Equals(_status.LastAction, message, StringComparison.Ordinal))
+            {
+                // Same value: the DP raises no change, so announce the repeat explicitly.
+                _status.AnnounceLastAction();
+            }
+            else
+            {
+                _status.LastAction = message;
+            }
         }
 
         RefreshReadouts();

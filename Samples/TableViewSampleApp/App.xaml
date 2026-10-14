@@ -108,6 +108,7 @@
                 <Setter Property="FontWeight" Value="SemiBold"/>
                 <Setter Property="FontSize" Value="14"/>
                 <Setter Property="Margin" Value="0,4,0,0"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
             </Style>
             <Style x:Key="SectionDescriptionTextStyle" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="12"/>
@@ -123,6 +124,7 @@
             <Style x:Key="StatusReadoutLabelStyle" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="12"/>
                 <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
             </Style>
             <Style x:Key="StatusReadoutValueStyle" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="12"/>

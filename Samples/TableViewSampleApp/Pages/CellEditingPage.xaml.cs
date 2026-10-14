@@ -68,6 +68,8 @@ public sealed partial class CellEditingPage : SamplePageBase
     private void OnBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
     {
         _openEdit = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName); // snippet:skip
+        _isEditOpen = true; // snippet:skip
+        _editsAtBeginEdit = _editsCommitted; // snippet:skip
         SetEditButtonsEnabled(true);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Began editing {0}", _openEdit));
     }
@@ -77,9 +79,11 @@ public sealed partial class CellEditingPage : SamplePageBase
     {
         var what = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName); // snippet:skip
         _openEdit = "(none)"; // snippet:skip
+        _isEditOpen = false; // snippet:skip
+        var logged = _editsCommitted > _editsAtBeginEdit && EditLog.Count > 0 ? "; edit log: " + EditLog[0] : string.Empty; // snippet:skip
         SetEditButtonsEnabled(false);
         SetLastAction(args.EditAction == TableViewEditAction.Commit
-            ? string.Format(CultureInfo.CurrentCulture, "Committed {0}", what)
+            ? string.Format(CultureInfo.CurrentCulture, "Committed {0}{1}", what, logged)
             : string.Format(CultureInfo.CurrentCulture, "Cancelled the edit of {0}; the model keeps its value", what));
     }
 
@@ -147,10 +151,18 @@ public sealed partial class CellEditingPage : SamplePageBase
         };
 
         _editsCommitted++;
-        EditLog.Insert(0, string.Format(CultureInfo.CurrentCulture, "{0} · {1} = {2}", person.FullName, propertyName, value));
+        var entry = string.Format(CultureInfo.CurrentCulture, "{0} · {1} = {2}", person.FullName, propertyName, value);
+        EditLog.Insert(0, entry);
         while (EditLog.Count > 50)
         {
             EditLog.RemoveAt(EditLog.Count - 1);
+        }
+
+        // The edit log is not a live region. When the write lands while the editor is still open,
+        // OnCellEditEnding's "Committed …" message carries the entry; otherwise announce it here.
+        if (!_isEditOpen)
+        {
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Edit log: {0}", entry));
         }
     }
 

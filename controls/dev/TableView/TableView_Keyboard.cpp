@@ -1643,7 +1643,9 @@ winrt::TableViewRow TableView::GetRealizedRowAt(int32_t rowIndex) const
 }
 
 winrt::TableViewRow TableView::ResolveFocusEntryRow(
-    winrt::TableViewRow const& row, winrt::DependencyObject const& oldFocusedElement)
+    winrt::TableViewRow const& row,
+    winrt::DependencyObject const& oldFocusedElement,
+    winrt::FocusNavigationDirection direction)
 {
     if (!row)
     {
@@ -1655,34 +1657,280 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
         oldFocusedElement == selfObject ||
         SharedHelpers::IsAncestor(oldFocusedElement, selfObject, false /* checkVisibility */);
 
-    if (m_currentCellRow < 0 || focusCameFromWithin)
+    if (focusCameFromWithin)
     {
         return row;
     }
 
-    // m_currentCellRow is a bare index, and nothing renumbers it when the source reshapes
-    // (sort, filter, group expand/collapse, insert, remove), so index 2 can name a different
-    // record by the time focus comes back. Follow the remembered ITEM instead: m_currentItem is
-    // written by the same OnRowCellFocusChanged funnel that writes m_currentCellRow, and it is
-    // cleared with SetCurrentCell(nullptr, nullptr) when the source is replaced.
-    auto const rememberedItem = m_currentItem.get();
-    winrt::IInspectable itemAtRememberedRow{ nullptr };
-    auto const stillTheSameRecord =
-        rememberedItem &&
-        TryGetItemAtRowIndex(m_currentCellRow, itemAtRememberedRow) &&
-        SameInspectableIdentity(itemAtRememberedRow, rememberedItem);
-
-    // A reshape that only moved the item is recoverable: FindRealizedRowForItem searches
-    // realized rows only, so this never forces a realization or a surprise scroll. When the
-    // item is gone or off-screen, focus stays on the row the framework aimed at.
-    if (auto const remembered = stillTheSameRecord
-            ? GetRealizedRowAt(m_currentCellRow)
-            : FindRealizedRowForItem(rememberedItem))
+    if (m_currentCellRow >= 0)
     {
-        return remembered;
+        // m_currentCellRow is a bare index that reshapes don't renumber, so follow the remembered item.
+        auto const rememberedItem = m_currentItem.get();
+        winrt::IInspectable itemAtRememberedRow{ nullptr };
+        auto const stillTheSameRecord =
+            rememberedItem &&
+            TryGetItemAtRowIndex(m_currentCellRow, itemAtRememberedRow) &&
+            SameInspectableIdentity(itemAtRememberedRow, rememberedItem);
+
+        // Realized rows only, so this never realizes or scrolls; a gone, off-screen or disabled item
+        // falls back to the viewport edge row.
+        auto const remembered = stillTheSameRecord
+            ? GetRealizedRowAt(m_currentCellRow)
+            : FindRealizedRowForItem(rememberedItem);
+        if (remembered && remembered.IsEnabled())
+        {
+            return remembered;
+        }
+    }
+
+    // XAML aims at a cache row outside the viewport, which would scroll; match ItemsView instead.
+    if (auto const edge = FindViewportEdgeRowInternal(direction == winrt::FocusNavigationDirection::Previous))
+    {
+        return edge;
     }
 
     return row;
+}
+
+winrt::TableViewRow TableView::FindViewportEdgeRowInternal(bool last) const
+{
+    return FindViewportEdgeElementInternal(last, false /* includeGroupHeaders */).try_as<winrt::TableViewRow>();
+}
+
+bool TableView::TryRedirectBandEntryToViewport(
+    winrt::UIElement const& target,
+    winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
+{
+    auto const direction = args.Direction();
+    auto const repeater = m_rowsRepeater.get();
+    auto const oldFocus = args.OldFocusedElement();
+    winrt::DependencyObject const selfObject = *this;
+    if ((direction != winrt::FocusNavigationDirection::Next && direction != winrt::FocusNavigationDirection::Previous) ||
+        !repeater || !oldFocus || HasRedirectedFocusEntry(args.CorrelationId()) ||
+        (oldFocus != selfObject && !SharedHelpers::IsAncestor(oldFocus, selfObject, false /* checkVisibility */)) ||
+        SharedHelpers::IsAncestor(oldFocus, repeater, false /* checkVisibility */))
+    {
+        return false;
+    }
+
+    // XAML aims at the first or last realized tab stop, which can be a cache row or group header.
+    auto const first = FindViewportEdgeElementInternal(false, true /* includeGroupHeaders */);
+    auto const last = FindViewportEdgeElementInternal(true, true /* includeGroupHeaders */);
+    const int32_t index = repeater.GetElementIndex(target);
+    if (!first || !last || index < 0)
+    {
+        return false;
+    }
+    if (index >= repeater.GetElementIndex(first) && index <= repeater.GetElementIndex(last))
+    {
+        if (target.try_as<winrt::TableViewGroupHeader>())
+        {
+            SetCellCursorActiveInternal(false);
+        }
+        return false;
+    }
+
+    // Land at row level; the redirected row's own GettingFocus re-enters the column cursor's cell.
+    auto const edge = direction == winrt::FocusNavigationDirection::Previous ? last : first;
+    auto const edgeRow = edge.try_as<winrt::TableViewRow>();
+    auto const edgeRowImpl = edgeRow ? winrt::get_self<TableViewRow>(edgeRow) : nullptr;
+    const bool edgeWasCellLevel = edgeRowImpl && edgeRowImpl->IsCellLevelInternal();
+    if (edgeRowImpl)
+    {
+        edgeRowImpl->SetCellLevelInternal(false);
+    }
+
+    if (IsEntryRedirectTargetFocusable(edge, selfObject) && args.TrySetNewFocusedElement(edge))
+    {
+        NoteFocusEntryRedirect(args.CorrelationId());
+        if (!edgeRow)
+        {
+            // Group headers have no cell level; the column cursor survives.
+            SetCellCursorActiveInternal(false);
+        }
+        return true;
+    }
+
+    if (edgeRowImpl)
+    {
+        edgeRowImpl->SetCellLevelInternal(edgeWasCellLevel);
+    }
+    return false;
+}
+
+// A refused target can be substituted by one that lands back on a row and re-enters the redirect.
+bool TableView::IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner)
+{
+    if (!target || !target.XamlRoot() || target.Visibility() != winrt::Visibility::Visible || !target.IsTabStop())
+    {
+        return false;
+    }
+
+    if (!SharedHelpers::IsAncestor(target, owner, true /* checkVisibility */))
+    {
+        return false;
+    }
+
+    // Cells are Grids, not Controls, so a disabled ancestor row does not show in the target's own state.
+    winrt::DependencyObject current = target;
+    while (current)
+    {
+        if (auto const control = current.try_as<winrt::Control>(); control && !control.IsEnabled())
+        {
+            return false;
+        }
+        if (current == owner)
+        {
+            break;
+        }
+        current = winrt::VisualTreeHelper::GetParent(current);
+    }
+
+    return true;
+}
+
+winrt::UIElement TableView::FindViewportEdgeElementInternal(bool last, bool includeGroupHeaders) const
+{
+    auto const repeater = m_rowsRepeater.get();
+    auto const scroller = m_bodyScroller.get();
+    if (!repeater || !scroller)
+    {
+        return nullptr;
+    }
+
+    const double viewportHeight = scroller.ViewportHeight();
+    if (!(viewportHeight > 0.0))
+    {
+        return nullptr;
+    }
+
+    winrt::UIElement fullyVisible{ nullptr };
+    int32_t fullyVisibleIndex = -1;
+    winrt::UIElement partiallyVisible{ nullptr };
+    int32_t partiallyVisibleIndex = -1;
+    auto const better = [last](int32_t candidate, int32_t current)
+    {
+        return current < 0 || (last ? candidate > current : candidate < current);
+    };
+
+    const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
+    for (int32_t i = 0; i < childCount; ++i)
+    {
+        auto const element = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::Control>();
+        const bool isCandidate = element &&
+            (element.try_as<winrt::TableViewRow>() || (includeGroupHeaders && element.try_as<winrt::TableViewGroupHeader>()));
+        if (!isCandidate || element.Visibility() != winrt::Visibility::Visible || !element.IsEnabled())
+        {
+            continue;
+        }
+
+        // Recycled containers stay parented with index -1.
+        const int32_t index = repeater.GetElementIndex(element);
+        const double height = element.ActualHeight();
+        if (index < 0 || !(height > 0.0))
+        {
+            continue;
+        }
+
+        double top = 0.0;
+        try
+        {
+            top = element.TransformToVisual(scroller).TransformPoint({ 0.0f, 0.0f }).Y;
+        }
+        catch (winrt::hresult_error const&)
+        {
+            continue;
+        }
+
+        // Half a pixel of slack absorbs layout rounding at the viewport edges.
+        constexpr double slack = 0.5;
+        const double bottom = top + height;
+        if (bottom <= slack || top >= viewportHeight - slack)
+        {
+            continue;
+        }
+
+        if (top >= -slack && bottom <= viewportHeight + slack)
+        {
+            if (better(index, fullyVisibleIndex))
+            {
+                fullyVisible = element;
+                fullyVisibleIndex = index;
+            }
+        }
+        else if (better(index, partiallyVisibleIndex))
+        {
+            partiallyVisible = element;
+            partiallyVisibleIndex = index;
+        }
+    }
+
+    return fullyVisible ? fullyVisible : partiallyVisible;
+}
+
+bool TableView::RowShowsCurrentItemInternal(winrt::TableViewRow const& row) const
+{
+    auto const repeater = m_rowsRepeater.get();
+    auto const currentItem = m_currentItem.get();
+    if (!row || !repeater || !currentItem)
+    {
+        return false;
+    }
+
+    const int32_t index = repeater.GetElementIndex(row);
+    winrt::IInspectable item{ nullptr };
+    return index >= 0 &&
+        TryGetItemAtRowIndex(index, item) &&
+        SameInspectableIdentity(item, currentItem);
+}
+
+TableView::FocusEntryTarget TableView::ResolveFocusEntryTarget(
+    winrt::TableViewRow const& row,
+    winrt::DependencyObject const& oldFocusedElement,
+    winrt::FocusNavigationDirection direction)
+{
+    FocusEntryTarget result{};
+    result.Row = ResolveFocusEntryRow(row, oldFocusedElement, direction);
+    if (!result.Row)
+    {
+        return result;
+    }
+
+    // Container identity (m_cellLevelRow) isn't enough: containers recycle onto other records.
+    if (m_cellCursorActive && RowShowsCurrentItemInternal(result.Row))
+    {
+        auto const rowImpl = winrt::get_self<TableViewRow>(result.Row);
+        const int32_t cellCount = rowImpl->GetVisibleCellCountInternal();
+        if (cellCount > 0)
+        {
+            if (auto const cell = rowImpl->GetVisibleCellInternal(std::clamp(m_currentCellColumn, 0, cellCount - 1)))
+            {
+                result.Element = cell;
+                result.CellLevel = true;
+                return result;
+            }
+        }
+    }
+
+    result.Element = result.Row;
+    return result;
+}
+
+void TableView::ArmCellLevelRowInternal(winrt::TableViewRow const& row)
+{
+    // Release any other drilled-in row first so only one row ever has its cells armed.
+    if (!row)
+    {
+        return;
+    }
+
+    if (auto const previous = m_cellLevelRow.get(); previous && previous != row)
+    {
+        winrt::get_self<TableViewRow>(previous)->SetCellLevelInternal(false);
+    }
+    winrt::get_self<TableViewRow>(row)->SetCellLevelInternal(true);
+    m_cellLevelRow = winrt::make_weak(row);
+    m_cellCursorActive = true;
 }
 
 // Popping out of cell level must restore the drilled row to row level, or that row disappears from
@@ -1754,15 +2002,7 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
         m_currentCellRow = rowIndex;
     }
 
-    // A cell holds focus, so the cursor is at cell level on THIS row. Release any other row that
-    // was still drilled in before claiming this one, so only one row ever has its cells armed.
-    if (auto const previous = m_cellLevelRow.get(); previous && previous != row)
-    {
-        winrt::get_self<TableViewRow>(previous)->SetCellLevelInternal(false);
-    }
-    rowImpl->SetCellLevelInternal(true);
-    m_cellLevelRow = winrt::make_weak(row);
-    m_cellCursorActive = true;
+    ArmCellLevelRowInternal(row);
 
     if (!IsEditing())
     {
@@ -2062,6 +2302,7 @@ bool TableView::TryHandleGroupHeaderExpandCollapseKey(const winrt::KeyRoutedEven
         return true;
     }
 
+    winrt::get_self<TableViewGroupHeader>(header)->SetGestureFocusStateInternal(winrt::FocusState::Keyboard);
     SetGroupExpansion(header, expand);
     return true;
 }

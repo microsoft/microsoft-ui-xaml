@@ -119,6 +119,8 @@ namespace MUXControlsTestApp
         private readonly ObservableCollection<TableViewTestPerson> _groupedItems = new ObservableCollection<TableViewTestPerson>();
         private TableViewSource _groupedSource;
         private int _addedColumnCount;
+        private TableViewRow _disabledRow;
+        private object _disabledRowItem;
 
         public TableViewPage()
         {
@@ -130,6 +132,9 @@ namespace MUXControlsTestApp
             }
 
             InitializeComponent();
+
+            navigateToTouch.Click += delegate { Frame.NavigateWithoutAnimation(typeof(TableViewTouchPage), 0); };
+            navigateToVirtualization.Click += delegate { Frame.NavigateWithoutAnimation(typeof(TableViewVirtualizationPage), 0); };
 
             for (int i = 0; i < Facts.BasicItemCount; i++)
             {
@@ -800,6 +805,44 @@ namespace MUXControlsTestApp
             if (age != null)
             {
                 BasicTableView.SortByColumn(age, SortDirection.Descending);
+            }
+        }
+
+        // Moves focus out first so disabling the row cannot shift focus to another row of the table.
+        private void OnDisableFocusedRowClick(object sender, RoutedEventArgs e)
+        {
+            for (var node = FocusManager.GetFocusedElement(XamlRoot) as DependencyObject; node != null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (node is TableViewRow row)
+                {
+                    AfterTableButton.Focus(FocusState.Programmatic);
+                    ReenableDisabledRow();
+                    _disabledRow = row;
+                    _disabledRowItem = row.DataContext;
+                    row.DataContextChanged += OnDisabledRowDataContextChanged;
+                    row.IsEnabled = false;
+                    return;
+                }
+            }
+        }
+
+        // The row is a recycled container, so it is re-enabled once it is reused for another item.
+        private void OnDisabledRowDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (!object.Equals(args.NewValue, _disabledRowItem))
+            {
+                ReenableDisabledRow();
+            }
+        }
+
+        private void ReenableDisabledRow()
+        {
+            if (_disabledRow != null)
+            {
+                _disabledRow.DataContextChanged -= OnDisabledRowDataContextChanged;
+                _disabledRow.IsEnabled = true;
+                _disabledRow = null;
+                _disabledRowItem = null;
             }
         }
     }

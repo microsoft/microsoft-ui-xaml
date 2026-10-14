@@ -274,9 +274,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies Multiply (*) on a focused tree row expands the whole subtree beneath it and keeps focus on the row.")]
-        // Known product bug: ExpandSubtree rebuilds (Reset) instead of splicing; the repeater moves focus
-        // off the cleared container and it lands on the first child (Ben), not Ada. The subtree assert passes.
-        [TestProperty("Ignore", "True")]
         public void MultiplyExpandsTreeRowSubtree()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -576,8 +573,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return focused != null && IsTreeRowNamed(focused, name);
         }
 
+        // Focus restores after a reshape can settle over a few layout passes; poll like WaitForHierarchyField.
         private static void VerifyTreeRowFocused(string tableAutomationId, string name, string message)
         {
+            for (int attempt = 0; attempt < 5 && !IsTreeRowFocused(tableAutomationId, name); attempt++)
+            {
+                Wait.ForIdle();
+            }
+
             ElementCache.Clear();
             UIObject focused = FindFocusedBodyElement(GetRowsHost(tableAutomationId));
             Log.Comment("Focused row: {0} (cell {1}); expected row '{2}' itself.",

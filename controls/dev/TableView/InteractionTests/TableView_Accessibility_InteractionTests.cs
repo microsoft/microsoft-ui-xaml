@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System;
 using Common;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
@@ -112,6 +113,96 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.AreEqual(baselineRows, CountRows(rowsHost), "A second Enter must re-expand the same group and restore the baseline row count.");
                 Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState, "After the second Enter the header must report Expanded.");
+            }
+        }
+
+        #endregion
+
+        #region Automation peer geometry
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the TableView's UIA BoundingRectangle ends at its own layout box, not at the realized cache rows below the body viewport.")]
+        public void TableViewBoundingRectangleExcludesRowsBelowViewport()
+        {
+            // ScrollOffsetTextBlock follows the table in the same StackPanel, so its top bounds the table's end.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem))
+                {
+                    Verify.Fail("Could not select the 'Scrolling' pivot item.");
+                    return;
+                }
+
+                UIObject tableView = GetTable(ScrollingTable);
+                UIObject nextElement = FindElement.ById(ScrollOffsets);
+                if (tableView == null || nextElement == null)
+                {
+                    Verify.Fail("ScrollingTableView or ScrollOffsetTextBlock was not found on the test page.");
+                    return;
+                }
+
+                var tableBounds = tableView.BoundingRectangle;
+                var nextBounds = nextElement.BoundingRectangle;
+                var headerHostBounds = GetHeaderHost(tableView).BoundingRectangle;
+                Log.Comment("Table bounds {0}; header host bounds {1}; next element bounds {2}.", tableBounds, headerHostBounds, nextBounds);
+
+                Verify.IsGreaterThan(tableBounds.Height, 0, "The on-screen table must report non-empty bounds.");
+                Verify.IsLessThanOrEqual(tableBounds.Bottom, nextBounds.Top + 1,
+                    "The table's bounding rectangle must end at its own box, above the element laid out after it.");
+
+                // A wrong DIP->physical conversion shows up here at 150%.
+                Verify.IsLessThanOrEqual(Math.Abs(tableBounds.Left - headerHostBounds.Left), 1,
+                    "The table's left edge must be its own layout box's left edge.");
+                Verify.IsLessThanOrEqual(Math.Abs(tableBounds.Top - headerHostBounds.Top), 1,
+                    "The table's top edge must be its own layout box's top edge.");
+
+                // Columns sum to 840 DIP, so the unclipped union is wider too. The aspect ratio is scale-free.
+                double aspect = (double)tableBounds.Width / tableBounds.Height;
+                Log.Comment("Aspect ratio {0:F3}, layout box 520x300 = {1:F3}.", aspect, 520.0 / 300.0);
+                Verify.IsLessThan(Math.Abs(aspect - (520.0 / 300.0)), 0.03,
+                    "The table's bounding rectangle must have its layout box's proportions (Width=520, Height=300).");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the TableView's UIA BoundingRectangle stays on its layout box when the body is scrolled to the middle, with cache rows realized ABOVE the viewport too.")]
+        public void TableViewBoundingRectangleStaysOnLayoutBoxWhenScrolled()
+        {
+            // At offset 0 nothing is realized above the viewport, so only a scrolled table can show top inflation.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem))
+                {
+                    Verify.Fail("Could not select the 'Scrolling' pivot item.");
+                    return;
+                }
+
+                UIObject tableView = GetTable(ScrollingTable);
+                UIObject nextElement = FindElement.ById(ScrollOffsets);
+                if (tableView == null || nextElement == null)
+                {
+                    Verify.Fail("ScrollingTableView or ScrollOffsetTextBlock was not found on the test page.");
+                    return;
+                }
+
+                var before = tableView.BoundingRectangle;
+                string offsetsBefore = ReadScrollOffsets();
+
+                WheelAtPoint(CentreOf(tableView), -10 * 120);
+                Wait.ForIdle();
+
+                string offsetsAfter = ReadScrollOffsets();
+                var after = tableView.BoundingRectangle;
+                var nextBounds = nextElement.BoundingRectangle;
+                Log.Comment("Offsets '{0}' -> '{1}'. Table bounds {2} -> {3}; next element bounds {4}.",
+                    offsetsBefore, offsetsAfter, before, after, nextBounds);
+
+                Verify.AreNotEqual(offsetsBefore, offsetsAfter, "Precondition: the wheel must scroll the body.");
+                Verify.IsLessThanOrEqual(Math.Abs(after.Top - before.Top), 1, "Scrolling must not move the table's top edge.");
+                Verify.IsLessThanOrEqual(Math.Abs(after.Left - before.Left), 1, "Scrolling must not move the table's left edge.");
+                Verify.IsLessThanOrEqual(Math.Abs(after.Height - before.Height), 1, "Scrolling must not change the table's height.");
+                Verify.IsLessThanOrEqual(after.Bottom, nextBounds.Top + 1,
+                    "The scrolled table's bounding rectangle must still end above the element laid out after it.");
             }
         }
 

@@ -63,7 +63,9 @@
                         x:Name="SearchBox"
                         AutomationProperties.AutomationId="FilterQueryBox"
                         Header="Query"
-                        PlaceholderText="Name, department, role or email"
+                        PlaceholderText="Search people"
+                        AutomationProperties.HelpText="Matches name, department, role or email."
+                        ToolTipService.ToolTip="Matches name, department, role or email."
                         TextChanged="OnSearchChanged"
                         HorizontalAlignment="Stretch"/>
                     <ToggleSwitch

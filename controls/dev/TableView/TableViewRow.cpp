@@ -745,12 +745,16 @@ void TableViewRow::OnRowGettingFocus(
     }
 
     // When returning from another band inside the table, stale cell-level state can make XAML aim
-    // the body's single tab stop at a cell. Body band entry is still row-level; outside re-entry is
-    // left alone so it can resume the previously focused cell.
+    // the body's single tab stop at a cell. Body band entry is still row-level.
     winrt::DependencyObject const ownerObject = owner;
     const bool focusCameFromWithinTable =
         oldFocus == ownerObject ||
         SharedHelpers::IsAncestor(oldFocus, ownerObject, false /* checkVisibility */);
+
+    if (focusCameFromWithinTable && ownerImpl->TryRedirectBandEntryToViewport(*this, args))
+    {
+        return;
+    }
 
     // The bands share one column cursor: a cell-level cursor re-enters on the cell in that column.
     if (focusCameFromWithinTable && ownerImpl->IsCellCursorActiveInternal())
@@ -789,40 +793,94 @@ void TableViewRow::OnRowGettingFocus(
         }
     }
 
-    if (newFocus != selfObject)
+    if (focusCameFromWithinTable)
     {
-        if (!focusCameFromWithinTable || !FindOwnCellInternal(newFocus, false /* requireExact */))
+        if (newFocus == selfObject || !FindOwnCellInternal(newFocus, false /* requireExact */))
         {
             return;
         }
 
+        // Commit the cursor change only once the focus manager accepts the redirect.
+        const bool wasCellLevel = IsCellLevelInternal();
         SetCellLevelInternal(false);
+        if (args.TrySetNewFocusedElement(selfObject))
+        {
+            ownerImpl->SetCellCursorActiveInternal(false);
+        }
+        else
+        {
+            SetCellLevelInternal(wasCellLevel);
+        }
+        return;
+    }
+
+    const auto correlationId = args.CorrelationId();
+    if (ownerImpl->HasRedirectedFocusEntry(correlationId))
+    {
+        return;
+    }
+
+    auto entry = ownerImpl->ResolveFocusEntryTarget(*this, oldFocus, direction);
+    if (!entry.Element || !entry.Row)
+    {
+        return;
+    }
+
+    // Redirecting to an ancestor cell of the proposed element starts a loop. A row target still
+    // takes focus from content hosted inside it.
+    winrt::DependencyObject targetObject = entry.Element;
+    if (newFocus == targetObject ||
+        (entry.CellLevel && SharedHelpers::IsAncestor(newFocus, targetObject, false /* checkVisibility */)))
+    {
+        return;
+    }
+
+    // Arm the target's level first (only one level is a tab stop); undo on failure.
+    auto targetRowImpl = winrt::get_self<TableViewRow>(entry.Row);
+    bool targetWasCellLevel = targetRowImpl->IsCellLevelInternal();
+    targetRowImpl->SetCellLevelInternal(entry.CellLevel);
+
+    if (!TableView::IsEntryRedirectTargetFocusable(entry.Element, ownerObject))
+    {
+        targetRowImpl->SetCellLevelInternal(targetWasCellLevel);
+
+        // The remembered target can't take focus; the viewport edge row still avoids a cache row.
+        auto const edgeRow = ownerImpl->FindViewportEdgeRowInternal(direction == winrt::FocusNavigationDirection::Previous);
+        winrt::DependencyObject const edgeObject = edgeRow;
+        if (!edgeRow || edgeObject == newFocus || edgeObject == targetObject)
+        {
+            return;
+        }
+
+        entry.Row = edgeRow;
+        entry.Element = edgeRow;
+        entry.CellLevel = false;
+        targetObject = edgeObject;
+        targetRowImpl = winrt::get_self<TableViewRow>(edgeRow);
+        targetWasCellLevel = targetRowImpl->IsCellLevelInternal();
+        targetRowImpl->SetCellLevelInternal(false);
+        if (!TableView::IsEntryRedirectTargetFocusable(edgeRow, ownerObject))
+        {
+            targetRowImpl->SetCellLevelInternal(targetWasCellLevel);
+            return;
+        }
+    }
+
+    if (!args.TrySetNewFocusedElement(targetObject))
+    {
+        targetRowImpl->SetCellLevelInternal(targetWasCellLevel);
+        return;
+    }
+
+    ownerImpl->NoteFocusEntryRedirect(correlationId);
+    if (entry.CellLevel)
+    {
+        ownerImpl->ArmCellLevelRowInternal(entry.Row);
+    }
+    else
+    {
         ownerImpl->SetCellCursorActiveInternal(false);
-        args.TrySetNewFocusedElement(selfObject);
-        return;
     }
-
-    // Redirect body Tab entry from the first repeater row to the remembered row.
-    auto const target = ownerImpl->ResolveFocusEntryRow(*this, oldFocus);
-    if (!target || target == *this)
-    {
-        return;
-    }
-
-    auto const targetObject = target.try_as<winrt::DependencyObject>();
-    if (!targetObject || targetObject == newFocus)
-    {
-        return;
-    }
-
-    // Body entry is row-level; reset the remembered row before redirecting or it is not focusable.
-    winrt::get_self<TableViewRow>(target)->SetCellLevelInternal(false);
-    ownerImpl->SetCellCursorActiveInternal(false);
-
-    // TrySetNewFocusedElement is refused during some focus operations (a programmatic move already
-    // in flight, for one). Failing is fine - focus simply stays on the row XAML aimed at, which is
-    // still a row-level landing in the body.
-    args.TrySetNewFocusedElement(targetObject);
 }
 
 void TableViewRow::OnRowGotFocus()

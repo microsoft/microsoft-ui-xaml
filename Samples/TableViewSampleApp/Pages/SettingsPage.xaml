@@ -77,9 +77,8 @@
                                    TextWrapping="Wrap"/>
                         <TextBlock Text="3. Return to the gallery and inspect ordinary, selected, keyboard-focused, and disabled table states against the actual Windows palette. A Light / Dark pass is not a contrast-theme pass."
                                    TextWrapping="Wrap"/>
-                        <Button Content="Refresh Windows state" Click="OnRefreshWindowsStateClick"
+                        <Button Content="Refresh Windows contrast state" Click="OnRefreshWindowsStateClick"
                                 AutomationProperties.AutomationId="SettingsRefreshContrastState"
-                                AutomationProperties.Name="Refresh Windows contrast state"
                                 HorizontalAlignment="Left"/>
                         <TextBlock x:Name="ContrastStatusText" TextWrapping="Wrap"
                                    AutomationProperties.AutomationId="SettingsContrastState"

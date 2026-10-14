@@ -31,4 +31,13 @@ public sealed partial class FilterPage
 
         SelectedItemText.Text = FilterTable.SelectedItem is Person person ? person.FullName : "(none)";
     }
+
+    // Appended to a Last action so the outcome of a filter change is announced, not only the call.
+    private string ShownSummary()
+    {
+        var query = Query;
+        var activeOnly = ActiveOnly;
+        var shown = HasFilter ? CountShown(People, p => Matches(p, query, activeOnly)) : People.Count;
+        return string.Format(CultureInfo.CurrentCulture, "showing {0:N0} of {1:N0} rows", shown, People.Count);
+    }
 }

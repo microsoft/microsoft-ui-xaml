@@ -8,6 +8,7 @@ using System.Globalization;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
 using TableViewSampleApp.Helpers;
@@ -50,9 +51,14 @@ public sealed partial class ShapingOptions : UserControl
     public ShapingOptions()
     {
         InitializeComponent();
+        AutomationProperties.SetName(this, "Shaping");
         GroupKeys = new CallbackCollection<object>(InsertGroupKey, RemoveGroupKey);
         UpdateHierarchyItems();
     }
+
+    // Report the section as a Group like RailSection does; the inner StackPanel has no peer.
+    protected override AutomationPeer OnCreateAutomationPeer() =>
+        new RailSection.GroupAutomationPeer(this, nameof(ShapingOptions));
 
     public event EventHandler<ShapingApplyingEventArgs>? ShapingApplying;
 

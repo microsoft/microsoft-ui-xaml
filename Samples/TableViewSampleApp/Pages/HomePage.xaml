@@ -189,12 +189,11 @@
                     Text="Found a bug or have feedback on TableView? File it in the public Microsoft UI XAML repository. Include the sample page name, repro steps, and the build (the About page shows the exact commit)."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
-                <Button x:Name="ReportIssueButton"
-                    Content="Report on GitHub"
+                <HyperlinkButton x:Name="ReportIssueButton"
+                    Content="Report an issue on GitHub"
                     HorizontalAlignment="Left"
                     Click="OnReportIssueClick"
                     AutomationProperties.AutomationId="HomeReportIssueButton"
-                    AutomationProperties.Name="Report an issue on GitHub"
                     AutomationProperties.HelpText="Opens the public Microsoft UI XAML bug report template to log a TableView samples issue."
                     ToolTipService.ToolTip="Opens the public Microsoft UI XAML bug report template on GitHub."/>
                 <TextBlock x:Name="ReportIssueFallbackText"
