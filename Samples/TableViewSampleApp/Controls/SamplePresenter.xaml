@@ -153,7 +153,7 @@
                         AutomationProperties.AutomationId="RailInfoTab"
                         AutomationProperties.Name="Info"/>
                 </SelectorBar>
-                <!-- A tab stop so the arrow keys can scroll text-only content, such as the Info tab. -->
+                <!-- A tab stop only while the text-only Info tab is shown, so arrows can scroll it. -->
                 <ScrollViewer
                     Grid.Row="1"
                     VerticalScrollMode="Auto"
@@ -161,7 +161,7 @@
                     HorizontalScrollMode="Disabled"
                     HorizontalScrollBarVisibility="Disabled"
                     IsVerticalScrollChainingEnabled="False"
-                    IsTabStop="True"
+                    IsTabStop="False"
                     UseSystemFocusVisuals="True"
                     AutomationProperties.Name="Sample panel content">
                     <!-- Right padding clears the overlay scrollbar when it expands (64478783). -->
