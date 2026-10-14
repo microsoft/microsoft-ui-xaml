@@ -1783,15 +1783,10 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
         tableViewSource = nullptr;
     }
 
-    // Detach the previous source before adopting the new one. Swapping ItemsSource between two
-    // TableViewSources leaves the old one alive and still subscribed to the app's collection, so
-    // without this it keeps a back-pointer to this control and a later rebuild of that discarded
-    // source would drive a TableView it no longer belongs to.
-    if (auto const previouslyOwned = m_activeSource.get(); previouslyOwned && previouslyOwned != tableViewSource)
-    {
-        winrt::get_self<::TableViewSource>(previouslyOwned)->ReleaseOwningTableView(*this);
-    }
-
+    // Publish the new source before releasing the previous one: the release synchronously runs
+    // other tables' waiters, and an app handler reached from there can assign this table's
+    // ItemsSource again. That nested adoption must see coherent state and must win.
+    auto const previouslyOwned = m_activeSource.get();
     m_activeSource.set(tableViewSource);
     m_activeSourceReleased = false;
 
@@ -1852,9 +1847,18 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
         else
         {
             // No Unloaded will come to release it; OnTableViewLoaded reclaims it.
-            sourceImpl->ReleaseOwningTableView(*this);
             m_activeSourceReleased = true;
+            sourceImpl->ReleaseOwningTableView(*this);
         }
+    }
+
+    // Detach the previous source last. Swapping ItemsSource between two TableViewSources leaves
+    // the old one alive and still subscribed to the app's collection, so without this it keeps a
+    // back-pointer to this control and a later rebuild of that discarded source would drive a
+    // TableView it no longer belongs to. A nested adoption may have made it active again.
+    if (previouslyOwned && previouslyOwned != tableViewSource && previouslyOwned != m_activeSource.get())
+    {
+        winrt::get_self<::TableViewSource>(previouslyOwned)->ReleaseOwningTableView(*this);
     }
 }
 
@@ -2742,6 +2746,40 @@ void TableView::RebuildHeaders()
     // Clearing the host under a live popup tears its child down reentrantly.
     ReleaseHeaderToolTips(host);
 
+    // Any focus move during the rebuild other than XAML's rescue off the removed cell belongs to
+    // the app or user, and the restore below must not pull focus back from it.
+    bool headerFocusMovedAway = false;
+    winrt::FocusManager::GettingFocus_revoker headerFocusMoveRevoker{};
+    if (focusedHeaderColumn)
+    {
+        auto const root = XamlRoot();
+        auto const focusedAtTeardown = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+        headerFocusMoveRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke,
+            [&headerFocusMovedAway, root, focusedAtTeardown, weakHost = winrt::make_weak(host), rescueSeen = false](
+                winrt::IInspectable const&, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args) mutable
+            {
+                auto const newFocus = args.NewFocusedElement().try_as<winrt::UIElement>();
+                if (headerFocusMovedAway || !newFocus || newFocus.XamlRoot() != root)
+                {
+                    return;
+                }
+                auto const liveHost = weakHost.get();
+                for (winrt::DependencyObject current = newFocus; current; current = winrt::VisualTreeHelper::GetParent(current))
+                {
+                    if (liveHost && current == liveHost)
+                    {
+                        return;
+                    }
+                }
+                if (!rescueSeen && focusedAtTeardown && args.OldFocusedElement() == focusedAtTeardown)
+                {
+                    rescueSeen = true;
+                    return;
+                }
+                headerFocusMovedAway = true;
+            });
+    }
+
     host.Children().Clear();
 
     // Cache theme-resource padding once per header rebuild; values are stable for the pass.
@@ -2916,7 +2954,8 @@ void TableView::RebuildHeaders()
     ApplyGridLinesToHeader();
     RefreshResizeGripperAvailability();
 
-    if (focusedHeaderColumn)
+    headerFocusMoveRevoker.revoke();
+    if (focusedHeaderColumn && !headerFocusMovedAway)
     {
         RestoreHeaderFocus(focusedHeaderColumn, focusedHeaderState);
     }
@@ -3371,10 +3410,11 @@ void TableView::OnTableViewUnloaded()
 
     // An unloaded table may stay alive until GC; let a newly loaded one bind the source meanwhile.
     // OnTableViewLoaded reclaims it.
+    // Flag first: the release runs other tables' waiters synchronously.
     if (auto const activeSource = m_activeSource.get(); activeSource && !m_activeSourceReleased)
     {
-        winrt::get_self<::TableViewSource>(activeSource)->ReleaseOwningTableView(*this);
         m_activeSourceReleased = true;
+        winrt::get_self<::TableViewSource>(activeSource)->ReleaseOwningTableView(*this);
     }
     StopAwaitingSource();
 
@@ -3644,6 +3684,13 @@ void TableView::AppendResizeGripperVisual(
             if (state->didWrite && col)
             {
                 TableView::RestoreColumnWidth(col, state->startWidth);
+            }
+
+            // Mid-drag refreshes were suppressed, so a sibling width change during the gesture
+            // still needs its availability applied.
+            if (strongThis)
+            {
+                strongThis->RefreshResizeGripperAvailability();
             }
             return;
         }

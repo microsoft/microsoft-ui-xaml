@@ -45,7 +45,9 @@ void TableViewSourceSortBinding::Clear()
     MemberPath = {};
     AxisToken = {};
     KeySelector = nullptr;
-    ResetCustomSort();
+    // Dropped, not reset: the axis left on a source this table no longer owns still ranks through
+    // it. The next sort mints a fresh adapter and selector.
+    CustomSortState.reset();
 }
 
 bool TableView::RepositionCustomSortItem(const winrt::IInspectable& item, bool reshapePending)
@@ -839,7 +841,25 @@ void TableView::ReconcileSortStateWithSource()
 
     auto const& ownToken = m_tableViewSourceSort.AxisToken;
     auto tableViewSourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
-    auto const axes = tableViewSourceImpl->ActiveSortAxisInfos();
+    auto axes = tableViewSourceImpl->ActiveSortAxisInfos();
+
+    // A comparer axis another table (or this one, before an ItemsSource change) installed ranks
+    // through an adapter nothing here can update, so it would order rows on stale ranks.
+    bool clearedForeignComparerAxis = false;
+    for (auto const& axis : axes)
+    {
+        if (axis.AxisToken != ownToken && axis.SortMemberPath.empty() &&
+            std::wstring_view{ axis.AxisToken }.starts_with(L"column:"))
+        {
+            auto const reconcileGuard = BeginControlInitiatedSortScope();
+            tableViewSourceImpl->ClearSort(axis.AxisToken);
+            clearedForeignComparerAxis = true;
+        }
+    }
+    if (clearedForeignComparerAxis)
+    {
+        axes = tableViewSourceImpl->ActiveSortAxisInfos();
+    }
 
     bool ownAxisPresent = false;
     // Infos arrive in precedence order, so the first foreign axis is the one that outranks ours
