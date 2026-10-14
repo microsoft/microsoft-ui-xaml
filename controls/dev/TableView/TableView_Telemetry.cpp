@@ -16,7 +16,6 @@ TableView::ActionTelemetry::ActionTelemetry(
 {
     if (admitted && owner.m_telemetry.session.active && !owner.m_rowsSourceDrained)
     {
-        m_state.origin = owner.m_telemetry.origin;
         m_controlGenerationAtAdmission = owner.m_telemetry.operationGeneration;
         m_generation = TableViewTelemetry::BeginOperation(m_state, operation);
         if (m_generation) { m_previousAction = std::exchange(owner.m_activeActionTelemetry, this); }
@@ -40,7 +39,7 @@ TableView::ActionTelemetry::~ActionTelemetry()
     }
     else if (m_failed)
     {
-        TableViewTelemetry::FailOperation(m_state, m_state.operation, m_generation, m_stage, m_error);
+        TableViewTelemetry::FailOperation(m_state, m_generation, m_stage, m_error);
     }
     else if (std::uncaught_exceptions() > m_exceptions)
     {
@@ -49,7 +48,7 @@ TableView::ActionTelemetry::~ActionTelemetry()
     }
     else if (m_completed)
     {
-        TableViewTelemetry::CompleteOperation(m_state, m_generation, TableViewTelemetry::Result::Success);
+        TableViewTelemetry::CompleteOperation(m_state, m_generation);
     }
     else
     {
@@ -96,17 +95,17 @@ void TableView::ApplicationCalloutTelemetry::Fault(std::optional<HRESULT> error)
     {
         TableViewTelemetry::IgnoreOperation(m_owner.m_telemetry, m_generation,
             TableViewTelemetry::IgnoreReason::ApplicationFault, error, m_kind);
-        TableViewTelemetry::IgnoreInitial(m_owner.m_telemetry, TableViewTelemetry::IgnoreReason::ApplicationFault, m_stage, error, m_kind);
+        TableViewTelemetry::IgnoreInitial(m_owner.m_telemetry, TableViewTelemetry::IgnoreReason::ApplicationFault, error, m_kind);
         TableViewTelemetry::ReportError(m_owner.m_telemetry, m_operation, m_stage, true,
             TableViewTelemetry::Attribution::Application, error, m_kind);
     }
 }
 
-void TableView::IgnoreTelemetry(TableViewTelemetry::IgnoreReason reason, TableViewTelemetry::Stage stage) noexcept
+void TableView::IgnoreTelemetry(TableViewTelemetry::IgnoreReason reason) noexcept
 {
     ++m_telemetryLifetimeGeneration;
     m_telemetryCancellationReason = reason;
-    TableViewTelemetry::IgnoreInitial(m_telemetry, reason, stage);
+    TableViewTelemetry::IgnoreInitial(m_telemetry, reason);
     TableViewTelemetry::IgnoreOperation(m_telemetry, m_telemetry.operationGeneration, reason);
 }
 
@@ -147,7 +146,7 @@ void TableView::IgnoreUnattributedTelemetry(
         !(operation == TableViewTelemetry::Operation::InitialLayout && generation == 0)) { return; }
     if (TableViewTelemetry::IsOperationHandled(m_telemetry, operation, generation)) { return; }
     TableViewTelemetry::IgnoreOperation(m_telemetry, generation, TableViewTelemetry::IgnoreReason::UnattributedFault, error);
-    TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::UnattributedFault, stage, error);
+    TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::UnattributedFault, error);
     TableViewTelemetry::ReportError(m_telemetry, operation, stage, false, TableViewTelemetry::Attribution::Unknown, error);
 }
 
@@ -155,7 +154,7 @@ void TableView::CompleteOperationTelemetry(uint64_t generation) noexcept
 {
     if (!generation || generation != m_telemetry.operationGeneration ||
         !TableViewTelemetry::IsOperationStarted(m_telemetry)) { return; }
-    TableViewTelemetry::CompleteOperation(m_telemetry, generation, TableViewTelemetry::Result::Success);
+    TableViewTelemetry::CompleteOperation(m_telemetry, generation);
 }
 
 void TableView::AttachSourceTelemetry(winrt::TableViewSource const& source)
@@ -215,7 +214,7 @@ void TableView::AttachSourceTelemetry(winrt::TableViewSource const& source)
                     if (*reason == TableViewTelemetry::IgnoreReason::ApplicationFault ||
                         *reason == TableViewTelemetry::IgnoreReason::UnattributedFault)
                     {
-                        TableViewTelemetry::IgnoreInitial(self->m_telemetry, *reason, stage, error, kind);
+                        TableViewTelemetry::IgnoreInitial(self->m_telemetry, *reason, error, kind);
                         TableViewTelemetry::ReportError(self->m_telemetry, operation, stage, false,
                             kind == TableViewTelemetry::AppFaultKind::None ? TableViewTelemetry::Attribution::Unknown :
                                 TableViewTelemetry::Attribution::Application, error, kind);
@@ -226,15 +225,6 @@ void TableView::AttachSourceTelemetry(winrt::TableViewSource const& source)
                     self->m_controlSortPublishedGeneration = generation;
                 }
                 else { self->CompleteOperationTelemetry(generation); }
-            }
-        },
-        [weakThis, weakSource](TableViewTelemetry::Operation operation, TableViewTelemetry::AppFaultKind kind, HRESULT error) noexcept
-        {
-            if (auto self = weakThis.get(); self && self->m_activeSource.get() == weakSource.get())
-            {
-                TableViewTelemetry::ReportError(self->m_telemetry, operation, TableViewTelemetry::Stage::Source, false,
-                    kind == TableViewTelemetry::AppFaultKind::None ? TableViewTelemetry::Attribution::Unknown :
-                        TableViewTelemetry::Attribution::Application, error, kind);
             }
         });
 }

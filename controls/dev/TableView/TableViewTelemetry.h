@@ -6,19 +6,18 @@
 #include <array>
 #include <cstdint>
 #include <optional>
-#include "MuxcTraceLogging.h"
 #include "TableViewTipTests.h"
 
 namespace TableViewTelemetry
 {
-    enum class Result : uint32_t { Started = 0, Success = 1, Failure = 2, Cancelled = 3 };
+    enum class Result : uint32_t { Success = 1, Failure = 2, Cancelled = 3 };
     enum class Stage : uint32_t
     {
-        None = 0, Template = 1, Layout = 2, Source = 3, Sort = 4, HeaderRefresh = 5,
+        None = 0, Template = 1, Source = 3, Sort = 4, HeaderRefresh = 5,
         Selection = 6, Editing = 7, Filter = 8, Grouping = 9
     };
     enum class InitialState { NotStarted, Started, Finished };
-    enum class InitialOutcome : uint32_t { NotObserved = 0, TemplateInitialized = 1, Failure = 2, Ignored = 3 };
+    enum class InitialOutcome : uint32_t { NotObserved = 0, TemplateInitialized = 1, Ignored = 3 };
     enum class Attribution : uint32_t { Unknown = 0, Product = 1, Application = 2 };
 
     struct ShapingObservation
@@ -51,7 +50,7 @@ namespace TableViewTelemetry
 
     struct State;
 
-    // Bounded operation ownership; borrows the control's census without duplicating it.
+    // One in-flight TiP operation; it counts into its owner's loaded-session counters.
     struct OperationState
     {
         explicit OperationState(State& owner) noexcept : usageOwner(owner) {}
@@ -60,7 +59,6 @@ namespace TableViewTelemetry
 
         TableViewOperationTest operationTest;
         State& usageOwner;
-        Origin origin{};
         uint64_t operationGeneration{};
         uint64_t operationSessionGeneration{};
         Operation operation{};
@@ -77,25 +75,24 @@ namespace TableViewTelemetry
         Session session;
         InitialState initial{};
         InitialOutcome initialOutcome{};
-        uint32_t reportedErrors{};
+        uint64_t reportedErrors{};
         bool initialTipPending{};
     };
 
-    bool IsEnabled() noexcept;
-    bool IsOperationStarted(OperationState const& state) noexcept;
+    inline bool IsOperationStarted(OperationState const& state) noexcept { return state.operationPending; }
     bool IsOperationHandled(OperationState const& state, Operation operation, uint64_t generation) noexcept;
     void BeginSession(State& state) noexcept;
     void EndSession(State& state) noexcept;
     void AbandonSession(State& state) noexcept;
-    void BeginInitial(State& state, Origin origin) noexcept;
-    void CompleteInitial(State& state, Result result, Stage stage = Stage::None, std::optional<HRESULT> error = {}) noexcept;
-    void IgnoreInitial(State& state, IgnoreReason reason, Stage stage = Stage::None,
+    void BeginInitial(State& state) noexcept;
+    void CompleteInitial(State& state) noexcept;
+    void IgnoreInitial(State& state, IgnoreReason reason,
         std::optional<HRESULT> error = {}, AppFaultKind kind = AppFaultKind::None) noexcept;
     uint64_t BeginOperation(OperationState& state, Operation operation) noexcept;
-    void CompleteOperation(OperationState& state, uint64_t generation, Result result, std::optional<HRESULT> error = {}) noexcept;
+    void CompleteOperation(OperationState& state, uint64_t generation) noexcept;
     void IgnoreOperation(OperationState& state, uint64_t generation, IgnoreReason reason,
         std::optional<HRESULT> error = {}, AppFaultKind kind = AppFaultKind::None) noexcept;
-    void FailOperation(OperationState& state, Operation operation, uint64_t generation, Stage stage, std::optional<HRESULT> error = {}) noexcept;
+    void FailOperation(OperationState& state, uint64_t generation, Stage stage, std::optional<HRESULT> error) noexcept;
     void ReportError(OperationState& state, Operation operation, Stage stage, bool recoverable,
         Attribution attribution = Attribution::Unknown, std::optional<HRESULT> error = {},
         AppFaultKind kind = AppFaultKind::None) noexcept;

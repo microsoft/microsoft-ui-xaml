@@ -406,13 +406,7 @@ bool TableView::RaiseSortingAndCheckCanceled(
     }
 
     auto args = winrt::make_self<TableViewSortingEventArgs>(trigger, direction);
-    try { m_sortingEventSource(*this, *args); }
-    catch (...)
-    {
-        TableViewTelemetry::ReportError(m_telemetry, TableViewTelemetry::Operation::Sort, TableViewTelemetry::Stage::Sort,
-            false, TableViewTelemetry::Attribution::Application, winrt::to_hresult(), TableViewTelemetry::AppFaultKind::Callback);
-        throw;
-    }
+    m_sortingEventSource(*this, *args);
 
     return args->Cancel();
 }
@@ -484,7 +478,7 @@ bool TableView::SyncTableViewSourceSort(
 
                 // Snapshot the rows for the engine, which ranks over a plain vector and never sees
                 // an ItemsSourceView. The comparer is wrapped into a neutral pairwise functor; the
-                // engine catches a throw and degrades it to "equal"; observe only the exceptional path.
+                // engine catches a throw and degrades it to "equal", so this lambda stays trivial.
                 std::vector<winrt::IInspectable> rows;
                 if (rowsView)
                 {
@@ -505,38 +499,12 @@ bool TableView::SyncTableViewSourceSort(
 
                 if (auto const& rankAdapter = m_tableViewSourceSort.CustomSortState)
                 {
-                    // The initial rank has explicit control ownership; retained failures use the facade's current call.
-                    auto rankFailure = std::make_shared<std::optional<HRESULT>>();
                     ShapingHelpers::PairwiseComparer comparer =
-                        [customComparer, weakSource = winrt::make_weak(tableViewSource),
-                            initialRank = std::weak_ptr<std::optional<HRESULT>>{ rankFailure }]
-                        (winrt::IInspectable const& a, winrt::IInspectable const& b)
+                        [customComparer](winrt::IInspectable const& a, winrt::IInspectable const& b)
                         {
-                            try { return static_cast<int>(customComparer.Compare(a, b)); }
-                            catch (...)
-                            {
-                                const auto error = winrt::to_hresult();
-                                if (auto initial = initialRank.lock())
-                                {
-                                    if (!*initial) { *initial = error; }
-                                }
-                                else if (auto source = weakSource.get())
-                                {
-                                    winrt::get_self<::TableViewSource>(source)->ObserveShapingFailure(error);
-                                }
-                                throw;
-                            }
+                            return static_cast<int>(customComparer.Compare(a, b));
                         };
                     rankAdapter->Rank(comparer, rows);
-                    const auto failure = *rankFailure;
-                    rankFailure.reset();
-                    if (failure)
-                    {
-                        TableViewTelemetry::IgnoreOperation(m_telemetry, telemetryGeneration,
-                            TableViewTelemetry::IgnoreReason::ApplicationFault, *failure, TableViewTelemetry::AppFaultKind::Callback);
-                        TableViewTelemetry::ReportError(m_telemetry, TableViewTelemetry::Operation::Sort, TableViewTelemetry::Stage::Sort,
-                            true, TableViewTelemetry::Attribution::Application, *failure, TableViewTelemetry::AppFaultKind::Callback);
-                    }
                 }
             }
         }
@@ -591,7 +559,7 @@ bool TableView::SyncTableViewSourceSort(
     {
         // Replacing rather than adding: re-sorting a column must swap its axis, not stack a
         // second one on top of the first.
-        tableViewSourceImpl->SortReplacing(m_tableViewSourceSort.AxisToken, sortAxisToken, keySelector, axisSortMemberPath, direction, false);
+        tableViewSourceImpl->SortReplacing(m_tableViewSourceSort.AxisToken, sortAxisToken, keySelector, axisSortMemberPath, direction);
         tableViewSourceImpl->ClearSortsExcept(sortAxisToken);
     }
 

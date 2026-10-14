@@ -522,7 +522,6 @@ public:
 
 private:
     class ActionTelemetry;
-    friend class TableViewRow;
     // Drives the SelectionModel; its SelectionChanged is the single funnel that publishes.
     void ApplySelection(int32_t index, bool reportTelemetry = false);
 
@@ -723,7 +722,7 @@ private:
     winrt::TableViewRow FindRealizedRowForItem(winrt::IInspectable const& item);
     bool TryBeginEditVisual(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
 
-    void EndEditVisual(winrt::TableViewEditAction action, ActionTelemetry* telemetry = nullptr);
+    void EndEditVisual(winrt::TableViewEditAction action, ActionTelemetry* telemetry);
 
     // Applies the outcome of an edit close: writes or reverts, tears down the visual, clears state.
     // Shared by the synchronous and deferred paths so they cannot drift.
@@ -735,10 +734,10 @@ private:
     bool HasBlockingValidationErrors(
         winrt::IInspectable const& item,
         winrt::TableViewColumn const& column,
-        ActionTelemetry* telemetry = nullptr) const;
+        ActionTelemetry* telemetry = nullptr);
 
 private:
-    // Synchronous actions have separate native ownership and share only the loaded-session counters.
+    // A synchronous action owns its own TiP test and shares the control's session counters and error mask.
     class ActionTelemetry
     {
     public:
@@ -748,7 +747,7 @@ private:
         ActionTelemetry& operator=(ActionTelemetry const&) = delete;
         void Complete() noexcept { m_completed = true; }
         void Ignore(TableViewTelemetry::IgnoreReason reason) noexcept { m_completed = false; m_ignoreReason = reason; }
-        void Fail(std::optional<HRESULT> error = {}) noexcept;
+        void Fail(std::optional<HRESULT> error) noexcept;
         void ApplicationFault(TableViewTelemetry::AppFaultKind kind, std::optional<HRESULT> error = {}) noexcept;
         uint64_t ControlGenerationAtAdmission() const noexcept { return m_controlGenerationAtAdmission; }
 
@@ -789,7 +788,7 @@ private:
     void InvalidateOperationTelemetry() noexcept;
     void IgnoreUnattributedTelemetry(TableViewTelemetry::Operation operation, uint64_t generation, TableViewTelemetry::Stage stage, std::optional<HRESULT> error = {}) noexcept;
     void CompleteOperationTelemetry(uint64_t generation) noexcept;
-    void IgnoreTelemetry(TableViewTelemetry::IgnoreReason reason, TableViewTelemetry::Stage stage = TableViewTelemetry::Stage::None) noexcept;
+    void IgnoreTelemetry(TableViewTelemetry::IgnoreReason reason) noexcept;
 
     TableViewTelemetry::State m_telemetry;
     ActionTelemetry* m_activeActionTelemetry{};

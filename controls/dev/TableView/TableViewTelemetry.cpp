@@ -28,11 +28,9 @@ namespace TableViewTelemetry
     TraceLoggingKeyword(measuresKeyword), \
     TABLEVIEW_COMMON_FIELDS
 
-        TableViewTipDimensions GetDimensions(OperationState const& state) noexcept
+        bool IsEnabled() noexcept
         {
-            TableViewTipDimensions dimensions;
-            dimensions.origin = state.origin;
-            return dimensions;
+            return TraceLoggingProviderEnabled(g_hTelemetryProvider, WINEVENT_LEVEL_INFO, measuresKeyword) != FALSE;
         }
 
         const char* GetIgnoreName(IgnoreReason reason) noexcept
@@ -48,7 +46,6 @@ namespace TableViewTelemetry
             case IgnoreReason::Stale: return "stale";
             case IgnoreReason::DeferredOrUnproven: return "deferred_or_unproven";
             case IgnoreReason::ApplicationFault: return "application_fault";
-            case IgnoreReason::ObservationLimit: return "observation_limit";
             case IgnoreReason::UnattributedFault: return "unattributed_fault";
             default:
                 OutputDebugStringW(L"TableView telemetry: invalid ignore reason.\n");
@@ -81,25 +78,6 @@ namespace TableViewTelemetry
             else if (reason == IgnoreReason::UnattributedFault) { Increment(session, session.unattributedFaultCount, 15); }
         }
 
-        Stage GetOperationStage(Operation operation) noexcept
-        {
-            switch (operation)
-            {
-            case Operation::ReplaceSource: return Stage::Source;
-            case Operation::Sort: return Stage::Sort;
-            case Operation::Filter: return Stage::Filter;
-            case Operation::GroupConfiguration: return Stage::Grouping;
-            case Operation::Selection: return Stage::Selection;
-            case Operation::BeginEdit:
-            case Operation::CommitEdit:
-            case Operation::CancelEdit: return Stage::Editing;
-            case Operation::InitialLayout:
-            case Operation::Layout: return Stage::Layout;
-            case Operation::HeaderRefresh: return Stage::HeaderRefresh;
-            default: return Stage::None;
-            }
-        }
-
         template<class Test>
         void CompleteTip(Test& test, Result result, Stage stage, std::optional<HRESULT> error) noexcept
         {
@@ -114,21 +92,8 @@ namespace TableViewTelemetry
                     data->failureHResultAvailable = error.has_value();
                     data->failureHResult = error.value_or(S_OK);
                 }
-                switch (stage)
-                {
-                case Stage::Source:
-                    test.set_flag(TIP_reason(TableViewTipReason::source_failure)); break;
-                case Stage::Sort:
-                case Stage::Filter:
-                case Stage::Grouping:
-                    test.set_flag(TIP_reason(TableViewTipReason::shaping_failure)); break;
-                case Stage::Selection:
-                    test.set_flag(TIP_reason(TableViewTipReason::selection_failure)); break;
-                case Stage::Editing:
-                    test.set_flag(TIP_reason(TableViewTipReason::editing_failure)); break;
-                default:
-                    test.set_flag(TIP_reason(TableViewTipReason::internal_failure)); break;
-                }
+                if (stage == Stage::Editing) { test.set_flag(TIP_reason(TableViewTipReason::editing_failure)); }
+                else { test.set_flag(TIP_reason(TableViewTipReason::internal_failure)); }
             }
             test.complete();
             test.reset();
@@ -137,8 +102,7 @@ namespace TableViewTelemetry
         void StopInitial(State& state, Result result) noexcept
         {
             state.initial = InitialState::Finished;
-            state.initialOutcome = result == Result::Success ? InitialOutcome::TemplateInitialized :
-                result == Result::Failure ? InitialOutcome::Failure : InitialOutcome::Ignored;
+            state.initialOutcome = result == Result::Success ? InitialOutcome::TemplateInitialized : InitialOutcome::Ignored;
             state.initialTipPending = false;
         }
 
@@ -161,16 +125,6 @@ namespace TableViewTelemetry
             test.complete_and_ignore(static_cast<unsigned short>(reason), name);
             test.reset();
         }
-    }
-
-    bool IsEnabled() noexcept
-    {
-        return TraceLoggingProviderEnabled(g_hTelemetryProvider, WINEVENT_LEVEL_INFO, measuresKeyword) != FALSE;
-    }
-
-    bool IsOperationStarted(OperationState const& state) noexcept
-    {
-        return state.operationPending;
     }
 
     bool IsOperationHandled(OperationState const& state, Operation operation, uint64_t generation) noexcept
@@ -224,33 +178,22 @@ namespace TableViewTelemetry
         IgnoreOperation(state, state.operationGeneration, IgnoreReason::Unloaded);
     }
 
-    void BeginInitial(State& state, Origin origin) noexcept
+    void BeginInitial(State& state) noexcept
     {
         if (state.initial != InitialState::NotStarted) { return; }
         state.initial = InitialState::Started;
-        state.origin = origin;
-        state.initialTest->dimensions = GetDimensions(state);
+        state.initialTest->dimensions = TableViewTipDimensions{};
         state.initialTipPending = state.initialTest.start() != GUID{};
     }
 
-    void CompleteInitial(State& state, Result result, Stage stage, std::optional<HRESULT> error) noexcept
+    void CompleteInitial(State& state) noexcept
     {
         if (state.initial != InitialState::Started) { return; }
-        if (result == Result::Cancelled)
-        {
-            IgnoreInitial(state, IgnoreReason::Cancelled, stage);
-            return;
-        }
-        if (result != Result::Success && result != Result::Failure)
-        {
-            OutputDebugStringW(L"TableView telemetry: invalid terminal result.\n");
-            return;
-        }
-        if (state.initialTipPending) { CompleteTip(state.initialTest, result, stage, error); }
-        StopInitial(state, result);
+        if (state.initialTipPending) { CompleteTip(state.initialTest, Result::Success, Stage::None, {}); }
+        StopInitial(state, Result::Success);
     }
 
-    void IgnoreInitial(State& state, IgnoreReason reason, Stage, std::optional<HRESULT> error, AppFaultKind kind) noexcept
+    void IgnoreInitial(State& state, IgnoreReason reason, std::optional<HRESULT> error, AppFaultKind kind) noexcept
     {
         if (state.initial != InitialState::Started) { return; }
         auto const name = GetIgnoreName(reason);
@@ -279,7 +222,7 @@ namespace TableViewTelemetry
         state.operationSessionGeneration = session.active ? session.generation : 0;
         {
             auto data = state.operationTest.data();
-            data->dimensions = GetDimensions(state);
+            data->dimensions = TableViewTipDimensions{};
             data->operation = operation;
         }
         state.operationTipPending = state.operationTest.start() != GUID{};
@@ -287,7 +230,7 @@ namespace TableViewTelemetry
         return generation;
     }
 
-    void CompleteOperation(OperationState& state, uint64_t generation, Result result, std::optional<HRESULT> error) noexcept
+    void CompleteOperation(OperationState& state, uint64_t generation) noexcept
     {
         if (generation != state.operationGeneration || !state.operationPending) { return; }
         if (state.operationSessionGeneration && !OwnsSession(state))
@@ -295,18 +238,8 @@ namespace TableViewTelemetry
             IgnoreOperation(state, generation, IgnoreReason::Stale);
             return;
         }
-        if (result == Result::Cancelled)
-        {
-            IgnoreOperation(state, generation, IgnoreReason::Cancelled);
-            return;
-        }
-        if (result != Result::Success && result != Result::Failure)
-        {
-            OutputDebugStringW(L"TableView telemetry: invalid terminal result.\n");
-            return;
-        }
-        if (state.operationTipPending) { CompleteTip(state.operationTest, result, GetOperationStage(state.operation), error); }
-        RecordOutcome(state, result);
+        if (state.operationTipPending) { CompleteTip(state.operationTest, Result::Success, Stage::None, {}); }
+        RecordOutcome(state, Result::Success);
         StopOperation(state);
     }
 
@@ -323,37 +256,33 @@ namespace TableViewTelemetry
         StopOperation(state);
     }
 
-    void FailOperation(OperationState& state, Operation operation, uint64_t generation, Stage stage, std::optional<HRESULT> error) noexcept
+    void FailOperation(OperationState& state, uint64_t generation, Stage stage, std::optional<HRESULT> error) noexcept
     {
-        if (generation != state.operationGeneration && !(operation == Operation::InitialLayout && generation == 0)) { return; }
-        // Zero identifies an initialization boundary before an operation was admitted.
-        if (generation != 0 && IsMeasuredOperation(operation) && (!state.operationPending || operation != state.operation)) { return; }
-        if (generation != 0 && state.operationSessionGeneration && !OwnsSession(state))
+        if (!generation || generation != state.operationGeneration || !state.operationPending) { return; }
+        if (state.operationSessionGeneration && !OwnsSession(state))
         {
             IgnoreOperation(state, generation, IgnoreReason::Stale);
             return;
         }
-        if (generation == state.operationGeneration)
-        {
-            if (state.operationTipPending) { CompleteTip(state.operationTest, Result::Failure, stage, error); }
-            RecordOutcome(state, Result::Failure);
-            StopOperation(state);
-        }
-        if (&state == &state.usageOwner) { CompleteInitial(state.usageOwner, Result::Failure, stage, error); }
-        ReportError(state, operation, stage, false, Attribution::Product, error);
+        if (state.operationTipPending) { CompleteTip(state.operationTest, Result::Failure, stage, error); }
+        RecordOutcome(state, Result::Failure);
+        StopOperation(state);
+        ReportError(state, state.operation, stage, false, Attribution::Product, error);
     }
 
     void ReportError(OperationState& state, Operation operation, Stage stage, bool recoverable,
         Attribution attribution, std::optional<HRESULT> error, AppFaultKind kind) noexcept
     {
-        if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(Operation::CancelEdit))
+        if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(Operation::CancelEdit) ||
+            static_cast<uint32_t>(attribution) > static_cast<uint32_t>(Attribution::Application))
         {
             OutputDebugStringW(L"TableView telemetry: invalid error operation.\n");
             return;
         }
         auto& owner = state.usageOwner;
         if (&owner != &state && state.operationSessionGeneration && !OwnsSession(state)) { return; }
-        auto const bit = uint32_t{ 1 } << static_cast<uint32_t>(operation);
+        // One report per operation and attribution, so an app fault cannot hide a later product error.
+        auto const bit = uint64_t{ 1 } << (static_cast<uint32_t>(operation) * 3 + static_cast<uint32_t>(attribution));
         if ((owner.reportedErrors & bit) ||
             !TraceLoggingProviderEnabled(g_hLoggingProvider, WINEVENT_LEVEL_VERBOSE, KEYWORD_TABLEVIEW)) { return; }
         owner.reportedErrors |= bit;

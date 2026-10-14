@@ -602,7 +602,7 @@ void TableView::PostEditNotification(std::function<void()> notify)
 bool TableView::HasBlockingValidationErrors(
     winrt::IInspectable const& item,
     winrt::TableViewColumn const& column,
-    ActionTelemetry* telemetry) const
+    ActionTelemetry* telemetry)
 {
     if (!item)
     {
@@ -619,7 +619,7 @@ bool TableView::HasBlockingValidationErrors(
     // unrelated, pre-existing error on a different property block this cell permanently -
     // the user could never leave the edit.
     const auto editingPath = column ? ResolveEditingPropertyPath(column) : winrt::hstring{};
-    ApplicationCalloutTelemetry callout{ *const_cast<TableView*>(this), TableViewTelemetry::Stage::Editing,
+    ApplicationCalloutTelemetry callout{ *this, TableViewTelemetry::Stage::Editing,
         TableViewTelemetry::AppFaultKind::Validation };
 
     if (!editingPath.empty())
@@ -1087,7 +1087,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
     if (!allowed || m_abandonPendingBeginEdit || !TryBeginEditVisual(item, column))
     {
         telemetry.Ignore(!allowed ? TableViewTelemetry::IgnoreReason::Vetoed :
-            m_abandonPendingBeginEdit ? TableViewTelemetry::IgnoreReason::Stale : TableViewTelemetry::IgnoreReason::ValidationRejected);
+            m_abandonPendingBeginEdit ? TableViewTelemetry::IgnoreReason::Stale : TableViewTelemetry::IgnoreReason::Cancelled);
         // Beginning -> None. Do not leave stale trackers behind, and reset the state before
         // draining so a queued reshape can itself start an edit.
         //

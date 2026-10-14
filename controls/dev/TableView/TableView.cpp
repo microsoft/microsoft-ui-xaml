@@ -794,8 +794,8 @@ void TableView::OnThemeSettingsChanged(
 void TableView::OnApplyTemplate()
 {
     m_headerSortSpaceArmedColumn = nullptr;
-    IgnoreTelemetry(TableViewTelemetry::IgnoreReason::Retemplated, TableViewTelemetry::Stage::Template);
-    TableViewTelemetry::BeginInitial(m_telemetry, TableViewTelemetry::Origin::Template);
+    IgnoreTelemetry(TableViewTelemetry::IgnoreReason::Retemplated);
+    TableViewTelemetry::BeginInitial(m_telemetry);
     bool completed = false;
     auto telemetryFailure = wil::scope_exit([this, &completed]() noexcept
     {
@@ -1063,7 +1063,7 @@ void TableView::OnApplyTemplate()
             });
     }
     completed = true;
-    TableViewTelemetry::CompleteInitial(m_telemetry, TableViewTelemetry::Result::Success);
+    TableViewTelemetry::CompleteInitial(m_telemetry);
 }
 
 void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
@@ -3118,8 +3118,12 @@ void TableView::QueueRaiseColumnsStructureChanged()
 void TableView::OnTableViewUnloaded()
 {
     m_headerSortSpaceArmedColumn = nullptr;
-    IgnoreTelemetry(TableViewTelemetry::IgnoreReason::Unloaded);
-    TableViewTelemetry::EndSession(m_telemetry);
+    // A re-parent can raise Loaded for the new tree before Unloaded for the old one.
+    if (!IsLoaded())
+    {
+        IgnoreTelemetry(TableViewTelemetry::IgnoreReason::Unloaded);
+        TableViewTelemetry::EndSession(m_telemetry);
+    }
     // Neither a pending restore nor a remembered position may outlive this tree.
     CancelReshapeFocusRestore();
     ForgetBodyFocusPosition();

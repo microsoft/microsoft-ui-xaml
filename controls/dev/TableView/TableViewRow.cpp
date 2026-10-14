@@ -2234,19 +2234,7 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         return false;
     }
 
-    auto const owner = GetOwningTableView();
-    std::optional<TableView::ApplicationCalloutTelemetry> callout;
-    if (owner)
-    {
-        callout.emplace(*winrt::get_self<TableView>(owner), TableViewTelemetry::Stage::Editing, TableViewTelemetry::AppFaultKind::Factory);
-    }
-    winrt::FrameworkElement editingElement{ nullptr };
-    try { editingElement = winrt::get_self<TableViewColumn>(column)->GenerateEditingElement(dataItem); }
-    catch (...)
-    {
-        if (callout) { callout->Fault(winrt::to_hresult()); }
-        throw;
-    }
+    auto const editingElement = winrt::get_self<TableViewColumn>(column)->GenerateEditingElement(dataItem);
     if (!editingElement)
     {
         return false;

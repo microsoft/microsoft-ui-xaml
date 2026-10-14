@@ -64,8 +64,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         fields.Add(data.PayloadNames[index], data.PayloadValue(index));
                     }
-                    var record = new Record(data.EventName, data.ProviderGuid,
-                        data.TimeStampQPC, data.ActivityID, fields);
+                    var record = new Record(data.EventName, data.ProviderGuid, data.TimeStampQPC, fields);
                     if (data.ProviderGuid == TipProvider)
                     {
                         if (!record.IsTip(64477764) && !record.IsTip(64477774)) { return; }
@@ -108,16 +107,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             internal readonly string Name;
             internal readonly Guid Provider;
             internal readonly long TimestampQpc;
-            internal readonly Guid ActivityId;
             private readonly Dictionary<string, object> fields;
 
-            internal Record(string name, Guid provider, long timestampQpc, Guid activityId,
-                Dictionary<string, object> fields)
+            internal Record(string name, Guid provider, long timestampQpc, Dictionary<string, object> fields)
             {
                 Name = name;
                 Provider = provider;
                 TimestampQpc = timestampQpc;
-                ActivityId = activityId;
                 this.fields = fields;
             }
 

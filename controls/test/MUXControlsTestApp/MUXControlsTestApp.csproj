@@ -4,8 +4,6 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove(environment.props))" />
   <Import Project="$(MUXCProjectRoot)mux.controls.props" Condition="Exists('$(MUXCProjectRoot)mux.controls.props')" />
   <Import Project="$(MUXCProjectRoot)FeatureAreas.props" />
-  <Import Project="$(MUXCProjectRoot)dev\TableView\TableView.TestInProduction.props"
-          Condition="'$(FeatureTableViewEnabled)' == 'true' and '$(RequireRealTestInProduction)' == 'true'" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>

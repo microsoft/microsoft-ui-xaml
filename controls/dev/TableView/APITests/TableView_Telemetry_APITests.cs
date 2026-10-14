@@ -52,91 +52,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyTemplateSetupDoesNotWaitForRectangleClipReveal()
         {
-            VerifyTemplateIgnoresClipReveal(changeTransform: false);
-        }
-
-        [TestMethod]
-        public void VerifyTemplateSetupDoesNotWaitForClipTransformReveal()
-        {
-            VerifyTemplateIgnoresClipReveal(changeTransform: true);
-        }
-
-        [TestMethod]
-        public void VerifyMutableTransformGroupDoesNotDelayTemplateSetup()
-        {
             using var capture = new TableViewTelemetryCapture();
             TableView table = null;
-            TransformGroup transforms = null;
             RectangleGeometry clip = null;
             RunOnUIThread.Execute(() =>
             {
                 table = CreateTableView();
-                transforms = new TransformGroup();
-                clip = new RectangleGeometry { Rect = new Rect(5000, 0, 500, 300), Transform = transforms };
+                clip = new RectangleGeometry { Rect = new Rect(0, 0, 0, 0) };
                 table.Clip = clip;
-                LoadContent(table);
-            });
-            IdleSynchronizer.Wait();
-            long changed = 0;
-            RunOnUIThread.Execute(() =>
-            {
-                changed = Stopwatch.GetTimestamp();
-                transforms.Children.Add(new TranslateTransform { X = -5000 });
-                Verify.AreEqual(0.0, clip.Bounds.X, "Only the existing transform collection changed.");
-            });
-            IdleSynchronizer.Wait();
-            var events = UnloadAndRead(capture);
-            Verify.IsTrue(events.Single(e => e.IsTip(64477764)).TimestampQpc < changed,
-                "Template setup must finish before the application's later transform collection change.");
-            VerifyInitialization(events);
-        }
-
-        [TestMethod]
-        public void VerifyTemplateSetupWithVisibleTransformGroup()
-        {
-            using var capture = new TableViewTelemetryCapture();
-            RunOnUIThread.Execute(() =>
-            {
-                var table = CreateTableView();
-                table.Clip = new RectangleGeometry
-                {
-                    Rect = new Rect(0, 0, 500, 300),
-                    Transform = new TransformGroup()
-                };
-                LoadContent(table);
-            });
-            IdleSynchronizer.Wait();
-            VerifyInitialization(UnloadAndRead(capture));
-        }
-
-        [TestMethod]
-        public void VerifyTemplateSetupDoesNotReadUnsupportedClipProjection()
-        {
-            using var capture = new TableViewTelemetryCapture();
-            TableView table = null;
-            RunOnUIThread.Execute(() =>
-            {
-                table = CreateTableView();
-                table.SetValue(UIElement.ClipProperty, new EllipseGeometry());
-                Verify.Throws<InvalidCastException>(() => { var unsupported = table.Clip; });
-                LoadContent(table);
-            });
-            IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() => table.ClearValue(UIElement.ClipProperty));
-            IdleSynchronizer.Wait();
-            var events = UnloadAndRead(capture);
-            VerifyInitialization(events);
-        }
-
-        [TestMethod]
-        public void VerifyTemplateSetupDoesNotWaitForOpacityReveal()
-        {
-            using var capture = new TableViewTelemetryCapture();
-            TableView table = null;
-            RunOnUIThread.Execute(() =>
-            {
-                table = CreateTableView();
-                table.Opacity = 0;
                 LoadContent(table);
             });
             IdleSynchronizer.Wait();
@@ -144,12 +67,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 reveal = Stopwatch.GetTimestamp();
-                table.Opacity = 1;
+                clip.Rect = new Rect(0, 0, 500, 300);
             });
             IdleSynchronizer.Wait();
             var events = UnloadAndRead(capture);
             Verify.IsTrue(events.Single(e => e.IsTip(64477764)).TimestampQpc < reveal,
-                "Template-setup latency must not include waiting for the app to show the control.");
+                "Template setup must finish before the application's later clip reveal.");
             VerifyInitialization(events);
         }
 
@@ -291,39 +214,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyNoProductFailures(events);
         }
 
-        private void VerifyTemplateIgnoresClipReveal(bool changeTransform)
+        [TestMethod]
+        public void VerifySelectionHandlerFaultIsApplicationFault()
         {
             using var capture = new TableViewTelemetryCapture();
             TableView table = null;
-            RectangleGeometry clip = null;
-            TranslateTransform transform = null;
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(typeof(RectangleGeometry),
-                    typeof(UIElement).GetProperty(nameof(UIElement.Clip)).PropertyType);
                 table = CreateTableView();
-                transform = new TranslateTransform();
-                clip = new RectangleGeometry
-                {
-                    Rect = changeTransform ? new Rect(5000, 0, 500, 300) : new Rect(0, 0, 0, 0),
-                    Transform = transform
-                };
-                table.Clip = clip;
                 LoadContent(table);
             });
             IdleSynchronizer.Wait();
-            long reveal = 0;
             RunOnUIThread.Execute(() =>
             {
-                reveal = Stopwatch.GetTimestamp();
-                if (changeTransform) { transform.X = -5000; }
-                else { clip.Rect = new Rect(0, 0, 500, 300); }
+                table.SelectionChanged += (_, _) => throw new InvalidOperationException("Application handler fault.");
+                bool propagated = false;
+                try { table.Select(1); }
+                catch (Exception) { propagated = true; }
+                Verify.IsTrue(propagated, "The handler's exception must still reach the caller.");
             });
-            IdleSynchronizer.Wait();
             var events = UnloadAndRead(capture);
-            Verify.IsTrue(events.Single(e => e.IsTip(64477764)).TimestampQpc < reveal,
-                "Template setup must finish before the application's later clip reveal.");
             VerifyInitialization(events);
+            VerifyTip(events, operation: 8, kind: 4, reason: 108, count: 1);
+            Verify.IsTrue(events.Any(e => e.Provider == TableViewTelemetryCapture.DebugProvider &&
+                e.Number("Attribution") == 2 && e.Number("AppFaultKind") == 1),
+                "The app fault is attributed to the application callback.");
+            Verify.AreEqual(0u, Summary(events).Number("SelectionCount"));
+            VerifyNoProductFailures(events);
         }
 
         private IReadOnlyList<TableViewTelemetryCapture.Record> UnloadAndRead(TableViewTelemetryCapture capture)

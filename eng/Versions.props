@@ -40,6 +40,7 @@
     <MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.SDK.BuildTools.MSIX".*?version="(.*?)"').Groups[1].Value)</MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion>
     <MSBuildCachePackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.MSBuildCache.*?version="(.*?)"').Groups[1].Value)</MSBuildCachePackageVersion>
     <MicrosoftCsWinRTVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.CsWinRT.*?version="(.*?)"').Groups[1].Value)</MicrosoftCsWinRTVersion>
+    <MicrosoftDiagnosticsTracingTraceEventVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Diagnostics.Tracing.TraceEvent.*?version="(.*?)"').Groups[1].Value)</MicrosoftDiagnosticsTracingTraceEventVersion>
     <!-- Internal component versions, first carried over from the deleted eng\Version.Details.xml.
          ValueOrDefault => $(WindowsAppSDKVersionPinned) in the mono-build, else the literal
          fallback (update manually). -->

@@ -77,35 +77,16 @@ struct TableViewSource::ShapingOperation
     TableViewTelemetry::ShapingObservation observation;
 };
 
-void TableViewSource::ObserveShapingFailure(
-    HRESULT error, TableViewTelemetry::AppFaultKind kind, TableViewTelemetry::Operation operation) noexcept
-{
-    auto const observed = m_shapingOperation;
-    if (observed)
-    {
-        if (observed->observation.appFaultKind == TableViewTelemetry::AppFaultKind::None)
-        {
-            observed->observation.appFaultKind = kind;
-            observed->observation.error = error;
-        }
-    }
-    else if (auto const handlers = m_shapingTelemetryHandlers; handlers && handlers->unownedAppFault)
-    {
-        handlers->unownedAppFault(operation, kind, error);
-    }
-}
-
 void TableViewSource::SetShapingOperationHandlers(
     winrt::IInspectable const& owner,
     std::function<uint64_t(TableViewTelemetry::Operation, bool)> begin,
-    ShapingOperationCompleted complete,
-    std::function<void(TableViewTelemetry::Operation, TableViewTelemetry::AppFaultKind, HRESULT)> unownedAppFault)
+    ShapingOperationCompleted complete)
 {
     if (m_owningTableView.get() != owner) { return; }
     try
     {
         m_shapingTelemetryHandlers = std::make_shared<ShapingTelemetryHandlers>(
-            ShapingTelemetryHandlers{ std::move(begin), std::move(complete), std::move(unownedAppFault) });
+            ShapingTelemetryHandlers{ std::move(begin), std::move(complete) });
     }
     catch (...) { OutputDebugStringW(L"TableView telemetry: source observation unavailable.\n"); }
 }
@@ -145,19 +126,7 @@ winrt::TableViewSource TableViewSource::Filter(winrt::TableViewPredicate const& 
     m_hasFilter = true;
     operation.Apply([&]()
     {
-        m_engine->SetFilter([predicate, weakThis = get_weak()](winrt::IInspectable const& item)
-        {
-            try { return predicate(item); }
-            catch (...)
-            {
-                if (auto self = weakThis.get())
-                {
-                    self->ObserveShapingFailure(winrt::to_hresult(), TableViewTelemetry::AppFaultKind::Callback,
-                        TableViewTelemetry::Operation::Filter);
-                }
-                throw;
-            }
-        });
+        m_engine->SetFilter([predicate](winrt::IInspectable const& item) { return predicate(item); });
     });
     return *this;
 }
@@ -178,37 +147,13 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
     RowIdentity::IdentitySelector groupIdentity{ nullptr };
     if (groupIdentitySelector)
     {
-        groupIdentity = [groupIdentitySelector, weakThis = get_weak()](winrt::IInspectable const& item)
-        {
-            try { return groupIdentitySelector(item); }
-            catch (...)
-            {
-                if (auto self = weakThis.get())
-                {
-                    self->ObserveShapingFailure(winrt::to_hresult(), TableViewTelemetry::AppFaultKind::Callback,
-                        TableViewTelemetry::Operation::GroupConfiguration);
-                }
-                throw;
-            }
-        };
+        groupIdentity = [groupIdentitySelector](winrt::IInspectable const& item) { return groupIdentitySelector(item); };
     }
 
     m_hasGroup = true;
     operation.Apply([&]()
     {
-        m_engine->SetGroup([key, weakThis = get_weak()](winrt::IInspectable const& item)
-        {
-            try { return key(item); }
-            catch (...)
-            {
-                if (auto self = weakThis.get())
-                {
-                    self->ObserveShapingFailure(winrt::to_hresult(), TableViewTelemetry::AppFaultKind::Callback,
-                        TableViewTelemetry::Operation::GroupConfiguration);
-                }
-                throw;
-            }
-        }, groupIdentity);
+        m_engine->SetGroup([key](winrt::IInspectable const& item) { return key(item); }, groupIdentity);
     });
     return *this;
 }
@@ -322,15 +267,15 @@ winrt::TableViewSource TableViewSource::Sort(winrt::hstring const& sortMemberPat
         }
     };
 
-    return SortCore({}, SortAxisTokenForPath(sortMemberPath), key, sortMemberPath, direction, false);
+    return SortCore({}, SortAxisTokenForPath(sortMemberPath), key, sortMemberPath, direction);
 }
 
-winrt::TableViewSource TableViewSource::SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction, bool applicationKey)
+winrt::TableViewSource TableViewSource::SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
 {
-    return SortCore(previousSortAxisToken, sortAxisToken, key, sortMemberPath, direction, applicationKey);
+    return SortCore(previousSortAxisToken, sortAxisToken, key, sortMemberPath, direction);
 }
 
-winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction, bool applicationKey)
+winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction)
 {
     if (!key)
     {
@@ -347,7 +292,6 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
         throw winrt::hresult_invalid_argument(L"direction must be a defined SortDirection value.");
     }
 
-    auto const keyIdentity = key.as<winrt::Windows::Foundation::IUnknown>();
     ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort };
     // The engine stores a std::function, which cannot be compared, so the delegate itself is
     // handed over as the axis identity. The wrapping lambda holds a strong ref to that same
@@ -357,20 +301,8 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
         m_engine->SetSort(
             previousSortAxisToken,
             sortAxisToken,
-            [key, applicationKey, weakThis = get_weak()](winrt::IInspectable const& item)
-            {
-                try { return key(item); }
-                catch (...)
-                {
-                    if (auto self = weakThis.get())
-                    {
-                        self->ObserveShapingFailure(winrt::to_hresult(), applicationKey ?
-                            TableViewTelemetry::AppFaultKind::Callback : TableViewTelemetry::AppFaultKind::None);
-                    }
-                    throw;
-                }
-            },
-            keyIdentity,
+            [key](winrt::IInspectable const& item) { return key(item); },
+            key.as<winrt::Windows::Foundation::IUnknown>(),
             sortMemberPath,
             direction);
     });
@@ -501,8 +433,8 @@ void TableViewSource::OnProjectionRebuilt()
     // Every rebuild mints a fresh row-metadata provider and can swap the view, so anything the
     // owner cached from the previous projection is stale from here - whether or not grouped-ness
     // changed.
-    NotifyOwnerProjectionChanged();
     if (m_shapingOperation) { m_shapingOperation->observation.published = true; }
+    NotifyOwnerProjectionChanged();
 }
 
 TableViewRowItemKeySelector TableViewSource::MakeIdentitySelector() const
@@ -603,22 +535,25 @@ void TableViewSource::ResumeHeldLiveShaping()
 
 void TableViewSource::NotifyOwnerProjectionChanged()
 {
-    ++m_notificationDepth;
-    auto restore = gsl::finally([this]() noexcept { --m_notificationDepth; });
     if (m_projectionChanged)
     {
+        // The owner can run app code that releases the last reference to this source.
+        auto const strongThis = get_strong();
+        ++m_notificationDepth;
+        auto restore = gsl::finally([this]() noexcept { --m_notificationDepth; });
         m_projectionChanged();
     }
 }
 
 void TableViewSource::NotifyOwnerShapingChanged(bool reorderOnly)
 {
-    ++m_notificationDepth;
-    auto restore = gsl::finally([this]() noexcept { --m_notificationDepth; });
-    if (m_shapingChanged)
-    {
-        m_shapingChanged(reorderOnly);
-    }
     // Only the in-place reorder notification proves computation; Refresh can merely defer.
     if (reorderOnly && m_shapingOperation) { m_shapingOperation->observation.published = true; }
+    if (m_shapingChanged)
+    {
+        auto const strongThis = get_strong();
+        ++m_notificationDepth;
+        auto restore = gsl::finally([this]() noexcept { --m_notificationDepth; });
+        m_shapingChanged(reorderOnly);
+    }
 }

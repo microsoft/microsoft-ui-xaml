@@ -53,7 +53,7 @@ public:
     winrt::TableViewSource ParentBy(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector);
     winrt::TableViewSource Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction);
     winrt::TableViewSource Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
-    winrt::TableViewSource SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction, bool applicationKey = true);
+    winrt::TableViewSource SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     winrt::TableViewSource ClearFilter();
     winrt::TableViewSource ClearGroupBy();
     winrt::TableViewSource ClearParentBy();
@@ -118,11 +118,7 @@ public:
     void SetShapingOperationHandlers(
         winrt::IInspectable const& owner,
         std::function<uint64_t(TableViewTelemetry::Operation, bool)> begin,
-        ShapingOperationCompleted complete,
-        std::function<void(TableViewTelemetry::Operation, TableViewTelemetry::AppFaultKind, HRESULT)> unownedAppFault);
-    void ObserveShapingFailure(HRESULT error,
-        TableViewTelemetry::AppFaultKind kind = TableViewTelemetry::AppFaultKind::Callback,
-        TableViewTelemetry::Operation operation = TableViewTelemetry::Operation::Sort) noexcept;
+        ShapingOperationCompleted complete);
     // The owner holds live restores while its cell editor is open and resumes them when it
     // closes (see ShapedItemsSource::SetLiveShapingHold).
     void SetLiveShapingHold(std::function<bool()> isHeld);
@@ -137,9 +133,8 @@ private:
     {
         std::function<uint64_t(TableViewTelemetry::Operation, bool)> begin;
         ShapingOperationCompleted complete;
-        std::function<void(TableViewTelemetry::Operation, TableViewTelemetry::AppFaultKind, HRESULT)> unownedAppFault;
     };
-    winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction, bool applicationKey = true);
+    winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     // Re-derives everything this class caches from the shape the engine just produced.
     void OnProjectionRebuilt();
     TableViewRowItemKeySelector MakeIdentitySelector() const;
