@@ -210,7 +210,7 @@
                         </Button>
                         <Button Grid.Row="1" Grid.Column="0" x:Name="SortGoalDifferenceDescButton" AutomationProperties.AutomationId="SortGoalDifferenceDescButton"
                                 Click="OnSortGoalDifferenceDescClick"
-                                AutomationProperties.Name="Sort by goal difference, highest first"
+                                AutomationProperties.Name="GD: sort by goal difference, highest first"
                                 ToolTipService.ToolTip="SortByColumn(GoalDifferenceColumn, Descending)."
                                 HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
                             <TextBlock Text="GD ↓" TextWrapping="Wrap" TextAlignment="Center"/>
@@ -231,14 +231,14 @@
                         </Button>
                         <Button Grid.Row="2" Grid.Column="1" x:Name="SortSeededButton" AutomationProperties.AutomationId="SortSeededFirstButton"
                                 Click="OnSortSeededClick"
-                                AutomationProperties.Name="Sort seeded teams first"
+                                AutomationProperties.Name="Seeded first: sort seeded teams first"
                                 ToolTipService.ToolTip="SortByColumn(SeededColumn, Descending): a CheckBox column sorted by the bool."
                                 HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
                             <TextBlock Text="Seeded first" TextWrapping="Wrap" TextAlignment="Center"/>
                         </Button>
                         <Button Grid.Row="3" Grid.Column="0" x:Name="TogglePointsButton" AutomationProperties.AutomationId="SortTogglePointsButton"
                                 Click="OnTogglePointsClick"
-                                AutomationProperties.Name="Toggle the points sort direction"
+                                AutomationProperties.Name="Toggle Points sort direction"
                                 ToolTipService.ToolTip="ToggleSortDirection(PointsColumn): reverses the Points sort, or starts it."
                                 HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
                             <TextBlock Text="Toggle Points" TextWrapping="Wrap" TextAlignment="Center"/>
