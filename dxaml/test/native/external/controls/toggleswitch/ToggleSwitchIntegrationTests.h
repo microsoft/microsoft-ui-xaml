@@ -42,7 +42,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(CanPanVerticallyOverToggleSwitchToScroll)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can pan vertically over a ToggleSwitch to scroll content.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateFootprint)

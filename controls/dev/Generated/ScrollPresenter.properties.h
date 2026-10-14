@@ -12,6 +12,9 @@ public:
     void Background(winrt::Brush const& value);
     winrt::Brush Background();
 
+    void CanContentRenderOutsideBounds(bool value);
+    bool CanContentRenderOutsideBounds();
+
     void ComputedHorizontalScrollMode(winrt::ScrollingScrollMode const& value);
     winrt::ScrollingScrollMode ComputedHorizontalScrollMode();
 
@@ -64,6 +67,7 @@ public:
     winrt::ScrollingZoomMode ZoomMode();
 
     static winrt::DependencyProperty BackgroundProperty() { return s_BackgroundProperty; }
+    static winrt::DependencyProperty CanContentRenderOutsideBoundsProperty() { return s_CanContentRenderOutsideBoundsProperty; }
     static winrt::DependencyProperty ComputedHorizontalScrollModeProperty() { return s_ComputedHorizontalScrollModeProperty; }
     static winrt::DependencyProperty ComputedVerticalScrollModeProperty() { return s_ComputedVerticalScrollModeProperty; }
     static winrt::DependencyProperty ContentProperty() { return s_ContentProperty; }
@@ -83,6 +87,7 @@ public:
     static winrt::DependencyProperty ZoomModeProperty() { return s_ZoomModeProperty; }
 
     static GlobalDependencyProperty s_BackgroundProperty;
+    static GlobalDependencyProperty s_CanContentRenderOutsideBoundsProperty;
     static GlobalDependencyProperty s_ComputedHorizontalScrollModeProperty;
     static GlobalDependencyProperty s_ComputedVerticalScrollModeProperty;
     static GlobalDependencyProperty s_ContentProperty;
@@ -140,6 +145,10 @@ public:
     static void ClearProperties();
 
     static void OnBackgroundPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnCanContentRenderOutsideBoundsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
