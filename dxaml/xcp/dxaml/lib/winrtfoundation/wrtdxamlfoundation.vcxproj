@@ -83,7 +83,6 @@
         <ClCompile Include="..\StaticStore.cpp"/>
         <ClCompile Include="..\XBFXamlTypeWrapper.cpp"/>
         <ClCompile Include="..\MetadataAPI.cpp"/>
-        <ClCompile Include="..\MetadataResetter.cpp"/>
         <ClCompile Include="..\ActivationAPI.cpp"/>
         <ClCompile Include="..\ResourceDictionary_partial.cpp"/>
         <ClCompile Include="..\DirectUIXamlQualifiedObject.cpp"/>

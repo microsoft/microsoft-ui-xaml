@@ -53,6 +53,7 @@ namespace Private { namespace Infrastructure {
             ) override;
         IFACEMETHOD(SimulateDeviceLost)() override;
         IFACEMETHOD(ResetDeviceAndVisuals)() override;
+        IFACEMETHOD(ResetDeviceAndVisualsWithoutUIThreadTick)() override;
         IFACEMETHOD(ResetDeviceOnly)() override;
         IFACEMETHOD(ConvertToPhysicalPixels)(wf::Point pointIn, wf::Point* pointOut) override;
         IFACEMETHOD(ConvertToPhysicalDisplayLocation)(wf::Point pointIn, wf::Point* pointOut) override;
