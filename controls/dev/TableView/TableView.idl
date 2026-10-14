@@ -232,8 +232,9 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     //   3. The row's own ContextFlyout (row Style, RowStyleSelector, or row template).
     //   4. TableView.ContextFlyout, through the framework's native routing.
     // Before a menu shows, the cell becomes the current cell and takes focus (so focus returns to it
-    // when the menu closes); selection does not change. While a cell is being edited, requests are
-    // left to the native chain, so the editor's own menu shows. Group headers never use it; give them a
+    // when the menu closes); selection does not change. While any cell in the table is being edited,
+    // requests on every row are left to the native chain (moving focus would commit the edit), so the
+    // editor's own menu shows and other rows show their own ContextFlyout. Group headers never use it; give them a
     // ContextFlyout through RowStyleSelector instead.
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
 
@@ -412,7 +413,8 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
 {
     TableViewGroupHeader();
 
-    // Content is the TableViewGroupInfo projection; ContentTemplate is the header content
+    // Content is the TableViewGroupInfo projection, and it is also the header's DataContext, so
+    // bindings in a group header Style or its ContextFlyout see it. ContentTemplate is the header content
     // template. The default Style seeds it, and TableView.GroupHeaderTemplate overrides it as a
     // local value that ClearValue reverts back to the Style setter.
 

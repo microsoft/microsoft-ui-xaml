@@ -333,15 +333,12 @@ winrt::TableView TableViewRow::GetOwningTableView()
     return m_owningTableView.get();
 }
 
+// Row-side half of TableView::IsContextMenuTargetCurrent, the only caller: it has already checked
+// the target kind, row, anchor load state, column, and owning table.
 bool TableViewRow::IsContextMenuTargetCurrent(
     TableViewDetails::ContextMenuTarget const& target) const
 {
-    using TableViewDetails::ContextMenuTargetKind;
-
-    if (target.Kind != ContextMenuTargetKind::Body || !target.Row ||
-        winrt::get_self<TableViewRow>(target.Row) != this ||
-        !target.Row.IsLoaded() || target.ScopeRoot != m_cellsHost.get() ||
-        !target.ScopeRoot || !target.Anchor)
+    if (!target.Row.IsLoaded() || !target.ScopeRoot || target.ScopeRoot != m_cellsHost.get())
     {
         return false;
     }
@@ -376,25 +373,12 @@ bool TableViewRow::IsContextMenuTargetCurrent(
         return false;
     }
 
-    auto node = target.ScopeRoot.as<winrt::DependencyObject>();
-    while (node && node != target.Row)
-    {
-        node = winrt::VisualTreeHelper::GetParent(node);
-    }
-    if (!node)
-    {
-        return false;
-    }
-
     if (!target.Column)
     {
         return target.Anchor == target.Row;
     }
 
-    // The column itself is validated by TableView::IsContextMenuTargetCurrent, the only caller.
-    return target.Anchor.Visibility() == winrt::Visibility::Visible &&
-        TableViewCellsPanel::CellForColumn(target.ScopeRoot, target.Column) == target.Anchor &&
-        winrt::VisualTreeHelper::GetParent(target.Anchor) == target.ScopeRoot;
+    return TableViewDetails::IsLiveCellAnchor(target.Anchor, target.ScopeRoot, target.Column);
 }
 
 winrt::TableViewColumn TableViewRow::GetCellOwningColumn(const winrt::UIElement& cellElement) const
@@ -2948,24 +2932,9 @@ std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextM
         return std::nullopt;
     }
 
-    // A request from a nested TableView belongs to that table, even when it left it Unhandled.
+    winrt::TableViewRow const self = *this;
     auto const source = args.OriginalSource().try_as<winrt::DependencyObject>();
-    bool reachedRow = false;
-    for (auto node = source; node; node = winrt::VisualTreeHelper::GetParent(node))
-    {
-        if (node == *this)
-        {
-            reachedRow = true;
-            break;
-        }
-
-        if (node.try_as<winrt::TableView>() || node.try_as<winrt::TableViewRow>())
-        {
-            return std::nullopt;
-        }
-    }
-
-    if (!reachedRow)
+    if (!TableViewDetails::IsOwnRequestSource(source, self))
     {
         return std::nullopt;
     }

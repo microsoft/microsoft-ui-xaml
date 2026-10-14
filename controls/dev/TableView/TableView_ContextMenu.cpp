@@ -68,36 +68,62 @@ bool TableView::IsContextMenuTargetCurrent(
         return winrt::get_self<TableViewRow>(target.Row)->IsContextMenuTargetCurrent(target);
     }
 
-    auto const ownerHeadersVisibility = owner.HeadersVisibility();
+    auto const showsColumnHeaders =
+        (static_cast<uint32_t>(owner.HeadersVisibility()) & static_cast<uint32_t>(winrt::TableViewHeadersVisibility::Column)) != 0;
     if (target.Row || target.Item || !target.Column ||
         target.ScopeRoot != m_headerHost.get() ||
-        ownerHeadersVisibility != winrt::TableViewHeadersVisibility::Column)
+        !showsColumnHeaders)
     {
         return false;
     }
 
-    return target.Anchor.Visibility() == winrt::Visibility::Visible &&
-        winrt::VisualTreeHelper::GetParent(target.Anchor) == target.ScopeRoot &&
-        TableViewCellsPanel::CellForColumn(target.ScopeRoot, target.Column) == target.Anchor;
+    return TableViewDetails::IsLiveCellAnchor(target.Anchor, target.ScopeRoot, target.Column);
+}
+
+bool TableViewDetails::IsLiveCellAnchor(
+    winrt::FrameworkElement const& anchor,
+    winrt::Panel const& scopeRoot,
+    winrt::TableViewColumn const& column)
+{
+    return anchor && scopeRoot && column &&
+        anchor.Visibility() == winrt::Visibility::Visible &&
+        winrt::VisualTreeHelper::GetParent(anchor) == scopeRoot &&
+        TableViewCellsPanel::CellForColumn(scopeRoot, column) == anchor;
+}
+
+bool TableViewDetails::IsOwnRequestSource(
+    winrt::DependencyObject const& source,
+    winrt::DependencyObject const& scope)
+{
+    for (auto node = source; node; node = winrt::VisualTreeHelper::GetParent(node))
+    {
+        if (node == scope)
+        {
+            return true;
+        }
+
+        if (node.try_as<winrt::TableView>() || node.try_as<winrt::TableViewRow>())
+        {
+            return false;
+        }
+    }
+
+    return false;
 }
 
 std::optional<TableViewDetails::ContextMenuTarget> TableView::ResolveHeaderContextMenuTarget(
     winrt::ContextRequestedEventArgs const& args)
 {
     auto const host = m_headerHost.get();
-    if (!host)
+    auto const source = args.OriginalSource().try_as<winrt::DependencyObject>();
+    if (!host || !TableViewDetails::IsOwnRequestSource(source, host))
     {
         return std::nullopt;
     }
 
-    auto node = args.OriginalSource().try_as<winrt::DependencyObject>();
+    auto node = source;
     while (node && node != host)
     {
-        if (node.try_as<winrt::TableView>() || node.try_as<winrt::TableViewRow>())
-        {
-            return std::nullopt;
-        }
-
         auto const parent = winrt::VisualTreeHelper::GetParent(node);
         if (parent == host)
         {
@@ -205,60 +231,61 @@ namespace
 
         return {};
     }
-}
 
-TableViewDetails::ContextMenuCandidate TableViewDetails::FindContentContextFlyout(
-    winrt::FrameworkElement const& wrapper)
-{
-    if (!wrapper)
+    // First app-supplied ContextFlyout inside a cell or header wrapper (CellTemplate, HeaderTemplate,
+    // generated element). Text controls' built-in flyouts are ignored.
+    TableViewDetails::ContextMenuCandidate FindContentContextFlyout(winrt::FrameworkElement const& wrapper)
     {
+        if (!wrapper)
+        {
+            return {};
+        }
+
+        // Depth-first in visual order, so the outermost app element (the template root) wins over
+        // anything nested inside it. Item containers of a nested items host (ListView, ItemsRepeater,
+        // and ItemsView through its repeater) belong to that host, as a nested TableView's cells do:
+        // the host's own ContextFlyout counts, its items' do not.
+        std::vector<winrt::DependencyObject> stack;
+        auto const pushChildren = [&stack](winrt::DependencyObject const& parent)
+        {
+            auto const count = winrt::VisualTreeHelper::GetChildrenCount(parent);
+            for (int32_t i = count - 1; i >= 0; --i)
+            {
+                stack.push_back(winrt::VisualTreeHelper::GetChild(parent, i));
+            }
+        };
+
+        pushChildren(wrapper);
+        while (!stack.empty())
+        {
+            auto const node = std::move(stack.back());
+            stack.pop_back();
+
+            auto const element = node.try_as<winrt::UIElement>();
+            if (!element || element.Visibility() != winrt::Visibility::Visible ||
+                node.try_as<winrt::TableView>())
+            {
+                continue;
+            }
+
+            if (HasAppContextFlyout(element))
+            {
+                if (auto const anchor = element.try_as<winrt::FrameworkElement>())
+                {
+                    return { element.ContextFlyout(), anchor };
+                }
+            }
+
+            if (node.try_as<winrt::ItemsControl>() || node.try_as<winrt::ItemsRepeater>())
+            {
+                continue;
+            }
+
+            pushChildren(node);
+        }
+
         return {};
     }
-
-    // Depth-first in visual order, so the outermost app element (the template root) wins over
-    // anything nested inside it. Item containers of a nested items host (ListView, ItemsRepeater,
-    // and ItemsView through its repeater) belong to that host, as a nested TableView's cells do:
-    // the host's own ContextFlyout counts, its items' do not.
-    std::vector<winrt::DependencyObject> stack;
-    auto const pushChildren = [&stack](winrt::DependencyObject const& parent)
-    {
-        auto const count = winrt::VisualTreeHelper::GetChildrenCount(parent);
-        for (int32_t i = count - 1; i >= 0; --i)
-        {
-            stack.push_back(winrt::VisualTreeHelper::GetChild(parent, i));
-        }
-    };
-
-    pushChildren(wrapper);
-    while (!stack.empty())
-    {
-        auto const node = std::move(stack.back());
-        stack.pop_back();
-
-        auto const element = node.try_as<winrt::UIElement>();
-        if (!element || element.Visibility() != winrt::Visibility::Visible ||
-            node.try_as<winrt::TableView>())
-        {
-            continue;
-        }
-
-        if (HasAppContextFlyout(element))
-        {
-            if (auto const anchor = element.try_as<winrt::FrameworkElement>())
-            {
-                return { element.ContextFlyout(), anchor };
-            }
-        }
-
-        if (node.try_as<winrt::ItemsControl>() || node.try_as<winrt::ItemsRepeater>())
-        {
-            continue;
-        }
-
-        pushChildren(node);
-    }
-
-    return {};
 }
 
 TableViewDetails::ContextMenuCandidate TableView::ResolveContextFlyout(
@@ -269,7 +296,7 @@ TableViewDetails::ContextMenuCandidate TableView::ResolveContextFlyout(
     // on the content already shows natively.
     if (target.Column)
     {
-        if (auto content = TableViewDetails::FindContentContextFlyout(target.Anchor))
+        if (auto content = FindContentContextFlyout(target.Anchor))
         {
             return content;
         }
@@ -310,52 +337,19 @@ void TableView::ShowContextFlyout(
     candidate.Flyout.ShowAt(candidate.Anchor, options);
 }
 
-bool TableView::ProcessContextMenuRequest(
-    TableViewDetails::ContextMenuTarget target,
-    winrt::ContextRequestedEventArgs const& args)
+bool TableView::IsContextMenuRequestCurrent(
+    TableViewDetails::ContextMenuTarget const& target,
+    winrt::IInspectable const& sourceSnapshot)
 {
-    using TableViewDetails::ContextMenuTargetKind;
+    return IsContextMenuTargetCurrent(target) &&
+        (target.Kind != TableViewDetails::ContextMenuTargetKind::Body ||
+            (ItemsSource() == sourceSnapshot && !IsEditing()));
+}
 
-    // args is null for a row automation peer request, which has no routed event.
-    if (args && args.Handled())
-    {
-        return false;
-    }
-
-    if (m_isProcessingContextMenu)
-    {
-        return true;
-    }
-
-    bool const body = target.Kind == ContextMenuTargetKind::Body;
-    if (body && IsEditing())
-    {
-        return false;
-    }
-
-    if (!IsContextMenuTargetCurrent(target))
-    {
-        return true;
-    }
-
-    // Resolved once, before focus moves. If the target goes stale while focus moves, the request
-    // stays handled only when the TableView would have shown a menu, so a stale request cannot
-    // fall through to the native chain at a different element.
-    auto const candidate = ResolveContextFlyout(target);
-    bool const invalidatedResult = static_cast<bool>(candidate);
-
-    auto const lifetime = get_strong();
-    m_isProcessingContextMenu = true;
-    auto restore = wil::scope_exit([this]() noexcept
-    {
-        m_isProcessingContextMenu = false;
-    });
-    auto const sourceSnapshot = ItemsSource();
-    auto const requestIsCurrent = [&]()
-    {
-        return IsContextMenuTargetCurrent(target) &&
-            (!body || (ItemsSource() == sourceSnapshot && !IsEditing()));
-    };
+bool TableView::FocusContextMenuTarget(
+    TableViewDetails::ContextMenuTarget const& target,
+    winrt::IInspectable const& sourceSnapshot)
+{
     auto const focusedElement = [this]() -> winrt::DependencyObject
     {
         auto const root = XamlRoot();
@@ -373,61 +367,109 @@ bool TableView::ProcessContextMenuRequest(
     // element the menu is for: the cell for a cell request (unless focus is already inside it, e.g.
     // on its content), the row for a row request, the header cell for a header request. Body
     // targets go through the two-level focus helpers so the cursor level follows.
-    if (body)
+    if (target.Kind != TableViewDetails::ContextMenuTargetKind::Body)
     {
-        if (target.Column)
+        if (!isFocusWithin(focusedElement(), target.Anchor))
         {
-            SetCurrentCell(target.Item, target.Column);
+            // Header cells are tab stops; a request on the header's content keeps focus where it is.
+            target.Anchor.Focus(winrt::FocusState::Programmatic);
         }
+        return true;
+    }
 
-        if (!requestIsCurrent())
-        {
-            return invalidatedResult;
-        }
+    if (target.Column)
+    {
+        SetCurrentCell(target.Item, target.Column);
+    }
 
-        winrt::DependencyObject const rowObject = target.Row;
-        auto focused = focusedElement();
+    if (!IsContextMenuRequestCurrent(target, sourceSnapshot))
+    {
+        return false;
+    }
 
-        if (target.Column)
-        {
-            // Entering the row from outside lands on the row first. App code reacting to that focus
-            // change (removing the item, say) recycles the row back to row level, which would leave a
-            // direct cell focus aimed at a cell that is no longer focusable.
-            if (!isFocusWithin(focused, rowObject))
-            {
-                FocusRowContainerInternal(target.Row, winrt::FocusState::Programmatic);
-                if (!requestIsCurrent())
-                {
-                    return invalidatedResult;
-                }
-                focused = focusedElement();
-            }
+    winrt::DependencyObject const rowObject = target.Row;
+    auto focused = focusedElement();
 
-            if (!isFocusWithin(focused, target.Anchor))
-            {
-                auto const rowImpl = winrt::get_self<TableViewRow>(target.Row);
-                if (int32_t const column = rowImpl->GetVisibleCellIndexInternal(target.Anchor); column >= 0)
-                {
-                    FocusRealizedRowCell(target.Row, column, winrt::FocusState::Programmatic);
-                }
-            }
-        }
-        else if (focused != rowObject)
+    if (!target.Column)
+    {
+        if (focused != rowObject)
         {
             FocusRowContainerInternal(target.Row, winrt::FocusState::Programmatic);
         }
-    }
-    else if (!isFocusWithin(focusedElement(), target.Anchor))
-    {
-        // Header cells are tab stops; a request on the header's content keeps focus where it is.
-        target.Anchor.Focus(winrt::FocusState::Programmatic);
+        return true;
     }
 
-    if (!requestIsCurrent())
+    // Entering the row from outside lands on the row first. App code reacting to that focus
+    // change (removing the item, say) recycles the row back to row level, which would leave a
+    // direct cell focus aimed at a cell that is no longer focusable.
+    if (!isFocusWithin(focused, rowObject))
     {
-        return invalidatedResult;
+        FocusRowContainerInternal(target.Row, winrt::FocusState::Programmatic);
+        if (!IsContextMenuRequestCurrent(target, sourceSnapshot))
+        {
+            return false;
+        }
+        focused = focusedElement();
     }
 
+    if (!isFocusWithin(focused, target.Anchor))
+    {
+        auto const rowImpl = winrt::get_self<TableViewRow>(target.Row);
+        if (int32_t const column = rowImpl->GetVisibleCellIndexInternal(target.Anchor); column >= 0)
+        {
+            FocusRealizedRowCell(target.Row, column, winrt::FocusState::Programmatic);
+        }
+    }
+
+    return true;
+}
+
+bool TableView::ProcessContextMenuRequest(
+    TableViewDetails::ContextMenuTarget const& target,
+    winrt::ContextRequestedEventArgs const& args)
+{
+    // args is null for a row automation peer request, which has no routed event.
+    if (args && args.Handled())
+    {
+        return false;
+    }
+
+    if (m_isProcessingContextMenu)
+    {
+        return true;
+    }
+
+    if (target.Kind == TableViewDetails::ContextMenuTargetKind::Body && IsEditing())
+    {
+        return false;
+    }
+
+    if (!IsContextMenuTargetCurrent(target))
+    {
+        return true;
+    }
+
+    // Moving focus runs app code. If that makes the target stale, the request stays handled only
+    // when the TableView would have shown a menu, so it cannot fall through to the native chain
+    // at a different element.
+    bool const staleResult = static_cast<bool>(ResolveContextFlyout(target));
+
+    auto const lifetime = get_strong();
+    m_isProcessingContextMenu = true;
+    auto restore = wil::scope_exit([this]() noexcept
+    {
+        m_isProcessingContextMenu = false;
+    });
+    auto const sourceSnapshot = ItemsSource();
+
+    if (!FocusContextMenuTarget(target, sourceSnapshot) || !IsContextMenuRequestCurrent(target, sourceSnapshot))
+    {
+        return staleResult;
+    }
+
+    // Resolved again once focus has settled: app code run by the focus move may have replaced a
+    // column's menu or the cell's content, and the menu shown is the one in place now.
+    auto const candidate = ResolveContextFlyout(target);
     if (!candidate)
     {
         return false;

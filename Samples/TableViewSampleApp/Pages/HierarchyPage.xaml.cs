@@ -10,7 +10,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
@@ -365,17 +364,17 @@ public sealed partial class HierarchyPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    // Row menu items inherit the row's DataContext (an Employee). A group header's DataContext is
-    // internal, so the group menu reads its TableViewGroupInfo from the header it opened on.
-    private TableViewGroupInfo? _menuGroup;
-
-    private void OnGroupMenuOpening(object sender, object e)
-        => _menuGroup = ((FlyoutBase)sender).Target is TableViewGroupHeader { Content: TableViewGroupInfo group } ? group : null;
-
+    // Menu items inherit the DataContext of the row they open on: an Employee for a data row, the
+    // TableViewGroupInfo for a group header.
     private void OnRowMenuItemClick(object sender, RoutedEventArgs e)
     {
         var menuItem = (MenuFlyoutItem)sender;
-        var target = menuItem.DataContext is Employee employee ? employee.Name : _menuGroup?.KeyText ?? "?";
+        var target = menuItem.DataContext switch
+        {
+            Employee employee => employee.Name,
+            TableViewGroupInfo group => group.KeyText,
+            _ => "?",
+        };
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0}: {1}", menuItem.Text, target));
     }
 
