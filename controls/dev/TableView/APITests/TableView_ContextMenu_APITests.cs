@@ -38,7 +38,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // keyboard behavior) are covered by the interaction tests.
     //
     // Red tests encode a known product gap and are expected to fail until it is fixed:
-    // A15, A16, C6, E4, E6, E8, G5.
+    // A15, C6.
     [TestClass]
     public class TableViewContextMenuTests : TableViewApiTestBase
     {
@@ -274,7 +274,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A16 (Red): a cell menu wins over a row ContextFlyout set by an implicit row style; cells without one get the row style menu.")]
+        [TestProperty("Description", "A16: a cell menu wins over a row ContextFlyout set by an implicit row style; cells without one get the row style menu.")]
         public void CellMenuWinsOverRowStyleMenu()
         {
             var f = LoadFixture(rowStyle: RowStyleWithFlyout());
@@ -298,6 +298,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RequestOnCell(f, 3, DepartmentCol);
 
             VerifyOpened(f, "ContentMenu", () => content, f.P(3), "UIA on row 3 / Department");
+            CloseMenus(f);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A18: a cell template flyout keeps winning when CellContextFlyout is assigned after load.")]
+        public void CellTemplateFlyoutWinsOverRuntimeCellMenu()
+        {
+            var f = LoadFixture(departmentTemplate: ContentTemplate(RootFlyoutContent));
+            var content = TrackContentMenu(f, 3, DepartmentCol, ContentRootName, "ContentMenu");
+
+            RunOnUIThread.Execute(() => f.DepartmentColumn.CellContextFlyout = f.CellMenu);
+            RequestOnCell(f, 3, DepartmentCol);
+
+            VerifyOpened(f, "ContentMenu", () => content, f.P(3), "UIA on row 3 / Department, CellContextFlyout set at runtime");
+            CloseMenus(f);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A19: a request raised on an element inside the cell template opens the template flyout, not CellContextFlyout.")]
+        public void RequestFromCellContentWinsOverCellMenu()
+        {
+            var f = LoadFixture(
+                departmentTemplate: ContentTemplate(ButtonFlyoutContent("{Binding Role}")),
+                configure: x => x.DepartmentColumn.CellContextFlyout = x.CellMenu);
+            var content = TrackContentMenu(f, 3, DepartmentCol, ContentRootName, "ContentMenu");
+
+            RequestOnElement(() => FindNamed(CellOf(f, 3, DepartmentCol), ContentButtonName));
+
+            VerifyOpened(f, "ContentMenu", () => content, expectedItem: null, "UIA on the button in row 3 / Department");
             CloseMenus(f);
         }
 
@@ -410,6 +439,62 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => VerifyFocusWithin(f, RowOf(f, 2), "after the request"));
         }
 
+        [TestMethod]
+        [TestProperty("Description", "C7: a ContextFlyout on a nested (non-root) element in the header template wins over HeaderContextFlyout.")]
+        public void HeaderTemplateInnerFlyoutWinsOverHeaderMenu()
+        {
+            var f = LoadFixture(configure: x => x.NameColumn.HeaderTemplate = ContentTemplate(
+                "<Grid>" +
+                "  <Border x:Name='ContentRoot' Background='Transparent'>" +
+                "    <Border.ContextFlyout><MenuFlyout/></Border.ContextFlyout>" +
+                "    <TextBlock Text='{Binding}'/>" +
+                "  </Border>" +
+                "</Grid>"));
+            FrameworkElement content = null;
+            RunOnUIThread.Execute(() => content = TrackNamedMenu(f, HeaderOf(f, NameCol), ContentRootName, "ContentMenu"));
+
+            RequestOnHeader(f, NameCol);
+
+            VerifyOpened(f, "ContentMenu", () => content, expectedItem: null, "UIA on the Name header");
+            CloseMenus(f);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "C8: a header template flyout wins over TableView.ContextFlyout when the column has no HeaderContextFlyout, and cell menus never apply.")]
+        public void HeaderTemplateFlyoutWinsOverTableMenu()
+        {
+            var f = LoadFixture(configure: x =>
+            {
+                x.OfficeColumn.CellContextFlyout = x.CellMenu;
+                x.OfficeColumn.HeaderTemplate = ContentTemplate(
+                    "<Grid x:Name='ContentRoot' Background='Transparent'>" +
+                    "  <Grid.ContextFlyout><MenuFlyout/></Grid.ContextFlyout>" +
+                    "  <TextBlock Text='{Binding}'/>" +
+                    "</Grid>");
+            });
+            FrameworkElement content = null;
+            RunOnUIThread.Execute(() => content = TrackNamedMenu(f, HeaderOf(f, OfficeCol), ContentRootName, "ContentMenu"));
+
+            RequestOnHeader(f, OfficeCol);
+
+            VerifyOpened(f, "ContentMenu", () => content, expectedItem: null, "UIA on the Office header");
+            CloseMenus(f);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "C9: a request raised on an element inside the header template opens the template flyout, not HeaderContextFlyout.")]
+        public void RequestFromHeaderContentWinsOverHeaderMenu()
+        {
+            var f = LoadFixture(configure: x => x.NameColumn.HeaderTemplate = ContentTemplate(ButtonFlyoutContent("{Binding}")));
+            FrameworkElement content = null;
+            RunOnUIThread.Execute(() => content = TrackNamedMenu(f, HeaderOf(f, NameCol), ContentRootName, "ContentMenu"));
+
+            RequestOnElement(() => FindNamed(HeaderOf(f, NameCol), ContentButtonName));
+
+            VerifyOpened(f, "ContentMenu", () => content, expectedItem: null, "UIA on the button in the Name header");
+            CloseMenus(f);
+        }
+
         // ---- D. Group headers ---------------------------------------------------------------
 
         [TestMethod]
@@ -478,7 +563,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "E4 (Red): a cell request focuses the exact target cell; a row request focuses the row itself.")]
+        [TestProperty("Description", "E4: a cell request focuses the exact target cell; a row request focuses the row itself.")]
         public void BodyRequestFocusesTargetCell()
         {
             var f = LoadFixture();
@@ -500,7 +585,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // An API test cannot hold an edit open (SetValue opens and commits in one call), so the request
         // is raised from BeginningEdit, a window in which IsEditing is already true.
         [TestMethod]
-        [TestProperty("Description", "E6 (Red): an edit on one row must not disable menus on another row.")]
+        [TestProperty("Description", "E6: an edit on one row must not disable menus on another row.")]
         public void RequestOnOtherRowWhileEditingUsesThatRowsMenu()
         {
             bool? wasEditing = null;
@@ -535,7 +620,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "E8 (Red): body side effects (focus to the target cell, selection untouched) apply when a row style menu wins.")]
+        [TestProperty("Description", "E8: body side effects (focus to the target cell, selection untouched) apply when a row style menu wins.")]
         public void RowStyleMenuAppliesBodySideEffects()
         {
             var f = LoadFixture(rowStyle: RowStyleWithFlyout());
@@ -781,7 +866,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "G5 (Red): a TableViewColumn in a content element's Tag does not redirect the request to that column.")]
+        [TestProperty("Description", "G5: a TableViewColumn in a content element's Tag does not redirect the request to that column.")]
         public void ColumnTagOnContentDoesNotRedirect()
         {
             var f = LoadFixture(departmentTemplate: ContentTemplate("<TextBlock x:Name='ContentRoot' Text='{Binding Role}'/>"));
@@ -934,6 +1019,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         internal const int DepartmentCol = 1;
         internal const int OfficeCol = 2;
         internal const string ContentRootName = "ContentRoot";
+        internal const string ContentButtonName = "ContentButton";
 
         internal const string XamlNamespaces =
             "xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
@@ -944,6 +1030,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             "<Grid x:Name='ContentRoot' Background='Transparent'>" +
             "  <Grid.ContextFlyout><MenuFlyout/></Grid.ContextFlyout>" +
             "  <TextBlock Text='{Binding Role}'/>" +
+            "</Grid>";
+
+        // A root flyout around a Button, so a request can start on a control inside the template.
+        internal static string ButtonFlyoutContent(string contentBinding) =>
+            "<Grid x:Name='ContentRoot' Background='Transparent'>" +
+            "  <Grid.ContextFlyout><MenuFlyout/></Grid.ContextFlyout>" +
+            "  <Button x:Name='ContentButton' Content='" + contentBinding + "'/>" +
             "</Grid>";
 
         // The default row template's parts, without visual states, under a root Grid with a ContextFlyout.
@@ -1086,6 +1179,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var peer = FrameworkElementAutomationPeer.CreatePeerForElement(HeaderOf(f, column));
                 Verify.IsNotNull(peer, "The header cell must produce an automation peer.");
+                peer.ShowContextMenu();
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        // Raises the request on an arbitrary element, e.g. a control inside a cell or header template.
+        internal static void RequestOnElement(Func<FrameworkElement> element)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(element());
+                Verify.IsNotNull(peer, "The element must produce an automation peer.");
                 peer.ShowContextMenu();
             });
             IdleSynchronizer.Wait();
