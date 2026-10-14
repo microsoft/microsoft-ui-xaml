@@ -2593,10 +2593,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass VirtualizingStackPanel
+    unsealed runtimeclass VirtualizingStackPanel
         : Microsoft.UI.Xaml.Controls.Primitives.OrientedVirtualizingPanel
     {
-        VirtualizingStackPanel();
+        [method_name("CreateInstance")] VirtualizingStackPanel();
         Boolean AreScrollSnapPointsRegular;
         Microsoft.UI.Xaml.Controls.Orientation Orientation;
         event Microsoft.UI.Xaml.Controls.CleanUpVirtualizedItemEventHandler CleanUpVirtualizedItemEvent;
