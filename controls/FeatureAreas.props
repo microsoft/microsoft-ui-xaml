@@ -259,6 +259,7 @@
     <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
     <FeatureSwipeControlEnabled>true</FeatureSwipeControlEnabled>
     <FeatureTabViewEnabled>true</FeatureTabViewEnabled>
+    <FeatureTableViewEnabled>true</FeatureTableViewEnabled>
     <FeatureTeachingTipEnabled>true</FeatureTeachingTipEnabled>
     <FeatureTreeViewEnabled>true</FeatureTreeViewEnabled>
     <FeatureTwoPaneViewEnabled>true</FeatureTwoPaneViewEnabled>
@@ -288,6 +289,10 @@
     <FeatureInkCanvasEnabled>true</FeatureInkCanvasEnabled>
     <FeatureInkToolbarEnabled>true</FeatureInkToolbarEnabled>
     <FeatureSystemBackdropElementEnabled>true</FeatureSystemBackdropElementEnabled>
+    <!-- Charts is built outside this repo and arrives prebuilt in the WinUIDetails package (see
+         eng\productmetadata.props). Only some WinUIDetails versions carry it, and its API is
+         experimental, so its tests build only when it is present in a non-final build. -->
+    <FeatureChartsEnabled Condition="'$(MUXFinalRelease)' != 'true' and Exists('$(WinUIDetailsLibPath)\Microsoft.UI.Xaml.Controls.Charts.winmd')">true</FeatureChartsEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
