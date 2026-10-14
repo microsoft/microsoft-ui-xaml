@@ -4852,10 +4852,12 @@ void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::Naviga
     if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && !DoesNavigationViewItemHaveChildren(selectedContainer) && !m_shouldIgnoreNextSelectionChange)
     {
         const auto focusState = selectedContainer.FocusState();
+        const auto paneToggleButton = m_paneToggleButton.get();
         ClosePane();
 
-        // The compact rail keeps the item visible; a fully closed overlay does not.
-        if (m_isClosedCompact && focusState != winrt::FocusState::Unfocused)
+        // Only undo SplitView's restore to the toggle; preserve application focus redirection.
+        if (m_isClosedCompact && focusState != winrt::FocusState::Unfocused &&
+            paneToggleButton && paneToggleButton.FocusState() != winrt::FocusState::Unfocused)
         {
             selectedContainer.Focus(focusState);
         }

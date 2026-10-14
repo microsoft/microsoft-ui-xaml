@@ -138,6 +138,48 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void VerifyCompactItemPreservesSynchronousFocusRedirection()
+        {
+            var navView = SetupNavigationView(NavigationViewPaneDisplayMode.LeftCompact);
+            NavigationViewItem item = null;
+            Button destination = null;
+            Button toggleButton = null;
+            RunOnUIThread.Execute(() =>
+            {
+                destination = new Button { Content = "Content focus destination" };
+                navView.Content = destination;
+                navView.IsPaneOpen = false;
+                Content.UpdateLayout();
+                toggleButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                Verify.IsTrue(toggleButton.Focus(FocusState.Pointer));
+                navView.IsPaneOpen = true;
+                item = (NavigationViewItem)navView.MenuItems[1];
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(item.Focus(FocusState.Keyboard));
+                navView.GettingFocus += (sender, args) =>
+                {
+                    if (args.OldFocusedElement == item && args.NewFocusedElement == toggleButton)
+                    {
+                        Verify.IsTrue(args.TrySetNewFocusedElement(destination));
+                    }
+                };
+                var peer = new NavigationViewItemAutomationPeer(item);
+                ((ISelectionItemProvider)peer.GetPattern(PatternInterface.SelectionItem)).Select();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(navView.IsPaneOpen);
+                Verify.AreEqual(destination, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot));
+            });
+        }
+
         private NavigationView SetupNavigationView(NavigationViewPaneDisplayMode paneDisplayMode = NavigationViewPaneDisplayMode.Auto)
         {
             NavigationView navView = null;
