@@ -6,7 +6,38 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "MyUserControl1.h"
+#if __has_include(<winrt/BindTestbed.h>)
+#include <winrt/BindTestbed.h>
+#endif
+#if __has_include(<winrt/BindTestbedModel.h>)
+#include <winrt/BindTestbedModel.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Input.h>)
+#include <winrt/Microsoft.UI.Xaml.Input.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -49,7 +80,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void MyUserControl1T<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void MyUserControl1T<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
         switch (connectionId)
         {
@@ -70,7 +101,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void MyUserControl1T<D, I...>::DisconnectUnloadedObject(int32_t)
+    void MyUserControl1T<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -82,7 +113,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename... I>
-    IComponentConnector MyUserControl1T<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector MyUserControl1T<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<::winrt::BindTestbed::implementation::XamlBindings> bindings;
         switch (connectionId)
@@ -117,7 +148,7 @@ namespace winrt::BindTestbed::implementation
             ReleaseAllListeners();
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -144,11 +175,11 @@ namespace winrt::BindTestbed::implementation
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject> cacheDPC_Tag;
         ::winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged cachePC_Tag_Cast_Tag_To_IEmployee{nullptr};
         ::winrt::event_token tokenPC_Tag_Cast_Tag_To_IEmployee {};
-        __int64 tokenDPC_Tag{0};
+        std::int64_t tokenDPC_Tag{0};
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::MyUserControl1 obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::MyUserControl1 obj, std::int32_t phase)
         {
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::Microsoft::UI::Xaml::FrameworkElement::TagProperty(), cacheDPC_Tag, tokenDPC_Tag);
             if (obj)
@@ -160,7 +191,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Tag(::winrt::Windows::Foundation::IInspectable obj, int32_t phase)
+        void Update_Tag(::winrt::Windows::Foundation::IInspectable obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -171,7 +202,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Tag_Cast_Tag_To_IEmployee(::winrt::BindTestbedModel::IEmployee obj, int32_t phase)
+        void Update_Tag_Cast_Tag_To_IEmployee(::winrt::BindTestbedModel::IEmployee obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_Tag_Cast_Tag_To_IEmployee, tokenPC_Tag_Cast_Tag_To_IEmployee);
             if (obj)
@@ -183,7 +214,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Tag_Cast_Tag_To_IEmployee_FirstName(::winrt::hstring obj, int32_t phase)
+        void Update_Tag_Cast_Tag_To_IEmployee_FirstName(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {

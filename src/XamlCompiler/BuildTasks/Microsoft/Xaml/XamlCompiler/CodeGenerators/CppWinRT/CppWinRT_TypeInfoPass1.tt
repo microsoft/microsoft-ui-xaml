@@ -8,28 +8,29 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-#pragma once
 
+#pragma once
+#ifndef XAML_IMPL_MODULE
+#include <unknwn.h>
+#undef GetCurrentTime
 #include <functional>
 #include <map>
+#include <memory>
 #include <vector>
-#include <unknwn.h>
 #include <mutex>
+#include <cstdint>
+<#  foreach (var projectionNamespace in CppWinRTProjectionDependency.TypeInfoSupportNamespaces) { #>
+<#=GetCppWinRTProjectionHeaderDirective(projectionNamespace, optionalHeader: true)#>
+<#  } #>
+#endif
 
-// Undefine GetCurrentTime macro to prevent
-// conflict with Storyboard::GetCurrentTime
-#undef GetCurrentTime
+#ifdef XAML_IMPL_MODULE
+#define XAML_EXPORT export extern "C++"
+#else
+#define XAML_EXPORT
+#endif
 
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include "winrt/<#=KnownNamespaces.Xaml#>.h"
-#include "winrt/<#=KnownNamespaces.XamlData#>.h"
-#include "winrt/<#=KnownNamespaces.XamlMarkup#>.h"
-#include "winrt/<#=KnownNamespaces.XamlInterop#>.h"
-#include "winrt/<#=KnownNamespaces.WindowsXamlInterop#>.h"
-#include "winrt/<#=KnownNamespaces.XamlXamlTypeInfo#>.h"
-
-namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
+XAML_EXPORT namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 {
     using IInspectable = <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable;
     using IXamlMember = <#=Projection(KnownNamespaces.XamlMarkup)#>::IXamlMember;
@@ -163,7 +164,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
         void SetBoxedType(IXamlType boxedType);
         void AddMemberName(::winrt::hstring const& shortName);
         void AddEnumValue(::winrt::hstring const& name, IInspectable value);
-        uint32_t CreateEnumUIntFromString(::winrt::hstring const& input) const;
+        std::uint32_t CreateEnumUIntFromString(::winrt::hstring const& input) const;
 
     private:
         std::shared_ptr<XamlTypeInfoProvider> _provider;
@@ -222,3 +223,4 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
         std::shared_ptr<XamlTypeInfoProvider> _provider;
     };
 }
+#undef XAML_EXPORT

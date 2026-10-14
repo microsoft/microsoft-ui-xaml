@@ -29,29 +29,53 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 //------------------------------------------------------------------------------
+
 #pragma once
-
+#ifndef XAML_IMPL_MODULE
 #include <unknwn.h>
-
-// Undefine GetCurrentTime macro to prevent
-// conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
-
+#include <cstdint>
 ");
-  foreach (var includeFile in Model.NeededCppWinRTProjectionHeaderFiles) { 
-            this.Write("#if __has_include(<");
-            this.Write(this.ToStringHelper.ToStringWithCulture(includeFile));
-            this.Write(">)\r\n#include <");
-            this.Write(this.ToStringHelper.ToStringWithCulture(includeFile));
-            this.Write(">\r\n#endif\r\n");
-  }
+  foreach (var projectionNamespace in Model.DeclarationCppWinRTProjectionNamespaces) { 
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionHeaderDirective(projectionNamespace, optionalHeader: true)));
             this.Write("\r\n");
+  } 
   if (Model.CodeInfo.BindStatus != BindStatus.None) { 
             this.Write("#include \"XamlBindingInfo.xaml.g.h\"\r\n");
   } 
-            this.Write("\r\nnamespace winrt::");
+            this.Write("#endif\r\n\r\n#ifdef XAML_IMPL_MODULE\r\n#define XAML_EXPORT export extern \"C++\"\r\n#else" +
+                    "\r\n#define XAML_EXPORT\r\n#endif\r\n\r\n");
+  if (Model.CodeInfo.BindStatus != BindStatus.None) { 
+            this.Write("XAML_EXPORT namespace winrt::");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(ProjectInfo.RootNamespace)));
+            this.Write("::implementation\r\n{\r\n    struct XamlBindings;\r\n}\r\n");
+  } 
+            this.Write("\r\n");
+  if (Model.CodeInfo.HasInComponentBase) {
+        var baseTypeName = Model.CodeInfo.BaseTypeName;
+        var baseTypeSeparator = baseTypeName.LastIndexOf('.');
+        var baseTypeNamespace = baseTypeName.Substring(0, baseTypeSeparator);
+        var baseTypeShortName = baseTypeName.Substring(baseTypeSeparator + 1);
+
+            this.Write("XAML_EXPORT namespace winrt::");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(baseTypeNamespace)));
+            this.Write("::implementation\r\n{\r\n    struct ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(baseTypeShortName));
+            this.Write(";\r\n}\r\n");
+  } 
+            this.Write("\r\nXAML_EXPORT namespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(Model.CodeInfo.ClassName.Namespace)));
-            this.Write("::implementation\r\n{\r\n    using IInspectable = ");
+            this.Write("::implementation\r\n{\r\n");
+  if (Model.CodeInfo.HasInComponentBase) { 
+            this.Write("    template <typename D, typename B, typename... I>\r\n    struct ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
+            this.Write("_base;\r\n");
+  } else { 
+            this.Write("    template <typename D, typename... I>\r\n    struct ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
+            this.Write("_base;\r\n");
+  } 
+            this.Write("\r\n    using IInspectable = ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsFoundation)));
             this.Write("::IInspectable;\r\n\r\n    template <typename D, typename ... I>\r\n    struct ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
@@ -80,14 +104,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsFoundation)));
             this.Write("::Uri const& resourceLocator);\r\n");
   }
-            this.Write("        virtual void Connect(int32_t connectionId, IInspectable const& target);\r\n" +
-                    "        virtual ");
+            this.Write("        virtual void Connect(std::int32_t connectionId, IInspectable const& targe" +
+                    "t);\r\n        virtual ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlMarkup)));
-            this.Write("::IComponentConnector GetBindingConnector(int32_t connectionId, IInspectable cons" +
-                    "t& target);\r\n        void UnloadObject(");
+            this.Write("::IComponentConnector GetBindingConnector(std::int32_t connectionId, IInspectable" +
+                    " const& target);\r\n        void UnloadObject(");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.Xaml)));
             this.Write("::DependencyObject const& dependencyObject);\r\n        void DisconnectUnloadedObje" +
-                    "ct(int32_t connectionId);\r\n");
+                    "ct(std::int32_t connectionId);\r\n");
   foreach (var fieldData in Model.CodeInfo.FieldDeclarations) {
         if (fieldData.IsDeprecated) { 
             this.Write("#pragma warning(push)\r\n#pragma warning(disable : 4973)\r\n");
@@ -135,7 +159,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write("#pragma warning(pop)\r\n");
       }
   }
-            this.Write("    };\r\n}\r\n");
+            this.Write("    };\r\n}\r\n#undef XAML_EXPORT\r\n");
             return this.GenerationEnvironment.ToString();
         }
     }

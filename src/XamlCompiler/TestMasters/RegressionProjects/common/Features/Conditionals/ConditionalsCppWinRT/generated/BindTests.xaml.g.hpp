@@ -6,7 +6,38 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "BindTests.h"
+#if __has_include(<winrt/ConditionalControls.h>)
+#include <winrt/ConditionalControls.h>
+#endif
+#if __has_include(<winrt/ConditionalsCppWinRT.h>)
+#include <winrt/ConditionalsCppWinRT.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/System.h>)
+#include <winrt/System.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -62,7 +93,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
     }
 
     template <typename D, typename ... I>
-    void BindTestsT<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void BindTestsT<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
         switch (connectionId)
         {
@@ -127,7 +158,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
     }
 
     template <typename D, typename ... I>
-    void BindTestsT<D, I...>::DisconnectUnloadedObject(int32_t connectionId)
+    void BindTestsT<D, I...>::DisconnectUnloadedObject(std::int32_t connectionId)
     {
         switch(connectionId)
         {
@@ -148,7 +179,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
     }
 
     template <typename D, typename... I>
-    IComponentConnector BindTestsT<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector BindTestsT<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<::winrt::ConditionalsCppWinRT::implementation::XamlBindings> bindings;
         switch (connectionId)
@@ -187,7 +218,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -247,7 +278,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             ::winrt::Microsoft::UI::Xaml::Markup::XamlBindingHelper::SuspendRendering(obj18);
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -295,7 +326,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::ConditionalControls::IEmployee obj, int32_t phase)
+        void Update_(::winrt::ConditionalControls::IEmployee obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -327,7 +358,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_FirstName_4169577821(::winrt::hstring obj, int32_t phase)
+        void Update_FirstName_4169577821(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -339,7 +370,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_OfficeNumber1_4169577821(int32_t obj, int32_t phase)
+        void Update_OfficeNumber1_4169577821(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -351,7 +382,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_OfficeNumber2_1189802222(int32_t obj, int32_t phase)
+        void Update_OfficeNumber2_1189802222(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 2) | NOT_PHASED )) != 0)
             {
@@ -363,7 +394,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_OfficeNumber3_2553856403(int32_t obj, int32_t phase)
+        void Update_OfficeNumber3_2553856403(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 3) | NOT_PHASED )) != 0)
             {
@@ -397,7 +428,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             ReleaseAllListeners();
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -932,7 +963,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::ConditionalsCppWinRT::BindTests obj, int32_t phase)
+        void Update_(::winrt::ConditionalsCppWinRT::BindTests obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_, tokenPC_);
             if (obj)
@@ -1012,7 +1043,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             CompleteUpdate(phase);
         }
 
-        void Update_v3TextBlock_2553856403(::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj, int32_t phase)
+        void Update_v3TextBlock_2553856403(::winrt::Microsoft::UI::Xaml::Controls::TextBlock obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1026,7 +1057,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_v3TextBlock_2553856403_Text_2553856403(::winrt::hstring obj, int32_t phase)
+        void Update_v3TextBlock_2553856403_Text_2553856403(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1038,7 +1069,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_V2Property_1189802222(::winrt::hstring obj, int32_t phase)
+        void Update_V2Property_1189802222(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1060,7 +1091,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_V2Property_2553856403(::winrt::hstring obj, int32_t phase)
+        void Update_V2Property_2553856403(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1072,7 +1103,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_V2Property_4169577821(::winrt::hstring obj, int32_t phase)
+        void Update_V2Property_4169577821(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1084,7 +1115,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_Model(::winrt::ConditionalControls::Model obj, int32_t phase)
+        void Update_Model(::winrt::ConditionalControls::Model obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1095,7 +1126,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_Model_Org(::winrt::ConditionalControls::Organization obj, int32_t phase)
+        void Update_Model_Org(::winrt::ConditionalControls::Organization obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1106,7 +1137,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_Model_Org_Employees(::winrt::ConditionalControls::IObservableCollection obj, int32_t phase)
+        void Update_Model_Org_Employees(::winrt::ConditionalControls::IObservableCollection obj, std::int32_t phase)
         {
             _bindingsTracking->UpdateCollectionChangedListener(obj, cacheCC_Model_Org_Employees, tokenCC_Model_Org_Employees);
                 Update_ConditionalControls_Organization_M_IsNonEmpty_3843776612(phase);
@@ -1117,7 +1148,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_Model_4169577821(::winrt::ConditionalControls::Model obj, int32_t phase)
+        void Update_Model_4169577821(::winrt::ConditionalControls::Model obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1131,7 +1162,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_Model_4169577821_Org_4169577821(::winrt::ConditionalControls::Organization obj, int32_t phase)
+        void Update_Model_4169577821_Org_4169577821(::winrt::ConditionalControls::Organization obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1145,7 +1176,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_Model_4169577821_Org_4169577821_Employees_4169577821(::winrt::ConditionalControls::IObservableCollection obj, int32_t phase)
+        void Update_Model_4169577821_Org_4169577821_Employees_4169577821(::winrt::ConditionalControls::IObservableCollection obj, std::int32_t phase)
         {
             if (BindTests_IsTypePresent_ConditionalControls_V1Type)
             {
@@ -1163,7 +1194,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_Model_4169577821_Org_4169577821_Employees_4169577821_ItemCount_4169577821(int32_t obj, int32_t phase)
+        void Update_Model_4169577821_Org_4169577821_Employees_4169577821_ItemCount_4169577821(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1175,7 +1206,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_Model_2553856403(::winrt::ConditionalControls::Model obj, int32_t phase)
+        void Update_Model_2553856403(::winrt::ConditionalControls::Model obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1196,7 +1227,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_Model_2553856403_Org_2553856403(::winrt::ConditionalControls::Organization obj, int32_t phase)
+        void Update_Model_2553856403_Org_2553856403(::winrt::ConditionalControls::Organization obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1221,7 +1252,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_Model_2553856403_Org_2553856403_EmployeesV3_2553856403(::winrt::ConditionalControls::IObservableCollection obj, int32_t phase)
+        void Update_Model_2553856403_Org_2553856403_EmployeesV3_2553856403(::winrt::ConditionalControls::IObservableCollection obj, std::int32_t phase)
         {
             if (BindTests_IsTypePresent_ConditionalControls_V3Type)
             {
@@ -1239,7 +1270,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_Model_2553856403_Org_2553856403_EmployeesV3_2553856403_ItemCount_2553856403(int32_t obj, int32_t phase)
+        void Update_Model_2553856403_Org_2553856403_EmployeesV3_2553856403_ItemCount_2553856403(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1251,7 +1282,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_ConditionalControls_Organization_M_IsNonEmpty_3843776612(int32_t phase)
+        void Update_ConditionalControls_Organization_M_IsNonEmpty_3843776612(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1259,7 +1290,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_V3Property_2553856403(::winrt::hstring obj, int32_t phase)
+        void Update_V3Property_2553856403(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1271,7 +1302,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403(::winrt::ConditionalControls::IEmployee obj, int32_t phase)
+        void Update_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403(::winrt::ConditionalControls::IEmployee obj, std::int32_t phase)
         {
             if (BindTests_IsTypePresent_ConditionalControls_V3Type)
             {
@@ -1293,7 +1324,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403(int32_t phase)
+        void Update_Model_2553856403_Org_2553856403_EmployeeOfTheMonth_2553856403_M_GetNameV3_371857150_2553856403(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1301,7 +1332,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_NullProperty_1189802222(::winrt::hstring obj, int32_t phase)
+        void Update_NullProperty_1189802222(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1313,7 +1344,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_NullEmployee_1189802222(::winrt::ConditionalControls::IEmployee obj, int32_t phase)
+        void Update_NullEmployee_1189802222(::winrt::ConditionalControls::IEmployee obj, std::int32_t phase)
         {
             if (BindTests_IsTypePresent_ConditionalControls_V2Type)
             {
@@ -1338,7 +1369,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
             }
         }
 
-        void Update_NullEmployee_1189802222_FirstName_1189802222(::winrt::hstring obj, int32_t phase)
+        void Update_NullEmployee_1189802222_FirstName_1189802222(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {

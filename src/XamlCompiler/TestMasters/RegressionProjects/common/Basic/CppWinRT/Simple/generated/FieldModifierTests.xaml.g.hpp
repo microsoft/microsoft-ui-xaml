@@ -6,7 +6,32 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "FieldModifierTests.h"
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Simple.h>)
+#include <winrt/Simple.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -36,7 +61,7 @@ namespace winrt::Simple::implementation
     }
 
     template <typename D, typename ... I>
-    void FieldModifierTestsT<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void FieldModifierTestsT<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
         switch (connectionId)
         {
@@ -117,7 +142,7 @@ namespace winrt::Simple::implementation
     }
 
     template <typename D, typename ... I>
-    void FieldModifierTestsT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void FieldModifierTestsT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -130,7 +155,7 @@ namespace winrt::Simple::implementation
 
 
     template <typename D, typename... I>
-    IComponentConnector FieldModifierTestsT<D, I...>::GetBindingConnector(int32_t, IInspectable const&)
+    IComponentConnector FieldModifierTestsT<D, I...>::GetBindingConnector(std::int32_t, IInspectable const&)
     {
         return nullptr;
     }

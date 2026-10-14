@@ -75,6 +75,20 @@ namespace Win8Xaml.CompilerProxies
             }
         }
 
+        public void SetOtherMetadataProviders(IEnumerable<TypeForCodeGen> providers)
+        {
+            // The runtime collection contains the compiler's TypeForCodeGen instances, while the
+            // test assembly uses proxy wrappers. Build the correctly typed List<T> before invoking
+            // the reflected property setter.
+            Type providerType = _otherMetadataProvidersProperty.PropertyType.GetGenericArguments()[0];
+            IList providerList = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(providerType));
+            foreach (TypeForCodeGen provider in providers)
+            {
+                providerList.Add(provider.Instance);
+            }
+            _otherMetadataProvidersProperty.SetValue(_instance, providerList, null);
+        }
+
 
         public List<InternalTypeEntry> TypeTable
         {

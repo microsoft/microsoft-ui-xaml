@@ -21,7 +21,9 @@ namespace Win8Xaml.CompilerProxies
         static PropertyInfo _genXbf64Path;
         static PropertyInfo _genXbfArm64Path;
         static PropertyInfo _targetPlatformMinVersion;
-        static PropertyInfo _codeGenFlagsProperty;
+        static PropertyInfo _buildXamlModules;
+        static PropertyInfo _codeGenFlags;
+        static PropertyInfo _shouldGenerateTypeInfoCode;
 
         object _instance;
 
@@ -36,7 +38,9 @@ namespace Win8Xaml.CompilerProxies
             _genXbf64Path = _xamlProjectInfoType.GetProperty("GenXbf64Path");
             _genXbfArm64Path = _xamlProjectInfoType.GetProperty("GenXbfArm64Path");
             _targetPlatformMinVersion = _xamlProjectInfoType.GetProperty("TargetPlatformMinVersion");
-            _codeGenFlagsProperty = _xamlProjectInfoType.GetProperty("CodeGenFlags");
+            _buildXamlModules = _xamlProjectInfoType.GetProperty("BuildXamlModules");
+            _codeGenFlags = _xamlProjectInfoType.GetProperty("CodeGenFlags");
+            _shouldGenerateTypeInfoCode = _xamlProjectInfoType.GetProperty("ShouldGenerateTypeInfoCode");
         }
 
         public XamlProjectInfo()
@@ -96,10 +100,46 @@ namespace Win8Xaml.CompilerProxies
             set { _isLibraryProperty.SetValue(_instance, value); }
         }
 
+        public bool BuildXamlModules
+        {
+            get { return (bool)_buildXamlModules.GetValue(_instance, null); }
+            set { _buildXamlModules.SetValue(_instance, value); }
+        }
+
+        public string PrecompiledHeaderFile
+        {
+            get { return (string)_xamlProjectInfoType.GetProperty("PrecompiledHeaderFile").GetValue(_instance, null); }
+            set { _xamlProjectInfoType.GetProperty("PrecompiledHeaderFile").SetValue(_instance, value); }
+        }
+
+        public void SetEmptyAdditionalXamlTypeInfoIncludes()
+        {
+            var property = _xamlProjectInfoType.GetProperty("AdditionalXamlTypeInfoIncludes");
+            property.SetValue(_instance, Array.CreateInstance(property.PropertyType.GetGenericArguments()[0], 0));
+        }
+
+        public IList<string> EnabledXamlOptionalChanges
+        {
+            get { return (IList<string>)_xamlProjectInfoType.GetProperty("EnabledXamlOptionalChanges").GetValue(_instance, null); }
+            set { _xamlProjectInfoType.GetProperty("EnabledXamlOptionalChanges").SetValue(_instance, value); }
+        }
+
+        public IList<string> DisabledXamlOptionalChanges
+        {
+            get { return (IList<string>)_xamlProjectInfoType.GetProperty("DisabledXamlOptionalChanges").GetValue(_instance, null); }
+            set { _xamlProjectInfoType.GetProperty("DisabledXamlOptionalChanges").SetValue(_instance, value); }
+        }
+
+        public bool ShouldGenerateTypeInfoCode
+        {
+            get { return (bool)_shouldGenerateTypeInfoCode.GetValue(_instance, null); }
+        }
+
         public void SetCodeGenFlags(string flags)
         {
-            object value = Enum.Parse(_codeGenFlagsProperty.PropertyType, flags);
-            _codeGenFlagsProperty.SetValue(_instance, value);
+            string enumValue = (flags ?? String.Empty).Replace(';', ',');
+            object value = Enum.Parse(_codeGenFlags.PropertyType, enumValue.Length == 0 ? "Nothing" : enumValue, true);
+            _codeGenFlags.SetValue(_instance, value, null);
         }
 
         public Dictionary<String, String> ClassToHeaderFileMap

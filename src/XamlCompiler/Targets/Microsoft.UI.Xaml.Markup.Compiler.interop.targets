@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 ***********************************************************************************************
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -101,7 +101,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <EnableBindingDiagnostics Condition="'$(EnableBindingDiagnostics)' == '' and ('$(IsAotCompatible)' == 'true' or '$(PublishAot)' == 'true')">true</EnableBindingDiagnostics>
 	</PropertyGroup>
 
-    <!-- Construct the FeatureControlFlags property based off of the values of EnableTypeInfoReflection, EnableXBindDiagnostics, EnableDefaultValidationContextGeneration, EnableWin32Codegen, EnableBindingDiagnostics, and UsingCSWinRT -->
+    <!-- Construct the FeatureControlFlags property based off of XAML/compiler capabilities that affect generated output. -->
     <ItemGroup>
       <XamlFeatureControlFlags Include="EnableTypeInfoReflection" Condition="'$(EnableTypeInfoReflection)' == 'true'" />
       <XamlFeatureControlFlags Include="EnableXBindDiagnostics" Condition="'$(EnableXBindDiagnostics)' == 'true'" />
@@ -109,7 +109,20 @@ Licensed under the MIT License. See LICENSE in the project root for license info
       <XamlFeatureControlFlags Include="EnableWin32Codegen" Condition="'$(EnableWin32Codegen)' == 'true'" />
       <XamlFeatureControlFlags Include="UsingCSWinRT" Condition="'$(_UsingCSWinRT)' == 'true'" />
       <XamlFeatureControlFlags Include="EnableBindingDiagnostics" Condition="'$(EnableBindingDiagnostics)' == 'true'" />
+      <XamlFeatureControlFlags Include="CppWinRTNamedModules" Condition="'$(XamlLanguage)' == 'CppWinRT' and '$(CppWinRTBuildModule)' == 'true'" />
     </ItemGroup>
+
+    <!--
+      XamlTypeInfo.xaml.g.h declares IXamlUserType as a classic COM interface derived
+      from IUnknown. In named-module mode C++/WinRT's winrt_base module must therefore
+      be built with legacy COM support enabled; including <unknwn.h> only in the XAML
+      module interface is too late because winrt::implements is exported by winrt_base.
+    -->
+    <ItemDefinitionGroup Condition="'$(XamlLanguage)' == 'CppWinRT' and '$(CppWinRTBuildModule)' == 'true'">
+      <ClCompile>
+        <PreprocessorDefinitions>WINRT_ENABLE_LEGACY_COM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      </ClCompile>
+    </ItemDefinitionGroup>
 
     <!-- When using reflection for our metadata provider, we need to include the reflection helper DLL which is in the same folder as this targets file -->
     <Choose>
@@ -638,6 +651,131 @@ Licensed under the MIT License. See LICENSE in the project root for license info
     </Target>
 
     <!--
+      Keep XAML BMIs in a dedicated subdirectory so their lifetime and mode switching
+      can be managed independently from C++/WinRT projection BMIs. Static-library
+      cross-project propagation remains the native VC/MSBuild module graph; this path
+      does not introduce a second ProjectReference protocol.
+    -->
+    <PropertyGroup>
+        <XamlCppWinRTModuleIfcDir Condition="'$(XamlCppWinRTModuleIfcDir)' == ''">$(IntDir)XamlModules\</XamlCppWinRTModuleIfcDir>
+    </PropertyGroup>
+
+    <!-- Dedicated sources are discovered before the normal VC module scanner. -->
+    <Target Name="XamlCppWinRTRemoveInactiveModuleOutputs"
+            Condition="'$(XamlLanguage)' == 'CppWinRT' and ('$(CppWinRTBuildModule)' != 'true' or ('@(Page)' == '' and '@(ApplicationDefinition)' == ''))"
+            BeforeTargets="MarkupCompilePass1;FixupCLCompileOptions">
+        <PropertyGroup>
+            <_XamlModuleGeneratedDir>$([MSBuild]::NormalizeDirectory($(MSBuildProjectDirectory), $(XamlGeneratedOutputPath)))</_XamlModuleGeneratedDir>
+        </PropertyGroup>
+        <ItemGroup>
+            <_XamlInactiveModuleOutputs Include="$(XamlCppWinRTModuleIfcDir)**\*;$(_XamlModuleGeneratedDir)**\*.xaml.g.ixx;$(_XamlModuleGeneratedDir)Application_Xaml.Support.g.ixx;$(_XamlModuleGeneratedDir)XamlSupport.g.ixx;$(_XamlModuleGeneratedDir)Application_Xaml.g.ixx;$(_XamlModuleGeneratedDir)XamlModules.list" />
+            <_XamlInactiveModuleOutputs Include="$(_XamlModuleGeneratedDir)**\*.xaml.g.h;$(_XamlModuleGeneratedDir)**\*.xaml.g.hpp;$(_XamlModuleGeneratedDir)**\*.xaml.g.hpp.backup"
+                Condition="'@(Page)' == '' and '@(ApplicationDefinition)' == ''" />
+        </ItemGroup>
+        <Delete Files="@(_XamlInactiveModuleOutputs)" />
+        <RemoveDir Directories="$(XamlCppWinRTModuleIfcDir)" Condition="Exists('$(XamlCppWinRTModuleIfcDir)')" />
+        <ItemGroup><_XamlInactiveModuleOutputs Remove="@(_XamlInactiveModuleOutputs)" /></ItemGroup>
+    </Target>
+
+    <Target Name="XamlCppWinRTAddModuleInterfaces"
+            Condition="'$(XamlLanguage)' == 'CppWinRT' and '$(CppWinRTBuildModule)' == 'true' and ('@(Page)' != '' or '@(ApplicationDefinition)' != '')"
+            DependsOnTargets="CppWinRTResolveModuleReferences;MarkupCompilePass1"
+            BeforeTargets="CppWinRTAddModuleInterfaces;FixupCLCompileOptions">
+        <!-- NuGet imports can replace XamlGeneratedOutputPath after this file is evaluated.
+             Resolve the final directory after Pass1, alongside its generated item metadata. -->
+        <PropertyGroup>
+            <_XamlModuleGeneratedDir>$([MSBuild]::NormalizeDirectory($(MSBuildProjectDirectory), $(XamlGeneratedOutputPath)))</_XamlModuleGeneratedDir>
+        </PropertyGroup>
+        <MakeDir Directories="$(XamlCppWinRTModuleIfcDir)" />
+        <ItemGroup>
+            <_XamlGeneratedInterfaces Include="@(_GeneratedCodeFiles->'%(FullPath)')"
+                Condition="$([System.String]::Copy('%(_GeneratedCodeFiles.Identity)').EndsWith('.g.ixx'))">
+                <XamlModuleName>%(_GeneratedCodeFiles.XamlModuleName)</XamlModuleName>
+                <XamlModuleRelativePath>$([MSBuild]::MakeRelative($(_XamlModuleGeneratedDir), %(_GeneratedCodeFiles.FullPath)))</XamlModuleRelativePath>
+                <XamlModuleObjectDir>$([System.IO.Path]::GetDirectoryName('$(XamlCppWinRTModuleIfcDir)$([MSBuild]::MakeRelative($(_XamlModuleGeneratedDir), %(_GeneratedCodeFiles.FullPath))).obj'))</XamlModuleObjectDir>
+            </_XamlGeneratedInterfaces>
+        </ItemGroup>
+        <RemoveDuplicates Inputs="@(_XamlGeneratedInterfaces)">
+            <Output TaskParameter="Filtered" ItemName="_XamlUniqueInterfaces" />
+        </RemoveDuplicates>
+        <ItemGroup>
+            <_XamlModuleObjectDirs Include="@(_XamlUniqueInterfaces->'%(XamlModuleObjectDir)'->Distinct())" />
+            <ClCompile Include="@(_XamlUniqueInterfaces)" Exclude="@(ClCompile)">
+                <CompileAs>CompileAsCppModule</CompileAs>
+                <ModulesSupported>true</ModulesSupported>
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <ModuleOutputFile>$(XamlCppWinRTModuleIfcDir)%(_XamlUniqueInterfaces.XamlModuleName).ifc</ModuleOutputFile>
+                <ObjectFileName>$(XamlCppWinRTModuleIfcDir)%(_XamlUniqueInterfaces.XamlModuleRelativePath).obj</ObjectFileName>
+                <ModuleDependenciesFile>$(XamlCppWinRTModuleIfcDir)%(_XamlUniqueInterfaces.XamlModuleRelativePath).module.json</ModuleDependenciesFile>
+                <SourceDependenciesFile>$(XamlCppWinRTModuleIfcDir)%(_XamlUniqueInterfaces.XamlModuleRelativePath).source.json</SourceDependenciesFile>
+                <AdditionalBMIDirectories Condition="'$(_CppWinRTModuleIfcSearchDirs)' != ''">$(_CppWinRTModuleIfcSearchDirs);%(ClCompile.AdditionalBMIDirectories)</AdditionalBMIDirectories>
+                <CompilerIteration>XamlGeneratedModule</CompilerIteration>
+            </ClCompile>
+        </ItemGroup>
+        <MakeDir Directories="@(_XamlModuleObjectDirs)" />
+        <!-- The manifest controls IFC lifetime even when a class is renamed in place. -->
+        <ItemGroup Condition="!Exists('$(XamlCppWinRTModuleIfcDir)modules.list')">
+            <_XamlStaleIfc Include="$(XamlCppWinRTModuleIfcDir)*.ifc;$(XamlCppWinRTModuleIfcDir)*.ifc.d.json" />
+        </ItemGroup>
+        <ReadLinesFromFile File="$(XamlCppWinRTModuleIfcDir)modules.list" Condition="Exists('$(XamlCppWinRTModuleIfcDir)modules.list')">
+            <Output TaskParameter="Lines" ItemName="_XamlPreviousModules" />
+        </ReadLinesFromFile>
+        <ReadLinesFromFile File="$(_XamlModuleGeneratedDir)XamlModules.list">
+            <Output TaskParameter="Lines" ItemName="_XamlCurrentModules" />
+        </ReadLinesFromFile>
+        <ItemGroup>
+            <_XamlPreviousModules Remove="@(_XamlCurrentModules)" />
+            <_XamlStaleIfc Include="@(_XamlPreviousModules->'$(XamlCppWinRTModuleIfcDir)%(Identity).ifc');@(_XamlPreviousModules->'$(XamlCppWinRTModuleIfcDir)%(Identity).ifc.d.json')" />
+        </ItemGroup>
+        <Delete Files="@(_XamlStaleIfc)" />
+        <Copy SourceFiles="$(_XamlModuleGeneratedDir)XamlModules.list" DestinationFiles="$(XamlCppWinRTModuleIfcDir)modules.list" SkipUnchangedFiles="true" />
+        <ItemGroup>
+            <FileWrites Include="$(XamlCppWinRTModuleIfcDir)modules.list" />
+            <_XamlGeneratedInterfaces Remove="@(_XamlGeneratedInterfaces)" />
+            <_XamlUniqueInterfaces Remove="@(_XamlUniqueInterfaces)" />
+            <_XamlModuleObjectDirs Remove="@(_XamlModuleObjectDirs)" />
+            <_XamlPreviousModules Remove="@(_XamlPreviousModules)" />
+            <_XamlCurrentModules Remove="@(_XamlCurrentModules)" />
+            <_XamlStaleIfc Remove="@(_XamlStaleIfc)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Pass 1 can still see a previous page interface while its incremental cleanup is
+         pending. Wait until Pass 2 has finalized the generated source set before deciding
+         whether source-relative scanner and object outputs are orphaned. -->
+    <Target Name="XamlCppWinRTRemoveOrphanedModuleArtifacts"
+            Condition="'$(XamlLanguage)' == 'CppWinRT' and '$(CppWinRTBuildModule)' == 'true'"
+            AfterTargets="MarkupCompilePass2"
+            BeforeTargets="ComputeXamlGeneratedCompileInputs;CompileXamlGeneratedFiles;FixupCLCompileOptions;ClCompile">
+        <PropertyGroup>
+            <_XamlModuleGeneratedDir>$([MSBuild]::NormalizeDirectory($(MSBuildProjectDirectory), $(XamlGeneratedOutputPath)))</_XamlModuleGeneratedDir>
+        </PropertyGroup>
+        <Message Importance="High" Condition="'$(MSBuildProjectName)' == 'SimpleCppWinRTModules'"
+                 Text="XamlC cleanup root=$(_XamlModuleGeneratedDir); modules=$(XamlCppWinRTModuleIfcDir)" />
+        <!-- Map each scanner object back to the generated interface source using item metadata. -->
+        <ItemGroup>
+            <_XamlGeneratedModuleObjects Include="$(XamlCppWinRTModuleIfcDir)**\*.g.ixx.obj" />
+            <_XamlGeneratedModuleObjects Update="@(_XamlGeneratedModuleObjects)">
+                <XamlGeneratedSource>$(_XamlModuleGeneratedDir)%(RecursiveDir)%(Filename)</XamlGeneratedSource>
+            </_XamlGeneratedModuleObjects>
+            <_XamlOrphanedModuleObjects Include="@(_XamlGeneratedModuleObjects)"
+                Condition="!Exists('%(_XamlGeneratedModuleObjects.XamlGeneratedSource)')" />
+        </ItemGroup>
+        <Message Importance="High" Condition="'$(MSBuildProjectName)' == 'SimpleCppWinRTModules'"
+                 Text="XamlC candidate %(_XamlGeneratedModuleObjects.Identity) recursive=%(_XamlGeneratedModuleObjects.RecursiveDir) filename=%(_XamlGeneratedModuleObjects.Filename) maps to %(_XamlGeneratedModuleObjects.XamlGeneratedSource)" />
+        <Message Importance="High" Condition="'$(MSBuildProjectName)' == 'SimpleCppWinRTModules'"
+                 Text="XamlC orphan %(_XamlOrphanedModuleObjects.Identity)" />
+        <Delete Files="@(_XamlOrphanedModuleObjects);
+                       @(_XamlOrphanedModuleObjects->'%(RootDir)%(Directory)%(Filename).module.json');
+                       @(_XamlOrphanedModuleObjects->'%(RootDir)%(Directory)%(Filename).module.json.command');
+                       @(_XamlOrphanedModuleObjects->'%(RootDir)%(Directory)%(Filename).source.json')" />
+        <ItemGroup>
+            <_XamlOrphanedModuleObjects Remove="@(_XamlOrphanedModuleObjects)" />
+            <_XamlGeneratedModuleObjects Remove="@(_XamlGeneratedModuleObjects)" />
+        </ItemGroup>
+    </Target>
+
+    <!--
     ================================================================
                          MarkupCompilePass2
     ================================================================
@@ -809,6 +947,23 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             <Output ItemName="_GeneratedXbfFiles" TaskParameter="GeneratedXbfFiles" />
             <Output ItemName="GeneratedXamlPagesFiles" TaskParameter="GeneratedXamlPagesFiles" />
         </OutputDeserializer>
+        <ItemGroup Condition="'$(XamlLanguage)' == 'CppWinRT' and '$(CppWinRTBuildModule)' == 'true'">
+            <!-- Module-mode implementations are returned in the raw generated-code list.
+                 Combine them with the legacy page list and remove duplicate pass outputs. -->
+            <_XamlGeneratedModulePageSources Include="@(GeneratedXamlPagesFiles)" />
+            <_XamlGeneratedModulePageSources Include="@(_GeneratedCodeFiles)"
+                       Condition="'%(_GeneratedCodeFiles.Extension)' == '.cpp' and $([System.String]::Copy('%(_GeneratedCodeFiles.Filename)').EndsWith('.xaml.g'))" />
+        </ItemGroup>
+        <RemoveDuplicates Condition="'$(XamlLanguage)' == 'CppWinRT' and '$(CppWinRTBuildModule)' == 'true'"
+                          Inputs="@(_XamlGeneratedModulePageSources)">
+            <Output TaskParameter="Filtered" ItemName="_XamlUniqueGeneratedModulePageSources" />
+        </RemoveDuplicates>
+        <ItemGroup Condition="'$(XamlLanguage)' == 'CppWinRT' and '$(CppWinRTBuildModule)' == 'true'">
+            <GeneratedXamlPagesFiles Remove="@(GeneratedXamlPagesFiles)" />
+            <GeneratedXamlPagesFiles Include="@(_XamlUniqueGeneratedModulePageSources)" />
+            <_XamlGeneratedModulePageSources Remove="@(_XamlGeneratedModulePageSources)" />
+            <_XamlUniqueGeneratedModulePageSources Remove="@(_XamlUniqueGeneratedModulePageSources)" />
+        </ItemGroup>
         <ItemGroup>
             <FileWrites Include="$(XamlSavedStateFilePath)" />
             <FileWrites Condition="'$(XamlRootsLog)' != ''" Include="$(XamlRootsLog)" />
@@ -826,24 +981,470 @@ Licensed under the MIT License. See LICENSE in the project root for license info
           the existing ClCompile items before the ClCompile target. XamlCompiler's Pass 2 adds its
           generated translation units afterward, so they do not inherit that item metadata. Copy
           the preprocessor definitions from the PCH-producing source, or from the pass-1 sources
-          when no PCH exists, so both CL passes compile with the same conditional declarations.
+          when no PCH exists, excluding module interfaces whose producer definitions must not flow
+          to ordinary translation units. Both CL passes then use the same conditional declarations.
         -->
         <ItemGroup>
             <_XamlPass1PreprocessorSource Include="@(ClCompile)" Condition="'%(ClCompile.PrecompiledHeader)' == 'Create'" />
         </ItemGroup>
         <ItemGroup Condition="'@(_XamlPass1PreprocessorSource)' == ''">
-            <_XamlPass1PreprocessorSource Include="@(ClCompile)" Condition="'%(ClCompile.CompilerIteration)' != 'XamlGenerated'" />
+            <_XamlPass1PreprocessorSource Include="@(ClCompile)"
+                Condition="'%(ClCompile.CompilerIteration)' != 'XamlGenerated' and '%(ClCompile.CompileAs)' != 'CompileAsCppModule'" />
         </ItemGroup>
         <PropertyGroup>
             <_XamlGeneratedPreprocessorDefinitions>@(_XamlPass1PreprocessorSource->'%(PreprocessorDefinitions)'->Distinct())</_XamlGeneratedPreprocessorDefinitions>
+            <!--
+              Pass 2 C++ files are added after the project's primary ClCompile pass. In named-module
+              mode the namespace IFCs are therefore already available, but these late items do not
+              participate in the earlier module-reference resolution. Seed them with the current
+              project's IFC directory and copy any BMI search directories resolved onto the normal
+              compile items (for example from CppWinRTConsumeModule project references).
+            -->
+            <_XamlGeneratedAdditionalBMIDirectories Condition="'$(CppWinRTBuildModule)' == 'true'">@(_XamlPass1PreprocessorSource->'%(AdditionalBMIDirectories)'->Distinct())</_XamlGeneratedAdditionalBMIDirectories>
         </PropertyGroup>
 
         <ItemGroup>
             <ClCompile Include="@(GeneratedXamlPagesFiles)" >
                 <CompilerIteration>XamlGenerated</CompilerIteration>
-                <PreprocessorDefinitions Condition="'$(_XamlGeneratedPreprocessorDefinitions)' != ''">$(_XamlGeneratedPreprocessorDefinitions)</PreprocessorDefinitions>
+                <ModulesSupported Condition="'$(CppWinRTBuildModule)' == 'true'">true</ModulesSupported>
+                <PreprocessorDefinitions Condition="'$(_XamlGeneratedPreprocessorDefinitions)' != ''">$(_XamlGeneratedPreprocessorDefinitions);%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
             </ClCompile>
+
+            <!--
+              Update XAML-generated implementation files. XamlMetaDataProvider.cpp is the
+              C++/WinRT wrapper that includes its generated projection header textually; mixing
+              XAML_USE_MODULE imports into that translation unit duplicates CRT/STL declarations.
+            -->
+            <!-- Update is evaluation-only. Inside a target it does not select the
+                 listed items; copy, amend and replace only the generated items. -->
+            <_XamlGeneratedModuleConsumers Include="@(ClCompile)"
+                       Condition="'$(CppWinRTBuildModule)' == 'true' and '%(ClCompile.CompilerIteration)' == 'XamlGenerated' and '%(ClCompile.Filename)%(ClCompile.Extension)' != 'XamlMetaDataProvider.cpp'">
+                <AdditionalBMIDirectories>$(IntDir);$(IntDir)Microsoft\cppwinrt\;$(XamlCppWinRTModuleIfcDir);$(_XamlGeneratedAdditionalBMIDirectories);%(ClCompile.AdditionalBMIDirectories)</AdditionalBMIDirectories>
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PreprocessorDefinitions>%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
+            
+                <ObjectFileName Condition="'%(_XamlGeneratedModuleConsumers.FullPath)' != ''">$(XamlCppWinRTModuleIfcDir)$([System.IO.Path]::ChangeExtension('$([MSBuild]::MakeRelative($(_XamlModuleGeneratedDir), %(_XamlGeneratedModuleConsumers.FullPath)))', '.obj'))</ObjectFileName>
+            </_XamlGeneratedModuleConsumers>
+            <ClCompile Remove="@(_XamlGeneratedModuleConsumers)" />
+            <ClCompile Include="@(_XamlGeneratedModuleConsumers)" />
+            <_XamlGeneratedModuleConsumers Remove="@(_XamlGeneratedModuleConsumers)" />
             <_XamlPass1PreprocessorSource Remove="@(_XamlPass1PreprocessorSource)" />
+        </ItemGroup>
+    </Target>
+
+    <!--
+      XamlGFiles such as XamlTypeInfo.g.cpp are materialized into ClCompile by the
+      VC XAML build after MarkupCompilePass2, in ComputeXamlGeneratedCompileInputs.
+      Apply named-module metadata again at that point so DLL/EXE and static-library
+      CompileXamlGeneratedFiles paths can resolve Application_Xaml and referenced
+      C++/WinRT BMIs without an application-owned /FI preamble.
+    -->
+    <UsingTask TaskName="GetXamlCppWinRTGeneratedModuleDependencies" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+      <ParameterGroup>
+        <GeneratedSources ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+        <ProjectDirectory ParameterType="System.String" Required="true" />
+        <CppWinRTIfcDir ParameterType="System.String" Required="true" />
+        <XamlIfcDir ParameterType="System.String" Required="true" />
+        <StlIfcDir ParameterType="System.String" />
+        <AdditionalBMIDirectories ParameterType="System.String" />
+        <ModuleDependencies ParameterType="System.String" Output="true" />
+        <ModuleReferenceOptions ParameterType="System.String" Output="true" />
+      </ParameterGroup>
+      <Task>
+        <Using Namespace="System" />
+        <Using Namespace="System.Collections.Generic" />
+        <Using Namespace="System.IO" />
+        <Using Namespace="System.Linq" />
+        <Using Namespace="System.Text.RegularExpressions" />
+        <Using Namespace="Microsoft.Build.Framework" />
+        <Code Type="Fragment" Language="cs"><![CDATA[
+            // The C++ dependency scanner emits absolute IFC paths. Match that spelling
+            // even when an application uses the default relative IntDir; otherwise CL
+            // receives two different /reference mappings for the same module (C7684).
+            Func<string, string> normalizePath = path => Path.GetFullPath(Path.Combine(ProjectDirectory, path));
+            CppWinRTIfcDir = normalizePath(CppWinRTIfcDir);
+            XamlIfcDir = normalizePath(XamlIfcDir);
+            if (!String.IsNullOrWhiteSpace(StlIfcDir))
+            {
+                StlIfcDir = normalizePath(StlIfcDir);
+            }
+
+            var importedModules = new SortedSet<string>(StringComparer.Ordinal);
+            var importPattern = new Regex(@"(?:^|;)\s*(?:export\s+)?import\s+([\p{L}_][\p{L}\p{N}\p{M}\p{Pc}\u200C\u200D_.:]*)\s*;", RegexOptions.CultureInvariant);
+
+            foreach (var source in GeneratedSources ?? new ITaskItem[0])
+            {
+                var sourcePath = source.GetMetadata("FullPath");
+                if (!File.Exists(sourcePath))
+                {
+                    sourcePath = source.ItemSpec;
+                }
+
+                if (!File.Exists(sourcePath))
+                {
+                    continue;
+                }
+
+                foreach (var line in File.ReadLines(sourcePath))
+                {
+                    foreach (Match match in importPattern.Matches(line))
+                    {
+                        importedModules.Add(match.Groups[1].Value);
+                    }
+                }
+            }
+
+            var directories = new List<string>();
+            Action<string> addDirectories = value =>
+            {
+                foreach (var directory in (value ?? String.Empty).Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var trimmed = directory.Trim().Trim('"');
+                    if (trimmed.Length == 0)
+                    {
+                        continue;
+                    }
+                    var normalized = normalizePath(trimmed);
+                    if (!directories.Contains(normalized, StringComparer.OrdinalIgnoreCase))
+                    {
+                        directories.Add(normalized);
+                    }
+                }
+            };
+
+            addDirectories(CppWinRTIfcDir);
+            addDirectories(XamlIfcDir);
+            addDirectories(StlIfcDir);
+            addDirectories(AdditionalBMIDirectories);
+
+            var referencesByModule = new SortedDictionary<string, string>(StringComparer.Ordinal);
+            foreach (var moduleName in importedModules)
+            {
+                string ifcPath = null;
+
+                foreach (var directory in directories)
+                {
+                    var candidates = new[]
+                    {
+                        Path.Combine(directory, moduleName + ".ifc"),
+                        Path.Combine(directory, moduleName + ".ixx.ifc")
+                    };
+
+                    ifcPath = candidates.FirstOrDefault(File.Exists);
+                    if (ifcPath != null)
+                    {
+                        break;
+                    }
+                }
+
+                if (ifcPath == null)
+                {
+                    if (moduleName == "std")
+                    {
+                        ifcPath = Path.Combine(StlIfcDir, "std.ixx.ifc");
+                    }
+                    else if (moduleName == "winrt_base" || moduleName.StartsWith("winrt.", StringComparison.Ordinal))
+                    {
+                        ifcPath = Path.Combine(CppWinRTIfcDir, moduleName + ".ixx.ifc");
+                    }
+                    else
+                    {
+                        ifcPath = Path.Combine(XamlIfcDir, moduleName + ".ifc");
+                    }
+                }
+
+                referencesByModule[moduleName] = ifcPath;
+            }
+
+            // Imported IFCs can themselves import modules, for example winrt_base imports
+            // std and winrt_numerics. CL needs an explicit mapping for those transitive
+            // IFCs too; /ifcSearchDir alone does not resolve C++/WinRT module outputs.
+            foreach (var directory in directories)
+            {
+                if (!Directory.Exists(directory))
+                {
+                    continue;
+                }
+
+                foreach (var ifcPath in Directory.GetFiles(directory, "*.ifc", SearchOption.TopDirectoryOnly)
+                             .OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
+                {
+                    string fileName = Path.GetFileName(ifcPath);
+                    string moduleName = fileName.EndsWith(".ixx.ifc", StringComparison.OrdinalIgnoreCase)
+                        ? fileName.Substring(0, fileName.Length - ".ixx.ifc".Length)
+                        : Path.GetFileNameWithoutExtension(fileName);
+                    if (moduleName.Length != 0 && !referencesByModule.ContainsKey(moduleName))
+                    {
+                        referencesByModule.Add(moduleName, ifcPath);
+                    }
+                }
+            }
+
+            var references = referencesByModule.Select(reference => reference.Key + "=" + reference.Value).ToList();
+            ModuleDependencies = String.Join(";", references);
+            ModuleReferenceOptions = String.Join(" ", references.Select(reference => "/reference \"" + reference + "\""));
+]]></Code>
+      </Task>
+    </UsingTask>
+
+    <Target Name="XamlCppWinRTApplyGeneratedModuleReferences"
+            Condition="'$(XamlLanguage)' == 'CppWinRT' and '$(CppWinRTBuildModule)' == 'true'"
+            AfterTargets="MarkupCompilePass2">
+        <PropertyGroup>
+            <!-- Keep the wildcard in Include so MSBuild expands generated page sources. -->
+            <_XamlGeneratedSourceDirectory>$([MSBuild]::NormalizeDirectory($(MSBuildProjectDirectory), $(XamlGeneratedOutputPath)))</_XamlGeneratedSourceDirectory>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <!-- Preserve raw XamlC outputs before the VC XAML target consumes their items. -->
+            <_XamlGeneratedModuleSourceSnapshot Include="@(GeneratedXamlPagesFiles->'%(FullPath)')" />
+            <_XamlGeneratedModuleSourceSnapshot Include="@(_GeneratedCodeFiles->'%(FullPath)')"
+                       Condition="'%(_GeneratedCodeFiles.Extension)' == '.cpp' and '%(_GeneratedCodeFiles.Filename)%(_GeneratedCodeFiles.Extension)' != 'XamlMetaDataProvider.cpp'" />
+            <_XamlGeneratedModuleSourceSnapshot Include="@(XamlGFiles->'%(FullPath)')"
+                       Condition="'%(XamlGFiles.Extension)' == '.cpp' and '%(XamlGFiles.Filename)%(XamlGFiles.Extension)' != 'XamlMetaDataProvider.cpp'" />
+            <_XamlGeneratedModuleSourceSnapshot Include="$(_XamlGeneratedSourceDirectory)**\*.xaml.g.cpp" />
+            <_XamlGeneratedCompilePaths Include="@(XamlGFiles->'%(FullPath)')"
+                       Condition="'%(XamlGFiles.Filename)%(XamlGFiles.Extension)' != 'XamlMetaDataProvider.cpp'" />
+            <_XamlGeneratedCompilePaths Include="@(GeneratedXamlPagesFiles->'%(FullPath)')" />
+            <_XamlGeneratedCompilePaths Include="@(_GeneratedCodeFiles->'%(FullPath)')"
+                       Condition="'%(_GeneratedCodeFiles.Filename)%(_GeneratedCodeFiles.Extension)' != 'XamlMetaDataProvider.cpp'" />
+            <!-- The page implementation sources are not consistently returned in XamlC's
+                 item outputs across compiler hosting modes. Their final on-disk names are
+                 stable, so include the generated implementation set before native compile. -->
+            <_XamlGeneratedCompilePaths Include="$(_XamlGeneratedSourceDirectory)**\*.xaml.g.cpp" />
+            <_XamlGeneratedCompilePaths Include="@(ClCompile->'%(FullPath)')"
+                       Condition="'%(ClCompile.CompilerIteration)' == 'XamlGenerated' and '%(ClCompile.Filename)%(ClCompile.Extension)' != 'XamlMetaDataProvider.cpp'" />
+        </ItemGroup>
+        <!-- The VC XAML target can filter module-suffixed implementation sources from
+             XamlGFiles after Pass 2. The raw task output remains authoritative. -->
+        <RemoveDuplicates Inputs="@(_XamlGeneratedCompilePaths)">
+            <Output TaskParameter="Filtered" ItemName="_XamlUniqueGeneratedCompilePaths" />
+        </RemoveDuplicates>
+        <ItemGroup>
+            <!-- Intersect with existing ClCompile items so their metadata is preserved.
+                 FullPath matching also handles relative versus absolute generated paths. -->
+            <_XamlAuthoredCompileItems Include="@(ClCompile)" />
+            <_XamlAuthoredCompileItems Remove="@(_XamlUniqueGeneratedCompilePaths)"
+                       MatchOnMetadata="FullPath" MatchOnMetadataOptions="PathLike" />
+            <_XamlGeneratedModuleConsumers Include="@(ClCompile)" />
+            <_XamlGeneratedModuleConsumers Remove="@(_XamlAuthoredCompileItems)" />
+            <_XamlGeneratedModuleConsumers>
+                <AdditionalBMIDirectories>$(IntDir);$(IntDir)Microsoft\cppwinrt\;$(XamlCppWinRTModuleIfcDir);$(_XamlGeneratedAdditionalBMIDirectories);%(_XamlGeneratedModuleConsumers.AdditionalBMIDirectories)</AdditionalBMIDirectories>
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <ModulesSupported>true</ModulesSupported>
+                <PreprocessorDefinitions>$(_XamlGeneratedPreprocessorDefinitions);%(_XamlGeneratedModuleConsumers.PreprocessorDefinitions)</PreprocessorDefinitions>
+            
+                <ObjectFileName Condition="'%(_XamlGeneratedModuleConsumers.FullPath)' != ''">$(XamlCppWinRTModuleIfcDir)$([System.IO.Path]::ChangeExtension('$([MSBuild]::MakeRelative($(_XamlModuleGeneratedDir), %(_XamlGeneratedModuleConsumers.FullPath)))', '.obj'))</ObjectFileName>
+            </_XamlGeneratedModuleConsumers>
+            <ClCompile Remove="@(_XamlGeneratedModuleConsumers)" />
+            <ClCompile Include="@(_XamlGeneratedModuleConsumers)" />
+
+            <!-- Ensure pass-2 implementation sources with the module-specific .xaml.g.cpp
+                 suffix reach the native compile even when the VC XAML target filters them
+                 out while materializing XamlGFiles. Existing ClCompile items are preserved. -->
+            <_XamlMissingGeneratedModuleCompileItems Include="@(_XamlUniqueGeneratedCompilePaths)"
+                       Condition="'%(_XamlUniqueGeneratedCompilePaths.Extension)' == '.cpp'">
+                <CompilerIteration>XamlGenerated</CompilerIteration>
+                <AdditionalBMIDirectories>$(IntDir);$(IntDir)Microsoft\cppwinrt\;$(XamlCppWinRTModuleIfcDir);$(_XamlGeneratedAdditionalBMIDirectories);%(_XamlUniqueGeneratedCompilePaths.AdditionalBMIDirectories)</AdditionalBMIDirectories>
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <ModulesSupported>true</ModulesSupported>
+                <PreprocessorDefinitions>$(_XamlGeneratedPreprocessorDefinitions);%(_XamlUniqueGeneratedCompilePaths.PreprocessorDefinitions)</PreprocessorDefinitions>
+            
+                <ObjectFileName Condition="'%(_XamlMissingGeneratedModuleCompileItems.FullPath)' != ''">$(XamlCppWinRTModuleIfcDir)$([System.IO.Path]::ChangeExtension('$([MSBuild]::MakeRelative($(_XamlModuleGeneratedDir), %(_XamlMissingGeneratedModuleCompileItems.FullPath)))', '.obj'))</ObjectFileName>
+            </_XamlMissingGeneratedModuleCompileItems>
+            <_XamlMissingGeneratedModuleCompileItems Remove="@(ClCompile)"
+                       MatchOnMetadata="FullPath" MatchOnMetadataOptions="PathLike" />
+            <ClCompile Include="@(_XamlMissingGeneratedModuleCompileItems)" />
+
+            <_XamlGeneratedModuleConsumers Remove="@(_XamlGeneratedModuleConsumers)" />
+            <_XamlAuthoredCompileItems Remove="@(_XamlAuthoredCompileItems)" />
+            <_XamlGeneratedCompilePaths Remove="@(_XamlGeneratedCompilePaths)" />
+            <_XamlUniqueGeneratedCompilePaths Remove="@(_XamlUniqueGeneratedCompilePaths)" />
+            <_XamlMissingGeneratedModuleCompileItems Remove="@(_XamlMissingGeneratedModuleCompileItems)" />
+        </ItemGroup>
+    </Target>
+
+    <!--
+      Pass 2 creates the generated implementation .cpp files after the normal C++
+      module dependency scan. Run after Pass 2 and the compile-input setup target, then
+      parse their imports and pass explicit IFC mappings to CL; /ifcSearchDir alone
+      cannot resolve CppWinRT's .ixx.ifc outputs.
+    -->
+    <Target Name="XamlCppWinRTResolveGeneratedModuleDependencies"
+            Condition="'$(XamlLanguage)' == 'CppWinRT' and '$(CppWinRTBuildModule)' == 'true'"
+            AfterTargets="XamlCppWinRTApplyGeneratedModuleReferences">
+        <PropertyGroup>
+            <!-- Keep the wildcard in Include so MSBuild expands generated page sources. -->
+            <_XamlGeneratedSourceDirectory>$([MSBuild]::NormalizeDirectory($(MSBuildProjectDirectory), $(XamlGeneratedOutputPath)))</_XamlGeneratedSourceDirectory>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <_XamlGeneratedModuleSourcePaths Include="@(_XamlGeneratedModuleSourceSnapshot)" />
+            <_XamlGeneratedModuleSourcePaths Include="@(ClCompile->'%(FullPath)')"
+                       Condition="'%(ClCompile.CompilerIteration)' == 'XamlGenerated' and '%(ClCompile.Filename)%(ClCompile.Extension)' != 'XamlMetaDataProvider.cpp'" />
+            <_XamlGeneratedModuleSourcePaths Include="@(GeneratedXamlPagesFiles->'%(FullPath)')"
+                       Condition="'%(GeneratedXamlPagesFiles.Extension)' == '.cpp' and '%(GeneratedXamlPagesFiles.Filename)%(GeneratedXamlPagesFiles.Extension)' != 'XamlMetaDataProvider.cpp'" />
+            <_XamlGeneratedModuleSourcePaths Include="@(_GeneratedCodeFiles->'%(FullPath)')"
+                       Condition="'%(_GeneratedCodeFiles.Extension)' == '.cpp' and '%(_GeneratedCodeFiles.Filename)%(_GeneratedCodeFiles.Extension)' != 'XamlMetaDataProvider.cpp'" />
+            <_XamlGeneratedModuleSourcePaths Include="@(XamlGFiles->'%(FullPath)')"
+                       Condition="'%(XamlGFiles.Extension)' == '.cpp' and '%(XamlGFiles.Filename)%(XamlGFiles.Extension)' != 'XamlMetaDataProvider.cpp'" />
+            <_XamlGeneratedModuleSourcePaths Include="$(_XamlGeneratedSourceDirectory)**\*.xaml.g.cpp" />
+        </ItemGroup>
+        <RemoveDuplicates Inputs="@(_XamlGeneratedModuleSourcePaths)">
+            <Output TaskParameter="Filtered" ItemName="_XamlUniqueGeneratedModuleSourcePaths" />
+        </RemoveDuplicates>
+        <Message Text="XamlC module-reference source items: @(_XamlUniqueGeneratedModuleSourcePaths)" Importance="High" />
+        <GetXamlCppWinRTGeneratedModuleDependencies
+            GeneratedSources="@(_XamlUniqueGeneratedModuleSourcePaths)"
+            ProjectDirectory="$(MSBuildProjectDirectory)"
+            CppWinRTIfcDir="$(IntDir)Microsoft\cppwinrt\"
+            XamlIfcDir="$(XamlCppWinRTModuleIfcDir)"
+            StlIfcDir="$(IntDir)microsoft\STL\"
+            AdditionalBMIDirectories="$(_XamlGeneratedAdditionalBMIDirectories);@(ClCompile->'%(AdditionalBMIDirectories)'->Distinct())">
+            <Output TaskParameter="ModuleDependencies" PropertyName="_XamlGeneratedModuleDependencies" />
+            <Output TaskParameter="ModuleReferenceOptions" PropertyName="_XamlGeneratedModuleReferenceOptions" />
+        </GetXamlCppWinRTGeneratedModuleDependencies>
+        <ItemGroup>
+            <!-- Preserve the exact XamlC-generated source set for the later PCH metadata pass. -->
+            <_XamlGeneratedModulePchSources Include="@(_XamlUniqueGeneratedModuleSourcePaths)" />
+            <_XamlGeneratedModuleConsumers Include="@(ClCompile)"
+                       Condition="'%(ClCompile.CompilerIteration)' == 'XamlGenerated' and '%(ClCompile.Filename)%(ClCompile.Extension)' != 'XamlMetaDataProvider.cpp'">
+                <ModulesSupported>true</ModulesSupported>
+                <AdditionalOptions>%(ClCompile.AdditionalOptions) $(_XamlGeneratedModuleReferenceOptions)</AdditionalOptions>
+            </_XamlGeneratedModuleConsumers>
+            <ClCompile Remove="@(_XamlGeneratedModuleConsumers)" />
+            <ClCompile Include="@(_XamlGeneratedModuleConsumers)" />
+
+            <_XamlMissingGeneratedModuleCompileItems Include="@(_XamlUniqueGeneratedModuleSourcePaths)">
+                <CompilerIteration>XamlGenerated</CompilerIteration>
+                <ModulesSupported>true</ModulesSupported>
+                <AdditionalBMIDirectories>$(IntDir);$(IntDir)Microsoft\cppwinrt\;$(XamlCppWinRTModuleIfcDir);$(_XamlGeneratedAdditionalBMIDirectories);%(_XamlUniqueGeneratedModuleSourcePaths.AdditionalBMIDirectories)</AdditionalBMIDirectories>
+                <AdditionalOptions>$(_XamlGeneratedModuleReferenceOptions) %(_XamlUniqueGeneratedModuleSourcePaths.AdditionalOptions)</AdditionalOptions>
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PreprocessorDefinitions>$(_XamlGeneratedPreprocessorDefinitions);%(_XamlUniqueGeneratedModuleSourcePaths.PreprocessorDefinitions)</PreprocessorDefinitions>
+            
+                <ObjectFileName Condition="'%(_XamlMissingGeneratedModuleCompileItems.FullPath)' != ''">$(XamlCppWinRTModuleIfcDir)$([System.IO.Path]::ChangeExtension('$([MSBuild]::MakeRelative($(_XamlModuleGeneratedDir), %(_XamlMissingGeneratedModuleCompileItems.FullPath)))', '.obj'))</ObjectFileName>
+            </_XamlMissingGeneratedModuleCompileItems>
+            <_XamlMissingGeneratedModuleCompileItems Remove="@(ClCompile)"
+                       MatchOnMetadata="FullPath" MatchOnMetadataOptions="PathLike" />
+            <ClCompile Include="@(_XamlMissingGeneratedModuleCompileItems)" />
+            <_XamlGeneratedModuleConsumers Remove="@(_XamlGeneratedModuleConsumers)" />
+            <_XamlGeneratedModuleSourcePaths Remove="@(_XamlGeneratedModuleSourcePaths)" />
+            <_XamlGeneratedModuleSourceSnapshot Remove="@(_XamlGeneratedModuleSourceSnapshot)" />
+            <_XamlUniqueGeneratedModuleSourcePaths Remove="@(_XamlUniqueGeneratedModuleSourcePaths)" />
+            <_XamlMissingGeneratedModuleCompileItems Remove="@(_XamlMissingGeneratedModuleCompileItems)" />
+        </ItemGroup>
+        <Message Text="XamlC generated module references resolved." Importance="High" />
+    </Target>
+
+    <!--
+      XamlGFiles are turned into ClCompile items by ComputeXamlGeneratedCompileInputs,
+      after the module-reference pass above. Reapply PCH metadata once those items exist:
+      module-mode generated .cpp consumers intentionally own their headers textually and
+      do not include the project PCH.
+    -->
+    <Target Name="XamlCppWinRTDisableGeneratedModuleConsumerPch"
+            Condition="'$(CppWinRTBuildModule)' == 'true'"
+            BeforeTargets="CompileXamlGeneratedFiles;ClCompile">
+        <PropertyGroup>
+            <_XamlGeneratedSourceDirectory>$([MSBuild]::NormalizeDirectory($(MSBuildProjectDirectory), $(XamlGeneratedOutputPath)))</_XamlGeneratedSourceDirectory>
+        </PropertyGroup>
+        <ItemGroup>
+            <!--
+              Some generated C++ consumers, including XamlTypeInfo.Impl.g.cpp and
+              XamlMetaDataProvider.cpp in static libraries, are materialized after the Pass 2 source snapshot. Find late
+              ClCompile items by compiler iteration and generated-output path, alongside
+              the saved XamlC source set. Set metadata on a new compile-item copy immediately
+              before native compilation so FixupCLCompileOptions cannot restore project PCH.
+            -->
+            <_XamlModuleGeneratedCompileItems Include="@(ClCompile)"
+                       Condition="'%(ClCompile.CompilerIteration)' == 'XamlGenerated'" />
+            <_XamlModuleGeneratedCompileItems Include="@(ClCompile)"
+                       Condition="'%(ClCompile.Extension)' == '.cpp' and $([System.String]::Copy('%(ClCompile.FullPath)').StartsWith('$(_XamlGeneratedSourceDirectory)'))" />
+            <_XamlModuleGeneratedCompileItems Include="@(_XamlGeneratedModulePchSources)" />
+        </ItemGroup>
+        <RemoveDuplicates Inputs="@(_XamlModuleGeneratedCompileItems)">
+            <Output TaskParameter="Filtered" ItemName="_XamlUniqueModuleGeneratedCompileItems" />
+        </RemoveDuplicates>
+        <ItemGroup>
+            <_XamlNoPchModuleGeneratedCompileItems Include="@(_XamlUniqueModuleGeneratedCompileItems)">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+            </_XamlNoPchModuleGeneratedCompileItems>
+            <ClCompile Remove="@(_XamlNoPchModuleGeneratedCompileItems)" />
+            <ClCompile Include="@(_XamlNoPchModuleGeneratedCompileItems)" />
+        </ItemGroup>
+        <Message Importance="High" Condition="'$(MSBuildProjectName)' == 'StaticControlsModuleLib'"
+                 Text="XamlC PCH late pass root=$(_XamlGeneratedSourceDirectory); language=$(XamlLanguage); module=$(CppWinRTBuildModule); items=@(_XamlNoPchModuleGeneratedCompileItems->'%(Identity)|%(CompilerIteration)|%(PrecompiledHeader)')" />
+        <ItemGroup>
+            <_XamlModuleGeneratedCompileItems Remove="@(_XamlModuleGeneratedCompileItems)" />
+            <_XamlUniqueModuleGeneratedCompileItems Remove="@(_XamlUniqueModuleGeneratedCompileItems)" />
+            <_XamlNoPchModuleGeneratedCompileItems Remove="@(_XamlNoPchModuleGeneratedCompileItems)" />
+            <_XamlGeneratedModulePchSources Remove="@(_XamlGeneratedModulePchSources)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- The VC XAML target appends generated objects to Obj and then registers all
+         XamlGenerated entries in Lib/Link. Obj can already contain those entries from
+         the native link-input computation. Normalize only XAML-owned object paths,
+         retaining the first item's metadata and every unrelated authored input. -->
+    <UsingTask TaskName="RemoveDuplicateXamlCppWinRTObjectInputs" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+      <ParameterGroup>
+        <GeneratedObjects ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+        <Inputs ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+        <Filtered ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+      </ParameterGroup>
+      <Task>
+        <Using Namespace="System" />
+        <Using Namespace="System.Collections.Generic" />
+        <Using Namespace="Microsoft.Build.Framework" />
+        <Code Type="Fragment" Language="cs"><![CDATA[
+            var generatedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in GeneratedObjects ?? new ITaskItem[0])
+            {
+                generatedPaths.Add(item.GetMetadata("FullPath"));
+            }
+
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var result = new List<ITaskItem>();
+            foreach (var item in Inputs ?? new ITaskItem[0])
+            {
+                string path = item.GetMetadata("FullPath");
+                if (!generatedPaths.Contains(path) || seen.Add(path))
+                {
+                    result.Add(item);
+                }
+            }
+            Filtered = result.ToArray();
+]]></Code>
+      </Task>
+    </UsingTask>
+
+    <Target Name="XamlCppWinRTRegisterUniqueGeneratedObjectInputs"
+            Condition="'$(XamlLanguage)' == 'CppWinRT' and '$(CppWinRTBuildModule)' == 'true'"
+            AfterTargets="ComputeXamlGeneratedCLOutputs">
+        <ItemGroup>
+            <_XamlOwnedGeneratedObjects Include="@(Obj)" Condition="'%(Obj.CompilerIteration)' == 'XamlGenerated'" />
+        </ItemGroup>
+        <RemoveDuplicateXamlCppWinRTObjectInputs GeneratedObjects="@(_XamlOwnedGeneratedObjects)" Inputs="@(Obj)">
+            <Output TaskParameter="Filtered" ItemName="_XamlUniqueObjectInputs" />
+        </RemoveDuplicateXamlCppWinRTObjectInputs>
+        <RemoveDuplicateXamlCppWinRTObjectInputs GeneratedObjects="@(_XamlOwnedGeneratedObjects)" Inputs="@(Lib)">
+            <Output TaskParameter="Filtered" ItemName="_XamlUniqueLibraryInputs" />
+        </RemoveDuplicateXamlCppWinRTObjectInputs>
+        <RemoveDuplicateXamlCppWinRTObjectInputs GeneratedObjects="@(_XamlOwnedGeneratedObjects)" Inputs="@(Link)">
+            <Output TaskParameter="Filtered" ItemName="_XamlUniqueLinkInputs" />
+        </RemoveDuplicateXamlCppWinRTObjectInputs>
+        <ItemGroup>
+            <Obj Remove="@(Obj)" />
+            <Obj Include="@(_XamlUniqueObjectInputs)" />
+            <Lib Remove="@(Lib)" />
+            <Lib Include="@(_XamlUniqueLibraryInputs)" />
+            <Link Remove="@(Link)" />
+            <Link Include="@(_XamlUniqueLinkInputs)" />
+            <_XamlOwnedGeneratedObjects Remove="@(_XamlOwnedGeneratedObjects)" />
+            <_XamlUniqueObjectInputs Remove="@(_XamlUniqueObjectInputs)" />
+            <_XamlUniqueLibraryInputs Remove="@(_XamlUniqueLibraryInputs)" />
+            <_XamlUniqueLinkInputs Remove="@(_XamlUniqueLinkInputs)" />
         </ItemGroup>
     </Target>
 
@@ -1186,3 +1787,5 @@ Licensed under the MIT License. See LICENSE in the project root for license info
     <Import Project="ImportAfter\*"/>
 
 </Project>
+
+

@@ -8,19 +8,21 @@
 //------------------------------------------------------------------------------
 #include "pch.h"
 
+#include <unknwn.h>
 #include <memory>
 #include <string>
 #include <regex>
-#include <unknwn.h>
 #include <mutex>
+#include <cstdint>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
-#include "winrt/windows.foundation.h"
-#include "winrt/windows.ui.xaml.interop.h"
-#include "winrt/microsoft.ui.xaml.markup.h"
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.UI.Xaml.Interop.h>
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+
 #include "XamlTypeInfo.xaml.g.h"
 #include "XamlMetaDataProvider.h"
 
@@ -523,12 +525,12 @@ namespace winrt::NonStandardCppWinRT::implementation
         _enumValues.insert_or_assign(name.data(), value);
     }
 
-    uint32_t XamlUserType::CreateEnumUIntFromString(::winrt::hstring const& input) const
+    std::uint32_t XamlUserType::CreateEnumUIntFromString(::winrt::hstring const& input) const
     {
         bool found = false;
 
         const std::wregex regularExpression(L"^\\s+|\\s*,\\s*|\\s+$");
-        uint32_t val = 0;
+        std::uint32_t val = 0;
 
         for (std::wcregex_token_iterator it{ input.begin(), input.end(), regularExpression, -1 }, end; it != end; ++it)
         {

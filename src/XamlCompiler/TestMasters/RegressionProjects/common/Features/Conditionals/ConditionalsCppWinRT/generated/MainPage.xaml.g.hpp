@@ -6,9 +6,34 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "MainPage.h"
 #include "BindTests.h"
 #include "NameEventsLoad.h"
+#if __has_include(<winrt/ConditionalsCppWinRT.h>)
+#include <winrt/ConditionalsCppWinRT.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -43,7 +68,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
     }
 
     template <typename D, typename ... I>
-    void MainPageT<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void MainPageT<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
         switch (connectionId)
         {
@@ -70,7 +95,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
     }
 
     template <typename D, typename ... I>
-    void MainPageT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void MainPageT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -83,7 +108,7 @@ namespace winrt::ConditionalsCppWinRT::implementation
 
 
     template <typename D, typename... I>
-    IComponentConnector MainPageT<D, I...>::GetBindingConnector(int32_t, IInspectable const&)
+    IComponentConnector MainPageT<D, I...>::GetBindingConnector(std::int32_t, IInspectable const&)
     {
         return nullptr;
     }

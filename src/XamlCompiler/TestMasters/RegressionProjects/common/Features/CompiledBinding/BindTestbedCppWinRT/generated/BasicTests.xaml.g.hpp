@@ -6,7 +6,38 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "BasicTests.h"
+#if __has_include(<winrt/BindTestbed.h>)
+#include <winrt/BindTestbed.h>
+#endif
+#if __has_include(<winrt/BindTestbedModel.h>)
+#include <winrt/BindTestbedModel.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.Collections.h>)
+#include <winrt/Windows.Foundation.Collections.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -52,7 +83,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void BasicTestsT<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void BasicTestsT<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
         switch (connectionId)
         {
@@ -133,7 +164,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void BasicTestsT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void BasicTestsT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -145,7 +176,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename... I>
-    IComponentConnector BasicTestsT<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector BasicTestsT<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<::winrt::BindTestbed::implementation::XamlBindings> bindings;
         switch (connectionId)
@@ -214,7 +245,7 @@ namespace winrt::BindTestbed::implementation
             ReleaseAllListeners();
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -481,14 +512,14 @@ namespace winrt::BindTestbed::implementation
         ::winrt::event_token tokenPC_Model_ThatOneGuy_K3734755244 {};
         ::winrt::event_token tokenPC_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IEmployee {};
         ::winrt::event_token tokenPC_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IManager {};
-        __int64 tokenDPC_DPOnPage{0};
-        __int64 tokenDPC_Model_StringPropertyDP{0};
-        __int64 tokenDPC_Model_IntPropertyDP{0};
-        __int64 tokenDPC_DOModel_IntPropertyDP{0};
+        std::int64_t tokenDPC_DPOnPage{0};
+        std::int64_t tokenDPC_Model_StringPropertyDP{0};
+        std::int64_t tokenDPC_Model_IntPropertyDP{0};
+        std::int64_t tokenDPC_DOModel_IntPropertyDP{0};
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::BasicTests obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::BasicTests obj, std::int32_t phase)
         {
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::BindTestbed::implementation::BasicTests::DPOnPageProperty(), cacheDPC_DPOnPage, tokenDPC_DPOnPage);
             if (obj)
@@ -507,7 +538,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_MyInt(int32_t obj, int32_t phase)
+        void Update_MyInt(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -516,7 +547,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_NonDPOnPage(::winrt::hstring obj, int32_t phase)
+        void Update_NonDPOnPage(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -525,7 +556,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model(::winrt::BindTestbedModel::DataModel obj, int32_t phase)
+        void Update_Model(::winrt::BindTestbedModel::DataModel obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_Model, tokenPC_Model);
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::BindTestbedModel::DataModel::StringPropertyDPProperty(), cacheDPC_Model_StringPropertyDP, tokenDPC_Model_StringPropertyDP);
@@ -549,7 +580,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ManagerProp(::winrt::BindTestbedModel::IManager obj, int32_t phase)
+        void Update_Model_ManagerProp(::winrt::BindTestbedModel::IManager obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_Model_ManagerProp, tokenPC_Model_ManagerProp);
             if (obj)
@@ -562,7 +593,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ManagerProp_Name(::winrt::hstring obj, int32_t phase)
+        void Update_Model_ManagerProp_Name(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -576,7 +607,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DPOnPage(::winrt::hstring obj, int32_t phase)
+        void Update_DPOnPage(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -590,7 +621,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_StringPropNoINPC(::winrt::hstring obj, int32_t phase)
+        void Update_Model_StringPropNoINPC(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -604,7 +635,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_IntPropNoINPC(int32_t obj, int32_t phase)
+        void Update_Model_IntPropNoINPC(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -618,7 +649,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_StringPropWithINPC(::winrt::hstring obj, int32_t phase)
+        void Update_Model_StringPropWithINPC(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -632,7 +663,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_IntPropWithINPC(int32_t obj, int32_t phase)
+        void Update_Model_IntPropWithINPC(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -646,7 +677,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_StringPropertyDP(::winrt::hstring obj, int32_t phase)
+        void Update_Model_StringPropertyDP(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -660,7 +691,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_IntPropertyDP(int32_t obj, int32_t phase)
+        void Update_Model_IntPropertyDP(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -674,7 +705,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, int32_t phase)
+        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, std::int32_t phase)
         {
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::BindTestbedModel::DOModel::IntPropertyDPProperty(), cacheDPC_DOModel_IntPropertyDP, tokenDPC_DOModel_IntPropertyDP);
             if (obj)
@@ -686,7 +717,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel_IntPropertyDP(int32_t obj, int32_t phase)
+        void Update_DOModel_IntPropertyDP(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -695,7 +726,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_Employees(::winrt::BindTestbedModel::EmployeeCollection obj, int32_t phase)
+        void Update_Model_Employees(::winrt::BindTestbedModel::EmployeeCollection obj, std::int32_t phase)
         {
             _bindingsTracking->UpdateCollectionChangedListener(obj, cacheCC_Model_Employees, tokenCC_Model_Employees);
             if (obj)
@@ -707,7 +738,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_Employees_I0(::winrt::BindTestbedModel::IEmployee obj, int32_t phase)
+        void Update_Model_Employees_I0(::winrt::BindTestbedModel::IEmployee obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_Model_Employees_I0, tokenPC_Model_Employees_I0);
             if (obj)
@@ -731,7 +762,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_Employees_I0_Title(::winrt::hstring obj, int32_t phase)
+        void Update_Model_Employees_I0_Title(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -740,7 +771,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_Employees_I0_Name(::winrt::hstring obj, int32_t phase)
+        void Update_Model_Employees_I0_Name(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -754,7 +785,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_Employees_I0_IsEmployeeOfTheMonth(bool obj, int32_t phase)
+        void Update_Model_Employees_I0_IsEmployeeOfTheMonth(bool obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -763,7 +794,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ManagerProp_ReportsOC(::winrt::BindTestbedModel::EmployeeCollection obj, int32_t phase)
+        void Update_Model_ManagerProp_ReportsOC(::winrt::BindTestbedModel::EmployeeCollection obj, std::int32_t phase)
         {
             _bindingsTracking->UpdateCollectionChangedListener(obj, cacheCC_Model_ManagerProp_ReportsOC, tokenCC_Model_ManagerProp_ReportsOC);
             if (obj)
@@ -775,7 +806,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ManagerProp_ReportsOC_I0(::winrt::BindTestbedModel::IEmployee obj, int32_t phase)
+        void Update_Model_ManagerProp_ReportsOC_I0(::winrt::BindTestbedModel::IEmployee obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_Model_ManagerProp_ReportsOC_I0, tokenPC_Model_ManagerProp_ReportsOC_I0);
             if (obj)
@@ -789,7 +820,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ManagerProp_ReportsOC_I0_Title(::winrt::hstring obj, int32_t phase)
+        void Update_Model_ManagerProp_ReportsOC_I0_Title(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -798,7 +829,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ManagerProp_ReportsOC_I0_Name(::winrt::hstring obj, int32_t phase)
+        void Update_Model_ManagerProp_ReportsOC_I0_Name(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -807,7 +838,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ManagerProp_ReportsOC_I0_IsEmployeeOfTheMonth(bool obj, int32_t phase)
+        void Update_Model_ManagerProp_ReportsOC_I0_IsEmployeeOfTheMonth(bool obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -816,7 +847,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_Managers(::winrt::Windows::Foundation::Collections::IVector<::winrt::BindTestbedModel::IManager> obj, int32_t phase)
+        void Update_Model_Managers(::winrt::Windows::Foundation::Collections::IVector<::winrt::BindTestbedModel::IManager> obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -827,7 +858,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_Managers_I0(::winrt::BindTestbedModel::IManager obj, int32_t phase)
+        void Update_Model_Managers_I0(::winrt::BindTestbedModel::IManager obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_Model_Managers_I0, tokenPC_Model_Managers_I0);
             if (obj)
@@ -839,7 +870,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_Managers_I0_Name(::winrt::hstring obj, int32_t phase)
+        void Update_Model_Managers_I0_Name(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -848,7 +879,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ThatOneGuy(::winrt::Windows::Foundation::Collections::IObservableMap<::winrt::hstring, ::winrt::BindTestbedModel::IEmployee> obj, int32_t phase)
+        void Update_Model_ThatOneGuy(::winrt::Windows::Foundation::Collections::IObservableMap<::winrt::hstring, ::winrt::BindTestbedModel::IEmployee> obj, std::int32_t phase)
         {
             _bindingsTracking->UpdateMapChangedListener_BindTestbedModel_IEmployee(obj, cacheMC_Model_ThatOneGuy, tokenMC_Model_ThatOneGuy);
             if (obj)
@@ -860,7 +891,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ThatOneGuy_K3734755244(::winrt::BindTestbedModel::IEmployee obj, int32_t phase)
+        void Update_Model_ThatOneGuy_K3734755244(::winrt::BindTestbedModel::IEmployee obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_Model_ThatOneGuy_K3734755244, tokenPC_Model_ThatOneGuy_K3734755244);
             if (obj)
@@ -872,7 +903,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ThatOneGuy_K3734755244_Name(::winrt::hstring obj, int32_t phase)
+        void Update_Model_ThatOneGuy_K3734755244_Name(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -883,7 +914,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ManagerObjectForCasting(::winrt::Windows::Foundation::IInspectable obj, int32_t phase)
+        void Update_Model_ManagerObjectForCasting(::winrt::Windows::Foundation::IInspectable obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -895,7 +926,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IEmployee(::winrt::BindTestbedModel::IEmployee obj, int32_t phase)
+        void Update_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IEmployee(::winrt::BindTestbedModel::IEmployee obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IEmployee, tokenPC_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IEmployee);
             if (obj)
@@ -907,7 +938,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IEmployee_Name(::winrt::hstring obj, int32_t phase)
+        void Update_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IEmployee_Name(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -916,7 +947,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IManager(::winrt::BindTestbedModel::IManager obj, int32_t phase)
+        void Update_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IManager(::winrt::BindTestbedModel::IManager obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IManager, tokenPC_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IManager);
             if (obj)
@@ -928,7 +959,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IManager_Name(::winrt::hstring obj, int32_t phase)
+        void Update_Model_ManagerObjectForCasting_Cast_ManagerObjectForCasting_To_IManager_Name(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -937,7 +968,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_Employees_I0_Visibility(bool obj, int32_t phase)
+        void Update_Model_Employees_I0_Visibility(bool obj, std::int32_t phase)
         {
                 if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                 {
@@ -945,7 +976,7 @@ namespace winrt::BindTestbed::implementation
                 }
         }
 
-        void Update_Model_Employees_I0_Visibility_Cast_Visibility_To_Visibility(::winrt::Microsoft::UI::Xaml::Visibility obj, int32_t phase)
+        void Update_Model_Employees_I0_Visibility_Cast_Visibility_To_Visibility(::winrt::Microsoft::UI::Xaml::Visibility obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -1317,7 +1348,7 @@ namespace winrt::BindTestbed::implementation
         }
 
 
-        static void Set_Microsoft_UI_Xaml_Controls_Grid_Row(::winrt::Microsoft::UI::Xaml::FrameworkElement const& obj, int32_t const& value)
+        static void Set_Microsoft_UI_Xaml_Controls_Grid_Row(::winrt::Microsoft::UI::Xaml::FrameworkElement const& obj, std::int32_t const& value)
         {
             ::winrt::Microsoft::UI::Xaml::Controls::Grid::SetRow(obj, value);
         }

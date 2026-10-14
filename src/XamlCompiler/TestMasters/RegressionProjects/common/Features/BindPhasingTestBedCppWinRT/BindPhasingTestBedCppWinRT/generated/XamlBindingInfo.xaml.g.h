@@ -6,21 +6,43 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+
 #pragma once
-
+#ifndef XAML_IMPL_MODULE
 #include <unknwn.h>
-
-// Undefine GetCurrentTime macro to prevent
-// conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
+#include <cstdint>
+#include <memory>
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.Collections.h>)
+#include <winrt/Windows.Foundation.Collections.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Data.h>)
+#include <winrt/Microsoft.UI.Xaml.Data.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Interop.h>)
+#include <winrt/Microsoft.UI.Xaml.Interop.h>
+#endif
+#endif
 
-#include "winrt/windows.foundation.h"
-#include "winrt/windows.ui.xaml.interop.h"
-#include "winrt/microsoft.ui.xaml.controls.h"
-#include "winrt/microsoft.ui.xaml.data.h"
-#include "winrt/microsoft.ui.xaml.markup.h"
+#ifdef XAML_IMPL_MODULE
+#define XAML_EXPORT export extern "C++"
+#else
+#define XAML_EXPORT
+#endif
 
-namespace winrt::BindPhasingTestBedCppWinRT::implementation
+XAML_EXPORT namespace winrt::BindPhasingTestBedCppWinRT::implementation
 {
     using DataContextChangedEventArgs = ::winrt::Microsoft::UI::Xaml::DataContextChangedEventArgs;
     using DependencyObject = ::winrt::Microsoft::UI::Xaml::DependencyObject;
@@ -46,7 +68,7 @@ namespace winrt::BindPhasingTestBedCppWinRT::implementation
         virtual void StopTracking() = 0;
         virtual void Connect(int connectionId, IInspectable const& target) = 0;
         virtual void Recycle() = 0;
-        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase) = 0;
+        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase) = 0;
         virtual void SubscribeForDataContextChanged(FrameworkElement const& object, XamlBindings& handler) = 0;
         virtual void DisconnectUnloadedObject(int connectionId) = 0;
     };
@@ -69,14 +91,14 @@ namespace winrt::BindPhasingTestBedCppWinRT::implementation
 
         // IComponentConnector
         void Connect(int connectionId, IInspectable const& target);
-        IComponentConnector GetBindingConnector(int32_t, IInspectable const&);
+        IComponentConnector GetBindingConnector(std::int32_t, IInspectable const&);
 
         // IDataTemplateComponent
-        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase);
+        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase);
         virtual void Recycle();
 
         // IDataTemplateExtension
-        bool ProcessBinding(uint32_t phase);
+        bool ProcessBinding(std::uint32_t phase);
         int ProcessBindings(ContainerContentChangingEventArgs const& args);
         void ResetTemplate();
 
@@ -148,7 +170,7 @@ namespace winrt::BindPhasingTestBedCppWinRT::implementation
             // Overridden in the binding class as needed.
         }
 
-        virtual void ProcessBindings(IInspectable const&, int, int, int32_t& nextPhase) override
+        virtual void ProcessBindings(IInspectable const&, int, int, std::int32_t& nextPhase) override
         {
             // Overridden in the binding class as needed.
             nextPhase = -1;
@@ -171,8 +193,8 @@ namespace winrt::BindPhasingTestBedCppWinRT::implementation
         void UpdatePropertyChangedListener(INotifyPropertyChanged const& obj, INotifyPropertyChanged& cache, ::winrt::event_token& token);
         void UpdatePropertyChangedListener(INotifyPropertyChanged const& obj, ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>& cache, ::winrt::event_token& token);
         void UpdateCollectionChangedListener(INotifyCollectionChanged const& obj, INotifyCollectionChanged& cache, ::winrt::event_token& token);
-        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, DependencyObject&  cache, int64_t& token);
-        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject>& cache, int64_t& token);
+        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, DependencyObject&  cache, std::int64_t& token);
+        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject>& cache, std::int64_t& token);
 
     private:
         IXamlBindingTracking* _pBindingsTrackingWeakRef{nullptr};
@@ -271,3 +293,5 @@ namespace winrt::BindPhasingTestBedCppWinRT::implementation
         T _dataRoot;
     };
 }
+#undef XAML_EXPORT
+

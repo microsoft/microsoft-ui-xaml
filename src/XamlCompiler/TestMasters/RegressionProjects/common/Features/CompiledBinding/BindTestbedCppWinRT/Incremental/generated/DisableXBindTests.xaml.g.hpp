@@ -6,7 +6,38 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "DisableXBindTests.h"
+#if __has_include(<winrt/BindTestbed.h>)
+#include <winrt/BindTestbed.h>
+#endif
+#if __has_include(<winrt/BindTestbedModel.h>)
+#include <winrt/BindTestbedModel.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/System.h>)
+#include <winrt/System.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -51,7 +82,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void DisableXBindTestsT<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void DisableXBindTestsT<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
         switch (connectionId)
         {
@@ -90,7 +121,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void DisableXBindTestsT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void DisableXBindTestsT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -102,7 +133,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename... I>
-    IComponentConnector DisableXBindTestsT<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector DisableXBindTestsT<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<::winrt::BindTestbed::implementation::XamlBindings> bindings;
         switch (connectionId)
@@ -137,7 +168,7 @@ namespace winrt::BindTestbed::implementation
             ReleaseAllListeners();
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -291,9 +322,9 @@ namespace winrt::BindTestbed::implementation
         ::winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged cachePC_DOModel_YangObj{nullptr};
         ::winrt::event_token tokenPC_Model {};
         ::winrt::event_token tokenPC_DOModel_YangObj {};
-        __int64 tokenDPC_DOModel_YinPropertyDP{0};
+        std::int64_t tokenDPC_DOModel_YinPropertyDP{0};
 
-        bool TryGet_Model_IntPropWithINPC(int32_t& val)
+        bool TryGet_Model_IntPropWithINPC(std::int32_t& val)
         {
             ::winrt::BindTestbedModel::DataModel obj{nullptr};
             if (TryGet_Model(obj) && obj)
@@ -342,7 +373,7 @@ namespace winrt::BindTestbed::implementation
         void Invoke_Model_M_FunctionOnModelTwoArgs_3830204370(int phase)
         {
             double p1 = 3.9;
-            int32_t p0;
+            std::int32_t p0;
             if (!TryGet_Model_IntPropWithINPC(p0)) { return; }
             ::winrt::hstring result = GetDataRoot().Model().FunctionOnModelTwoArgs(p0, p1);
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
@@ -364,7 +395,7 @@ namespace winrt::BindTestbed::implementation
 
         void Invoke_Model_M_FunctionReturningInt_371857150(int phase)
         {
-            int32_t result = GetDataRoot().Model().FunctionReturningInt();
+            std::int32_t result = GetDataRoot().Model().FunctionReturningInt();
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
                 // DisableXBindTests.xaml line 26
@@ -385,7 +416,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::DisableXBindTests obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::DisableXBindTests obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -405,7 +436,7 @@ namespace winrt::BindTestbed::implementation
             CompleteUpdate(phase);
         }
 
-        void Update_Model(::winrt::BindTestbedModel::DataModel obj, int32_t phase)
+        void Update_Model(::winrt::BindTestbedModel::DataModel obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_Model, tokenPC_Model);
             if (obj)
@@ -422,7 +453,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_IntPropWithINPC(int32_t obj, int32_t phase)
+        void Update_Model_IntPropWithINPC(std::int32_t obj, std::int32_t phase)
         {
                 if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                 {
@@ -431,7 +462,7 @@ namespace winrt::BindTestbed::implementation
                 Update_Model_M_FunctionOnModelTwoArgs_3830204370(phase);
         }
 
-        void Update_Model_IntPropWithINPC_M_ToString_371857150(int32_t phase)
+        void Update_Model_IntPropWithINPC_M_ToString_371857150(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -439,7 +470,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_M_FunctionOnModelTwoArgs_3830204370(int32_t phase)
+        void Update_Model_M_FunctionOnModelTwoArgs_3830204370(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -447,7 +478,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_M_FunctionReturningNull_371857150(int32_t phase)
+        void Update_M_FunctionReturningNull_371857150(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -455,7 +486,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_M_FunctionReturningInt_371857150(int32_t phase)
+        void Update_Model_M_FunctionReturningInt_371857150(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -463,7 +494,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, int32_t phase)
+        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, std::int32_t phase)
         {
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::BindTestbedModel::DOModel::YinPropertyDPProperty(), cacheDPC_DOModel_YinPropertyDP, tokenDPC_DOModel_YinPropertyDP);
             if (obj)
@@ -476,7 +507,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel_YinPropertyDP(double obj, int32_t phase)
+        void Update_DOModel_YinPropertyDP(double obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -485,7 +516,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel_YangObj(::winrt::BindTestbedModel::YangContainer obj, int32_t phase)
+        void Update_DOModel_YangObj(::winrt::BindTestbedModel::YangContainer obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_DOModel_YangObj, tokenPC_DOModel_YangObj);
             if (obj)
@@ -497,7 +528,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel_YangObj_Value(double obj, int32_t phase)
+        void Update_DOModel_YangObj_Value(double obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {

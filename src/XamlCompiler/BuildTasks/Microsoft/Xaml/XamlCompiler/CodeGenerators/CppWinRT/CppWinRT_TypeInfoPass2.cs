@@ -35,36 +35,59 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 // </auto-generated>
 //------------------------------------------------------------------------------
 ");
-  if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { 
+  if(!ProjectInfo.BuildXamlModules && !String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { 
             this.Write("#include \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(ProjectInfo.PrecompiledHeaderFile));
             this.Write("\"\r\n");
   }
-            this.Write("#include <memory>\r\n#include <unknwn.h>\r\n\r\n// Undefine GetCurrentTime macro to pre" +
-                    "vent\r\n// conflict with Storyboard::GetCurrentTime\r\n#undef GetCurrentTime\r\n\r\n");
-  foreach (var includeFile in Model.NeededCppWinRTProjectionHeaderFiles) { 
-            this.Write("#if __has_include(<");
-            this.Write(this.ToStringHelper.ToStringWithCulture(includeFile));
-            this.Write(">)\r\n#include <");
-            this.Write(this.ToStringHelper.ToStringWithCulture(includeFile));
-            this.Write(">\r\n#endif\r\n");
-  }
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTConsumerPreamble()));
             this.Write("\r\n");
-  if (ProjectInfo.GenerateIncrementalTypeInfo) { 
-            this.Write("#ifdef XAML_TYPE_INFO_INC\r\n#include XAML_TYPE_INFO_INC\r\n#endif\r\n");
+  if (!ProjectInfo.BuildXamlModules) { 
+            this.Write("#include <unknwn.h>\r\n");
   } 
-            this.Write("#include \"XamlTypeInfo.xaml.g.h\"\r\n\r\n");
+            this.Write("#include <algorithm>\r\n#include <cstddef>\r\n#include <cstdint>\r\n#include <functiona" +
+                    "l>\r\n#include <map>\r\n#include <memory>\r\n#include <mutex>\r\n#include <regex>\r\n#incl" +
+                    "ude <string>\r\n#include <type_traits>\r\n#include <utility>\r\n#include <vector>\r\n");
+  if (ProjectInfo.BuildXamlModules) { 
+            this.Write("#ifndef WINRT_IMPORT_MODULE\r\n#define WINRT_IMPORT_MODULE\r\n#endif\r\n");
+  } 
+            this.Write("\r\n// Undefine GetCurrentTime macro to prevent\r\n// conflict with Storyboard::GetCu" +
+                    "rrentTime\r\n#undef GetCurrentTime\r\n\r\n");
   if (!ProjectInfo.GenerateIncrementalTypeInfo) { 
-      foreach(string includeFile in Model.AllLocalXamlHeaderFiles) { 
+      foreach(var additionalHeader in ProjectInfo.AdditionalXamlTypeInfoIncludes) { 
+            this.Write("#include \"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(additionalHeader.ItemSpec));
+            this.Write("\"\r\n");
+      } 
+      if (!ProjectInfo.BuildXamlModules) { 
+          foreach(string includeFile in ProjectInfo.ClassToHeaderFileMap.Values) { 
             this.Write("#include \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(includeFile));
             this.Write("\"\r\n");
+          } 
       } 
+  } 
+  if (ProjectInfo.GenerateIncrementalTypeInfo) { 
+            this.Write("#ifdef XAML_TYPE_INFO_INC\r\n#include XAML_TYPE_INFO_INC\r\n#endif\r\n");
+  } 
+  foreach (var projectionNamespace in Model.NeededCppWinRTProjectionNamespaces) { 
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(projectionNamespace, optionalHeader: true)));
+            this.Write("\r\n");
+  } 
+  if (!ProjectInfo.BuildXamlModules) { 
+            this.Write("#include \"XamlTypeInfo.xaml.g.h\"\r\n#include \"XamlBindingInfo.xaml.g.h\"\r\n");
+  } else { 
+            this.Write("import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetTypeInfoModuleName(ProjectInfo.RootNamespace)));
+            this.Write(";\r\nimport ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetBindingInfoModuleName(ProjectInfo.RootNamespace)));
+            this.Write(";\r\nimport ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)));
+            this.Write(";\r\n");
   } 
             this.Write("#include \"XamlBindingInfo.xaml.g.hpp\"\r\n");
   if (!ProjectInfo.GenerateIncrementalTypeInfo) { 
-      foreach(string includeFile in Model.AllLocalHppGeneratedFiles) 
-      { 
+      foreach(string includeFile in Model.AllLocalHppGeneratedFiles) { 
             this.Write("#include \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(includeFile.Replace(".g.hpp", ".xaml.g.hpp")));
             this.Write("\"\r\n");
@@ -239,7 +262,7 @@ struct TypeInfo
   } 
             this.Write("\r\n");
   entryIndex = 0; 
-            this.Write("constexpr uint32_t TypeInfoLookup[] = { \r\n");
+            this.Write("constexpr std::uint32_t TypeInfoLookup[] = { \r\n");
   foreach(var entry in Model.TypeInfoLookup) 
   { 
             this.Write("    ");
@@ -356,7 +379,7 @@ struct TypeInfo
             this.Write(@"
 const TypeInfo* GetTypeInfo(::winrt::hstring const& typeName)
 {
-    size_t typeNameLength = typeName.size();
+    std::size_t typeNameLength = typeName.size();
     if (typeNameLength < _countof(TypeInfoLookup) - 1)
     {
         const auto begin = TypeInfos + TypeInfoLookup[typeNameLength];

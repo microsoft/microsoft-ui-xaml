@@ -6,7 +6,32 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "CastingTests.h"
+#if __has_include(<winrt/BindTestbed.h>)
+#include <winrt/BindTestbed.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -53,13 +78,13 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename... I>
-    void CastingTestsT<D, I...>::Connect(int32_t, IInspectable const&)
+    void CastingTestsT<D, I...>::Connect(std::int32_t, IInspectable const&)
     {
         _contentLoaded = true;
     }
 
     template <typename D, typename ... I>
-    void CastingTestsT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void CastingTestsT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -71,7 +96,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename... I>
-    IComponentConnector CastingTestsT<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector CastingTestsT<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<::winrt::BindTestbed::implementation::XamlBindings> bindings;
         switch (connectionId)
@@ -106,7 +131,7 @@ namespace winrt::BindTestbed::implementation
             ReleaseAllListeners();
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -365,7 +390,7 @@ namespace winrt::BindTestbed::implementation
                                         {
                                             if (GetDataRoot().DataContext().as<::winrt::BindTestbed::CastingModel>() != nullptr)
                                             {
-                                                GetDataRoot().DataContext().as<::winrt::BindTestbed::CastingModel>().IntVal(static_cast<int32_t>(obj31.FontSize()));
+                                                GetDataRoot().DataContext().as<::winrt::BindTestbed::CastingModel>().IntVal(static_cast<std::int32_t>(obj31.FontSize()));
                                             }
                                         }
                                     }
@@ -426,8 +451,8 @@ namespace winrt::BindTestbed::implementation
         // Fields for binding tracking.
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject> cacheDPC_Tag;
         ::winrt::weak_ref<::winrt::Microsoft::UI::Xaml::DependencyObject> cacheDPC_DataContext;
-        __int64 tokenDPC_Tag{0};
-        __int64 tokenDPC_DataContext{0};
+        std::int64_t tokenDPC_Tag{0};
+        std::int64_t tokenDPC_DataContext{0};
 
         bool TryGet_DataContext_Cast_DataContext_To_CastingModel_Prefix(::winrt::hstring& val)
         {
@@ -477,12 +502,12 @@ namespace winrt::BindTestbed::implementation
             return true;
         }
 
-        bool TryGet_DataContext_Cast_DataContext_To_CastingModel_Postfix_Cast_Postfix_To_Int32(int32_t& val)
+        bool TryGet_DataContext_Cast_DataContext_To_CastingModel_Postfix_Cast_Postfix_To_Int32(std::int32_t& val)
         {
             double obj;
             if (TryGet_DataContext_Cast_DataContext_To_CastingModel_Postfix(obj))
             {
-                val = static_cast<int32_t>(obj);
+                val = static_cast<std::int32_t>(obj);
                 return true;
             }
             else
@@ -511,7 +536,7 @@ namespace winrt::BindTestbed::implementation
         {
             ::winrt::hstring p0;
             if (!TryGet_DataContext_Cast_DataContext_To_CastingModel_Prefix(p0)) { return; }
-            int32_t p1;
+            std::int32_t p1;
             if (!TryGet_DataContext_Cast_DataContext_To_CastingModel_Postfix_Cast_Postfix_To_Int32(p1)) { return; }
             ::winrt::hstring result = GetDataRoot().DataContext().as<::winrt::BindTestbed::CastingModel>().CombineStringWithInt(p0, p1);
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
@@ -534,7 +559,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::CastingTests obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::CastingTests obj, std::int32_t phase)
         {
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::Microsoft::UI::Xaml::FrameworkElement::TagProperty(), cacheDPC_Tag, tokenDPC_Tag);
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::Microsoft::UI::Xaml::FrameworkElement::DataContextProperty(), cacheDPC_DataContext, tokenDPC_DataContext);
@@ -549,7 +574,7 @@ namespace winrt::BindTestbed::implementation
             CompleteUpdate(phase);
         }
 
-        void Update_Tag(::winrt::Windows::Foundation::IInspectable obj, int32_t phase)
+        void Update_Tag(::winrt::Windows::Foundation::IInspectable obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -560,7 +585,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Tag_Cast_Tag_To_String(::winrt::hstring obj, int32_t phase)
+        void Update_Tag_Cast_Tag_To_String(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -574,7 +599,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DataContext(::winrt::Windows::Foundation::IInspectable obj, int32_t phase)
+        void Update_DataContext(::winrt::Windows::Foundation::IInspectable obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -585,7 +610,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel(::winrt::BindTestbed::CastingModel obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel(::winrt::BindTestbed::CastingModel obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -608,7 +633,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_Username(::winrt::hstring obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_Username(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -624,7 +649,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_IsChecked(bool obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_IsChecked(bool obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -646,7 +671,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_IsVisibleNullable(::winrt::Windows::Foundation::IReference<bool> obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_IsVisibleNullable(::winrt::Windows::Foundation::IReference<bool> obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -658,7 +683,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_IsVisibleNullable_Cast_IsVisibleNullable_To_Boolean(bool obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_IsVisibleNullable_Cast_IsVisibleNullable_To_Boolean(bool obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -672,7 +697,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_IsVisible(bool obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_IsVisible(bool obj, std::int32_t phase)
         {
                 if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                 {
@@ -680,7 +705,7 @@ namespace winrt::BindTestbed::implementation
                 }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_IsVisible_Cast_IsVisible_To_Visibility(::winrt::Microsoft::UI::Xaml::Visibility obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_IsVisible_Cast_IsVisible_To_Visibility(::winrt::Microsoft::UI::Xaml::Visibility obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -698,7 +723,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_IsVisibleNullable_Cast_IsVisibleNullable_To_Visibility(::winrt::Microsoft::UI::Xaml::Visibility obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_IsVisibleNullable_Cast_IsVisibleNullable_To_Visibility(::winrt::Microsoft::UI::Xaml::Visibility obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -716,7 +741,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_VisibilityValue(::winrt::Microsoft::UI::Xaml::Visibility obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_VisibilityValue(::winrt::Microsoft::UI::Xaml::Visibility obj, std::int32_t phase)
         {
                 if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                 {
@@ -724,7 +749,7 @@ namespace winrt::BindTestbed::implementation
                 }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_VisibilityValue_Cast_VisibilityValue_To_Boolean(bool obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_VisibilityValue_Cast_VisibilityValue_To_Boolean(bool obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -742,15 +767,15 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_DoubleVal(double obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_DoubleVal(double obj, std::int32_t phase)
         {
                 if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
                 {
-                    Update_DataContext_Cast_DataContext_To_CastingModel_DoubleVal_Cast_DoubleVal_To_Int32(static_cast<int32_t>(obj), phase);
+                    Update_DataContext_Cast_DataContext_To_CastingModel_DoubleVal_Cast_DoubleVal_To_Int32(static_cast<std::int32_t>(obj), phase);
                 }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_DoubleVal_Cast_DoubleVal_To_Int32(int32_t obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_DoubleVal_Cast_DoubleVal_To_Int32(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -764,7 +789,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_IntVal(int32_t obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_IntVal(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {
@@ -780,25 +805,25 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_Prefix(::winrt::hstring obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_Prefix(::winrt::hstring obj, std::int32_t phase)
         {
                 Update_DataContext_Cast_DataContext_To_CastingModel_M_CombineStringWithInt_3047264610(phase);
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_Postfix(double obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_Postfix(double obj, std::int32_t phase)
         {
                 if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                 {
-                    Update_DataContext_Cast_DataContext_To_CastingModel_Postfix_Cast_Postfix_To_Int32(static_cast<int32_t>(obj), phase);
+                    Update_DataContext_Cast_DataContext_To_CastingModel_Postfix_Cast_Postfix_To_Int32(static_cast<std::int32_t>(obj), phase);
                 }
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_Postfix_Cast_Postfix_To_Int32(int32_t obj, int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_Postfix_Cast_Postfix_To_Int32(std::int32_t obj, std::int32_t phase)
         {
                 Update_DataContext_Cast_DataContext_To_CastingModel_M_CombineStringWithInt_3047264610(phase);
         }
 
-        void Update_DataContext_Cast_DataContext_To_CastingModel_M_CombineStringWithInt_3047264610(int32_t phase)
+        void Update_DataContext_Cast_DataContext_To_CastingModel_M_CombineStringWithInt_3047264610(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -881,7 +906,7 @@ namespace winrt::BindTestbed::implementation
             obj.Visibility(value);
         }
 
-        static void Set_Microsoft_UI_Xaml_UIElement_TabIndex(::winrt::Microsoft::UI::Xaml::UIElement const& obj, int32_t const& value)
+        static void Set_Microsoft_UI_Xaml_UIElement_TabIndex(::winrt::Microsoft::UI::Xaml::UIElement const& obj, std::int32_t const& value)
         {
             obj.TabIndex(value);
         }

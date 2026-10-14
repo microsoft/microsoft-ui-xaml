@@ -1,0 +1,14 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+import "MainPageBase.idl";
+import "Models.idl";
+
+namespace Simple
+{
+    runtimeclass MainPage : MainPageBase
+    {
+        MainPage();
+        String StringProperty{ get; };
+        Simple.Models.BindModel Model { get; };
+    };
+}

@@ -92,7 +92,7 @@ namespace UnitTests
                 "<TextBlock Text='{x:Bind FormatTitle(StringProperty)}'/>", CodeGenLanguage.CppWinRT);
 
             AssertGenerated(code,
-                @"void Update_StringProperty\(::winrt::hstring obj, int32_t phase\)\s*\{\s*" +
+                @"void Update_StringProperty\(::winrt::hstring obj, std::int32_t phase\)\s*\{\s*" +
                 @"Update_M_FormatTitle_\d+\(phase\);\s*\}");
         }
 

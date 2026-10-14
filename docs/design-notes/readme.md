@@ -8,6 +8,7 @@ This is a collection of documentations which provide a high level design oriente
 
 * [Journey of a control](./control-overview.md) - a vertical slice of what makes up a WinUI control
 * [Xaml compiler overview](./xamlcompiler.md)
+* [XamlC + C++/WinRT named modules](./xamlc-cppwinrt-named-modules.md) - How XamlC participates in C++/WinRT 3.x named-module builds, including generated module structure, MSBuild integration, migration, and incremental behavior.
 * [Codegen](./codegen.md)
 * [Xaml/C# Object Lifetime Design](./xaml-object-lifetime.md)
 * [Surfaces in Xaml](./surfaces-overview.md) - Use of Composition and Direct3D surfaces in Xaml

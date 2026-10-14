@@ -12,6 +12,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop
     {
         public IList<string> GeneratedCodeFiles { get; set; }
 
+        public IDictionary<string, string> GeneratedModuleNames { get; set; }
+
         public IList<string> GeneratedXamlFiles { get; set; }
 
         public IList<string> GeneratedXbfFiles { get; set; }

@@ -7,6 +7,7 @@
 *.idl text eol=crlf
 *.h text eol=crlf
 *.cpp text eol=crlf
+*.ixx text eol=crlf
 *.sln text eol=crlf
 *.props text eol=crlf
 *.targets text eol=crlf

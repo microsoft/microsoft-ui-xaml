@@ -30,33 +30,24 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-#pragma once
 
+#pragma once
+#ifndef XAML_IMPL_MODULE
+#include <unknwn.h>
+#undef GetCurrentTime
 #include <functional>
 #include <map>
+#include <memory>
 #include <vector>
-#include <unknwn.h>
 #include <mutex>
-
-// Undefine GetCurrentTime macro to prevent
-// conflict with Storyboard::GetCurrentTime
-#undef GetCurrentTime
-
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include ""winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.Xaml));
-            this.Write(".h\"\r\n#include \"winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.XamlData));
-            this.Write(".h\"\r\n#include \"winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.XamlMarkup));
-            this.Write(".h\"\r\n#include \"winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.XamlInterop));
-            this.Write(".h\"\r\n#include \"winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.WindowsXamlInterop));
-            this.Write(".h\"\r\n#include \"winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.XamlXamlTypeInfo));
-            this.Write(".h\"\r\n\r\nnamespace winrt::");
+#include <cstdint>
+");
+  foreach (var projectionNamespace in CppWinRTProjectionDependency.TypeInfoSupportNamespaces) { 
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionHeaderDirective(projectionNamespace, optionalHeader: true)));
+            this.Write("\r\n");
+  } 
+            this.Write("#endif\r\n\r\n#ifdef XAML_IMPL_MODULE\r\n#define XAML_EXPORT export extern \"C++\"\r\n#else" +
+                    "\r\n#define XAML_EXPORT\r\n#endif\r\n\r\nXAML_EXPORT namespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(ProjectInfo.RootNamespace)));
             this.Write("::implementation\r\n{\r\n    using IInspectable = ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsFoundation)));
@@ -209,7 +200,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         void SetBoxedType(IXamlType boxedType);
         void AddMemberName(::winrt::hstring const& shortName);
         void AddEnumValue(::winrt::hstring const& name, IInspectable value);
-        uint32_t CreateEnumUIntFromString(::winrt::hstring const& input) const;
+        std::uint32_t CreateEnumUIntFromString(::winrt::hstring const& input) const;
 
     private:
         std::shared_ptr<XamlTypeInfoProvider> _provider;
@@ -270,6 +261,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         std::shared_ptr<XamlTypeInfoProvider> _provider;
     };
 }
+#undef XAML_EXPORT
 ");
             return this.GenerationEnvironment.ToString();
         }

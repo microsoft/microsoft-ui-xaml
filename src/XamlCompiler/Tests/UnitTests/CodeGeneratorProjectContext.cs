@@ -34,6 +34,7 @@ namespace UnitTests
         public string ProjectName { get; private set; }  // caller can't change projectName because we make a /temp folder.
 
         private bool _isLibrary;
+        private bool _buildXamlModules;
         private string _rootNamespace;
 
         public bool IsLibrary
@@ -46,6 +47,19 @@ namespace UnitTests
                     throw new InvalidOperationException("Can't set IsLibrary, call ClearProjectInfo() first");
                 }
                 _isLibrary = value;
+            }
+        }
+
+        public bool BuildXamlModules
+        {
+            get { return _buildXamlModules; }
+            set
+            {
+                if (_projectInfo != null)
+                {
+                    throw new InvalidOperationException("Can't set BuildXamlModules, call ClearProjectInfo() first");
+                }
+                _buildXamlModules = value;
             }
         }
 
@@ -83,7 +97,12 @@ namespace UnitTests
                     _projectInfo.RootNamespace = RootNamespace;
                     _projectInfo.ProjectName = ProjectName;
                     _projectInfo.IsLibrary = IsLibrary;
+                    _projectInfo.BuildXamlModules = BuildXamlModules;
                     _projectInfo.TargetPlatformMinVersion = _tpmv;
+                    // CompileXamlInternal always supplies these lists, even when no optional
+                    // changes are selected. App templates enumerate them during generation.
+                    _projectInfo.EnabledXamlOptionalChanges = new List<string>();
+                    _projectInfo.DisabledXamlOptionalChanges = new List<string>();
                     
                     var testBinDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                     _projectInfo.GenXbf32Path = _projectInfo.GenXbf64Path = _projectInfo.GenXbfArm64Path = Path.Combine(testBinDirectory, "genxbf.dll");

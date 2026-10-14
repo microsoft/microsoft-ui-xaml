@@ -6,7 +6,38 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "MainPage.h"
+#if __has_include(<winrt/BindTestbed.h>)
+#include <winrt/BindTestbed.h>
+#endif
+#if __has_include(<winrt/BindTestbedModel.h>)
+#include <winrt/BindTestbedModel.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.Collections.h>)
+#include <winrt/Windows.Foundation.Collections.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -67,7 +98,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void MainPageT<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void MainPageT<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
         switch (connectionId)
         {
@@ -100,7 +131,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void MainPageT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void MainPageT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -112,7 +143,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename... I>
-    IComponentConnector MainPageT<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector MainPageT<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<::winrt::BindTestbed::implementation::XamlBindings> bindings;
         switch (connectionId)
@@ -238,7 +269,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -260,7 +291,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -292,7 +323,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::MainModel obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::MainModel obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -304,7 +335,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model(::winrt::BindTestbedModel::DataModel obj, int32_t phase)
+        void Update_Model(::winrt::BindTestbedModel::DataModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -316,7 +347,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, int32_t phase)
+        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -356,7 +387,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -378,7 +409,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -410,7 +441,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::MainModel obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::MainModel obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -422,7 +453,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model(::winrt::BindTestbedModel::DataModel obj, int32_t phase)
+        void Update_Model(::winrt::BindTestbedModel::DataModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -434,7 +465,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, int32_t phase)
+        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -532,7 +563,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -554,7 +585,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -586,7 +617,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::MainModel obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::MainModel obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -601,7 +632,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model(::winrt::BindTestbedModel::DataModel obj, int32_t phase)
+        void Update_Model(::winrt::BindTestbedModel::DataModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -613,7 +644,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, int32_t phase)
+        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -625,7 +656,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Employees(::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::BindTestbedModel::IEmployee> obj, int32_t phase)
+        void Update_Employees(::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::BindTestbedModel::IEmployee> obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -644,7 +675,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_AllFirstNames(::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::hstring> obj, int32_t phase)
+        void Update_AllFirstNames(::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::hstring> obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -656,7 +687,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_AllLastNames(::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::hstring> obj, int32_t phase)
+        void Update_AllLastNames(::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::hstring> obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -668,7 +699,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Employees_I0(::winrt::BindTestbedModel::IEmployee obj, int32_t phase)
+        void Update_Employees_I0(::winrt::BindTestbedModel::IEmployee obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -744,7 +775,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -766,7 +797,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -798,7 +829,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::MainModel obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::MainModel obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -810,7 +841,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model(::winrt::BindTestbedModel::DataModel obj, int32_t phase)
+        void Update_Model(::winrt::BindTestbedModel::DataModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -822,7 +853,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, int32_t phase)
+        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -862,7 +893,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -884,7 +915,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -916,7 +947,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::MainModel obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::MainModel obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -928,7 +959,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model(::winrt::BindTestbedModel::DataModel obj, int32_t phase)
+        void Update_Model(::winrt::BindTestbedModel::DataModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -940,7 +971,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, int32_t phase)
+        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -980,7 +1011,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -1002,7 +1033,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -1034,7 +1065,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::MainModel obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::MainModel obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1046,7 +1077,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model(::winrt::BindTestbedModel::DataModel obj, int32_t phase)
+        void Update_Model(::winrt::BindTestbedModel::DataModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1058,7 +1089,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, int32_t phase)
+        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1098,7 +1129,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -1120,7 +1151,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -1152,7 +1183,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::MainModel obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::MainModel obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1164,7 +1195,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model(::winrt::BindTestbedModel::DataModel obj, int32_t phase)
+        void Update_Model(::winrt::BindTestbedModel::DataModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1176,7 +1207,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, int32_t phase)
+        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1216,7 +1247,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -1238,7 +1269,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase)
+        void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase)
         {
             nextPhase = -1;
             switch (phase)
@@ -1270,7 +1301,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::MainModel obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::MainModel obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1282,7 +1313,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model(::winrt::BindTestbedModel::DataModel obj, int32_t phase)
+        void Update_Model(::winrt::BindTestbedModel::DataModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1294,7 +1325,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, int32_t phase)
+        void Update_DOModel(::winrt::BindTestbedModel::DOModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1334,7 +1365,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -1359,7 +1390,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::MainPage obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::MainPage obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1370,7 +1401,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_MainModel(::winrt::BindTestbed::MainModel obj, int32_t phase)
+        void Update_MainModel(::winrt::BindTestbed::MainModel obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -1432,7 +1463,7 @@ namespace winrt::BindTestbed::implementation
         {
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -1457,7 +1488,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::MainPage obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::MainPage obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1468,7 +1499,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_MainModel(::winrt::BindTestbed::MainModel obj, int32_t phase)
+        void Update_MainModel(::winrt::BindTestbed::MainModel obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1479,7 +1510,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_MainModel_Employees(::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::BindTestbedModel::IEmployee> obj, int32_t phase)
+        void Update_MainModel_Employees(::winrt::Windows::Foundation::Collections::IObservableVector<::winrt::BindTestbedModel::IEmployee> obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1490,7 +1521,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_MainModel_Employees_I0(::winrt::BindTestbedModel::IEmployee obj, int32_t phase)
+        void Update_MainModel_Employees_I0(::winrt::BindTestbedModel::IEmployee obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -1501,7 +1532,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_MainModel_Employees_I0_Title(::winrt::hstring obj, int32_t phase)
+        void Update_MainModel_Employees_I0_Title(::winrt::hstring obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {

@@ -661,11 +661,11 @@ namespace UnitTests
                 case CodeGenLanguage.VisualBasic:
                     return Language.Parse("VB");
 
-                case CodeGenLanguage.Cpp:
-                    return Language.Parse("C++");
-
                 case CodeGenLanguage.CppWinRT:
                     return Language.Parse("CppWinRT");
+
+                case CodeGenLanguage.Cpp:
+                    return Language.Parse("C++");
 
                 default:
                     throw new ArgumentOutOfRangeException("Bad Code Language");

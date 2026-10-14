@@ -40,11 +40,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write("#include \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(includeFile));
             this.Write("\"\r\n");
-  }
+  } 
+            this.Write("#include \"XamlMetaDataProvider.h\"\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionHeaderDirective(KnownNamespaces.Xaml)));
+            this.Write("\r\n");
   if (ProjectInfo.EnabledXamlOptionalChanges.Count > 0 || ProjectInfo.DisabledXamlOptionalChanges.Count > 0) { 
-            this.Write("#include \"winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.XamlSettings));
-            this.Write(".h\"\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionHeaderDirective(KnownNamespaces.XamlSettings)));
+            this.Write("\r\n");
   } 
             this.Write("\r\n#if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPT" +
                     "ION\r\nextern \"C\" __declspec(dllimport) int __stdcall IsDebuggerPresent();\r\n#endif" +
@@ -107,15 +109,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
   } 
             this.Write("    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.Xaml)));
-            this.Write(@"::Application::Start(
-        [](auto&&)
-        {
-#ifdef DISABLE_XAML_GENERATED_MAIN
-            // The App is constructed here only when it has an accessible parameterless
-            // constructor. This lets an application that defines DISABLE_XAML_GENERATED_MAIN
-            // supply its own entry point and omit a parameterless App constructor without
-            // breaking this generated helper.
-            if constexpr (has_parameterless_ctor_v<");
+            this.Write("::Application::Start(\r\n        [](auto&&)\r\n        {\r\n#ifdef DISABLE_XAML_GENERAT" +
+                    "ED_MAIN\r\n            if constexpr (has_parameterless_ctor_v<");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")));
             this.Write(">)\r\n            {\r\n                ::winrt::make<");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")));

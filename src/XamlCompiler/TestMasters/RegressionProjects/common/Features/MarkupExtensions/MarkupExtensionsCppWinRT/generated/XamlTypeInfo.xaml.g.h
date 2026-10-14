@@ -6,28 +6,35 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-#pragma once
 
+#pragma once
+#ifndef XAML_IMPL_MODULE
+#include <unknwn.h>
+#undef GetCurrentTime
 #include <functional>
 #include <map>
+#include <memory>
 #include <vector>
-#include <unknwn.h>
 #include <mutex>
-
-// Undefine GetCurrentTime macro to prevent
-// conflict with Storyboard::GetCurrentTime
-#undef GetCurrentTime
-
+#include <cstdint>
+#if __has_include(<winrt/Windows.Foundation.h>)
 #include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include "winrt/Microsoft.UI.Xaml.h"
-#include "winrt/Microsoft.UI.Xaml.Data.h"
-#include "winrt/Microsoft.UI.Xaml.Markup.h"
-#include "winrt/Microsoft.UI.Xaml.Interop.h"
-#include "winrt/Windows.UI.Xaml.Interop.h"
-#include "winrt/Microsoft.UI.Xaml.XamlTypeInfo.h"
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Windows.UI.Xaml.Interop.h>)
+#include <winrt/Windows.UI.Xaml.Interop.h>
+#endif
+#endif
 
-namespace winrt::MarkupExtensionsCppWinRT::implementation
+#ifdef XAML_IMPL_MODULE
+#define XAML_EXPORT export extern "C++"
+#else
+#define XAML_EXPORT
+#endif
+
+XAML_EXPORT namespace winrt::MarkupExtensionsCppWinRT::implementation
 {
     using IInspectable = ::winrt::Windows::Foundation::IInspectable;
     using IXamlMember = ::winrt::Microsoft::UI::Xaml::Markup::IXamlMember;
@@ -157,7 +164,7 @@ namespace winrt::MarkupExtensionsCppWinRT::implementation
         void SetBoxedType(IXamlType boxedType);
         void AddMemberName(::winrt::hstring const& shortName);
         void AddEnumValue(::winrt::hstring const& name, IInspectable value);
-        uint32_t CreateEnumUIntFromString(::winrt::hstring const& input) const;
+        std::uint32_t CreateEnumUIntFromString(::winrt::hstring const& input) const;
 
     private:
         std::shared_ptr<XamlTypeInfoProvider> _provider;
@@ -216,4 +223,5 @@ namespace winrt::MarkupExtensionsCppWinRT::implementation
         std::shared_ptr<XamlTypeInfoProvider> _provider;
     };
 }
+#undef XAML_EXPORT
 

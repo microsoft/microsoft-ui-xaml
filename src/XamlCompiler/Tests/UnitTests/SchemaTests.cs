@@ -25,8 +25,8 @@ namespace UnitTests
         {
             var elementNames = new Dictionary<Type, string>
             {
-                { typeof(int), "int32_t" },
-                { typeof(ushort), "uint16_t" },
+                { typeof(int), "std::int32_t" },
+                { typeof(ushort), "std::uint16_t" },
                 { typeof(string), "::winrt::hstring" },
                 { typeof(object), "::winrt::Windows::Foundation::IInspectable" },
                 { typeof(TimeSpan), "::winrt::Windows::Foundation::TimeSpan" },
@@ -74,7 +74,7 @@ namespace UnitTests
             foreach (bool globalized in new[] { false, true })
             {
                 string prefix = globalized ? "::winrt::" : "";
-                string elementName = prefix + "System::Collections::Generic::List<int32_t>";
+                string elementName = prefix + "System::Collections::Generic::List<std::int32_t>";
                 Assert.AreEqual(elementName,
                     XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(List<int>), "CppWinRT", globalized));
                 Assert.AreEqual($"::winrt::com_array<{elementName}>",
@@ -109,9 +109,9 @@ namespace UnitTests
         [TestMethod]
         public void Schema_CppWinRTArrayTypeNamesDoNotFlattenUnsupportedShapes()
         {
-            Assert.AreEqual("int32_t[,]",
+            Assert.AreEqual("std::int32_t[,]",
                 XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(int[,]), "CppWinRT", true));
-            Assert.AreEqual("int32_t[][]",
+            Assert.AreEqual("std::int32_t[][]",
                 XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(int[][]), "CppWinRT", true));
         }
 

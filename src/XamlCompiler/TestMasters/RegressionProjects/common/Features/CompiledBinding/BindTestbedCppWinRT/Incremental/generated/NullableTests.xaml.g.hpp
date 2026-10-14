@@ -6,7 +6,35 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 #include "pch.h"
+
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
 #include "NullableTests.h"
+#if __has_include(<winrt/BindTestbed.h>)
+#include <winrt/BindTestbed.h>
+#endif
+#if __has_include(<winrt/BindTestbedModel.h>)
+#include <winrt/BindTestbedModel.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.h>)
+#include <winrt/Microsoft.UI.Xaml.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Controls.Primitives.h>)
+#include <winrt/Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+#if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
+#include <winrt/Microsoft.UI.Xaml.Markup.h>
+#endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -51,7 +79,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void NullableTestsT<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void NullableTestsT<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
         switch (connectionId)
         {
@@ -84,7 +112,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename ... I>
-    void NullableTestsT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void NullableTestsT<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -96,7 +124,7 @@ namespace winrt::BindTestbed::implementation
     }
 
     template <typename D, typename... I>
-    IComponentConnector NullableTestsT<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector NullableTestsT<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<::winrt::BindTestbed::implementation::XamlBindings> bindings;
         switch (connectionId)
@@ -131,7 +159,7 @@ namespace winrt::BindTestbed::implementation
             ReleaseAllListeners();
         }
 
-        void Connect(int32_t connectionId, IInspectable const& target) override
+        void Connect(std::int32_t connectionId, IInspectable const& target) override
         {
             switch(connectionId)
             {
@@ -197,7 +225,7 @@ namespace winrt::BindTestbed::implementation
         ::winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged cachePC_Model{nullptr};
         ::winrt::Microsoft::UI::Xaml::DependencyObject cacheDPC_Model_NullableDoublePropertyDP{nullptr};
         ::winrt::event_token tokenPC_Model {};
-        __int64 tokenDPC_Model_NullableDoublePropertyDP{0};
+        std::int64_t tokenDPC_Model_NullableDoublePropertyDP{0};
 
         bool TryGet_Model_NullableDoublePropertyDP(::winrt::Windows::Foundation::IReference<double>& val)
         {
@@ -260,7 +288,7 @@ namespace winrt::BindTestbed::implementation
 
         // Update methods for each path node used in binding steps.
 
-        void Update_(::winrt::BindTestbed::NullableTests obj, int32_t phase)
+        void Update_(::winrt::BindTestbed::NullableTests obj, std::int32_t phase)
         {
             if (obj)
             {
@@ -272,7 +300,7 @@ namespace winrt::BindTestbed::implementation
             CompleteUpdate(phase);
         }
 
-        void Update_Model(::winrt::BindTestbedModel::DataModel obj, int32_t phase)
+        void Update_Model(::winrt::BindTestbedModel::DataModel obj, std::int32_t phase)
         {
             _bindingsTracking->UpdatePropertyChangedListener(obj, cachePC_Model, tokenPC_Model);
             _bindingsTracking->UpdateDependencyPropertyChangedListener(obj, ::winrt::BindTestbedModel::DataModel::NullableDoublePropertyDPProperty(), cacheDPC_Model_NullableDoublePropertyDP, tokenDPC_Model_NullableDoublePropertyDP);
@@ -291,7 +319,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ExtractionPoint(::winrt::BindTestbedModel::Location obj, int32_t phase)
+        void Update_Model_ExtractionPoint(::winrt::BindTestbedModel::Location obj, std::int32_t phase)
         {
                 if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                 {
@@ -300,7 +328,7 @@ namespace winrt::BindTestbed::implementation
                 }
         }
 
-        void Update_Model_ExtractionPoint_Coords(::winrt::BindTestbedModel::Coordinates obj, int32_t phase)
+        void Update_Model_ExtractionPoint_Coords(::winrt::BindTestbedModel::Coordinates obj, std::int32_t phase)
         {
                 if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                 {
@@ -308,7 +336,7 @@ namespace winrt::BindTestbed::implementation
                 }
         }
 
-        void Update_Model_ExtractionPoint_Coords_Longitude(double obj, int32_t phase)
+        void Update_Model_ExtractionPoint_Coords_Longitude(double obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -317,7 +345,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_AlwaysNullNullableBoolProperty(::winrt::Windows::Foundation::IReference<bool> obj, int32_t phase)
+        void Update_Model_AlwaysNullNullableBoolProperty(::winrt::Windows::Foundation::IReference<bool> obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -326,7 +354,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_ExtractionPoint_Altitude(int32_t obj, int32_t phase)
+        void Update_Model_ExtractionPoint_Altitude(std::int32_t obj, std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
@@ -335,7 +363,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_NullableDoublePropertyDP(::winrt::Windows::Foundation::IReference<double> obj, int32_t phase)
+        void Update_Model_NullableDoublePropertyDP(::winrt::Windows::Foundation::IReference<double> obj, std::int32_t phase)
         {
                 Update_Model_M_FunctionReturningNullableDouble_2231344659(phase);
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
@@ -345,7 +373,7 @@ namespace winrt::BindTestbed::implementation
             }
         }
 
-        void Update_Model_M_FunctionReturningNullableDouble_2231344659(int32_t phase)
+        void Update_Model_M_FunctionReturningNullableDouble_2231344659(std::int32_t phase)
         {
             if((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
             {

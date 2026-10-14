@@ -8,25 +8,36 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-<#  if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
+<#  if(!ProjectInfo.BuildXamlModules && !String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
 #include "<#=ProjectInfo.PrecompiledHeaderFile#>"
 <#  }#>
-
+<#=GetCppWinRTConsumerPreamble()#>
+<#  if (!ProjectInfo.BuildXamlModules) { #>
+#include <unknwn.h>
 #include <memory>
 #include <string>
 #include <regex>
-#include <unknwn.h>
 #include <mutex>
+#include <cstdint>
+<#  } else { #>
+import std;
+<#  } #>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
-#include "winrt/windows.foundation.h"
-#include "winrt/windows.ui.xaml.interop.h"
-#include "winrt/microsoft.ui.xaml.markup.h"
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundation)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsXamlInterop)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlMarkup)#>
+
+<#  if (!ProjectInfo.BuildXamlModules) { #>
 #include "XamlTypeInfo.xaml.g.h"
 #include "XamlMetaDataProvider.h"
+<#  } else { #>
+import <#=CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)#>.Support;
+import <#=CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)#>;
+<#  } #>
 
 namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 {
@@ -543,12 +554,12 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
         _enumValues.insert_or_assign(name.data(), value);
     }
 
-    uint32_t XamlUserType::CreateEnumUIntFromString(::winrt::hstring const& input) const
+    std::uint32_t XamlUserType::CreateEnumUIntFromString(::winrt::hstring const& input) const
     {
         bool found = false;
 
         const std::wregex regularExpression(L"^\\s+|\\s*,\\s*|\\s+$");
-        uint32_t val = 0;
+        std::uint32_t val = 0;
 
         for (std::wcregex_token_iterator it{ input.begin(), input.end(), regularExpression, -1 }, end; it != end; ++it)
         {

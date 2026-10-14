@@ -5,14 +5,12 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 //------------------------------------------------------------------------------
+
 #pragma once
-
+#ifndef XAML_IMPL_MODULE
 #include <unknwn.h>
-
-// Undefine GetCurrentTime macro to prevent
-// conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
-
+#include <cstdint>
 #if __has_include(<winrt/Microsoft.UI.Xaml.h>)
 #include <winrt/Microsoft.UI.Xaml.h>
 #endif
@@ -25,10 +23,24 @@
 #if __has_include(<winrt/Microsoft.UI.Xaml.Markup.h>)
 #include <winrt/Microsoft.UI.Xaml.Markup.h>
 #endif
+#if __has_include(<winrt/Windows.Foundation.h>)
+#include <winrt/Windows.Foundation.h>
+#endif
+#endif
+
+#ifdef XAML_IMPL_MODULE
+#define XAML_EXPORT export extern "C++"
+#else
+#define XAML_EXPORT
+#endif
 
 
-namespace winrt::MultipleViewsTestbedCppWinRT::implementation
+
+XAML_EXPORT namespace winrt::MultipleViewsTestbedCppWinRT::implementation
 {
+    template <typename D, typename... I>
+    struct MainPage_base;
+
     using IInspectable = ::winrt::Windows::Foundation::IInspectable;
 
     template <typename D, typename ... I>
@@ -42,10 +54,10 @@ namespace winrt::MultipleViewsTestbedCppWinRT::implementation
 
         void InitializeComponent();
         void InitializeComponent(::winrt::Windows::Foundation::Uri const& resourceLocator);
-        virtual void Connect(int32_t connectionId, IInspectable const& target);
-        virtual ::winrt::Microsoft::UI::Xaml::Markup::IComponentConnector GetBindingConnector(int32_t connectionId, IInspectable const& target);
+        virtual void Connect(std::int32_t connectionId, IInspectable const& target);
+        virtual ::winrt::Microsoft::UI::Xaml::Markup::IComponentConnector GetBindingConnector(std::int32_t connectionId, IInspectable const& target);
         void UnloadObject(::winrt::Microsoft::UI::Xaml::DependencyObject const& dependencyObject);
-        void DisconnectUnloadedObject(int32_t connectionId);
+        void DisconnectUnloadedObject(std::int32_t connectionId);
 
         ::winrt::Microsoft::UI::Xaml::Controls::TextBlock DisplayText()
         {
@@ -76,4 +88,5 @@ namespace winrt::MultipleViewsTestbedCppWinRT::implementation
         ::winrt::Microsoft::UI::Xaml::Controls::Primitives::ButtonBase _MyControl{nullptr};
     };
 }
+#undef XAML_EXPORT
 

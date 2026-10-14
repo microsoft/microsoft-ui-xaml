@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.CodeDom.Compiler;
 
 namespace Win8Xaml.CompilerProxies
@@ -49,7 +50,9 @@ namespace Win8Xaml.CompilerProxies
             }
             catch (Exception e)
             {
-                throw e.InnerException ?? e;
+                // Keep the original generator frame when unwrapping reflection exceptions.
+                ExceptionDispatchInfo.Capture(e.InnerException ?? e).Throw();
+                throw;
             }
         }
 
@@ -69,7 +72,8 @@ namespace Win8Xaml.CompilerProxies
             }
             catch (Exception e)
             {
-                throw e.InnerException ?? e;
+                ExceptionDispatchInfo.Capture(e.InnerException ?? e).Throw();
+                throw;
             }
         }
     }

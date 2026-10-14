@@ -642,7 +642,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             if (propertyType.IsCollection)
             {
                 XamlType collectionItemType = propertyType.ItemType;
-                if(propertyType.TypeConverter == null && !propertyType.HasCreateFromStringMethod() && (collectionItemType.TypeConverter != null || collectionItemType.HasCreateFromStringMethod()))
+                // Object collections accept string items without a converter, just as an
+                // Object-valued property does. Still validate the collection's syntax.
+                if (propertyType.TypeConverter == null && !propertyType.HasCreateFromStringMethod() &&
+                    (collectionItemType == _schemaContext.DirectUIXamlLanguage.Object ||
+                     collectionItemType.TypeConverter != null || collectionItemType.HasCreateFromStringMethod()))
                 {
                     return (SuccinctCollectionSyntaxVerifier.TryParse(text, locationForErrors, Errors, property));
                 }

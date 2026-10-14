@@ -12,12 +12,24 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 //------------------------------------------------------------------------------
-<#  if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
+<#  if(!ProjectInfo.BuildXamlModules && !String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
 #include "<#=ProjectInfo.PrecompiledHeaderFile#>"
 <#  }#>
-<#  foreach (var includeFile in Model.NeededLocalXamlHeaderFiles) { #>
+<#=GetCppWinRTConsumerPreamble()#>
+
+#include <cstdint>
+#include <memory>
+#include <type_traits>
+#include <utility>
+
+<#  if (!ProjectInfo.BuildXamlModules) { #>
+<#      foreach (var includeFile in Model.NeededLocalXamlHeaderFiles) { #>
 #include "<#=includeFile#>"
-<#  }#>
+<#      }#>
+<#  } #>
+<#  foreach (var projectionNamespace in Model.NeededCppWinRTProjectionNamespaces) { #>
+<#=GetCppWinRTProjectionDependencyDirective(projectionNamespace, optionalHeader: true)#>
+<#  } #>
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
@@ -141,7 +153,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 <#+ {#>
 <#+     if (Model.ConnectableElements.Any()) { #>
     template <typename D, typename ... I>
-    void <#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::Connect(int32_t connectionId, IInspectable const& target)
+    void <#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)
     {
 <#+         if(Model.ConnectableElements.Any()) { #>
         switch (connectionId)
@@ -157,7 +169,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 <#+         }#>
 <#+     } else { #>
     template <typename D, typename... I>
-    void <#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::Connect(int32_t, IInspectable const&)
+    void <#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::Connect(std::int32_t, IInspectable const&)
     {
 <#+     } #>
         _contentLoaded = true;
@@ -167,7 +179,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 <#+ private void Output_EmptyUnloadMethods()#>
 <#+ {#>
     template <typename D, typename ... I>
-    void <#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::DisconnectUnloadedObject(int32_t)
+    void <#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::DisconnectUnloadedObject(std::int32_t)
     {
         throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
     }
@@ -200,7 +212,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
     }
 
     template <typename D, typename ... I>
-    void <#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::DisconnectUnloadedObject(int32_t connectionId)
+    void <#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::DisconnectUnloadedObject(std::int32_t connectionId)
     {
         switch(connectionId)
         {
@@ -272,7 +284,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 <#+ {#>
 
     template <typename D, typename... I>
-    IComponentConnector <#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::GetBindingConnector(int32_t, IInspectable const&)
+    IComponentConnector <#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::GetBindingConnector(std::int32_t, IInspectable const&)
     {
         return nullptr;
     }
@@ -281,7 +293,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 <#+ private void Output_GetBindingConnectorMethod()#>
 <#+ {#>
     template <typename D, typename... I>
-    IComponentConnector <#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)
+    IComponentConnector <#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& target)
     {
         ::winrt::com_ptr<<#=Projection(ProjectInfo.RootNamespace)#>::implementation::XamlBindings> bindings;
         switch (connectionId)

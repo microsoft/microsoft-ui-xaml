@@ -35,16 +35,25 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 ");
-  if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { 
+  if(!ProjectInfo.BuildXamlModules && !String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { 
             this.Write("#include \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(ProjectInfo.PrecompiledHeaderFile));
             this.Write("\"\r\n");
   }
-  foreach (var includeFile in Model.NeededLocalXamlHeaderFiles) { 
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTConsumerPreamble()));
+            this.Write("\r\n\r\n#include <cstdint>\r\n#include <memory>\r\n#include <type_traits>\r\n#include <util" +
+                    "ity>\r\n\r\n");
+  if (!ProjectInfo.BuildXamlModules) { 
+      foreach (var includeFile in Model.NeededLocalXamlHeaderFiles) { 
             this.Write("#include \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(includeFile));
             this.Write("\"\r\n");
-  }
+      }
+  } 
+  foreach (var projectionNamespace in Model.NeededCppWinRTProjectionNamespaces) { 
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(projectionNamespace, optionalHeader: true)));
+            this.Write("\r\n");
+  } 
             this.Write("\r\n#pragma warning(push)\r\n#pragma warning(disable: 4100) // unreferenced formal pa" +
                     "rameter\r\n\r\nnamespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(Model.CodeInfo.ClassName.Namespace)));
@@ -206,7 +215,8 @@ this.Write("    template <typename D, typename ... I>\r\n    void ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
 
-this.Write("T<D, I...>::Connect(int32_t connectionId, IInspectable const& target)\r\n    {\r\n");
+this.Write("T<D, I...>::Connect(std::int32_t connectionId, IInspectable const& target)\r\n    {" +
+        "\r\n");
 
          if(Model.ConnectableElements.Any()) { 
 this.Write("        switch (connectionId)\r\n        {\r\n");
@@ -230,7 +240,7 @@ this.Write("    template <typename D, typename... I>\r\n    void ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
 
-this.Write("T<D, I...>::Connect(int32_t, IInspectable const&)\r\n    {\r\n");
+this.Write("T<D, I...>::Connect(std::int32_t, IInspectable const&)\r\n    {\r\n");
 
      } 
 this.Write("        _contentLoaded = true;\r\n    }\r\n");
@@ -242,9 +252,9 @@ this.Write("    template <typename D, typename ... I>\r\n    void ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
 
-this.Write("T<D, I...>::DisconnectUnloadedObject(int32_t)\r\n    {\r\n        throw ::winrt::hres" +
-        "ult_invalid_argument { L\"No unloadable objects to disconnect.\" };\r\n    }\r\n\r\n    " +
-        "template <typename D, typename ... I>\r\n    void ");
+this.Write("T<D, I...>::DisconnectUnloadedObject(std::int32_t)\r\n    {\r\n        throw ::winrt:" +
+        ":hresult_invalid_argument { L\"No unloadable objects to disconnect.\" };\r\n    }\r\n\r" +
+        "\n    template <typename D, typename ... I>\r\n    void ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
 
@@ -290,8 +300,8 @@ this.Write("::XamlMarkupHelper::UnloadObject(unloadableObject);\r\n        }\r\n
 
 this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
 
-this.Write("T<D, I...>::DisconnectUnloadedObject(int32_t connectionId)\r\n    {\r\n        switch" +
-        "(connectionId)\r\n        {\r\n");
+this.Write("T<D, I...>::DisconnectUnloadedObject(std::int32_t connectionId)\r\n    {\r\n        s" +
+        "witch(connectionId)\r\n        {\r\n");
 
          foreach (var element in Model.DeferrableElements)
          {
@@ -410,8 +420,8 @@ this.Write("\r\n    template <typename D, typename... I>\r\n    IComponentConnec
 
 this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
 
-this.Write("T<D, I...>::GetBindingConnector(int32_t, IInspectable const&)\r\n    {\r\n        ret" +
-        "urn nullptr;\r\n    }\r\n");
+this.Write("T<D, I...>::GetBindingConnector(std::int32_t, IInspectable const&)\r\n    {\r\n      " +
+        "  return nullptr;\r\n    }\r\n");
 
  } 
  private void Output_GetBindingConnectorMethod()
@@ -420,8 +430,8 @@ this.Write("    template <typename D, typename... I>\r\n    IComponentConnector 
 
 this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
 
-this.Write("T<D, I...>::GetBindingConnector(int32_t connectionId, IInspectable const& target)" +
-        "\r\n    {\r\n        ::winrt::com_ptr<");
+this.Write("T<D, I...>::GetBindingConnector(std::int32_t connectionId, IInspectable const& ta" +
+        "rget)\r\n    {\r\n        ::winrt::com_ptr<");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(Projection(ProjectInfo.RootNamespace)));
 
