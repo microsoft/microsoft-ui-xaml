@@ -52,13 +52,13 @@
                       <Scale ScaleX="-1" />
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="45" SizeY="13" BorderMode="Hard" ScaleX="-1" OffsetX="45" OffsetY="5" OffsetZ="0">
+                      <wucSpriteVisual SizeX="47" SizeY="15" BorderMode="Hard" ScaleX="-1" OffsetX="46" OffsetY="4" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
                           </Source>
                           <Mask>
-                            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="926790562" />
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="399495176" />
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>

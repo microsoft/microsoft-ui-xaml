@@ -86,6 +86,22 @@
     <value>кнопка</value>
     <comment>Localized UIA control-type name for InkToolbar tool buttons; Narrator reads this instead of "custom". UWP IDS_INKTOOLBAR_TOOL_BUTTON_CONTROLTYPE_NAME.</comment>
   </data>
+  <data name="InkToolbarDropDownButtonControlTypeName" xml:space="preserve">
+    <value>кнопка выпадающего списка</value>
+    <comment>Accessible control type for built-in pen buttons with a flyout. UI Automation reports the expanded or collapsed state separately.</comment>
+  </data>
+  <data name="InkToolbarStencilDropDownControlTypeName" xml:space="preserve">
+    <value>раскрывающийся список</value>
+    <comment>Concise accessible control type for the measuring-tools dropdown. UI Automation reports the expanded or collapsed state separately.</comment>
+  </data>
+  <data name="InkToolbarStencilButtonName" xml:space="preserve">
+    <value>Инструменты измерения</value>
+    <comment>Persistent accessible identity of the ruler/protractor dropdown, announced before the selected stencil name.</comment>
+  </data>
+  <data name="InkToolbarColorPaletteHelpText" xml:space="preserve">
+    <value>Откройте, чтобы выбрать цвет из палитры</value>
+    <comment>Accessible help for the ballpoint-pen, pencil and highlighter dropdowns.</comment>
+  </data>
   <data name="InkToolbarStrokeEraserLabel" xml:space="preserve">
     <value>Ластик для штрихов</value>
     <comment>Display label for the InkToolbar eraser flyout stroke-eraser item. UWP IDS_INKTOOLBAR_ERASERSTROKEERASER.</comment>
@@ -245,5 +261,37 @@
   <data name="InkToolbarColorNamePink" xml:space="preserve">
     <value>Розовый</value>
     <comment>Name of the InkToolbar highlighter palette color #EC008C.</comment>
+  </data>
+  <data name="InkToolbarToolButtonSelectedStateName" xml:space="preserve">
+    <value>выбрано</value>
+    <comment>Appended to an InkToolbar tool button's accessible name when it is the active tool, so Narrator announces the selected tool. The Custom control type suppresses the native selected-state read.</comment>
+  </data>
+  <data name="InkToolbarPenConfigurationSizeSliderName" xml:space="preserve">
+    <value>Размер пера</value>
+    <comment>Accessible name for the stroke-width slider in the InkToolbar pen flyout; Narrator reads this before the value. UWP IDS_INKTOOLBAR_PENL3STROKEWIDTHSLIDERNAME = 6422.</comment>
+  </data>
+  <data name="InkToolbarStrokeWidthSliderRangeFormat" xml:space="preserve">
+    <value>Минимум %1!s!, максимум %2!s!</value>
+    <comment>Narrator help text for the InkToolbar pen-size slider, announcing the smallest and largest stroke width. %1!s! is the minimum value and %2!s! is the maximum value.</comment>
+  </data>
+  <data name="InkToolbarBallpointPenFlyoutName" xml:space="preserve">
+    <value>Всплывающее меню шариковой ручки</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar ballpoint-pen button; without it the flyout is announced as "popup". UWP IDS_INKTOOLBAR_BALLPOINTPENFLYOUT = 6440.</comment>
+  </data>
+  <data name="InkToolbarPencilFlyoutName" xml:space="preserve">
+    <value>Всплывающее меню карандаша</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar pencil button. UWP IDS_INKTOOLBAR_PENCILFLYOUT = 6441.</comment>
+  </data>
+  <data name="InkToolbarHighlighterFlyoutName" xml:space="preserve">
+    <value>Всплывающее меню маркера</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar highlighter button. UWP IDS_INKTOOLBAR_HIGHLIGHTERFLYOUT = 6442.</comment>
+  </data>
+  <data name="InkToolbarEraserFlyoutName" xml:space="preserve">
+    <value>Всплывающее меню ластика</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar eraser button. UWP IDS_INKTOOLBAR_ERASERFLYOUT = 6443.</comment>
+  </data>
+  <data name="InkToolbarStencilFlyoutName" xml:space="preserve">
+    <value>Всплывающее меню шаблона</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar stencil button. UWP IDS_INKTOOLBAR_STENCILFLYOUT = 6444.</comment>
   </data>
 </root>
