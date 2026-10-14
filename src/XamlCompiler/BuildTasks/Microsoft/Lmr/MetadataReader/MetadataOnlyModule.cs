@@ -52,6 +52,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
         private Dictionary<ParameterHandle, MethodDefinitionHandle> m_paramToMethod;
 
+        private Dictionary<Tuple<string, string>, TypeDefinitionHandle> m_topLevelTypeNames;
+        private Dictionary<string, ExportedTypeHandle> m_typeForwardersByName;
+
 
         public MetadataOnlyModule(ITypeUniverse universe, PEReader peReader, MetadataReader reader, string modulePath)
             : this(universe, peReader, reader, new DefaultFactory(), modulePath)
@@ -670,7 +673,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                 name = className.Substring(lastDot + 1);
             }
 
-            foreach (var typeDefHandle in m_reader.TypeDefinitions)
+            // Keep the original search semantics for nested and unqualified names.
+            IEnumerable<TypeDefinitionHandle> candidates = outerTypeDefHandle.IsNil && ns != null
+                ? FindTopLevelTypeDefs(ns, name)
+                : m_reader.TypeDefinitions;
+            foreach (var typeDefHandle in candidates)
             {
                 var typeDef = m_reader.GetTypeDefinition(typeDefHandle);
 
@@ -707,6 +714,60 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                     CultureInfo.InvariantCulture, Resources.CannotFindTypeInModule, className, this.ToString()));
             }
             return default;
+        }
+
+        private IEnumerable<TypeDefinitionHandle> FindTopLevelTypeDefs(string ns, string name)
+        {
+            if (m_topLevelTypeNames == null)
+            {
+                var index = new Dictionary<Tuple<string, string>, TypeDefinitionHandle>();
+                foreach (var handle in m_reader.TypeDefinitions)
+                {
+                    var definition = m_reader.GetTypeDefinition(handle);
+                    if (!definition.GetDeclaringType().IsNil)
+                    {
+                        continue;
+                    }
+
+                    var key = Tuple.Create(m_reader.GetString(definition.Namespace), m_reader.GetString(definition.Name));
+                    if (!index.ContainsKey(key))
+                    {
+                        index.Add(key, handle);
+                    }
+                }
+                m_topLevelTypeNames = index;
+            }
+
+            if (m_topLevelTypeNames.TryGetValue(Tuple.Create(ns, name), out var result))
+            {
+                yield return result;
+            }
+        }
+
+        internal ExportedTypeHandle FindTypeForwarder(string fullName)
+        {
+            if (m_typeForwardersByName == null)
+            {
+                var index = new Dictionary<string, ExportedTypeHandle>(StringComparer.Ordinal);
+                foreach (var handle in m_reader.ExportedTypes)
+                {
+                    var exportedType = m_reader.GetExportedType(handle);
+                    if (exportedType.Implementation.Kind != HandleKind.AssemblyReference)
+                    {
+                        continue;
+                    }
+                    string name = m_reader.GetString(exportedType.Name);
+                    string ns = m_reader.GetString(exportedType.Namespace);
+                    string key = string.IsNullOrEmpty(ns) ? name : ns + "." + name;
+                    if (!index.ContainsKey(key))
+                    {
+                        index.Add(key, handle);
+                    }
+                }
+                m_typeForwardersByName = index;
+            }
+            m_typeForwardersByName.TryGetValue(fullName, out var result);
+            return result;
         }
 
         #endregion // Resolution
