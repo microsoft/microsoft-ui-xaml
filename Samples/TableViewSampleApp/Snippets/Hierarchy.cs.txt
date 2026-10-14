@@ -1,0 +1,163 @@
+BuildColumns(ManagerTable);
+BuildColumns(MentorTable);
+
+_managerSource = TableViewSource.From(_employees);
+_mentorSource = TableViewSource.From(_employees);
+ManagerTable.ItemsSource = _managerSource;
+MentorTable.ItemsSource = _mentorSource;
+ManagerTable.GroupHeaderTemplate = (DataTemplate)Resources["GroupHeader"];
+MentorTable.GroupHeaderTemplate = (DataTemplate)Resources["GroupHeader"];
+
+DeclareManagerRelation(_managerSource);
+DeclareMentorRelation(_mentorSource);
+
+// …
+
+private static void BuildColumns(TableView table)
+{
+    // The chevron and the indent are drawn over the first column; nothing about these column
+    // declarations is hierarchy-aware.
+    table.Columns.Add(SampleColumns.Text("Name", nameof(Employee.Name), SampleColumns.Star(2)));
+    table.Columns.Add(SampleColumns.Text("Title", nameof(Employee.Title), SampleColumns.Star()));
+    table.Columns.Add(SampleColumns.Text("Dept", nameof(Employee.Dept), SampleColumns.Pixels(100)));
+    table.Columns.Add(SampleColumns.Text("Id", nameof(Employee.Id), SampleColumns.Pixels(60)));
+}
+
+// ---- Relations ----
+
+// A null parent key makes a root; a key with no matching Id makes an orphan, which is also a root.
+private static void DeclareManagerRelation(TableViewSource source) =>
+    source.ParentBy(
+        new TableViewKeySelector(item => ((Employee)item).Id),
+        new TableViewKeySelector(item => ((Employee)item).ManagerId!));
+
+private static void DeclareMentorRelation(TableViewSource source) =>
+    source.ParentBy(
+        new TableViewKeySelector(item => ((Employee)item).Id),
+        new TableViewKeySelector(item => ((Employee)item).MentorId!));
+
+// …
+
+// ---- Shaping (applied to both sources) ----
+
+private void ApplyFilter()
+{
+    var text = FilterBox.Text?.Trim() ?? string.Empty;
+    foreach (var source in Sources)
+    {
+        if (text.Length == 0)
+        {
+            source.ClearFilter();
+        }
+        else
+        {
+            // Matches NODES; ancestors of a match are kept as ordinary rows and expanded while the
+            // filter is active.
+            source.Filter(new TableViewPredicate(
+                item => ((Employee)item).Name.Contains(text, StringComparison.OrdinalIgnoreCase)));
+        }
+    }
+}
+
+private void ApplySort()
+{
+    foreach (var source in Sources)
+    {
+        // A key-selector sort is an anonymous axis: a new Sort(keySelector) is added behind the
+        // previous one instead of replacing it, so clear the old axis first.
+        source.ClearSort();
+        switch (SortCombo.SelectedIndex)
+        {
+            case 1:
+                source.Sort(new TableViewKeySelector(item => ((Employee)item).Name), SortDirection.Ascending);
+                break;
+            case 2:
+                source.Sort(new TableViewKeySelector(item => ((Employee)item).Name), SortDirection.Descending);
+                break;
+            case 3:
+                source.Sort(new TableViewKeySelector(item => ((Employee)item).Title), SortDirection.Ascending);
+                break;
+        }
+    }
+}
+
+private void ApplyGroup()
+{
+    foreach (var source in Sources)
+    {
+        if (GroupToggle.IsOn)
+        {
+            // Only the roots are bucketed; a descendant stays under its parent.
+            source.GroupBy(new TableViewKeySelector(item => ((Employee)item).Dept));
+        }
+        else
+        {
+            source.ClearGroupBy();
+        }
+    }
+}
+
+// Under ParentBy, live shaping also tracks keys, so a ManagerId/MentorId edit reparents.
+private void ApplyLive()
+{
+    bool live = LiveToggle.IsOn;
+    foreach (var source in Sources)
+    {
+        source.IsLiveShaping = live;
+    }
+}
+
+// …
+
+// Moves selection under another manager (never itself or a report, which would cycle). Live: a
+// property set reparents. Off: the item is replaced so the collection change carries the new key.
+private void Reparent_Click(object sender, RoutedEventArgs e)
+{
+    if (SelectedEmployee() is not { } selected)
+    {
+        return;
+    }
+
+    int index = _employees.IndexOf(selected);
+    var managerOf = _employees.ToDictionary(x => x.Id, x => x.ManagerId);
+    bool IsUnderSelected(int? id)
+    {
+        for (int hops = 0; id is int current && hops <= _employees.Count; hops++)
+        {
+            if (current == selected.Id)
+            {
+                return true;
+            }
+
+            id = managerOf.GetValueOrDefault(current);
+        }
+
+        return false;
+    }
+
+    for (int step = 1; step < _employees.Count; step++)
+    {
+        var candidate = _employees[(index + step * 7) % _employees.Count];
+        if (candidate.Id != selected.ManagerId && !IsUnderSelected(candidate.Id))
+        {
+            if (LiveToggle.IsOn)
+            {
+                selected.ManagerId = candidate.Id;
+            }
+            else
+            {
+                _employees[index] = new Employee
+                {
+                    Id = selected.Id,
+                    ManagerId = candidate.Id,
+                    MentorId = selected.MentorId,
+                    Name = selected.Name,
+                    Title = selected.Title,
+                    Dept = selected.Dept,
+                };
+            }
+
+            return;
+        }
+    }
+}

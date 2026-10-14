@@ -90,7 +90,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             // for investigation.
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the genxbf.dll that builds Windows creates the same output as the one in the sdk")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
     };

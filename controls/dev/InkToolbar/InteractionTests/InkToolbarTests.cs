@@ -26,7 +26,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Classification", "Integration")]
         [TestProperty("Platform", "Any")]
         [TestProperty("MUXControlsTestSuite", "SuiteB")]
-        [TestProperty("Ignore", "True")] // Enable once the InkToolbar interaction test page + harness are registered in MUXControlsTestApp.
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);

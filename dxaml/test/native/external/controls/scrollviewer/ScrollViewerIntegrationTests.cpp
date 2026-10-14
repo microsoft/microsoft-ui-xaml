@@ -7128,6 +7128,69 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    void ScrollViewerIntegrationTests::ValidateIndicatorsHideAfterVerticalScrollBarHover()
+    {
+        ValidateIndicatorsHideAfterScrollBarHover(xaml_controls::Orientation::Vertical);
+    }
+
+    void ScrollViewerIntegrationTests::ValidateIndicatorsHideAfterHorizontalScrollBarHover()
+    {
+        ValidateIndicatorsHideAfterScrollBarHover(xaml_controls::Orientation::Horizontal);
+    }
+
+    void ScrollViewerIntegrationTests::ValidateIndicatorsHideAfterScrollBarHover(xaml_controls::Orientation orientation)
+    {
+        TestCleanupWrapper cleanup;
+
+        auto scrollViewer = AddScrollViewer(orientation);
+        xaml_primitives::ScrollBar^ scrollBar = nullptr;
+        CustomScrollViewerVsm^ customScrollViewerVsm = nullptr;
+        auto indicatorHiddenEvent = std::make_shared<Event>();
+        long long indicatorModeChangedToken = 0;
+
+        RunOnUIThread([&]()
+        {
+            scrollViewer->Name = L"scrollViewer";
+            scrollBar = safe_cast<xaml_primitives::ScrollBar^>(TreeHelper::GetVisualChildByName(
+                scrollViewer,
+                orientation == xaml_controls::Orientation::Vertical ? L"VerticalScrollBar" : L"HorizontalScrollBar"));
+            VERIFY_IS_NOT_NULL(scrollBar);
+
+            customScrollViewerVsm = ref new CustomScrollViewerVsm();
+            auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(scrollViewer, 0));
+            xaml::VisualStateManager::SetCustomVisualStateManager(templateRoot, customScrollViewerVsm);
+        });
+
+        TestServices::InputHelper->MoveMouse(scrollBar);
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(scrollBar->IndicatorMode, xaml_primitives::ScrollingIndicatorMode::MouseIndicator);
+            customScrollViewerVsm->ResetIndicatorCounts();
+            indicatorModeChangedToken = scrollBar->RegisterPropertyChangedCallback(
+                xaml_primitives::ScrollBar::IndicatorModeProperty,
+                ref new DependencyPropertyChangedCallback([indicatorHiddenEvent](DependencyObject^ sender, DependencyProperty^)
+            {
+                if (safe_cast<xaml_primitives::ScrollBar^>(sender)->IndicatorMode == xaml_primitives::ScrollingIndicatorMode::None)
+                {
+                    indicatorHiddenEvent->Set();
+                }
+            }));
+        });
+
+        TestServices::InputHelper->MoveMouse(scrollViewer);
+        indicatorHiddenEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_GREATER_THAN(customScrollViewerVsm->GetNoIndicatorCount(), 0);
+            VERIFY_ARE_EQUAL(scrollBar->IndicatorMode, xaml_primitives::ScrollingIndicatorMode::None);
+            scrollBar->UnregisterPropertyChangedCallback(xaml_primitives::ScrollBar::IndicatorModeProperty, indicatorModeChangedToken);
+        });
+    }
+
     // Validate basic effect of ScrollContentPresenter's SizesContentToTemplatedParent property.
     void ScrollViewerIntegrationTests::ConstrainImageAvailableSize()
     {

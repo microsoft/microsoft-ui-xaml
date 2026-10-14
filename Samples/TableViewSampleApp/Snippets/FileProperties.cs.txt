@@ -1,0 +1,89 @@
+Source = TableViewSource.From(Entries);    // created once; never rebuilt
+InitializeComponent();
+
+PropTable.HeadersVisibility = TableViewHeadersVisibility.Column;
+PropTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
+PropTable.Density = TableViewDensity.Compact;
+
+// …
+
+// Refills the one collection; the source re-projects it under the current filter and grouping.
+private void ShowFile(FileInfo file)
+{
+    _currentFile = file;
+    Entries.Clear();
+    foreach (var entry in ReadProperties(file))
+    {
+        Entries.Add(entry);
+    }
+}
+
+// …
+
+// ---- Filter (TableViewSource.Filter) ---------------------------------------------------
+
+private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (FilterSelector is null)
+    {
+        return;
+    }
+
+    switch (SampleShaping.SelectedTag(FilterSelector, "all"))
+    {
+        case "dates":
+            Source.Filter(item => item is FilePropertyEntry { IsDate: true });
+            break;
+        case "version":
+            Source.Filter(item => item is FilePropertyEntry { Source: FilePropertyEntry.VersionResource });
+            break;
+        case "none":
+            Source.Filter(_ => false);
+            break;
+        default:
+            Source.ClearFilter();
+            break;
+    }
+
+    // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only.
+    if (IsLoaded)
+    {
+        // …
+    }
+}
+
+// …
+
+private void OnMoveSectionClick(object sender, RoutedEventArgs e)
+{
+    if (PropTable.SelectedItem is not FilePropertyEntry entry)
+    {
+        return;
+    }
+
+    var from = entry.Section;
+    entry.Section = SampleShaping.Next(s_sections, from);
+
+    // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row.
+    ReapplyIfGroupedOn(nameof(FilePropertyEntry.Section));
+}
+
+private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
+{
+    if (PropTable.SelectedItem is not FilePropertyEntry entry)
+    {
+        return;
+    }
+
+    // A collection change: the source drops the row (and an emptied section) by itself.
+    Entries.Remove(entry);
+}
+
+// …
+
+// Never blank: TableViewSource fails fast on an empty group identity.
+private static object KeyOf(FilePropertyEntry? entry, string key)
+{
+    var value = key == nameof(FilePropertyEntry.Source) ? entry?.Source : entry?.Section;
+    return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
+}
