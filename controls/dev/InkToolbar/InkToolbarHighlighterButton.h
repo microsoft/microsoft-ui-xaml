@@ -34,6 +34,11 @@ public:
         return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarHighlighterButtonName);
     }
 
+    winrt::hstring GetFlyoutName() override
+    {
+        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarHighlighterFlyoutName);
+    }
+
     // UWP InkToolbarHighlighterButton::GetColors: WinUI 2 highlighter palette (6 colors, ARGB).
     std::vector<winrt::Windows::UI::Color> GetColors() override
     {
