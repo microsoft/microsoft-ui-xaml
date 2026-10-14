@@ -3,10 +3,7 @@
 
 using Common;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
-using Windows.Foundation.Metadata;
-using Windows.UI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
