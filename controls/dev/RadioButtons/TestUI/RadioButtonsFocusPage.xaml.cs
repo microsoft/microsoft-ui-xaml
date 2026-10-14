@@ -26,8 +26,9 @@ namespace RadioButtons_TestUI
 
         private void ChangeTestFrameVisibility(Visibility visibility)
         {
-            var testFrame = App.TestContentRoot as TestFrame;
-            testFrame.ChangeBarVisibility(visibility);
+            // App.TestContentRoot is the frame's content (this page), not the TestFrame itself.
+            var testFrame = this.Frame as TestFrame;
+            testFrame?.ChangeBarVisibility(visibility);
         }
 
         private void TestRadioButtons_SelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)

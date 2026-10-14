@@ -49,7 +49,7 @@
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
 
     <!-- Test specifying Enabled/Disabled optional changes -->
-    <EnabledXamlOptionalChanges>_Reserved</EnabledXamlOptionalChanges>
+    <EnabledXamlOptionalChanges>_Reserved,GamepadKeyRouting</EnabledXamlOptionalChanges>
     <DisabledXamlOptionalChanges>_Reserved</DisabledXamlOptionalChanges>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -137,6 +137,7 @@
       <DependentUpon>MarkupWindow.xaml</DependentUpon>
     </ClInclude>
     <ClInclude Include="ShutdownOrderValidation.h" />
+    <ClInclude Include="GamepadKeyRoutingState.h" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
@@ -186,6 +187,7 @@
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
     <ClCompile Include="ShutdownOrderValidation.cpp" />
+    <ClCompile Include="GamepadKeyRoutingState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl">

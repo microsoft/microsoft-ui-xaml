@@ -35,7 +35,7 @@
                 </ExpressionAnimation>
               </TransformMatrix>
               <Visual Tag="ContentVisual">
-                <wucSpriteVisual SizeX="21" SizeY="10" BorderMode="Hard" OffsetX="1" OffsetY="5" OffsetZ="0">
+                <wucSpriteVisual SizeX="23" SizeY="12" BorderMode="Hard" OffsetX="0" OffsetY="4" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="rgb {1, 0, 0}" />

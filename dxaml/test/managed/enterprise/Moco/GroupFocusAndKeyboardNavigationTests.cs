@@ -759,7 +759,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateArrowNavigationWithHiddenEmptyGroups()
         {
             ListView lv = null;
@@ -853,7 +853,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateArrowNavigationWithNonFocusableGroups()
         {
             ListView lv = null;
