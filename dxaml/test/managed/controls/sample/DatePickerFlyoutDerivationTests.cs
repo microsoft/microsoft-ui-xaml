@@ -1,5 +1,5 @@
-using WEX.TestExecution;
-using Private.Infrastructure;
+using WEX.TestExecution.Markup;
+using Microsoft.UI.Xaml.Tests.Common;
 using XamlControls = Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.UI.Xaml.Tests.Controls
