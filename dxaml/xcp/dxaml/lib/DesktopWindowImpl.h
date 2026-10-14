@@ -229,7 +229,8 @@ namespace DirectUI
         bool m_hasExplicitClientHeight = false;
 
         // When the app has set Width/Height, but we haven't been able to honor them yet,
-        // we store them here.
+        // we store them here. After close, these fields also provide property-value round-tripping
+        // without attempting to resize the destroyed native window.
         std::optional<double> m_pendingClientWidthDips;
         std::optional<double> m_pendingClientHeightDips;
 
