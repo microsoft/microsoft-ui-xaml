@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TableViewCellAutomationPeer.h"
+#include "TableViewContextFlyout.h"
 #include "TableViewRow.h"
 
 struct __declspec(uuid("843c3f59-aab0-4bcb-a8a4-12327286a29f")) __declspec(novtable)
@@ -28,7 +29,10 @@ public:
     static winrt::Grid Create(
         winrt::TableViewRow const& row, winrt::TableViewColumn const& column, int32_t columnIndex)
     {
-        auto const wrapper = winrt::make<TableViewCell>(row, column, columnIndex).as<winrt::Grid>();
+        auto const cell = winrt::make_self<TableViewCell>(row, column, columnIndex);
+        auto const wrapper = cell.as<winrt::Grid>();
+        cell->m_contextFlyout = TableViewContextFlyout::Create(
+            wrapper, column, winrt::TableViewColumn::CellContextFlyoutProperty());
 
         // Cells need IsTabStop for UIA SetFocus to succeed; row policy later gates which cells are
         // in the tab order.
@@ -105,6 +109,7 @@ public:
     }
 
 private:
+    winrt::com_ptr<TableViewContextFlyout> m_contextFlyout;
     winrt::weak_ref<winrt::TableViewRow> m_row;
     winrt::weak_ref<winrt::TableViewColumn> m_column;
     winrt::weak_ref<winrt::AutomationPeer> m_automationPeer{ nullptr };

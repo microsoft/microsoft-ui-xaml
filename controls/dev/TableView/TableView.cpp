@@ -2693,7 +2693,7 @@ void TableView::RebuildHeaders()
             // Header cell root: TableViewHeaderCell is the focus/hit-test target so its automation
             // peer attaches to the right element. Content and chevron get separate columns so the
             // chevron reserves width instead of overlaying text.
-            auto const headerCell = winrt::make<TableViewHeaderCell>(*this, column).as<winrt::Grid>();
+            auto const headerCell = TableViewHeaderCell::Create(*this, column);
             constexpr int contentColumnIndex = 0;
             constexpr int indicatorColumnIndex = 1;
             {

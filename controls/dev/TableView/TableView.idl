@@ -213,6 +213,10 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     // tooltip. A CLR property, not a DP, so XAML passes the Binding through unevaluated.
     Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
 
+    // Native context menus on the generated cell/header surfaces. Null preserves ancestor fallback.
+    Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
+    Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
+
     // The editing hooks a derived column would override - GenerateEditingElement, PrepareCellForEdit,
     // CommitCellEdit, CancelCellEdit - are internal in this release. The built-in columns use them,
     // but a CellEditingTemplate is the supported way to customise an editor here, so publishing the
@@ -230,6 +234,8 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CellEditingTemplateProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CellContextFlyoutProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CanSortProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SortCycleProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SortMemberPathProperty { get; };
