@@ -191,5 +191,91 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
 
         // Row-relative x of the centre of the Dept cell, well clear of the chevron.
         internal static int HierarchyDeptCellCentreX => HierarchyColumnWidths[0] + (HierarchyColumnWidths[1] / 2);
+
+        // ---- Context menu fixture (ContextMenuTable) ----
+        //
+        // Columns, in visible order, and the menu each one resolves to:
+        //   Name  text column      CellContextFlyout = CellMenu, HeaderContextFlyout = HeaderMenu
+        //   City  template column  CellTemplate root carries ContextFlyout = TemplateMenu
+        //   Age   text column      no menus of its own, so the row's menu applies
+        // Rows get RowMenu from an implicit TableViewRow style; the table's own ContextFlyout is TableMenu.
+        // The table is wider than its columns and taller than its rows, so it has blank space to the right of
+        // the last column and below the last row.
+
+        internal const string ContextMenuTable = "ContextMenuTable";
+        internal const string ContextMenuPivotItem = "ContextMenu";
+        internal const string ResetContextMenuButton = "ResetContextMenu";
+
+        internal const string CellMenu = "CellMenu";
+        internal const string HeaderMenu = "HeaderMenu";
+        internal const string TemplateMenu = "TemplateMenu";
+        internal const string RowMenu = "RowMenu";
+        internal const string TableMenu = "TableMenu";
+
+        // Each menu's single item has AutomationId "<menu>Item".
+        internal static string MenuItemId(string menu) => menu + "Item";
+
+        internal static readonly string[] ContextMenuColumns = { "Name", "City", "Age" };
+        internal static readonly int[] ContextMenuColumnWidths = { 160, 160, 100 };
+        internal const int ContextMenuTableWidth = 600;
+        internal const int ContextMenuItemCount = 6;
+
+        internal const int ContextMenuNameColumn = 0;
+        internal const int ContextMenuCityColumn = 1;
+        internal const int ContextMenuAgeColumn = 2;
+
+        internal static string ContextMenuName(int id) => "Item " + id;
+
+        internal static int ContextMenuColumnCentreX(int column)
+        {
+            int left = 0;
+            for (int i = 0; i < column; i++)
+            {
+                left += ContextMenuColumnWidths[i];
+            }
+            return left + (ContextMenuColumnWidths[column] / 2);
+        }
+
+        // Row-relative x inside the Name cell's text ("Item n" is left aligned).
+        internal const int ContextMenuNameTextX = 24;
+
+        // Row-relative x inside the Name cell but well past the end of its text.
+        internal static int ContextMenuNamePaddingX => ContextMenuColumnWidths[0] - 12;
+
+        // Row-relative x in the blank space after the last column.
+        internal static int ContextMenuBlankRowX
+        {
+            get
+            {
+                int sum = 0;
+                foreach (int width in ContextMenuColumnWidths)
+                {
+                    sum += width;
+                }
+                return sum + ((ContextMenuTableWidth - sum) / 2);
+            }
+        }
+
+        // Read-only TextBox describing the last menu opened on ContextMenuTable, as "key=value" fields joined by ';':
+        //   menu=<CellMenu|...|none>   the last menu that raised Opening
+        //   open=<True|False>          whether that menu is still open
+        //   opens=<n>                  Opening count since the last reset
+        //   item=<name|none>           the menu target's DataContext, when it is a row item
+        //   target=<type>              the menu target's runtime type name
+        //   focus=<description>        the focused element when the menu opened:
+        //                              cell:<item>/<visible column index>, row:<item>, header:<text>, or a type name
+        //   selected=<name|none>       ContextMenuTable.SelectedItem
+        internal const string ContextMenuReadout = "ContextMenuReadout";
+
+        internal const string MenuField = "menu";
+        internal const string OpenField = "open";
+        internal const string OpensField = "opens";
+        internal const string ItemField = "item";
+        internal const string TargetField = "target";
+        internal const string FocusField = "focus";
+
+        internal static string CellFocus(int id, int column) => "cell:" + ContextMenuName(id) + "/" + column;
+        internal static string RowFocus(int id) => "row:" + ContextMenuName(id);
+        internal static string HeaderFocus(string header) => "header:" + header;
     }
 }

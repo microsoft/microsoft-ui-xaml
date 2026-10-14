@@ -8,7 +8,9 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
@@ -178,6 +180,7 @@ namespace MUXControlsTestApp
             ScrollingTableView.LayoutUpdated += OnScrollingTableViewLayoutUpdated;
 
             HookHierarchyTables();
+            HookContextMenuTable();
         }
 
         private ScrollViewer _scrollingBodyScroller;
@@ -669,6 +672,163 @@ namespace MUXControlsTestApp
             return "[" + (info == null || info.Key == null ? "?" : info.Key.ToString()) + "]";
         }
 
+        // ---- Context menus ----
+
+        private readonly ObservableCollection<TableViewTestPerson> _contextMenuItems = new ObservableCollection<TableViewTestPerson>();
+        private string _contextMenuLast = Facts.NoneValue;
+        private bool _contextMenuOpen;
+        private int _contextMenuOpens;
+        private string _contextMenuItem = Facts.NoneValue;
+        private string _contextMenuTarget = Facts.NoneValue;
+        private string _contextMenuFocus = Facts.NoneValue;
+
+        private void HookContextMenuTable()
+        {
+            for (int i = 0; i < Facts.ContextMenuItemCount; i++)
+            {
+                _contextMenuItems.Add(new TableViewTestPerson(i, Facts.ContextMenuName(i), Facts.BasicAge(i), Facts.CityOf(i)));
+            }
+
+            ContextMenuTable.ItemsSource = _contextMenuItems;
+            ContextMenuTable.SelectionChanged += (s, args) => RefreshContextMenuReadout();
+
+            foreach (string key in new[] { Facts.CellMenu, Facts.HeaderMenu, Facts.TemplateMenu, Facts.RowMenu, Facts.TableMenu })
+            {
+                var menu = (FlyoutBase)ContextMenuTableHost.Resources[key];
+                menu.Opening += (s, args) => OnContextMenuOpening(key, (FlyoutBase)s);
+                menu.Closed += (s, args) =>
+                {
+                    _contextMenuOpen = false;
+                    RefreshContextMenuReadout();
+                };
+            }
+
+            RefreshContextMenuReadout();
+        }
+
+        // Records the menu, its target and the focused element at the moment the menu opens: TableView moves focus
+        // to the target before it shows the menu, and the menu takes focus right after.
+        private void OnContextMenuOpening(string key, FlyoutBase menu)
+        {
+            _contextMenuLast = key;
+            _contextMenuOpen = true;
+            _contextMenuOpens++;
+
+            FrameworkElement target = menu.Target;
+            var person = target?.DataContext as TableViewTestPerson;
+            _contextMenuItem = person == null ? Facts.NoneValue : person.Name;
+            _contextMenuTarget = target == null ? Facts.NoneValue : target.GetType().Name;
+            _contextMenuFocus = DescribeContextMenuFocus();
+
+            RefreshContextMenuReadout();
+        }
+
+        private void OnResetContextMenuClick(object sender, RoutedEventArgs e)
+        {
+            if (ContextMenuTable.IsEditing)
+            {
+                ContextMenuTable.CancelEdit();
+            }
+
+            if (ContextMenuTable.IsLoaded)
+            {
+                ContextMenuTable.DeselectAll();
+            }
+
+            _contextMenuLast = Facts.NoneValue;
+            _contextMenuOpen = false;
+            _contextMenuOpens = 0;
+            _contextMenuItem = Facts.NoneValue;
+            _contextMenuTarget = Facts.NoneValue;
+            _contextMenuFocus = Facts.NoneValue;
+            RefreshContextMenuReadout();
+        }
+
+        private void RefreshContextMenuReadout()
+        {
+            if (ContextMenuReadout == null || ContextMenuTable == null)
+            {
+                return;
+            }
+
+            var selected = ContextMenuTable.SelectedItem as TableViewTestPerson;
+            string text =
+                Facts.MenuField + "=" + _contextMenuLast + ";" +
+                Facts.OpenField + "=" + _contextMenuOpen + ";" +
+                Facts.OpensField + "=" + _contextMenuOpens + ";" +
+                Facts.ItemField + "=" + _contextMenuItem + ";" +
+                Facts.TargetField + "=" + _contextMenuTarget + ";" +
+                Facts.FocusField + "=" + _contextMenuFocus + ";" +
+                Facts.SelectedField + "=" + (selected == null ? Facts.NoneValue : selected.Name);
+
+            if (ContextMenuReadout.Text != text)
+            {
+                ContextMenuReadout.Text = text;
+            }
+        }
+
+        // cell:<item>/<visible column index>, row:<item>, header:<text>, or the focused element's type name.
+        private string DescribeContextMenuFocus()
+        {
+            var focused = XamlRoot == null ? null : FocusManager.GetFocusedElement(XamlRoot) as DependencyObject;
+            if (focused == null)
+            {
+                return Facts.NoneValue;
+            }
+
+            for (DependencyObject node = focused; node != null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (node is TableViewRow row)
+                {
+                    var person = row.DataContext as TableViewTestPerson;
+                    string name = person == null ? "?" : person.Name;
+                    if (focused == row)
+                    {
+                        return "row:" + name;
+                    }
+
+                    var cellsHost = FindDescendant<TableViewCellsPanel>(row);
+                    int index = cellsHost == null ? -1 : IndexOfChildContaining(cellsHost, focused);
+                    return "cell:" + name + "/" + index;
+                }
+
+                if (node is FrameworkElement element && element.Name == "PART_HeaderHost")
+                {
+                    var peer = focused is UIElement focusedElement
+                        ? FrameworkElementAutomationPeer.FromElement(focusedElement)
+                        : null;
+                    return "header:" + (peer == null ? "?" : peer.GetName());
+                }
+
+                if (node == ContextMenuTable)
+                {
+                    break;
+                }
+            }
+
+            return focused.GetType().Name;
+        }
+
+        // Index of the panel child that is, or contains, element; -1 if none.
+        private static int IndexOfChildContaining(Panel panel, DependencyObject element)
+        {
+            for (int i = 0; i < panel.Children.Count; i++)
+            {
+                for (DependencyObject node = element; node != null; node = VisualTreeHelper.GetParent(node))
+                {
+                    if (node == panel.Children[i])
+                    {
+                        return i;
+                    }
+                    if (node == panel)
+                    {
+                        break;
+                    }
+                }
+            }
+            return -1;
+        }
+
         // Unloads the Basic table from the tree shortly after the click, then restores it. The delay
         // exists so a test can start a pointer drag and have the unload land mid-gesture, which a
         // direct click cannot do while the control holds pointer capture.
@@ -726,6 +886,7 @@ namespace MUXControlsTestApp
         private void OnGoToHierarchyClick(object sender, RoutedEventArgs e) => ShowTableHost(HierarchyTableHost);
 
         private void OnGoToGroupedPagingClick(object sender, RoutedEventArgs e) => ShowTableHost(GroupedPagingTableHost);
+        private void OnGoToContextMenuClick(object sender, RoutedEventArgs e) => ShowTableHost(ContextMenuTableHost);
 
         private void ShowTableHost(FrameworkElement host)
         {
@@ -735,6 +896,7 @@ namespace MUXControlsTestApp
             GroupedPagingTableHost.Visibility = Visibility.Collapsed;
             ScrollingTableHost.Visibility = Visibility.Collapsed;
             HierarchyTableHost.Visibility = Visibility.Collapsed;
+            ContextMenuTableHost.Visibility = Visibility.Collapsed;
             host.Visibility = Visibility.Visible;
         }
 
