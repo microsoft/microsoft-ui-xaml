@@ -913,6 +913,71 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void InkToolbarToolFlyoutPopupAutomationTest()
+        {
+            // Each tool flyout opens in its own popup window. Narrator reads that window's name and, for a
+            // dialog, reads all of its content at once; the flyouts must be named and must not be dialogs.
+            var toolbar = CreateLoadedInkToolbar();
+            foreach (var (tool, expectedName) in new[]
+            {
+                (InkToolbarTool.BallpointPen, "Ballpoint pen flyout"),
+                (InkToolbarTool.Pencil, "Pencil flyout"),
+                (InkToolbarTool.Highlighter, "Highlighter flyout")
+            })
+            {
+                IExpandCollapseProvider expandCollapse = null;
+                Flyout flyout = null;
+                using var closed = new ManualResetEvent(false);
+                EventHandler<object> closedHandler = (s, e) => closed.Set();
+                RunOnUIThread.Execute(() =>
+                {
+                    var button = toolbar.GetToolButton(tool);
+                    Verify.IsNotNull(button, $"{tool} should be present after load.");
+                    toolbar.ActiveTool = button;
+                    toolbar.UpdateLayout();
+                    flyout = FlyoutBase.GetAttachedFlyout(button) as Flyout;
+                    Verify.IsNotNull(flyout, $"{tool} should have a flyout.");
+                    Verify.IsFalse(AutomationProperties.GetIsDialog(flyout), $"The {tool} flyout should not be a dialog.");
+                    flyout.Closed += closedHandler;
+                    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(button);
+                    expandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+                    Verify.IsNotNull(expandCollapse, $"{tool} should expose IExpandCollapseProvider.");
+                });
+
+                try
+                {
+                    RunOnUIThread.Execute(() => expandCollapse.Expand());
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var popup = VisualTreeHelper.GetOpenPopupsForXamlRoot(toolbar.XamlRoot)
+                            .FirstOrDefault(p => p.Child is FlyoutPresenter);
+                        Verify.IsNotNull(popup, $"The {tool} flyout should be open in a popup.");
+                        Verify.AreEqual(expectedName, AutomationProperties.GetName(popup),
+                            "The popup window should carry the flyout name, not \"Popup\".");
+                        Verify.IsFalse(AutomationProperties.GetIsDialog(popup), "The popup window should not be a dialog.");
+
+                        var popupPeer = FrameworkElementAutomationPeer.CreatePeerForElement(popup);
+                        Verify.AreEqual(expectedName, popupPeer.GetName(), "UIA should report the flyout name for the popup window.");
+                        Verify.IsFalse(popupPeer.IsDialog(), "UIA should not report the popup window as a dialog.");
+                    });
+                }
+                finally
+                {
+                    try
+                    {
+                        RunOnUIThread.Execute(() => expandCollapse.Collapse());
+                        Verify.IsTrue(closed.WaitOne(DefaultWaitTimeInMS), $"The {tool} flyout should finish closing.");
+                    }
+                    finally
+                    {
+                        RunOnUIThread.Execute(() => flyout.Closed -= closedHandler);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
         public void InkToolbarToolButtonAutomationPeerSelectedStateTest()
         {
             var toolbar = CreateLoadedInkToolbar();

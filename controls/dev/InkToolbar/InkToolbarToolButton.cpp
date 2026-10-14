@@ -73,6 +73,8 @@ void InkToolbarToolButton::OnApplyTemplate()
         if (auto flyout = winrt::FlyoutBase::GetAttachedFlyout(*this))
         {
             winrt::AutomationProperties::SetName(flyout, flyoutName);
+            // A tool's options flyout is not a dialog; as one, Narrator reads its whole content on open.
+            winrt::AutomationProperties::SetIsDialog(flyout, false);
         }
     }
 

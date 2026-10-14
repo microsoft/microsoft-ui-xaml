@@ -766,28 +766,20 @@ void InkToolbar::OnFlyoutOpened(winrt::IInspectable const& sender, winrt::IInspe
         }
     }
 
-    // The flyout name is set on the flyout content, but ShouldConstrainToRootBounds(false) hosts it in
-    // a separate popup window that Narrator reads as "Popup". Copy the name onto that popup so the
-    // flyout is announced by name instead of "popup".
+    // Each flyout opens in its own popup window, which Narrator names "Popup" (Caps+T reads "Popup, window")
+    // because the flyout's name only reaches the presenter inside it. Name the popup after the flyout. The
+    // popup is reused, so the name also applies when the window is announced on later opens.
     auto flyoutName = winrt::AutomationProperties::GetName(flyout);
-    if (!flyoutName.empty())
+    auto asFlyout = flyout.try_as<winrt::Flyout>();
+    if (!flyoutName.empty() && asFlyout && XamlRoot())
     {
-        winrt::UIElement contentRoot{ nullptr };
-        if (found->m_penL3)
+        for (auto const& popup : winrt::VisualTreeHelper::GetOpenPopupsForXamlRoot(XamlRoot()))
         {
-            contentRoot = found->m_penL3.try_as<winrt::UIElement>();
-        }
-        else if (auto asFlyout = flyout.try_as<winrt::Flyout>())
-        {
-            contentRoot = asFlyout.Content().try_as<winrt::UIElement>();
-        }
-
-        for (winrt::DependencyObject node = contentRoot; node; node = winrt::VisualTreeHelper::GetParent(node))
-        {
-            if (node.try_as<winrt::Microsoft::UI::Xaml::Controls::FlyoutPresenter>() ||
-                node.try_as<winrt::Microsoft::UI::Xaml::Controls::Primitives::Popup>())
+            auto presenter = popup.Child().try_as<winrt::Microsoft::UI::Xaml::Controls::FlyoutPresenter>();
+            if (presenter && presenter.Content() == asFlyout.Content())
             {
-                winrt::AutomationProperties::SetName(node, flyoutName);
+                winrt::AutomationProperties::SetName(popup, flyoutName);
+                break;
             }
         }
     }

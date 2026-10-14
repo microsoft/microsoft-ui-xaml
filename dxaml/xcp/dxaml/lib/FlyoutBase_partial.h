@@ -177,6 +177,7 @@ namespace DirectUI
         _Check_return_ HRESULT ForwardPopupFlowDirection();
 
         _Check_return_ HRESULT EnsurePopupAndPresenter();
+        _Check_return_ HRESULT ForwardAutomationPropertiesToPopup();
 
         bool m_isPositionedAtPoint;
 

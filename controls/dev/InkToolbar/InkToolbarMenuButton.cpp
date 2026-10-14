@@ -48,6 +48,8 @@ void InkToolbarMenuButton::OnApplyTemplate()
         if (auto flyout = winrt::FlyoutBase::GetAttachedFlyout(*this))
         {
             winrt::AutomationProperties::SetName(flyout, flyoutName);
+            // The measuring-tools list is not a dialog; as one, Narrator reads its whole content on open.
+            winrt::AutomationProperties::SetIsDialog(flyout, false);
         }
     }
 
