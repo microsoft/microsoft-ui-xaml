@@ -208,6 +208,8 @@ void TableView::AttachSourceTip(winrt::TableViewSource const& source)
                     {
                         return;
                     }
+                    // A callout that already closed this operation has reported the fault.
+                    if (TableViewTip::IsOperationHandled(self->m_tip, operation, generation)) { return; }
                     TableViewTip::IgnoreOperation(self->m_tip, generation, *reason, error, kind);
                     if (*reason == TableViewTip::IgnoreReason::ApplicationFault ||
                         *reason == TableViewTip::IgnoreReason::UnattributedFault)
