@@ -150,6 +150,52 @@ namespace Microsoft.UI.Xaml.Tests.Hosting.Win32.WPF
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that Window.VisibilityChanged follows AppWindow visibility changes.")]
+        public void ValidateVisibilityChangedOnAppWindowHideAndShow()
+        {
+            Window desktopWindow = null;
+            var visibilityChanges = new List<bool>();
+
+            UIExecutor.Execute(() =>
+            {
+                desktopWindow = new Window();
+                desktopWindow.Content = new StackPanel();
+                desktopWindow.VisibilityChanged += (sender, args) => visibilityChanges.Add(args.Visible);
+                desktopWindow.Activate();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.IsTrue(desktopWindow.Visible);
+                Verify.AreEqual(1, visibilityChanges.Count);
+                Verify.IsTrue(visibilityChanges[0]);
+
+                desktopWindow.AppWindow.Hide();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.IsFalse(desktopWindow.Visible);
+                Verify.AreEqual(2, visibilityChanges.Count);
+                Verify.IsFalse(visibilityChanges[1]);
+
+                desktopWindow.AppWindow.Show();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.IsTrue(desktopWindow.Visible);
+                Verify.AreEqual(3, visibilityChanges.Count);
+                Verify.IsTrue(visibilityChanges[2]);
+                desktopWindow.Close();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies that we can retrieve a Window instance from the framework application in desktop mode")]
         public void ValidateWindowCanBeRetrievedFromApplication()
         {

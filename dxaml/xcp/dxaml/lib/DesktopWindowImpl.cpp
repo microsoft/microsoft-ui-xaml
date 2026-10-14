@@ -1428,6 +1428,8 @@ LRESULT DesktopWindowImpl::OnMessage(
             return LResultFromHResult(OnMoved(wParam, lParam));
         case WM_SIZE:
             return LResultFromHResult(OnSizeChanged(wParam, lParam));
+        case WM_SHOWWINDOW:
+            return LResultFromHResult(OnShowWindow(wParam, lParam));
         case WM_ACTIVATE:
             return LResultFromHResult(OnActivate(wParam, lParam));
         case WM_NCRBUTTONUP:
@@ -1674,6 +1676,30 @@ LRESULT DesktopWindowImpl::OnDpiChanged(
     }
 
     return 0;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::OnShowWindow(
+    WPARAM wParam,
+    LPARAM lParam)
+{
+    // WM_SHOWWINDOW reports direct ShowWindow/ShowOwnedPopups visibility changes. The
+    // initial activation publishes the first visible transition, while WM_SIZE remains
+    // responsible for minimize and restore transitions.
+    if (m_bIsClosed || m_bInitialWindowActivation || lParam != 0)
+    {
+        return S_OK;
+    }
+
+    const bool isVisible = wParam != FALSE;
+    if (isVisible == !m_bMinimizedOrHidden)
+    {
+        return S_OK;
+    }
+
+    m_bMinimizedOrHidden = !isVisible;
+    IFC_RETURN(RaiseWindowVisibilityChangedEvent(isVisible));
+
+    return S_OK;
 }
 
 _Check_return_ HRESULT DesktopWindowImpl::OnSizeChanged(
