@@ -264,6 +264,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         //   target=<type>              the menu target's runtime type name
         //   focus=<description>        the focused element when the menu opened:
         //                              cell:<item>/<visible column index>, row:<item>, header:<text>, or a type name
+        //   editing=<True|False>       ContextMenuTable.IsEditing
         //   selected=<name|none>       ContextMenuTable.SelectedItem
         internal const string ContextMenuReadout = "ContextMenuReadout";
 
