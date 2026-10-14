@@ -256,6 +256,8 @@ winrt::Size TableViewCellsPanel::MeasureOverride(winrt::Size const& availableSiz
 winrt::Size TableViewCellsPanel::ArrangeOverride(winrt::Size const& finalSize)
 {
     float x = 0.0f;
+    float leadLeft = 0.0f;
+    float leadWidth = -1.0f;
 
     for (winrt::UIElement const& child : Children())
     {
@@ -266,7 +268,20 @@ winrt::Size TableViewCellsPanel::ArrangeOverride(winrt::Size const& finalSize)
 
         // Cells are arranged at the resolved column width; content wider than the column clips/ellipsizes.
         child.Arrange({ x, 0.0f, w, finalSize.Height });
+
+        // Same "lead" rule as TableViewRow::ApplyHierarchyIndentToCells: the first visible wrapper.
+        if (leadWidth < 0.0f && child.Visibility() == winrt::Visibility::Visible && column)
+        {
+            leadLeft = x;
+            leadWidth = w;
+        }
         x += w;
+    }
+
+    // Report the lead slot so the chevron is confined to it; every width change passes through here.
+    if (auto const row = m_owningRow.get())
+    {
+        winrt::get_self<TableViewRow>(row)->OnCellsArrangedInternal(leadLeft, leadWidth, finalSize.Height);
     }
 
     return { x, finalSize.Height };
@@ -279,23 +294,12 @@ void TableViewCellsPanel::ApplyFrozenColumnLayout(const winrt::Panel& host, doub
         return;
     }
 
-    if (host.FlowDirection() == winrt::FlowDirection::RightToLeft)
-    {
-        // Frozen-column pin math is LTR-only; under RTL it would pin/clip the wrong
-        // edge. Skip pinning in RTL so scrolling remains plain and uncorrupted.
-        auto children = host.Children();
-        const uint32_t count = children.Size();
-        for (uint32_t i = 0; i < count; ++i)
-        {
-            if (auto el = children.GetAt(i).try_as<winrt::FrameworkElement>())
-            {
-                el.Translation({ 0.0f, 0.0f, 0.0f });
-                winrt::Canvas::SetZIndex(el, 0);
-                el.Clip(nullptr);
-            }
-        }
-        return;
-    }
+    // The pin math below runs entirely in logical (pre-mirror) LTR coordinates: children arrange
+    // left-to-right regardless of FlowDirection, and XAML applies RTL as a single mirror transform
+    // at the FlowDirection boundary above this panel. That mirror flips the counter-translation and
+    // the clip geometry uniformly, so a Leading-frozen prefix pinned at logical-left lands on the
+    // visual right under RTL - exactly where FrozenEdge.Leading must pin. No RTL special-casing is
+    // needed here; the same code pins the correct edge in both flow directions.
 
     // Accumulate each cell's panel-space left edge from column ActualWidth.
     double panelX = 0.0;
