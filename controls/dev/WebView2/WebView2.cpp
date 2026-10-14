@@ -1349,11 +1349,28 @@ void WebView2::MoveFocusIntoCoreWebView2(winrt::CoreWebView2MoveFocusReason reas
 {
     if (m_coreWebView && m_coreWebViewController)
     {
-        CoreWebView2RunIgnoreInvalidStateSync(
-            [&]()
+        try
+        {
+            CoreWebView2RunIgnoreInvalidStateSync(
+                [&]()
+                {
+                    m_coreWebViewController.MoveFocus(reason);
+                });
+        }
+        catch (const winrt::hresult_error& error)
+        {
+            TraceLoggingProviderWrite(
+                XamlTelemetryLogging,
+                "WebView2_MoveFocus_Failed",
+                TraceLoggingHResult(error.code().value, "HRESULT"),
+                TraceLoggingInt32(static_cast<int32_t>(reason), "Reason"),
+                TraceLoggingLevel(WINEVENT_LEVEL_WARNING));
+
+            if (error.code().value != E_INVALIDARG)
             {
-                m_coreWebViewController.MoveFocus(reason);
-            });
+                throw;
+            }
+        }
     }
 }
 

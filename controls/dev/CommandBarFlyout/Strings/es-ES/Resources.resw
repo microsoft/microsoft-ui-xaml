@@ -134,7 +134,7 @@
     <comment>The label for the text command bar flyout menu item that provides the proofing menu.</comment>
   </data>
   <data name="TextCommandDescriptionBold" xml:space="preserve">
-    <value>Escribir en negrita el texto seleccionado</value>
+    <value>Poner en negrita el texto seleccionado</value>
   </data>
   <data name="TextCommandDescriptionCopy" xml:space="preserve">
     <value>Copiar el contenido seleccionado al portapapeles</value>
