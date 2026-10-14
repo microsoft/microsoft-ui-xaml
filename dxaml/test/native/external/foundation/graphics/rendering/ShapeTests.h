@@ -81,7 +81,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(RenderPath)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Mask is different
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
