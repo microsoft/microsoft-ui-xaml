@@ -868,8 +868,8 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies that we can us AddHandler to add changing focus event handlers")]
-        [TestProperty("IsolationLevel", "Method")]  //Isolation level set to method here as it is the only way to test FocusInputDeviceKinds.None
-        [TestProperty("Hosting:Mode", "UAP")] // Blocking for WPF because default input device type is keyboard by convention there which cannot work with this test
+        [TestProperty("IsolationLevel", "Method")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ChangingFocusEventsBubbleWhenHandledWhenUsingAddHandler()
         {
             const string rootPanelXaml =
@@ -889,26 +889,26 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
             var button1LosingFocusHandler = new Action<object, LosingFocusEventArgs>((source, args) =>
             {
-                VerifyLosingFocusEventArgParameters(args, button1, button2, FocusState.Pointer, FocusNavigationDirection.None, false /*Handled*/, FocusInputDeviceKind.None, false /*Cancel*/);
+                VerifyLosingFocusEventArgParameters(args, button1, button2, FocusState.Pointer, FocusNavigationDirection.None, false /*Handled*/, FocusInputDeviceKind.Keyboard, false /*Cancel*/);
                 Log.Comment("Button 1 LosingFocus Handler invoked");
                 args.Handled = true;
             });
 
             var stackpanel2LosingFocusHandler = new Action<object, LosingFocusEventArgs>((source, args) =>
             {
-                VerifyLosingFocusEventArgParameters(args, button1, button2, FocusState.Pointer, FocusNavigationDirection.None, true /*Handled*/, FocusInputDeviceKind.None, false /*Cancel*/);
+                VerifyLosingFocusEventArgParameters(args, button1, button2, FocusState.Pointer, FocusNavigationDirection.None, true /*Handled*/, FocusInputDeviceKind.Keyboard, false /*Cancel*/);
             });
 
             var button2GettingFocusHandler = new Action<object, GettingFocusEventArgs>((source, args) =>
             {
-                VerifyGettingFocusEventArgParameters(args, button1, button2, FocusState.Pointer, FocusNavigationDirection.None, false /*Handled*/, FocusInputDeviceKind.None, false /*Cancel*/);
+                VerifyGettingFocusEventArgParameters(args, button1, button2, FocusState.Pointer, FocusNavigationDirection.None, false /*Handled*/, FocusInputDeviceKind.Keyboard, false /*Cancel*/);
                 Log.Comment("Button2 GettingFocus Handler invoked");
                 args.Handled = true;
             });
 
             var stackpanel2GettingFocusHandler = new Action<object, GettingFocusEventArgs>((source, args) =>
             {
-                VerifyGettingFocusEventArgParameters(args, button1, button2, FocusState.Pointer, FocusNavigationDirection.None, true /*Handled*/, FocusInputDeviceKind.None, false /*Cancel*/);
+                VerifyGettingFocusEventArgParameters(args, button1, button2, FocusState.Pointer, FocusNavigationDirection.None, true /*Handled*/, FocusInputDeviceKind.Keyboard, false /*Cancel*/);
             });
 
             UIExecutor.Execute(() =>
@@ -2073,7 +2073,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies Tabbing cannot raise NoFocusCandidateFound if focusable elements are on the page")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyTabbingCanNotCauseNoFocusCandidateRaiseIfFocusableElementsAreOnThePage()
         {
             const string rootPanelXaml =
@@ -2116,7 +2116,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies tab wrapping does not raise NoFocusCandidateFound")]
-        [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyTabWrappingDoesNotCauseNoFocusCandidateRaise()
         {
             const string rootPanelXaml =
@@ -2178,7 +2178,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies shift + tab wrapping does not start separate focus movement operation")]
-        [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyShiftTabWrappingIsOneFocusMovementOperation()
         {
             const string rootPanelXaml =
@@ -2399,7 +2399,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies Keyboard XYFocus can raise NoFocusCandidateFound")]
-        [TestProperty("Hosting:Mode", "UAP")]  // This breaks for WPF mode. New test VerifyKeyboardOrGamePadXYFocusCanCauseNoFocusCandidateRaise has been created for gamecontroller input in WPF mode
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyKeyboardXYFocusCanCauseNoFocusCandidateRaise()
         {
             const string rootPanelXaml =
@@ -2479,7 +2479,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies Keyboard or GamePad XYFocus can raise NoFocusCandidateFound")]
-        [TestProperty("Hosting:Mode", "WPF")] // In WPF host, input cannot be distinguished between Gamepad and Keyboard. This check passes because -hostingMode UAP is passed by default in test infra, but not locally
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Ignore", "TRUE")]   // Focus engagement bugs in lifted islands
         public void VerifyKeyboardOrGamePadXYFocusCanCauseNoFocusCandidateRaise()
         {
@@ -2560,7 +2560,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies Keyboard XYFocus can only raise NoFocusCandidateFound once.")]
-        [TestProperty("Hosting:Mode", "UAP")] // This breaks for WPF mode. New test VerifyKeyboardOrGamePadXYFocusCanCauseNoFocusCandidateRaise has been created for gamecontroller input in WPF mode
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyKeyboardXYFocusOnlyRaisesNoFocusCandidateFoundOnce()
         {
             const string rootPanelXaml =
@@ -2693,7 +2693,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies that NoFocusCandidateFound can fires on an engaged element.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyNoFocusCandidateFoundFiredOnEngagement()
         {
             const string rootPanelXaml =
@@ -2784,7 +2784,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies that Window activation and deactivation raise Changing Focus events.")]
-        [TestProperty("Hosting:Mode", "UAP")]  // To be enabled after per root xamlRoot and focus manager have been implemented
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyWindowDeactivationAndActivationRaiseChangingFocusEvents()
         {
             const string rootPanelXaml =
@@ -2872,7 +2872,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies that Changing Focus events during Window activation and deactivation cannot be cancelled or redirected.")]
-        [TestProperty("Hosting:Mode", "UAP")] // To be enabled after per root xamlRoot and focus manager have been implemented
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyChangingFocusEventsDuringWindowDeactivationAndActivationCannotBeCancelled()
         {
             const string rootPanelXaml =
@@ -2982,7 +2982,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies that focus can change during window activation when focus moved internally")]
-        [TestProperty("Hosting:Mode", "UAP")] // To be enabled after per root xamlRoot and focus manager have been implemented
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyFocusChangeAfterInternalFocusMoveDuringWindowActivation()
         {
             const string rootPanelXaml =
@@ -3064,7 +3064,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies that Changing Focus events during Window activation and deactivation cannot be cancelled or redirected after an internal focus move")]
-        [TestProperty("Hosting:Mode", "UAP")] // To be enabled after per root xamlRoot and focus manager have been implemented
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyFocusCannotBeCanceledAfterInternalFocusMoveDuringWindowActivation()
         {
             const string rootPanelXaml =
@@ -3669,7 +3669,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies the TryCancel behavior on changing focus events.")]
-        [TestProperty("Hosting:Mode", "UAP")] // To be enabled after per root xamlRoot and focus manager have been implemented
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyChangingFocusTryCancelBehavior()
         {
             const string rootPanelXaml =
@@ -3809,7 +3809,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verifies the TrySetNewFocusedElement behavior when focus is not redirectable.")]
-        [TestProperty("Hosting:Mode", "UAP")] // To be enabled after per root xamlRoot and focus manager have been implemented
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyChangingFocusTrySetNewFocusedElementBehaviorOnWindowActivation()
         {
             const string rootPanelXaml =

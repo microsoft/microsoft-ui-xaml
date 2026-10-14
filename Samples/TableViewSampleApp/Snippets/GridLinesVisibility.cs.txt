@@ -1,0 +1,99 @@
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+// …
+
+// ---- Grid lines and banding ---------------------------------------------------------
+
+private void OnGridLinesChanged(object sender, SelectionChangedEventArgs e)
+{
+    // Fires during InitializeComponent (SelectedIndex="3") before the table exists.
+    if (PeopleTable is null || GridLinesText is null)
+    {
+        return;
+    }
+
+    PeopleTable.GridLinesVisibility = SampleShaping.SelectedTag(GridLinesSelector, "All") switch
+    {
+        "None" => TableViewGridLinesVisibility.None,
+        "Horizontal" => TableViewGridLinesVisibility.Horizontal,
+        "Vertical" => TableViewGridLinesVisibility.Vertical,
+        _ => TableViewGridLinesVisibility.All,
+    };
+}
+
+private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (PeopleTable is null || RowBandingText is null)
+    {
+        return;
+    }
+
+    var custom = SampleShaping.SelectedTag(RowBandingSelector, "default") == "custom";
+    PeopleTable.Style = custom ? (Style)Resources["CustomBandingTableViewStyle"] : null;
+}
+
+// …
+
+private void OnMoveToNextGroupClick(object sender, RoutedEventArgs e)
+{
+    if (PeopleTable.SelectedItem is not Person person)
+    {
+        return;
+    }
+
+    // Moves along the key the Group key selector names, so the row always changes group
+    // when grouped (and the same value changes when flat).
+    var key = Shaping.SelectedKey;
+    using (BeginBulkUpdate())
+    {
+        switch (key)
+        {
+            case nameof(Person.Office):
+                person.Office = SampleShaping.Next(PersonData.Offices, person.Office);
+                break;
+            case nameof(Person.IsActive):
+                person.IsActive = !person.IsActive;
+                break;
+            default:
+                person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
+                break;
+        }
+    }
+
+    // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
+    // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+    ReapplyIfGroupedOn(key);
+}
+
+// …
+
+// From Controls\ShapingOptions.xaml.cs
+// Reshape the ONE TableViewSource in place. GroupBy/ClearGroupBy is the group axis and
+// ParentBy/ClearParentBy the hierarchy axis; together, GroupBy buckets the roots and each root
+// keeps its subtree.
+private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
+{
+    if (relation is not null && IsHierarchicalMode(mode))
+    {
+        // A second ParentBy replaces the relation and resets expansion, so declare it once.
+        if (!hadParentBy)
+        {
+            source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
+        }
+    }
+    else if (hadParentBy)
+    {
+        source.ClearParentBy();
+    }
+
+    if (mode is "grouped" or "groupedHierarchy")
+    {
+        // The key selector receives the ROW; the identity selector receives the KEY.
+        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+    }
+    else
+    {
+        source.ClearGroupBy();
+    }
+}
