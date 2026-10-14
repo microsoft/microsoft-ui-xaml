@@ -32,12 +32,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description",
                 L"Ensure update that only affects render reports correctly")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(UpdateDoesntAffectLayout)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Ensure we don't fire events that don't affect layout")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CountingScopeExcludesForeignAndBufferedEvents)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verifies that scoped event counting excludes foreign processes and buffered setup events without changing legacy capture")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 

@@ -105,7 +105,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
 
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events and overrides")]
-        [TestProperty("Hosting:Mode", "UAP")]  // fails in WPF mode in catgates
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyPreviewKeyOverridesEventOrder()
         {
             const string rootPanelXaml =
@@ -274,7 +274,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
 
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events from a popup")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyKeyEventOrderFromPopup()
         {
             const string rootPanelXaml =
@@ -662,7 +662,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
 
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events on reparenting")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyKeyDownEventOrderWhenReparenting()
         {
             const string rootPanelXaml =
@@ -734,7 +734,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
 
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events on deleting subtree")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyKeyDownEventOrderWhenDeletingSubtree()
         {
             const string rootPanelXaml =
@@ -793,7 +793,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
 
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events on adding to subtree")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails due release queue not empty
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyKeyDownEventOrderWhenAddingToSubtree()
         {
             const string rootPanelXaml =
@@ -868,7 +868,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
 
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events when changing focus.")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails due release queue not empty
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyKeyEventOrderWhenChangingFocus()
         {
             const string rootPanelXaml =
@@ -1172,7 +1172,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
 
         [TestMethod]
         [TestProperty("Description", "Verify the orderign of AccessKeys and KeyEvents")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyAccessKeysPrecedePreviewKeyEvents()
         {
             const string rootPanelXaml =
@@ -1294,7 +1294,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verifies the event order of CharacterReceived and key events when using alt numeric key codes.")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // CharacterReceived event is not getting fired on all Onecore SKUs for Alt+Numpad key codes
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCharacterReceivedEventOrderWithAltNumericKeyCodes()
         {
             const string rootPanelXaml =
@@ -1380,7 +1380,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
 
         [TestMethod]
         [TestProperty("Description", "Verifies CharacterReceived is not fired if Access Keys are fired in hotkey mode.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCharacterReceivedNotFiredIfAccessKeyFired()
         {
             const string rootPanelXaml =
@@ -1462,7 +1462,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
         [TestMethod]
         [TestProperty("Description", "Verifies the event order of CharacterReceived and key events when character received is handled.")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // CharacterReceived event is not getting fired on all Onecore SKUs for Alt+Numpad key codes
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCharacterReceivedEventCanBeInterceptedWhenHandled()
         {
             const string rootPanelXaml =
@@ -1551,7 +1551,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
 
         [TestMethod]
         [TestProperty("Description", "Verifies the event order of CharacterReceived and key events for TextBox.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCharacterReceivedEventOrderWithTextBox()
         {
             const string rootPanelXaml =
@@ -1619,7 +1619,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
 
         [TestMethod]
         [TestProperty("Description", "Verifies the event order of CharacterReceived and key events for PasswordBox.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCharacterReceivedEventOrderWithPasswordBox()
         {
             const string rootPanelXaml =
@@ -1679,7 +1679,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
 
         [TestMethod]
         [TestProperty("Description", "Verifies the event order of CharacterReceived and key events for RichEditBox.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCharacterReceivedEventOrderWithRichEditBox()
         {
             const string rootPanelXaml =
