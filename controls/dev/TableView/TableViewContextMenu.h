@@ -31,7 +31,15 @@ namespace TableViewDetails
         explicit operator bool() const noexcept { return static_cast<bool>(Flyout); }
     };
 
-    // First app-supplied ContextFlyout inside a cell or header wrapper (CellTemplate, HeaderTemplate,
-    // generated element, implicit style). Text controls' built-in flyouts are ignored.
-    ContextMenuCandidate FindContentContextFlyout(winrt::FrameworkElement const& wrapper);
+    // True when a header or row cell anchor is still the visible cell for column, directly under
+    // its cells host.
+    bool IsLiveCellAnchor(
+        winrt::FrameworkElement const& anchor,
+        winrt::Panel const& scopeRoot,
+        winrt::TableViewColumn const& column);
+
+    // True when a request's OriginalSource is scope or inside it without crossing a nested
+    // TableView or TableViewRow: a request from a nested table belongs to that table, even when it
+    // left it Unhandled.
+    bool IsOwnRequestSource(winrt::DependencyObject const& source, winrt::DependencyObject const& scope);
 }

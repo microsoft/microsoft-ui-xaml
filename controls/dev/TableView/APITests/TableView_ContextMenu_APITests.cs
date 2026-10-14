@@ -521,14 +521,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "D2: a group header ContextFlyout from an implicit style wins over TableView.ContextFlyout.")]
+        [TestProperty("Description", "D2: a group header ContextFlyout from an implicit style wins over TableView.ContextFlyout, and its items see the TableViewGroupInfo.")]
         public void GroupHeaderStyleMenuWins()
         {
             var f = LoadFixture(grouped: true, configure: x =>
             {
                 var style = (Style)XamlReader.Load(
                     "<Style " + XamlNamespaces + " TargetType='tv:TableViewGroupHeader'>" +
-                    "  <Setter Property='ContextFlyout'><Setter.Value><MenuFlyout/></Setter.Value></Setter>" +
+                    "  <Setter Property='ContextFlyout'><Setter.Value><MenuFlyout><MenuFlyoutItem Text='{Binding KeyText}'/></MenuFlyout></Setter.Value></Setter>" +
                     "</Style>");
                 x.Recorder.Track("GroupHeaderMenu", SetterFlyout(style));
                 x.Table.Resources[typeof(TableViewGroupHeader)] = style;
@@ -537,7 +537,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => GetGroupHeaderPeer(f.Table, 0).ShowContextMenu());
             IdleSynchronizer.Wait();
 
-            VerifyOpened(f, "GroupHeaderMenu", () => GetGroupHeader(f.Table, 0), expectedItem: null, "UIA on the first group header");
+            object groupInfo = null;
+            RunOnUIThread.Execute(() => groupInfo = GetGroupHeader(f.Table, 0).Content);
+            Verify.IsTrue(groupInfo is TableViewGroupInfo, "Precondition: a group header's Content is its TableViewGroupInfo.");
+            VerifyOpened(f, "GroupHeaderMenu", () => GetGroupHeader(f.Table, 0), groupInfo, "UIA on the first group header");
+            RunOnUIThread.Execute(() =>
+            {
+                var item = (MenuFlyoutItem)((MenuFlyout)f.Recorder.Opened[0].Flyout).Items[0];
+                Verify.AreEqual(((TableViewGroupInfo)groupInfo).KeyText, item.Text, "{Binding KeyText} on a group header menu item must resolve.");
+            });
             CloseMenus(f);
         }
 
@@ -595,7 +603,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // An API test cannot hold an edit open (SetValue opens and commits in one call), so the request
         // is raised from BeginningEdit, a window in which IsEditing is already true.
         [TestMethod]
-        [TestProperty("Description", "E6: an edit on one row must not disable menus on another row.")]
+        [TestProperty("Description", "E6: while any cell is editing, a request on another row skips TableView's menus and the native chain opens that row's own menu.")]
         public void RequestOnOtherRowWhileEditingUsesThatRowsMenu()
         {
             bool? wasEditing = null;
@@ -626,6 +634,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() => Verify.IsTrue(wasEditing == true, "Precondition: IsEditing must be true inside BeginningEdit."));
             VerifyOpened(f, "RowMenu", () => RowOf(f, 6), f.P(6), "UIA on row 6 / Office while row 3 / Name is editing");
+            CloseMenus(f);
+        }
+
+        // The editing gate is table-wide: moving focus to another row mid-edit would commit the edit
+        // from inside BeginningEdit, so TableView leaves every body request to the native chain.
+        [TestMethod]
+        [TestProperty("Description", "E7: while any cell is editing, a column's CellContextFlyout on another row is bypassed.")]
+        public void CellMenuOnOtherRowBypassedWhileEditing()
+        {
+            bool? wasEditing = null;
+            var f = LoadFixture(configure: x =>
+            {
+                x.Table.IsReadOnly = false;
+                ((TableViewTextColumn)x.NameColumn).Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.TwoWay };
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                f.Table.BeginningEdit += (s, e) =>
+                {
+                    if (wasEditing.HasValue)
+                    {
+                        return;
+                    }
+
+                    wasEditing = f.Table.IsEditing;
+                    GetCellPeer(f.Table, f.P(6), NameCol).ShowContextMenu();
+                };
+
+                var provider = GetCellPeer(f.Table, f.P(3), NameCol).GetPattern(PatternInterface.Value) as IValueProvider;
+                Verify.IsNotNull(provider, "Precondition: the Name cell must be editable.");
+                provider.SetValue("Edited");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(wasEditing == true, "Precondition: IsEditing must be true inside BeginningEdit."));
+            VerifyOpened(f, "RowMenu", () => RowOf(f, 6), f.P(6), "UIA on row 6 / Name while row 3 / Name is editing");
             CloseMenus(f);
         }
 
@@ -790,7 +835,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual(1, f.Recorder.Opened.Count, $"Exactly one menu must open. Opened: {f.Recorder.Describe()}");
                 Verify.AreEqual("HeaderMenu", f.Recorder.Opened[0].Name, "The header menu must open.");
-                Verify.IsFalse(f.Recorder.Opened[0].ItemsSee is Person, $"Header menu items must not see a row item; saw {f.Recorder.Opened[0].ItemsSee}.");
+                Verify.IsNull(f.Recorder.Opened[0].ItemsSee, $"Header menu items must see no DataContext; saw {f.Recorder.Opened[0].ItemsSee}.");
             });
             CloseMenus(f);
         }
@@ -846,9 +891,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(1, ran, "Precondition: the request must move focus into row 5 exactly once.");
-                Verify.IsFalse(f.Recorder.Opened.Any(o => o.Name == "CellMenu"),
-                    $"The removed column's cell menu must not open. Opened: {f.Recorder.Describe()}");
+                Verify.AreEqual(0, f.Recorder.Opened.Count,
+                    $"A request whose column was removed must be suppressed, not passed to another menu. Opened: {f.Recorder.Describe()}");
             });
+            CloseMenus(f);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "G4: a CellContextFlyout replaced while focus moves to the target row is the menu that opens.")]
+        public void CellMenuReplacedDuringFocusMoveShowsNewMenu()
+        {
+            int ran = 0;
+            MenuFlyout replacement = null;
+            var f = LoadFixture();
+            FocusRow(f, 1);
+            RunOnUIThread.Execute(() =>
+            {
+                replacement = f.Recorder.Create("ReplacementMenu");
+                RowOf(f, 5).GettingFocus += (s, e) =>
+                {
+                    if (ran++ == 0)
+                    {
+                        f.NameColumn.CellContextFlyout = replacement;
+                    }
+                };
+            });
+
+            RequestOnCell(f, 5, NameCol);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(ran >= 1, "Precondition: the request must move focus into row 5."));
+            VerifyOpened(f, "ReplacementMenu", () => CellOf(f, 5, NameCol), f.P(5), "UIA on row 5 / Name");
             CloseMenus(f);
         }
 
