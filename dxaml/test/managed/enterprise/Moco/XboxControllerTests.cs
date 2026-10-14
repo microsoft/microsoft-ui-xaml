@@ -158,6 +158,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void HorizontalListViewsInsideVerticalScrollviewer_BringIntoViewPadding()
         {
             Grid rootGrid = null;
@@ -330,6 +331,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void SingleSelectionFollowsFocus_ListViewSingleSelectionXboxNavigation()
         {
             ListView listView = null;
@@ -388,6 +390,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void SingleSelectionFollowsFocus_GridViewSingleSelectionXboxNavigation()
         {
             GridView gridView = null;
@@ -459,6 +462,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void SingleSelectionFollowsFocus_ListBoxSingleSelectionXboxNavigation()
         {
             ListBox listBox = null;
@@ -517,6 +521,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void SingleSelectionFollowsFocus_ListBoxXboxNavigation_Multiple()
         {
             ListBox listBox = null;
@@ -573,7 +578,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ListView2DNavigation()
         {
             ListView listView = null;
@@ -681,6 +686,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ListView2DNavigationWithoutScrollViewerTemplatePart()
         {
             ListView listView = null;
@@ -766,7 +772,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerticalListView2DPageNavigation()
         {
             ListView listView = null;
@@ -883,6 +889,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         // gracefully without crashing
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerticalEmptyListView2DPageNavigation()
         {
             ListView listView = null;
@@ -963,6 +970,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void HorizontalListView2DPageNavigation()
         {
             ListView listView = null;
@@ -1083,6 +1091,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ListView2DNavigationNonFocusableHeaderContent()
         {
             ListView listView = null;
@@ -1173,7 +1182,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ListViewDelayLoadNoInitilFocus()
         {
             ListView listView = null;
@@ -1239,6 +1248,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ListView2DNavigationWithinAndAcrossItem()
         {
             StackPanel rootPanel = null;
@@ -1328,14 +1338,14 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GridView2DNavigationDown()
         {
             GridView2DNavigation(true);
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GridView2DNavigationUp()
         {
             GridView2DNavigation(false);
@@ -1500,7 +1510,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GridView2DPageNavigation()
         {
             GridView gridView = null;
@@ -1618,6 +1628,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void NestedListView2DNavigation()
         {
             Button beforeButton = null;
@@ -1759,6 +1770,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("Description", "Validates that when there is a selected item and SingleSelectionFollowsFocus=True, that 2D navigation will move onto the selected item.")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ListViewBase2DNavigationFocusesSelectedItemWhenSSFF()
         {
             Action<string> runScenario = (string listViewBaseType) =>
@@ -1813,7 +1825,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("Description", "Validates that when there is a selected item and SingleSelectionFollowsFocus=True, that 2D navigation can still move onto a focusable header object.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ListViewBase2DNavigationFocusesHeaderWithSelectedItemAndSSFF()
         {
             Action<string> runScenario = (string listViewBaseType) =>
@@ -1871,6 +1883,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("Description", "Validates that when there is a selected item and SingleSelectionFollowsFocus=True, that 2D navigation can still move onto a focusable footer object.")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ListViewBase2DNavigationFocusesFooterWithSelectedItemAndSSFF()
         {
             Action<string> runScenario = (string listViewBaseType) =>
@@ -2017,6 +2030,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ScrollViewer2DPageNavigation()
         {
             ScrollViewer2DPageNavigationTest();
@@ -2147,6 +2161,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ScrollViewer2DNavigationWithHyperLink()
         {
             ScrollViewer sv = null;
@@ -2392,6 +2407,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ListBox2DPageNavigation()
         {
             ListBox listBox = null;
@@ -2465,6 +2481,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ScrollViewerNavigationOnDisabledScrollMode()
         {
             ScrollViewer sv = null;
@@ -2534,6 +2551,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CalendarViewEngagement()
         {
             CalendarView calendarView = null;
@@ -2634,6 +2652,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CalendarViewEngagementFocus()
         {
             CalendarView calendarView = null;
@@ -2720,7 +2739,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CalendarView2DPageNavigation()
         {
             CalendarView calendarView = null;
@@ -2804,6 +2823,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GamepadAKeyPress()
         {
             ListView list = null;

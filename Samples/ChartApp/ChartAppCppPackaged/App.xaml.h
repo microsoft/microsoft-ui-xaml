@@ -2,7 +2,7 @@
 
 #include "App.xaml.g.h"
 
-namespace winrt::ChartAppCppPackaged::implementation
+namespace winrt::ChartsSample::implementation
 {
     struct App : AppT<App>
     {
@@ -11,6 +11,7 @@ namespace winrt::ChartAppCppPackaged::implementation
         void OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const&);
 
     private:
+        uint32_t m_primaryThreadId{};
         winrt::Microsoft::UI::Xaml::Window window{ nullptr };
     };
 }

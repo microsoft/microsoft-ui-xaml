@@ -84,6 +84,10 @@ namespace
         icon.HorizontalAlignment(winrt::HorizontalAlignment::Center);
         icon.VerticalAlignment(winrt::VerticalAlignment::Center);
         icon.Margin(winrt::ThicknessHelper::FromLengths(12, 0, 12, 0));
+        // Without this, high contrast paints a black plate behind the glyph instead of letting the
+        // item's selection background show through. The XAML-authored items get it from
+        // InkToolbarFlyoutItemContentTextStyle / InkToolbarGlyphFontStyle.
+        icon.HighContrastAdjustment(winrt::ElementHighContrastAdjustment::None);
         winrt::Grid::SetColumn(icon, 0);
         grid.Children().Append(icon);
 
@@ -101,6 +105,7 @@ namespace
         }
         text.VerticalAlignment(winrt::VerticalAlignment::Center);
         text.Margin(winrt::ThicknessHelper::FromLengths(0, 0, 12, 0));
+        text.HighContrastAdjustment(winrt::ElementHighContrastAdjustment::None);
         winrt::Grid::SetColumn(text, 1);
         grid.Children().Append(text);
 
@@ -316,21 +321,48 @@ void InkToolbarStencilButton::OnSelectedStencilChanged(winrt::DependencyProperty
 winrt::hstring InkToolbarStencilButton::GetLocalizedToolName()
 {
     // UWP StencilButton::GetLocalizedToolName: name reflects the currently selected stencil.
-    switch (SelectedStencil())
+    // Called during templating; a missing resource must fall back to empty rather than throw out of it.
+    try
     {
-    case winrt::InkToolbarStencilKind::Ruler:
-        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilRulerName);
-    case winrt::InkToolbarStencilKind::Protractor:
-        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilProtractorName);
-    default:
+        switch (SelectedStencil())
+        {
+        case winrt::InkToolbarStencilKind::Ruler:
+            return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilRulerName);
+        case winrt::InkToolbarStencilKind::Protractor:
+            return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilProtractorName);
+        default:
+            return {};
+        }
+    }
+    catch (winrt::hresult_error const&)
+    {
         return {};
     }
 }
 
 winrt::hstring InkToolbarStencilButton::GetFlyoutName()
 {
-    // Localized flyout name is a lift resource gap (documented).
-    return {};
+    try
+    {
+        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilFlyoutName);
+    }
+    catch (winrt::hresult_error const&)
+    {
+        return {};
+    }
+}
+
+winrt::hstring InkToolbarStencilButton::GetPersistentToolName()
+{
+    // The button's purpose is "Measuring tools" regardless of which stencil is selected.
+    try
+    {
+        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilButtonName);
+    }
+    catch (winrt::hresult_error const&)
+    {
+        return {};
+    }
 }
 
 unsigned InkToolbarStencilButton::NumberOfStencils()

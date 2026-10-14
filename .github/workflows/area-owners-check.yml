@@ -1,0 +1,39 @@
+# Keeps .github/area-owners.yml honest on every PR: fails when the change adds files
+# no area covers, leaves a glob matching nothing, or breaks the map's schema. Drift
+# that already exists on the base branch is reported but not blamed on the PR - the
+# weekly sync (area-owners-sync.yml) picks that up.
+#
+# Read-only: runs on `pull_request` with a read-only token and no secrets.
+
+name: Area Owners Check
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate area owners
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # The merge commit (HEAD) and its first parent (the base branch tip). Only
+      # trees are needed to list files, so blobs outside .github are not fetched.
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+          filter: blob:none
+          sparse-checkout: .github
+          persist-credentials: false
+          show-progress: false
+
+      - name: Install dependencies
+        working-directory: .github/scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate
+        run: node .github/scripts/validate-area-owners.mjs --base HEAD^1 --head HEAD
