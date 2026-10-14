@@ -10,9 +10,11 @@
 #include <WUCRenderingScopeGuard.h>
 
 using namespace ::Windows::UI;
+using namespace Microsoft::UI::Composition;
 using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::UI::Xaml::Controls;
 using namespace Microsoft::UI::Xaml::Documents;
+using namespace Microsoft::UI::Xaml::Hosting;
 using namespace Microsoft::UI::Xaml::Markup;
 using namespace Microsoft::UI::Xaml::Tests::Common;
 
@@ -70,6 +72,74 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TestServices::WindowHelper->WindowContent = root;
             });
 
+            TestServices::WindowHelper->WaitForIdle();
+
+            TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::AllSurfaces);
+        }
+
+        //------------------------------------------------------------------------
+        // Test case: Redirects TextBlock content across a fractional column boundary at 150%
+        // scale and verifies the glyph mask retains its full edge coverage.
+        //------------------------------------------------------------------------
+        void TextBlockClippingTests::RedirectVisualAtFractionalScale()
+        {
+            RunOnUIThread([&]()
+            {
+                TestServices::WindowHelper->WindowContent = nullptr;
+            });
+
+            WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
+            TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(401, 300));
+            TestServices::Utilities->SetMockDCompSurfaceIdMode(MockDComp::SurfaceIdMode::XmlOrder);
+            TestServices::Utilities->ResetMockDCompSurfaceId();
+
+            Grid^ root = nullptr;
+            ListView^ sourceElement = nullptr;
+            Border^ targetElement = nullptr;
+            RedirectVisual^ redirectVisual = nullptr;
+
+            RunOnUIThread([&]()
+            {
+                root = safe_cast<Grid^>(XamlReader::Load(
+                    L"<Grid Width='401' Height='300' "
+                    L"xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                    L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                    L"  <Grid.ColumnDefinitions>"
+                    L"    <ColumnDefinition Width='*'/>"
+                    L"    <ColumnDefinition Width='*'/>"
+                    L"  </Grid.ColumnDefinitions>"
+                    L"  <ListView x:Name='SourceElement'>"
+                    L"    <ListViewItem><TextBlock FontSize='14' Text='Hello world'/></ListViewItem>"
+                    L"    <ListViewItem><TextBlock FontSize='14' Text='Hello world'/></ListViewItem>"
+                    L"    <ListViewItem><TextBlock FontSize='14' Text='Hello world'/></ListViewItem>"
+                    L"    <ListViewItem><TextBlock FontSize='14' Text='Hello world'/></ListViewItem>"
+                    L"  </ListView>"
+                    L"  <Border x:Name='TargetElement' Grid.Column='1'/>"
+                    L"</Grid>"));
+
+                sourceElement = safe_cast<ListView^>(root->FindName(L"SourceElement"));
+                targetElement = safe_cast<Border^>(root->FindName(L"TargetElement"));
+                VERIFY_IS_NOT_NULL(sourceElement);
+                VERIFY_IS_NOT_NULL(targetElement);
+
+                root->RasterizationScale = 1.5f;
+                TestServices::WindowHelper->WindowContent = root;
+            });
+
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                auto sourceVisual = ElementCompositionPreview::GetElementVisual(sourceElement);
+                VERIFY_IS_NOT_NULL(sourceVisual);
+
+                redirectVisual = sourceVisual->Compositor->CreateRedirectVisual(sourceVisual);
+                VERIFY_IS_NOT_NULL(redirectVisual);
+
+                ElementCompositionPreview::SetElementChildVisual(targetElement, redirectVisual);
+            });
+
+            TestServices::WindowHelper->SynchronouslyTickUIThread(2);
             TestServices::WindowHelper->WaitForIdle();
 
             TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::AllSurfaces);

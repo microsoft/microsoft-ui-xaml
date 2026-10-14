@@ -292,7 +292,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
 
         [TestMethod]
         [TestProperty("Description", "Validates access keys on pivot control.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyAccessKeysWorkOnPivotControl()
         {
             const string rootPanelXaml =
@@ -389,7 +389,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
 
         [TestMethod]
         [TestProperty("Description", "In a multi-level flyout menu, press access keys quickly to navigate the whole menu.  It often crashes, and rarely actually traverses the whole menu.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void MenuFlyoutMultiLevel()
         {
             Page root = null;
