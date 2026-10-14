@@ -101,6 +101,73 @@
              buttons below, give the same one-table-at-a-time surface without the Pivot. -->
         <Grid Grid.Row="1">
 
+            <Grid x:Name="ContextFlyoutsTableHost" Visibility="Collapsed" RowSpacing="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Clear column menus" AutomationProperties.AutomationId="ClearContextFlyoutsButton"
+                            Click="OnClearContextFlyoutsClick" IsTabStop="False" AllowFocusOnInteraction="False" />
+                    <Button Content="Restore column menus" AutomationProperties.AutomationId="RestoreContextFlyoutsButton"
+                            Click="OnRestoreContextFlyoutsClick" IsTabStop="False" AllowFocusOnInteraction="False" />
+                    <Button Content="Retarget invoking row" AutomationProperties.AutomationId="RetargetContextRowButton"
+                            Click="OnRetargetContextRowClick" IsTabStop="False" AllowFocusOnInteraction="False" />
+                </StackPanel>
+                <controls:TableView x:Name="ContextFlyoutsTableView" Grid.Row="1"
+                                    AutomationProperties.AutomationId="ContextFlyoutsTableView"
+                                    IsReadOnly="False" CanUserSortColumns="False" CanUserResizeColumns="False"
+                                    SelectionMode="Single" VerticalAlignment="Top" Height="300">
+                    <controls:TableViewTextColumn x:Name="ContextTextColumn" Header="ContextText" Width="240"
+                                                 Binding="{Binding Name}">
+                        <controls:TableViewTextColumn.CellContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Text action" AutomationProperties.AutomationId="ContextTextAction" />
+                                <MenuFlyoutItem Text="{Binding Name}" IsEnabled="False" />
+                            </MenuFlyout>
+                        </controls:TableViewTextColumn.CellContextFlyout>
+                        <controls:TableViewTextColumn.HeaderContextFlyout>
+                            <MenuFlyout><MenuFlyoutItem Text="Text header action" /></MenuFlyout>
+                        </controls:TableViewTextColumn.HeaderContextFlyout>
+                    </controls:TableViewTextColumn>
+                    <controls:TableViewTemplateColumn x:Name="ContextTemplateColumn" Header="ContextTemplate" Width="260">
+                        <controls:TableViewTemplateColumn.CellContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Template action" />
+                                <MenuFlyoutItem Text="{Binding Name}" IsEnabled="False" />
+                            </MenuFlyout>
+                        </controls:TableViewTemplateColumn.CellContextFlyout>
+                        <controls:TableViewTemplateColumn.HeaderContextFlyout>
+                            <MenuFlyout><MenuFlyoutItem Text="Template header action" /></MenuFlyout>
+                        </controls:TableViewTemplateColumn.HeaderContextFlyout>
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border x:Name="ContextChild" Background="Transparent" Width="120" Height="32"
+                                        HorizontalAlignment="Left" Margin="16,8">
+                                    <Border.ContextFlyout>
+                                        <MenuFlyout>
+                                            <MenuFlyoutItem Text="Child action" />
+                                            <MenuFlyoutItem Text="{Binding Name}" IsEnabled="False" />
+                                        </MenuFlyout>
+                                    </Border.ContextFlyout>
+                                    <TextBlock Text="{Binding Name}" />
+                                </Border>
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                    </controls:TableViewTemplateColumn>
+                    <controls:TableViewTextColumn Header="ContextFallback" Width="160" Binding="{Binding Name}" />
+                </controls:TableView>
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <TextBox x:Name="ContextFlyoutReport" AutomationProperties.AutomationId="ContextFlyoutReport"
+                             IsReadOnly="True" IsTabStop="False" Width="400" />
+                    <TextBox x:Name="ContextFlyoutActionReport" AutomationProperties.AutomationId="ContextFlyoutActionReport"
+                             IsReadOnly="True" IsTabStop="False" Width="200" />
+                    <TextBox x:Name="ContextFlyoutLifetimeReport" AutomationProperties.AutomationId="ContextFlyoutLifetimeReport"
+                             IsReadOnly="True" IsTabStop="False" Width="180" />
+                </StackPanel>
+            </Grid>
+
             <Grid x:Name="BasicTableHost" Visibility="Visible">
                 <controls:TableView x:Name="BasicTableView"
                                     AutomationProperties.Name="BasicTableView"
@@ -400,6 +467,10 @@
                      IsReadOnly="True"
                      IsTabStop="False"
                      Text="" />
+            <Button Content="Context flyouts"
+                    AutomationProperties.AutomationId="GoToContextFlyoutsButton"
+                    IsTabStop="False"
+                    Click="OnGoToContextFlyoutsClick" />
         </StackPanel>
     </Grid>
 </local:TestPage>

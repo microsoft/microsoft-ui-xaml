@@ -20,5 +20,6 @@
       <DependentUpon>TableViewPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)TableViewTestPageFacts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewPage.ContextFlyouts.cs" />
   </ItemGroup>
 </Project>

@@ -165,6 +165,7 @@ namespace MUXControlsTestApp
             ScrollingTableView.LayoutUpdated += OnScrollingTableViewLayoutUpdated;
 
             HookHierarchyTables();
+            InitializeContextFlyouts();
         }
 
         private ScrollViewer _scrollingBodyScroller;
@@ -719,6 +720,7 @@ namespace MUXControlsTestApp
             GroupedTableHost.Visibility = Visibility.Collapsed;
             ScrollingTableHost.Visibility = Visibility.Collapsed;
             HierarchyTableHost.Visibility = Visibility.Collapsed;
+            ContextFlyoutsTableHost.Visibility = Visibility.Collapsed;
             host.Visibility = Visibility.Visible;
         }
 

@@ -20,5 +20,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Layout_InteractionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Pointer_InteractionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_ToolTips_InteractionTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_ContextFlyouts_InteractionTests.cs" />
   </ItemGroup>
 </Project>
