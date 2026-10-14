@@ -95,6 +95,7 @@ if (!$SkipPackageUninstall)
     # Note - Make sure that this list is kept in sync with controls\test\testinfra\MUXTestInfra\TestAppInstallHelper.cs
     Write-Host "Attempting to uninstall previous versions of sample apps";
     Get-AppxPackage "WinUICppDesktopSampleApp" | Remove-AppxPackage -ErrorAction SilentlyContinue;
+    Get-AppxPackage "WinUICppIslandsSampleApp" | Remove-AppxPackage -ErrorAction SilentlyContinue;
     Get-AppxPackage "WinUICsDesktopSampleApp" | Remove-AppxPackage -ErrorAction SilentlyContinue;
     Get-AppxPackage "Microsoft.WinUI3ControlsGallery.Debug" | Remove-AppxPackage -ErrorAction SilentlyContinue;
     Get-AppxPackage "Microsoft.WinUI3ControlsGallery" | Remove-AppxPackage -ErrorAction SilentlyContinue;
