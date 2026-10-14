@@ -11,9 +11,17 @@ namespace MUXControlsTestApp
     [TopLevelTestPage(Name = "TitleBar", Icon = "DefaultIcon.png")]
     public sealed partial class TitleBarPage : TestPage
     {
+        private string originalMainWindowTitle;
+
         public TitleBarPage()
         {
             LogController.InitializeLogging();
+
+            // The in-page TitleBar is hosted in the main test window, so it renames that window to its Title.
+            // The test infrastructure finds the main window by its original title, so restore it when leaving the page.
+            originalMainWindowTitle = App.CurrentWindow.AppWindow.Title;
+            this.Unloaded += (sender, args) => App.CurrentWindow.AppWindow.Title = originalMainWindowTitle;
+
             this.InitializeComponent();
         }
 

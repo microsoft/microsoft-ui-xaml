@@ -182,12 +182,12 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ThemeShadowDropShadowLoadTest)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Description", L"Basic test loading a ThemeShadow with Drop Shadows enabled.")
     END_TEST_METHOD()
     
     BEGIN_TEST_METHOD(ThemeShadowDropShadowBasicPopup)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Description", L"Basic ThemeShadow usage on Popup element with Drop Shadows enabled.")
     END_TEST_METHOD()
 
@@ -197,7 +197,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ThemeShadowDropShadowDynamicCornerRadius)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Description", L"Testing DropShadows with different corner radius on caster element.")
     END_TEST_METHOD()
 
@@ -207,7 +207,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ThemeShadowDropShadowRoundedCornersTargetOfLTE)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Description", L"ThemeShadow with drop shadow, element is the target of an LTE and has rounded corners.")
     END_TEST_METHOD()
 

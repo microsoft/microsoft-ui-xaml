@@ -399,7 +399,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(MenuFlyoutRemainsInBoundsWhenShownTwice)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a MenuFlyout remains within the screen's boundaries when its ShowAt method is called twice in a row.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // y coordinate of flyout is about 8 pixels off.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateSettingKeyboardAcceleratorCreatesDefaultItemKeyboardAcceleratorText)
