@@ -1917,24 +1917,17 @@ void TableView::QueueRefreshRealizedRowHierarchyState()
     {
         return;
     }
-    m_rowHierarchyRefreshQueued = true;
-
     auto weakThis = get_weak();
-    if (auto const queue = winrt::DispatcherQueue::GetForCurrentThread())
+    auto const queue = winrt::DispatcherQueue::GetForCurrentThread();
+    // Unlatch if the post fails (queue shutting down) so later Resets can still queue a restamp.
+    m_rowHierarchyRefreshQueued = queue && queue.TryEnqueue([weakThis]()
     {
-        queue.TryEnqueue([weakThis]()
+        if (auto strongThis = weakThis.get())
         {
-            if (auto strongThis = weakThis.get())
-            {
-                strongThis->m_rowHierarchyRefreshQueued = false;
-                strongThis->RefreshRealizedRowHierarchyState();
-            }
-        });
-    }
-    else
-    {
-        m_rowHierarchyRefreshQueued = false;
-    }
+            strongThis->m_rowHierarchyRefreshQueued = false;
+            strongThis->RefreshRealizedRowHierarchyState();
+        }
+    });
 }
 
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)

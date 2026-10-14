@@ -420,11 +420,12 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
 //
 //   CommonStates:        Normal, PointerOver, Pressed, Disabled,
 //                        Selected, SelectedPointerOver, SelectedPressed, SelectedDisabled
-//   HierarchyStates:     Hierarchical, NotHierarchical
-//   ExpandabilityStates: Expandable, NotExpandable
-//   ExpansionStates:     Expanded, Collapsed
+//   RowHierarchyStates:     RowHierarchical, RowNotHierarchical
+//   RowExpandabilityStates: RowExpandable, RowNotExpandable
+//   RowExpansionStates:     RowExpanded, RowCollapsed
 //
-// The hierarchy groups are entered on every row, including in flat and grouped tables.
+// The hierarchy groups are entered on every row, including in flat and grouped tables. Names are
+// Row-prefixed so they cannot collide with an app's own Expanded/Collapsed states in a retemplate.
 //
 // Selected states share this one group so nothing depends on GoToState call order.
 // Multiple/Extended selection will add a separate MultiSelectStates group (and a checkbox part)
@@ -446,7 +447,7 @@ unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("0")]
     Int32 Level { get; };
 
-    // True when this row has children. Drives ExpandabilityStates.
+    // True when this row has children. Drives RowExpandabilityStates.
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsExpandable { get; };
 

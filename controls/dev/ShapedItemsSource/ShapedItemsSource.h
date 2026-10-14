@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
@@ -240,6 +241,8 @@ private:
     void PublishHierarchyIndex(std::shared_ptr<ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments);
 
     std::vector<winrt::IInspectable> VisibleHierarchicalRows() const;
+    // Every row of the last good hierarchy structure, flat-filtered: the failed-teardown fallback.
+    std::vector<winrt::IInspectable> HierarchyFallbackRows() const;
 
     // Re-derives group Items from the hierarchy adapter; also on node toggles, since nothing else
     // tells the grouped adapter the tree changed.
@@ -336,7 +339,10 @@ private:
         winrt::hstring const& propertyName);
     // Marks stale and posts ONE restore; N changes in a turn cost one reshape.
     void MarkLiveShapingDirty();
-    // Posts RestoreLiveShaping to the next turn, or runs it now when nothing can be posted.
+    // Posts a restore for a dirty projection unless one is queued or the hold still applies.
+    void EnsureLiveShapingRestore();
+    // Posts RestoreLiveShaping to the owner's queue. Runs it now only when the owner has no
+    // dispatcher at all (test host); a refused post leaves it dirty for the next change.
     void PostLiveShapingRestore();
     void RestoreLiveShaping();
     void RaiseProjectionRebuilt() const { if (m_projectionRebuilt) { m_projectionRebuilt(); } }
@@ -412,15 +418,23 @@ private:
     std::shared_ptr<GroupedSourceAdapter> m_groupedAdapter{};
     std::shared_ptr<LiveShapingTracker> m_liveShaping{ std::make_shared<LiveShapingTracker>() };
     // Owning thread (m_rows is bound to it); PropertyChanged is always handled here. Null off a
-    // dispatcher thread: changes then run inline on the owner thread, dropped on others.
+    // dispatcher thread: changes then run inline on the owner thread, flagged on others.
     winrt::Microsoft::UI::Dispatching::DispatcherQueue m_ownerQueue{ nullptr };
     DWORD m_ownerThreadId{ 0 };
+    // Set off-thread when a PropertyChanged could not be marshalled to the owner; the owner's next
+    // live change forces a full restore. Shared so the handler never has to lock `this` off-thread.
+    std::shared_ptr<std::atomic<bool>> m_liveShapingChangeDropped{ std::make_shared<std::atomic<bool>>(false) };
     bool m_liveShapingEnabled{ false };
     std::unordered_map<void const*, LiveShapeSnapshot> m_liveShapeSnapshots;
-    // Pending live reshape; doubles as the "restore already posted" guard.
+    // Pending live reshape: the projection may not reflect the captured snapshots.
     bool m_liveShapingDirty{ false };
+    // A restore is queued on m_ownerQueue (so it implies m_ownerQueue is set). Separate from dirty
+    // so a refused post or a failed restore is retried by the next change instead of stranding the
+    // dirty flag.
+    bool m_liveShapingRestorePosted{ false };
     std::function<bool()> m_liveShapingHold{};
-    // A restore found the hold on and parked; ResumeHeldLiveShaping re-posts it.
+    // A restore found the hold on and parked; ResumeHeldLiveShaping re-posts it if still dirty.
+    // Set only while dirty, but a refresh may clear dirty first, so it alone does not imply dirty.
     bool m_liveShapingHeld{ false };
     std::function<bool(winrt::IInspectable const&, bool)> m_liveItemChangedHook{};
 

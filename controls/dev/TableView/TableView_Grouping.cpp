@@ -377,7 +377,10 @@ winrt::hstring TableView::CaptureFocusedContainerForRestore()
         return {};
     }
 
-    // Walk out from the focused element to its header or data-row container, if it is inside one.
+    // Walk out from the focused element to its header container, if it is inside one. Data-row
+    // focus is captured only for a hierarchical source, where a row's chevron is the expansion
+    // target; in a flat grouped table, row focus is left alone.
+    const bool captureRows = m_tableViewSourceRowMetadata && m_tableViewSourceRowMetadata->IsHierarchicalSource();
     auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
     for (winrt::DependencyObject node = focused; node; node = winrt::VisualTreeHelper::GetParent(node))
     {
@@ -388,6 +391,10 @@ winrt::hstring TableView::CaptureFocusedContainerForRestore()
         }
         else if (auto const row = node.try_as<winrt::TableViewRow>())
         {
+            if (!captureRows)
+            {
+                break;
+            }
             container = row;
         }
 
@@ -492,28 +499,27 @@ void TableView::ApplyGroupExpansionByIdentity(
     try
     {
         // Local strong ref: a handler may re-declare the shape and replace the provider mid-call.
+        // Edit-ending handlers ran app code above, so re-check the source before mutating; a stale
+        // request still falls through to drain queued edit reshapes.
         auto const provider = m_tableViewSourceRowMetadata;
-        if (subtree)
+        if (provider && generation == m_rowMetadataGeneration)
         {
-            provider->ExpandSubtree(identity);
-            changed = true;
-        }
-        else if (desired.has_value())
-        {
-            // Idempotent set: applying the state we already have is a no-op in the provider.
-            if (*desired)
+            if (subtree)
             {
-                provider->Expand(identity);
+                provider->ExpandSubtree(identity);
+                changed = true;
+            }
+            else if (desired.has_value())
+            {
+                // Idempotent set: applying the state we already have is a no-op, and reports no change.
+                changed = *desired
+                    ? provider->Expand(identity)
+                    : provider->Collapse(identity);
             }
             else
             {
-                provider->Collapse(identity);
+                changed = provider->Toggle(identity);
             }
-            changed = true;
-        }
-        else
-        {
-            changed = provider->Toggle(identity);
         }
     }
     catch (...)
@@ -528,8 +534,14 @@ void TableView::ApplyGroupExpansionByIdentity(
     if (changed)
     {
         QueueGroupExpansionRowRefresh();
-        // The toggled row keeps its index, so it is never re-prepared; restamp it here.
+        // The toggled row keeps its index, so it is never re-prepared; restamp it here. In a tree,
+        // rows below the splice may still report pre-reconcile indices, so restamp again once the
+        // repeater has reconciled. Flat grouped rows carry no tree state, so one pass is enough.
         RefreshRealizedRowHierarchyState();
+        if (m_tableViewSourceRowMetadata && m_tableViewSourceRowMetadata->IsHierarchicalSource())
+        {
+            QueueRefreshRealizedRowHierarchyState();
+        }
         RaiseGroupStructureChanged();
     }
 
@@ -730,6 +742,7 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
         return;
     }
 
+    const uint64_t generation = m_rowMetadataGeneration;
     if (!TryTerminateEditForControlInitiatedReshape())
     {
         if (m_editState == EditState::Ending)
@@ -748,24 +761,28 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     bool changed = false;
     try
     {
-        // Local strong ref, as in ApplyGroupExpansionByIdentity.
+        // Local strong ref, as in ApplyGroupExpansionByIdentity; edit-ending handlers may have
+        // replaced or cleared the source.
         auto const provider = m_tableViewSourceRowMetadata;
-        switch (axis)
+        if (provider && generation == m_rowMetadataGeneration)
         {
-        case BulkExpansionAxis::Groups:
-            expand
-                ? provider->ExpandAllGroups()
-                : provider->CollapseAllGroups();
-            break;
+            switch (axis)
+            {
+            case BulkExpansionAxis::Groups:
+                expand
+                    ? provider->ExpandAllGroups()
+                    : provider->CollapseAllGroups();
+                break;
 
-        case BulkExpansionAxis::Rows:
-            expand
-                ? provider->ExpandAllRows()
-                : provider->CollapseAllRows();
-            break;
+            case BulkExpansionAxis::Rows:
+                expand
+                    ? provider->ExpandAllRows()
+                    : provider->CollapseAllRows();
+                break;
+            }
+
+            changed = true;
         }
-
-        changed = true;
     }
     catch (...)
     {
@@ -777,7 +794,9 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     if (changed)
     {
         QueueGroupExpansionRowRefresh();
+        // Sync for rows that kept their index; queued for rows whose index the splice shifted.
         RefreshRealizedRowHierarchyState();
+        QueueRefreshRealizedRowHierarchyState();
 
         // Both axes: under a grouped tree, row expansion changes group contents.
         RaiseGroupStructureChanged();

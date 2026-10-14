@@ -1036,15 +1036,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsTrue(fired, "Flat: the presented change fired.");
                 Verify.AreEqual("ArgumentException", thrown, "Flat: the failure surfaces once.");
-                VerifyTree(tableView, "Ada Eve Gus", "flat: after the failed refresh");
-                Verify.AreEqual("none none none", ExpandStates(tableView), "Flat: rows are inert.");
+                VerifyTree(tableView, Flat, "flat: after the failed refresh keeps collapsed descendants");
+                Verify.AreEqual("none none none none none none none", ExpandStates(tableView), "Flat: rows are inert.");
                 source.ClearParentBy();
                 tableView.ExpandAllRows();
             });
             SettleLayout(tableView);
             RunOnUIThread.Execute(() =>
             {
-                VerifyTree(tableView, "Ada Eve Gus", "flat: again");
+                VerifyTree(tableView, Flat, "flat: again");
                 list.RemoveAt(list.Count - 1);
             });
             SettleLayout(tableView);
