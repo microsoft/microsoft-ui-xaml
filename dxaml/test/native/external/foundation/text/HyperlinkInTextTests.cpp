@@ -1727,9 +1727,6 @@ void HyperlinkInTextTests::ValidateHyperlinkGotFocusOnLoad()
     auto gotFocusEvent = std::make_shared<Event>();
     auto gotFocusRegistration = CreateSafeEventRegistration(xaml_docs::Hyperlink, GotFocus);
 
-    auto windowActivatedEvent = std::make_shared<Event>();
-    auto windowActivatedRegistration = CreateSafeEventRegistration(Window, Activated);
-
     RunOnUIThread([&]()
     {
         root = safe_cast<StackPanel^>(xaml_markup::XamlReader::Load(
@@ -1741,12 +1738,6 @@ void HyperlinkInTextTests::ValidateHyperlinkGotFocusOnLoad()
 
         TestServices::WindowHelper->WindowContent = root;
         hyperlink1 = safe_cast<Hyperlink^>(root->FindName(L"Hyperlink1"));
-
-        windowActivatedRegistration.Attach(Window::Current, [&]()
-        {
-            LOG_OUTPUT(L"Window activated");
-            windowActivatedEvent->Set();
-        });
 
         lostFocusRegistration.Attach(
             hyperlink1,
@@ -1772,6 +1763,23 @@ void HyperlinkInTextTests::ValidateHyperlinkGotFocusOnLoad()
         xamlRoot = hyperlink1->XamlRoot;
     });
 
+    auto waitForWindowFocus = [&](bool expectedFocus)
+    {
+        constexpr unsigned int maximumAttempts = 100;
+        for (unsigned int attempt = 0; attempt < maximumAttempts; ++attempt)
+        {
+            TestServices::Utilities->IsWindowFocused(&isFocused, xamlRoot);
+            if (!!isFocused == expectedFocus)
+            {
+                return;
+            }
+
+            Sleep(100);
+        }
+
+        VERIFY_ARE_EQUAL(expectedFocus, !!isFocused);
+    };
+
     //Puts Keyboard focus onto the hyperlink.
     TestServices::KeyboardHelper->Tab();
     TestServices::WindowHelper->WaitForIdle();
@@ -1789,9 +1797,7 @@ void HyperlinkInTextTests::ValidateHyperlinkGotFocusOnLoad()
     TestServices::KeyboardHelper->PressKeySequence("$d$_lwin#$u$_lwin");
     TestServices::WindowHelper->WaitForIdle();
 
-    windowActivatedEvent->WaitForDefault();
-    windowActivatedEvent->Reset();
-    TestServices::Utilities->IsWindowFocused(&isFocused, xamlRoot);
+    waitForWindowFocus(false);
 
     //Checks that the hyperlink has lost focus.
     RunOnUIThread([&]()
@@ -1819,8 +1825,7 @@ void HyperlinkInTextTests::ValidateHyperlinkGotFocusOnLoad()
         TestServices::KeyboardHelper->Escape();
     }
     TestServices::WindowHelper->WaitForIdle();
-    windowActivatedEvent->WaitForDefault();
-    TestServices::Utilities->IsWindowFocused(&isFocused, xamlRoot);
+    waitForWindowFocus(true);
 
     //Checks that the hyperlink has received focus once more.
     RunOnUIThread([&]()

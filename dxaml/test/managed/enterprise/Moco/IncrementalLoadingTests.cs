@@ -82,6 +82,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [Priority(1)]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LoadMoreItemsEdgeTest()
         {
             SetupTest(xamlText);
@@ -113,6 +114,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [Description("Verify IIncrementalLoadingVector.LoadMoreItemsAsync is called for automatic edge loading multiple times")]
         [TestMethod]
         [Priority(1)]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LoadMoreItemsEdgeItemsWrapGridTest()
         {
             SetupTest(xamlTextItemsWrapGrid);
@@ -143,6 +145,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [Priority(1)]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LoadMoreItemsEdgeWrapGridTest()
         {
             SetupTest(xamlTextWrapGrid);
@@ -174,7 +177,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [Description("Verify IIncrementalLoadingVector.LoadMoreItemsAsync is called for automatic edge loading multiple times")]
         [TestMethod]
         [Priority(1)]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void RepeatedLoadMoreItemsTest()
         {
             SetupTest(xamlText);
@@ -219,6 +222,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestMethod]
         [Priority(1)]
         [Description("Verify IIncrementalLoadingVector.LoadMoreItemsAsync by calling programmatically")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LoadMoreItemsProgrammaticTest()
         {
             SetupTest(xamlText);
@@ -239,6 +243,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestMethod]
         [Priority(1)]
         [Description("Verify ListViewBase.LoadMoreItemsAsync by calling programmatically")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LoadMoreItemsProgrammaticTest2()
         {
             SetupTest(xamlText);
@@ -259,6 +264,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestMethod]
         [Priority(1)]
         [Description("Verify ListViewBase.LoadMoreItemsAsync doesn't trigger a load programmatically when HasMoreItems is false.")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void LoadMoreItemsProgrammaticTest3()
         {
             SetupTest(xamlText);
@@ -279,6 +285,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestMethod]
         [Priority(1)]
         [Description("Verify IncrementalLoadingTrigger set to None does not trigger LoadMoreItemsAsync")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void IncrementalLoadingTriggerNoneTest1()
         {
             SetupTest(xamlText);
@@ -307,6 +314,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestMethod]
         [Priority(1)]
         [Description("Verify HasMoreItems = false does not trigger LoadMoreItemsAsync")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void HasMoreItemsFalseTest()
         {
             SetupTest(xamlText);
@@ -332,6 +340,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestMethod]
         [Priority(1)]
         [Description("Verify setting IncrementalLoadingThreshold is honored for edge scrolling")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void IncrementalLoadingThresholdTest()
         {
             SetupTest(xamlText);
@@ -375,6 +384,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestMethod]
         [Priority(1)]
         [Description("Removing items before selected index, in an incremental loading case")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void DeleteItemsBeforeSelectedIndexWithIncrementalLoading()
         {
             ListView listView = null;
@@ -437,6 +447,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [Description("Load call should not be raised after listview is not active")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void NoLoadCallsAfterListViewIsInactive()
         {
             StackPanel panel = null;
