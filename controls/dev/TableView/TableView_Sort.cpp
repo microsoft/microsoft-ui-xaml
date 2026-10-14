@@ -663,7 +663,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     {
         if (measureTip && !completed)
         {
-            TableViewTip::FailOperation(m_tip, tipGeneration, TableViewTip::Stage::Sort, {});
+            FailTipOperation(tipGeneration, TableViewTip::Stage::Sort, {});
         }
         else if (measureTip && m_controlSortPublishedGeneration == tipGeneration)
         {

@@ -760,6 +760,7 @@ private:
         uint64_t m_controlGenerationAtAdmission{};
         uint64_t m_lifetimeGeneration{};
         int m_exceptions{};
+        uint32_t m_appFaultsAtStart{};
         bool m_completed{};
         bool m_failed{};
         TableViewTip::IgnoreReason m_ignoreReason{ TableViewTip::IgnoreReason::Stale };
@@ -788,6 +789,8 @@ private:
     uint64_t BeginTipOperation(TableViewTip::Operation operation, bool admitted = true) noexcept;
     void EndTipOperation() noexcept;
     void SupersedeTipOperation() noexcept;
+    void NoteTipAppFault(TableViewTip::AppFaultKind kind) noexcept;
+    void FailTipOperation(uint64_t generation, TableViewTip::Stage stage, std::optional<HRESULT> error) noexcept;
     void CompleteTipOperation(uint64_t generation) noexcept;
     void IgnoreTip(TableViewTip::IgnoreReason reason) noexcept;
 
@@ -799,6 +802,10 @@ private:
     TableViewTip::IgnoreReason m_tipCancellationReason{ TableViewTip::IgnoreReason::Cancelled };
     uint32_t m_tipMutationDepth{};
     uint32_t m_tipSourceMutationDepth{};
+    // App faults tagged so far; an exception escaping an operation during which this moved is the app's.
+    uint32_t m_tipAppFaults{};
+    uint32_t m_tipAppFaultsAtOperationStart{};
+    TableViewTip::AppFaultKind m_tipLastAppFaultKind{};
 
     void OnColumnsVectorChanged(
         const winrt::IObservableVector<winrt::TableViewColumn>& sender,

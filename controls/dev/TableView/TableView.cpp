@@ -1200,7 +1200,7 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     {
         if (!completed)
         {
-            TableViewTip::FailOperation(m_tip, tipGeneration, TableViewTip::Stage::Source, {});
+            FailTipOperation(tipGeneration, TableViewTip::Stage::Source, {});
         }
         else { CompleteTipOperation(tipGeneration); }
         EndTipOperation();

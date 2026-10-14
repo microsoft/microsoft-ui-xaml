@@ -12,7 +12,7 @@
 TableView::ActionTip::ActionTip(
     TableView& owner, TableViewTip::Operation operation, TableViewTip::Stage stage, bool admitted) noexcept :
     m_owner(owner), m_state(owner.m_telemetrySession), m_stage(stage), m_lifetimeGeneration(owner.m_tipLifetimeGeneration),
-    m_exceptions(std::uncaught_exceptions())
+    m_exceptions(std::uncaught_exceptions()), m_appFaultsAtStart(owner.m_tipAppFaults)
 {
     if (admitted && owner.m_telemetrySession.active && !owner.m_rowsSourceDrained)
     {
@@ -37,10 +37,20 @@ TableView::ActionTip::~ActionTip()
         TableViewTelemetry::ReportError(m_state.session, m_state.operationSessionGeneration, m_state.operation, m_stage, true,
             TableViewTip::Attribution::Application, m_error, m_appFaultKind);
     }
-    else if (m_failed || std::uncaught_exceptions() > m_exceptions)
+    else if (m_failed)
     {
-        // App callouts are tagged above, so anything else that escapes is TableView's own failure.
         TableViewTip::FailOperation(m_state, m_generation, m_stage, m_error);
+    }
+    else if (std::uncaught_exceptions() > m_exceptions)
+    {
+        // App callouts are tagged, so an exception escaping is TableView's own failure unless app
+        // code faulted while this ran, e.g. in a nested operation that tagged it on the way out.
+        if (m_owner.m_tipAppFaults != m_appFaultsAtStart)
+        {
+            TableViewTip::IgnoreOperation(m_state, m_generation, TableViewTip::IgnoreReason::ApplicationFault, {},
+                m_owner.m_tipLastAppFaultKind);
+        }
+        else { TableViewTip::FailOperation(m_state, m_generation, m_stage, {}); }
     }
     else if (m_completed)
     {
@@ -60,6 +70,7 @@ void TableView::ActionTip::Fail(std::optional<HRESULT> error) noexcept
 
 void TableView::ActionTip::ApplicationFault(TableViewTip::AppFaultKind kind, std::optional<HRESULT> error) noexcept
 {
+    m_owner.NoteTipAppFault(kind);
     if (m_appFaultKind == TableViewTip::AppFaultKind::None)
     {
         m_appFaultKind = kind;
@@ -86,8 +97,10 @@ void TableView::AppCalloutTip::Fault(std::optional<HRESULT> error) noexcept
     if (m_action)
     {
         m_action->ApplicationFault(m_kind, error);
+        return;
     }
-    else if (m_generation == m_owner.m_tip.operationGeneration)
+    m_owner.NoteTipAppFault(m_kind);
+    if (m_generation == m_owner.m_tip.operationGeneration)
     {
         TableViewTip::IgnoreOperation(m_owner.m_tip, m_generation,
             TableViewTip::IgnoreReason::ApplicationFault, error, m_kind);
@@ -111,9 +124,28 @@ uint64_t TableView::BeginTipOperation(TableViewTip::Operation operation, bool ad
     if (!admitted) { return 0; }
     if (m_telemetrySession.active && !m_rowsSourceDrained)
     {
-        return TableViewTip::BeginOperation(m_tip, operation);
+        auto const generation = TableViewTip::BeginOperation(m_tip, operation);
+        if (generation) { m_tipAppFaultsAtOperationStart = m_tipAppFaults; }
+        return generation;
     }
     return 0;
+}
+
+void TableView::NoteTipAppFault(TableViewTip::AppFaultKind kind) noexcept
+{
+    ++m_tipAppFaults;
+    m_tipLastAppFaultKind = kind;
+}
+
+// Like an action, the control's operation fails on an escaping exception unless app code faulted
+// while it ran, e.g. in a nested operation that tagged it on the way out.
+void TableView::FailTipOperation(uint64_t generation, TableViewTip::Stage stage, std::optional<HRESULT> error) noexcept
+{
+    if (m_tipAppFaults != m_tipAppFaultsAtOperationStart)
+    {
+        TableViewTip::IgnoreOperation(m_tip, generation, TableViewTip::IgnoreReason::ApplicationFault, error, m_tipLastAppFaultKind);
+    }
+    else { TableViewTip::FailOperation(m_tip, generation, stage, error); }
 }
 
 void TableView::EndTipOperation() noexcept
@@ -184,6 +216,8 @@ void TableView::AttachSourceTip(winrt::TableViewSource const& source)
                     --self->m_tipSourceMutationDepth;
                     self->EndTipOperation();
                 });
+                // The source rethrows an app fault, so it can escape through the control's operations.
+                if (kind != TableViewTip::AppFaultKind::None) { self->NoteTipAppFault(kind); }
                 if (!generation || self->m_activeSource.get() != weakSource.get() ||
                     generation != self->m_tip.operationGeneration) { return; }
                 // A callout that already closed this operation has reported the fault.
@@ -192,7 +226,7 @@ void TableView::AttachSourceTip(winrt::TableViewSource const& source)
                     operation == TableViewTip::Operation::Sort ? TableViewTip::Stage::Sort : TableViewTip::Stage::Grouping;
                 if (failed)
                 {
-                    TableViewTip::FailOperation(self->m_tip, generation, stage, error);
+                    self->FailTipOperation(generation, stage, error);
                 }
                 else if (reason)
                 {
