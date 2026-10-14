@@ -84,7 +84,7 @@ namespace winrt::BindTestbed::implementation
     void PhasingTests::StackPanel_PointerReleased(IInspectable const& sender, wux::Input::PointerRoutedEventArgs const&)
     {
         auto root = sender.as<wuxc::StackPanel>();
-        root.Background(wux::Media::SolidColorBrush(::Windows::UI::Colors::White()));
+        root.Background(wux::Media::SolidColorBrush(::winrt::Windows::UI::Colors::White()));
         root.FindName(L"deferedTextBlock");
         root.FindName(L"deferedAndPhasedTextBlock");
     }
