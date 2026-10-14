@@ -8,7 +8,11 @@
 #define LOC_PREFIX L"Microsoft.UI.Xaml"
 #define LOC_PREFIX_WINUI L"Microsoft.UI.Xaml"
 
+#ifdef MUXCONTROLS_TABULAR
+PCWSTR ResourceAccessor::c_resourceLoc{ MUXTABULARROOT_NAMESPACE_STR L"/Resources" };
+#else
 PCWSTR ResourceAccessor::c_resourceLoc{ LOC_PREFIX L"/Resources" };
+#endif
 PCWSTR ResourceAccessor::c_assetLoc{ L"Files/" LOC_PREFIX L"/Assets"};
 PCWSTR ResourceAccessor::c_resourceLocWinUI{ LOC_PREFIX_WINUI L"/Resources" };
 

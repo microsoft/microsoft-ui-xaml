@@ -1006,6 +1006,115 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Collapses the target of a pending ItemsView.StartBringItemIntoView operation and verifies that the ensuing layout pass does not throw.")]
+        public void CanCollapsePendingBringItemIntoViewTarget()
+        {
+            InvalidatePendingBringItemIntoViewTarget(detachTarget: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Detaches the target of a pending ItemsView.StartBringItemIntoView operation and verifies that the ensuing layout pass does not throw.")]
+        public void CanDetachPendingBringItemIntoViewTarget()
+        {
+            InvalidatePendingBringItemIntoViewTarget(detachTarget: true);
+        }
+
+        // Regression coverage for https://github.com/microsoft/microsoft-ui-xaml/issues/11865.
+        // ItemsView retains the StartBringItemIntoView target in m_bringIntoViewElement and hands it back to
+        // ScrollView as the scroll anchor from ItemsView::OnScrollViewAnchorRequested. When that retained element
+        // stops being a valid anchor before the next layout pass - because it got collapsed, or because it got
+        // recycled and detached from the ItemsRepeater content - ScrollingAnchorRequestedEventArgs.AnchorElement
+        // used to reject it with E_INVALIDARG, surfacing as an ArgumentException during layout.
+        private void InvalidatePendingBringItemIntoViewTarget(bool detachTarget)
+        {
+            using (PrivateLoggingHelper privateIVLoggingHelper = new PrivateLoggingHelper(
+                new List<string>() { "ItemsView", "ItemsRepeater", "ScrollView" },
+                isLoggingInfoLevel: true,
+                isLoggingVerboseLevel: true))
+            {
+                ItemsView itemsView = null;
+                ItemContainer targetItemContainer = null;
+                AutoResetEvent itemsViewLoadedEvent = new AutoResetEvent(false);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    itemsView = new ItemsView();
+
+                    SetupDefaultUI(itemsView, itemsViewLoadedEvent);
+                });
+
+                WaitForEvent("Waiting for Loaded event", itemsViewLoadedEvent);
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Setting ItemsSource with a tall first item so that the second item is off-screen.");
+
+                    targetItemContainer = new ItemContainer()
+                    {
+                        Height = 100,
+                        Child = new TextBlock() { Text = "Target" }
+                    };
+
+                    itemsView.ItemsSource = new object[]
+                    {
+                        new ItemContainer()
+                        {
+                            Height = 2000,
+                            Child = new TextBlock() { Text = "First item" }
+                        },
+                        targetItemContainer
+                    };
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Invoking ItemsView.StartBringItemIntoView(1).");
+
+                    itemsView.StartBringItemIntoView(1, new BringIntoViewOptions() { AnimationDesired = false });
+
+                    if (detachTarget)
+                    {
+                        Log.Comment("Detaching the pending bring-into-view target by replacing the ItemsSource.");
+
+                        itemsView.ItemsSource = new object[]
+                        {
+                            new ItemContainer()
+                            {
+                                Height = 2000,
+                                Child = new TextBlock() { Text = "Replacement item" }
+                            }
+                        };
+                    }
+                    else
+                    {
+                        Log.Comment("Invalidating the pending bring-into-view target by collapsing it.");
+
+                        targetItemContainer.Visibility = Visibility.Collapsed;
+                    }
+
+                    Log.Comment("Invoking ItemsView.UpdateLayout() to force the anchor request synchronously.");
+
+                    try
+                    {
+                        itemsView.UpdateLayout();
+                    }
+                    catch (Exception exception)
+                    {
+                        Verify.Fail($"ItemsView.UpdateLayout() threw {exception.GetType().Name}: {exception.Message}");
+                    }
+                });
+
+                IdleSynchronizer.Wait();
+
+                Log.Comment("Done");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verify binding to the ItemsView's SelectedItem using XAML markup.")]
         public void CanBindSelectedItem()
         {
