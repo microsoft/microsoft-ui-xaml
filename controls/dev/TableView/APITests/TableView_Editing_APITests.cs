@@ -1115,6 +1115,58 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyForcedClose(tableView, actions, TableViewEditAction.Commit, parent, "Zed", "an item still in the flat projection must receive the valid pending value");
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies filtering an edited child out of a ParentBy projection force-closes the edit as a Cancel and writes nothing to it.")]
+        public void VerifyForcedCloseCancelsWhenEditedItemIsFilteredOutUnderParentBy()
+        {
+            var items = MakeEditableItems();
+            var parent = items[0];
+            var edited = items[1];
+            var source = ParentEditedUnder(items, parent, edited);
+            var tableView = LoadExpandedTable(source);
+            var actions = OpenEditHoldingValidValue(tableView, edited, "Zed");
+
+            RunOnUIThread.Execute(() => source.Filter(new TableViewPredicate(o => ((EditablePerson)o).Name != "Diego")));
+            IdleSynchronizer.Wait();
+
+            VerifyForcedClose(tableView, actions, TableViewEditAction.Cancel, edited, "Diego", "a filtered-out child must not receive the pending value");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies removing an edited child from a ParentBy source force-closes the edit as a Cancel and writes nothing to it.")]
+        public void VerifyForcedCloseCancelsWhenEditedItemIsRemovedUnderParentBy()
+        {
+            var items = new ObservableCollection<EditablePerson>(MakeEditableItems());
+            var parent = items[0];
+            var edited = items[1];
+            var source = ParentEditedUnder(items, parent, edited);
+            var tableView = LoadExpandedTable(source);
+            var actions = OpenEditHoldingValidValue(tableView, edited, "Zed");
+
+            RunOnUIThread.Execute(() => items.Remove(edited));
+            IdleSynchronizer.Wait();
+
+            VerifyForcedClose(tableView, actions, TableViewEditAction.Cancel, edited, "Diego", "a removed child must not receive the pending value");
+        }
+
+        private static TableViewSource ParentEditedUnder(IEnumerable<EditablePerson> items, EditablePerson parent, EditablePerson child)
+        {
+            var source = SourceFrom(items);
+            RunOnUIThread.Execute(() => source.ParentBy(
+                new TableViewKeySelector(o => o),
+                new TableViewKeySelector(o => ReferenceEquals(o, child) ? parent : null)));
+            return source;
+        }
+
+        // Nodes start collapsed, so expand them to give the child a realized row to edit.
+        private TableView LoadExpandedTable(TableViewSource source)
+        {
+            var tableView = LoadEditableTable(source);
+            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
+            IdleSynchronizer.Wait();
+            return tableView;
+        }
+
         // TableViewSource must be created on the UI thread.
         private static TableViewSource SourceFrom(object items)
         {
