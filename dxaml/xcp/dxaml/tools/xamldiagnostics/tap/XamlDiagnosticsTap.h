@@ -238,6 +238,13 @@ interface __declspec(uuid("{e6755030-f33e-4864-931e-06368e30a84a}"))
     STDMETHOD_(void, RemoveDictionaryItem)(
         _In_ InstanceHandle dictionaryHandle,
         _In_ InstanceHandle implicitStyleHandle) = 0;
+
+    // Needs to be called from the correct thread
+    STDMETHOD(HitTestForXamlRoot)(
+        _In_ InstanceHandle xamlRootHandle,
+        _In_ RECT rect,
+        _Out_ unsigned int* pCount,
+        _Deref_post_opt_count_(*pCount) InstanceHandle** ppInstanceHandles) = 0;
 };
 
 HRESULT XamlDiagnosticsTap_CreateInstance(

@@ -1,0 +1,648 @@
+{
+  "area-AOT": {
+    "team": "team-Markup",
+    "confidence": "high",
+    "match": ["AOT", "NativeAOT", "trimming", "PublishAot", "IL trimming"]
+  },
+  "area-AccessKeys": {
+    "team": "team-Reach",
+    "confidence": "low",
+    "match": ["AccessKey", "access key", "alt key", "key tips"]
+  },
+  "area-Accessibility": {
+    "team": "team-Reach",
+    "confidence": "low",
+    "match": ["accessibility", "screen reader", "Narrator", "UIA", "AutomationPeer", "AutomationProperties", "contrast"],
+    "note": "If the defect is inside one control's peer, prefer that control's area with team-Controls."
+  },
+  "area-AnimatedIcon": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["AnimatedIcon", "animated icon", "lottie icon", "IconSource animation"]
+  },
+  "area-AnimatedVisualPlayer": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["AnimatedVisualPlayer", "lottie", "IAnimatedVisual", "composition animation playback"],
+    "note": "Playback pipeline can be composition-side; reroute to team-CompInput if the failure is in the compositor.",
+    "overrides": [{"id": "compositor-failure", "when": "The failure is in the compositor.", "team": "team-CompInput"}]
+  },
+  "area-Animations": {
+    "team": "team-Rendering",
+    "confidence": "medium",
+    "match": ["Storyboard", "DoubleAnimation", "implicit animation", "connected animation", "easing"]
+  },
+  "area-App activation": {
+    "team": "team-Reach",
+    "confidence": "medium",
+    "match": ["activation", "launch args", "protocol activation", "file activation", "OnLaunched"]
+  },
+  "area-AppWindow": {
+    "team": "team-CompInput",
+    "confidence": "low",
+    "match": ["AppWindow", "window presenter", "OverlappedPresenter", "window resize", "always on top"],
+    "overrides": [{"id": "xaml-hosting", "when": "XAML content, XamlRoot or island hosting inside the window", "team": "team-Reach"}]
+  },
+  "area-Application": {
+    "team": "team-Reach",
+    "confidence": "medium",
+    "match": ["Application object", "App.xaml", "application singleton", "unhandled exception"]
+  },
+  "area-AutoSuggestBox": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["AutoSuggestBox", "suggestion list", "auto suggest", "type-ahead"]
+  },
+  "area-Binding": {
+    "team": "team-Markup",
+    "confidence": "high",
+    "match": ["Binding", "x:Bind", "DataContext", "INotifyPropertyChanged", "converter", "binding expression"]
+  },
+  "area-Breadcrumb": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["BreadcrumbBar", "breadcrumb", "path navigation"]
+  },
+  "area-Button": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["Button", "ToggleButton", "CheckBox", "RadioButton", "click event"]
+  },
+  "area-C#/WinRT": {
+    "team": "team-Reach",
+    "confidence": "medium",
+    "match": ["CsWinRT", "C# projection", "WinRT interop", "generated projection"]
+  },
+  "area-C++/WinRT": {
+    "team": "team-Core",
+    "confidence": "low",
+    "match": ["cppwinrt", "C++/WinRT", "winrt::", "implements<>"]
+  },
+  "area-ColorPicker": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["ColorPicker", "ColorSpectrum", "color wheel", "eyedropper"]
+  },
+  "area-ComboBox": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["ComboBox", "dropdown", "editable combo", "ComboBoxItem"]
+  },
+  "area-CommandBarFlyout": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["CommandBarFlyout", "CommandBar", "AppBarButton", "secondary commands"]
+  },
+  "area-Commanding": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["ICommand", "XamlUICommand", "StandardUICommand", "CanExecute"]
+  },
+  "area-CoreFramework": {
+    "team": "team-Markup",
+    "confidence": "high",
+    "match": ["DependencyProperty", "DependencyObject", "property system", "FrameworkElement base", "type system"]
+  },
+  "area-DataGrid": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["DataGrid", "grid column", "row virtualization"]
+  },
+  "area-DateTimePickers": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["DatePicker", "TimePicker", "CalendarView", "CalendarDatePicker"]
+  },
+  "area-Density": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["compact density", "control sizing", "CompactDensity"]
+  },
+  "area-Design": {
+    "team": "team-Design",
+    "confidence": "medium",
+    "match": ["visual design", "design guidance", "spec design"]
+  },
+  "area-DesignDiscussion": {
+    "team": "team-Design",
+    "confidence": "medium",
+    "match": ["design discussion", "design review", "open design question"]
+  },
+  "area-DesignToolkit": {
+    "team": "team-Design",
+    "confidence": "high",
+    "match": ["design toolkit", "Figma", "design kit", "redlines"]
+  },
+  "area-Designer": {
+    "team": "team-Markup",
+    "confidence": "low",
+    "match": ["XAML designer", "design surface", "Visual Studio designer", "design-time"]
+  },
+  "area-DevInternal": {
+    "team": "team-Markup",
+    "confidence": "medium",
+    "match": ["internal only", "dev internal"]
+  },
+  "area-Dialogs": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["ContentDialog", "dialog", "modal", "ShowAsync"]
+  },
+  "area-DragAndDrop": {
+    "team": "team-CompInput",
+    "confidence": "medium",
+    "match": ["drag and drop", "DragStarting", "Drop", "DataPackage", "drag visual"]
+  },
+  "area-EffectiveViewport": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["EffectiveViewport", "EffectiveViewportChanged", "viewport"]
+  },
+  "area-ErrorHandling": {
+    "team": "team-Core",
+    "confidence": "medium",
+    "match": ["unhandled exception", "HRESULT", "crash on error", "error propagation", "fail fast"]
+  },
+  "area-Expander": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["Expander", "collapsible", "disclosure"]
+  },
+  "area-External": {
+    "team": null,
+    "confidence": "low",
+    "match": ["external component", "third party", "not in this repo"],
+    "note": "No single owner in the data. Route by the underlying subsystem, or leave for human triage."
+  },
+  "area-Flyouts": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["Flyout", "MenuFlyout", "FlyoutPresenter", "light dismiss"],
+    "overrides": [{"id": "rendering-artifact", "when": "placement, shadow, or rendering artifact", "team": "team-Rendering"}]
+  },
+  "area-FocusManager": {
+    "team": "team-Reach",
+    "confidence": "high",
+    "match": ["FocusManager", "GotFocus", "LostFocus", "focus visual", "tab order", "TabIndex"]
+  },
+  "area-HotReload": {
+    "team": "team-Markup",
+    "confidence": "high",
+    "match": ["Hot Reload", "XAML Hot Reload", "live edit"]
+  },
+  "area-Hyperlink": {
+    "team": "team-Rendering",
+    "confidence": "medium",
+    "match": ["Hyperlink", "inline link", "text link"],
+    "note": "Inline text element, handled with text rendering rather than the controls library."
+  },
+  "area-HyperlinkButton": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["HyperlinkButton", "NavigateUri"]
+  },
+  "area-Icon": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["IconElement", "FontIcon", "SymbolIcon", "IconSource", "PathIcon"],
+    "overrides": [{"id": "glyph-rendering", "when": "glyph rasterisation, blurry or clipped icon", "team": "team-Rendering"}]
+  },
+  "area-ImageIcon": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["ImageIcon"]
+  },
+  "area-Images": {
+    "team": "team-Rendering",
+    "confidence": "high",
+    "match": ["Image", "BitmapImage", "SvgImageSource", "image decode", "ImageFailed", "source stream"]
+  },
+  "area-InfoBadge": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["InfoBadge", "badge", "count badge"]
+  },
+  "area-InfoBar": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["InfoBar", "inline notification", "status banner"]
+  },
+  "area-Infrastructure": {
+    "team": "team-Core",
+    "confidence": "low",
+    "match": ["repo infrastructure", "build agent", "internal tooling"]
+  },
+  "area-InkCanvas": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["InkCanvas", "inking", "stylus strokes", "InkPresenter"]
+  },
+  "area-InkToolBar": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["InkToolbar", "pen picker", "ink tools"]
+  },
+  "area-InputValidation": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["InputValidation", "validation error", "INotifyDataErrorInfo", "error template"]
+  },
+  "area-Islands": {
+    "team": "team-Reach",
+    "confidence": "high",
+    "match": ["DesktopWindowXamlSource", "XAML island", "island hosting", "ContentIsland", "Win32 interop"]
+  },
+  "area-ItemsRepeater": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["ItemsRepeater", "Repeater", "virtualizing layout", "ElementFactory"]
+  },
+  "area-ItemsView": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["ItemsView", "ItemCollectionTransitionProvider", "ItemContainer"]
+  },
+  "area-KeyboardAccelerators": {
+    "team": "team-Reach",
+    "confidence": "medium",
+    "match": ["KeyboardAccelerator", "shortcut key", "accelerator", "Ctrl+"]
+  },
+  "area-Layouts": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["Grid", "StackPanel", "Canvas", "RelativePanel", "measure", "arrange", "layout cycle"],
+    "overrides": [{"id": "layout-engine", "when": "layout pass crash or invalidation in the engine", "team": "team-Core"}]
+  },
+  "area-Lifetime": {
+    "team": "team-Reach",
+    "confidence": "medium",
+    "match": ["shutdown", "teardown", "object lifetime", "leak", "finalizer", "reference cycle"]
+  },
+  "area-Lists": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["ListView", "GridView", "ListBox", "ListViewItem", "FlipView", "Selector", "data virtualization"]
+  },
+  "area-LiveVisualTree": {
+    "team": "team-Markup",
+    "confidence": "low",
+    "match": ["Live Visual Tree", "IXamlDiagnostics", "visual tree inspector", "property explorer"]
+  },
+  "area-Localization": {
+    "team": "team-Markup",
+    "confidence": "low",
+    "match": ["localization", "RTL", "FlowDirection", "translated string", "locale"]
+  },
+  "area-MRT": {
+    "team": "team-Markup",
+    "confidence": "medium",
+    "match": ["MRT", "MRTCore", "resources.pri", "resource loading", "ResourceManager"]
+  },
+  "area-MapControl": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["MapControl", "map tiles", "MapElement"]
+  },
+  "area-Materials": {
+    "team": "team-Rendering",
+    "confidence": "low",
+    "match": ["AcrylicBrush", "material", "blur backdrop", "tint"],
+    "overrides": [{"id": "compositor-resource", "when": "backdrop configuration or compositor resource", "team": "team-CompInput"}]
+  },
+  "area-MediaElement": {
+    "team": "team-Rendering",
+    "confidence": "high",
+    "match": ["MediaElement"]
+  },
+  "area-MediaPlayerElement": {
+    "team": "team-Rendering",
+    "confidence": "high",
+    "match": ["MediaPlayerElement", "MediaPlayer", "video playback", "transport controls"]
+  },
+  "area-Menus": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["MenuBar", "MenuFlyoutItem", "context menu", "cascading menu", "submenu"]
+  },
+  "area-Migration": {
+    "team": "team-Markup",
+    "confidence": "low",
+    "match": ["migration", "UWP to WinUI", "WPF to WinUI", "upgrade assistant", "porting"]
+  },
+  "area-Mouse": {
+    "team": "team-CompInput",
+    "confidence": "medium",
+    "match": ["mouse wheel", "right click", "cursor", "ProtectedCursor", "mouse capture"]
+  },
+  "area-Navigation": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["Frame", "Page navigation", "back stack", "NavigationCacheMode", "OnNavigatedTo"],
+    "note": "Frame/page navigation. Distinct from the area-NavigationView control."
+  },
+  "area-NavigationView": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["NavigationView", "NavView", "nav pane", "NavigationViewItem", "hamburger"]
+  },
+  "area-NugetPackage": {
+    "team": "team-Markup",
+    "confidence": "low",
+    "match": ["NuGet package", "package restore", "WindowsAppSDK package", "nupkg"]
+  },
+  "area-NumberBox": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["NumberBox", "spin buttons", "numeric input", "number formatter"]
+  },
+  "area-Pager": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["PagerControl", "pager", "page number"]
+  },
+  "area-ParallaxView": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["ParallaxView", "parallax"]
+  },
+  "area-Parser": {
+    "team": "team-Markup",
+    "confidence": "medium",
+    "match": ["XAML parser", "XBF", "parse error", "markup extension", "XamlReader"]
+  },
+  "area-PasswordBox": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["PasswordBox", "reveal password", "password field"]
+  },
+  "area-Performance": {
+    "team": null,
+    "confidence": "low",
+    "match": ["performance", "slow", "memory usage", "startup time", "regression in speed", "CPU"],
+    "note": "Spread evenly across every team in the data. Route by the subsystem that is slow, not by this label alone."
+  },
+  "area-PersonPicture": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["PersonPicture", "avatar", "initials", "contact photo"]
+  },
+  "area-PipsPager": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["PipsPager", "pips", "dot pagination"]
+  },
+  "area-Pivot": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["Pivot", "PivotItem", "LoopingSelector"]
+  },
+  "area-Pointer": {
+    "team": "team-CompInput",
+    "confidence": "high",
+    "match": ["PointerPressed", "PointerMoved", "pointer capture", "touch", "pen", "hit testing", "gesture"]
+  },
+  "area-Popup": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["Popup", "popup window", "IsOpen", "light dismiss overlay"],
+    "overrides": [{"id": "composition-layering", "when": "z-order, clipping or composition layering", "team": "team-Rendering"}]
+  },
+  "area-Progress": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["ProgressBar", "ProgressRing", "indeterminate progress"]
+  },
+  "area-ProjectSystem": {
+    "team": "team-Markup",
+    "confidence": "high",
+    "match": ["csproj", "vcxproj", "MSBuild", "project template", "build target", "SDK version"]
+  },
+  "area-PullToRefresh": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["RefreshContainer", "PullToRefresh", "RefreshVisualizer"]
+  },
+  "area-RadialGradientBrush": {
+    "team": "team-Rendering",
+    "confidence": "medium",
+    "match": ["RadialGradientBrush", "gradient stop", "radial gradient"]
+  },
+  "area-RadioButtons": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["RadioButtons", "radio group"]
+  },
+  "area-RatingControl": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["RatingControl", "star rating"]
+  },
+  "area-RepeatButton": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["RepeatButton", "auto repeat"]
+  },
+  "area-Resources": {
+    "team": "team-Markup",
+    "confidence": "medium",
+    "match": ["ResourceDictionary", "StaticResource", "ThemeResource", "merged dictionaries", "lookup"]
+  },
+  "area-ScaleFactor": {
+    "team": "team-Rendering",
+    "confidence": "high",
+    "match": ["DPI", "scale factor", "per-monitor DPI", "RasterizationScale", "blurry at scaling"]
+  },
+  "area-ScrollBar": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["ScrollBar", "scrollbar thumb", "conscious scrollbar"]
+  },
+  "area-Scrolling": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["ScrollViewer", "ScrollView", "ScrollPresenter", "scrolling", "InteractionTracker", "zoom factor"],
+    "overrides": [{"id": "compositor-input", "when": "compositor-thread interaction tracker or input latency", "team": "team-CompInput"}]
+  },
+  "area-SelectionModel": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["SelectionModel", "IndexPath", "multi-select"]
+  },
+  "area-SemanticZoom": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["SemanticZoom", "zoomed in view", "zoomed out view"]
+  },
+  "area-Shadows": {
+    "team": "team-Rendering",
+    "confidence": "medium",
+    "match": ["ThemeShadow", "DropShadow", "shadow", "elevation"]
+  },
+  "area-Shapes": {
+    "team": "team-Rendering",
+    "confidence": "high",
+    "match": ["Path", "Rectangle", "Ellipse", "Geometry", "stroke", "fill", "PathGeometry"]
+  },
+  "area-Slider": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["Slider", "thumb drag", "tick marks"]
+  },
+  "area-SplitButton": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["SplitButton", "ToggleSplitButton"]
+  },
+  "area-SplitView": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["SplitView", "pane", "display mode"]
+  },
+  "area-Styling": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["Style", "Setter", "ControlTemplate", "theme", "light theme", "dark theme", "high contrast"]
+  },
+  "area-SwipeControl": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["SwipeControl", "SwipeItem", "swipe gesture"]
+  },
+  "area-SystemBackdropEement": {
+    "team": "team-CompInput",
+    "confidence": "medium",
+    "match": ["SystemBackdrop", "Mica", "Acrylic", "DesktopAcrylicBackdrop", "MicaBackdrop"],
+    "note": "Label name contains a typo in the repository (\"Eement\"). Match on it exactly."
+  },
+  "area-TabView": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["TabView", "TabViewItem", "tab strip", "tab tear-out"]
+  },
+  "area-TeachingTip": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["TeachingTip", "coachmark", "teaching callout"]
+  },
+  "area-TableView": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["TableView", "Table", "DataGrid"]
+  },
+  "area-Charting": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["Charts", "Charting", "Graphs"]
+  },
+  "area-Inking": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["Ink", "Inking", "Pen", "Handwrite"]
+  },
+  "area-Templates": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["DataTemplate", "ControlTemplate", "TemplateSelector", "template part"]
+  },
+  "area-TestInfrastructure": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["test infrastructure", "TAEF", "Helix", "flaky test", "test harness"]
+  },
+  "area-TextBlocks": {
+    "team": "team-Rendering",
+    "confidence": "medium",
+    "match": ["TextBlock", "RichTextBlock", "text wrapping", "text trimming", "font fallback", "glyph"]
+  },
+  "area-TextBox": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["TextBox", "RichEditBox", "text input", "caret", "selection", "spell check"]
+  },
+  "area-TitleBar": {
+    "team": "team-Reach",
+    "confidence": "low",
+    "match": ["TitleBar", "custom title bar", "caption buttons", "ExtendsContentIntoTitleBar", "drag region"],
+    "overrides": [{"id": "pointer-handling", "when": "hit testing, drag region input or caption button pointer handling", "team": "team-CompInput"}]
+  },
+  "area-ToggleSwitch": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["ToggleSwitch", "on off switch"]
+  },
+  "area-ToolTip": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["ToolTip", "ToolTipService", "hover tip"]
+  },
+  "area-Tooling": {
+    "team": "team-Markup",
+    "confidence": "low",
+    "match": ["developer tooling", "WinAppCLI", "diagnostics tool", "debugger extension"]
+  },
+  "area-Transitions": {
+    "team": "team-Rendering",
+    "confidence": "medium",
+    "match": ["ThemeTransition", "transition", "EntranceTransition", "reposition animation"]
+  },
+  "area-TreeView": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["TreeView", "TreeViewItem", "expand collapse", "hierarchical data"]
+  },
+  "area-TwoPaneView": {
+    "team": "team-Controls",
+    "confidence": "medium",
+    "match": ["TwoPaneView", "dual screen", "spanning"]
+  },
+  "area-UIDesign": {
+    "team": "team-Design",
+    "confidence": "high",
+    "match": ["UI design", "visual polish", "spacing", "typography", "design inconsistency"]
+  },
+  "area-Unpackaged": {
+    "team": "team-Markup",
+    "confidence": "high",
+    "match": ["unpackaged", "self-contained", "sparse package", "bootstrapper", "no identity"]
+  },
+  "area-VSM": {
+    "team": "team-Controls",
+    "confidence": "low",
+    "match": ["VisualStateManager", "VisualState", "state trigger", "AdaptiveTrigger"]
+  },
+  "area-WebView": {
+    "team": "team-Rendering",
+    "confidence": "high",
+    "match": ["WebView2", "WebView", "CoreWebView2", "Edge runtime", "browser control"]
+  },
+  "area-Windowing": {
+    "team": "team-CompInput",
+    "confidence": "high",
+    "match": ["window positioning", "window state", "minimize", "maximize", "monitor", "z-order", "window styles"]
+  },
+  "area-WindowsDesign": {
+    "team": "team-Design",
+    "confidence": "medium",
+    "match": ["Windows design language", "Fluent", "OS design alignment"]
+  },
+  "area-XYFocus": {
+    "team": "team-Reach",
+    "confidence": "medium",
+    "match": ["XYFocus", "directional focus", "gamepad navigation", "d-pad"]
+  },
+  "area-XamlCompiler": {
+    "team": "team-Markup",
+    "confidence": "high",
+    "match": ["XAML compiler", "XamlCompiler", "genxbf", "compile error", "code-behind generation", "XamlTypeInfo"]
+  },
+  "area-XamlWindow": {
+    "team": "team-Reach",
+    "confidence": "high",
+    "match": ["Microsoft.UI.Xaml.Window", "XamlRoot", "window content", "Window.Activate", "window closed"]
+  },
+  "area-wapproj": {
+    "team": "team-Markup",
+    "confidence": "medium",
+    "match": ["wapproj", "Windows Application Packaging Project", "MSIX packaging"]
+  }
+}

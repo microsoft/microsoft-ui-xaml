@@ -20,6 +20,10 @@
         </StackPanel>
         <!-- Custom title bar  end block -->
         <TextBlock Text="WinUICppDesktopSampleApp" FontSize="20" Margin="2"/>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="GamepadKeyRouting:" VerticalAlignment="Center" Margin="2"/>
+            <TextBlock x:Name="textBlockGamepadKeyRouting" AutomationProperties.Name="textBlockGamepadKeyRouting" VerticalAlignment="Center" Margin="2"/>
+        </StackPanel>
         <ContentDialog x:Name="contentDialogWindowChromeTest"
             PrimaryButtonText="Accept" IsPrimaryButtonEnabled="False"
             CloseButtonText="Cancel">

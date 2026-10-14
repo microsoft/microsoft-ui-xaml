@@ -18,6 +18,7 @@ public:
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     hstring GetClassNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
+    winrt::Rect GetBoundingRectangleCore();
 
     // IGridProvider / ITableProvider expose visible logical columns.
     // Headers remain semantic cell names even when the header strip is hidden.
@@ -49,21 +50,32 @@ public:
     // Expanding or collapsing a group adds or removes whole runs of rows, so every cached child
     // of the TableView peer may be stale.
     void RaiseStructureChangedForGroupExpansion();
+    // Column add/remove/hide changes every row's cells and the header band.
+    void RaiseStructureChangedForColumnsChange();
 
-private:
-    // One peer per column, kept alive for as long as the column stays in Columns(). Each call
-    // to GetColumnHeaders must hand back the same provider for a given column: minting a fresh
-    // peer per call yields unstable provider identity and leaves the returned providers with no
-    // owner keeping them alive.
-    struct ColumnHeaderPeerCacheEntry
-    {
-        winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
-        winrt::AutomationPeer peer{ nullptr };
-    };
-
+    // Internal — the single source of column-header peer identity, shared with
+    // TableViewCellAutomationPeer::GetColumnHeaderItems.
     winrt::AutomationPeer GetOrCreateColumnHeaderPeer(
         winrt::TableView const& tableView,
         winrt::TableViewColumn const& column);
+
+private:
+    // One peer per column, kept alive for as long as the column stays in Columns(). Each call
+    // to GetColumnHeaders must hand back the same provider for a given column.
+    struct ColumnHeaderPeerCacheEntry
+    {
+        ColumnHeaderPeerCacheEntry(
+            ITrackerHandleManager const* owner,
+            winrt::TableViewColumn const& headerColumn,
+            winrt::AutomationPeer const& headerPeer)
+            : column(winrt::make_weak(headerColumn))
+            , peer(owner, headerPeer)
+        {
+        }
+
+        winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
+        tracker_ref<winrt::AutomationPeer> peer;
+    };
 
     void RaiseStructureChanged(winrt::AutomationStructureChangeType const& structureChangeType);
     com_ptr<TableView> GetImpl();
