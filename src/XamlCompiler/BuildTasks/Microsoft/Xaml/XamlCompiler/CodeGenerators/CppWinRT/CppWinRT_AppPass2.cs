@@ -84,8 +84,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                     "oid>\r\n    inline constexpr bool has_parameterless_ctor_v = false;\r\n\r\n    templat" +
                     "e <typename T>\r\n    inline constexpr bool has_parameterless_ctor_v<T, std::void_" +
                     "t<decltype(T())>> = true;\r\n}\r\n#endif\r\n\r\n#ifndef DISABLE_XAML_GENERATED_MAIN\r\nint" +
-                    " __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)\r\n#else\r\nint __stdcall wXam" +
-                    "lGeneratedMain()\r\n#endif\r\n{\r\n");
+                    " __stdcall wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR, _In_ int)\r\n#" +
+                    "else\r\nint __stdcall wXamlGeneratedMain()\r\n#endif\r\n{\r\n");
   if (ProjectInfo.IsWin32App) { 
             this.Write("    winrt::init_apartment(winrt::apartment_type::single_threaded);\r\n");
   } else { 

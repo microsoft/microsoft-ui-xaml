@@ -1,3 +1,0 @@
-path,%SystemDrive%\perf
-process,te.exe
-process,te.processhost.exe

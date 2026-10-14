@@ -6,33 +6,27 @@
 
     <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
     <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
-    <!-- Mirrored: TableView_themeresources.xaml is not emitted for the Tabular binary. -->
+    <!-- Metric defaults remain available alongside the default styles. -->
     <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
-        
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundBrush" Color="{ThemeResource TextFillColorPrimary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundPointerOverBrush" Color="{ThemeResource TextFillColorPrimary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="{ThemeResource TextFillColorPrimary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="{ThemeResource TextFillColorDisabled}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPointerOverBrush" Color="{ThemeResource SubtleFillColorSecondary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPressedBrush" Color="{ThemeResource SubtleFillColorTertiary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="Transparent" />
-    <!-- Last-resort selection fallbacks for hosts that do not merge
-         CommonStyles/TabularSurfaces_themeresources.xaml, which is the canonical source. -->
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="{ThemeResource SubtleFillColorSecondary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="{ThemeResource SubtleFillColorTertiary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="{ThemeResource SubtleFillColorSecondary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedBrush" Color="{ThemeResource TextFillColorPrimary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPointerOverBrush" Color="{ThemeResource TextFillColorPrimary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPressedBrush" Color="{ThemeResource TextFillColorPrimary}" />
-    <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColor}" />
-    <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="{ThemeResource SubtleFillColorSecondary}" />
-    <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="{ThemeResource DividerStrokeColorDefault}" />
+
+    <!-- TabularControlsResources is required to supply TabularSurface* brushes for all themes. -->
 
     <!-- TableView default style. Header cells stack horizontally (one per
          column); the body is an ItemsRepeater of TableViewRow, each building its cells from
          the owning TableView's Columns. -->
     <Style TargetType="controls:TableView">
+        <!-- The control is a focus SCOPE, not a focus STOP: Tab must land on the header band and
+             then the body, never on the table element itself. Matches the ListView default style
+             (dxaml\xcp\dxaml\themes\generic.xaml), which sets IsTabStop="False" for the same
+             reason. Control.IsTabStop defaults to true, so this has to be stated.
+
+             Deliberately NOT paired with TabNavigation="Once". ListView sets that because it wants
+             exactly ONE stop for the whole control; TableView wants TWO - the header band and the
+             body - and Once here would swallow the body, leaving it unreachable by Tab. The two
+             stops come from the two bands owning their own scopes: KeyboardNavigationMode::Once on
+             PART_HeaderHost (TableView::OnApplyTemplate) and the same mode that ItemsRepeater sets
+             on itself for PART_RowsRepeater. -->
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceRowForegroundBrush}" />
@@ -57,8 +51,12 @@
                             <Border x:Name="PART_HeaderRow"
                                     Grid.Row="0"
                                     Background="{ThemeResource TabularSurfaceHeaderBackgroundBrush}"
-                                    BorderBrush="{ThemeResource TabularSurfaceGridLineBrush}"
-                                    BorderThickness="0,0,0,1">
+                                    BorderBrush="{ThemeResource TabularSurfaceGridLineBrush}">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                    </Style>
+                                </Border.Style>
                                 <Grid>
                                     <ScrollViewer x:Name="PART_HeaderScroller"
                                                   HorizontalScrollMode="Disabled"
@@ -82,23 +80,12 @@
                                           VerticalContentAlignment="Stretch">
                                 
                                 <Grid x:Name="PART_BodyContent" Background="Transparent">
-                                    <!-- Vertical StackLayout ignores horizontal cache length; keep only the effective cache axis. -->
                                     <ItemsRepeater x:Name="PART_RowsRepeater"
                                                    VerticalCacheLength="2.0">
                                         <ItemsRepeater.Layout>
                                             <StackLayout Orientation="Vertical" />
                                         </ItemsRepeater.Layout>
-                                        <!-- No ItemTemplate here: it is assigned in code to a
-                                             TableViewRowTemplateSelector that maps the row's
-                                             TableViewRowKind to a TableViewGroupHeader or TableViewRow
-                                             container template. ItemsRepeater accepts a
-                                             DataTemplateSelector and gives each selected template its
-                                             own recycle pool. -->
                                     </ItemsRepeater>
-                                    <!-- Empty-state overlay. The control (C++ UpdateEmptyState) shows
-                                         this ONLY when EmptyTemplate is set AND the effective row source
-                                         is empty; otherwise it stays Collapsed and inert (zero behavior
-                                         change for TableViews that don't set EmptyTemplate). Centered. -->
                                     <ContentControl x:Name="PART_EmptyStatePresenter"
                                                     Visibility="Collapsed"
                                                     IsTabStop="False"
@@ -115,7 +102,22 @@
         </Setter>
     </Style>
 
+    <x:Double x:Key="TableViewRowExpanderSize">24</x:Double>
+
+    <!-- Indent added per hierarchy level on a tree row's first column. Override in an app's
+         resources to retheme every table, or in one TableView's Resources for a single table. -->
+    <x:Double x:Key="TableViewRowIndentSize">16</x:Double>
+
     <Style TargetType="controls:TableViewRow">
+        <!-- The row IS a focus target. Body navigation is TWO-LEVEL, following the W3C ARIA APG
+             `treegrid` pattern: focus enters the body on a ROW, Right drills into that row's first
+             CELL, and Left from the first cell comes back out to the ROW. So Control.IsTabStop's
+             default of true is what we want here and there is deliberately no setter overriding it.
+
+             The row's IsTabStop is not static, though: TableViewRow::SetCellLevelInternal clears it
+             for exactly as long as the cursor is drilled into that row's cells, and restores it on
+             the way back out. That is what keeps the body ONE tab stop in BOTH directions - see the
+             comment on SetCellLevelInternal for why the framework's tab walk forces the trade. -->
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />        
@@ -128,11 +130,11 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:TableViewRow">
-                    <Border x:Name="PART_RootBorder"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Padding="{TemplateBinding Padding}">
+                    <Grid>
+                        <!-- State groups belong on the TEMPLATE ROOT: VisualStateManager resolves
+                             them from the root's attached property, so hosting them on an inner
+                             element disables every state silently - no parse error and no warning,
+                             just a row that never paints its selected / hover / pressed visuals. -->
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -141,6 +143,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundPointerOverBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -148,14 +153,18 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundPressedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
-                                <!-- Disabled state takes the Disabled background brush. PART_RootBorder is a
-                                     Border (no Foreground), so disabled text-color routing is deferred. -->
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundDisabledBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -172,6 +181,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Opacity">
                                             <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -184,6 +196,9 @@
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedPointerOverBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Opacity">
                                             <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />
@@ -198,17 +213,28 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedPressedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Opacity">
                                             <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
-                                <!-- A disabled row keeps the accent strip so its selected state stays
-                                     legible, but drops the selected fill for the disabled one. -->
                                 <VisualState x:Name="SelectedDisabled">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundDisabledBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <!-- Suppress the High Contrast text backplate only while selected, where it fights the selection fill. -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Fill">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceSelectionIndicatorDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Opacity">
                                             <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />
@@ -216,8 +242,46 @@
                                     </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <!-- Hierarchy groups. Inert for flat/grouped sources (Level 0). -->
+                            <VisualStateGroup x:Name="ExpansionStates">
+                                <VisualState x:Name="Collapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_RowExpanderIcon.Glyph" Value="&#xE76C;" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Expanded">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_RowExpanderIcon.Glyph" Value="&#xE70D;" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="ExpandabilityStates">
+                                <VisualState x:Name="Expandable" />
+                                <!-- Only the glyph hides; the gutter keeps its width so leaf text
+                                     aligns with sibling branch text. -->
+                                <VisualState x:Name="NotExpandable">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_RowExpanderIcon.Visibility" Value="Collapsed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="HierarchyStates">
+                                <!-- TableViewRow sets gutter Visibility directly; these states exist
+                                     for retemplating apps to key off. -->
+                                <VisualState x:Name="NotHierarchical" />
+                                <VisualState x:Name="Hierarchical" />
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
+                        <Border x:Name="PART_RootBorder"
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
                         <Grid>
                             <!-- Cell host. TableViewRow populates PART_CellsHost with one cell wrapper
                                  per TableViewColumn, in Columns order, laid out left-to-right.
@@ -232,9 +296,29 @@
                                               Foreground="{TemplateBinding Foreground}"
                                               HorizontalContentAlignment="Stretch"
                                               VerticalContentAlignment="Stretch">
-                                <!-- Left, matching PART_HeaderHost. -->
-                                <controls:TableViewCellsPanel x:Name="PART_CellsHost"
-                                                              HorizontalAlignment="Left" />
+                                <Grid>
+                                    <!-- Left, matching PART_HeaderHost. -->
+                                    <controls:TableViewCellsPanel x:Name="PART_CellsHost"
+                                                                  HorizontalAlignment="Left" />
+
+                                    <!-- Hierarchy chevron. Overlays the first cell (TableViewRow pads it by
+                                         the same indent) so cells stay aligned with headers; later child so it
+                                         stays on top as the hit target. No own Foreground: inherits the
+                                         presenter's, keeping this optional part out of CommonStates. -->
+                                    <Border x:Name="PART_RowExpanderGutter"
+                                            Width="{ThemeResource TableViewRowExpanderSize}"
+                                            Background="Transparent"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Stretch"
+                                            Visibility="Collapsed">
+                                        <FontIcon x:Name="PART_RowExpanderIcon"
+                                                  FontSize="12"
+                                                  Glyph="&#xE76C;"
+                                                  MirroredWhenRightToLeft="True"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
                             </ContentPresenter>
 
                             <!-- Fluent selection indicator: overlays the leading edge, Opacity 0 by
@@ -252,7 +336,14 @@
                                        IsHitTestVisible="False"
                                        Opacity="0" />
                         </Grid>
-                    </Border>
+                        </Border>
+                        <Border x:Name="PART_GridLineBorder"
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                IsHitTestVisible="False" />
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -301,13 +392,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:TableViewGroupHeader">
-                    <Border x:Name="PART_Root"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            Padding="{TemplateBinding Padding}"
-                            HorizontalAlignment="Stretch">
-
+                    <Grid>
+                        <!-- See TableViewRow: state groups must sit on the template root. -->
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -358,6 +444,13 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
+                        <Border x:Name="PART_Root"
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalAlignment="Stretch">
                         <Grid ColumnSpacing="6">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -386,7 +479,14 @@
                                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
                         </Grid>
-                    </Border>
+                        </Border>
+                        <Border x:Name="PART_GridLineBorder"
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                IsHitTestVisible="False" />
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

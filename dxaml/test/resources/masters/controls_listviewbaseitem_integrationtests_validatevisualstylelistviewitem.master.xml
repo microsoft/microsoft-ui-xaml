@@ -46,7 +46,7 @@
                 <wucSpriteVisual SizeX="200" SizeY="40" BorderMode="Soft">
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="44" SizeY="10" BorderMode="Hard" OffsetX="13" OffsetY="16" OffsetZ="0">
+                <wucSpriteVisual SizeX="46" SizeY="12" BorderMode="Hard" OffsetX="12" OffsetY="15" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -65,7 +65,7 @@
                 <wucSpriteVisual SizeX="200" SizeY="40" BorderMode="Soft" OffsetX="0" OffsetY="40" OffsetZ="0">
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="77" SizeY="10" BorderMode="Hard" OffsetX="13" OffsetY="56" OffsetZ="0">
+                <wucSpriteVisual SizeX="79" SizeY="12" BorderMode="Hard" OffsetX="12" OffsetY="55" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -81,7 +81,7 @@
                 <wucSpriteVisual SizeX="200" SizeY="40" BorderMode="Soft" Opacity="0.3" OffsetX="0" OffsetY="80" OffsetZ="0">
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="52" SizeY="10" BorderMode="Hard" Opacity="0.3" OffsetX="13" OffsetY="96" OffsetZ="0">
+                <wucSpriteVisual SizeX="54" SizeY="12" BorderMode="Hard" Opacity="0.3" OffsetX="12" OffsetY="95" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -100,7 +100,7 @@
                 <wucSpriteVisual SizeX="200" SizeY="40" BorderMode="Soft" OffsetX="0" OffsetY="120" OffsetZ="0">
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="52" SizeY="10" BorderMode="Hard" OffsetX="12" OffsetY="136" OffsetZ="0">
+                <wucSpriteVisual SizeX="54" SizeY="12" BorderMode="Hard" OffsetX="11" OffsetY="135" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -119,7 +119,7 @@
                 <wucSpriteVisual SizeX="200" SizeY="40" BorderMode="Soft" OffsetX="0" OffsetY="160" OffsetZ="0">
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="131" SizeY="10" BorderMode="Hard" OffsetX="13" OffsetY="176" OffsetZ="0">
+                <wucSpriteVisual SizeX="133" SizeY="12" BorderMode="Hard" OffsetX="12" OffsetY="175" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -138,7 +138,7 @@
                 <wucSpriteVisual SizeX="200" SizeY="40" BorderMode="Soft" Opacity="0.3" OffsetX="0" OffsetY="200" OffsetZ="0">
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="108" SizeY="10" BorderMode="Hard" Opacity="0.3" OffsetX="13" OffsetY="216" OffsetZ="0">
+                <wucSpriteVisual SizeX="110" SizeY="12" BorderMode="Hard" Opacity="0.3" OffsetX="12" OffsetY="215" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -154,7 +154,7 @@
                 <wucSpriteVisual SizeX="168" SizeY="40" BorderMode="Soft" OffsetX="232" OffsetY="0" OffsetZ="0">
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="72" SizeY="10" BorderMode="Hard" OffsetX="245" OffsetY="16" OffsetZ="0">
+                <wucSpriteVisual SizeX="74" SizeY="12" BorderMode="Hard" OffsetX="244" OffsetY="15" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -180,7 +180,7 @@
                 <wucSpriteVisual SizeX="168" SizeY="40" BorderMode="Soft" OffsetX="232" OffsetY="40" OffsetZ="0">
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="74" SizeY="10" BorderMode="Hard" OffsetX="245" OffsetY="56" OffsetZ="0">
+                <wucSpriteVisual SizeX="76" SizeY="12" BorderMode="Hard" OffsetX="244" OffsetY="55" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -197,7 +197,7 @@
                     </Source>
                   </NineGridBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="9" SizeY="7" BorderMode="Hard" OffsetX="218" OffsetY="56" OffsetZ="0">
+                <wucSpriteVisual SizeX="11" SizeY="9" BorderMode="Hard" OffsetX="217" OffsetY="55" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -213,7 +213,7 @@
                 <wucSpriteVisual SizeX="168" SizeY="40" BorderMode="Soft" Opacity="0.3" OffsetX="232" OffsetY="80" OffsetZ="0">
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="76" SizeY="10" BorderMode="Hard" Opacity="0.3" OffsetX="245" OffsetY="96" OffsetZ="0">
+                <wucSpriteVisual SizeX="78" SizeY="12" BorderMode="Hard" Opacity="0.3" OffsetX="244" OffsetY="95" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -239,7 +239,7 @@
                 <wucSpriteVisual SizeX="168" SizeY="40" BorderMode="Soft" Opacity="0.3" OffsetX="232" OffsetY="120" OffsetZ="0">
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="132" SizeY="10" BorderMode="Hard" Opacity="0.3" OffsetX="245" OffsetY="136" OffsetZ="0">
+                <wucSpriteVisual SizeX="134" SizeY="12" BorderMode="Hard" Opacity="0.3" OffsetX="244" OffsetY="135" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -256,7 +256,7 @@
                     </Source>
                   </NineGridBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="9" SizeY="7" BorderMode="Hard" Opacity="0.3" OffsetX="218" OffsetY="136" OffsetZ="0">
+                <wucSpriteVisual SizeX="11" SizeY="9" BorderMode="Hard" Opacity="0.3" OffsetX="217" OffsetY="135" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />

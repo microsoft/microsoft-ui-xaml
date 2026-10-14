@@ -501,7 +501,10 @@ Entry c_typeEntries[] =
                 {
                     winrt::ITableViewRowStatics statics = GetFactory<winrt::ITableViewRowStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewRow");
                     {
+                        xamlType.AddDPMember(L"IsExpandable", L"Boolean", statics.IsExpandableProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"IsExpanded", L"Boolean", statics.IsExpandedProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"IsSelected", L"Boolean", statics.IsSelectedProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"Level", L"Int32", statics.LevelProperty(), false /* isContent */);
                     }
 
                 });
@@ -585,8 +588,17 @@ Entry c_typeEntries[] =
                 /* Arg 3 - Activator func */ 
                 nullptr,
                 /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    xamlType.AddMember(
+                        L"IsLiveShaping", /* propertyName */
+                        L"Boolean", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewSource>().IsLiveShaping()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewSource>().IsLiveShaping(unbox_value<bool>(value)); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                });
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }

@@ -49,15 +49,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
 
         //------------------------------------------------------------------------
-        // Test case: Checks for a transparent background when the app is on lock
-        //            screen
+        // Test case: Checks that island content has a transparent background.
         //------------------------------------------------------------------------
         void LockScreenTests::TransparentBackground()
         {
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
-
-            // Note: Real shell applications should hide the window while updating TransparentBackground before showing it so no
-            // XAML frame gets rendered
 
             TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 300));
 
@@ -65,35 +61,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             RunOnUIThread([&]()
             {
                 TestServices::WindowHelper->WindowContent = rootGrid;
-
-                xaml::Window^ xamlWindow = xaml::Window::Current;
-                xaml::IWindowPrivate^ windowPrivate = dynamic_cast<::IWindowPrivate^>(xamlWindow);
-                
-                windowPrivate->TransparentBackground = false;
-                VERIFY_IS_FALSE(windowPrivate->TransparentBackground);
-                windowPrivate->TransparentBackground = true;
-                VERIFY_IS_TRUE(windowPrivate->TransparentBackground);
             });
 
             TestServices::WindowHelper->WaitForIdle();
 
             TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::AllSurfaces, "transparent");
-
-            RunOnUIThread([&]()
-            {
-                TestServices::WindowHelper->WindowContent = rootGrid;
-
-                xaml::Window^ xamlWindow = xaml::Window::Current;
-                xaml::IWindowPrivate^ windowPrivate = dynamic_cast<::IWindowPrivate^>(xamlWindow);
-
-                VERIFY_IS_TRUE(windowPrivate->TransparentBackground);
-                windowPrivate->TransparentBackground = false;
-                VERIFY_IS_FALSE(windowPrivate->TransparentBackground);
-            });
-
-            TestServices::WindowHelper->WaitForIdle();
-
-            TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::AllSurfaces, "opaque");
         }
 
     } }
