@@ -509,6 +509,8 @@ The current cell is the navigation position and is deliberately independent of e
 
 `CellEditEnding` is raised synchronously. The control reads `Cancel` immediately after the handler returns, so validation or save decisions must be complete before returning from the handler.
 
+When an open edit is forced closed because its item was removed, filtered out, or `ItemsSource` was replaced, `CellEditEnding` reports `Cancel` and the pending value is not written. If the item is still present (for example after a sort or regroup, or when it is only under a collapsed group or node), a valid pending value is committed.
+
 ## TableView selection methods
 
 All mutators resolve immediately when selection is on and a source exists; otherwise they are a no-op — `Select` never clears an existing selection to signal rejection. The only state carried across time is the live selection stashed over an unload/reload cycle, which `DeselectAll` and `SelectionMode = None` both discard.
@@ -835,6 +837,8 @@ How an edit is being closed.
 |---|---:|---|
 | `Commit` | 0 | The edited value is being written to the source. |
 | `Cancel` | 1 | The edit is being cancelled and the editor is discarded. |
+
+A forced close of an edit whose item was removed, filtered out, or whose `ItemsSource` was replaced reports `Cancel` and does not write the pending value. If the item is still present (for example after a sort or regroup, or when it is only under a collapsed group or node), a valid pending value is committed.
 
 ## Editing event args
 

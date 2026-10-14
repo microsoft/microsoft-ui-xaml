@@ -53,7 +53,8 @@ enum TableViewDensity
     Comfortable = 2,
 };
 
-// How an edit closed.
+// How an edit closed. A forced close reports Cancel, writing nothing, when the item was removed,
+// filtered out, or ItemsSource was replaced; an item still present commits a valid pending value.
 [MUX_PREVIEW]
 [webhosthidden]
 enum TableViewEditAction
