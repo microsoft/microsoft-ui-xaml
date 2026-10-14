@@ -121,6 +121,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                         // Note - Make sure that this list stays in sync with test\scripts\runtests.ps1 and
                         //        Helix\scripts\TestPass-OneTimeMachineSetup.ps1
                         else if ((installedPackage.Id.Name == "WinUICppDesktopSampleApp") ||
+                            (installedPackage.Id.Name == "WinUICppIslandsSampleApp") ||
                             (installedPackage.Id.Name == "WinUICsDesktopSampleApp") ||
                             (installedPackage.Id.Name == "DisableXamlGeneratedMainCs") ||
                             (installedPackage.Id.Name == "DisableXamlGeneratedMainNoCtorCs") ||
