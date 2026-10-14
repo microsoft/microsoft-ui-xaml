@@ -418,7 +418,8 @@ winrt::hstring TableViewCellAutomationPeer::ReadDisplayName(winrt::TableView con
     if (valueText.empty())
     {
         // An unnamed visual (a ProgressBar, say) is not blank; name it by its column instead.
-        if (display && !ShowsNoCellContent(display, 8))
+        auto const content = display ? display : GetCellContentElement(Owner().try_as<winrt::FrameworkElement>());
+        if (content && !ShowsNoCellContent(content, 8))
         {
             return GetColumnHeaderText(table);
         }
