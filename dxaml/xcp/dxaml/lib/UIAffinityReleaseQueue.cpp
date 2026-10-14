@@ -59,8 +59,8 @@ _Check_return_ HRESULT UIAffinityReleaseQueue::RequestCleanupWake(
     if (FAILED(hr) || !enqueued)
     {
         state->pending.store(false, std::memory_order_release);
-        IFC_RETURN(hr);
-        // Queue shutdown rejects new work without failing; core shutdown still drains the release queue.
+        // Report rejection without dropping the objects; core shutdown still drains the release queue.
+        return FAILED(hr) ? hr : E_ABORT;
     }
     return S_OK;
 }

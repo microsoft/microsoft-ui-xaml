@@ -85,18 +85,15 @@ namespace DirectUI
 
         HRESULT QueueUnreachableCleanup( ctl::WeakReferenceSourceNoThreadId *pItem )
         {
-            HRESULT hr = S_OK;
             m_queuedObjectsForUnreachableCleanup.emplace_back(pItem, reinterpret_cast<void*>(*reinterpret_cast<uintptr_t*>(pItem)));
             ctl::addref_interface_inner(pItem);
             const auto dispatcher = m_wakeDispatcher;
             const auto wakeState = m_wakeState;
-            IFC_RETURN(RequestCleanupWake(dispatcher.Get(), wakeState));
-            RRETURN(hr);//RRETURN_REMOVAL
+            return RequestCleanupWake(dispatcher.Get(), wakeState);
         }
 
         HRESULT QueueFinalRelease( ctl::WeakReferenceSourceNoThreadId *pItem )
         {
-            HRESULT hr = S_OK;
             wrl::ComPtr<msy::IDispatcherQueue> dispatcher;
             std::shared_ptr<CleanupWakeState> wakeState;
             {
@@ -106,8 +103,7 @@ namespace DirectUI
                 wakeState = m_wakeState;
             }
             // Shutdown may destroy this queue after unlocking; posting uses only the retained state.
-            IFC_RETURN(RequestCleanupWake(dispatcher.Get(), wakeState));
-            RRETURN(hr);//RRETURN_REMOVAL
+            return RequestCleanupWake(dispatcher.Get(), wakeState);
         }
 
         BOOLEAN IsEmpty();
