@@ -3011,7 +3011,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         RunOnUIThread([&]()
         {
             pivot = TreeHelper::GetVisualChildByType<xaml_controls::Pivot>(rootPanel);
-            VERIFY_ARE_EQUAL(TestServices::WindowHelper->WindowBounds.Width, pivot->ActualWidth);
+            VERIFY_ARE_EQUAL(TestServices::WindowHelper->VisibleBounds.Width, pivot->ActualWidth);
         });
     }
 

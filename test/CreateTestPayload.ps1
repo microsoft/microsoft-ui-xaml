@@ -20,6 +20,8 @@ param(
 
     [switch]$SkipWinUIGallery,
 
+    [switch]$IncludeWebView2RuntimeInstaller,
+
     [switch]$Clean,
 
     [switch]$Quiet
@@ -174,6 +176,24 @@ if ($Mode -eq "DevTestSuite" -or $Mode -eq "ScenarioTestSuite")
     Publish-Item "$repoRoot\controls\tools\EnableMUXControlsTestAppManagedDebugging.*" "$outpath"
     
     Publish-Item "$binpath\TestDependencies\dotnet-windowsdesktop-runtime-installer.exe" "$outpath"
+
+    if ($IncludeWebView2RuntimeInstaller)
+    {
+        $webView2RuntimeInstaller = "$binpath\TestDependencies\tools\x64\MicrosoftEdgeWebView2RuntimeInstallerX64.exe"
+        if (-not (Test-Path -LiteralPath $webView2RuntimeInstaller -PathType Leaf))
+        {
+            throw "The x64 Evergreen WebView2 Standalone Installer was not found at '$webView2RuntimeInstaller'."
+        }
+
+        $signature = Get-AuthenticodeSignature -FilePath $webView2RuntimeInstaller
+        $signerSubject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { "<none>" }
+        if ($signature.Status -ne "Valid" -or $signerSubject -notmatch "(^|,\s*)O=Microsoft Corporation(,|$)")
+        {
+            throw "Evergreen WebView2 Standalone Installer signature validation failed. Status: $($signature.Status); signer: $signerSubject"
+        }
+
+        Publish-Item $webView2RuntimeInstaller "$outpath\tools\x64"
+    }
 }
 
 if ($Mode -eq "DevTestSuite")
@@ -229,6 +249,7 @@ if ($Mode -eq "ScenarioTestSuite")
     {
         Publish-Item "$binpath\Samples\WinUICsDesktopSampleApp_Test\*.msix*" "$outpath\Test\"
         Publish-Item "$binpath\Samples\WinUICppDesktopSampleApp_Test\*.msix*" "$outpath\Test\"
+        Publish-Item "$binpath\Samples\WinUICppIslandsSampleApp_Test\*.msix*" "$outpath\Test\"
         Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCs_Test\*.msix" "$outpath\Test\"
         Publish-Item "$binpath\Samples\DisableXamlGeneratedMainNoCtorCs_Test\*.msix" "$outpath\Test\"
         Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCpp_Test\*.msix" "$outpath\Test\"
@@ -262,6 +283,7 @@ if ($Mode -eq "ScenarioTestSuite")
     if (-not ($env:BUILD_DEFINITIONNAME -and ($env:BUILD_DEFINITIONNAME.Contains("ValidateReunion") -or $env:BUILD_DEFINITIONNAME.Contains("WindowsAppSDK"))))
     {
         Publish-Item "$binpath\Samples\WinUICppDesktopSampleApp_Test\Dependencies\$redistPlatform\*.appx" "$outpath\Test\"
+        Publish-Item "$binpath\Samples\WinUICppIslandsSampleApp_Test\Dependencies\$redistPlatform\*.appx" "$outpath\Test\"
     }
 
     # TODO: Remove below check

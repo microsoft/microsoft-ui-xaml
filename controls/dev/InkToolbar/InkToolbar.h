@@ -23,6 +23,7 @@
 
 #include "ButtonManager.h"
 #include "InkToolbarMenuButton.h"   // InkToolbarMenuButtonCheckedState
+#include "InkTelemetry.h"
 
 class InkToolbar :
     public ReferenceTracker<InkToolbar, winrt::implementation::InkToolbarT>,
@@ -30,6 +31,7 @@ class InkToolbar :
 {
 public:
     InkToolbar();
+    ~InkToolbar();
 
     // IFrameworkElementOverrides / IUIElementOverrides
     // NOTE: like UWP, the container populates its buttons in MeasureOverride (runs even when Children
@@ -157,6 +159,10 @@ private:
     std::vector<winrt::UIElement> m_autoPopulatedButtons;
     bool m_autoPopulated = false;
     bool m_childrenDirty = true;
+
+    void ReportUsageTelemetry() noexcept;
+    InkTelemetry::ToolbarState m_telemetryState;
+    winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
 
     // Tracks an open L3 for as long as it is open (registered for flyout Closed to prune).
     struct OpenFlyout
