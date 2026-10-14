@@ -43,11 +43,7 @@ public sealed partial class ContextMenusPage : SamplePageBase
         _rowMenu = (FlyoutBase)((Setter)_rowMenuStyle.Setters[0]).Value;
         AttachHeaderMenus();
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
-        AttachVerification();
     }
-
-    // Implemented by ContextMenusPage.Verification.cs in verification builds only.
-    partial void AttachVerification();
 
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 

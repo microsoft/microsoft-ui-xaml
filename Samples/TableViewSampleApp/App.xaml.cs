@@ -14,7 +14,6 @@ public partial class App : Application
 {
     private const string VerifyGroupsArgument = "--verify-groups";
     private const string VerifySelectionArgument = "--verify-selection";
-    private const string VerifyContextMenusArgument = "--verify-context-menus";
 
     private readonly string[] _commandLineArguments;
     private Window? _window;
@@ -53,9 +52,8 @@ public partial class App : Application
 
     // ----- Opt-in verification logging -----
     //
-    // The gallery doubles as a manual verification harness: launched with --verify-groups,
-    // --verify-selection or --verify-context-menus it writes what it observed to a file next to the
-    // executable. Compiled
+    // The gallery doubles as a manual verification harness: launched with --verify-groups or
+    // --verify-selection it appends what it observed to a file next to the executable. Compiled
     // out unless TABLEVIEW_SAMPLE_VERIFY is defined, so a normal build carries none of it.
 
     internal static bool IsGroupsVerificationEnabled() =>
@@ -63,12 +61,6 @@ public partial class App : Application
 
     internal static bool IsSelectionVerificationEnabled() =>
         Environment.GetCommandLineArgs().Any(static a => string.Equals(a, VerifySelectionArgument, StringComparison.OrdinalIgnoreCase));
-
-    internal static bool IsContextMenuVerificationEnabled() =>
-        Environment.GetCommandLineArgs().Any(static a => string.Equals(a, VerifyContextMenusArgument, StringComparison.OrdinalIgnoreCase));
-
-    internal static string GetContextMenuVerificationLogPath() =>
-        Path.Combine(AppContext.BaseDirectory, "verification-context-menus.txt");
 
     internal static string GetVerificationLaunchLogPath() =>
         Path.Combine(AppContext.BaseDirectory, "verification-groups-launch.txt");
