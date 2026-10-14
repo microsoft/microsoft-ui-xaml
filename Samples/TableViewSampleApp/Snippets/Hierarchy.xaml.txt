@@ -33,7 +33,9 @@
             <MenuFlyoutItem Text="Open profile" Click="OnRowMenuItemClick"/>
             <MenuFlyoutItem Text="Email team" Click="OnRowMenuItemClick"/>
         </MenuFlyout>
-        <MenuFlyout x:Key="DeptGroupMenu" Opening="OnGroupMenuOpening">
+        <!-- A group header's DataContext is its TableViewGroupInfo. -->
+        <MenuFlyout x:Key="DeptGroupMenu">
+            <MenuFlyoutItem Text="{Binding KeyText}" IsEnabled="False"/>
             <MenuFlyoutItem Text="Email department" Click="OnRowMenuItemClick"/>
         </MenuFlyout>
     </tv:TableView.Resources>

@@ -421,10 +421,10 @@ public:
         winrt::FocusState focusState = winrt::FocusState::Keyboard);
 
     // Returns true when the request is handled: a menu was shown, or the request was suppressed
-    // because its target changed while it was being processed. False leaves it to bubble on to
-    // the native ContextFlyout chain.
+    // (nested request, stale target that would have shown a menu). False leaves it to bubble on to
+    // the native ContextFlyout chain, including a target that went stale with no menu to show.
     bool ProcessContextMenuRequest(
-        TableViewDetails::ContextMenuTarget target,
+        TableViewDetails::ContextMenuTarget const& target,
         winrt::ContextRequestedEventArgs const& args);
 
     // A column a context menu request can target: in this table's Columns, owned by it, Visible.
@@ -1329,6 +1329,15 @@ private:
     void StopAwaitingSource();
 
     bool IsContextMenuTargetCurrent(TableViewDetails::ContextMenuTarget const& target) const;
+    // IsContextMenuTargetCurrent plus, for body targets, an unchanged source and no edit in progress.
+    bool IsContextMenuRequestCurrent(
+        TableViewDetails::ContextMenuTarget const& target,
+        winrt::IInspectable const& sourceSnapshot);
+    // Moves focus (and, for a cell, the current cell) to a context menu target. Returns false when
+    // app code run by the move made the request stale.
+    bool FocusContextMenuTarget(
+        TableViewDetails::ContextMenuTarget const& target,
+        winrt::IInspectable const& sourceSnapshot);
     void OnHeaderContextRequested(winrt::ContextRequestedEventArgs const& args);
     std::optional<TableViewDetails::ContextMenuTarget> ResolveHeaderContextMenuTarget(
         winrt::ContextRequestedEventArgs const& args);
