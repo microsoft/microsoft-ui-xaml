@@ -232,7 +232,7 @@ void TreeViewNode::RemoveFromChildrenNodes(int index, int count)
 {
     for (int i = 0; i < count; i++)
     {
-        winrt::get_self<TreeViewNodeVector>(Children())->RemoveAt(index, false /* updateItemsSource */);
+        winrt::get_self<TreeViewNodeVector>(Children())->RemoveAt(index, false /* updateItemsSource */, false /* updateIsExpanded */);
     }
 }
 

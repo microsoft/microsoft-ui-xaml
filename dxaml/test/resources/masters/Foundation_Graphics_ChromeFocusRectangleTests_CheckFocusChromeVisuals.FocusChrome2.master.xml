@@ -53,7 +53,7 @@
                     </Source>
                   </NineGridBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="49" SizeY="11" BorderMode="Hard" OffsetX="40" OffsetY="40" OffsetZ="0">
+                <wucSpriteVisual SizeX="51" SizeY="13" BorderMode="Hard" OffsetX="39" OffsetY="39" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -122,7 +122,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="70" SizeY="11" BorderMode="Hard" OffsetX="58" OffsetY="210" OffsetZ="0">
+                <wucSpriteVisual SizeX="72" SizeY="13" BorderMode="Hard" OffsetX="57" OffsetY="209" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -145,7 +145,7 @@
                     </Source>
                   </NineGridBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="165" SizeY="14" BorderMode="Hard" OffsetX="30" OffsetY="252" OffsetZ="0">
+                <wucSpriteVisual SizeX="167" SizeY="16" BorderMode="Hard" OffsetX="29" OffsetY="251" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />

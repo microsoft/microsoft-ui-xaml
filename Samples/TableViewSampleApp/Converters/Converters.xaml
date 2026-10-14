@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary
+    x:Class="TableViewSampleApp.Converters.SampleConverters"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:TableViewSampleApp.Converters">
+
+    <converters:SortStandingTintConverter x:Key="SortStandingTintConverter"/>
+    <converters:SortStandingDotConverter x:Key="SortStandingDotConverter"/>
+    <converters:SortStandingTextConverter x:Key="SortStandingTextConverter"/>
+    <converters:SortCountryTintConverter x:Key="SortCountryTintConverter"/>
+    <converters:SortCountryDotConverter x:Key="SortCountryDotConverter"/>
+
+    <converters:GroupExpansionTextConverter x:Key="GroupExpansionTextConverter"/>
+    <converters:GroupCountTextConverter x:Key="GroupCountTextConverter"/>
+
+    <converters:ProcessHeatBrushConverter x:Key="ProcessHeatBrushConverter"/>
+
+    <converters:ShowcaseDepartmentTintConverter x:Key="ShowcaseDepartmentTintConverter"/>
+    <converters:ShowcaseDepartmentDotConverter x:Key="ShowcaseDepartmentDotConverter"/>
+    <converters:ShowcaseSalaryTintConverter x:Key="ShowcaseSalaryTintConverter"/>
+</ResourceDictionary>

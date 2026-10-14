@@ -8,7 +8,11 @@
 #include "common.h"
 
 #include "InkToolbarMenuButton.h"
+#include "InkToolbarTrace.h"
+#include "ResourceAccessor.h"
 #include "InkToolbarMenuButtonAutomationPeer.g.h"
+
+#include <string>
 
 class InkToolbarMenuButtonAutomationPeer :
     public ReferenceTracker<InkToolbarMenuButtonAutomationPeer, winrt::implementation::InkToolbarMenuButtonAutomationPeerT>
@@ -17,6 +21,15 @@ public:
     InkToolbarMenuButtonAutomationPeer(winrt::InkToolbarMenuButton const& owner)
         : ReferenceTracker(owner)
     {
+        try
+        {
+            m_dropDownControlType = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilDropDownControlTypeName);
+            m_persistentName = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilButtonName);
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            InkToolbarLogHResult(e.code(), L"menu button accessibility resource lookup");
+        }
     }
 
     // IAutomationPeerOverrides
@@ -24,33 +37,68 @@ public:
     {
         if (patternInterface == winrt::PatternInterface::ExpandCollapse)
         {
-            return *this;
+            if (auto owner = GetImpl(); owner && owner->HasL3())
+            {
+                return *this;
+            }
+            return nullptr;
+        }
+        if (patternInterface == winrt::PatternInterface::Toggle)
+        {
+            if (auto owner = GetImpl(); owner && owner->HasL3())
+            {
+                // The dropdown reports expansion, not the stencil's on/off state.
+                return nullptr;
+            }
         }
         return __super::GetPatternCore(patternInterface);
     }
 
     winrt::AutomationControlType GetAutomationControlTypeCore()
     {
-        return winrt::AutomationControlType::Custom;
+        return winrt::AutomationControlType::Button;
+    }
+
+    hstring GetLocalizedControlTypeCore()
+    {
+        if (auto owner = GetImpl(); owner && owner->HasL3() && !m_dropDownControlType.empty())
+        {
+            return m_dropDownControlType;
+        }
+        return __super::GetLocalizedControlTypeCore();
+    }
+
+    hstring GetNameCore()
+    {
+        auto name = __super::GetNameCore();
+        if (auto owner = GetImpl(); owner && owner->MenuKind() == winrt::InkToolbarMenuKind::Stencil && !m_persistentName.empty())
+        {
+            return name.empty() ? m_persistentName
+                : winrt::hstring{ std::wstring{ m_persistentName.c_str() } + L", " + std::wstring{ name.c_str() } };
+        }
+        return name;
     }
 
     // IExpandCollapseProvider
     winrt::ExpandCollapseState ExpandCollapseState()
     {
-        auto state = winrt::ExpandCollapseState::Collapsed;
         if (auto owner = GetImpl())
         {
-            if (owner->HasL3() && owner->IsL3Open())
+            if (owner->IsL3Open())
             {
-                state = winrt::ExpandCollapseState::Expanded;
+                return winrt::ExpandCollapseState::Expanded;
+            }
+            if (owner->HasL3())
+            {
+                return winrt::ExpandCollapseState::Collapsed;
             }
         }
-        return state;
+        return winrt::ExpandCollapseState::LeafNode;
     }
 
     void Expand()
     {
-        if (auto owner = GetImpl())
+        if (auto owner = GetImpl(); owner && owner->HasL3())
         {
             owner->OpenL3();
         }
@@ -65,6 +113,9 @@ public:
     }
 
 private:
+    winrt::hstring m_dropDownControlType;
+    winrt::hstring m_persistentName;
+
     com_ptr<InkToolbarMenuButton> GetImpl()
     {
         com_ptr<InkToolbarMenuButton> impl;
@@ -75,4 +126,3 @@ private:
         return impl;
     }
 };
-
