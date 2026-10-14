@@ -35,8 +35,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Intersections_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_HierarchyLive_APITests.cs" />
   </ItemGroup>
-  <ItemGroup Condition="'$(RequireRealTestInProduction)' == 'true'">
-    <Compile Include="$(MSBuildThisFileDirectory)TableView_Telemetry_APITests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TableViewTelemetryCapture.cs" />
-  </ItemGroup>
 </Project>

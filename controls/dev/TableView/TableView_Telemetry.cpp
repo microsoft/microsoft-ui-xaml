@@ -142,11 +142,9 @@ void TableView::InvalidateOperationTelemetry() noexcept
 void TableView::IgnoreUnattributedTelemetry(
     TableViewTelemetry::Operation operation, uint64_t generation, TableViewTelemetry::Stage stage, std::optional<HRESULT> error) noexcept
 {
-    if (generation != m_telemetry.operationGeneration &&
-        !(operation == TableViewTelemetry::Operation::InitialLayout && generation == 0)) { return; }
+    if (!generation || generation != m_telemetry.operationGeneration) { return; }
     if (TableViewTelemetry::IsOperationHandled(m_telemetry, operation, generation)) { return; }
     TableViewTelemetry::IgnoreOperation(m_telemetry, generation, TableViewTelemetry::IgnoreReason::UnattributedFault, error);
-    TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::UnattributedFault, error);
     TableViewTelemetry::ReportError(m_telemetry, operation, stage, false, TableViewTelemetry::Attribution::Unknown, error);
 }
 
@@ -214,7 +212,6 @@ void TableView::AttachSourceTelemetry(winrt::TableViewSource const& source)
                     if (*reason == TableViewTelemetry::IgnoreReason::ApplicationFault ||
                         *reason == TableViewTelemetry::IgnoreReason::UnattributedFault)
                     {
-                        TableViewTelemetry::IgnoreInitial(self->m_telemetry, *reason, error, kind);
                         TableViewTelemetry::ReportError(self->m_telemetry, operation, stage, false,
                             kind == TableViewTelemetry::AppFaultKind::None ? TableViewTelemetry::Attribution::Unknown :
                                 TableViewTelemetry::Attribution::Application, error, kind);

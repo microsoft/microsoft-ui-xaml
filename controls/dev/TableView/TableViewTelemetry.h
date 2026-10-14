@@ -16,8 +16,6 @@ namespace TableViewTelemetry
         None = 0, Template = 1, Source = 3, Sort = 4, HeaderRefresh = 5,
         Selection = 6, Editing = 7, Filter = 8, Grouping = 9
     };
-    enum class InitialState { NotStarted, Started, Finished };
-    enum class InitialOutcome : uint32_t { NotObserved = 0, TemplateInitialized = 1, Ignored = 3 };
     enum class Attribution : uint32_t { Unknown = 0, Product = 1, Application = 2 };
 
     struct ShapingObservation
@@ -73,8 +71,6 @@ namespace TableViewTelemetry
         State() noexcept : OperationState(*this) {}
         TableViewInitializationTest initialTest;
         Session session;
-        InitialState initial{};
-        InitialOutcome initialOutcome{};
         uint64_t reportedErrors{};
         bool initialTipPending{};
     };
@@ -86,6 +82,7 @@ namespace TableViewTelemetry
     void AbandonSession(State& state) noexcept;
     void BeginInitial(State& state) noexcept;
     void CompleteInitial(State& state) noexcept;
+    void FailInitial(State& state, HRESULT error) noexcept;
     void IgnoreInitial(State& state, IgnoreReason reason,
         std::optional<HRESULT> error = {}, AppFaultKind kind = AppFaultKind::None) noexcept;
     uint64_t BeginOperation(OperationState& state, Operation operation) noexcept;

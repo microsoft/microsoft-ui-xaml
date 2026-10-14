@@ -79,7 +79,7 @@ namespace TableViewTelemetry
         }
 
         template<class Test>
-        void CompleteTip(Test& test, Result result, Stage stage, std::optional<HRESULT> error) noexcept
+        void CompleteTip(Test& test, Result result, std::optional<HRESULT> error) noexcept
         {
             if (result == Result::Success)
             {
@@ -92,18 +92,10 @@ namespace TableViewTelemetry
                     data->failureHResultAvailable = error.has_value();
                     data->failureHResult = error.value_or(S_OK);
                 }
-                if (stage == Stage::Editing) { test.set_flag(TIP_reason(TableViewTipReason::editing_failure)); }
-                else { test.set_flag(TIP_reason(TableViewTipReason::internal_failure)); }
+                test.set_flag(TIP_reason(TableViewTipReason::internal_failure));
             }
             test.complete();
             test.reset();
-        }
-
-        void StopInitial(State& state, Result result) noexcept
-        {
-            state.initial = InitialState::Finished;
-            state.initialOutcome = result == Result::Success ? InitialOutcome::TemplateInitialized : InitialOutcome::Ignored;
-            state.initialTipPending = false;
         }
 
         void StopOperation(OperationState& state) noexcept
@@ -154,8 +146,7 @@ namespace TableViewTelemetry
         auto const& session = state.session;
         TraceLoggingWriteActivity(g_hTelemetryProvider, "TableView_SessionSummary",
             g_TelemetryProviderActivityId != GUID{} ? &g_TelemetryProviderActivityId : nullptr, nullptr, TABLEVIEW_INFO_FIELDS,
-            TraceLoggingUInt32(4, "SessionSummaryVersion"),
-            TraceLoggingUInt32(static_cast<uint32_t>(state.initialOutcome), "InitialOutcome"),
+            TraceLoggingUInt32(5, "SessionSummaryVersion"),
             TraceLoggingUInt32(session.counts[1], "ReplaceSourceCount"),
             TraceLoggingUInt32(session.counts[2], "SortCount"),
             TraceLoggingUInt32(session.counts[5], "FilterCount"),
@@ -178,31 +169,34 @@ namespace TableViewTelemetry
         IgnoreOperation(state, state.operationGeneration, IgnoreReason::Unloaded);
     }
 
+    // Every template application is one setup run; OnApplyTemplate ignores an unfinished one first.
     void BeginInitial(State& state) noexcept
     {
-        if (state.initial != InitialState::NotStarted) { return; }
-        state.initial = InitialState::Started;
-        state.initialTest->dimensions = TableViewTipDimensions{};
         state.initialTipPending = state.initialTest.start() != GUID{};
     }
 
     void CompleteInitial(State& state) noexcept
     {
-        if (state.initial != InitialState::Started) { return; }
-        if (state.initialTipPending) { CompleteTip(state.initialTest, Result::Success, Stage::None, {}); }
-        StopInitial(state, Result::Success);
+        if (!state.initialTipPending) { return; }
+        state.initialTipPending = false;
+        CompleteTip(state.initialTest, Result::Success, {});
+    }
+
+    void FailInitial(State& state, HRESULT error) noexcept
+    {
+        if (!state.initialTipPending) { return; }
+        state.initialTipPending = false;
+        CompleteTip(state.initialTest, Result::Failure, error);
+        ReportError(state, Operation::InitialLayout, Stage::Template, false, Attribution::Product, error);
     }
 
     void IgnoreInitial(State& state, IgnoreReason reason, std::optional<HRESULT> error, AppFaultKind kind) noexcept
     {
-        if (state.initial != InitialState::Started) { return; }
+        if (!state.initialTipPending) { return; }
         auto const name = GetIgnoreName(reason);
         if (!name) { return; }
-        if (state.initialTipPending)
-        {
-            IgnoreTip(state.initialTest, reason, name, error, kind);
-        }
-        StopInitial(state, Result::Cancelled);
+        state.initialTipPending = false;
+        IgnoreTip(state.initialTest, reason, name, error, kind);
     }
 
     uint64_t BeginOperation(OperationState& state, Operation operation) noexcept
@@ -222,7 +216,6 @@ namespace TableViewTelemetry
         state.operationSessionGeneration = session.active ? session.generation : 0;
         {
             auto data = state.operationTest.data();
-            data->dimensions = TableViewTipDimensions{};
             data->operation = operation;
         }
         state.operationTipPending = state.operationTest.start() != GUID{};
@@ -238,7 +231,7 @@ namespace TableViewTelemetry
             IgnoreOperation(state, generation, IgnoreReason::Stale);
             return;
         }
-        if (state.operationTipPending) { CompleteTip(state.operationTest, Result::Success, Stage::None, {}); }
+        if (state.operationTipPending) { CompleteTip(state.operationTest, Result::Success, {}); }
         RecordOutcome(state, Result::Success);
         StopOperation(state);
     }
@@ -264,7 +257,7 @@ namespace TableViewTelemetry
             IgnoreOperation(state, generation, IgnoreReason::Stale);
             return;
         }
-        if (state.operationTipPending) { CompleteTip(state.operationTest, Result::Failure, stage, error); }
+        if (state.operationTipPending) { CompleteTip(state.operationTest, Result::Failure, error); }
         RecordOutcome(state, Result::Failure);
         StopOperation(state);
         ReportError(state, state.operation, stage, false, Attribution::Product, error);

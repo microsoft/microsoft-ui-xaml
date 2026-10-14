@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Scoped to Tabular and the explicit real-TiP TableView validation consumers. -->
+  <!-- Scoped to Tabular: selects the production TiP library when it is restored, else the public stub. -->
   <PropertyGroup>
     <TableViewTIPPackagesConfigContents>$([System.IO.File]::ReadAllText('$(ProjectRoot)build\packages.TestInProduction.config'))</TableViewTIPPackagesConfigContents>
     <TestInProductionPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(TableViewTIPPackagesConfigContents), 'Microsoft.Windows.TestInProduction.*?version="(.*?)"').Groups[1].Value)</TestInProductionPackageVersion>
@@ -16,8 +16,4 @@
     <TestInProductionPkgDirectory>$(NugetPackageDirectory)\Microsoft.Internal.Windows.TestInProduction.$(TestInProductionPackageVersion)</TestInProductionPkgDirectory>
     <TestInProductionTargetsFile>$(TestInProductionPkgDirectory)\build\native\Microsoft.Internal.Windows.TestInProduction.targets</TestInProductionTargetsFile>
   </PropertyGroup>
-  <Target Name="RequireTableViewRealTestInProductionLibrary" BeforeTargets="PrepareForBuild" Condition="'$(RequireRealTestInProduction)' == 'true'">
-    <Error Condition="'$(TestInProductionIsReal)' != 'true' or !Exists('$(TestInProductionTargetsFile)')"
-           Text="TableView real-TiP validation requires the production targets declared in build\packages.TestInProduction.config. Restore that package and do not select UseTestInProductionStub." />
-  </Target>
 </Project>

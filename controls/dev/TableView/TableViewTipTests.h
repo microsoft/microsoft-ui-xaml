@@ -15,7 +15,6 @@ namespace TableViewTelemetry
         Filter = 5, GroupConfiguration = 6, Selection = 8,
         BeginEdit = 9, CommitEdit = 10, CancelEdit = 11
     };
-    enum class Origin : uint32_t { Template = 0 };
     enum class IgnoreReason : unsigned short
     {
         Cancelled = 100, Vetoed = 101, ValidationRejected = 102, Superseded = 103,
@@ -44,8 +43,7 @@ namespace TableViewTelemetry
 
     enum class TableViewTipReason : unsigned short
     {
-        scenario_completed = 1, scenario_not_completed = 2,
-        editing_failure = 15, internal_failure = 17
+        scenario_completed = 1, scenario_not_completed = 2, internal_failure = 17
     };
 
     struct TableViewTipDimensions
@@ -54,19 +52,18 @@ namespace TableViewTelemetry
         uint32_t productMajor{ WINDOWSAPPSDK_RELEASE_MAJOR };
         uint32_t productMinor{ WINDOWSAPPSDK_RELEASE_MINOR };
         uint32_t componentBuild{ WINUI_BUILD_VERSION };
-        Origin origin{};
 
         template<class Archive>
         void serialize(Archive& archive)
         {
             archive(TIP_value(componentMajor), TIP_value(productMajor), TIP_value(productMinor),
-                TIP_value(componentBuild), TIP_value(origin));
+                TIP_value(componentBuild));
         }
     };
 
     TIP_declare_test(TableViewInitializationTest, 64477764)
     {
-        TIP_set_data_version(4);
+        TIP_set_data_version(5);
         TIP_set_metrics_enabled();
         using reason = TableViewTipReason;
 
@@ -77,7 +74,7 @@ namespace TableViewTelemetry
         bool diagnosticHResultAvailable{};
         AppFaultKind appFaultKind{};
 
-        TIP_require_all_flags_clear(reason::editing_failure, reason::internal_failure);
+        TIP_require_all_flags_clear(reason::internal_failure);
 
         void evaluate()
         {
@@ -103,7 +100,7 @@ namespace TableViewTelemetry
 
     TIP_declare_test(TableViewOperationTest, 64477774)
     {
-        TIP_set_data_version(3);
+        TIP_set_data_version(4);
         TIP_set_metrics_enabled();
         using reason = TableViewTipReason;
 
@@ -115,7 +112,7 @@ namespace TableViewTelemetry
         bool diagnosticHResultAvailable{};
         AppFaultKind appFaultKind{};
 
-        TIP_require_all_flags_clear(reason::editing_failure, reason::internal_failure);
+        TIP_require_all_flags_clear(reason::internal_failure);
 
         void evaluate()
         {

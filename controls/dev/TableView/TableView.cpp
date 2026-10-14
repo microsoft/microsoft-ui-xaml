@@ -792,18 +792,11 @@ void TableView::OnThemeSettingsChanged(
 }
 
 void TableView::OnApplyTemplate()
+try
 {
     m_headerSortSpaceArmedColumn = nullptr;
     IgnoreTelemetry(TableViewTelemetry::IgnoreReason::Retemplated);
     TableViewTelemetry::BeginInitial(m_telemetry);
-    bool completed = false;
-    auto telemetryFailure = wil::scope_exit([this, &completed]() noexcept
-    {
-        if (!completed)
-        {
-            IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::InitialLayout, 0, TableViewTelemetry::Stage::Template);
-        }
-    });
     __super::OnApplyTemplate();
     InvalidateTableViewResourceCache(this);
 
@@ -1062,8 +1055,14 @@ void TableView::OnApplyTemplate()
                 }
             });
     }
-    completed = true;
     TableViewTelemetry::CompleteInitial(m_telemetry);
+}
+catch (...)
+{
+    // The control, row and cell templates are expanded outside this method, and a tagged app callout
+    // here has already closed the run as an application fault; any other throw counts as a setup failure.
+    TableViewTelemetry::FailInitial(m_telemetry, winrt::to_hresult());
+    throw;
 }
 
 void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
