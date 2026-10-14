@@ -172,6 +172,12 @@ public:
         _Out_ unsigned int* pCount,
         _Deref_post_opt_count_(*pCount) InstanceHandle** ppInstanceHandles) override;
 
+    STDMETHOD(HitTestForXamlRoot)(
+        _In_ InstanceHandle xamlRootHandle,
+        _In_ RECT rect,
+        _Out_ unsigned int* pCount,
+        _Deref_post_opt_count_(*pCount) InstanceHandle** ppInstanceHandles) override;
+
     STDMETHOD(RegisterInstance)(
         _In_ IInspectable* pInstance,
         _Out_ InstanceHandle* pInstanceHandle) override;
@@ -829,6 +835,25 @@ XamlDiagnosticsTap::HitTest(
 }
 
 STDMETHODIMP
+XamlDiagnosticsTap::HitTestForXamlRoot(
+    _In_ InstanceHandle xamlRootHandle,
+    _In_ RECT rect,
+    _Out_ unsigned int* pCount,
+    _Deref_post_opt_count_(*pCount) InstanceHandle** ppInstanceHandles)
+{
+    wrl::ComPtr<IXamlDiagnostics2> xamlDiagnostics2;
+    RETURN_IF_FAILED(m_xamlDiagnostics.As(&xamlDiagnostics2));
+
+    return RunOnUIThread(m_mainDispatcherQueue.Get(), [&]() {
+        return xamlDiagnostics2->HitTestForXamlRoot(
+            xamlRootHandle,
+            rect,
+            pCount,
+            ppInstanceHandles);
+    });
+}
+
+STDMETHODIMP
 XamlDiagnosticsTap::RegisterInstance(
     _In_ IInspectable* pInstance,
     _Out_ InstanceHandle* pInstanceHandle)
@@ -1035,4 +1060,3 @@ XamlDiagnosticsTap::RemoveDictionaryItem(
     }), WEX::Common::String().Format(L"Failed to remove implicit style resource"));
 }
 #pragma endregion
-

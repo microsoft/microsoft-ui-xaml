@@ -16,6 +16,8 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <AppxPackageName>ChartAppCsPackaged</AppxPackageName>
     <Configurations>Debug;Release;Debug_test</Configurations>
+    <!-- Charts APIs are experimental and surface as CS8305 ("for evaluation purposes only"). -->
+    <NoWarn>$(NoWarn);CS8305</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,6 +34,10 @@
     <PackageReference Include="Microsoft.Windows.CSWinRT" />
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
     <Manifest Include="$(ApplicationManifest)" />
+    <Page Include="..\ChartAppCsUnpackaged\MainWindow.xaml" Link="MainWindow.xaml" />
+    <Compile Include="..\ChartAppCsUnpackaged\MainWindow.xaml.cs" Link="MainWindow.xaml.cs" />
+    <Compile Include="..\ChartAppCsUnpackaged\SecondaryChartWindow.cs" Link="SecondaryChartWindow.cs" />
+    <Compile Include="..\ChartAppCsUnpackaged\ObservableVector.cs" Link="ObservableVector.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
