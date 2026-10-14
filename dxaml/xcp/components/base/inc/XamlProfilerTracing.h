@@ -482,12 +482,6 @@ public:
     DEFINE_TRACELOGGING_EVENT_PARAM4(TouchSelectionGripperReposition,
         uint64_t, ElementId, bool, IsStartGripper, int32_t, X, int32_t, Y,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-    DEFINE_TRACELOGGING_EVENT_PARAM4(TouchSelectionGripperTetherBegin,
-        uint64_t, ElementId, bool, IsStartGripper, int32_t, X, int32_t, Y,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-    DEFINE_TRACELOGGING_EVENT_PARAM4(TouchSelectionGripperTetherEnd,
-        uint64_t, ElementId, bool, IsStartGripper, int32_t, X, int32_t, Y,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Items virtualization (dxaml projection layer) — ElementId is the container/panel.
     // GenerateContainer carries ElementId on its Stop: the container is only realized near the
