@@ -84,7 +84,6 @@ namespace TableViewTelemetry
     bool IsEnabled() noexcept;
     bool IsOperationStarted(OperationState const& state) noexcept;
     bool IsOperationHandled(OperationState const& state, Operation operation, uint64_t generation) noexcept;
-    inline bool IsInitializing(State const& state) noexcept { return state.initial == InitialState::Started; }
     void BeginSession(State& state) noexcept;
     void EndSession(State& state) noexcept;
     void AbandonSession(State& state) noexcept;
