@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>3ccf846c-a0e8-47a3-b98e-5afa08107d40</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Charts_APITests</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ChartAutomationTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ChartAxisTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ChartSamplesTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ChartSeriesTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ChartTestHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ChartTests.cs" />
+  </ItemGroup>
+</Project>

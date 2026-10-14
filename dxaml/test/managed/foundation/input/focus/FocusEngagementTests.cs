@@ -152,7 +152,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify Focus engagement behavior when opening a MenuFlyout")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyFocusEngagementOnMenuFlyout()
         {
             StackPanel rootPanel = null;
