@@ -691,7 +691,27 @@ bool TableView::FocusContainerByIdentity(
 
     if (!IsRowElementArranged(element))
     {
-        element.UpdateLayout();
+        // The layout can re-project the source; the header must still be this group's, at index.
+        auto const expectedItem = GetRowsSourceItemAt(index);
+        int32_t revalidatedIndex = -1;
+        const bool sameHeader = ArrangeAndRevalidate(element, index, expectedItem) &&
+            m_tableViewSourceRowMetadata &&
+            m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, revalidatedIndex) &&
+            revalidatedIndex == index &&
+            element.try_as<winrt::TableViewGroupHeader>();
+        if (!sameHeader)
+        {
+            if (!finalAttempt)
+            {
+                return false;
+            }
+            if (!fromPointerGesture && expectedItem)
+            {
+                BeginPendingBodyFocus(index, m_currentCellColumn, false /* cellLevel */, std::nullopt, expectedItem);
+                m_pendingReshapeFocusState = focusState == winrt::FocusState::Unfocused ? winrt::FocusState::Keyboard : focusState;
+            }
+            return true;
+        }
         if (!IsRowElementArranged(element) && !finalAttempt)
         {
             return false;

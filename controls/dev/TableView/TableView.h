@@ -1146,8 +1146,11 @@ private:
     bool IsBodyFocusAtRow(int32_t rowIndex) const;
     bool IsBodyFocusInContainer(winrt::UIElement const& container) const;
     // Keyboard moves to a row that is not arranged yet finish through the same attempt loop.
-    void BeginPendingBodyFocus(int32_t row, int32_t column, bool cellLevel, std::optional<double> alignRatio);
+    void BeginPendingBodyFocus(
+        int32_t row, int32_t column, bool cellLevel, std::optional<double> alignRatio, winrt::IInspectable const& item = nullptr);
     bool IsPendingBodyFocusItemAt(int32_t row) const;
+    winrt::IInspectable GetRowsSourceItemAt(int32_t index) const;
+    bool ArrangeAndRevalidate(winrt::UIElement const& element, int32_t index, winrt::IInspectable const& expectedItem);
     static bool IsRowElementArranged(winrt::UIElement const& element);
     bool IsRowElementInViewport(winrt::UIElement const& element) const;
     bool BringRowElementIntoView(winrt::UIElement const& element, std::optional<double> alignRatio);

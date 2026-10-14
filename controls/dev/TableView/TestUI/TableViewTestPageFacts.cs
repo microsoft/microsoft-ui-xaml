@@ -28,6 +28,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string BasicTable = "BasicTableView";
         internal const string RtlTable = "RtlTableView";
         internal const string GroupedTable = "GroupedTableView";
+        internal const string GroupedPagingTable = "GroupedPagingTableView";
         internal const string ScrollingTable = "ScrollingTableView";
         internal const string HierarchyTable = "HierarchyTable";
         internal const string HierarchyRtlTable = "HierarchyRtlTable";
@@ -53,6 +54,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string BasicPivotItem = "Basic";
         internal const string RtlPivotItem = "Rtl";
         internal const string GroupedPivotItem = "Grouped";
+        internal const string GroupedPagingPivotItem = "GroupedPaging";
         internal const string ScrollingPivotItem = "Scrolling";
         internal const string HierarchyPivotItem = "Hierarchy";
 
@@ -125,6 +127,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
 
         internal static string GroupedName(int id) => "Grouped " + id;
         internal static int GroupedAge(int id) => 30 + id;
+
+        // GroupedPagingTableView: one item per group, so the flattened projection alternates header, row.
+        // Every container is GroupedPagingContainerHeight tall and the body shows 3.5 of them, so a
+        // bottom-aligned page holds three whole containers, two of them headers when it ends on one.
+        internal const int GroupedPagingItemCount = 30;
+        internal const int GroupedPagingContainerHeight = 40;
+        internal static string GroupedPagingName(int id) => "Pager " + id.ToString("D2", global::System.Globalization.CultureInfo.InvariantCulture);
+        internal static string GroupedPagingSection(int id) => "Section " + id.ToString("D2", global::System.Globalization.CultureInfo.InvariantCulture);
 
         internal static string CityOf(int id) => Cities[id % Cities.Length];
 

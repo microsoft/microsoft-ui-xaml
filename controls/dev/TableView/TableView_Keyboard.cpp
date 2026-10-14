@@ -1683,19 +1683,17 @@ bool TableView::TryLandReshapeFocus()
     return false;
 }
 
-void TableView::BeginPendingBodyFocus(int32_t row, int32_t column, bool cellLevel, std::optional<double> alignRatio)
+void TableView::BeginPendingBodyFocus(
+    int32_t row, int32_t column, bool cellLevel, std::optional<double> alignRatio, winrt::IInspectable const& item)
 {
     m_pendingReshapeFocusRow = row;
     m_pendingReshapeFocusColumn = column;
     m_pendingReshapeFocusCellLevel = cellLevel;
     m_pendingReshapeFocusState = winrt::FocusState::Keyboard;
     m_pendingReshapeFocusAlign = alignRatio;
-    m_pendingBodyFocusItem = nullptr;
+    // A caller that ran layout passes the item it captured before; the row may now hold another.
+    m_pendingBodyFocusItem = item ? item : GetRowsSourceItemAt(row);
     m_pendingBodyFocusFromKeyboard = true;
-    if (m_rowsItemsSourceView && row >= 0 && row < m_rowsItemsSourceView.Count())
-    {
-        m_pendingBodyFocusItem = m_rowsItemsSourceView.GetAt(row);
-    }
     m_reshapeFocusAttemptsLeft = s_keyboardFocusAttempts;
     ArmReshapeFocusAttempt();
 }
@@ -1710,6 +1708,47 @@ bool TableView::IsPendingBodyFocusItemAt(int32_t row) const
     auto const target = m_pendingBodyFocusItem.try_as<::IUnknown>();
     auto const candidate = m_rowsItemsSourceView.GetAt(row).try_as<::IUnknown>();
     return target && candidate && target.get() == candidate.get();
+}
+
+winrt::IInspectable TableView::GetRowsSourceItemAt(int32_t index) const
+{
+    if (!m_rowsItemsSourceView || index < 0 || index >= m_rowsItemsSourceView.Count())
+    {
+        return nullptr;
+    }
+    return m_rowsItemsSourceView.GetAt(index);
+}
+
+// A synchronous layout runs app code (SizeChanged, bindings) that can edit the source or recycle
+// the container; false means the element no longer shows expectedItem at index.
+bool TableView::ArrangeAndRevalidate(
+    winrt::UIElement const& element, int32_t index, winrt::IInspectable const& expectedItem)
+{
+    auto const repeater = m_rowsRepeater.get();
+    auto const view = m_rowsItemsSourceView;
+    if (!element || !repeater || index < 0)
+    {
+        return false;
+    }
+
+    try
+    {
+        element.UpdateLayout();
+    }
+    catch (...)
+    {
+        return false;
+    }
+
+    if (m_rowsRepeater.get() != repeater || m_rowsItemsSourceView != view ||
+        repeater.GetElementIndex(element) != index)
+    {
+        return false;
+    }
+
+    auto const expected = expectedItem.try_as<::IUnknown>();
+    auto const current = GetRowsSourceItemAt(index).try_as<::IUnknown>();
+    return expected.get() == current.get();
 }
 
 bool TableView::IsRowElementArranged(winrt::UIElement const& element)
@@ -1772,16 +1811,11 @@ bool TableView::BringRowElementIntoView(winrt::UIElement const& element, std::op
 
     if (!IsRowElementArranged(element))
     {
-        try
-        {
-            frameworkElement.UpdateLayout();
-        }
-        catch (...)
-        {
-            return false;
-        }
-
-        if (!IsRowElementArranged(element))
+        auto const repeater = m_rowsRepeater.get();
+        const int32_t index = repeater ? repeater.GetElementIndex(element) : -1;
+        if (index < 0 ||
+            !ArrangeAndRevalidate(element, index, GetRowsSourceItemAt(index)) ||
+            !IsRowElementArranged(element))
         {
             return false;
         }
@@ -2468,17 +2502,19 @@ winrt::UIElement TableView::FindViewportEdgeElementInternal(bool last, bool incl
 
 int32_t TableView::GetPageTargetRow(int32_t currentRow, bool pageDown, int32_t rowCount)
 {
+    // Flattened indices: a group header at the viewport edge is a page target like a row, so a
+    // viewport holding one data row between headers still pages by the viewport.
     int32_t first = -1;
     int32_t last = -1;
     if (auto const repeater = m_rowsRepeater.get())
     {
-        if (auto const row = FindViewportEdgeRowInternal(false /* last */))
+        if (auto const element = FindViewportEdgeElementInternal(false /* last */, true /* includeGroupHeaders */))
         {
-            first = repeater.GetElementIndex(row);
+            first = repeater.GetElementIndex(element);
         }
-        if (auto const row = FindViewportEdgeRowInternal(true /* last */))
+        if (auto const element = FindViewportEdgeElementInternal(true /* last */, true /* includeGroupHeaders */))
         {
-            last = repeater.GetElementIndex(row);
+            last = repeater.GetElementIndex(element);
         }
     }
 
@@ -2790,12 +2826,11 @@ bool TableView::FocusRowElementInternal(
 
     if (!IsRowElementArranged(element))
     {
-        try
+        auto const expectedItem = GetRowsSourceItemAt(rowIndex);
+        if (!ArrangeAndRevalidate(element, rowIndex, expectedItem))
         {
-            element.UpdateLayout();
-        }
-        catch (...)
-        {
+            BeginPendingBodyFocus(rowIndex, targetColumn, cellLevel, alignRatio, expectedItem);
+            return true;
         }
     }
 

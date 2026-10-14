@@ -499,7 +499,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     for (int press = 0; press < pressesPerBurst; press++)
                     {
-                        KeyboardHelper.PressKey(Key.PageDown);
+                        KeyboardHelper.PressKey(Key.PageDown, skipWait: true);
                     }
                     Wait.ForIdle();
 
@@ -517,6 +517,91 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     string.Format("{0} PageDowns must leave the first page (last visible row {1}): reached {2}.",
                         bursts * pressesPerBurst, lastVisible, position));
             }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Page Down in grouped data pages over group headers at the viewport edge instead of stepping one header at a time.")]
+        public void GroupedPageDownPagesPastGroupHeaders()
+        {
+            // GroupedPagingTableView alternates header, row (one item per group) in a body 3.5 containers
+            // tall, so a bottom-aligned page ending on a header holds a single data row. Paging by data rows
+            // alone then stepped one container per press; headers at the edge must count as page targets.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(GroupedPagingPivotItem)) { Verify.Fail(GoToButton(GroupedPagingPivotItem) + " was not found."); return; }
+
+                UIObject table = GetTable(GroupedPagingTable);
+                if (table == null) { return; }
+                UIObject rowsHost = GetRowsHost(table);
+                if (rowsHost.Children.Count < 4) { Verify.Fail("Need realized group headers and rows."); return; }
+
+                UIObject firstRow = rowsHost.Children[1];
+                Verify.IsTrue(IsRow(firstRow), "Precondition: the first group header is followed by its row.");
+                firstRow.SetFocus();
+                Wait.ForIdle();
+                Verify.AreEqual(1, FlattenedIndexOfGroupedPagingFocus(table), "Precondition: focus starts on the first row.");
+
+                int fullyVisible = 0;
+                foreach (UIObject child in rowsHost.Children)
+                {
+                    if (IsFullyInGroupedPagingViewport(table, child.BoundingRectangle)) { fullyVisible++; }
+                }
+                Log.Comment("Containers fully in the viewport at the top: {0}.", fullyVisible);
+                Verify.IsTrue(fullyVisible >= 3, "Precondition: the viewport must hold at least three whole containers.");
+
+                // The first press only reaches the last visible container; every later press pages from the edge.
+                int lastIndex = (GroupedPagingItemCount * 2) - 1;
+                int position = 1;
+                for (int press = 0; press < 5; press++)
+                {
+                    KeyboardHelper.PressKey(Key.PageDown);
+                    Wait.ForIdle();
+
+                    int next = FlattenedIndexOfGroupedPagingFocus(table);
+                    Log.Comment("PageDown {0}: focus moved from {1} to {2}.", press, position, next);
+                    Verify.IsTrue(next > position,
+                        string.Format("PageDown {0} must move focus forward: was {1}, now {2}.", press, position, next));
+                    if (press > 0 && next < lastIndex)
+                    {
+                        Verify.IsTrue(next - position > 1,
+                            string.Format("PageDown {0} must page past the group header at the edge: moved {1} -> {2}.", press, position, next));
+                    }
+
+                    UIObject focused = FindFocusedRow(GetRowsHost(table));
+                    Verify.IsNotNull(focused, "Focus must stay on a row or group header of the body.");
+                    if (focused == null) { return; }
+                    Verify.IsTrue(IsFullyInGroupedPagingViewport(table, focused.BoundingRectangle),
+                        string.Format("The focused {0} '{1}' must be fully in view after PageDown {2}: bounds {3}, table {4}.",
+                            focused.ClassName, focused.Name, press, focused.BoundingRectangle, table.BoundingRectangle));
+
+                    position = next;
+                    if (position >= lastIndex) { break; }
+                }
+            }
+        }
+
+        // The flattened index of the focused GroupedPagingTableView container (header 2n, row 2n+1), or -1.
+        private static int FlattenedIndexOfGroupedPagingFocus(UIObject table)
+        {
+            ElementCache.Clear();
+            UIObject focused = FindFocusedRow(GetRowsHost(table));
+            if (focused == null) { return -1; }
+
+            for (int id = 0; id < GroupedPagingItemCount; id++)
+            {
+                if (IsRow(focused) && focused.Name.Contains(GroupedPagingName(id))) { return (id * 2) + 1; }
+                if (IsGroupHeader(focused) && focused.Name.Contains(GroupedPagingSection(id))) { return id * 2; }
+            }
+
+            Log.Comment("Unrecognized focused container {0} '{1}'.", focused.ClassName, focused.Name);
+            return -1;
+        }
+
+        // The body fills the table inside its 1px border (HeadersVisibility is None); one pixel of slack for rounding.
+        private static bool IsFullyInGroupedPagingViewport(UIObject table, System.Drawing.Rectangle bounds)
+        {
+            var viewport = table.BoundingRectangle;
+            return bounds.Height > 0 && bounds.Top >= viewport.Top - 1 && bounds.Bottom <= viewport.Bottom + 1;
         }
 
         [TestMethod]
