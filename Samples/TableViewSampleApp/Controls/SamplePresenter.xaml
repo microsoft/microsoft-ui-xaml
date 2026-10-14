@@ -76,14 +76,33 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition x:Name="ExampleHostRow" Height="Auto"/>
                 </Grid.RowDefinitions>
-                <InfoBar
+                <!-- Not an InfoBar: it announces on open (64477279). Unnamed: WinUI reports an unset AutomationId as the x:Name. -->
+                <Border
                     Grid.Row="0"
-                    Title="Try it"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
                     MinHeight="104"
-                    Visibility="Collapsed"/>
+                    Padding="16,14"
+                    CornerRadius="{ThemeResource ControlCornerRadius}"
+                    BorderThickness="1"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}"
+                    Visibility="Collapsed">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            Glyph="&#xE946;"
+                            FontSize="16"
+                            VerticalAlignment="Top"
+                            Margin="0,2,0,0"
+                            Foreground="{ThemeResource SystemFillColorAttentionBrush}"
+                            AutomationProperties.AccessibilityView="Raw"/>
+                        <TextBlock Grid.Column="1" TextWrapping="Wrap">
+                            <Run Text="Try it" FontWeight="SemiBold"/><Run Text="  "/><Run x:Name="TryItMessageRun"/>
+                        </TextBlock>
+                    </Grid>
+                </Border>
                 <ContentControl
                     x:Name="ExampleHost"
                     Grid.Row="1"
@@ -141,7 +160,8 @@
                     HorizontalScrollMode="Disabled"
                     HorizontalScrollBarVisibility="Disabled"
                     IsVerticalScrollChainingEnabled="False">
-                    <Grid Padding="16,8,16,16">
+                    <!-- Right padding clears the overlay scrollbar when it expands (64478783). -->
+                    <Grid Padding="16,8,24,16">
                         <ContentControl
                             x:Name="OptionsHost"
                             IsTabStop="False"

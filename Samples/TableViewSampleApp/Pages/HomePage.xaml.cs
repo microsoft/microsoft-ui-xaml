@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using TableViewSampleApp;
@@ -61,5 +62,11 @@ public sealed partial class HomePage : Page
             "Could not open a browser. The link was copied to the clipboard: {0}",
             ReportIssueUri.AbsoluteUri);
         ReportIssueFallbackText.Visibility = Visibility.Visible;
+
+        // TextBlock does not raise LiveRegionChanged on a text change; raise it once.
+        ReportIssueFallbackText.UpdateLayout();
+        (FrameworkElementAutomationPeer.FromElement(ReportIssueFallbackText)
+            ?? FrameworkElementAutomationPeer.CreatePeerForElement(ReportIssueFallbackText))
+            ?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
     }
 }

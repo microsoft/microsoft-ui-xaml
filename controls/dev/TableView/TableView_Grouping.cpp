@@ -217,6 +217,19 @@ bool TableView::TryFocusParentRow(winrt::UIElement const& container)
 
 void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired, bool subtree)
 {
+    // Consume the gesture state first so a request that goes nowhere can't leak it to a later one.
+    winrt::FocusState gestureState = winrt::FocusState::Unfocused;
+    if (auto const header = container.try_as<winrt::TableViewGroupHeader>())
+    {
+        gestureState = winrt::get_self<TableViewGroupHeader>(header)->TakeGestureFocusStateInternal();
+    }
+    else if (subtree)
+    {
+        // Only the Multiply key expands a row subtree, so restore as Keyboard even when the row was
+        // focused by a click: its rebuild recycles the row, which would otherwise strand focus.
+        gestureState = winrt::FocusState::Keyboard;
+    }
+
     if (!m_tableViewSourceRowMetadata)
     {
         return;
@@ -229,7 +242,7 @@ void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::op
     winrt::hstring const identity = TryGetContainerIdentity(container);
 
     // Capture focus while the container still owns it; the deferred reshape recycles it.
-    CaptureContainerFocusForRestore(container, identity);
+    CaptureContainerFocusForRestore(container, identity, gestureState);
 
     // A header toggles a group; anything else is a tree row.
     const auto axis = container && container.try_as<winrt::TableViewGroupHeader>()
@@ -269,11 +282,15 @@ winrt::hstring TableView::TryGetContainerIdentity(winrt::UIElement const& contai
     }
 }
 
-void TableView::CaptureContainerFocusForRestore(winrt::UIElement const& container, winrt::hstring const& identity)
+void TableView::CaptureContainerFocusForRestore(
+    winrt::UIElement const& container,
+    winrt::hstring const& identity,
+    winrt::FocusState gestureState)
 {
     // Clear any prior capture: a fresh toggle supersedes an earlier one whose restore has not run.
     m_pendingGroupFocusIdentity.clear();
     m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+    m_pendingGroupFocusFromPointerGesture = false;
 
     if (identity.empty() || !container)
     {
@@ -311,15 +328,39 @@ void TableView::CaptureContainerFocusForRestore(winrt::UIElement const& containe
 
     if (auto const control = stateSource)
     {
-        // Pointer focus draws no focus visual, so there is nothing to restore for a band click.
-        // Keyboard (and programmatic, e.g. a test driving Focus) carry a visual worth preserving.
-        const auto state = control.FocusState();
-        if (state == winrt::FocusState::Keyboard || state == winrt::FocusState::Programmatic)
+        // Headers restore pointer focus too (a band click focuses then collapses); data rows only
+        // keyboard/programmatic, since the row restore always focuses with Keyboard state.
+        const bool isHeader = container.try_as<winrt::TableViewGroupHeader>() != nullptr;
+        const auto state = gestureState != winrt::FocusState::Unfocused ? gestureState : control.FocusState();
+        const bool restorable = isHeader
+            ? state != winrt::FocusState::Unfocused
+            : (state == winrt::FocusState::Keyboard || state == winrt::FocusState::Programmatic);
+        if (restorable)
         {
             m_pendingGroupFocusIdentity = identity;
             m_pendingGroupFocusState = state;
+            m_pendingGroupFocusFromPointerGesture = gestureState == winrt::FocusState::Pointer;
         }
     }
+}
+
+bool TableView::CanRestoreContainerFocus()
+{
+    auto const root = XamlRoot();
+    if (!root || !root.IsHostVisible())
+    {
+        return false;
+    }
+
+    // ItemsRepeater moves focus off a cleared container to a realized neighbour, still inside.
+    auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+    if (!focused)
+    {
+        return true;
+    }
+
+    winrt::DependencyObject const selfObject = *this;
+    return focused == selfObject || SharedHelpers::IsAncestor(focused, selfObject, false /* checkVisibility */);
 }
 
 winrt::hstring TableView::CaptureFocusedContainerForRestore()
@@ -328,6 +369,7 @@ winrt::hstring TableView::CaptureFocusedContainerForRestore()
     // a fresh single-group toggle does.
     m_pendingGroupFocusIdentity.clear();
     m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+    m_pendingGroupFocusFromPointerGesture = false;
 
     auto const root = XamlRoot();
     if (!root)
@@ -506,8 +548,10 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
     }
 
     const auto focusState = m_pendingGroupFocusState;
+    const bool fromPointerGesture = m_pendingGroupFocusFromPointerGesture;
     m_pendingGroupFocusIdentity.clear();
     m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+    m_pendingGroupFocusFromPointerGesture = false;
 
     // Defer to after the reshape's relayout. The reprojection triggered by the toggle recycles the
     // header container during the next layout pass; focusing now would land on a container layout
@@ -521,7 +565,7 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
 
     auto weakThis = get_weak();
     m_pendingGroupFocusLayoutToken = LayoutUpdated(
-        [weakThis, identity, focusState](winrt::IInspectable const&, winrt::IInspectable const&)
+        [weakThis, identity, focusState, fromPointerGesture](winrt::IInspectable const&, winrt::IInspectable const&)
         {
             auto strongThis = weakThis.get();
             if (!strongThis)
@@ -541,7 +585,12 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
             // deferred restore.
             try
             {
-                strongThis->FocusContainerByIdentity(identity, focusState);
+                if (!strongThis->CanRestoreContainerFocus())
+                {
+                    return;
+                }
+
+                strongThis->FocusContainerByIdentity(identity, focusState, fromPointerGesture);
             }
             catch (...)
             {
@@ -550,7 +599,7 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
         });
 }
 
-void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState)
+void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture)
 {
     if (identity.empty() || !m_tableViewSourceRowMetadata)
     {
@@ -615,9 +664,12 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
         return;
     }
 
-    if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
+    if (!fromPointerGesture)
     {
-        frameworkElement.StartBringIntoView();
+        if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
+        {
+            frameworkElement.StartBringIntoView();
+        }
     }
 
     if (auto const control = element.try_as<winrt::Control>())
@@ -1090,6 +1142,7 @@ void TableView::ClearGroupHeaderElement(winrt::TableViewGroupHeader const& heade
     // scroll can still call Expand()/Row()/ContainingGrid() on this element -- nulling the owner
     // turns those into silent no-ops, which is worse than the ancestor walk it replaced. A weak
     // ref costs nothing to keep and stays correct.
+    winrt::get_self<TableViewGroupHeader>(header)->ResetPointerStateInternal();
     header.ClearValue(winrt::ContentControl::ContentTemplateProperty());
 }
 

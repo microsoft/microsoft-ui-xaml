@@ -280,8 +280,52 @@ public:
     // The row that body entry should land on when focus is aimed at a row CONTAINER from outside
     // the table. Used by TableViewRow's GettingFocus redirect: entering the table returns to the
     // row the user left, while a move that started inside the table keeps the row it names.
+    // Otherwise falls back to the viewport edge row.
     winrt::TableViewRow ResolveFocusEntryRow(
-        winrt::TableViewRow const& row, winrt::DependencyObject const& oldFocusedElement);
+        winrt::TableViewRow const& row,
+        winrt::DependencyObject const& oldFocusedElement,
+        winrt::FocusNavigationDirection direction = winrt::FocusNavigationDirection::None);
+
+    // No side effects; the caller arms the level it redirects to.
+    struct FocusEntryTarget
+    {
+        winrt::TableViewRow Row{ nullptr };
+        winrt::UIElement Element{ nullptr };
+        bool CellLevel{ false };
+    };
+    FocusEntryTarget ResolveFocusEntryTarget(
+        winrt::TableViewRow const& row,
+        winrt::DependencyObject const& oldFocusedElement,
+        winrt::FocusNavigationDirection direction);
+
+    // Tab from another band onto a row or group header outside the viewport lands on the
+    // viewport edge row or group header instead. Returns true when focus was redirected.
+    bool TryRedirectBandEntryToViewport(
+        winrt::UIElement const& target,
+        winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args);
+
+    static bool IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner);
+    winrt::UIElement FindViewportEdgeElementInternal(bool last, bool includeGroupHeaders) const;
+
+    // A redirect re-raises GettingFocus with the same CorrelationId; redirect once to avoid a loop.
+    bool HasRedirectedFocusEntry(winrt::guid const& correlationId) const noexcept
+    {
+        return m_hasFocusEntryRedirect && m_focusEntryRedirectCorrelationId == correlationId;
+    }
+    void NoteFocusEntryRedirect(winrt::guid const& correlationId) noexcept
+    {
+        m_focusEntryRedirectCorrelationId = correlationId;
+        m_hasFocusEntryRedirect = true;
+    }
+
+    void ArmCellLevelRowInternal(winrt::TableViewRow const& row);
+
+    winrt::TableViewRow FindViewportEdgeRowInternal(bool last) const;
+
+    winrt::hstring GetContainerIdentityInternal(winrt::UIElement const& container)
+    {
+        return TryGetContainerIdentity(container);
+    }
 
     // Two-level cursor state. False = ROW level, true = CELL level. Owned here rather than on the
     // row because it has to survive row recycling and follow the cursor from row to row.
@@ -340,7 +384,8 @@ public:
     bool CancelEditInternal(EditingUnit unit);
 
     // Forced teardown (source-driven reset / ItemsSource replacement / unload). Cannot be vetoed.
-    bool TerminateEditForReset(bool force);
+    // sourceReplaced: the edited item belongs to a data set the control is leaving.
+    bool TerminateEditForReset(bool force, bool sourceReplaced = false);
     // Same, but leaves the edited row's visuals alone. For callers inside a layout pass, where
     // restoring the display child would mutate the tree during measure.
     //
@@ -349,7 +394,7 @@ public:
     // ItemsRepeater's measure, and a handler that touches the tree or invalidates layout
     // re-enters the pass we are standing in and fail-fasts. Pass true only from a genuine layout
     // pass - the DP-change callers are re-entrant for FOCUS reasons, not layout ones.
-    bool TerminateEditWithoutVisualRestore(bool insideLayoutPass = false);
+    bool TerminateEditWithoutVisualRestore(bool insideLayoutPass = false, bool sourceReplaced = false);
 
     // Runs an app-visible notification now, or on the dispatcher when we are inside a layout pass.
     void PostEditNotification(std::function<void()> notify);
@@ -929,14 +974,16 @@ private:
     // Keyboard-driven group toggle loses focus without this: the Enter/Space toggle defers a
     // structural reshape that recycles the focused header container, dropping focus (and its
     // visual) to nothing. Capture the header's identity + FocusState at gesture time, then restore
-    // focus to the same group's header once the reshape's relayout has settled. Only keyboard /
-    // programmatic focus is restored -- a pointer toggle carries no focus visual.
-    // Same for focused hierarchical data rows whose container a reset recycles; re-focused only
-    // when focus did not survive.
-    void CaptureContainerFocusForRestore(winrt::UIElement const& container, winrt::hstring const& identity);
+    // focus to the same group's header after the relayout settles, unless focus left the table.
+    // Also covers focused hierarchical rows a reset recycles (keyboard / programmatic focus only).
+    void CaptureContainerFocusForRestore(
+        winrt::UIElement const& container,
+        winrt::hstring const& identity,
+        winrt::FocusState gestureState = winrt::FocusState::Unfocused);
     winrt::hstring CaptureFocusedContainerForRestore();
     void RestoreContainerFocusIfPending(winrt::hstring const& identity);
-    void FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState);
+    void FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture);
+    bool CanRestoreContainerFocus();
     // Row identity for a realized container. Identity is index-independent once captured.
     winrt::hstring TryGetContainerIdentity(winrt::UIElement const& container);
 
@@ -1042,6 +1089,7 @@ private:
     winrt::event_token m_pendingGroupFocusLayoutToken{};
     winrt::hstring m_pendingGroupFocusIdentity{};
     winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
+    bool m_pendingGroupFocusFromPointerGesture{ false };
     winrt::event_token m_pendingGroupRowRefreshLayoutToken{};
     // Count changes refresh both empty state and the terminal row separator.
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceCollectionChangedRevoker{};
@@ -1116,9 +1164,13 @@ private:
     // ThemeSettings (lifted WinUI3) reports the system High Contrast setting and raises Changed on the
     // control's UI thread -- unlike AccessibilitySettings.HighContrastChanged, which could be delivered
     // off-thread. It requires a WindowId, so it is created on Loaded (once a XamlRoot exists), not in
-    // the constructor, and torn down on Unloaded.
+    // the constructor, and released on Unloaded, AppWindow.Destroying, or destruction.
     winrt::Microsoft::UI::System::ThemeSettings m_themeSettings{ nullptr };
     winrt::Microsoft::UI::System::ThemeSettings::Changed_revoker m_themeSettingsChangedRevoker{}; // Runtime HC toggles must refresh cached HC-dependent brushes.
+    // remove_Changed fail-fasts once the window is gone, hence the Destroying release. A token, not
+    // auto_revoke: AppWindow has no weak reference support.
+    winrt::Microsoft::UI::Windowing::AppWindow m_appWindow{ nullptr };
+    winrt::event_token m_appWindowDestroyingToken{};
     // Cached HC state: kept fresh by ThemeSettings.Changed while loaded and read by IsHighContrast().
     // Only touched on the UI thread now, so no atomic is required.
     bool m_isHighContrast{ false };
@@ -1126,6 +1178,7 @@ private:
 
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     void OnTableViewUnloaded();
+    void ReleaseThemeSettings();
     bool m_rowsSourceDrained{ false };
 
     double ComputeLeadingFrozenWidth();
@@ -1224,6 +1277,11 @@ private:
     // The row currently drilled in, so the cursor can pop it back to row level when it moves on.
     // Weak: rows are recycled on every scroll.
     winrt::weak_ref<winrt::TableViewRow> m_cellLevelRow{ nullptr };
+
+    winrt::guid m_focusEntryRedirectCorrelationId{};
+    bool m_hasFocusEntryRedirect{ false };
+
+    bool RowShowsCurrentItemInternal(winrt::TableViewRow const& row) const;
 
     // Row-level Left/Right drill between row and cells; group headers use Left/Right for expand/collapse.
     bool TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args);

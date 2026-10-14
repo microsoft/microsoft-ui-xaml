@@ -60,6 +60,7 @@
     x:Name="BioWidthSlider"
     AutomationProperties.AutomationId="TextWrapBioWidthSlider"
     AutomationProperties.Name="Bio column width"
+    AutomationProperties.HelpText="Width in pixels, from 220 to 520."
     Minimum="220"
     Maximum="520"
     StepFrequency="20"

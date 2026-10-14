@@ -983,6 +983,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies header cells carry ControlCornerRadius so their system focus visual is rounded.")]
+        public void VerifyHeaderCellCornerRadiusMatchesControlCornerRadius()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
+                Verify.IsNotNull(row, "The TableView should realize at least one row.");
+                var headerCell = GetHeaderCell(tableView, 0) as Grid;
+                Verify.IsNotNull(headerCell, "Header cells should be Grids.");
+                Verify.IsTrue(headerCell.UseSystemFocusVisuals, "Header cells should use the system focus visual.");
+                Verify.AreNotEqual(new CornerRadius(0), row.CornerRadius, "The row style should round row focus.");
+                Verify.AreEqual(row.CornerRadius, headerCell.CornerRadius,
+                    "Header cells must carry ControlCornerRadius so the keyboard focus rect is rounded like the rows'.");
+            });
+        }
+
         // Distinct from the tests above, which set density before load. Without this, density applies
         // only to rows realized AFTER the change, so a table that has already rendered shows a mix of
         // densities as the user scrolls.

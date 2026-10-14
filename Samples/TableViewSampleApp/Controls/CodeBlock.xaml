@@ -60,6 +60,7 @@
                 VerticalScrollMode="Auto"
                 VerticalScrollBarVisibility="Auto"
                 IsTabStop="True"
+                UseSystemFocusVisuals="True"
                 AutomationProperties.Name="Code">
                 <TextBlock
                     x:Name="CodeText"

@@ -197,44 +197,60 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Button Grid.Row="0" Grid.Column="0" x:Name="SortPointsDescButton" AutomationProperties.AutomationId="SortPointsDescButton"
-                                Content="Points ↓" Click="OnSortPointsDescClick"
+                                Click="OnSortPointsDescClick"
                                 AutomationProperties.Name="Sort by points, highest first"
                                 ToolTipService.ToolTip="SortByColumn(PointsColumn, Descending): the standings order."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Points ↓" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="0" Grid.Column="1" x:Name="SortGroupAscButton" AutomationProperties.AutomationId="SortGroupAscButton"
-                                Content="Group ↑" Click="OnSortGroupAscClick"
+                                Click="OnSortGroupAscClick"
                                 AutomationProperties.Name="Sort by group, A first"
                                 ToolTipService.ToolTip="SortByColumn(GroupColumn, Ascending)."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Group ↑" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="1" Grid.Column="0" x:Name="SortGoalDifferenceDescButton" AutomationProperties.AutomationId="SortGoalDifferenceDescButton"
-                                Content="GD ↓" Click="OnSortGoalDifferenceDescClick"
+                                Click="OnSortGoalDifferenceDescClick"
                                 AutomationProperties.Name="Sort by goal difference, highest first"
                                 ToolTipService.ToolTip="SortByColumn(GoalDifferenceColumn, Descending)."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="GD ↓" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="1" Grid.Column="1" x:Name="SortNextMatchButton" AutomationProperties.AutomationId="SortNextMatchButton"
-                                Content="Next match ↑" Click="OnSortNextMatchClick"
+                                Click="OnSortNextMatchClick"
                                 AutomationProperties.Name="Sort by next match date, soonest first"
                                 ToolTipService.ToolTip="SortByColumn(NextMatchColumn, Ascending): a template column sorted by the DateTimeOffset."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Next match ↑" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="2" Grid.Column="0" x:Name="SortKickoffButton" AutomationProperties.AutomationId="SortKickoffButton"
-                                Content="Kickoff ↑" Click="OnSortKickoffClick"
+                                Click="OnSortKickoffClick"
                                 AutomationProperties.Name="Sort by kickoff time, earliest first"
                                 ToolTipService.ToolTip="SortByColumn(KickoffColumn, Ascending): a template column sorted by the TimeSpan."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Kickoff ↑" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="2" Grid.Column="1" x:Name="SortSeededButton" AutomationProperties.AutomationId="SortSeededFirstButton"
-                                Content="Seeded first" Click="OnSortSeededClick"
+                                Click="OnSortSeededClick"
                                 AutomationProperties.Name="Sort seeded teams first"
                                 ToolTipService.ToolTip="SortByColumn(SeededColumn, Descending): a CheckBox column sorted by the bool."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Seeded first" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="3" Grid.Column="0" x:Name="TogglePointsButton" AutomationProperties.AutomationId="SortTogglePointsButton"
-                                Content="Toggle Points" Click="OnTogglePointsClick"
+                                Click="OnTogglePointsClick"
                                 AutomationProperties.Name="Toggle the points sort direction"
                                 ToolTipService.ToolTip="ToggleSortDirection(PointsColumn): reverses the Points sort, or starts it."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Toggle Points" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="3" Grid.Column="1" x:Name="ClearSortButton" AutomationProperties.AutomationId="SortClearSortButton"
-                                Content="Clear sort" Click="OnClearSortClick"
+                                Click="OnClearSortClick"
                                 ToolTipService.ToolTip="ClearSort(): the rows return to source order and Sorted fires with no column."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Clear sort" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                     </Grid>
                 </controls:RailSection>
 
