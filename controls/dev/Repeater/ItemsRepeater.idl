@@ -335,8 +335,11 @@ runtimeclass ItemCollectionTransition
 
 [MUX_PUBLIC_V5]
 [webhosthidden]
-runtimeclass ItemCollectionTransitionProgress
+unsealed runtimeclass ItemCollectionTransitionProgress
 {
+    [method_name("CreateInstance")]
+    protected ItemCollectionTransitionProgress(ItemCollectionTransition transition);
+
     ItemCollectionTransition Transition{ get; };
     Microsoft.UI.Xaml.UIElement Element{ get; };
 
