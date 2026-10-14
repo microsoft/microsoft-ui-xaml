@@ -238,8 +238,10 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"ActualWidth", L"Double", statics.ActualWidthProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanResize", L"Boolean", statics.CanResizeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanSort", L"Boolean", statics.CanSortProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"CellContextFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.CellContextFlyoutProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CellEditingTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.CellEditingTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"FrozenEdge", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge", statics.FrozenEdgeProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"HeaderContextFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.HeaderContextFlyoutProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Header", L"Object", statics.HeaderProperty(), true /* isContent */);
                         xamlType.AddDPMember(L"HeaderTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.HeaderTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderTemplateSelector", L"Microsoft.UI.Xaml.Controls.DataTemplateSelector", statics.HeaderTemplateSelectorProperty(), false /* isContent */);
@@ -769,7 +771,13 @@ Entry c_typeEntries[] =
         []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Microsoft.UI.Xaml.Controls.Panel"); }
     },
     {
-        /* Arg1 TypeName */ 
+        /* Arg1 TypeName */
+        L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase",
+        /* Arg2 CreateXamlTypeCallback */
+        []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase"); }
+    },
+    {
+        /* Arg1 TypeName */
         L"Microsoft.UI.Xaml.Data.Binding",
         /* Arg2 CreateXamlTypeCallback */ 
         []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Microsoft.UI.Xaml.Data.Binding"); }

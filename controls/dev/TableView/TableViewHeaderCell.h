@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TableViewColumnHeaderAutomationPeer.h"
+#include "TableViewContextFlyout.h"
 
 // Keep the existing Grid layout/input behavior, but attach the header peer to the
 // actual focus and hit-test target. This implementation-only type needs no WinRT API.
@@ -14,6 +15,15 @@ public:
     TableViewHeaderCell(winrt::TableView const& table, winrt::TableViewColumn const& column)
         : m_table(winrt::make_weak(table)), m_column(winrt::make_weak(column))
     {
+    }
+
+    static winrt::Grid Create(winrt::TableView const& table, winrt::TableViewColumn const& column)
+    {
+        auto const cell = winrt::make_self<TableViewHeaderCell>(table, column);
+        auto const wrapper = cell.as<winrt::Grid>();
+        cell->m_contextFlyout = TableViewContextFlyout::Create(
+            wrapper, column, winrt::TableViewColumn::HeaderContextFlyoutProperty());
+        return wrapper;
     }
 
     winrt::hstring GetRuntimeClassName() const
@@ -28,6 +38,7 @@ public:
     }
 
 private:
+    winrt::com_ptr<TableViewContextFlyout> m_contextFlyout;
     winrt::weak_ref<winrt::TableView> m_table;
     winrt::weak_ref<winrt::TableViewColumn> m_column;
 };
