@@ -148,11 +148,6 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
     {
         ClearLiveShapingSubscriptions();
 
-        // Nothing live is pending any more; a later re-enable starts from a fresh restore. A
-        // restore still queued finds the flag clear and returns.
-        m_liveShapingDirty = false;
-        m_liveShapingHeld = false;
-        m_liveShapingChangeDropped->store(false);
         // Sort-key tracking owns staleness again. The projection is current (live shaping kept it
         // so), hence tracking restarts with nothing dirty.
         if (m_kind == ProjectionKind::Flat && m_shapingState.HasProjection)
@@ -1756,13 +1751,16 @@ void ShapedItemsSource::Refresh()
 
         auto const authoritativeSource = m_source;
         m_refreshSourceStamp = m_sourceChangeStamp;
+
+        // Cleared before the re-read: an off-thread change dropped while the items are being read
+        // keeps the flag set, so the next live change still forces a rebuild.
+        m_liveShapingChangeDropped->store(false);
         auto rows = Materialize(authoritativeSource);
         RefreshLiveShapingSubscriptions(rows);
 
         // All snapshots were just recaptured, so any pending live restore is satisfied -- unless
         // the rebuild below throws, in which case the catch re-marks it.
         m_liveShapingDirty = false;
-        m_liveShapingChangeDropped->store(false);
 
         if (!HasAnyShapingVerb())
         {
@@ -1848,13 +1846,7 @@ void ShapedItemsSource::Refresh()
         // Contained: a scheduling failure must not replace the actionable exception rethrown below.
         if (runPendingRefresh)
         {
-            try
-            {
-                ScheduleRefreshReplay();
-            }
-            catch (...)
-            {
-            }
+            try { ScheduleRefreshReplay(); } catch (...) {}
         }
 
         // An in-pass ClearParentBy must still take effect; its rebuild just failed.
@@ -2555,14 +2547,10 @@ void ShapedItemsSource::TryCompleteDeferredHierarchyTeardown()
         }
         else if (m_kind == ProjectionKind::Hierarchical)
         {
-            if (m_hierarchicalAdapter)
-            {
-                m_releasedHierarchyRows = HierarchyFallbackRows();
-            }
-            auto const flatRows = std::move(m_releasedHierarchyRows);
-            m_releasedHierarchyRows.clear();
+            // Release captures the fallback rows while the tree is still alive; an earlier release
+            // already captured them otherwise.
             ReleaseHierarchyProjection();
-            m_releasedHierarchyRows.clear();
+            auto const flatRows = std::exchange(m_releasedHierarchyRows, {});
             InvalidateShapingState();
             ClearFlatRowIdentityTracking();
             m_rows.ReplaceAll(flatRows);
@@ -2844,8 +2832,11 @@ void ShapedItemsSource::ClearLiveShapingSubscriptions()
 {
     m_liveShaping->UnsubscribeAll();
     m_liveShapeSnapshots.clear();
-    // Nothing tracked, so a posted restore must not reshape.
+    // Nothing tracked, so nothing live is pending: a posted restore finds the flag clear and
+    // returns, and a later re-enable starts from a fresh restore.
     m_liveShapingDirty = false;
+    m_liveShapingHeld = false;
+    m_liveShapingChangeDropped->store(false);
 }
 
 void ShapedItemsSource::ResubscribeLiveShapingFromSource()
@@ -3010,6 +3001,7 @@ void ShapedItemsSource::ResumeHeldLiveShaping()
         return;
     }
 
-    // Posted: caller is closing an edit, often inside app callbacks or layout.
-    PostLiveShapingRestore();
+    // Posted: caller is closing an edit, often inside app callbacks or layout. Skips the post when a
+    // refresh in the meantime already satisfied the restore.
+    EnsureLiveShapingRestore();
 }

@@ -17,26 +17,6 @@ namespace ShapingHelpers
 {
     namespace
     {
-        // Value keys compare numerically equal floats as equal: -0 folds into +0 and every NaN
-        // into one canonical NaN, so the key is not the raw bit pattern.
-        uint32_t CanonicalFloatBits(float value) noexcept
-        {
-            if (std::isnan(value)) return 0x7FC00000u;
-            if (value == 0.0f) return 0u;
-            uint32_t bits = 0;
-            std::memcpy(&bits, &value, sizeof(bits));
-            return bits;
-        }
-
-        uint64_t CanonicalDoubleBits(double value) noexcept
-        {
-            if (std::isnan(value)) return 0x7FF8000000000000ull;
-            if (value == 0.0) return 0ull;
-            uint64_t bits = 0;
-            std::memcpy(&bits, &value, sizeof(bits));
-            return bits;
-        }
-
         enum class NumericKind { None, Signed, Unsigned, Floating };
 
         enum class ValueClassRank

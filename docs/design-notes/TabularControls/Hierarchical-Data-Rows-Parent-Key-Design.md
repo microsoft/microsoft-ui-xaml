@@ -90,14 +90,17 @@ configured, and the removal verb mirrors it (`Filter`/`ClearFilter`, `GroupBy`/`
   unchanged is ignored.
 - **When it reshapes.** A change that moves the snapshot posts one reshape to the source's
   dispatcher; further changes in the same turn coalesce into it. A change raised on another thread
-  is marshaled to the source's thread first. The reshape re-applies the whole pipeline: filter,
+  is marshaled to the source's thread first; if that post is refused, the change is picked up by
+  the next live change on the source's thread. The reshape re-applies the whole pipeline: filter,
   sort, group and parent relation.
 - **Edits.** While a cell edit is in progress the reshape is held, and it runs once the edit
   closes, so live data never ends the user's edit.
 - **Turning it on** subscribes every item and posts one catch-up reshape, because edits made while
   it was off were not tracked. Turning it off revokes every subscription.
 - **Cost.** One subscription and one snapshot per item, kept in step with collection changes, plus
-  one snapshot capture per changed item while no reshape is pending.
+  one snapshot capture per changed item while no reshape is pending. Each reshape is a full refresh:
+  it re-reads every item and recaptures every snapshot (O(n) in the source size), however few items
+  changed.
 
 ## 3. Key semantics
 

@@ -428,11 +428,13 @@ private:
     std::unordered_map<void const*, LiveShapeSnapshot> m_liveShapeSnapshots;
     // Pending live reshape: the projection may not reflect the captured snapshots.
     bool m_liveShapingDirty{ false };
-    // A restore is queued on m_ownerQueue. Separate from dirty so a refused post or a failed
-    // restore is retried by the next change instead of stranding the dirty flag.
+    // A restore is queued on m_ownerQueue (so it implies m_ownerQueue is set). Separate from dirty
+    // so a refused post or a failed restore is retried by the next change instead of stranding the
+    // dirty flag.
     bool m_liveShapingRestorePosted{ false };
     std::function<bool()> m_liveShapingHold{};
-    // A restore found the hold on and parked; ResumeHeldLiveShaping re-posts it.
+    // A restore found the hold on and parked; ResumeHeldLiveShaping re-posts it if still dirty.
+    // Set only while dirty, but a refresh may clear dirty first, so it alone does not imply dirty.
     bool m_liveShapingHeld{ false };
     std::function<bool(winrt::IInspectable const&, bool)> m_liveItemChangedHook{};
 

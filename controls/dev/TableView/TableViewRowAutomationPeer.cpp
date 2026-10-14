@@ -538,7 +538,7 @@ std::wstring TableViewRowAutomationPeer::ComposeCellTexts(
 int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
 {
     const int32_t value = ComputePositionInSet();
-    m_lastRaisedPositionInSet = value;
+    m_lastReportedPositionInSet = value;
     return value;
 }
 
@@ -585,7 +585,7 @@ int32_t TableViewRowAutomationPeer::ComputePositionInSet()
 int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
 {
     const int32_t value = ComputeSizeOfSet();
-    m_lastRaisedSizeOfSet = value;
+    m_lastReportedSizeOfSet = value;
     return value;
 }
 
@@ -797,11 +797,11 @@ void TableViewRowAutomationPeer::RaiseExpandCollapseAutomationEvent(
     }
 }
 
-// ----- IAutomationPeerOverrides3 -----
-
 void TableViewRowAutomationPeer::RaiseHierarchyPositionChanged()
 {
-    if (!IsHierarchicalRow())
+    // A row that left the tree (ClearParentBy, or a recycled row bound to a flat item) still owes
+    // a client that read its tree Level the change back.
+    if (!IsHierarchicalRow() && m_lastReportedLevel <= 0)
     {
         return;
     }
@@ -819,9 +819,9 @@ void TableViewRowAutomationPeer::RaiseHierarchyPositionChanged()
             }
         };
 
-        raiseIfChanged(winrt::AutomationElementIdentifiers::LevelProperty(), m_lastRaisedLevel, ComputeLevel());
-        raiseIfChanged(winrt::AutomationElementIdentifiers::PositionInSetProperty(), m_lastRaisedPositionInSet, ComputePositionInSet());
-        raiseIfChanged(winrt::AutomationElementIdentifiers::SizeOfSetProperty(), m_lastRaisedSizeOfSet, ComputeSizeOfSet());
+        raiseIfChanged(winrt::AutomationElementIdentifiers::LevelProperty(), m_lastReportedLevel, ComputeLevel());
+        raiseIfChanged(winrt::AutomationElementIdentifiers::PositionInSetProperty(), m_lastReportedPositionInSet, ComputePositionInSet());
+        raiseIfChanged(winrt::AutomationElementIdentifiers::SizeOfSetProperty(), m_lastReportedSizeOfSet, ComputeSizeOfSet());
     }
     catch (...)
     {
@@ -829,10 +829,12 @@ void TableViewRowAutomationPeer::RaiseHierarchyPositionChanged()
     }
 }
 
+// ----- IAutomationPeerOverrides3 -----
+
 int32_t TableViewRowAutomationPeer::GetLevelCore()
 {
     const int32_t value = ComputeLevel();
-    m_lastRaisedLevel = value;
+    m_lastReportedLevel = value;
     return value;
 }
 

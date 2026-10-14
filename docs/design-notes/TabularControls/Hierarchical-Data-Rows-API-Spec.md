@@ -27,6 +27,9 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
 
         // Removes the relation and shows the source flat again.
         TableViewSource ClearParentBy();
+
+        // Reshapes when an item's key, parent key, sort key, group key or filter result changes.
+        Boolean IsLiveShaping { get; set; };
     }
 
     runtimeclass TableView
@@ -70,7 +73,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
   - `GroupBy` buckets the roots, and each root keeps its subtree.
 - **Change tracking.**
   - Adding, removing or replacing items in the collection updates the tree.
-  - Changing a property of an existing item (its key or parent key) is not noticed. To move a row to a new parent, replace the item.
+  - Changing a property of an existing item (its key or parent key) is noticed only when `TableViewSource.IsLiveShaping` is true; the tree then reshapes on the item's `PropertyChanged`. Otherwise, to move a row to a new parent, replace the item.
 
 ## Example
 

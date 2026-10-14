@@ -1270,7 +1270,6 @@ The display-only base delivered previously:
 These ship additively in a later change — they are part of v1, not non-goals:
 
 - Row selection: multiple/extended (Ctrl/Shift range selection). **Single selection ships here.**
-- Two-level hierarchy.
 - Column resize and reorder.
 
 ## Non-goals (out of scope for v1)

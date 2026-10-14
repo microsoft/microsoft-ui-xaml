@@ -19,14 +19,6 @@ namespace
     constexpr std::wstring_view c_valueKeyPrefix{ L"value:" };
     constexpr std::wstring_view c_objectKeyPrefix{ L"object:" };
 
-    // -0 folds into +0 and every NaN into one, matching the shared Single/Double formatter.
-    uint32_t CanonicalFloatBits(float value) noexcept
-    {
-        if (std::isnan(value)) return 0x7FC00000u;
-        if (value == 0.0f) return 0u;
-        return std::bit_cast<uint32_t>(value);
-    }
-
     bool IsNoKey(winrt::IInspectable const& key)
     {
         if (!key) return true;

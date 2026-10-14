@@ -74,9 +74,9 @@ private:
     int32_t ComputeSizeOfSet();
 
     // Last values handed to a client through the Get*Core overrides; -1 until first read.
-    int32_t m_lastRaisedLevel{ -1 };
-    int32_t m_lastRaisedPositionInSet{ -1 };
-    int32_t m_lastRaisedSizeOfSet{ -1 };
+    int32_t m_lastReportedLevel{ -1 };
+    int32_t m_lastReportedPositionInSet{ -1 };
+    int32_t m_lastReportedSizeOfSet{ -1 };
 
     // The owning TableView, or null once the row has been recycled out of the tree.
     winrt::TableView GetOwningTableView();

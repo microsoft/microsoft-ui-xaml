@@ -46,7 +46,8 @@ private:
         Subscription(Subscription const&) = delete;
         Subscription& operator=(Subscription const&) = delete;
         Subscription(Subscription&&) noexcept = default;
-        Subscription& operator=(Subscription&& other) noexcept;
+        // Entries live in a node-based map and are never reassigned.
+        Subscription& operator=(Subscription&&) = delete;
         // Backstop for the strong path, which has no auto-revoker: a dropped entry must not leave
         // its handler attached. A moved-from or revoked entry has nothing left to revoke.
         ~Subscription() { Revoke(); }
