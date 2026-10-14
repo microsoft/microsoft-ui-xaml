@@ -636,6 +636,8 @@ Base class for TableView columns.
 | `Header` | `Object` | `null` | Header content for the column. |
 | `HeaderTemplate` | `DataTemplate` | `null` | Template used to display the header. |
 | `HeaderTemplateSelector` | `DataTemplateSelector` | `null` | Template selector used to display the header; takes precedence over `HeaderTemplate` when both are set. |
+| `CellContextFlyout` | `FlyoutBase` | `null` | Native context flyout for the generated body cells in this column. |
+| `HeaderContextFlyout` | `FlyoutBase` | `null` | Independent native context flyout for this column's complete generated header. |
 | `Width` | `GridLength` | Default column width | Accepts `Pixel`/`Auto`/`*` (`GridLength`) for forward-compatibility; in v1 only explicit pixel widths are realized — `Auto` and `*` fall back to the default column width. True Auto/Star sizing is deferred. |
 | `MinWidth` | `Double` | `20` | Minimum column width. |
 | `MaxWidth` | `Double` | Infinity | Maximum column width. |
@@ -695,6 +697,42 @@ header peer publishes the text itself rather than through
 `AutomationProperties.HelpText`, and it reads the value from the column rather than the
 tooltip visual. The provider is available once the header is realized. As with cells, non-string content is
 mouse-only: pair it with `Header` text that carries the same information when it matters.
+
+### Cell and header context menus
+
+Set `CellContextFlyout` and `HeaderContextFlyout` once on a column. Both are dependency
+properties on `TableViewColumn`, inherited by text, template, and custom column types.
+They accept existing `MenuFlyout` or `CommandBarFlyout` instances through
+`Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase`.
+
+With `NameCellMenu` and `NameHeaderMenu` defined as flyout resources:
+
+```xaml
+<tabular:TableViewTextColumn
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
+    Header="Name"
+    Binding="{Binding Name}"
+    CellContextFlyout="{StaticResource NameCellMenu}"
+    HeaderContextFlyout="{StaticResource NameHeaderMenu}" />
+```
+
+A template column uses the same properties without adding a menu-only wrapper to its
+`CellTemplate` or `HeaderTemplate`. The menus belong to the generated cell/header
+surfaces, so their padding and keyboard focus targets use native context-menu routing.
+A child or editor menu retains priority for requests originating within that child.
+Row-focused keyboard requests remain row requests; these APIs do not change selection
+or introduce a new current-cell policy.
+
+Changes to the properties update realized wrappers, including recycled cells. Null
+removes only a column-owned association and restores current styles and native ancestor
+fallback. An application's local menu, null override, or binding is preserved.
+
+At each opening, native flyout handling supplies the invoking visual's data context to
+the presenter. Cell commands therefore bind to the invoked row item, not necessarily
+`SelectedItem`. Header menus retain the header's ambient data context; pass an explicit
+column key when a command needs one. Menu actions remain application-defined. No new
+row-menu property or context-menu request event is introduced.
 
 ## TableViewTextColumn class
 
@@ -1050,6 +1088,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Boolean IsReadOnly;
         Microsoft.UI.Xaml.DataTemplate CellEditingTemplate;
         Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
+        Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
+        Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
 
         static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
@@ -1063,6 +1103,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty CellEditingTemplateProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty CellContextFlyoutProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
     };
 
     [MUX_PREVIEW, webhosthidden]

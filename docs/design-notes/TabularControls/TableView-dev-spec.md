@@ -49,6 +49,70 @@ principled answer is column auto-generation from the item's public properties
 `TableViewTextColumn`s rather than stringified objects. Consumers who explicitly want the whole
 item's string form can use `TableViewTextColumn Binding="{Binding}"`.
 
+## Column context menus
+
+`TableViewColumn.CellContextFlyout` configures the native context flyout for every
+generated body cell in that column. `HeaderContextFlyout` independently configures
+the column's generated header. Both are nullable `FlyoutBase` dependency properties
+inherited by `TableViewTextColumn` and `TableViewTemplateColumn`; they accept existing
+`MenuFlyout` and `CommandBarFlyout` instances.
+
+```xaml
+<tabular:TableViewTextColumn
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
+    Header="Name" Binding="{Binding Name}">
+    <tabular:TableViewTextColumn.CellContextFlyout>
+        <MenuFlyout>
+            <MenuFlyoutItem Text="Copy name"
+                            Command="{Binding CopyNameCommand}"
+                            CommandParameter="{Binding Name}" />
+        </MenuFlyout>
+    </tabular:TableViewTextColumn.CellContextFlyout>
+    <tabular:TableViewTextColumn.HeaderContextFlyout>
+        <MenuFlyout>
+            <MenuFlyoutItem Text="Choose columns"
+                            Command="{StaticResource ChooseColumnsCommand}" />
+        </MenuFlyout>
+    </tabular:TableViewTextColumn.HeaderContextFlyout>
+</tabular:TableViewTextColumn>
+```
+
+This excerpt assumes a row item exposing `Name` and `CopyNameCommand`, and an
+application command resource named `ChooseColumnsCommand`. Commands remain
+application-defined. A template column uses the same two properties without adding
+a menu-only wrapper to its `CellTemplate` or `HeaderTemplate`.
+
+Each generated cell/header observes the corresponding column dependency property and
+applies it to native `UIElement.ContextFlyout`. The internal subscription keeps weak
+references to its column, target, and last-applied flyout, and uses the existing
+property-change revoker for cleanup. Replacing or clearing a column flyout updates
+existing wrappers without rebuilding cells or interrupting an editor. New wrappers
+subscribe when created; recycled wrappers retain their subscription.
+
+Only feature-owned local values are updated or cleared. An application's local menu,
+null value, or binding is left alone. A null column property does not install a local
+null on the wrapper: clearing an owned menu restores the current style value and normal
+ancestor fallback. The row's inherited data context is never replaced by the column.
+
+Native context routing covers the wrapper's padding and its keyboard focus target
+(Shift+F10 or the Apps key), as well as right-click and touch-hold. A descendant or
+editor that handles the request retains priority. Null contributes no menu and leaves
+normal row/table/ancestor fallback available. Row-level keyboard requests remain
+row-level requests; this feature neither invents a target column nor changes
+selection or the current-cell navigation model.
+
+The same configured cell flyout can open for different rows. Native flyout handling
+copies the target's data context into the presenter at each opening; menu commands
+therefore bind to the invoked row rather than `SelectedItem`. Header menus keep the
+header's normal ambient data context, not an implicit column model. Applications
+should pass an explicit column key when a header command needs one.
+
+Native flyouts hide when their target unloads. While a shared flyout remains open,
+its presenter keeps the context copied at opening rather than following a recycled
+wrapper's new data context. Application commands must still check that their original
+target is available and eligible when executed.
+
 # Layout
 
 The default `TableView` template is a two-band layout: a chrome `Border` (rounded with `ControlCornerRadius` for a card edge) containing a `Grid` with two rows — row 0 `Auto` (header band) and row 1 `*` (body band). The corner rounding is render-only and does not shrink the body viewport, so row virtualization is unaffected.
