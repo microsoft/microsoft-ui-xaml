@@ -51,7 +51,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(DisengageOnlyIfCancelNotHandled)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that Gamepad B disengages a control only if it was not previously handled.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Focus engagement bugs in lifted islands
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ForceDisengage)
@@ -77,7 +77,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(EngagementWhenNotTabStop)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that setting IsTabStop to false doesn't immediately cause a control engaged with a gamepad to disengage.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Focus engagement bugs in lifted islands
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ParentChildEngagementWhenNotEnabled)
@@ -132,7 +132,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(FocusingHyperlinkDoesNotDisengage)
                 TEST_METHOD_PROPERTY(L"Description", L"When an element is engaged and we are focusing a hyperlink, we should not disengage")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Focus engagement bugs in lifted islands
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateIsFocusEngagedProgrammatically)
@@ -149,14 +149,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that when input comes in from devices other than Gamepad or Remote, we remove Engagement")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // [DCPP-test] WPF tests are failing with AnimationIdle timeout during test cleanup
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateIsFocusEngagedWithChildContainingFocus)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates pre-requisite conditions and makes sure that setting IsFocusEngaged to true on a control works as expected when one of its children has focus")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Focus engagement bugs in lifted islands
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ElementWithinEngagedControlFocusedAfterEngagement)

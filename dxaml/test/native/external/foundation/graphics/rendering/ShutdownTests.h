@@ -26,7 +26,7 @@ public:
     BEGIN_TEST_METHOD(ShutdownWithOutstandingDOs)
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
         TEST_METHOD_PROPERTY(L"Description", L"Shuts down Xaml while there's still a DO alive. We shouldn't crash.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Fails with empty MockDComp output on Catgates but not locally
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 

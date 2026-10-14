@@ -1,0 +1,77 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.InkToolbarPage"
+    x:Name="InkToolbarTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Test controls that drive the InkToolbar under test. -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" Margin="0,0,0,8">
+            <StackPanel>
+                <TextBlock Text="InitialControls" />
+                <ComboBox x:Name="InitialControlsSelector" AutomationProperties.Name="InitialControlsSelector"
+                          SelectionChanged="InitialControlsSelector_SelectionChanged">
+                    <ComboBoxItem Content="All" />
+                    <ComboBoxItem Content="None" />
+                    <ComboBoxItem Content="PensOnly" />
+                    <ComboBoxItem Content="AllExceptPens" />
+                </ComboBox>
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="Orientation" />
+                <ComboBox x:Name="OrientationSelector" AutomationProperties.Name="OrientationSelector"
+                          SelectionChanged="OrientationSelector_SelectionChanged">
+                    <ComboBoxItem Content="Horizontal" />
+                    <ComboBoxItem Content="Vertical" />
+                </ComboBox>
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="FlyoutPlacement" />
+                <ComboBox x:Name="FlyoutPlacementSelector" AutomationProperties.Name="FlyoutPlacementSelector"
+                          SelectionChanged="FlyoutPlacementSelector_SelectionChanged">
+                    <ComboBoxItem Content="Auto" />
+                    <ComboBoxItem Content="Top" />
+                    <ComboBoxItem Content="Bottom" />
+                    <ComboBoxItem Content="Left" />
+                    <ComboBoxItem Content="Right" />
+                </ComboBox>
+            </StackPanel>
+            <CheckBox x:Name="RulerCheckBox" AutomationProperties.Name="RulerCheckBox" Content="Ruler"
+                      VerticalAlignment="Bottom" Checked="RulerCheckBox_Toggled" Unchecked="RulerCheckBox_Toggled" />
+            <CheckBox x:Name="StencilCheckBox" AutomationProperties.Name="StencilCheckBox" Content="Stencil"
+                      VerticalAlignment="Bottom" Checked="StencilCheckBox_Toggled" Unchecked="StencilCheckBox_Toggled" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="16" Margin="0,0,0,8">
+            <TextBlock x:Name="StatusText" AutomationProperties.Name="StatusText" Text="Ready" />
+            <TextBlock x:Name="OrientationText" AutomationProperties.Name="OrientationText" Text="Horizontal" />
+            <TextBlock x:Name="FlyoutPlacementText" AutomationProperties.Name="FlyoutPlacementText" Text="Auto" />
+            <TextBlock x:Name="ActiveToolText" AutomationProperties.Name="ActiveToolText" Text="None" />
+        </StackPanel>
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <!-- InkToolbar drives the InkCanvas.InkPresenter (pen / eraser / colors). -->
+            <controls:InkToolbar x:Name="TestInkToolbar" AutomationProperties.Name="TestInkToolbar"
+                                 Grid.Row="0" TargetInkCanvas="{x:Bind TestInkCanvas}" Margin="0,0,0,8" />
+            <Border Grid.Row="1" BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1">
+                <controls:InkCanvas x:Name="TestInkCanvas" AutomationProperties.Name="TestInkCanvas" />
+            </Border>
+        </Grid>
+    </Grid>
+</local:TestPage>
