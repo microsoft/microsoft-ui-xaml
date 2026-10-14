@@ -261,18 +261,26 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
 
 // ----- The single writer -----
 
-void TableView::ApplySelection(int32_t index)
+void TableView::ApplySelection(int32_t index, bool measureTip)
 {
+    bool validRequest = index >= -1;
     if (!CanSelectRows())
     {
         index = -1;
+        validRequest = false;
     }
 
     if (index >= 0 && index >= GetItemsSourceCount())
     {
         index = -1;
+        validRequest = false;
     }
 
+    const bool accepted = m_telemetrySession.active && measureTip && !m_isRestoringSelection &&
+        validRequest && m_lastPublishedIndex != index;
+    const auto version = m_selectionVersion;
+    const auto sourceGeneration = m_rowMetadataGeneration;
+    ActionTip tip{ *this, TableViewTip::Operation::Selection, TableViewTip::Stage::Selection, accepted };
     if (index < 0 && !m_selectionModel)
     {
         // Nothing selected and no model yet - nothing to clear, but publish so the projections
@@ -304,6 +312,18 @@ void TableView::ApplySelection(int32_t index)
     // The model raises SelectionChanged only when the selection actually moved; publish here too so
     // a rejected write still leaves the DPs agreeing with the model.
     PushSelectionProperties();
+    if (accepted)
+    {
+        if (m_selectionVersion == version + 1 && m_rowMetadataGeneration == sourceGeneration &&
+            m_lastPublishedIndex == index)
+        {
+            tip.Complete();
+        }
+        else
+        {
+            tip.Ignore(TableViewTip::IgnoreReason::Superseded);
+        }
+    }
 }
 
 void TableView::OnSelectionModelSelectionChanged(
@@ -440,7 +460,9 @@ void TableView::RaiseSelectionChanged(winrt::IInspectable const& addedItem)
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(removed)),
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(added)) };
 
-    m_selectionChangedEventSource(*this, args);
+    AppCalloutTip callout{ *this, TableViewTip::Stage::Selection, TableViewTip::AppFaultKind::Callback };
+    try { m_selectionChangedEventSource(*this, args); }
+    catch (...) { callout.Fault(winrt::to_hresult()); throw; }
 }
 
 void TableView::RaiseSelectionAutomationEvents(
@@ -810,11 +832,11 @@ void TableView::SelectRowIndexFromInteraction(int32_t index, bool toggle)
 
     if (toggle && IsSelected(index))
     {
-        ApplySelection(-1);
+        ApplySelection(-1, true);
         return;
     }
 
-    ApplySelection(index);
+    ApplySelection(index, true);
 }
 
 void TableView::SelectRowIndexFromKeyboardFocus(int32_t index)
@@ -847,7 +869,7 @@ void TableView::Select(int32_t index)
         return;
     }
 
-    ApplySelection(index);
+    ApplySelection(index, true);
 }
 
 void TableView::Deselect(int32_t index)
@@ -855,7 +877,7 @@ void TableView::Deselect(int32_t index)
     // Only clears when `index` IS the selection, so a stale call cannot clobber a newer one.
     if (IsSelected(index))
     {
-        ApplySelection(-1);
+        ApplySelection(-1, true);
     }
 }
 
@@ -875,5 +897,5 @@ bool TableView::IsSelected(int32_t index)
 void TableView::DeselectAll()
 {
     ClearPendingSelection();
-    ApplySelection(-1);
+    ApplySelection(-1, true);
 }

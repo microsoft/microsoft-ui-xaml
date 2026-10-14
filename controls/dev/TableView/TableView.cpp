@@ -554,6 +554,7 @@ winrt::Brush TableView::LookupHeaderStateBrush(std::wstring_view key)
 
 TableView::~TableView()
 {
+    IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
     // Must run while this control still holds the selector: once anything has been recycled the
     // pools hang off the cached templates and close a cycle the reference tracker cannot walk.
     // Destructor runs off the reference tracker's teardown path (e.g. UIAffinityReleaseQueue),
@@ -721,6 +722,7 @@ TableView::TableView()
 
 void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
+    TableViewTelemetry::BeginSession(m_telemetrySession);
     ReclaimItemsSource();
 
     // ThemeSettings requires a WindowId, so it can only be created once we have a XamlRoot.
@@ -799,8 +801,11 @@ void TableView::OnThemeSettingsChanged(
 }
 
 void TableView::OnApplyTemplate()
+try
 {
     m_headerSortSpaceArmedColumn = nullptr;
+    IgnoreTip(TableViewTip::IgnoreReason::Retemplated);
+    TableViewTip::StartSetup(m_tip);
     __super::OnApplyTemplate();
     InvalidateTableViewResourceCache(this);
     CancelHeaderFocusRestore();
@@ -1065,6 +1070,14 @@ void TableView::OnApplyTemplate()
                 }
             });
     }
+    TableViewTip::CompleteSetup(m_tip);
+}
+catch (...)
+{
+    // The control, row and cell templates are expanded outside this method, and a tagged app callout
+    // here has already closed the run as an application fault; any other throw counts as a setup failure.
+    TableViewTip::FailSetup(m_tip, winrt::to_hresult());
+    throw;
 }
 
 void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
@@ -1200,6 +1213,18 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
         return;
     }
 
+    auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::ReplaceSource);
+    bool completed = false;
+    auto tipCompletion = wil::scope_exit([this, tipGeneration, &completed]() noexcept
+    {
+        if (!completed)
+        {
+            FailTipOperation(tipGeneration, TableViewTip::Stage::Source, {});
+        }
+        else { CompleteTipOperation(tipGeneration); }
+        EndTipOperation();
+    });
+
     // The edited item is about to leave the control. Forced, because the data set is already gone
     // by the time a handler could react, so the close cannot be vetoed. No-focus teardown: this is
     // a dependency-property change callback, and moving focus from one re-enters the framework.
@@ -1237,6 +1262,7 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     ResetSortStateForNewItemsSource();
     AdoptItemsSource();
     RefreshRowsPipeline();
+    completed = true;
 }
 
 void TableView::OnHeadersVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -1818,6 +1844,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
                 strongThis->OnTableViewSourceShapingChanged(reorderOnly);
             }
         });
+        AttachSourceTip(tableViewSource);
         // Live reshape must not end the user's edit; DrainCoalescedEditReshape resumes it.
         sourceImpl->SetLiveShapingHold([weakThis]()
         {
@@ -1927,6 +1954,8 @@ void TableView::RefreshRowsPipeline()
 
 void TableView::OnTableViewSourceProjectionChanged()
 {
+    SupersedeTipOperation();
+
     // The repeater's focus rescue during recycling must not be mistaken for the user's position.
     SuppressBodyFocusTrackingForThisTurn();
 
@@ -2011,6 +2040,7 @@ void TableView::QueueRefreshRealizedRowHierarchyState()
 
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
 {
+    SupersedeTipOperation();
     if (!reorderOnly)
     {
         QueueGroupExpansionRowRefresh();
@@ -2084,6 +2114,7 @@ void TableView::UpdateItemsSourceCollectionChangedSubscription()
 
 void TableView::OnItemsSourceCollectionChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
 {
+    SupersedeTipOperation();
     UpdateEmptyState();
     QueueTerminalGridLineRefresh();
 }
@@ -3183,7 +3214,7 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
     // sorted order with no affordance to change it would strand the user.
     if (!CanUserSortColumns())
     {
-        ClearSort();
+        ClearSortInternal(false);
     }
 
     // The chevron and the click handler are stamped at header-build time.
@@ -3195,7 +3226,7 @@ void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
     // A column that just opted out must not keep an active sort applied to it.
     if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None)
     {
-        SortByColumn(column, winrt::SortDirection::None);
+        SortByColumnInternal(column, winrt::SortDirection::None, false);
     }
 
     // The chevron and the click handler are stamped at header-build time.
@@ -3254,6 +3285,8 @@ void TableView::QueueRebuildHeaders()
                 }
                 catch (...)
                 {
+                    TableViewTelemetry::ReportError(strongThis->m_telemetrySession, 0,
+                        TableViewTip::Operation::HeaderRefresh, TableViewTip::Stage::HeaderRefresh, true);
                     // Coalesced header rebuild is best-effort; never fail-fast the dispatcher.
                 }
             }
@@ -3352,6 +3385,8 @@ void TableView::OnTableViewUnloaded()
     }
 
     m_headerSortSpaceArmedColumn = nullptr;
+    IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
+    TableViewTelemetry::EndSession(m_telemetrySession);
     // Neither a pending restore nor a remembered position may outlive this tree.
     CancelReshapeFocusRestore();
     ForgetBodyFocusPosition();

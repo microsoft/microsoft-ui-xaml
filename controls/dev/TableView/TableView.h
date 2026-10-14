@@ -10,10 +10,12 @@
 #include <functional>
 #include <limits>
 #include <optional>
+#include <utility>
 
 #include "TableView.g.h"
 #include "TableView.properties.h"
 #include "TableViewRowInfo.h"
+#include "TableViewTip.h"
 
 // ThemeSettings (Microsoft.UI.System) is used below for UI-thread High Contrast change notifications.
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
@@ -591,8 +593,9 @@ public:
     bool PurgeColumnFromSortState(const winrt::TableViewColumn& removedColumn);
 
 private:
+    class ActionTip;
     // Drives the SelectionModel; its SelectionChanged is the single funnel that publishes.
-    void ApplySelection(int32_t index);
+    void ApplySelection(int32_t index, bool measureTip = false);
 
     void ReleaseHeaderToolTips(const winrt::Panel& host);
     winrt::TableViewColumn GetFocusedHeaderColumn(const winrt::Panel& host, winrt::FocusState& focusState) const;
@@ -774,7 +777,7 @@ private:
     void UpdateCurrentColumn(winrt::TableViewColumn const& column);
 
     // Shared tail of the synchronous and deferred edit-close paths.
-    bool CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel, bool vetoed);
+    bool CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel, bool vetoed, ActionTip* tip = nullptr);
     // The cell being edited. Distinct from m_currentItem/m_currentColumn, which track focus.
     tracker_ref<winrt::IInspectable> m_currentEditItem{ this };
     tracker_ref<winrt::TableViewColumn> m_currentEditColumn{ this };
@@ -783,14 +786,15 @@ private:
     // Whatever the column's PrepareCellForEdit handed back, returned to it on cancel.
     tracker_ref<winrt::IInspectable> m_editUneditedValue{ this };
 
-    bool RaiseBeginningEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
+    bool RaiseBeginningEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column, ActionTip& tip);
     // Returns Vetoed or Completed. Synchronous: there is no deferral in this release, so a handler
     // must set Cancel before it returns.
     enum class EditEndingResult { Vetoed, Completed };
     EditEndingResult RaiseEditEnding(
         EditingUnit unit,
         winrt::TableViewEditAction action,
-        bool honorCancel);
+        bool honorCancel,
+        ActionTip* tip);
 
     bool TryResolveFocusedCell(winrt::IInspectable& item, winrt::TableViewColumn& column);
     bool TryResolveCurrentCell(winrt::IInspectable& item, winrt::TableViewColumn& column);
@@ -799,20 +803,91 @@ private:
     winrt::TableViewRow FindRealizedRowForItem(winrt::IInspectable const& item);
     bool TryBeginEditVisual(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
 
-    void EndEditVisual(winrt::TableViewEditAction action);
+    void EndEditVisual(winrt::TableViewEditAction action, ActionTip* tip);
 
     // Applies the outcome of an edit close: writes or reverts, tears down the visual, clears state.
     // Shared by the synchronous and deferred paths so they cannot drift.
-    bool FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel);
+    bool FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel, ActionTip* tip);
     bool EndCurrentEdit(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel);
 
     // Scoped to the property the edited column writes; falls back to the object-level check only
     // when the column reports no single editing property path.
     bool HasBlockingValidationErrors(
         winrt::IInspectable const& item,
-        winrt::TableViewColumn const& column) const;
+        winrt::TableViewColumn const& column,
+        ActionTip* tip = nullptr);
 
 private:
+    // A synchronous action owns its own TiP test and shares the control's session counters and error mask.
+    class ActionTip
+    {
+    public:
+        ActionTip(TableView& owner, TableViewTip::Operation operation, TableViewTip::Stage stage, bool admitted = true) noexcept;
+        ~ActionTip();
+        ActionTip(ActionTip const&) = delete;
+        ActionTip& operator=(ActionTip const&) = delete;
+        void Complete() noexcept { m_completed = true; }
+        void Ignore(TableViewTip::IgnoreReason reason) noexcept { m_completed = false; m_ignoreReason = reason; }
+        void Fail(std::optional<HRESULT> error) noexcept;
+        void ApplicationFault(TableViewTip::AppFaultKind kind, std::optional<HRESULT> error = {}) noexcept;
+        uint64_t ControlGenerationAtAdmission() const noexcept { return m_controlGenerationAtAdmission; }
+
+    private:
+        TableView& m_owner;
+        ActionTip* m_previousAction{};
+        TableViewTip::OperationState m_state;
+        TableViewTip::Stage m_stage;
+        uint64_t m_generation{};
+        uint64_t m_controlGenerationAtAdmission{};
+        uint64_t m_lifetimeGeneration{};
+        int m_exceptions{};
+        uint32_t m_appFaultsAtStart{};
+        bool m_completed{};
+        bool m_failed{};
+        TableViewTip::IgnoreReason m_ignoreReason{ TableViewTip::IgnoreReason::Stale };
+        std::optional<HRESULT> m_error;
+        TableViewTip::AppFaultKind m_appFaultKind{};
+    };
+
+    // Marks a throw from app code (handler, factory, validation, write) so the TiP closes as an
+    // application fault rather than counting against TableView.
+    class AppCalloutTip
+    {
+    public:
+        AppCalloutTip(TableView& owner, TableViewTip::Stage stage, TableViewTip::AppFaultKind kind) noexcept;
+        void Fault(std::optional<HRESULT> error = {}) noexcept;
+    private:
+        TableView& m_owner;
+        ActionTip* m_action{};
+        TableViewTip::Operation m_operation{};
+        TableViewTip::Stage m_stage{};
+        TableViewTip::AppFaultKind m_kind{};
+        uint64_t m_generation{};
+        uint64_t m_lifetime{};
+    };
+
+    void AttachSourceTip(winrt::TableViewSource const& source);
+    uint64_t BeginTipOperation(TableViewTip::Operation operation, bool admitted = true) noexcept;
+    void EndTipOperation() noexcept;
+    void SupersedeTipOperation() noexcept;
+    void NoteTipAppFault(TableViewTip::AppFaultKind kind) noexcept;
+    void FailTipOperation(uint64_t generation, TableViewTip::Stage stage, std::optional<HRESULT> error) noexcept;
+    void CompleteTipOperation(uint64_t generation) noexcept;
+    void IgnoreTip(TableViewTip::IgnoreReason reason) noexcept;
+
+    // Telemetry: usage counts for the loaded session. TiP: the setup and operation tests.
+    TableViewTelemetry::Session m_telemetrySession;
+    TableViewTip::State m_tip{ m_telemetrySession };
+    ActionTip* m_activeActionTip{};
+    uint64_t m_tipLifetimeGeneration{};
+    TableViewTip::IgnoreReason m_tipCancellationReason{ TableViewTip::IgnoreReason::Cancelled };
+    uint32_t m_tipMutationDepth{};
+    uint32_t m_tipSourceMutationDepth{};
+    // App faults tagged so far; an exception escaping an operation during which this moved is the app's.
+    uint32_t m_tipAppFaults{};
+    uint32_t m_tipAppFaultsAtOperationStart{};
+    TableViewTip::AppFaultKind m_tipLastAppFaultKind{};
+
     void OnColumnsVectorChanged(
         const winrt::IObservableVector<winrt::TableViewColumn>& sender,
         const winrt::IVectorChangedEventArgs& args);
@@ -901,10 +976,16 @@ private:
     void QueueReconcileSortStateWithSource();
     // Suppresses ReconcileSortStateWithSource for the duration of a control-initiated verb, whose
     // own source mutations would otherwise read as the app taking over.
-    [[nodiscard]] auto BeginControlInitiatedSortScope()
+    [[nodiscard]] auto BeginControlInitiatedSortScope(uint64_t tipGeneration = 0)
     {
         m_isApplyingControlInitiatedSort = true;
-        return gsl::finally([this]() { m_isApplyingControlInitiatedSort = false; });
+        const auto previousGeneration = std::exchange(m_controlSortTipGeneration,
+            tipGeneration ? tipGeneration : (std::numeric_limits<uint64_t>::max)());
+        return gsl::finally([this, previousGeneration]()
+        {
+            m_isApplyingControlInitiatedSort = false;
+            m_controlSortTipGeneration = previousGeneration;
+        });
     }
     // EmptyTemplate shows only for null or empty row sources.
     void UpdateEmptyState();
@@ -1030,7 +1111,9 @@ private:
     void ApplySingleColumnSortState(const winrt::TableViewColumn& column, winrt::SortDirection direction);
     // Applies the current sort state to the bound TableViewSource. Returns false when there is no
     // TableViewSource, or the trigger column resolves no sort key.
-    bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
+    bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t tipGeneration);
+    bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip);
+    bool ClearSortInternal(bool measureTip);
     winrt::TableViewKeySelector GetTableViewSourceSortKeySelector(const winrt::hstring& sortMemberPath);
     // Re-places a live-tracked item among CustomSortComparer ranks. True if any sort key moved.
     bool RepositionCustomSortItem(const winrt::IInspectable& item, bool reshapePending);
@@ -1042,7 +1125,7 @@ private:
     bool RaiseSortingAndCheckCanceled(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
     // Single funnel for "the sort state has been written to the columns": reshapes, restores the
     // selection, raises Sorted, and announces.
-    void RecomputeSortDPsAndRaiseInternal(const winrt::TableViewColumn& trigger);
+    void RecomputeSortDPsAndRaiseInternal(const winrt::TableViewColumn& trigger, bool measureTip = true);
 
     // Silently drops the active sort when the data set is replaced. See the definition for why this
     // is not ClearSort.
@@ -1085,6 +1168,8 @@ private:
     // True while a control-initiated sort verb is mutating the source. Its own mutations must not
     // be mistaken for the app declaring a sort behind the control's back.
     bool m_isApplyingControlInitiatedSort{ false };
+    uint64_t m_controlSortTipGeneration{};
+    uint64_t m_controlSortPublishedGeneration{};
     bool m_sortReconcileQueued{ false };
     winrt::event_token m_rowsRepeaterLoadedToken{};
     // Terminal-edge geometry is evaluated once after layout settles; gridline rendering then
@@ -1379,4 +1464,3 @@ private:
     int32_t GetFocusedRowIndex() const;
     int32_t GetEstimatedRowsPerPage(); // Non-const — GetDensityRowMinHeight() mutates the resource cache.
 };
-
