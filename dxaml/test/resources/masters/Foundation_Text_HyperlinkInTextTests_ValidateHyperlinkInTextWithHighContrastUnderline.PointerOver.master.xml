@@ -46,7 +46,7 @@
                 <wucSpriteVisual SizeX="60.84" SizeY="0.87" BorderMode="Soft" OffsetX="140.1" OffsetY="56" OffsetZ="0">
                   <ColorBrush Color="rgb {1, 1, 0}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="109" SizeY="24" BorderMode="Hard" OffsetX="20" OffsetY="31" OffsetZ="0">
+                <wucSpriteVisual SizeX="111" SizeY="26" BorderMode="Hard" OffsetX="19" OffsetY="30" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -56,7 +56,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="60" SizeY="14" BorderMode="Hard" OffsetX="141" OffsetY="44" OffsetZ="0">
+                <wucSpriteVisual SizeX="62" SizeY="16" BorderMode="Hard" OffsetX="140" OffsetY="43" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="rgb {1, 1, 0}" />
@@ -72,7 +72,7 @@
                 <wucSpriteVisual SizeX="60.84" SizeY="0.87" BorderMode="Soft" OffsetX="140.1" OffsetY="99" OffsetZ="0">
                   <ColorBrush Color="#ffffffff" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="109" SizeY="24" BorderMode="Hard" OffsetX="20" OffsetY="74" OffsetZ="0">
+                <wucSpriteVisual SizeX="111" SizeY="26" BorderMode="Hard" OffsetX="19" OffsetY="73" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -82,7 +82,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="60" SizeY="14" BorderMode="Hard" OffsetX="141" OffsetY="87" OffsetZ="0">
+                <wucSpriteVisual SizeX="62" SizeY="16" BorderMode="Hard" OffsetX="140" OffsetY="86" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />

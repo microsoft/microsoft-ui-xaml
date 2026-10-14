@@ -26,7 +26,7 @@ public:
 
     BEGIN_TEST_METHOD(ActualOffsetAPI)
         TEST_METHOD_PROPERTY(L"Description", L"Basic usage of ActualOffset API")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset is different
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ActualOffsetReference)
@@ -55,49 +55,49 @@ public:
 
     BEGIN_TEST_METHOD(TranslationAPI)
         TEST_METHOD_PROPERTY(L"Description", L"Basic usage of Translation API")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root, extra transform on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(TranslationAPIWithClip)
         TEST_METHOD_PROPERTY(L"Description", L"Translation with prepend clip")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root, extra transform on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(RotationAPI)
         TEST_METHOD_PROPERTY(L"Description", L"Basic usage of Rotation API")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ScaleAPI)
         TEST_METHOD_PROPERTY(L"Description", L"Basic usage of Scale API")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(TransformMatrixAPI)
         TEST_METHOD_PROPERTY(L"Description", L"Basic usage of TramsformMatrix API")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(CenterPointAPI)
         TEST_METHOD_PROPERTY(L"Description", L"Basic usage of CenterPoint API")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(RotationAxisAPI)
         TEST_METHOD_PROPERTY(L"Description", L"Basic usage of RotationAxis API")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(CombinedAPI)
         TEST_METHOD_PROPERTY(L"Description", L"Basic usage of multiple facade APIs")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -157,13 +157,13 @@ public:
 
     BEGIN_TEST_METHOD(TranslationAnimationPlusECP)
         TEST_METHOD_PROPERTY(L"Description", L"Animate Translation property in combination with ECP Translation")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root, extra transform on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(TranslationAnimationPlusECPAndClip)
         TEST_METHOD_PROPERTY(L"Description", L"Animate Translation property in combination with ECP Translation")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root, extra transform on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -173,13 +173,13 @@ public:
 
     BEGIN_TEST_METHOD(TranslationPlusLTETarget)
         TEST_METHOD_PROPERTY(L"Description", L"Set Translation property and also target with an LTE")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(TranslationPlusLTETarget2)
         TEST_METHOD_PROPERTY(L"Description", L"Set Translation property and also target with an LTE and TransformParent with transform")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -259,12 +259,12 @@ public:
 
     BEGIN_TEST_METHOD(HitTestingAnimated)
         TEST_METHOD_PROPERTY(L"Description", L"Animate transform related facades and verify hit-testing behavior")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // TransformToVisual mismatch
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(HitTestingAnimatedAndReferenced)
         TEST_METHOD_PROPERTY(L"Description", L"Animate transform related facades, and also reference them, and verify hit-testing behavior")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // TransformToVisual mismatch
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(HitTestingTransformMatrix)
@@ -280,12 +280,12 @@ public:
 
     BEGIN_TEST_METHOD(HitTesting3D)
         TEST_METHOD_PROPERTY(L"Description", L"Hit test against facade properties that give the element 3D depth")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Event timed out
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(HitTesting2DRotations)
         TEST_METHOD_PROPERTY(L"Description", L"Hit test against facade Rotation properties that's 2D")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Event timed out
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(HitTestingTranslationCombos)
@@ -299,41 +299,41 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(TranslationTransition)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ScaleTransition)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(RotationTransition)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(OpacityTransition)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(OpacityTransitionTo0)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(TransitionsFromMarkup)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Offset on root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ThisDotTarget)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(PropertiesFromMarkup)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
