@@ -11,6 +11,8 @@
 #include "DiscreteObjectKeyFrame.g.h"
 #include "vsanimation.h"
 #include "ItemContainerGenerator.g.h"
+#include "ItemsControl.g.h"
+#include "LayoutTransition_Partial.h"
 #include "RepositionThemeTransition.g.h"
 #include "Storyboard.g.h"
 #include "InputPaneThemeTransition.g.h"
@@ -33,6 +35,7 @@
 #include "ContentDialogOpenCloseThemeTransition.g.h"
 #include "MenuFlyoutPresenter.g.h"
 #include "ThemeGenerator.h"
+#include "TransitionCollection.h"
 #include "VisualTreeHelper.h"
 #include "RootScale.h"
 
@@ -225,11 +228,41 @@ _Check_return_ HRESULT Transition::NotifyLayoutTransitionEnd(
 
 namespace DirectUI
 {
+static bool HasAddDeleteThemeTransition(_In_ xaml::IUIElement* element)
+{
+    const auto containsAddDelete = [](CTransitionCollection* transitions)
+    {
+        if (transitions)
+        {
+            for (auto transition : *transitions)
+            {
+                if (transition->OfTypeByIndex(KnownTypeIndex::AddDeleteThemeTransition))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    };
+
+    auto coreElement = static_cast<CUIElement*>(static_cast<UIElement*>(element)->GetHandle());
+    auto transitions = coreElement->GetTransitions();
+    if (containsAddDelete(transitions.get()))
+    {
+        return true;
+    }
+
+    auto parent = do_pointer_cast<CUIElement>(coreElement->GetParentInternal());
+    return parent && containsAddDelete(parent->GetTransitionsForChildElementNoAddRef(coreElement));
+}
+
 // helper that checks for the contextprovider interface having been implemented and if so, calling it.
-_Check_return_ HRESULT GetTransitionContext(
+static _Check_return_ HRESULT GetTransitionContextImpl(
     _In_ xaml::IUIElement* element,
     _Out_ BOOLEAN* pRelevantInformation,
-    _Out_ ThemeTransitionContext* pContext)
+    _Out_ ThemeTransitionContext* pContext,
+    _In_ bool allowItemsControlContext)
 {
     HRESULT hr = S_OK;
     ITransitionContextProvider* pElementAsProvider = ctl::query_interface<ITransitionContextProvider>(element);
@@ -244,10 +277,42 @@ _Check_return_ HRESULT GetTransitionContext(
         IFC(pElementAsProvider->GetCurrentTransitionContext(layoutTick, pContext));
         *pRelevantInformation = TRUE;
     }
+    else if (allowItemsControlContext && HasAddDeleteThemeTransition(element))
+    {
+        // Resolve the owner context only during storyboard creation, after collection
+        // changes in the same layout tick have been batched.
+        ctl::ComPtr<IItemsControl> itemsControl;
+        IFC(ItemsControl::ItemsControlFromItemContainer(static_cast<UIElement*>(element), &itemsControl));
+        if (itemsControl)
+        {
+            IFC(itemsControl.Cast<ItemsControl>()->GetCurrentTransitionContext(layoutTick, pContext));
+            // Preserve the legacy initial-load, reset, and layout-only behavior.
+            *pRelevantInformation =
+                *pContext != ThemeTransitionContext::None &&
+                *pContext != ThemeTransitionContext::Entrance &&
+                *pContext != ThemeTransitionContext::ContentTransition;
+        }
+    }
 
 Cleanup:
     ReleaseInterface(pElementAsProvider);
     RRETURN(hr);
+}
+
+_Check_return_ HRESULT GetTransitionContext(
+    _In_ xaml::IUIElement* element,
+    _Out_ BOOLEAN* pRelevantInformation,
+    _Out_ ThemeTransitionContext* pContext)
+{
+    return GetTransitionContextImpl(element, pRelevantInformation, pContext, false /* allowItemsControlContext */);
+}
+
+static _Check_return_ HRESULT GetCollectionTransitionContext(
+    _In_ xaml::IUIElement* element,
+    _Out_ BOOLEAN* pRelevantInformation,
+    _Out_ ThemeTransitionContext* pContext)
+{
+    return GetTransitionContextImpl(element, pRelevantInformation, pContext, true /* allowItemsControlContext */);
 }
 }
 _Check_return_ HRESULT GetSpeedOfChanges(
@@ -345,6 +410,34 @@ _Check_return_ HRESULT RepositionThemeTransition::CreateStoryboardImpl(
     wf::Point destoffset = {0,0};
     ctl::ComPtr<Storyboard> spSB;
     ctl::ComPtr<wfc::IVector<xaml_animation::Timeline*>> spChildren;
+    BOOLEAN didContextCheck = FALSE;
+    BOOLEAN fastMutations = FALSE;
+    ThemeTransitionContext context = ThemeTransitionContext::None;
+
+    *parentForTransition = transitionTrigger == xaml::TransitionTrigger_Reparent
+        ? xaml::TransitionParent_ParentToRoot
+        : xaml::TransitionParent_ParentToCommonParent;
+
+    if (HasAddDeleteThemeTransition(element))
+    {
+        IFC(GetCollectionTransitionContext(element, &didContextCheck, &context));
+        if (didContextCheck &&
+            (context == ThemeTransitionContext::SingleDeleteList ||
+             context == ThemeTransitionContext::SingleDeleteGrid ||
+             context == ThemeTransitionContext::MultipleDeleteList ||
+             context == ThemeTransitionContext::MultipleDeleteGrid ||
+             context == ThemeTransitionContext::MixedOperationsList ||
+             context == ThemeTransitionContext::MixedOperationsGrid))
+        {
+            IFC(GetSpeedOfChanges(element, &fastMutations));
+            if (!fastMutations)
+            {
+                // AddDeleteThemeTransition already sequences movement after the exit.
+                // A separate reposition storyboard would overwrite that coordinated movement.
+                goto Cleanup;
+            }
+        }
+    }
 
     IFC(ctl::make(&spSB));
     IFC(CoreImports::Storyboard_SetTarget(static_cast<CTimeline*>(spSB->GetHandle()), static_cast<UIElement*>(element)->GetHandle()));
@@ -353,8 +446,6 @@ _Check_return_ HRESULT RepositionThemeTransition::CreateStoryboardImpl(
     IFC(ThemeGenerator::AddTimelinesForThemeAnimation(TAS_REPOSITION, TA_REPOSITION_TARGET, NULL, NULL, FALSE, sourceoffset, destoffset, spChildren.Get()));
 
     IFC(storyboards->Append(spSB.Get()));
-
-    *parentForTransition = transitionTrigger == xaml::TransitionTrigger_Reparent ? xaml::TransitionParent_ParentToRoot : xaml::TransitionParent_ParentToCommonParent;
 
 Cleanup:
     RRETURN(hr);
@@ -1472,7 +1563,7 @@ _Check_return_ HRESULT AddDeleteRepositionHelperLoad(
     INT64   affectedDuration = 300; // todo: pvl might change, do I want to make yet another call to pvl to find out these times?
     bool mixedContext = false;
 
-    IFC_RETURN(GetTransitionContext(element, &didContextCheck, &context));
+    IFC_RETURN(GetCollectionTransitionContext(element, &didContextCheck, &context));
 
     UIElement::VirtualizationInformation *pVirtualizationInformation = static_cast<UIElement*>(element)->GetVirtualizationInformation();
     if (pVirtualizationInformation != nullptr)
@@ -1604,7 +1695,7 @@ _Check_return_ HRESULT AddDeleteRepositionHelperUnload(
     BOOLEAN scheduleAffectedFirst = FALSE;   // pvl should define a begintime on the affected here
     INT64   affectedDuration = 300; // todo: pvl might change, do I want to make yet another call to pvl to find out these times?
 
-    IFC_RETURN(GetTransitionContext(element, &didContextCheck, &context));
+    IFC_RETURN(GetCollectionTransitionContext(element, &didContextCheck, &context));
 
     UIElement::VirtualizationInformation *pVirtualizationInformation = static_cast<UIElement*>(element)->GetVirtualizationInformation();
     if (pVirtualizationInformation != nullptr)
@@ -1702,7 +1793,7 @@ _Check_return_ HRESULT AddDeleteRepositionHelperReparentAndLayout(
     bool mixedContext = false;
     INT64   loadDuration = 220;
 
-    IFC_RETURN(GetTransitionContext(element, &didContextCheck, &context));
+    IFC_RETURN(GetCollectionTransitionContext(element, &didContextCheck, &context));
 
     UIElement::VirtualizationInformation *pVirtualizationInformation = static_cast<UIElement*>(element)->GetVirtualizationInformation();
     if (pVirtualizationInformation != nullptr)
@@ -2143,7 +2234,7 @@ _Check_return_ HRESULT ReorderThemeTransition::CreateStoryboardImpl(
 
     if (shouldRun)
     {
-        IFC(GetTransitionContext(element, &didCheck, &context));
+        IFC(GetCollectionTransitionContext(element, &didCheck, &context));
     }
     if (didCheck)
     {
@@ -2207,7 +2298,7 @@ _Check_return_ HRESULT AddDeleteThemeTransition::CreateStoryboardImpl(
 
     if (shouldRun)
     {
-        IFC(GetTransitionContext(element, &didCheck, &context));
+        IFC(GetCollectionTransitionContext(element, &didCheck, &context));
     }
     if (didCheck)
     {

@@ -13,14 +13,14 @@
       <Visual />
       <Visual Tag="PrependVisual">
         <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+          <CoodinateSpaceFor LightNumber="1" />
+          <CoodinateSpaceFor LightNumber="2" />
+          <CoodinateSpaceFor LightNumber="3" />
+          <CoodinateSpaceFor LightNumber="6" />
+          <CoodinateSpaceFor LightNumber="7" />
           <Visual Tag="ContentVisual">
             <Visual Tag="PrependVisual">
               <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
-                <CoodinateSpaceFor LightNumber="1" />
-                <CoodinateSpaceFor LightNumber="2" />
-                <CoodinateSpaceFor LightNumber="3" />
-                <CoodinateSpaceFor LightNumber="6" />
-                <CoodinateSpaceFor LightNumber="7" />
                 <Visual Tag="ContentVisual">
                   <Visual Tag="PrependVisual">
                     <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
