@@ -1247,6 +1247,145 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the last Star column, which has no later Star column to trade width with, shows no gripper.")]
+        public void VerifyPinnedStarColumnHidesGripper()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(1.0, GridUnitType.Star)),
+                    ("Second", new GridLength(1.0, GridUnitType.Star)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(Visibility.Visible, RequireGripper(tableView, 0).Visibility,
+                    "Column 0 can trade width with the Star column after it, so its gripper must show.");
+                Verify.AreEqual(Visibility.Collapsed, RequireGripper(tableView, 1).Visibility,
+                    "The last Star column cannot be dragged, so it must not offer a gripper.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a column whose MinWidth equals its MaxWidth shows no gripper.")]
+        public void VerifyFixedWidthColumnHidesGripper()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(120.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                column.MinWidth = 120.0;
+                column.MaxWidth = 120.0;
+
+                Verify.AreEqual(Visibility.Collapsed, RequireGripper(tableView, 0).Visibility,
+                    "A column whose MinWidth equals its MaxWidth can never change width, so it must not offer a gripper.");
+
+                column.MaxWidth = double.PositiveInfinity;
+
+                Verify.AreEqual(Visibility.Visible, RequireGripper(tableView, 0).Visibility,
+                    "Lifting MaxWidth must restore the gripper.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a fixed-width Star column does not count as a donor for the Star column before it.")]
+        public void VerifyFixedWidthStarDonorPinsPreviousColumn()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(1.0, GridUnitType.Star)),
+                    ("Second", new GridLength(1.0, GridUnitType.Star)));
+                tableView.Columns[1].MinWidth = 150.0;
+                tableView.Columns[1].MaxWidth = 150.0;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(Visibility.Collapsed, RequireGripper(tableView, 0).Visibility,
+                    "The only later Star column is fixed at 150 and cannot give width, so column 0 has no donor.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies gripper availability is re-evaluated when a column's Width changes.")]
+        public void VerifyGripperAvailabilityTracksWidthChange()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(1.0, GridUnitType.Star)),
+                    ("Second", new GridLength(1.0, GridUnitType.Star)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Columns[1].Width = new GridLength(100.0, GridUnitType.Pixel);
+
+                Verify.AreEqual(Visibility.Visible, RequireGripper(tableView, 1).Visibility,
+                    "A Pixel column owns its width, so its gripper must show.");
+                Verify.AreEqual(Visibility.Collapsed, RequireGripper(tableView, 0).Visibility,
+                    "Column 0 is now the last Star column and has nothing to trade width with.");
+
+                tableView.Columns[1].Width = new GridLength(1.0, GridUnitType.Star);
+
+                Verify.AreEqual(Visibility.Visible, RequireGripper(tableView, 0).Visibility,
+                    "Restoring the Star column must restore column 0's gripper.");
+                Verify.AreEqual(Visibility.Collapsed, RequireGripper(tableView, 1).Visibility,
+                    "Restoring the Star column must pin it again.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the last column keeps its gripper when no column is Star, because the table may grow.")]
+        public void VerifyLastColumnKeepsGripperWhenTableHasNoStar()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(Visibility.Visible, RequireGripper(tableView, 1).Visibility,
+                    "Without a Star column the extent grows, so the last column must stay resizable.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a keyboard step resizes by the increment, ignores off-axis keys, and mirrors under RTL.")]
         public void VerifyKeyboardStepAdjustsWidthAndMirrorsInRightToLeft()
         {

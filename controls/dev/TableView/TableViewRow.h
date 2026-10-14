@@ -9,6 +9,7 @@
 #include "TableViewRow.g.h"
 #include "TableViewRow.properties.h"
 
+#include <optional>
 #include <vector>
 
 class TableViewRow :
@@ -109,7 +110,7 @@ public:
     // Releases control-owned cell tooltips (recycle-out).
     void ReleaseCellToolTips();
     // Raises NameProperty changed on cell peers that already exist; creates none.
-    void RaiseCellAutomationNamesChangedInternal();
+    void RaiseCellAutomationNamesChangedInternal(winrt::UIElement const& skipCell = nullptr);
 
     void RefreshColumnVisibility(const winrt::TableViewColumn& column, winrt::Visibility visibility);
     double MeasuredWidthForColumn(const winrt::TableViewColumn& column) const;
@@ -282,6 +283,8 @@ private:
     tracker_ref<winrt::IInspectable> m_editingAutomationItem{ this };
     winrt::hstring m_editingAutomationValue;
     winrt::hstring m_editingAutomationName;
+    // Row Name before the edit, so a commit that changes a derived value in other cells can publish it.
+    std::optional<winrt::hstring> m_editingRowAutomationName;
 
     // Begin-edit gesture state. Held per row rather than on the control: a double-click that starts
     // on one row and finishes on another is not a double-click, and per-row state makes that fall

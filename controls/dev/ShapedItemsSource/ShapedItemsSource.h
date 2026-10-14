@@ -163,6 +163,9 @@ public:
 
     void Refresh();
 
+    // False when a shaped projection could not identify every row (a null item, or one object on
+    // two rows), so a shaping verb that would throw from Refresh can be refused up front.
+    bool CanProjectWithRowIdentity() const;
     // One switch for sort keys, group key, filter result and hierarchy edge together.
     void SetLiveShaping(bool enabled);
     bool IsLiveShapingEnabled() const noexcept { return m_liveShapingEnabled; }
@@ -177,6 +180,10 @@ public:
     // runs for each arriving item, and once with a null item when live shaping turns on (every
     // item may have changed untracked).
     void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook) { m_liveItemChangedHook = std::move(hook); }
+
+    // Lets the owner drop per-row state (comparer ranks) for rows that left the source: called with the
+    // removed item after an in-place sorted removal, or with null and every source row after a rebuild.
+    void SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook) { m_rowsReleasedHook = std::move(hook); }
 
 private:
     void SubscribeToSourceCollectionChanges();
@@ -236,6 +243,8 @@ private:
     uint64_t m_sourceChangeStamp{ 0 };
     // Stamp captured when the current Refresh materialized the source.
     uint64_t m_refreshSourceStamp{ 0 };
+    // Stamp whose rows the last successful shaped Refresh validated; never a real stamp until then.
+    uint64_t m_validatedSourceStamp{ ~uint64_t{ 0 } };
 
     // Creates the adapter if needed, applies any pending intent reset, and hands it the index.
     void PublishHierarchyIndex(std::shared_ptr<ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments);
@@ -438,6 +447,7 @@ private:
     // Set only while dirty, but a refresh may clear dirty first, so it alone does not imply dirty.
     bool m_liveShapingHeld{ false };
     std::function<bool(winrt::IInspectable const&, bool)> m_liveItemChangedHook{};
+    std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> m_rowsReleasedHook{};
 
     // Both set or both null; m_parentKeySelector is the "hierarchy declared" test.
     ShapingHelpers::KeySelector m_keySelector{ nullptr };

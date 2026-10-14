@@ -239,12 +239,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 foreach (var key in CollectKeys(highContrast))
                 {
                     // Only the canonical palette entries, which declare an explicit
-                    // Color="{ThemeResource SystemColor*}". The MUX_-prefixed keys are StaticResource
-                    // aliases; a StaticResource inside a theme dictionary is resolved when that
-                    // dictionary loads, so reading one off a detached TabularControlsResources yields
-                    // whichever sibling theme XAML happened to bind - an artifact of the read, not the
-                    // value a high-contrast user would see. Same for SortIndicatorForeground, which is
-                    // an alias to SystemColorWindowTextColorBrush.
+                    // Color="{ThemeResource SystemColor*}". SortIndicatorForeground is a StaticResource
+                    // alias to SystemColorWindowTextColorBrush; a StaticResource inside a theme
+                    // dictionary is resolved when that dictionary loads, so reading one off a detached
+                    // TabularControlsResources yields whichever sibling theme XAML happened to bind - an
+                    // artifact of the read, not the value a high-contrast user would see.
                     if (!key.StartsWith("TabularSurface", StringComparison.Ordinal))
                     {
                         continue;
@@ -664,6 +663,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "SystemColor* resources must resolve from the application resources before validating HighContrast.");
                 Verify.IsTrue(systemColors.Contains(highContrast.Color),
                     "The HighContrast default ResizeGripperSeparatorBrush must resolve through a system colour, not a hardcoded accent or cross-dictionary StaticResource alias.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyHeaderPointerStateBrushesResolveInEveryTheme()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var resources = new TabularControlsResources();
+
+                foreach (var themeName in new[] { "Default", "Light" })
+                {
+                    Verify.AreEqual(
+                        RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundPointerOverBrush").Color,
+                        RequireBrush(resources, themeName, "TabularSurfaceHeaderBackgroundPointerOverBrush").Color,
+                        $"'{themeName}' header pointer-over fill must match the row pointer-over fill.");
+                    Verify.AreEqual(
+                        RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundPressedBrush").Color,
+                        RequireBrush(resources, themeName, "TabularSurfaceHeaderBackgroundPressedBrush").Color,
+                        $"'{themeName}' header pressed fill must match the row pressed fill.");
+
+                    // Header text inherits TableView.Foreground (TabularSurfaceRowForegroundBrush); the
+                    // state keys only apply in High Contrast but must still match it elsewhere.
+                    var restForeground = RequireBrush(resources, themeName, "TabularSurfaceRowForegroundBrush").Color;
+                    Verify.AreEqual(restForeground,
+                        RequireBrush(resources, themeName, "TabularSurfaceHeaderForegroundPointerOverBrush").Color,
+                        $"'{themeName}' header text must keep its rest colour on hover.");
+                    Verify.AreEqual(restForeground,
+                        RequireBrush(resources, themeName, "TabularSurfaceHeaderForegroundPressedBrush").Color,
+                        $"'{themeName}' header text must keep its rest colour when pressed.");
+                }
+
+                var systemColors = CollectSystemColors();
+                Verify.IsGreaterThan(systemColors.Count, 0,
+                    "SystemColor* resources must resolve from the application resources before validating HighContrast.");
+
+                var highlight = RequireBrush(resources, "HighContrast", "TabularSurfaceRowBackgroundPointerOverBrush").Color;
+                var highlightText = RequireBrush(resources, "HighContrast", "TabularSurfaceRowForegroundPointerOverBrush").Color;
+                foreach (var state in new[] { "PointerOver", "Pressed" })
+                {
+                    var background = RequireBrush(resources, "HighContrast", $"TabularSurfaceHeaderBackground{state}Brush").Color;
+                    var foreground = RequireBrush(resources, "HighContrast", $"TabularSurfaceHeaderForeground{state}Brush").Color;
+                    Verify.IsTrue(systemColors.Contains(background) && systemColors.Contains(foreground),
+                        $"HighContrast header {state} brushes must resolve through system colours.");
+                    Verify.AreEqual(highlight, background, $"HighContrast header {state} fill must be SystemColorHighlightColor.");
+                    Verify.AreEqual(highlightText, foreground, $"HighContrast header {state} text must be SystemColorHighlightTextColor.");
+                }
             });
         }
 
@@ -1140,6 +1187,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var target = getTarget();
                 Verify.IsTrue(ReferenceEquals(target, FocusManager.GetFocusedElement(target.XamlRoot)),
                     $"Precondition: keyboard focus stays on the {what}.");
+                Verify.AreEqual(FocusState.Keyboard, target.FocusState, $"Precondition: the {what} is keyboard-focused.");
                 Verify.AreEqual(expected, target.CornerRadius,
                     $"A keyboard-focused {what} must be rounded like the rows' focus rect.");
                 Verify.IsTrue(getOther().Focus(FocusState.Programmatic), "Precondition: focus moves elsewhere.");
@@ -1177,8 +1225,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(new CornerRadius(0), getTarget().CornerRadius,
-                    $"Programmatic focus without keyboard input shows no focus rect, so the {what} must stay square.");
+                // XAML coerces programmatic focus to Keyboard or Pointer from the content root's last
+                // input device, which earlier tests or the harness may have left as keyboard; the
+                // focus rect, and so the radius, follows the coerced state.
+                var target = getTarget();
+                var state = target.FocusState;
+                Log.Comment($"Programmatic focus on the {what} was coerced to {state}.");
+                Verify.IsTrue(state == FocusState.Keyboard || state == FocusState.Pointer,
+                    $"Precondition: programmatic focus on the {what} is coerced to Keyboard or Pointer.");
+                Verify.AreEqual(state == FocusState.Keyboard ? expected : new CornerRadius(0), target.CornerRadius,
+                    $"Programmatic focus shows the focus rect only after keyboard input, so the {what} is rounded only then.");
             });
         }
 

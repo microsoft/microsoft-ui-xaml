@@ -1331,6 +1331,10 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
         filteredSource.erase(filteredSource.begin() + removal.SourceIndex);
         m_shapingState.Items.erase(m_shapingState.Items.begin() + removal.RowIndex);
         UntrackFlatItemPropertyChanged(removal.Item);
+        if (m_rowsReleasedHook)
+        {
+            m_rowsReleasedHook(removal.Item, {});
+        }
         m_rows.RemoveAt(removal.RowIndex);
         return true;
     };
@@ -1503,6 +1507,31 @@ bool ShapedItemsSource::ValidateRowIdentities(
     wchar_t const*& reason) const
 {
     return RowIdentity::ValidateRowIdentities(rows, EffectiveIdentitySelector(), reason);
+}
+
+bool ShapedItemsSource::CanProjectWithRowIdentity() const
+{
+    // A shaped projection validated its rows when it was built.
+    if (m_kind != ProjectionKind::None && m_kind != ProjectionKind::Unshaped &&
+        m_validatedSourceStamp == m_sourceChangeStamp)
+    {
+        return true;
+    }
+
+    // Mirrors Refresh: identity is validated over the rows a shaped projection would publish.
+    auto rows = Materialize(m_source);
+    if (!m_parentKeySelector)
+    {
+        ApplyFilter(rows);
+    }
+
+    wchar_t const* reason = nullptr;
+    if (!ValidateRowIdentities(rows, reason))
+    {
+        LogIdentityProjectionDisabled(reason);
+        return false;
+    }
+    return true;
 }
 
 void ShapedItemsSource::ClearFlatRowIdentityTracking()
@@ -1765,6 +1794,10 @@ void ShapedItemsSource::Refresh()
         // keeps the flag set, so the next live change still forces a rebuild.
         m_liveShapingChangeDropped->store(false);
         auto rows = Materialize(authoritativeSource);
+        if (m_rowsReleasedHook)
+        {
+            m_rowsReleasedHook(nullptr, rows);
+        }
         RefreshLiveShapingSubscriptions(rows);
 
         // All snapshots were just recaptured, so any pending live restore is satisfied -- unless
@@ -1837,6 +1870,7 @@ void ShapedItemsSource::Refresh()
             {
                 RebuildFlat(rows);
             }
+            m_validatedSourceStamp = m_refreshSourceStamp;
         }
         MUX_ASSERT(m_source == authoritativeSource);
     }
@@ -1849,6 +1883,7 @@ void ShapedItemsSource::Refresh()
         {
             m_liveShapingDirty = true;
         }
+        m_validatedSourceStamp = ~uint64_t{ 0 };
 
         // A request that arrived during the failed pass describes newer state; post it (inline
         // would throw into the same app call). Only such requests replay, so bad data cannot loop.

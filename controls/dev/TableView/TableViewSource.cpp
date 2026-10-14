@@ -371,7 +371,7 @@ TableViewRowItemKeySelector TableViewSource::MakeIdentitySelector() const
     };
 }
 
-void TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
+bool TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
 {
     // Sharing one shaped TableViewSource across two TableView controls has no coherent
     // semantics: shaping verbs (Filter/Sort/GroupBy) mutate a single projection, and the two
@@ -380,42 +380,71 @@ void TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
     // exists, silently overwriting m_owningTableView here left the previous owner rendering
     // against stale shape metadata and never receiving projection-shape notifications.
     //
-    // Contract: fail-fast if a second live TableView tries to bind to a TableViewSource that
-    // is already owned by a different TableView. In chk this asserts (same shape as the
-    // null-queue and identity fail-fasts in this file); in fre we keep the existing owner
-    // intact and refuse the new binding rather than corrupt the projection state, so a
-    // shipping app degrades gracefully instead of crashing. Callers must Unbind the source
-    // from the previous TableView (assign a different ItemsSource) before binding it here.
-    if (owner)
+    // Contract: a second TableView cannot bind a source another TableView already owns; it is
+    // refused and renders empty until the owner releases it (assigns a different ItemsSource or
+    // is unloaded). Not an assert: a navigation loads the new page before it unloads the old one,
+    // so a refusal is a normal transient state.
+    if (auto existingOwner = m_owningTableView.get())
     {
-        if (auto existingOwner = m_owningTableView.get())
+        if (existingOwner != owner)
         {
-            if (existingOwner != owner)
-            {
-                MUX_ASSERT_MSG(false,
-                    L"TableViewSource: attempted to bind an already-owned source to a second TableView. "
-                    L"A TableViewSource has single-owner semantics; unbind it from the previous "
-                    L"TableView (assign a different ItemsSource) before binding to another.");
-                return;
-            }
-            // Same TableView re-registering itself (e.g. re-entrant ItemsSource re-assignment
-            // with the same value). Idempotent.
+            return false;
         }
+        // Same TableView re-registering itself (e.g. reclaiming on Loaded). Idempotent.
     }
 
-    m_owningTableView = owner ? winrt::weak_ref<winrt::IInspectable>{ owner } : winrt::weak_ref<winrt::IInspectable>{ nullptr };
+    m_owningTableView = winrt::weak_ref<winrt::IInspectable>{ owner };
+    RemoveOwnerReleasedHandler(owner);
+    return true;
+}
 
-    if (!owner)
+void TableViewSource::AddOwnerReleasedHandler(winrt::IInspectable const& waiter, std::function<void()> handler)
+{
+    RemoveOwnerReleasedHandler(waiter);
+    m_ownerReleasedWaiters.push_back({ winrt::weak_ref<winrt::IInspectable>{ waiter }, std::move(handler) });
+}
+
+void TableViewSource::RemoveOwnerReleasedHandler(winrt::IInspectable const& waiter)
+{
+    // Also prunes waiters that have been collected.
+    std::erase_if(m_ownerReleasedWaiters, [&waiter](OwnerReleasedWaiter const& entry)
     {
-        // Detaching: drop the owner's handlers with the owner itself, so a source that has been
-        // swapped out of ItemsSource cannot drive the control it used to belong to.
-        m_projectionChanged = nullptr;
-        m_shapingChanged = nullptr;
-        // A restore held for the former owner's editor must not wait on an edit it will no longer
-        // hear the end of.
-        m_engine->SetLiveShapingHold(nullptr);
-        m_engine->SetLiveItemChangedHook(nullptr);
-        m_engine->ResumeHeldLiveShaping();
+        auto const entryWaiter = entry.Waiter.get();
+        return !entryWaiter || entryWaiter == waiter;
+    });
+}
+
+void TableViewSource::ReleaseOwningTableView(winrt::IInspectable const& owner)
+{
+    // Only the owner can release; a table whose bind was refused must not detach the real owner.
+    if (auto existingOwner = m_owningTableView.get(); existingOwner && existingOwner != owner)
+    {
+        return;
+    }
+
+    m_owningTableView = winrt::weak_ref<winrt::IInspectable>{ nullptr };
+
+    // Drop the owner's handlers with the owner itself, so a source that has been swapped out of
+    // ItemsSource cannot drive the control it used to belong to.
+    m_projectionChanged = nullptr;
+    m_shapingChanged = nullptr;
+    // A restore held for the former owner's editor must not wait on an edit it will no longer
+    // hear the end of.
+    m_engine->SetLiveShapingHold(nullptr);
+    m_engine->SetLiveItemChangedHook(nullptr);
+    m_engine->SetRowsReleasedHook(nullptr);
+    m_engine->ResumeHeldLiveShaping();
+
+    // Last, after the former owner's handlers are dropped. Each waiter is popped before it runs:
+    // it re-enters SetOwningTableView, and one that does not claim must not be retried.
+    while (!m_owningTableView.get() && !m_ownerReleasedWaiters.empty())
+    {
+        auto waiter = std::move(m_ownerReleasedWaiters.front());
+        m_ownerReleasedWaiters.erase(m_ownerReleasedWaiters.begin());
+        if (waiter.Waiter.get() && waiter.Handler)
+        {
+            waiter.Handler();
+        }
     }
 }
 
@@ -429,9 +458,19 @@ void TableViewSource::SetLiveItemChangedHook(std::function<bool(winrt::IInspecta
     m_engine->SetLiveItemChangedHook(std::move(hook));
 }
 
+void TableViewSource::SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook)
+{
+    m_engine->SetRowsReleasedHook(std::move(hook));
+}
+
 void TableViewSource::ResumeHeldLiveShaping()
 {
     m_engine->ResumeHeldLiveShaping();
+}
+
+bool TableViewSource::CanApplySort() const
+{
+    return m_engine->CanProjectWithRowIdentity();
 }
 
 void TableViewSource::NotifyOwnerProjectionChanged()

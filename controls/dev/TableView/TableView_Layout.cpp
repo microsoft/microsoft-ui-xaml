@@ -32,6 +32,12 @@
 
 namespace
 {
+    bool IsFixedWidthColumn(winrt::TableViewColumn const& column)
+    {
+        const double lo = NonNegativeFiniteOrZero(column.MinWidth());
+        return MaxWidthForColumn(column, lo) <= lo;
+    }
+
     double MinWidthForStarFactor(winrt::TableViewColumn const& column, double factor)
     {
         if (factor > 0.0)
@@ -501,7 +507,6 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
 
     double reservedForOthers = 0.0;
     bool dividesViewport = authoredType(column) == winrt::GridUnitType::Star;
-    bool hasParticipant = false;
 
     for (uint32_t i = 0; i < columns.Size(); ++i)
     {
@@ -521,8 +526,8 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
         const bool participates =
             i > draggedIndex &&
             other.Width().GridUnitType == winrt::GridUnitType::Star &&
-            resizeEnabled && other.CanResize();
-        hasParticipant |= participates;
+            resizeEnabled && other.CanResize() &&
+            !IsFixedWidthColumn(other);
 
         if (!participates)
         {
@@ -543,7 +548,7 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
     // Pinned in both directions: bounding only growth would let the drag hand width to a column
     // that is then not allowed to give it back. A Pixel or Auto column owns its width outright, so
     // it may still shrink -- that only makes the table narrower and needs nothing from a neighbour.
-    if (!hasParticipant && column.Width().GridUnitType == winrt::GridUnitType::Star)
+    if (IsColumnResizePinned(column))
     {
         bounds.Min = column.ActualWidth();
         bounds.Max = bounds.Min;
@@ -552,6 +557,83 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
 
     bounds.Max = std::max(0.0, viewport - reservedForOthers);
     return bounds;
+}
+
+// MinWidth meets MaxWidth, or a Star column with no later resizable Star column to trade with.
+// Shared by the drag bounds and gripper visibility so the two cannot disagree.
+bool TableView::IsColumnResizePinned(const winrt::TableViewColumn& column)
+{
+    if (!column)
+    {
+        return false;
+    }
+
+    if (IsFixedWidthColumn(column))
+    {
+        return true;
+    }
+
+    if (column.Width().GridUnitType != winrt::GridUnitType::Star)
+    {
+        return false;
+    }
+
+    auto columns = Columns();
+    uint32_t columnIndex = 0;
+    if (!columns || !columns.IndexOf(column, columnIndex))
+    {
+        return false;
+    }
+
+    if (!CanUserResizeColumns())
+    {
+        return true;
+    }
+
+    for (uint32_t i = columnIndex + 1; i < columns.Size(); ++i)
+    {
+        auto const other = columns.GetAt(i);
+        if (other &&
+            winrt::get_self<TableViewColumn>(other)->GetOwningTableView() == *this &&
+            other.Visibility() == winrt::Visibility::Visible &&
+            other.Width().GridUnitType == winrt::GridUnitType::Star &&
+            other.CanResize() &&
+            !IsFixedWidthColumn(other))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void TableView::RefreshResizeGripperAvailability()
+{
+    auto const host = m_headerHost.get();
+    if (!host)
+    {
+        return;
+    }
+
+    auto const children = host.Children();
+    const uint32_t count = children.Size();
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        auto const headerCell = children.GetAt(i).try_as<winrt::FrameworkElement>();
+        if (!headerCell)
+        {
+            continue;
+        }
+
+        auto const gripper = FindResizeGripperInCell(headerCell);
+        auto const column = headerCell.Tag().try_as<winrt::TableViewColumn>();
+        if (!gripper || !column)
+        {
+            continue;
+        }
+
+        gripper.Visibility(IsColumnResizePinned(column) ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
+    }
 }
 
 // Re-run the cell panels' measure/arrange so the header band and all rows reflect the newly resolved

@@ -209,6 +209,30 @@
                 </controls:TableView>
             </Grid>
 
+            <!-- Fixed container heights and a body 3.5 containers tall; see TableViewTestPageFacts.GroupedPagingContainerHeight.
+                 Height is 3.5 * 40 plus the table's 1px border. -->
+            <Grid x:Name="GroupedPagingTableHost" Visibility="Collapsed">
+                <Grid.Resources>
+                    <Style TargetType="controls:TableViewRow">
+                        <Setter Property="Height" Value="40" />
+                    </Style>
+                    <Style TargetType="controls:TableViewGroupHeader">
+                        <Setter Property="Height" Value="40" />
+                    </Style>
+                </Grid.Resources>
+                <controls:TableView x:Name="GroupedPagingTableView"
+                                    AutomationProperties.Name="GroupedPagingTableView"
+                                    AutomationProperties.AutomationId="GroupedPagingTableView"
+                                    HeadersVisibility="None"
+                                    Height="142"
+                                    Width="320"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="PagerName" Width="200" Binding="{Binding Name}" />
+                </controls:TableView>
+            </Grid>
+
             <Grid x:Name="ScrollingTableHost" Visibility="Collapsed">
                 <StackPanel Orientation="Vertical" Spacing="4">
                 <controls:TableView x:Name="ScrollingTableView"
@@ -331,6 +355,10 @@
                     AutomationProperties.Name="GoToHierarchyButton"
                     AutomationProperties.AutomationId="GoToHierarchyButton"
                     Click="OnGoToHierarchyClick" />
+            <Button Content="Grouped Paging"
+                    AutomationProperties.Name="GoToGroupedPagingButton"
+                    AutomationProperties.AutomationId="GoToGroupedPagingButton"
+                    Click="OnGoToGroupedPagingClick" />
             <TextBlock x:Name="StatusTextBlock"
                        AutomationProperties.Name="StatusTextBlock"
                        AutomationProperties.AutomationId="StatusTextBlock"

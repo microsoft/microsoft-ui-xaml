@@ -1358,7 +1358,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // A non-string header rendered through HeaderTemplate, with an automation name on the
                 // template root. The header object must be neither IStringable nor a String-typed
-                // IPropertyValue, or TryGetColumnHeaderString short-circuits the fallback under test -
+                // IPropertyValue, or TryGetColumnHeaderText short-circuits the fallback under test -
                 // a boxed primitive stringifies and would never reach it.
                 tableView.Columns.Add(new TableViewTextColumn
                 {
@@ -1384,6 +1384,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // primary source and template headers needing some name.
                 Verify.AreEqual("Priority", name,
                     "A template header's peer must take its name from the realized header, not from the TableView owner and not empty.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a templated managed-object header is named from its template, not from the object's ToString.")]
+        public void VerifyColumnHeaderNameIgnoresManagedObjectToStringWhenTemplated()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                tableView.Columns.Add(new TableViewTextColumn
+                {
+                    Header = new TitledColumnHeader { Title = "CPU" },
+                    HeaderTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock Text=""{Binding Title}"" />
+                          </DataTemplate>"),
+                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                });
+
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]).GetName();
+
+                Verify.AreEqual("CPU", name, "A templated object header must be named from the rendered template.");
+                Verify.IsFalse(name.Contains(nameof(TitledColumnHeader)),
+                    $"A templated object header must not be named after its type; saw '{name}'.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an unnamed template header is not named by the resize gripper in its header cell.")]
+        public void VerifyUnnamedTemplateHeaderIsNotNamedByResizeGripper()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                tableView.CanUserResizeColumns = true;
+                tableView.Columns.Add(new TableViewTextColumn
+                {
+                    Header = new Border { Width = 20, Height = 12 },
+                    CanResize = true,
+                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                });
+
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var gripperPeer = FrameworkElementAutomationPeer.CreatePeerForElement(RequireGripper(tableView, 0));
+                var gripperName = gripperPeer?.GetName();
+                Verify.IsFalse(string.IsNullOrEmpty(gripperName), "Precondition: the gripper must have a name.");
+
+                var name = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]).GetName();
+                Log.Comment($"Header name: '{name}'; gripper name: '{gripperName}'.");
+                Verify.IsFalse(!string.IsNullOrEmpty(name) && name.Contains(gripperName),
+                    $"An unnamed header must not take the resize gripper's name; saw '{name}'.");
             });
         }
 
@@ -2434,6 +2503,64 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
+
+        #region Teardown
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a keyboard-focused header cell's peer still answers after its TableView leaves the tree.")]
+        public void VerifyFocusedHeaderPeerAnswersAfterTableLeavesTree()
+        {
+            TableView tableView = null;
+            StackPanel host = null;
+            FrameworkElement headerCell = null;
+            AutomationPeer headerPeer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                host = new StackPanel();
+                host.Children.Add(new Button { Content = "Sink" });
+                host.Children.Add(tableView);
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                headerCell = GetHeaderCell(tableView, 1);
+                Verify.IsTrue(headerCell.Focus(FocusState.Keyboard), "Precondition: header cell 1 takes keyboard focus.");
+                headerPeer = FrameworkElementAutomationPeer.CreatePeerForElement(headerCell);
+                Verify.IsNotNull(headerPeer, "Precondition: the header cell has a peer.");
+                Verify.AreEqual("Role", headerPeer.GetName(), "Precondition: the live header peer is named by its column.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => host.Children.Remove(tableView));
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Exception error = null;
+                try
+                {
+                    Log.Comment($"Detached header peer name: '{headerPeer.GetName()}'");
+                    Verify.AreEqual(AutomationControlType.HeaderItem, headerPeer.GetAutomationControlType(),
+                        "A detached header peer must still report its control type.");
+                    Log.Comment($"Detached header peer has keyboard focus: {headerPeer.HasKeyboardFocus()}");
+                }
+                catch (Exception e)
+                {
+                    error = e;
+                }
+
+                Verify.IsTrue(error == null, $"Querying a detached header peer must not throw. Instead: {error?.Message}");
+            });
+        }
+
+        #endregion
     }
 
     internal static class TableViewAutomationTestHelpers
@@ -2539,5 +2666,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 .OfType<FrameworkElement>()
                 .Where(child => child.Tag is TableViewColumn)
                 .ToList();
+    }
+
+    // A plain managed header object: CsWinRT gives it IStringable, whose ToString is the type name.
+    internal sealed class TitledColumnHeader
+    {
+        public string Title { get; set; }
     }
 }

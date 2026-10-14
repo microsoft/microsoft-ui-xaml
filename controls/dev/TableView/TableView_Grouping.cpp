@@ -568,7 +568,14 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
     // Defer to after the reshape's relayout. The reprojection triggered by the toggle recycles the
     // header container during the next layout pass; focusing now would land on a container layout
     // is about to recycle, dropping focus a second time. A one-shot LayoutUpdated fires once the
-    // tree has settled, mirroring FocusRow's deferred-focus pattern.
+    // tree has settled.
+    ArmContainerFocusRestore(identity, focusState, fromPointerGesture, s_containerFocusRestoreAttempts);
+}
+
+// Re-armed while the header is still unarranged after the relayout; the last attempt focuses anyway.
+void TableView::ArmContainerFocusRestore(
+    winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, int32_t attemptsLeft)
+{
     if (m_pendingGroupFocusLayoutToken.value)
     {
         LayoutUpdated(m_pendingGroupFocusLayoutToken);
@@ -577,7 +584,7 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
 
     auto weakThis = get_weak();
     m_pendingGroupFocusLayoutToken = LayoutUpdated(
-        [weakThis, identity, focusState, fromPointerGesture](winrt::IInspectable const&, winrt::IInspectable const&)
+        [weakThis, identity, focusState, fromPointerGesture, attemptsLeft](winrt::IInspectable const&, winrt::IInspectable const&)
         {
             auto strongThis = weakThis.get();
             if (!strongThis)
@@ -602,7 +609,11 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
                     return;
                 }
 
-                strongThis->FocusContainerByIdentity(identity, focusState, fromPointerGesture);
+                const bool finalAttempt = attemptsLeft <= 1;
+                if (!strongThis->FocusContainerByIdentity(identity, focusState, fromPointerGesture, finalAttempt))
+                {
+                    strongThis->ArmContainerFocusRestore(identity, focusState, fromPointerGesture, attemptsLeft - 1);
+                }
             }
             catch (...)
             {
@@ -611,23 +622,25 @@ void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
         });
 }
 
-void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture)
+// Returns false only when a non-final attempt found the group header not yet arranged.
+bool TableView::FocusContainerByIdentity(
+    winrt::hstring const& identity, winrt::FocusState focusState, bool fromPointerGesture, bool finalAttempt)
 {
     if (identity.empty() || !m_tableViewSourceRowMetadata)
     {
-        return;
+        return true;
     }
 
     int32_t index = -1;
     if (!m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, index) || index < 0)
     {
-        return;
+        return true;
     }
 
     auto repeater = m_rowsRepeater.get();
     if (!repeater)
     {
-        return;
+        return true;
     }
 
     // The metadata provider and repeater own separate views that can absorb reshapes at different
@@ -636,7 +649,7 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
     auto const sourceView = repeater.ItemsSourceView();
     if (!sourceView || index >= sourceView.Count())
     {
-        return;
+        return true;
     }
 
     // Data row: a splice keeps focus in place; restore only if the Reset recycled the container.
@@ -652,7 +665,7 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
                 {
                     if (repeater.GetElementIndex(row) == index)
                     {
-                        return;
+                        return true;
                     }
                     break;
                 }
@@ -660,27 +673,48 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
         }
 
         FocusRow(index);
-        return;
+        return true;
     }
 
     auto element = repeater.GetOrCreateElement(index);
     if (!element)
     {
-        return;
+        return true;
     }
 
     // Only a group header is a valid target: after a re-sort or source swap the identity's index
     // could now name a data row, and focusing that with a header's intent would be wrong.
     if (!element.try_as<winrt::TableViewGroupHeader>())
     {
-        return;
+        return true;
     }
 
-    if (!fromPointerGesture)
+    if (!IsRowElementArranged(element))
     {
-        if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
+        // The layout can re-project the source; the header must still be this group's, at index.
+        auto const expectedItem = GetRowsSourceItemAt(index);
+        int32_t revalidatedIndex = -1;
+        const bool sameHeader = ArrangeAndRevalidate(element, index, expectedItem) &&
+            m_tableViewSourceRowMetadata &&
+            m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, revalidatedIndex) &&
+            revalidatedIndex == index &&
+            element.try_as<winrt::TableViewGroupHeader>();
+        if (!sameHeader)
         {
-            frameworkElement.StartBringIntoView();
+            if (!finalAttempt)
+            {
+                return false;
+            }
+            if (!fromPointerGesture && expectedItem)
+            {
+                BeginPendingBodyFocus(index, m_currentCellColumn, false /* cellLevel */, std::nullopt, expectedItem);
+                m_pendingReshapeFocusState = focusState == winrt::FocusState::Unfocused ? winrt::FocusState::Keyboard : focusState;
+            }
+            return true;
+        }
+        if (!IsRowElementArranged(element) && !finalAttempt)
+        {
+            return false;
         }
     }
 
@@ -688,6 +722,16 @@ void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::
     {
         control.Focus(focusState);
     }
+
+    // The body scrolls itself to the header; finish through the attempt loop if the header still
+    // sits at an estimated position outside the viewport.
+    if (!fromPointerGesture && !IsRowElementInViewport(element))
+    {
+        BringRowElementIntoView(element, std::nullopt);
+        BeginPendingBodyFocus(index, m_currentCellColumn, false /* cellLevel */, std::nullopt);
+        m_pendingReshapeFocusState = focusState == winrt::FocusState::Unfocused ? winrt::FocusState::Keyboard : focusState;
+    }
+    return true;
 }
 
 void TableView::ExpandAllGroups()

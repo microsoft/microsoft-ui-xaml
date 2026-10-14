@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
@@ -124,6 +125,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
         }
 
         _updating = true;
+        var previousObservations = ExpectedObservationsText.Text;
         try
         {
             AssessmentTable.DeselectAll();
@@ -148,9 +150,20 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 
         if (announce)
         {
+            if (ExpectedObservationsText.Text != previousObservations)
+            {
+                AnnounceExpectedObservations();
+            }
+
             SetLastAction("Reset the fixture to its baseline; no rows selected by the app.");
         }
     }
+
+    // TextBlock does not raise LiveRegionChanged on a text change; raise it for the user's change only.
+    private void AnnounceExpectedObservations() =>
+        (FrameworkElementAutomationPeer.FromElement(ExpectedObservationsText)
+            ?? FrameworkElementAutomationPeer.CreatePeerForElement(ExpectedObservationsText))
+            ?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
 
     // <snippet>
     private void ConfigureColumns()
@@ -258,6 +271,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
         }
 
         ConfigureColumns();
+        AnnounceExpectedObservations();
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Fixture scenario -> {0}; source objects kept.", SampleShaping.Label(ScenarioSelector)));
     }
 

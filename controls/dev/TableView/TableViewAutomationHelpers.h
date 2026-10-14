@@ -346,6 +346,37 @@ inline winrt::hstring GetCellContentName(
     return {};
 }
 
+// The name UIA uses for a column: its string header, else an element header's own name (hidden
+// headers collapse their header cells), else the name its realized header item exposes, which is
+// the only source for an object or templated header. Shared by the cell peer and the built-in
+// editor so both name the column the same way.
+inline winrt::hstring ResolveColumnAccessibleName(winrt::TableView const& table, winrt::TableViewColumn const& column)
+{
+    if (auto const headerString = TableViewDetails::TryGetColumnHeaderText(column))
+    {
+        return *headerString;
+    }
+
+    if (auto const headerElement = column ? column.Header().try_as<winrt::FrameworkElement>() : nullptr)
+    {
+        uint32_t remaining = 32;
+        if (auto const name = GetCellContentName(headerElement, false /* allowPeerCreation */, 8, remaining); !name.empty())
+        {
+            return name;
+        }
+    }
+
+    if (table)
+    {
+        if (auto const headerPeer = GetRealizedColumnHeaderPeer(table, column))
+        {
+            return headerPeer.GetName();
+        }
+    }
+
+    return {};
+}
+
 inline winrt::FrameworkElement GetCellContentElement(winrt::FrameworkElement const& cell)
 {
     if (!cell)
@@ -497,27 +528,4 @@ inline winrt::hstring GetCellDisplayText(winrt::FrameworkElement const& cell, bo
     auto const content = GetCellContentElement(cell);
     uint32_t remaining = 32;
     return GetCellContentName(content, allowPeerCreation, 8, remaining);
-}
-
-// Returns the column Header's string form (an IStringable, or a String-typed IPropertyValue), or
-// nullopt when the header is not a string (or the column is null). Returning nullopt rather than an
-// empty string lets callers distinguish "no string header" from "an explicitly empty string header".
-inline std::optional<winrt::hstring> TryGetColumnHeaderString(winrt::TableViewColumn const& column)
-{
-    if (column)
-    {
-        auto const header = column.Header();
-        if (auto const stringable = header.try_as<winrt::IStringable>())
-        {
-            return stringable.ToString();
-        }
-        if (auto const propValue = header.try_as<winrt::IPropertyValue>())
-        {
-            if (propValue.Type() == winrt::PropertyType::String)
-            {
-                return propValue.GetString();
-            }
-        }
-    }
-    return std::nullopt;
 }

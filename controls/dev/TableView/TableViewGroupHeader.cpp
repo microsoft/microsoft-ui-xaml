@@ -119,7 +119,10 @@ void TableViewGroupHeader::UpdateTerminalBottomGridLineSuppression()
         {
             thickness.Bottom = 0.0;
         }
-        gridLineBorder.BorderThickness(thickness);
+        if (gridLineBorder.BorderThickness() != thickness)
+        {
+            gridLineBorder.BorderThickness(thickness);
+        }
     }
 }
 
@@ -285,6 +288,12 @@ void TableViewGroupHeader::OnPointerEntered(winrt::PointerRoutedEventArgs const&
 void TableViewGroupHeader::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerExited(args);
+    // Only the pressing pointer may cancel the press (as TableViewRow): another contact or the mouse
+    // leaving must not drop an in-flight tap.
+    if (m_isPressed && args.Pointer().PointerId() != m_pressedPointerId)
+    {
+        return;
+    }
     m_isPointerOver = false;
     m_isPressed = false;
     m_pressedGroupIdentity.clear();
@@ -325,6 +334,7 @@ void TableViewGroupHeader::OnPointerPressed(winrt::PointerRoutedEventArgs const&
     }
 
     m_isPressed = true;
+    m_pressedPointerId = args.Pointer().PointerId();
 
     // A reshape between press and release can recycle this container onto another group.
     m_pressedGroupIdentity = GetGroupIdentity();
@@ -387,6 +397,10 @@ void TableViewGroupHeader::OnPointerReleased(winrt::PointerRoutedEventArgs const
 void TableViewGroupHeader::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerCaptureLost(args);
+    if (m_isPressed && args.Pointer().PointerId() != m_pressedPointerId)
+    {
+        return;
+    }
     m_isPressed = false;
     m_isPointerOver = false;
     m_pressedGroupIdentity.clear();
