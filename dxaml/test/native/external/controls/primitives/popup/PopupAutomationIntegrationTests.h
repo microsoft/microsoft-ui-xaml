@@ -88,6 +88,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyWindowedPopupListViewDataPeerUsesPopupHost)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a ListView item data peer preserves the popup host supplied by UIA navigation.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
     private:
         enum class PopupHostChange { None, NewPopup, NonWindowed, NestedInline };
 

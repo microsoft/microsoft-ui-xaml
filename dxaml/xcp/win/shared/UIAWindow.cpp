@@ -2958,15 +2958,18 @@ HRESULT CUIAWindow::CreateProviderForAP(CAutomationPeer* pAP, CUIAWrapper** ppRe
     IFCPTR_RETURN(pAP);
 
     CUIAWindow* providerWindow = this;
-    if (auto root = pAP->GetRootNoRef())
+    auto owner = pAP->GetDONoRef();
+    // Data peers can have an automation peer owner instead of a visual owner.
+    // Preserve the supplied host when the owner's visual ancestry is unavailable.
+    if (owner && !do_pointer_cast<CAutomationPeer>(owner))
     {
-        if (auto rootWindow = pAP->GetContext()->GetUIAWindowForElementRootNoRef(root))
+        if (auto root = pAP->GetRootNoRef())
         {
-            providerWindow = rootWindow;
+            if (auto rootWindow = pAP->GetContext()->GetUIAWindowForElementRootNoRef(root))
+            {
+                providerWindow = rootWindow;
+            }
         }
-    }
-    if (auto owner = pAP->GetDONoRef())
-    {
         xref_ptr<CPopup> popup(do_pointer_cast<CPopup>(owner));
         if (!popup || !popup->IsOpen() || !popup->IsWindowed())
         {
