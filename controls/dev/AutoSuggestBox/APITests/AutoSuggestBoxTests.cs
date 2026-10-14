@@ -11,7 +11,6 @@ using MUXControlsTestApp;
 
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
-using WEX.Logging.Interop;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
