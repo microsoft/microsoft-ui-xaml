@@ -89,7 +89,6 @@ private:
     int32_t GetItemOccurrenceAtIndex(winrt::TableView const& tableView, winrt::IInspectable const& item, int32_t targetIndex);
     bool IsTrackedRow(winrt::TableViewRow const& row, winrt::TableView const& tableView);
     void TrackRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
-    [[noreturn]] static void ThrowElementNotAvailable();
     // Joins the visible cells' display text in visual order.
     static std::wstring ComposeCellTexts(
         TableViewRow* rowImpl,

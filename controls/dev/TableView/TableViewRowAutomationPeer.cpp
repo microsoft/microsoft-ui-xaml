@@ -447,11 +447,6 @@ void TableViewRowAutomationPeer::DropCellPeerCache()
     m_cellPeerCache.clear();
 }
 
-[[noreturn]] void TableViewRowAutomationPeer::ThrowElementNotAvailable()
-{
-    throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
-}
-
 hstring TableViewRowAutomationPeer::GetNameCore()
 {
     auto const row = Owner().try_as<winrt::TableViewRow>();

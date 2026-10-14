@@ -33,14 +33,6 @@ namespace
     constexpr winrt::Thickness s_verticalThickness{ 0, 0, 1, 0 };
     constexpr winrt::Thickness s_zeroThickness{ 0, 0, 0, 0 };
 
-    // Shared transparent fill for cell wrappers. Cached because rows and cells are rebuilt on every
-    // scroll, and a fresh brush per cell is pure allocation for a value that never varies.
-    winrt::Brush TransparentBrush()
-    {
-        static const winrt::SolidColorBrush s_transparent{ winrt::Colors::Transparent() };
-        return s_transparent;
-    }
-
     bool WantsHorizontalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
     {
         return visibility == winrt::TableViewGridLinesVisibility::Horizontal ||
@@ -1741,6 +1733,35 @@ void TableViewRow::ResetCellAutomationNames()
     }
 }
 
+void TableViewRow::RaiseCellAutomationNamesChangedInternal()
+{
+    if (auto const host = m_cellsHost.get())
+    {
+        for (auto const& cell : host.Children())
+        {
+            try
+            {
+                if (auto const peer = TableViewCell::TryGetExistingPeer(cell)
+                    .try_as<winrt::TableViewCellAutomationPeer>())
+                {
+                    if (auto const oldName = winrt::get_self<TableViewCellAutomationPeer>(peer)->TakeLastNameInternal())
+                    {
+                        if (auto const newName = peer.GetName(); newName != *oldName)
+                        {
+                            peer.RaisePropertyChangedEvent(winrt::AutomationElementIdentifiers::NameProperty(),
+                                winrt::box_value(*oldName), winrt::box_value(newName));
+                        }
+                    }
+                }
+            }
+            catch (...)
+            {
+                TVDiag::LogRetailF(L"[TableView] Optional cell name change could not be raised.");
+            }
+        }
+    }
+}
+
 void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
 {
     RestoreCellContentTabStopsInternal();
@@ -1979,10 +2000,15 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         cellWrapper.Tag(column);
         cellWrapper.Visibility(column.Visibility());
         cellWrapper.MinHeight(rowMinHeight);
+        ownerImpl->AttachFocusCornerRadius(cellWrapper);
 
         // A null Background does not hit-test; Transparent keeps the full cell pressable so clicks
         // in padding still set current cell and support double-click-to-edit.
-        cellWrapper.Background(TransparentBrush());
+        if (!m_cellWrapperBackground)
+        {
+            m_cellWrapperBackground = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
+        }
+        cellWrapper.Background(m_cellWrapperBackground);
 
         // No local DataContext anywhere on the cell path: cells inherit the row item so recycled
         // rows update reactively. Custom columns must also bind to inherited DataContext, not bake
@@ -2510,7 +2536,7 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
                                     return;
                                 }
                                 auto const peerImpl = winrt::get_self<TableViewCellAutomationPeer>(currentPeer);
-                                if (peerImpl->Row() < 0 || peerImpl->Value() != newValue || peerImpl->ReadNameForEdit() != newName)
+                                if (peerImpl->GetRowIndexInternal() < 0 || peerImpl->Value() != newValue || peerImpl->ReadNameForEdit() != newName)
                                 {
                                     return;
                                 }

@@ -48,8 +48,6 @@ static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"s
 // Matches SortIndicatorSize in SortIndicator_themeresources.xaml; used only when that key is
 // missing or unusable.
 static constexpr double c_sortIndicatorSizeFallback{ 16.0 };
-static constexpr std::wstring_view s_ControlCornerRadiusKey{ L"ControlCornerRadius"sv };
-static constexpr winrt::CornerRadius c_controlCornerRadiusFallback{ 4.0, 4.0, 4.0, 4.0 };
 
 namespace
 {
@@ -142,6 +140,11 @@ namespace
         {
             auto const r = right.try_as<winrt::IReference<winrt::CornerRadius>>();
             return r && l.Value() == r.Value();
+        }
+        if (auto const l = left.try_as<winrt::IReference<winrt::Windows::UI::Text::FontWeight>>())
+        {
+            auto const r = right.try_as<winrt::IReference<winrt::Windows::UI::Text::FontWeight>>();
+            return r && l.Value().Weight == r.Value().Weight;
         }
         return false;
     }
@@ -464,6 +467,7 @@ namespace
         cache.density.hasHeaderCellPadding = false;
         cache.font.hasCellFontSize = false;
         cache.font.hasHeaderFontSize = false;
+        cache.font.hasHeaderFontWeight = false;
         cache.hierarchy.hasRowIndentSize = false;
         cache.hierarchy.hasRowExpanderSize = false;
         cache.hierarchy.hasGroupExpanderSize = false;
@@ -503,22 +507,17 @@ namespace
         }
     }
 
+    // The stock style always supplies TabularSurfaceGridLineBrush; on a miss draw only in High Contrast.
     winrt::Brush CreateGridLineFallbackBrush(winrt::FrameworkElement const& start, bool highContrast)
     {
-        auto color = highContrast
-            ? winrt::Colors::White()
-            : (start.ActualTheme() == winrt::ElementTheme::Light
-                ? winrt::ColorHelper::FromArgb(0x29, 0x00, 0x00, 0x00)
-                : winrt::ColorHelper::FromArgb(0x29, 0xff, 0xff, 0xff));
-
-        if (highContrast)
+        if (!highContrast)
         {
-            color = winrt::unbox_value_or<winrt::Color>(
-                LookupElementResource(start, L"SystemColorWindowTextColor", true),
-                color);
+            return nullptr;
         }
 
-        return winrt::SolidColorBrush(color);
+        return winrt::SolidColorBrush(winrt::unbox_value_or<winrt::Color>(
+            LookupElementResource(start, L"SystemColorWindowTextColor", true),
+            winrt::Colors::White()));
     }
 
 }
@@ -1228,7 +1227,21 @@ void TableView::OnHeadersVisibilityPropertyChanged(const winrt::DependencyProper
     }
 
     UpdateHeaderVisibility();
+    InvalidateMeasure();
     QueueTerminalGridLineRefresh();
+
+    // UIA: every realized cell's name and header items follow whether column headers are shown.
+    const auto columnBit = static_cast<uint32_t>(winrt::TableViewHeadersVisibility::Column);
+    const bool showedColumnHeaders =
+        (static_cast<uint32_t>(winrt::unbox_value<winrt::TableViewHeadersVisibility>(args.OldValue())) & columnBit) != 0;
+    if (showedColumnHeaders != ShouldShowColumnHeaders() &&
+        winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    {
+        ForEachRealizedRow([](winrt::TableViewRow const& row)
+        {
+            winrt::get_self<TableViewRow>(row)->RaiseCellAutomationNamesChangedInternal();
+        });
+    }
 }
 
 void TableView::OnGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -2237,6 +2250,48 @@ double TableView::GetHeaderFontSize()
     return cache.font.headerFontSize;
 }
 
+winrt::Windows::UI::Text::FontWeight TableView::GetHeaderFontWeight()
+{
+    auto& cache = GetTableViewResourceCache(this);
+    if (cache.font.hasHeaderFontWeight)
+    {
+        return cache.font.headerFontWeight;
+    }
+
+    const auto fallback = winrt::FontWeights::SemiBold();
+    if (auto raw = LookupElementResource(*this, L"TableViewHeaderFontWeight", IsHighContrast()))
+    {
+        cache.font.headerFontWeight = winrt::unbox_value_or<winrt::Windows::UI::Text::FontWeight>(raw, fallback);
+        cache.font.hasHeaderFontWeight = true;
+        return cache.font.headerFontWeight;
+    }
+    cache.font.headerFontWeight = fallback;
+    cache.font.hasHeaderFontWeight = true;
+    return cache.font.headerFontWeight;
+}
+
+// The system focus visual takes its corners from the focused Grid's CornerRadius, but a rounded Grid
+// also clips its children and hit-testing, so round only while the focus rect shows. Programmatic
+// focus is coerced to Keyboard or Pointer by the last input device, so Keyboard is exactly that case.
+void TableView::AttachFocusCornerRadius(winrt::Grid const& target)
+{
+    target.RegisterPropertyChangedCallback(winrt::UIElement::FocusStateProperty(),
+        [weakThis = get_weak()](winrt::DependencyObject const& sender, winrt::DependencyProperty const&)
+        {
+            auto const grid = sender.as<winrt::Grid>();
+            auto const self = weakThis.get();
+            if (self && grid.FocusState() == winrt::FocusState::Keyboard)
+            {
+                // The TableView style sets CornerRadius from ControlCornerRadius, so the value stays in XAML.
+                grid.CornerRadius(self->CornerRadius());
+            }
+            else
+            {
+                grid.ClearValue(winrt::Grid::CornerRadiusProperty());
+            }
+        });
+}
+
 double TableView::GetRowIndentSize()
 {
     // Cached: hit per realized row on every pass, and resource lookup walks the whole tree. Cleared
@@ -2649,6 +2704,7 @@ void TableView::RebuildHeaders()
     // Header cells share the density row min-height so the header band matches the body rows.
     const double cachedRowMinHeight = GetDensityRowMinHeight();
     const double cachedHeaderFontSize = GetHeaderFontSize();
+    const auto cachedHeaderFontWeight = GetHeaderFontWeight();
     const winrt::Brush cachedHeaderCellFill = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
     // of RebuildHeaders; a non-positive or non-finite override would flow straight into Width().
@@ -2664,9 +2720,6 @@ void TableView::RebuildHeaders()
     {
         cachedSortIndicatorWidth = c_sortIndicatorSizeFallback;
     }
-    // The system focus visual takes its corners from the focused Grid's CornerRadius.
-    const auto cachedHeaderCellCornerRadius = winrt::unbox_value_or<winrt::CornerRadius>(
-        LookupElementResource(*this, s_ControlCornerRadiusKey), c_controlCornerRadiusFallback);
     const bool canUserSortColumns = CanUserSortColumns();
 
     // XAML mirrors an RTL subtree with one transform where FlowDirection changes, so logical Right
@@ -2684,19 +2737,8 @@ void TableView::RebuildHeaders()
             }
 
             // Header cell root: TableViewHeaderCell is the focus/hit-test target so its automation
-            // peer attaches to the right element. Content and chevron get separate columns so the
-            // chevron reserves width instead of overlaying text.
+            // peer attaches to the right element.
             auto const headerCell = winrt::make<TableViewHeaderCell>(*this, column).as<winrt::Grid>();
-            constexpr int contentColumnIndex = 0;
-            constexpr int indicatorColumnIndex = 1;
-            {
-                winrt::ColumnDefinition starColumn;
-                starColumn.Width(winrt::GridLengthHelper::FromValueAndType(1, winrt::GridUnitType::Star));
-                winrt::ColumnDefinition autoColumn;
-                autoColumn.Width(winrt::GridLengthHelper::FromValueAndType(0, winrt::GridUnitType::Auto));
-                headerCell.ColumnDefinitions().Append(starColumn);
-                headerCell.ColumnDefinitions().Append(autoColumn);
-            }
             headerCell.Visibility(column.Visibility());
             // Header cells are the named keyboard/UIA targets; the host is one Tab stop, and arrows
             // must still reach every visible header. Every visible header is a tab stop by product
@@ -2707,7 +2749,7 @@ void TableView::RebuildHeaders()
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
             headerCell.IsTabStop(true);
             headerCell.UseSystemFocusVisuals(true);
-            headerCell.CornerRadius(cachedHeaderCellCornerRadius);
+            AttachFocusCornerRadius(headerCell);
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {
@@ -2756,10 +2798,9 @@ void TableView::RebuildHeaders()
             content.Padding(contentPadding);
             content.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
             content.VerticalAlignment(winrt::VerticalAlignment::Center);
-            // Column-header text: theme font size, SemiBold to stand out from cells (templates override).
+            // Column-header text: theme font size and weight (templates override).
             content.FontSize(cachedHeaderFontSize);
-            content.FontWeight(winrt::FontWeights::SemiBold());
-            winrt::Grid::SetColumn(content, contentColumnIndex);
+            content.FontWeight(cachedHeaderFontWeight);
             headerCell.Children().Append(content);
 
             // Resolve from TableView so header grid lines track theme.
@@ -2772,7 +2813,6 @@ void TableView::RebuildHeaders()
                 winrt::AutomationProperties::SetAccessibilityView(headerGridLine, winrt::AccessibilityView::Raw);
                 headerGridLine.Visibility(wantVerticalHeaderLines ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
                 headerGridLine.Background(cachedHeaderGridLineBrush);
-                winrt::Grid::SetColumnSpan(headerGridLine, 2);
                 headerCell.Children().Append(headerGridLine);
             }
 
@@ -2791,12 +2831,9 @@ void TableView::RebuildHeaders()
                 // The chevron is decoration on top of a clickable header: letting it take the hit
                 // would create a dead spot in the middle of the click target.
                 indicatorHost.IsHitTestVisible(false);
-                // SortIndicator has a fixed themed Width and only fades via Opacity, so an always-
-                // visible host would cost that width on every sortable column.
                 indicatorHost.Visibility(column.SortDirection() == winrt::SortDirection::None
                     ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
                 AppendSortIndicatorVisual(indicatorHost, column);
-                winrt::Grid::SetColumn(indicatorHost, indicatorColumnIndex);
                 headerCell.Children().Append(indicatorHost);
 
                 // Weak: the handler is owned by a visual the control also owns, so a strong
@@ -2922,7 +2959,7 @@ void TableView::RefreshSortIndicators()
         {
             const auto direction = column.SortDirection();
             indicator.Direction(ToSortIndicatorDirection(direction));
-            // Keep the reserved column in step with the chevron.
+            // Keep the host in step with the chevron.
             if (auto const indicatorHost = indicator.Parent().try_as<winrt::UIElement>())
             {
                 indicatorHost.Visibility(direction == winrt::SortDirection::None
@@ -3413,7 +3450,6 @@ void TableView::AppendResizeGripperVisual(
             strongThis->AnnounceColumnWidth(weakHeaderCell.get(), col);
         }
     });
-    winrt::Grid::SetColumnSpan(gripperVisual, 2);
     headerCell.Children().Append(gripperVisual);
 }
 

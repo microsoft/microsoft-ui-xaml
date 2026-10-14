@@ -180,6 +180,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies sorting does not narrow the header content, because its padding already reserves the indicator.")]
+        public void VerifySortingDoesNotChangeHeaderContentWidth()
+        {
+            TableView tableView = null;
+            double unsortedWidth = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                tableView.Columns[0].Width = new GridLength(200.0, GridUnitType.Pixel);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                unsortedWidth = GetHeaderPresenter(tableView, 0).ActualWidth;
+                Verify.IsGreaterThan(unsortedWidth, 0.0, "The header content must have been laid out.");
+                tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(unsortedWidth, GetHeaderPresenter(tableView, 0).ActualWidth,
+                    "Sorting must not take the indicator's width from the header content a second time.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies SortByColumn returns true only when the sort state actually changed.")]
         public void VerifySortByColumnReturnsWhetherStateChanged()
         {

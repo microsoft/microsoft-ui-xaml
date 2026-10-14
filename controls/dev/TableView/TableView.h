@@ -88,6 +88,8 @@ struct TableViewResourceCache
         double cellFontSize{ 0.0 };
         bool hasHeaderFontSize{ false };
         double headerFontSize{ 0.0 };
+        bool hasHeaderFontWeight{ false };
+        winrt::Windows::UI::Text::FontWeight headerFontWeight{};
     };
     FontInfo font{};
 
@@ -170,6 +172,8 @@ public:
     winrt::Thickness GetDensityHeaderCellPadding();
     double GetCellFontSize();
     double GetHeaderFontSize();
+    winrt::Windows::UI::Text::FontWeight GetHeaderFontWeight();
+    void AttachFocusCornerRadius(winrt::Grid const& target);
 
     // Per-level indent from the TableViewRowIndentSize resource, cached for rows.
     double GetRowIndentSize();
@@ -229,7 +233,7 @@ public:
     void OnColumnWidthChanged(const winrt::TableViewColumn& column);
 
     // TableViewTemplateColumn calls this when CellTemplate changes so realized rows regenerate cells.
-    void OnColumnCellTemplateChanged(const winrt::TableViewColumn& column);
+    void OnColumnCellTemplateChanged(const winrt::TableViewColumn& column, bool resetAutoWidth = true);
 
     // TableViewColumn calls this when Header / HeaderTemplate / HeaderTemplateSelector changes so
     // headers re-render and Auto columns recompute their content width.
@@ -254,6 +258,7 @@ public:
     // Automation peer accessors; weak refs may be null before OnApplyTemplate.
     winrt::ItemsRepeater GetRowsRepeaterInternal() const { return m_rowsRepeater.get(); }
     winrt::Panel GetHeaderHostInternal() const { return m_headerHost.get(); }
+    bool AreColumnHeadersShownInternal() { return ShouldShowColumnHeaders(); }
     int32_t GetRowCountInternal() const { return GetItemsSourceCount(); }
     int32_t GetDataRowPositionInSetInternal(int32_t rowIndex) const;
     int32_t GetDataRowSizeOfSetInternal() const;

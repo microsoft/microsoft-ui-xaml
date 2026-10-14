@@ -401,8 +401,10 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetC
     std::vector<winrt::IRawElementProviderSimple> headers;
     std::vector<ColumnHeaderPeerCacheEntry> liveCache;
 
-    // Key off visible logical Columns() so headers enumerate before templates realize.
-    if (auto const tableView = Owner().try_as<winrt::TableView>())
+    // Key off visible logical Columns() so headers enumerate before templates realize. Hidden column
+    // headers report none, matching each cell's GetColumnHeaderItems.
+    if (auto const tableView = Owner().try_as<winrt::TableView>();
+        tableView && winrt::get_self<TableView>(tableView)->AreColumnHeadersShownInternal())
     {
         if (auto const columns = tableView.Columns())
         {

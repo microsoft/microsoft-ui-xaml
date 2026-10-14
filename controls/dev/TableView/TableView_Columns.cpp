@@ -408,7 +408,7 @@ void TableView::OnColumnWidthChanged(const winrt::TableViewColumn& column)
     QueueTerminalGridLineRefresh();
 }
 
-void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column)
+void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column, bool resetAutoWidth)
 {
     if (!column)
     {
@@ -425,7 +425,10 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
     // content width. Reset only this column's grow-only accumulator -- a global reset would shrink
     // unrelated Auto columns to only the currently-realized rows (the same reason OnColumnsVectorChanged
     // does not reset pre-existing columns).
-    winrt::get_self<TableViewColumn>(column)->ResetDesiredWidthInternal();
+    if (resetAutoWidth)
+    {
+        winrt::get_self<TableViewColumn>(column)->ResetDesiredWidthInternal();
+    }
     InvalidateMeasure();
 }
 
