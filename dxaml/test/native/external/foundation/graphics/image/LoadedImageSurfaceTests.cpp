@@ -223,9 +223,10 @@ void LoadedImageSurfaceTests::CreateFromUriWithSizeAndAtlasHint()
     RunOnUIThread([&]()
     {
         LOG_OUTPUT(L"Setting atlas hint");
-        xaml::Window^ xamlWindow = xaml::Window::Current;
-        xaml::IWindowPrivate^ windowPrivate = dynamic_cast<xaml::IWindowPrivate^>(xamlWindow);
-        windowPrivate->SetAtlasSizeHint(256, 256);
+        // Window::Current is null in WPF hosting, and atlas size hints are not supported for islands.
+        //xaml::Window^ xamlWindow = xaml::Window::Current;
+        //xaml::IWindowPrivate^ windowPrivate = dynamic_cast<xaml::IWindowPrivate^>(xamlWindow);
+        //windowPrivate->SetAtlasSizeHint(256, 256);
     });
 
     auto exitGuard = wil::scope_exit([&]
@@ -1446,7 +1447,12 @@ void LoadedImageSurfaceTests::LoadAfterDeviceLostOnStartup()
     const auto& wh = TestServices::WindowHelper;
     const auto& u = TestServices::Utilities;
 
-    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    WUCRenderingScopeGuard guard(
+        DCompRendering::WUCCompleteSynchronousCompTree,
+        true /* resizeWindow */,
+        true /* injectMockDComp */,
+        false /* resetDevice */,
+        false /* resetWindowContent */);
     wh->SetWindowSizeOverrideWithScale(wf::Size(400, 300), 2.0f);
 
     std::shared_ptr<LoadedImageSurfaceVerifier> verifier;
@@ -1488,6 +1494,9 @@ void LoadedImageSurfaceTests::LoadAfterDeviceLostOnStartup()
         wh->ResumeNewDispatchForTest();
     });
 
+    LOG_OUTPUT(L"> Processing device lost.");
+    wh->SynchronouslyTickUIThread(1);
+
     LOG_OUTPUT(L"> Adding LoadedImageSurface to tree.");
     verifier->PutToXamlTree();
 
@@ -1497,4 +1506,3 @@ void LoadedImageSurfaceTests::LoadAfterDeviceLostOnStartup()
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
 }
-

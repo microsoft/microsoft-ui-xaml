@@ -40,7 +40,7 @@ public:
 
     BEGIN_TEST_METHOD(UnderlineStyle)
         TEST_METHOD_PROPERTY(L"Description", L"Validates Hyperlink.UnderlineStyle property")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO 36060166: Re-enable after fixing unreliability.
     END_TEST_METHOD()
@@ -51,7 +51,7 @@ public:
 
     BEGIN_TEST_METHOD(ValidateHyperlinkWithLocalForeground)
         TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore") // TODO: 31563479 - Mouse input helper not reliable on WindowsCore, Santorini
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // [DCPP-test] WPF tests are failing with AnimationIdle timeout during test cleanup
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(FocusHyperLinkWithSIPShowing)
@@ -59,11 +59,11 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(HyperLinkBringIntoView)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Explicitly tests RootScrollViewer
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(HyperLinkBringIntoViewWithGamepad)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Explicitly tests RootScrollViewer
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateHyperlinkEnterKeyInput)
@@ -77,7 +77,7 @@ public:
 
     BEGIN_TEST_METHOD(ValidateNavigationOnKeyUp)
         TEST_METHOD_PROPERTY(L"Description", L"Verifies that Hyperlink processes a KeyUp to Navigate only after it sees a KeyDown on NavigationKey first")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateKeyDownBubbling)
@@ -87,7 +87,7 @@ public:
     BEGIN_TEST_METHOD(PointerOverHighContrast)
         TEST_METHOD_PROPERTY(L"Description", L"Validates Hyperlink pointer over color for high contrast theme")
         TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore") // TODO: 31563479 - Mouse input helper not reliable on WindowsCore, Santorini
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateDefaultSystemControlForegroundBrushes)
@@ -140,7 +140,7 @@ public:
         TEST_METHOD_PROPERTY(L"Description", L"Verifies that Hyperlink GotFocus event is fired on load.")
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
         TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         // Disabled on 25H2+: Window::Activated event doesn't fire when returning from Start menu
         // on ADO pipeline VMs. Screenshots confirm Start menu IS dismissed and app IS foreground,
         // but the Activated event never arrives, causing windowActivatedEvent->WaitForDefault() to
@@ -163,12 +163,12 @@ public:
 
     BEGIN_TEST_METHOD(UIAPeerLifetime)
         TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateTapAndClick)
         TEST_METHOD_PROPERTY(L"Description", L"Verifies that tapping and clicking on the Hyperlink work")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
 private:
