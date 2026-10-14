@@ -62,12 +62,6 @@ only when `TableViewSampleEnableVerificationLogs=true` is passed to MSBuild, and
 `--verify-groups` or `--verify-selection`. Normal public sample builds do not write log files next
 to the executable.
 
-The same build also has a context menu self-check. Launch with
-`--page=ContextMenus --verify-context-menus`: the page raises real mouse, keyboard (Shift+F10, Menu
-key) and UIA `ShowContextMenu` requests against cells, rows and headers, writes PASS/FAIL lines to
-`verification-context-menus.txt` next to the executable, then exits. It moves the real mouse pointer
-and pins the window on top while it runs, so leave the machine alone.
-
 ## Using TableView in your own app
 
 Reference `Microsoft.WindowsAppSDK.WinUI` and use the control. In `App.xaml`, merge
@@ -158,68 +152,6 @@ Menus are not stamped on realized cells; each menu inherits the requested row's
 item as its `DataContext` while open. A target invalidated while focus moves is
 not retargeted: custom display is suppressed. A body request with no applicable
 custom candidate still permits native fallback if focus invalidates its target.
-
-### Context menu diagnostics
-
-The **Context menu diagnostics** page (`ContextMenuDiagnostics`, under Power user)
-is a manual verification harness for the cases below. It is not a usage example
-and has no source snippet. Its table uses `PersonData.Many(300)` with **First
-name** (editable), **Office**, **Salary** and **Bio** columns.
-
-The scrollable diagnostic toolbar keeps the table usable in smaller windows.
-Right-click a **First name** cell and choose **Show first name value**; the result
-appears below the table. Its `CommandParameter` binds to `FirstName` on the menu
-item's inherited row `DataContext`. It changes no data, selection, or clipboard.
-A null data row has no value, so the action is disabled. There is no automatic
-cell-value API: bind to the row item.
-
-Status shows open counts, selection, the opened menu, and its inherited item.
-`fixtureIndex` identifies the opened menu's item in the original 300-row fixture
-(`-1` for headers, null items, or replacement data).
-`opens` counts menus made by this page, including inner/direct menus, but not the
-XAML-defined `APP-OWNED` menu or an editor's built-in context menu.
-Use **Reset** between independent cases. Reset restores ordinary data, headers,
-templates, LTR and menu candidates, and cancels pending focus mutation; it
-preserves the selection-mode checkbox and deliberately does not clear direct
-menus on existing elements. **Navigate away/back after direct-menu or
-nested-table cases** to create clean containers.
-
-| Case | Reproduction and expected result |
-|---|---|
-| B1 | Right-click First name, Escape, Shift+F10, Escape, Apps key: one CELL open per gesture, correct bound item. |
-| B2 | Select one row, right-click another: focus moves, selection does not. Repeat with SelectionMode.None. |
-| B3 | Invoke First name, then trailing blank space in the same row: ROW. Clear row menu: NATIVE. |
-| B4 | Scroll horizontally/vertically, invoke visible cells: the menu's item matches the target row. |
-| B5 | Office/Salary uses ROW. Clear row menu and invoke again: NATIVE. |
-| B9 | Right-click Bio text: APP-OWNED, no outer menu. A First name TextBox editor keeps native editing behavior; see limitation below. |
-| B10 | Right-click a different First name row, Escape, F2: editing starts on the context row/cell, not the previously selected row. |
-| B11 | Invoke First name on successive rows: CELL binding text changes to the requested item. |
-| H1 | First name/Office header pointer or focused-header Shift+F10/Apps: HEADER/OFFICE HEADER, null item. Salary header has no candidate: NATIVE. |
-| H3 | Direct header menu, invoke First name header: DIRECT HEADER. Recreate page afterwards. |
-| H4 | Start First name editing with F2, invoke Office header: OFFICE HEADER remains eligible. |
-| H5 | Blank header space or Group by Office then group header: NATIVE. |
-| H6 | Hide headers, invoke former header position: no stale header menu. Show headers, invoke First name: HEADER once. |
-| H7 | Repeat B1 and B5 after header cases: body behavior is unchanged. |
-| L4 | Focus Mutate on next focus and invoke it, then right-click First name without left-clicking: synchronous GettingFocus replaces items; zero opens for the configured stale request. GotFocus itself is deferred until after Focus returns and cannot exercise this synchronous gate. |
-| B5 + L4 | Reset, Clear row menu, focus Mutate on next focus and invoke it, then right-click Office: one NATIVE open, selection unchanged. Repeat after Reset and Null item row (wait for realizedNull=PASS), targeting the blank Office cell in row zero. The null row's First name cell remains configured and must still suppress with zero opens. |
-| L6 | Direct row menu gives DIRECT ROW. Nested table then right-click Inner body gives INNER, not the outer ROW; Clear inner menus gives native outer fallback. |
-| L7 | Retemplate three times; scroll past row 150 and back; invoke First name after each: one open each, current binding. |
-| L8 | Developer-only native debugger case: a same-owner nested request must suppress. This intentionally has no shipping probe/button. |
-| A1-A2 | Physical touch-hold and gamepad Menu on body/header: applicable menu once, selection unchanged. Require actual hardware; keyboard is not a substitute. |
-| A3 | RTL + frozen First name, horizontal scroll, invoke First name/body/header: inspect target and mirrored platform placement. |
-| A4 | Inspect an open menu with UIA/Narrator: CELL presenter and named CELL/current-item entries; only one popup. |
-| A5 | Escape from CELL, then F2: row focus returns and First name editing works. |
-| A7 | Plain flyout, invoke First name: PLAIN FLYOUT. |
-| A8 | Group by Office, invoke group header: NATIVE. |
-| Null-item regression | Null item row creates an actual null source item at row zero. Wait for realizedNull=PASS; right-click its blank First name/Office: CELL/ROW with a null item. Reset then reapply Null item row between cases. |
-
-These are reproducible diagnostics, not a claim that every hardware/accessibility
-case has passed. Known editing limitation: opening the built-in TextBox popup can
-cause existing focus-loss commit/teardown before the context-menu pipeline runs.
-That pre-existing editor behavior is separate from header eligibility while editing.
-The existing frozen-column layout explicitly disables pinning in RTL. The A3
-button exposes this limitation: First name can scroll out of view, so combined
-RTL/frozen/scroll coverage must not be reported as passed.
 
 ## More detail
 

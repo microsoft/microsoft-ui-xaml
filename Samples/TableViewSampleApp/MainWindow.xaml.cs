@@ -39,7 +39,6 @@ public sealed partial class MainWindow : Window
         ["Groups"] = typeof(GroupsPage),
         ["ToolTips"] = typeof(ToolTipsPage),
         ["ContextMenus"] = typeof(ContextMenusPage),
-        ["ContextMenuDiagnostics"] = typeof(ContextMenuDiagnosticsPage),
         ["HeadersVisibility"] = typeof(HeadersVisibilityPage),
         ["GridLinesVisibility"] = typeof(GridLinesVisibilityPage),
         ["Virtualization"] = typeof(VirtualizationPage),
