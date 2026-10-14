@@ -8,3 +8,7 @@ URL not found https://www.microsoft.com/store/p/windbg/9pgjgd53tn86 while parsin
 
 # The CLA site returns HTTP 403 to unauthenticated link-checker requests
 URL not found https://cla.microsoft.com while parsing contribution_workflow.md (HTTP 403)
+
+# GitHub sometimes returns HTTP 503 to the link checker for this valid roadmap page
+URL not found https://github.com/microsoft/WindowsAppSDK/blob/main/docs/roadmap.md while parsing contribution_handling.md (HTTP 503)
+URL not found https://github.com/microsoft/WindowsAppSDK/blob/main/docs/roadmap.md while parsing feature_proposal_process.md (HTTP 503)
