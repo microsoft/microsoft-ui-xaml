@@ -58,7 +58,7 @@
                 <Visual Tag="PrependVisual">
                   <Visual Tag="PrimaryVisual" SizeX="108.7" SizeY="32">
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="161" SizeY="26" BorderMode="Hard" ScaleX="0.6667" ScaleY="0.6667" OffsetX="0.6667" OffsetY="8.5" OffsetZ="0">
+                      <wucSpriteVisual SizeX="163" SizeY="28" BorderMode="Hard" ScaleX="0.6667" ScaleY="0.6667" OffsetX="0" OffsetY="7.833" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />

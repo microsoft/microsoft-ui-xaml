@@ -49,11 +49,13 @@ public:
     winrt::TableViewSource Filter(winrt::TableViewPredicate const& predicate);
     winrt::TableViewSource GroupBy(winrt::TableViewKeySelector const& key);
     winrt::TableViewSource GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewIdentitySelector const& groupIdentitySelector);
+    winrt::TableViewSource ParentBy(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector);
     winrt::TableViewSource Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction);
     winrt::TableViewSource Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     winrt::TableViewSource SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     winrt::TableViewSource ClearFilter();
     winrt::TableViewSource ClearGroupBy();
+    winrt::TableViewSource ClearParentBy();
     winrt::TableViewSource ClearSort();
     winrt::TableViewSource ClearSort(winrt::hstring const& sortAxisToken);
     // Internal, for the owning control: make sortAxisToken the ONLY sort axis, dropping any the
@@ -77,6 +79,9 @@ public:
     // own path-based axis, and so re-sorting one path replaces it instead of stacking.
     static winrt::hstring SortAxisTokenForPath(winrt::hstring const& sortMemberPath);
 
+    bool IsLiveShaping() const;
+    void IsLiveShaping(bool value);
+
     // UI-thread affine after construction/binding: shaping verbs and projection mutation must
     // run on the owning UI thread. Only source change notifications are marshaled back here.
     winrt::ItemsSourceView GetItemsSourceView();
@@ -87,6 +92,9 @@ public:
     // this to decide how to interpret a row DataContext, so reporting intent here would make them
     // read a flat item as a GroupedEntry.
     bool IsGrouped() const;
+    // True when `item` (by object identity) is in the shaped, filtered rows, regardless of group or
+    // node expansion. Header rows never match.
+    bool ContainsShapedItem(winrt::IInspectable const& item) const;
 
     // Internal: the owning TableView caches the projection (ItemsSourceView, row metadata and
     // grouped-ness) when it binds, so it must be told when a shaping verb swaps that projection
@@ -104,6 +112,13 @@ public:
     // Raised when a shaping verb rewrote the projection. `reorderOnly` is true when membership is
     // unchanged and only the order moved.
     void SetShapingChangedHandler(std::function<void(bool)> handler) { m_shapingChanged = std::move(handler); }
+    // The owner holds live restores while its cell editor is open and resumes them when it
+    // closes (see ShapedItemsSource::SetLiveShapingHold).
+    void SetLiveShapingHold(std::function<bool()> isHeld);
+    void ResumeHeldLiveShaping();
+    // Lets the owner refresh a custom comparer's ranks as items change (see
+    // ShapedItemsSource::SetLiveItemChangedHook).
+    void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook);
 
 private:
     winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
