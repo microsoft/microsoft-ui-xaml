@@ -301,6 +301,7 @@ public:
         // For testing - normally we can get the visual out of the Composition island, but for tests this returns a
         // real visual when we want the mock. So track the root visual separately.
         wrl::ComPtr<ixp::IVisual> m_islandRootVisual;
+        wrl::ComPtr<ixp::IVisual> m_disconnectedRootVisual;
     };
 
     using XamlIslandRenderDataMap = containers::vector_map<CXamlIslandRoot*, XamlIslandRenderData>;

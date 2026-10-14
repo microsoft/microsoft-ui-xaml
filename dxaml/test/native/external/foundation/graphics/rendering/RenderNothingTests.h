@@ -26,12 +26,7 @@ public:
     TEST_METHOD_CLEANUP(TestCleanup)
 
     BEGIN_TEST_METHOD(RenderNoContent)
-        // This test sets WindowHelper->WindowContent to null. With the WPFTestWindow, setting the content to null will
-        // call Close on the underlying DesktopWindowXamlSource, which will call Close on the DesktopWindowBridge,
-        // which destroys its internal hwnd. All this happens before Xaml renders its first frame, so when Xaml ticks
-        // again and initializes DManip, it will try to reuse the destroyed hwnd and hit an error. Limit this test to
-        // UWP only.
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(RenderNoVisualTree)

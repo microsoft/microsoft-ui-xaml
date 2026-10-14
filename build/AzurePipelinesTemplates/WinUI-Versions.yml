@@ -1,0 +1,7 @@
+# Standalone WinUI version constants (replaces WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig). The mono-build supplies versions from the monorepo instead.
+variables:
+  MajorVersion: 2
+  MinorVersion: 0
+  PatchVersion: 0
+  # VersionTag: "experimental" (main/experimental), "preview", or "" (stable). Appended to NuGet + MSIX versions.
+  VersionTag: "experimental"
