@@ -3,7 +3,6 @@
 
 using Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 using MUXControlsTestApp.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -11,7 +10,6 @@ using Windows.Foundation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
-using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.UI.Xaml.Media;
 using Common;
@@ -19,7 +17,6 @@ using Common;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
-using System.Xml.Linq;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
