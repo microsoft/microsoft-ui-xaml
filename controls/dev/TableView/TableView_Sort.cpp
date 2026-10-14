@@ -160,7 +160,7 @@ bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDi
 }
 
 bool TableView::SortByColumnInternal(
-    const winrt::TableViewColumn& column, winrt::SortDirection direction, bool reportTelemetry)
+    const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip)
 {
     if (!CanSortColumn(column))
     {
@@ -189,9 +189,9 @@ bool TableView::SortByColumnInternal(
     {
         if (m_editState == EditState::Ending && !m_isApplyingCoalescedEditReshape)
         {
-            QueueCoalescedEditReshape([this, column, direction, reportTelemetry]()
+            QueueCoalescedEditReshape([this, column, direction, measureTip]()
             {
-                SortByColumnInternal(column, direction, reportTelemetry);
+                SortByColumnInternal(column, direction, measureTip);
             });
         }
         return false;
@@ -212,7 +212,7 @@ bool TableView::SortByColumnInternal(
     }
 
     ApplySingleColumnSortState(column, direction);
-    RecomputeSortDPsAndRaiseInternal(column, reportTelemetry);
+    RecomputeSortDPsAndRaiseInternal(column, measureTip);
     DrainCoalescedEditReshape();
     return true;
 }
@@ -299,7 +299,7 @@ bool TableView::ClearSort()
     return ClearSortInternal(true);
 }
 
-bool TableView::ClearSortInternal(bool reportTelemetry)
+bool TableView::ClearSortInternal(bool measureTip)
 {
     if (m_sortedColumns.empty())
     {
@@ -310,9 +310,9 @@ bool TableView::ClearSortInternal(bool reportTelemetry)
     {
         if (m_editState == EditState::Ending && !m_isApplyingCoalescedEditReshape)
         {
-            QueueCoalescedEditReshape([this, reportTelemetry]()
+            QueueCoalescedEditReshape([this, measureTip]()
             {
-                ClearSortInternal(reportTelemetry);
+                ClearSortInternal(measureTip);
             });
         }
         return false;
@@ -342,7 +342,7 @@ bool TableView::ClearSortInternal(bool reportTelemetry)
     m_sortedColumns.clear();
 
     // Null trigger: Sorted fires with Column=null to signal a full clear.
-    RecomputeSortDPsAndRaiseInternal(nullptr, reportTelemetry);
+    RecomputeSortDPsAndRaiseInternal(nullptr, measureTip);
     DrainCoalescedEditReshape();
     return true;
 }
@@ -447,7 +447,7 @@ winrt::TableViewKeySelector TableView::GetTableViewSourceSortKeySelector(
 bool TableView::SyncTableViewSourceSort(
     const winrt::TableViewColumn& trigger,
     winrt::SortDirection direction,
-    uint64_t telemetryGeneration)
+    uint64_t tipGeneration)
 {
     auto tableViewSource = ShapingSourceInternal();
     if (!tableViewSource)
@@ -511,7 +511,7 @@ bool TableView::SyncTableViewSourceSort(
         else
         {
             // Projected dispatch - see the note in HasResolvedSortMemberPath.
-            ApplicationCalloutTelemetry callout{ *this, TableViewTelemetry::Stage::Sort, TableViewTelemetry::AppFaultKind::Callback };
+            AppCalloutTip callout{ *this, TableViewTip::Stage::Sort, TableViewTip::AppFaultKind::Callback };
             winrt::hstring sortMemberPath;
             try { sortMemberPath = trigger.GetSortMemberPathCore(); }
             catch (...) { callout.Fault(winrt::to_hresult()); throw; }
@@ -547,7 +547,7 @@ bool TableView::SyncTableViewSourceSort(
     // The control is the last writer here, so its axis becomes the only one. Without this an
     // app-declared fluent Sort axis would survive alongside it and, being declared earlier, would
     // outrank it as the primary sort while the chevron advertised this column.
-    auto const reconcileGuard = BeginControlInitiatedSortScope(telemetryGeneration);
+    auto const reconcileGuard = BeginControlInitiatedSortScope(tipGeneration);
     if (direction == winrt::SortDirection::None)
     {
         // A control-initiated clear means "nothing is sorted", so it clears EVERY axis, not just
@@ -640,7 +640,7 @@ int32_t TableView::FindEntryIndexForDataItem(const winrt::IInspectable& item) co
 }
 
 void TableView::RecomputeSortDPsAndRaiseInternal(
-    const winrt::TableViewColumn& trigger, bool reportTelemetry)
+    const winrt::TableViewColumn& trigger, bool measureTip)
 {
     // Stale-deferred-clear guard. A null trigger means "clear", and every legitimate null-trigger
     // caller - ClearSort, SortByColumn(col, None), ToggleSortDirection cycling to None - clears
@@ -654,26 +654,26 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         return;
     }
 
-    const auto invalidatedSort = !reportTelemetry && m_telemetry.operation == TableViewTelemetry::Operation::Sort
-        ? m_telemetry.operationGeneration : 0;
-    auto const telemetryGeneration = BeginOperationTelemetry(TableViewTelemetry::Operation::Sort, reportTelemetry);
+    const auto invalidatedSort = !measureTip && m_tip.operation == TableViewTip::Operation::Sort
+        ? m_tip.operationGeneration : 0;
+    auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::Sort, measureTip);
     m_controlSortPublishedGeneration = 0;
     bool completed = false;
-    auto telemetryCompletion = wil::scope_exit([this, telemetryGeneration, reportTelemetry, &completed]() noexcept
+    auto tipCompletion = wil::scope_exit([this, tipGeneration, measureTip, &completed]() noexcept
     {
-        if (reportTelemetry && !completed)
+        if (measureTip && !completed)
         {
-            IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::Sort, telemetryGeneration, TableViewTelemetry::Stage::Sort);
+            IgnoreUnattributedTipOperation(TableViewTip::Operation::Sort, tipGeneration, TableViewTip::Stage::Sort);
         }
-        else if (reportTelemetry && m_controlSortPublishedGeneration == telemetryGeneration)
+        else if (measureTip && m_controlSortPublishedGeneration == tipGeneration)
         {
-            CompleteOperationTelemetry(telemetryGeneration);
+            CompleteTipOperation(tipGeneration);
         }
-        else if (reportTelemetry)
+        else if (measureTip)
         {
-            TableViewTelemetry::IgnoreOperation(m_telemetry, telemetryGeneration, TableViewTelemetry::IgnoreReason::DeferredOrUnproven);
+            TableViewTip::IgnoreOperation(m_tip, tipGeneration, TableViewTip::IgnoreReason::DeferredOrUnproven);
         }
-        EndOperationTelemetry();
+        EndTipOperation();
     });
 
     // Reshapes through whichever source is active. A cancelled Sorting never reaches this point,
@@ -683,14 +683,14 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     // Selection is index-based, and a re-sort moves every index. Capture the item, then re-find it
     // afterwards so the selection follows the row rather than the slot.
     const auto preservedSelection = SelectedItemInternal();
-    const bool reshaped = SyncTableViewSourceSort(trigger, requestedDirection, telemetryGeneration);
+    const bool reshaped = SyncTableViewSourceSort(trigger, requestedDirection, tipGeneration);
     if (reshaped && invalidatedSort)
     {
-        TableViewTelemetry::IgnoreOperation(m_telemetry, invalidatedSort, TableViewTelemetry::IgnoreReason::Stale);
+        TableViewTip::IgnoreOperation(m_tip, invalidatedSort, TableViewTip::IgnoreReason::Stale);
     }
-    if (!reshaped && telemetryGeneration == m_telemetry.operationGeneration)
+    if (!reshaped && tipGeneration == m_tip.operationGeneration)
     {
-        TableViewTelemetry::IgnoreOperation(m_telemetry, telemetryGeneration, TableViewTelemetry::IgnoreReason::Stale);
+        TableViewTip::IgnoreOperation(m_tip, tipGeneration, TableViewTip::IgnoreReason::Stale);
     }
 
     if (reshaped && preservedSelection)
@@ -704,7 +704,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     {
         const auto appliedDirection = trigger ? trigger.SortDirection() : winrt::SortDirection::None;
         auto args = winrt::make_self<TableViewSortedEventArgs>(trigger, appliedDirection);
-        ApplicationCalloutTelemetry callout{ *this, TableViewTelemetry::Stage::Sort, TableViewTelemetry::AppFaultKind::Callback };
+        AppCalloutTip callout{ *this, TableViewTip::Stage::Sort, TableViewTip::AppFaultKind::Callback };
         try
         {
             m_sortedEventSource(*this, *args);

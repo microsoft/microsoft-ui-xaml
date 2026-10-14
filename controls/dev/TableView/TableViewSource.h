@@ -10,7 +10,7 @@
 
 #include "TableViewSource.g.h"
 #include "TableViewRowInfo.h"
-#include "TableViewTelemetry.h"
+#include "TableViewTip.h"
 
 class ShapedItemsSource;
 
@@ -113,12 +113,12 @@ public:
     // Raised when a shaping verb rewrote the projection. `reorderOnly` is true when membership is
     // unchanged and only the order moved.
     void SetShapingChangedHandler(std::function<void(bool)> handler) { m_shapingChanged = std::move(handler); }
-    using ShapingOperationCompleted = std::function<void(TableViewTelemetry::Operation, uint64_t,
-        std::optional<TableViewTelemetry::IgnoreReason>, std::optional<HRESULT>, TableViewTelemetry::AppFaultKind)>;
-    void SetShapingOperationHandlers(
+    using ShapingTipCompleted = std::function<void(TableViewTip::Operation, uint64_t,
+        std::optional<TableViewTip::IgnoreReason>, std::optional<HRESULT>, TableViewTip::AppFaultKind)>;
+    void SetShapingTipHandlers(
         winrt::IInspectable const& owner,
-        std::function<uint64_t(TableViewTelemetry::Operation, bool)> begin,
-        ShapingOperationCompleted complete);
+        std::function<uint64_t(TableViewTip::Operation, bool)> begin,
+        ShapingTipCompleted complete);
     // The owner holds live restores while its cell editor is open and resumes them when it
     // closes (see ShapedItemsSource::SetLiveShapingHold).
     void SetLiveShapingHold(std::function<bool()> isHeld);
@@ -128,11 +128,11 @@ public:
     void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook);
 
 private:
-    struct ShapingOperation;
-    struct ShapingTelemetryHandlers
+    struct ShapingTip;
+    struct ShapingTipHandlers
     {
-        std::function<uint64_t(TableViewTelemetry::Operation, bool)> begin;
-        ShapingOperationCompleted complete;
+        std::function<uint64_t(TableViewTip::Operation, bool)> begin;
+        ShapingTipCompleted complete;
     };
     winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     // Re-derives everything this class caches from the shape the engine just produced.
@@ -154,8 +154,8 @@ private:
     // source that has been swapped out cannot drive its former owner.
     std::function<void()> m_projectionChanged{};
     std::function<void(bool)> m_shapingChanged{};
-    std::shared_ptr<ShapingTelemetryHandlers> m_shapingTelemetryHandlers;
-    ShapingOperation* m_shapingOperation{};
+    std::shared_ptr<ShapingTipHandlers> m_shapingTipHandlers;
+    ShapingTip* m_shapingTip{};
     uint64_t m_ownerGeneration{};
     uint32_t m_notificationDepth{};
     bool m_hasFilter{};

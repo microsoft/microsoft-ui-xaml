@@ -211,7 +211,7 @@ void TableView::SetCurrentCell(winrt::IInspectable const& item, winrt::TableView
     UpdateCurrentColumn(column);
 }
 
-bool TableView::RaiseBeginningEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column, ActionTelemetry& telemetry)
+bool TableView::RaiseBeginningEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column, ActionTip& tip)
 {
     if (!m_beginningEditEventSource)
     {
@@ -224,7 +224,7 @@ bool TableView::RaiseBeginningEdit(winrt::IInspectable const& item, winrt::Table
     }
     catch (...)
     {
-        telemetry.ApplicationFault(TableViewTelemetry::AppFaultKind::Callback, winrt::to_hresult());
+        tip.ApplicationFault(TableViewTip::AppFaultKind::Callback, winrt::to_hresult());
         LogConsumerHandlerThrow(L"BeginningEdit");
     }
     return !args->Cancel();
@@ -234,7 +234,7 @@ TableView::EditEndingResult TableView::RaiseEditEnding(
     EditingUnit unit,
     winrt::TableViewEditAction action,
     bool honorCancel,
-    ActionTelemetry* telemetry)
+    ActionTip* tip)
 {
     const auto item = m_currentEditItem.get();
     const auto column = m_currentEditColumn.get();
@@ -246,16 +246,16 @@ TableView::EditEndingResult TableView::RaiseEditEnding(
     {
         auto cellArgs = winrt::make_self<TableViewCellEditEndingEventArgs>(item, column, action);
         auto const self = get_strong();
-        const auto lifetime = m_telemetryLifetimeGeneration;
+        const auto lifetime = m_tipLifetimeGeneration;
         PostEditNotification([self, cellArgs, lifetime, deferred = m_insideLayoutPass,
             operation = action == winrt::TableViewEditAction::Commit ?
-                TableViewTelemetry::Operation::CommitEdit : TableViewTelemetry::Operation::CancelEdit,
-            telemetry = m_insideLayoutPass ? nullptr : telemetry]()
+                TableViewTip::Operation::CommitEdit : TableViewTip::Operation::CancelEdit,
+            tip = m_insideLayoutPass ? nullptr : tip]()
         {
-            std::optional<ApplicationCalloutTelemetry> callout;
+            std::optional<AppCalloutTip> callout;
             if (!deferred)
             {
-                callout.emplace(*self, TableViewTelemetry::Stage::Editing, TableViewTelemetry::AppFaultKind::Callback);
+                callout.emplace(*self, TableViewTip::Stage::Editing, TableViewTip::AppFaultKind::Callback);
             }
             try
             {
@@ -263,13 +263,13 @@ TableView::EditEndingResult TableView::RaiseEditEnding(
             }
             catch (...)
             {
-                if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Callback, winrt::to_hresult()); }
+                if (tip) { tip->ApplicationFault(TableViewTip::AppFaultKind::Callback, winrt::to_hresult()); }
                 else if (callout) { callout->Fault(winrt::to_hresult()); }
-                else if (lifetime == self->m_telemetryLifetimeGeneration)
+                else if (lifetime == self->m_tipLifetimeGeneration)
                 {
-                    TableViewTelemetry::ReportError(self->m_telemetry, operation,
-                        TableViewTelemetry::Stage::Editing, true, TableViewTelemetry::Attribution::Application,
-                        winrt::to_hresult(), TableViewTelemetry::AppFaultKind::Callback);
+                    TableViewTelemetry::ReportError(self->m_telemetrySession, 0, operation,
+                        TableViewTip::Stage::Editing, true, TableViewTip::Attribution::Application,
+                        winrt::to_hresult(), TableViewTip::AppFaultKind::Callback);
                 }
                 LogConsumerHandlerThrow(L"CellEditEnding");
             }
@@ -509,7 +509,7 @@ winrt::FrameworkElement TableView::CurrentEditingElement() const
     return nullptr;
 }
 
-void TableView::EndEditVisual(winrt::TableViewEditAction action, ActionTelemetry* telemetry)
+void TableView::EndEditVisual(winrt::TableViewEditAction action, ActionTip* tip)
 {
     if (auto row = m_currentEditRow.get())
     {
@@ -524,11 +524,11 @@ void TableView::EndEditVisual(winrt::TableViewEditAction action, ActionTelemetry
         {
             std::optional<HRESULT> displayFailure;
             bool applicationFault = false;
-            winrt::get_self<TableViewRow>(row)->EndCellEdit(action, telemetry ? &displayFailure : nullptr, &applicationFault);
-            if (displayFailure && telemetry)
+            winrt::get_self<TableViewRow>(row)->EndCellEdit(action, tip ? &displayFailure : nullptr, &applicationFault);
+            if (displayFailure && tip)
             {
-                if (applicationFault) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Factory, *displayFailure); }
-                else { telemetry->Fail(*displayFailure); }
+                if (applicationFault) { tip->ApplicationFault(TableViewTip::AppFaultKind::Factory, *displayFailure); }
+                else { tip->Fail(*displayFailure); }
             }
         }
     }
@@ -602,7 +602,7 @@ void TableView::PostEditNotification(std::function<void()> notify)
 bool TableView::HasBlockingValidationErrors(
     winrt::IInspectable const& item,
     winrt::TableViewColumn const& column,
-    ActionTelemetry* telemetry)
+    ActionTip* tip)
 {
     if (!item)
     {
@@ -619,8 +619,8 @@ bool TableView::HasBlockingValidationErrors(
     // unrelated, pre-existing error on a different property block this cell permanently -
     // the user could never leave the edit.
     const auto editingPath = column ? ResolveEditingPropertyPath(column) : winrt::hstring{};
-    ApplicationCalloutTelemetry callout{ *this, TableViewTelemetry::Stage::Editing,
-        TableViewTelemetry::AppFaultKind::Validation };
+    AppCalloutTip callout{ *this, TableViewTip::Stage::Editing,
+        TableViewTip::AppFaultKind::Validation };
 
     if (!editingPath.empty())
     {
@@ -643,7 +643,7 @@ bool TableView::HasBlockingValidationErrors(
         }
         catch (...)
         {
-            if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Validation, winrt::to_hresult()); }
+            if (tip) { tip->ApplicationFault(TableViewTip::AppFaultKind::Validation, winrt::to_hresult()); }
             else { callout.Fault(winrt::to_hresult()); }
             return false;
         }
@@ -655,13 +655,13 @@ bool TableView::HasBlockingValidationErrors(
     }
     catch (...)
     {
-        if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Validation, winrt::to_hresult()); }
+        if (tip) { tip->ApplicationFault(TableViewTip::AppFaultKind::Validation, winrt::to_hresult()); }
         else { callout.Fault(winrt::to_hresult()); }
         return false;
     }
 }
 
-bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel, ActionTelemetry* telemetry)
+bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel, ActionTip* tip)
 {
     const auto item = m_currentEditItem.get();
     const auto column = m_currentEditColumn.get();
@@ -684,7 +684,7 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
             }
             catch (...)
             {
-                if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Write, winrt::to_hresult()); }
+                if (tip) { tip->ApplicationFault(TableViewTip::AppFaultKind::Write, winrt::to_hresult()); }
                 LogConsumerHandlerThrow(L"CommitCellEdit");
                 wrote = false;
             }
@@ -692,10 +692,10 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
 
         if (!wrote)
         {
-            if (telemetry)
+            if (tip)
             {
-                if (column && editingElement) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Write); }
-                else { telemetry->Ignore(TableViewTelemetry::IgnoreReason::Stale); }
+                if (column && editingElement) { tip->ApplicationFault(TableViewTip::AppFaultKind::Write); }
+                else { tip->Ignore(TableViewTip::IgnoreReason::Stale); }
             }
             // Nothing reached the item - a setter threw, or no writable binding could be resolved.
             // Reporting success here is silent data loss, so the edit stays open instead.
@@ -713,9 +713,9 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
 
         // Validate AFTER the write - the pending value lives in the editor until the column
         // commits, so validating before it would only ever re-check the pre-edit value.
-        if (honorCancel && HasBlockingValidationErrors(item, column, telemetry))
+        if (honorCancel && HasBlockingValidationErrors(item, column, tip))
         {
-            if (telemetry) { telemetry->Ignore(TableViewTelemetry::IgnoreReason::ValidationRejected); }
+            if (tip) { tip->Ignore(TableViewTip::IgnoreReason::ValidationRejected); }
             if (column && editingElement)
             {
                 // Undo the write. CancelCellEdit restores the EDITOR, and because the editing
@@ -723,13 +723,13 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
                 // value to push the pre-edit value back to the source. Without this second write
                 // the item keeps the value the control just rejected, and the user's typed text is
                 // replaced in the editor as well: invalid data on the item, nothing on screen.
-                ApplicationCalloutTelemetry callout{ *this, TableViewTelemetry::Stage::Editing, TableViewTelemetry::AppFaultKind::Write };
+                AppCalloutTip callout{ *this, TableViewTip::Stage::Editing, TableViewTip::AppFaultKind::Write };
                 try
                 {
                     winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, m_editUneditedValue.get());
                     if (!winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement))
                     {
-                        if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Write); }
+                        if (tip) { tip->ApplicationFault(TableViewTip::AppFaultKind::Write); }
                         TVDiag::LogRetailF(
                             L"[TableView] A rejected value could not be rolled back; the item still holds it.");
                     }
@@ -764,12 +764,12 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
                     winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, m_editUneditedValue.get());
                     if (!winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement))
                     {
-                        if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Write); }
+                        if (tip) { tip->ApplicationFault(TableViewTip::AppFaultKind::Write); }
                     }
                 }
                 catch (...)
                 {
-                    if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Write, winrt::to_hresult()); }
+                    if (tip) { tip->ApplicationFault(TableViewTip::AppFaultKind::Write, winrt::to_hresult()); }
                     LogConsumerHandlerThrow(L"CancelCellEdit");
                 }
 
@@ -778,7 +778,7 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
         }
     }
 
-    EndEditVisual(action, telemetry);
+    EndEditVisual(action, tip);
     m_editUneditedValue.set(nullptr);
 
     m_currentEditItem.set(nullptr);
@@ -786,17 +786,17 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
     return true;
 }
 
-bool TableView::CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel, bool vetoed, ActionTelemetry* telemetry)
+bool TableView::CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel, bool vetoed, ActionTip* tip)
 {
     if (m_editState != EditState::Ending)
     {
-        if (telemetry) { telemetry->Ignore(TableViewTelemetry::IgnoreReason::Stale); }
+        if (tip) { tip->Ignore(TableViewTip::IgnoreReason::Stale); }
         return false;
     }
 
     if (vetoed)
     {
-        if (telemetry) { telemetry->Ignore(TableViewTelemetry::IgnoreReason::Vetoed); }
+        if (tip) { tip->Ignore(TableViewTip::IgnoreReason::Vetoed); }
         // Ending -> Editing: a handler kept the edit open.
         m_editState = EditState::Editing;
         ClearCoalescedEditReshape();
@@ -805,7 +805,7 @@ bool TableView::CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction act
 
     auto const generation = m_editGeneration;
 
-    const bool closed = FinishEditTeardown(unit, action, honorCancel, telemetry);
+    const bool closed = FinishEditTeardown(unit, action, honorCancel, tip);
 
     // A rollback write inside FinishEditTeardown raises PropertyChanged, which can re-enter layout
     // and drive a forced teardown (row rebuild / recycle) underneath this frame. That teardown has
@@ -813,7 +813,7 @@ bool TableView::CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction act
     // would leave the control reporting IsEditing with no editor.
     if (m_editGeneration != generation)
     {
-        if (telemetry) { telemetry->Ignore(TableViewTelemetry::IgnoreReason::Superseded); }
+        if (tip) { tip->Ignore(TableViewTip::IgnoreReason::Superseded); }
         return false;
     }
 
@@ -864,17 +864,17 @@ bool TableView::EndCurrentEdit(EditingUnit unit, winrt::TableViewEditAction acti
         return false;
     }
 
-    ActionTelemetry telemetry{ *this,
-        action == winrt::TableViewEditAction::Commit ? TableViewTelemetry::Operation::CommitEdit : TableViewTelemetry::Operation::CancelEdit,
-        TableViewTelemetry::Stage::Editing, honorCancel };
+    ActionTip tip{ *this,
+        action == winrt::TableViewEditAction::Commit ? TableViewTip::Operation::CommitEdit : TableViewTip::Operation::CancelEdit,
+        TableViewTip::Stage::Editing, honorCancel };
     const auto generation = m_editGeneration;
     m_editState = EditState::Ending;
 
-    const auto result = RaiseEditEnding(unit, action, honorCancel, honorCancel ? &telemetry : nullptr);
+    const auto result = RaiseEditEnding(unit, action, honorCancel, honorCancel ? &tip : nullptr);
 
-    const bool closed = CompleteEditEnd(unit, action, honorCancel, result == EditEndingResult::Vetoed, honorCancel ? &telemetry : nullptr);
-    if (closed && m_editGeneration == generation) { telemetry.Complete(); }
-    else if (m_editGeneration != generation) { telemetry.Ignore(TableViewTelemetry::IgnoreReason::Superseded); }
+    const bool closed = CompleteEditEnd(unit, action, honorCancel, result == EditEndingResult::Vetoed, honorCancel ? &tip : nullptr);
+    if (closed && m_editGeneration == generation) { tip.Complete(); }
+    else if (m_editGeneration != generation) { tip.Ignore(TableViewTip::IgnoreReason::Superseded); }
     return closed;
 }
 
@@ -913,7 +913,7 @@ bool TableView::TerminateEditForReset(bool force, bool sourceReplaced)
         {
             if (auto const editingElement = CurrentEditingElement())
             {
-                ApplicationCalloutTelemetry callout{ *this, TableViewTelemetry::Stage::Editing, TableViewTelemetry::AppFaultKind::Write };
+                AppCalloutTip callout{ *this, TableViewTip::Stage::Editing, TableViewTip::AppFaultKind::Write };
                 try
                 {
                     wrote = winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement);
@@ -1070,7 +1070,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         }
     }
 
-    ActionTelemetry telemetry{ *this, TableViewTelemetry::Operation::BeginEdit, TableViewTelemetry::Stage::Editing };
+    ActionTip tip{ *this, TableViewTip::Operation::BeginEdit, TableViewTip::Stage::Editing };
     const auto generation = m_editGeneration;
     m_currentEditItem.set(item);
     m_currentEditColumn.set(column);
@@ -1083,11 +1083,11 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
     // collection and have ItemsRepeater recycle the row underneath us. A forced teardown cannot
     // close an edit that is still Beginning, so OnRowElementClearing raises this flag instead and
     // the checks below unwind rather than promoting to Editing over a recycled row.
-    const bool allowed = RaiseBeginningEdit(item, column, telemetry);
+    const bool allowed = RaiseBeginningEdit(item, column, tip);
     if (!allowed || m_abandonPendingBeginEdit || !TryBeginEditVisual(item, column))
     {
-        telemetry.Ignore(!allowed ? TableViewTelemetry::IgnoreReason::Vetoed :
-            m_abandonPendingBeginEdit ? TableViewTelemetry::IgnoreReason::Stale : TableViewTelemetry::IgnoreReason::Cancelled);
+        tip.Ignore(!allowed ? TableViewTip::IgnoreReason::Vetoed :
+            m_abandonPendingBeginEdit ? TableViewTip::IgnoreReason::Stale : TableViewTip::IgnoreReason::Cancelled);
         // Beginning -> None. Do not leave stale trackers behind, and reset the state before
         // draining so a queued reshape can itself start an edit.
         //
@@ -1115,7 +1115,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
             }
             catch (...)
             {
-                telemetry.ApplicationFault(TableViewTelemetry::AppFaultKind::Factory, winrt::to_hresult());
+                tip.ApplicationFault(TableViewTip::AppFaultKind::Factory, winrt::to_hresult());
                 LogConsumerHandlerThrow(L"PrepareCellForEdit");
             }
         }
@@ -1126,7 +1126,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
     // recycled row is what lets a later commit write into a different item.
     if (m_abandonPendingBeginEdit || !m_currentEditRow.get())
     {
-        telemetry.Ignore(TableViewTelemetry::IgnoreReason::Stale);
+        tip.Ignore(TableViewTip::IgnoreReason::Stale);
         m_abandonPendingBeginEdit = false;
         m_currentEditItem.set(nullptr);
         m_currentEditColumn.set(nullptr);
@@ -1142,11 +1142,11 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
     if (m_editGeneration == generation && m_editState == EditState::Editing &&
         m_currentEditColumn.get() == column && SameInspectableIdentity(m_currentEditItem.get(), item))
     {
-        telemetry.Complete();
+        tip.Complete();
     }
     else
     {
-        telemetry.Ignore(TableViewTelemetry::IgnoreReason::Superseded);
+        tip.Ignore(TableViewTip::IgnoreReason::Superseded);
     }
     return true;
 }

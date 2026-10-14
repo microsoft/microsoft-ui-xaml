@@ -33,24 +33,9 @@ namespace TableViewTelemetry
             return TraceLoggingProviderEnabled(g_hTelemetryProvider, WINEVENT_LEVEL_INFO, measuresKeyword) != FALSE;
         }
 
-        const char* GetIgnoreName(IgnoreReason reason) noexcept
+        bool IsCurrent(Session const& session, uint64_t startedIn) noexcept
         {
-            switch (reason)
-            {
-            case IgnoreReason::Cancelled: return "cancelled";
-            case IgnoreReason::Vetoed: return "vetoed";
-            case IgnoreReason::ValidationRejected: return "validation_rejected";
-            case IgnoreReason::Superseded: return "superseded";
-            case IgnoreReason::Unloaded: return "unloaded";
-            case IgnoreReason::Retemplated: return "retemplated";
-            case IgnoreReason::Stale: return "stale";
-            case IgnoreReason::DeferredOrUnproven: return "deferred_or_unproven";
-            case IgnoreReason::ApplicationFault: return "application_fault";
-            case IgnoreReason::UnattributedFault: return "unattributed_fault";
-            default:
-                OutputDebugStringW(L"TableView telemetry: invalid ignore reason.\n");
-                return nullptr;
-            }
+            return session.active && startedIn == session.generation;
         }
 
         void Increment(Session& session, uint32_t& count, uint32_t bit) noexcept
@@ -58,92 +43,23 @@ namespace TableViewTelemetry
             if (count == (std::numeric_limits<uint32_t>::max)()) { session.overflowMask |= uint32_t{ 1 } << bit; }
             else { ++count; }
         }
-
-        bool OwnsSession(OperationState const& state) noexcept
-        {
-            auto const& session = state.usageOwner.session;
-            return session.active && state.operationSessionGeneration == session.generation;
-        }
-
-        void RecordOutcome(OperationState& state, Result result, std::optional<IgnoreReason> reason = {}) noexcept
-        {
-            auto& session = state.usageOwner.session;
-            if (!OwnsSession(state) || !IsMeasuredOperation(state.operation)) { return; }
-            if (result == Result::Success)
-            {
-                auto const operation = static_cast<uint32_t>(state.operation);
-                Increment(session, session.counts[operation], operation);
-            }
-            else if (reason == IgnoreReason::DeferredOrUnproven) { Increment(session, session.deferredCount, 14); }
-            else if (reason == IgnoreReason::UnattributedFault) { Increment(session, session.unattributedFaultCount, 15); }
-        }
-
-        template<class Test>
-        void CompleteTip(Test& test, Result result, std::optional<HRESULT> error) noexcept
-        {
-            if (result == Result::Success)
-            {
-                test.set_flag(TIP_reason(TableViewTipReason::scenario_completed));
-            }
-            else
-            {
-                {
-                    auto data = test.data();
-                    data->failureHResultAvailable = error.has_value();
-                    data->failureHResult = error.value_or(S_OK);
-                }
-                test.set_flag(TIP_reason(TableViewTipReason::internal_failure));
-            }
-            test.complete();
-            test.reset();
-        }
-
-        void StopOperation(OperationState& state) noexcept
-        {
-            if (state.operationPending) { state.operationHandled = true; }
-            state.operationPending = false;
-            state.operationTipPending = false;
-        }
-
-        template<class Test>
-        void IgnoreTip(Test& test, IgnoreReason reason, const char* name, std::optional<HRESULT> error, AppFaultKind kind) noexcept
-        {
-            {
-                auto data = test.data();
-                data->diagnosticHResult = error.value_or(S_OK);
-                data->diagnosticHResultAvailable = error.has_value();
-                data->appFaultKind = kind;
-            }
-            test.complete_and_ignore(static_cast<unsigned short>(reason), name);
-            test.reset();
-        }
     }
 
-    bool IsOperationHandled(OperationState const& state, Operation operation, uint64_t generation) noexcept
+    void BeginSession(Session& session) noexcept
     {
-        return generation != 0 && generation == state.operationGeneration &&
-            operation == state.operation && state.operationHandled;
+        if (session.active || session.generation == (std::numeric_limits<uint64_t>::max)()) { return; }
+        auto const generation = session.generation + 1;
+        session = {};
+        session.generation = generation;
+        session.active = true;
     }
 
-    void BeginSession(State& state) noexcept
+    void EndSession(Session& session) noexcept
     {
-        if (state.session.active || state.session.generation == (std::numeric_limits<uint64_t>::max)()) { return; }
-        auto const generation = state.session.generation + 1;
-        state.session = {};
-        state.session.generation = generation;
-        state.session.active = true;
-        state.reportedErrors = 0;
-    }
-
-    void EndSession(State& state) noexcept
-    {
-        if (!state.session.active) { return; }
-        IgnoreInitial(state, IgnoreReason::Unloaded);
-        IgnoreOperation(state, state.operationGeneration, IgnoreReason::Unloaded);
+        if (!session.active) { return; }
         auto const enabled = IsEnabled();
-        state.session.active = false;
+        session.active = false;
         if (!enabled) { return; }
-        auto const& session = state.session;
         TraceLoggingWriteActivity(g_hTelemetryProvider, "TableView_SessionSummary",
             g_TelemetryProviderActivityId != GUID{} ? &g_TelemetryProviderActivityId : nullptr, nullptr, TABLEVIEW_INFO_FIELDS,
             TraceLoggingUInt32(5, "SessionSummaryVersion"),
@@ -162,123 +78,34 @@ namespace TableViewTelemetry
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage));
     }
 
-    void AbandonSession(State& state) noexcept
+    void CountOperation(Session& session, uint64_t startedIn, TableViewTip::Operation operation,
+        std::optional<TableViewTip::IgnoreReason> ignored) noexcept
     {
-        state.session.active = false;
-        IgnoreInitial(state, IgnoreReason::Unloaded);
-        IgnoreOperation(state, state.operationGeneration, IgnoreReason::Unloaded);
-    }
-
-    // Every template application is one setup run; OnApplyTemplate ignores an unfinished one first.
-    void BeginInitial(State& state) noexcept
-    {
-        state.initialTipPending = state.initialTest.start() != GUID{};
-    }
-
-    void CompleteInitial(State& state) noexcept
-    {
-        if (!state.initialTipPending) { return; }
-        state.initialTipPending = false;
-        CompleteTip(state.initialTest, Result::Success, {});
-    }
-
-    void FailInitial(State& state, HRESULT error) noexcept
-    {
-        if (!state.initialTipPending) { return; }
-        state.initialTipPending = false;
-        CompleteTip(state.initialTest, Result::Failure, error);
-        ReportError(state, Operation::InitialLayout, Stage::Template, false, Attribution::Product, error);
-    }
-
-    void IgnoreInitial(State& state, IgnoreReason reason, std::optional<HRESULT> error, AppFaultKind kind) noexcept
-    {
-        if (!state.initialTipPending) { return; }
-        auto const name = GetIgnoreName(reason);
-        if (!name) { return; }
-        state.initialTipPending = false;
-        IgnoreTip(state.initialTest, reason, name, error, kind);
-    }
-
-    uint64_t BeginOperation(OperationState& state, Operation operation) noexcept
-    {
-        if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(Operation::CancelEdit))
+        if (!IsCurrent(session, startedIn) || !TableViewTip::IsMeasuredOperation(operation)) { return; }
+        if (!ignored)
         {
-            OutputDebugStringW(L"TableView telemetry: invalid operation.\n");
-            return 0;
+            auto const index = static_cast<uint32_t>(operation);
+            Increment(session, session.counts[index], index);
         }
-        if (!IsMeasuredOperation(operation)) { return 0; }
-        IgnoreOperation(state, state.operationGeneration, IgnoreReason::Superseded);
-        if (state.operationGeneration == (std::numeric_limits<uint64_t>::max)()) { return 0; }
-        auto const generation = ++state.operationGeneration;
-        state.operationHandled = false;
-        state.operation = operation;
-        auto& session = state.usageOwner.session;
-        state.operationSessionGeneration = session.active ? session.generation : 0;
-        {
-            auto data = state.operationTest.data();
-            data->operation = operation;
-        }
-        state.operationTipPending = state.operationTest.start() != GUID{};
-        state.operationPending = state.operationTipPending || session.active;
-        return generation;
+        else if (*ignored == TableViewTip::IgnoreReason::DeferredOrUnproven) { Increment(session, session.deferredCount, 14); }
+        else if (*ignored == TableViewTip::IgnoreReason::UnattributedFault) { Increment(session, session.unattributedFaultCount, 15); }
     }
 
-    void CompleteOperation(OperationState& state, uint64_t generation) noexcept
+    void ReportError(Session& session, uint64_t startedIn, TableViewTip::Operation operation, TableViewTip::Stage stage,
+        bool recoverable, TableViewTip::Attribution attribution, std::optional<HRESULT> error, TableViewTip::AppFaultKind kind) noexcept
     {
-        if (generation != state.operationGeneration || !state.operationPending) { return; }
-        if (state.operationSessionGeneration && !OwnsSession(state))
-        {
-            IgnoreOperation(state, generation, IgnoreReason::Stale);
-            return;
-        }
-        if (state.operationTipPending) { CompleteTip(state.operationTest, Result::Success, {}); }
-        RecordOutcome(state, Result::Success);
-        StopOperation(state);
-    }
-
-    void IgnoreOperation(OperationState& state, uint64_t generation, IgnoreReason reason, std::optional<HRESULT> error, AppFaultKind kind) noexcept
-    {
-        if (generation != state.operationGeneration || !state.operationPending) { return; }
-        auto const name = GetIgnoreName(reason);
-        if (!name) { return; }
-        if (state.operationTipPending)
-        {
-            IgnoreTip(state.operationTest, reason, name, error, kind);
-        }
-        RecordOutcome(state, Result::Cancelled, reason);
-        StopOperation(state);
-    }
-
-    void FailOperation(OperationState& state, uint64_t generation, Stage stage, std::optional<HRESULT> error) noexcept
-    {
-        if (!generation || generation != state.operationGeneration || !state.operationPending) { return; }
-        if (state.operationSessionGeneration && !OwnsSession(state))
-        {
-            IgnoreOperation(state, generation, IgnoreReason::Stale);
-            return;
-        }
-        if (state.operationTipPending) { CompleteTip(state.operationTest, Result::Failure, error); }
-        RecordOutcome(state, Result::Failure);
-        StopOperation(state);
-        ReportError(state, state.operation, stage, false, Attribution::Product, error);
-    }
-
-    void ReportError(OperationState& state, Operation operation, Stage stage, bool recoverable,
-        Attribution attribution, std::optional<HRESULT> error, AppFaultKind kind) noexcept
-    {
-        if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(Operation::CancelEdit) ||
-            static_cast<uint32_t>(attribution) > static_cast<uint32_t>(Attribution::Application))
+        if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(TableViewTip::Operation::CancelEdit) ||
+            static_cast<uint32_t>(attribution) > static_cast<uint32_t>(TableViewTip::Attribution::Application))
         {
             OutputDebugStringW(L"TableView telemetry: invalid error operation.\n");
             return;
         }
-        auto& owner = state.usageOwner;
-        if (&owner != &state && state.operationSessionGeneration && !OwnsSession(state)) { return; }
+        if (startedIn && !IsCurrent(session, startedIn)) { return; }
         // One report per operation and attribution, so an app fault cannot hide a later product error.
         auto const bit = uint64_t{ 1 } << (static_cast<uint32_t>(operation) * 3 + static_cast<uint32_t>(attribution));
-        if ((owner.reportedErrors & bit) ||
+        if ((session.reportedErrors & bit) ||
             !TraceLoggingProviderEnabled(g_hLoggingProvider, WINEVENT_LEVEL_VERBOSE, KEYWORD_TABLEVIEW)) { return; }
-        owner.reportedErrors |= bit;
+        session.reportedErrors |= bit;
         TraceLoggingWriteActivity(g_hLoggingProvider, "TableView_Error",
             g_TelemetryProviderActivityId != GUID{} ? &g_TelemetryProviderActivityId : nullptr, nullptr,
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE), TraceLoggingKeyword(KEYWORD_TABLEVIEW), TABLEVIEW_COMMON_FIELDS,

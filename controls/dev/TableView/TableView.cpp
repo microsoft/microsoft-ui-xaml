@@ -550,8 +550,7 @@ winrt::Brush TableView::GetGridLineBrush()
 
 TableView::~TableView()
 {
-    IgnoreTelemetry(TableViewTelemetry::IgnoreReason::Unloaded);
-    TableViewTelemetry::AbandonSession(m_telemetry);
+    IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
     // Must run while this control still holds the selector: once anything has been recycled the
     // pools hang off the cached templates and close a cycle the reference tracker cannot walk.
     // Destructor runs off the reference tracker's teardown path (e.g. UIAffinityReleaseQueue),
@@ -715,7 +714,7 @@ TableView::TableView()
 
 void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
-    TableViewTelemetry::BeginSession(m_telemetry);
+    TableViewTelemetry::BeginSession(m_telemetrySession);
     // ThemeSettings requires a WindowId, so it can only be created once we have a XamlRoot.
     if (m_themeSettings)
     {
@@ -795,8 +794,8 @@ void TableView::OnApplyTemplate()
 try
 {
     m_headerSortSpaceArmedColumn = nullptr;
-    IgnoreTelemetry(TableViewTelemetry::IgnoreReason::Retemplated);
-    TableViewTelemetry::BeginInitial(m_telemetry);
+    IgnoreTip(TableViewTip::IgnoreReason::Retemplated);
+    TableViewTip::StartSetup(m_tip);
     __super::OnApplyTemplate();
     InvalidateTableViewResourceCache(this);
 
@@ -1055,13 +1054,13 @@ try
                 }
             });
     }
-    TableViewTelemetry::CompleteInitial(m_telemetry);
+    TableViewTip::CompleteSetup(m_tip);
 }
 catch (...)
 {
     // The control, row and cell templates are expanded outside this method, and a tagged app callout
     // here has already closed the run as an application fault; any other throw counts as a setup failure.
-    TableViewTelemetry::FailInitial(m_telemetry, winrt::to_hresult());
+    TableViewTip::FailSetup(m_tip, winrt::to_hresult());
     throw;
 }
 
@@ -1195,16 +1194,16 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
         return;
     }
 
-    auto const telemetryGeneration = BeginOperationTelemetry(TableViewTelemetry::Operation::ReplaceSource);
+    auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::ReplaceSource);
     bool completed = false;
-    auto telemetryCompletion = wil::scope_exit([this, telemetryGeneration, &completed]() noexcept
+    auto tipCompletion = wil::scope_exit([this, tipGeneration, &completed]() noexcept
     {
         if (!completed)
         {
-            IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::ReplaceSource, telemetryGeneration, TableViewTelemetry::Stage::Source);
+            IgnoreUnattributedTipOperation(TableViewTip::Operation::ReplaceSource, tipGeneration, TableViewTip::Stage::Source);
         }
-        else { CompleteOperationTelemetry(telemetryGeneration); }
-        EndOperationTelemetry();
+        else { CompleteTipOperation(tipGeneration); }
+        EndTipOperation();
     });
 
     // The edited item is about to leave the control. Forced, because the data set is already gone
@@ -1795,7 +1794,7 @@ void TableView::AdoptItemsSource()
                 strongThis->OnTableViewSourceShapingChanged(reorderOnly);
             }
         });
-        AttachSourceTelemetry(tableViewSource);
+        AttachSourceTip(tableViewSource);
         // Live reshape must not end the user's edit; DrainCoalescedEditReshape resumes it.
         sourceImpl->SetLiveShapingHold([weakThis]()
         {
@@ -1876,7 +1875,7 @@ void TableView::RefreshRowsPipeline()
 
 void TableView::OnTableViewSourceProjectionChanged()
 {
-    InvalidateOperationTelemetry();
+    SupersedeTipOperation();
 
     // The repeater's focus rescue during recycling must not be mistaken for the user's position.
     SuppressBodyFocusTrackingForThisTurn();
@@ -1969,7 +1968,7 @@ void TableView::QueueRefreshRealizedRowHierarchyState()
 
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
 {
-    InvalidateOperationTelemetry();
+    SupersedeTipOperation();
     if (!reorderOnly)
     {
         QueueGroupExpansionRowRefresh();
@@ -2043,7 +2042,7 @@ void TableView::UpdateItemsSourceCollectionChangedSubscription()
 
 void TableView::OnItemsSourceCollectionChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
 {
-    InvalidateOperationTelemetry();
+    SupersedeTipOperation();
     UpdateEmptyState();
     QueueTerminalGridLineRefresh();
 }
@@ -3048,8 +3047,8 @@ void TableView::QueueRebuildHeaders()
                 }
                 catch (...)
                 {
-                    TableViewTelemetry::ReportError(strongThis->m_telemetry,
-                        TableViewTelemetry::Operation::HeaderRefresh, TableViewTelemetry::Stage::HeaderRefresh, true);
+                    TableViewTelemetry::ReportError(strongThis->m_telemetrySession, 0,
+                        TableViewTip::Operation::HeaderRefresh, TableViewTip::Stage::HeaderRefresh, true);
                     // Coalesced header rebuild is best-effort; never fail-fast the dispatcher.
                 }
             }
@@ -3120,8 +3119,8 @@ void TableView::OnTableViewUnloaded()
     // A re-parent can raise Loaded for the new tree before Unloaded for the old one.
     if (!IsLoaded())
     {
-        IgnoreTelemetry(TableViewTelemetry::IgnoreReason::Unloaded);
-        TableViewTelemetry::EndSession(m_telemetry);
+        IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
+        TableViewTelemetry::EndSession(m_telemetrySession);
     }
     // Neither a pending restore nor a remembered position may outlive this tree.
     CancelReshapeFocusRestore();

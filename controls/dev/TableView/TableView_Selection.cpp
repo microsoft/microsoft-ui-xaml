@@ -261,7 +261,7 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
 
 // ----- The single writer -----
 
-void TableView::ApplySelection(int32_t index, bool reportTelemetry)
+void TableView::ApplySelection(int32_t index, bool measureTip)
 {
     bool validRequest = index >= -1;
     if (!CanSelectRows())
@@ -276,11 +276,11 @@ void TableView::ApplySelection(int32_t index, bool reportTelemetry)
         validRequest = false;
     }
 
-    const bool accepted = m_telemetry.session.active && reportTelemetry && !m_isRestoringSelection &&
+    const bool accepted = m_telemetrySession.active && measureTip && !m_isRestoringSelection &&
         validRequest && m_lastPublishedIndex != index;
     const auto version = m_selectionVersion;
     const auto sourceGeneration = m_rowMetadataGeneration;
-    ActionTelemetry telemetry{ *this, TableViewTelemetry::Operation::Selection, TableViewTelemetry::Stage::Selection, accepted };
+    ActionTip tip{ *this, TableViewTip::Operation::Selection, TableViewTip::Stage::Selection, accepted };
     if (index < 0 && !m_selectionModel)
     {
         // Nothing selected and no model yet - nothing to clear, but publish so the projections
@@ -317,11 +317,11 @@ void TableView::ApplySelection(int32_t index, bool reportTelemetry)
         if (m_selectionVersion == version + 1 && m_rowMetadataGeneration == sourceGeneration &&
             m_lastPublishedIndex == index)
         {
-            telemetry.Complete();
+            tip.Complete();
         }
         else
         {
-            telemetry.Ignore(TableViewTelemetry::IgnoreReason::Superseded);
+            tip.Ignore(TableViewTip::IgnoreReason::Superseded);
         }
     }
 }
@@ -460,7 +460,7 @@ void TableView::RaiseSelectionChanged(winrt::IInspectable const& addedItem)
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(removed)),
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(added)) };
 
-    ApplicationCalloutTelemetry callout{ *this, TableViewTelemetry::Stage::Selection, TableViewTelemetry::AppFaultKind::Callback };
+    AppCalloutTip callout{ *this, TableViewTip::Stage::Selection, TableViewTip::AppFaultKind::Callback };
     try { m_selectionChangedEventSource(*this, args); }
     catch (...) { callout.Fault(winrt::to_hresult()); throw; }
 }

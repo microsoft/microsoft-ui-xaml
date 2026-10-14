@@ -16,11 +16,11 @@ namespace
     namespace tabularPrimitives = winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives::implementation;
 }
 
-struct TableViewSource::ShapingOperation
+struct TableViewSource::ShapingTip
 {
-    ShapingOperation(TableViewSource& source, TableViewTelemetry::Operation kind, bool meaningful = true) :
-        source(source), kind(kind), handlers(source.m_shapingTelemetryHandlers),
-        previous(std::exchange(source.m_shapingOperation, this)), ownerGeneration(source.m_ownerGeneration)
+    ShapingTip(TableViewSource& source, TableViewTip::Operation kind, bool meaningful = true) :
+        source(source), kind(kind), handlers(source.m_shapingTipHandlers),
+        previous(std::exchange(source.m_shapingTip, this)), ownerGeneration(source.m_ownerGeneration)
     {
         observation.unproven = previous || source.m_notificationDepth;
         if (previous) { previous->observation.unproven = true; }
@@ -30,19 +30,19 @@ struct TableViewSource::ShapingOperation
         }
     }
 
-    ~ShapingOperation()
+    ~ShapingTip()
     {
-        source.m_shapingOperation = previous;
+        source.m_shapingTip = previous;
         if (handlers)
         {
             auto const reason = ownerGeneration == source.m_ownerGeneration ?
-                observation.Outcome() : std::optional{ TableViewTelemetry::IgnoreReason::Stale };
+                observation.Outcome() : std::optional{ TableViewTip::IgnoreReason::Stale };
             handlers->complete(kind, generation, reason, observation.error, observation.appFaultKind);
         }
     }
 
-    ShapingOperation(ShapingOperation const&) = delete;
-    ShapingOperation& operator=(ShapingOperation const&) = delete;
+    ShapingTip(ShapingTip const&) = delete;
+    ShapingTip& operator=(ShapingTip const&) = delete;
 
     template<class Callback>
     void Apply(Callback&& callback)
@@ -54,9 +54,9 @@ struct TableViewSource::ShapingOperation
         }
         catch (winrt::hresult_invalid_argument const&)
         {
-            if (observation.appFaultKind == TableViewTelemetry::AppFaultKind::None)
+            if (observation.appFaultKind == TableViewTip::AppFaultKind::None)
             {
-                observation.appFaultKind = TableViewTelemetry::AppFaultKind::Data;
+                observation.appFaultKind = TableViewTip::AppFaultKind::Data;
                 observation.error = winrt::to_hresult();
             }
             throw;
@@ -69,26 +69,26 @@ struct TableViewSource::ShapingOperation
     }
 
     TableViewSource& source;
-    TableViewTelemetry::Operation kind;
-    std::shared_ptr<ShapingTelemetryHandlers> handlers;
-    ShapingOperation* previous{};
+    TableViewTip::Operation kind;
+    std::shared_ptr<ShapingTipHandlers> handlers;
+    ShapingTip* previous{};
     uint64_t ownerGeneration{};
     uint64_t generation{};
-    TableViewTelemetry::ShapingObservation observation;
+    TableViewTip::ShapingObservation observation;
 };
 
-void TableViewSource::SetShapingOperationHandlers(
+void TableViewSource::SetShapingTipHandlers(
     winrt::IInspectable const& owner,
-    std::function<uint64_t(TableViewTelemetry::Operation, bool)> begin,
-    ShapingOperationCompleted complete)
+    std::function<uint64_t(TableViewTip::Operation, bool)> begin,
+    ShapingTipCompleted complete)
 {
     if (m_owningTableView.get() != owner) { return; }
     try
     {
-        m_shapingTelemetryHandlers = std::make_shared<ShapingTelemetryHandlers>(
-            ShapingTelemetryHandlers{ std::move(begin), std::move(complete) });
+        m_shapingTipHandlers = std::make_shared<ShapingTipHandlers>(
+            ShapingTipHandlers{ std::move(begin), std::move(complete) });
     }
-    catch (...) { OutputDebugStringW(L"TableView telemetry: source observation unavailable.\n"); }
+    catch (...) { OutputDebugStringW(L"TableView TiP: source observation unavailable.\n"); }
 }
 
 TableViewSource::~TableViewSource() = default;
@@ -122,9 +122,9 @@ winrt::TableViewSource TableViewSource::Filter(winrt::TableViewPredicate const& 
     {
         throw winrt::hresult_invalid_argument(L"predicate cannot be null.");
     }
-    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Filter };
+    ShapingTip tip{ *this, TableViewTip::Operation::Filter };
     m_hasFilter = true;
-    operation.Apply([&]()
+    tip.Apply([&]()
     {
         m_engine->SetFilter([predicate](winrt::IInspectable const& item) { return predicate(item); });
     });
@@ -143,7 +143,7 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
         throw winrt::hresult_invalid_argument(L"key cannot be null.");
     }
 
-    ShapingOperation operation{ *this, TableViewTelemetry::Operation::GroupConfiguration };
+    ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration };
     RowIdentity::IdentitySelector groupIdentity{ nullptr };
     if (groupIdentitySelector)
     {
@@ -151,7 +151,7 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
     }
 
     m_hasGroup = true;
-    operation.Apply([&]()
+    tip.Apply([&]()
     {
         m_engine->SetGroup([key](winrt::IInspectable const& item) { return key(item); }, groupIdentity);
     });
@@ -160,17 +160,17 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
 
 winrt::TableViewSource TableViewSource::ClearFilter()
 {
-    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Filter, m_hasFilter };
+    ShapingTip tip{ *this, TableViewTip::Operation::Filter, m_hasFilter };
     m_hasFilter = false;
-    operation.Apply([&]() { m_engine->ClearFilter(); });
+    tip.Apply([&]() { m_engine->ClearFilter(); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearGroupBy()
 {
-    ShapingOperation operation{ *this, TableViewTelemetry::Operation::GroupConfiguration, m_hasGroup };
+    ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration, m_hasGroup };
     m_hasGroup = false;
-    operation.Apply([&]() { m_engine->ClearGroup(); });
+    tip.Apply([&]() { m_engine->ClearGroup(); });
     return *this;
 }
 
@@ -195,22 +195,22 @@ winrt::TableViewSource TableViewSource::ClearParentBy()
 
 winrt::TableViewSource TableViewSource::ClearSort()
 {
-    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort };
-    operation.Apply([&]() { m_engine->ClearSorts(); });
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
+    tip.Apply([&]() { m_engine->ClearSorts(); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSort(winrt::hstring const& sortAxisToken)
 {
-    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort };
-    operation.Apply([&]() { m_engine->ClearSort(sortAxisToken); });
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
+    tip.Apply([&]() { m_engine->ClearSort(sortAxisToken); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSortsExcept(winrt::hstring const& sortAxisToken)
 {
-    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort };
-    operation.Apply([&]() { m_engine->ClearSortsExcept(sortAxisToken); });
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
+    tip.Apply([&]() { m_engine->ClearSortsExcept(sortAxisToken); });
     return *this;
 }
 
@@ -292,11 +292,11 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
         throw winrt::hresult_invalid_argument(L"direction must be a defined SortDirection value.");
     }
 
-    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort };
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
     // The engine stores a std::function, which cannot be compared, so the delegate itself is
     // handed over as the axis identity. The wrapping lambda holds a strong ref to that same
     // delegate, so the identity stays valid for as long as the axis lives.
-    operation.Apply([&]()
+    tip.Apply([&]()
     {
         m_engine->SetSort(
             previousSortAxisToken,
@@ -433,7 +433,7 @@ void TableViewSource::OnProjectionRebuilt()
     // Every rebuild mints a fresh row-metadata provider and can swap the view, so anything the
     // owner cached from the previous projection is stale from here - whether or not grouped-ness
     // changed.
-    if (m_shapingOperation) { m_shapingOperation->observation.published = true; }
+    if (m_shapingTip) { m_shapingTip->observation.published = true; }
     NotifyOwnerProjectionChanged();
 }
 
@@ -509,7 +509,7 @@ void TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
         // swapped out of ItemsSource cannot drive the control it used to belong to.
         m_projectionChanged = nullptr;
         m_shapingChanged = nullptr;
-        m_shapingTelemetryHandlers.reset();
+        m_shapingTipHandlers.reset();
         // A restore held for the former owner's editor must not wait on an edit it will no longer
         // hear the end of.
         m_engine->SetLiveShapingHold(nullptr);
@@ -548,7 +548,7 @@ void TableViewSource::NotifyOwnerProjectionChanged()
 void TableViewSource::NotifyOwnerShapingChanged(bool reorderOnly)
 {
     // Only the in-place reorder notification proves computation; Refresh can merely defer.
-    if (reorderOnly && m_shapingOperation) { m_shapingOperation->observation.published = true; }
+    if (reorderOnly && m_shapingTip) { m_shapingTip->observation.published = true; }
     if (m_shapingChanged)
     {
         auto const strongThis = get_strong();
