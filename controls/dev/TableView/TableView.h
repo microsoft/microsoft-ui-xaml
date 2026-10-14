@@ -421,11 +421,17 @@ public:
         winrt::FocusState focusState = winrt::FocusState::Keyboard);
 
     // Returns true when the request is handled: a menu was shown, or the request was suppressed
-    // (nested request, stale target that would have shown a menu). False leaves it to bubble on to
-    // the native ContextFlyout chain, including a target that went stale with no menu to show.
+    // (a cell is editing, nested request, stale target that would have shown a menu). False leaves
+    // it to bubble on to the native ContextFlyout chain, including a target that went stale with no
+    // menu to show.
     bool ProcessContextMenuRequest(
         TableViewDetails::ContextMenuTarget const& target,
         winrt::ContextRequestedEventArgs const& args);
+
+    // Marks an unhandled request handled while a cell is editing, so no ContextFlyout on the
+    // element that raised it or on any ancestor opens. Hooked below every element that can carry a
+    // TableView menu the request handlers do not reach (group headers, the table itself).
+    void SuppressContextRequestWhileEditing(winrt::ContextRequestedEventArgs const& args);
 
     // A column a context menu request can target: in this table's Columns, owned by it, Visible.
     bool IsContextMenuColumn(winrt::TableViewColumn const& column) const;
@@ -1167,6 +1173,7 @@ private:
     tracker_ref<winrt::Panel> m_headerHost{ this };
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
     winrt::UIElement::ContextRequested_revoker m_headerContextRequestedRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     // Keeps the header band locked to the body when focus moves to an off-screen header.
     winrt::UIElement::BringIntoViewRequested_revoker m_headerBringIntoViewRevoker{};
     winrt::UIElement::BringIntoViewRequested_revoker m_bodyBringIntoViewRevoker{};

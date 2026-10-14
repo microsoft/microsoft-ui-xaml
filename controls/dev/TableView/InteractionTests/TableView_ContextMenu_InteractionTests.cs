@@ -306,7 +306,105 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         #endregion
 
+        #region Editing
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a right-click on the editor of a cell being edited shows no TableView menu (the editor's own menu is left to it).")]
+        public void RightClickOnEditorOpensNoTableViewMenu()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectContextMenuHostAndGetTable();
+                if (table == null) { return; }
+                if (!BeginEditOnNameCell(3)) { return; }
+
+                RightClickRow(table, 3, ContextMenuNameTextX);
+
+                VerifyNoMenuOpened();
+                Log.Comment("editing after right-click on the editor: {0}", ReadContextMenuField(EditingField));
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a right-click on another row's cell while a cell is editing opens no menu: neither the cell's, the row's nor the table's.")]
+        public void RightClickOnOtherRowWhileEditingOpensNoMenu()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectContextMenuHostAndGetTable();
+                if (table == null) { return; }
+                if (!BeginEditOnNameCell(1)) { return; }
+
+                RightClickRow(table, 4, ContextMenuNameTextX);
+                VerifyNoMenuOpened();
+
+                RightClickRow(table, 4, ContextMenuColumnCentreX(ContextMenuAgeColumn));
+                VerifyNoMenuOpened();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a right-click on a column header while a cell is editing opens no menu: neither the header's nor the table's.")]
+        public void RightClickOnHeaderWhileEditingOpensNoMenu()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (SelectContextMenuHostAndGetTable() == null) { return; }
+                if (!BeginEditOnNameCell(2)) { return; }
+
+                RightClickHeader(ContextMenuColumns[ContextMenuNameColumn]);
+                VerifyNoMenuOpened();
+
+                RightClickHeader(ContextMenuColumns[ContextMenuAgeColumn]);
+                VerifyNoMenuOpened();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a right-click on the empty area below the rows while a cell is editing does not open the table's ContextFlyout.")]
+        public void RightClickBelowRowsWhileEditingOpensNoMenu()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectContextMenuHostAndGetTable();
+                if (table == null) { return; }
+                if (!BeginEditOnNameCell(2)) { return; }
+
+                var bounds = table.BoundingRectangle;
+                RightClickPoint(new Point(bounds.Left + 80, bounds.Top + bounds.Height - 24));
+                VerifyNoMenuOpened();
+            }
+        }
+
+        #endregion
+
         #region Helpers
+
+        // Focuses the row's Name cell and opens its editor with F2.
+        private static bool BeginEditOnNameCell(int rowIndex)
+        {
+            if (!DrillIntoRow(ContextMenuTable, rowIndex)) { return false; }
+
+            KeyboardHelper.PressKey(Key.F2);
+            Wait.ForIdle();
+            if (WaitForContextMenuField(EditingField, "True") != "True")
+            {
+                Verify.Fail(string.Format("Precondition: F2 must open the editor on row {0}'s Name cell.", rowIndex));
+                return false;
+            }
+            return true;
+        }
+
+        // No TableView menu opened since the reset, and the cell is still being edited.
+        private static void VerifyNoMenuOpened()
+        {
+            Wait.ForIdle();
+            Log.Comment("Readout: {0}", ReadPageReadout(ContextMenuReadout));
+            Verify.AreEqual("0", ReadContextMenuField(OpensField), "No TableView menu may open while a cell is editing.");
+            Verify.AreEqual("True", ReadContextMenuField(EditingField), "The request must not end the edit.");
+        }
 
         // Switches to the ContextMenu host, resets its readout and selection, and returns ContextMenuTable.
         private static UIObject SelectContextMenuHostAndGetTable()

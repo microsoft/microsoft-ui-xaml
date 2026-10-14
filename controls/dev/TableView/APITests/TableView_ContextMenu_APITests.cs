@@ -600,56 +600,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             CloseMenus(f);
         }
 
-        // An API test cannot hold an edit open (SetValue opens and commits in one call), so the request
-        // is raised from BeginningEdit, a window in which IsEditing is already true.
         [TestMethod]
-        [TestProperty("Description", "E6: while any cell is editing, a request on another row skips TableView's menus and the native chain opens that row's own menu.")]
-        public void RequestOnOtherRowWhileEditingUsesThatRowsMenu()
+        [TestProperty("Description", "E6: while any cell is editing, a request on another row's cell opens no menu (neither its row menu nor the table menu).")]
+        public void RequestOnOtherRowWhileEditingOpensNoMenu()
         {
-            bool? wasEditing = null;
-            var f = LoadFixture(configure: x =>
-            {
-                x.Table.IsReadOnly = false;
-                ((TableViewTextColumn)x.NameColumn).Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.TwoWay };
-            });
-
-            RunOnUIThread.Execute(() =>
-            {
-                f.Table.BeginningEdit += (s, e) =>
-                {
-                    if (wasEditing.HasValue)
-                    {
-                        return;
-                    }
-
-                    wasEditing = f.Table.IsEditing;
-                    GetCellPeer(f.Table, f.P(6), OfficeCol).ShowContextMenu();
-                };
-
-                var provider = GetCellPeer(f.Table, f.P(3), NameCol).GetPattern(PatternInterface.Value) as IValueProvider;
-                Verify.IsNotNull(provider, "Precondition: the Name cell must be editable.");
-                provider.SetValue("Edited");
-            });
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() => Verify.IsTrue(wasEditing == true, "Precondition: IsEditing must be true inside BeginningEdit."));
-            VerifyOpened(f, "RowMenu", () => RowOf(f, 6), f.P(6), "UIA on row 6 / Office while row 3 / Name is editing");
-            CloseMenus(f);
+            var f = LoadEditableFixture();
+            RequestWhileEditing(f, () => GetCellPeer(f.Table, f.P(6), OfficeCol).ShowContextMenu());
+            VerifyNoMenuOpened(f, "UIA on row 6 / Office while row 3 / Name is editing");
         }
 
-        // The editing gate is table-wide: moving focus to another row mid-edit would commit the edit
-        // from inside BeginningEdit, so TableView leaves every body request to the native chain.
         [TestMethod]
-        [TestProperty("Description", "E7: while any cell is editing, a column's CellContextFlyout on another row is bypassed.")]
-        public void CellMenuOnOtherRowBypassedWhileEditing()
+        [TestProperty("Description", "E7: while any cell is editing, a column's CellContextFlyout on another row does not open, and nothing else opens in its place.")]
+        public void CellMenuOnOtherRowSuppressedWhileEditing()
+        {
+            var f = LoadEditableFixture();
+            RequestWhileEditing(f, () => GetCellPeer(f.Table, f.P(6), NameCol).ShowContextMenu());
+            VerifyNoMenuOpened(f, "UIA on row 6 / Name while row 3 / Name is editing");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "E7b: while any cell is editing, a row request opens no menu.")]
+        public void RowRequestSuppressedWhileEditing()
+        {
+            var f = LoadEditableFixture();
+            RequestWhileEditing(f, () => ((AutomationPeer)FrameworkElementAutomationPeer.CreatePeerForElement(RowOf(f, 6))).ShowContextMenu());
+            VerifyNoMenuOpened(f, "UIA on row 6 while row 3 / Name is editing");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "E7c: while any cell is editing, a column header request opens no menu (neither HeaderContextFlyout nor the table menu).")]
+        public void HeaderRequestSuppressedWhileEditing()
+        {
+            var f = LoadEditableFixture();
+            RequestWhileEditing(f, () => new TableViewColumnHeaderAutomationPeer(f.Table, f.NameColumn).ShowContextMenu());
+            VerifyNoMenuOpened(f, "UIA on the Name header while row 3 / Name is editing");
+        }
+
+        private ContextMenuFixture LoadEditableFixture() => LoadFixture(configure: x =>
+        {
+            x.Table.IsReadOnly = false;
+            ((TableViewTextColumn)x.NameColumn).Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.TwoWay };
+        });
+
+        // An API test cannot hold an edit open (SetValue opens and commits in one call), so the request
+        // is raised from BeginningEdit, a window in which IsEditing is already true.
+        internal static void RequestWhileEditing(ContextMenuFixture f, Action request)
         {
             bool? wasEditing = null;
-            var f = LoadFixture(configure: x =>
-            {
-                x.Table.IsReadOnly = false;
-                ((TableViewTextColumn)x.NameColumn).Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.TwoWay };
-            });
-
             RunOnUIThread.Execute(() =>
             {
                 f.Table.BeginningEdit += (s, e) =>
@@ -660,7 +657,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
 
                     wasEditing = f.Table.IsEditing;
-                    GetCellPeer(f.Table, f.P(6), NameCol).ShowContextMenu();
+                    request();
                 };
 
                 var provider = GetCellPeer(f.Table, f.P(3), NameCol).GetPattern(PatternInterface.Value) as IValueProvider;
@@ -668,9 +665,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 provider.SetValue("Edited");
             });
             IdleSynchronizer.Wait();
-
             RunOnUIThread.Execute(() => Verify.IsTrue(wasEditing == true, "Precondition: IsEditing must be true inside BeginningEdit."));
-            VerifyOpened(f, "RowMenu", () => RowOf(f, 6), f.P(6), "UIA on row 6 / Name while row 3 / Name is editing");
+        }
+
+        internal static void VerifyNoMenuOpened(ContextMenuFixture f, string when)
+        {
+            RunOnUIThread.Execute(() => Verify.AreEqual(0, f.Recorder.Opened.Count,
+                $"No TableView menu may open while a cell is editing ({when}). Opened: {f.Recorder.Describe()}"));
             CloseMenus(f);
         }
 

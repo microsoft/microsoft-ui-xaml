@@ -113,6 +113,7 @@ private:
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
     tracker_ref<winrt::IInspectable> m_groupEntry{ this };
 

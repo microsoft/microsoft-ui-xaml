@@ -2887,7 +2887,7 @@ void TableViewRow::OnTemplateRootContextRequested(winrt::ContextRequestedEventAr
         return;
     }
 
-    // A cell request the cells host left Unhandled (editing, nothing to show) keeps bubbling.
+    // A cell request the cells host left Unhandled (nothing to show) keeps bubbling.
     if (auto const target = ResolveContextMenuTarget(args); target && !target->Column)
     {
         ProcessContextRequest(*target, args);
