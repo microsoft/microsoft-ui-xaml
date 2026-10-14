@@ -31,6 +31,33 @@ namespace
         bool& m_flag;
         bool m_previous;
     };
+
+    bool IsResolvableSelectionAnnouncementRow(
+        winrt::TableView const& owner,
+        winrt::TableViewRow const& row,
+        winrt::AutomationPeer const& peer,
+        winrt::IInspectable const& expectedItem)
+    {
+        if (!owner || !row || !peer || !expectedItem ||
+            winrt::get_self<TableViewRow>(row)->GetOwningTableView() != owner)
+        {
+            return false;
+        }
+
+        auto const repeater = winrt::get_self<TableView>(owner)->GetRowsRepeaterInternal();
+        if (!repeater)
+        {
+            return false;
+        }
+
+        const int32_t index = repeater.GetElementIndex(row);
+        auto const element = index >= 0 ? repeater.TryGetElement(index).try_as<winrt::TableViewRow>() : nullptr;
+        // Identity, not just index: a recycled container can still report an index while it has
+        // already been re-bound to a different item, so either announcement - selected or removed
+        // from selection - would name the wrong record.
+        auto const actualItem = winrt::get_self<TableView>(owner)->UnwrapEditingDataItem(row.DataContext());
+        return element == row && actualItem && TableView::SameInspectableIdentity(actualItem, expectedItem);
+    }
 }
 
 bool TableView::CanSelectRows()
@@ -140,6 +167,25 @@ bool TableView::ShouldDeferSelectionRequest()
 void TableView::ClearPendingSelection()
 {
     m_pendingSelectedItem.set(nullptr);
+    m_pendingSelectedIdentity.clear();
+}
+
+winrt::hstring TableView::HierarchyIdentityForIndex(int32_t index) const
+{
+    if (index < 0 || !m_tableViewSourceRowMetadata || !m_tableViewSourceRowMetadata->IsHierarchicalSource())
+    {
+        return {};
+    }
+
+    try
+    {
+        return m_tableViewSourceRowMetadata->GetIdentity(index);
+    }
+    catch (...)
+    {
+        // Mid-reshape the row may not be addressable; the object anchor still applies.
+        return {};
+    }
 }
 
 bool TableView::DrainPendingSelection()
@@ -151,8 +197,25 @@ bool TableView::DrainPendingSelection()
 
     if (auto const pendingItem = m_pendingSelectedItem.get())
     {
+        auto const pendingIdentity = m_pendingSelectedIdentity;
         ClearPendingSelection();
-        ApplySelection(IndexOfItem(pendingItem));
+
+        // Tree: re-anchor on node key first (app may have replaced the object); object identity is
+        // the fallback.
+        int32_t index = -1;
+        if (!pendingIdentity.empty() && m_tableViewSourceRowMetadata &&
+            m_tableViewSourceRowMetadata->IsHierarchicalSource())
+        {
+            int32_t candidate = -1;
+            TableViewRowInfo info{};
+            if (m_tableViewSourceRowMetadata->TryGetIndexForIdentity(pendingIdentity, candidate) &&
+                TryGetTableViewSourceRowInfo(candidate, info) && info.Kind == TableViewRowKind::Data)
+            {
+                index = candidate;
+            }
+        }
+
+        ApplySelection(index >= 0 ? index : IndexOfItem(pendingItem));
         return true;
     }
 
@@ -215,6 +278,7 @@ void TableView::ApplySelection(int32_t index)
         // Nothing selected and no model yet - nothing to clear, but publish so the projections
         // start out agreeing with the model.
         m_stickySelectedItem.set(nullptr);
+        m_stickySelectedIdentity.clear();
         PushSelectionProperties();
         return;
     }
@@ -231,10 +295,11 @@ void TableView::ApplySelection(int32_t index)
     }
 
     // Capture the intentional selection by object identity. This is the single selection writer, so
-    // every user gesture / programmatic set / restore passes through here and nowhere else moves the
-    // sticky anchor - which is exactly why a Reset-driven model clear (which does NOT call this)
-    // leaves it intact for the identity restore.
+    // every gesture / programmatic set / restore passes through here; the anchor otherwise moves only
+    // in OnSelectionModelSelectionChanged (incremental clear outside a restore). A Reset-driven clear
+    // runs under the restore flag, keeping it for the identity restore.
     m_stickySelectedItem.set(index >= 0 ? SelectedItemForIndex(index) : nullptr);
+    m_stickySelectedIdentity = (index >= 0 && m_stickySelectedItem.get()) ? HierarchyIdentityForIndex(index) : winrt::hstring{};
 
     // The model raises SelectionChanged only when the selection actually moved; publish here too so
     // a rejected write still leaves the DPs agreeing with the model.
@@ -247,6 +312,8 @@ void TableView::OnSelectionModelSelectionChanged(
 {
     const int32_t newIndex = SelectedIndexInternal();
     auto const newItem = SelectedItemInternal();
+    auto const deselectedItem = UnwrapEditingDataItem(SelectedItem());
+    auto const selectedItem = UnwrapEditingDataItem(newItem);
 
     auto const deselectedRow = FindRealizedRowForIndex(m_lastPublishedIndex);
     auto const selectedRow = FindRealizedRowForIndex(newIndex);
@@ -283,13 +350,21 @@ void TableView::OnSelectionModelSelectionChanged(
         return;
     }
 
+    // Outside a restore, a model clear means the row left the view (e.g. subtree collapse). Drop the
+    // anchor so a later Reset doesn't resurrect it.
+    if (newIndex < 0)
+    {
+        m_stickySelectedItem.set(nullptr);
+        m_stickySelectedIdentity.clear();
+    }
+
     PushSelectionProperties();
     if (m_selectionVersion != version)
     {
         return;
     }
 
-    RaiseSelectionAutomationEvents(deselectedRow, selectedRow);
+    RaiseSelectionAutomationEvents(deselectedRow, deselectedItem, selectedRow, selectedItem);
     RaiseSelectionChanged(newItem);
 }
 
@@ -370,7 +445,9 @@ void TableView::RaiseSelectionChanged(winrt::IInspectable const& addedItem)
 
 void TableView::RaiseSelectionAutomationEvents(
     winrt::TableViewRow const& deselectedRow,
-    winrt::TableViewRow const& selectedRow)
+    winrt::IInspectable const& deselectedItem,
+    winrt::TableViewRow const& selectedRow,
+    winrt::IInspectable const& selectedItem)
 {
     // Container-level first: it is the only signal available when the selected row is unrealized
     // and there is no row peer to raise a per-element event on.
@@ -388,7 +465,10 @@ void TableView::RaiseSelectionAutomationEvents(
     {
         if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(selectedRow))
         {
-            peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+            if (IsResolvableSelectionAnnouncementRow(*this, selectedRow, peer, selectedItem))
+            {
+                peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+            }
         }
     }
 
@@ -397,7 +477,10 @@ void TableView::RaiseSelectionAutomationEvents(
     {
         if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(deselectedRow))
         {
-            peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementRemovedFromSelection);
+            if (IsResolvableSelectionAnnouncementRow(*this, deselectedRow, peer, deselectedItem))
+            {
+                peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementRemovedFromSelection);
+            }
         }
     }
 
@@ -409,10 +492,13 @@ void TableView::RaiseSelectionAutomationEvents(
         {
             if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(selectedRow))
             {
-                peer.RaisePropertyChangedEvent(
-                    winrt::SelectionItemPatternIdentifiers::IsSelectedProperty(),
-                    box_value(false),
-                    box_value(true));
+                if (IsResolvableSelectionAnnouncementRow(*this, selectedRow, peer, selectedItem))
+                {
+                    peer.RaisePropertyChangedEvent(
+                        winrt::SelectionItemPatternIdentifiers::IsSelectedProperty(),
+                        box_value(false),
+                        box_value(true));
+                }
             }
         }
 
@@ -420,10 +506,13 @@ void TableView::RaiseSelectionAutomationEvents(
         {
             if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(deselectedRow))
             {
-                peer.RaisePropertyChangedEvent(
-                    winrt::SelectionItemPatternIdentifiers::IsSelectedProperty(),
-                    box_value(true),
-                    box_value(false));
+                if (IsResolvableSelectionAnnouncementRow(*this, deselectedRow, peer, deselectedItem))
+                {
+                    peer.RaisePropertyChangedEvent(
+                        winrt::SelectionItemPatternIdentifiers::IsSelectedProperty(),
+                        box_value(true),
+                        box_value(false));
+                }
             }
         }
     }
@@ -524,6 +613,7 @@ void TableView::OnSelectionSourceReset(
     // transient clear the model is about to publish, so the restore reads as one atomic event (or
     // as silence when the same row is re-selected) rather than a clear-then-reselect pair.
     m_pendingSelectedItem.set(sticky);
+    m_pendingSelectedIdentity = m_stickySelectedIdentity;
     m_isRestoringSelection = true;
     m_resetSelectionRestorePending = true;
 }
@@ -727,8 +817,12 @@ void TableView::SelectRowIndexFromInteraction(int32_t index, bool toggle)
     ApplySelection(index);
 }
 
-// ----- Public API -----
+void TableView::SelectRowIndexFromKeyboardFocus(int32_t index)
+{
+    SelectRowIndexFromInteraction(index, false /* toggle */);
+}
 
+// ----- Public API -----
 void TableView::Select(int32_t index)
 {
     if (index < 0)

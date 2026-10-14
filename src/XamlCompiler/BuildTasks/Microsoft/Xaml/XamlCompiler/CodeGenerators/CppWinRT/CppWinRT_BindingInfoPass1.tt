@@ -9,64 +9,24 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-<#  if (ProjectInfo.UseCppWinRTNamedModules) { #>
-#ifdef WINRT_XAML_MODULE_INTERFACE
-module;
-#include <unknwn.h>
-
-export module <#=CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)#>;
-
-#define WINRT_IMPORT_MODULE
-import std;
-export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsFoundation)#>;
-export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsFoundationCollections)#>;
-export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.Xaml)#>;
-export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlControls)#>;
-export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlData)#>;
-export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlMarkup)#>;
-export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlInterop)#>;
-
-<#  foreach (var xamlClassName in ProjectInfo.XamlClassNames) { #>
-export import :<#=CppWinRTProjectionDependency.GetXamlPartitionName(xamlClassName)#>;
-<#  } #>
-<#  if (ProjectInfo.ShouldGenerateTypeInfoCode) { #>
-export import :XamlTypeInfo;
-<#  } #>
-
-#undef WINRT_XAML_MODULE_INTERFACE
-#define WINRT_XAML_EXPORT export extern "C++"
-#else
 #pragma once
-#ifndef WINRT_IMPORT_MODULE
-#define WINRT_IMPORT_MODULE
-#endif
-import <#=CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)#>;
-#define WINRT_XAML_SKIP_BODY
-#endif
-<#  } else { #>
-#pragma once
+#ifndef XAML_IMPL_MODULE
 #include <unknwn.h>
-
-// Undefine GetCurrentTime macro to prevent
-// conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
-
 #include <cstdint>
 #include <memory>
-
-<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundation)#>
-<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundationCollections)#>
-<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.Xaml)#>
-<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlControls)#>
-<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlData)#>
-<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlMarkup)#>
-<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlInterop)#>
-
-#define WINRT_XAML_EXPORT
+<#  foreach (var projectionNamespace in CppWinRTProjectionDependency.BindingSupportNamespaces) { #>
+<#=GetCppWinRTProjectionHeaderDirective(projectionNamespace, optionalHeader: true)#>
 <#  } #>
+#endif
 
-#ifndef WINRT_XAML_SKIP_BODY
-WINRT_XAML_EXPORT namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
+#ifdef XAML_IMPL_MODULE
+#define XAML_EXPORT export extern "C++"
+#else
+#define XAML_EXPORT
+#endif
+
+XAML_EXPORT namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 {
     using DataContextChangedEventArgs = <#=Projection(KnownNamespaces.Xaml)#>::DataContextChangedEventArgs;
     using DependencyObject = <#=Projection(KnownNamespaces.Xaml)#>::DependencyObject;
@@ -331,11 +291,4 @@ WINRT_XAML_EXPORT namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::imp
         T _dataRoot;
     };
 }
-#endif // WINRT_XAML_SKIP_BODY
-
-#ifdef WINRT_XAML_EXPORT
-#undef WINRT_XAML_EXPORT
-#endif
-#ifdef WINRT_XAML_SKIP_BODY
-#undef WINRT_XAML_SKIP_BODY
-#endif
+#undef XAML_EXPORT

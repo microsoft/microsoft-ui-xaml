@@ -9,26 +9,22 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #pragma once
-
-<#  if (ProjectInfo.UseCppWinRTNamedModules) { #>
-import std;
-<#=GetCppWinRTNamedModuleImportDirective(ProjectInfo.RootNamespace)#>
-<#=GetCppWinRTNamedModuleImportDirective(KnownNamespaces.XamlMarkup)#>
-<#=GetCppWinRTNamedModuleImportDirective(KnownNamespaces.WindowsXamlInterop)#>
-<#=GetCppWinRTModuleCompatibilityDefinition()#>
-<#  } else { #>
+#ifndef XAML_IMPL_MODULE
+#include <unknwn.h>
+#undef GetCurrentTime
 #include <functional>
 #include <map>
 #include <memory>
 #include <vector>
-#include <unknwn.h>
-
-// Undefine GetCurrentTime macro to prevent
-// conflict with Storyboard::GetCurrentTime
-#undef GetCurrentTime
-<#  } #>
 #include "XamlTypeInfo.xaml.g.h"
 #include "XamlMetaDataProvider.g.h"
+#endif
+
+#ifdef XAML_IMPL_MODULE
+#define XAML_EXPORT export extern "C++"
+#else
+#define XAML_EXPORT
+#endif
 
 /*
     If the file above was not generated, you may be missing a declaration
@@ -43,7 +39,7 @@ import std;
     }
 */
 
-namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
+XAML_EXPORT namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 {
     using IXamlMember = <#=Projection(KnownNamespaces.XamlMarkup)#>::IXamlMember;
     using IXamlType = <#=Projection(KnownNamespaces.XamlMarkup)#>::IXamlType;
@@ -63,9 +59,11 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
     };
 }
 
-namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::factory_implementation
+XAML_EXPORT namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::factory_implementation
 {
     struct XamlMetaDataProvider : XamlMetaDataProviderT<XamlMetaDataProvider, implementation::XamlMetaDataProvider>
     {
     };
 }
+
+#undef XAML_EXPORT

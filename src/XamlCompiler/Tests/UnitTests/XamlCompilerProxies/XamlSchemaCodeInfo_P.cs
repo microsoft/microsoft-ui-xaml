@@ -44,9 +44,9 @@ namespace Win8Xaml.CompilerProxies
 
         public object Instance { get { return _instance; } }
 
-        public static string GetFullGenericNestedName(Type type, string programmingLanguage)
+        public static string GetFullGenericNestedName(Type type, string programmingLanguage, bool globalized = false)
         {
-            object[] args = new object[] { type, programmingLanguage, false };
+            object[] args = new object[] { type, programmingLanguage, globalized };
             string result = (String)_getFullGenericNestedName.Invoke(null, args);
             return result;
         }
@@ -73,6 +73,20 @@ namespace Win8Xaml.CompilerProxies
                 _otherMetadataProvidersProperty.SetValue(_instance, value);
                 this._otherMetadataProviders = value;
             }
+        }
+
+        public void SetOtherMetadataProviders(IEnumerable<TypeForCodeGen> providers)
+        {
+            // The runtime collection contains the compiler's TypeForCodeGen instances, while the
+            // test assembly uses proxy wrappers. Build the correctly typed List<T> before invoking
+            // the reflected property setter.
+            Type providerType = _otherMetadataProvidersProperty.PropertyType.GetGenericArguments()[0];
+            IList providerList = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(providerType));
+            foreach (TypeForCodeGen provider in providers)
+            {
+                providerList.Add(provider.Instance);
+            }
+            _otherMetadataProvidersProperty.SetValue(_instance, providerList, null);
         }
 
 

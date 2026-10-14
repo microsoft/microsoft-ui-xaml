@@ -31,14 +31,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 // </auto-generated>
 //------------------------------------------------------------------------------
 ");
-  if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { 
+  if (!ProjectInfo.BuildXamlModules) { 
+      if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { 
             this.Write("#include \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(ProjectInfo.PrecompiledHeaderFile));
             this.Write("\"\r\n");
-  }
-            this.Write("\r\n#include <cstdint>\r\n#include <memory>\r\n#include <utility>\r\n\r\n");
-            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTModuleCompatibilityDefinition()));
-            this.Write("\r\n#include \"XamlBindingInfo.xaml.g.h\"\r\n\r\nnamespace winrt::");
+      }
+            this.Write("#include <cstdint>\r\n#include <memory>\r\n#include <utility>\r\n\r\n#include \"XamlBindin" +
+                    "gInfo.xaml.g.h\"\r\n");
+  } 
+            this.Write("\r\nnamespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(ProjectInfo.RootNamespace)));
             this.Write("::implementation\r\n{\r\n\r\nusing DataContextChangedEventArgs = ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.Xaml)));
@@ -72,43 +74,43 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
  }
             this.Write("\r\n// XamlBindings\r\n\r\nXamlBindings::XamlBindings(std::shared_ptr<IXamlBindings>&& " +
                     "pBindings)\r\n    : _pBindings(std::move(pBindings))\r\n{\r\n}\r\n\r\nvoid XamlBindings::I" +
-                    "nitialize()\r\n{\r\n    if (!_pBindings->IsInitialized())\r\n    { \r\n        _pBinding" +
-                    "s->Update();\r\n    }\r\n}\r\n\r\nvoid XamlBindings::Update()\r\n{\r\n    _pBindings->Update" +
-                    "();\r\n}\r\n\r\nvoid XamlBindings::StopTracking()\r\n{\r\n    _pBindings->StopTracking();\r" +
-                    "\n}\r\n\r\nvoid XamlBindings::Loading(FrameworkElement const&, IInspectable const&)\r\n" +
-                    "{\r\n    Initialize();\r\n}\r\n\r\nvoid XamlBindings::Activated(IInspectable const&, Win" +
-                    "dowActivatedEventArgs const&)\r\n{\r\n    Initialize();\r\n}\r\n\r\nvoid XamlBindings::Dat" +
-                    "aContextChanged(\r\n    FrameworkElement const&,\r\n    DataContextChangedEventArgs " +
-                    "const& args)\r\n{\r\n    if (_pBindings->SetDataRoot(args.NewValue()))\r\n    {\r\n     " +
-                    "   Update();\r\n    }\r\n}\r\n\r\nvoid XamlBindings::SubscribeForDataContextChanged(Fram" +
-                    "eworkElement const& object)\r\n{\r\n    _pBindings->SubscribeForDataContextChanged(o" +
-                    "bject, *this);\r\n}\r\n\r\nvoid XamlBindings::DisconnectUnloadedObject(int connectionI" +
-                    "d)\r\n{\r\n    _pBindings->DisconnectUnloadedObject(connectionId);\r\n}\r\n\r\nvoid XamlBi" +
-                    "ndings::Connect(int connectionId, IInspectable const& target)\r\n{\r\n    _pBindings" +
-                    "->Connect(connectionId, target);\r\n}\r\n\r\nIComponentConnector XamlBindings::GetBind" +
-                    "ingConnector(std::int32_t, IInspectable const&)\r\n{\r\n    return nullptr;\r\n}\r\n\r\nbo" +
-                    "ol XamlBindings::ProcessBinding(unsigned int)\r\n{\r\n    throw ::winrt::hresult_not" +
-                    "_implemented {};\r\n}\r\n\r\nint XamlBindings::ProcessBindings(ContainerContentChangin" +
-                    "gEventArgs const& args)\r\n{\r\n    std::int32_t nextPhase;\r\n    _pBindings->Process" +
-                    "Bindings(args.Item(), args.ItemIndex(), args.Phase(), nextPhase);\r\n    return ne" +
-                    "xtPhase;\r\n}\r\n\r\nvoid XamlBindings::ResetTemplate()\r\n{\r\n    _pBindings->Recycle();" +
-                    "\r\n}\r\n\r\nvoid XamlBindings::ProcessBindings(\r\n    IInspectable const& item, int it" +
-                    "emIndex, int phase, std::int32_t& nextPhase)\r\n{\r\n    _pBindings->ProcessBindings" +
-                    "(item, itemIndex, phase, nextPhase);\r\n}\r\n\r\nvoid XamlBindings::Recycle()\r\n{\r\n    " +
-                    "_pBindings->Recycle();\r\n}\r\n\r\n// XamlBindingTrackingBase\r\n\r\nXamlBindingTrackingBa" +
-                    "se::XamlBindingTrackingBase()\r\n{\r\n}\r\n\r\nvoid XamlBindingTrackingBase::SetListener" +
-                    "(IXamlBindingTracking* pBindings)\r\n{\r\n    _pBindingsTrackingWeakRef = pBindings;" +
-                    "\r\n}\r\n\r\nvoid XamlBindingTrackingBase::PropertyChanged(\r\n    IInspectable const& s" +
-                    "ender,\r\n    PropertyChangedEventArgs const&  e)\r\n{\r\n    if (_pBindingsTrackingWe" +
-                    "akRef)\r\n    {\r\n        _pBindingsTrackingWeakRef->PropertyChanged(sender, e);\r\n " +
-                    "   }\r\n}\r\n\r\nvoid XamlBindingTrackingBase::CollectionChanged(\r\n    IInspectable co" +
-                    "nst& sender,\r\n    NotifyCollectionChangedEventArgs const& e)\r\n{\r\n    if (_pBindi" +
-                    "ngsTrackingWeakRef)\r\n    {\r\n        _pBindingsTrackingWeakRef->CollectionChanged" +
-                    "(sender, e);\r\n    }\r\n}\r\n\r\nvoid XamlBindingTrackingBase::DependencyPropertyChange" +
-                    "d(\r\n    DependencyObject const& sender,\r\n    DependencyProperty const& prop)\r\n{\r" +
-                    "\n    if (_pBindingsTrackingWeakRef)\r\n    {\r\n        _pBindingsTrackingWeakRef->D" +
-                    "ependencyPropertyChanged(sender, prop);\r\n    }\r\n}\r\n\r\nvoid XamlBindingTrackingBas" +
-                    "e::VectorChanged(\r\n    IInspectable const& sender,\r\n    ");
+                    "nitialize()\r\n{\r\n    if (!_pBindings->IsInitialized())\r\n    {\r\n        _pBindings" +
+                    "->Update();\r\n    }\r\n}\r\n\r\nvoid XamlBindings::Update()\r\n{\r\n    _pBindings->Update(" +
+                    ");\r\n}\r\n\r\nvoid XamlBindings::StopTracking()\r\n{\r\n    _pBindings->StopTracking();\r\n" +
+                    "}\r\n\r\nvoid XamlBindings::Loading(FrameworkElement const&, IInspectable const&)\r\n{" +
+                    "\r\n    Initialize();\r\n}\r\n\r\nvoid XamlBindings::Activated(IInspectable const&, Wind" +
+                    "owActivatedEventArgs const&)\r\n{\r\n    Initialize();\r\n}\r\n\r\nvoid XamlBindings::Data" +
+                    "ContextChanged(\r\n    FrameworkElement const&,\r\n    DataContextChangedEventArgs c" +
+                    "onst& args)\r\n{\r\n    if (_pBindings->SetDataRoot(args.NewValue()))\r\n    {\r\n      " +
+                    "  Update();\r\n    }\r\n}\r\n\r\nvoid XamlBindings::SubscribeForDataContextChanged(Frame" +
+                    "workElement const& object)\r\n{\r\n    _pBindings->SubscribeForDataContextChanged(ob" +
+                    "ject, *this);\r\n}\r\n\r\nvoid XamlBindings::DisconnectUnloadedObject(int connectionId" +
+                    ")\r\n{\r\n    _pBindings->DisconnectUnloadedObject(connectionId);\r\n}\r\n\r\nvoid XamlBin" +
+                    "dings::Connect(int connectionId, IInspectable const& target)\r\n{\r\n    _pBindings-" +
+                    ">Connect(connectionId, target);\r\n}\r\n\r\nIComponentConnector XamlBindings::GetBindi" +
+                    "ngConnector(std::int32_t, IInspectable const&)\r\n{\r\n    return nullptr;\r\n}\r\n\r\nboo" +
+                    "l XamlBindings::ProcessBinding(unsigned int)\r\n{\r\n    throw ::winrt::hresult_not_" +
+                    "implemented {};\r\n}\r\n\r\nint XamlBindings::ProcessBindings(ContainerContentChanging" +
+                    "EventArgs const& args)\r\n{\r\n    std::int32_t nextPhase;\r\n    _pBindings->ProcessB" +
+                    "indings(args.Item(), args.ItemIndex(), args.Phase(), nextPhase);\r\n    return nex" +
+                    "tPhase;\r\n}\r\n\r\nvoid XamlBindings::ResetTemplate()\r\n{\r\n    _pBindings->Recycle();\r" +
+                    "\n}\r\n\r\nvoid XamlBindings::ProcessBindings(\r\n    IInspectable const& item, int ite" +
+                    "mIndex, int phase, std::int32_t& nextPhase)\r\n{\r\n    _pBindings->ProcessBindings(" +
+                    "item, itemIndex, phase, nextPhase);\r\n}\r\n\r\nvoid XamlBindings::Recycle()\r\n{\r\n    _" +
+                    "pBindings->Recycle();\r\n}\r\n\r\n// XamlBindingTrackingBase\r\n\r\nXamlBindingTrackingBas" +
+                    "e::XamlBindingTrackingBase()\r\n{\r\n}\r\n\r\nvoid XamlBindingTrackingBase::SetListener(" +
+                    "IXamlBindingTracking* pBindings)\r\n{\r\n    _pBindingsTrackingWeakRef = pBindings;\r" +
+                    "\n}\r\n\r\nvoid XamlBindingTrackingBase::PropertyChanged(\r\n    IInspectable const& se" +
+                    "nder,\r\n    PropertyChangedEventArgs const& e)\r\n{\r\n    if (_pBindingsTrackingWeak" +
+                    "Ref)\r\n    {\r\n        _pBindingsTrackingWeakRef->PropertyChanged(sender, e);\r\n   " +
+                    " }\r\n}\r\n\r\nvoid XamlBindingTrackingBase::CollectionChanged(\r\n    IInspectable cons" +
+                    "t& sender,\r\n    NotifyCollectionChangedEventArgs const& e)\r\n{\r\n    if (_pBinding" +
+                    "sTrackingWeakRef)\r\n    {\r\n        _pBindingsTrackingWeakRef->CollectionChanged(s" +
+                    "ender, e);\r\n    }\r\n}\r\n\r\nvoid XamlBindingTrackingBase::DependencyPropertyChanged(" +
+                    "\r\n    DependencyObject const& sender,\r\n    DependencyProperty const& prop)\r\n{\r\n " +
+                    "   if (_pBindingsTrackingWeakRef)\r\n    {\r\n        _pBindingsTrackingWeakRef->Dep" +
+                    "endencyPropertyChanged(sender, prop);\r\n    }\r\n}\r\n\r\nvoid XamlBindingTrackingBase:" +
+                    ":VectorChanged(\r\n    IInspectable const& sender,\r\n    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsFoundationCollections)));
             this.Write("::IVectorChangedEventArgs const& e)\r\n{\r\n    if (_pBindingsTrackingWeakRef)\r\n    {" +
                     "\r\n        _pBindingsTrackingWeakRef->VectorChanged(sender, e);\r\n    }\r\n}\r\n\r\nvoid" +
@@ -119,9 +121,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                     "}\r\n}\r\n");
  if (ProjectInfo.IsInputValidationEnabled) {
             this.Write("\r\nvoid XamlBindingTrackingBase::ErrorsChanged(\r\n    IInspectable const& sender,\r\n" +
-                    "    DataErrorsChangedEventArgs const&  e)\r\n{\r\n    if (_pBindingsTrackingWeakRef)" +
-                    "\r\n    {\r\n        _pBindingsTrackingWeakRef->ErrorsChanged(sender, e);\r\n    }\r\n}\r" +
-                    "\n");
+                    "    DataErrorsChangedEventArgs const& e)\r\n{\r\n    if (_pBindingsTrackingWeakRef)\r" +
+                    "\n    {\r\n        _pBindingsTrackingWeakRef->ErrorsChanged(sender, e);\r\n    }\r\n}\r\n" +
+                    "");
  }
             this.Write(@"
 void XamlBindingTrackingBase::UpdatePropertyChangedListener(
@@ -162,11 +164,11 @@ void XamlBindingTrackingBase::UpdatePropertyChangedListener(
                     "  DependencyObject& cache,\r\n    std::int64_t& token)\r\n{\r\n    if (cache && cache " +
                     "!= obj)\r\n    {\r\n        cache.UnregisterPropertyChangedCallback(property, token)" +
                     ";\r\n        cache = nullptr;\r\n    }\r\n\r\n    if (!cache && obj)\r\n    {\r\n        cac" +
-                    "he = obj;\r\n        token = obj.RegisterPropertyChangedCallback(property, \r\n     " +
-                    "       { this, &XamlBindingTrackingBase::DependencyPropertyChanged });\r\n    }\r\n}" +
-                    "\r\n\r\nvoid XamlBindingTrackingBase::UpdateDependencyPropertyChangedListener(\r\n    " +
-                    "DependencyObject const& obj,\r\n    DependencyProperty const& property,\r\n    winrt" +
-                    "::weak_ref<");
+                    "he = obj;\r\n        token = obj.RegisterPropertyChangedCallback(property,\r\n      " +
+                    "      { this, &XamlBindingTrackingBase::DependencyPropertyChanged });\r\n    }\r\n}\r" +
+                    "\n\r\nvoid XamlBindingTrackingBase::UpdateDependencyPropertyChangedListener(\r\n    D" +
+                    "ependencyObject const& obj,\r\n    DependencyProperty const& property,\r\n    winrt:" +
+                    ":weak_ref<");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.Xaml)));
             this.Write(@"::DependencyObject>& cacheRef,
     std::int64_t& token)
@@ -182,7 +184,7 @@ void XamlBindingTrackingBase::UpdatePropertyChangedListener(
     if (!cache && obj)
     {
         cacheRef = cache = obj;
-        token = obj.RegisterPropertyChangedCallback(property, 
+        token = obj.RegisterPropertyChangedCallback(property,
             { this, &XamlBindingTrackingBase::DependencyPropertyChanged });
     }
 }

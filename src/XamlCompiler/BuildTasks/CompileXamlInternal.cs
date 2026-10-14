@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 namespace Microsoft.UI.Xaml.Markup.Compiler
@@ -175,7 +175,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public bool EnableWin32Codegen { get; private set; }
         public bool UsingCSWinRT { get; private set; }
         public bool EnableBindingDiagnostics { get; private set; }
-        public bool UseCppWinRTNamedModules { get; private set; }
+        public bool BuildXamlModules { get; private set; }
 
         // Controls whether or not usage of features (platform API, x:Bind functionality,
         // conditional XAML, etc.) should be validated against TargetPlatformMinVersion
@@ -187,6 +187,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         #endregion
 
         #region Output Properties
+
+        public Dictionary<string, string> GeneratedModuleNames { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public IList<string> GeneratedCodeFiles
         {
@@ -330,7 +332,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             EnableWin32Codegen = FeatureControlFlags.HasFlag(FeatureCtrlFlags.EnableWin32Codegen);
             UsingCSWinRT = FeatureControlFlags.HasFlag(FeatureCtrlFlags.UsingCSWinRT);
             EnableBindingDiagnostics = FeatureControlFlags.HasFlag(FeatureCtrlFlags.EnableBindingDiagnostics);
-            UseCppWinRTNamedModules = FeatureControlFlags.HasFlag(FeatureCtrlFlags.CppWinRTNamedModules);
+            BuildXamlModules = FeatureControlFlags.HasFlag(FeatureCtrlFlags.CppWinRTNamedModules);
             IgnoreSpecifiedTargetPlatformMinVersion = IgnoreSpecifiedTargetPlatformMinVersion;
 
             XamlApplications = GetFileItems(i.XamlApplications);
@@ -473,6 +475,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 {
                     DeleteGeneratedCodeFileAndBackup(generatedCodePrefix + Language.Pass1Extension);
                     DeleteGeneratedCodeFileAndBackup(generatedCodePrefix + Language.Pass2Extension);
+                    if (Language.Name == ProgrammingLanguage.CppWinRT)
+                    {
+                        DeleteGeneratedCodeFileAndBackup(generatedCodePrefix + ".xaml.g.ixx");
+                        // Module-mode Pass2 consumers use .xaml.g.cpp instead of the legacy
+                        // .xaml.g.hpp; remove the source when its XAML class disappears.
+                        DeleteGeneratedCodeFileAndBackup(generatedCodePrefix + ".xaml.g.cpp");
+                    }
                 }
 
                 SaveState.XamlPerFileInfo.Remove(badFile);
@@ -660,6 +669,17 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             if (Language.IsNative)
             {
                 _generatedCodeFiles.Add(srcOutputFileName1);
+                if (!IsPass1 && Language.Name == ProgrammingLanguage.CppWinRT && BuildXamlModules)
+                {
+                    // Module-mode page implementations use a dedicated .xaml.g.cpp
+                    // extension. Report the actual file so the native targets can add
+                    // it to ClCompile; the legacy Pass2Extension is .xaml.g.hpp.
+                    string moduleImplementationFile = Path.Combine(targetFolder, codeFileName + ".xaml.g.cpp");
+                    if (File.Exists(moduleImplementationFile))
+                    {
+                        _generatedCodeFiles.Add(moduleImplementationFile);
+                    }
+                }
                 if (!IsPass1 && this.CodeGenerationControlFlags.HasFlag(CodeGenCtrlFlags.IncrementalTypeInfoCodeGen))
                 {
                     string pageCodeFile = Path.Combine(targetFolder, codeFileName + Language.Pass2Extension);
@@ -773,6 +793,120 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
         }
 
+        private void UpdateCppWinRTXamlModules()
+        {
+            if (!IsPass1 || IsDesignTimeBuild || Language.Name != ProgrammingLanguage.CppWinRT)
+            {
+                return;
+            }
+
+            // ProjectXamlTaskItems includes saved names for unchanged files, rather than
+            // only the current harvest workset. Module packaging follows this full state.
+            var classNames = SourceFileManager.ProjectXamlTaskItems
+                .Where(item => !ShouldSuppressPageCodeGen() || item.IsApplication)
+                .Select(item => item.ClassFullName)
+                .Where(name => !String.IsNullOrWhiteSpace(name))
+                .Distinct(StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal).ToList();
+            bool buildModules = BuildXamlModules && SourceFileManager.ProjectXamlTaskItems.Any();
+            var activePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var modules = new List<string>();
+            string rootModule = CppWinRTProjectionDependency.GetXamlPrimaryModuleName(RootNamespace);
+            if (buildModules)
+            {
+                foreach (var codeFile in SourceFileManager.CodeGenFiles)
+                {
+                    if (ShouldSuppressPageCodeGen() && !codeFile.XamlTaskItems.Any(item => item.IsApplication))
+                    {
+                        continue;
+                    }
+
+                    string path = Path.Combine(codeFile.TargetFolderFullPath, codeFile.BaseFileName + ".xaml.g.ixx");
+                    activePaths.Add(path);
+                    GeneratedModuleNames[path] = CppWinRTProjectionDependency.GetXamlClassModuleName(RootNamespace, codeFile.XamlTaskItems.First().ClassFullName);
+                    if (File.Exists(path) && !_generatedCodeFiles.Contains(path))
+                    {
+                        _generatedCodeFiles.Add(path);
+                    }
+                }
+
+                // BindingInfo and TypeInfo are independent generated module interfaces.
+                // Keep them in the active-file set and the logical module manifest so
+                // stale cleanup never removes a freshly generated interface.
+                string bindingInfoPath = Path.Combine(OutputFolderFullpath, "XamlBindingInfo.xaml.g.ixx");
+                if (File.Exists(bindingInfoPath))
+                {
+                    activePaths.Add(bindingInfoPath);
+                    GeneratedModuleNames[bindingInfoPath] = CppWinRTProjectionDependency.GetBindingInfoModuleName(RootNamespace);
+                    if (!_generatedCodeFiles.Contains(bindingInfoPath))
+                    {
+                        _generatedCodeFiles.Add(bindingInfoPath);
+                    }
+                    modules.Add(CppWinRTProjectionDependency.GetBindingInfoModuleName(RootNamespace));
+                }
+
+                if (!ShouldSuppressTypeInfoCodeGen())
+                {
+                    string typeInfoPath = Path.Combine(OutputFolderFullpath, "XamlTypeInfo.xaml.g.ixx");
+                    if (File.Exists(typeInfoPath))
+                    {
+                        activePaths.Add(typeInfoPath);
+                        GeneratedModuleNames[typeInfoPath] = CppWinRTProjectionDependency.GetTypeInfoModuleName(RootNamespace);
+                        if (!_generatedCodeFiles.Contains(typeInfoPath))
+                        {
+                            _generatedCodeFiles.Add(typeInfoPath);
+                        }
+                        modules.Add(CppWinRTProjectionDependency.GetTypeInfoModuleName(RootNamespace));
+                    }
+                }
+
+                // The public root is only an aggregator over independent per-class interfaces.
+                // There is deliberately no Application_Xaml.Support contract.
+                var shared = new List<FileNameAndContentPair>
+                {
+                    new FileNameAndContentPair("Application_Xaml.g.ixx", CppWinRTProjectionDependency.WriteAggregator(RootNamespace, classNames))
+                };
+                WriteOutputFilesToDisk(shared, OutputFolderFullpath, true);
+                string aggregatorPath = Path.Combine(OutputFolderFullpath, "Application_Xaml.g.ixx");
+                if (!_generatedCodeFiles.Contains(aggregatorPath))
+                {
+                    _generatedCodeFiles.Add(aggregatorPath);
+                }
+                GeneratedModuleNames[aggregatorPath] = rootModule;
+                modules.Add(rootModule);
+                modules.AddRange(classNames.Select(name => CppWinRTProjectionDependency.GetXamlClassModuleName(RootNamespace, name)));
+
+                // Delete obsolete support-module artifacts from earlier revisions.
+                DeleteGeneratedCodeFileAndBackup(Path.Combine(OutputFolderFullpath, "Application_Xaml.Support.g.ixx"));
+                DeleteGeneratedCodeFileAndBackup(Path.Combine(OutputFolderFullpath, "XamlSupport.g.ixx"));
+            }
+
+            if (Directory.Exists(OutputFolderFullpath))
+            {
+                foreach (var path in Directory.GetFiles(OutputFolderFullpath, "*.xaml.g.ixx", SearchOption.AllDirectories))
+                {
+                    if (!activePaths.Contains(path))
+                    {
+                        DeleteGeneratedCodeFileAndBackup(path);
+                    }
+                }
+            }
+
+            if (!buildModules)
+            {
+                foreach (string name in new[] { "Application_Xaml.Support.g.ixx", "XamlSupport.g.ixx", "Application_Xaml.g.ixx", "XamlModules.list" })
+                {
+                    DeleteGeneratedCodeFileAndBackup(Path.Combine(OutputFolderFullpath, name));
+                }
+                return;
+            }
+
+            WriteOutputFilesToDisk(new List<FileNameAndContentPair>
+            {
+                new FileNameAndContentPair("XamlModules.list", String.Join(Environment.NewLine, modules.Distinct(StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal)) + Environment.NewLine)
+            }, OutputFolderFullpath, true);
+            _generatedCodeFiles.Add(Path.Combine(OutputFolderFullpath, "XamlModules.list"));
+        }
+
         internal void UpdateGeneratedFilesLists()
         {
             foreach (ClassCodeGenFile codeGenFile in SourceFileManager.CodeGenFiles)
@@ -812,9 +946,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
                     // Native Pass1 normally regenerates these shared headers after per-class
                     // code generation. The no-change shortcut returns before those generators
-                    // run, so report the existing files explicitly. Named-module builds depend
-                    // on XamlBindingInfo.xaml.g.h as the Application_Xaml primary interface and
-                    // on XamlTypeInfo.xaml.g.h as its optional TypeInfo partition.
+                    // run, so report the existing files explicitly. Incremental builds depend
+                    // on XamlBindingInfo.xaml.g.h for support declarations and on
+                    // XamlTypeInfo.xaml.g.h for its optional TypeInfo declarations.
                     extraFilePaths.Add(Path.Combine(
                         SourceFileManager.OutputFolderFullpath,
                         KnownStrings.XamlBindingInfo + Language.Pass1Extension));
@@ -916,10 +1050,26 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             // Clean removed items before the no-XAML early exit. Otherwise removing the final
             // XAML item leaves both its saved state and generated C++ headers behind.
             bool didProjectXamlItemsChange = CleanUpSavedState();
+            if (IsPass1 && Language.Name == ProgrammingLanguage.CppWinRT && BuildXamlModules)
+            {
+                string manifest = Path.Combine(OutputFolderFullpath, "XamlModules.list");
+                var previousModules = new HashSet<string>(File.Exists(manifest) ? File.ReadAllLines(manifest) : Array.Empty<string>(), StringComparer.Ordinal);
+                foreach (var item in SourceFileManager.ProjectXamlTaskItems)
+                {
+                    if ((!ShouldSuppressPageCodeGen() || item.IsApplication) && !String.IsNullOrWhiteSpace(item.ClassFullName) &&
+                        (!previousModules.Contains(CppWinRTProjectionDependency.GetXamlClassModuleName(RootNamespace, item.ClassFullName)) ||
+                         !File.Exists(item.GeneratedCodePathPrefix + ".xaml.g.ixx")))
+                    {
+                        item.IsForcedOutOfDate = true;
+                    }
+                }
+            }
+
 
             // if there are no XAML files then issue a warning and exit (successfully), because we have nothing to do.
             if ((XamlApplications == null || !XamlApplications.Any()) && (XamlPages == null || XamlPages.Count == 0))
             {
+                UpdateCppWinRTXamlModules();
                 LogWarning(new XamlValidationWarningNoXaml());
                 return true;        // exit the compiler but not as a failure, just "done"
             }
@@ -963,6 +1113,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 {
                     // TODO: does this fix the file generation issue
                     UpdateGeneratedFilesLists();
+                    UpdateCppWinRTXamlModules();
                     areGeneratedFilesListsUpdated = true;
 
                     bool haveXamlTypeInfo = ShortcutBackupRestoreXamlTypeInfoFile_WhenNothingExternalHasChanged();
@@ -1091,28 +1242,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     }
                 }
 
-                // The C++/WinRT XAML umbrella module needs the complete project x:Class set,
-                // including files skipped by incremental Pass1. ProjectXamlTaskItems restores
-                // ClassFullName from SaveState and refreshes it when a XAML file changes.
-                if (Language.Name == ProgrammingLanguage.CppWinRT && _projectInfo.UseCppWinRTNamedModules)
-                {
-                    IEnumerable<TaskItemFilename> moduleXamlItems = SourceFileManager.ProjectXamlTaskItems;
-                    if (ShouldSuppressPageCodeGen())
-                    {
-                        // NoPageCodeGen suppresses non-Application pages only. App.xaml still
-                        // generates AppPass1/AppPass2, so its module partition must remain
-                        // reachable from the Application_Xaml primary interface.
-                        moduleXamlItems = moduleXamlItems.Where(item => item.IsApplication);
-                    }
-
-                    _projectInfo.XamlClassNames = moduleXamlItems
-                        .Select(item => item.ClassFullName)
-                        .Where(className => !String.IsNullOrWhiteSpace(className))
-                        .Distinct(StringComparer.Ordinal)
-                        .OrderBy(className => className, StringComparer.Ordinal)
-                        .ToList();
-                }
-
                 // Create Code Generator
                 _codeGenerator = new XamlCodeGenerator(Language, IsPass1, _projectInfo, _typeInfoCollector.SchemaInfo);
                 if (IsPass1 && Language.Name == ProgrammingLanguage.CSharp)
@@ -1171,8 +1300,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 // UpdateGeneratedFilesLists runs before GenerateTypeInfo on the normal path.
                 // In native Pass1, XamlTypeInfo.xaml.g.h therefore does not exist yet when
                 // that list is populated on a clean build. Report the newly materialized
-                // TypeInfo partition explicitly so the MSBuild module-registration target
-                // can compile it with the other Application_Xaml interfaces.
+                // TypeInfo header explicitly so incremental clean can preserve the generated header.
                 if (IsPass1 && Language.IsNative && !ShouldSuppressTypeInfoCodeGen())
                 {
                     string xamlTypeInfoPass1 = Path.Combine(
@@ -1183,6 +1311,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                         _generatedCodeFiles.Add(xamlTypeInfoPass1);
                     }
                 }
+
+                UpdateCppWinRTXamlModules();
 
                 try
                 {
@@ -1587,6 +1717,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 if (codeFiles.Count != 1 || Language.IsNative)
                 {
                     WriteOutputFilesToDisk(codeFiles, OutputFolderFullpath, true);
+                ReportGeneratedModuleImplementationFiles(codeFiles, OutputFolderFullpath);
                 }
                 else
                 {
@@ -2040,6 +2171,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 }
                 codeFiles = _codeGenerator.GenerateBindingInfo(observableVectorTypes, observableMapTypes, bindingSetters, eventBindingUsed);
                 WriteOutputFilesToDisk(codeFiles, OutputFolderFullpath, true);
+                ReportGeneratedModuleImplementationFiles(codeFiles, OutputFolderFullpath);
             }
         }
 
@@ -2138,7 +2270,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
             projectInfo.IsWin32App = EnableWin32Codegen;
             projectInfo.UsingCSWinRT = UsingCSWinRT;
-            projectInfo.UseCppWinRTNamedModules = UseCppWinRTNamedModules;
+            projectInfo.BuildXamlModules = BuildXamlModules;
             projectInfo.PrecompiledHeaderFile = PrecompiledHeaderFile;
             projectInfo.EnabledXamlOptionalChanges = ParseCommaSeparatedList(EnabledXamlOptionalChanges);
             projectInfo.DisabledXamlOptionalChanges = ParseCommaSeparatedList(DisabledXamlOptionalChanges);
@@ -2381,6 +2513,23 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
         }
 
+        private void ReportGeneratedModuleImplementationFiles(IEnumerable<FileNameAndContentPair> generatedFiles, string targetFolder)
+        {
+            if (IsPass1 || Language.Name != ProgrammingLanguage.CppWinRT || !BuildXamlModules || generatedFiles == null)
+            {
+                return;
+            }
+
+            foreach (var generatedFile in generatedFiles.Where(file => file.FileName.EndsWith(".xaml.g.cpp", StringComparison.OrdinalIgnoreCase)))
+            {
+                string generatedPath = Path.Combine(targetFolder, generatedFile.FileName);
+                if (!_generatedCodeFiles.Contains(generatedPath))
+                {
+                    _generatedCodeFiles.Add(generatedPath);
+                }
+            }
+        }
+
         private bool GeneratePageOutputFiles(XamlClassCodeInfo classCodeInfo)
         {
             List<FileNameAndContentPair> generatedCodeFiles = null;
@@ -2486,6 +2635,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
             PerformanceUtility.FireCodeMarker(CodeMarkerEvent.perfXC_WriteFilesToDiskStart);
             WriteOutputFilesToDisk(generatedCodeFiles, classCodeInfo.TargetFolder, true);
+            ReportGeneratedModuleImplementationFiles(generatedCodeFiles, classCodeInfo.TargetFolder);
             WriteOutputFilesToDisk(generatedXamlFiles, classCodeInfo.TargetFolder, true);
             PerformanceUtility.FireCodeMarker(CodeMarkerEvent.perfXC_WriteFilesToDiskEnd);
             return true;
@@ -3230,12 +3380,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         private bool ShouldSuppressTypeInfoCodeGen()
         {
-            return _projectInfo.HasCodeGenFlag(CodeGenCtrlFlags.NoTypeInfoCodeGen);
+            return CodeGenerationControlFlags.HasFlag(CodeGenCtrlFlags.NoTypeInfoCodeGen);
         }
 
         private bool ShouldSuppressPageCodeGen()
         {
-            return _projectInfo.HasCodeGenFlag(CodeGenCtrlFlags.NoPageCodeGen);
+            return CodeGenerationControlFlags.HasFlag(CodeGenCtrlFlags.NoPageCodeGen);
         }
 
         internal BuildTaskFileService TaskFileService { get; set; }
