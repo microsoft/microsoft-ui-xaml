@@ -378,6 +378,58 @@ public sealed partial class HierarchyPage : SamplePageBase
         var target = menuItem.DataContext is Employee employee ? employee.Name : _menuGroup?.KeyText ?? "?";
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0}: {1}", menuItem.Text, target));
     }
+
+    private void OnPromoteClick(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is not Employee { CanPromote: true } employee)
+        {
+            return;
+        }
+
+        var from = employee.Title;
+        employee.Title = from == "Associate" ? "Engineer" : "Senior";
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Promoted {0} from {1} to {2}", employee.Name, from, employee.Title));
+    }
+
+    private void OnRemoveMentorClick(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is Employee employee)
+        {
+            employee.MentorId = null;
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0}'s mentor", employee.Name));
+        }
+    }
+
+    // Mentor = the employee's manager, unless that would put the employee in its own mentor chain.
+    private void OnAssignMentorClick(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is not Employee employee)
+        {
+            return;
+        }
+
+        var mentorOf = _employees.ToDictionary(x => x.Id, x => x.MentorId);
+        int? id = employee.ManagerId;
+        for (int hops = 0; id is int current && hops <= _employees.Count; hops++)
+        {
+            if (current == employee.Id)
+            {
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "No mentor for {0} without a cycle", employee.Name));
+                return;
+            }
+
+            id = mentorOf.GetValueOrDefault(current);
+        }
+
+        if (employee.ManagerId is not int managerId)
+        {
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} has no manager to mentor them", employee.Name));
+            return;
+        }
+
+        employee.MentorId = managerId;
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} is now mentored by their manager", employee.Name));
+    }
     // </snippet>
 
     private void Reset_Click(object sender, RoutedEventArgs e)

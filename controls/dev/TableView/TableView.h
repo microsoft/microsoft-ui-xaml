@@ -420,9 +420,15 @@ public:
         int32_t visibleColumnIndex,
         winrt::FocusState focusState = winrt::FocusState::Keyboard);
 
-    TableViewDetails::ContextMenuResult ProcessContextMenuRequest(
+    // Returns true when the request is handled: a menu was shown, or the request was suppressed
+    // because its target changed while it was being processed. False leaves it to bubble on to
+    // the native ContextFlyout chain.
+    bool ProcessContextMenuRequest(
         TableViewDetails::ContextMenuTarget target,
         winrt::ContextRequestedEventArgs const& args);
+
+    // A column a context menu request can target: in this table's Columns, owned by it, Visible.
+    bool IsContextMenuColumn(winrt::TableViewColumn const& column) const;
 
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 

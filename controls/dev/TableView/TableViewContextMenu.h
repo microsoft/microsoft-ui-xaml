@@ -23,13 +23,6 @@ namespace TableViewDetails
         winrt::Panel ScopeRoot{ nullptr };
     };
 
-    enum class ContextMenuResult
-    {
-        Unhandled,
-        Suppressed,
-        Shown,
-    };
-
     struct ContextMenuCandidate
     {
         winrt::FlyoutBase Flyout{ nullptr };

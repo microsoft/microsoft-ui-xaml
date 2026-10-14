@@ -6,7 +6,8 @@ using System.Runtime.CompilerServices;
 namespace TableViewSampleApp.Data;
 
 // Flat row model: no Level/IsExpanded/children. The tree comes from key selectors (Id plus
-// ManagerId or MentorId), so one list can show two relations. Observable for live shaping.
+// ManagerId or MentorId), so one list can show two relations. Observable for live shaping, and so
+// row menu items bound to HasMentor / CanPromote update while a menu is reused across rows.
 public sealed class Employee : INotifyPropertyChanged
 {
     private int? _managerId;
@@ -17,23 +18,51 @@ public sealed class Employee : INotifyPropertyChanged
 
     public int Id { get; set; }
     public int? ManagerId { get => _managerId; set => Set(ref _managerId, value); }
-    public int? MentorId { get => _mentorId; set => Set(ref _mentorId, value); }
+    public int? MentorId
+    {
+        get => _mentorId;
+        set
+        {
+            if (Set(ref _mentorId, value))
+            {
+                OnPropertyChanged(nameof(HasMentor));
+            }
+        }
+    }
     public string Name { get => _name; set => Set(ref _name, value); }
-    public string Title { get => _title; set => Set(ref _title, value); }
+    public string Title
+    {
+        get => _title;
+        set
+        {
+            if (Set(ref _title, value))
+            {
+                OnPropertyChanged(nameof(CanPromote));
+            }
+        }
+    }
     public string Dept { get => _dept; set => Set(ref _dept, value); }
+
+    public bool HasMentor => MentorId is not null;
+
+    // Individual-contributor titles below Senior can be promoted one step.
+    public bool CanPromote => Title is "Engineer" or "Associate";
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private void Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
+    private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
-            return;
+            return false;
         }
 
         field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        OnPropertyChanged(name);
+        return true;
     }
+
+    private void OnPropertyChanged(string? name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
 
 internal static class HierarchyData
