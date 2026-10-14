@@ -86,21 +86,6 @@ namespace ShapingHelpers
         }
     }
 
-    void RowExpansionModel::Clear()
-    {
-        if (m_nonDefault.empty())
-        {
-            return;
-        }
-
-        m_nonDefault.clear();
-
-        Change change;
-        change.AffectsAllKeys = true;
-        change.IsExpanded = m_defaultExpanded;
-        RaiseChanged(std::move(change));
-    }
-
     void RowExpansionModel::RaiseChanged(Change change) const
     {
         if (m_changed)

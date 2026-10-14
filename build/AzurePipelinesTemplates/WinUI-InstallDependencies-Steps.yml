@@ -120,17 +120,18 @@ steps:
       includeNuGetOrg: false
 
   - task: VSBuild@1
-    displayName: 'Restore Maestro dependencies'
-    condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    displayName: 'Restore component dependencies'
     inputs:
-      solution: '$(Build.SourcesDirectory)\eng\Microsoft.MaestroRestore.csproj'
+      solution: '$(Build.SourcesDirectory)\eng\RestoreComponentDependencies.csproj'
       msBuildArgs: '/t:restore'
 
+  # Same project as above; IsInternalWinUIBuild=false selects its public-package ItemGroup.
+  # Skipped for the mono-build, which consumes the transport packages restored above.
   - task: VSBuild@1
-    displayName: 'Restore OSS Maestro dependencies'
-    condition: and(succeeded(), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
+    displayName: 'Restore OSS component dependencies'
+    condition: and(succeeded(), ne(variables['IsInternalWinUIBuild'], 'true'), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
     inputs:
-      solution: '$(Build.SourcesDirectory)\eng\Microsoft.MaestroRestore.csproj'
+      solution: '$(Build.SourcesDirectory)\eng\RestoreComponentDependencies.csproj'
       msBuildArgs: '/t:restore /p:IsInternalWinUIBuild=false'
 
   - task: PowerShell@2
