@@ -5,7 +5,6 @@
 
 #include <FrameworkApplication.g.h>
 #include <XamlIslandRootCollection.g.h>
-#include <MetadataResetter.h>
 #include "theming\inc\Theme.h"
 
 XAML_ABI_NAMESPACE_BEGIN
@@ -57,8 +56,6 @@ namespace DirectUI
         static Theming::Theme GetApplicationRequestedTheme();
 
         static _Check_return_ HRESULT GetApplicationHighContrastAdjustment(_Out_ ApplicationHighContrastAdjustment* pApplicationHighContrastAdjustment);
-
-        std::shared_ptr<MetadataResetter> GetMetadataReference();
 
         AppPolicyWindowingModel GetAppPolicyWindowingModel() { return m_appPolicyWindowingModel; }
 
@@ -193,8 +190,6 @@ namespace DirectUI
         xstring_ptr m_appXamlPath;
 
         XAML::PLM::PLMHandler* m_pPLMHandlerForMTA { nullptr };
-
-        std::shared_ptr<MetadataResetter> m_metadataRef;
 
         // Stores the current FocusVisualKind property value.
         xaml::FocusVisualKind m_focusVisualKind { xaml::FocusVisualKind_DottedLine };

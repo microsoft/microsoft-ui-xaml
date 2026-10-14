@@ -116,12 +116,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyGamepadFocusBehavior)
             TEST_METHOD_PROPERTY(L"Description", L"Verfies that only the overlay pane traps focus within the pane until it is open")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateFootprint)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the ActualWidth of SplitView's Content and Pane content in various configurations.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanNotShiftTabOutOfPaneWhenContentsIsListView)
@@ -130,7 +130,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyKeyboardFocusBehavior)
             TEST_METHOD_PROPERTY(L"Description", L"Verfies that the overlay pane will capture keyboard focus when opened and cycles focus within the pane when tab is pressed repeatedly.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
         END_TEST_METHOD()
 
@@ -157,7 +157,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(OpenSplitViewWithNoElementsFocused)
             TEST_METHOD_PROPERTY(L"Description", L"When a SplitView is opened when nothing has focus, it should correctly focus its Pane")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DoesNotFireOpenedOrClosedEventOnDisplayModeChange)
