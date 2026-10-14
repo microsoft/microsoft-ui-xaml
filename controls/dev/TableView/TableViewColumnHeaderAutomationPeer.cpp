@@ -13,7 +13,9 @@
 #include "Utils.h"
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
+#include <cwctype>
 #include <limits>
+#include <string_view>
 
 namespace
 {
@@ -178,7 +180,19 @@ hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
         return toolTipText;
     }
 
-    return StringUtil::FormatString(format, toolTipText.c_str(), sortText.c_str());
+    // The format supplies its own separator; a tooltip written as a sentence would otherwise read "..".
+    std::wstring_view trimmedToolTip{ toolTipText };
+    while (!trimmedToolTip.empty() &&
+        (trimmedToolTip.back() == L'.' || trimmedToolTip.back() == L'\u3002' || std::iswspace(trimmedToolTip.back())))
+    {
+        trimmedToolTip.remove_suffix(1);
+    }
+    if (trimmedToolTip.empty())
+    {
+        return sortText;
+    }
+
+    return StringUtil::FormatString(format, std::wstring{ trimmedToolTip }.c_str(), sortText.c_str());
 }
 
 winrt::IInspectable TableViewColumnHeaderAutomationPeer::GetPatternCore(winrt::PatternInterface patternInterface)

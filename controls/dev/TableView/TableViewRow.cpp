@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableViewRow.h"
 #include "TableViewToolTipHelpers.h"
+#include "TableViewFocusHelpers.h"
 #include "TableView.h"
 #include "TableViewColumn.h"
 #include "TableViewCellsPanel.h"
@@ -43,6 +44,30 @@ namespace
     {
         return visibility == winrt::TableViewGridLinesVisibility::Vertical ||
             visibility == winrt::TableViewGridLinesVisibility::All;
+    }
+
+    // These run from OnDataContextChanged inside the rows list measure. A redundant write still
+    // invalidates measure, which repeated per row per pass trips the layout-cycle failfast, so every
+    // layout-affecting write on that path must be a no-op when the value is already in place.
+    void ClearLocalValueIfSet(winrt::DependencyObject const& target, winrt::DependencyProperty const& property)
+    {
+        if (target.ReadLocalValue(property) != winrt::DependencyProperty::UnsetValue())
+        {
+            target.ClearValue(property);
+        }
+    }
+
+    void SetThicknessIfChanged(
+        winrt::DependencyObject const& target,
+        winrt::DependencyProperty const& property,
+        winrt::Thickness const& value)
+    {
+        auto const current = target.ReadLocalValue(property);
+        if (current == winrt::DependencyProperty::UnsetValue() ||
+            winrt::unbox_value_or<winrt::Thickness>(current, winrt::Thickness{ -1, -1, -1, -1 }) != value)
+        {
+            target.SetValue(property, winrt::box_value(value));
+        }
     }
 
     // Slop allowed between the two presses of a double-click, in DIPs.
@@ -478,11 +503,17 @@ void TableViewRow::ApplyFocusLevelInternal()
     if (m_isCellLevel)
     {
         SetCellsTabStopInternal(true);
-        IsTabStop(false);
+        if (IsTabStop())
+        {
+            IsTabStop(false);
+        }
     }
     else
     {
-        IsTabStop(true);
+        if (!IsTabStop())
+        {
+            IsTabStop(true);
+        }
         SetCellsTabStopInternal(false);
     }
 }
@@ -497,7 +528,10 @@ void TableViewRow::SetCellsTabStopInternal(bool isTabStop)
         {
             if (auto const child = children.GetAt(i))
             {
-                child.IsTabStop(isTabStop);
+                if (child.IsTabStop() != isTabStop)
+                {
+                    child.IsTabStop(isTabStop);
+                }
             }
         }
     }
@@ -1742,12 +1776,17 @@ void TableViewRow::ResetCellAutomationNames()
     }
 }
 
-void TableViewRow::RaiseCellAutomationNamesChangedInternal()
+void TableViewRow::RaiseCellAutomationNamesChangedInternal(winrt::UIElement const& skipCell)
 {
     if (auto const host = m_cellsHost.get())
     {
         for (auto const& cell : host.Children())
         {
+            if (skipCell && cell == skipCell)
+            {
+                continue;
+            }
+
             try
             {
                 if (auto const peer = TableViewCell::TryGetExistingPeer(cell)
@@ -1802,7 +1841,10 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     // Compact = 30, Comfortable = 48; resolved from the TableViewRowMinHeight* resources).
     const auto ownerImpl = winrt::get_self<TableView>(owner);
     const auto rowMinHeight = ownerImpl->GetDensityRowMinHeight();
-    MinHeight(rowMinHeight);
+    if (MinHeight() != rowMinHeight)
+    {
+        MinHeight(rowMinHeight);
+    }
 
     auto columns = owner.Columns();
     auto isOwnedColumn = [&owner](winrt::TableViewColumn const& column)
@@ -1932,14 +1974,23 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
             auto cellWrapper = children.GetAt(childIndex).as<winrt::Grid>();
             // Do NOT re-push data during ItemsRepeater measure: live DataContext/Content mutation re-entered layout and hit 0xc0000420 on scroll.
             // Cells must update reactively from inherited DataContext; only equal-valued visual restamps are safe here.
-            cellWrapper.Visibility(column.Visibility());
-            cellWrapper.MinHeight(rowMinHeight);
+            if (cellWrapper.Visibility() != column.Visibility())
+            {
+                cellWrapper.Visibility(column.Visibility());
+            }
+            if (cellWrapper.MinHeight() != rowMinHeight)
+            {
+                cellWrapper.MinHeight(rowMinHeight);
+            }
 
             if (auto cellElement = TableViewCell::Child(cellWrapper).try_as<winrt::FrameworkElement>())
             {
                 if (auto textBlock = cellElement.try_as<winrt::TextBlock>())
                 {
-                    textBlock.Padding(cellPadding);
+                    if (textBlock.Padding() != cellPadding)
+                    {
+                        textBlock.Padding(cellPadding);
+                    }
                 }
             }
 
@@ -2117,11 +2168,11 @@ void TableViewRow::RefreshGridLines()
     const auto visibility = owner.GridLinesVisibility();
     if (WantsHorizontalLines(visibility))
     {
-        ClearValue(winrt::Control::BorderThicknessProperty());
+        ClearLocalValueIfSet(*this, winrt::Control::BorderThicknessProperty());
     }
     else
     {
-        BorderThickness(s_zeroThickness);
+        SetThicknessIfChanged(*this, winrt::Control::BorderThicknessProperty(), s_zeroThickness);
     }
 
     if (auto gridLineBorder = m_gridLineBorder.get())
@@ -2131,7 +2182,10 @@ void TableViewRow::RefreshGridLines()
         {
             thickness.Bottom = 0.0;
         }
-        gridLineBorder.BorderThickness(thickness);
+        if (gridLineBorder.BorderThickness() != thickness)
+        {
+            gridLineBorder.BorderThickness(thickness);
+        }
     }
 
     auto host = m_cellsHost.get();
@@ -2177,20 +2231,27 @@ void TableViewRow::RefreshGridLines()
             {
                 // RTL-aware thickness, not the LTR-only static: the separator must sit on the
                 // trailing edge in both flow directions.
-                cellWrapper.BorderThickness(verticalThickness);
+                if (cellWrapper.BorderThickness() != verticalThickness)
+                {
+                    cellWrapper.BorderThickness(verticalThickness);
+                }
                 // Keep the separator's layout thickness stable and suppress only its brush when
                 // the terminal cell actually meets the outer border.
-                cellWrapper.BorderBrush(
+                auto const brush =
                     m_suppressTrailingGridLine &&
                     cellWrapper.Visibility() == winrt::Visibility::Visible &&
                     i == lastVisibleCell
                         ? nullptr
-                        : gridLineBrush);
+                        : gridLineBrush;
+                if (cellWrapper.BorderBrush() != brush)
+                {
+                    cellWrapper.BorderBrush(brush);
+                }
             }
             else
             {
-                cellWrapper.ClearValue(winrt::Grid::BorderThicknessProperty());
-                cellWrapper.ClearValue(winrt::Grid::BorderBrushProperty());
+                ClearLocalValueIfSet(cellWrapper, winrt::Grid::BorderThicknessProperty());
+                ClearLocalValueIfSet(cellWrapper, winrt::Grid::BorderBrushProperty());
             }
         }
     }
@@ -2206,8 +2267,9 @@ void TableViewRow::RefreshRowBackground()
         return;
     }
 
-    // Clear first so recycled rows do not keep stale banding fills.
-    ClearValue(winrt::Control::BackgroundProperty());
+    // Resolve the target first and write only on change, so recycled rows drop stale banding fills
+    // without a clear-then-set churn on every DataContext change.
+    winrt::Brush background{ nullptr };
     if (owner.RowBackground() != nullptr || owner.AlternatingRowBackground() != nullptr)
     {
         auto rowIndex = -1;
@@ -2220,16 +2282,24 @@ void TableViewRow::RefreshRowBackground()
             // RowBackground is the base for every row; AlternatingRowBackground overrides
             // odd rows only when set (WPF DataGrid parity). Setting RowBackground alone
             // must fill all rows uniformly, not stripe odd rows transparent.
-            auto background = owner.RowBackground();
+            background = owner.RowBackground();
             if ((rowIndex % 2) != 0 && owner.AlternatingRowBackground() != nullptr)
             {
                 background = owner.AlternatingRowBackground();
             }
-            if (background)
-            {
-                Background(background);
-            }
         }
+    }
+
+    if (background)
+    {
+        if (ReadLocalValue(winrt::Control::BackgroundProperty()) != background)
+        {
+            Background(background);
+        }
+    }
+    else
+    {
+        ClearLocalValueIfSet(*this, winrt::Control::BackgroundProperty());
     }
 }
 
@@ -2275,8 +2345,15 @@ void TableViewRow::SyncExpanderGutterWithLeadCell(winrt::Panel const& host)
     }
 
     winrt::ElementCompositionPreview::SetIsTranslationEnabled(gutter, true);
-    gutter.Translation({ offset, 0.0f, 0.0f });
-    winrt::Canvas::SetZIndex(gutter, 2);
+    auto const translation = gutter.Translation();
+    if (translation.x != offset || translation.y != 0.0f || translation.z != 0.0f)
+    {
+        gutter.Translation({ offset, 0.0f, 0.0f });
+    }
+    if (winrt::Canvas::GetZIndex(gutter) != 2)
+    {
+        winrt::Canvas::SetZIndex(gutter, 2);
+    }
 }
 
 // ----- Editing -----
@@ -2347,6 +2424,14 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
             m_editingAutomationName = name;
             m_editingAutomationPeer = weakPeer;
         }
+        m_editingRowAutomationName.reset();
+        if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+        {
+            if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+            {
+                m_editingRowAutomationName = rowPeer.GetName();
+            }
+        }
     }
     catch (...)
     {
@@ -2354,6 +2439,7 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         m_editingAutomationItem.set(nullptr);
         m_editingAutomationValue = {};
         m_editingAutomationName = {};
+        m_editingRowAutomationName.reset();
         TVDiag::LogRetailF(L"[TableView] Optional pre-edit UIA snapshot could not be captured.");
     }
     try
@@ -2404,6 +2490,8 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
     m_editingAutomationItem.set(nullptr);
     m_editingAutomationValue = {};
     m_editingAutomationName = {};
+    auto const oldRowName = std::move(m_editingRowAutomationName);
+    m_editingRowAutomationName.reset();
     if (!cellWrapper)
     {
         m_editingColumn.set(nullptr);
@@ -2418,31 +2506,28 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
     if (auto const editingElement = m_editingElement.get())
     {
         bool editorHasFocus = false;
+        auto restoreState = winrt::FocusState::Programmatic;
         if (auto const root = XamlRoot())
         {
-            if (auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>())
+            auto const focused = winrt::FocusManager::GetFocusedElement(root);
+            editorHasFocus = TableViewDetails::IsWithinElementPopupAware(focused, editingElement, root);
+            if (editorHasFocus)
             {
-                auto current = focused;
-                while (current)
+                // Read from the focused element: inside a dropdown the editor itself reports Unfocused.
+                if (auto const focusedElement = focused.try_as<winrt::UIElement>();
+                    focusedElement && focusedElement.FocusState() != winrt::FocusState::Unfocused)
                 {
-                    if (current == editingElement)
-                    {
-                        editorHasFocus = true;
-                        break;
-                    }
-                    current = winrt::VisualTreeHelper::GetParent(current);
+                    restoreState = focusedElement.FocusState();
                 }
             }
         }
+
+        TableViewDetails::CloseOpenDropDowns(editingElement);
 
         if (editorHasFocus)
         {
             // Restore focus to the cell, not row, and preserve Keyboard focus state so the focus
             // rectangle survives Enter-commit.
-            auto const restoreState = editingElement.FocusState() == winrt::FocusState::Unfocused
-                ? winrt::FocusState::Programmatic
-                : editingElement.FocusState();
-
             // Closing edit returns to cell level, so re-arm cells before restoring focus.
             SetCellLevelInternal(true);
 
@@ -2575,6 +2660,56 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
     catch (...)
     {
         TVDiag::LogRetailF(L"[TableView] Optional committed-cell UIA notification could not be prepared.");
+    }
+
+    // Other cells and the row Name can derive from the edited value (a template column bound to a
+    // computed property). Their peers compute names live, but clients that cache need the change.
+    try
+    {
+        if (action == winrt::TableViewEditAction::Commit &&
+            winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+        {
+            if (auto const queue = DispatcherQueue())
+            {
+                auto const weakThis = get_weak();
+                auto const weakCell = winrt::make_weak(cellWrapper.as<winrt::UIElement>());
+                auto const item = DataContext();
+                if (!queue.TryEnqueue(winrt::DispatcherQueuePriority::Low, [weakThis, weakCell, item, oldRowName]()
+                {
+                    try
+                    {
+                        auto const row = weakThis.get();
+                        if (!row || !TableView::SameInspectableIdentity(row->DataContext(), item))
+                        {
+                            return;
+                        }
+                        row->RaiseCellAutomationNamesChangedInternal(weakCell.get());
+                        if (oldRowName)
+                        {
+                            if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*row))
+                            {
+                                if (auto const newRowName = rowPeer.GetName(); newRowName != *oldRowName)
+                                {
+                                    rowPeer.RaisePropertyChangedEvent(winrt::AutomationElementIdentifiers::NameProperty(),
+                                        winrt::box_value(*oldRowName), winrt::box_value(newRowName));
+                                }
+                            }
+                        }
+                    }
+                    catch (...)
+                    {
+                        TVDiag::LogRetailF(L"[TableView] Optional committed-row name notification could not be delivered.");
+                    }
+                }))
+                {
+                    TVDiag::LogRetailF(L"[TableView] Optional committed-row name notification queue rejected delivery.");
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] Optional committed-row name notification could not be prepared.");
     }
 }
 

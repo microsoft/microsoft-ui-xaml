@@ -13,6 +13,7 @@ using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
+using MUXTestInfra.Shared.Infra;
 using Point = System.Drawing.Point;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPageFacts;
@@ -130,6 +131,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             Verify.AreEqual(expectedName, header.Name, "The first group header must still name the same group.");
             return header;
+        }
+
+        // Injected touch is delivered asynchronously, so a single idle wait can observe the header before the tap
+        // lands. Polls until the first group header reports the expected state, then falls back to the strict refetch.
+        internal static UIObject WaitForFirstGroupHeaderState(UIObject tableView, string expectedName, ExpandCollapseState expected)
+        {
+            for (int attempt = 0; attempt < 20; attempt++)
+            {
+                Wait.ForIdle();
+                ElementCache.Clear();
+                UIObject header = GetFirstGroupHeader(GetRowsHost(tableView));
+                if (header != null &&
+                    header.Name == expectedName &&
+                    new ExpandCollapseImplementation(header).ExpandCollapseState == expected)
+                {
+                    Log.Comment("Group header reached {0} after {1} poll(s).", expected, attempt + 1);
+                    return header;
+                }
+
+                Wait.ForMilliseconds(100);
+            }
+
+            return RefetchFirstGroupHeader(tableView, expectedName);
         }
 
         // The index-th group header among the rows host's own children, or null.

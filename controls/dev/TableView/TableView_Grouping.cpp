@@ -703,10 +703,13 @@ bool TableView::FocusContainerByIdentity(
         control.Focus(focusState);
     }
 
-    // After Focus, so this non-animated request replaces the one focus raises.
-    if (!fromPointerGesture)
+    // The body scrolls itself to the header; finish through the attempt loop if the header still
+    // sits at an estimated position outside the viewport.
+    if (!fromPointerGesture && !IsRowElementInViewport(element))
     {
         BringRowElementIntoView(element, std::nullopt);
+        BeginPendingBodyFocus(index, m_currentCellColumn, false /* cellLevel */, std::nullopt);
+        m_pendingReshapeFocusState = focusState == winrt::FocusState::Unfocused ? winrt::FocusState::Keyboard : focusState;
     }
     return true;
 }

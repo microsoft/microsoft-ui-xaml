@@ -1144,12 +1144,20 @@ private:
     void CancelReshapeFocusRestoreForUserInput();
     bool TryLandReshapeFocus();
     bool IsBodyFocusAtRow(int32_t rowIndex) const;
+    bool IsBodyFocusInContainer(winrt::UIElement const& container) const;
     // Keyboard moves to a row that is not arranged yet finish through the same attempt loop.
     void BeginPendingBodyFocus(int32_t row, int32_t column, bool cellLevel, std::optional<double> alignRatio);
     bool IsPendingBodyFocusItemAt(int32_t row) const;
     static bool IsRowElementArranged(winrt::UIElement const& element);
     bool IsRowElementInViewport(winrt::UIElement const& element) const;
     bool BringRowElementIntoView(winrt::UIElement const& element, std::optional<double> alignRatio);
+    bool ScrollBodyToRowElement(winrt::UIElement const& element, std::optional<double> alignRatio);
+    bool ScrollBodyToIndex(int32_t index, std::optional<double> alignRatio);
+    void RequestBodyVerticalOffset(double offset);
+    bool IsBodyScrollInFlight();
+    std::optional<double> m_requestedBodyVerticalOffset{};
+    void RevealFocusedBodyElement(winrt::UIElement const& element);
+    bool IsKeyboardBodyFocusPending() const { return m_pendingBodyFocusFromKeyboard && m_pendingReshapeFocusRow >= 0; }
     void QueueReshapeFocusCaptureDisarm();
     void UpdateReshapeFocusDetectorSubscription(const winrt::ItemsSourceView& view);
     void OnRowsSourceResetForFocus(
@@ -1169,6 +1177,8 @@ private:
     std::optional<double> m_pendingReshapeFocusAlign{};
     // Keyboard pending focus follows its item, so source edits above it cannot retarget the move.
     winrt::IInspectable m_pendingBodyFocusItem{ nullptr };
+    // Set by BeginPendingBodyFocus: a keyboard move scrolling to its row, not a re-shape restore.
+    bool m_pendingBodyFocusFromKeyboard{ false };
     int32_t m_reshapeFocusAttemptsLeft{ 0 };
     // Set for the turn a restore is armed in; that turn's input triggered the re-shape.
     bool m_reshapeFocusArmedThisTurn{ false };
@@ -1177,6 +1187,10 @@ private:
     // Covers realize -> arrange -> deferred re-shape work, yet bounded so a restore never fights
     // the user for focus.
     static constexpr int32_t s_reshapeFocusRestoreAttempts{ 24 };
+    // A far keyboard jump over estimated row heights can take a few scroll-and-realize rounds.
+    static constexpr int32_t s_keyboardFocusAttempts{ 48 };
+    // Set while an attempt waits for a body scroll to apply; only layout passes re-run it then.
+    bool m_reshapeFocusWaitForLayout{ false };
     // Subscribed before the repeater so a Reset is observed while the rows are still realized.
     winrt::ItemsSourceView::CollectionChanged_revoker m_reshapeFocusDetectorRevoker{};
     winrt::ItemsSourceView m_reshapeFocusDetectorView{ nullptr };

@@ -10,6 +10,7 @@
 #include "GridCoordinateHelper.h"
 #include "ResourceAccessor.h"
 #include "TableViewAutomationHelpers.h"
+#include "TableViewFocusHelpers.h"
 #include "Utils.h"
 #include "SharedHelpers.h"
 #include "TVDiag.h"
@@ -711,6 +712,18 @@ void TableView::OnPreviewKeyDownForNavigation(
 {
     m_navKeyHandledEarly = false;
 
+    // A keyboard move still scrolling to its row is the newest intent, not a stale restore: a
+    // repeated key pages on from that row, and any other key leaves the scroll to finish.
+    int32_t pendingKeyboardRow = -1;
+    if (IsKeyboardBodyFocusPending())
+    {
+        pendingKeyboardRow = m_pendingReshapeFocusRow;
+        if (m_pendingBodyFocusItem && !IsPendingBodyFocusItemAt(pendingKeyboardRow))
+        {
+            pendingKeyboardRow = FindEntryIndexForDataItem(m_pendingBodyFocusItem);
+        }
+    }
+
     switch (args.Key())
     {
     case winrt::Windows::System::VirtualKey::Shift:
@@ -720,7 +733,10 @@ void TableView::OnPreviewKeyDownForNavigation(
     case winrt::Windows::System::VirtualKey::RightWindows:
         break;
     default:
-        CancelReshapeFocusRestoreForUserInput();
+        if (!IsKeyboardBodyFocusPending())
+        {
+            CancelReshapeFocusRestoreForUserInput();
+        }
         break;
     }
 
@@ -755,6 +771,28 @@ void TableView::OnPreviewKeyDownForNavigation(
         break;
     }
 
+    // Live focus can still be on the row a pending keyboard move is leaving; anchor at its target.
+    switch (args.Key())
+    {
+    case winrt::Windows::System::VirtualKey::Up:
+    case winrt::Windows::System::VirtualKey::Down:
+    case winrt::Windows::System::VirtualKey::Home:
+    case winrt::Windows::System::VirtualKey::End:
+    case winrt::Windows::System::VirtualKey::PageUp:
+    case winrt::Windows::System::VirtualKey::PageDown:
+        if (pendingKeyboardRow >= 0 && !IsBodyFocusAtRow(pendingKeyboardRow))
+        {
+            m_navAnchorRow = pendingKeyboardRow;
+            m_navAnchorCellRow = m_pendingReshapeFocusCellLevel ? pendingKeyboardRow : -1;
+            m_navAnchorCellColumn = m_pendingReshapeFocusCellLevel ? m_pendingReshapeFocusColumn : -1;
+            m_navAnchorRowContainer = -1;
+            m_navAnchorGroupHeader = -1;
+        }
+        break;
+    default:
+        break;
+    }
+
     // PART_BodyScroller would otherwise page on its own before our handledEventsToo KeyDown runs.
     if ((args.Key() == winrt::Windows::System::VirtualKey::PageUp ||
             args.Key() == winrt::Windows::System::VirtualKey::PageDown) &&
@@ -781,16 +819,8 @@ bool TableView::IsFocusInsideEditingElement() const
         return false;
     }
 
-    auto focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
-    while (focused)
-    {
-        if (focused == editingElement)
-        {
-            return true;
-        }
-        focused = winrt::VisualTreeHelper::GetParent(focused);
-    }
-    return false;
+    // Popup-aware: an open ComboBox editor's dropdown items are not visual descendants of the editor.
+    return TableViewDetails::IsWithinElementPopupAware(winrt::FocusManager::GetFocusedElement(root), editingElement, root);
 }
 
 void TableView::OnKeyDownForNavigation(
@@ -878,8 +908,7 @@ void TableView::OnKeyDownForNavigation(
 
     const bool isRowSelectionSpace =
         key == winrt::Windows::System::VirtualKey::Space &&
-        !IsKeyDown(winrt::VirtualKey::Menu) &&
-        !IsKeyDown(winrt::VirtualKey::Control);
+        !IsKeyDown(winrt::VirtualKey::Menu);
     if (isRowSelectionSpace && CanSelectRows())
     {
         if (auto const root = XamlRoot())
@@ -1387,6 +1416,7 @@ void TableView::RestoreBodyFocusAfterReshape()
     m_pendingReshapeFocusRow = row;
     m_pendingReshapeFocusAlign.reset();
     m_pendingBodyFocusItem = nullptr;
+    m_pendingBodyFocusFromKeyboard = false;
 
     m_reshapeFocusArmedThisTurn = true;
     if (auto const queue = DispatcherQueue())
@@ -1444,7 +1474,9 @@ void TableView::ArmReshapeFocusAttempt()
             }
         });
 
-    if (m_reshapeFocusTurnQueued)
+    // A body scroll in flight lands through layout; spinning dispatcher turns would only burn the
+    // attempt budget before it applies.
+    if (m_reshapeFocusTurnQueued || m_reshapeFocusWaitForLayout)
     {
         return;
     }
@@ -1477,6 +1509,9 @@ void TableView::CancelReshapeFocusRestore()
 {
     m_pendingReshapeFocusRow = -1;
     m_pendingBodyFocusItem = nullptr;
+    m_pendingBodyFocusFromKeyboard = false;
+    m_requestedBodyVerticalOffset.reset();
+    m_reshapeFocusWaitForLayout = false;
     m_reshapeFocusAttemptsLeft = 0;
     if (m_reshapeFocusLayoutToken.value)
     {
@@ -1584,6 +1619,17 @@ bool TableView::TryLandReshapeFocus()
     // TryGetElement first: GetOrCreateElement can recycle the container the repeater's rescue just
     // focused, and it throws while a layout pass is in flight.
     auto element = repeater.TryGetElement(target);
+    m_reshapeFocusWaitForLayout = false;
+    if (!element && m_pendingBodyFocusFromKeyboard)
+    {
+        // A keyboard move scrolls until the repeater realizes its row; see FocusRowElementInternal.
+        if (IsBodyScrollInFlight() || ScrollBodyToIndex(target, m_pendingReshapeFocusAlign))
+        {
+            m_reshapeFocusWaitForLayout = true;
+            return false;
+        }
+    }
+
     if (!element)
     {
         try
@@ -1604,12 +1650,16 @@ bool TableView::TryLandReshapeFocus()
     if (!IsRowElementArranged(element))
     {
         // Realized but not arranged yet; Focus() would be refused.
+        m_reshapeFocusWaitForLayout = m_pendingBodyFocusFromKeyboard;
         return false;
     }
 
-    const bool focused = IsBodyFocusAtRow(target);
+    // Compare containers, not indices: a container focused at an estimated position can still report
+    // the target index after the repeater realizes another container for it in the viewport.
+    const bool focused = IsBodyFocusInContainer(element);
     if (focused && IsRowElementInViewport(element))
     {
+        RevealFocusedBodyElement(element);
         return true;
     }
 
@@ -1625,7 +1675,11 @@ bool TableView::TryLandReshapeFocus()
         }
     }
 
-    BringRowElementIntoView(element, m_pendingReshapeFocusAlign);
+    if (!IsRowElementInViewport(element))
+    {
+        const bool scrolling = IsBodyScrollInFlight() || ScrollBodyToRowElement(element, m_pendingReshapeFocusAlign);
+        m_reshapeFocusWaitForLayout = scrolling || m_pendingBodyFocusFromKeyboard;
+    }
     return false;
 }
 
@@ -1637,11 +1691,12 @@ void TableView::BeginPendingBodyFocus(int32_t row, int32_t column, bool cellLeve
     m_pendingReshapeFocusState = winrt::FocusState::Keyboard;
     m_pendingReshapeFocusAlign = alignRatio;
     m_pendingBodyFocusItem = nullptr;
+    m_pendingBodyFocusFromKeyboard = true;
     if (m_rowsItemsSourceView && row >= 0 && row < m_rowsItemsSourceView.Count())
     {
         m_pendingBodyFocusItem = m_rowsItemsSourceView.GetAt(row);
     }
-    m_reshapeFocusAttemptsLeft = s_reshapeFocusRestoreAttempts;
+    m_reshapeFocusAttemptsLeft = s_keyboardFocusAttempts;
     ArmReshapeFocusAttempt();
 }
 
@@ -1660,10 +1715,18 @@ bool TableView::IsPendingBodyFocusItemAt(int32_t row) const
 bool TableView::IsRowElementArranged(winrt::UIElement const& element)
 {
     auto const frameworkElement = element.try_as<winrt::FrameworkElement>();
-    return frameworkElement &&
-        frameworkElement.IsLoaded() &&
-        frameworkElement.ActualHeight() > 0.0 &&
-        winrt::VisualTreeHelper::GetParent(frameworkElement);
+    if (!frameworkElement ||
+        !frameworkElement.IsLoaded() ||
+        !(frameworkElement.ActualHeight() > 0.0) ||
+        !winrt::VisualTreeHelper::GetParent(frameworkElement))
+    {
+        return false;
+    }
+
+    // ItemsRepeater parks cleared containers at (-10000, -10000); one it re-realizes keeps that
+    // offset until its next arrange, and focusing it there strands focus off-screen.
+    const auto offset = frameworkElement.ActualOffset();
+    return !(offset.x <= -9999.0f && offset.y <= -9999.0f);
 }
 
 bool TableView::IsRowElementInViewport(winrt::UIElement const& element) const
@@ -1729,35 +1792,297 @@ bool TableView::BringRowElementIntoView(winrt::UIElement const& element, std::op
         return true;
     }
 
-    winrt::BringIntoViewOptions options;
-    options.AnimationDesired(false);
-    if (alignRatio)
+    // Scroll PART_BodyScroller directly. A far target sits at the repeater's estimated position,
+    // and a bubbling StartBringIntoView hands whatever the body cannot reach yet to the page's
+    // ScrollViewer, scrolling the table out of view. The attempt loop re-aims as estimates settle;
+    // RevealFocusedBodyElement bubbles once the row is really in view.
+    ScrollBodyToRowElement(element, alignRatio);
+    return true;
+}
+
+bool TableView::ScrollBodyToRowElement(winrt::UIElement const& element, std::optional<double> alignRatio)
+{
+    auto const frameworkElement = element.try_as<winrt::FrameworkElement>();
+    auto const scroller = m_bodyScroller.get();
+    auto const repeater = m_rowsRepeater.get();
+    if (!frameworkElement || !scroller || !repeater)
     {
-        options.VerticalAlignmentRatio(*alignRatio);
+        return false;
     }
 
-    // Keep a focused cell's horizontal span so the row request does not undo the cell's own scroll.
-    if (auto const root = XamlRoot())
+    const double viewportHeight = scroller.ViewportHeight();
+    if (!(viewportHeight > 0.0))
     {
-        if (auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::FrameworkElement>();
-            focused && SharedHelpers::IsAncestor(focused, element, false /* checkVisibility */))
+        return false;
+    }
+
+    const double offset = scroller.VerticalOffset();
+    const double scrollable = std::max(0.0, scroller.ScrollableHeight());
+    const int32_t index = repeater.GetElementIndex(element);
+    const int32_t count = GetItemsSourceCount();
+
+    double target = offset;
+    if (index == 0)
+    {
+        // The extent edges are exact even while the rows between them are still estimated.
+        target = 0.0;
+    }
+    else if (index > 0 && index == count - 1)
+    {
+        target = scrollable;
+    }
+    else
+    {
+        double top = 0.0;
+        try
         {
+            top = frameworkElement.TransformToVisual(scroller).TransformPoint({ 0.0f, 0.0f }).Y;
+        }
+        catch (winrt::hresult_error const&)
+        {
+            return false;
+        }
+
+        const double height = frameworkElement.ActualHeight();
+        double delta = 0.0;
+        if (height > viewportHeight)
+        {
+            delta = top;
+        }
+        else if (alignRatio)
+        {
+            delta = top - *alignRatio * (viewportHeight - height);
+        }
+        else if (top < 0.0)
+        {
+            delta = top;
+        }
+        else if (top + height > viewportHeight)
+        {
+            delta = top + height - viewportHeight;
+        }
+        target = offset + delta;
+    }
+
+    target = std::clamp(target, 0.0, scrollable);
+    if (std::abs(target - offset) < 0.5)
+    {
+        return false;
+    }
+
+    RequestBodyVerticalOffset(target);
+    return true;
+}
+
+void TableView::RequestBodyVerticalOffset(double offset)
+{
+    if (auto const scroller = m_bodyScroller.get())
+    {
+        m_requestedBodyVerticalOffset = offset;
+        scroller.ChangeView(nullptr, offset, nullptr, true /* disableAnimation */);
+    }
+}
+
+// ChangeView applies on a later tick (cleared by OnBodyScrollerViewChanged); until then positions
+// still describe the old offset.
+bool TableView::IsBodyScrollInFlight()
+{
+    auto const scroller = m_bodyScroller.get();
+    if (!scroller || !m_requestedBodyVerticalOffset)
+    {
+        return false;
+    }
+
+    if (std::abs(scroller.VerticalOffset() - *m_requestedBodyVerticalOffset) < 0.5)
+    {
+        m_requestedBodyVerticalOffset.reset();
+        return false;
+    }
+    return true;
+}
+
+// For a row the repeater has not realized: estimate from the realized container nearest to it, so
+// the repeater realizes the row where the viewport lands. Re-run until the row itself is realized,
+// at which point ScrollBodyToRowElement is exact.
+bool TableView::ScrollBodyToIndex(int32_t index, std::optional<double> alignRatio)
+{
+    auto const repeater = m_rowsRepeater.get();
+    auto const scroller = m_bodyScroller.get();
+    if (!repeater || !scroller)
+    {
+        return false;
+    }
+
+    if (auto const element = repeater.TryGetElement(index); element && IsRowElementArranged(element))
+    {
+        return ScrollBodyToRowElement(element, alignRatio);
+    }
+
+    const double viewportHeight = scroller.ViewportHeight();
+    if (!(viewportHeight > 0.0))
+    {
+        return false;
+    }
+
+    const double offset = scroller.VerticalOffset();
+    const double scrollable = std::max(0.0, scroller.ScrollableHeight());
+    const int32_t count = GetItemsSourceCount();
+
+    double target = offset;
+    if (index <= 0)
+    {
+        target = 0.0;
+    }
+    else if (index >= count - 1)
+    {
+        target = scrollable;
+    }
+    else
+    {
+        int32_t nearestIndex = -1;
+        double nearestTop = 0.0;
+        double nearestHeight = 0.0;
+        double totalHeight = 0.0;
+        int32_t measured = 0;
+        const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
+        for (int32_t i = 0; i < childCount; ++i)
+        {
+            auto const child = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::FrameworkElement>();
+            if (!child)
+            {
+                continue;
+            }
+
+            const int32_t childIndex = repeater.GetElementIndex(child);
+            const double height = child.ActualHeight();
+            if (childIndex < 0 || !(height > 0.0))
+            {
+                continue;
+            }
+
+            double top = 0.0;
             try
             {
-                const auto origin = focused.TransformToVisual(element).TransformPoint({ 0.0f, 0.0f });
-                options.TargetRect(winrt::Rect{
-                    origin.X, 0.0f,
-                    static_cast<float>(focused.ActualWidth()),
-                    static_cast<float>(frameworkElement.ActualHeight()) });
+                top = child.TransformToVisual(scroller).TransformPoint({ 0.0f, 0.0f }).Y;
             }
             catch (winrt::hresult_error const&)
             {
+                continue;
+            }
+
+            totalHeight += height;
+            ++measured;
+            if (nearestIndex < 0 || std::abs(childIndex - index) < std::abs(nearestIndex - index))
+            {
+                nearestIndex = childIndex;
+                nearestTop = top;
+                nearestHeight = height;
             }
         }
+
+        if (measured == 0)
+        {
+            return false;
+        }
+
+        const double averageHeight = totalHeight / measured;
+        const double top = index > nearestIndex
+            ? nearestTop + nearestHeight + (index - nearestIndex - 1) * averageHeight
+            : nearestTop - (nearestIndex - index) * averageHeight;
+        double delta = 0.0;
+        if (alignRatio && averageHeight <= viewportHeight)
+        {
+            delta = top - *alignRatio * (viewportHeight - averageHeight);
+        }
+        else if (top < 0.0 || averageHeight > viewportHeight)
+        {
+            delta = top;
+        }
+        else if (top + averageHeight > viewportHeight)
+        {
+            delta = top + averageHeight - viewportHeight;
+        }
+        target = offset + delta;
     }
 
-    frameworkElement.StartBringIntoView(options);
+    target = std::clamp(target, 0.0, scrollable);
+    if (std::abs(target - offset) < 0.5)
+    {
+        return false;
+    }
+
+    RequestBodyVerticalOffset(target);
     return true;
+}
+
+// Once the body shows the row, reveal it in any outer scroller (ListView does the same on focus).
+// The request starts at the TableView, not the row: routed through PART_BodyScroller and the
+// repeater it would re-anchor the virtualized body.
+void TableView::RevealFocusedBodyElement(winrt::UIElement const& element)
+{
+    auto const root = XamlRoot();
+    auto const scroller = m_bodyScroller.get();
+    if (!element || !root || !scroller)
+    {
+        return;
+    }
+
+    winrt::FrameworkElement target = element.try_as<winrt::FrameworkElement>();
+    if (auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::FrameworkElement>();
+        focused && SharedHelpers::IsAncestor(focused, element, false /* checkVisibility */))
+    {
+        target = focused;
+    }
+    if (!target)
+    {
+        return;
+    }
+
+    try
+    {
+        // A focus move suppressed while off-viewport skipped the horizontal reveal of its cell.
+        const auto inBody = target.TransformToVisual(scroller).TransformPoint({ 0.0f, 0.0f });
+        const double width = target.ActualWidth();
+        const double viewportWidth = scroller.ViewportWidth();
+        if (target != element && viewportWidth > 0.0 && width <= viewportWidth)
+        {
+            double delta = 0.0;
+            if (inBody.X < 0.0)
+            {
+                delta = inBody.X;
+            }
+            else if (inBody.X + width > viewportWidth)
+            {
+                delta = inBody.X + width - viewportWidth;
+            }
+            if (std::abs(delta) >= 0.5)
+            {
+                scroller.ChangeView(scroller.HorizontalOffset() + delta, nullptr, nullptr, true /* disableAnimation */);
+            }
+        }
+
+        const auto origin = target.TransformToVisual(*this).TransformPoint({ 0.0f, 0.0f });
+        const double tableHeight = ActualHeight();
+        const double top = std::clamp<double>(origin.Y, 0.0, tableHeight);
+        const double bottom = std::clamp<double>(origin.Y + target.ActualHeight(), 0.0, tableHeight);
+        if (!(bottom > top))
+        {
+            return;
+        }
+
+        const double tableWidth = ActualWidth();
+        const double left = std::clamp<double>(origin.X, 0.0, tableWidth);
+        const double right = std::clamp<double>(origin.X + target.ActualWidth(), 0.0, tableWidth);
+        winrt::BringIntoViewOptions options;
+        options.AnimationDesired(false);
+        options.TargetRect(winrt::Rect{
+            static_cast<float>(left), static_cast<float>(top),
+            static_cast<float>(std::max(0.0, right - left)), static_cast<float>(bottom - top) });
+        StartBringIntoView(options);
+    }
+    catch (winrt::hresult_error const&)
+    {
+    }
 }
 
 // XAML pads a keyboard-focus bring-into-view by 20 DIPs (or the focus visual margin), so focusing a
@@ -1767,7 +2092,48 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
 {
     auto const repeater = m_rowsRepeater.get();
     auto const target = args.TargetElement().try_as<winrt::FrameworkElement>();
-    if (!repeater || !target || !std::isnan(args.VerticalAlignmentRatio()) || args.VerticalOffset() != 0.0)
+    if (!repeater || !target)
+    {
+        return;
+    }
+
+    winrt::UIElement bodyItem{ nullptr };
+    for (winrt::DependencyObject node = target; node; node = winrt::VisualTreeHelper::GetParent(node))
+    {
+        if (node.try_as<winrt::TableViewRow>() || node.try_as<winrt::TableViewGroupHeader>())
+        {
+            if (auto const element = node.try_as<winrt::UIElement>();
+                winrt::VisualTreeHelper::GetParent(element) == repeater)
+            {
+                bodyItem = element;
+                break;
+            }
+        }
+    }
+
+    if (bodyItem)
+    {
+        // Focus raises its padded request asynchronously. When keys move focus faster than that,
+        // the request arrives for a container focus has already left, whose position may now be
+        // a recycled or estimated one; honoring it scrolled the body back to the top.
+        const auto requested = args.TargetRect();
+        const bool focusPadded = requested.Y < 0.0f || requested.Y + requested.Height > target.ActualHeight();
+        if (focusPadded && !IsBodyFocusInContainer(bodyItem))
+        {
+            args.Handled(true);
+            return;
+        }
+
+        // While the table drives the body to a row it has not reached yet, the request focus raises
+        // would bubble the unreachable part of an estimated position to outer scrollers.
+        if (IsKeyboardBodyFocusPending() && !IsRowElementInViewport(bodyItem))
+        {
+            args.Handled(true);
+            return;
+        }
+    }
+
+    if (!std::isnan(args.VerticalAlignmentRatio()) || args.VerticalOffset() != 0.0)
     {
         return;
     }
@@ -1815,6 +2181,31 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
         rect.Height = bottom - top;
         args.TargetRect(rect);
     }
+}
+
+bool TableView::IsBodyFocusInContainer(winrt::UIElement const& container) const
+{
+    auto const repeater = m_rowsRepeater.get();
+    auto const root = XamlRoot();
+    if (!container || !repeater || !root)
+    {
+        return false;
+    }
+
+    for (auto node = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+         node;
+         node = winrt::VisualTreeHelper::GetParent(node))
+    {
+        if (node == container)
+        {
+            return true;
+        }
+        if (node == repeater)
+        {
+            return false;
+        }
+    }
+    return false;
 }
 
 bool TableView::IsBodyFocusAtRow(int32_t rowIndex) const
@@ -2378,7 +2769,20 @@ bool TableView::FocusRowElementInternal(
     // This request is newer intent than any keyboard or re-shape focus still settling.
     CancelReshapeFocusRestore();
 
-    auto element = repeater.GetOrCreateElement(rowIndex);
+    // A row the repeater has not realized is scrolled to first and focused once realized.
+    // GetOrCreateElement would make it the repeater's anchor at an estimated position, and repeated
+    // far jumps (key-repeat PageDown) left focus on such a container after the repeater re-indexed
+    // it off-screen.
+    auto element = repeater.TryGetElement(rowIndex);
+    if (!element)
+    {
+        if (ScrollBodyToIndex(rowIndex, alignRatio))
+        {
+            BeginPendingBodyFocus(rowIndex, targetColumn, cellLevel, alignRatio);
+            return true;
+        }
+        element = repeater.GetOrCreateElement(rowIndex);
+    }
     if (!element || !element.try_as<winrt::Control>())
     {
         return false;
@@ -2405,12 +2809,11 @@ bool TableView::FocusRowElementInternal(
             return false;
         }
 
-        // After Focus, so this non-animated request replaces the one focus raises.
-        BringRowElementIntoView(element, alignRatio);
         if (IsRowElementInViewport(element))
         {
             return true;
         }
+        BringRowElementIntoView(element, alignRatio);
     }
 
     BeginPendingBodyFocus(rowIndex, targetColumn, cellLevel, alignRatio);

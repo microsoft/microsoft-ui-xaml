@@ -1144,6 +1144,9 @@ void TableView::OnBodyScrollerViewChanged(
         return;
     }
 
+    // A keyboard move's ChangeView has applied; its pending focus may re-measure positions now.
+    m_requestedBodyVerticalOffset.reset();
+
     const double bodyHOffset = bodyScroller.HorizontalOffset();
 
     // Re-pin leading-frozen columns only when horizontal scroll moves.
