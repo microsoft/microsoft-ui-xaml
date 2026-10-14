@@ -75,6 +75,8 @@
     <Setter Property="MinWidth" Value="{StaticResource PagerControlNumberPanelButtonWidth}" />
     <Setter Property="MinHeight" Value="20" />
     <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
