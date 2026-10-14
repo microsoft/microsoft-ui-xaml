@@ -40,6 +40,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private const ScrollingZoomMode c_defaultZoomMode = ScrollingZoomMode.Disabled;
         private const ScrollingInputKinds c_defaultIgnoredInputKinds = ScrollingInputKinds.None;
         private const ScrollingContentOrientation c_defaultContentOrientation = ScrollingContentOrientation.Both;
+        private const bool c_defaultCanContentRenderOutsideBounds = false;
         private const double c_defaultMinZoomFactor = 0.1;
         private const double c_defaultZoomFactor = 1.0;
         private const double c_defaultMaxZoomFactor = 10.0;
@@ -92,6 +93,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(c_defaultContentOrientation, scrollPresenter.ContentOrientation);
                 Verify.AreEqual(c_defaultZoomMode, scrollPresenter.ZoomMode);
                 Verify.AreEqual(c_defaultIgnoredInputKinds, scrollPresenter.IgnoredInputKinds);
+                Verify.AreEqual(c_defaultCanContentRenderOutsideBounds, scrollPresenter.CanContentRenderOutsideBounds);
                 Verify.AreEqual(c_defaultMinZoomFactor, scrollPresenter.MinZoomFactor);
                 Verify.AreEqual(c_defaultMaxZoomFactor, scrollPresenter.MaxZoomFactor);
                 Verify.AreEqual(c_defaultZoomFactor, scrollPresenter.ZoomFactor);
@@ -134,6 +136,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollPresenter.ZoomChainMode = ScrollingChainMode.Never;
                 scrollPresenter.ZoomMode = ScrollingZoomMode.Enabled;
                 scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.MouseWheel;
+                scrollPresenter.CanContentRenderOutsideBounds = true;
                 scrollPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
                 scrollPresenter.MinZoomFactor = 0.5f;
                 scrollPresenter.MaxZoomFactor = 2.0f;
@@ -157,11 +160,181 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(ScrollingChainMode.Never, scrollPresenter.ZoomChainMode);
                 Verify.AreEqual(ScrollingZoomMode.Enabled, scrollPresenter.ZoomMode);
                 Verify.AreEqual(ScrollingInputKinds.MouseWheel, scrollPresenter.IgnoredInputKinds);
+                Verify.IsTrue(scrollPresenter.CanContentRenderOutsideBounds);
                 Verify.AreEqual(ScrollingContentOrientation.Horizontal, scrollPresenter.ContentOrientation);
                 Verify.AreEqual(0.5f, scrollPresenter.MinZoomFactor);
                 Verify.AreEqual(2.0f, scrollPresenter.MaxZoomFactor);
                 Verify.AreEqual(0.25f, scrollPresenter.HorizontalAnchorRatio);
                 Verify.AreEqual(0.75f, scrollPresenter.VerticalAnchorRatio);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ScrollPresenter viewport clipping.")]
+        public void VerifyContentClipping()
+        {
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            RectangleGeometry originalViewportClip = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
+
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
+            });
+
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Verifying the default viewport clip.");
+                RectangleGeometry viewportClip = scrollPresenter.Clip as RectangleGeometry;
+                Verify.IsNotNull(viewportClip);
+                originalViewportClip = viewportClip;
+                Verify.AreEqual(
+                    new Rect(0, 0, c_defaultUIScrollPresenterWidth, c_defaultUIScrollPresenterHeight),
+                    viewportClip.Rect);
+
+                Log.Comment("Allowing content to render outside the viewport.");
+                scrollPresenter.CanContentRenderOutsideBounds = true;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(scrollPresenter.Clip);
+
+                Log.Comment("Restoring the viewport clip.");
+                scrollPresenter.CanContentRenderOutsideBounds = false;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                RectangleGeometry viewportClip = scrollPresenter.Clip as RectangleGeometry;
+                Verify.IsNotNull(viewportClip);
+                Verify.AreEqual(
+                    new Rect(0, 0, c_defaultUIScrollPresenterWidth, c_defaultUIScrollPresenterHeight),
+                    viewportClip.Rect);
+
+                Log.Comment("Resizing ScrollPresenter and verifying the viewport clip.");
+                scrollPresenter.Width = 400;
+                scrollPresenter.Height = 250;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                RectangleGeometry viewportClip = scrollPresenter.Clip as RectangleGeometry;
+                Verify.IsNotNull(viewportClip);
+                Verify.AreSame(originalViewportClip, viewportClip);
+                Verify.AreEqual(
+                    new Rect(0, 0, scrollPresenter.ViewportWidth, scrollPresenter.ViewportHeight),
+                    viewportClip.Rect);
+
+                Content = null;
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ScrollPresenter respects a custom Clip in both clipping states.")]
+        public void VerifyCustomClipPreservation()
+        {
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            RectangleGeometry customClip = null;
+            RectangleGeometry replacementClip = null;
+            Rect customClipRect = new Rect(10, 20, 30, 40);
+            Rect replacementClipRect = new Rect(15, 25, 35, 45);
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
+                customClip = new RectangleGeometry { Rect = customClipRect };
+                replacementClip = new RectangleGeometry { Rect = replacementClipRect };
+                scrollPresenter.Clip = customClip;
+
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
+            });
+
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Verifying the custom Clip overrides viewport clipping.");
+                Verify.AreSame(customClip, scrollPresenter.Clip);
+                Verify.AreEqual(customClipRect, customClip.Rect);
+
+                Log.Comment("Allowing content to render outside the viewport.");
+                scrollPresenter.CanContentRenderOutsideBounds = true;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Verifying the custom Clip remains unchanged.");
+                Verify.AreSame(customClip, scrollPresenter.Clip);
+                Verify.AreEqual(customClipRect, customClip.Rect);
+
+                Log.Comment("Resizing ScrollPresenter while the custom Clip is active.");
+                scrollPresenter.Width = 400;
+                scrollPresenter.Height = 250;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(customClip, scrollPresenter.Clip);
+                Verify.AreEqual(customClipRect, customClip.Rect);
+
+                Log.Comment("Restoring viewport clipping.");
+                scrollPresenter.CanContentRenderOutsideBounds = false;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(customClip, scrollPresenter.Clip);
+                Verify.AreEqual(customClipRect, customClip.Rect);
+
+                Log.Comment("Replacing the custom Clip while viewport clipping is enabled.");
+                scrollPresenter.Clip = replacementClip;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(replacementClip, scrollPresenter.Clip);
+                Verify.AreEqual(replacementClipRect, replacementClip.Rect);
+                Verify.AreEqual(customClipRect, customClip.Rect);
+
+                Log.Comment("Allowing content to render outside the viewport again.");
+                scrollPresenter.CanContentRenderOutsideBounds = true;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(replacementClip, scrollPresenter.Clip);
+                Verify.AreEqual(replacementClipRect, replacementClip.Rect);
+                Verify.AreEqual(customClipRect, customClip.Rect);
+
+                Content = null;
             });
         }
 

@@ -306,6 +306,162 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: host a 100px-wide ItemsRepeater aligned Left, Center or Right in a 400x300 ScrollPresenter (content
+        //           narrower than the viewport) and call ScrollTo(0, 1000); lay out while ScrollStarting is being raised.
+        // Expected: before the view moves, the layout already gets the destination window (1000 down), shifted left by 0,
+        //           150 or 300px to match the repeater's alignment - the same window the layout gets once scrolling ends.
+        // A failure means: centered or right-aligned lists show blank or wrong items while a scroll to a far offset starts.
+        [TestMethod]
+        [TestProperty("Description", "Verifies ScrollPresenter scroll anticipation adjusts the layout window for a horizontally aligned repeater narrower than the viewport.")]
+        public void ValidateScrollStartingAnticipationForHorizontallyAlignedRepeater()
+        {
+            ValidateScrollStartingAnticipation(isVerticalScroll: true, alignment: (int)HorizontalAlignment.Left, expectedAlignmentShift: 0.0);
+            ValidateScrollStartingAnticipation(isVerticalScroll: true, alignment: (int)HorizontalAlignment.Center, expectedAlignmentShift: 150.0);
+            ValidateScrollStartingAnticipation(isVerticalScroll: true, alignment: (int)HorizontalAlignment.Right, expectedAlignmentShift: 300.0);
+        }
+
+        // Scenario: host a 100px-tall ItemsRepeater aligned Top, Center or Bottom in a 400x300 ScrollPresenter (content
+        //           shorter than the viewport) and call ScrollTo(1000, 0); lay out while ScrollStarting is being raised.
+        // Expected: before the view moves, the layout already gets the destination window (1000 across), shifted up by 0,
+        //           100 or 200px to match the repeater's alignment - the same window the layout gets once scrolling ends.
+        // A failure means: vertically centered or bottom-aligned horizontal lists show blank or wrong items when scrolled.
+        [TestMethod]
+        [TestProperty("Description", "Verifies ScrollPresenter scroll anticipation adjusts the layout window for a vertically aligned repeater shorter than the viewport.")]
+        public void ValidateScrollStartingAnticipationForVerticallyAlignedRepeater()
+        {
+            ValidateScrollStartingAnticipation(isVerticalScroll: false, alignment: (int)VerticalAlignment.Top, expectedAlignmentShift: 0.0);
+            ValidateScrollStartingAnticipation(isVerticalScroll: false, alignment: (int)VerticalAlignment.Center, expectedAlignmentShift: 100.0);
+            ValidateScrollStartingAnticipation(isVerticalScroll: false, alignment: (int)VerticalAlignment.Bottom, expectedAlignmentShift: 200.0);
+        }
+
+        private void ValidateScrollStartingAnticipation(bool isVerticalScroll, int alignment, double expectedAlignmentShift)
+        {
+            const double viewportWidth = 400.0;
+            const double viewportHeight = 300.0;
+            const double targetOffset = 1000.0;
+            var visibleRects = new List<Rect>();
+            var realizationRects = new List<Rect>();
+            ScrollPresenter scrollPresenter = null;
+            ItemsRepeater repeater = null;
+            Rect? anticipatedVisibleRect = null;
+            Rect? anticipatedRealizationRect = null;
+            double offsetWhenStarting = double.NaN;
+            int scrollStartingCount = 0;
+            var scrollCompletedEvent = new AutoResetEvent(false);
+            string context = (isVerticalScroll ? "HorizontalAlignment " + (HorizontalAlignment)alignment : "VerticalAlignment " + (VerticalAlignment)alignment) + ": ";
+            Log.Comment(context);
+
+            // The window expected while scrolling starts and after it ends: the destination offset along the scrolling
+            // axis, and the alignment shift (the repeater is offset inside the wider viewport) along the other axis.
+            var expectedWindow = isVerticalScroll ?
+                new Rect(-expectedAlignmentShift, targetOffset, viewportWidth, viewportHeight) :
+                new Rect(targetOffset, -expectedAlignmentShift, viewportWidth, viewportHeight);
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater() {
+                    Layout = GetMonitoringLayout(isVerticalScroll ? new Size(100, 3000) : new Size(3000, 100), realizationRects, visibleRects),
+                    HorizontalCacheLength = 0.0,
+                    VerticalCacheLength = 0.0
+                };
+
+                if (isVerticalScroll)
+                {
+                    repeater.HorizontalAlignment = (HorizontalAlignment)alignment;
+                }
+                else
+                {
+                    repeater.VerticalAlignment = (VerticalAlignment)alignment;
+                }
+
+                scrollPresenter = new ScrollPresenter {
+                    Content = repeater,
+                    ContentOrientation = ScrollingContentOrientation.None,
+                    Width = viewportWidth,
+                    Height = viewportHeight
+                };
+
+                Content = scrollPresenter;
+                Content.UpdateLayout();
+
+                Verify.AreEqual(isVerticalScroll ? 100.0 : 3000.0, scrollPresenter.ExtentWidth, context + "ExtentWidth");
+                Verify.AreEqual(isVerticalScroll ? 3000.0 : 100.0, scrollPresenter.ExtentHeight, context + "ExtentHeight");
+
+                scrollPresenter.ScrollStarting += (ScrollPresenter sender, ScrollingScrollStartingEventArgs args) =>
+                {
+                    scrollStartingCount++;
+                    offsetWhenStarting = isVerticalScroll ? sender.VerticalOffset : sender.HorizontalOffset;
+                    visibleRects.Clear();
+                    realizationRects.Clear();
+                    // The repeater handled ScrollStarting first (it subscribed during its first measure pass) and
+                    // invalidated its measure with the anticipated window; run that layout pass now.
+                    repeater.UpdateLayout();
+                    if (visibleRects.Count > 0)
+                    {
+                        anticipatedVisibleRect = visibleRects.Last();
+                        anticipatedRealizationRect = realizationRects.Last();
+                    }
+                    // Start from empty lists so the post-scroll check below only sees later layout passes.
+                    visibleRects.Clear();
+                    realizationRects.Clear();
+                };
+                scrollPresenter.ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
+                {
+                    scrollCompletedEvent.Set();
+                };
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var options = new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
+                if (isVerticalScroll)
+                {
+                    scrollPresenter.ScrollTo(0.0, targetOffset, options);
+                }
+                else
+                {
+                    scrollPresenter.ScrollTo(targetOffset, 0.0, options);
+                }
+            });
+            Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS), context + "Waiting for ScrollCompleted.");
+            CompositionPropertySpy.SynchronouslyTickUIThread(1);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, scrollStartingCount, context + "ScrollStarting raised once.");
+                Verify.AreEqual(0.0, offsetWhenStarting, context + "The view had not moved yet when ScrollStarting was raised.");
+                Verify.IsTrue(anticipatedVisibleRect.HasValue, context + "A layout pass ran for the anticipated view while ScrollStarting was raised.");
+                VerifyRectsAreClose(expectedWindow, anticipatedVisibleRect.Value, context + "anticipated visible window");
+                VerifyRectsAreClose(expectedWindow, anticipatedRealizationRect.Value, context + "anticipated realization window");
+
+                Verify.AreEqual(targetOffset, isVerticalScroll ? scrollPresenter.VerticalOffset : scrollPresenter.HorizontalOffset, context + "final offset");
+
+                // Independent oracle for the expected window: once the scroll completed, a fresh layout pass gets the
+                // repeater's actual effective viewport, which must equal the window that was anticipated.
+                Log.Comment(context + "layout passes between ScrollStarting and the end of the scroll: " + visibleRects.Count);
+                visibleRects.Clear();
+                repeater.InvalidateMeasure();
+                repeater.UpdateLayout();
+                Verify.IsTrue(visibleRects.Count > 0, context + "A layout pass ran after the scroll.");
+                VerifyRectsAreClose(expectedWindow, visibleRects.Last(), context + "visible window after the scroll");
+
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        private static void VerifyRectsAreClose(Rect expected, Rect actual, string message)
+        {
+            const double tolerance = 1.0;
+            bool areClose =
+                Math.Abs(expected.X - actual.X) <= tolerance &&
+                Math.Abs(expected.Y - actual.Y) <= tolerance &&
+                Math.Abs(expected.Width - actual.Width) <= tolerance &&
+                Math.Abs(expected.Height - actual.Height) <= tolerance;
+            Verify.IsTrue(areClose, string.Format("{0}: expected {1}, actual {2}", message, expected, actual));
+        }
+
         [TestMethod]
         public void ValidateTwoScrollPresentersScenario()
         {
