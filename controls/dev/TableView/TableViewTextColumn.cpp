@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableViewTextColumn.h"
 #include "TableView.h"
+#include "TableViewAutomationHelpers.h"
 
 TableViewTextColumn::TableViewTextColumn()
 {
@@ -33,9 +34,8 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     auto const owner = GetOwningTableView();
     // Cell content is left-aligned and vertically centered within the row (standard grid look).
     textBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
-    // Fluent body text: theme font size / Normal.
+    // FontWeight stays unset so a TableView/app value inherits.
     textBlock.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
-    textBlock.FontWeight(winrt::FontWeights::Normal());
     // Density-aware built-in cell padding (Standard = 8,4,8,4 = unchanged default).
     if (owner)
     {
@@ -79,7 +79,6 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
     // text or resize the row as the edit opens.
     textBox.VerticalAlignment(winrt::VerticalAlignment::Center);
     textBox.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
-    textBox.FontWeight(winrt::FontWeights::Normal());
     textBox.Padding(owner
         ? winrt::get_self<TableView>(owner)->GetDensityCellPadding()
         : winrt::ThicknessHelper::FromLengths(8, 4, 8, 4));
@@ -128,6 +127,11 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
     editingBinding.UpdateSourceTrigger(winrt::Microsoft::UI::Xaml::Data::UpdateSourceTrigger::Explicit);
 
     winrt::BindingOperations::SetBinding(textBox, winrt::TextBox::TextProperty(), editingBinding);
+
+    if (auto const headerText = TryGetColumnHeaderString(*this); headerText && !headerText->empty())
+    {
+        winrt::AutomationProperties::SetName(textBox, *headerText);
+    }
 
     return textBox;
 }

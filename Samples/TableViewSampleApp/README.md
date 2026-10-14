@@ -1,8 +1,8 @@
 # TableView sample
 
 A small WinUI 3 desktop app that exercises the live public API of the
-`Microsoft.UI.Xaml.Controls.Tabular.TableView` control. The left panel lets you tweak columns,
-sizing, headers, grid lines, density, backgrounds, and more while the table updates in real time.
+`Microsoft.UI.Xaml.Controls.Tabular.TableView` control. The navigation pane groups focused pages for
+quick-start usage, full-app scenarios, basics, columns, rows and cells, and power-user behavior.
 
 `TableView` ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`, separate from the main framework DLL,
 but its API is published through the WindowsAppSDK NuGet package: type information reaches the
@@ -49,6 +49,19 @@ string when in doubt.
 BuildOutput\obj\amd64chk\Samples\TableViewSampleApp\TableViewSampleApp.exe
 ```
 
+Supported launch arguments:
+
+- `--page=<tag>` opens a navigation page directly. Tags are the values in
+  `MainWindow.xaml` / `MainWindow.xaml.cs`, for example `Showcase`, `Selection`,
+  `GridLinesVisibility`, `Settings`, or `About`.
+- `--show-dev-info` shows the developer status bar with the loaded Tabular controls assembly path,
+  size, and timestamp. This is intended for local/UIA verification, not end-user docs.
+
+The app also contains an opt-in UIA verification log harness for local automation. It is compiled
+only when `TableViewSampleEnableVerificationLogs=true` is passed to MSBuild, and then activated with
+`--verify-groups` or `--verify-selection`. Normal public sample builds do not write log files next
+to the executable.
+
 ## Using TableView in your own app
 
 Reference `Microsoft.WindowsAppSDK.WinUI` and use the control. In `App.xaml`, merge
@@ -78,25 +91,26 @@ visible on purpose.
 
 ## What it demonstrates
 
-- Column `Width` (Auto / Pixel / Star), `MinWidth`, `MaxWidth`
-- Add / remove / hide columns
-- `HeadersVisibility`
-- `GridLinesVisibility`
-- `Density` (Compact / Standard / Comfortable)
-- `RowBackground` / `AlternatingRowBackground`
-- `FrozenEdge`
-- `IsReadOnly`
-- `HeaderTemplate`
-- `EmptyTemplate`
-- `TableViewTextColumn` and `TableViewTemplateColumn` (custom cell content)
+- A basic showcase table plus Task Manager, File Explorer, and File properties scenarios
+- Selection, sorting, filtering, keyboard navigation, and accessibility behavior
+- Column layout &amp; sizing (Pixel / Star widths, Min/Max clamps, drag-to-resize) and column
+  lifecycle (add, remove, reorder at runtime), plus header visibility
+- Tooltips, grid lines, cell templating, text wrapping, row height, cell editing,
+  empty state, density, and grouped rows
+- Hierarchical rows (`TableViewSource.ParentBy`): one flat list, two relations, composed with
+  filter, sort and grouping, and `IsLiveShaping` reshaping both trees when a row's property changes.
+  The table pages' Shaping section also offers Hierarchy and Grouped hierarchy (ParentBy, plus
+  GroupBy on the roots) over their own data: people by manager, files by folder, processes by app;
+  pages whose rows have no parent relation show those modes disabled with the reason
+- Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
+- `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
+  sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing
+  a region, run `powershell -File tools\Update-Snippets.ps1` and include the result. The build checks
+  that every snippet is current and that every `Snippet` / `SourceSnippet` / `AdditionalSnippet` a
+  page names exists: a warning locally, an error in CI.
 
-The **Filter / sort / group** page exercises the data-shaping surface:
-
-- `TableViewSource.Filter` / `ClearFilter` — text and predicate filters
-- `TableViewSource.GroupBy` / `ClearGroupBy` — grouping by a value-type key
-- `TableViewSource.Sort` / `ClearSort` — programmatic sort with `SortDirection`
-- `TableView.CanUserSortColumns`, `SortByColumn`, `ClearSort`, `Sorting` / `Sorted`
-- `GroupHeaderTemplate` (custom vs. built-in), `ExpandAllGroups` / `CollapseAllGroups`
+The pages are code-behind on purpose (no view models): each one demonstrates TableView API calls,
+not app architecture.
 
 ## More detail
 

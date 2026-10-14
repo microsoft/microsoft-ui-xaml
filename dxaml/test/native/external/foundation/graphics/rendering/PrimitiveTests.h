@@ -37,49 +37,49 @@ public:
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Texture1)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Tests on WPF are failing to wait for ImageBrush.ImageOpened event
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // DCPP Test: Some Graphics::PrimitiveTests tests are running in isolation mode due to test instability.
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Texture2)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Tests on WPF are failing to wait for ImageBrush.ImageOpened event
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // DCPP Test: Some Graphics::PrimitiveTests tests are running in isolation mode due to test instability.
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Texture3)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Tests on WPF are failing to wait for ImageBrush.ImageOpened event
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // DCPP Test: Some Graphics::PrimitiveTests tests are running in isolation mode due to test instability.
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Texture4)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Tests on WPF are failing to wait for ImageBrush.ImageOpened event
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // DCPP Test: Some Graphics::PrimitiveTests tests are running in isolation mode due to test instability.
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Texture5)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Tests on WPF are failing to wait for ImageBrush.ImageOpened event
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // DCPP Test: Some Graphics::PrimitiveTests tests are running in isolation mode due to test instability.
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Texture6)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Tests on WPF are failing to wait for ImageBrush.ImageOpened event
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // DCPP Test: Some Graphics::PrimitiveTests tests are running in isolation mode due to test instability.
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Texture7)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Tests on WPF are failing to wait for ImageBrush.ImageOpened event
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // DCPP Test: Some Graphics::PrimitiveTests tests are running in isolation mode due to test instability.
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Texture8)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Tests on WPF are failing to wait for ImageBrush.ImageOpened event
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // DCPP Test: Some Graphics::PrimitiveTests tests are running in isolation mode due to test instability.
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
@@ -95,7 +95,7 @@ public:
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Texture11)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Tests on WPF are failing to wait for ImageBrush.ImageOpened event
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // DCPP Test: Some Graphics::PrimitiveTests tests are running in isolation mode due to test instability.
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
@@ -177,7 +177,7 @@ public:
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Element13)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Tests on WPF are failing to wait for ImageBrush.ImageOpened event
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // DCPP Test: Some Graphics::PrimitiveTests tests are running in isolation mode due to test instability.
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
@@ -203,7 +203,7 @@ public:
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Element20)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Tests on WPF are failing to wait for ImageBrush.ImageOpened event
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Element21)
@@ -233,7 +233,7 @@ public:
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Element27)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: Tests on WPF are failing to wait for ImageBrush.ImageOpened event
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Element28)
