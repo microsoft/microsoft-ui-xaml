@@ -43,14 +43,14 @@
     <!-- Internal component versions, first carried over from the deleted eng\Version.Details.xml.
          ValueOrDefault => $(WindowsAppSDKVersionPinned) in the mono-build, else the literal
          fallback (update manually). -->
-    <FoundationTransportPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '3.0.0-20260802.0.nightly.internal'))</FoundationTransportPackageVersion>
-    <FrameworkUdkPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '3.0.0-experimental-27300.1905.260822-1925.0'))</FrameworkUdkPackageVersion>
-    <IxpTransportPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '3.0.0-experimental-27300.1905.260822-1925.0'))</IxpTransportPackageVersion>
-    <BasePackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.0.6-dev.experimental2'))</BasePackageVersion>
-    <WinUIDetailsNugetVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '3.10.0-experimental.20260916.0'))</WinUIDetailsNugetVersion>
+    <FoundationTransportPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.0-dev.experimental6'))</FoundationTransportPackageVersion>
+    <FrameworkUdkPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.0-dev.experimental6'))</FrameworkUdkPackageVersion>
+    <IxpTransportPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.0-dev.experimental6'))</IxpTransportPackageVersion>
+    <BasePackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.0-dev.experimental6'))</BasePackageVersion>
+    <WinUIDetailsNugetVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.0-dev.experimental6'))</WinUIDetailsNugetVersion>
     <!-- Package Versions for use in sample and test apps. Once Transport packages are removed revert to using old version variables -->
-    <FoundationPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '3.0.0-dev.experimental11'))</FoundationPackageVersion>
-    <IXPPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '3.0.0-experimental-Rolling.20260823.1'))</IXPPackageVersion>
+    <FoundationPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.0-dev.experimental6'))</FoundationPackageVersion>
+    <IXPPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.0-dev.experimental6'))</IXPPackageVersion>
     <!-- ====================================================================================== -->
     <!-- OSS builds currently pin to last-known-good versions. -->
     <FoundationTransportPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.19-experimental</FoundationTransportPackageVersion>
