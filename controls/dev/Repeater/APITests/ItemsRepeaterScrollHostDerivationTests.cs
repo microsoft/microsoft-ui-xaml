@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using MUXControlsTestApp.Utilities;
 
 using WEX.TestExecution;
+using WEX.TestExecution.Markup;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
