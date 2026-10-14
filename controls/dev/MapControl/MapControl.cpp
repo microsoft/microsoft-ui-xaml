@@ -314,8 +314,7 @@ winrt::fire_and_forget MapControl::ResetLayerCollection()
             for (uint32_t j = 0; j < elements.Size(); j++)
             {
                 auto element = elements.GetAt(j);
-                auto location = element.as<winrt::MapIcon>().Location();
-                winrt::get_self<MapElement>(element)->Id = co_await AddMapIcon(location,  layerId);
+                winrt::get_self<MapElement>(element)->Id = co_await AddMapIcon(element.as<winrt::MapIcon>(), layerId);
             }
         }
     }
@@ -359,24 +358,33 @@ winrt::fire_and_forget MapControl::OnLayerAdded(const winrt::MapElementsLayer la
         for (uint32_t i = 0; i < elements.Size(); i++)
         {
             auto element = elements.GetAt(i);
-            auto location = element.as<winrt::MapIcon>().Location();
-            winrt::get_self<MapElement>(element)->Id = co_await AddMapIcon(location,  winrt::get_self<MapElementsLayer>(layer)->Id);
+            winrt::get_self<MapElement>(element)->Id = co_await AddMapIcon(element.as<winrt::MapIcon>(), winrt::get_self<MapElementsLayer>(layer)->Id);
         }
     }
 }
 
-winrt::IAsyncOperation<winrt::hstring> MapControl::AddMapIcon(winrt::Geopoint mapIconPoint, winrt::hstring layerId)
+winrt::IAsyncOperation<winrt::hstring> MapControl::AddMapIcon(winrt::MapIcon mapIcon, winrt::hstring layerId)
 {
     winrt::hstring returnedValue{};
     if (auto webView = m_webView.get())
     {
         auto core = co_await GetCoreWebView2();
 
-        const auto mapIconPosition = mapIconPoint.Position();
+        const auto mapIconPosition = mapIcon.Location().Position();
         const auto latitude = winrt::to_hstring(mapIconPosition.Latitude);
         const auto longitude = winrt::to_hstring(mapIconPosition.Longitude);
 
-        returnedValue = co_await core.ExecuteScriptAsync(L"addPoint(" + longitude + L", " + latitude + L"," + layerId + L");");
+        // Prefer the app-provided accessible name; otherwise fall back to a localized
+        // default so screen readers never announce an empty or hard-coded pin name.
+        auto accessibleName = winrt::AutomationProperties::GetName(mapIcon);
+        if (accessibleName.empty())
+        {
+            accessibleName = ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameMapIcon);
+        }
+        // JSON-encode the name so it is safely escaped when injected into the script call.
+        const auto nameArgument = winrt::Windows::Data::Json::JsonValue::CreateStringValue(accessibleName).Stringify();
+
+        returnedValue = co_await core.ExecuteScriptAsync(L"addPoint(" + longitude + L", " + latitude + L"," + layerId + L"," + nameArgument + L");");
     }
     co_return returnedValue;
 }
@@ -415,7 +423,7 @@ winrt::IAsyncAction MapControl::LayerElementsChanged(const winrt::MapElementsLay
     case winrt::Collections::CollectionChange::ItemInserted:
     {
         auto element = elements.GetAt(index);
-        winrt::get_self<MapElement>(element)->Id = co_await AddMapIcon(element.as<winrt::MapIcon>().Location(), layerId);
+        winrt::get_self<MapElement>(element)->Id = co_await AddMapIcon(element.as<winrt::MapIcon>(), layerId);
         break;
     }
     case winrt::Collections::CollectionChange::ItemRemoved:
@@ -425,7 +433,7 @@ winrt::IAsyncAction MapControl::LayerElementsChanged(const winrt::MapElementsLay
     {
         auto element = elements.GetAt(index);
         RemoveMapIcon(elementId, layerId);
-        winrt::get_self<MapElement>(element)->Id = co_await AddMapIcon(element.as<winrt::MapIcon>().Location(), layerId);
+        winrt::get_self<MapElement>(element)->Id = co_await AddMapIcon(element.as<winrt::MapIcon>(), layerId);
         break;
     }
     case winrt::Collections::CollectionChange::Reset:

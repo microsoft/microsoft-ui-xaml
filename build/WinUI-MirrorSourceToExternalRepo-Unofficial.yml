@@ -45,7 +45,7 @@ parameters:
   default: false
 
 variables:
-- template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
+- template: AzurePipelinesTemplates\WinUI-Versions.yml
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 
 name: $[format('{0:yyyyMMdd}-{1}', pipeline.startTime, variables['versionFinal'])]
@@ -64,14 +64,10 @@ resources:
       type: git
       name: WinUI/WinUI-SourceDrop-Staging
       ref: refs/heads/main
-    - repository: WindowsAppSDKConfig
+    - repository: WinAppSDK
       type: git
-      name: ProjectReunion/WindowsAppSDKConfig
-      ref: refs/heads/main
-    - repository: WindowsAppSDKVersionConfig
-      type: git
-      name: ProjectReunion/WindowsAppSDKConfig
-      ref: refs/heads/main
+      name: OS/WinAppSDK
+      ref: refs/heads/release/main
   pipelines:
     - pipeline: sourcePipeline
       source: \OneBranch\microsoft-ui-xaml-lift\WinUI-Xaml-Official (OneBranch)
