@@ -36,6 +36,10 @@ public:
                 InkToolbarLogHResult(e.code(), L"pen button accessibility resource lookup");
             }
         }
+
+        // Cache here (UI thread); a resource lookup from the GetNameCore UIA callback can fail-fast.
+        try { m_selectedStateName = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarToolButtonSelectedStateName); }
+        catch (...) { m_selectedStateName = L"selected"; }
     }
 
     // IAutomationPeerOverrides
@@ -88,6 +92,23 @@ public:
         return helpText;
     }
 
+    hstring GetNameCore()
+    {
+        auto name = __super::GetNameCore();
+
+        // The button/custom control type does not make Narrator announce the checked tool, so fold
+        // "selected" into the active tool's name to guarantee the current tool is announced.
+        if (auto toggle = Owner().try_as<winrt::Microsoft::UI::Xaml::Controls::Primitives::ToggleButton>())
+        {
+            if (auto checked = toggle.IsChecked(); checked && checked.Value() && !m_selectedStateName.empty())
+            {
+                name = name.empty() ? m_selectedStateName
+                                    : winrt::hstring{ std::wstring{ name.c_str() } + L", " + std::wstring{ m_selectedStateName.c_str() } };
+            }
+        }
+        return name;
+    }
+
     // IExpandCollapseProvider
     winrt::ExpandCollapseState ExpandCollapseState()
     {
@@ -122,6 +143,7 @@ private:
     bool m_isBuiltInPen;
     winrt::hstring m_dropDownControlType;
     winrt::hstring m_colorPaletteHint;
+    winrt::hstring m_selectedStateName;
 
     com_ptr<InkToolbarToolButton> GetImpl()
     {
