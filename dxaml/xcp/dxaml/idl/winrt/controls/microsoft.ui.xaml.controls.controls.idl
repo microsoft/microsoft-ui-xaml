@@ -1961,10 +1961,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [inputproperty("Password")]
-    runtimeclass PasswordBox
+    unsealed runtimeclass PasswordBox
         : Microsoft.UI.Xaml.Controls.Control
     {
-        PasswordBox();
+        [method_name("CreateInstance")] PasswordBox();
         String Password;
         String PasswordChar;
         [deprecated("IsPasswordRevealButtonEnabledProperty may be altered or unavailable for releases after Windows 10.0. Instead, use PasswordRevealModeProperty.", deprecate, Microsoft.UI.Xaml.WinUIContract, 1)]

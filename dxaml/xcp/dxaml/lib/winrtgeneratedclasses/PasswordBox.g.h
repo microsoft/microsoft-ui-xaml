@@ -181,21 +181,24 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) PasswordBoxFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxFactory
         , public ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxStatics
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
         , public ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxStaticsFeature_HeaderPlacement
 #endif
     {
-        BEGIN_INTERFACE_MAP(PasswordBoxFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(PasswordBoxFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(PasswordBoxFactory, ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxFactory)
             INTERFACE_ENTRY(PasswordBoxFactory, ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxStatics)
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
             INTERFACE_ENTRY(PasswordBoxFactory, ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxStaticsFeature_HeaderPlacement)
 #endif
-        END_INTERFACE_MAP(PasswordBoxFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(PasswordBoxFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IPasswordBox** ppInstance);
 
         // Static properties.
 
