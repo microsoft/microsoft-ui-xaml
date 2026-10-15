@@ -119,15 +119,8 @@ InkCanvas::~InkCanvas()
     {
     }
 
-    // Ensure that we have torn down our dcomp stuff. Destruction can run during app shutdown, after XAML has
-    // torn down; a throw here would terminate the process.
-    try
-    {
-        DetachFromVisualLink();
-    }
-    catch (...)
-    {
-    }
+    // Ensure that we have torn down our dcomp stuff
+    DetachFromVisualLink();
 }
 
 void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
