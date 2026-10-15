@@ -148,10 +148,6 @@ struct TableViewResourceCache
     {
         bool hasCellFontSize{ false };
         double cellFontSize{ 0.0 };
-        bool hasHeaderFontSize{ false };
-        double headerFontSize{ 0.0 };
-        bool hasHeaderFontWeight{ false };
-        winrt::Windows::UI::Text::FontWeight headerFontWeight{};
     };
     FontInfo font{};
 
@@ -177,7 +173,6 @@ struct TableViewResourceCache
         winrt::Brush brush{ nullptr };
     };
     GridLineInfo gridLine{};
-    GridLineInfo headerSeparator{};
 
     // Cached horizontal scroll offset used to reposition frozen columns (not a theme resource,
     // so it is intentionally left out of the density/gridline groups above).
@@ -235,9 +230,7 @@ public:
     winrt::Thickness GetDensityCellPadding();
     winrt::Thickness GetDensityHeaderCellPadding();
     double GetCellFontSize();
-    double GetHeaderFontSize();
-    winrt::Windows::UI::Text::FontWeight GetHeaderFontWeight();
-    void AttachFocusCornerRadius(winrt::Grid const& target);
+    void AttachFocusCornerRadius(winrt::FrameworkElement const& target);
 
     // Per-level indent from the TableViewRowIndentSize resource, cached for rows.
     double GetRowIndentSize();
@@ -249,13 +242,11 @@ public:
     // Resolved grid-line brush (theme/HC-aware, cached); rows call this via get_self, like the
     // density/font accessors above.
     winrt::Brush GetGridLineBrush();
-    winrt::Brush GetHeaderSeparatorBrush();
 
-    // Header pointer-state brushes; looked up per state change, so not cached.
-    winrt::Brush LookupHeaderStateBrush(std::wstring_view key);
+    static winrt::SortIndicatorDirection ToSortIndicatorDirection(winrt::SortDirection direction);
 
-    // Code-created, so its Name is in no XAML namescope and FindName cannot resolve it.
-    static winrt::SortIndicator FindSortIndicator(const winrt::Panel& root);
+    void OnColumnHeaderTemplateApplied(winrt::TableViewColumnHeader const& header);
+    void OnColumnHeaderStylePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Per-instance resource cache (density metrics + gridline brush); accessed by the
     // file-scope resource helpers in TableView.cpp through this owner pointer.
@@ -269,9 +260,9 @@ public:
     // Toggling it adds or removes every gripper, so the header band is rebuilt.
     void OnCanUserResizeColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    // The gripper owns the resize mechanics; this only positions it and forwards the pointer drag.
-    void AppendResizeGripperVisual(
-        const winrt::Grid& headerCell,
+    // The gripper owns the resize mechanics; this only sizes it and forwards the pointer drag.
+    winrt::ResizeGripper CreateResizeGripper(
+        const winrt::FrameworkElement& headerCell,
         const winrt::TableViewColumn& column,
         double gripperWidth,
         const winrt::hstring& headerText);
@@ -1170,8 +1161,6 @@ private:
     // re-enter the collection that is still mutating, so the reshape runs on the next turn.
     void QueueClearSortAfterColumnRemoval();
     bool m_clearSortAfterColumnRemovalQueued{ false };
-    void AppendSortIndicatorVisual(const winrt::Panel& host, const winrt::TableViewColumn& column);
-    static winrt::SortIndicatorDirection ToSortIndicatorDirection(winrt::SortDirection direction);
 
     // v1 is single-column sort, so this holds at most one entry. It stays a vector because the
     // clear/purge walks are written against the collection and multi-column sort is the expected
@@ -1391,6 +1380,7 @@ private:
     bool m_frozenColumnsActive{ false };
 
     bool m_rebuildHeadersQueued{ false };
+    bool m_rebuildingHeaders{ false };
 
     bool m_columnsStructureChangedQueued{ false };
 

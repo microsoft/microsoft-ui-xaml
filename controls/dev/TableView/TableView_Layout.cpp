@@ -8,6 +8,7 @@
 #include "TableViewRow.h"
 #include "TableViewGroupHeader.h"
 #include "TableViewCell.h"
+#include "TableViewColumnHeader.h"
 
 #include <algorithm>
 #include <cmath>
@@ -678,8 +679,9 @@ void TableView::RefreshResizeGripperAvailability()
         }
 
         // Only a peer a client already holds is notified; FromElement would create one.
-        auto const headerPeer = winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged)
-            ? TableViewCell::TryGetExistingPeer(headerCell) : nullptr;
+        auto const header = headerCell.try_as<winrt::TableViewColumnHeader>();
+        auto const headerPeer = header && winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged)
+            ? winrt::get_self<TableViewColumnHeader>(header)->GetExistingAutomationPeerInternal() : nullptr;
         const bool couldResize = headerPeer && CanResizeColumnFromAutomation(column);
         gripper.Visibility(visibility);
 

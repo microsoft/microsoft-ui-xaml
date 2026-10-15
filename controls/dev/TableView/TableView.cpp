@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TableView.h"
-#include "TableViewHeaderCell.h"
+#include "TableViewColumnHeader.h"
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
 #include "TableViewCellsPanel.h"
@@ -30,7 +30,6 @@ static constexpr std::wstring_view s_RowsRepeaterPartName{ L"PART_RowsRepeater"s
 static constexpr std::wstring_view s_HeaderRowPartName{ L"PART_HeaderRow"sv };
 static constexpr std::wstring_view s_HeaderHostPartName{ L"PART_HeaderHost"sv };
 static constexpr std::wstring_view s_EmptyStatePresenterPartName{ L"PART_EmptyStatePresenter"sv };
-static constexpr std::wstring_view s_HeaderGridLineName{ L"TableViewHeaderGridLine"sv };
 static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGripperWidth"sv };
 // Matches TableViewResizeGripperWidth in the theme dictionaries; used when that key is missing or
 // unusable.
@@ -43,7 +42,6 @@ static constexpr double c_defaultGroupExpanderSize{ 24.0 };
 
 // The ColumnSpacing of the Grid hosting PART_ExpanderGutter in the group-header template.
 static constexpr double c_groupHeaderExpanderSpacing{ 6.0 };
-static constexpr std::wstring_view s_SortIndicatorName{ L"TableViewSortIndicator"sv };
 static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"sv };
 // Matches SortIndicatorSize in SortIndicator_themeresources.xaml; used only when that key is
 // missing or unusable.
@@ -468,13 +466,10 @@ namespace
         cache.density.hasCellPadding = false;
         cache.density.hasHeaderCellPadding = false;
         cache.font.hasCellFontSize = false;
-        cache.font.hasHeaderFontSize = false;
-        cache.font.hasHeaderFontWeight = false;
         cache.hierarchy.hasRowIndentSize = false;
         cache.hierarchy.hasRowExpanderSize = false;
         cache.hierarchy.hasGroupExpanderSize = false;
         cache.gridLine.hasBrush = false;
-        cache.headerSeparator.hasBrush = false;
     }
 
     bool ShouldRefreshFrozenColumnsForScroll(TableView* owner, double horizontalOffset)
@@ -554,36 +549,6 @@ winrt::Brush TableView::GetGridLineBrush()
     cache.gridLine.highContrast = highContrast;
     cache.gridLine.brush = brush;
     return brush;
-}
-
-winrt::Brush TableView::GetHeaderSeparatorBrush()
-{
-    auto& cache = GetTableViewResourceCache(this);
-    const bool highContrast = IsHighContrast();
-    const auto theme = ActualTheme();
-    if (cache.headerSeparator.hasBrush &&
-        cache.headerSeparator.theme == theme &&
-        cache.headerSeparator.highContrast == highContrast)
-    {
-        return cache.headerSeparator.brush;
-    }
-
-    auto brush = LookupElementResource(*this, L"TabularSurfaceHeaderSeparatorBrush", highContrast).try_as<winrt::Brush>();
-    if (!brush)
-    {
-        brush = GetGridLineBrush();
-    }
-
-    cache.headerSeparator.hasBrush = true;
-    cache.headerSeparator.theme = theme;
-    cache.headerSeparator.highContrast = highContrast;
-    cache.headerSeparator.brush = brush;
-    return brush;
-}
-
-winrt::Brush TableView::LookupHeaderStateBrush(std::wstring_view key)
-{
-    return LookupElementResource(*this, key, IsHighContrast()).try_as<winrt::Brush>();
 }
 
 TableView::~TableView()
@@ -1416,13 +1381,12 @@ void TableView::ApplyGridLinesToHeader()
     }
 
     const bool wantVertical = WantsVerticalLines(visibility);
-    const auto headerGridLineName = winrt::hstring{ s_HeaderGridLineName };
     const auto headerCells = host.Children();
     const uint32_t headerCellCount = headerCells.Size();
     uint32_t lastVisibleHeaderCell = headerCellCount;
     for (uint32_t i = headerCellCount; i > 0; --i)
     {
-        if (auto headerCell = headerCells.GetAt(i - 1).try_as<winrt::Panel>())
+        if (auto headerCell = headerCells.GetAt(i - 1).try_as<winrt::FrameworkElement>())
         {
             const auto column = headerCell.Tag().try_as<winrt::TableViewColumn>();
             if (headerCell.Visibility() == winrt::Visibility::Visible &&
@@ -1437,24 +1401,25 @@ void TableView::ApplyGridLinesToHeader()
 
     for (uint32_t i = 0; i < headerCellCount; ++i)
     {
-        if (auto headerCell = headerCells.GetAt(i).try_as<winrt::Panel>())
+        if (auto header = headerCells.GetAt(i).try_as<winrt::TableViewColumnHeader>())
         {
-            const auto children = headerCell.Children();
-            const uint32_t childCount = children.Size();
-            for (uint32_t childIndex = 0; childIndex < childCount; ++childIndex)
+            if (auto const gridLine = winrt::get_self<TableViewColumnHeader>(header)->GetGridLineInternal())
             {
-                if (auto border = children.GetAt(childIndex).try_as<winrt::Border>())
-                {
-                    if (border.Name() == headerGridLineName)
-                    {
-                        border.Visibility(
-                            wantVertical && !(m_suppressTrailingGridLine && i == lastVisibleHeaderCell)
-                                ? winrt::Visibility::Visible
-                                : winrt::Visibility::Collapsed);
-                    }
-                }
+                gridLine.Visibility(
+                    wantVertical && !(m_suppressTrailingGridLine && i == lastVisibleHeaderCell)
+                        ? winrt::Visibility::Visible
+                        : winrt::Visibility::Collapsed);
             }
         }
+    }
+}
+
+void TableView::OnColumnHeaderTemplateApplied(winrt::TableViewColumnHeader const& /*header*/)
+{
+    if (!m_rebuildingHeaders)
+    {
+        ApplyGridLinesToHeader();
+        RefreshResizeGripperAvailability();
     }
 }
 
@@ -2394,64 +2359,27 @@ double TableView::GetCellFontSize()
     return cache.font.cellFontSize;
 }
 
-double TableView::GetHeaderFontSize()
-{
-    auto& cache = GetTableViewResourceCache(this);
-    if (cache.font.hasHeaderFontSize)
-    {
-        return cache.font.headerFontSize;
-    }
-
-    constexpr double fallback = 14.0;
-    if (auto raw = LookupElementResource(*this, L"TableViewHeaderFontSize"))
-    {
-        cache.font.headerFontSize = winrt::unbox_value_or<double>(raw, fallback);
-        cache.font.hasHeaderFontSize = true;
-        return cache.font.headerFontSize;
-    }
-    cache.font.headerFontSize = fallback;
-    cache.font.hasHeaderFontSize = true;
-    return cache.font.headerFontSize;
-}
-
-winrt::Windows::UI::Text::FontWeight TableView::GetHeaderFontWeight()
-{
-    auto& cache = GetTableViewResourceCache(this);
-    if (cache.font.hasHeaderFontWeight)
-    {
-        return cache.font.headerFontWeight;
-    }
-
-    const auto fallback = winrt::FontWeights::SemiBold();
-    if (auto raw = LookupElementResource(*this, L"TableViewHeaderFontWeight", IsHighContrast()))
-    {
-        cache.font.headerFontWeight = winrt::unbox_value_or<winrt::Windows::UI::Text::FontWeight>(raw, fallback);
-        cache.font.hasHeaderFontWeight = true;
-        return cache.font.headerFontWeight;
-    }
-    cache.font.headerFontWeight = fallback;
-    cache.font.hasHeaderFontWeight = true;
-    return cache.font.headerFontWeight;
-}
-
-// The system focus visual takes its corners from the focused Grid's CornerRadius, but a rounded Grid
-// also clips its children and hit-testing, so round only while the focus rect shows. Programmatic
+// The system focus visual takes its corners from the focused element's CornerRadius, but a rounded
+// root also clips its children and hit-testing, so round only while the focus rect shows. Programmatic
 // focus is coerced to Keyboard or Pointer by the last input device, so Keyboard is exactly that case.
-void TableView::AttachFocusCornerRadius(winrt::Grid const& target)
+void TableView::AttachFocusCornerRadius(winrt::FrameworkElement const& target)
 {
+    auto const radiusProperty = target.try_as<winrt::Control>()
+        ? winrt::Control::CornerRadiusProperty()
+        : winrt::Grid::CornerRadiusProperty();
     target.RegisterPropertyChangedCallback(winrt::UIElement::FocusStateProperty(),
-        [weakThis = get_weak()](winrt::DependencyObject const& sender, winrt::DependencyProperty const&)
+        [weakThis = get_weak(), radiusProperty](winrt::DependencyObject const& sender, winrt::DependencyProperty const&)
         {
-            auto const grid = sender.as<winrt::Grid>();
+            auto const element = sender.as<winrt::UIElement>();
             auto const self = weakThis.get();
-            if (self && grid.FocusState() == winrt::FocusState::Keyboard)
+            if (self && element.FocusState() == winrt::FocusState::Keyboard)
             {
                 // The TableView style sets CornerRadius from ControlCornerRadius, so the value stays in XAML.
-                grid.CornerRadius(self->CornerRadius());
+                sender.SetValue(radiusProperty, winrt::box_value(self->CornerRadius()));
             }
             else
             {
-                grid.ClearValue(winrt::Grid::CornerRadiusProperty());
+                sender.ClearValue(radiusProperty);
             }
         });
 }
@@ -2806,6 +2734,22 @@ using TableViewDetails::GetColumnHeaderText;
 // GetColumnHeaderText renders an untemplated IStringable for automation purposes, but only a genuine string
 // may be swapped for a TextBlock -- a UIElement or a type with an implicit DataTemplate must keep
 // the ContentPresenter's content model.
+// Includes BasedOn styles.
+static bool StyleSetsProperty(const winrt::Style& style, const winrt::DependencyProperty& property)
+{
+    for (auto current = style; current; current = current.BasedOn())
+    {
+        for (auto const& setterBase : current.Setters())
+        {
+            if (auto const setter = setterBase.try_as<winrt::Setter>(); setter && setter.Property() == property)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 static bool IsPlainStringHeader(const winrt::TableViewColumn& column)
 {
     const auto propValue = column.Header().try_as<winrt::IPropertyValue>();
@@ -2889,15 +2833,11 @@ void TableView::RebuildHeaders()
 
     host.Children().Clear();
 
-    // Cache theme-resource padding once per header rebuild; values are stable for the pass.
-    winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
-    // Always cache the header separator brush at rebuild time; visibility toggles do not reassign it later.
-    const auto cachedHeaderSeparatorBrush = GetHeaderSeparatorBrush();
-    // Header cells share the density row min-height so the header band matches the body rows.
+    m_rebuildingHeaders = true;
+    auto const rebuildingGuard = wil::scope_exit([this]() noexcept { m_rebuildingHeaders = false; });
+
+    const winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
     const double cachedRowMinHeight = GetDensityRowMinHeight();
-    const double cachedHeaderFontSize = GetHeaderFontSize();
-    const auto cachedHeaderFontWeight = GetHeaderFontWeight();
-    const winrt::Brush cachedHeaderCellFill = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
     // of RebuildHeaders; a non-positive or non-finite override would flow straight into Width().
     double cachedResizeGripperWidth = winrt::unbox_value_or<double>(
@@ -2913,11 +2853,7 @@ void TableView::RebuildHeaders()
         cachedSortIndicatorWidth = c_sortIndicatorSizeFallback;
     }
     const bool canUserSortColumns = CanUserSortColumns();
-
-    // XAML mirrors an RTL subtree with one transform where FlowDirection changes, so logical Right
-    // is the trailing edge in both directions. Never swap sides by hand in a header cell (grid
-    // line, sort indicator, resize gripper).
-    const auto logicalEndAlignment = winrt::HorizontalAlignment::Right;
+    auto const tableHeaderStyle = ColumnHeaderStyle();
 
     if (auto columns = Columns())
     {
@@ -2928,45 +2864,44 @@ void TableView::RebuildHeaders()
                 continue;
             }
 
-            // Header cell root: TableViewHeaderCell is the focus/hit-test target so its automation
-            // peer attaches to the right element.
-            auto const headerCell = winrt::make<TableViewHeaderCell>(*this, column).as<winrt::Grid>();
-            headerCell.Visibility(column.Visibility());
-            // Header cells are the named keyboard/UIA targets; the host is one Tab stop, and arrows
-            // must still reach every visible header. Every visible header is a tab stop by product
-            // decision, including non-actionable ones: ARIA permits skipping them, but skipping makes
-            // the band's keyboard model depend on per-column capability, which is harder to explain
-            // than one uniform rule.
+            auto const header = winrt::make<TableViewColumnHeader>();
+            auto const headerImpl = winrt::get_self<TableViewColumnHeader>(header);
+            headerImpl->SetOwnerInternal(*this, column);
+            header.Visibility(column.Visibility());
+
+            auto const headerStyle = column.HeaderStyle() ? column.HeaderStyle() : tableHeaderStyle;
+            if (headerStyle)
+            {
+                header.Style(headerStyle);
+            }
+
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
-            headerCell.IsTabStop(true);
-            headerCell.UseSystemFocusVisuals(true);
-            AttachFocusCornerRadius(headerCell);
+            AttachFocusCornerRadius(header);
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {
-                winrt::AutomationProperties::SetName(headerCell, headerText);
+                winrt::AutomationProperties::SetName(header, headerText);
             }
-            winrt::AutomationProperties::SetAccessibilityView(headerCell, winrt::AccessibilityView::Content);
-            headerCell.MinHeight(cachedRowMinHeight);
-            // Without a fill the padding takes no pointer input, killing the tooltip and
-            // click-to-sort there.
-            headerCell.Background(cachedHeaderCellFill);
+            winrt::AutomationProperties::SetAccessibilityView(header, winrt::AccessibilityView::Content);
+            if (!StyleSetsProperty(headerStyle, winrt::FrameworkElement::MinHeightProperty()))
+            {
+                header.MinHeight(cachedRowMinHeight);
+            }
+            if (!StyleSetsProperty(headerStyle, winrt::Control::PaddingProperty()))
+            {
+                header.Padding(cachedHeaderCellPadding);
+            }
 
-
-            winrt::ContentPresenter content;
-            content.Content(column.Header());
-            // Header peer already names this subtree; leaving it in Content view double-announces.
-            winrt::AutomationProperties::SetAccessibilityView(content, winrt::AccessibilityView::Raw);
             if (auto headerTemplateSelector = column.HeaderTemplateSelector())
             {
-                content.Content(column.Header());
-                content.ContentTemplateSelector(headerTemplateSelector);
+                header.Content(column.Header());
+                header.ContentTemplateSelector(headerTemplateSelector);
             }
             else if (auto headerTemplate = column.HeaderTemplate())
             {
-                content.Content(column.Header());
-                content.ContentTemplate(headerTemplate);
+                header.Content(column.Header());
+                header.ContentTemplate(headerTemplate);
             }
             else if (!headerText.empty() && IsPlainStringHeader(column))
             {
@@ -2976,61 +2911,28 @@ void TableView::RebuildHeaders()
                 headerBlock.Text(headerText);
                 headerBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
                 headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
-                // The header cell's peer already announces this text.
+                // The header's peer already announces this text.
                 winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
-                content.Content(headerBlock);
+                header.Content(headerBlock);
             }
-            // Consume TableViewHeaderCellPadding from theme resources (cached once per rebuild).
-            // Sortable headers reserve the chevron's themed width so text trims before the overlay.
-            auto contentPadding = cachedHeaderCellPadding;
-            if (headerIsSortable)
+            else
             {
-                contentPadding.Right += cachedSortIndicatorWidth;
-            }
-            content.Padding(contentPadding);
-            content.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
-            content.VerticalAlignment(winrt::VerticalAlignment::Center);
-            // Column-header text: theme font size and weight (templates override).
-            content.FontSize(cachedHeaderFontSize);
-            content.FontWeight(cachedHeaderFontWeight);
-            headerCell.Children().Append(content);
-
-            // Visibility is set by ApplyGridLinesToHeader.
-            {
-                winrt::Border headerGridLine;
-                headerGridLine.Name(winrt::hstring{ s_HeaderGridLineName });
-                headerGridLine.Width(1);
-                headerGridLine.HorizontalAlignment(logicalEndAlignment);
-                headerGridLine.IsHitTestVisible(false);
-                winrt::AutomationProperties::SetAccessibilityView(headerGridLine, winrt::AccessibilityView::Raw);
-                headerGridLine.Background(cachedHeaderSeparatorBrush);
-                headerCell.Children().Append(headerGridLine);
+                header.Content(column.Header());
             }
 
-            headerCell.Tag(column);
+            header.Tag(column);
 
-            TableViewDetails::ApplyHeaderToolTip(headerCell, column.HeaderToolTip());
+            TableViewDetails::ApplyHeaderToolTip(header, column.HeaderToolTip());
+
+            headerImpl->SetSortableInternal(headerIsSortable, cachedSortIndicatorWidth);
+            headerImpl->SetSortDirectionInternal(column.SortDirection());
 
             if (headerIsSortable)
             {
-                // Hosted in its own panel so the chevron sits on the logical trailing edge without
-                // competing with the header content's Stretch alignment.
-                winrt::StackPanel indicatorHost;
-                indicatorHost.Orientation(winrt::Orientation::Horizontal);
-                indicatorHost.HorizontalAlignment(logicalEndAlignment);
-                indicatorHost.VerticalAlignment(winrt::VerticalAlignment::Center);
-                // The chevron is decoration on top of a clickable header: letting it take the hit
-                // would create a dead spot in the middle of the click target.
-                indicatorHost.IsHitTestVisible(false);
-                indicatorHost.Visibility(column.SortDirection() == winrt::SortDirection::None
-                    ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
-                AppendSortIndicatorVisual(indicatorHost, column);
-                headerCell.Children().Append(indicatorHost);
-
                 // Weak: the handler is owned by a visual the control also owns, so a strong
                 // capture would keep the TableView alive through its own header.
                 auto weakThis = get_weak();
-                headerCell.Tapped([weakThis, column](auto const&, winrt::TappedRoutedEventArgs const& args)
+                header.Tapped([weakThis, column](auto const&, winrt::TappedRoutedEventArgs const& args)
                 {
                     if (auto strongThis = weakThis.get())
                     {
@@ -3042,15 +2944,17 @@ void TableView::RebuildHeaders()
                 });
             }
 
-            // Last, so it wins the hit test on the edge it shares with the grid line and the sort
-            // affordance. The gripper marks the press handled, which also keeps a resize drag from
-            // reaching the header's Tapped handler and sorting the column.
+            // The gripper marks the press handled, which also keeps a resize drag from reaching the
+            // header's Tapped handler and sorting the column.
             if (headerIsResizable)
             {
-                AppendResizeGripperVisual(headerCell, column, cachedResizeGripperWidth, headerText);
+                headerImpl->SetResizeGripperInternal(
+                    CreateResizeGripper(header, column, cachedResizeGripperWidth, headerText));
             }
 
-            host.Children().Append(headerCell);
+            host.Children().Append(header);
+            // Template now so the parts exist for the passes below and for callers right after.
+            header.ApplyTemplate();
         }
     }
 
@@ -3181,25 +3085,6 @@ void TableView::CancelHeaderFocusRestore()
     }
 }
 
-// Builds the chevron for one header. The indicator is a display-only primitive: it owns no sort
-// policy, so the control sets Direction and nothing else.
-void TableView::AppendSortIndicatorVisual(const winrt::Panel& host, const winrt::TableViewColumn& column)
-{
-    if (!host || !column)
-    {
-        return;
-    }
-
-    winrt::SortIndicator indicator;
-    indicator.Name(winrt::hstring{ s_SortIndicatorName });
-    indicator.VerticalAlignment(winrt::VerticalAlignment::Center);
-    indicator.Direction(ToSortIndicatorDirection(column.SortDirection()));
-    // The header cell already reports the sort state through its automation peer's help text;
-    // surfacing the chevron separately would make AT announce the same thing twice.
-    winrt::AutomationProperties::SetAccessibilityView(indicator, winrt::AccessibilityView::Raw);
-    host.Children().Append(indicator);
-}
-
 winrt::SortIndicatorDirection TableView::ToSortIndicatorDirection(winrt::SortDirection direction)
 {
     // Two distinct WinRT enums with matching numeric values; map explicitly rather than casting so
@@ -3216,33 +3101,6 @@ winrt::SortIndicatorDirection TableView::ToSortIndicatorDirection(winrt::SortDir
     }
 }
 
-winrt::SortIndicator TableView::FindSortIndicator(const winrt::Panel& root)
-{
-    if (!root)
-    {
-        return nullptr;
-    }
-
-    // The chevron lives one level down inside its own host StackPanel today, but recurse so a
-    // future template tweak that nests it deeper does not silently break the refresh.
-    for (auto const& child : root.Children())
-    {
-        if (auto const indicator = child.try_as<winrt::SortIndicator>())
-        {
-            return indicator;
-        }
-        if (auto const childPanel = child.try_as<winrt::Panel>())
-        {
-            if (auto const found = FindSortIndicator(childPanel))
-            {
-                return found;
-            }
-        }
-    }
-
-    return nullptr;
-}
-
 void TableView::RefreshSortIndicators()
 {
     auto host = m_headerHost.get();
@@ -3253,33 +3111,23 @@ void TableView::RefreshSortIndicators()
 
     for (auto const& child : host.Children())
     {
-        auto const headerCell = child.try_as<winrt::Panel>();
-        if (!headerCell)
+        auto const header = child.try_as<winrt::TableViewColumnHeader>();
+        if (!header)
         {
             continue;
         }
 
-        auto const column = headerCell.Tag().try_as<winrt::TableViewColumn>();
-        if (!column)
+        if (auto const column = header.Tag().try_as<winrt::TableViewColumn>())
         {
-            continue;
-        }
-
-        // A child walk by type rather than FindName: the indicator is code-created into a nested
-        // host panel, so its Name was never registered in a namescope and FindName returns null --
-        // which left a programmatic sort (no header rebuild) with a stale chevron.
-        if (auto const indicator = FindSortIndicator(headerCell))
-        {
-            const auto direction = column.SortDirection();
-            indicator.Direction(ToSortIndicatorDirection(direction));
-            // Keep the host in step with the chevron.
-            if (auto const indicatorHost = indicator.Parent().try_as<winrt::UIElement>())
-            {
-                indicatorHost.Visibility(direction == winrt::SortDirection::None
-                    ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
-            }
+            winrt::get_self<TableViewColumnHeader>(header)->SetSortDirectionInternal(column.SortDirection());
         }
     }
+}
+
+void TableView::OnColumnHeaderStylePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
+{
+    // Rebuild, not restyle in place: the style also decides whether density sets MinHeight/Padding.
+    QueueRebuildHeaders();
 }
 
 void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
@@ -3639,8 +3487,8 @@ void TableView::OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequest
     }
 }
 
-void TableView::AppendResizeGripperVisual(
-    const winrt::Grid& headerCell,
+winrt::ResizeGripper TableView::CreateResizeGripper(
+    const winrt::FrameworkElement& headerCell,
     const winrt::TableViewColumn& column,
     double gripperWidth,
     const winrt::hstring& headerText)
@@ -3817,7 +3665,7 @@ void TableView::AppendResizeGripperVisual(
             strongThis->RefreshResizeGripperAvailability();
         }
     });
-    headerCell.Children().Append(gripperVisual);
+    return gripperVisual;
 }
 
 // Escape is the only host-driven cancel left: the gripper ends its own gesture on release, on a
@@ -3907,26 +3755,12 @@ bool TableView::TryResizeColumnFromAutomation(const winrt::TableViewColumn& colu
     return true;
 }
 
-// The header cell is tagged with its column; the gripper is one of its children.
-// The gripper is one of the header cell's children; the caller already has the cell.
 winrt::ResizeGripper TableView::FindResizeGripperInCell(const winrt::FrameworkElement& headerCell) const
 {
-    auto const cell = headerCell.try_as<winrt::Panel>();
-    if (!cell)
+    if (auto const header = headerCell.try_as<winrt::TableViewColumnHeader>())
     {
-        return nullptr;
+        return winrt::get_self<TableViewColumnHeader>(header)->GetResizeGripperInternal();
     }
-
-    auto const cellChildren = cell.Children();
-    const uint32_t cellCount = cellChildren.Size();
-    for (uint32_t j = 0; j < cellCount; ++j)
-    {
-        if (auto const gripper = cellChildren.GetAt(j).try_as<winrt::ResizeGripper>())
-        {
-            return gripper;
-        }
-    }
-
     return nullptr;
 }
 
