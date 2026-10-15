@@ -9,6 +9,8 @@ namespace winrt::TableViewAppCppPackaged::implementation
 {
     App::App()
     {
+        HighContrastAdjustment(ApplicationHighContrastAdjustment::None);
+
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
         UnhandledException([](IInspectable const&, UnhandledExceptionEventArgs const& e)
         {
