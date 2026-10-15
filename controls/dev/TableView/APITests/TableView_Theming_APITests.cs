@@ -634,6 +634,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // The template is one Border: it is both the pointer target (Transparent background) and the
+        // separator, hidden at rest by the CommonStates setters rather than by a nested element.
+        [TestMethod]
+        public void VerifyResizeGripperSeparatorShowsOnlyInPointerStates()
+        {
+            ResizeGripper gripper = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                gripper = new ResizeGripper { Width = 8, Height = 24 };
+                LoadContent(gripper);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var separator = gripper.FindVisualChildByName("Separator") as Border;
+                if (separator == null)
+                {
+                    Verify.Fail("The ResizeGripper template must contain the 'Separator' part its visual states target by name.");
+                    return;
+                }
+
+                Verify.AreEqual(separator, VisualTreeHelper.GetChild(gripper, 0),
+                    "'Separator' must be the template root.");
+                Verify.IsNull(separator.Child, "The separator Border must not wrap another element.");
+                Verify.IsNotNull(separator.Background, "A null Background would stop the gripper from hit-testing.");
+
+                var rest = separator.BorderBrush as SolidColorBrush;
+                Verify.IsTrue(rest != null && rest.Color.A == 0, "The separator must be hidden in the Normal state.");
+
+                foreach (var state in new[] { "PointerOver", "Pressed" })
+                {
+                    VisualStateManager.GoToState(gripper, state, false);
+                    Verify.AreEqual(gripper.BorderBrush, separator.BorderBrush,
+                        $"The {state} state must show the separator with the gripper's BorderBrush.");
+                }
+
+                VisualStateManager.GoToState(gripper, "Normal", false);
+                rest = separator.BorderBrush as SolidColorBrush;
+                Verify.IsTrue(rest != null && rest.Color.A == 0, "Returning to Normal must hide the separator again.");
+            });
+        }
+
         [TestMethod]
         public void VerifyResizeGripperDefaultSeparatorBrushesResolve()
         {
@@ -1001,9 +1047,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Density is one of the better-specified areas in the control: the presets are literal values in
         // TableView_themeresources.xaml rather than constants in code.
         //
-        // Table-driven over all three values deliberately. The row's own Style carries a MinHeight
-        // setter of 40, so if the density value stopped being applied as a local value, Standard would
-        // keep passing and only Compact and Comfortable would fail.
+        // Table-driven over all three values deliberately. The row's Style carries no MinHeight setter:
+        // the density value applied in code is the only source, and each preset must reach the row.
         [TestMethod]
         public void VerifyRowMinHeightFollowsDensity()
         {
@@ -1031,8 +1076,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Verify.AreEqual(testCase.RowMinHeight, row.MinHeight,
                         $"Density={testCase.Density} must give rows a MinHeight of {testCase.RowMinHeight}, from " +
-                        $"TableView_themeresources.xaml. A value of 40 here means the density metric is not being applied " +
-                        "as a local value and the style's own setter is winning.");
+                        "TableView_themeresources.xaml, applied by the row in code.");
                 });
             }
         }

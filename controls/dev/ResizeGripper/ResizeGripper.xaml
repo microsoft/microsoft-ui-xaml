@@ -21,32 +21,30 @@
                          before any press. Owned here rather than by the host so every consumer gets
                          it, and so it can be restyled through ResizeGripperSeparatorBrush and
                          ResizeGripperSeparatorThickness. -->
-                    <Border x:Name="LayoutRoot"
+                    <!-- One Border: the Transparent Background keeps the whole gripper a pointer
+                         target, and the border is the separator. Normal and Disabled hide it by
+                         clearing the brush, so leaving them restores the templated BorderBrush. -->
+                    <Border x:Name="Separator"
                             Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch">
-                        <Border x:Name="Separator"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                Opacity="0"
-                                IsHitTestVisible="False"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Stretch" />
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
-                                <VisualState x:Name="PointerOver">
+                                <VisualState x:Name="Normal">
                                     <VisualState.Setters>
-                                        <Setter Target="Separator.Opacity" Value="1" />
+                                        <Setter Target="Separator.BorderBrush" Value="Transparent" />
                                     </VisualState.Setters>
                                 </VisualState>
+                                <VisualState x:Name="PointerOver" />
                                 <!-- Same weight as PointerOver: the pointer is still over the
                                      gripper during a drag, and a change mid-gesture reads as a glitch. -->
-                                <VisualState x:Name="Pressed">
+                                <VisualState x:Name="Pressed" />
+                                <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="Separator.Opacity" Value="1" />
+                                        <Setter Target="Separator.BorderBrush" Value="Transparent" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="Disabled" />
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="OrientationStates">
                                 <VisualState x:Name="Horizontal">
