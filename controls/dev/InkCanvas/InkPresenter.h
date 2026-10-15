@@ -304,7 +304,8 @@ private:
     void FlushPendingEndDry();
     bool m_inDry{ false };
     bool m_endDryPending{ false };
-    winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingRevoker{};
+    // A self-removing CompositionTarget.Rendering handler is registered (UI thread only).
+    bool m_renderingHooked{ false };
 
     winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
 
