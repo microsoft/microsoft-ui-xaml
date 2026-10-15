@@ -92,6 +92,79 @@ namespace
         return nullptr;
     }
 
+    // An open Button.Flyout, SplitButton.Flyout or attached flyout under the editor (a
+    // CalendarDatePicker's calendar is attached in its template).
+    bool HasOpenOwnedFlyout(winrt::DependencyObject const& element)
+    {
+        auto const isOpen = [](winrt::FlyoutBase const& flyout) { return flyout && flyout.IsOpen(); };
+
+        if (auto const fe = element.try_as<winrt::FrameworkElement>(); fe && isOpen(winrt::FlyoutBase::GetAttachedFlyout(fe)))
+        {
+            return true;
+        }
+        if (auto const button = element.try_as<winrt::Button>(); button && isOpen(button.Flyout()))
+        {
+            return true;
+        }
+        if (auto const splitButton = element.try_as<winrt::SplitButton>(); splitButton && isOpen(splitButton.Flyout()))
+        {
+            return true;
+        }
+
+        const int32_t count = winrt::VisualTreeHelper::GetChildrenCount(element);
+        for (int32_t i = 0; i < count; ++i)
+        {
+            if (HasOpenOwnedFlyout(winrt::VisualTreeHelper::GetChild(element, i)))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    template <typename T>
+    bool ContainsElementOfType(winrt::DependencyObject const& element)
+    {
+        if (element.try_as<T>())
+        {
+            return true;
+        }
+
+        const int32_t count = winrt::VisualTreeHelper::GetChildrenCount(element);
+        for (int32_t i = 0; i < count; ++i)
+        {
+            if (ContainsElementOfType<T>(winrt::VisualTreeHelper::GetChild(element, i)))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // True when an open popup outside the editor's tree was opened by the editor. A popup has no
+    // public link to its owner, so only the editor's own flyouts count; a ContentDialog, a
+    // TeachingTip or another table's menu does not.
+    bool IsEditorOwnedPopup(winrt::Popup const& popup, winrt::FrameworkElement const& editor)
+    {
+        // Only one top-level flyout is open per root, so an open flyout under the editor is this one.
+        if (HasOpenOwnedFlyout(editor))
+        {
+            return true;
+        }
+
+        // A DatePicker/TimePicker shows its picker flyout from code, out of reach of the walk above.
+        auto const child = popup.Child();
+        if (child.try_as<winrt::DatePickerFlyoutPresenter>())
+        {
+            return ContainsElementOfType<winrt::DatePicker>(editor);
+        }
+        if (child.try_as<winrt::TimePickerFlyoutPresenter>())
+        {
+            return ContainsElementOfType<winrt::TimePicker>(editor);
+        }
+        return false;
+    }
+
 }
 
 // F2 / Enter / Escape. Registered WITH handledEventsToo, because a single-line TextBox reports Enter
@@ -284,10 +357,9 @@ void TableView::CompleteFocusLossCommit()
         return;
     }
 
-    // Focus went into some other popup - a picker or a button flyout inside the editor. A popup has
-    // no link back to its owner, but table menus stay closed while editing, so the popup that took
-    // focus from the editor is the editor's. Decide again once it closes.
-    if (auto const popup = FindOpenPopupContaining(focused, root))
+    // Focus went into a popup the editor opened - a picker or a button flyout inside it. Decide again
+    // once it closes. Focus in any other popup is a genuine move away and commits now.
+    if (auto const popup = FindOpenPopupContaining(focused, root); popup && IsEditorOwnedPopup(popup, editingElement))
     {
         m_editorPopupClosedRevoker = popup.Closed(winrt::auto_revoke,
             [weakThis = get_weak()](auto&&, auto&&)

@@ -36,7 +36,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // ---- A. Body precedence -------------------------------------------------------------
 
         [TestMethod]
-        [TestProperty("Description", "A1: a column's CellContextFlyout wins over the row style menu and anchors to the cell.")]
+        [TestProperty("Description", "A column's CellContextFlyout wins over the row style menu and anchors to the cell.")]
         public void CellMenuWinsOverRowMenu()
         {
             var f = LoadFixture();
@@ -48,7 +48,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A2: a cell without a CellContextFlyout falls back to the row style menu, anchored to the row.")]
+        [TestProperty("Description", "A cell without a CellContextFlyout falls back to the row style menu, anchored to the row.")]
         public void RowMenuUsedWhenColumnHasNoCellMenu()
         {
             var f = LoadFixture();
@@ -60,7 +60,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A3: with no cell or row menu the native TableView.ContextFlyout opens.")]
+        [TestProperty("Description", "With no cell or row menu the native TableView.ContextFlyout opens.")]
         public void TableMenuUsedWhenNoCellOrRowMenu()
         {
             var f = LoadFixture(configure: x => x.Table.Resources.Remove(typeof(TableViewRow)));
@@ -72,7 +72,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A4: with no TableView candidate the request is left unhandled and an ancestor's ContextFlyout opens.")]
+        [TestProperty("Description", "With no TableView candidate the request is left unhandled and an ancestor's ContextFlyout opens.")]
         public void UnhandledWhenNoCandidateBubblesToAncestor()
         {
             var f = LoadFixture(configure: x =>
@@ -88,7 +88,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A5: CellContextFlyout is read per request; a new value applies and null falls back to the row menu.")]
+        [TestProperty("Description", "CellContextFlyout is read per request; a new value applies and null falls back to the row menu.")]
         public void CellMenuChangesApplyOnNextRequest()
         {
             var f = LoadFixture();
@@ -111,7 +111,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A7: a ContextFlyout on the cell template root wins over the column's CellContextFlyout.")]
+        [TestProperty("Description", "A ContextFlyout on the cell template root wins over the column's CellContextFlyout.")]
         public void CellTemplateFlyoutWinsOverCellMenu()
         {
             var f = LoadFixture(
@@ -126,7 +126,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A9: a ContextFlyout on a nested (non-root) element in the cell template is found.")]
+        [TestProperty("Description", "A ContextFlyout on a nested (non-root) element in the cell template is found.")]
         public void CellTemplateInnerFlyoutFound()
         {
             var f = LoadFixture(
@@ -147,7 +147,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A10: with nested content flyouts, UIA/keyboard requests pick the outermost one.")]
+        [TestProperty("Description", "With nested content flyouts, UIA/keyboard requests pick the outermost one.")]
         public void OutermostContentFlyoutWins()
         {
             var f = LoadFixture(departmentTemplate: ContentTemplate(
@@ -168,7 +168,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A11: a ContextFlyout on collapsed content is not a candidate.")]
+        [TestProperty("Description", "A ContextFlyout on collapsed content is not a candidate.")]
         public void CollapsedContentFlyoutIgnored()
         {
             var f = LoadFixture(
@@ -189,7 +189,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A12: a text control's built-in copy/select flyout is not an app menu; the cell menu still opens.")]
+        [TestProperty("Description", "A text control's built-in copy/select flyout is not an app menu; the cell menu still opens.")]
         public void TextControlDefaultFlyoutIgnored()
         {
             var cases = new[]
@@ -210,7 +210,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A13: a ContextFlyout set locally on a text control is an app menu and wins.")]
+        [TestProperty("Description", "A ContextFlyout set locally on a text control is an app menu and wins.")]
         public void TextControlLocalFlyoutCounts()
         {
             var f = LoadFixture(nameTemplate: ContentTemplate(
@@ -226,7 +226,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A14: the content search stops at a nested TableView.")]
+        [TestProperty("Description", "The content search stops at a nested TableView.")]
         public void NestedTableViewFlyoutsNotPickedByOuter()
         {
             var f = LoadFixture(
@@ -244,7 +244,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A15: the content search stops at a nested items control, like it does at a nested TableView.")]
+        [TestProperty("Description", "The content search stops at a nested items control, like it does at a nested TableView.")]
         public void NestedItemsControlFlyoutNotPicked()
         {
             var f = LoadFixture(
@@ -265,7 +265,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A16: a cell menu wins over a row ContextFlyout set by an implicit row style; cells without one get the row style menu.")]
+        [TestProperty("Description", "A cell menu wins over a row ContextFlyout set by an implicit row style; cells without one get the row style menu.")]
         public void CellMenuWinsOverRowStyleMenu()
         {
             var f = LoadFixture(rowStyle: RowStyleWithFlyout());
@@ -280,7 +280,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A17: a cell content flyout wins over a row style menu.")]
+        [TestProperty("Description", "A cell content flyout wins over a row style menu.")]
         public void CellTemplateFlyoutWinsOverRowStyleMenu()
         {
             var f = LoadFixture(departmentTemplate: ContentTemplate(RootFlyoutContent), rowStyle: RowStyleWithFlyout());
@@ -293,7 +293,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A18: a cell template flyout keeps winning when CellContextFlyout is assigned after load.")]
+        [TestProperty("Description", "A cell template flyout keeps winning when CellContextFlyout is assigned after load.")]
         public void CellTemplateFlyoutWinsOverRuntimeCellMenu()
         {
             var f = LoadFixture(departmentTemplate: ContentTemplate(RootFlyoutContent));
@@ -307,7 +307,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A19: a request raised on an element inside the cell template opens the template flyout, not CellContextFlyout.")]
+        [TestProperty("Description", "A request raised on an element inside the cell template opens the template flyout, not CellContextFlyout.")]
         public void RequestFromCellContentWinsOverCellMenu()
         {
             var f = LoadFixture(
@@ -324,7 +324,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // ---- B. Row targets -----------------------------------------------------------------
 
         [TestMethod]
-        [TestProperty("Description", "B6: a row peer request targets the row even after a cell request made Name the current column.")]
+        [TestProperty("Description", "A row peer request targets the row even after a cell request made Name the current column.")]
         public void RowPeerShowContextMenuOpensRowMenu()
         {
             var f = LoadFixture();
@@ -342,7 +342,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // ---- C. Column headers --------------------------------------------------------------
 
         [TestMethod]
-        [TestProperty("Description", "C1: a header request opens the column's HeaderContextFlyout anchored to that header.")]
+        [TestProperty("Description", "A header request opens the column's HeaderContextFlyout anchored to that header.")]
         public void HeaderMenuOpensOnHeader()
         {
             var f = LoadFixture();
@@ -354,7 +354,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "C2: a header without a menu falls back to TableView.ContextFlyout, never to cell or row menus.")]
+        [TestProperty("Description", "A header without a menu falls back to TableView.ContextFlyout, never to cell or row menus.")]
         public void HeaderWithoutMenuFallsBackToTableMenu()
         {
             var f = LoadFixture(configure: x => x.OfficeColumn.CellContextFlyout = x.CellMenu);
@@ -366,7 +366,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "C3: a ContextFlyout in the header template wins over HeaderContextFlyout.")]
+        [TestProperty("Description", "A ContextFlyout in the header template wins over HeaderContextFlyout.")]
         public void HeaderTemplateFlyoutWinsOverHeaderMenu()
         {
             var f = LoadFixture(configure: x => x.NameColumn.HeaderTemplate = ContentTemplate(
@@ -384,7 +384,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "C4: a header request focuses the header and leaves body selection unchanged; focus returns to the header when the menu closes.")]
+        [TestProperty("Description", "A header request focuses the header and leaves body selection unchanged; focus returns to the header when the menu closes.")]
         public void HeaderRequestDoesNotMoveBodyState()
         {
             var f = LoadFixture();
@@ -403,7 +403,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "C6: a header peer for a collapsed column must not open any menu.")]
+        [TestProperty("Description", "A header peer for a collapsed column must not open any menu.")]
         public void CollapsedColumnHeaderPeerOpensNoMenu()
         {
             var f = LoadFixture(configure: x => x.OfficeColumn.HeaderContextFlyout = x.HeaderMenu);
@@ -431,7 +431,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "C10: a TableView-owned header peer (public constructor) forwards ShowContextMenu to the realized header, so the column's header menu opens rather than the table menu.")]
+        [TestProperty("Description", "A TableView-owned header peer (public constructor) forwards ShowContextMenu to the realized header, so the column's header menu opens rather than the table menu.")]
         public void TableOwnedHeaderPeerOpensHeaderMenu()
         {
             var f = LoadFixture();
@@ -444,7 +444,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "C7: a ContextFlyout on a nested (non-root) element in the header template wins over HeaderContextFlyout.")]
+        [TestProperty("Description", "A ContextFlyout on a nested (non-root) element in the header template wins over HeaderContextFlyout.")]
         public void HeaderTemplateInnerFlyoutWinsOverHeaderMenu()
         {
             var f = LoadFixture(configure: x => x.NameColumn.HeaderTemplate = ContentTemplate(
@@ -464,7 +464,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "C8: a header template flyout wins over TableView.ContextFlyout when the column has no HeaderContextFlyout, and cell menus never apply.")]
+        [TestProperty("Description", "A header template flyout wins over TableView.ContextFlyout when the column has no HeaderContextFlyout, and cell menus never apply.")]
         public void HeaderTemplateFlyoutWinsOverTableMenu()
         {
             var f = LoadFixture(configure: x =>
@@ -486,7 +486,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "C9: a request raised on an element inside the header template opens the template flyout, not HeaderContextFlyout.")]
+        [TestProperty("Description", "A request raised on an element inside the header template opens the template flyout, not HeaderContextFlyout.")]
         public void RequestFromHeaderContentWinsOverHeaderMenu()
         {
             var f = LoadFixture(configure: x => x.NameColumn.HeaderTemplate = ContentTemplate(ButtonFlyoutContent("{Binding}")));
@@ -502,7 +502,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // ---- D. Group headers ---------------------------------------------------------------
 
         [TestMethod]
-        [TestProperty("Description", "D1: group headers never use cell or row menus; the table menu opens.")]
+        [TestProperty("Description", "Group headers never use cell or row menus; the table menu opens.")]
         public void GroupHeaderUsesTableMenu()
         {
             var f = LoadFixture(grouped: true);
@@ -515,7 +515,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "D2: a group header ContextFlyout from an implicit style wins over TableView.ContextFlyout, and its items see the TableViewGroupInfo.")]
+        [TestProperty("Description", "A group header ContextFlyout from an implicit style wins over TableView.ContextFlyout, and its items see the TableViewGroupInfo.")]
         public void GroupHeaderStyleMenuWins()
         {
             var f = LoadFixture(grouped: true, configure: x =>
@@ -546,7 +546,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // ---- E. Side effects ----------------------------------------------------------------
 
         [TestMethod]
-        [TestProperty("Description", "E2: a body request does not change the selection.")]
+        [TestProperty("Description", "A body request does not change the selection.")]
         public void BodyRequestDoesNotChangeSelection()
         {
             var f = LoadFixture();
@@ -560,7 +560,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "E3: a body request moves focus into the target row, and focus is still there after the menu closes.")]
+        [TestProperty("Description", "A body request moves focus into the target row, and focus is still there after the menu closes.")]
         public void BodyRequestMovesFocusIntoTargetRow()
         {
             var f = LoadFixture();
@@ -575,7 +575,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "E4: a cell request focuses the exact target cell; a row request focuses the row itself.")]
+        [TestProperty("Description", "A cell request focuses the exact target cell; a row request focuses the row itself.")]
         public void BodyRequestFocusesTargetCell()
         {
             var f = LoadFixture();
@@ -595,7 +595,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "E6: while any cell is editing, a request on another row's cell opens no menu (neither its row menu nor the table menu).")]
+        [TestProperty("Description", "While any cell is editing, a request on another row's cell opens no menu (neither its row menu nor the table menu).")]
         public void RequestOnOtherRowWhileEditingOpensNoMenu()
         {
             var f = LoadEditableFixture();
@@ -604,7 +604,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "E7: while any cell is editing, a column's CellContextFlyout on another row does not open, and nothing else opens in its place.")]
+        [TestProperty("Description", "While any cell is editing, a column's CellContextFlyout on another row does not open, and nothing else opens in its place.")]
         public void CellMenuOnOtherRowSuppressedWhileEditing()
         {
             var f = LoadEditableFixture();
@@ -613,7 +613,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "E7b: while any cell is editing, a row request opens no menu.")]
+        [TestProperty("Description", "While any cell is editing, a row request opens no menu.")]
         public void RowRequestSuppressedWhileEditing()
         {
             var f = LoadEditableFixture();
@@ -622,7 +622,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "E7c: while any cell is editing, a column header request opens no menu (neither HeaderContextFlyout nor the table menu).")]
+        [TestProperty("Description", "While any cell is editing, a column header request opens no menu (neither HeaderContextFlyout nor the table menu).")]
         public void HeaderRequestSuppressedWhileEditing()
         {
             var f = LoadEditableFixture();
@@ -631,7 +631,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "E7d: while any cell is editing, a group header request opens no menu (neither its style ContextFlyout nor the table menu).")]
+        [TestProperty("Description", "While any cell is editing, a group header request opens no menu (neither its style ContextFlyout nor the table menu).")]
         public void GroupHeaderRequestSuppressedWhileEditing()
         {
             var f = LoadEditableFixture(grouped: true, configure: x =>
@@ -648,7 +648,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "E7e: while any cell is editing, a request on the TableView itself opens no menu.")]
+        [TestProperty("Description", "While any cell is editing, a request on the TableView itself opens no menu.")]
         public void TableRequestSuppressedWhileEditing()
         {
             var f = LoadEditableFixture();
@@ -697,7 +697,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "E8: body side effects (focus to the target cell, selection untouched) apply when a row style menu wins.")]
+        [TestProperty("Description", "Body side effects (focus to the target cell, selection untouched) apply when a row style menu wins.")]
         public void RowStyleMenuAppliesBodySideEffects()
         {
             var f = LoadFixture(rowStyle: RowStyleWithFlyout());
@@ -719,7 +719,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // ---- F. DataContext, sharing and recycling ------------------------------------------
 
         [TestMethod]
-        [TestProperty("Description", "F1: one shared cell menu sees the requested row's item every time.")]
+        [TestProperty("Description", "One shared cell menu sees the requested row's item every time.")]
         public void SharedCellMenuSeesRequestedRowItem()
         {
             var f = LoadFixture();
@@ -734,7 +734,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "F2: a row menu command bound with CommandParameter={Binding} acts on the requested item.")]
+        [TestProperty("Description", "A row menu command bound with CommandParameter={Binding} acts on the requested item.")]
         public void MenuCommandActsOnRequestedItem()
         {
             MenuFlyoutItem remove = null;
@@ -771,7 +771,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "F3: a recycled row container's menu sees its new item.")]
+        [TestProperty("Description", "A recycled row container's menu sees its new item.")]
         public void RecycledRowMenuSeesNewItem()
         {
             var f = LoadFixture(itemCount: 300);
@@ -822,7 +822,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "F4 (smoke): a ContextFlyout on the row template root opens with the row's item.")]
+        [TestProperty("Description", "A ContextFlyout on the row template root opens with the row's item.")]
         public void RowTemplateMenuSmoke()
         {
             var f = LoadFixture(configure: x =>
@@ -844,7 +844,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // Header menus see no row item; per-column menus are how an app knows the column (see the sample).
         [TestMethod]
-        [TestProperty("Description", "F5: a header menu's items never see a row item.")]
+        [TestProperty("Description", "A header menu's items never see a row item.")]
         public void HeaderMenuSeesNoRowItem()
         {
             var f = LoadFixture();
@@ -865,7 +865,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // ---- G. Robustness ------------------------------------------------------------------
 
         [TestMethod]
-        [TestProperty("Description", "G1: an item removed while focus moves to the target row suppresses the menu.")]
+        [TestProperty("Description", "An item removed while focus moves to the target row suppresses the menu.")]
         public void ItemRemovedDuringFocusMoveSuppressesMenu()
         {
             int ran = 0;
@@ -894,7 +894,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "G2: a column removed while focus moves to the target row is not a target.")]
+        [TestProperty("Description", "A column removed while focus moves to the target row is not a target.")]
         public void ColumnRemovedDuringFocusMoveSuppressesMenu()
         {
             int ran = 0;
@@ -920,7 +920,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "G4: a CellContextFlyout replaced while focus moves to the target row is the menu that opens.")]
+        [TestProperty("Description", "A CellContextFlyout replaced while focus moves to the target row is the menu that opens.")]
         public void CellMenuReplacedDuringFocusMoveShowsNewMenu()
         {
             int ran = 0;
@@ -947,30 +947,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "G3: a request raised from inside Opening is suppressed by the busy guard.")]
-        [TestProperty("Ignore", "True")] // A synchronous nested ShowContextMenu fail-fasts in CXcpDispatcher::CheckReentrancy before TableView sees it, so the busy guard cannot be reached from app code.
-        public void ReentrantRequestDuringOpeningIsSuppressed()
+        [TestProperty("Description", "A row or cell peer whose container went back to the pool raises ElementNotAvailable from ShowContextMenu and opens no menu.")]
+        public void PooledRowPeerShowContextMenuOpensNoMenu()
         {
             var f = LoadFixture();
-            bool nested = false;
-            RunOnUIThread.Execute(() => f.CellMenu.Opening += (s, e) =>
+            AutomationPeer rowPeer = null;
+            AutomationPeer cellPeer = null;
+            RunOnUIThread.Execute(() =>
             {
-                if (!nested)
-                {
-                    nested = true;
-                    GetCellPeer(f.Table, f.P(5), NameCol).ShowContextMenu();
-                }
+                rowPeer = GetRowPeer(RowOf(f, 5));
+                cellPeer = GetCellPeer(f.Table, f.P(5), OfficeCol);
+                f.Items.Clear();
             });
+            SettleLayout(f.Table);
 
-            RequestOnCell(f, 2, NameCol);
-
-            RunOnUIThread.Execute(() => Verify.IsTrue(nested, "Precondition: the nested request must have been raised."));
-            VerifyOpened(f, "CellMenu", () => CellOf(f, 2, NameCol), f.P(2), "outer request on row 2 / Name");
+            Action<AutomationPeer, string> verifyPooled = (peer, name) =>
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    bool threw = false;
+                    try
+                    {
+                        peer.ShowContextMenu();
+                    }
+                    catch (Exception)
+                    {
+                        threw = true;
+                    }
+                    Verify.IsTrue(threw, $"ShowContextMenu on the pooled {name} peer must raise ElementNotAvailable.");
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() => Verify.AreEqual(0, f.Recorder.Opened.Count,
+                    $"No menu may open from the pooled {name} peer. Opened: {f.Recorder.Describe()}"));
+            };
+            verifyPooled(rowPeer, "row");
+            verifyPooled(cellPeer, "cell");
             CloseMenus(f);
         }
 
         [TestMethod]
-        [TestProperty("Description", "G5: a TableViewColumn in a content element's Tag does not redirect the request to that column.")]
+        [TestProperty("Description", "A TableViewColumn in a content element's Tag does not redirect the request to that column.")]
         public void ColumnTagOnContentDoesNotRedirect()
         {
             var f = LoadFixture(departmentTemplate: ContentTemplate("<TextBlock x:Name='ContentRoot' Text='{Binding Role}'/>"));
@@ -1100,7 +1116,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public MenuFlyout TableMenu;
         public MenuFlyout OuterMenu;
 
-        // 1-based, matching the design doc's "row n" / "person n".
+        // 1-based: P(1) is "Person 0", the first row.
         public Person P(int n) => Items.First(p => p.Name == $"Person {n - 1}");
     }
 

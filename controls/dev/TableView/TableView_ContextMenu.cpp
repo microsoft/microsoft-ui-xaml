@@ -68,6 +68,11 @@ bool TableView::IsContextMenuTargetCurrent(
         return winrt::get_self<TableViewRow>(target.Row)->IsContextMenuTargetCurrent(target);
     }
 
+    if (target.Kind != ContextMenuTargetKind::Header)
+    {
+        return false;
+    }
+
     auto const showsColumnHeaders =
         (static_cast<uint32_t>(owner.HeadersVisibility()) & static_cast<uint32_t>(winrt::TableViewHeadersVisibility::Column)) != 0;
     if (target.Row || target.Item || !target.Column ||
@@ -127,13 +132,8 @@ std::optional<TableViewDetails::ContextMenuTarget> TableView::ResolveHeaderConte
         auto const parent = winrt::VisualTreeHelper::GetParent(node);
         if (parent == host)
         {
-            auto const cell = node.try_as<winrt::Grid>();
-            if (!cell)
-            {
-                return std::nullopt;
-            }
-
-            auto const column = cell.Tag().try_as<winrt::TableViewColumn>();
+            auto const cell = node.try_as<winrt::FrameworkElement>();
+            auto const column = cell ? TableViewCellsPanel::ColumnForCell(cell) : nullptr;
             if (!column)
             {
                 return std::nullopt;
@@ -160,7 +160,7 @@ std::optional<TableViewDetails::ContextMenuTarget> TableView::ResolveHeaderConte
 
 void TableView::SuppressContextRequestWhileEditing(winrt::ContextRequestedEventArgs const& args)
 {
-    if (!args.Handled() && IsEditing())
+    if (!args.Handled() && AreContextMenusSuppressed())
     {
         args.Handled(true);
     }
@@ -249,8 +249,8 @@ namespace
             return {};
         }
 
-        // Depth-first in visual order so the outermost element wins. A nested items host's or
-        // TableView's own ContextFlyout counts; its items' do not.
+        // Depth-first in visual order so the outermost element wins. A nested items host's own
+        // ContextFlyout counts, its items' do not; a nested TableView is skipped entirely.
         std::vector<winrt::DependencyObject> stack;
         auto const pushChildren = [&stack](winrt::DependencyObject const& parent)
         {
@@ -361,7 +361,7 @@ bool TableView::IsContextMenuRequestCurrent(
 {
     return IsContextMenuTargetCurrent(target) &&
         (target.Kind != TableViewDetails::ContextMenuTargetKind::Body ||
-            (ItemsSource() == sourceSnapshot && !IsEditing()));
+            (ItemsSource() == sourceSnapshot && !AreContextMenusSuppressed()));
 }
 
 bool TableView::FocusContextMenuTarget(
@@ -383,7 +383,7 @@ bool TableView::FocusContextMenuTarget(
 
     // Focus the exact target (cell, row or header) so focus restore and Narrator use it. Body
     // targets go through the two-level focus helpers so the cursor level follows.
-    if (target.Kind != TableViewDetails::ContextMenuTargetKind::Body)
+    if (target.Kind == TableViewDetails::ContextMenuTargetKind::Header)
     {
         if (!isFocusWithin(focusedElement(), target.Anchor))
         {
@@ -450,6 +450,8 @@ bool TableView::ProcessContextMenuRequest(
         return false;
     }
 
+    // Defensive: the framework fail-fasts a synchronous nested ShowContextMenu before it reaches
+    // here, so this only guards against a future path that re-enters while focus or menu app code runs.
     if (m_isProcessingContextMenu)
     {
         return true;
@@ -458,7 +460,7 @@ bool TableView::ProcessContextMenuRequest(
     // No TableView menu shows while a cell is editing: the request is handled with nothing shown,
     // so the row and table menus cannot open through the native chain either. An editor with its
     // own menu (a TextBox) has already shown it and handled the request.
-    if (IsEditing())
+    if (AreContextMenusSuppressed())
     {
         return true;
     }

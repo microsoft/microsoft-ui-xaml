@@ -161,7 +161,7 @@ void TableViewAutomationPeer::ShowContextMenuCore()
 {
     // The base raises ContextRequested on the TableView itself, which shows its own
     // ContextFlyout before the template-root suppression hook can see it.
-    if (auto const impl = GetImpl(); impl && impl->IsEditing())
+    if (auto const impl = GetImpl(); impl && impl->AreContextMenusSuppressed())
     {
         return;
     }
