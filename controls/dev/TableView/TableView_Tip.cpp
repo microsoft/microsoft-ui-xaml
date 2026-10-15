@@ -37,19 +37,21 @@ TableView::ActionTip::~ActionTip()
         return;
     }
 
-    // An exception leaving the action is the app's when app code rethrew while it ran.
+    // An exception leaving the action is the app's when app code rethrew it while the action ran. The owner
+    // records the escaping HRESULT in a catch, so like FailTipOperation this boundary requires it to match.
     auto const escaping = std::uncaught_exceptions() > m_exceptions;
-    auto const appEscaped = escaping && m_owner.AppEscapedSince(m_appEscapesAtStart, {});
-    // Diagnostics keep one report per operation and attribution, so the app fault that decided the outcome
-    // goes first. A fault is recoverable unless its exception left the action.
+    auto const appEscaped = escaping && m_escapingError && m_owner.AppEscapedSince(m_appEscapesAtStart, *m_escapingError);
+    // Diagnostics keep one report per operation, attribution and recoverability, so the app fault that decided
+    // the outcome goes first. A fault that stopped the action (its exception left it, or its write did not
+    // land) is not recoverable.
     if (appEscaped) { ReportAppFault(m_owner.m_tipAppEscapeKind, m_owner.m_tipAppEscapeError, false); }
-    if (m_appFaultKind != TableViewTip::AppFaultKind::None) { ReportAppFault(m_appFaultKind, m_appFaultError, true); }
+    if (m_appFaultKind != TableViewTip::AppFaultKind::None) { ReportAppFault(m_appFaultKind, m_appFaultError, false); }
     if (m_recoveredKind != TableViewTip::AppFaultKind::None) { ReportAppFault(m_recoveredKind, m_recoveredError, true); }
 
     // An app fault never overrides TableView's own failure in the same action.
     if (m_failed || (escaping && !appEscaped))
     {
-        TableViewTip::FailOperation(state, m_generation, m_stage, m_failError);
+        TableViewTip::FailOperation(state, m_generation, m_stage, m_failError ? m_failError : m_escapingError);
     }
     else if (appEscaped)
     {
@@ -126,13 +128,12 @@ TableView::AppEscapeScope::~AppEscapeScope()
     }
 }
 
-// An exception leaving an operation is the app's when app code rethrew while the operation ran and the
-// exception is still propagating (AppEscapeScope retires swallowed ones). A boundary that holds the
-// escaping HRESULT also requires it to match.
-bool TableView::AppEscapedSince(uint64_t escapes, std::optional<HRESULT> escaping) const noexcept
+// An exception leaving an operation is the app's when app code rethrew it while the operation ran: an escape was
+// noted since the operation started and not retired (AppEscapeScope retires swallowed ones), and its HRESULT is
+// the escaping one.
+bool TableView::AppEscapedSince(uint64_t escapes, HRESULT escaping) const noexcept
 {
-    return m_tipAppEscapes != escapes &&
-        (!escaping || !m_tipAppEscapeError || *escaping == *m_tipAppEscapeError);
+    return m_tipAppEscapes != escapes && m_tipAppEscapeError == escaping;
 }
 
 // The action an app callout runs under, unless a control operation started after that action did.
@@ -186,7 +187,7 @@ uint64_t TableView::BeginTipOperation(TableViewTip::Operation operation, bool ad
 void TableView::FailTipOperation(uint64_t generation, TableViewTip::Stage stage, std::optional<HRESULT> error) noexcept
 {
     if (!generation || generation != m_tip.operationGeneration || !TableViewTip::IsOperationStarted(m_tip)) { return; }
-    if (AppEscapedSince(m_tipAppEscapesAtOperationStart, error))
+    if (error && AppEscapedSince(m_tipAppEscapesAtOperationStart, *error))
     {
         auto const operation = m_tip.operation;
         auto const startedIn = m_tip.operationSessionGeneration;

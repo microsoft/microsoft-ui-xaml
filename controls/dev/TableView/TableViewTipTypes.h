@@ -12,7 +12,9 @@ namespace TableViewTip
     {
         Setup = 0, ReplaceSource = 1, Sort = 2, HeaderRefresh = 3,
         Filter = 5, GroupConfiguration = 6, Selection = 8,
-        BeginEdit = 9, CommitEdit = 10, CancelEdit = 11
+        BeginEdit = 9, CommitEdit = 10, CancelEdit = 11,
+        // One past the last operation: add operations above it. TableViewTelemetry.cpp checks every value below it.
+        Max
     };
     enum class IgnoreReason : unsigned short
     {
@@ -27,7 +29,12 @@ namespace TableViewTip
         None = 0, Template = 1, Source = 3, Sort = 4, HeaderRefresh = 5,
         Selection = 6, Editing = 7, Filter = 8, Grouping = 9
     };
-    enum class Attribution : uint32_t { Unknown = 0, Product = 1, Application = 2 };
+    enum class Attribution : uint32_t
+    {
+        Unknown = 0, Product = 1, Application = 2,
+        // One past the last attribution: add attributions above it.
+        Max
+    };
 
     constexpr bool IsMeasuredOperation(Operation operation) noexcept
     {

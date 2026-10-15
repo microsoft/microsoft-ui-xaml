@@ -20,7 +20,8 @@ namespace TableViewTelemetry
         uint64_t generation{};
         uint32_t deferredCount{};
         uint32_t overflowMask{};
-        uint32_t reportedErrors{};
+        // TableView_Error dedupe: one bit per operation, attribution and recoverability.
+        uint64_t reportedErrors{};
         bool active{};
     };
 

@@ -829,6 +829,9 @@ private:
         void Complete() noexcept { m_completed = true; }
         void Ignore(TableViewTip::IgnoreReason reason) noexcept { m_completed = false; m_ignoreReason = reason; }
         void Fail(std::optional<HRESULT> error) noexcept;
+        // The owner records the HRESULT of an exception leaving the action, so the app is blamed only when that
+        // HRESULT is the one its code rethrew.
+        void Escaping(HRESULT error) noexcept { m_escapingError = error; }
         // App code stopped the operation: its write did not land.
         void ApplicationFault(TableViewTip::AppFaultKind kind, std::optional<HRESULT> error = {}) noexcept;
         // App code failed (threw, or its write did not land) and TableView carried on: reported, and the
@@ -852,6 +855,7 @@ private:
         bool m_failed{};
         TableViewTip::IgnoreReason m_ignoreReason{ TableViewTip::IgnoreReason::Stale };
         std::optional<HRESULT> m_failError;
+        std::optional<HRESULT> m_escapingError;
         TableViewTip::AppFaultKind m_appFaultKind{};
         std::optional<HRESULT> m_appFaultError;
         TableViewTip::AppFaultKind m_recoveredKind{};
@@ -885,7 +889,7 @@ private:
     // App code failed (threw, or its write did not land) and TableView carried on without rethrowing.
     void NoteRecoveredAppFault(TableViewTip::Operation operation, TableViewTip::Stage stage,
         TableViewTip::AppFaultKind kind, std::optional<HRESULT> error) noexcept;
-    bool AppEscapedSince(uint64_t escapes, std::optional<HRESULT> escaping) const noexcept;
+    bool AppEscapedSince(uint64_t escapes, HRESULT escaping) const noexcept;
     ActionTip* CalloutAction() const noexcept;
     void FailTipOperation(uint64_t generation, TableViewTip::Stage stage, std::optional<HRESULT> error) noexcept;
     void CompleteTipOperation(uint64_t generation) noexcept;

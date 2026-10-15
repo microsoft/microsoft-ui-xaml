@@ -281,48 +281,56 @@ void TableView::ApplySelection(int32_t index, bool measureTip)
     const auto version = m_selectionVersion;
     const auto sourceGeneration = m_rowMetadataGeneration;
     ActionTip tip{ *this, TableViewTip::Operation::Selection, TableViewTip::Stage::Selection, accepted };
-    if (index < 0 && !m_selectionModel)
+    try
     {
-        // Nothing selected and no model yet - nothing to clear, but publish so the projections
-        // start out agreeing with the model.
-        m_stickySelectedItem.set(nullptr);
-        m_stickySelectedIdentity.clear();
-        PushSelectionProperties();
-        return;
-    }
-
-    EnsureSelectionModel();
-
-    if (index < 0)
-    {
-        m_selectionModel.ClearSelection();
-    }
-    else
-    {
-        m_selectionModel.Select(index);
-    }
-
-    // Capture the intentional selection by object identity. This is the single selection writer, so
-    // every gesture / programmatic set / restore passes through here; the anchor otherwise moves only
-    // in OnSelectionModelSelectionChanged (incremental clear outside a restore). A Reset-driven clear
-    // runs under the restore flag, keeping it for the identity restore.
-    m_stickySelectedItem.set(index >= 0 ? SelectedItemForIndex(index) : nullptr);
-    m_stickySelectedIdentity = (index >= 0 && m_stickySelectedItem.get()) ? HierarchyIdentityForIndex(index) : winrt::hstring{};
-
-    // The model raises SelectionChanged only when the selection actually moved; publish here too so
-    // a rejected write still leaves the DPs agreeing with the model.
-    PushSelectionProperties();
-    if (accepted)
-    {
-        if (m_selectionVersion == version + 1 && m_rowMetadataGeneration == sourceGeneration &&
-            m_lastPublishedIndex == index)
+        if (index < 0 && !m_selectionModel)
         {
-            tip.Complete();
+            // Nothing selected and no model yet - nothing to clear, but publish so the projections
+            // start out agreeing with the model.
+            m_stickySelectedItem.set(nullptr);
+            m_stickySelectedIdentity.clear();
+            PushSelectionProperties();
+            return;
+        }
+
+        EnsureSelectionModel();
+
+        if (index < 0)
+        {
+            m_selectionModel.ClearSelection();
         }
         else
         {
-            tip.Ignore(TableViewTip::IgnoreReason::Superseded);
+            m_selectionModel.Select(index);
         }
+
+        // Capture the intentional selection by object identity. This is the single selection writer, so
+        // every gesture / programmatic set / restore passes through here; the anchor otherwise moves only
+        // in OnSelectionModelSelectionChanged (incremental clear outside a restore). A Reset-driven clear
+        // runs under the restore flag, keeping it for the identity restore.
+        m_stickySelectedItem.set(index >= 0 ? SelectedItemForIndex(index) : nullptr);
+        m_stickySelectedIdentity = (index >= 0 && m_stickySelectedItem.get()) ? HierarchyIdentityForIndex(index) : winrt::hstring{};
+
+        // The model raises SelectionChanged only when the selection actually moved; publish here too so
+        // a rejected write still leaves the DPs agreeing with the model.
+        PushSelectionProperties();
+        if (accepted)
+        {
+            if (m_selectionVersion == version + 1 && m_rowMetadataGeneration == sourceGeneration &&
+                m_lastPublishedIndex == index)
+            {
+                tip.Complete();
+            }
+            else
+            {
+                tip.Ignore(TableViewTip::IgnoreReason::Superseded);
+            }
+        }
+    }
+    catch (...)
+    {
+        tip.Escaping(winrt::to_hresult());
+        throw;
     }
 }
 

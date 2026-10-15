@@ -65,10 +65,13 @@ namespace TableViewTelemetry
         }
         constexpr uint32_t c_countSlots = static_cast<uint32_t>(std::tuple_size_v<decltype(Session::counts)>);
         constexpr uint32_t c_deferredOverflowBit = c_countSlots;
-        // The diagnostic dedupe mask has one bit per attribution in each diagnostic slot.
-        constexpr uint32_t c_attributionBits = static_cast<uint32_t>(TableViewTip::Attribution::Application) + 1;
+        constexpr uint32_t c_overflowMaskBits = std::numeric_limits<decltype(Session::overflowMask)>::digits;
+        // The diagnostic dedupe mask has a bit per attribution and recoverability in each diagnostic slot.
+        constexpr uint32_t c_attributions = static_cast<uint32_t>(TableViewTip::Attribution::Max);
+        constexpr uint32_t c_errorBitsPerSlot = c_attributions * 2;
+        constexpr uint32_t c_errorMaskBits = std::numeric_limits<decltype(Session::reportedErrors)>::digits;
 
-        // One diagnostic per operation (setup and header refresh included) and attribution, per session.
+        // One diagnostic per operation (setup and header refresh included), attribution and recoverability, per session.
         constexpr std::optional<uint32_t> DiagnosticSlot(TableViewTip::Operation operation) noexcept
         {
             switch (operation)
@@ -84,18 +87,18 @@ namespace TableViewTelemetry
         // The slot tables cover exactly the measured operations and fit the session's fields.
         constexpr bool SlotsFit() noexcept
         {
-            for (uint32_t value = 0; value <= static_cast<uint32_t>(TableViewTip::Operation::CancelEdit); ++value)
+            for (uint32_t value = 0; value < static_cast<uint32_t>(TableViewTip::Operation::Max); ++value)
             {
                 auto const operation = static_cast<TableViewTip::Operation>(value);
                 auto const slot = CountSlot(operation);
                 auto const diagnostic = DiagnosticSlot(operation);
                 if (TableViewTip::IsMeasuredOperation(operation) != slot.has_value() || (slot && *slot >= c_countSlots) ||
-                    (diagnostic && (*diagnostic + 1) * c_attributionBits > 32))
+                    (diagnostic && (*diagnostic + 1) * c_errorBitsPerSlot > c_errorMaskBits))
                 {
                     return false;
                 }
             }
-            return c_deferredOverflowBit < 32;
+            return c_deferredOverflowBit < c_overflowMaskBits;
         }
         static_assert(SlotsFit(), "Update IsMeasuredOperation, CountSlot, DiagnosticSlot and Session together.");
 
@@ -175,14 +178,16 @@ namespace TableViewTelemetry
         bool recoverable, TableViewTip::Attribution attribution, std::optional<HRESULT> error, TableViewTip::AppFaultKind kind) noexcept
     {
         auto const slot = DiagnosticSlot(operation);
-        if (!slot || static_cast<uint32_t>(attribution) > static_cast<uint32_t>(TableViewTip::Attribution::Application))
+        if (!slot || static_cast<uint32_t>(attribution) >= c_attributions)
         {
             OutputDebugStringW(L"TableView telemetry: invalid error operation.\n");
             return;
         }
         if (startedIn && !IsCurrent(session, startedIn)) { return; }
-        // One report per operation and attribution, so an app fault cannot hide a later product error.
-        auto const bit = uint32_t{ 1 } << (*slot * c_attributionBits + static_cast<uint32_t>(attribution));
+        // One report per operation, attribution and recoverability: an app fault cannot hide a later product error,
+        // and a fault TableView recovered from cannot hide a later one that stopped an operation.
+        auto const bit = uint64_t{ 1 } <<
+            (*slot * c_errorBitsPerSlot + static_cast<uint32_t>(attribution) * 2 + (recoverable ? 1 : 0));
         if ((session.reportedErrors & bit) ||
             !TraceLoggingProviderEnabled(g_hLoggingProvider, WINEVENT_LEVEL_VERBOSE, KEYWORD_TABLEVIEW)) { return; }
         session.reportedErrors |= bit;

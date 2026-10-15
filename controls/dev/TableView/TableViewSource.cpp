@@ -195,7 +195,7 @@ winrt::TableViewSource TableViewSource::ClearParentBy()
 
 winrt::TableViewSource TableViewSource::ClearSort()
 {
-    ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasActiveSort() };
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortAxis({}) };
     tip.Apply([&]() { m_engine->ClearSorts(); });
     return *this;
 }

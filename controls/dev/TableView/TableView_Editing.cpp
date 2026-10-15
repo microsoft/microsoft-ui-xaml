@@ -936,18 +936,28 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
                 }
                 else
                 {
+                    // The cancel closes the edit whatever the rollback does; a failed write is reported as the app's.
+                    auto const recoverRollbackFault = [this, tip](std::optional<HRESULT> error) noexcept
+                    {
+                        if (tip) { tip->RecoveredAppFault(TableViewTip::AppFaultKind::Write, error); }
+                        else
+                        {
+                            NoteRecoveredAppFault(TableViewTip::Operation::CancelEdit, TableViewTip::Stage::Editing,
+                                TableViewTip::AppFaultKind::Write, error);
+                        }
+                    };
                     AppEscapeScope escapes{ *this };
                     try
                     {
                         winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, m_editUneditedValue.get());
                         if (!winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement))
                         {
-                            if (tip) { tip->ApplicationFault(TableViewTip::AppFaultKind::Write); }
+                            recoverRollbackFault({});
                         }
                     }
                     catch (...)
                     {
-                        if (tip) { tip->ApplicationFault(TableViewTip::AppFaultKind::Write, winrt::to_hresult()); }
+                        recoverRollbackFault(winrt::to_hresult());
                         LogConsumerHandlerThrow(L"CancelCellEdit");
                     }
                 }
@@ -1046,15 +1056,23 @@ bool TableView::EndCurrentEdit(EditingUnit unit, winrt::TableViewEditAction acti
     ActionTip tip{ *this,
         action == winrt::TableViewEditAction::Commit ? TableViewTip::Operation::CommitEdit : TableViewTip::Operation::CancelEdit,
         TableViewTip::Stage::Editing, honorCancel };
-    const auto generation = m_editGeneration;
-    m_editState = EditState::Ending;
+    try
+    {
+        const auto generation = m_editGeneration;
+        m_editState = EditState::Ending;
 
-    const auto result = RaiseEditEnding(unit, action, honorCancel, honorCancel ? &tip : nullptr);
+        const auto result = RaiseEditEnding(unit, action, honorCancel, honorCancel ? &tip : nullptr);
 
-    const bool closed = CompleteEditEnd(unit, action, honorCancel, result == EditEndingResult::Vetoed, honorCancel ? &tip : nullptr);
-    if (closed && m_editGeneration == generation) { tip.Complete(); }
-    else if (m_editGeneration != generation) { tip.Ignore(TableViewTip::IgnoreReason::Superseded); }
-    return closed;
+        const bool closed = CompleteEditEnd(unit, action, honorCancel, result == EditEndingResult::Vetoed, honorCancel ? &tip : nullptr);
+        if (closed && m_editGeneration == generation) { tip.Complete(); }
+        else if (m_editGeneration != generation) { tip.Ignore(TableViewTip::IgnoreReason::Superseded); }
+        return closed;
+    }
+    catch (...)
+    {
+        tip.Escaping(winrt::to_hresult());
+        throw;
+    }
 }
 
 bool TableView::TerminateEditForReset(bool force, bool sourceReplaced)
@@ -1257,85 +1275,93 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
     }
 
     ActionTip tip{ *this, TableViewTip::Operation::BeginEdit, TableViewTip::Stage::Editing };
-    const auto generation = m_editGeneration;
-    m_currentEditItem.set(item);
-    m_currentEditColumn.set(column);
-    m_editState = EditState::Beginning;
-    m_abandonPendingBeginEdit = false;
-    m_editSourceWritten = false;
-
-    // Everything from here to the promotion below runs app code - a BeginningEdit handler, the
-    // editing binding's getter, ITableViewEditableItem.BeginEdit - any of which can mutate the
-    // collection and have ItemsRepeater recycle the row underneath us. A forced teardown cannot
-    // close an edit that is still Beginning, so OnRowElementClearing raises this flag instead and
-    // the checks below unwind rather than promoting to Editing over a recycled row.
-    const bool allowed = RaiseBeginningEdit(item, column, tip);
-    if (!allowed || m_abandonPendingBeginEdit || !TryBeginEditVisual(item, column))
+    try
     {
-        tip.Ignore(!allowed ? TableViewTip::IgnoreReason::Vetoed :
-            m_abandonPendingBeginEdit ? TableViewTip::IgnoreReason::Stale : TableViewTip::IgnoreReason::Cancelled);
-        // Beginning -> None. Do not leave stale trackers behind, and reset the state before
-        // draining so a queued reshape can itself start an edit.
-        //
-        // The item transaction is deliberately NOT touched: a cell commit keeps the row
-        // transaction open, so anything held here belongs to a previous cell in the same row and
-        // is still legitimately live. Clearing it would leave the item with an unpaired BeginEdit.
-        m_currentEditItem.set(nullptr);
-        m_currentEditColumn.set(nullptr);
-        m_editUneditedValue.set(nullptr);
-        m_editState = EditState::None;
+        const auto generation = m_editGeneration;
+        m_currentEditItem.set(item);
+        m_currentEditColumn.set(column);
+        m_editState = EditState::Beginning;
         m_abandonPendingBeginEdit = false;
-        DrainCoalescedEditReshape();
-        return false;
-    }
+        m_editSourceWritten = false;
 
-    // The column primes its own editor and hands back whatever it needs to revert. Done here rather
-    // than in the row so the returned value has an owner for the lifetime of the edit.
-    if (auto const row = m_currentEditRow.get())
-    {
-        if (auto const editingElement = winrt::get_self<TableViewRow>(row)->GetEditingElement())
+        // Everything from here to the promotion below runs app code - a BeginningEdit handler, the
+        // editing binding's getter, ITableViewEditableItem.BeginEdit - any of which can mutate the
+        // collection and have ItemsRepeater recycle the row underneath us. A forced teardown cannot
+        // close an edit that is still Beginning, so OnRowElementClearing raises this flag instead and
+        // the checks below unwind rather than promoting to Editing over a recycled row.
+        const bool allowed = RaiseBeginningEdit(item, column, tip);
+        if (!allowed || m_abandonPendingBeginEdit || !TryBeginEditVisual(item, column))
         {
-            AppEscapeScope escapes{ *this };
-            try
+            tip.Ignore(!allowed ? TableViewTip::IgnoreReason::Vetoed :
+                m_abandonPendingBeginEdit ? TableViewTip::IgnoreReason::Stale : TableViewTip::IgnoreReason::Cancelled);
+            // Beginning -> None. Do not leave stale trackers behind, and reset the state before
+            // draining so a queued reshape can itself start an edit.
+            //
+            // The item transaction is deliberately NOT touched: a cell commit keeps the row
+            // transaction open, so anything held here belongs to a previous cell in the same row and
+            // is still legitimately live. Clearing it would leave the item with an unpaired BeginEdit.
+            m_currentEditItem.set(nullptr);
+            m_currentEditColumn.set(nullptr);
+            m_editUneditedValue.set(nullptr);
+            m_editState = EditState::None;
+            m_abandonPendingBeginEdit = false;
+            DrainCoalescedEditReshape();
+            return false;
+        }
+
+        // The column primes its own editor and hands back whatever it needs to revert. Done here rather
+        // than in the row so the returned value has an owner for the lifetime of the edit.
+        if (auto const row = m_currentEditRow.get())
+        {
+            if (auto const editingElement = winrt::get_self<TableViewRow>(row)->GetEditingElement())
             {
-                m_editUneditedValue.set(winrt::get_self<TableViewColumn>(column)->PrepareCellForEdit(editingElement, nullptr));
-            }
-            catch (...)
-            {
-                tip.RecoveredAppFault(TableViewTip::AppFaultKind::Factory, winrt::to_hresult());
-                LogConsumerHandlerThrow(L"PrepareCellForEdit");
+                AppEscapeScope escapes{ *this };
+                try
+                {
+                    m_editUneditedValue.set(winrt::get_self<TableViewColumn>(column)->PrepareCellForEdit(editingElement, nullptr));
+                }
+                catch (...)
+                {
+                    tip.RecoveredAppFault(TableViewTip::AppFaultKind::Factory, winrt::to_hresult());
+                    LogConsumerHandlerThrow(L"PrepareCellForEdit");
+                }
             }
         }
-    }
 
-    // Last chance to unwind: PrepareCellForEdit calls app code, so
-    // the row can have been recycled between the check above and here. Promoting to Editing over a
-    // recycled row is what lets a later commit write into a different item.
-    if (m_abandonPendingBeginEdit || !m_currentEditRow.get())
-    {
-        tip.Ignore(TableViewTip::IgnoreReason::Stale);
-        m_abandonPendingBeginEdit = false;
-        m_currentEditItem.set(nullptr);
-        m_currentEditColumn.set(nullptr);
-        m_editUneditedValue.set(nullptr);
-        m_editState = EditState::None;
+        // Last chance to unwind: PrepareCellForEdit calls app code, so
+        // the row can have been recycled between the check above and here. Promoting to Editing over a
+        // recycled row is what lets a later commit write into a different item.
+        if (m_abandonPendingBeginEdit || !m_currentEditRow.get())
+        {
+            tip.Ignore(TableViewTip::IgnoreReason::Stale);
+            m_abandonPendingBeginEdit = false;
+            m_currentEditItem.set(nullptr);
+            m_currentEditColumn.set(nullptr);
+            m_editUneditedValue.set(nullptr);
+            m_editState = EditState::None;
+            DrainCoalescedEditReshape();
+            return false;
+        }
+
+        SetCurrentCell(item, column);
+        m_editState = EditState::Editing;
         DrainCoalescedEditReshape();
-        return false;
+        if (m_editGeneration == generation && m_editState == EditState::Editing &&
+            m_currentEditColumn.get() == column && SameInspectableIdentity(m_currentEditItem.get(), item))
+        {
+            tip.Complete();
+        }
+        else
+        {
+            tip.Ignore(TableViewTip::IgnoreReason::Superseded);
+        }
+        return true;
     }
-
-    SetCurrentCell(item, column);
-    m_editState = EditState::Editing;
-    DrainCoalescedEditReshape();
-    if (m_editGeneration == generation && m_editState == EditState::Editing &&
-        m_currentEditColumn.get() == column && SameInspectableIdentity(m_currentEditItem.get(), item))
+    catch (...)
     {
-        tip.Complete();
+        tip.Escaping(winrt::to_hresult());
+        throw;
     }
-    else
-    {
-        tip.Ignore(TableViewTip::IgnoreReason::Superseded);
-    }
-    return true;
 }
 
 bool TableView::CommitEdit()
