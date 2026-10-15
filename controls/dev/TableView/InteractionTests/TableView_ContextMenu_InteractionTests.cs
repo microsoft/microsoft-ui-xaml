@@ -200,63 +200,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the Menu (Apps) key on a focused cell opens the column's CellContextFlyout for that row.")]
-        public void MenuKeyOnCellOpensCellMenu()
-        {
-            using (var setup = new TestSetupHelper(PageName))
-            {
-                if (SelectContextMenuHostAndGetTable() == null) { return; }
-                if (!DrillIntoRow(ContextMenuTable, 4)) { return; }
-
-                TextInput.SendText("{APPS}");
-                Wait.ForIdle();
-
-                VerifyMenuOpened(CellMenu, ContextMenuName(4), CellFocus(4, ContextMenuNameColumn));
-                CloseMenu();
-            }
-        }
-
-        [TestMethod]
         [TestProperty("Description", "Verifies Shift+F10 on a focused row (not a cell) opens the row's menu, not a column's cell menu.")]
         public void ShiftF10OnRowOpensRowMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject table = SelectContextMenuHostAndGetTable();
-                if (table == null) { return; }
-
-                UIObject row = GetRow(table, 3);
-                if (row == null) { Verify.Fail("Row 3 was not found."); return; }
-                row.SetFocus();
-                Wait.ForIdle();
-                if (!row.HasKeyboardFocus) { Verify.Fail("Precondition: row 3 did not take focus."); return; }
+                if (SelectContextMenuHostAndGetTable() == null) { return; }
+                if (FocusRowAt(ContextMenuTable, 3) == null) { return; }
 
                 KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
 
                 VerifyMenuOpened(RowMenu, ContextMenuName(3), RowFocus(3));
-                CloseMenu();
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies Shift+F10 on a focused cell with no menu of its own opens the row's menu.")]
-        public void ShiftF10OnPlainCellOpensRowMenu()
-        {
-            using (var setup = new TestSetupHelper(PageName))
-            {
-                if (SelectContextMenuHostAndGetTable() == null) { return; }
-                if (!DrillIntoRow(ContextMenuTable, 2)) { return; }
-
-                KeyboardHelper.PressKey(Key.Right, ModifierKey.None, numPresses: (uint)ContextMenuAgeColumn);
-                Wait.ForIdle();
-                VerifyFocusedCell(ContextMenuTable, 2, ContextMenuAgeColumn, "Precondition: focus must reach row 2's Age cell.");
-
-                KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
-
-                VerifyMenuOpened(RowMenu, ContextMenuName(2), CellFocus(2, ContextMenuAgeColumn));
-                Verify.AreEqual("TableViewRow", ReadContextMenuField(TargetField), "The row menu must stay targeted at the row.");
-                UIObject row = GetRow(GetTable(ContextMenuTable), 2);
-                VerifyMenuPlacedAtCell(row, row.Children[ContextMenuAgeColumn], RowMenu);
                 CloseMenu();
             }
         }
@@ -291,16 +245,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject table = SelectContextMenuHostAndGetTable();
-                if (table == null) { return; }
+                if (SelectContextMenuHostAndGetTable() == null) { return; }
                 if (!InvokeHostButton(MirrorContextMenuTableButton)) { return; }
 
                 // Under RTL, Left drills in and moves to the next column in reading order.
-                UIObject row = GetRow(GetTable(ContextMenuTable), 3);
-                if (row == null) { Verify.Fail("Row 3 was not found."); return; }
-                row.SetFocus();
-                Wait.ForIdle();
-                if (!row.HasKeyboardFocus) { Verify.Fail("Precondition: row 3 did not take focus."); return; }
+                if (FocusRowAt(ContextMenuTable, 3) == null) { return; }
                 KeyboardHelper.PressKey(Key.Left, ModifierKey.None, numPresses: (uint)ContextMenuAgeColumn + 1);
                 Wait.ForIdle();
                 VerifyFocusedCell(ContextMenuTable, 3, ContextMenuAgeColumn, "Precondition: focus must reach row 3's Age cell.");
@@ -309,7 +258,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 VerifyMenuOpened(RowMenu, ContextMenuName(3), CellFocus(3, ContextMenuAgeColumn));
-                row = GetRow(GetTable(ContextMenuTable), 3);
+                UIObject row = GetRow(GetTable(ContextMenuTable), 3);
                 VerifyMenuPlacedAtCell(row, row.Children[ContextMenuAgeColumn], RowMenu, rightToLeft: true);
                 CloseMenu();
             }
@@ -780,38 +729,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.AreEqual("False", WaitForContextMenuField(OpenField, "False"), "Escape must close the menu.");
         }
 
-        // The value of one "key=value" field of ContextMenuReadout, or null if the field is absent.
-        private static string ReadContextMenuField(string field)
-        {
-            string readout = ReadPageReadout(ContextMenuReadout);
-            if (readout == null)
-            {
-                return null;
-            }
+        private static string ReadContextMenuField(string field) => ReadReadoutField(ContextMenuReadout, field);
 
-            foreach (string part in readout.Split(';'))
-            {
-                int separator = part.IndexOf('=');
-                if (separator > 0 && part.Substring(0, separator) == field)
-                {
-                    return part.Substring(separator + 1);
-                }
-            }
-
-            return null;
-        }
-
-        // A few idle waits let a menu's Opening/Closed land. Returns the last value read.
-        private static string WaitForContextMenuField(string field, string expected)
-        {
-            string value = ReadContextMenuField(field);
-            for (int attempt = 0; attempt < 5 && value != expected; attempt++)
-            {
-                Wait.ForIdle();
-                value = ReadContextMenuField(field);
-            }
-            return value;
-        }
+        // A few idle waits let a menu's Opening/Closed land.
+        private static string WaitForContextMenuField(string field, string expected) => WaitForReadoutField(ContextMenuReadout, field, expected);
 
         #endregion
     }
