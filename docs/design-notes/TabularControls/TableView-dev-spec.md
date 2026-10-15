@@ -295,6 +295,8 @@ when the sort cannot be applied: besides a canceled `Sorting` or an edit that wi
 column with `CanSort=False` (or with neither a sort member path nor a `CustomSortComparer`) is not
 sortable, and a source containing a null row object or the same object on two rows has no row
 identity to sort by. `CanUserSortColumns=False` gates only header clicks, not these methods.
+Setting `CanSort=False` on the sorted column clears its sort through an internal path that skips
+that gate, raising `Sorting`/`Sorted` exactly as `SortByColumn(column, None)` does.
 
 Without this, the earlier-declared axis would silently outrank the later one while the chevron
 advertised the loser. WPF splits the same way: `SortDescriptions` carry a property name, which is
