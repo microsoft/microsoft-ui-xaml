@@ -10,6 +10,9 @@
 #include "TableViewGroupHeaderAutomationPeer.h"
 
 static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
+static constexpr std::wstring_view s_ContentPresenterPartName{ L"PART_ContentPresenter"sv };
+static constexpr std::wstring_view s_ItemCountForegroundPartName{ L"PART_ItemCountForeground"sv };
+static constexpr std::wstring_view s_ItemCountTextName{ L"TableViewGroupHeaderItemCountText"sv };
 
 TableViewGroupHeader::TableViewGroupHeader()
 {
@@ -58,12 +61,45 @@ winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSi
     {
         // Before any column has resolved (first pass, or no owner yet) fall back to the natural
         // measure rather than reporting zero, which would collapse the band.
-        return __super::MeasureOverride(availableSize);
+        auto const natural = __super::MeasureOverride(availableSize);
+        BindItemCountForeground();
+        return natural;
     }
 
     const auto width = static_cast<float>(columnsTotal);
     auto const desired = __super::MeasureOverride({ width, availableSize.Height });
+    BindItemCountForeground();
     return { width, desired.Height };
+}
+
+// CommonStates setters can't reach into the DataTemplate, so the count text binds to a template part.
+// Called after measure, when the presenter has realized its content.
+void TableViewGroupHeader::BindItemCountForeground()
+{
+    auto const presenter = m_contentPresenter.get();
+    auto const source = m_itemCountForeground.get();
+    if (!presenter || !source || winrt::VisualTreeHelper::GetChildrenCount(presenter) == 0)
+    {
+        return;
+    }
+
+    auto const root = winrt::VisualTreeHelper::GetChild(presenter, 0);
+    if (root == m_boundContentRoot.get())
+    {
+        return;
+    }
+    m_boundContentRoot = winrt::make_weak(root);
+
+    if (auto const rootElement = root.try_as<winrt::FrameworkElement>())
+    {
+        if (auto const countText = rootElement.FindName(s_ItemCountTextName).try_as<winrt::TextBlock>())
+        {
+            winrt::Binding binding;
+            binding.Source(source);
+            binding.Path(winrt::PropertyPath(L"Foreground"));
+            countText.SetBinding(winrt::TextBlock::ForegroundProperty(), binding);
+        }
+    }
 }
 
 void TableViewGroupHeader::SetOwningTableViewInternal(winrt::TableView const& owner)
@@ -85,6 +121,9 @@ void TableViewGroupHeader::OnApplyTemplate()
     m_isEnabledChangedRevoker.revoke();
     m_templateRootContextRequestedRevoker.revoke();
     m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
+    m_contentPresenter.set(GetTemplateChild(hstring{ s_ContentPresenterPartName }).try_as<winrt::ContentPresenter>());
+    m_itemCountForeground.set(GetTemplateChild(hstring{ s_ItemCountForegroundPartName }).try_as<winrt::FrameworkElement>());
+    m_boundContentRoot = nullptr;
 
     // A group header's ContextFlyout (set through a TableViewGroupHeader Style) stays closed while
     // a cell is editing.

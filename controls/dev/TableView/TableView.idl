@@ -385,7 +385,8 @@ runtimeclass TableViewGroupHeaderToggleRequestedEventArgs
 // The whole band is the toggle target (matching ListView / TreeView) rather than a
 // nested Button, so there is one interactive element and one automation story.
 //
-// Parts. Code looks up only PART_GridLineBorder; the default states target PART_Root,
+// Parts. Code looks up PART_GridLineBorder, PART_ContentPresenter and PART_ItemCountForeground;
+// the default states target PART_Root,
 // PART_ContentPresenter and PART_ExpanderIcon by name, so a template that keeps those states
 // must declare them:
 //   PART_Root              Border            the band; CommonStates sets Background
@@ -393,6 +394,7 @@ runtimeclass TableViewGroupHeaderToggleRequestedEventArgs
 //   PART_ExpanderGutter    Border            reserves the chevron column so content stays aligned
 //   PART_ExpanderIcon      FontIcon          glyph driven by ExpansionStates, not by code
 //   PART_GridLineBorder    Border            optional; border chrome and terminal-line suppression
+//   PART_ItemCountForeground FrameworkElement optional; its Foreground colors the default item count
 //
 // States: CommonStates Normal|PointerOver|Pressed|Disabled
 //         ExpansionStates Expanded|Collapsed
