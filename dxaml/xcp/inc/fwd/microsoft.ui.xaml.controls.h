@@ -600,6 +600,7 @@ namespace Controls {
     interface IItemsPresenterStatics;
     interface IItemsPresenterStatics2;
     interface IItemsStackPanel;
+    interface IItemsStackPanelFactory;
     interface IItemsStackPanelStatics;
     interface IItemsWrapGrid;
     interface IItemsWrapGridStatics;
