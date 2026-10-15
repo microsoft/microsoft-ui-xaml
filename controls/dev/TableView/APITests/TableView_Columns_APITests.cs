@@ -25,8 +25,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // Category 3.1 of the TableView test plan: the Columns collection.
     //
     // These tests assert against two structures the control builds from Columns:
-    //   - PART_HeaderHost, whose children are header cell Grids, each tagged with its column
-    //     (TableView.cpp:1610, headerCell.Tag(column)).
+    //   - PART_HeaderHost, whose children are TableViewColumnHeader controls, each tagged with its column
+    //     (TableView::RebuildHeaders, header.Tag(column)).
     //   - each realized TableViewRow's PART_CellsHost, whose children are Grid cell wrappers,
     //     each tagged with its column (TableViewRow.cpp:762, cellWrapper.Tag(column)).
     // The Tag is the supported way to map a rendered element back to the column that produced it,
