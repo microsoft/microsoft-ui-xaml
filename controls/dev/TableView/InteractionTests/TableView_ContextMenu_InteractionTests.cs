@@ -477,7 +477,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 VerifyMenuOpened(CellMenu, ContextMenuName(3), CellFocus(3, ContextMenuNameColumn));
                 Verify.AreEqual(NoneValue, ReadContextMenuField(SelectedField), "A press-and-hold must not select the row.");
-                CloseMenu();
+
+                // Close the touch way: a tap outside light-dismisses the menu.
+                InputHelper.Tap(FindElement.ById(ContextMenuReadout));
+                Wait.ForIdle();
+                Verify.AreEqual("False", WaitForContextMenuField(OpenField, "False"), "A tap outside must close the menu.");
             }
         }
 
