@@ -331,7 +331,10 @@ void InkToolbarPenConfigurationControl::RegenerateItemSource()
 
     // Setting the items source triggers SelectionChanged; suppress preview updates during regeneration.
     m_regeneratingItemSource = true;
-    if (palette.try_as<winrt::Windows::Foundation::Collections::IIterable<winrt::IInspectable>>())
+    // Bind directly when ItemsSource accepts the collection as is (IIterable<IInspectable> or IBindableIterable), so
+    // live changes to an observable palette keep showing. Only a plain IVector<Brush> is copied.
+    if (palette.try_as<winrt::Windows::Foundation::Collections::IIterable<winrt::IInspectable>>() ||
+        palette.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableIterable>())
     {
         colorPicker.ItemsSource(palette);
     }
