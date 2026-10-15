@@ -134,18 +134,21 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
     }
 
     // Bracket the whole attach sequence so a throw from any step is still recorded as a failure.
+    // attachFailureHr carries the real HRESULT (set in the attach catch below) so a degraded attach is
+    // diagnosable from failure telemetry in production, not only from the debugger.
+    HRESULT attachFailureHr = E_FAIL;
     InkTelemetry::BeginCanvasInitialization(m_telemetryState);
-    auto initializationOutcome = wil::scope_exit([this]()
+    auto initializationOutcome = wil::scope_exit([this, &attachFailureHr]()
         {
             InkTelemetry::ReportError(
                 InkTelemetry::ErrorCategory::Initialization,
                 InkTelemetry::Operation::AttachToCompositor,
                 false /* isRecoverable */,
-                E_FAIL,
+                attachFailureHr,
                 &m_telemetryState);
 
             InkTelemetry::CompleteCanvasInitialization(
-                m_telemetryState, InkTelemetry::Result::Failure, CompositorEngineForTelemetry(), E_FAIL);
+                m_telemetryState, InkTelemetry::Result::Failure, CompositorEngineForTelemetry(), attachFailureHr);
         });
 
     // Make sure the presenter (proxy + OS presenter) exists before we queue any ink-thread work
@@ -164,14 +167,18 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
     }
     catch (winrt::hresult_error const& e)
     {
-        // InkCanvas has no logging channel; surface the HRESULT to the debugger so a degraded attach
-        // is diagnosable. The initialization scope_exit still records the failure telemetry.
-        wchar_t message[160];
-        swprintf_s(
-            message,
-            L"InkCanvas: attach to the composition tree failed (hr=0x%08X); rendering no ink.\n",
-            static_cast<unsigned int>(e.code()));
-        OutputDebugStringW(message);
+        // Record the real HRESULT for the failure telemetry (scope_exit above) so the degraded attach is
+        // diagnosable in production; also surface it to the debugger in dev without paying the cost in release.
+        attachFailureHr = e.code();
+        if (IsDebuggerPresent())
+        {
+            wchar_t message[160];
+            swprintf_s(
+                message,
+                L"InkCanvas: attach to the composition tree failed (hr=0x%08X); rendering no ink.\n",
+                static_cast<unsigned int>(e.code()));
+            OutputDebugStringW(message);
+        }
 
         DetachFromVisualLink();
         return;
