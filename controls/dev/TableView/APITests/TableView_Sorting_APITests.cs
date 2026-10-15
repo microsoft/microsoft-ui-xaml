@@ -467,6 +467,49 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a canceled CanSort = false clear keeps the sort, and SortByColumn(column, None) can still clear it.")]
+        public void VerifyCanceledCanSortClearCanBeClearedBySortByColumnNone()
+        {
+            TableView tableView = null;
+            var cancel = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                tableView.Sorting += (sender, args) => args.Cancel = cancel;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                Verify.IsTrue(tableView.SortByColumn(column, SortDirection.Ascending), "Baseline: the column must sort.");
+
+                cancel = true;
+                column.CanSort = false;
+                cancel = false;
+                Verify.AreEqual(SortDirection.Ascending, column.SortDirection,
+                    "A Sorting handler that cancels the opt-out clear keeps the sort.");
+
+                Verify.IsFalse(tableView.SortByColumn(column, SortDirection.Descending),
+                    "CanSort = false must still refuse a new direction.");
+                Verify.IsTrue(tableView.SortByColumn(column, SortDirection.None),
+                    "SortByColumn(column, None) must clear a sort the opted-out column still holds.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The sort must be cleared.");
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name),
+                    "clearing the sort must restore source order");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies ClearSort resets every column and restores source order.")]
         public void VerifyClearSortClearsEveryColumnAndRestoresSourceOrder()
         {
