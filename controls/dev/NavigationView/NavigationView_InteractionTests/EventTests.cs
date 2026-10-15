@@ -299,8 +299,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     Wait.ForIdle();
                     Verify.AreEqual("Test reset", textBlock.DocumentText);
 
-                    Log.Comment("Click the back button's top-left corner (formerly the margin area)");
-                    InputHelper.LeftClick(backButton, 1, 1);
+                    Log.Comment("Click the NavigationView's top-left corner (formerly the back button's margin area)");
+                    InputHelper.LeftClick(navView, 1, 1);
                     Verify.AreEqual("Back was requested", textBlock.DocumentText);
                 }
             }
