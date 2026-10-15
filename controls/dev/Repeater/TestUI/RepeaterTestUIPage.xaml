@@ -100,8 +100,8 @@
                     </ComboBox>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <CheckBox x:Name="chkLinedFlowLayout" Content="LinedFlowLayout" IsChecked="True" Margin="2"/>
-                    <CheckBox x:Name="chkScrollView" Content="ScrollView" Margin="2"/>
+                    <CheckBox x:Name="chkLinedFlowLayout" Content="LinedFlowLayout" IsChecked="True" Margin="2" Checked="ChkOutputDebugStringLevel_CheckedChanged" Unchecked="ChkOutputDebugStringLevel_CheckedChanged"/>
+                    <CheckBox x:Name="chkScrollView" Content="ScrollView" Margin="2" Checked="ChkOutputDebugStringLevel_CheckedChanged" Unchecked="ChkOutputDebugStringLevel_CheckedChanged"/>
                 </StackPanel>
                 <Button x:Name="linedFlowLayoutDemo" AutomationProperties.Name="LinedFlowLayoutDemo">LinedFlowLayout testing</Button>
             </StackPanel>
