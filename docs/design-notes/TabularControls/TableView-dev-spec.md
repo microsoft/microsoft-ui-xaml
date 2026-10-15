@@ -516,9 +516,9 @@ Row recycling, cell rebuild and dependency-property change callbacks can all run
 
 ## Key internal components
 
-- **`PART_HeaderScroller`** — horizontal-only header scroller synchronized with the body.
+- **`PART_HeaderScroller`** — horizontal-only header scroller synchronized with the body. Found as `PART_HeaderHost`'s nearest `ScrollViewer` ancestor; the name is for readability only.
 - **`PART_HeaderHost`** — `TableViewCellsPanel` header host rebuilt from the non-null columns.
-- **`PART_BodyScroller`** — body scroll presenter and source of horizontal offset.
+- **`PART_BodyScroller`** — body scroll presenter and source of horizontal offset. Found as `PART_RowsRepeater`'s nearest `ScrollViewer` ancestor; the name is for readability only.
 - **`PART_RowsRepeater`** — vertical row realization surface.
 - **`PART_CellsHost`** — row-local `TableViewCellsPanel` cell host.
 - **`TableViewCellsPanel`** — the custom `Panel` used for `PART_HeaderHost` and each row's `PART_CellsHost`; its `MeasureOverride` reports each cell's measured width and its `ArrangeOverride` places cells at the column's resolved `ActualWidth` (see *Column alignment*).
