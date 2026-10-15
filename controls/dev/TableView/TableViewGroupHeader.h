@@ -101,6 +101,7 @@ public:
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateTerminalBottomGridLineSuppression();
+    void BindItemCountForeground();
 
     winrt::hstring GetGroupIdentity();
 
@@ -111,6 +112,9 @@ private:
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
+    tracker_ref<winrt::ContentPresenter> m_contentPresenter{ this };
+    tracker_ref<winrt::FrameworkElement> m_itemCountForeground{ this };
+    winrt::weak_ref<winrt::DependencyObject> m_boundContentRoot{ nullptr };
     tracker_ref<winrt::IInspectable> m_groupEntry{ this };
 
     bool m_isPointerOver{ false };

@@ -73,7 +73,9 @@
             <!-- Group-header row surfaces (P2.8 grouped rows) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#4C3A3A3A" />                  <!-- LayerFillColorDefault -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#FFFFFF" />                    <!-- TextFillColorPrimary -->
-            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.7</x:Double>
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderCountForegroundBrush" Color="#C5FFFFFF" />                <!-- TextFillColorSecondary -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderCountForegroundPointerOverBrush" Color="#C5FFFFFF" />     <!-- TextFillColorSecondary -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderCountForegroundPressedBrush" Color="#C5FFFFFF" />         <!-- TextFillColorSecondary -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="Transparent" />
             <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0</Thickness>
 
@@ -120,7 +122,9 @@
             <!-- Group header surfaces (parity with Default theme) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#14000000" />                  <!-- subtle group-header band, a touch darker than the rows (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#E4000000" />                  <!-- TextFillColorPrimary (Light) -->
-            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.7</x:Double>
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderCountForegroundBrush" Color="#9E000000" />                <!-- TextFillColorSecondary (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderCountForegroundPointerOverBrush" Color="#9E000000" />     <!-- TextFillColorSecondary (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderCountForegroundPressedBrush" Color="#9E000000" />         <!-- TextFillColorSecondary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="Transparent" />
             <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0</Thickness>
 
@@ -163,7 +167,9 @@
             <!-- Group-header row surfaces (P2.8 grouped rows) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">1.0</x:Double>
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderCountForegroundBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderCountForegroundPointerOverBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderCountForegroundPressedBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0,1,0,1</Thickness>
 

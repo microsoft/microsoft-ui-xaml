@@ -91,7 +91,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // Hardcoded rather than looked up: TableViewGroupHeaderPadding is declared at the root
                 // of TableView.xaml, the default-style page, which reaches a control through
                 // DefaultStyleResourceUri and is never merged into Application.Current.Resources.
-                Verify.AreEqual(new Thickness(8, 6, 16, 6), groupHeader.Padding,
+                Verify.AreEqual(new Thickness(8, 8, 12, 8), groupHeader.Padding,
                     "TableViewGroupHeader's default style must take Padding from TableViewGroupHeaderPadding.");
             });
         }
@@ -1208,6 +1208,91 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         Verify.AreEqual(ElementHighContrastAdjustment.None, part.HighContrastAdjustment,
                             $"The {state} state must turn off the High Contrast text backplate on {partName}.");
                     }
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyDefaultGroupHeaderCountUsesSecondaryBrushThatFollowsStates()
+        {
+            var rest = Color.FromArgb(0xFF, 0x10, 0x80, 0x40);
+            var pointerOver = Color.FromArgb(0xFF, 0x80, 0x10, 0x40);
+            TableView tableView = null;
+            TableViewGroupHeader groupHeader = null;
+            TextBlock count = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TabularSurfaceGroupHeaderCountForegroundBrush", new SolidColorBrush(rest));
+                SetApplicationResource("TabularSurfaceGroupHeaderCountForegroundPointerOverBrush", new SolidColorBrush(pointerOver));
+
+                tableView = CreateGroupedThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    groupHeader = FindVisualChildrenByType<TableViewGroupHeader>(tableView).FirstOrDefault();
+                    count = groupHeader?.FindVisualChildByName("TableViewGroupHeaderItemCountText") as TextBlock;
+                    if (count == null)
+                    {
+                        Verify.Fail("The default group header content must contain the item-count TextBlock.");
+                        return;
+                    }
+
+                    Verify.AreEqual(1.0, count.Opacity, "The count must not be dimmed with Opacity.");
+                    Verify.AreEqual(rest, (count.Foreground as SolidColorBrush)?.Color ?? default,
+                        "At rest the count must use TabularSurfaceGroupHeaderCountForegroundBrush.");
+
+                    var contentPresenter = groupHeader.FindVisualChildByName("PART_ContentPresenter") as ContentPresenter;
+                    var key = contentPresenter == null ? null :
+                        FindVisualChildrenByType<TextBlock>(contentPresenter).FirstOrDefault(t => t != count);
+                    Verify.IsNotNull(key, "The default group header content must contain the key TextBlock.");
+                    Verify.AreEqual(DependencyProperty.UnsetValue, key?.ReadLocalValue(TextBlock.FontWeightProperty),
+                        "Key text weight must come from a style, not a local value.");
+                    Verify.AreEqual((ushort)600, key?.FontWeight.Weight ?? (ushort)0,
+                        "Key text must be SemiBold (BodyStrongTextBlockStyle equivalent).");
+                    Verify.AreEqual(TextWrapping.NoWrap, key?.TextWrapping ?? TextWrapping.Wrap, "Key text stays on one line.");
+
+                    Verify.IsTrue(VisualStateManager.GoToState(groupHeader, "PointerOver", false), "PointerOver must exist.");
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(pointerOver, (count.Foreground as SolidColorBrush)?.Color ?? default,
+                        "PointerOver must retarget the count brush.");
+                    Verify.IsTrue(VisualStateManager.GoToState(groupHeader, "Disabled", false), "Disabled must exist.");
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var presenter = groupHeader.FindVisualChildByName("PART_ContentPresenter") as ContentPresenter;
+                    Verify.AreEqual((presenter?.Foreground as SolidColorBrush)?.Color ?? default,
+                        (count.Foreground as SolidColorBrush)?.Color ?? rest,
+                        "Disabled must give the count the same disabled brush as the key text.");
+                    Verify.IsTrue(VisualStateManager.GoToState(groupHeader, "Normal", false), "Normal must exist.");
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() => Verify.AreEqual(rest, (count.Foreground as SolidColorBrush)?.Color ?? default,
+                    "Returning to Normal must restore the rest count brush."));
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    ClearApplicationResource("TabularSurfaceGroupHeaderCountForegroundBrush");
+                    ClearApplicationResource("TabularSurfaceGroupHeaderCountForegroundPointerOverBrush");
                 });
             }
         }

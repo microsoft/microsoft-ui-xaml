@@ -360,18 +360,23 @@
         is declared here rather than assigned from C++.
     -->
     <x:Double x:Key="TableViewGroupExpanderSize">24</x:Double>
-    <Thickness x:Key="TableViewGroupHeaderPadding">8,6,16,6</Thickness>
+    <Thickness x:Key="TableViewGroupHeaderPadding">8,8,12,8</Thickness>
+
+    <!-- BodyStrongTextBlockStyle equivalent, single line. -->
+    <Style x:Key="TableViewGroupHeaderKeyTextStyle" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
 
     <DataTemplate x:Key="TableViewDefaultGroupHeaderContentTemplate">
-        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
             <TextBlock Text="{Binding KeyText, Mode=OneWay}"
-                       FontWeight="SemiBold"
-                       VerticalAlignment="Center"
-                       TextTrimming="CharacterEllipsis" />
-            <!-- Inherits Foreground so it follows the PointerOver / Pressed / Disabled states
-                 exactly like the key text; a local brush would win over the state setters. -->
-            <TextBlock Text="{Binding ItemCountText, Mode=OneWay}"
-                       Opacity="{ThemeResource TabularSurfaceGroupHeaderCountOpacity}"
+                       Style="{ThemeResource TableViewGroupHeaderKeyTextStyle}" />
+            <!-- Foreground is bound in code to PART_ItemCountForeground. -->
+            <TextBlock x:Name="TableViewGroupHeaderItemCountText"
+                       Text="{Binding ItemCountText, Mode=OneWay}"
                        VerticalAlignment="Center" />
         </StackPanel>
     </DataTemplate>
@@ -403,6 +408,7 @@
                                         <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceRowBackgroundPointerOverBrush}" />
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
                                         <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
+                                        <Setter Target="PART_ItemCountForeground.Foreground" Value="{ThemeResource TabularSurfaceGroupHeaderCountForegroundPointerOverBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
                                         <Setter Target="PART_ExpanderIcon.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
@@ -412,6 +418,7 @@
                                         <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceRowBackgroundPressedBrush}" />
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
                                         <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
+                                        <Setter Target="PART_ItemCountForeground.Foreground" Value="{ThemeResource TabularSurfaceGroupHeaderCountForegroundPressedBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
                                         <Setter Target="PART_ExpanderIcon.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
@@ -420,6 +427,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
                                         <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
+                                        <Setter Target="PART_ItemCountForeground.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -456,7 +464,7 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}"
                                 HorizontalAlignment="Stretch">
-                        <Grid ColumnSpacing="6">
+                        <Grid ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
@@ -483,6 +491,11 @@
                                               Foreground="{TemplateBinding Foreground}"
                                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+
+                            <!-- Not rendered; CommonStates set the item-count brush here. -->
+                            <TextBlock x:Name="PART_ItemCountForeground"
+                                       Visibility="Collapsed"
+                                       Foreground="{ThemeResource TabularSurfaceGroupHeaderCountForegroundBrush}" />
                         </Grid>
                         </Border>
                         <Border x:Name="PART_GridLineBorder"
