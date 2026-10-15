@@ -421,8 +421,9 @@ public:
         winrt::FocusState focusState = winrt::FocusState::Keyboard);
 
     // Returns true when the request is handled: a menu was shown, or the request was suppressed
-    // (a cell is editing, nested request, stale target that would have shown a menu). False leaves
-    // it to bubble on to the native ContextFlyout chain, including a target that went stale with no
+    // (a cell is editing, nested request, target already stale on entry, or a target that went
+    // stale during the focus move and would have shown a menu). False leaves it to bubble on to the
+    // native ContextFlyout chain, including a target that went stale during the focus move with no
     // menu to show.
     bool ProcessContextMenuRequest(
         TableViewDetails::ContextMenuTarget const& target,
@@ -513,6 +514,8 @@ public:
         const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args);
     void QueueFocusLossCommit();
     void CompleteFocusLossCommit();
+    // Keeps the Escape that closed an editor's flyout from also cancelling the edit.
+    void MarkEditorFlyoutClosing();
 
     // ----- Selection (TableView_Selection.cpp) -----
     // SelectionModel owns the selected index and reconciles it across collection changes; this
@@ -1437,6 +1440,8 @@ private:
     // Set while a focus-loss commit waits for the editor's own flyout to close.
     winrt::FlyoutBase::Closed_revoker m_editorFlyoutClosedRevoker{};
     winrt::FlyoutBase::Closing_revoker m_editorFlyoutClosingRevoker{};
+    // Same, for any other popup that took focus from the editor (a picker, a button flyout).
+    winrt::Popup::Closed_revoker m_editorPopupClosedRevoker{};
     // True from the editor flyout's Closing until the current input has been dispatched.
     bool m_editorFlyoutClosing{ false };
 

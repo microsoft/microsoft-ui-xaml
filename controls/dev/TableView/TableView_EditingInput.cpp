@@ -72,6 +72,26 @@ namespace
         return nullptr;
     }
 
+    // The open popup whose content holds `element`. Flyouts that are not reachable from the editor's
+    // properties (a DatePicker's picker, a Button.Flyout, an attached flyout) surface only here.
+    winrt::Popup FindOpenPopupContaining(winrt::IInspectable const& element, winrt::XamlRoot const& root)
+    {
+        if (!element || !root)
+        {
+            return nullptr;
+        }
+
+        for (auto const& popup : winrt::VisualTreeHelper::GetOpenPopupsForXamlRoot(root))
+        {
+            if (auto const child = popup.Child().try_as<winrt::FrameworkElement>(); child && IsWithinElement(element, child))
+            {
+                return popup;
+            }
+        }
+
+        return nullptr;
+    }
+
 }
 
 // F2 / Enter / Escape. Registered WITH handledEventsToo, because a single-line TextBox reports Enter
@@ -194,6 +214,7 @@ void TableView::CompleteFocusLossCommit()
     m_focusLossCommitQueued = false;
     m_editorFlyoutClosedRevoker.revoke();
     m_editorFlyoutClosingRevoker.revoke();
+    m_editorPopupClosedRevoker.revoke();
 
     if (!IsEditing())
     {
@@ -214,9 +235,11 @@ void TableView::CompleteFocusLossCommit()
 
     // Focus may have come back to the editor while this was queued - which is exactly what the
     // open-an-editor gesture itself does. Only a genuine move away closes the edit.
-    if (auto const root = XamlRoot())
+    auto const root = XamlRoot();
+    winrt::IInspectable focused{ nullptr };
+    if (root)
     {
-        auto const focused = winrt::FocusManager::GetFocusedElement(root);
+        focused = winrt::FocusManager::GetFocusedElement(root);
 
         if (IsWithinElement(focused, editingElement))
         {
@@ -239,26 +262,14 @@ void TableView::CompleteFocusLossCommit()
     if (auto const flyout = FindOpenEditorFlyout(editingElement))
     {
         // Escape light-dismisses the menu before the key is routed, so the editor then receives
-        // that same Escape. Mark the close so the key handler leaves the edit alone; the mark
-        // lives only until the current input has been dispatched.
+        // that same Escape. Mark the close so the key handler leaves the edit alone.
         m_editorFlyoutClosingRevoker = flyout.Closing(winrt::auto_revoke,
             [weakThis = get_weak()](auto&&, auto&&)
             {
                 if (auto strongThis = weakThis.get())
                 {
                     strongThis->m_editorFlyoutClosingRevoker.revoke();
-                    strongThis->m_editorFlyoutClosing = true;
-                    auto const dispatcher = strongThis->DispatcherQueue();
-                    if (!dispatcher || !dispatcher.TryEnqueue([weakThis]()
-                        {
-                            if (auto self = weakThis.get())
-                            {
-                                self->m_editorFlyoutClosing = false;
-                            }
-                        }))
-                    {
-                        strongThis->m_editorFlyoutClosing = false;
-                    }
+                    strongThis->MarkEditorFlyoutClosing();
                 }
             });
 
@@ -273,5 +284,43 @@ void TableView::CompleteFocusLossCommit()
         return;
     }
 
+    // Focus went into some other popup - a picker or a button flyout inside the editor. A popup has
+    // no link back to its owner, but table menus stay closed while editing, so the popup that took
+    // focus from the editor is the editor's. Decide again once it closes.
+    if (auto const popup = FindOpenPopupContaining(focused, root))
+    {
+        m_editorPopupClosedRevoker = popup.Closed(winrt::auto_revoke,
+            [weakThis = get_weak()](auto&&, auto&&)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->m_editorPopupClosedRevoker.revoke();
+                    strongThis->MarkEditorFlyoutClosing();
+                    if (!strongThis->m_focusLossCommitQueued)
+                    {
+                        strongThis->QueueFocusLossCommit();
+                    }
+                }
+            });
+        return;
+    }
+
     CommitEdit();
+}
+
+void TableView::MarkEditorFlyoutClosing()
+{
+    // Lives only until the current input has been dispatched.
+    m_editorFlyoutClosing = true;
+    auto const dispatcher = DispatcherQueue();
+    if (!dispatcher || !dispatcher.TryEnqueue([weakThis = get_weak()]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->m_editorFlyoutClosing = false;
+            }
+        }))
+    {
+        m_editorFlyoutClosing = false;
+    }
 }

@@ -32,7 +32,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // ContextFlyout (implicit style or template), the native TableView.ContextFlyout fallback, and
     // ContextFlyouts set in cell or header content.
     //
-    // Test IDs match controls\dev\TableView\docs\context-menu-test-design.md. Every request is raised
+    // Each test's Description starts with an ID matching the section headers below. Every request is raised
     // through an automation peer's ShowContextMenu (no position, like a keyboard request). Real mouse
     // and keyboard input, the chevron, and the current cell (internal; observable only through
     // keyboard behavior) are covered by the interaction tests.
@@ -636,10 +636,37 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyNoMenuOpened(f, "UIA on the Name header while row 3 / Name is editing");
         }
 
-        private ContextMenuFixture LoadEditableFixture() => LoadFixture(configure: x =>
+        [TestMethod]
+        [TestProperty("Description", "E7d: while any cell is editing, a group header request opens no menu (neither its style ContextFlyout nor the table menu).")]
+        public void GroupHeaderRequestSuppressedWhileEditing()
+        {
+            var f = LoadEditableFixture(grouped: true, configure: x =>
+            {
+                var style = (Style)XamlReader.Load(
+                    "<Style " + XamlNamespaces + " TargetType='tv:TableViewGroupHeader'>" +
+                    "  <Setter Property='ContextFlyout'><Setter.Value><MenuFlyout><MenuFlyoutItem Text='Group'/></MenuFlyout></Setter.Value></Setter>" +
+                    "</Style>");
+                x.Recorder.Track("GroupHeaderMenu", SetterFlyout(style));
+                x.Table.Resources[typeof(TableViewGroupHeader)] = style;
+            });
+            RequestWhileEditing(f, () => GetGroupHeaderPeer(f.Table, 0).ShowContextMenu());
+            VerifyNoMenuOpened(f, "UIA on the first group header while row 3 / Name is editing");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "E7e: while any cell is editing, a request on the TableView itself opens no menu.")]
+        public void TableRequestSuppressedWhileEditing()
+        {
+            var f = LoadEditableFixture();
+            RequestWhileEditing(f, () => ((AutomationPeer)FrameworkElementAutomationPeer.CreatePeerForElement(f.Table)).ShowContextMenu());
+            VerifyNoMenuOpened(f, "UIA on the TableView while row 3 / Name is editing");
+        }
+
+        private ContextMenuFixture LoadEditableFixture(bool grouped = false, Action<ContextMenuFixture> configure = null) => LoadFixture(grouped: grouped, configure: x =>
         {
             x.Table.IsReadOnly = false;
             ((TableViewTextColumn)x.NameColumn).Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.TwoWay };
+            configure?.Invoke(x);
         });
 
         // An API test cannot hold an edit open (SetValue opens and commits in one call), so the request
