@@ -1948,6 +1948,7 @@ XamlRuntimeType::ResetDependencyProperties() const
     ABI::Microsoft::UI::Xaml::Controls::PivotFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Automation::Peers::PivotAutomationPeerFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Controls::Primitives::PivotHeaderItemFactory::ClearProperties();
+    ABI::Microsoft::UI::Xaml::Controls::Primitives::PivotHeaderPanelFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Controls::PivotItemFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Automation::Peers::PivotItemAutomationPeerFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Automation::Peers::PivotItemDataAutomationPeerFactory::ClearProperties();
@@ -1993,6 +1994,8 @@ XamlRuntimeType::EnsureDependencyProperties(_In_ UINT16 typeLabel) const
             return ABI::Microsoft::UI::Xaml::Controls::PivotFactory::EnsureProperties();
         case activate_PivotHeaderItem:
             return ABI::Microsoft::UI::Xaml::Controls::Primitives::PivotHeaderItemFactory::EnsureProperties();
+        case activate_PivotHeaderPanel:
+            return ABI::Microsoft::UI::Xaml::Controls::Primitives::PivotHeaderPanelFactory::EnsureProperties();
         case activate_PivotItem:
             return ABI::Microsoft::UI::Xaml::Controls::PivotItemFactory::EnsureProperties();
         case activate_SlideNavigationTransitionInfo:
