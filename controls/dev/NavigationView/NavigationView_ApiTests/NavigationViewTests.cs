@@ -1369,6 +1369,155 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyItemInvokedRedirectKeepsSingleSelection()
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                foreach (var destination in new[] { "NonSelecting", "Selecting", "Previous", "None", "Invoked", "Repeated", "InitiallyUnselected", "DeselectionRedirect", "NestedInvocation" })
+                {
+                    NavigationView navView = null;
+                    NavigationViewItem previousItem = null;
+                    NavigationViewItem invokedItem = null;
+                    NavigationViewItem redirectItem = null;
+                    NavigationViewItem finalItem = null;
+                    NavigationViewItem expectedItem = null;
+                    var events = new List<string>();
+                    using var selectionChanged = new ManualResetEvent(false);
+                    Action verifySelection = null;
+                    long deselectionToken = 0;
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment($"PaneDisplayMode={paneDisplayMode}, Destination={destination}");
+                        previousItem = new NavigationViewItem { Content = "Previous" };
+                        invokedItem = new NavigationViewItem { Content = "Invoked" };
+                        redirectItem = new NavigationViewItem { Content = "Redirect", SelectsOnInvoked = destination == "Selecting" };
+                        finalItem = new NavigationViewItem { Content = "Final", SelectsOnInvoked = destination == "NestedInvocation" };
+                        expectedItem = destination switch
+                        {
+                            "Previous" => previousItem,
+                            "None" => null,
+                            "Invoked" => invokedItem,
+                            "Repeated" => invokedItem,
+                            _ => redirectItem
+                        };
+                        navView = new NavigationView { PaneDisplayMode = paneDisplayMode, Width = 1008 };
+                        navView.MenuItems.Add(previousItem);
+                        navView.MenuItems.Add(invokedItem);
+                        navView.MenuItems.Add(redirectItem);
+                        navView.MenuItems.Add(finalItem);
+                        Content = navView;
+                        Content.UpdateLayout();
+                        if (destination != "InitiallyUnselected")
+                        {
+                            navView.SelectedItem = previousItem;
+                        }
+
+                        verifySelection = () =>
+                        {
+                            Verify.AreEqual(expectedItem, navView.SelectedItem);
+                            foreach (var item in new[] { previousItem, invokedItem, redirectItem, finalItem })
+                            {
+                                Verify.AreEqual(item == expectedItem, item.IsSelected, $"IsSelected for {item.Content}");
+                                var provider = FrameworkElementAutomationPeer.CreatePeerForElement(item)
+                                    .GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                                Verify.IsNotNull(provider);
+                                Verify.AreEqual(item == expectedItem, provider.IsSelected, $"UIA selection for {item.Content}");
+                            }
+                        };
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        if (destination == "DeselectionRedirect")
+                        {
+                            deselectionToken = previousItem.RegisterPropertyChangedCallback(NavigationViewItem.IsSelectedProperty, (sender, property) =>
+                            {
+                                if (!previousItem.IsSelected)
+                                {
+                                    expectedItem = finalItem;
+                                    navView.SelectedItem = expectedItem;
+                                }
+                            });
+                        }
+                        navView.SelectionChanged += (sender, args) =>
+                        {
+                            events.Add("SelectionChanged");
+                            Verify.AreEqual(expectedItem, args.SelectedItem);
+                            verifySelection();
+                            selectionChanged.Set();
+                        };
+                        navView.ItemInvoked += (sender, args) =>
+                        {
+                            events.Add("ItemInvoked");
+                            if (destination == "NestedInvocation" && args.InvokedItemContainer == finalItem)
+                            {
+                                Verify.AreEqual(2, events.Count, "Each explicitly invoked item must raise exactly one invocation.");
+                                Verify.AreEqual(finalItem, navView.SelectedItem);
+                                Verify.IsTrue(previousItem.IsSelected);
+                                Verify.IsFalse(finalItem.IsSelected);
+                                if (events.Count == 2)
+                                {
+                                    navView.SelectedItem = expectedItem;
+                                }
+                                return;
+                            }
+                            Verify.AreEqual(invokedItem, args.InvokedItemContainer);
+                            Verify.AreEqual(1, events.Count, "Invocation must precede the selection notification and occur only once.");
+                            if (events.Count == 1)
+                            {
+                                Verify.AreEqual(invokedItem, navView.SelectedItem);
+                                Verify.AreEqual(destination != "InitiallyUnselected", previousItem.IsSelected,
+                                    "ItemInvoked must observe the previous item's original selection state.");
+                                Verify.IsFalse(invokedItem.IsSelected);
+                                if (destination == "Repeated")
+                                {
+                                    expectedItem = redirectItem;
+                                    navView.SelectedItem = expectedItem;
+                                    expectedItem = invokedItem;
+                                }
+                                if (destination == "NestedInvocation")
+                                {
+                                    var nestedProvider = FrameworkElementAutomationPeer.CreatePeerForElement(finalItem) as IInvokeProvider;
+                                    Verify.IsNotNull(nestedProvider);
+                                    nestedProvider.Invoke();
+                                }
+                                else
+                                {
+                                    navView.SelectedItem = expectedItem;
+                                }
+                            }
+                        };
+                        var provider = FrameworkElementAutomationPeer.CreatePeerForElement(invokedItem) as IInvokeProvider;
+                        Verify.IsNotNull(provider);
+                        provider.Invoke();
+                        verifySelection();
+                    });
+                    Verify.IsTrue(selectionChanged.WaitOne(TimeSpan.FromSeconds(5)), "SelectionChanged must be raised, including deferred null selection.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        verifySelection();
+                        var expectedEvents = destination switch
+                        {
+                            "Repeated" => "ItemInvoked,SelectionChanged,SelectionChanged",
+                            "NestedInvocation" => "ItemInvoked,ItemInvoked,SelectionChanged",
+                            _ => "ItemInvoked,SelectionChanged"
+                        };
+                        Verify.AreEqual(expectedEvents, string.Join(",", events));
+                        if (destination == "DeselectionRedirect")
+                        {
+                            Verify.AreEqual(finalItem, navView.SelectedItem, "A redirect from the previous item's deselection must not be overwritten.");
+                            previousItem.UnregisterPropertyChangedCallback(NavigationViewItem.IsSelectedProperty, deselectionToken);
+                        }
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
         public void VerifyAutomationPeerCanRemoveNonSelectingItemFromSelection()
         {
             RunOnUIThread.Execute(() =>

@@ -1036,7 +1036,6 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
 {
     m_shouldRaiseItemInvokedAfterSelection = true;
 
-    const auto selectedItem = SelectedItem();
     const bool updateSelection = m_selectionModel && nvi.SelectsOnInvoked();
     if (updateSelection)
     {
@@ -1050,8 +1049,8 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
         UpdateSelectionModelSelection(ip);
     }
 
-    // Selection did not change, so consume the pending invocation before raising the event directly.
-    if (selectedItem == SelectedItem())
+    // Raise directly only if ChangeSelection has not already consumed this invocation.
+    if (m_shouldRaiseItemInvokedAfterSelection)
     {
         m_shouldRaiseItemInvokedAfterSelection = false;
         RaiseItemInvokedForNavigationViewItem(nvi);
@@ -2310,6 +2309,7 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
 // SelectsOnInvoked gates selection in the invocation path, not explicit SelectedItem or IsSelected changes.
 void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem)
 {
+    const auto pendingPreviousItem = std::exchange(m_itemPendingUnselection, std::nullopt);
     const bool isSettingsItem = IsSettingsItem(nextItem);
 
     // Other transition other than default only apply to topnav
@@ -2340,11 +2340,26 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
     const auto selectedItem = SelectedItem();
     if (m_shouldRaiseItemInvokedAfterSelection)
     {
-        // If selection changed inside ItemInvoked, the flag does not get said to false and the event get's raised again,so we need to set it to false now!
+        m_itemPendingUnselection = pendingPreviousItem.value_or(prevItem);
+        auto scopeGuard = gsl::finally([this]()
+        {
+            m_itemPendingUnselection.reset();
+        });
         m_shouldRaiseItemInvokedAfterSelection = false;
         RaiseItemInvoked(nextItem, isSettingsItem, NavigationViewItemOrSettingsContentFromData(nextItem), recommendedDirection);
+
+        // A reentrant selection owns the remaining work, even if it returns to the invoked item.
+        if (!m_itemPendingUnselection)
+        {
+            return;
+        }
     }
-    // Selection was modified inside ItemInvoked, skip everything here!
+
+    if (pendingPreviousItem)
+    {
+        UnselectPrevItem(*pendingPreviousItem, nextItem);
+    }
+    // Unselecting the original item can itself redirect selection through a property callback.
     if (selectedItem != SelectedItem())
     {
         return;
