@@ -31,7 +31,6 @@ ResizeGripper::ResizeGripper()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_ResizeGripper);
 
     SetDefaultStyleKey(this);
-    // ProtectedCursor is deliberately NOT set here - see UpdateResizeCursor.
     // Set here rather than in the default style: without it no manipulation is ever raised, so a
     // host whose style failed to load would have no pointer resize at all.
     UpdateManipulationMode();
@@ -51,6 +50,7 @@ void ResizeGripper::OnUnloaded(const winrt::IInspectable&, const winrt::RoutedEv
 void ResizeGripper::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
 {
     UpdateVisualState();
+    UpdateResizeCursor();
 }
 
 void ResizeGripper::OnApplyTemplate()
@@ -59,6 +59,7 @@ void ResizeGripper::OnApplyTemplate()
     m_templateApplied = true;
     UpdateOrientationVisualState();
     UpdateVisualState();
+    UpdateResizeCursor();
 }
 
 void ResizeGripper::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)
@@ -75,8 +76,8 @@ void ResizeGripper::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
     UpdateVisualState();
 }
 
-// Pressed stays on for the whole drag even if the pointer leaves the gripper, because the host
-// captures the pointer and the column keeps resizing.
+// Pressed stays on for the whole drag even if the pointer leaves the gripper: the column keeps
+// resizing.
 void ResizeGripper::UpdateVisualState()
 {
     auto const state =
@@ -100,24 +101,22 @@ void ResizeGripper::UpdateOrientationVisualState()
     winrt::VisualStateManager::GoToState(*this, IsHorizontalDrag() ? L"Horizontal" : L"Vertical", true /* useTransitions */);
 }
 
-// PARKED - deliberately not called. The framework drops ProtectedCursor on the next pointer move,
-// so setting it made the resize shape appear as the pointer arrived and revert immediately, which
-// is a flicker rather than an affordance. Measured: dwell on a divider reads an arrow 40 samples
-// out of 40; re-asserting per pointer move changed nothing. Tracked as ADO 63771830 / related to
-// microsoft-ui-xaml#7062. The shape logic below is correct and stays put: restore the calls in
-// OnPointerEntered and in the DragOrientation branch of OnPropertyChanged once the framework holds
-// the cursor. Until then the hover separator carries the affordance.
-//
-// Owned by the primitive so every host gets the right shape, keyed off the direction of travel.
-// Two guards, both of which cause a visibly wrong or flickering cursor when missed:
-//  - nothing before OnApplyTemplate. Assigning ProtectedCursor that early does not stick
-//    (microsoft-ui-xaml#7062), which is why the shape is resolved on pointer entry instead.
-//  - never reassign the shape already in effect. Handing the input system a brand new
-//    InputSystemCursor makes the pointer visibly reset even when the shape is identical.
+// Assigned once and held: the input system uses the nearest ancestor's ProtectedCursor on every
+// pointer move. Not before OnApplyTemplate (microsoft-ui-xaml#7062), and never reassigned with the
+// same shape, which visibly resets the pointer.
 void ResizeGripper::UpdateResizeCursor()
 {
     if (!m_templateApplied)
     {
+        return;
+    }
+
+    if (!IsEnabled())
+    {
+        if (ProtectedCursor())
+        {
+            ProtectedCursor(nullptr);
+        }
         return;
     }
 
@@ -212,6 +211,12 @@ void ResizeGripper::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 
     if (IsEnabled())
     {
+        // Keeps the resize cursor while the pointer outruns the edge. Mouse only: touch capture
+        // would stop an ancestor ScrollViewer panning the cross axis.
+        if (args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Mouse)
+        {
+            CapturePointer(args.Pointer());
+        }
         args.Handled(true);
     }
 }
@@ -359,6 +364,7 @@ void ResizeGripper::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     {
         UpdateOrientationVisualState();
         UpdateManipulationMode();
+        UpdateResizeCursor();
     }
 }
 
