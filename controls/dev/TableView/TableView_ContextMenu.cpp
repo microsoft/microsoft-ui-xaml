@@ -249,10 +249,8 @@ namespace
             return {};
         }
 
-        // Depth-first in visual order, so the outermost app element (the template root) wins over
-        // anything nested inside it. Item containers of a nested items host (ListView, ItemsRepeater,
-        // and ItemsView through its repeater) belong to that host, as a nested TableView's cells do:
-        // the host's own ContextFlyout counts, its items' do not.
+        // Depth-first in visual order so the outermost element wins. A nested items host's or
+        // TableView's own ContextFlyout counts; its items' do not.
         std::vector<winrt::DependencyObject> stack;
         auto const pushChildren = [&stack](winrt::DependencyObject const& parent)
         {
@@ -383,9 +381,7 @@ bool TableView::FocusContextMenuTarget(
             (focused == element || SharedHelpers::IsAncestor(focused, element, false /* checkVisibility */));
     };
 
-    // Focus the exact target, so the flyout's focus restore returns to it and Narrator reads the
-    // element the menu is for: the cell for a cell request (unless focus is already inside it, e.g.
-    // on its content), the row for a row request, the header cell for a header request. Body
+    // Focus the exact target (cell, row or header) so focus restore and Narrator use it. Body
     // targets go through the two-level focus helpers so the cursor level follows.
     if (target.Kind != TableViewDetails::ContextMenuTargetKind::Body)
     {

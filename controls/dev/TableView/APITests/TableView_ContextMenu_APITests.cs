@@ -28,14 +28,8 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    // Context menus: TableViewColumn.CellContextFlyout and HeaderContextFlyout, the row's own
-    // ContextFlyout (implicit style or template), the native TableView.ContextFlyout fallback, and
-    // ContextFlyouts set in cell or header content.
-    //
-    // Each test's Description starts with an ID matching the section headers below. Every request is raised
-    // through an automation peer's ShowContextMenu (no position, like a keyboard request). Real mouse
-    // and keyboard input, the chevron, and the current cell (internal; observable only through
-    // keyboard behavior) are covered by the interaction tests.
+    // Context menu resolution (cell, header, row, content and TableView flyouts). Requests go through
+    // an automation peer's ShowContextMenu; real input is covered by the interaction tests.
     [TestClass]
     public class TableViewContextMenuTests : TableViewApiTestBase
     {
