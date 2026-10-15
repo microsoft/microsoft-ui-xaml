@@ -633,6 +633,48 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the public cell peer constructor rejects arguments that cannot describe a cell, and accepts ones that can.")]
+        public void VerifyCellPeerConstructorValidatesArguments()
+        {
+            TableView tableView = null;
+            TableView otherTable = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                otherTable = CreateAutomationTable();
+                var host = new StackPanel();
+                host.Children.Add(tableView);
+                host.Children.Add(otherTable);
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(tableView).First();
+                var cell = GetRowCell(row, 0);
+                var column = tableView.Columns[0];
+                int count = tableView.Columns.Count;
+
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(null, row, column, 0), "A null cell must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, null, column, 0), "A null row must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, null, 0), "A null column must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, column, -1), "A negative column index must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, column, count), "A column index past the table's columns must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, otherTable.Columns[0], 0), "A column from another table must be rejected.");
+
+                var peer = new TableViewCellAutomationPeer(cell, row, column, count - 1);
+                Verify.IsNotNull(peer, "In-range arguments must construct a peer.");
+
+                // A row no TableView owns has no column set to check against, so only the index sign is enforced.
+                Verify.IsNotNull(new TableViewCellAutomationPeer(new Grid(), new TableViewRow(), new TableViewTextColumn(), 3),
+                    "An unowned row must accept any non-negative index.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a cell peer whose row is gone throws ElementNotAvailable from GridItem.Row instead of reporting -1.")]
         public void VerifyStaleCellPeerGridItemRowThrowsElementNotAvailable()
         {
