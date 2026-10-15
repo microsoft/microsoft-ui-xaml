@@ -384,11 +384,14 @@ runtimeclass TableViewGroupHeaderToggleRequestedEventArgs
 // The whole band is the toggle target (matching ListView / TreeView) rather than a
 // nested Button, so there is one interactive element and one automation story.
 //
-// Parts (all optional; omitting one degrades rather than fails):
-//   PART_ExpanderGutter  Border    reserves the chevron column so content stays aligned
-//   PART_ExpanderIcon    FontIcon  glyph driven by ExpansionStates, not by code
-//   PART_GridLineBorder  Border    renders border chrome and terminal-line suppression
-//   content region       inherited from ContentControl
+// Parts. Code looks up only PART_GridLineBorder; the default states target PART_Root,
+// PART_ContentPresenter and PART_ExpanderIcon by name, so a template that keeps those states
+// must declare them:
+//   PART_Root              Border            the band; CommonStates sets Background
+//   PART_ContentPresenter  ContentPresenter  content region; CommonStates sets Foreground
+//   PART_ExpanderGutter    Border            reserves the chevron column so content stays aligned
+//   PART_ExpanderIcon      FontIcon          glyph driven by ExpansionStates, not by code
+//   PART_GridLineBorder    Border            optional; border chrome and terminal-line suppression
 //
 // States: CommonStates Normal|PointerOver|Pressed|Disabled
 //         ExpansionStates Expanded|Collapsed
@@ -494,6 +497,9 @@ unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
 //   PART_HeaderHost     — Panel. Receives one header cell per column.
 //   PART_RowsRepeater   — ItemsRepeater. Hosts row containers; do not TemplateBind ItemsSource.
 //   PART_EmptyStatePresenter — ContentControl/ContentPresenter (optional). Hosts EmptyTemplate.
+//   PART_HeaderScroller / PART_BodyScroller — ScrollViewer (optional). Found as the nearest
+//                         ScrollViewer ancestor of PART_HeaderHost / PART_RowsRepeater, stopping at
+//                         the TableView, not by name.
 //
 // Unsealed: ReferenceTracker requires the cppwinrt-projected derivable type surface.
 //
@@ -741,6 +747,9 @@ unsealed runtimeclass TableViewColumnHeaderAutomationPeer
 // are shown and the column is visible. Only when column headers are hidden does the name become
 // "{column header}, {cell value}". A cell holding an interactive control is named after its column
 // header, since the control names itself.
+// The constructor throws E_INVALIDARG for a null cell, row or column, a negative columnIndex, or -
+// when the row belongs to a TableView - a column from another table or a columnIndex not less than
+// Columns.Size.
 [MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass TableViewCellAutomationPeer

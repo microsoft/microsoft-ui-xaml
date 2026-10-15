@@ -440,9 +440,13 @@ Template parts:
 | Part | Type | Description |
 |---|---|---|
 | `PART_HeaderRow` | FrameworkElement | Header row root. |
-| `PART_HeaderHost` | `Panel` | Host for column header elements. |
+| `PART_HeaderHost` | `TableViewCellsPanel` (typed `Panel`) | Host for column header elements. See [TableViewCellsPanel class](#tableviewcellspanel-class). |
 | `PART_RowsRepeater` | `ItemsRepeater` | Repeater that displays rows. |
 | `PART_EmptyStatePresenter` | `ContentControl` | Optional presenter for `EmptyTemplate`. |
+| `PART_HeaderScroller` | `ScrollViewer` | Optional. Horizontal-only scroller around `PART_HeaderHost`, kept in sync with the body. |
+| `PART_BodyScroller` | `ScrollViewer` | Optional. Scroller around `PART_RowsRepeater`; supplies the viewport for `*` column widths, the offset for frozen-column pinning, and the target of keyboard paging and scroll-into-view. |
+
+The two scrollers are not looked up by name: each is the nearest `ScrollViewer` ancestor of `PART_HeaderHost` / `PART_RowsRepeater` **inside the template**. The search stops at the `TableView`, so a template that omits them never latches onto a `ScrollViewer` in the app's own tree. Without `PART_BodyScroller`, `*` columns keep their provisional width, frozen columns are not pinned, and the header is not scroll-synced; the default template supplies both and names them for readability.
 
 ### Example Usage
 
@@ -614,12 +618,15 @@ The realized group-header container: a templated `ContentControl` whose `Content
 | `IsExpandable` | `Boolean` DP | Whether this header can expand. |
 | `ToggleRequested` | event (`TableViewGroupHeaderToggleRequestedEventArgs`) | Raised when the band is activated. The args carry `GroupKey`, so a handler that re-enters and mutates the header still sees the key that was actually activated. |
 
-Template parts (all optional; omitting one degrades rather than fails):
+Template parts. Code looks up only `PART_GridLineBorder`, and degrades without it. The default visual states, however, target `PART_Root`, `PART_ContentPresenter` and `PART_ExpanderIcon` by name, so a template that keeps those state definitions must declare all three:
 
 | Part | Type | Purpose |
 |---|---|---|
-| `PART_ExpanderGutter` | `Border` | Reserves the chevron column so header content stays aligned with the rows below. |
-| `PART_ExpanderIcon` | `FontIcon` | Glyph driven by `ExpansionStates`, not by code. |
+| `PART_Root` | `Border` | The band. `CommonStates` sets its `Background` for `PointerOver` and `Pressed`. |
+| `PART_ContentPresenter` | `ContentPresenter` | The app-customizable content region, showing `ContentTemplate` over the `TableViewGroupInfo`. `CommonStates` sets its `Foreground` and `HighContrastAdjustment`. |
+| `PART_ExpanderGutter` | `Border` | Reserves the chevron column so header content stays aligned with the rows below. It keeps its width when the chevron hides. |
+| `PART_ExpanderIcon` | `FontIcon` | Glyph driven by `ExpansionStates`, not by code; hidden by `NotExpandable`; recoloured by `CommonStates`. |
+| `PART_GridLineBorder` | `Border` | Optional. Renders the border chrome; on the last row the control clears its bottom edge so it does not double the table's own border. |
 
 Visual states: `CommonStates` (`Normal`/`PointerOver`/`Pressed`/`Disabled`), `ExpansionStates` (`Expanded`/`Collapsed`), `ExpandabilityStates` (`Expandable`/`NotExpandable`).
 
@@ -765,7 +772,7 @@ Template parts:
 | Part | Type | Description |
 |---|---|---|
 | `PART_RootBorder` | `Border` | Row root border. Its `Background` is driven by `CommonStates`. |
-| `PART_CellsHost` | `Panel` | Host for generated cell elements. |
+| `PART_CellsHost` | `TableViewCellsPanel` (typed `Panel`) | Host for generated cell elements. See [TableViewCellsPanel class](#tableviewcellspanel-class). |
 | `PART_SelectionIndicator` | `Shape` (default: `Rectangle`) | **Required by the default state definitions.** Leading-edge selection strip; the `Selected*` states animate `Opacity` to `1`, and `SelectedDisabled` also animates `Fill`. Custom templates using other indicator types must adapt the corresponding state targets. |
 
 Visual states:
@@ -781,6 +788,37 @@ Properties:
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `IsSelected` | `Boolean` | `false` | Whether the row is the selected row. Read-only: selection is owned by the `TableView`, so a row cannot select itself — apps go through `Select(Int32)` / `Deselect(Int32)` / `DeselectAll()`. Rows are recycled, so this is always re-derived. |
+
+## TableViewCellsPanel class
+
+The layout panel that lines cells up under their columns. The default templates use it as `TableView`'s `PART_HeaderHost` and as each row's `PART_CellsHost`; it is public so that a re-templated `TableView` or `TableViewRow` can declare it in XAML.
+
+`TableViewCellsPanel` derives from `Microsoft.UI.Xaml.Controls.Panel`.
+
+| Member | Kind | Description |
+|---|---|---|
+| `TableViewCellsPanel()` | constructor | Creates the panel. Needed for XAML activation in a control template. |
+
+It adds no properties, methods or events of its own; everything else is inherited from `Panel`.
+
+Behavior:
+
+- The **owning control populates `Children`**: one header cell (in `PART_HeaderHost`) or one cell wrapper (in `PART_CellsHost`) per column, in `Columns` order, each tagged with its `TableViewColumn`. Apps should not add, remove or reorder children; the control rebuilds them when the columns change.
+- **Measure:** a cell in an `Auto` column is measured unconstrained, and its width is reported to the `TableView`, which takes the widest header or realized cell when it resolves the column's `ActualWidth`. A cell in a `Pixel` or `*` column is measured at the column's resolved width. A cell in a collapsed column is measured at zero width.
+- **Arrange:** cells are placed left to right at each column's resolved `ActualWidth`, so the header band and every row stay aligned without a per-cell `Width` binding. Content wider than its column is clipped or ellipsized.
+- **Frozen columns:** the leading frozen prefix is pinned against the body's horizontal offset through `UIElement.Translation`, `Canvas.ZIndex` and a clip on the cells.
+
+Usage in a re-template:
+
+```xaml
+<!-- Inside a TableViewRow ControlTemplate. HorizontalAlignment="Left" matters: the panel reports
+     the summed column width, and a Stretch alignment would centre it in a wider presenter. -->
+<tabular:TableViewCellsPanel x:Name="PART_CellsHost" HorizontalAlignment="Left" />
+```
+
+`PART_HeaderHost` and `PART_CellsHost` are typed `Panel`, and any `Panel` is accepted, but only a `TableViewCellsPanel` reports measured widths and arranges at the column widths. With another panel, `Auto` columns ignore that host's content and its cells are not column-aligned.
+
+Outside a `TableView` the panel has no columns to read. Untagged children are measured unconstrained and arranged at their desired width, side by side; this is a defensive fallback, not a supported layout.
 
 ## Enums
 
@@ -823,6 +861,8 @@ Mirrors WPF `DataGridGridLinesVisibility` values exactly.
 ### TableViewSelectionMode
 
 Only `None` and `Single` exist in this release: `Multiple`/`Extended` need an anchor, a range model and Ctrl/Shift gesture handling, none of which single selection implies. New members are appended, so these numeric values stay stable when they arrive.
+
+Why a TableView-specific enum rather than reusing `ItemsViewSelectionMode` or `ListViewSelectionMode`: both already define `Multiple` and `Extended`, which this release cannot honor. Reusing either would make `SelectionMode = Multiple` compile, bind and round-trip through markup, and then fail or silently behave as `Single` at run time; an enum that only names the supported values makes the limit visible in IntelliSense and the type system instead. The names and numeric values (`None = 0`, `Single = 1`) match the first two `ItemsViewSelectionMode` members, so code and persisted values transfer. The cost is a third selection-mode enum in the namespace; if API review prefers reuse, the alternative is `ItemsViewSelectionMode` with `Multiple`/`Extended` rejected by `E_INVALIDARG` until they are implemented.
 
 | Value | Numeric value | Description |
 |---|---:|---|
@@ -901,6 +941,8 @@ A cell visual owns its peer through normal `OnCreateAutomationPeer` discovery; t
 Each realized column-header visual owns its `HeaderItem` peer. `ITableProvider.GetColumnHeaders`, `ITableItemProvider.GetColumnHeaderItems`, tree navigation, focus, and hit-testing use that same peer. Names and set metadata honor overrides on the header itself. The existing Grid layout and mouse handlers are unchanged; sortable headers expose Invoke and sort on Enter or Space on the actual keyboard target. Surviving header visuals retain identity, while a header rebuild creates new visuals and identities; a retained old header cannot invoke sorting on its replacement. No provider is fabricated before header realization. Cell names still include the semantic column name when the header strip is hidden. The preview peer constructor requires a realized header for its column and returns `E_INVALIDARG` before realization or when that column has no header in the table.
 
 Header `IsEnabled` reflects the owning table's effective state and disabled control ancestors between the header visual and the table (including template controls); Invoke rejects a disabled header without changing sort state. Cell header lookup resolves the realized visual independently of the table's peer type, so application-supplied table peers preserve canonical header identity. A cell with no reachable header (including a collapsed or removed column) returns an empty header array.
+
+The preview `TableViewCellAutomationPeer(cell, row, column, columnIndex)` constructor validates its arguments and throws `E_INVALIDARG` (`ArgumentException` in .NET) when `cell`, `row` or `column` is null, when `columnIndex` is negative, or — when `row` belongs to a `TableView` — when `column` belongs to a different table or `columnIndex` is not less than that table's `Columns.Count`. `columnIndex` is only a fallback: `IGridItemProvider.Column` is computed live from the row's visible cells, and the constructor argument is reported only when the row has no cell host. Peers the control creates for its own cells do not go through this check.
 
 `ScrollItem` is not implemented explicitly — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a row or cell into view after reaching it through `IGridProvider.GetItem`.
 
@@ -1086,6 +1128,12 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Microsoft.UI.Xaml.DataTemplate CellTemplate;
 
         static Microsoft.UI.Xaml.DependencyProperty CellTemplateProperty { get; };
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    unsealed runtimeclass TableViewCellsPanel : Microsoft.UI.Xaml.Controls.Panel
+    {
+        TableViewCellsPanel();
     };
 
     [MUX_PREVIEW, webhosthidden]
