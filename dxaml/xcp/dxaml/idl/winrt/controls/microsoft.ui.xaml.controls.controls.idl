@@ -2778,10 +2778,10 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [contentproperty("Child")]
-    runtimeclass Popup
+    unsealed runtimeclass Popup
         : Microsoft.UI.Xaml.FrameworkElement
     {
-        Popup();
+        [method_name("CreateInstance")] Popup();
         Microsoft.UI.Xaml.UIElement Child;
         Boolean IsOpen;
         Double HorizontalOffset;
