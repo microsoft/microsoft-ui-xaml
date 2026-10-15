@@ -704,6 +704,145 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies toggling a focused group header at the bottom of a long grouped table keeps it in view instead of jumping the viewport to an earlier group.")]
+        public void VerifyFocusedBottomGroupToggleKeepsViewport()
+        {
+            const int groupCount = 40;
+            const int perGroup = 3;
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var people = new List<ShapedPerson>();
+                for (var g = 0; g < groupCount; g++)
+                {
+                    for (var p = 0; p < perGroup; p++)
+                    {
+                        people.Add(new ShapedPerson($"P{g:D2}-{p}", $"G{g:D2}", "Dept"));
+                    }
+                }
+
+                var source = TableViewSource.From(people);
+                source.GroupBy(o => Person(o).Role);
+                tableView = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 600, height: 300);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            // Virtualized extents are estimates, so re-target the end until it stops moving.
+            for (var attempt = 0; attempt < 5; attempt++)
+            {
+                var atEnd = false;
+                RunOnUIThread.Execute(() =>
+                {
+                    var scroller = GetBodyScroller(tableView);
+                    atEnd = scroller.ScrollableHeight > 0 && Math.Abs(scroller.VerticalOffset - scroller.ScrollableHeight) < 0.5;
+                    if (!atEnd)
+                    {
+                        scroller.ChangeView(null, scroller.ScrollableHeight, null, true);
+                    }
+                });
+                SettleLayout(tableView);
+                if (atEnd)
+                {
+                    break;
+                }
+            }
+
+            foreach (var targetGroup in new[] { groupCount - 1, groupCount - 2 })
+            {
+                var key = $"G{targetGroup:D2}";
+                double groupHeight = 0.0;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var header = FindRealizedGroupHeader(tableView, key);
+                    Verify.IsNotNull(header, $"Precondition: the header of {key} is realized at the bottom.");
+                    groupHeight = header.ActualHeight + (perGroup * GetRealizedRows(tableView).Select(r => r.ActualHeight).DefaultIfEmpty(0.0).Max());
+                    Verify.IsTrue(header.Focus(FocusState.Keyboard), $"Precondition: the {key} header takes keyboard focus.");
+                    VerifyGroupHeaderInViewport(tableView, key, "before any toggle");
+                });
+
+                for (var cycle = 0; cycle < 2; cycle++)
+                {
+                    foreach (var expand in new[] { false, true })
+                    {
+                        double offsetBefore = 0.0;
+                        var context = $"{key} cycle {cycle} after {(expand ? "expand" : "collapse")}";
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            offsetBefore = GetBodyScroller(tableView).VerticalOffset;
+                            var header = FindRealizedGroupHeader(tableView, key);
+                            Verify.IsNotNull(header, $"The {key} header is realized ({context}).");
+                            var provider = FrameworkElementAutomationPeer.CreatePeerForElement(header)
+                                .GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+                            if (expand)
+                            {
+                                provider.Expand();
+                            }
+                            else
+                            {
+                                provider.Collapse();
+                            }
+                        });
+
+                        // The focus restore runs on LayoutUpdated after the deferred reshape.
+                        SettleLayout(tableView);
+                        SettleLayout(tableView);
+
+                        RunOnUIThread.Execute(() =>
+                        {
+                            var scroller = GetBodyScroller(tableView);
+                            var offsetAfter = scroller.VerticalOffset;
+                            Log.Comment($"{context}: offset {offsetBefore:F1} -> {offsetAfter:F1}, scrollable {scroller.ScrollableHeight:F1}.");
+
+                            var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as TableViewGroupHeader;
+                            Verify.AreEqual(key, (focused?.Content as TableViewGroupInfo)?.Key as string,
+                                $"Keyboard focus stays on the toggled header ({context}).");
+                            Verify.AreEqual(expand, GetGroupInfoByKey(tableView, key)?.IsExpanded ?? !expand,
+                                $"The group reports the requested state ({context}).");
+                            VerifyGroupHeaderInViewport(tableView, key, context);
+
+                            // Beyond clamping at the end of the extent, scroll anchoring may shift by at most one group.
+                            var maxBackward = Math.Max(0.0, offsetBefore - scroller.ScrollableHeight) + groupHeight + 0.5;
+                            Verify.IsLessThanOrEqual(offsetBefore - offsetAfter, maxBackward,
+                                $"The viewport must not jump to an earlier group ({context}).");
+                        });
+                    }
+                }
+            }
+        }
+
+        private static TableViewGroupHeader FindRealizedGroupHeader(TableView tableView, string key)
+        {
+            var repeater = GetRowsRepeater(tableView);
+            return Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(repeater))
+                .Select(i => VisualTreeHelper.GetChild(repeater, i) as TableViewGroupHeader)
+                .FirstOrDefault(h => h != null && repeater.GetElementIndex(h) >= 0 &&
+                    Equals((h.Content as TableViewGroupInfo)?.Key, key));
+        }
+
+        private static TableViewGroupInfo GetGroupInfoByKey(TableView tableView, string key)
+            => FindRealizedGroupHeader(tableView, key)?.Content as TableViewGroupInfo;
+
+        private static void VerifyGroupHeaderInViewport(TableView tableView, string key, string context)
+        {
+            var header = FindRealizedGroupHeader(tableView, key);
+            Verify.IsNotNull(header, $"The {key} header must stay realized ({context}).");
+            if (header == null)
+            {
+                return;
+            }
+
+            var scroller = GetBodyScroller(tableView);
+            var top = header.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y;
+            Verify.IsTrue(top >= -0.5 && top + header.ActualHeight <= scroller.ViewportHeight + 0.5,
+                $"The {key} header must stay fully in the viewport ({context}): top {top:F1}, height {header.ActualHeight:F1}, viewport {scroller.ViewportHeight:F1}.");
+        }
+
         #endregion
 
         #region 9.4 Group edge cases
