@@ -786,34 +786,41 @@ void InkSynchronizer::EndDry()
         // The app's dry ink is in XAML's tree now and is rendered in XAML's next frame. Forward EndDry at the
         // start of that frame: the OS detaches the wet ink from the host visual (on XAML's device) and XAML's
         // commit of that frame carries both changes.
-        try
+        if (!m_renderingHooked)
         {
-            if (!m_renderingRevoker)
+            try
             {
-                m_renderingRevoker = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(winrt::auto_revoke,
-                    [weakThis = get_weak()](auto const&, auto const&)
+                // The handler removes itself when it runs (on this UI thread), so nothing has to be unregistered
+                // when the synchronizer is released, possibly on another thread.
+                auto token = std::make_shared<winrt::event_token>();
+                *token = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(
+                    [weakThis = get_weak(), token](auto const&, auto const&)
                     {
+                        winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(*token);
                         if (auto self = weakThis.get())
                         {
+                            self->m_renderingHooked = false;
                             try
                             {
                                 self->FlushPendingEndDry();
                             }
-                            catch (...)
+                            catch (winrt::hresult_error const& e)
                             {
                                 // Must not escape into XAML's frame callback.
+                                InkTelemetry::ReportError(
+                                    InkTelemetry::ErrorCategory::ApiMisuse, InkTelemetry::Operation::EndDry, true /* isRecoverable */, e.code());
                             }
                         }
                     });
+                m_renderingHooked = true;
             }
-            return;
+            catch (winrt::hresult_error const&)
+            {
+                // No XAML frame to wait for: forward now.
+                FlushPendingEndDry();
+            }
         }
-        catch (...)
-        {
-            // No XAML frame to wait for: forward now.
-            FlushPendingEndDry();
-            return;
-        }
+        return;
     }
 
     RunOnInkHostThreadSync(m_owner,
@@ -830,7 +837,6 @@ void InkSynchronizer::EndDry()
 
 void InkSynchronizer::FlushPendingEndDry()
 {
-    m_renderingRevoker.revoke();
     if (!m_endDryPending)
     {
         return;
