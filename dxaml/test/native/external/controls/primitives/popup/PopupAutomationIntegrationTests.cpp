@@ -265,7 +265,7 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupListViewDataPeerHost(bo
             auto listPeer = xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(listView);
             VERIFY_IS_NOT_NULL(listPeer);
             unsigned int dataPeerCount = 0;
-            for (auto child : listPeer->GetChildren())
+            for (xaml_automation_peers::AutomationPeer^ child : listPeer->GetChildren())
             {
                 if (auto dataPeer = dynamic_cast<xaml_automation_peers::ListViewItemDataAutomationPeer^>(child))
                 {
