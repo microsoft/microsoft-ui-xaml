@@ -143,13 +143,14 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
-`GridLinesVisibility` controls gridlines. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
+`GridLinesVisibility` controls the body gridlines and `HeaderGridLinesVisibility` independently controls the column-header lines (the separators between header cells and the rule under the header). `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
 
 ```xaml
 <tabular:TableView
     ItemsSource="{x:Bind People}"
     HeadersVisibility="Column"
-    GridLinesVisibility="All"
+    GridLinesVisibility="Horizontal"
+    HeaderGridLinesVisibility="All"
     Density="Compact"
     RowBackground="{ThemeResource CardBackgroundFillColorDefaultBrush}"
     AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}">
@@ -165,7 +166,8 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 using Microsoft.UI.Xaml.Controls.Tabular;
 
 PeopleTable.HeadersVisibility = TableViewHeadersVisibility.Column;
-PeopleTable.GridLinesVisibility = TableViewGridLinesVisibility.All;
+PeopleTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
+PeopleTable.HeaderGridLinesVisibility = TableViewGridLinesVisibility.All;
 PeopleTable.Density = TableViewDensity.Compact;
 ```
 
@@ -471,7 +473,8 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 | `ItemsSource` | `Object` | `null` | Source collection for table rows. |
 | `Columns` | `IVector<TableViewColumn>` | Empty vector | Developer-defined column collection. This is the content property. |
 | `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls column-header visibility. |
-| `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls horizontal and vertical gridlines. |
+| `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls the body's horizontal (row) and vertical (column) gridlines. |
+| `HeaderGridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls the column-header lines independently of `GridLinesVisibility`: `Vertical` draws the full-height separators between header cells, `Horizontal` the rule under the header. |
 | `Density` | `TableViewDensity` | `Standard` | Controls row/cell spacing. |
 | `RowBackground` | `Brush` | `null` | Background brush for rows. |
 | `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
@@ -839,7 +842,7 @@ Flags enum mirroring the `None`/`Column` slots of WPF `DataGridHeadersVisibility
 
 ### TableViewGridLinesVisibility
 
-Mirrors WPF `DataGridGridLinesVisibility` values exactly.
+Mirrors WPF `DataGridGridLinesVisibility` values exactly. Used by both `GridLinesVisibility` (body) and `HeaderGridLinesVisibility` (column header).
 
 | Value | Numeric value | Description |
 |---|---:|---|
@@ -1154,6 +1157,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn> Columns { get; };
         Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility HeadersVisibility;
         Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility GridLinesVisibility;
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility HeaderGridLinesVisibility;
         Microsoft.UI.Xaml.Media.Brush RowBackground;
         Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground;
         Microsoft.UI.Xaml.DataTemplate EmptyTemplate;
@@ -1193,6 +1197,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderGridLinesVisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty RowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };

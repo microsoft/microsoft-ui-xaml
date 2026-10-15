@@ -21,6 +21,7 @@ GlobalDependencyProperty TableViewProperties::s_DensityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_EmptyTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_GridLinesVisibilityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_GroupHeaderTemplateProperty{ nullptr };
+GlobalDependencyProperty TableViewProperties::s_HeaderGridLinesVisibilityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_HeadersVisibilityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_IsReadOnlyProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_ItemsSourceProperty{ nullptr };
@@ -129,6 +130,17 @@ void TableViewProperties::EnsureProperties()
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnGroupHeaderTemplatePropertyChanged));
     }
+    if (!s_HeaderGridLinesVisibilityProperty)
+    {
+        s_HeaderGridLinesVisibilityProperty =
+            InitializeDependencyProperty(
+                L"HeaderGridLinesVisibility",
+                winrt::name_of<winrt::TableViewGridLinesVisibility>(),
+                winrt::name_of<winrt::TableView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::TableViewGridLinesVisibility>::BoxValueIfNecessary(winrt::TableViewGridLinesVisibility::All),
+                winrt::PropertyChangedCallback(&OnHeaderGridLinesVisibilityPropertyChanged));
+    }
     if (!s_HeadersVisibilityProperty)
     {
         s_HeadersVisibilityProperty =
@@ -218,6 +230,7 @@ void TableViewProperties::ClearProperties()
     s_EmptyTemplateProperty = nullptr;
     s_GridLinesVisibilityProperty = nullptr;
     s_GroupHeaderTemplateProperty = nullptr;
+    s_HeaderGridLinesVisibilityProperty = nullptr;
     s_HeadersVisibilityProperty = nullptr;
     s_IsReadOnlyProperty = nullptr;
     s_ItemsSourceProperty = nullptr;
@@ -289,6 +302,14 @@ void TableViewProperties::OnGroupHeaderTemplatePropertyChanged(
 {
     auto owner = sender.as<winrt::TableView>();
     winrt::get_self<TableView>(owner)->OnGroupHeaderTemplatePropertyChanged(args);
+}
+
+void TableViewProperties::OnHeaderGridLinesVisibilityPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableView>();
+    winrt::get_self<TableView>(owner)->OnHeaderGridLinesVisibilityPropertyChanged(args);
 }
 
 void TableViewProperties::OnHeadersVisibilityPropertyChanged(
@@ -433,6 +454,19 @@ void TableViewProperties::GroupHeaderTemplate(winrt::DataTemplate const& value)
 winrt::DataTemplate TableViewProperties::GroupHeaderTemplate()
 {
     return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_GroupHeaderTemplateProperty));
+}
+
+void TableViewProperties::HeaderGridLinesVisibility(winrt::TableViewGridLinesVisibility const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableView*>(this)->SetValue(s_HeaderGridLinesVisibilityProperty, ValueHelper<winrt::TableViewGridLinesVisibility>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::TableViewGridLinesVisibility TableViewProperties::HeaderGridLinesVisibility()
+{
+    return ValueHelper<winrt::TableViewGridLinesVisibility>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_HeaderGridLinesVisibilityProperty));
 }
 
 void TableViewProperties::HeadersVisibility(winrt::TableViewHeadersVisibility const& value)

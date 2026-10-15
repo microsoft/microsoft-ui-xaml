@@ -520,10 +520,15 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("winrt::TableViewHeadersVisibility::Column")]
     TableViewHeadersVisibility HeadersVisibility { get; set; };
 
-    // Controls row dividers and column separators; row banding is separate.
+    // Body row dividers and column separators; header lines follow HeaderGridLinesVisibility.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::TableViewGridLinesVisibility::All")]
     TableViewGridLinesVisibility GridLinesVisibility { get; set; };
+
+    // Header lines only: Vertical = separators between header cells, Horizontal = rule under the header.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::TableViewGridLinesVisibility::All")]
+    TableViewGridLinesVisibility HeaderGridLinesVisibility { get; set; };
 
     // Master switch for the column-resize affordance; a column opts out individually via CanResize.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
@@ -671,6 +676,7 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty HeaderGridLinesVisibilityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CanUserResizeColumnsProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty RowBackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };

@@ -474,6 +474,7 @@ namespace
         cache.hierarchy.hasRowExpanderSize = false;
         cache.hierarchy.hasGroupExpanderSize = false;
         cache.gridLine.hasBrush = false;
+        cache.headerSeparator.hasBrush = false;
     }
 
     bool ShouldRefreshFrozenColumnsForScroll(TableView* owner, double horizontalOffset)
@@ -552,6 +553,31 @@ winrt::Brush TableView::GetGridLineBrush()
     cache.gridLine.theme = theme;
     cache.gridLine.highContrast = highContrast;
     cache.gridLine.brush = brush;
+    return brush;
+}
+
+winrt::Brush TableView::GetHeaderSeparatorBrush()
+{
+    auto& cache = GetTableViewResourceCache(this);
+    const bool highContrast = IsHighContrast();
+    const auto theme = ActualTheme();
+    if (cache.headerSeparator.hasBrush &&
+        cache.headerSeparator.theme == theme &&
+        cache.headerSeparator.highContrast == highContrast)
+    {
+        return cache.headerSeparator.brush;
+    }
+
+    auto brush = LookupElementResource(*this, L"TabularSurfaceHeaderSeparatorBrush", highContrast).try_as<winrt::Brush>();
+    if (!brush)
+    {
+        brush = GetGridLineBrush();
+    }
+
+    cache.headerSeparator.hasBrush = true;
+    cache.headerSeparator.theme = theme;
+    cache.headerSeparator.highContrast = highContrast;
+    cache.headerSeparator.brush = brush;
     return brush;
 }
 
@@ -1332,6 +1358,17 @@ void TableView::OnGridLinesVisibilityPropertyChanged(const winrt::DependencyProp
     QueueTerminalGridLineRefresh();
 }
 
+void TableView::OnHeaderGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (args.OldValue() == args.NewValue())
+    {
+        return;
+    }
+
+    ApplyGridLinesToHeader();
+    QueueTerminalGridLineRefresh();
+}
+
 void TableView::OnRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (args.OldValue() == args.NewValue())
@@ -1355,7 +1392,7 @@ void TableView::OnAlternatingRowBackgroundPropertyChanged(const winrt::Dependenc
 
 void TableView::ApplyGridLinesToHeader()
 {
-    const auto visibility = GridLinesVisibility();
+    const auto visibility = HeaderGridLinesVisibility();
 
     if (auto headerFE = m_headerRow.get())
     {
@@ -1488,7 +1525,7 @@ void TableView::QueueTerminalGridLineRefresh(bool isGeometryRetry)
 
 std::optional<bool> TableView::ShouldSuppressTrailingGridLine()
 {
-    if (!WantsVerticalLines(GridLinesVisibility()))
+    if (!WantsVerticalLines(GridLinesVisibility()) && !WantsVerticalLines(HeaderGridLinesVisibility()))
     {
         return false;
     }
@@ -2854,9 +2891,8 @@ void TableView::RebuildHeaders()
 
     // Cache theme-resource padding once per header rebuild; values are stable for the pass.
     winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
-    // Always cache the header grid-line brush at rebuild time; visibility toggles do not reassign it later.
-    const bool wantVerticalHeaderLines = WantsVerticalLines(GridLinesVisibility());
-    const auto cachedHeaderGridLineBrush = GetGridLineBrush();
+    // Always cache the header separator brush at rebuild time; visibility toggles do not reassign it later.
+    const auto cachedHeaderSeparatorBrush = GetHeaderSeparatorBrush();
     // Header cells share the density row min-height so the header band matches the body rows.
     const double cachedRowMinHeight = GetDensityRowMinHeight();
     const double cachedHeaderFontSize = GetHeaderFontSize();
@@ -2959,7 +2995,7 @@ void TableView::RebuildHeaders()
             content.FontWeight(cachedHeaderFontWeight);
             headerCell.Children().Append(content);
 
-            // Resolve from TableView so header grid lines track theme.
+            // Visibility is set by ApplyGridLinesToHeader.
             {
                 winrt::Border headerGridLine;
                 headerGridLine.Name(winrt::hstring{ s_HeaderGridLineName });
@@ -2967,8 +3003,7 @@ void TableView::RebuildHeaders()
                 headerGridLine.HorizontalAlignment(logicalEndAlignment);
                 headerGridLine.IsHitTestVisible(false);
                 winrt::AutomationProperties::SetAccessibilityView(headerGridLine, winrt::AccessibilityView::Raw);
-                headerGridLine.Visibility(wantVerticalHeaderLines ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
-                headerGridLine.Background(cachedHeaderGridLineBrush);
+                headerGridLine.Background(cachedHeaderSeparatorBrush);
                 headerCell.Children().Append(headerGridLine);
             }
 
