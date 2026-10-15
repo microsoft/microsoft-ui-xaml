@@ -361,7 +361,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
     };
     class DatePickerFlyoutItemFactory
         :
-        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutItemStatics>
+        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutItemFactory, ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutItemStatics>
     {
 
     friend class DatePickerFlyoutItemGenerated;
@@ -371,6 +371,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
          _Check_return_ HRESULT RuntimeClassInitialize();
          static _Check_return_ HRESULT EnsureProperties();
          static void ClearProperties();
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutItem** ppInstance);
 
         // Properties.
 
@@ -398,6 +399,9 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         : public DatePickerFlyoutItemRuntimeClass
     {
         friend class ABI::Microsoft::UI::Xaml::Controls::DatePickerFlyoutItem;
+        friend class pctl::AggregableComObject< 
+            ABI::Microsoft::UI::Xaml::Controls::DatePickerFlyoutItem,
+            ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutItem>;
         WuxpInspectableClass(RuntimeClass_Microsoft_UI_Xaml_Controls_DatePickerFlyoutItem, TrustLevel::BaseTrust);
 
     public:
@@ -441,8 +445,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Customized properties.
         virtual _Check_return_ HRESULT get_TypeImpl(_Out_ ABI::Windows::UI::Xaml::Interop::TypeName* pValue) = 0;
 
-        // Initialization methods
-        virtual _Check_return_ HRESULT InitializeImpl();
+        // Initialization methods required by AggregableComObject to make this an aggregable class.
+        virtual _Check_return_ HRESULT InitializeImpl(_In_opt_ IInspectable* pOuter = nullptr);
 
         // Event Sources
     };
