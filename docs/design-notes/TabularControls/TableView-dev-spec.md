@@ -60,7 +60,7 @@ TableView — Default Template
       ├─ Header band  [Row 0, Auto]
       │  └─ Border PART_HeaderRow                 (header background + 1px bottom gridline)
       │     └─ ScrollViewer PART_HeaderScroller   (H-only; scrollbar hidden; V disabled; synced to body)
-      │        └─ TableViewCellsPanel PART_HeaderHost   -> one Grid header cell per column (L->R)
+      │        └─ TableViewCellsPanel PART_HeaderHost   -> one TableViewColumnHeader per column (L->R)
       └─ Body band  [Row 1, *]
          └─ ScrollViewer PART_BodyScroller         (H + V, auto scrollbars)
             └─ Grid PART_BodyContent
@@ -400,7 +400,8 @@ only the bulk commands plus the header's own gesture and UIA pattern. Grouping i
 
 Styling is layered so the display-only base stays minimal while a richer surface can grow
 additively — the realized row/cell/header are already styleable targets (`TableViewRow` is a
-public `Control`; cell wrappers are `Border`s; header cells are `Grid`s), so the additions below
+public `Control`; cell wrappers are `Border`s; column headers are public `TableViewColumnHeader`
+controls), so the additions below
 need no new base API or re-plumbing.
 
 **v1 (this base):**
@@ -413,18 +414,30 @@ need no new base API or re-plumbing.
   default brushes, re-resolved on theme and high-contrast changes.
 - Typography theme keys — `TableViewCellFontSize` (14), `TableViewHeaderFontSize` (14) and
   `TableViewHeaderFontWeight` (`SemiBold`). They do not vary with `Density`; an override in the
-  TableView's or an ancestor's `Resources`, or in `Application.Resources`, wins. Values are cached
-  per instance, so a later override applies after a theme, high-contrast or density change.
+  TableView's or an ancestor's `Resources`, or in `Application.Resources`, wins. The cell size is
+  cached per instance, so a later override applies after a theme, high-contrast or density change.
+  The header keys are `{ThemeResource}` setters in the `TableViewColumnHeader` default style, so a
+  header style's `FontSize`/`FontWeight` setter wins over them and nothing is written as a local value.
+- `ColumnHeaderStyle` / `TableViewColumn.HeaderStyle` — `Style` for the templated
+  `TableViewColumnHeader` (`ContentControl`); the column's style wins. Both are layered over the
+  default header style, so they need not be `BasedOn` it. Pointer-over and pressed are `CommonStates`
+  (`Normal`/`PointerOver`/`Pressed`/`Disabled`) that change only the fill (the `TabularSurfaceHeader*`
+  brushes), so a custom `TableView.Foreground` survives hover; under High Contrast a separate
+  `HighContrastStates` group (`HighContrastNormal`/`HighContrastPointerOver`/`HighContrastPressed`)
+  swaps the text and glyph to the highlight-text brush. `SortStates`
+  (`Unsorted`/`SortAscending`/`SortDescending`) only show or hide the sort glyph. `MinHeight` and
+  `Padding` follow `Density` unless the applied header style sets them (an implicit header style's
+  setters for those two are overridden by the density values).
 
 **Rich styling (later):** delivered as **per-element `Style` dependency properties**, matching WPF
 `DataGrid` (`RowStyle` / `CellStyle` / `ColumnHeaderStyle`) — **not** a monolithic `TableStyle`.
+`ColumnHeaderStyle` has shipped (above); `RowStyle` and `CellStyle` follow the same shape.
 `RowStyle` targets the realized `TableViewRow`; `CellStyle` the per-cell container (the cell-wrapper
 `Border`; cell *content* is customized via the column's template / `GenerateElementCore`, matching
 WPF where `CellStyle` targets `DataGridCell`, not the content); `ColumnHeaderStyle` the generated
-header cell. They form a cohesive set and land together, since shipping one alone would leave an
-asymmetric styling surface. Header restyling beyond the `TabularSurfaceHeader*` keys (for example
-replacing the pointer-over/pressed visuals) needs a public templated header type and
-`ColumnHeaderStyle`, both of which require API review; today's header cell is an internal `Grid`.
+header. The header went first because its pointer, sort and typography visuals were the ones
+built in code; the public `TableViewColumnHeader` type and `ColumnHeaderStyle` are preview API
+pending API review.
 
 **Why per-element Styles + theme resources, not a monolithic `TableStyle`:** per-element `Style`s
 compose with the standard WinUI `Style`/`Setter`/`ControlTemplate` machinery and scale to any

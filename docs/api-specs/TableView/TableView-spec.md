@@ -177,7 +177,8 @@ In all themes, an application-set table or row `Foreground` supplies the normal-
 pointer-over, pressed, selected, and disabled states use the corresponding `TabularSurface*`
 foreground brush. Cell content inherits that foreground unless its template supplies an explicit brush.
 
-Override the named `TabularSurface*` brush keys to customize colors. Low-level Fluent color-token
+Override the named `TabularSurface*` brush keys to customize colors. To restyle column headers
+beyond their brushes (typography, padding, the template), set `ColumnHeaderStyle`. Low-level Fluent color-token
 overrides no longer flow through the removed default-style brush fallbacks.
 
 Override `TabularSurfaceSelectionIndicatorDisabledBrush` and `TabularSurfaceRowForegroundDisabledBrush`
@@ -480,6 +481,7 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 | `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
 | `EmptyTemplate` | `DataTemplate` | `null` | Template displayed when there are no rows. |
 | `GroupHeaderTemplate` | `DataTemplate` | `null` | Content template for the group-header band shown when the source is grouped. Fills only the header's content region; the chevron and themed band remain control-owned. The data context is a `TableViewGroupInfo`. Ignored when the source is not grouped. |
+| `ColumnHeaderStyle` | `Style` | `null` | `Style` applied to every `TableViewColumnHeader`. `TableViewColumn.HeaderStyle` overrides it for one column. Layered over the default header style, so it need not be `BasedOn` it. See [TableViewColumnHeader class](#tableviewcolumnheader-class). |
 | `IsReadOnly` | `Boolean` | `true` | Gates editing for the whole control. Editing is opt-in: while `true`, user gestures do not open an editor regardless of per-column `IsReadOnly`. Setting it to `true` while a cell is open closes that edit. |
 | `IsEditing` | `Boolean` | `false` | `true` while a cell editor is open, through the matching commit/cancel close. Read-only. |
 | `SelectionMode` | `TableViewSelectionMode` | `Single` | Gates row selection for the whole control. Selection is on by default, matching `ItemsView`, `ListView` and WPF's `DataGrid`; set `None` for a display-only table, which also clears any selection. |
@@ -633,6 +635,40 @@ Visual states: `CommonStates` (`Normal`/`PointerOver`/`Pressed`/`Disabled`), `Ex
 
 The **whole band** is the toggle target, matching `ListView` and `TreeView`, rather than a nested button inside it — one interactive element, one automation story.
 
+## TableViewColumnHeader class
+
+The realized column header: a templated `ContentControl`, one per column in `PART_HeaderHost`. The `TableView` creates and owns the headers; apps restyle them through `TableView.ColumnHeaderStyle` or `TableViewColumn.HeaderStyle`, and fill the content region through the column's `Header`, `HeaderTemplate` or `HeaderTemplateSelector`. It has no members of its own beyond the constructor.
+
+```xml
+<tabular:TableView.ColumnHeaderStyle>
+    <Style TargetType="tabular:TableViewColumnHeader">
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Background" Value="{ThemeResource LayerFillColorDefaultBrush}" />
+    </Style>
+</tabular:TableView.ColumnHeaderStyle>
+```
+
+The default style sets `FontSize` and `FontWeight` from `{ThemeResource TableViewHeaderFontSize}` and `{ThemeResource TableViewHeaderFontWeight}` (14, `SemiBold`), a transparent `Background` so the whole header takes pointer input, and `IsTabStop`/`UseSystemFocusVisuals`. The header inherits `Foreground` from the `TableView`. `MinHeight` and `Padding` follow `Density` unless the applied `ColumnHeaderStyle`/`HeaderStyle` sets them.
+
+Template parts. All are optional; a missing part disables only its feature:
+
+| Part | Type | Purpose |
+|---|---|---|
+| `PART_ContentPresenter` | `ContentPresenter` | Content region. On a sortable column the control adds the sort glyph's width to its right `Margin`, so text trims before the glyph. |
+| `PART_GridLine` | `Border` | Vertical separator. Its `Visibility` follows the table's grid-line settings; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
+| `PART_SortIndicatorHost` | `Border` | Hosts the sort glyph on a sortable column. Under a High Contrast highlight state the glyph takes `PART_ContentPresenter`'s `Foreground`. |
+| `PART_ResizeGripperHost` | `Border` | Hosts the resize gripper on a resizable column. Without it the column cannot be resized from the header, by pointer, keyboard or UI Automation. |
+
+Visual states:
+
+| Group | States | Notes |
+|---|---|---|
+| `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled` | `PointerOver`/`Pressed` are entered only on a column the user can sort, and change only the fill (`TabularSurfaceHeaderBackgroundPointerOverBrush` / `...PressedBrush`). |
+| `HighContrastStates` | `HighContrastNormal`, `HighContrastPointerOver`, `HighContrastPressed` | Entered alongside `PointerOver`/`Pressed` only under High Contrast: text and glyph switch to `TabularSurfaceHeaderForeground*Brush` and drop the text backplate. |
+| `SortStates` | `Unsorted`, `SortAscending`, `SortDescending` | Show or hide the sort glyph; the glyph is hidden until the column is sorted. |
+
+The header's automation peer is `TableViewColumnHeaderAutomationPeer` (`HeaderItem`, with `Invoke` to sort and `Transform` to resize). A `ContextFlyout` set through a header style takes precedence over `HeaderContextFlyout` and, like it, stays closed while a cell is editing.
+
 ## TableViewColumn class
 
 Base class for TableView columns.
@@ -646,6 +682,7 @@ Base class for TableView columns.
 | `Header` | `Object` | `null` | Header content for the column. |
 | `HeaderTemplate` | `DataTemplate` | `null` | Template used to display the header. |
 | `HeaderTemplateSelector` | `DataTemplateSelector` | `null` | Template selector used to display the header; takes precedence over `HeaderTemplate` when both are set. |
+| `HeaderStyle` | `Style` | `null` | `Style` for this column's `TableViewColumnHeader`; wins over `TableView.ColumnHeaderStyle`. |
 | `Width` | `GridLength` | Default column width | `Pixel` = exact; `Auto` = widest realized cell (grows within a data set) or the current header; `*` = a proportional share of the body viewport after fixed columns. |
 | `MinWidth` | `Double` | `20` | Minimum column width. |
 | `MaxWidth` | `Double` | Infinity | Maximum column width. |
