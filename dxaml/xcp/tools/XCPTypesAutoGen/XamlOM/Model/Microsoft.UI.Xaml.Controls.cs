@@ -3792,7 +3792,7 @@ namespace Microsoft.UI.Xaml.Controls
     [Guids(ClassGuid = "e74b21a7-8081-4f19-bade-3fb9abda1ce5")]
     [ClassFlags(HasTypeConverter = true)]
     [ContentProperty(nameof(Height))]
-    public sealed class RowDefinition
+    public class RowDefinition
      : Microsoft.UI.Xaml.DependencyObject
     {
         [PropertyFlags(AffectsMeasure = true)]
