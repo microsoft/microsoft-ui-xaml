@@ -544,9 +544,7 @@ winrt::Brush TableView::GetGridLineBrush()
         if (!brush && !m_reportedMissingGridLineBrush)
         {
             m_reportedMissingGridLineBrush = true;
-            OutputDebugStringW(L"TableView: TabularSurfaceGridLineBrush not found - merge TabularControlsResources; grid lines are not drawn.\n");
-            TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::Setup, TableViewTip::Stage::Template,
-                true, TableViewTip::Attribution::Application);
+            TVDiag::DbgLogF(L"TableView: TabularSurfaceGridLineBrush not found - merge TabularControlsResources; grid lines are not drawn.");
         }
     }
 
