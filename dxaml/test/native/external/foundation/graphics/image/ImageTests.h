@@ -207,7 +207,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"[ImageTestEngine] Loads an image as a stream and attempts to cleanup the hardware resources and verifies they are decoded to element size.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // MockDComp crash
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -243,7 +243,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"[ImageTestEngine] Loads an image and uses the DecodePixelWidth/DecodePixelHeight API to control decoding size.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // MockDComp crash
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -421,17 +421,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(DownloadProgressStreamSource)
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Illegal to wait on a task in a Windows Runtime STA
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(DownloadProgressStreamSourceAsync)
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Illegal to wait on a task in a Windows Runtime STA
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(DontReloadImageFromStream)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Illegal to wait on a task in a Windows Runtime STA
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ToggleUriSource)
@@ -472,4 +472,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     } } }
 } } } }
-

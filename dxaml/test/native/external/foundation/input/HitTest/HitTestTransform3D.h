@@ -169,7 +169,7 @@ public:
 
     BEGIN_TEST_METHOD(PerspectivePlusPopupScaledWUC)
         TEST_METHOD_PROPERTY(L"Description", L"Perspective on HandOff Visual plus a rignt-aligned Popup and plateau scale")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Failure assigning Popup.Child - XamlRoot API?
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Failure assigning Popup.Child - XamlRoot API?
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
     END_TEST_METHOD()
 

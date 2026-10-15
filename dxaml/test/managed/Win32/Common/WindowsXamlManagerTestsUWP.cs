@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using System;
 using System.Diagnostics;
@@ -28,7 +28,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Win32.Common
         [TestProperty("IsolationLevel", "Method")]
         [TestProperty("RunAs", "UAP")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public static void Setup(TestContext context)
         {
@@ -48,6 +48,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Win32.Common
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void CannotCreateWindowsXamlManagerInUIThread()
         {
             UIExecutor.Execute(() =>
@@ -61,6 +62,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Win32.Common
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void CannotCreateWindowsXamlManager()
         {
             Exception caughtException = VerifyExtensions.Throws<Exception>(()=>
@@ -71,6 +73,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Win32.Common
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void CannotCreateDesktopWindowXamlSourceInUIThread()
         {
             UIExecutor.Execute(() =>
@@ -84,6 +87,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Win32.Common
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void CannotCreateDesktopWindowXamlSource()
         {
             Exception caughtException = VerifyExtensions.Throws<Exception>(()=>

@@ -26,7 +26,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(RenderTextBoxWith18Zoom)
                 TEST_METHOD_PROPERTY(L"Classification", L"Integration")
                 TEST_METHOD_PROPERTY(L"Description", L"Renders a TextBox with zoom scale 1.8x. Ensures the TextBox is drawn as a single primitive so that seams don't show up.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Zoom scale not applied
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using System;
 
@@ -1509,7 +1509,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
 
         [TestMethod]
         [TestProperty("Description", "Verify that plateau scaling works correctly with HintRect in the FindNextElement API")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Ignore", "TRUE")]    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
         public void FindNextElementHintRectWorksWithPlateauScaling()
         {
@@ -1670,7 +1670,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
         */
         [TestMethod]
         [TestProperty("Description", "Verify that plateau scaling works correctly with ExclusionRect in the FindNextElement API")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Ignore", "TRUE")]    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
         public void FindNextElementExclusionRectWorksWithPlateauScaling()
         {

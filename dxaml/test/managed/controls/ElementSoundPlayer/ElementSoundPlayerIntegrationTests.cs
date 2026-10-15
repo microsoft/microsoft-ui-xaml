@@ -27,7 +27,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [ClassInitialize]
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("Ignore", "True")] // TODO: Re-enable ElementSoundPlayer tests that were disabled for Lifted Xaml.
@@ -103,7 +103,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
             "Description",
             "Verify tapping headers to change pivot items plays next/previous sound depending on index position")]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyPivotHeaderTapSound()
         {
             const string rootPanelXaml =
@@ -293,7 +293,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestProperty(
             "Description",
             "Exercises the ElementSoundPlayer's State and Volume properties, and the ElementSoundMode property of input, HyperLink and Flyout controls for automatic element sound playing: Verify SpatialAudio is off by default - do not explicitly provide a setting")]
-        [TestProperty("Hosting:Mode", "UAP")]    
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ExerciseElementSoundPlayerService()
         {
             SoundData[] soundData = new SoundData[]
@@ -322,7 +322,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
             "Exercises the ElementSoundPlayer's State and Volume properties, and the ElementSoundMode property of input, HyperLink and Flyout controls for automatic element sound playing.")]
         [TestProperty("Platform", "Desktop")]
         [TestProperty("EnabledOnOneCore", "False")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ExerciseElementSoundPlayerServiceWithSpatialAudio()
         {
             SoundData[] soundData = new SoundData[]
@@ -348,7 +348,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestProperty(
             "Description",
             "Exercises the ElementSoundPlayer's State and Volume properties, and the ElementSoundMode property of input, HyperLink and Flyout controls for automatic element sound playing.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ExerciseElementSoundPlayerServiceWithoutSpatialAudio()
         {
             SoundData[] soundData = new SoundData[]
@@ -634,7 +634,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void TestButtonPanelWithSpatialAudio() 
         {
             SoundData[] soundData = new SoundData[]
@@ -650,7 +650,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void TestButtonPanelWithoutSpatialAudio() 
         {
             SoundData[] soundData = new SoundData[]

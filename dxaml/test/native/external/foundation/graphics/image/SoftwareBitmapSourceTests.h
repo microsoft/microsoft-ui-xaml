@@ -169,7 +169,7 @@ public:
     BEGIN_TEST_METHOD(WriteableBitmapSetSource)
         TEST_METHOD_PROPERTY(L"Description", L"WriteableBitmap::SetSource(stream)")
         TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Illegal to wait on a task in a Windows Runtime STA
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 

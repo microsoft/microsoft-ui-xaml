@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using System;
 using System.Text;
@@ -35,7 +35,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestProperty("RunAs", "UAP")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Hosting:Mode", "UAP")]  // crash reason :  test crashes at the end
+        [TestProperty("Hosting:Mode", "WPF")]  // crash reason :  test crashes at the end
         public static void Setup(TestContext context)
         {
             AssemblySetup.CommonTestClassSetup();
@@ -171,6 +171,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
 
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void CancelDuringAnimation()
         {
             XamlRoot xamlRoot = null;
@@ -220,6 +221,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void KeysPressedDuringAnimation()
         {
             XamlRoot xamlRoot = null;

@@ -46,20 +46,20 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(NestedPopup)
                 TEST_METHOD_PROPERTY(L"Description", L"Creates a ScrollViewer with two nested Popups and validates the DComp tree with DManip-on-DComp enabled")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Test crash - Failed to assign Popup.Child
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Test crash - Failed to assign Popup.Child
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(NestedPopupPan)
                 TEST_METHOD_PROPERTY(L"Description", L"Pans a ScrollViewer with two nested Popups and validates the DComp tree with DManip-on-DComp enabled")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Test crash - Failed to assign Popup.Child
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Test crash - Failed to assign Popup.Child
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP Test: Some tests show input differences in RS4 and 19H1
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(RegressionTest_3271313)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates pixel snapping behavior within scrolled Popup at high DPI")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Zoom scale not applied
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 

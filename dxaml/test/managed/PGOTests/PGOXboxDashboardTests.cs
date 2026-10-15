@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace Microsoft.UI.Xaml.Tests.PGO.XboxDashboard
         [ClassInitialize]
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
-        [TestProperty("Hosting:Mode", "UAP")]  // WPF not needed in this case. 
+        [TestProperty("Hosting:Mode", "WPF")]  // WPF not needed in this case.
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("IsolationLevel", "Method")]
         [TestProperty("Classification", "Integration")]

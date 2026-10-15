@@ -69,28 +69,28 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(AnimatedSetSource)
                 TEST_METHOD_PROPERTY(L"Description", L"See if a SetSource based image animates.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Illegal to wait on a task in a Windows Runtime STA
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AnimatedSetSourceNotInTree)
                 TEST_METHOD_PROPERTY(L"Description", L"SetSource is called on the image not being in the live tree.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Illegal to wait on a task in a Windows Runtime STA
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AnimatedSetSourceAsyncPreLiveTree)
                 TEST_METHOD_PROPERTY(L"Description", L"See if a SetSourceAsync based image animates (before it is live in tree).")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Illegal to wait on a task in a Windows Runtime STA
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AnimatedSetSourceAsyncPostLiveTree)
                 TEST_METHOD_PROPERTY(L"Description", L"See if a SetSourceAsync based image animates (after it is live in tree).")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Illegal to wait on a task in a Windows Runtime STA
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AnimatedSWBrush)
@@ -121,4 +121,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     } } }
 } } } }
-
