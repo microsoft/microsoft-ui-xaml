@@ -17,7 +17,7 @@ namespace Microsoft.UI.Xaml.Controls
     [Implements(typeof(Microsoft.UI.Xaml.Controls.IInputValidationControl), Velocity = "Feature_InputValidation")]
     [Implements(typeof(Microsoft.UI.Xaml.Controls.IInputValidationControl2), Velocity = "Feature_InputValidation")]
     [InputProperty("Text")]
-    public sealed class AutoSuggestBox
+    public class AutoSuggestBox
         : Microsoft.UI.Xaml.Controls.ItemsControl
     {
         #region Properties
