@@ -411,6 +411,62 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies setting CanSort = false on the sorted column clears its sort and raises Sorting/Sorted.")]
+        public void VerifyCanSortFalseClearsActiveSort()
+        {
+            TableView tableView = null;
+            var sortingArgs = new List<TableViewSortingEventArgs>();
+            var sortedArgs = new List<TableViewSortedEventArgs>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending),
+                    "Baseline: the column must sort.");
+                tableView.Sorting += (sender, args) => sortingArgs.Add(args);
+                tableView.Sorted += (sender, args) => sortedArgs.Add(args);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name),
+                    "baseline: the rows must be sorted");
+                tableView.Columns[0].CanSort = false;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                Verify.AreEqual(SortDirection.None, column.SortDirection,
+                    "Opting a sorted column out of sorting must clear its sort direction.");
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name),
+                    "clearing the opted-out column's sort must restore source order");
+
+                var indicator = FindSortIndicator(tableView, 0);
+                Verify.IsTrue(indicator == null || indicator.Direction == SortIndicatorDirection.None,
+                    "The header arrow must be cleared.");
+
+                Verify.AreEqual(1, sortingArgs.Count, "The clear must raise Sorting once.");
+                Verify.AreEqual(column, sortingArgs[0].Column, "Sorting must name the opted-out column.");
+                Verify.AreEqual(SortDirection.None, sortingArgs[0].Direction, "Sorting must request None.");
+                Verify.AreEqual(1, sortedArgs.Count, "The clear must raise Sorted once.");
+                Verify.AreEqual(column, sortedArgs[0].Column, "Sorted must name the opted-out column.");
+                Verify.AreEqual(SortDirection.None, sortedArgs[0].Direction, "Sorted must report None.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies ClearSort resets every column and restores source order.")]
         public void VerifyClearSortClearsEveryColumnAndRestoresSourceOrder()
         {

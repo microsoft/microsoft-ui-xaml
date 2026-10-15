@@ -3248,7 +3248,8 @@ void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
     // A column that just opted out must not keep an active sort applied to it.
     if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None)
     {
-        SortByColumnInternal(column, winrt::SortDirection::None, false);
+        // Bypasses the CanSort gate that just closed; the public methods keep refusing.
+        SortByColumnInternal(column, winrt::SortDirection::None, false, false);
     }
 
     // The chevron and the click handler are stamped at header-build time.

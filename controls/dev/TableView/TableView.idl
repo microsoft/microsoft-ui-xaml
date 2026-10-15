@@ -156,7 +156,9 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
 
     // Per-column opt-out of sorting. Default true. When false the control will not sort by this
     // column: the header click handler ignores it, and SortByColumn and ToggleSortDirection return
-    // false without changing state. (CanUserSortColumns, by contrast, gates only header clicks.)
+    // false without changing state. Setting it false on the sorted column clears that sort, raising
+    // Sorting and Sorted as SortByColumn(column, None) does. (CanUserSortColumns, by contrast,
+    // gates only header clicks.)
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("true")]
     Boolean CanSort { get; set; };

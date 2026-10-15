@@ -1120,9 +1120,10 @@ private:
     // Re-validated after every point where app code could have run (a Sorting handler, or an
     // edit-ending handler): the columns collection may have changed underneath the request that is
     // still in flight.
-    bool IsSortRequestStillValid(const winrt::TableViewColumn& column) const;
+    // requireCanSort=false is only for clearing a column that has just opted out of sorting.
+    bool IsSortRequestStillValid(const winrt::TableViewColumn& column, bool requireCanSort = true) const;
     bool IsSortClearStillValid() const;
-    bool CanSortColumnNow(const winrt::TableViewColumn& column) const;
+    bool CanSortColumnNow(const winrt::TableViewColumn& column, bool requireCanSort = true) const;
     // False when the active source cannot order its rows (a null item or one object twice).
     bool CanApplySortTo(winrt::SortDirection direction) const;
     // The source the rows are projected through, app-assigned or synthesized. Non-null means the
@@ -1133,7 +1134,7 @@ private:
     // Applies the current sort state to the bound TableViewSource. Returns false when there is no
     // TableViewSource, or the trigger column resolves no sort key.
     bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t tipGeneration);
-    bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip);
+    bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort = true);
     bool ClearSortInternal(bool measureTip);
     winrt::TableViewKeySelector GetTableViewSourceSortKeySelector(const winrt::hstring& sortMemberPath);
     // Re-places a live-tracked item among CustomSortComparer ranks. True if any sort key moved.

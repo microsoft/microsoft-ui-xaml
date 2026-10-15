@@ -191,9 +191,13 @@ bool TableView::IsSortClearStillValid() const
 
 // Refused a source another table owns: there is nothing to sort until it is released, and the
 // columns keep their state for the reconcile that follows.
-bool TableView::CanSortColumnNow(const winrt::TableViewColumn& column) const
+bool TableView::CanSortColumnNow(const winrt::TableViewColumn& column, bool requireCanSort) const
 {
-    return !m_awaitedSource.get() && CanSortColumn(column);
+    if (m_awaitedSource.get())
+    {
+        return false;
+    }
+    return requireCanSort ? CanSortColumn(column) : static_cast<bool>(column);
 }
 
 bool TableView::CanApplySortTo(winrt::SortDirection direction) const
@@ -206,9 +210,9 @@ bool TableView::CanApplySortTo(winrt::SortDirection direction) const
     return !source || winrt::get_self<::TableViewSource>(source)->CanApplySort();
 }
 
-bool TableView::IsSortRequestStillValid(const winrt::TableViewColumn& column) const
+bool TableView::IsSortRequestStillValid(const winrt::TableViewColumn& column, bool requireCanSort) const
 {
-    if (!column || !CanSortColumnNow(column))
+    if (!column || !CanSortColumnNow(column, requireCanSort))
     {
         return false;
     }
@@ -234,9 +238,11 @@ bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDi
 }
 
 bool TableView::SortByColumnInternal(
-    const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip)
+    const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort)
 {
-    if (!CanSortColumnNow(column))
+    // Only a clear may skip the CanSort gate.
+    requireCanSort = requireCanSort || direction != winrt::SortDirection::None;
+    if (!CanSortColumnNow(column, requireCanSort))
     {
         return false;
     }
@@ -269,14 +275,14 @@ bool TableView::SortByColumnInternal(
     {
         if (m_editState == EditState::Ending && !m_isApplyingCoalescedEditReshape)
         {
-            QueueCoalescedEditReshape([this, column, direction, measureTip]()
+            QueueCoalescedEditReshape([this, column, direction, measureTip, requireCanSort]()
             {
-                SortByColumnInternal(column, direction, measureTip);
+                SortByColumnInternal(column, direction, measureTip, requireCanSort);
             });
         }
         return false;
     }
-    if (!IsSortRequestStillValid(column))
+    if (!IsSortRequestStillValid(column, requireCanSort))
     {
         return false;
     }
@@ -287,7 +293,7 @@ bool TableView::SortByColumnInternal(
     }
 
     // The edit commit and the Sorting handler are app code that can change the rows.
-    if (!IsSortRequestStillValid(column) || !CanApplySortTo(direction))
+    if (!IsSortRequestStillValid(column, requireCanSort) || !CanApplySortTo(direction))
     {
         return false;
     }
