@@ -34,6 +34,96 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void ToggleSwitchRetainsPointerFocusAfterNavigationViewItemClick()
+        {
+            foreach (bool topMode in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Pointer Focus Test" }))
+                {
+                    if (topMode)
+                    {
+                        FindElement.ByName<CheckBox>("Top mode").Check();
+                        Wait.ForIdle();
+                    }
+
+                    var item = FindElement.ByName("Second item");
+                    var toggle = FindElement.ByName("Focus toggle");
+                    var toggleState = FindElement.ByName<TextBlock>("Toggle state");
+                    var pointerPressedCount = FindElement.ByName<TextBlock>("Pointer pressed count");
+
+                    for (int repetition = 0; repetition < 2; repetition++)
+                    {
+                        InputHelper.LeftClick(item);
+                        Verify.IsTrue(item.HasKeyboardFocus);
+                        Verify.AreEqual((repetition + 1).ToString(), pointerPressedCount.GetText(),
+                            "Ordinary application PointerPressed handlers must still receive the item press.");
+
+                        var previousToggleState = toggleState.GetText();
+                        InputHelper.LeftClick(toggle);
+                        Verify.AreNotEqual(previousToggleState, toggleState.GetText());
+                        Verify.IsTrue(toggle.HasKeyboardFocus, "The first toggle click after item selection must retain focus.");
+
+                        InputHelper.LeftClick(toggle);
+                        Verify.IsTrue(toggle.HasKeyboardFocus, "Subsequent toggle clicks must retain focus.");
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void UnhandledReleaseAfterCaptureStillFocusesScrollViewer()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Pointer Focus Test" }))
+            {
+                var captureTarget = FindElement.ByName("Capture target");
+                var toggle = FindElement.ByName("Focus toggle");
+                var scrollViewer = FindElement.ByName("Input root ScrollViewer");
+
+                InputHelper.LeftClick(toggle);
+                InputHelper.LeftMouseButtonDown(captureTarget);
+                Verify.AreEqual("True", FindElement.ByName<TextBlock>("Capture succeeded").GetText());
+                InputHelper.MoveMouse(toggle.GetClickablePoint());
+                InputHelper.LeftMouseButtonUp();
+
+                Verify.IsTrue(scrollViewer.HasKeyboardFocus,
+                    "Releasing capture before the unhandled release bubbles must preserve normal ScrollViewer focus.");
+                InputHelper.LeftClick(toggle);
+                Verify.IsTrue(toggle.HasKeyboardFocus);
+            }
+        }
+
+        [TestMethod]
+        public void PointerFocusFixPreservesOtherControlsAndKeyboardNavigation()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Pointer Focus Test" }))
+            {
+                var toggle = FindElement.ByName("Focus toggle");
+                var button = FindElement.ByName("Other button");
+                var scrollViewer = FindElement.ByName("Focusable ScrollViewer");
+                var toggleState = FindElement.ByName<TextBlock>("Toggle state");
+
+                InputHelper.LeftClick(button);
+                Verify.IsTrue(button.HasKeyboardFocus);
+                InputHelper.LeftClick(toggle);
+                Verify.IsTrue(toggle.HasKeyboardFocus);
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                Verify.IsTrue(button.HasKeyboardFocus);
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+                Verify.IsTrue(toggle.HasKeyboardFocus);
+
+                KeyboardHelper.PressKey(Key.Space);
+                Wait.ForIdle();
+                Verify.AreEqual("False", toggleState.GetText());
+
+                InputHelper.LeftClick(scrollViewer);
+                Verify.IsTrue(scrollViewer.HasKeyboardFocus, "Do not suppress legitimate ScrollViewer focus.");
+            }
+        }
+
+        [TestMethod]
         public void EnsureTopSettingsRetainsFocusAfterOrientationChanges()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))

@@ -891,6 +891,10 @@ namespace DirectUI
         IFACEMETHOD(OnPointerReleased)(
             _In_ xaml_input::IPointerRoutedEventArgs* pArgs) override;
 
+        _Check_return_ HRESULT OnPointerReleasedCleanup(
+            _In_ IInspectable* sender,
+            _In_ xaml_input::IPointerRoutedEventArgs* args);
+
         // RightTappedUnhandled event handler.
         // Private event.
         _Check_return_ HRESULT OnRightTappedUnhandled(

@@ -30,6 +30,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully add/remove a ScrollViewer from the live tree.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(HandledReleasePreservesAnotherPointerPress)
+            TEST_METHOD_PROPERTY(L"Description", L"A handled second-contact release preserves an active ScrollViewer press.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(CanScrollToHorizontalOffset)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that ScrollToHorizontalOffset properly changes the view.")
         END_TEST_METHOD()
@@ -725,6 +730,5 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     };
 
 } } } } } }
-
 
 
