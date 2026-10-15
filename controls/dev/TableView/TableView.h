@@ -177,6 +177,7 @@ struct TableViewResourceCache
         winrt::Brush brush{ nullptr };
     };
     GridLineInfo gridLine{};
+    GridLineInfo headerSeparator{};
 
     // Cached horizontal scroll offset used to reposition frozen columns (not a theme resource,
     // so it is intentionally left out of the density/gridline groups above).
@@ -222,6 +223,7 @@ public:
     void OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeadersVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnHeaderGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnAlternatingRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnEmptyTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -247,6 +249,7 @@ public:
     // Resolved grid-line brush (theme/HC-aware, cached); rows call this via get_self, like the
     // density/font accessors above.
     winrt::Brush GetGridLineBrush();
+    winrt::Brush GetHeaderSeparatorBrush();
 
     // Header pointer-state brushes; looked up per state change, so not cached.
     winrt::Brush LookupHeaderStateBrush(std::wstring_view key);
