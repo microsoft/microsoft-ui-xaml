@@ -490,9 +490,10 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [default_interface]
-    runtimeclass LoopingSelectorItem
+    unsealed runtimeclass LoopingSelectorItem
         : Microsoft.UI.Xaml.Controls.ContentControl
     {
+        [method_name("CreateInstance")] LoopingSelectorItem();
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
