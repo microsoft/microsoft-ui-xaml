@@ -92,10 +92,6 @@ public:
         return std::exchange(m_gestureFocusState, winrt::FocusState::Unfocused);
     }
 
-    // Internal: see TableViewRow::IsStyleFromSelectorInternal.
-    bool IsStyleFromSelectorInternal() const { return m_styleFromSelector; }
-    void SetStyleFromSelectorInternal(bool value) { m_styleFromSelector = value; }
-
     // Internal: the projection entry this header was last prepared for. DataContext carries the
     // public TableViewGroupInfo once prepared, so a re-prepare that cannot read the projection
     // falls back to this instead.
@@ -130,5 +126,4 @@ private:
     // Guards against double-hooking when the same container is prepared many times after pool
     // recycling: one subscription per container lifetime, not per prepare.
     bool m_toggleHooked{ false };
-    bool m_styleFromSelector{ false };
 };

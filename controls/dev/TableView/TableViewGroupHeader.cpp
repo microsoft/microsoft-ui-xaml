@@ -86,7 +86,7 @@ void TableViewGroupHeader::OnApplyTemplate()
     m_templateRootContextRequestedRevoker.revoke();
     m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
 
-    // A group header's ContextFlyout (set through RowStyleSelector) stays closed while a cell is
+    // A group header's ContextFlyout (set through a TableViewGroupHeader Style) stays closed while a cell is
     // editing. Hooked on the template root because the framework shows the header's own
     // ContextFlyout before the header's handlers run.
     if (winrt::VisualTreeHelper::GetChildrenCount(*this) > 0)
