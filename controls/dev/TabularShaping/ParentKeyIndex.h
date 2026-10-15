@@ -20,6 +20,10 @@ struct ParentStructure
 
     // Source order. Keeps keyed rows alive so no KeyByItem address can be recycled.
     std::vector<winrt::IInspectable> Rows;
+    // Object (identity) keys, held for the structure's lifetime. Node keys persist as expansion
+    // intent and selection anchors until the next structure prunes them; holding the objects
+    // means no new key can take a still-referenced address in the meantime.
+    std::vector<winrt::IInspectable> KeyObjects;
     // ABI pointer -> nodeKey, for every row.
     std::unordered_map<void*, std::wstring> KeyByItem;
     // nodeKey -> position in Rows. Keys view KeyByItem's values (node-based, so they stay put).

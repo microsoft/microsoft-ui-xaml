@@ -43,17 +43,15 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Grid x:Name="DirectionStateRoot">
-                            <FontIcon x:Name="GlyphIcon"
-                                      Glyph="&#xE96D;"
-                                      FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                      FontSize="{ThemeResource SortIndicatorGlyphSize}"
-                                      IsTextScaleFactorEnabled="False"
-                                      Foreground="{TemplateBinding Foreground}"
-                                      HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"
-                                      AutomationProperties.AccessibilityView="Raw" />
-                        </Grid>
+                        <FontIcon x:Name="GlyphIcon"
+                                  Glyph="&#xE96D;"
+                                  FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                  FontSize="{ThemeResource SortIndicatorGlyphSize}"
+                                  IsTextScaleFactorEnabled="False"
+                                  Foreground="{TemplateBinding Foreground}"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  AutomationProperties.AccessibilityView="Raw" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

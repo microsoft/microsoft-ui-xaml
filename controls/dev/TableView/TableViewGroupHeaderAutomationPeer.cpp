@@ -205,11 +205,15 @@ int32_t TableViewGroupHeaderAutomationPeer::Row()
         {
             if (auto const repeater = winrt::get_self<TableView>(owner)->GetRowsRepeaterForPeer())
             {
-                return repeater.GetElementIndex(header);
+                if (const auto index = repeater.GetElementIndex(header); index >= 0)
+                {
+                    return index;
+                }
             }
         }
     }
-    return -1;
+    // A recycled header has no row; -1 would read as a real coordinate.
+    ThrowElementNotAvailable();
 }
 
 int32_t TableViewGroupHeaderAutomationPeer::Column()

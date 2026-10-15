@@ -4,6 +4,8 @@
 #pragma once
 
 #include <atomic>
+#include <bit>
+#include <cmath>
 #include <cstdint>
 #include <functional>
 #include <unordered_map>
@@ -39,6 +41,22 @@ namespace ShapingHelpers
     {
         virtual int32_t GroupChildCount() const = 0;
     };
+
+    // Value keys compare numerically equal floats as equal: -0 folds into +0 and every NaN into one
+    // canonical NaN, so the key is not the raw bit pattern.
+    inline uint32_t CanonicalFloatBits(float value) noexcept
+    {
+        if (std::isnan(value)) return 0x7FC00000u;
+        if (value == 0.0f) return 0u;
+        return std::bit_cast<uint32_t>(value);
+    }
+
+    inline uint64_t CanonicalDoubleBits(double value) noexcept
+    {
+        if (std::isnan(value)) return 0x7FF8000000000000ull;
+        if (value == 0.0) return 0ull;
+        return std::bit_cast<uint64_t>(value);
+    }
 
     struct ValueKey
     {
@@ -252,6 +270,11 @@ namespace ShapingHelpers
 
         bool HasComparer() const noexcept { return static_cast<bool>(m_comparer); }
 
+        // Drop rows that left the source so the ranks stop keeping them alive. Rank gaps left
+        // behind are harmless: keys only have to order. Both are no-ops inside a comparer callback.
+        void Forget(winrt::IInspectable const& item);
+        void RetainOnly(std::vector<winrt::IInspectable> const& liveRows);
+
     private:
         struct RankEntry
         {
@@ -262,7 +285,9 @@ namespace ShapingHelpers
         };
 
         static void* IdentityOf(winrt::IInspectable const& item);
+        // m_ranks stays ordered by rank; PlaceUnranked relies on it to binary-search.
         void AddRanked(winrt::IInspectable const& item, int32_t rank);
+        void InsertRanked(size_t position, winrt::IInspectable const& item, int32_t rank);
 
         // App code, so it never escapes: a throwing comparer degrades to "equal", which keeps the
         // merge stable rather than random. Also normalizes the result to -1 / 0 / 1.

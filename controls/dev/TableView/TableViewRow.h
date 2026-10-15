@@ -9,6 +9,7 @@
 #include "TableViewRow.g.h"
 #include "TableViewRow.properties.h"
 
+#include <optional>
 #include <vector>
 
 class TableViewRow :
@@ -108,6 +109,8 @@ public:
 
     // Releases control-owned cell tooltips (recycle-out).
     void ReleaseCellToolTips();
+    // Raises NameProperty changed on cell peers that already exist; creates none.
+    void RaiseCellAutomationNamesChangedInternal(winrt::UIElement const& skipCell = nullptr);
 
     void RefreshColumnVisibility(const winrt::TableViewColumn& column, winrt::Visibility visibility);
     double MeasuredWidthForColumn(const winrt::TableViewColumn& column) const;
@@ -117,7 +120,7 @@ public:
     bool BeginCellEdit(const winrt::TableViewColumn& column, const winrt::IInspectable& dataItem);
 
     // Restores the display visual. Safe to call when no cell edit is open.
-    void EndCellEdit(winrt::TableViewEditAction action);
+    void EndCellEdit(winrt::TableViewEditAction action, std::optional<HRESULT>* displayFailure = nullptr, bool* applicationFault = nullptr);
 
     winrt::FrameworkElement GetEditingElement() const { return m_editingElement.get(); }
 
@@ -198,6 +201,12 @@ private:
     void OnExpanderGutterPointerPressed(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
+    void OnExpanderGutterPointerReleased(
+        const winrt::IInspectable& sender,
+        const winrt::PointerRoutedEventArgs& args);
+    void OnExpanderGutterPointerCanceled(
+        const winrt::IInspectable& sender,
+        const winrt::PointerRoutedEventArgs& args);
     bool IsWithinExpanderGutter(const winrt::IInspectable& source) const;
     void UpdateExpanderGutterClip();
 
@@ -214,7 +223,14 @@ private:
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
     // Chevron hit target. Null if a re-template drops the part (indent still applies).
     tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
+    // Transparent cell wrapper fill, created on first use and shared by this row's cells.
+    winrt::Brush m_cellWrapperBackground{ nullptr };
     winrt::UIElement::PointerPressed_revoker m_gutterPointerPressedRevoker{};
+    winrt::UIElement::PointerReleased_revoker m_gutterPointerReleasedRevoker{};
+    winrt::UIElement::PointerExited_revoker m_gutterPointerExitedRevoker{};
+    winrt::UIElement::PointerCaptureLost_revoker m_gutterPointerCaptureLostRevoker{};
+    // Chevron toggles on release-inside, like TableViewGroupHeader.
+    bool m_isGutterPressed{ false };
     // Lead cell's last arranged slot in the cells host (negative width: none yet / none visible).
     double m_leadCellLeft{ 0.0 };
     double m_leadCellWidth{ -1.0 };
@@ -267,6 +283,8 @@ private:
     tracker_ref<winrt::IInspectable> m_editingAutomationItem{ this };
     winrt::hstring m_editingAutomationValue;
     winrt::hstring m_editingAutomationName;
+    // Row Name before the edit, so a commit that changes a derived value in other cells can publish it.
+    std::optional<winrt::hstring> m_editingRowAutomationName;
 
     // Begin-edit gesture state. Held per row rather than on the control: a double-click that starts
     // on one row and finishes on another is not a double-click, and per-row state makes that fall
