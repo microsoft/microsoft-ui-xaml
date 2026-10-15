@@ -10,7 +10,7 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace MUXControlsTestApp
 {
-    [TopLevelTestPage(Name = "Automatic Drag Tests")]
+    [TopLevelTestPage(Name = "Automatic Drag")]
     public sealed partial class AutomaticDragPage : TestPage
     {
         private int releaseCount;
