@@ -13,8 +13,15 @@
 #include "Utils.h"
 #include "InkToolbarMenuButtonAutomationPeer.g.h"
 
+#include <UIAutomationCore.h>
+#include <UIAutomationCoreApi.h>
+
+// Implements IToggleProvider itself (cloaked, so no API change) to replace ToggleButtonAutomationPeer::Toggle,
+// which clicks the button: on a stencil button that is on and has a dropdown, a click opens the dropdown
+// instead of turning the stencil off, so UIA Toggle would not change ToggleState.
 class InkToolbarMenuButtonAutomationPeer :
-    public ReferenceTracker<InkToolbarMenuButtonAutomationPeer, winrt::implementation::InkToolbarMenuButtonAutomationPeerT>
+    public ReferenceTracker<InkToolbarMenuButtonAutomationPeer, winrt::implementation::InkToolbarMenuButtonAutomationPeerT,
+        winrt::cloaked<winrt::Microsoft::UI::Xaml::Automation::Provider::IToggleProvider>>
 {
 public:
     InkToolbarMenuButtonAutomationPeer(winrt::InkToolbarMenuButton const& owner)
@@ -38,14 +45,18 @@ public:
     {
         if (patternInterface == winrt::PatternInterface::ExpandCollapse)
         {
-            if (auto owner = GetImpl(); owner && owner->HasL3())
+            if (auto owner = GetImpl(); owner && HasDropDown(*owner))
             {
                 return *this;
             }
             return nullptr;
         }
-        // Toggle comes from the ToggleButton base in both modes: it reports whether a measuring tool is
-        // showing, which is separate from whether the dropdown is open.
+        if (patternInterface == winrt::PatternInterface::Toggle)
+        {
+            // Toggle reports whether a measuring tool is showing, which is separate from whether the
+            // dropdown is open.
+            return *this;
+        }
         return __super::GetPatternCore(patternInterface);
     }
 
@@ -53,7 +64,7 @@ public:
     {
         // Like ToggleSplitButton: a toggle that also opens a dropdown is a split button, since a Button
         // must not expose both Toggle and ExpandCollapse.
-        if (auto owner = GetImpl(); owner && owner->HasL3())
+        if (auto owner = GetImpl(); owner && HasDropDown(*owner))
         {
             return winrt::AutomationControlType::SplitButton;
         }
@@ -104,9 +115,42 @@ public:
         }
     }
 
+    // IToggleProvider
+    winrt::Microsoft::UI::Xaml::Automation::ToggleState ToggleState()
+    {
+        if (auto toggle = Owner().try_as<winrt::Microsoft::UI::Xaml::Controls::Primitives::ToggleButton>())
+        {
+            if (auto checked = toggle.IsChecked())
+            {
+                return checked.Value() ? winrt::Microsoft::UI::Xaml::Automation::ToggleState::On
+                                       : winrt::Microsoft::UI::Xaml::Automation::ToggleState::Off;
+            }
+            return winrt::Microsoft::UI::Xaml::Automation::ToggleState::Indeterminate;
+        }
+        return winrt::Microsoft::UI::Xaml::Automation::ToggleState::Off;
+    }
+
+    void Toggle()
+    {
+        if (!IsEnabled())
+        {
+            throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
+        }
+        if (auto owner = GetImpl())
+        {
+            owner->ToggleFromAutomation(ToggleState() != winrt::Microsoft::UI::Xaml::Automation::ToggleState::On);
+        }
+    }
+
 private:
     winrt::hstring m_persistentName;
     winrt::hstring m_nameFormat;
+
+    // A dropdown that is open keeps its ExpandCollapse provider until it closes, even if its content went away.
+    static bool HasDropDown(InkToolbarMenuButton& owner)
+    {
+        return owner.HasL3() || owner.IsL3Open();
+    }
 
     com_ptr<InkToolbarMenuButton> GetImpl()
     {

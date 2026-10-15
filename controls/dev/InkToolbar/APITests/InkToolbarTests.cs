@@ -1133,6 +1133,114 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void InkToolbarToolButtonDropDownEmptiedWhileOpenTest()
+        {
+            // If the dropdown loses its last option while open, the peer keeps reporting it as an open dropdown
+            // until it closes, then reports a leaf node.
+            var toolbar = CreateLoadedInkToolbar();
+            InkToolbarEraserButton eraser = null;
+            AutomationPeer peer = null;
+            IExpandCollapseProvider expandCollapse = null;
+            Flyout flyout = null;
+            using var closed = new ManualResetEvent(false);
+            EventHandler<object> closedHandler = (s, e) => closed.Set();
+            RunOnUIThread.Execute(() =>
+            {
+                eraser = toolbar.GetToolButton(InkToolbarTool.Eraser) as InkToolbarEraserButton;
+                Verify.IsNotNull(eraser, "The eraser should be present after load.");
+                toolbar.ActiveTool = eraser;
+                toolbar.UpdateLayout();
+                flyout = FlyoutBase.GetAttachedFlyout(eraser) as Flyout;
+                Verify.IsNotNull(flyout, "The eraser should have a flyout.");
+                flyout.Closed += closedHandler;
+                peer = FrameworkElementAutomationPeer.CreatePeerForElement(eraser);
+                expandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+                Verify.IsNotNull(expandCollapse, "The eraser with Clear all should expose ExpandCollapse.");
+            });
+
+            try
+            {
+                RunOnUIThread.Execute(() => expandCollapse.Expand());
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    eraser.IsClearAllVisible = false;
+                    if (flyout.IsOpen)
+                    {
+                        Verify.IsNotNull(peer.GetPattern(PatternInterface.ExpandCollapse),
+                            "An open dropdown should keep ExpandCollapse after its last option is removed.");
+                        Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState,
+                            "An open dropdown should report Expanded after its last option is removed.");
+                        Verify.AreEqual(AutomationControlType.Button, peer.GetAutomationControlType(),
+                            "An open dropdown should keep the Button role.");
+                    }
+                });
+            }
+            finally
+            {
+                try
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        if (flyout.IsOpen)
+                        {
+                            expandCollapse.Collapse();
+                        }
+                        else
+                        {
+                            closed.Set();
+                        }
+                    });
+                    Verify.IsTrue(closed.WaitOne(DefaultWaitTimeInMS), "The eraser flyout should finish closing.");
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() => flyout.Closed -= closedHandler);
+                }
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(ExpandCollapseState.LeafNode, expandCollapse.ExpandCollapseState,
+                    "After closing, an eraser without options should report LeafNode.");
+                Verify.IsNull(peer.GetPattern(PatternInterface.ExpandCollapse),
+                    "After closing, an eraser without options should not expose ExpandCollapse.");
+                eraser.IsClearAllVisible = true;
+            });
+        }
+
+        [TestMethod]
+        public void InkToolbarStencilButtonAutomationToggleTest()
+        {
+            // With both stencils, a click on an active stencil button opens the dropdown (UWP pointer behavior).
+            // UIA Toggle must still change ToggleState: on, then off, without opening the dropdown.
+            var toolbar = CreateLoadedInkToolbar();
+            RunOnUIThread.Execute(() =>
+            {
+                var button = toolbar.GetMenuButton(InkToolbarMenuKind.Stencil) as InkToolbarStencilButton;
+                Verify.IsNotNull(button, "The stencil button should be present after load.");
+                button.ApplyTemplate();
+                button.UpdateLayout();
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(button);
+                var toggle = peer.GetPattern(PatternInterface.Toggle) as IToggleProvider;
+                var expandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+                Verify.IsNotNull(toggle, "The stencil button should expose Toggle.");
+                Verify.IsNotNull(expandCollapse, "With both stencils the stencil button should expose ExpandCollapse.");
+                Verify.AreEqual(ToggleState.Off, toggle.ToggleState, "No stencil should show at start.");
+
+                toggle.Toggle();
+                Verify.AreEqual(ToggleState.On, toggle.ToggleState, "Toggle should show a stencil.");
+                Verify.IsTrue(toolbar.IsStencilButtonChecked, "IsStencilButtonChecked should follow Toggle.");
+
+                toggle.Toggle();
+                Verify.AreEqual(ToggleState.Off, toggle.ToggleState, "Toggle on an active stencil button should turn it off.");
+                Verify.IsFalse(toolbar.IsStencilButtonChecked, "IsStencilButtonChecked should follow Toggle.");
+                Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState,
+                    "Toggle should not open the dropdown.");
+            });
+        }
+
+        [TestMethod]
         public void InkToolbarSingleStencilAutomationPeerTest()
         {
             RunOnUIThread.Execute(() =>

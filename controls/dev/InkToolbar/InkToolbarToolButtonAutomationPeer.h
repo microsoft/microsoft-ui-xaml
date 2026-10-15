@@ -51,7 +51,7 @@ public:
     {
         if (patternInterface == winrt::PatternInterface::ExpandCollapse)
         {
-            if (auto owner = GetImpl(); owner && owner->HasL3())
+            if (auto owner = GetImpl(); owner && HasDropDown(*owner))
             {
                 return *this;
             }
@@ -65,7 +65,7 @@ public:
         // A tool that opens a dropdown (built-in pens, eraser, custom tools/pens with configuration
         // content) uses the standard Button role so Narrator announces its expand/collapse state. A tool
         // without one keeps UWP's Custom role, since a Button needs Invoke, Toggle or ExpandCollapse.
-        if (auto owner = GetImpl(); owner && owner->HasL3())
+        if (auto owner = GetImpl(); owner && HasDropDown(*owner))
         {
             return winrt::AutomationControlType::Button;
         }
@@ -74,7 +74,7 @@ public:
 
     hstring GetLocalizedControlTypeCore()
     {
-        if (auto owner = GetImpl(); owner && owner->HasL3())
+        if (auto owner = GetImpl(); owner && HasDropDown(*owner))
         {
             return __super::GetLocalizedControlTypeCore();
         }
@@ -115,9 +115,16 @@ public:
     // IExpandCollapseProvider
     winrt::ExpandCollapseState ExpandCollapseState()
     {
-        if (auto owner = GetImpl(); owner && owner->HasL3())
+        if (auto owner = GetImpl())
         {
-            return owner->IsL3Open() ? winrt::ExpandCollapseState::Expanded : winrt::ExpandCollapseState::Collapsed;
+            if (owner->IsL3Open())
+            {
+                return winrt::ExpandCollapseState::Expanded;
+            }
+            if (owner->HasL3())
+            {
+                return winrt::ExpandCollapseState::Collapsed;
+            }
         }
         return winrt::ExpandCollapseState::LeafNode;
     }
@@ -139,6 +146,12 @@ public:
     }
 
 private:
+    // A dropdown that is open keeps its ExpandCollapse provider until it closes, even if its content went away.
+    static bool HasDropDown(InkToolbarToolButton& owner)
+    {
+        return owner.HasL3() || owner.IsL3Open();
+    }
+
     bool m_isBuiltInPen;
     winrt::hstring m_colorPaletteHint;
     winrt::hstring m_toolButtonControlType;

@@ -731,9 +731,15 @@ void InkToolbar::OnFlyoutClosed(winrt::IInspectable const& sender, winrt::IInspe
     auto button = found->m_toolButton
         ? found->m_toolButton.as<winrt::UIElement>()
         : found->m_menuButton.as<winrt::UIElement>();
+    // The dropdown may have lost its content while open (e.g. ConfigurationContent cleared); then the button
+    // no longer has one and reads as a leaf node.
+    const bool stillHasDropDown = found->m_toolButton
+        ? winrt::get_self<InkToolbarToolButton>(found->m_toolButton)->HasL3()
+        : winrt::get_self<InkToolbarMenuButton>(found->m_menuButton)->HasL3();
     m_openFlyouts.erase(found);
     SharedHelpers::RaiseAutomationPropertyChangedEvent(
-        button, winrt::ExpandCollapseState::Expanded, winrt::ExpandCollapseState::Collapsed);
+        button, winrt::ExpandCollapseState::Expanded,
+        stillHasDropDown ? winrt::ExpandCollapseState::Collapsed : winrt::ExpandCollapseState::LeafNode);
 }
 
 // When an L3 opens, move focus into the relevant control (pen color / eraser / stencil selection).
