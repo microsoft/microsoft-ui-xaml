@@ -305,6 +305,15 @@ void TableViewColumnHeaderAutomationPeer::Resize(double width, double)
         throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
     }
 
+    // UIA sizes are physical pixels, like BoundingRectangle; column widths are DIPs.
+    if (auto const xamlRoot = owner.XamlRoot())
+    {
+        if (const double scale = xamlRoot.RasterizationScale(); scale > 0.0)
+        {
+            width /= scale;
+        }
+    }
+
     if (!winrt::get_self<TableView>(owner)->TryResizeColumnFromAutomation(column, width))
     {
         throw winrt::hresult_error(UIA_E_INVALIDOPERATION);

@@ -1806,8 +1806,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     .GetPattern(PatternInterface.Transform) as ITransformProvider;
                 Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
 
-                // Height is ignored: a column only resizes along its width.
-                transform.Resize(200.0, 999.0);
+                // Height is ignored: a column only resizes along its width. UIA widths are physical pixels.
+                transform.Resize(200.0 * tableView.XamlRoot.RasterizationScale, 999.0);
                 Verify.AreEqual(GridUnitType.Pixel, column.Width.GridUnitType, "A resize writes a pixel width.");
                 Verify.AreEqual(200.0, column.Width.Value, "Resize must set the requested width.");
                 Content.UpdateLayout();
@@ -1821,12 +1821,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(200.0, column.ActualWidth, "ActualWidth must follow the width Resize wrote.");
                 Verify.AreEqual(150.0, tableView.Columns[1].Width.Value, "Resizing one column must not change another fixed column.");
 
-                transform.Resize(1000.0, 0.0);
+                transform.Resize(1000.0 * tableView.XamlRoot.RasterizationScale, 0.0);
                 Verify.AreEqual(260.0, column.Width.Value, "Resize must clamp to MaxWidth.");
                 Content.UpdateLayout();
 
-                transform.Resize(10.0, 0.0);
+                transform.Resize(10.0 * tableView.XamlRoot.RasterizationScale, 0.0);
                 Verify.AreEqual(80.0, column.Width.Value, "Resize must clamp to MinWidth.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Transform.Resize reads its width in physical pixels, the units UIA reports bounds in.")]
+        public void VerifyTransformResizeWidthIsPhysicalPixels()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+
+                // Not settable from a test; at 1.0 this still pins the contract the conversion relies on.
+                var scale = tableView.XamlRoot.RasterizationScale;
+                Log.Comment($"RasterizationScale = {scale}");
+
+                transform.Resize(180.0 * scale, 0.0);
+                Verify.IsTrue(Math.Abs(column.Width.Value - 180.0) < 0.01,
+                    $"Resize must convert physical pixels to DIPs; expected 180, got {column.Width.Value}.");
             });
         }
 
