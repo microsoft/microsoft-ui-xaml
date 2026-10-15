@@ -72,8 +72,9 @@ namespace
         return nullptr;
     }
 
-    // The open popup whose content holds `element`. Flyouts that are not reachable from the editor's
+    // The open popup that is or holds `element`. Flyouts that are not reachable from the editor's
     // properties (a DatePicker's picker, a Button.Flyout, an attached flyout) surface only here.
+    // While a flyout opens, focus can rest on its Popup before reaching the content.
     winrt::Popup FindOpenPopupContaining(winrt::IInspectable const& element, winrt::XamlRoot const& root)
     {
         if (!element || !root)
@@ -81,8 +82,13 @@ namespace
             return nullptr;
         }
 
+        auto const elementAsPopup = element.try_as<winrt::Popup>();
         for (auto const& popup : winrt::VisualTreeHelper::GetOpenPopupsForXamlRoot(root))
         {
+            if (popup == elementAsPopup)
+            {
+                return popup;
+            }
             if (auto const child = popup.Child().try_as<winrt::FrameworkElement>(); child && IsWithinElement(element, child))
             {
                 return popup;
