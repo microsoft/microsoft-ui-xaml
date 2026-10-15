@@ -726,7 +726,14 @@ _Check_return_ HRESULT CPasswordBox::OnInputScopeChanged(_In_ CInputScope *pInpu
             m_fNumericPinInputScope = FALSE;
             inputScopeList[0] = IS_PASSWORD;
         }
+#ifndef XAMLPROFILER_ENABLED
         TraceSendInputScopeToRichEditInfo(static_cast<UINT32>(inputScopeList[0])); // in reality, only first input scope in the list is used
+#else
+        if (XamlElementTracing::IsEnabled())
+        {
+            XamlElementTracing::SendInputScopeToRichEdit(this, static_cast<UINT32>(inputScopeList[0]));
+        }
+#endif
         IFC_RETURN(GetTextServices()->TxSendMessage(EM_SETCTFINPUTSCOPES, inputScopeCount, reinterpret_cast<LPARAM>(inputScopeList), nullptr));
         IFC_RETURN(UpdateIhmSkinToBitLocker(!!m_fNumericPinInputScope));
     }
@@ -744,12 +751,26 @@ _Check_return_ HRESULT CPasswordBox::UpdateIhmSkinToBitLocker(bool skinBitLocker
             if (skinBitLocker)
             {
                 IFC_RETURN(::TextInput_SetKeyboardSkin(::TextInput_KeyboardSkins::Bitlocker, inputHwnd));
+#ifndef XAMLPROFILER_ENABLED
                 TraceSetIhmKeyboardSkinInfo(static_cast<UINT32>(::TextInput_KeyboardSkins::Bitlocker));
+#else
+                if (XamlElementTracing::IsEnabled())
+                {
+                    XamlElementTracing::SetIhmKeyboardSkin(this, static_cast<UINT32>(::TextInput_KeyboardSkins::Bitlocker));
+                }
+#endif
             }
             else
             {
                 IFC_RETURN(::TextInput_SetKeyboardSkin(::TextInput_KeyboardSkins::Default, inputHwnd));
+#ifndef XAMLPROFILER_ENABLED
                 TraceSetIhmKeyboardSkinInfo(static_cast<UINT32>(::TextInput_KeyboardSkins::Default));
+#else
+                if (XamlElementTracing::IsEnabled())
+                {
+                    XamlElementTracing::SetIhmKeyboardSkin(this, static_cast<UINT32>(::TextInput_KeyboardSkins::Default));
+                }
+#endif
             }
         }
     }

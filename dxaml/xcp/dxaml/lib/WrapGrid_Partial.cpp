@@ -273,7 +273,11 @@ IFACEMETHODIMP WrapGrid::MeasureOverride(
     wf::Size availableSize,
     _Out_ wf::Size* returnValue)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::VirtualizationMeasureStart(GetHandle());
+#else
     TraceVirtualizationMeasureBegin();
+#endif
 
     HRESULT hr = S_OK;
     OrientedSize itemSize;
@@ -337,7 +341,11 @@ IFACEMETHODIMP WrapGrid::MeasureOverride(
     }
 
 Cleanup:
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::VirtualizationMeasureStop(GetHandle());
+#else
     TraceVirtualizationMeasureEnd();
+#endif
     RRETURN(hr);
 }
 

@@ -111,7 +111,11 @@ ListViewBase::SetupContainerContentChangingAfterPrepare(
     INT itemIndex,
     wf::Size measureSize)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::SetupCCCStart(container ? static_cast<DependencyObject*>(container)->GetHandle() : nullptr, itemIndex, GetHandle());
+#else
     TraceSetupCCCBegin(itemIndex);
+#endif
     ctl::ComPtr<xaml::IDependencyObject> itemAsDO;
 
     // this is being called by modern panels after the prepare has occurred.
@@ -317,7 +321,11 @@ ListViewBase::SetupContainerContentChangingAfterPrepare(
         IFC_RETURN(RegisterWorkFromArgs(argsConcrete.Get()));
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::SetupCCCStop(container ? static_cast<DependencyObject*>(container)->GetHandle() : nullptr, GetHandle());
+#else
     TraceSetupCCCEnd();
+#endif
     return S_OK;
 }
 
