@@ -823,6 +823,8 @@ private:
     bool TryGetItemAtRowIndex(int32_t rowIndex, winrt::IInspectable& item) const;
     winrt::TableViewRow FindRealizedRowForItem(winrt::IInspectable const& item);
     bool TryBeginEditVisual(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
+    // Beginning -> None without touching the row's visual or the item transaction.
+    void ResetPendingBeginEdit();
 
     void EndEditVisual(winrt::TableViewEditAction action, ActionTip* tip);
 

@@ -2478,6 +2478,43 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         return false;
     }
 
+    // A throw past here (the child swap, or tooltip retraction) must put the display element back and
+    // drop the half-captured edit state; otherwise the cell is left blank and the row half-editing.
+    auto const displayElement = TableViewCell::Child(cellWrapper);
+    auto unwindOnThrow = wil::scope_exit([this, cellWrapper, displayElement]() noexcept
+    {
+        try
+        {
+            if (auto const peer = TableViewCell::TryGetExistingPeer(cellWrapper)
+                .try_as<winrt::TableViewCellAutomationPeer>())
+            {
+                winrt::get_self<TableViewCellAutomationPeer>(peer)->ResetEditName();
+            }
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] Optional abandoned-cell name state could not be reset.");
+        }
+        try
+        {
+            TableViewCell::Child(cellWrapper, displayElement);
+            TableViewDetails::RefreshOwnedToolTip(cellWrapper);
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] A failed BeginCellEdit could not restore the display cell.");
+        }
+        m_editingAutomationPeer = nullptr;
+        m_editingAutomationItem.set(nullptr);
+        m_editingAutomationValue = {};
+        m_editingAutomationName = {};
+        m_editingRowAutomationName.reset();
+        m_editingColumn.set(nullptr);
+        m_editingCellWrapper.set(nullptr);
+        m_editingElement.set(nullptr);
+        m_editingDisplayElement.set(nullptr);
+    });
+
     // No local DataContext on the editing element, for the same reason the display cell sets none:
     // it inherits from the wrapper, which tracks the item across row recycle.
     // Observe only a provider a client already obtained. Creating peers here would turn every
@@ -2528,7 +2565,7 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
     {
         TVDiag::LogRetailF(L"[TableView] Optional stable cell-name capture failed.");
     }
-    m_editingDisplayElement.set(TableViewCell::Child(cellWrapper));
+    m_editingDisplayElement.set(displayElement);
     m_pendingEditingCell = winrt::make_weak(cellWrapper.as<winrt::UIElement>());
     auto pendingCellGuard = wil::scope_exit([this]() noexcept { m_pendingEditingCell = nullptr; });
     TableViewCell::Child(cellWrapper, editingElement);
@@ -2538,7 +2575,7 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
     TableViewDetails::ClearOwnedToolTip(cellWrapper);
     m_editingElement.set(editingElement);
 
-
+    unwindOnThrow.release();
     return true;
 }
 
