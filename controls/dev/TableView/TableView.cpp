@@ -2740,21 +2740,17 @@ void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t
     if (!hasRowInfo)
     {
         rowImpl->SetHierarchyStateInternal(0, false, false);
-    }
-    else
-    {
-        // Ask the source whether it is a tree: a leaf root (Level 1, not expandable) looks like a
-        // grouped data row but must still reserve chevron width.
-        const bool isHierarchicalRow =
-            m_tableViewSourceRowMetadata && m_tableViewSourceRowMetadata->IsHierarchicalSource();
-        rowImpl->SetHierarchyStateInternal(
-            isHierarchicalRow ? (std::max)(1, rowInfo.Level) : 0,
-            rowInfo.IsExpandable,
-            rowInfo.IsExpanded);
+        return;
     }
 
-    // After the hierarchy state, so the selector sees the row's current kind.
-    ApplyRowStyleSelector(row);
+    // Ask the source whether it is a tree: a leaf root (Level 1, not expandable) looks like a
+    // grouped data row but must still reserve chevron width.
+    const bool isHierarchicalRow =
+        m_tableViewSourceRowMetadata && m_tableViewSourceRowMetadata->IsHierarchicalSource();
+    rowImpl->SetHierarchyStateInternal(
+        isHierarchicalRow ? (std::max)(1, rowInfo.Level) : 0,
+        rowInfo.IsExpandable,
+        rowInfo.IsExpanded);
 }
 
 using TableViewDetails::GetColumnHeaderText;

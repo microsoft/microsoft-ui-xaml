@@ -226,7 +226,6 @@ public:
     void OnAlternatingRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnEmptyTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnGroupHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnRowStyleSelectorPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Density resources fall back to Standard defaults; rows and columns call these via get_self.
@@ -545,9 +544,6 @@ public:
     void RefreshRowSelectionState(winrt::TableViewRow const& row);
     void RefreshRowSelectionState(winrt::TableViewRow const& row, int32_t selectedIndex);
     void RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t index);
-    // Asks RowStyleSelector for the container's Style; see TableView_RowStyle.cpp.
-    void ApplyRowStyleSelector(winrt::TableViewRow const& row);
-    void ApplyGroupHeaderStyleSelector(winrt::TableViewGroupHeader const& header);
 
     // Restamps realized rows after a reshape; rows that kept their index are not re-prepared.
     void RefreshRealizedRowHierarchyState();
