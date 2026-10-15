@@ -2,21 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
-using System.Globalization;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
-using TableViewSampleApp.Converters;
+using TableViewSampleApp.Pages;
 
-namespace TableViewSampleApp.Pages;
+namespace TableViewSampleApp.Converters;
 
-// Vibrant cell tints for the Showcase page. Each tinted cell binds a Border background to a row
-// value through one of these converters, so a live update on the bound Person recolors only that
-// cell. They follow the shared converter rules: sealed partial, brushes built once and returned
-// by reference, and a transparent background under a Windows Contrast theme so the theme's own
-// text and background pair wins. ShowcasePage.Vibrant turns the tints off.
-
-/// <summary>Department pill background: the shared department palette, or transparent.</summary>
 public sealed partial class ShowcaseDepartmentTintConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language) =>
@@ -26,7 +18,6 @@ public sealed partial class ShowcaseDepartmentTintConverter : IValueConverter
         throw new NotImplementedException();
 }
 
-/// <summary>Department pill dot: the shared department palette, or transparent.</summary>
 public sealed partial class ShowcaseDepartmentDotConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language) =>
@@ -36,19 +27,15 @@ public sealed partial class ShowcaseDepartmentDotConverter : IValueConverter
         throw new NotImplementedException();
 }
 
-/// <summary>
-/// Stoplight tint for the Salary cell: green from 190,000, amber from 150,000, red below. The
-/// thresholds suit the Person salary band (110,000 to 230,000).
-/// </summary>
 public sealed partial class ShowcaseSalaryTintConverter : IValueConverter
 {
-    private static readonly SolidColorBrush s_high = new(ColorHelper.FromArgb(0x4D, 0x16, 0xA3, 0x4A));
-    private static readonly SolidColorBrush s_mid = new(ColorHelper.FromArgb(0x4D, 0xF5, 0x9E, 0x0B));
-    private static readonly SolidColorBrush s_low = new(ColorHelper.FromArgb(0x4D, 0xDC, 0x26, 0x26));
+    private static readonly SolidColorBrush s_high = ChipBrushes.CreateTint(0x16, 0xA3, 0x4A, alpha: 0x4D);
+    private static readonly SolidColorBrush s_mid = ChipBrushes.CreateTint(0xF5, 0x9E, 0x0B, alpha: 0x4D);
+    private static readonly SolidColorBrush s_low = ChipBrushes.CreateTint(0xDC, 0x26, 0x26, alpha: 0x4D);
 
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (!ShowcasePage.Vibrant || ChipBrushes.IsHighContrast || value is not double salary)
+        if (!ShowcasePage.Vibrant || value is not double salary)
         {
             return ChipBrushes.Transparent;
         }
@@ -92,25 +79,6 @@ public sealed partial class PersonAvatarColorNameConverter : IValueConverter
             "Design" or "HR" or "Marketing" => "rust avatar",
             _ => "blue avatar",
         };
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language) =>
-        throw new NotImplementedException();
-}
-
-public sealed partial class RowAutomationNameConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language)
-    {
-        var rowName = value?.ToString();
-        if (string.IsNullOrWhiteSpace(rowName))
-        {
-            rowName = "row";
-        }
-
-        return parameter is string format && !string.IsNullOrWhiteSpace(format)
-            ? string.Format(CultureInfo.CurrentCulture, format, rowName)
-            : rowName;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language) =>

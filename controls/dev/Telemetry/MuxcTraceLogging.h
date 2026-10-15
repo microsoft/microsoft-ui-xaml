@@ -34,6 +34,7 @@
 #define KEYWORD_INKTOOLBAR         0x0000000000004000
 #define KEYWORD_TITLEBAR           0x0000000000008000
 #define KEYWORD_INKCANVAS          0x0000000000010000
+#define KEYWORD_TABLEVIEW          0x0000000000020000
 
 // Common output formats
 #define TRACE_MSG_METH L"%s[0x%p]()\n"

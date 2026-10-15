@@ -12,6 +12,8 @@
 //
 // DbgLogF is #ifdef DBG-gated so retail builds drop both the call and any format-string cost.
 //
+// LogDebugger emits development setup hints only when a debugger is attached, in either build.
+//
 // LogRetailF is retail-visible. Use ONLY where the control silently swallows something an app
 // author would need to diagnose, and where the alternative is behaviour that is indistinguishable
 // at runtime from "nothing happened": a consumer event handler that threw, or an edit cancel that
@@ -31,6 +33,18 @@ namespace TVDiag
             OutputDebugStringW(buffer);
             OutputDebugStringW(L"\n");
         }
+    }
+
+    inline bool LogDebugger(_In_z_ wchar_t const* message) noexcept
+    {
+        if (!IsDebuggerPresent())
+        {
+            return false;
+        }
+
+        OutputDebugStringW(message);
+        OutputDebugStringW(L"\n");
+        return true;
     }
 
     // Intentionally NOT DBG-gated. See the header comment for when this is appropriate.

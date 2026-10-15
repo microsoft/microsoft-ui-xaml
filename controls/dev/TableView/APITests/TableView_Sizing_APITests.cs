@@ -347,21 +347,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies an Auto column widens when a wider row realizes and narrows again when that row is recycled.")]
+        [TestProperty("Description", "Verifies an Auto column widens when a wider row realizes and keeps that width when the row is recycled.")]
         public void VerifyAutoWidthGrowsAsWiderRowsRealize()
         {
-            // Auto is shrink-capable, not a grow-only high-water mark: the width tracks the widest
-            // *currently realized* cell in both directions. The alternative reading - that a column
-            // latches its maximum for the life of the data set - would mean one wide row anywhere in a
-            // long source permanently widens the column even while that row is nowhere near the
-            // viewport, stealing space from every other column for the rest of the session.
-            //
-            // The two readings are indistinguishable on the way up. Only scrolling the wide row back
-            // out separates them, so this test must travel in both directions.
-            //
-            // TableView.idl:122 still says Auto "grows within a data set", which reads as monotonic and
-            // contradicts this. The IDL wording is stale and should be corrected to match the decided
-            // behavior; see the test plan.
+            // Growth and shrink look alike on the way up, so the wide row must also scroll back out.
             TableView tableView = null;
             double initialWidth = 0.0;
             double grownWidth = 0.0;
@@ -410,22 +399,189 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsFalse(IsItemRealized(tableView, wideItem),
-                    "Precondition: the wide row must be recycled after scrolling back, or the shrink assertion would be vacuous.");
+                    "Precondition: the wide row must be recycled after scrolling back, or the grow-only assertion would be vacuous.");
 
                 var settledWidth = tableView.Columns[0].ActualWidth;
                 Log.Comment($"Auto width after the wide row was recycled: {settledWidth}.");
 
-                Verify.IsLessThan(settledWidth, grownWidth,
-                    "An Auto column must narrow again once its widest realized cell is recycled, rather than latching a grow-only maximum.");
+                Verify.AreEqual(grownWidth, settledWidth,
+                    "An Auto column must keep its grown width when its widest realized cell is recycled; Auto grows within a data set.");
+            });
+        }
 
-                // Returning to the original rows must not leave the column any wider than it started.
-                // This is deliberately an upper bound rather than an equality: Auto tracks the widest
-                // *currently realized* cell, and the realized set after scrolling back is not
-                // guaranteed to be identical to the initial one, so a slightly narrower result is
-                // correct behavior rather than a regression. What must not happen is the column
-                // staying wide - or drifting wider - once the wide row is gone.
-                Verify.IsLessThanOrEqual(settledWidth, initialWidth + c_widthTolerance,
-                    "Auto width must not remain wider than it started once the original rows are realized again.");
+        [TestMethod]
+        [TestProperty("Description", "Verifies showing column headers mid data set does not shrink a grown Auto column to the on-screen rows.")]
+        public void VerifyShowingHeadersKeepsGrownAutoWidth()
+        {
+            VerifyChangeKeepsGrownAutoWidth(
+                t => t.HeadersVisibility = TableViewHeadersVisibility.None,
+                t => t.HeadersVisibility = TableViewHeadersVisibility.Column,
+                "Showing a header narrower than the grown width must not reset the Auto column to the on-screen rows.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies hiding column headers mid data set does not shrink a grown Auto column to the on-screen rows.")]
+        public void VerifyHidingHeadersKeepsGrownAutoWidth()
+        {
+            VerifyChangeKeepsGrownAutoWidth(
+                t => t.HeadersVisibility = TableViewHeadersVisibility.Column,
+                t => t.HeadersVisibility = TableViewHeadersVisibility.None,
+                "Hiding the headers drops only the header's width; the width grown by a recycled row must be kept.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies changing a column's tooltip binding does not shrink its grown Auto width.")]
+        public void VerifyCellToolTipBindingChangeKeepsGrownAutoWidth()
+        {
+            VerifyChangeKeepsGrownAutoWidth(
+                t => { },
+                t => t.Columns[0].CellToolTipBinding = new Binding { Path = new PropertyPath("Name") },
+                "A tooltip does not change what the cell displays, so the grown Auto width must be kept.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies changing a column's editing template while no edit is open does not shrink its grown Auto width.")]
+        public void VerifyCellEditingTemplateChangeKeepsGrownAutoWidth()
+        {
+            VerifyChangeKeepsGrownAutoWidth(
+                t => { },
+                t => t.Columns[0].CellEditingTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""><TextBox /></DataTemplate>"),
+                "An editing template does not change what the cell displays, so the grown Auto width must be kept.");
+        }
+
+        private void VerifyChangeKeepsGrownAutoWidth(Action<TableView> setup, Action<TableView> change, string message)
+        {
+            TableView tableView = null;
+            double initialWidth = 0.0;
+            double grownWidth = 0.0;
+            Person wideItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var names = Enumerable.Range(0, 120).Select(i => $"Row {i}").ToArray();
+                names[c_wideRowIndex] = VeryLongText;
+
+                tableView = CreateAutoColumnTable("Name", names);
+                setup(tableView);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                wideItem = ((IReadOnlyList<Person>)tableView.ItemsSource)[c_wideRowIndex];
+                initialWidth = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width with only short rows realized: {initialWidth}.");
+            });
+
+            ScrollBodyToItem(tableView, c_wideRowIndex);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(IsItemRealized(tableView, wideItem),
+                    "Precondition: the wide row must be realized after scrolling to it.");
+
+                grownWidth = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width with the wide row realized: {grownWidth}.");
+
+                Verify.IsGreaterThan(grownWidth, initialWidth,
+                    "Precondition: the wide row must widen the Auto column, or the kept-width assertion would be vacuous.");
+            });
+
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 0.0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(IsItemRealized(tableView, wideItem),
+                    "Precondition: the wide row must be recycled before the change, or only on-screen rows are tested.");
+
+                change(tableView);
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var widthAfterChange = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width after the change: {widthAfterChange}.");
+
+                Verify.AreEqual(grownWidth, widthAfterChange, message);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a new ItemsSource starts a new data set, so an Auto column can narrow to the new content.")]
+        public void VerifyAutoWidthResetsWhenItemsSourceChanges()
+        {
+            TableView tableView = null;
+            double wideWidth = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutoColumnTable("Name", new[] { "Al", VeryLongText, "Cy" });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                wideWidth = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width with a long cell: {wideWidth}.");
+
+                tableView.ItemsSource = new[] { "Al", "Bo", "Cy" }
+                    .Select(name => new Person { Name = name, Role = "Role" })
+                    .ToList();
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var narrowWidth = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width after replacing ItemsSource with short cells: {narrowWidth}.");
+
+                Verify.IsLessThan(narrowWidth, wideWidth,
+                    "A new ItemsSource is a new data set: the grow-only Auto width must reset so the column fits the new content.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an Auto column follows its current header width, so turning off sorting gives back the sort indicator's space.")]
+        public void VerifyAutoWidthFollowsCurrentHeaderWidth()
+        {
+            TableView tableView = null;
+            double sortableWidth = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutoColumnTable("A column header wider than its cells", new[] { "Al", "Bo", "Cy" });
+                tableView.CanUserSortColumns = true;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                sortableWidth = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width with a sortable header: {sortableWidth}.");
+                tableView.CanUserSortColumns = false;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var width = tableView.Columns[0].ActualWidth;
+                Log.Comment($"Auto width after turning off sorting: {width}.");
+                Verify.IsLessThan(width, sortableWidth,
+                    "The header no longer reserves the sort indicator, so a header-driven Auto column must narrow.");
             });
         }
 
@@ -1091,6 +1247,145 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the last Star column, which has no later Star column to trade width with, shows no gripper.")]
+        public void VerifyPinnedStarColumnHidesGripper()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(1.0, GridUnitType.Star)),
+                    ("Second", new GridLength(1.0, GridUnitType.Star)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(Visibility.Visible, RequireGripper(tableView, 0).Visibility,
+                    "Column 0 can trade width with the Star column after it, so its gripper must show.");
+                Verify.AreEqual(Visibility.Collapsed, RequireGripper(tableView, 1).Visibility,
+                    "The last Star column cannot be dragged, so it must not offer a gripper.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a column whose MinWidth equals its MaxWidth shows no gripper.")]
+        public void VerifyFixedWidthColumnHidesGripper()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(120.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                column.MinWidth = 120.0;
+                column.MaxWidth = 120.0;
+
+                Verify.AreEqual(Visibility.Collapsed, RequireGripper(tableView, 0).Visibility,
+                    "A column whose MinWidth equals its MaxWidth can never change width, so it must not offer a gripper.");
+
+                column.MaxWidth = double.PositiveInfinity;
+
+                Verify.AreEqual(Visibility.Visible, RequireGripper(tableView, 0).Visibility,
+                    "Lifting MaxWidth must restore the gripper.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a fixed-width Star column does not count as a donor for the Star column before it.")]
+        public void VerifyFixedWidthStarDonorPinsPreviousColumn()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(1.0, GridUnitType.Star)),
+                    ("Second", new GridLength(1.0, GridUnitType.Star)));
+                tableView.Columns[1].MinWidth = 150.0;
+                tableView.Columns[1].MaxWidth = 150.0;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(Visibility.Collapsed, RequireGripper(tableView, 0).Visibility,
+                    "The only later Star column is fixed at 150 and cannot give width, so column 0 has no donor.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies gripper availability is re-evaluated when a column's Width changes.")]
+        public void VerifyGripperAvailabilityTracksWidthChange()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(1.0, GridUnitType.Star)),
+                    ("Second", new GridLength(1.0, GridUnitType.Star)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Columns[1].Width = new GridLength(100.0, GridUnitType.Pixel);
+
+                Verify.AreEqual(Visibility.Visible, RequireGripper(tableView, 1).Visibility,
+                    "A Pixel column owns its width, so its gripper must show.");
+                Verify.AreEqual(Visibility.Collapsed, RequireGripper(tableView, 0).Visibility,
+                    "Column 0 is now the last Star column and has nothing to trade width with.");
+
+                tableView.Columns[1].Width = new GridLength(1.0, GridUnitType.Star);
+
+                Verify.AreEqual(Visibility.Visible, RequireGripper(tableView, 0).Visibility,
+                    "Restoring the Star column must restore column 0's gripper.");
+                Verify.AreEqual(Visibility.Collapsed, RequireGripper(tableView, 1).Visibility,
+                    "Restoring the Star column must pin it again.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the last column keeps its gripper when no column is Star, because the table may grow.")]
+        public void VerifyLastColumnKeepsGripperWhenTableHasNoStar()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(Visibility.Visible, RequireGripper(tableView, 1).Visibility,
+                    "Without a Star column the extent grows, so the last column must stay resizable.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a keyboard step resizes by the increment, ignores off-axis keys, and mirrors under RTL.")]
         public void VerifyKeyboardStepAdjustsWidthAndMirrorsInRightToLeft()
         {
@@ -1519,6 +1814,73 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "The frozen header cell must stay aligned with its frozen body cells under RTL");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the header grid line, sort indicator and resize gripper share the trailing (visual left) edge under RTL.")]
+        public void VerifyHeaderTrailingAdornmentsShareEdgeInRightToLeft()
+        {
+            // Header cells are already mirrored by the framework, so a hand-swapped alignment would
+            // put adornments on the wrong edge. Measure in an explicit LeftToRight wrapper.
+            TableView tableView = null;
+            FrameworkElement wrapper = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSortingTestHelpers.CreateSortTable();
+                tableView.CanUserResizeColumns = true;
+                tableView.GridLinesVisibility = TableViewGridLinesVisibility.All;
+                tableView.FlowDirection = FlowDirection.RightToLeft;
+
+                var host = new Grid { FlowDirection = FlowDirection.LeftToRight };
+                host.Children.Add(tableView);
+                wrapper = host;
+
+                LoadContent(host);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var headerCell = GetHeaderCell(tableView, 0);
+                Verify.AreEqual(FlowDirection.RightToLeft, headerCell.FlowDirection,
+                    "Precondition: FlowDirection must reach the header cell.");
+                Verify.IsGreaterThan(
+                    GetVisualRight(headerCell, wrapper),
+                    GetVisualRight(GetHeaderCell(tableView, 1), wrapper),
+                    "Precondition: under RTL the first header must be arranged to the right of the second.");
+
+                var cellLeft = GetVisualLeft(headerCell, wrapper);
+                var cellRight = GetVisualRight(headerCell, wrapper);
+                Log.Comment($"Header cell spans {cellLeft}..{cellRight}.");
+
+                var gridLine = headerCell.FindVisualChildByName("TableViewHeaderGridLine");
+                Verify.IsNotNull(gridLine, "The header cell must contain its vertical grid line.");
+                Verify.AreEqual(Visibility.Visible, gridLine.Visibility,
+                    "Precondition: a non-terminal header grid line must be visible with GridLinesVisibility.All.");
+                var gridLineLeft = GetVisualLeft(gridLine, wrapper);
+
+                var gripper = RequireGripper(tableView, 0);
+                var gripperLeft = GetVisualLeft(gripper, wrapper);
+
+                var indicator = TableViewSortingTestHelpers.FindSortIndicator(tableView, 0);
+                Verify.IsNotNull(indicator, "A sorted, sortable column must build a sort indicator.");
+                var indicatorLeft = GetVisualLeft(indicator, wrapper);
+                var indicatorRight = GetVisualRight(indicator, wrapper);
+                Log.Comment($"Grid line left {gridLineLeft}, gripper left {gripperLeft}, indicator {indicatorLeft}..{indicatorRight}.");
+
+                VerifyNear(cellLeft, gridLineLeft, c_positionTolerance,
+                    "Under RTL the header grid line must sit on the cell's trailing (visual left) edge");
+                VerifyNear(cellLeft, gripperLeft, c_positionTolerance,
+                    "Under RTL the resize gripper must sit on the cell's trailing (visual left) edge");
+                Verify.IsLessThan(indicatorLeft - cellLeft, cellRight - indicatorRight,
+                    "Under RTL the sort indicator must sit toward the cell's trailing (visual left) edge, with the grid line and gripper.");
+            });
+        }
     }
 
     internal static class TableViewSizingTestHelpers
@@ -1535,10 +1897,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // Far enough down a 120-row source that it cannot be realized while the first rows are in view.
         internal const int c_wideRowIndex = 60;
-
-        // Auto widths are layout-rounded against the current RasterizationScale, so a width that
-        // returns to "the same" value can differ by a rounding step.
-        internal const double c_widthTolerance = 2.0;
 
         // Positions are compared after two independent arrange passes; the same rounding applies.
         internal const double c_positionTolerance = 2.0;
@@ -1557,6 +1915,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return Math.Max(
                 transform.TransformPoint(new Point(0.0, 0.0)).X,
                 transform.TransformPoint(new Point(extent, 0.0)).X);
+        }
+
+        internal static double GetVisualLeft(FrameworkElement element, FrameworkElement ancestor)
+        {
+            var transform = element.TransformToVisual(ancestor);
+
+            return Math.Min(
+                transform.TransformPoint(new Point(0.0, 0.0)).X,
+                transform.TransformPoint(new Point(element.ActualWidth, 0.0)).X);
         }
 
         // Scrolls far enough to realize the row at the given index, derived from a measured row height

@@ -31,7 +31,8 @@
                         VerticalAlignment="Center">
                     <muxc:FontIcon Glyph="&#xE80A;" FontSize="12"
                                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   AutomationProperties.AccessibilityView="Raw"/>
                 </Border>
                 <TextBlock x:Name="AppTitleTextBlock"
                            Text="WinUI TableView Samples"
@@ -50,7 +51,7 @@
                     ToolTipService.ToolTip="Toggle theme (Use system setting → Light → Dark)"
                     AutomationProperties.Name="Toggle theme"
                     Click="OnThemeToggleClick">
-                <muxc:FontIcon x:Name="ThemeToggleIcon" Glyph="&#xE793;" FontSize="14"/>
+                <muxc:FontIcon x:Name="ThemeToggleIcon" Glyph="&#xE793;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
             </Button>
         </Grid>
 
@@ -110,6 +111,7 @@
                 <muxc:NavigationViewItem Tag="RightToLeft" Content="Right-to-left layout"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE7AF;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="Virtualization" Content="Virtualization"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8C6;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="Performance" Content="Performance"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE916;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItemSeparator/>
             </muxc:NavigationView.MenuItems>
 
             <muxc:NavigationView.FooterMenuItems>

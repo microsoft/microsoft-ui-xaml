@@ -35,6 +35,7 @@ class ModelContextTests(unittest.TestCase):
         self.assertEqual(self.evidence, original)
         self.assertNotIn('"_snapshot"', formatted)
         self.assertNotIn('"_catalog"', formatted)
+        self.assertNotIn('"_team_parents"', formatted)
         self.assertIn("\u2603", formatted)
 
     def test_maximum_unicode_records_survive_the_complete_prompt_handoff(self):
@@ -87,7 +88,9 @@ class ModelContextTests(unittest.TestCase):
                 patch.dict(os.environ, {"GITHUB_REPOSITORY": REPO, "GITHUB_TOKEN": "test-token"}),
                 patch.object(sys, "argv", ["triage.py", "prepare", "event.json", str(destination)]),
                 patch.object(t, "GitHub", return_value=self.client),
-                patch.object(t, "read_json", side_effect=[event(), MAPPING]),
+                patch.object(t, "read_json", side_effect=[
+                    event(), MAPPING, self.evidence["_team_parents"],
+                ]),
                 patch("sys.stdout", new_callable=io.StringIO),
             ):
                 self.assertEqual(t.main(), 0)
@@ -266,6 +269,11 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertIn("name: Execute threat detection with AWF", detection)
         self.assertIn("threat-detection:\n    continue-on-error: false", self.source)
         self.assertIn('GH_AW_DETECTION_CONTINUE_ON_ERROR: "false"', detection)
+
+    def test_parent_inheritance_is_not_delegated_to_the_model(self):
+        self.assertNotIn("team-Core", self.source)
+        self.assertNotIn("team-parent-map.json", self.source)
+        self.assertIn("Never emit a team name.", self.source)
 
     def test_external_reporters_are_not_subject_to_a_role_gate(self):
         self.assertIn("  roles: all", self.source)

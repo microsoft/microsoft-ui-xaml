@@ -19,6 +19,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="using:TableViewSampleApp.Converters"
     xmlns:data="using:TableViewSampleApp.Data"
+    xmlns:helpers="using:TableViewSampleApp.Helpers"
     xmlns:models="using:TableViewSampleApp.Models"
     xmlns:templates="using:TableViewSampleApp.Templates">
 
@@ -31,10 +32,8 @@
     <converters:SalaryTextConverter x:Key="SalaryTextConverter"/>
     <converters:AvatarImageConverter x:Key="AvatarImageConverter"/>
 
-    <!-- Photo (ColWidthAvatar). PersonPicture shows the image when AvatarPath resolves and
-         initials from DisplayName otherwise, so the cell is never blank. The path goes through
-         AvatarImageConverter: never bind a raw string to an ImageSource. Decorative: the Name
-         column carries the row's identity. -->
+    <!-- Initials are bound explicitly: PersonPicture derives none from an Arabic or Hebrew DisplayName.
+         Never bind a raw string to an ImageSource: the path goes through AvatarImageConverter. -->
     <DataTemplate x:Key="AvatarTemplate" x:DataType="models:Person">
         <PersonPicture
             Width="28"
@@ -43,13 +42,13 @@
             VerticalAlignment="Center"
             IsTabStop="False"
             DisplayName="{x:Bind FullName, Mode=OneWay}"
+            Initials="{x:Bind Initials, Mode=OneWay}"
             ProfilePicture="{x:Bind AvatarPath, Mode=OneWay, Converter={StaticResource AvatarImageConverter}}"
             AutomationProperties.AccessibilityView="Raw"/>
     </DataTemplate>
 
-    <!-- Department chip (ColWidthChip). Read-only. Tint and dot come from the cached
-         ChipBrushes and drop to transparent / theme text under a Contrast theme. The label is
-         the visible and the accessible value, so colour never carries meaning alone. -->
+    <!-- The chip root's AutomationProperties.Name is what the cell reads first ("Department, Marketing"). -->
+    <!-- snippet CellTemplating -->
     <DataTemplate x:Key="DepartmentChipTemplate" x:DataType="models:Person">
         <Border
             CornerRadius="10"
@@ -60,6 +59,7 @@
             Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource DepartmentChipTintConverter}}"
             BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
             BorderThickness="1"
+            AutomationProperties.Name="{x:Bind Department, Mode=OneWay}"
             AutomationProperties.AccessibilityView="Raw">
             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                 <Ellipse
@@ -76,6 +76,7 @@
             </StackPanel>
         </Border>
     </DataTemplate>
+    <!-- /snippet -->
 
     <!-- Active / Inactive status chip (ColWidthStatus). Read-only counterpart of the
          Active CheckBox, for pages about read-only presentation. -->
@@ -89,6 +90,7 @@
             Background="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ActiveChipTintConverter}}"
             BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
             BorderThickness="1"
+            AutomationProperties.Name="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ActiveChipTextConverter}}"
             AutomationProperties.AccessibilityView="Raw">
             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                 <Ellipse
@@ -107,6 +109,7 @@
     </DataTemplate>
 
     <!-- Active CheckBox (ColWidthBoolean). Tab reaches it, Space toggles it. -->
+    <!-- snippet CellTemplating -->
     <DataTemplate x:Key="ActiveCheckBoxTemplate" x:DataType="models:Person">
         <CheckBox
             IsChecked="{x:Bind IsActive, Mode=TwoWay}"
@@ -116,6 +119,7 @@
             HorizontalAlignment="Left"
             AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Active for {0}'}"/>
     </DataTemplate>
+    <!-- /snippet -->
 
     <!-- Full DatePicker (ColWidthDatePicker, 310). The control's own MinWidth is about 296,
          so a narrower column clips the year. -->
@@ -156,14 +160,15 @@
             AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Shift start for {0}'}"/>
     </DataTemplate>
 
-    <!-- Compact 24 h TimePicker (ColWidthTimeCompact). MinWidth="0" lets it shrink to the
-         column; hh:mm stays fully visible at the token width. -->
+    <!-- MinWidth="0" plus PickerSizing.FitToWidth let it shrink; without FitToWidth the inner
+         FlyoutButton keeps its 242 px MinWidth and the minutes are clipped. -->
     <DataTemplate x:Key="ShiftTimeCompactTemplate" x:DataType="models:Person">
         <TimePicker
             Time="{x:Bind ShiftStart, Mode=TwoWay}"
             ClockIdentifier="24HourClock"
             MinuteIncrement="15"
             MinWidth="0"
+            helpers:PickerSizing.FitToWidth="True"
             Margin="6,2"
             VerticalAlignment="Center"
             HorizontalAlignment="Stretch"

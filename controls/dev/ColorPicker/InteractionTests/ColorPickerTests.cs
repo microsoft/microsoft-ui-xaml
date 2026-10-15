@@ -323,10 +323,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 action();
 
                 Log.Comment("Waiting for color to change...");
-                colorChangedEvent.WaitOne();
-                Log.Comment("Color changed.");
-
+                bool colorChanged = colorChangedEvent.WaitOne(TimeSpan.FromSeconds(15));
                 waitingForColorChanged = false;
+                Verify.IsTrue(colorChanged, "The color should change within 15 seconds.");
+                Log.Comment("Color changed.");
             }
 
             protected override void Dispose(bool isDisposing)
@@ -1241,6 +1241,222 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Left, ModifierKey.Control);
                 Verify.AreEqual("46, Dark red", thirdDimensionSlider.Value);
             }
+        }
+
+        // Scenario: with (Saturation, Value) then (Hue, Value) spectrums, use arrow keys on the third-dimension slider,
+        //     including at its bounds; then press Left and Right on the alpha slider at 0% opacity.
+        // Expected: the slider takes the hue / saturation channel (distinct automation names), arrow keys change that
+        //     channel by one step, and no slider wraps around at its minimum or maximum.
+        // Failure means: ColorPickerSlider::OnKeyDown (bounds, no wrap) or ColorPicker::SetThirdDimensionSliderChannel /
+        //     OnThirdDimensionSliderValueChanged regressed, so keyboard users get wrap-around or the wrong channel.
+        [TestMethod]
+        public void CanUseKeyboardOnThirdDimensionSliderForHueAndSaturation()
+        {
+            using (var setup = SetupColorPickerTest(TestOptions.EnableAlpha | TestOptions.DisableColorSpectrumLoadWait))
+            {
+                string valueSliderName = FindElement.ById(ThirdDimensionAutomationId).Name;
+                ComboBox componentsComboBox = new ComboBox(FindElement.ById("ColorSpectrumComponentsComboBox"));
+
+                Log.Comment("(Saturation, Value): the third-dimension slider controls hue.");
+                componentsComboBox.SelectItemById("ColorSpectrumComponentsSaturationValue");
+                Wait.ForIdle();
+
+                ColorPickerSlider slider = new ColorPickerSlider(FindElement.ById(ThirdDimensionAutomationId));
+                string hueSliderName = slider.Name;
+                Verify.IsFalse(string.IsNullOrEmpty(hueSliderName));
+                Verify.AreNotEqual(valueSliderName, hueSliderName);
+                VerifyColorIsSelected(255, 0, 0);
+                Verify.AreEqual(0, GetLeadingNumber(slider.Value), "Hue slider value: " + slider.Value);
+
+                slider.SetFocus();
+                Wait.ForIdle();
+                VerifyElementIsFocused(ThirdDimensionAutomationId);
+
+                PressKeyAndWaitForColorChange(Key.Right);
+                VerifyColorIsSelected(255, 4, 0);
+                Verify.AreEqual(1, GetLeadingNumber(slider.Value), "Hue slider value: " + slider.Value);
+
+                PressKeyAndWaitForColorChange(Key.Left);
+                VerifyColorIsSelected(255, 0, 0);
+
+                Log.Comment("Left at the minimum hue doesn't wrap around to the maximum hue.");
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                VerifyColorIsSelected(255, 0, 0);
+                Verify.AreEqual(0, GetLeadingNumber(slider.Value), "Hue slider value: " + slider.Value);
+
+                Log.Comment("(Hue, Value): the third-dimension slider controls saturation.");
+                componentsComboBox.SelectItemById("ColorSpectrumComponentsHueValue");
+                Wait.ForIdle();
+
+                slider = new ColorPickerSlider(FindElement.ById(ThirdDimensionAutomationId));
+                string saturationSliderName = slider.Name;
+                Verify.IsFalse(string.IsNullOrEmpty(saturationSliderName));
+                Verify.AreNotEqual(valueSliderName, saturationSliderName);
+                Verify.AreNotEqual(hueSliderName, saturationSliderName);
+                Verify.AreEqual(100, GetLeadingNumber(slider.Value), "Saturation slider value: " + slider.Value);
+
+                slider.SetFocus();
+                Wait.ForIdle();
+
+                PressKeyAndWaitForColorChange(Key.Left);
+                VerifyColorIsSelected(255, 3, 3);
+                Verify.AreEqual(99, GetLeadingNumber(slider.Value), "Saturation slider value: " + slider.Value);
+
+                PressKeyAndWaitForColorChange(Key.Right);
+                VerifyColorIsSelected(255, 0, 0);
+
+                Log.Comment("Right at the maximum saturation doesn't wrap around to the minimum saturation.");
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyColorIsSelected(255, 0, 0);
+                Verify.AreEqual(100, GetLeadingNumber(slider.Value), "Saturation slider value: " + slider.Value);
+
+                Log.Comment("Left on the alpha slider at 0% opacity stays at 0%.");
+                WriteInTextBox(AlphaTextBoxAutomationId, "0%");
+                VerifyColorIsSelected(255, 0, 0, 0);
+
+                FindElement.ById(AlphaSliderAutomationId).SetFocus();
+                Wait.ForIdle();
+                VerifyElementIsFocused(AlphaSliderAutomationId);
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                VerifyColorIsSelected(255, 0, 0, 0);
+
+                PressKeyAndWaitForColorChange(Key.Right);
+                VerifyColorIsSelected(255, 0, 0, 2);
+            }
+        }
+
+        // Scenario: drag past the right edge of a box (Hue, Saturation) spectrum, tap outside the circle of a ring
+        //     spectrum, then press arrow keys on the spectrum for each other ordering (and once in RTL).
+        // Expected: the drag clamps to the last column (hue >= 355); the tap picks the ring's outer edge (saturation >=
+        //     99); each arrow key changes only its mapped HSV channel by one step in the key's direction.
+        // Failure means: ColorSpectrum::UpdateColorFromPoint no longer clamps/projects outside points, or
+        //     ColorSpectrum::OnKeyDown maps a key to the wrong channel or direction (including the RTL inversion).
+        [TestMethod]
+        public void CanUseKeyboardAndPointerOnColorSpectrumForAllComponents()
+        {
+            using (var setup = SetupColorPickerTest())
+            {
+                SelectTextBoxes(ColorChannels.HSV);
+                ColorSpectrum colorSpectrum = new ColorSpectrum(FindElement.ById(ColorSpectrumAutomationId));
+
+                Log.Comment("Box (Hue, Saturation): dragging beyond the right edge selects the last column (maximum hue).");
+                setup.ExecuteAndWaitForColorChange(() => InputHelper.MouseDragDistance(colorSpectrum, colorSpectrum.BoundingRectangle.Width, Direction.East));
+                int[] hsv = GetHsvTextBoxValues();
+                Verify.IsGreaterThanOrEqual(hsv[0], 355, "Hue after dragging past the right edge: " + hsv[0]);
+                Verify.IsLessThanOrEqual(Math.Abs(hsv[1] - 50), 2, "Saturation should match the vertical center: " + hsv[1]);
+                Verify.AreEqual(100, hsv[2]);
+
+                Log.Comment("Ring (Hue, Saturation): a tap in the top-left corner, outside the circle, selects the ring's outer edge.");
+                WaitForColorSpectrumReload(() => new ComboBox(FindElement.ById("ColorSpectrumShapeComboBox")).SelectItemByName("Ring"));
+                TapOnColorSpectrumAndWaitForColorChange(0.02, 0.02);
+                hsv = GetHsvTextBoxValues();
+                Verify.IsLessThanOrEqual(Math.Abs(hsv[0] - 224), 2, "Hue at the top-left edge of the ring: " + hsv[0]);
+                Verify.IsGreaterThanOrEqual(hsv[1], 99, "The ring's outer edge has the maximum saturation: " + hsv[1]);
+                Verify.AreEqual(100, hsv[2]);
+
+                Log.Comment("Start the keyboard checks from red.");
+                SetColorSpectrumColor(255, 0, 0);
+                VerifyHsvTextBoxes(0, 100, 100);
+
+                // For each ordering: the key for the horizontal axis, then Down for the vertical axis, and the expected change.
+                ComboBox componentsComboBox = new ComboBox(FindElement.ById("ColorSpectrumComponentsComboBox"));
+                var steps = new[]
+                {
+                    new { Components = "ColorSpectrumComponentsSaturationValue", HorizontalKey = Key.Left, HorizontalDelta = new[] { 0, -1, 0 }, DownDelta = new[] { 0, 0, -1 } },
+                    new { Components = "ColorSpectrumComponentsSaturationHue", HorizontalKey = Key.Right, HorizontalDelta = new[] { 0, -1, 0 }, DownDelta = new[] { 1, 0, 0 } },
+                    new { Components = "ColorSpectrumComponentsHueValue", HorizontalKey = Key.Right, HorizontalDelta = new[] { 1, 0, 0 }, DownDelta = new[] { 0, 0, -1 } },
+                    new { Components = "ColorSpectrumComponentsValueHue", HorizontalKey = Key.Right, HorizontalDelta = new[] { 0, 0, -1 }, DownDelta = new[] { 1, 0, 0 } },
+                    new { Components = "ColorSpectrumComponentsValueSaturation", HorizontalKey = Key.Right, HorizontalDelta = new[] { 0, 0, -1 }, DownDelta = new[] { 0, -1, 0 } },
+                };
+
+                int[] expected = { 0, 100, 100 };
+                foreach (var step in steps)
+                {
+                    Log.Comment("Components {0}.", step.Components);
+                    componentsComboBox.SelectItemById(step.Components);
+                    Wait.ForIdle();
+                    VerifyHsvTextBoxes(expected[0], expected[1], expected[2]);
+
+                    FindElement.ById(ColorSpectrumAutomationId).SetFocus();
+                    Wait.ForIdle();
+
+                    PressKeyAndWaitForColorChange(step.HorizontalKey);
+                    for (int i = 0; i < 3; i++) { expected[i] += step.HorizontalDelta[i]; }
+                    VerifyHsvTextBoxes(expected[0], expected[1], expected[2]);
+
+                    PressKeyAndWaitForColorChange(Key.Down);
+                    for (int i = 0; i < 3; i++) { expected[i] += step.DownDelta[i]; }
+                    VerifyHsvTextBoxes(expected[0], expected[1], expected[2]);
+                }
+
+                Log.Comment("(Saturation, Value) in RTL: the flipped image and the reversed saturation axis cancel out, so Right lowers saturation.");
+                componentsComboBox.SelectItemById("ColorSpectrumComponentsSaturationValue");
+                Wait.ForIdle();
+                SetIsRTL(true);
+                FindElement.ById(ColorSpectrumAutomationId).SetFocus();
+                Wait.ForIdle();
+                PressKeyAndWaitForColorChange(Key.Right);
+                expected[1] -= 1;
+                VerifyHsvTextBoxes(expected[0], expected[1], expected[2]);
+                SetIsRTL(false);
+            }
+        }
+
+        private static int GetLeadingNumber(string text)
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(text ?? string.Empty, @"\d+");
+            Verify.IsTrue(match.Success, "Expected a number in '" + text + "'.");
+            return int.Parse(match.Value);
+        }
+
+        private int[] GetHsvTextBoxValues()
+        {
+            return new[]
+            {
+                int.Parse(new Edit(FindElement.ById(HueTextBoxAutomationId)).Value),
+                int.Parse(new Edit(FindElement.ById(SaturationTextBoxAutomationId)).Value),
+                int.Parse(new Edit(FindElement.ById(ValueTextBoxAutomationId)).Value),
+            };
+        }
+
+        private void VerifyHsvTextBoxes(int expectedHue, int expectedSaturation, int expectedValue)
+        {
+            int[] actual = GetHsvTextBoxValues();
+            Log.Comment("Expecting HSV = ({0}, {1}, {2}). Actual HSV = ({3}, {4}, {5}).", expectedHue, expectedSaturation, expectedValue, actual[0], actual[1], actual[2]);
+            Verify.AreEqual(expectedHue, actual[0]);
+            Verify.AreEqual(expectedSaturation, actual[1]);
+            Verify.AreEqual(expectedValue, actual[2]);
+        }
+
+        // The test page checks ColorSpectrumLoadedCheckBox whenever SpectrumRectangle.Fill changes. After a Shape or
+        // Components change, ColorSpectrum sets a new Fill only once the ThreadPool rebuild has completed and m_hsvValues
+        // (the map used for pointer hit-testing) has been replaced, so an Off->On transition marks the end of the rebuild.
+        private void WaitForColorSpectrumReload(Action action)
+        {
+            CheckBox cb = new CheckBox(FindElement.ById("ColorSpectrumLoadedCheckBox"));
+
+            // Clear the checkbox before arming the waiter, so that our own On->Off toggle cannot satisfy it.
+            if (cb.ToggleState != ToggleState.Off)
+            {
+                cb.Toggle();
+                Wait.ForIdle();
+            }
+
+            Verify.AreEqual(ToggleState.Off, cb.ToggleState, "ColorSpectrumLoadedCheckBox should be cleared before the reload.");
+
+            using (var waiter = cb.GetToggledWaiter())
+            {
+                waiter.AddFilter(_ => cb.ToggleState == ToggleState.On);
+                action();
+                Log.Comment("Waiting for the color spectrum image to be reloaded...");
+                waiter.Wait();
+            }
+
+            Wait.ForIdle();
         }
 
         // In the OS repo, we run tests against rs_onecore_dep_uxp_dev, and localization resources are not created for OS builds from that repo.
