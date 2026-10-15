@@ -1368,6 +1368,9 @@ private:
 
     double GetHeaderMeasuredWidthForColumn(const winrt::TableViewColumn& column) const;
     void ResolveColumnWidths();
+    // Only Auto columns read realized-row widths, so row prepare/clear re-resolves only when one exists.
+    bool HasVisibleAutoColumn();
+    void InvalidateMeasureForRowRealizationChange();
     void ResetColumnDesiredWidths();
     // Limits a resize gesture to the width the other columns can absorb. Unbounded when nothing
     // constrains it.
