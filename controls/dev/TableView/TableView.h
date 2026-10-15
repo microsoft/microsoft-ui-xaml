@@ -277,6 +277,11 @@ public:
 
     // Idempotent; safe from any pointer end-event, the gripper's Unloaded, or TableView's own.
     void CancelColumnResizeDrag();
+
+    // UIA Transform support for the column header peer. Driven through the column's gripper so the
+    // bounds, Star handling and announcement match a pointer or Alt+Arrow resize exactly.
+    bool CanResizeColumnFromAutomation(const winrt::TableViewColumn& column);
+    bool TryResizeColumnFromAutomation(const winrt::TableViewColumn& column, double width);
     void AnnounceColumnWidth(const winrt::IInspectable& announcer, const winrt::TableViewColumn& column);
 
     // Coalesces bursts of column-driven header rebuilds (bulk Columns edits, per-column Header /
@@ -1371,6 +1376,7 @@ private:
     // Collapses the gripper of every pinned column; it stays in the tree for keyboard resize lookup.
     void RefreshResizeGripperAvailability();
     void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, std::vector<ColumnResizeFrozenColumn>& frozen);
+    winrt::ResizeGripper GetAvailableResizeGripper(const winrt::TableViewColumn& column);
     static void RestoreColumnWidth(const winrt::TableViewColumn& column, const winrt::IInspectable& localWidth);
     // Re-invalidate the header + realized row cells panels so they re-measure/arrange after a resolve.
     void InvalidateCellPanels();

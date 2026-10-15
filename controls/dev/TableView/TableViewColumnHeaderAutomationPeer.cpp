@@ -13,6 +13,7 @@
 #include "Utils.h"
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
+#include <cmath>
 #include <cwctype>
 #include <limits>
 #include <string_view>
@@ -202,6 +203,11 @@ winrt::IInspectable TableViewColumnHeaderAutomationPeer::GetPatternCore(winrt::P
         return *this;
     }
 
+    if (patternInterface == winrt::PatternInterface::Transform && IsResizableColumn())
+    {
+        return *this;
+    }
+
     return __super::GetPatternCore(patternInterface);
 }
 
@@ -248,6 +254,66 @@ void TableViewColumnHeaderAutomationPeer::Invoke()
     }
 
     throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
+}
+
+bool TableViewColumnHeaderAutomationPeer::CanMove()
+{
+    return false;
+}
+
+bool TableViewColumnHeaderAutomationPeer::CanResize()
+{
+    if (!IsResizableColumn())
+    {
+        return false;
+    }
+
+    auto const owner = m_table.get();
+    return owner && winrt::get_self<TableView>(owner)->CanResizeColumnFromAutomation(m_column.get());
+}
+
+bool TableViewColumnHeaderAutomationPeer::CanRotate()
+{
+    return false;
+}
+
+void TableViewColumnHeaderAutomationPeer::Move(double, double)
+{
+    throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+}
+
+void TableViewColumnHeaderAutomationPeer::Resize(double width, double)
+{
+    if (!IsEnabled())
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
+    }
+    if (!std::isfinite(width) || width < 0.0)
+    {
+        throw winrt::hresult_invalid_argument();
+    }
+    if (!CanResize())
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
+
+    // Height is ignored: a column header only resizes along the column axis.
+    auto const column = m_column.get();
+    auto const owner = m_table.get();
+    if (!column || !owner)
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
+    }
+
+    if (!winrt::get_self<TableView>(owner)->TryResizeColumnFromAutomation(column, width))
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
+}
+
+void TableViewColumnHeaderAutomationPeer::Rotate(double)
+{
+    throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
 }
 
 winrt::Windows::Foundation::Collections::IVector<winrt::AutomationPeer> TableViewColumnHeaderAutomationPeer::GetChildrenCore()
@@ -323,6 +389,19 @@ bool TableViewColumnHeaderAutomationPeer::IsSortableColumn()
 
     auto const owner = m_table.get();
     return owner && owner.IsLoaded() && owner.CanUserSortColumns();
+}
+
+// The static opt-in only; whether the gripper is usable right now is CanResize's job.
+bool TableViewColumnHeaderAutomationPeer::IsResizableColumn()
+{
+    auto const column = m_column.get();
+    if (!column || !column.CanResize() || !IsVisibleColumn(column))
+    {
+        return false;
+    }
+
+    auto const owner = m_table.get();
+    return owner && owner.CanUserResizeColumns();
 }
 
 int32_t TableViewColumnHeaderAutomationPeer::GetPositionInSetCore()

@@ -913,7 +913,7 @@ TableView provides UI Automation peers for grid/table accessibility, cell value 
 |---|---|---|
 | `TableViewAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionProvider`, `IGridProvider`, `ITableProvider`, `IItemContainerProvider` |
 | `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider` |
-| `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IInvokeProvider` (sort) |
+| `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IInvokeProvider` (sort), `ITransformProvider` (resize; implementation-only, not in the IDL) |
 | `TableViewGroupHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IExpandCollapseProvider`, `IGridItemProvider` |
 | `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` |
 
@@ -943,6 +943,7 @@ Each realized column-header visual owns its `HeaderItem` peer. `ITableProvider.G
 Header `IsEnabled` reflects the owning table's effective state and disabled control ancestors between the header visual and the table (including template controls); Invoke rejects a disabled header without changing sort state. Cell header lookup resolves the realized visual independently of the table's peer type, so application-supplied table peers preserve canonical header identity. A cell with no reachable header (including a collapsed or removed column) returns an empty header array.
 
 The preview `TableViewCellAutomationPeer(cell, row, column, columnIndex)` constructor validates its arguments and throws `E_INVALIDARG` (`ArgumentException` in .NET) when `cell`, `row` or `column` is null, when `columnIndex` is negative, or — when `row` belongs to a `TableView` — when `column` belongs to a different table or `columnIndex` is not less than that table's `Columns.Count`. `columnIndex` is only a fallback: `IGridItemProvider.Column` is computed live from the row's visible cells, and the constructor argument is reported only when the row has no cell host. Peers the control creates for its own cells do not go through this check.
+A column header exposes the Transform pattern (required by UIA for a resizable `HeaderItem`) while `CanUserResizeColumns` and the column's `CanResize` are both true. `CanResize` follows the same rule as the resize gripper's visibility, so it reports `false` for a pinned column (`MinWidth` equal to `MaxWidth`, or a Star column with no later resizable Star column to trade width with) and raises a property-changed event when that changes. `Resize(width, height)` runs the same resize path as a pointer drag or Alt+Arrow, so it honors `MinWidth` / `MaxWidth` and the viewport bounds and announces the new width; `height` is ignored. `CanMove` and `CanRotate` are `false`, and `Move` / `Rotate` fail with `UIA_E_INVALIDOPERATION`.
 
 `ScrollItem` is not implemented explicitly — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a row or cell into view after reaching it through `IGridProvider.GetItem`.
 

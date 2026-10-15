@@ -632,7 +632,26 @@ void TableView::RefreshResizeGripperAvailability()
             continue;
         }
 
-        gripper.Visibility(IsColumnResizePinned(column) ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
+        auto const visibility = IsColumnResizePinned(column) ? winrt::Visibility::Collapsed : winrt::Visibility::Visible;
+        if (gripper.Visibility() == visibility)
+        {
+            continue;
+        }
+        gripper.Visibility(visibility);
+
+        // The realized header owns the canonical peer. FromElement does not create one, so this never
+        // builds automation peers from inside layout.
+        if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+        {
+            if (auto const headerPeer = winrt::FrameworkElementAutomationPeer::FromElement(headerCell))
+            {
+                const bool canResize = CanResizeColumnFromAutomation(column);
+                headerPeer.RaisePropertyChangedEvent(
+                    winrt::TransformPatternIdentifiers::CanResizeProperty(),
+                    winrt::box_value(!canResize),
+                    winrt::box_value(canResize));
+            }
+        }
     }
 }
 
