@@ -10,8 +10,18 @@
             <CheckBox x:Name="CancelDrag" Content="Cancel drag start" IsChecked="True"/>
         </StackPanel>
         <Border x:Name="DragSource" CanDrag="True" Background="LightBlue" Height="80">
-            <TextBlock x:Name="DragHandle" Text="Drag this plain Border"
-                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="240"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="DragHandle" Text="Drag this plain Border"
+                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                <Border x:Name="TouchChild" Grid.Column="1" Background="LightPink">
+                    <TextBlock x:Name="TouchHandle" Text="Child handles touch"
+                               HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                </Border>
+            </Grid>
         </Border>
         <Border x:Name="DropTarget" AllowDrop="True" Background="LightGreen" Height="120"
                 DragOver="DropTarget_DragOver" Drop="DropTarget_Drop">
@@ -28,11 +38,17 @@
                 <TextBlock x:Name="DragCount" Text="0"/>
                 <TextBlock x:Name="DropCount" Text="0"/>
                 <TextBlock x:Name="CopyCompletionCount" Text="0"/>
+                <TextBlock x:Name="MousePointerId" Text="0"/>
+                <TextBlock x:Name="MouseCaptureCount" Text="0"/>
+                <TextBlock x:Name="MouseCaptureLostCount" Text="0"/>
             </StackPanel>
             <StackPanel>
                 <TextBlock x:Name="DroppedText" Text="None"/>
                 <TextBlock x:Name="CompletionResult" Text="None"/>
                 <TextBlock x:Name="CaptureCount" Text="0"/>
+                <TextBlock x:Name="ChildTouchPointerId" Text="0"/>
+                <TextBlock x:Name="ChildTouchPressCount" Text="0"/>
+                <TextBlock x:Name="ChildTouchReleaseCount" Text="0"/>
             </StackPanel>
         </StackPanel>
         <Button x:Name="Snapshot" Content="Read capture state" Click="Snapshot_Click"/>

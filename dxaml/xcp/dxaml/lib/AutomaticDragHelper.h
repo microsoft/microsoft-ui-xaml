@@ -75,6 +75,9 @@ namespace DirectUI
 
         bool m_shouldAddInputHandlers = false;
 
+        // Valid while a mouse/pen press is being tracked.
+        UINT m_mouseDragPointerId = 0;
+
         ctl::ComPtr<ixp::IPointerPoint> m_spPointerPoint;
         ctl::ComPtr<xaml_input::IPointer> m_spPointer;
 

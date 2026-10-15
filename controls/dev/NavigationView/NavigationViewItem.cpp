@@ -1121,8 +1121,13 @@ void NavigationViewItem::OnPresenterPointerReleased(const winrt::IInspectable&, 
     {
         m_isPressed = false;
 
-        if (!IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()) &&
-            IsInNavigationViewOwnedRepeater())
+        const bool isPointerInBounds = !IsOutOfControlBounds(args.GetCurrentPoint(*this).Position());
+        if (m_isPointerCapturedByItem)
+        {
+            m_isPointerOver = isPointerInBounds;
+        }
+
+        if (isPointerInBounds && IsInNavigationViewOwnedRepeater())
         {
             if (auto nvImpl = winrt::get_self<NavigationView>(GetNavigationView()))
             {

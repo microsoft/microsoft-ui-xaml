@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -133,6 +134,11 @@ namespace MUXControlsTestApp
                 .Where(group => group.CurrentState != null && group.CurrentState.Name.Contains("Pressed"))
                 .Select(group => group.CurrentState.Name);
             PressedStates.Text = string.Join(",", pressedStates.DefaultIfEmpty("None"));
+            ItemPointerOver.Text = Descendants(DragItem).Prepend(DragItem).OfType<FrameworkElement>()
+                .SelectMany(element => VisualStateManager.GetVisualStateGroups(element))
+                .Any(group => group.CurrentState != null && group.CurrentState.Name.Contains("PointerOver")).ToString();
+            ItemWidth.Text = DragItem.ActualWidth.ToString(CultureInfo.InvariantCulture);
+            ItemRasterizationScale.Text = XamlRoot.RasterizationScale.ToString(CultureInfo.InvariantCulture);
         }
 
         private static IEnumerable<DependencyObject> Descendants(DependencyObject root)

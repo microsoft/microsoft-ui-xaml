@@ -3,6 +3,7 @@
 using Common;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
@@ -204,6 +205,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     Verify.AreEqual("4", new TextBlock(FindElement.ById("InvocationCount")).GetText());
                     VerifyNavigationViewDragStateReset();
                 }
+            }
+        }
+
+        [TestMethod]
+        public void NavigationViewItemPenSubthresholdExitClearsHover()
+        {
+            using var inputController = InputController.Activate(PointerInputType.Pen);
+            foreach (bool topMode in new[] { false, true })
+            {
+                using var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" });
+                if (topMode)
+                {
+                    new CheckBox(FindElement.ById("TopMode")).Check();
+                    Wait.ForIdle();
+                }
+
+                new Button(FindElement.ById("Snapshot")).Invoke();
+                Wait.ForIdle();
+                double scale = double.Parse(new TextBlock(FindElement.ById("ItemRasterizationScale")).GetText(), CultureInfo.InvariantCulture);
+                double width = double.Parse(new TextBlock(FindElement.ById("ItemWidth")).GetText(), CultureInfo.InvariantCulture);
+                var bounds = FindElement.ById("DragItem").BoundingRectangle;
+                double right = bounds.Left + bounds.Width / 2 + width * scale / 2;
+                var start = new System.Drawing.Point((int)(right - 5 * scale), (int)(bounds.Top + bounds.Height / 2));
+                var end = new System.Drawing.Point((int)(right + scale), start.Y);
+                PointerInput.Move(start);
+                Wait.ForIdle();
+                new Button(FindElement.ById("Snapshot")).Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("True", new TextBlock(FindElement.ById("ItemPointerOver")).GetText());
+
+                PointerInput.Press(PointerButtons.Primary);
+                try
+                {
+                    Wait.ForIdle();
+                    Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                    PointerInput.Move(end);
+                    Wait.ForIdle();
+                    Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
+                }
+                finally
+                {
+                    PointerInput.Release(PointerButtons.Primary);
+                }
+
+                Wait.ForIdle();
+                VerifyNavigationViewDragStateReset();
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                Verify.AreEqual("False", new TextBlock(FindElement.ById("ItemPointerOver")).GetText());
             }
         }
 

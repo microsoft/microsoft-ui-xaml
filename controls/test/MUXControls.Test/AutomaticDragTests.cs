@@ -83,6 +83,64 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void HandledChildTouchReleasePreservesMouseDrag()
+        {
+            using var mouseController = InputController.Activate(PointerInputType.Mouse);
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            var mouse = PointerInput.Current;
+            var source = FindElement.ById("DragHandle");
+            var target = FindElement.ById("DropHandle");
+            mouse.Move(source.GetClickablePoint());
+            mouse.Press(PointerButtons.Primary);
+            try
+            {
+                Wait.ForIdle();
+                new Button(FindElement.ById("Snapshot")).Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("1", ReadText("MouseCaptureCount"));
+                string mousePointerId = ReadText("MousePointerId");
+
+                using (InputController.Activate(PointerInputType.SingleTouch))
+                {
+                    var touch = PointerInput.Current;
+                    touch.Move(FindElement.ById("TouchHandle").GetClickablePoint());
+                    touch.Press(PointerButtons.Primary);
+                    try
+                    {
+                        Wait.ForIdle();
+                        Verify.AreEqual("1", ReadText("ChildTouchPressCount"));
+                        Verify.AreNotEqual(mousePointerId, ReadText("ChildTouchPointerId"));
+                    }
+                    finally
+                    {
+                        touch.Release(PointerButtons.Primary);
+                    }
+                    Wait.ForIdle();
+                }
+
+                new Button(FindElement.ById("Snapshot")).Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("1", ReadText("ChildTouchReleaseCount"));
+                Verify.AreEqual("1", ReadText("MouseCaptureCount"));
+                Verify.AreEqual("0", ReadText("MouseCaptureLostCount"));
+                Verify.AreEqual("0", ReadText("DragCount"));
+                mouse.Move(target.GetClickablePoint());
+                Wait.ForIdle();
+            }
+            finally
+            {
+                mouse.Release(PointerButtons.Primary);
+            }
+
+            Wait.ForIdle();
+            Verify.AreEqual("1", ReadText("DragCount"));
+            VerifyCaptureReleased();
+            InputHelper.MouseDragToTarget(source, target);
+            Verify.AreEqual("2", ReadText("DragCount"));
+            VerifyCaptureReleased();
+        }
+
+        [TestMethod]
         public void PenCanceledDragCanRestartAndDrop()
         {
             VerifyCanceledDragCanRestartAndDrop(PointerInputType.Pen);

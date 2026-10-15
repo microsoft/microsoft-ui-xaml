@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Linq;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using Windows.ApplicationModel.DataTransfer;
@@ -16,12 +18,45 @@ namespace MUXControlsTestApp
         private int dragCount;
         private int dropCount;
         private int copyCompletionCount;
+        private int childTouchReleaseCount;
+        private int childTouchPressCount;
+        private int mouseCaptureLostCount;
 
         public AutomaticDragPage()
         {
             InitializeComponent();
             DragSource.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
-                LastPointerDevice.Text = args.Pointer.PointerDeviceType.ToString()), true);
+            {
+                LastPointerDevice.Text = args.Pointer.PointerDeviceType.ToString();
+                if (args.Pointer.PointerDeviceType == PointerDeviceType.Mouse)
+                {
+                    MousePointerId.Text = args.Pointer.PointerId.ToString();
+                }
+            }), true);
+            DragSource.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler((sender, args) =>
+            {
+                if (args.Pointer.PointerDeviceType == PointerDeviceType.Mouse)
+                {
+                    MouseCaptureLostCount.Text = (++mouseCaptureLostCount).ToString();
+                }
+            }), true);
+            TouchChild.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
+            {
+                if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    HandleChildTouch(sender, args);
+                    ChildTouchPressCount.Text = (++childTouchPressCount).ToString();
+                }
+            }), true);
+            TouchChild.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(HandleChildTouch), true);
+            TouchChild.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler((sender, args) =>
+            {
+                if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                {
+                    HandleChildTouch(sender, args);
+                    ChildTouchReleaseCount.Text = (++childTouchReleaseCount).ToString();
+                }
+            }), true);
             DragSource.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler((sender, args) =>
             {
                 ReleaseCount.Text = (++releaseCount).ToString();
@@ -57,6 +92,15 @@ namespace MUXControlsTestApp
             };
         }
 
+        private void HandleChildTouch(object sender, PointerRoutedEventArgs args)
+        {
+            if (args.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                ChildTouchPointerId.Text = args.Pointer.PointerId.ToString();
+                args.Handled = true;
+            }
+        }
+
         private void DropTarget_DragOver(object sender, DragEventArgs args)
         {
             args.AcceptedOperation = DataPackageOperation.Copy;
@@ -81,6 +125,8 @@ namespace MUXControlsTestApp
         private void Snapshot_Click(object sender, RoutedEventArgs args)
         {
             CaptureCount.Text = (DragSource.PointerCaptures?.Count ?? 0).ToString();
+            MouseCaptureCount.Text = (DragSource.PointerCaptures?.Count(
+                pointer => pointer.PointerDeviceType == PointerDeviceType.Mouse) ?? 0).ToString();
         }
     }
 }

@@ -214,6 +214,7 @@ AutomaticDragHelper::HandlePointerPressedEventArgs(
         // If the left mouse button was the one pressed...
         if (!m_isLeftButtonPressed && isLeftButtonPressed)
         {
+            IFC_RETURN(spPointer->get_PointerId(&m_mouseDragPointerId));
             m_isLeftButtonPressed = true;
             // Start listening for a mouse drag gesture
             IFC_RETURN(spPointerPoint->get_Position(&m_lastMouseLeftButtonDownPosition));
@@ -302,6 +303,16 @@ _In_ xaml_input::IPointerRoutedEventArgs* pArgs)
     ASSERT(pArgs);
 
     IFC_RETURN(pArgs->get_Pointer(&spPointer));
+    if (m_isLeftButtonPressed)
+    {
+        UINT pointerId = 0;
+        IFC_RETURN(spPointer->get_PointerId(&pointerId));
+        // A handled release from a descendant may belong to another pointer.
+        if (pointerId != m_mouseDragPointerId)
+        {
+            return S_OK;
+        }
+    }
     IFC_RETURN(spPointer->get_PointerDeviceType(&pointerDeviceType));
 
     // Check if this is a mouse button up
