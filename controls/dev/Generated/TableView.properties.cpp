@@ -25,7 +25,6 @@ GlobalDependencyProperty TableViewProperties::s_HeadersVisibilityProperty{ nullp
 GlobalDependencyProperty TableViewProperties::s_IsReadOnlyProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_ItemsSourceProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_RowBackgroundProperty{ nullptr };
-GlobalDependencyProperty TableViewProperties::s_RowStyleSelectorProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectedIndexProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectedItemProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectionModeProperty{ nullptr };
@@ -174,17 +173,6 @@ void TableViewProperties::EnsureProperties()
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnRowBackgroundPropertyChanged));
     }
-    if (!s_RowStyleSelectorProperty)
-    {
-        s_RowStyleSelectorProperty =
-            InitializeDependencyProperty(
-                L"RowStyleSelector",
-                winrt::name_of<winrt::StyleSelector>(),
-                winrt::name_of<winrt::TableView>(),
-                false /* isAttached */,
-                ValueHelper<winrt::StyleSelector>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnRowStyleSelectorPropertyChanged));
-    }
     if (!s_SelectedIndexProperty)
     {
         s_SelectedIndexProperty =
@@ -234,7 +222,6 @@ void TableViewProperties::ClearProperties()
     s_IsReadOnlyProperty = nullptr;
     s_ItemsSourceProperty = nullptr;
     s_RowBackgroundProperty = nullptr;
-    s_RowStyleSelectorProperty = nullptr;
     s_SelectedIndexProperty = nullptr;
     s_SelectedItemProperty = nullptr;
     s_SelectionModeProperty = nullptr;
@@ -334,14 +321,6 @@ void TableViewProperties::OnRowBackgroundPropertyChanged(
 {
     auto owner = sender.as<winrt::TableView>();
     winrt::get_self<TableView>(owner)->OnRowBackgroundPropertyChanged(args);
-}
-
-void TableViewProperties::OnRowStyleSelectorPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TableView>();
-    winrt::get_self<TableView>(owner)->OnRowStyleSelectorPropertyChanged(args);
 }
 
 void TableViewProperties::OnSelectionModePropertyChanged(
@@ -506,19 +485,6 @@ void TableViewProperties::RowBackground(winrt::Brush const& value)
 winrt::Brush TableViewProperties::RowBackground()
 {
     return ValueHelper<winrt::Brush>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_RowBackgroundProperty));
-}
-
-void TableViewProperties::RowStyleSelector(winrt::StyleSelector const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<TableView*>(this)->SetValue(s_RowStyleSelectorProperty, ValueHelper<winrt::StyleSelector>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::StyleSelector TableViewProperties::RowStyleSelector()
-{
-    return ValueHelper<winrt::StyleSelector>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_RowStyleSelectorProperty));
 }
 
 void TableViewProperties::SelectedIndex(int value)

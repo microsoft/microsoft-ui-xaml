@@ -229,14 +229,14 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     //      when the request starts on the text itself (pointer); a keyboard request on the cell, or
     //      a pointer request on the cell's padding, skips it.
     //   2. CellContextFlyout.
-    //   3. The row's own ContextFlyout (row Style, RowStyleSelector, or row template).
+    //   3. The row's own ContextFlyout (row Style or row template).
     //   4. TableView.ContextFlyout, through the framework's native routing.
     // Before a menu shows, the cell becomes the current cell and takes focus (so focus returns to it
     // when the menu closes); selection does not change. While any cell in the table is being edited,
     // no TableView menu opens: cell, header, row, group header and TableView.ContextFlyout requests
     // are handled with nothing shown. The editor's own menu (a TextBox's copy/paste) still shows, as
     // does a ContextFlyout set inside another cell's or header's template. Group headers never use it; give them a
-    // ContextFlyout through RowStyleSelector instead.
+    // ContextFlyout through a TableViewGroupHeader Style instead.
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
 
     // HeaderContextFlyout: shown at the header cell. The first match wins: a ContextFlyout set
@@ -552,17 +552,6 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate { get; set; };
 
-    // Picks a Style for each realized row container: TableViewRow for data rows (leaf or
-    // expandable) and TableViewGroupHeader for group headers. item is the data item for a row and
-    // the TableViewGroupInfo for a group header. Re-evaluated whenever the row's hierarchy state is
-    // refreshed (prepare, expand, collapse, collection change) and when this property changes. A
-    // returned Style replaces the app's implicit style for that container type, so chain with
-    // BasedOn to keep it; returning null restores the implicit style. Setting ContextFlyout in the
-    // returned Style gives each row kind its own context menu (see TableViewColumn.CellContextFlyout
-    // for how it ranks against cell menus).
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Microsoft.UI.Xaml.Controls.StyleSelector RowStyleSelector { get; set; };
-
     // Vertical density preset for row height and built-in cell/header padding.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::TableViewDensity::Standard")]
@@ -693,7 +682,6 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty GroupHeaderTemplateProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty RowStyleSelectorProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty DensityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SelectionModeProperty { get; };
