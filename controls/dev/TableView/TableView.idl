@@ -498,9 +498,9 @@ unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
 //   PART_HeaderHost     — Panel. Receives one header cell per column.
 //   PART_RowsRepeater   — ItemsRepeater. Hosts row containers; do not TemplateBind ItemsSource.
 //   PART_EmptyStatePresenter — ContentControl/ContentPresenter (optional). Hosts EmptyTemplate.
-//   PART_HeaderScroller / PART_BodyScroller — ScrollViewer (optional). Found as the nearest
-//                         ScrollViewer ancestor of PART_HeaderHost / PART_RowsRepeater, stopping at
-//                         the TableView, not by name.
+//
+// Structure, not named parts: the header and body scrollers are the nearest ScrollViewer ancestors
+// of PART_HeaderHost / PART_RowsRepeater inside the template; their names are not looked up.
 //
 // Unsealed: ReferenceTracker requires the cppwinrt-projected derivable type surface.
 //

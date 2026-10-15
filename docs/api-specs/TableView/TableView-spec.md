@@ -443,10 +443,8 @@ Template parts:
 | `PART_HeaderHost` | `TableViewCellsPanel` (typed `Panel`) | Host for column header elements. See [TableViewCellsPanel class](#tableviewcellspanel-class). |
 | `PART_RowsRepeater` | `ItemsRepeater` | Repeater that displays rows. |
 | `PART_EmptyStatePresenter` | `ContentControl` | Optional presenter for `EmptyTemplate`. |
-| `PART_HeaderScroller` | `ScrollViewer` | Optional. Horizontal-only scroller around `PART_HeaderHost`, kept in sync with the body. |
-| `PART_BodyScroller` | `ScrollViewer` | Optional. Scroller around `PART_RowsRepeater`; supplies the viewport for `*` column widths, the offset for frozen-column pinning, and the target of keyboard paging and scroll-into-view. |
 
-The two scrollers are not looked up by name: each is the nearest `ScrollViewer` ancestor of `PART_HeaderHost` / `PART_RowsRepeater` **inside the template**. The search stops at the `TableView`, so a template that omits them never latches onto a `ScrollViewer` in the app's own tree. Without `PART_BodyScroller`, `*` columns keep their provisional width, frozen columns are not pinned, and the header is not scroll-synced; the default template supplies both and names them for readability.
+Scrolling is structural rather than a named part. The header scroller and the body scroller are the nearest `ScrollViewer` ancestors of `PART_HeaderHost` / `PART_RowsRepeater` **inside the template**; their names are not looked up. The search stops at the `TableView`, so a template that omits them never latches onto a `ScrollViewer` in the app's own tree. The header scroller is horizontal-only and kept in sync with the body. The body scroller supplies the viewport for `*` column widths, the offset for frozen-column pinning, and the target of keyboard paging and scroll-into-view; without it, `*` columns keep their provisional width, frozen columns are not pinned, and the header is not scroll-synced. The default template supplies both, named `PART_HeaderScroller` and `PART_BodyScroller` for readability only.
 
 ### Example Usage
 
