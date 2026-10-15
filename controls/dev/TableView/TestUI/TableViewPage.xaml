@@ -354,11 +354,20 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <Button Grid.Row="0"
-                        Content="Reset"
-                        AutomationProperties.Name="ResetContextMenu"
-                        AutomationProperties.AutomationId="ResetContextMenu"
-                        Click="OnResetContextMenuClick" />
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                    <Button Content="Reset"
+                            AutomationProperties.Name="ResetContextMenu"
+                            AutomationProperties.AutomationId="ResetContextMenu"
+                            Click="OnResetContextMenuClick" />
+                    <Button Content="Grouped"
+                            AutomationProperties.Name="GroupContextMenuTable"
+                            AutomationProperties.AutomationId="GroupContextMenuTable"
+                            Click="OnGroupContextMenuTableClick" />
+                    <Button Content="Right to left"
+                            AutomationProperties.Name="MirrorContextMenuTable"
+                            AutomationProperties.AutomationId="MirrorContextMenuTable"
+                            Click="OnMirrorContextMenuTableClick" />
+                </StackPanel>
 
                 <!-- Format documented on TableViewTestPageFacts.ContextMenuReadout. -->
                 <TextBox x:Name="ContextMenuReadout"

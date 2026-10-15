@@ -139,6 +139,12 @@ winrt::TableViewRow TableViewRowAutomationPeer::GetRow() const
 
 void TableViewRowAutomationPeer::ShowContextMenuCore()
 {
+    // A recycled row raising the request would open a menu for whatever item it holds next.
+    if (!GetOwningTableView())
+    {
+        ThrowElementNotAvailable();
+    }
+
     if (auto const row = GetRow(); row && winrt::get_self<TableViewRow>(row)->ShowContextMenuFromPeer())
     {
         return;

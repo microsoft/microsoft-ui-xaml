@@ -12,36 +12,5 @@
     MinHeight="320">
     <tv:TableView.Resources>
         <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
-        <!-- One menu for every row: OnRowMenuOpening keeps untagged items plus those
-             tagged for the row's kind (Leaf / Manager). Items bind to the row's Employee. -->
-        <MenuFlyout x:Key="RowMenu" Opening="OnRowMenuOpening">
-            <MenuFlyoutItem Text="Open profile" Click="OnRowMenuItemClick"/>
-            <MenuFlyoutItem Text="Copy row" Click="OnCopyRowClick"/>
-            <MenuFlyoutItem Text="Email team" Tag="Manager" Click="OnRowMenuItemClick"/>
-            <MenuFlyoutItem Text="Promote" Tag="Leaf" Command="{Binding PromoteCommand}"/>
-            <MenuFlyoutSeparator Tag="Leaf"/>
-            <MenuFlyoutItem Text="Assign mentor" Tag="Leaf" Click="OnAssignMentorClick"
-                            Visibility="{Binding HasMentor, Converter={StaticResource InvertedBoolToVisibilityConverter}}"/>
-            <MenuFlyoutItem Text="Remove mentor" Tag="Leaf" Click="OnRemoveMentorClick"
-                            Visibility="{Binding HasMentor, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <MenuFlyoutSeparator Tag="Leaf"/>
-            <MenuFlyoutItem Text="Remove" Tag="Leaf" Click="OnRowMenuItemClick"/>
-        </MenuFlyout>
-        <!-- A group header's DataContext is its TableViewGroupInfo. -->
-        <MenuFlyout x:Key="DeptGroupMenu">
-            <MenuFlyoutItem Text="{Binding KeyText}" IsEnabled="False"/>
-            <MenuFlyoutItem Text="Email department" Click="OnRowMenuItemClick"/>
-        </MenuFlyout>
-        <Style TargetType="tv:TableViewRow">
-            <Setter Property="ContextFlyout" Value="{StaticResource RowMenu}"/>
-        </Style>
-        <!-- Department headers (Group on): the style owns the band chrome;
-             GroupHeaderTemplate (set in code) still owns the content. -->
-        <Style TargetType="tv:TableViewGroupHeader">
-            <Setter Property="ContextFlyout" Value="{StaticResource DeptGroupMenu}"/>
-            <Setter Property="Background" Value="{ThemeResource SystemFillColorAttentionBackgroundBrush}"/>
-            <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-            <Setter Property="Padding" Value="8,10,16,10"/>
-        </Style>
     </tv:TableView.Resources>
 </tv:TableView>

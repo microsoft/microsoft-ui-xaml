@@ -39,6 +39,28 @@ private void ShowAllColumns()
 
 // ---- Cell and row menu items ----------------------------------------------------------------
 
+// MenuFlyout has no item filter: cache the XAML items and re-add this row kind's subset on each
+// open. Re-adding (not Visibility) leaves the IsActive bindings in charge.
+private List<MenuFlyoutItemBase>? _rowMenuItems;
+
+private void OnRowMenuOpening(object sender, object e)
+{
+    var menu = (MenuFlyout)sender;
+    _rowMenuItems ??= new List<MenuFlyoutItemBase>(menu.Items);
+
+    // Target is the row, also when the request came from one of its cells. Under Hierarchy, a
+    // row with reports is expandable; Manager-tagged items show only on those rows.
+    var isManager = menu.Target is TableViewRow { IsExpandable: true };
+    menu.Items.Clear();
+    foreach (var item in _rowMenuItems)
+    {
+        if (item.Tag is null || (isManager && (item.Tag as string) == "Manager"))
+        {
+            menu.Items.Add(item);
+        }
+    }
+}
+
 // A menu item inherits the requested row item as its DataContext.
 private void OnCopyNameClick(object sender, RoutedEventArgs e)
 {
@@ -72,6 +94,38 @@ private void OnNextDepartmentClick(object sender, RoutedEventArgs e)
         var from = person.Department;
         person.Department = SampleShaping.Next(PersonData.Departments, from);
         ReapplyIfGroupedOn(nameof(Person.Department));
+    }
+}
+
+private void OnEmailTeamClick(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { DataContext: Person manager })
+    {
+        var reports = 0;
+        foreach (var person in People)
+        {
+            if (person.ManagerId == manager.EmployeeId)
+            {
+                reports++;
+            }
+        }
+    }
+}
+
+private void OnToggleActiveClick(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { DataContext: Person person })
+    {
+        person.IsActive = !person.IsActive;
+    }
+}
+
+// A group header menu item's DataContext is the header's TableViewGroupInfo.
+private void OnEmailGroupClick(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { DataContext: TableViewGroupInfo group })
+    {
+        // …
     }
 }
 

@@ -5,7 +5,6 @@
 
 #include "pch.h"
 #include "common.h"
-#include <optional>
 
 #include "TableViewRow.g.h"
 #include "TableViewContextMenu.h"

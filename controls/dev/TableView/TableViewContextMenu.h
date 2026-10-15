@@ -42,4 +42,21 @@ namespace TableViewDetails
     // TableView or TableViewRow: a request from a nested table belongs to that table, even when it
     // left it Unhandled.
     bool IsOwnRequestSource(winrt::DependencyObject const& source, winrt::DependencyObject const& scope);
+
+    // Hooks ContextRequested on control's template root. The framework shows the control's own
+    // ContextFlyout before the control's handlers run, so suppression must sit below it.
+    template <typename Handler>
+    winrt::UIElement::ContextRequested_revoker HookTemplateRootContextRequested(
+        winrt::DependencyObject const& control,
+        Handler&& handler)
+    {
+        if (winrt::VisualTreeHelper::GetChildrenCount(control) > 0)
+        {
+            if (auto const templateRoot = winrt::VisualTreeHelper::GetChild(control, 0).try_as<winrt::UIElement>())
+            {
+                return templateRoot.ContextRequested(winrt::auto_revoke, std::forward<Handler>(handler));
+            }
+        }
+        return {};
+    }
 }

@@ -103,7 +103,7 @@ void TableViewGroupHeaderAutomationPeer::ShowContextMenuCore()
 {
     // The base raises ContextRequested on the header itself, which shows the header's own
     // ContextFlyout before any TableView suppression hook can see it.
-    if (auto const tableView = GetOwningTableView(); tableView && winrt::get_self<TableView>(tableView)->IsEditing())
+    if (auto const tableView = GetOwningTableView(); tableView && winrt::get_self<TableView>(tableView)->AreContextMenusSuppressed())
     {
         return;
     }

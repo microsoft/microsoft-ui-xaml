@@ -2,14 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
-using TableViewSampleApp.Helpers;
 
 namespace TableViewSampleApp.Data;
 
 // Flat row model: no Level/IsExpanded/children. The tree comes from key selectors (Id plus
-// ManagerId or MentorId), so one list can show two relations. Observable for live shaping, and so
-// row menu items bound to HasMentor / CanPromote update while a menu is reused across rows.
+// ManagerId or MentorId), so one list can show two relations. Observable for live shaping.
 public sealed class Employee : INotifyPropertyChanged
 {
     private int? _managerId;
@@ -17,61 +14,26 @@ public sealed class Employee : INotifyPropertyChanged
     private string _name = string.Empty;
     private string _title = string.Empty;
     private string _dept = string.Empty;
-    private RelayCommand? _promoteCommand;
 
     public int Id { get; set; }
     public int? ManagerId { get => _managerId; set => Set(ref _managerId, value); }
-    public int? MentorId
-    {
-        get => _mentorId;
-        set
-        {
-            if (Set(ref _mentorId, value))
-            {
-                OnPropertyChanged(nameof(HasMentor));
-            }
-        }
-    }
+    public int? MentorId { get => _mentorId; set => Set(ref _mentorId, value); }
     public string Name { get => _name; set => Set(ref _name, value); }
-    public string Title
-    {
-        get => _title;
-        set
-        {
-            if (Set(ref _title, value))
-            {
-                OnPropertyChanged(nameof(CanPromote));
-                _promoteCommand?.RaiseCanExecuteChanged();
-            }
-        }
-    }
+    public string Title { get => _title; set => Set(ref _title, value); }
     public string Dept { get => _dept; set => Set(ref _dept, value); }
-
-    public bool HasMentor => MentorId is not null;
-
-    // Individual-contributor titles below Senior can be promoted one step.
-    public bool CanPromote => Title is "Engineer" or "Associate";
-
-    // MVVM: a row menu item binds Command to this; CanExecute enables the item only when CanPromote.
-    public ICommand PromoteCommand => _promoteCommand ??= new RelayCommand(
-        () => Title = Title == "Associate" ? "Engineer" : "Senior",
-        () => CanPromote);
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
+    private void Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
-            return false;
+            return;
         }
 
         field = value;
-        OnPropertyChanged(name);
-        return true;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
-
-    private void OnPropertyChanged(string? name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
 
 internal static class HierarchyData

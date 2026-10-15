@@ -16,8 +16,8 @@ using Windows.ApplicationModel.DataTransfer;
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Per-column <c>CellContextFlyout</c> / <c>HeaderContextFlyout</c>, a row <c>ContextFlyout</c> from an
-/// implicit <c>TableViewRow</c> style, and <c>TableView.ContextFlyout</c> as the final fallback.
+/// Per-column <c>CellContextFlyout</c> / <c>HeaderContextFlyout</c>, row and group header
+/// <c>ContextFlyout</c>s from implicit styles, and <c>TableView.ContextFlyout</c> as the final fallback.
 /// </summary>
 public sealed partial class ContextMenusPage : SamplePageBase
 {
@@ -87,6 +87,28 @@ public sealed partial class ContextMenusPage : SamplePageBase
 
     // ---- Cell and row menu items ----------------------------------------------------------------
 
+    // MenuFlyout has no item filter: cache the XAML items and re-add this row kind's subset on each
+    // open. Re-adding (not Visibility) leaves the IsActive bindings in charge.
+    private List<MenuFlyoutItemBase>? _rowMenuItems;
+
+    private void OnRowMenuOpening(object sender, object e)
+    {
+        var menu = (MenuFlyout)sender;
+        _rowMenuItems ??= new List<MenuFlyoutItemBase>(menu.Items);
+
+        // Target is the row, also when the request came from one of its cells. Under Hierarchy, a
+        // row with reports is expandable; Manager-tagged items show only on those rows.
+        var isManager = menu.Target is TableViewRow { IsExpandable: true };
+        menu.Items.Clear();
+        foreach (var item in _rowMenuItems)
+        {
+            if (item.Tag is null || (isManager && (item.Tag as string) == "Manager"))
+            {
+                menu.Items.Add(item);
+            }
+        }
+    }
+
     // A menu item inherits the requested row item as its DataContext.
     private void OnCopyNameClick(object sender, RoutedEventArgs e)
     {
@@ -121,6 +143,41 @@ public sealed partial class ContextMenusPage : SamplePageBase
             person.Department = SampleShaping.Next(PersonData.Departments, from);
             ReapplyIfGroupedOn(nameof(Person.Department));
             SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, person.Department));
+        }
+    }
+
+    private void OnEmailTeamClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: Person manager })
+        {
+            var reports = 0;
+            foreach (var person in People)
+            {
+                if (person.ManagerId == manager.EmployeeId)
+                {
+                    reports++;
+                }
+            }
+
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Emailed {0}'s team ({1} reports)", manager.FullName, reports));
+        }
+    }
+
+    private void OnToggleActiveClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: Person person })
+        {
+            person.IsActive = !person.IsActive;
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} is now {1}", person.FullName, person.IsActive ? "active" : "inactive"));
+        }
+    }
+
+    // A group header menu item's DataContext is the header's TableViewGroupInfo.
+    private void OnEmailGroupClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: TableViewGroupInfo group })
+        {
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Emailed {0}", group.KeyText));
         }
     }
 

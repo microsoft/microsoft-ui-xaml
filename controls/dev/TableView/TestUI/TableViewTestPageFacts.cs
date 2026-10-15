@@ -200,6 +200,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string ContextMenuPivotItem = "ContextMenu";
         internal const string ResetContextMenuButton = "ResetContextMenu";
 
+        // Groups the table by City (groups in first-appearance order: Redmond, Seattle, Bellevue), or mirrors it.
+        // Reset undoes both.
+        internal const string GroupContextMenuTableButton = "GroupContextMenuTable";
+        internal const string MirrorContextMenuTableButton = "MirrorContextMenuTable";
+
         internal const string CellMenu = "CellMenu";
         internal const string HeaderMenu = "HeaderMenu";
         internal const string TemplateMenu = "TemplateMenu";
@@ -251,7 +256,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         }
 
         // Read-only TextBox for the last menu opened, as "key=value;...": menu, open, opens, item, target,
-        // focus (cell:<item>/<column>, row:<item> or header:<text>), editing, selected.
+        // focus (cell:<item>/<column>, row:<item>, group:<key> or header:<text>), editing, selected.
         internal const string ContextMenuReadout = "ContextMenuReadout";
 
         internal const string MenuField = "menu";
@@ -264,5 +269,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal static string CellFocus(int id, int column) => "cell:" + ContextMenuName(id) + "/" + column;
         internal static string RowFocus(int id) => "row:" + ContextMenuName(id);
         internal static string HeaderFocus(string header) => "header:" + header;
+        internal static string GroupFocus(string key) => "group:" + key;
     }
 }

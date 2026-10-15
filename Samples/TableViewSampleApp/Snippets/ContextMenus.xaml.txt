@@ -10,17 +10,33 @@
 </MenuFlyout>
 
 <!-- The row menu is the fallback for every cell without its own CellContextFlyout, and for
-     blank space past the last column. An implicit TableViewRow style sets it on every row. -->
-<MenuFlyout x:Key="RowMenu">
+     blank space past the last column. An implicit TableViewRow style sets it on every row.
+     OnRowMenuOpening keeps untagged items plus those tagged for the row's kind. -->
+<MenuFlyout x:Key="RowMenu" Opening="OnRowMenuOpening">
     <MenuFlyoutItem Text="Copy row" Click="OnCopyRowClick">
         <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8C8;"/></MenuFlyoutItem.Icon>
+    </MenuFlyoutItem>
+    <MenuFlyoutItem Text="Email team" Tag="Manager" Click="OnEmailTeamClick">
+        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE715;"/></MenuFlyoutItem.Icon>
     </MenuFlyoutItem>
     <MenuFlyoutSeparator/>
     <MenuFlyoutItem Text="Move to next department" Click="OnNextDepartmentClick">
         <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8AB;"/></MenuFlyoutItem.Icon>
     </MenuFlyoutItem>
+    <MenuFlyoutItem Text="Deactivate" Click="OnToggleActiveClick"
+                    Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibilityConverter}}"/>
+    <MenuFlyoutItem Text="Reactivate" Click="OnToggleActiveClick"
+                    Visibility="{Binding IsActive, Converter={StaticResource InvertedBoolToVisibilityConverter}}"/>
     <MenuFlyoutItem Text="Remove from list" Click="OnRemoveClick">
         <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE74D;"/></MenuFlyoutItem.Icon>
+    </MenuFlyoutItem>
+</MenuFlyout>
+
+<!-- A group header's DataContext is its TableViewGroupInfo. -->
+<MenuFlyout x:Key="GroupMenu">
+    <MenuFlyoutItem Text="{Binding KeyText}" IsEnabled="False"/>
+    <MenuFlyoutItem Text="Email group" Click="OnEmailGroupClick">
+        <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE715;"/></MenuFlyoutItem.Icon>
     </MenuFlyoutItem>
 </MenuFlyout>
 
@@ -34,13 +50,19 @@
     SelectionMode="Single"
     VerticalAlignment="Stretch"
     MinHeight="320">
-    <!-- Rows get their menu from an implicit style, like any other row property. -->
+    <!-- Rows and group headers get their menus from implicit styles. -->
     <tv:TableView.Resources>
         <Style TargetType="tv:TableViewRow">
             <Setter Property="ContextFlyout" Value="{StaticResource RowMenu}"/>
         </Style>
+        <Style TargetType="tv:TableViewGroupHeader">
+            <Setter Property="ContextFlyout" Value="{StaticResource GroupMenu}"/>
+            <Setter Property="Background" Value="{ThemeResource SystemFillColorAttentionBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+            <Setter Property="Padding" Value="8,10,16,10"/>
+        </Style>
     </tv:TableView.Resources>
-    <!-- The table's own menu: the final fallback, e.g. for group headers. -->
+    <!-- The table's own menu: the final fallback. -->
     <tv:TableView.ContextFlyout>
         <MenuFlyout>
             <MenuFlyoutItem Text="Restore the list" Click="OnRestoreListClick">

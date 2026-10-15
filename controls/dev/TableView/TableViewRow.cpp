@@ -292,20 +292,14 @@ void TableViewRow::OnApplyTemplate()
             });
     }
 
-    if (winrt::VisualTreeHelper::GetChildrenCount(*this) > 0)
-    {
-        if (auto const templateRoot = winrt::VisualTreeHelper::GetChild(*this, 0).try_as<winrt::UIElement>())
+    m_templateRootContextRequestedRevoker = TableViewDetails::HookTemplateRootContextRequested(*this,
+        [weakThis = get_weak()](auto&&, winrt::ContextRequestedEventArgs const& args)
         {
-            m_templateRootContextRequestedRevoker = templateRoot.ContextRequested(winrt::auto_revoke,
-                [weakThis = get_weak()](auto&&, winrt::ContextRequestedEventArgs const& args)
-                {
-                    if (auto self = weakThis.get())
-                    {
-                        self->OnTemplateRootContextRequested(args);
-                    }
-                });
-        }
-    }
+            if (auto self = weakThis.get())
+            {
+                self->OnTemplateRootContextRequested(args);
+            }
+        });
 
     RebuildCells();
 
