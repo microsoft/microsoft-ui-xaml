@@ -157,6 +157,18 @@ winrt::Rect TableViewAutomationPeer::GetBoundingRectangleCore()
     return clipped;
 }
 
+void TableViewAutomationPeer::ShowContextMenuCore()
+{
+    // The base raises ContextRequested on the TableView itself, which shows its own
+    // ContextFlyout before the template-root suppression hook can see it.
+    if (auto const impl = GetImpl(); impl && impl->IsEditing())
+    {
+        return;
+    }
+
+    __super::ShowContextMenuCore();
+}
+
 void TableViewAutomationPeer::RaiseStructureChangedForSortChange()
 {
     // Same children, new order.
