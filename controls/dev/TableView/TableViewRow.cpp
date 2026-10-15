@@ -2551,16 +2551,23 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         return false;
     }
 
-    auto const editingElement = winrt::get_self<TableViewColumn>(column)->GenerateEditingElement(dataItem);
-    if (!editingElement)
-    {
-        return false;
-    }
-
-    // A throw past here (the child swap, or tooltip retraction) must put the display element back and
-    // drop the half-captured edit state; otherwise the cell is left blank and the row half-editing.
+    // A throw past here (the editor factory, the child swap, or tooltip retraction) must put the display
+    // element back and drop the half-captured edit state; otherwise the cell is left blank and the row
+    // half-editing.
     auto const displayElement = TableViewCell::Child(cellWrapper);
-    auto unwindOnThrow = wil::scope_exit([this, cellWrapper, displayElement]() noexcept
+    auto const focusRoot = XamlRoot();
+    auto const restoreFocusState = [&]()
+    {
+        auto const focused = focusRoot ? winrt::FocusManager::GetFocusedElement(focusRoot) : nullptr;
+        if (!TableViewDetails::IsWithinElementPopupAware(focused, cellWrapper, focusRoot))
+        {
+            return winrt::FocusState::Unfocused;
+        }
+        auto const focusedElement = focused.try_as<winrt::UIElement>();
+        return focusedElement && focusedElement.FocusState() != winrt::FocusState::Unfocused
+            ? focusedElement.FocusState() : winrt::FocusState::Programmatic;
+    }();
+    auto unwindOnThrow = wil::scope_exit([this, cellWrapper, displayElement, focusRoot, restoreFocusState]() noexcept
     {
         try
         {
@@ -2576,8 +2583,11 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         }
         try
         {
-            TableViewCell::Child(cellWrapper, displayElement);
-            TableViewDetails::RefreshOwnedToolTip(cellWrapper);
+            if (TableViewCell::Child(cellWrapper) != displayElement)
+            {
+                TableViewCell::Child(cellWrapper, displayElement);
+                TableViewDetails::RefreshOwnedToolTip(cellWrapper);
+            }
         }
         catch (...)
         {
@@ -2592,7 +2602,35 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         m_editingCellWrapper.set(nullptr);
         m_editingElement.set(nullptr);
         m_editingDisplayElement.set(nullptr);
+
+        // Not a layout pass (unlike AbandonCellEdit's callers), so focus the editor took or dropped
+        // can go back to the cell.
+        try
+        {
+            if (restoreFocusState != winrt::FocusState::Unfocused &&
+                !TableViewDetails::IsWithinElementPopupAware(
+                    focusRoot ? winrt::FocusManager::GetFocusedElement(focusRoot) : nullptr, cellWrapper, focusRoot))
+            {
+                SetCellLevelInternal(true);
+                if (!cellWrapper.Focus(restoreFocusState))
+                {
+                    SetCellLevelInternal(false);
+                    Focus(restoreFocusState);
+                }
+            }
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] A failed BeginCellEdit could not restore focus to the cell.");
+        }
     });
+
+    auto const editingElement = winrt::get_self<TableViewColumn>(column)->GenerateEditingElement(dataItem);
+    if (!editingElement)
+    {
+        unwindOnThrow.release();
+        return false;
+    }
 
     // No local DataContext on the editing element, for the same reason the display cell sets none:
     // it inherits from the wrapper, which tracks the item across row recycle.
