@@ -7,6 +7,7 @@
 #include "TableViewCellsPanel.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
+#include "TableViewColumnHeader.h"
 #include "TableViewToolTipHelpers.h"
 #include "TableViewColumnHeaderAutomationPeer.properties.cpp"
 #include "ResourceAccessor.h"
@@ -85,12 +86,12 @@ hstring TableViewColumnHeaderAutomationPeer::GetNameCore()
         return *headerString;
     }
 
-    // Read only the header content presenter (the first child): the grid line, sort indicator and
-    // resize gripper siblings must never name the header.
-    if (auto const header = GetHeaderElement().try_as<winrt::Panel>(); header && header.Children().Size() > 0)
+    // Only the content region names the header, never the grid line, glyph or gripper.
+    if (auto const header = GetHeaderElement().try_as<winrt::TableViewColumnHeader>())
     {
         uint32_t remaining = 64;
-        if (auto const name = GetCellContentName(header.Children().GetAt(0).try_as<winrt::FrameworkElement>(), true, 8, remaining);
+        if (auto const name = GetCellContentName(
+                winrt::get_self<TableViewColumnHeader>(header)->GetContentPresenterInternal(), true, 8, remaining);
             !name.empty())
         {
             return name;
@@ -213,7 +214,6 @@ winrt::IInspectable TableViewColumnHeaderAutomationPeer::GetPatternCore(winrt::P
 
 bool TableViewColumnHeaderAutomationPeer::IsEnabledCore()
 {
-    // Grid is not a Control, so its base peer does not report inherited disabled state.
     auto const table = m_table.get();
     if (!table || !table.IsEnabled())
     {

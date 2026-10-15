@@ -170,6 +170,7 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"AlternatingRowBackground", L"Microsoft.UI.Xaml.Media.Brush", statics.AlternatingRowBackgroundProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanUserResizeColumns", L"Boolean", statics.CanUserResizeColumnsProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanUserSortColumns", L"Boolean", statics.CanUserSortColumnsProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ColumnHeaderStyle", L"Microsoft.UI.Xaml.Style", statics.ColumnHeaderStyleProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Columns", L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn>", statics.ColumnsProperty(), true /* isContent */);
                         xamlType.AddDPMember(L"Density", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity", statics.DensityProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"EmptyTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.EmptyTemplateProperty(), false /* isContent */);
@@ -244,6 +245,7 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"FrozenEdge", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge", statics.FrozenEdgeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderContextFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.HeaderContextFlyoutProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Header", L"Object", statics.HeaderProperty(), true /* isContent */);
+                        xamlType.AddDPMember(L"HeaderStyle", L"Microsoft.UI.Xaml.Style", statics.HeaderStyleProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.HeaderTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderTemplateSelector", L"Microsoft.UI.Xaml.Controls.DataTemplateSelector", statics.HeaderTemplateSelectorProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeaderToolTip", L"Object", statics.HeaderToolTipProperty(), false /* isContent */);
@@ -274,6 +276,26 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                 });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Tabular.TableViewColumnHeader",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.TableViewColumnHeader",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.ContentControl",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ITableViewColumnHeaderFactory>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewColumnHeader"); },
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
@@ -812,6 +834,12 @@ Entry c_typeEntries[] =
         L"Microsoft.UI.Xaml.ResourceDictionary",
         /* Arg2 CreateXamlTypeCallback */ 
         []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Microsoft.UI.Xaml.ResourceDictionary"); }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Style",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Microsoft.UI.Xaml.Style"); }
     },
     {
         /* Arg1 TypeName */ 
