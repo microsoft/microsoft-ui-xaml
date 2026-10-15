@@ -1255,6 +1255,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
     const auto generation = m_editGeneration;
     m_currentEditItem.set(item);
     m_currentEditColumn.set(column);
+    m_currentEditRow.set(nullptr);
     m_editState = EditState::Beginning;
     m_abandonPendingBeginEdit = false;
     m_editSourceWritten = false;
@@ -1270,9 +1271,10 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         }
         try
         {
+            // Not a layout pass, so unlike AbandonCellEdit this may hand focus back to the cell.
             if (auto const row = m_currentEditRow.get())
             {
-                winrt::get_self<TableViewRow>(row)->AbandonCellEdit();
+                winrt::get_self<TableViewRow>(row)->EndCellEdit(winrt::TableViewEditAction::Cancel);
             }
         }
         catch (...)
