@@ -286,6 +286,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that under RTL the Menu (Apps) key on a focused cell with no menu of its own opens the row's menu at that cell, mirrored.")]
+        public void MenuKeyOnPlainCellOpensRowMenuAtCellRightToLeft()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectContextMenuHostAndGetTable();
+                if (table == null) { return; }
+                if (!InvokeHostButton(MirrorContextMenuTableButton)) { return; }
+
+                // Under RTL, Left drills in and moves to the next column in reading order.
+                UIObject row = GetRow(GetTable(ContextMenuTable), 3);
+                if (row == null) { Verify.Fail("Row 3 was not found."); return; }
+                row.SetFocus();
+                Wait.ForIdle();
+                if (!row.HasKeyboardFocus) { Verify.Fail("Precondition: row 3 did not take focus."); return; }
+                KeyboardHelper.PressKey(Key.Left, ModifierKey.None, numPresses: (uint)ContextMenuAgeColumn + 1);
+                Wait.ForIdle();
+                VerifyFocusedCell(ContextMenuTable, 3, ContextMenuAgeColumn, "Precondition: focus must reach row 3's Age cell.");
+
+                TextInput.SendText("{APPS}");
+                Wait.ForIdle();
+
+                VerifyMenuOpened(RowMenu, ContextMenuName(3), CellFocus(3, ContextMenuAgeColumn));
+                row = GetRow(GetTable(ContextMenuTable), 3);
+                VerifyMenuPlacedAtCell(row, row.Children[ContextMenuAgeColumn], RowMenu, rightToLeft: true);
+                CloseMenu();
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Shift+F10 on a focused column header opens the column's HeaderContextFlyout.")]
         public void ShiftF10OnHeaderOpensHeaderMenu()
         {
@@ -459,9 +489,113 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a right-click on a group header while a cell is editing opens no menu.")]
+        public void RightClickOnGroupHeaderWhileEditingOpensNoMenu()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectContextMenuHostAndGetTable();
+                if (table == null) { return; }
+                if (!InvokeHostButton(GroupContextMenuTableButton)) { return; }
+
+                // Child 0 of the rows host is the first group header; child 1 is its first row.
+                if (!BeginEditOnNameCell(1)) { return; }
+
+                UIObject header = GetGroupHeaderAt(GetRowsHost(GetTable(ContextMenuTable)), 1);
+                if (header == null) { Verify.Fail("The second group header was not found."); return; }
+                RightClickPoint(CentreOf(header));
+                VerifyNoMenuOpened();
+            }
+        }
+
+        #endregion
+
+        #region Touch
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a press-and-hold on a cell opens the column's CellContextFlyout for that row and leaves selection alone.")]
+        public void PressAndHoldOnCellOpensCellMenu()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectContextMenuHostAndGetTable();
+                if (table == null) { return; }
+
+                UIObject row = GetRow(table, 3);
+                if (row == null) { Verify.Fail("Row 3 was not found."); return; }
+                InputHelper.TapAndHold(row, ContextMenuNameTextX, row.BoundingRectangle.Height / 2, 1500);
+
+                VerifyMenuOpened(CellMenu, ContextMenuName(3), CellFocus(3, ContextMenuNameColumn));
+                Verify.AreEqual(NoneValue, ReadContextMenuField(SelectedField), "A press-and-hold must not select the row.");
+                CloseMenu();
+            }
+        }
+
+        #endregion
+
+        #region Group headers
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a right-click on a group header with no menu of its own opens the table's ContextFlyout, not a row menu.")]
+        public void RightClickOnGroupHeaderOpensTableMenu()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (SelectContextMenuHostAndGetTable() == null) { return; }
+                if (!InvokeHostButton(GroupContextMenuTableButton)) { return; }
+
+                UIObject header = GetGroupHeaderAt(GetRowsHost(GetTable(ContextMenuTable)), 0);
+                if (header == null) { Verify.Fail("The first group header was not found."); return; }
+                RightClickPoint(CentreOf(header));
+
+                VerifyMenuOpened(TableMenu, NoneValue, expectedFocus: null);
+                Verify.AreEqual(NoneValue, ReadContextMenuField(SelectedField), "A right-click on a group header must not select a row.");
+                CloseMenu();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Shift+F10 on a focused group header opens the table's ContextFlyout and keeps focus on the header.")]
+        public void ShiftF10OnGroupHeaderOpensTableMenu()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (SelectContextMenuHostAndGetTable() == null) { return; }
+                if (!InvokeHostButton(GroupContextMenuTableButton)) { return; }
+
+                UIObject header = GetGroupHeaderAt(GetRowsHost(GetTable(ContextMenuTable)), 0);
+                if (header == null) { Verify.Fail("The first group header was not found."); return; }
+                header.SetFocus();
+                Wait.ForIdle();
+                if (!header.HasKeyboardFocus) { Verify.Fail("Precondition: the first group header did not take focus."); return; }
+
+                KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
+
+                VerifyMenuOpened(TableMenu, NoneValue, GroupFocus(Cities[0]));
+                CloseMenu();
+            }
+        }
+
         #endregion
 
         #region Helpers
+
+        // Invokes one of the ContextMenu host's mode buttons and drops cached UIA elements, since it re-realizes the table.
+        private static bool InvokeHostButton(string automationId)
+        {
+            var button = FindElement.ById<Button>(automationId);
+            if (button == null)
+            {
+                Verify.Fail(automationId + " was not found.");
+                return false;
+            }
+
+            button.InvokeAndWait();
+            Wait.ForIdle();
+            ElementCache.Clear();
+            return true;
+        }
 
         // Focuses the row's Name cell and opens its editor with F2.
         private static bool BeginEditOnNameCell(int rowIndex)
@@ -590,8 +724,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // A keyboard request on a cell opens the menu at that cell - starting within the cell's columns, directly
         // below or above it - even when the menu belongs to the row. Row-anchored placement would put the menu at the
-        // row's left edge or centred on the row, so both are ruled out where they differ from the cell.
-        private static void VerifyMenuPlacedAtCell(UIObject row, UIObject cell, string menu)
+        // row's leading edge or centred on the row, so both are ruled out where they differ from the cell. Under RTL
+        // the menu starts at the cell's right edge.
+        private static void VerifyMenuPlacedAtCell(UIObject row, UIObject cell, string menu, bool rightToLeft = false)
         {
             UIObject menuItem = TryFindElement.ById(MenuItemId(menu));
             if (row == null || cell == null || menuItem == null) { Verify.Fail("The row, the cell or the open menu was not found."); return; }
@@ -602,12 +737,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Row bounds={0}; cell bounds={1}; menu item bounds={2}.", rowBounds, cellBounds, itemBounds);
 
             const int Tolerance = 16;
-            Verify.IsTrue(itemBounds.Left >= cellBounds.Left - Tolerance && itemBounds.Left <= cellBounds.Right,
-                "The menu must start horizontally within the focused cell, not at the row.");
+            if (rightToLeft)
+            {
+                Verify.IsTrue(itemBounds.Right <= cellBounds.Right + Tolerance && itemBounds.Right >= cellBounds.Left,
+                    "Under RTL the menu must start horizontally within the focused cell, not at the row.");
+            }
+            else
+            {
+                Verify.IsTrue(itemBounds.Left >= cellBounds.Left - Tolerance && itemBounds.Left <= cellBounds.Right,
+                    "The menu must start horizontally within the focused cell, not at the row.");
+            }
             Verify.IsTrue(itemBounds.Top >= cellBounds.Bottom - Tolerance || itemBounds.Bottom <= cellBounds.Top + Tolerance,
                 "The menu must open next to the focused cell without covering it.");
 
-            if (cellBounds.Left - rowBounds.Left > 2 * Tolerance)
+            if (rightToLeft)
+            {
+                if (rowBounds.Right - cellBounds.Right > 2 * Tolerance)
+                {
+                    Verify.IsTrue(Math.Abs(itemBounds.Right - rowBounds.Right) > Tolerance,
+                        "Under RTL the menu must not be placed at the row's right edge.");
+                }
+            }
+            else if (cellBounds.Left - rowBounds.Left > 2 * Tolerance)
             {
                 Verify.IsTrue(Math.Abs(itemBounds.Left - rowBounds.Left) > Tolerance,
                     "The menu must not be placed at the row's left edge.");

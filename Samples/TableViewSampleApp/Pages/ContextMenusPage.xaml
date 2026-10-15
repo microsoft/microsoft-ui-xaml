@@ -22,17 +22,33 @@
         </MenuFlyout>
 
         <!-- The row menu is the fallback for every cell without its own CellContextFlyout, and for
-             blank space past the last column. An implicit TableViewRow style sets it on every row. -->
-        <MenuFlyout x:Key="RowMenu">
+             blank space past the last column. An implicit TableViewRow style sets it on every row.
+             OnRowMenuOpening keeps untagged items plus those tagged for the row's kind. -->
+        <MenuFlyout x:Key="RowMenu" Opening="OnRowMenuOpening">
             <MenuFlyoutItem Text="Copy row" Click="OnCopyRowClick">
                 <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8C8;"/></MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem Text="Email team" Tag="Manager" Click="OnEmailTeamClick">
+                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE715;"/></MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
             <MenuFlyoutSeparator/>
             <MenuFlyoutItem Text="Move to next department" Click="OnNextDepartmentClick">
                 <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE8AB;"/></MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
+            <MenuFlyoutItem Text="Deactivate" Click="OnToggleActiveClick"
+                            Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <MenuFlyoutItem Text="Reactivate" Click="OnToggleActiveClick"
+                            Visibility="{Binding IsActive, Converter={StaticResource InvertedBoolToVisibilityConverter}}"/>
             <MenuFlyoutItem Text="Remove from list" Click="OnRemoveClick">
                 <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE74D;"/></MenuFlyoutItem.Icon>
+            </MenuFlyoutItem>
+        </MenuFlyout>
+
+        <!-- A group header's DataContext is its TableViewGroupInfo. -->
+        <MenuFlyout x:Key="GroupMenu">
+            <MenuFlyoutItem Text="{Binding KeyText}" IsEnabled="False"/>
+            <MenuFlyoutItem Text="Email group" Click="OnEmailGroupClick">
+                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE715;"/></MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
         </MenuFlyout>
         <!-- /snippet -->
@@ -40,11 +56,11 @@
 
     <controls:SamplePresenter
         Header="Context menus"
-        Description="TableView picks one context menu per request. A column's CellContextFlyout wins over the row's own ContextFlyout, set here through an implicit TableViewRow style, and a column's HeaderContextFlyout covers its header. When none applies, the request falls through to the table's own ContextFlyout. Menu items inherit the requested row item as their DataContext. Opening a menu moves keyboard focus to the row but never changes the selection."
+        Description="TableView picks one context menu per request. A column's CellContextFlyout wins over the row's own ContextFlyout, set here through an implicit TableViewRow style, and a column's HeaderContextFlyout covers its header. Group headers get their menu from an implicit TableViewGroupHeader style. When none applies, the request falls through to the table's own ContextFlyout. Menu items inherit the requested row item as their DataContext. Opening a menu moves keyboard focus to the row but never changes the selection."
         Snippet="ContextMenus"
         StretchExample="True"
-        TryIt="Right-click a Name cell for its own menu, then any other cell for the row menu. Right-click a header and hide that column. Press Shift+F10 or the Menu key on a focused row or header. Group by Department and right-click a group header: it has no row, so the table's own menu opens."
-        WhatToLookFor="Menu items inherit the row item as DataContext: the Name menu shows that person's e-mail, and one shared row menu copies, moves or removes whichever person you clicked. Each header has its own menu, so it knows which column to hide. Right-clicking another row moves focus without changing the selection. Turn a menu off to watch the request fall through to the next one.">
+        TryIt="Right-click a Name cell for its own menu, then any other cell for the row menu. Right-click a header and hide that column. Press Shift+F10 or the Menu key on a focused row or header. Choose Hierarchy in Shaping: managers (rows with reports) also show Email team. Deactivate or Reactivate shows depending on the person's status. Group by Department and right-click a group header for its own menu."
+        WhatToLookFor="Menu items inherit the row item as DataContext: the Name menu shows that person's e-mail, and one shared row menu copies, moves or removes whichever person you clicked. The row menu's Opening handler reads MenuFlyout.Target (the row, also for a cell request) to pick items for its kind; Deactivate/Reactivate bind Visibility to the Person. Each header has its own menu, so it knows which column to hide. Right-clicking another row moves focus without changing the selection. Turn a menu off to watch the request fall through to the next one.">
 
         <controls:SamplePresenter.Example>
             <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
@@ -57,13 +73,19 @@
                     SelectionMode="Single"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
-                    <!-- Rows get their menu from an implicit style, like any other row property. -->
+                    <!-- Rows and group headers get their menus from implicit styles. -->
                     <tv:TableView.Resources>
                         <Style TargetType="tv:TableViewRow">
                             <Setter Property="ContextFlyout" Value="{StaticResource RowMenu}"/>
                         </Style>
+                        <Style TargetType="tv:TableViewGroupHeader">
+                            <Setter Property="ContextFlyout" Value="{StaticResource GroupMenu}"/>
+                            <Setter Property="Background" Value="{ThemeResource SystemFillColorAttentionBackgroundBrush}"/>
+                            <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                            <Setter Property="Padding" Value="8,10,16,10"/>
+                        </Style>
                     </tv:TableView.Resources>
-                    <!-- The table's own menu: the final fallback, e.g. for group headers. -->
+                    <!-- The table's own menu: the final fallback. -->
                     <tv:TableView.ContextFlyout>
                         <MenuFlyout>
                             <MenuFlyoutItem Text="Restore the list" Click="OnRestoreListClick">
@@ -120,7 +142,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="ContextMenus"
-                    Description="Group header bands have no row item and no column, so no row or cell menu applies to them: right-clicking one opens the table's own ContextFlyout.">
+                    Description="Group header bands have no row item and no column, so no row or cell menu applies to them; they use the menu from the implicit TableViewGroupHeader style. Hierarchy nests people under their manager, so managers get the manager row menu.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                 </controls:ShapingOptions>

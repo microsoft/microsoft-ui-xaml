@@ -215,10 +215,11 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
 
     // Shown at the cell, with the row's item as its items' DataContext; shared by the column's cells.
-    // First match wins: a ContextFlyout inside the cell (excluding nested items hosts/TableViews; on
-    // text controls only one set on the element itself), CellContextFlyout, the row's ContextFlyout,
-    // then TableView.ContextFlyout. The cell takes focus; selection does not change. No TableView
-    // menu opens while a cell is editing. Group headers never use it.
+    // First match wins: a ContextFlyout inside the cell (not on a nested items host's items or
+    // anywhere in a nested TableView; on text controls only one set on the element itself),
+    // CellContextFlyout, the row's ContextFlyout, then TableView.ContextFlyout. The cell takes
+    // focus; selection does not change. No TableView menu opens while a cell is editing. Group
+    // headers never use it.
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
 
     // Shown at the header cell. First match wins: a ContextFlyout inside the HeaderTemplate, this,

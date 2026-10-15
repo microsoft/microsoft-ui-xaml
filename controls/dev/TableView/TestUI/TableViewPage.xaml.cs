@@ -745,6 +745,12 @@ namespace MUXControlsTestApp
                 _contextMenuItems[i].Name = Facts.ContextMenuName(i);
             }
 
+            if (!ReferenceEquals(ContextMenuTable.ItemsSource, _contextMenuItems))
+            {
+                ContextMenuTable.ItemsSource = _contextMenuItems;
+            }
+            ContextMenuTable.FlowDirection = FlowDirection.LeftToRight;
+
             _contextMenuLast = Facts.NoneValue;
             _contextMenuOpen = false;
             _contextMenuOpens = 0;
@@ -752,6 +758,19 @@ namespace MUXControlsTestApp
             _contextMenuTarget = Facts.NoneValue;
             _contextMenuFocus = Facts.NoneValue;
             RefreshContextMenuReadout();
+        }
+
+        // Groups ContextMenuTable by City; Reset ungroups it.
+        private void OnGroupContextMenuTableClick(object sender, RoutedEventArgs e)
+        {
+            ContextMenuTable.ItemsSource = TableViewSource.From(_contextMenuItems)
+                .GroupBy(item => ((TableViewTestPerson)item).City);
+        }
+
+        // Mirrors ContextMenuTable; Reset restores left to right.
+        private void OnMirrorContextMenuTableClick(object sender, RoutedEventArgs e)
+        {
+            ContextMenuTable.FlowDirection = FlowDirection.RightToLeft;
         }
 
         private void RefreshContextMenuReadout()
@@ -778,7 +797,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        // cell:<item>/<visible column index>, row:<item>, header:<text>, or the focused element's type name.
+        // cell:<item>/<visible column index>, row:<item>, group:<key>, header:<text>, or the focused element's type name.
         private string DescribeContextMenuFocus()
         {
             var focused = XamlRoot == null ? null : FocusManager.GetFocusedElement(XamlRoot) as DependencyObject;
@@ -801,6 +820,12 @@ namespace MUXControlsTestApp
                     var cellsHost = FindDescendant<TableViewCellsPanel>(row);
                     int index = cellsHost == null ? -1 : IndexOfChildContaining(cellsHost, focused);
                     return "cell:" + name + "/" + index;
+                }
+
+                if (node is TableViewGroupHeader groupHeader)
+                {
+                    var info = groupHeader.Content as TableViewGroupInfo;
+                    return "group:" + (info == null || info.Key == null ? "?" : info.Key.ToString());
                 }
 
                 if (node is FrameworkElement element && element.Name == "PART_HeaderHost")

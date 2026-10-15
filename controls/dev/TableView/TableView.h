@@ -425,6 +425,9 @@ public:
         TableViewDetails::ContextMenuTarget const& target,
         winrt::ContextRequestedEventArgs const& args);
 
+    // The one context menu policy check: no TableView menu opens while a cell is editing.
+    bool AreContextMenusSuppressed() const noexcept { return IsEditing(); }
+
     // Marks an unhandled request handled while a cell is editing, so no ContextFlyout on the
     // element that raised it or on any ancestor opens. Hooked below every element that can carry a
     // TableView menu the request handlers do not reach (group headers, the table itself).

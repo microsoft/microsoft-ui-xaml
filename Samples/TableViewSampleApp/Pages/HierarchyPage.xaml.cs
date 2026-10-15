@@ -13,7 +13,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace TableViewSampleApp.Pages;
 
@@ -361,95 +360,6 @@ public sealed partial class HierarchyPage : SamplePageBase
         }
 
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "No other manager for {0} without a cycle", selected.Name));
-    }
-    // </snippet>
-
-    // <snippet>
-    // MenuFlyout has no item filter: cache the XAML items, re-add this row kind's subset on each open.
-    // Re-adding (not Visibility) leaves the HasMentor bindings in charge.
-    private List<MenuFlyoutItemBase>? _rowMenuItems;
-
-    private void OnRowMenuOpening(object sender, object e)
-    {
-        var menu = (MenuFlyout)sender;
-        _rowMenuItems ??= menu.Items.ToList();
-
-        // Target is the row, also when the menu was requested from one of its cells.
-        var kind = menu.Target is TableViewRow { IsExpandable: true } ? "Manager" : "Leaf";
-        menu.Items.Clear();
-        foreach (var item in _rowMenuItems)
-        {
-            if (item.Tag is null || (item.Tag as string) == kind)
-            {
-                menu.Items.Add(item);
-            }
-        }
-    }
-
-    // Menu items inherit the DataContext of the row they open on: an Employee for a data row, the
-    // TableViewGroupInfo for a group header.
-    private void OnRowMenuItemClick(object sender, RoutedEventArgs e)
-    {
-        var menuItem = (MenuFlyoutItem)sender;
-        var target = menuItem.DataContext switch
-        {
-            Employee employee => employee.Name,
-            TableViewGroupInfo group => group.KeyText,
-            _ => "?",
-        };
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0}: {1}", menuItem.Text, target));
-    }
-
-    private void OnCopyRowClick(object sender, RoutedEventArgs e)
-    {
-        if (((FrameworkElement)sender).DataContext is Employee employee)
-        {
-            var text = string.Join('\t', employee.Name, employee.Title, employee.Dept, employee.Id);
-            var package = new DataPackage();
-            package.SetText(text);
-            Clipboard.SetContent(package);
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Copied \"{0}\"", text));
-        }
-    }
-
-    private void OnRemoveMentorClick(object sender, RoutedEventArgs e)
-    {
-        if (((FrameworkElement)sender).DataContext is Employee employee)
-        {
-            employee.MentorId = null;
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0}'s mentor", employee.Name));
-        }
-    }
-
-    // Mentor = the employee's manager, unless that would put the employee in its own mentor chain.
-    private void OnAssignMentorClick(object sender, RoutedEventArgs e)
-    {
-        if (((FrameworkElement)sender).DataContext is not Employee employee)
-        {
-            return;
-        }
-
-        var mentorOf = _employees.ToDictionary(x => x.Id, x => x.MentorId);
-        int? id = employee.ManagerId;
-        for (int hops = 0; id is int current && hops <= _employees.Count; hops++)
-        {
-            if (current == employee.Id)
-            {
-                SetLastAction(string.Format(CultureInfo.CurrentCulture, "No mentor for {0} without a cycle", employee.Name));
-                return;
-            }
-
-            id = mentorOf.GetValueOrDefault(current);
-        }
-
-        if (employee.ManagerId is not int managerId)
-        {
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} has no manager to mentor them", employee.Name));
-            return;
-        }
-
-        employee.MentorId = managerId;
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} is now mentored by their manager", employee.Name));
     }
     // </snippet>
 

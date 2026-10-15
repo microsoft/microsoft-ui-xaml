@@ -101,12 +101,7 @@ visible on purpose.
   filter, sort and grouping, and `IsLiveShaping` reshaping both trees when a row's property changes.
   The table pages' Shaping section also offers Hierarchy and Grouped hierarchy (ParentBy, plus
   GroupBy on the roots) over their own data: people by manager, files by folder, processes by app;
-  pages whose rows have no parent relation show those modes disabled with the reason. The Manager
-  table shows per-row-kind context menus: one shared row menu set
-  through an implicit `TableViewRow` style, whose `Opening` handler keeps the items tagged for the
-  row's kind (leaf or expandable, read from `MenuFlyout.Target`); an implicit `TableViewGroupHeader`
-  style gives group headers their own menu and restyles the band, and the leaf items bind
-  `Command` / `Visibility` to the row's item
+  pages whose rows have no parent relation show those modes disabled with the reason
 - Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
 - `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
   sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing
@@ -123,17 +118,22 @@ The **Context menus** page (`ContextMenus`) demonstrates per-column cell/header
 flyouts and row fallback with the shared people data: a **Name** cell menu whose
 items bind to the row item, a shared row menu (**Copy row**, **Move to next
 department**, **Remove from list**) set through an implicit `TableViewRow` style,
-per-column header menus that hide columns,
-and the table's own `ContextFlyout` as the final fallback. The rail switches the
-cell, row and header menus off.
+per-column header menus that hide columns, a group header menu set through an
+implicit `TableViewGroupHeader` style, and the table's own `ContextFlyout` as the
+final fallback. The rail switches the cell, row and header menus off.
+
+The row menu varies per row kind: its `Opening` handler reads `MenuFlyout.Target`
+(the row, also for a cell request) and keeps the items tagged for that kind, so
+under Hierarchy shaping managers (expandable rows) also get **Email team**.
+**Deactivate** / **Reactivate** bind `Visibility` to the person's `IsActive`.
 
 There is no row menu property: rows get their menu from their own `ContextFlyout`,
 set through an implicit `TableViewRow` style or a row template; a menu's `Opening`
-handler can vary its items per row through `MenuFlyout.Target` (see the Hierarchy page). Column cell menus
+handler can vary its items per row through `MenuFlyout.Target`. Column cell menus
 take precedence over it; the native `TableView.ContextFlyout` is the final
 fallback. A column header uses its
-`HeaderContextFlyout`, otherwise native fallback. Group headers always use native
-fallback. Setting a menu property to null (or removing the row style) removes that
+`HeaderContextFlyout`, otherwise native fallback. Group headers use their own
+`ContextFlyout` (its items see the `TableViewGroupInfo`), otherwise native fallback. Setting a menu property to null (or removing the row style) removes that
 candidate.
 
 Keyboard requests (Shift+F10, Menu key) follow the focus level: with focus on a
@@ -142,11 +142,12 @@ first cell), the row menu opens even if the remembered current column has a cell
 menu. UI Automation `ShowContextMenu` on a row peer likewise opens the row menu.
 
 A `ContextFlyout` you set inside a cell or header (`CellTemplate`,
-`HeaderTemplate`, or an implicit style) always wins over the column properties,
-for mouse, keyboard (Shift+F10, Menu key) and UI Automation alike. It covers the
+`HeaderTemplate`, or an implicit style) wins over the column properties, for
+mouse, keyboard (Shift+F10, Menu key) and UI Automation alike. It covers the
 whole cell or header, padding included.
 
-The built-in copy/select flyouts on text controls don't count.
+On text controls only a `ContextFlyout` set on the element itself counts: their
+built-in copy/select flyouts and flyouts set through a style are skipped.
 
 Context requests move body focus without changing selection. Headers do not move
 body focus.
