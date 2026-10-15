@@ -299,13 +299,16 @@ public:
     void Initialize(inking::InkSynchronizer const& osSynchronizer) noexcept { m_osSynchronizer = osSynchronizer; }
 
 private:
-    // XAML-frame dry handoff (see InkPresenter::IsDryHandoffInXamlFrame): EndDry is held until the next
-    // CompositionTarget.Rendering and forwarded there, before XAML renders that frame. UI thread only.
+    // Custom-dry handoff state. Only BeginDry/EndDry move it, on the UI thread (StrokesCollected).
+    //   Idle          - no dry in progress
+    //   InDry         - BeginDry done, waiting for the app's EndDry
+    //   EndDryPending - ink is on XAML's device: EndDry is held until XAML's next frame starts (Rendering)
+    enum class DryState { Idle, InDry, EndDryPending };
     void FlushPendingEndDry();
-    bool m_inDry{ false };
-    bool m_endDryPending{ false };
-    // A self-removing CompositionTarget.Rendering handler is registered (UI thread only).
-    bool m_renderingHooked{ false };
+    void EndDryOnOs();
+    DryState m_dryState{ DryState::Idle };
+    // Set only in EndDryPending: the Rendering registration that forwards the held EndDry.
+    std::shared_ptr<winrt::event_token> m_renderingToken;
 
     winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
 
@@ -379,6 +382,7 @@ public:
     // share XAML's commit.
     void SetDryHandoffInXamlFrame(bool value) noexcept { m_dryHandoffInXamlFrame = value; }
     bool IsDryHandoffInXamlFrame() const noexcept { return m_dryHandoffInXamlFrame; }
+    bool IsOnUIThread() const { return m_uiDispatcher && m_uiDispatcher.HasThreadAccess(); }
 
     // Internal (not on the winmd surface). Fire our StrokesCollected/StrokesErased events on the UI
     // thread. Called from the stroke-forwarding lambdas after the (agile) strokes have been
