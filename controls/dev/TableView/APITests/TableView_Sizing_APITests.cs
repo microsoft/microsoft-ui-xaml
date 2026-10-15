@@ -2018,7 +2018,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var cellRight = GetVisualRight(headerCell, wrapper);
                 Log.Comment($"Header cell spans {cellLeft}..{cellRight}.");
 
-                var gridLine = headerCell.FindVisualChildByName("TableViewHeaderGridLine");
+                var gridLine = headerCell.FindVisualChildByName("PART_GridLine");
                 Verify.IsNotNull(gridLine, "The header cell must contain its vertical grid line.");
                 Verify.AreEqual(Visibility.Visible, gridLine.Visibility,
                     "Precondition: a non-terminal header grid line must be visible with GridLinesVisibility.All.");
