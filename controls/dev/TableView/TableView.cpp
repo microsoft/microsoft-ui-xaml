@@ -2603,6 +2603,7 @@ void TableView::OnRowElementPrepared(
             rowImpl->RefreshGridLines();
             rowImpl->RefreshRowBackground();
         }
+        rowImpl->RefreshCellToolTips();
         RefreshRowHierarchyState(row, args.Index());
         RefreshRowSelectionState(row);
         InvalidateMeasureForRowRealizationChange();

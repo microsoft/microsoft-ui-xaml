@@ -115,6 +115,7 @@ public:
 
     // Releases control-owned cell tooltips (recycle-out).
     void ReleaseCellToolTips();
+    void RefreshCellToolTips();
     // Raises NameProperty changed on cell peers that already exist; creates none.
     void RaiseCellAutomationNamesChangedInternal(winrt::UIElement const& skipCell = nullptr);
 

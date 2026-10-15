@@ -325,6 +325,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies recycled rows keep their tooltip and help text when the bound value does not change between items.")]
+        public void VerifyRecycledRowKeepsToolTipWhenItemsShareTheValue()
+        {
+            TableView tableView = null;
+            var items = MakeManyItems(200);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateToolTipTable(items, cellToolTipPath: null);
+                // An explicit Source keeps the value constant through the repeater's DataContext
+                // reset, so a recycled cell gets no property-changed callback to revive the tooltip
+                // the recycle-out neutralized.
+                tableView.Columns[0].CellToolTipBinding = new Binding { Source = "Shared role", Mode = BindingMode.OneWay };
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 2000.0);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 4000.0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = GetRealizedRows(tableView);
+                Verify.IsGreaterThan(rows.Count, 0, "Rows must be realized after the scroll.");
+
+                foreach (var row in rows)
+                {
+                    var item = row.DataContext as Person;
+                    var wrapper = GetRowCell(row, 0);
+                    var toolTip = RequireToolTip(wrapper, $"the row for {item?.Name}");
+                    Verify.AreEqual("Shared role", toolTip.Content as string, "A recycled row must keep its tooltip content.");
+                    Verify.IsTrue(toolTip.IsEnabled, "A recycled row's tooltip must be enabled.");
+                    Verify.AreEqual("Shared role", AutomationProperties.GetHelpText(wrapper),
+                        "A recycled row must re-publish the tooltip as help text.");
+                }
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a source PropertyChanged updates a live cell tooltip in place, on the same ToolTip instance.")]
         public void VerifyItemPropertyChangeUpdatesCellToolTipInPlace()
         {
