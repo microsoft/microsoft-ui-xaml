@@ -367,11 +367,11 @@ public:
     // no element identity, so an out-of-process consumer could only attribute it
     // to an element by scope-nesting inference. Core pointers are classified at
     // runtime, including objects reached through a projection's GetHandle():
-    //   * UI element, including controls: cuielement.
-    //   * Other dependency object: objectpointer, plus cuielement only when a
+    //   * UI element, including controls: ElementId.
+    //   * Other dependency object: objectpointer, plus ElementId only when a
     //     containing text control or an explicitly supplied UI owner is known.
-    // A null subject produces objectpointer=0, without a cuielement field.
-    // cuielement uses the Visual tree's CUIElement identity. An associated text
+    // A null subject produces objectpointer=0, without an ElementId field.
+    // ElementId uses the Visual tree's CUIElement identity. An associated text
     // host is not necessarily the particular overflow element rendering a run.
     // No owner is inferred for arbitrary or shared dependency objects.
     //
@@ -421,13 +421,13 @@ public:
             if (identity.uiElement != 0 && identity.objectPointer == 0) \
             { \
                 TraceLoggingWrite(TraceLoggingType::Provider(), OpName, \
-                    TraceLoggingValue(identity.uiElement, "cuielement"), \
+                    TraceLoggingValue(identity.uiElement, "ElementId"), \
                     __VA_ARGS__); \
             } \
             else if (identity.uiElement != 0) \
             { \
                 TraceLoggingWrite(TraceLoggingType::Provider(), OpName, \
-                    TraceLoggingValue(identity.uiElement, "cuielement"), \
+                    TraceLoggingValue(identity.uiElement, "ElementId"), \
                     TraceLoggingValue(identity.objectPointer, "objectpointer"), \
                     __VA_ARGS__); \
             } \
