@@ -62,58 +62,50 @@
             <ColumnDefinition x:Name="OptionsColumn" Width="0"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Example container (live demo) -->
-        <Border
-            x:Name="ExampleContainer"
-            Grid.Row="0" Grid.Column="0"
-            CornerRadius="6"
-            BorderThickness="1"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            Background="{ThemeResource SubtleFillColorTransparentBrush}">
-            <!-- No x:Name on the InfoBars: WinUI reports an unset AutomationId as the x:Name. -->
-            <Grid x:Name="ExampleGrid" RowSpacing="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition x:Name="ExampleHostRow" Height="Auto"/>
-                </Grid.RowDefinitions>
-                <!-- Not an InfoBar: it announces on open (64477279). Unnamed: WinUI reports an unset AutomationId as the x:Name. -->
-                <Border
-                    Grid.Row="0"
-                    MinHeight="104"
-                    Padding="16,14"
-                    CornerRadius="{ThemeResource ControlCornerRadius}"
-                    BorderThickness="1"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}"
-                    Visibility="Collapsed">
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <FontIcon
-                            Glyph="&#xE946;"
-                            FontSize="16"
-                            VerticalAlignment="Top"
-                            Margin="0,2,0,0"
-                            Foreground="{ThemeResource SystemFillColorAttentionBrush}"
-                            AutomationProperties.AccessibilityView="Raw"/>
-                        <TextBlock Grid.Column="1" TextWrapping="Wrap">
-                            <Run Text="Try it" FontWeight="SemiBold"/><Run Text="  "/><Run x:Name="TryItMessageRun"/>
-                        </TextBlock>
-                    </Grid>
-                </Border>
-                <ContentControl
-                    x:Name="ExampleHost"
-                    Grid.Row="1"
-                    IsTabStop="False"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    HorizontalContentAlignment="Stretch"
-                    VerticalContentAlignment="Stretch"
-                    Content="{x:Bind Example, Mode=OneWay}"/>
-            </Grid>
-        </Border>
+        <!-- Example (live demo). No card frame: tables draw their own border. -->
+        <!-- No x:Name on the InfoBars: WinUI reports an unset AutomationId as the x:Name. -->
+        <Grid x:Name="ExampleGrid" Grid.Row="0" Grid.Column="0" RowSpacing="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition x:Name="ExampleHostRow" Height="Auto"/>
+            </Grid.RowDefinitions>
+            <!-- Not an InfoBar: it announces on open (64477279). Unnamed: WinUI reports an unset AutomationId as the x:Name. -->
+            <Border
+                Grid.Row="0"
+                MinHeight="104"
+                Padding="16,14"
+                CornerRadius="{ThemeResource ControlCornerRadius}"
+                BorderThickness="1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}"
+                Visibility="Collapsed">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <FontIcon
+                        Glyph="&#xE946;"
+                        FontSize="16"
+                        VerticalAlignment="Top"
+                        Margin="0,2,0,0"
+                        Foreground="{ThemeResource SystemFillColorAttentionBrush}"
+                        AutomationProperties.AccessibilityView="Raw"/>
+                    <TextBlock Grid.Column="1" TextWrapping="Wrap">
+                        <Run Text="Try it" FontWeight="SemiBold"/><Run Text="  "/><Run x:Name="TryItMessageRun"/>
+                    </TextBlock>
+                </Grid>
+            </Border>
+            <ContentControl
+                x:Name="ExampleHost"
+                Grid.Row="1"
+                IsTabStop="False"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                Content="{x:Bind Example, Mode=OneWay}"/>
+        </Grid>
 
         <!-- Options rail (right in wide layouts, stacked under the example in narrow
              layouts) — collapses when Options is null. In wide mode its width is
