@@ -32,6 +32,11 @@ ColorSpectrum::ColorSpectrum()
     m_maxValueFromLastBitmapCreation = MaxValue();
 
     Unloaded({ this, &ColorSpectrum::OnUnloaded });
+
+    // The color-name tooltip is a popup that isn't part of our visual tree, so it won't move
+    // with us when the hosting page scrolls. Close it when our effective viewport changes so it
+    // doesn't linger, detached, over unrelated content while the user scrolls.
+    EffectiveViewportChanged({ this, &ColorSpectrum::OnEffectiveViewportChanged });
 }
 
 winrt::AutomationPeer ColorSpectrum::OnCreateAutomationPeer()
@@ -65,6 +70,8 @@ void ColorSpectrum::OnApplyTemplate()
         inputTarget.PointerPressed({ this, &ColorSpectrum::OnInputTargetPointerPressed });
         inputTarget.PointerMoved({ this, &ColorSpectrum::OnInputTargetPointerMoved });
         inputTarget.PointerReleased({ this, &ColorSpectrum::OnInputTargetPointerReleased });
+        inputTarget.PointerCanceled({ this, &ColorSpectrum::OnInputTargetPointerCanceled });
+        inputTarget.PointerCaptureLost({ this, &ColorSpectrum::OnInputTargetPointerCaptureLost });
     }
 
     if (auto&& colorNameToolTip = m_colorNameToolTip.get())
@@ -207,20 +214,14 @@ void ColorSpectrum::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 
 void ColorSpectrum::OnGotFocus(winrt::RoutedEventArgs const& /*e*/)
 {
-    if (auto&& colorNameToolTip = m_colorNameToolTip.get())
-    {
-        colorNameToolTip.IsOpen(true);
-    }
+    OpenColorNameToolTip();
 
     UpdateVisualState(true /* useTransitions */);
 }
 
 void ColorSpectrum::OnLostFocus(winrt::RoutedEventArgs const& /*e*/)
 {
-    if (auto&& colorNameToolTip = m_colorNameToolTip.get())
-    {
-        colorNameToolTip.IsOpen(false);
-    }
+    CloseColorNameToolTip();
 
     UpdateVisualState(true /* useTransitions */);
 }
@@ -442,7 +443,19 @@ void ColorSpectrum::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedE
         // we'll want to synchronously cancel it so we don't have any asynchronous actions
         // lingering beyond our lifetime.
         CancelAsyncAction(m_createImageBitmapAction);
+
+        // Make sure the color-name tooltip doesn't linger on screen after we've been
+        // removed from the tree (e.g. when the hosting page is scrolled away or closed).
+        CloseColorNameToolTip();
     }
+}
+
+void ColorSpectrum::OnEffectiveViewportChanged(winrt::FrameworkElement const& /*sender*/, winrt::EffectiveViewportChangedEventArgs const& /*args*/)
+{
+    // When the hosting page scrolls, the color-name tooltip (a popup outside our visual tree)
+    // would otherwise stay put and end up detached over unrelated content. Close it so it
+    // dismisses instead of lingering or mispositioning while scrolling.
+    CloseColorNameToolTip();
 }
 
 winrt::Rect ColorSpectrum::GetBoundingRectangle()
@@ -810,6 +823,11 @@ void ColorSpectrum::OnInputTargetPointerPressed(winrt::IInspectable const& /*sen
     UpdateVisualState(true /* useTransitions*/);
     UpdateEllipse();
 
+    // Open the color-name tooltip on each pointer press rather than relying solely on GotFocus.
+    // After a previous interaction closes the tooltip on release the control keeps focus, so a
+    // subsequent press is a focus no-op and GotFocus wouldn't fire to reopen it.
+    OpenColorNameToolTip();
+
     args.Handled(true);
 }
 
@@ -826,14 +844,65 @@ void ColorSpectrum::OnInputTargetPointerMoved(winrt::IInspectable const& /*sende
 
 void ColorSpectrum::OnInputTargetPointerReleased(winrt::IInspectable const& /*sender*/, winrt::PointerRoutedEventArgs const& args)
 {
-    m_isPointerPressed = false;
-    m_shouldShowLargeSelection = false;
-
     m_inputTarget.get().ReleasePointerCapture(args.Pointer());
+
+    EndPointerInteraction();
+
     UpdateVisualState(true /* useTransitions*/);
     UpdateEllipse();
 
     args.Handled(true);
+}
+
+void ColorSpectrum::OnInputTargetPointerCanceled(winrt::IInspectable const& /*sender*/, winrt::PointerRoutedEventArgs const& args)
+{
+    // On touch, panning hands the pointer off to direct manipulation, which raises PointerCanceled
+    // (not PointerReleased). Treat it the same as a release so the interaction state is cleared and
+    // the color-name tooltip doesn't linger.
+    EndPointerInteraction();
+}
+
+void ColorSpectrum::OnInputTargetPointerCaptureLost(winrt::IInspectable const& /*sender*/, winrt::PointerRoutedEventArgs const& args)
+{
+    // Capture can be lost without a PointerReleased (e.g. when direct manipulation takes over during
+    // a touch pan). End the interaction here as well so pressed state is reset and the tooltip closes.
+    EndPointerInteraction();
+
+    UpdateVisualState(true /* useTransitions*/);
+    UpdateEllipse();
+
+    args.Handled(true);
+}
+
+void ColorSpectrum::EndPointerInteraction()
+{
+    m_isPointerPressed = false;
+    m_shouldShowLargeSelection = false;
+
+    // The color-name tooltip is opened when the ColorSpectrum receives focus, which happens when
+    // the pointer presses on it. If we opened the tooltip as a result of a pointer interaction,
+    // close it now that the interaction has ended so it doesn't linger while the user clicks or
+    // scrolls elsewhere. Keyboard-driven focus keeps the tooltip open until focus is lost.
+    if (FocusState() == winrt::FocusState::Pointer)
+    {
+        CloseColorNameToolTip();
+    }
+}
+
+void ColorSpectrum::OpenColorNameToolTip()
+{
+    if (auto&& colorNameToolTip = m_colorNameToolTip.get())
+    {
+        colorNameToolTip.IsOpen(true);
+    }
+}
+
+void ColorSpectrum::CloseColorNameToolTip()
+{
+    if (auto&& colorNameToolTip = m_colorNameToolTip.get())
+    {
+        colorNameToolTip.IsOpen(false);
+    }
 }
 
 void ColorSpectrum::OnSelectionEllipseFlowDirectionChanged(winrt::DependencyObject const& /*o*/, winrt::DependencyProperty const& /*p*/)
