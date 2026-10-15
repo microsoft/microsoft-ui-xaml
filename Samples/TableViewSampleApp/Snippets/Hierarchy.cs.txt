@@ -164,6 +164,28 @@ private void Reparent_Click(object sender, RoutedEventArgs e)
 
 // …
 
+// MenuFlyout has no item filter, so the full XAML list is cached on the first open and the
+// subset for this row's kind is re-added on every open. Re-adding, rather than setting
+// Visibility, leaves the HasMentor Visibility bindings in charge of their items.
+private List<MenuFlyoutItemBase>? _rowMenuItems;
+
+private void OnRowMenuOpening(object sender, object e)
+{
+    var menu = (MenuFlyout)sender;
+    _rowMenuItems ??= menu.Items.ToList();
+
+    // Target is the row, also when the menu was requested from one of its cells.
+    var kind = menu.Target is TableViewRow { IsExpandable: true } ? "Manager" : "Leaf";
+    menu.Items.Clear();
+    foreach (var item in _rowMenuItems)
+    {
+        if (item.Tag is null || (item.Tag as string) == kind)
+        {
+            menu.Items.Add(item);
+        }
+    }
+}
+
 // Menu items inherit the DataContext of the row they open on: an Employee for a data row, the
 // TableViewGroupInfo for a group header.
 private void OnRowMenuItemClick(object sender, RoutedEventArgs e)
@@ -177,15 +199,15 @@ private void OnRowMenuItemClick(object sender, RoutedEventArgs e)
     };
 }
 
-private void OnPromoteClick(object sender, RoutedEventArgs e)
+private void OnCopyRowClick(object sender, RoutedEventArgs e)
 {
-    if (((FrameworkElement)sender).DataContext is not Employee { CanPromote: true } employee)
+    if (((FrameworkElement)sender).DataContext is Employee employee)
     {
-        return;
+        var text = string.Join('\t', employee.Name, employee.Title, employee.Dept, employee.Id);
+        var package = new DataPackage();
+        package.SetText(text);
+        Clipboard.SetContent(package);
     }
-
-    var from = employee.Title;
-    employee.Title = from == "Associate" ? "Engineer" : "Senior";
 }
 
 private void OnRemoveMentorClick(object sender, RoutedEventArgs e)
@@ -222,24 +244,4 @@ private void OnAssignMentorClick(object sender, RoutedEventArgs e)
     }
 
     employee.MentorId = managerId;
-}
-
-// …
-
-// From Helpers\RowKindStyleSelector.cs
-// One Style per row kind. TableView asks again whenever a row's hierarchy state changes, so a row
-// that gains its first child switches to ExpandableRow without being re-created.
-public sealed partial class RowKindStyleSelector : StyleSelector
-{
-    public Style? LeafRow { get; set; }
-    public Style? ExpandableRow { get; set; }
-    public Style? GroupHeader { get; set; }
-
-    protected override Style? SelectStyleCore(object item, DependencyObject container) => container switch
-    {
-        TableViewGroupHeader => GroupHeader,
-        TableViewRow { IsExpandable: true } => ExpandableRow,
-        TableViewRow => LeafRow,
-        _ => null,
-    };
 }

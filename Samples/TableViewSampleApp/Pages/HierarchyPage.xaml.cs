@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace TableViewSampleApp.Pages;
 
@@ -364,6 +365,28 @@ public sealed partial class HierarchyPage : SamplePageBase
     // </snippet>
 
     // <snippet>
+    // MenuFlyout has no item filter, so the full XAML list is cached on the first open and the
+    // subset for this row's kind is re-added on every open. Re-adding, rather than setting
+    // Visibility, leaves the HasMentor Visibility bindings in charge of their items.
+    private List<MenuFlyoutItemBase>? _rowMenuItems;
+
+    private void OnRowMenuOpening(object sender, object e)
+    {
+        var menu = (MenuFlyout)sender;
+        _rowMenuItems ??= menu.Items.ToList();
+
+        // Target is the row, also when the menu was requested from one of its cells.
+        var kind = menu.Target is TableViewRow { IsExpandable: true } ? "Manager" : "Leaf";
+        menu.Items.Clear();
+        foreach (var item in _rowMenuItems)
+        {
+            if (item.Tag is null || (item.Tag as string) == kind)
+            {
+                menu.Items.Add(item);
+            }
+        }
+    }
+
     // Menu items inherit the DataContext of the row they open on: an Employee for a data row, the
     // TableViewGroupInfo for a group header.
     private void OnRowMenuItemClick(object sender, RoutedEventArgs e)
@@ -378,16 +401,16 @@ public sealed partial class HierarchyPage : SamplePageBase
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0}: {1}", menuItem.Text, target));
     }
 
-    private void OnPromoteClick(object sender, RoutedEventArgs e)
+    private void OnCopyRowClick(object sender, RoutedEventArgs e)
     {
-        if (((FrameworkElement)sender).DataContext is not Employee { CanPromote: true } employee)
+        if (((FrameworkElement)sender).DataContext is Employee employee)
         {
-            return;
+            var text = string.Join('\t', employee.Name, employee.Title, employee.Dept, employee.Id);
+            var package = new DataPackage();
+            package.SetText(text);
+            Clipboard.SetContent(package);
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Copied \"{0}\"", text));
         }
-
-        var from = employee.Title;
-        employee.Title = from == "Associate" ? "Engineer" : "Senior";
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Promoted {0} from {1} to {2}", employee.Name, from, employee.Title));
     }
 
     private void OnRemoveMentorClick(object sender, RoutedEventArgs e)
