@@ -2585,14 +2585,19 @@ void TableView::OnRowElementPrepared(
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
         auto rowImpl = winrt::get_self<TableViewRow>(row);
-        rowImpl->EnsureOwningTableViewInternal(*this);
+        // Stage the suppression state first so the cell rebuild's chrome refresh paints it; refresh
+        // grid lines and banding here only if the rebuild did not (each grid-line pass walks every cell).
         rowImpl->SetTerminalGridLineSuppression({
             .suppressTrailing = m_suppressTrailingGridLine,
-            .suppressBottom = false });
-        rowImpl->RefreshRowBackground();
+            .suppressBottom = false }, false /* refresh */);
+        if (!rowImpl->EnsureOwningTableViewInternal(*this))
+        {
+            rowImpl->RefreshGridLines();
+            rowImpl->RefreshRowBackground();
+        }
         RefreshRowHierarchyState(row, args.Index());
         RefreshRowSelectionState(row);
-        InvalidateMeasure();
+        InvalidateMeasureForRowRealizationChange();
         QueueTerminalGridLineRefresh();
     }
     else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
@@ -2645,7 +2650,7 @@ void TableView::OnRowElementClearing(
         }
         // Release app-supplied tooltip content rather than pinning it in the recycle pool.
         rowImpl->ReleaseCellToolTips();
-        rowImpl->SetTerminalGridLineSuppression({});
+        rowImpl->SetTerminalGridLineSuppression({}, false /* refresh */);
         if (auto terminalRow = m_terminalGridLineRow.get(); terminalRow && IsSameObject(row, terminalRow))
         {
             m_terminalGridLineRowSizeChangedRevoker.revoke();
@@ -2657,8 +2662,11 @@ void TableView::OnRowElementClearing(
         // ElementPrepared/ElementIndexChanged callback. Keep the weak owner available so that path
         // can rebuild cells and publish a live row peer; item-identity tracking still rejects stale
         // peers after the rebind.
-        rowImpl->EnsureOwningTableViewInternal(*this);
-        InvalidateMeasure();
+        if (!rowImpl->EnsureOwningTableViewInternal(*this))
+        {
+            rowImpl->RefreshGridLines();
+        }
+        InvalidateMeasureForRowRealizationChange();
         QueueTerminalGridLineRefresh();
     }
     else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())

@@ -4,6 +4,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using System.Collections.Generic;
 using System.Linq;
@@ -256,6 +257,218 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.IsTrue(checkedAny, "Precondition: at least one realized row must be locatable in the projection.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a recycled row whose row peer exists but whose cells have no peers keeps its cell elements and shows the new item.")]
+        public void VerifyRecycledRowWithoutCellPeersReusesItsCells()
+        {
+            TableView tableView = null;
+            List<Person> items = null;
+            var cellsBefore = new Dictionary<TableViewRow, List<UIElement>>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeManyItems(RecyclingSourceCount);
+                tableView = CreateScrollableTable(items);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var row in RealizedProjectedRows(tableView))
+                {
+                    // A row peer tracks its item, which is what used to force a whole-row regeneration on
+                    // recycle. Cells are only enumerated, never asked for peers (FromElement would create one).
+                    GetRowPeer(row);
+                    cellsBefore[row] = GetCellsHost(row).Children.ToList();
+                }
+
+                Verify.IsGreaterThan(cellsBefore.Count, 0, "Precondition: rows must be realized before scrolling.");
+            });
+
+            ScrollToEnd(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var recycledCount = 0;
+
+                foreach (var row in RealizedProjectedRows(tableView))
+                {
+                    var item = row.DataContext as Person;
+                    Verify.IsNotNull(item, "Every realized row must carry a data item.");
+
+                    var cells = GetCellsHost(row).Children.ToList();
+                    Verify.AreEqual(GetRowCellColumns(row).Count, cells.Count, "Every column must have a cell.");
+                    Verify.AreEqual(item.Name, GetCellText((Grid)cells[0]), "A recycled row's first cell must show its current item.");
+                    Verify.AreEqual(item.Role, GetCellText((Grid)cells[1]), "A recycled row's second cell must show its current item.");
+
+                    if (!cellsBefore.TryGetValue(row, out var previous))
+                    {
+                        continue;
+                    }
+
+                    recycledCount++;
+                    for (var i = 0; i < cells.Count; i++)
+                    {
+                        Verify.IsTrue(ReferenceEquals(previous[i], cells[i]),
+                            $"Recycling '{item.Name}' into a row with no cell peers must reuse cell {i}, not regenerate it.");
+                        Verify.IsTrue(ReferenceEquals(GetCellContent((Grid)previous[i]), GetCellContent((Grid)cells[i])),
+                            $"Recycling '{item.Name}' must keep the generated content of cell {i}.");
+                    }
+                }
+
+                Log.Comment($"{recycledCount} recycled rows reused their cells.");
+                Verify.IsGreaterThan(recycledCount, 0, "Precondition: at least one container must have been recycled to a new item.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a recycled row whose cells already have automation peers replaces them, so a held cell provider never silently describes another item.")]
+        public void VerifyRecycledRowWithCellPeersReplacesItsCells()
+        {
+            TableView tableView = null;
+            List<Person> items = null;
+            var peersBefore = new Dictionary<TableViewRow, TableViewCellAutomationPeer>();
+            var cellsBefore = new Dictionary<TableViewRow, UIElement>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeManyItems(RecyclingSourceCount);
+                tableView = CreateScrollableTable(items);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var row in RealizedProjectedRows(tableView))
+                {
+                    peersBefore[row] = GetCellPeer(row, 0);
+                    cellsBefore[row] = GetRowCell(row, 0);
+                }
+
+                Verify.IsGreaterThan(peersBefore.Count, 0, "Precondition: rows must be realized before scrolling.");
+            });
+
+            ScrollToEnd(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var recycledCount = 0;
+
+                foreach (var row in RealizedProjectedRows(tableView))
+                {
+                    var item = row.DataContext as Person;
+                    Verify.IsNotNull(item, "Every realized row must carry a data item.");
+
+                    var cellPeer = GetCellPeer(row, 0);
+                    var name = cellPeer.GetName();
+                    Verify.IsTrue(name != null && name.Contains(item.Name),
+                        $"A recycled cell peer must report the current item's value; '{name}' does not mention '{item.Name}'.");
+                    Verify.AreEqual(item.Name, GetCellText(GetRowCell(row, 0)), "A recycled row must show its current item.");
+
+                    if (!peersBefore.TryGetValue(row, out var previousPeer))
+                    {
+                        continue;
+                    }
+
+                    recycledCount++;
+                    Verify.IsFalse(ReferenceEquals(previousPeer, cellPeer),
+                        $"A row recycled to '{item.Name}' must not hand out the cell provider of its previous item.");
+                    Verify.IsFalse(ReferenceEquals(cellsBefore[row], GetRowCell(row, 0)),
+                        $"A row recycled to '{item.Name}' while its cells had peers must replace those cells.");
+                }
+
+                Log.Comment($"{recycledCount} recycled rows replaced their cells.");
+                Verify.IsGreaterThan(recycledCount, 0, "Precondition: at least one container must have been recycled to a new item.");
+            });
+        }
+    }
+
+    // Recycled rows must repaint index- and table-dependent chrome for the slot they now occupy.
+    [TestClass]
+    public class TableViewRowChromeRecyclingTests : TableViewApiTestBase
+    {
+        [TestMethod]
+        [TestProperty("Description", "Verifies recycled rows carry the banding for their new index and draw grid lines, with and without a row peer.")]
+        public void VerifyRecycledRowsRepaintBandingAndGridLines()
+        {
+            TableView tableView = null;
+            List<Person> items = null;
+            Brush baseBrush = null;
+            Brush alternateBrush = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeManyItems(RecyclingSourceCount);
+                baseBrush = new SolidColorBrush(Microsoft.UI.Colors.LightGray);
+                alternateBrush = new SolidColorBrush(Microsoft.UI.Colors.LightBlue);
+                tableView = CreateScrollableTable(items);
+                tableView.RowBackground = baseBrush;
+                tableView.AlternatingRowBackground = alternateBrush;
+                tableView.GridLinesVisibility = TableViewGridLinesVisibility.All;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Every other row gets a peer so both recycle routes (with and without item tracking) are covered.
+                var rows = RealizedProjectedRows(tableView);
+                for (var i = 0; i < rows.Count; i += 2)
+                {
+                    GetRowPeer(rows[i]);
+                }
+
+                VerifyChrome(tableView, items, baseBrush, alternateBrush, "before scrolling");
+            });
+
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 37.0 * 7);
+            RunOnUIThread.Execute(() => VerifyChrome(tableView, items, baseBrush, alternateBrush, "after a partial scroll"));
+
+            ScrollToEnd(tableView);
+            RunOnUIThread.Execute(() => VerifyChrome(tableView, items, baseBrush, alternateBrush, "after scrolling to the end"));
+
+            ScrollToStart(tableView);
+            RunOnUIThread.Execute(() => VerifyChrome(tableView, items, baseBrush, alternateBrush, "after scrolling back"));
+        }
+
+        private static void VerifyChrome(
+            TableView tableView,
+            List<Person> items,
+            Brush baseBrush,
+            Brush alternateBrush,
+            string context)
+        {
+            var rows = RealizedProjectedRows(tableView);
+            Verify.IsGreaterThan(rows.Count, 0, $"Rows must be realized ({context}).");
+
+            foreach (var row in rows)
+            {
+                var item = row.DataContext as Person;
+                var index = items.IndexOf(item);
+                Verify.IsGreaterThanOrEqual(index, 0, $"Every realized row must map to a source item ({context}).");
+
+                Verify.AreEqual(item.Name, GetCellText(GetRowCell(row, 0)), $"Row {index} must show its own item ({context}).");
+
+                var expected = (index % 2) == 0 ? baseBrush : alternateBrush;
+                Verify.AreEqual(expected, row.Background, $"Row {index} must carry the brush for its parity ({context}).");
+
+                // The final row may suppress its bottom line where it meets the table border.
+                if (index != items.Count - 1)
+                {
+                    Verify.IsGreaterThan(row.BorderThickness.Bottom, 0.0, $"Row {index} must draw its horizontal grid line ({context}).");
+                }
+
+                var cell = GetRowCell(row, 0);
+                Verify.IsGreaterThan(cell.BorderThickness.Right, 0.0, $"Row {index} must draw its vertical grid line ({context}).");
+                Verify.IsNotNull(cell.BorderBrush, $"Row {index}'s vertical grid line must have a brush ({context}).");
+            }
         }
     }
 

@@ -308,11 +308,14 @@ void TableViewRow::OnApplyTemplate()
     UpdateVisualState(false /* useTransitions */);
 }
 
-void TableViewRow::SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state)
+void TableViewRow::SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state, bool refresh)
 {
     m_suppressTrailingGridLine = state.suppressTrailing;
     m_suppressBottomGridLine = state.suppressBottom;
-    RefreshGridLines();
+    if (refresh)
+    {
+        RefreshGridLines();
+    }
 }
 
 winrt::AutomationPeer TableViewRow::OnCreateAutomationPeer()
@@ -1047,13 +1050,13 @@ void TableViewRow::AttachColumnsSubscription(winrt::TableView const& owner)
     }
 }
 
-void TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
+bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
 {
     auto const currentOwner = GetOwningTableView();
     // Compare through the typed accessor so unchanged weak refs hit the no-op path.
     if (currentOwner == owner)
     {
-        return;
+        return false;
     }
 
     // Single-writer: the recycle cycle clears the owner to null between tables; a direct
@@ -1063,7 +1066,7 @@ void TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
         // Runs inside an ItemsRepeater callback; an escaping throw would failfast.
         // Assert in debug, no-op in retail (keep current owner, skip re-attach).
         MUX_ASSERT_MSG(false, "TableViewRow re-owned without an intervening clear");
-        return;
+        return false;
     }
 
     DetachColumnsSubscription();
@@ -1102,20 +1105,19 @@ void TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
     // Observe the new owner's Columns vector (no-op on recycle-out when owner is null).
     AttachColumnsSubscription(owner);
 
-    RebuildCells();
+    return RebuildCells();
 }
 
-void TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
+bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
 {
     if (!owner)
     {
-        return;
+        return false;
     }
 
     if (m_owningTableView.get() != owner)
     {
-        SetOwningTableViewInternal(owner);
-        return;
+        return SetOwningTableViewInternal(owner);
     }
 
     auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
@@ -1123,23 +1125,38 @@ void TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
     auto* const peerImpl = rowPeer ? winrt::get_self<TableViewRowAutomationPeer>(rowPeer) : nullptr;
     if (peerImpl && !peerImpl->CanReuseForRowItem(*this, owner))
     {
-        if (auto host = m_cellsHost.get())
+        // Cell providers are bound to their element, so once a client may hold one the cells must be
+        // replaced for the new item. With no cell peer realized nothing can observe the reuse, so
+        // keep the cells and let them restamp from the inherited DataContext. (FromElement above creates
+        // the row peer, so this branch runs on every recycle, not only under a UIA client.)
+        bool chromeRefreshed = false;
+        if (HasCellAutomationPeers())
         {
-            ResetCellAutomationNames();
-            host.Children().Clear();
+            if (auto host = m_cellsHost.get())
+            {
+                ResetCellAutomationNames();
+                host.Children().Clear();
+            }
+            peerImpl->DropCellPeerCache();
+            chromeRefreshed = RebuildCells(false /* updateExistingCellPeerItems */);
         }
-        peerImpl->DropCellPeerCache();
-        RebuildCells(false /* updateExistingCellPeerItems */);
+        else
+        {
+            peerImpl->DropCellPeerCache();
+            chromeRefreshed = RebuildCells();
+        }
         peerImpl->TrackCurrentRowItem(*this, owner);
-        return;
+        return chromeRefreshed;
     }
 
-    RebuildCells();
+    const bool chromeRefreshed = RebuildCells();
 
     if (peerImpl)
     {
         peerImpl->TrackCurrentRowItem(*this, owner);
     }
+
+    return chromeRefreshed;
 }
 
 // Rewire realized rows when Columns changes but the owner identity does not.
@@ -1850,6 +1867,29 @@ void TableViewRow::ResetCellAutomationNames()
     }
 }
 
+bool TableViewRow::HasCellAutomationPeers() const
+{
+    if (auto const host = m_cellsHost.get())
+    {
+        for (auto const& cell : host.Children())
+        {
+            try
+            {
+                if (TableViewCell::TryGetExistingPeer(cell))
+                {
+                    return true;
+                }
+            }
+            catch (...)
+            {
+                // Unknown provider state: take the replace path, which is always correct.
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void TableViewRow::RaiseCellAutomationNamesChangedInternal(winrt::UIElement const& skipCell)
 {
     if (auto const host = m_cellsHost.get())
@@ -1884,20 +1924,20 @@ void TableViewRow::RaiseCellAutomationNamesChangedInternal(winrt::UIElement cons
     }
 }
 
-void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
+bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
 {
     RestoreCellContentTabStopsInternal();
 
     auto host = m_cellsHost.get();
     if (!host)
     {
-        return;
+        return false;
     }
 
     // Re-entry guard. See OnDataContextChanged.
     if (m_isRebuildingCells)
     {
-        return;
+        return false;
     }
     m_isRebuildingCells = true;
     // Synchronous RAII guard: captures this only until RebuildCells returns.
@@ -1908,7 +1948,7 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     {
         // Keep realized cells on recycle-out so the next ElementPrepared restamps
         // instead of re-generating every cell (the restamp fast-path exists for this).
-        return;
+        return false;
     }
 
     // Density: apply the owning TableView's row min-height (Fluent Standard = 40,
@@ -1947,13 +1987,13 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
             // rather than orphan the editor; the next pass retries once the edit has closed.
             if (m_editingCellWrapper.get())
             {
-                return;
+                return false;
             }
         }
 
         ResetCellAutomationNames();
         host.Children().Clear();
-        return;
+        return false;
     }
 
     auto dataContext = DataContext();
@@ -2082,7 +2122,7 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         RefreshGridLines();
         RefreshRowBackground();
         ApplyHierarchyAffordance();
-        return;
+        return true;
     }
 
     // Column adds/removes/reorders or template changes rebuild cells; width-only changes are picked
@@ -2111,7 +2151,7 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         // rebuild happens on the next pass once the edit has actually closed.
         if (m_editingCellWrapper.get())
         {
-            return;
+            return false;
         }
     }
 
@@ -2174,6 +2214,7 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     RefreshGridLines();
     RefreshRowBackground();
     ApplyHierarchyAffordance();
+    return true;
 }
 
 // Recycle-out. Always walks: the restamp fast-path revives tooltips through the binding, so a
