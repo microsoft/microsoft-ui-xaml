@@ -63,51 +63,49 @@
         WhatToLookFor="Menu items inherit the row item as DataContext: the Name menu shows that person's e-mail, and one shared row menu copies, moves or removes whichever person you clicked. The row menu's Opening handler reads MenuFlyout.Target (the row, also for a cell request) to pick items for its kind; Deactivate/Reactivate bind Visibility to the Person. Each header has its own menu, so it knows which column to hide. Right-clicking another row moves focus without changing the selection. Turn a menu off to watch the request fall through to the next one.">
 
         <controls:SamplePresenter.Example>
-            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                <!-- snippet -->
-                <tv:TableView
-                    x:Name="PeopleTable"
-                    AutomationProperties.AutomationId="ContextMenusTable"
-                    AutomationProperties.Name="People with context menus"
-                    ItemsSource="{x:Bind Source}"
-                    SelectionMode="Single"
-                    VerticalAlignment="Stretch"
-                    MinHeight="320">
-                    <!-- Rows and group headers get their menus from implicit styles. -->
-                    <tv:TableView.Resources>
-                        <Style TargetType="tv:TableViewRow">
-                            <Setter Property="ContextFlyout" Value="{StaticResource RowMenu}"/>
-                        </Style>
-                        <Style TargetType="tv:TableViewGroupHeader">
-                            <Setter Property="ContextFlyout" Value="{StaticResource GroupMenu}"/>
-                            <Setter Property="Background" Value="{ThemeResource SystemFillColorAttentionBackgroundBrush}"/>
-                            <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                            <Setter Property="Padding" Value="8,10,16,10"/>
-                        </Style>
-                    </tv:TableView.Resources>
-                    <!-- The table's own menu: the final fallback. -->
-                    <tv:TableView.ContextFlyout>
-                        <MenuFlyout>
-                            <MenuFlyoutItem Text="Restore the list" Click="OnRestoreListClick">
-                                <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE72C;"/></MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                        </MenuFlyout>
-                    </tv:TableView.ContextFlyout>
-                    <!-- Each header gets its own HeaderContextFlyout in code, so its items know the column. -->
-                    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}"
-                                                 CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="{StaticResource ColWidthShortName}"
-                                             Binding="{Binding FullName}"
-                                             CellContextFlyout="{StaticResource NameCellMenu}"/>
-                    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}"
-                                                 CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                    <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}"
-                                             Binding="{Binding Office}"/>
-                    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}"
-                                             Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
-                </tv:TableView>
-                <!-- /snippet -->
-            </Border>
+            <!-- snippet -->
+            <tv:TableView
+                x:Name="PeopleTable"
+                AutomationProperties.AutomationId="ContextMenusTable"
+                AutomationProperties.Name="People with context menus"
+                ItemsSource="{x:Bind Source}"
+                SelectionMode="Single"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <!-- Rows and group headers get their menus from implicit styles. -->
+                <tv:TableView.Resources>
+                    <Style TargetType="tv:TableViewRow">
+                        <Setter Property="ContextFlyout" Value="{StaticResource RowMenu}"/>
+                    </Style>
+                    <Style TargetType="tv:TableViewGroupHeader">
+                        <Setter Property="ContextFlyout" Value="{StaticResource GroupMenu}"/>
+                        <Setter Property="Background" Value="{ThemeResource SystemFillColorAttentionBackgroundBrush}"/>
+                        <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                        <Setter Property="Padding" Value="8,10,16,10"/>
+                    </Style>
+                </tv:TableView.Resources>
+                <!-- The table's own menu: the final fallback. -->
+                <tv:TableView.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Restore the list" Click="OnRestoreListClick">
+                            <MenuFlyoutItem.Icon><FontIcon Glyph="&#xE72C;"/></MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </tv:TableView.ContextFlyout>
+                <!-- Each header gets its own HeaderContextFlyout in code, so its items know the column. -->
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                                             CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="{StaticResource ColWidthShortName}"
+                                         Binding="{Binding FullName}"
+                                         CellContextFlyout="{StaticResource NameCellMenu}"/>
+                <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}"
+                                             CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}"
+                                         Binding="{Binding Office}"/>
+                <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}"
+                                         Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+            </tv:TableView>
+            <!-- /snippet -->
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
