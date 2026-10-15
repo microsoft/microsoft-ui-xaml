@@ -154,8 +154,9 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     [MUX_DEFAULT_VALUE("winrt::Visibility::Visible")]
     Microsoft.UI.Xaml.Visibility Visibility { get; set; };
 
-    // Per-column opt-out for the click-to-sort UX. Default true. When false the header click
-    // handler ignores this column; programmatic SortByColumn still works.
+    // Per-column opt-out of sorting. Default true. When false the control will not sort by this
+    // column: the header click handler ignores it, and SortByColumn and ToggleSortDirection return
+    // false without changing state. (CanUserSortColumns, by contrast, gates only header clicks.)
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("true")]
     Boolean CanSort { get; set; };
@@ -183,7 +184,8 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     ITableViewSortComparer CustomSortComparer { get; set; };
 
     // Read-only DP driven by the owning TableView. None means the column is not part of the
-    // active sort.
+    // active sort. Apps change it through SortByColumn, ToggleSortDirection or ClearSort, or by
+    // declaring TableViewSource.Sort(sortMemberPath, direction) with a path matching this column's.
     [MUX_DEFAULT_VALUE("winrt::SortDirection::None")]
     SortDirection SortDirection { get; };
 
@@ -264,8 +266,10 @@ runtimeclass TableViewSortingEventArgs
     SortDirection Direction { get; };
 
     // Set true to stop the control applying the sort, leaving the app to own the ordering. The
-    // control's sort state, header glyph and Sorted event are all suppressed, so an app that
-    // orders the rows itself and wants the glyph to follow sets the column's state explicitly.
+    // control's sort state, header glyph and Sorted event are all suppressed. SortDirection is
+    // read-only, so the glyph cannot be set directly: an app that wants it to follow its own
+    // ordering declares that order with TableViewSource.Sort(sortMemberPath, direction) on the
+    // TableViewSource bound as ItemsSource, which lights the column whose sort path matches.
     Boolean Cancel;
 };
 
@@ -634,12 +638,13 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
 
     // Clears any other sort state, then sets this column's SortDirection. Pass SortDirection.None
     // to clear. Returns true when the sort state changed; returns false when the sort could not be
-    // applied (for example, when the rows cannot be ordered).
+    // applied (for example, when the rows cannot be ordered, or the column cannot sort because
+    // CanSort is false or it has neither a sort member path nor a CustomSortComparer).
     Boolean SortByColumn(MU_XC_NAMESPACE.TableViewColumn column, SortDirection direction);
 
     // Cycles the trigger column's direction per SortCycle, clearing any other sort state first.
     // Returns true when the sort state changed; returns false when the sort could not be applied
-    // (for example, when the rows cannot be ordered).
+    // (for example, when the rows cannot be ordered, or the column cannot sort, as for SortByColumn).
     Boolean ToggleSortDirection(MU_XC_NAMESPACE.TableViewColumn column);
 
     // Clears every column's sort state in one batch. Returns true when anything was cleared.

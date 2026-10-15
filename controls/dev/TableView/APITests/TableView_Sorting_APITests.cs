@@ -380,6 +380,37 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies SortByColumn refuses a column whose CanSort is false.")]
+        public void VerifySortByColumnRespectsCanSort()
+        {
+            TableView tableView = null;
+            var returned = true;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                tableView.Columns[0].CanSort = false;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => returned = tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(returned, "SortByColumn must refuse a column with CanSort = false.");
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection,
+                    "A column with CanSort = false must not acquire a sort direction.");
+
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name),
+                    "a column that opted out of sorting must leave the rows in source order");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies ClearSort resets every column and restores source order.")]
         public void VerifyClearSortClearsEveryColumnAndRestoresSourceOrder()
         {
