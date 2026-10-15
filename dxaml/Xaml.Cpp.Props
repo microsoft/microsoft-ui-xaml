@@ -102,7 +102,7 @@
 
   <!-- XamlProfiler producer master switch. -->
   <PropertyGroup>
-    <XamlProfilerEnabled Condition="'$(XamlProfilerEnabled)'==''">true</XamlProfilerEnabled>
+    <XamlProfilerEnabled>true</XamlProfilerEnabled>
   </PropertyGroup>
 
 </Project>
