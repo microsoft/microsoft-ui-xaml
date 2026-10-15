@@ -264,6 +264,17 @@ Sort has two front-ends and exactly one axis is ever in force; they reconcile ra
   column's `SortMemberPath` and light that column's chevron. The delegate overload
   (`Sort(keySelector, direction)`) is opaque — the key may not correspond to a column at all
   (computed key, multi-field, custom comparer) — so no chevron is shown.
+- `TableViewColumn.SortDirection` is read-only to apps. An app that cancels `Sorting` to order the
+  rows itself can make the chevron follow only by declaring that order with the path overload on
+  the bound `TableViewSource`.
+
+**Axis identity on the source.** A path axis is keyed on its path, so re-sorting the same path
+replaces it in place. A delegate axis is keyed on the delegate object's COM identity
+(`ShapingPipeline::SetSort`): the same delegate instance re-sorts that axis in place and `None`
+removes it, while any other instance, even one with identical logic, is a new, least significant
+axis, and `None` with it removes nothing. Path and delegate axes never match each other, and the
+control's own axis is keyed on column identity, so two columns sharing a `SortMemberPath` stay
+separate.
 
 Reconciliation rules:
 
@@ -281,7 +292,9 @@ the new page before unloading the old one resolves on its own. While refused, a 
 
 **Refused sorts.** `SortByColumn` and `ToggleSortDirection` return `false`, with no state changed,
 when the sort cannot be applied: besides a canceled `Sorting` or an edit that will not close, a
-source containing a null row object or the same object on two rows has no row identity to sort by.
+column with `CanSort=False` (or with neither a sort member path nor a `CustomSortComparer`) is not
+sortable, and a source containing a null row object or the same object on two rows has no row
+identity to sort by. `CanUserSortColumns=False` gates only header clicks, not these methods.
 
 Without this, the earlier-declared axis would silently outrank the later one while the chevron
 advertised the loser. WPF splits the same way: `SortDescriptions` carry a property name, which is
