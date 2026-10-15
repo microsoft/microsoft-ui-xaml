@@ -51,6 +51,9 @@
   <Target Name="EnsureTableViewTipPackageBuildImports" BeforeTargets="PrepareForBuild">
     <Error Condition="!Exists('$(TestInProductionTargetsFile)')"
            Text="The selected TestInProduction package is missing. Restore NuGet packages before building Tabular. Missing file: $(TestInProductionTargetsFile)" />
+    <!-- Internal pipeline builds ship TableView TiP data; with the public stub the tests compile but report nothing. -->
+    <Error Condition="'$(IsInternalWinUIBuild)' == 'true' and '$(TF_BUILD)' != '' and '$(TestInProductionIsReal)' != 'true' and '$(UseTestInProductionStub)' != 'true'"
+           Text="Internal pipeline builds must use the production TestInProduction package, but $(TableViewTIPProductionTargetsFile) does not exist. Restore build\packages.TestInProduction.config into $(NugetPackageDirectory), or set UseTestInProductionStub=true to build with the public stub." />
   </Target>
   <!-- Give C++/WinRT MUXC's unmerged winmd for shared/future type projections; do not feed it to MIDL. -->
   <PropertyGroup>
