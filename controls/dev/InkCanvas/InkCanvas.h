@@ -59,6 +59,7 @@ private:
     void ReportUsageTelemetry(InkTelemetry::CompositorEngine engine) noexcept;
     void SubscribeToStrokeTelemetry() noexcept;
     void AttachToSystemCompositor();
+    bool TryAttachToXamlSystemDevice(winrt::Microsoft::UI::Composition::Compositor const& compositor, winrt::Microsoft::UI::Composition::ContainerVisual const& mucRootVisual);
     void AttachToLiftedCompositor();
     // Shared by both compositor paths: creates the ink visual on the shared DComp device and binds
     // it to the presenter. Called first by AttachToSystemCompositor/AttachToLiftedCompositor, before

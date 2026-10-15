@@ -53,6 +53,30 @@ private:
     winrt::com_ptr<IDCompositionDevice> m_device;
 };
 
+// Commit request handler used when the ink is rooted on XAML's own system compositor device. The OS
+// calls OnCommitRequested on the ink thread right after a dry handoff step. Committing XAML's device
+// there could split a XAML frame, so the commit is queued to the UI thread, where it runs between
+// frames. The step that must match the app's dry ink (EndDry) is already inside XAML's frame (see
+// InkSynchronizer::EndDry), so XAML's own commit carries it.
+struct XamlFrameCommitRequestHandler : winrt::implements<XamlFrameCommitRequestHandler, IInkCommitRequestHandler>
+{
+    XamlFrameCommitRequestHandler(winrt::com_ptr<IDCompositionDevice> device, winrt::Microsoft::UI::Dispatching::DispatcherQueue uiQueue)
+        : m_device(std::move(device)), m_uiQueue(std::move(uiQueue)) {}
+
+    IFACEMETHODIMP OnCommitRequested() override
+    {
+        if (m_device && m_uiQueue)
+        {
+            m_uiQueue.TryEnqueue([device = m_device]() { device->Commit(); });
+        }
+        return S_OK;
+    }
+
+private:
+    winrt::com_ptr<IDCompositionDevice> m_device;
+    winrt::Microsoft::UI::Dispatching::DispatcherQueue m_uiQueue{ nullptr };
+};
+
 // Marshals a work item onto the ink host thread through the owning InkPresenter proxy, passing the
 // OS presenter to the lambda. No-op if the proxy has already been destroyed. The child proxies
 // (InkStrokeContainer / InkInputProcessingConfiguration / InkInputConfiguration) call these instead
@@ -257,7 +281,8 @@ private:
 // committed and suppresses the presenter's own dry rendering; EndDry releases the wet-ink layer once
 // the app has drawn them. UWP returns the OS InkSynchronizer directly; this mirror exists only because
 // that object is thread-affine to the ink thread, so it forwards BeginDry/EndDry through the owning
-// InkPresenter proxy's work queue and holds no dry-transaction state of its own. The InkPresenter keeps
+// InkPresenter proxy's work queue. When the ink is on XAML's device it holds EndDry for XAML's next frame
+// (see InkSynchronizer::EndDry). The InkPresenter keeps
 // this projected mirror, never the raw OS inking::InkSynchronizer.
 class InkSynchronizer :
     public winrt::implementation::InkSynchronizerT<InkSynchronizer>
@@ -274,6 +299,13 @@ public:
     void Initialize(inking::InkSynchronizer const& osSynchronizer) noexcept { m_osSynchronizer = osSynchronizer; }
 
 private:
+    // XAML-frame dry handoff (see InkPresenter::IsDryHandoffInXamlFrame): EndDry is held until the next
+    // CompositionTarget.Rendering and forwarded there, before XAML renders that frame. UI thread only.
+    void FlushPendingEndDry();
+    bool m_inDry{ false };
+    bool m_endDryPending{ false };
+    winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingRevoker{};
+
     winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
 
     // The OS InkSynchronizer this mirror fronts (from OS ActivateCustomDrying). Thread-affine to the ink
@@ -341,6 +373,12 @@ public:
     void SetRulerEnabled(bool enabled);
     void SetProtractorEnabled(bool enabled);
 
+    // Internal. True when InkCanvas rooted the ink on XAML's own system compositor device; then
+    // InkSynchronizer forwards EndDry inside XAML's next frame so the wet removal and the app's dry ink
+    // share XAML's commit.
+    void SetDryHandoffInXamlFrame(bool value) noexcept { m_dryHandoffInXamlFrame = value; }
+    bool IsDryHandoffInXamlFrame() const noexcept { return m_dryHandoffInXamlFrame; }
+
     // Internal (not on the winmd surface). Fire our StrokesCollected/StrokesErased events on the UI
     // thread. Called from the stroke-forwarding lambdas after the (agile) strokes have been
     // snapshotted off the ink thread and marshaled back to the UI thread.
@@ -392,6 +430,8 @@ private:
     // calls return the same instance, UWP parity). It fronts the OS InkSynchronizer; this proxy keeps
     // only this projected wrapper, never the raw OS one.
     muxc::InkSynchronizer m_customDrySynchronizer{ nullptr };
+
+    bool m_dryHandoffInXamlFrame{ false };
 
     // Ruler / protractor stencils bound to the OS presenter. Thread-affine to the ink
     // thread, so they are only ever constructed and touched inside serialized ink-thread

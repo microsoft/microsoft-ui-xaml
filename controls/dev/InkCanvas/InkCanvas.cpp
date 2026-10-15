@@ -524,20 +524,30 @@ void InkCanvas::SetInkRootVisual(IDCompositionTarget* target)
     winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
 }
 
-// System compositor path: splices the ink visual directly under a lifted MUC visual via
+// System compositor path. First tries to put the ink on XAML's own device (TryAttachToXamlSystemDevice), which
+// gives same-frame custom-dry handoff. Otherwise splices the ink visual under a lifted MUC visual via
 // IExpCompositorInterop2::CreateDCompVisualUnderMUCVisual, so lifted XAML natively clips/scrolls/
 // z-orders it. Only reached when IsSystemCompositor() is true, so the interop must be present.
 void InkCanvas::AttachToSystemCompositor()
 {
+    auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    auto mucRootVisual = compositor.CreateContainerVisual();
+
+    // Same-frame dry handoff: root the ink on XAML's own system compositor device so the OS's custom-dry
+    // EndDry (which detaches the wet ink from this host visual, then asks the host to commit) lands in the
+    // same commit as the app's dry ink, as UWP does with its InkCommitProvider on XAML's device.
+    if (TryAttachToXamlSystemDevice(compositor, mucRootVisual))
+    {
+        winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
+        return;
+    }
+
     // Create the ink visual and bind it to the presenter before the compositor-specific splice.
     AttachInkVisualToPresenter();
-
-    auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
 
     winrt::com_ptr<ABI::Microsoft::UI::Composition::Experimental::IExpCompositorInterop2> interop;
     winrt::check_hresult(winrt::get_unknown(compositor)->QueryInterface(IID_PPV_ARGS(interop.put())));
 
-    auto mucRootVisual = compositor.CreateContainerVisual();
     auto desktopDevice = m_threadData->m_compositionDevice.as<IDCompositionDesktopDevice>();
 
     // Get the MUC visual's IVisual interface pointer through the projection: up-cast to Visual (whose
@@ -562,6 +572,70 @@ void InkCanvas::AttachToSystemCompositor()
     winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
 
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
+}
+
+// Roots the ink on XAML's own system compositor device (system engine only). On the system engine, XAML's
+// MUC compositor and visuals are backed by system Windows.UI.Composition objects (GetForSystemEngine); that
+// compositor is an interop compositor, so it is also an IDCompositionDesktopDevice. Creating the ink root
+// visual on it and handing that device to the OS (SetRootVisual(visual, device)) makes the OS commit
+// provider track XAML's own batches, and the OS's custom-dry wet removal joins XAML's commit. Returns false
+// (nothing attached) if any piece is unavailable, so the caller falls back to the separate-device splice.
+bool InkCanvas::TryAttachToXamlSystemDevice(winrt::Microsoft::UI::Composition::Compositor const& compositor, winrt::Microsoft::UI::Composition::ContainerVisual const& mucRootVisual)
+{
+    try
+    {
+        auto systemCompositor = winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(compositor);
+        auto systemParent = winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(mucRootVisual)
+            .try_as<winrt::Windows::UI::Composition::ContainerVisual>();
+        auto xamlDevice = systemCompositor ? systemCompositor.try_as<IDCompositionDesktopDevice>() : nullptr;
+        if (!systemParent || !xamlDevice)
+        {
+            return false;
+        }
+
+        winrt::com_ptr<IDCompositionVisual2> inkVisual;
+        winrt::check_hresult(xamlDevice->CreateVisual(inkVisual.put()));
+        auto inkVisualAsWuc = inkVisual.try_as<winrt::Windows::UI::Composition::Visual>();
+        if (!inkVisualAsWuc)
+        {
+            return false;
+        }
+
+        // Bind on the ink thread and wait, so a device the OS rejects (no batch tracking) falls back cleanly.
+        auto* presenterSelf = winrt::get_self<::InkPresenter>(m_inkPresenterProxy);
+        auto uiQueue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+        HRESULT bindResult = E_FAIL;
+        m_isDetached.store(false, std::memory_order_release);
+        presenterSelf->RunInkPresenterWorkItemSync(
+            [&](inking::InkPresenter const& presenter)
+            {
+                auto desktopPresenter = presenter.as<IInkPresenterDesktop>();
+                bindResult = desktopPresenter->SetRootVisual(inkVisual.get(), xamlDevice.get());
+                if (SUCCEEDED(bindResult))
+                {
+                    auto commitHandler = winrt::make_self<XamlFrameCommitRequestHandler>(xamlDevice.as<IDCompositionDevice>(), uiQueue);
+                    bindResult = desktopPresenter->SetCommitRequestHandler(commitHandler.as<IInkCommitRequestHandler>().get());
+                }
+            },
+            /* pumpMessages */ false);
+
+        if (FAILED(bindResult))
+        {
+            winrt::throw_hresult(bindResult);
+        }
+
+        systemParent.Children().InsertAtTop(inkVisualAsWuc);
+        m_inkRootVisual = inkVisual.as<IDCompositionVisual>();
+        presenterSelf->SetDryHandoffInXamlFrame(true);
+        return true;
+    }
+    catch (winrt::hresult_error const& e)
+    {
+        wchar_t message[128];
+        swprintf_s(message, L"InkCanvas: ink on XAML's device failed (hr=0x%08X); using a separate device.\n", static_cast<uint32_t>(e.code()));
+        ::OutputDebugStringW(message);
+        return false;
+    }
 }
 
 // Lifted compositor path: ContentExternalOutputLink produces a lifted PlacementVisual (backed by a
@@ -611,6 +685,10 @@ void InkCanvas::DetachFromVisualLink()
     m_systemVisualLink = nullptr;
     m_inkRootVisual = nullptr;
     m_hostHwnd = NULL;
+    if (m_inkPresenterProxy)
+    {
+        winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->SetDryHandoffInXamlFrame(false);
+    }
 
     // When we give up our last reference to the system visual, we need to let the
     // the system compositor know it has work to do.  Note that it is possible that
