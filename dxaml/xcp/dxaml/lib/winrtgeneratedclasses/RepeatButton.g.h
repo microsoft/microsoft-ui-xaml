@@ -78,15 +78,18 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) RepeatButtonFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::Primitives::IRepeatButtonFactory
         , public ABI::Microsoft::UI::Xaml::Controls::Primitives::IRepeatButtonStatics
     {
-        BEGIN_INTERFACE_MAP(RepeatButtonFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(RepeatButtonFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(RepeatButtonFactory, ABI::Microsoft::UI::Xaml::Controls::Primitives::IRepeatButtonFactory)
             INTERFACE_ENTRY(RepeatButtonFactory, ABI::Microsoft::UI::Xaml::Controls::Primitives::IRepeatButtonStatics)
-        END_INTERFACE_MAP(RepeatButtonFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(RepeatButtonFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IRepeatButton** ppInstance);
 
         // Static properties.
 
