@@ -34,5 +34,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Lifetime_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Intersections_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_HierarchyLive_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_SourceOwnership_APITests.cs" />
   </ItemGroup>
 </Project>

@@ -154,6 +154,14 @@ namespace MUXControlsTestApp
             _groupedSource = TableViewSource.From(_groupedItems)
                 .GroupBy(item => ((TableViewTestPerson)item).City);
 
+            var groupedPagingItems = new ObservableCollection<TableViewTestPerson>();
+            for (int i = 0; i < Facts.GroupedPagingItemCount; i++)
+            {
+                groupedPagingItems.Add(new TableViewTestPerson(i, Facts.GroupedPagingName(i), Facts.GroupedAge(i), Facts.GroupedPagingSection(i)));
+            }
+            GroupedPagingTableView.ItemsSource = TableViewSource.From(groupedPagingItems)
+                .GroupBy(item => ((TableViewTestPerson)item).City);
+
             BasicTableView.ItemsSource = _basicItems;
             ScrollingTableView.ItemsSource = _scrollingItems;
             RtlTableView.ItemsSource = _scrollingItems;
@@ -717,11 +725,14 @@ namespace MUXControlsTestApp
 
         private void OnGoToHierarchyClick(object sender, RoutedEventArgs e) => ShowTableHost(HierarchyTableHost);
 
+        private void OnGoToGroupedPagingClick(object sender, RoutedEventArgs e) => ShowTableHost(GroupedPagingTableHost);
+
         private void ShowTableHost(FrameworkElement host)
         {
             BasicTableHost.Visibility = Visibility.Collapsed;
             RtlTableHost.Visibility = Visibility.Collapsed;
             GroupedTableHost.Visibility = Visibility.Collapsed;
+            GroupedPagingTableHost.Visibility = Visibility.Collapsed;
             ScrollingTableHost.Visibility = Visibility.Collapsed;
             HierarchyTableHost.Visibility = Visibility.Collapsed;
             host.Visibility = Visibility.Visible;

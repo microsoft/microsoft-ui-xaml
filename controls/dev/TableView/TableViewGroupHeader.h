@@ -107,6 +107,7 @@ private:
 
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
+    uint32_t m_pressedPointerId{};
     bool m_suppressBottomGridLine{ false };
     winrt::hstring m_pressedGroupIdentity{};
     winrt::FocusState m_gestureFocusState{ winrt::FocusState::Unfocused };

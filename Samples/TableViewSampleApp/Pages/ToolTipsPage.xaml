@@ -33,36 +33,34 @@
         WhatToLookFor="A cell tooltip is evaluated against the row, so after an action the Department chip's tooltip shows the new role without the app refreshing anything. The Name card's binding has no Path, so it is built from the row item when the binding evaluates and does not track individual property changes. Salary has no CellToolTipBinding and stays silent. Its header tooltip repeats the header text, so UI Automation reads it once, not twice. The Email envelope's tooltip belongs to the cell template and survives Cell tooltips Off.">
 
         <controls:SamplePresenter.Example>
-            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                <!-- snippet -->
-                <tv:TableView
-                    x:Name="PeopleTable"
-                    AutomationProperties.AutomationId="ToolTipsTable"
-                    AutomationProperties.Name="People with tooltips"
-                    ItemsSource="{x:Bind Source}"
-                    SelectionMode="Single"
-                    VerticalAlignment="Stretch"
-                    MinHeight="320">
-                    <!-- CellToolTipBinding is set in code (AttachCellToolTips) so it can be detached. -->
-                    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}"
-                                                 CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="{StaticResource ColWidthShortName}"
-                                             Binding="{Binding FullName}"
-                                             HeaderToolTip="Full name, as entered"/>
-                    <tv:TableViewTextColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
-                                             Binding="{Binding Bio}" CanSort="False"/>
-                    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}"
-                                                 CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"
-                                                 HeaderToolTip="Team the person reports into"/>
-                    <!-- No CellToolTipBinding at all: nothing appears over these cells. -->
-                    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}"
-                                             Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"
-                                             HeaderToolTip="Salary"/>
-                    <tv:TableViewTemplateColumn x:Name="EmailColumn" Header="Email" Width="{StaticResource ColWidthNarrow}"
-                                                 CellTemplate="{StaticResource EmailIconCellTemplate}" CanSort="False"/>
-                </tv:TableView>
-                <!-- /snippet -->
-            </Border>
+            <!-- snippet -->
+            <tv:TableView
+                x:Name="PeopleTable"
+                AutomationProperties.AutomationId="ToolTipsTable"
+                AutomationProperties.Name="People with tooltips"
+                ItemsSource="{x:Bind Source}"
+                SelectionMode="Single"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <!-- CellToolTipBinding is set in code (AttachCellToolTips) so it can be detached. -->
+                <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                                             CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="{StaticResource ColWidthShortName}"
+                                         Binding="{Binding FullName}"
+                                         HeaderToolTip="Full name, as entered"/>
+                <tv:TableViewTextColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
+                                         Binding="{Binding Bio}" CanSort="False"/>
+                <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}"
+                                             CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"
+                                             HeaderToolTip="Team the person reports into"/>
+                <!-- No CellToolTipBinding at all: nothing appears over these cells. -->
+                <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}"
+                                         Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"
+                                         HeaderToolTip="Salary"/>
+                <tv:TableViewTemplateColumn x:Name="EmailColumn" Header="Email" Width="{StaticResource ColWidthNarrow}"
+                                             CellTemplate="{StaticResource EmailIconCellTemplate}" CanSort="False"/>
+            </tv:TableView>
+            <!-- /snippet -->
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>

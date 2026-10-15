@@ -823,6 +823,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped-tree regroup that moves the selected root into a later group keeps it selected without raising SelectionChanged.")]
+        public void VerifyGroupedTreeSelectionSurvivesRegroupWhenKeyChanges()
+        {
+            ObservableCollection<TreeEmployee> list = null;
+            TableViewSource source = null;
+            RunOnUIThread.Execute(() =>
+            {
+                list = MakeTree();
+                list.Add(new TreeEmployee { Id = 8, Name = "Hal", Dept = "Eng" });
+                source = Tree(list).GroupBy(ByDept);
+            });
+            var tableView = Place(source);
+
+            var changes = 0;
+            TreeEmployee hal = null;
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, "[Eng] Ada1+ Hal1 [Ops] Eve1+ Gus1", "baseline");
+                tableView.Select(GetProjectedElements(tableView).FindIndex(el => el is TableViewRow r && NameOf(r.DataContext) == "Hal"));
+                Verify.AreEqual("Hal", SelectedName(tableView), "Precondition: Hal is selected.");
+
+                tableView.SelectionChanged += (s, e) => changes++;
+                // Eng is bucketed before Ops, so the old group is refilled before the new one.
+                hal = list.First(employee => employee.Name == "Hal");
+                hal.Dept = "Ops";
+                source.GroupBy(ByDept);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, "[Eng] Ada1+ [Ops] Eve1+ Gus1 Hal1", "Hal moved to Ops");
+                Verify.AreSame(hal, tableView.SelectedItem, "The moved root must stay selected.");
+                Verify.AreEqual(GetProjectedItems(tableView).IndexOf(hal), tableView.SelectedIndex,
+                    "SelectedIndex must follow the root to its new position.");
+                Verify.AreEqual(0, changes, "The selected item did not change, so no SelectionChanged may be raised.");
+            });
+        }
+
         #endregion
 
         #region 3.7 Re-entrancy and robustness
@@ -1036,15 +1076,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsTrue(fired, "Flat: the presented change fired.");
                 Verify.AreEqual("ArgumentException", thrown, "Flat: the failure surfaces once.");
-                VerifyTree(tableView, "Ada Eve Gus", "flat: after the failed refresh");
-                Verify.AreEqual("none none none", ExpandStates(tableView), "Flat: rows are inert.");
+                VerifyTree(tableView, Flat, "flat: after the failed refresh keeps collapsed descendants");
+                Verify.AreEqual("none none none none none none none", ExpandStates(tableView), "Flat: rows are inert.");
                 source.ClearParentBy();
                 tableView.ExpandAllRows();
             });
             SettleLayout(tableView);
             RunOnUIThread.Execute(() =>
             {
-                VerifyTree(tableView, "Ada Eve Gus", "flat: again");
+                VerifyTree(tableView, Flat, "flat: again");
                 list.RemoveAt(list.Count - 1);
             });
             SettleLayout(tableView);

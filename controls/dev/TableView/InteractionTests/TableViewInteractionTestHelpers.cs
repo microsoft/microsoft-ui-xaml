@@ -13,6 +13,7 @@ using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
+using MUXTestInfra.Shared.Infra;
 using Point = System.Drawing.Point;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPageFacts;
@@ -130,6 +131,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             Verify.AreEqual(expectedName, header.Name, "The first group header must still name the same group.");
             return header;
+        }
+
+        // Injected touch is delivered asynchronously, so a single idle wait can observe the header before the tap
+        // lands. Polls until the first group header reports the expected state, then falls back to the strict refetch.
+        internal static UIObject WaitForFirstGroupHeaderState(UIObject tableView, string expectedName, ExpandCollapseState expected)
+        {
+            for (int attempt = 0; attempt < 20; attempt++)
+            {
+                Wait.ForIdle();
+                ElementCache.Clear();
+                UIObject header = GetFirstGroupHeader(GetRowsHost(tableView));
+                if (header != null &&
+                    header.Name == expectedName &&
+                    new ExpandCollapseImplementation(header).ExpandCollapseState == expected)
+                {
+                    Log.Comment("Group header reached {0} after {1} poll(s).", expected, attempt + 1);
+                    return header;
+                }
+
+                Wait.ForMilliseconds(100);
+            }
+
+            return RefetchFirstGroupHeader(tableView, expectedName);
         }
 
         // The index-th group header among the rows host's own children, or null.
@@ -507,6 +531,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
         }
 
+        // dx is a screen delta; positive scrolls the content right. Returns false if the ScrollBar was not found.
+        // The ScrollBars are direct children of the body scroller; enumerating those is safe, unlike a row's children.
+        internal static bool DragHorizontalScrollBar(UIObject tableView, int dx)
+        {
+            UIObject scrollBar = null;
+            foreach (UIObject child in tableView.Children)
+            {
+                if (child.ClassName != "ScrollViewer")
+                {
+                    continue;
+                }
+
+                foreach (UIObject scrollerChild in child.Children)
+                {
+                    if (scrollerChild.ClassName == "ScrollBar" && scrollerChild.Name == "Horizontal")
+                    {
+                        scrollBar = scrollerChild;
+                        break;
+                    }
+                }
+            }
+
+            if (scrollBar == null)
+            {
+                return false;
+            }
+
+            var bounds = scrollBar.BoundingRectangle;
+            if (bounds.Width <= 0 || bounds.Height <= 0)
+            {
+                return false;
+            }
+
+            // A quarter along the track is inside the thumb at offset 0: the viewport is ~62% of the extent.
+            int startX = bounds.Left + (bounds.Width / 4);
+            int y = bounds.Top + (bounds.Height / 2);
+
+            Log.Comment("Dragging the horizontal ScrollBar thumb from ({0}, {1}) by {2}px.", startX, y, dx);
+
+            InputHelper.LeftMouseButtonDown(scrollBar, -(bounds.Width / 4), 0);
+            InputHelper.MoveMouse(new Point(startX + (dx / 2), y));
+            InputHelper.MoveMouse(new Point(startX + dx, y));
+            InputHelper.LeftMouseButtonUp();
+            Wait.ForIdle();
+
+            return true;
+        }
+
         // ---------- Test page ----------
 
         // MUXTestInfra's AppWatcherThread kills the test host once ONE app instance has run for 15 minutes
@@ -531,6 +603,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             catch (Exception e) when (e is InvalidOperationException || e is System.ComponentModel.Win32Exception)
             {
                 // The process could not be queried; leave the restart decision to the infra.
+            }
+        }
+
+        // Call last inside the TestSetupHelper scope of a test that leaves a column header focused. On 25H2 the UIA
+        // call after GoBack (back-button InvokeAndWait, or the next test's page lookup) has blocked until the TAEF
+        // timeout when the page was torn down with a header holding keyboard focus; the app itself stayed responsive.
+        // Parking focus on a page button and settling first keeps that teardown off the header path. Best-effort.
+        internal static void MoveFocusOffTableBeforeTeardown()
+        {
+            UIObject outside = TryFindElement.ById(DummyButton);
+            if (outside == null)
+            {
+                Log.Comment(DummyButton + " was not found; leaving focus where it is for teardown.");
+                return;
+            }
+
+            outside.SetFocus();
+            Wait.ForIdle();
+            if (!outside.HasKeyboardFocus)
+            {
+                Log.Comment("Could not move keyboard focus to " + DummyButton + " before teardown.");
             }
         }
 
