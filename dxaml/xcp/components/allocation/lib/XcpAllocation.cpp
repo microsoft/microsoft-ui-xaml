@@ -58,7 +58,27 @@ _Check_return_ size_t XcpAllocation::OSMemoryGetBlockSize(_In_opt_ const void *p
 #define COUNT_ALLOC 1
 #endif
 
-#if COUNT_ALLOC && defined(XAMLPROFILER_ENABLED)
+// XamlProfilerTracing::XamlHeapSnapshot (uielement.cpp, DCompSurface.cpp) reports
+// GetAllocationCount/Size and GetDeallocationCount. These are maintained with plain relaxed
+// atomic increments on the alloc/free hot path (no syscalls), so it's cheap enough to keep
+// them on whenever the profiler is built in, including retail/fre builds with
+// XamlProfilerEnabled=true, and they're always self-consistent regardless of whether any ETW
+// session is currently attached.
+#if defined(XAMLPROFILER_ENABLED)
+#define COUNT_ALLOC 1
+#endif
+
+// Outstanding-allocation tracking (GetOutstandingAllocationCount/Size) additionally calls
+// HeapSize() on every single allocation, reallocation, and free across the whole process (see
+// RecordOutstandingAllocation and the OSMemoryResize/OSMemoryFree block-size queries below) to
+// learn each block's true heap-rounded size. That per-call syscall cost is deliberately NOT
+// enabled just because XAMLPROFILER_ENABLED is on in a retail/fre build: unlike a plain emit-time
+// check, this is continuous, symmetric alloc/free bookkeeping, so it can't be safely gated behind
+// a live XamlProfilerTracing::IsEnabled() check without risking counter drift (e.g. going negative)
+// if an ETW session attaches or detaches mid-process. It stays tied to DBG/TRACE_ALLOC, so
+// XamlHeapSnapshot's OutstandingBytes/OutstandingAllocationCount fields report 0 in retail/fre
+// instead of adding a HeapSize() syscall to every allocation in production.
+#if COUNT_ALLOC && (DBG || TRACE_ALLOC)
 #define COUNT_OUTSTANDING_ALLOC 1
 #endif
 

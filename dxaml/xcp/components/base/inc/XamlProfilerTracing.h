@@ -5,13 +5,13 @@
 
 #include <TraceLoggingInterop.h>
 
-// XamlProfiler tree-tracking instrumentation is compiled into chk/Debug builds only
-// (XAMLPROFILER_ENABLED is defined alongside DBG when Configuration==Debug; see
-// Xaml.Cpp.Targets / LibraryCompile.props). In retail/fre builds this entire header is
-// empty, and the matching WucVisualTreeProfiler.cpp is excluded from the build, so the
-// profiler adds zero code/size to shipping binaries. Every consumer #includes this header
-// (and its call sites) inside its own #ifdef XAMLPROFILER_ENABLED, matching the
-// SwipeTestHooks convention.
+// XamlProfiler tree-tracking instrumentation is compiled into all configurations, including
+// retail/fre (Release) builds (XAMLPROFILER_ENABLED is defined whenever XamlProfilerEnabled==true;
+// see Xaml.Cpp.Props / Xaml.Cpp.Targets / LibraryCompile.props). Every event emission is still
+// gated at runtime behind XamlProfilerTracing::IsEnabled() (an ETW "is anyone listening" check),
+// so the cost when no session is subscribed is a single cached-bool check per call site, not the
+// full instrumentation. Every consumer #includes this header (and its call sites) inside its own
+// #ifdef XAMLPROFILER_ENABLED, matching the SwipeTestHooks convention.
 #ifdef XAMLPROFILER_ENABLED
 
 class CDependencyObject;

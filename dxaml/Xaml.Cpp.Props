@@ -101,10 +101,12 @@
   </PropertyGroup>
 
   <!-- XamlProfiler producer master switch. The ETW tree-tracking instrumentation is enabled in
-       Debug builds and disabled by default for all other configurations. -->
+       all configurations, including retail/fre (Release) builds, so an out-of-process profiler
+       can attach to production binaries. Every event is still gated at runtime behind
+       XamlProfilerTracing::IsEnabled() (an ETW "is anyone listening" check), so the cost when no
+       session is subscribed is a single cached-bool check, not the full instrumentation. -->
   <PropertyGroup>
-    <XamlProfilerEnabled>false</XamlProfilerEnabled>
-    <XamlProfilerEnabled Condition="'$(Configuration)'=='Debug'">true</XamlProfilerEnabled>
+    <XamlProfilerEnabled>true</XamlProfilerEnabled>
   </PropertyGroup>
 
 </Project>
