@@ -12,57 +12,43 @@
     MinHeight="320">
     <tv:TableView.Resources>
         <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
-        <!-- Per-row-kind context menus: individual contributors, managers
-             (rows with reports) and department headers (Group on). Menu items
-             inherit the row's Employee as DataContext, so their state can bind
-             to it: Promote is disabled unless CanPromote, and exactly one of
-             Assign / Remove mentor shows, depending on HasMentor. -->
-        <MenuFlyout x:Key="LeafRowMenu">
+        <!-- One menu for every row. Items tagged Leaf (individual contributors) or
+             Manager (rows with reports) show only for that row kind; untagged
+             items show for both. OnRowMenuOpening picks the subset from the
+             row the menu opens on, so a row that gains its first report gets
+             the manager items the next time its menu opens. Menu items inherit
+             the row's Employee as DataContext, so their state can bind to it:
+             Promote binds the Employee's PromoteCommand (MVVM, disabled unless
+             CanPromote), and exactly one of Assign / Remove mentor shows,
+             depending on HasMentor. -->
+        <MenuFlyout x:Key="RowMenu" Opening="OnRowMenuOpening">
             <MenuFlyoutItem Text="Open profile" Click="OnRowMenuItemClick"/>
-            <MenuFlyoutItem Text="Promote" Click="OnPromoteClick"
-                            IsEnabled="{Binding CanPromote}"/>
-            <MenuFlyoutSeparator/>
-            <MenuFlyoutItem Text="Assign mentor" Click="OnAssignMentorClick"
+            <MenuFlyoutItem Text="Copy row" Click="OnCopyRowClick"/>
+            <MenuFlyoutItem Text="Email team" Tag="Manager" Click="OnRowMenuItemClick"/>
+            <MenuFlyoutItem Text="Promote" Tag="Leaf" Command="{Binding PromoteCommand}"/>
+            <MenuFlyoutSeparator Tag="Leaf"/>
+            <MenuFlyoutItem Text="Assign mentor" Tag="Leaf" Click="OnAssignMentorClick"
                             Visibility="{Binding HasMentor, Converter={StaticResource InvertedBoolToVisibilityConverter}}"/>
-            <MenuFlyoutItem Text="Remove mentor" Click="OnRemoveMentorClick"
+            <MenuFlyoutItem Text="Remove mentor" Tag="Leaf" Click="OnRemoveMentorClick"
                             Visibility="{Binding HasMentor, Converter={StaticResource BoolToVisibilityConverter}}"/>
-            <MenuFlyoutSeparator/>
-            <MenuFlyoutItem Text="Remove" Click="OnRowMenuItemClick"/>
-        </MenuFlyout>
-        <MenuFlyout x:Key="ManagerRowMenu">
-            <MenuFlyoutItem Text="Open profile" Click="OnRowMenuItemClick"/>
-            <MenuFlyoutItem Text="Email team" Click="OnRowMenuItemClick"/>
+            <MenuFlyoutSeparator Tag="Leaf"/>
+            <MenuFlyoutItem Text="Remove" Tag="Leaf" Click="OnRowMenuItemClick"/>
         </MenuFlyout>
         <!-- A group header's DataContext is its TableViewGroupInfo. -->
         <MenuFlyout x:Key="DeptGroupMenu">
             <MenuFlyoutItem Text="{Binding KeyText}" IsEnabled="False"/>
             <MenuFlyoutItem Text="Email department" Click="OnRowMenuItemClick"/>
         </MenuFlyout>
+        <Style TargetType="tv:TableViewRow">
+            <Setter Property="ContextFlyout" Value="{StaticResource RowMenu}"/>
+        </Style>
+        <!-- Department headers (Group on): the style owns the band chrome;
+             GroupHeaderTemplate (set in code) still owns the content. -->
+        <Style TargetType="tv:TableViewGroupHeader">
+            <Setter Property="ContextFlyout" Value="{StaticResource DeptGroupMenu}"/>
+            <Setter Property="Background" Value="{ThemeResource SystemFillColorAttentionBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+            <Setter Property="Padding" Value="8,10,16,10"/>
+        </Style>
     </tv:TableView.Resources>
-    <!-- TableView asks again whenever a row's hierarchy state changes, so a
-         row that gains its first report switches menus in place. -->
-    <tv:TableView.RowStyleSelector>
-        <helpers:RowKindStyleSelector>
-            <helpers:RowKindStyleSelector.LeafRow>
-                <Style TargetType="tv:TableViewRow">
-                    <Setter Property="ContextFlyout" Value="{StaticResource LeafRowMenu}"/>
-                </Style>
-            </helpers:RowKindStyleSelector.LeafRow>
-            <helpers:RowKindStyleSelector.ExpandableRow>
-                <Style TargetType="tv:TableViewRow">
-                    <Setter Property="ContextFlyout" Value="{StaticResource ManagerRowMenu}"/>
-                </Style>
-            </helpers:RowKindStyleSelector.ExpandableRow>
-            <!-- The style owns the band chrome; GroupHeaderTemplate (set in
-                 code) still owns the content. -->
-            <helpers:RowKindStyleSelector.GroupHeader>
-                <Style TargetType="tv:TableViewGroupHeader">
-                    <Setter Property="ContextFlyout" Value="{StaticResource DeptGroupMenu}"/>
-                    <Setter Property="Background" Value="{ThemeResource SystemFillColorAttentionBackgroundBrush}"/>
-                    <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                    <Setter Property="Padding" Value="8,10,16,10"/>
-                </Style>
-            </helpers:RowKindStyleSelector.GroupHeader>
-        </helpers:RowKindStyleSelector>
-    </tv:TableView.RowStyleSelector>
 </tv:TableView>
