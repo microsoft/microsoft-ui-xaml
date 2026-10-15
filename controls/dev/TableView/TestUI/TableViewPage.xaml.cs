@@ -739,6 +739,12 @@ namespace MUXControlsTestApp
                 ContextMenuTable.DeselectAll();
             }
 
+            // An edit test may have committed a new name; later tests expect the seeded ones.
+            for (int i = 0; i < _contextMenuItems.Count; i++)
+            {
+                _contextMenuItems[i].Name = Facts.ContextMenuName(i);
+            }
+
             _contextMenuLast = Facts.NoneValue;
             _contextMenuOpen = false;
             _contextMenuOpens = 0;

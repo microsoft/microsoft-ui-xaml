@@ -259,7 +259,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
 
                 VerifyMenuOpened(RowMenu, ContextMenuName(2), CellFocus(2, ContextMenuAgeColumn));
-                VerifyMenuPlacedAtCell(GetRow(GetTable(ContextMenuTable), 2).Children[ContextMenuAgeColumn], RowMenu);
+                Verify.AreEqual("TableViewRow", ReadContextMenuField(TargetField), "The row menu must stay targeted at the row.");
+                UIObject row = GetRow(GetTable(ContextMenuTable), 2);
+                VerifyMenuPlacedAtCell(row, row.Children[ContextMenuAgeColumn], RowMenu);
+                CloseMenu();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the Menu (Apps) key on a focused cell with no menu of its own opens the row's menu at that cell, still targeted at the row.")]
+        public void MenuKeyOnPlainCellOpensRowMenuAtCell()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (SelectContextMenuHostAndGetTable() == null) { return; }
+                if (!DrillIntoRow(ContextMenuTable, 3)) { return; }
+
+                KeyboardHelper.PressKey(Key.Right, ModifierKey.None, numPresses: (uint)ContextMenuAgeColumn);
+                Wait.ForIdle();
+                VerifyFocusedCell(ContextMenuTable, 3, ContextMenuAgeColumn, "Precondition: focus must reach row 3's Age cell.");
+
+                TextInput.SendText("{APPS}");
+                Wait.ForIdle();
+
+                VerifyMenuOpened(RowMenu, ContextMenuName(3), CellFocus(3, ContextMenuAgeColumn));
+                Verify.AreEqual("TableViewRow", ReadContextMenuField(TargetField), "The row menu must stay targeted at the row.");
+                UIObject row = GetRow(GetTable(ContextMenuTable), 3);
+                VerifyMenuPlacedAtCell(row, row.Children[ContextMenuAgeColumn], RowMenu);
                 CloseMenu();
             }
         }
@@ -321,16 +347,69 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 RightClickRow(table, 3, ContextMenuNameTextX);
                 VerifyNoMenuOpened();
+                VerifyEditorMenuOpen();
 
                 // Escape inside the editor's menu closes only the menu; focus returns to the editor.
                 KeyboardHelper.PressKey(Key.Escape);
-                Wait.ForIdle();
-                Verify.AreEqual("True", WaitForContextMenuField(EditingField, "True"),
-                    "Closing the editor's menu must not end the edit.");
+                VerifyStillEditing("Closing the editor's menu must not end the edit.");
 
                 KeyboardHelper.PressKey(Key.Escape);
                 Verify.AreEqual("False", WaitForContextMenuField(EditingField, "False"),
                     "Escape in the editor must still cancel the edit.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a command picked from the editor's own menu closes the menu without ending the edit, and Escape still cancels afterwards.")]
+        public void EditorMenuCommandKeepsEdit()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectContextMenuHostAndGetTable();
+                if (table == null) { return; }
+                if (!BeginEditOnNameCell(3)) { return; }
+
+                RightClickRow(table, 3, ContextMenuNameTextX);
+                VerifyEditorMenuOpen();
+
+                FindElement.ByName<Button>(EditorMenuSelectAll).InvokeAndWait();
+                VerifyStillEditing("Picking a command from the editor's menu must not end the edit.");
+
+                KeyboardHelper.PressKey(Key.Escape);
+                Verify.AreEqual("False", WaitForContextMenuField(EditingField, "False"),
+                    "Escape in the editor must still cancel the edit.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that after the editor's own menu closes, moving to another cell still commits the typed value.")]
+        public void ClickAwayAfterEditorMenuCommitsEdit()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject table = SelectContextMenuHostAndGetTable();
+                if (table == null) { return; }
+                if (!BeginEditOnNameCell(3)) { return; }
+
+                RightClickRow(table, 3, ContextMenuNameTextX);
+                VerifyEditorMenuOpen();
+                KeyboardHelper.PressKey(Key.Escape);
+                VerifyStillEditing("Closing the editor's menu must not end the edit.");
+
+                const string typed = "EditedAfterMenu";
+                KeyboardHelper.PressKey(Key.a, ModifierKey.Control);
+                TextInput.SendText(typed);
+                Wait.ForIdle();
+
+                ClickRowAtColumnOffset(GetRow(table, 5), ContextMenuColumnCentreX(ContextMenuAgeColumn));
+                Verify.AreEqual("False", WaitForContextMenuField(EditingField, "False"),
+                    "Moving to another cell must end the edit.");
+
+                // The row menu reports its row's item, so it shows whether the typed name was kept.
+                ElementCache.Clear();
+                RightClickRow(GetTable(ContextMenuTable), 3, ContextMenuColumnCentreX(ContextMenuAgeColumn));
+                VerifyMenuOpened(RowMenu, typed, "cell:" + typed + "/" + ContextMenuAgeColumn);
+                CloseMenu();
             }
         }
 
@@ -410,7 +489,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
             Log.Comment("Readout: {0}", ReadPageReadout(ContextMenuReadout));
             Verify.AreEqual("0", ReadContextMenuField(OpensField), "No TableView menu may open while a cell is editing.");
-            Verify.AreEqual("True", ReadContextMenuField(EditingField), "The request must not end the edit.");
+            VerifyStillEditing("The request must not end the edit.");
+        }
+
+        // The editing readout refreshes on a dispatcher hop after the edit ends, so one read can be stale. Watch it
+        // across several idles and fail if it ever reports the edit ended.
+        private static void VerifyStillEditing(string message)
+        {
+            for (int attempt = 0; attempt < 4; attempt++)
+            {
+                Wait.ForIdle();
+                Verify.AreEqual("True", ReadContextMenuField(EditingField), message);
+            }
+        }
+
+        // The text editor's own menu (TextCommandBarFlyout) is open.
+        private const string EditorMenuSelectAll = "Select All";
+
+        private static void VerifyEditorMenuOpen()
+        {
+            ElementCache.Clear();
+            Verify.IsNotNull(FindElement.ByName(EditorMenuSelectAll), "The editor's own menu must open.");
         }
 
         // Switches to the ContextMenu host, resets its readout and selection, and returns ContextMenuTable.
@@ -495,21 +594,37 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // A keyboard request on a cell opens the menu at that cell - starting within the cell's columns, directly
-        // below or above it - even when the menu belongs to the row.
-        private static void VerifyMenuPlacedAtCell(UIObject cell, string menu)
+        // below or above it - even when the menu belongs to the row. Row-anchored placement would put the menu at the
+        // row's left edge or centred on the row, so both are ruled out where they differ from the cell.
+        private static void VerifyMenuPlacedAtCell(UIObject row, UIObject cell, string menu)
         {
             UIObject menuItem = TryFindElement.ById(MenuItemId(menu));
-            if (cell == null || menuItem == null) { Verify.Fail("The cell or the open menu was not found."); return; }
+            if (row == null || cell == null || menuItem == null) { Verify.Fail("The row, the cell or the open menu was not found."); return; }
 
+            var rowBounds = row.BoundingRectangle;
             var cellBounds = cell.BoundingRectangle;
             var itemBounds = menuItem.BoundingRectangle;
-            Log.Comment("Cell bounds={0}; menu item bounds={1}.", cellBounds, itemBounds);
+            Log.Comment("Row bounds={0}; cell bounds={1}; menu item bounds={2}.", rowBounds, cellBounds, itemBounds);
 
             const int Tolerance = 16;
             Verify.IsTrue(itemBounds.Left >= cellBounds.Left - Tolerance && itemBounds.Left <= cellBounds.Right,
                 "The menu must start horizontally within the focused cell, not at the row.");
             Verify.IsTrue(itemBounds.Top >= cellBounds.Bottom - Tolerance || itemBounds.Bottom <= cellBounds.Top + Tolerance,
                 "The menu must open next to the focused cell without covering it.");
+
+            if (cellBounds.Left - rowBounds.Left > 2 * Tolerance)
+            {
+                Verify.IsTrue(Math.Abs(itemBounds.Left - rowBounds.Left) > Tolerance,
+                    "The menu must not be placed at the row's left edge.");
+            }
+
+            int rowCentre = rowBounds.Left + rowBounds.Width / 2;
+            int itemCentre = itemBounds.Left + itemBounds.Width / 2;
+            if (rowCentre < cellBounds.Left - Tolerance || rowCentre > cellBounds.Right + Tolerance)
+            {
+                Verify.IsTrue(Math.Abs(itemCentre - rowCentre) > Tolerance,
+                    "The menu must not be centred on the row.");
+            }
         }
 
         private static void CloseMenu()

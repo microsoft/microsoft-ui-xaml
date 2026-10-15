@@ -99,6 +99,18 @@ void TableViewGroupHeaderAutomationPeer::SetFocusCore()
     __super::SetFocusCore();
 }
 
+void TableViewGroupHeaderAutomationPeer::ShowContextMenuCore()
+{
+    // The base raises ContextRequested on the header itself, which shows the header's own
+    // ContextFlyout before any TableView suppression hook can see it.
+    if (auto const tableView = GetOwningTableView(); tableView && winrt::get_self<TableView>(tableView)->IsEditing())
+    {
+        return;
+    }
+
+    __super::ShowContextMenuCore();
+}
+
 int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
 {
     // An app-set AutomationProperties.Level wins, as in the dxaml peers that compute this.
