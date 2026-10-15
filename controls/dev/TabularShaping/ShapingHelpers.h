@@ -97,6 +97,14 @@ namespace ShapingHelpers
         winrt::IInspectable const& source,
         bool throwIfUnsupported = false);
 
+    // Where an exception leaving shaping came from. Shaping rethrows it unchanged; an owner uses this to
+    // tell the caller's collection or a broken caller contract from shaping's own failures. Noted on the
+    // failure path only, and thread-local: shaping runs on its owner's thread.
+    void NoteCallerFault(HRESULT error) noexcept;
+    // Whether a caller fault was noted for exactly this HRESULT; clears the note.
+    bool TakeCallerFault(HRESULT escaping) noexcept;
+    void ClearCallerFault() noexcept;
+
     // Resolves ONCE what a collection is and how to read it.
     //
     // A XAML items source can arrive as any of half a dozen interfaces, and the stack needs three

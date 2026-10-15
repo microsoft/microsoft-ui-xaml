@@ -284,6 +284,37 @@ namespace ShapingHelpers
         return false;
     }
 
+    bool ShapingPipeline::HasSortAxis(winrt::hstring const& axisToken) const noexcept
+    {
+        return std::any_of(
+            m_sorts.begin(),
+            m_sorts.end(),
+            [&axisToken](SortAxis const& axis) { return axisToken.empty() || axis.AxisToken == axisToken; });
+    }
+
+    bool ShapingPipeline::HasSortOtherThan(winrt::hstring const& axisToken) const noexcept
+    {
+        return std::any_of(
+            m_sorts.begin(),
+            m_sorts.end(),
+            [&axisToken](SortAxis const& axis) { return axisToken.empty() || axis.AxisToken != axisToken; });
+    }
+
+    bool ShapingPipeline::HasMatchingSort(
+        winrt::hstring const& axisToken,
+        winrt::Windows::Foundation::IUnknown const& keyIdentity) const noexcept
+    {
+        return std::any_of(
+            m_sorts.begin(),
+            m_sorts.end(),
+            [&](SortAxis const& axis)
+            {
+                return axisToken.empty() ?
+                    (axis.AxisToken.empty() && axis.KeyIdentity && axis.KeyIdentity == keyIdentity) :
+                    axis.AxisToken == axisToken;
+            });
+    }
+
     std::vector<SortAxis> ShapingPipeline::ActiveSortAxes(int32_t afterOrder, int32_t beforeOrder) const
     {
         std::vector<SortAxis> active;

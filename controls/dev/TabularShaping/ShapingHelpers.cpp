@@ -651,6 +651,39 @@ namespace ShapingHelpers
         return keyA < keyB ? -1 : (keyA > keyB ? 1 : 0);
     }
 
+    namespace
+    {
+        thread_local bool t_callerFault{};
+        thread_local HRESULT t_callerFaultError{};
+
+        // In a catch only: notes the app's collection as the origin, unless the failure was our own allocation.
+        void NoteCollectionFault() noexcept
+        {
+            if (auto const error = winrt::to_hresult(); error != E_OUTOFMEMORY)
+            {
+                NoteCallerFault(error);
+            }
+        }
+    }
+
+    void NoteCallerFault(HRESULT error) noexcept
+    {
+        t_callerFault = true;
+        t_callerFaultError = error;
+    }
+
+    bool TakeCallerFault(HRESULT escaping) noexcept
+    {
+        auto const taken = t_callerFault && t_callerFaultError == escaping;
+        t_callerFault = false;
+        return taken;
+    }
+
+    void ClearCallerFault() noexcept
+    {
+        t_callerFault = false;
+    }
+
     std::vector<winrt::IInspectable> EnumerateInspectableItems(
         winrt::IInspectable const& source,
         bool throwIfUnsupported)
@@ -706,6 +739,7 @@ namespace ShapingHelpers
     }
 
     uint32_t CollectionAccessor::Count() const
+    try
     {
         if (m_vector)
         {
@@ -721,8 +755,14 @@ namespace ShapingHelpers
         }
         return 0;
     }
+    catch (...)
+    {
+        NoteCollectionFault();
+        throw;
+    }
 
     winrt::IInspectable CollectionAccessor::GetAtUnchecked(uint32_t index) const
+    try
     {
         if (m_vector)
         {
@@ -733,6 +773,11 @@ namespace ShapingHelpers
             return m_vectorView.GetAt(index);
         }
         return m_bindableVector.GetAt(index);
+    }
+    catch (...)
+    {
+        NoteCollectionFault();
+        throw;
     }
 
     bool CollectionAccessor::TryGetAt(uint32_t index, winrt::IInspectable& item) const
@@ -748,6 +793,7 @@ namespace ShapingHelpers
     }
 
     std::vector<winrt::IInspectable> CollectionAccessor::Enumerate(bool throwIfUnsupported) const
+    try
     {
         std::vector<winrt::IInspectable> result;
         if (!m_source)
@@ -817,6 +863,11 @@ namespace ShapingHelpers
         }
 
         return result;
+    }
+    catch (...)
+    {
+        NoteCollectionFault();
+        throw;
     }
 
     void ApplyPredicateFilter(

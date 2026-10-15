@@ -141,6 +141,15 @@ public:
     // exists".
     std::vector<ActiveSortAxisInfo> ActiveSortAxisInfos() const;
     bool HasActiveSort() const;
+    // Whether a clear verb has anything to clear, so an owner can tell a no-op clear from a real one.
+    bool HasFilter() const noexcept { return m_pipeline.HasFilter(); }
+    bool HasGroup() const noexcept { return static_cast<bool>(m_groupSelector); }
+    bool HasSortAxis(winrt::hstring const& axisToken) const noexcept { return m_pipeline.HasSortAxis(axisToken); }
+    bool HasSortOtherThan(winrt::hstring const& axisToken) const noexcept { return m_pipeline.HasSortOtherThan(axisToken); }
+    bool HasMatchingSort(winrt::hstring const& axisToken, winrt::Windows::Foundation::IUnknown const& keyIdentity) const noexcept
+    {
+        return m_pipeline.HasMatchingSort(axisToken, keyIdentity);
+    }
 
     // -- projection -----------------------------------------------------------------------
     // Name this engine uses to prefix caller-facing diagnostics. Layer 2 must not hardcode a
