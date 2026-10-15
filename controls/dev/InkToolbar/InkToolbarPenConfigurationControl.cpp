@@ -294,8 +294,8 @@ void InkToolbarPenConfigurationControl::RemoveColorPicker(winrt::Control const& 
     }
 }
 
-// Built-in collections are bindable in C++/WinRT, so we set the pen Palette (an IVector<Brush>) directly as
-// the ItemsSource (UWP wrapped it in a BindableVector). High-contrast palette substitution is a lift gap.
+// ItemsSource only accepts IInspectable collections; a plain IVector<Brush> (e.g. single_threaded_vector, or an
+// app-supplied palette) fails with E_INVALIDARG. UWP wrapped the palette in a BindableVector; we do the same when needed.
 void InkToolbarPenConfigurationControl::RegenerateItemSource()
 {
     auto colorPicker = m_colorPicker.get();
@@ -331,7 +331,19 @@ void InkToolbarPenConfigurationControl::RegenerateItemSource()
 
     // Setting the items source triggers SelectionChanged; suppress preview updates during regeneration.
     m_regeneratingItemSource = true;
-    colorPicker.ItemsSource(palette);
+    if (palette.try_as<winrt::Windows::Foundation::Collections::IIterable<winrt::IInspectable>>())
+    {
+        colorPicker.ItemsSource(palette);
+    }
+    else
+    {
+        auto bindablePalette = winrt::single_threaded_observable_vector<winrt::IInspectable>();
+        for (auto const& brush : palette)
+        {
+            bindablePalette.Append(brush);
+        }
+        colorPicker.ItemsSource(bindablePalette);
+    }
 
     auto selector = colorPicker.as<winrt::Microsoft::UI::Xaml::Controls::Primitives::Selector>();
     int selectedIndex = button.SelectedBrushIndex();
