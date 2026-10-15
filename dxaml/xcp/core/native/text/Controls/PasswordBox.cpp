@@ -731,7 +731,7 @@ _Check_return_ HRESULT CPasswordBox::OnInputScopeChanged(_In_ CInputScope *pInpu
 #else
         if (XamlElementTracing::IsEnabled())
         {
-            XamlElementTracing::SendInputScopeToRichEdit(reinterpret_cast<uint64_t>(this), static_cast<UINT32>(inputScopeList[0]));
+            XamlElementTracing::SendInputScopeToRichEdit(this, static_cast<UINT32>(inputScopeList[0]));
         }
 #endif
         IFC_RETURN(GetTextServices()->TxSendMessage(EM_SETCTFINPUTSCOPES, inputScopeCount, reinterpret_cast<LPARAM>(inputScopeList), nullptr));
@@ -756,7 +756,7 @@ _Check_return_ HRESULT CPasswordBox::UpdateIhmSkinToBitLocker(bool skinBitLocker
 #else
                 if (XamlElementTracing::IsEnabled())
                 {
-                    XamlElementTracing::SetIhmKeyboardSkin(reinterpret_cast<uint64_t>(this), static_cast<UINT32>(::TextInput_KeyboardSkins::Bitlocker));
+                    XamlElementTracing::SetIhmKeyboardSkin(this, static_cast<UINT32>(::TextInput_KeyboardSkins::Bitlocker));
                 }
 #endif
             }
@@ -768,7 +768,7 @@ _Check_return_ HRESULT CPasswordBox::UpdateIhmSkinToBitLocker(bool skinBitLocker
 #else
                 if (XamlElementTracing::IsEnabled())
                 {
-                    XamlElementTracing::SetIhmKeyboardSkin(reinterpret_cast<uint64_t>(this), static_cast<UINT32>(::TextInput_KeyboardSkins::Default));
+                    XamlElementTracing::SetIhmKeyboardSkin(this, static_cast<UINT32>(::TextInput_KeyboardSkins::Default));
                 }
 #endif
             }

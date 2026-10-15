@@ -435,7 +435,7 @@ _Check_return_ HRESULT VisualTree::SetPublicRootVisual(
     }
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::PutRootVisualStart(reinterpret_cast<uint64_t>(pRoot));
+    XamlElementTracing::PutRootVisualStart(pRoot);
 #else
     TracePutRootVisualBegin();
 #endif
@@ -525,7 +525,7 @@ Cleanup:
     }
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::PutRootVisualStop(reinterpret_cast<uint64_t>(pRoot));
+    XamlElementTracing::PutRootVisualStop(pRoot);
 #else
     TracePutRootVisualEnd();
 #endif

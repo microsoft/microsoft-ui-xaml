@@ -465,7 +465,7 @@ Cleanup:
 
 #ifdef XAMLPROFILER_ENABLED
     XamlElementTracing::TouchSelectionGripperShowEnd(
-        reinterpret_cast<uint64_t>(thisTextSelectionGripper.get()),
+        thisTextSelectionGripper.get(),
         !!thisTextSelectionGripper->m_isStartGripper,
         static_cast<int32_t>(thisTextSelectionGripper->m_centerWorldCoordinate.x),
         static_cast<int32_t>(thisTextSelectionGripper->m_centerWorldCoordinate.y));
@@ -868,7 +868,7 @@ void CTextSelectionGripper::UpdateCenterLocalCoordinate(
 
 #ifdef XAMLPROFILER_ENABLED
         XamlElementTracing::TouchSelectionGripperReposition(
-            reinterpret_cast<uint64_t>(this),
+            this,
             !!m_isStartGripper,
             static_cast<int32_t>(m_centerWorldCoordinate.x),
             static_cast<int32_t>(m_centerWorldCoordinate.y));
@@ -998,7 +998,7 @@ _Check_return_ HRESULT CTextSelectionGripper::Show(bool fAnimate)
     {
 #ifdef XAMLPROFILER_ENABLED
         XamlElementTracing::TouchSelectionGripperShowBegin(
-            reinterpret_cast<uint64_t>(this),
+            this,
             !!m_isStartGripper,
             static_cast<int32_t>(m_centerWorldCoordinate.x),
             static_cast<int32_t>(m_centerWorldCoordinate.y));
@@ -1034,7 +1034,7 @@ _Check_return_ HRESULT CTextSelectionGripper::Show(bool fAnimate)
         {
 #ifdef XAMLPROFILER_ENABLED
              XamlElementTracing::TouchSelectionGripperShowEnd(
-                 reinterpret_cast<uint64_t>(this),
+                 this,
                  !!m_isStartGripper,
                  static_cast<int32_t>(m_centerWorldCoordinate.x),
                  static_cast<int32_t>(m_centerWorldCoordinate.y));
@@ -1064,7 +1064,7 @@ _Check_return_ HRESULT CTextSelectionGripper::Hide(bool fAnimate)
     {
 #ifdef XAMLPROFILER_ENABLED
         XamlElementTracing::TouchSelectionGripperHideBegin(
-            reinterpret_cast<uint64_t>(this),
+            this,
             !!m_isStartGripper,
             static_cast<int32_t>(m_centerWorldCoordinate.x),
             static_cast<int32_t>(m_centerWorldCoordinate.y));
@@ -1119,7 +1119,7 @@ _Check_return_ HRESULT CTextSelectionGripper::HideImmediately()
 
 #ifdef XAMLPROFILER_ENABLED
     XamlElementTracing::TouchSelectionGripperHideEnd(
-        reinterpret_cast<uint64_t>(this),
+        this,
         !!m_isStartGripper,
         static_cast<int32_t>(m_centerWorldCoordinate.x),
         static_cast<int32_t>(m_centerWorldCoordinate.y));

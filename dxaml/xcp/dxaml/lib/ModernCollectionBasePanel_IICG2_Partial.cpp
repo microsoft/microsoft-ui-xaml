@@ -394,7 +394,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GenerateContainerAtIndexImpl(_
 
 #ifdef XAMLPROFILER_ENABLED
     if (spContainer)
-        XamlElementTracing::GenerateMCContainer(reinterpret_cast<uint64_t>(spContainer.Cast<UIElement>()->GetHandle()), indexInItemCollection);
+        XamlElementTracing::GenerateMCContainer(spContainer.Cast<UIElement>()->GetHandle(), indexInItemCollection);
 #endif
     IFC(spContainer.MoveTo(ppReturnValue));
 

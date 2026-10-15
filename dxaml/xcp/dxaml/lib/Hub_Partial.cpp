@@ -174,7 +174,7 @@ Hub::OnCollectionChanged(
 #ifndef XAMLPROFILER_ENABLED
             TraceHubSectionCountInfo(nNewSectionsCount);
 #else
-            XamlElementTracing::HubSectionCount(reinterpret_cast<uint64_t>(GetHandle()), nNewSectionsCount);
+            XamlElementTracing::HubSectionCount(GetHandle(), nNewSectionsCount);
 #endif
         }
     }

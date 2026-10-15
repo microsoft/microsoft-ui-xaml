@@ -1488,7 +1488,16 @@ ItemContainerGenerator::Generator::GenerateNext(
 
 Cleanup:
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::GenerateContainerStop(spContainer ? reinterpret_cast<uint64_t>(spContainer.Cast<DependencyObject>()->GetHandle()) : 0);
+    if (XamlElementTracing::IsEnabled())
+    {
+        auto coreContainer = spContainer ? spContainer.Cast<DependencyObject>()->GetHandle() : nullptr;
+        ctl::ComPtr<xaml::IUIElement> hostElement;
+        if (coreContainer && !coreContainer->OfTypeByIndex<KnownTypeIndex::UIElement>())
+        {
+            hostElement = spHost.AsOrNull<xaml::IUIElement>();
+        }
+        XamlElementTracing::GenerateContainerStop(coreContainer, hostElement ? hostElement.Cast<UIElement>()->GetHandle() : nullptr);
+    }
 #else
     TraceGenerateContainerEnd();
 #endif

@@ -1120,10 +1120,10 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
         // resolved style name is captured after retrieval and read back here on the Stop edge; pStyle
         // is cleared before Cleanup, so it cannot be read from the lambda directly.
         xstring_ptr profilerStyleName;
-        XamlElementTracing::GetBuiltInStyleStart(reinterpret_cast<uint64_t>(this));
+        XamlElementTracing::GetBuiltInStyleStart(this);
         auto profilerGuard = wil::scope_exit([this, &profilerStyleName]()
         {
-            XamlElementTracing::GetBuiltInStyleStop(reinterpret_cast<uint64_t>(this),
+            XamlElementTracing::GetBuiltInStyleStop(this,
                 profilerStyleName.IsNull() ? L"None" : profilerStyleName.GetBuffer());
         });
 #endif

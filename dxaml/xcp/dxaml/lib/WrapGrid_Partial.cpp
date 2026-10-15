@@ -274,7 +274,7 @@ IFACEMETHODIMP WrapGrid::MeasureOverride(
     _Out_ wf::Size* returnValue)
 {
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::VirtualizationMeasureStart(reinterpret_cast<uint64_t>(GetHandle()));
+    XamlElementTracing::VirtualizationMeasureStart(GetHandle());
 #else
     TraceVirtualizationMeasureBegin();
 #endif
@@ -342,7 +342,7 @@ IFACEMETHODIMP WrapGrid::MeasureOverride(
 
 Cleanup:
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::VirtualizationMeasureStop(reinterpret_cast<uint64_t>(GetHandle()));
+    XamlElementTracing::VirtualizationMeasureStop(GetHandle());
 #else
     TraceVirtualizationMeasureEnd();
 #endif

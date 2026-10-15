@@ -65,6 +65,7 @@
 
 #ifdef XAMLPROFILER_ENABLED
 #include <XcpAllocation.h>
+#include <TextElement.h>
 #endif
 
 using namespace DirectUI;
@@ -108,6 +109,38 @@ uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexce
         return handle;
     }
     return 0;
+}
+
+XamlElementTracing::Identity XamlElementTracing::GetIdentity(
+    _In_opt_ CDependencyObject* object,
+    _In_opt_ CDependencyObject* relatedUIElement)
+{
+    Identity identity;
+    if (object == nullptr)
+    {
+        return identity;
+    }
+
+    if (auto uiElement = do_pointer_cast<CUIElement>(object))
+    {
+        identity.uiElement = reinterpret_cast<uint64_t>(uiElement);
+    }
+    else
+    {
+        identity.objectPointer = reinterpret_cast<uint64_t>(object);
+        auto owner = do_pointer_cast<CUIElement>(relatedUIElement);
+        if (owner == nullptr)
+        {
+            if (auto textElement = do_pointer_cast<CTextElement>(object))
+            {
+                // This is the containing text host, not necessarily an overflow renderer.
+                // Avoid creating text pointers (and their failure paths) just for tracing.
+                owner = textElement->GetContainingFrameworkElement();
+            }
+        }
+        identity.uiElement = reinterpret_cast<uint64_t>(owner);
+    }
+    return identity;
 }
 
 uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
@@ -13373,7 +13406,7 @@ CUIElement::BoundsTestEntry(
     HitTestParams myParams(hitTestParams);
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::HitTestStart(reinterpret_cast<uint64_t>(this));
+    XamlElementTracing::HitTestStart(this);
 #else
     TraceHitTestBegin();
 #endif
@@ -13387,7 +13420,7 @@ CUIElement::BoundsTestEntry(
     IFC_RETURN(BoundsTestInternal(target, pCallback, &hitTestParams, canHitDisabledElements, canHitInvisibleElements, nullptr /* pResult */));
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::HitTestStop(reinterpret_cast<uint64_t>(this));
+    XamlElementTracing::HitTestStop(this);
 #else
     TraceHitTestEnd();
 #endif
@@ -13396,11 +13429,10 @@ CUIElement::BoundsTestEntry(
 #ifdef XAMLPROFILER_ENABLED
     if (XamlElementTracing::IsEnabled())
     {
-        const uint64_t elementId = reinterpret_cast<uint64_t>(this);
-        XamlElementTracing::OuterBoundsStats(elementId, hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);
-        XamlElementTracing::InnerBoundsStats(elementId, hitTestParams.m_hitTestPerfData->m_innerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_innerBoundsReuse);
-        XamlElementTracing::ContentBoundsStats(elementId, hitTestParams.m_hitTestPerfData->m_contentBoundsRecalc, hitTestParams.m_hitTestPerfData->m_contentBoundsReuse);
-        XamlElementTracing::ChildBoundsStats(elementId, hitTestParams.m_hitTestPerfData->m_childBoundsRecalc, hitTestParams.m_hitTestPerfData->m_childBoundsReuse);
+        XamlElementTracing::OuterBoundsStats(this, hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);
+        XamlElementTracing::InnerBoundsStats(this, hitTestParams.m_hitTestPerfData->m_innerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_innerBoundsReuse);
+        XamlElementTracing::ContentBoundsStats(this, hitTestParams.m_hitTestPerfData->m_contentBoundsRecalc, hitTestParams.m_hitTestPerfData->m_contentBoundsReuse);
+        XamlElementTracing::ChildBoundsStats(this, hitTestParams.m_hitTestPerfData->m_childBoundsRecalc, hitTestParams.m_hitTestPerfData->m_childBoundsReuse);
     }
 #else
     TraceOuterBoundsStatsInfo(hitTestParams.m_hitTestPerfData->m_outerBoundsRecalc, hitTestParams.m_hitTestPerfData->m_outerBoundsReuse);

@@ -813,7 +813,7 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
             if (XamlElementTracing::IsEnabled())
             {
                 XamlElementTracing::VirtualizationIsEnabledByLayout(
-                    reinterpret_cast<uint64_t>(GetHandle()),
+                    GetHandle(),
                     !!isVirtualizationActive,
                     GetHandle()->m_strName.GetBuffer(),
                     GetHandle()->GetClassName().GetBuffer(),

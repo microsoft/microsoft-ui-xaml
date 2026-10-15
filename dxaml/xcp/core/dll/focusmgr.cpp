@@ -1849,7 +1849,7 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
     GUID correlationId = m_asyncOperation != nullptr ? m_asyncOperation->GetCorrelationId() : movement.GetCorrelationId();
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::UpdateFocusStart(reinterpret_cast<uint64_t>(movement.GetTarget()));
+    XamlElementTracing::UpdateFocusStart(movement.GetTarget());
 #else
     TraceUpdateFocusBegin();
 #endif
@@ -2153,7 +2153,7 @@ Cleanup:
     // Carry the element identity on both edges: Start records the requested target
     // (movement.GetTarget()) and Stop records pNewFocus, matching the attribution the retail
     // UpdateFocusEnd event records after synchronous GettingFocus/LosingFocus handlers run.
-    XamlElementTracing::UpdateFocusStop(reinterpret_cast<uint64_t>(pNewFocus));
+    XamlElementTracing::UpdateFocusStop(pNewFocus);
 #else
     TraceUpdateFocusEnd((UINT64)pNewFocus);
 #endif
@@ -2641,10 +2641,10 @@ CDependencyObject* CFocusManager::FindNextFocus(
     // (e.g. WebView) this is the component, not m_pFocusedElement. The scope_exit also balances the
     // activity across the early ProcessTabStopInternal failure returns below, which the retail End
     // (emitted only on the normal exit) intentionally does not cover.
-    XamlElementTracing::XYFocusEnteredStart(reinterpret_cast<uint64_t>(currentFocusedElementOrComponent), xyFocusDirectionName);
+    XamlElementTracing::XYFocusEnteredStart(currentFocusedElementOrComponent, xyFocusDirectionName);
     auto xyFocusProfilerGuard = wil::scope_exit([currentFocusedElementOrComponent]()
     {
-        XamlElementTracing::XYFocusEnteredStop(reinterpret_cast<uint64_t>(currentFocusedElementOrComponent));
+        XamlElementTracing::XYFocusEnteredStop(currentFocusedElementOrComponent);
     });
 #endif
 
