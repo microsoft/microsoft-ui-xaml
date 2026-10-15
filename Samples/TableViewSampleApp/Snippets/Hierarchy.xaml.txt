@@ -12,15 +12,8 @@
     MinHeight="320">
     <tv:TableView.Resources>
         <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
-        <!-- One menu for every row. Items tagged Leaf (individual contributors) or
-             Manager (rows with reports) show only for that row kind; untagged
-             items show for both. OnRowMenuOpening picks the subset from the
-             row the menu opens on, so a row that gains its first report gets
-             the manager items the next time its menu opens. Menu items inherit
-             the row's Employee as DataContext, so their state can bind to it:
-             Promote binds the Employee's PromoteCommand (MVVM, disabled unless
-             CanPromote), and exactly one of Assign / Remove mentor shows,
-             depending on HasMentor. -->
+        <!-- One menu for every row: OnRowMenuOpening keeps untagged items plus those
+             tagged for the row's kind (Leaf / Manager). Items bind to the row's Employee. -->
         <MenuFlyout x:Key="RowMenu" Opening="OnRowMenuOpening">
             <MenuFlyoutItem Text="Open profile" Click="OnRowMenuItemClick"/>
             <MenuFlyoutItem Text="Copy row" Click="OnCopyRowClick"/>

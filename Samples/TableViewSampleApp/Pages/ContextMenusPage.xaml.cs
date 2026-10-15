@@ -16,15 +16,8 @@ using Windows.ApplicationModel.DataTransfer;
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Demonstrates TableView's context menu properties:
-/// <list type="bullet">
-///   <item><description><c>TableViewColumn.CellContextFlyout</c> and <c>HeaderContextFlyout</c>:
-///     per-column menus for body cells and the column header.</description></item>
-///   <item><description>The row's own <c>ContextFlyout</c>, set through an implicit
-///     <c>TableViewRow</c> style: the fallback for every body cell without its own cell menu.</description></item>
-///   <item><description>The inherited <c>TableView.ContextFlyout</c>: the final fallback.</description></item>
-/// </list>
-/// The menus are not stamped on cells: a menu item's DataContext is the requested row item.
+/// Per-column <c>CellContextFlyout</c> / <c>HeaderContextFlyout</c>, a row <c>ContextFlyout</c> from an
+/// implicit <c>TableViewRow</c> style, and <c>TableView.ContextFlyout</c> as the final fallback.
 /// </summary>
 public sealed partial class ContextMenusPage : SamplePageBase
 {

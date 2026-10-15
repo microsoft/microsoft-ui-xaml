@@ -419,11 +419,8 @@ public:
         int32_t visibleColumnIndex,
         winrt::FocusState focusState = winrt::FocusState::Keyboard);
 
-    // Returns true when the request is handled: a menu was shown, or the request was suppressed
-    // (a cell is editing, nested request, target already stale on entry, or a target that went
-    // stale during the focus move and would have shown a menu). False leaves it to bubble on to the
-    // native ContextFlyout chain, including a target that went stale during the focus move with no
-    // menu to show.
+    // True when handled (menu shown, or suppressed: editing, nested or stale target); false lets the
+    // request bubble to the native ContextFlyout chain.
     bool ProcessContextMenuRequest(
         TableViewDetails::ContextMenuTarget const& target,
         winrt::ContextRequestedEventArgs const& args);

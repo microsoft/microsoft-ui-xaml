@@ -214,37 +214,15 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     // tooltip. A CLR property, not a DP, so XAML passes the Binding through unevaluated.
     Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
 
-    // Context flyouts for this column's body cells and its header. A request is a right-click,
-    // touch-and-hold, Shift+F10 or the Menu key, or UI Automation ShowContextMenu. Null means the
-    // column contributes no flyout at that target. One flyout instance is shared by every cell of
-    // the column; clearing or replacing it does not close a flyout that is already open.
-    //
-    // CellContextFlyout: shown at the cell, with the row's data item as the DataContext of its
-    // items. The first match wins:
-    //   1. A ContextFlyout set inside the cell (CellTemplate, generated element, style),
-    //      not counting nested items hosts (ListView, ItemsRepeater) or nested TableViews.
-    //      Text controls (TextBlock, RichTextBlock, TextBox, RichEditBox, PasswordBox) always
-    //      carry a built-in copy/select flyout, so for them only a ContextFlyout set on the element
-    //      itself (directly or through a binding) counts. One set by a Style setter is shown only
-    //      when the request starts on the text itself (pointer); a keyboard request on the cell, or
-    //      a pointer request on the cell's padding, skips it.
-    //   2. CellContextFlyout.
-    //   3. The row's own ContextFlyout (row Style or row template).
-    //   4. TableView.ContextFlyout, through the framework's native routing.
-    // Before a menu shows, the cell becomes the current cell and takes focus (so focus returns to it
-    // when the menu closes); selection does not change. While any cell in the table is being edited,
-    // no TableView menu opens: cell, header, row, group header and TableView.ContextFlyout requests
-    // are handled with nothing shown. The editor's own menu (a TextBox's copy/paste) still shows, as
-    // does a ContextFlyout set inside another cell's or header's template. Group headers never use it; give them a
-    // ContextFlyout through a TableViewGroupHeader Style instead.
+    // Shown at the cell, with the row's item as its items' DataContext; shared by the column's cells.
+    // First match wins: a ContextFlyout inside the cell (excluding nested items hosts/TableViews; on
+    // text controls only one set on the element itself), CellContextFlyout, the row's ContextFlyout,
+    // then TableView.ContextFlyout. The cell takes focus; selection does not change. No TableView
+    // menu opens while a cell is editing. Group headers never use it.
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
 
-    // HeaderContextFlyout: shown at the header cell. The first match wins: a ContextFlyout set
-    // inside the HeaderTemplate (with the same text-control rule as cells), then
-    // HeaderContextFlyout, then TableView.ContextFlyout. Cell and
-    // row menus never apply to a header. The header takes focus; the body's current cell and
-    // selection do not change. A Collapsed column's header opens no menu, and no header menu opens
-    // while a cell is editing.
+    // Shown at the header cell. First match wins: a ContextFlyout inside the HeaderTemplate, this,
+    // then TableView.ContextFlyout. Collapsed columns and an editing table open no header menu.
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
 
     // The editing hooks a derived column would override - GenerateEditingElement, PrepareCellForEdit,

@@ -193,14 +193,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal static int HierarchyDeptCellCentreX => HierarchyColumnWidths[0] + (HierarchyColumnWidths[1] / 2);
 
         // ---- Context menu fixture (ContextMenuTable) ----
-        //
-        // Columns, in visible order, and the menu each one resolves to:
-        //   Name  text column      CellContextFlyout = CellMenu, HeaderContextFlyout = HeaderMenu
-        //   City  template column  CellTemplate root carries ContextFlyout = TemplateMenu
-        //   Age   text column      no menus of its own, so the row's menu applies
-        // Rows get RowMenu from an implicit TableViewRow style; the table's own ContextFlyout is TableMenu.
-        // The table is wider than its columns and taller than its rows, so it has blank space to the right of
-        // the last column and below the last row.
+        // Name: CellMenu + HeaderMenu; City: TemplateMenu on its template root; Age: none (row menu applies).
+        // Rows: RowMenu via implicit style; table: TableMenu. Blank space right of the columns and below the rows.
 
         internal const string ContextMenuTable = "ContextMenuTable";
         internal const string ContextMenuPivotItem = "ContextMenu";
@@ -256,16 +250,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
             }
         }
 
-        // Read-only TextBox describing the last menu opened on ContextMenuTable, as "key=value" fields joined by ';':
-        //   menu=<CellMenu|...|none>   the last menu that raised Opening
-        //   open=<True|False>          whether that menu is still open
-        //   opens=<n>                  Opening count since the last reset
-        //   item=<name|none>           the menu target's DataContext, when it is a row item
-        //   target=<type>              the menu target's runtime type name
-        //   focus=<description>        the focused element when the menu opened:
-        //                              cell:<item>/<visible column index>, row:<item>, header:<text>, or a type name
-        //   editing=<True|False>       ContextMenuTable.IsEditing
-        //   selected=<name|none>       ContextMenuTable.SelectedItem
+        // Read-only TextBox for the last menu opened, as "key=value;...": menu, open, opens, item, target,
+        // focus (cell:<item>/<column>, row:<item> or header:<text>), editing, selected.
         internal const string ContextMenuReadout = "ContextMenuReadout";
 
         internal const string MenuField = "menu";
