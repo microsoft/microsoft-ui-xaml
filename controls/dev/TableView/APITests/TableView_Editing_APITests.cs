@@ -636,9 +636,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                editors[0].Text = InvalidPrefix + "NopeX";
+                var editor = GetEditorTextBox(tableView, items[0]);
+                editor.Text = InvalidPrefix + "NopeX";
 
                 tableView.ItemsSource = new List<EditablePerson>();
             });
@@ -665,9 +664,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                editors[0].Text = InvalidPrefix + "Nope";
+                var editor = GetEditorTextBox(tableView, items[0]);
+                editor.Text = InvalidPrefix + "Nope";
 
                 // Forced and outside layout, with the item still in the source: the pending value is
                 // transferred, then rejected by validation.
@@ -699,11 +697,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 tableView = CreateEditableTable(items);
                 tableView.IsReadOnly = false;
-                focusSink = new Button { Content = "Sink" };
-                var host = new StackPanel();
-                host.Children.Add(focusSink);
-                host.Children.Add(tableView);
-                LoadContent(host);
+                focusSink = LoadWithFocusSink(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -720,9 +714,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             // focus-loss commit of an invalid value is rejected and leaves the edit open.
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                editors[0].Text = InvalidPrefix + "NopeX";
+                var editor = GetEditorTextBox(tableView, items[0]);
+                editor.Text = InvalidPrefix + "NopeX";
                 focusSink.Focus(FocusState.Programmatic);
             });
 
@@ -733,9 +726,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreNotEqual(FocusState.Unfocused, focusSink.FocusState, "Precondition: focus left the editor.");
                 Verify.IsTrue(tableView.IsEditing, "Precondition: the rejected focus-loss commit keeps the edit open.");
 
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must still host its editor TextBox.");
-                editors[0].Text = InvalidPrefix + "NopeY";
+                var editor = GetEditorTextBox(tableView, items[0]);
+                editor.Text = InvalidPrefix + "NopeY";
             });
 
             // Row 0 leaves the realization window, so the repeater recycles it inside measure.
@@ -843,11 +835,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 table = CreateEditableTable(source);
                 table.IsReadOnly = false;
-                sink = new Button { Content = "Sink" };
-                var host = new StackPanel();
-                host.Children.Add(sink);
-                host.Children.Add(table);
-                LoadContent(host);
+                sink = LoadWithFocusSink(table);
             });
             IdleSynchronizer.Wait();
 
@@ -869,6 +857,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, item));
             Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
             return editors[0];
+        }
+
+        // Loads the table after a focusable button, which tests use to move focus off the editor.
+        private Button LoadWithFocusSink(TableView tableView)
+        {
+            var sink = new Button { Content = "Sink" };
+            var host = new StackPanel();
+            host.Children.Add(sink);
+            host.Children.Add(tableView);
+            LoadContent(host);
+            return sink;
         }
 
         [TestMethod]
@@ -912,11 +911,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 };
 
-                focusSink = new Button { Content = "Sink" };
-                var host = new StackPanel();
-                host.Children.Add(focusSink);
-                host.Children.Add(tableView);
-                LoadContent(host);
+                focusSink = LoadWithFocusSink(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -931,9 +926,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                editors[0].Text = InvalidPrefix + "NopeX";
+                var editor = GetEditorTextBox(tableView, items[0]);
+                editor.Text = InvalidPrefix + "NopeX";
                 focusSink.Focus(FocusState.Programmatic);
             });
 
@@ -942,9 +936,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsTrue(tableView.IsEditing, "Precondition: the rejected focus-loss commit keeps the edit open.");
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must still host its editor TextBox.");
-                editors[0].Text = InvalidPrefix + "NopeY";
+                var editor = GetEditorTextBox(tableView, items[0]);
+                editor.Text = InvalidPrefix + "NopeY";
             });
 
             // Recycling row 0 inside measure transfers the invalid value and posts its rollback.
@@ -989,9 +982,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                Verify.AreEqual("Name", AutomationProperties.GetName(editors[0]), "The editor's UIA name must be the column header text.");
+                var editor = GetEditorTextBox(tableView, items[0]);
+                Verify.AreEqual("Name", AutomationProperties.GetName(editor), "The editor's UIA name must be the column header text.");
             });
 
             RunOnUIThread.Execute(() => tableView.CancelEdit());
@@ -1036,11 +1028,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                Verify.AreEqual("Full name", AutomationProperties.GetName(editors[0]),
+                var editor = GetEditorTextBox(tableView, items[0]);
+                Verify.AreEqual("Full name", AutomationProperties.GetName(editor),
                     "An object header has no string form; the editor must take the name its rendered header exposes.");
-                Verify.AreEqual("Full name", FrameworkElementAutomationPeer.CreatePeerForElement(editors[0]).GetName(),
+                Verify.AreEqual("Full name", FrameworkElementAutomationPeer.CreatePeerForElement(editor).GetName(),
                     "The editor's peer must report the same name.");
             });
 
@@ -1078,9 +1069,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var editors = FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0]));
-                Verify.AreEqual(1, editors.Count, "The edited row must host exactly one editor TextBox.");
-                Verify.AreEqual(Microsoft.UI.Text.FontWeights.Bold.Weight, editors[0].FontWeight.Weight,
+                var editor = GetEditorTextBox(tableView, items[0]);
+                Verify.AreEqual(Microsoft.UI.Text.FontWeights.Bold.Weight, editor.FontWeight.Weight,
                     "The editor must not set a local FontWeight that blocks the TableView's value.");
             });
 
