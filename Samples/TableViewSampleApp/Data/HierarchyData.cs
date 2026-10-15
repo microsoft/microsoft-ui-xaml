@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
+using TableViewSampleApp.Helpers;
 
 namespace TableViewSampleApp.Data;
 
@@ -15,6 +17,7 @@ public sealed class Employee : INotifyPropertyChanged
     private string _name = string.Empty;
     private string _title = string.Empty;
     private string _dept = string.Empty;
+    private RelayCommand? _promoteCommand;
 
     public int Id { get; set; }
     public int? ManagerId { get => _managerId; set => Set(ref _managerId, value); }
@@ -38,6 +41,7 @@ public sealed class Employee : INotifyPropertyChanged
             if (Set(ref _title, value))
             {
                 OnPropertyChanged(nameof(CanPromote));
+                _promoteCommand?.RaiseCanExecuteChanged();
             }
         }
     }
@@ -47,6 +51,11 @@ public sealed class Employee : INotifyPropertyChanged
 
     // Individual-contributor titles below Senior can be promoted one step.
     public bool CanPromote => Title is "Engineer" or "Associate";
+
+    // MVVM: a row menu item binds Command to this; CanExecute enables the item only when CanPromote.
+    public ICommand PromoteCommand => _promoteCommand ??= new RelayCommand(
+        () => Title = Title == "Associate" ? "Engineer" : "Senior",
+        () => CanPromote);
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

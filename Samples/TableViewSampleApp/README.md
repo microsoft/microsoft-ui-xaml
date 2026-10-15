@@ -102,9 +102,11 @@ visible on purpose.
   The table pages' Shaping section also offers Hierarchy and Grouped hierarchy (ParentBy, plus
   GroupBy on the roots) over their own data: people by manager, files by folder, processes by app;
   pages whose rows have no parent relation show those modes disabled with the reason. The Manager
-  table shows per-row-kind context menus through `TableView.RowStyleSelector` (leaf rows,
-    expandable rows and group headers each get their own `Style`; the group header style also
-    restyles the band, and the leaf menu's items bind `IsEnabled` / `Visibility` to the row's item)
+  table shows per-row-kind context menus without a `RowStyleSelector`: one shared row menu set
+  through an implicit `TableViewRow` style, whose `Opening` handler keeps the items tagged for the
+  row's kind (leaf or expandable, read from `MenuFlyout.Target`); an implicit `TableViewGroupHeader`
+  style gives group headers their own menu and restyles the band, and the leaf items bind
+  `Command` / `Visibility` to the row's item
 - Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
 - `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
   sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing
@@ -127,7 +129,8 @@ cell, row and header menus off.
 
 There is no row menu property: rows get their menu from their own `ContextFlyout`,
 set through an implicit `TableViewRow` style, a row template, or a `Style` picked per
-row kind by `TableView.RowStyleSelector` (see the Hierarchy page). Column cell menus
+row by `TableView.RowStyleSelector`; a menu's `Opening` handler can also vary its items
+per row through `MenuFlyout.Target` (see the Hierarchy page). Column cell menus
 take precedence over it; the native `TableView.ContextFlyout` is the final
 fallback. A column header uses its
 `HeaderContextFlyout`, otherwise native fallback. Group headers always use native
