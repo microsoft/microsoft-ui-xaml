@@ -498,11 +498,12 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [default_interface]
-    runtimeclass LoopingSelectorPanel
+    unsealed runtimeclass LoopingSelectorPanel
         : Microsoft.UI.Xaml.Controls.Canvas
         , [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         Microsoft.UI.Xaml.Controls.Primitives.IScrollSnapPointsInfo
     {
+        [method_name("CreateInstance")] LoopingSelectorPanel();
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
