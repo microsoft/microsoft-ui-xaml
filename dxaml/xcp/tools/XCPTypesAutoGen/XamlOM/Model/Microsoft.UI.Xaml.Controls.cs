@@ -4520,7 +4520,7 @@ namespace Microsoft.UI.Xaml.Controls
     [CodeGen(partial: true)]
     [FrameworkTypePattern]
     [Guids(ClassGuid = "b0201b45-cdf1-41dc-a575-f281eea3ad11")]
-    public sealed class ItemContainerGenerator
+    public class ItemContainerGenerator
     {
         [Attached(TargetType = typeof(Microsoft.UI.Xaml.UIElement))]
         [PropertyFlags(IsExcludedFromVisualTree = true)]
@@ -4550,7 +4550,7 @@ namespace Microsoft.UI.Xaml.Controls
 
         public event Microsoft.UI.Xaml.Controls.Primitives.ItemsChangedEventHandler ItemsChanged;
 
-        internal ItemContainerGenerator() { }
+        public ItemContainerGenerator() { }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [TypeTable(IsExcludedFromCore = true)]
