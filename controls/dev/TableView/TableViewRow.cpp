@@ -2217,13 +2217,51 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     return true;
 }
 
-// Recycle-out. Always walks: the restamp fast-path revives tooltips through the binding, so a
-// cached per-row flag would go stale and strand app content in the pool.
+// Recycle-out. Always walks: the bound value can revive a tooltip at any time, so a cached
+// per-row flag would go stale and strand app content in the pool.
 void TableViewRow::ReleaseCellToolTips()
 {
     if (auto const host = m_cellsHost.get())
     {
         ClearOwnedCellToolTips(host);
+    }
+}
+
+// Recycle-in. ReleaseCellToolTips neutralized the tooltips, and a bound value that did not change
+// (an explicit Source, or equal across the DataContext reset) raises no callback to revive them.
+void TableViewRow::RefreshCellToolTips()
+{
+    auto const host = m_cellsHost.get();
+    if (!host)
+    {
+        return;
+    }
+
+    auto const editingWrapper = m_editingCellWrapper.get();
+    auto const children = host.Children();
+    const uint32_t count = children.Size();
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        if (auto const cellWrapper = children.GetAt(i).try_as<winrt::Grid>();
+            cellWrapper && cellWrapper != editingWrapper)
+        {
+            // Usually the value changed with the DataContext and the tooltip is already live.
+            auto const record = TableViewDetails::GetRecord(cellWrapper);
+            if (!record || !record->ToolTip || record->ToolTip.IsEnabled())
+            {
+                continue;
+            }
+
+            try
+            {
+                TableViewDetails::RefreshOwnedToolTip(cellWrapper);
+            }
+            catch (...)
+            {
+                TVDiag::LogRetailF(L"[TableView] Re-applying a cell tooltip failed (HRESULT 0x%08X).",
+                    static_cast<unsigned int>(winrt::to_hresult()));
+            }
+        }
     }
 }
 
