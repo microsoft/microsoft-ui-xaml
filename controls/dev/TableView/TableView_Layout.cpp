@@ -7,6 +7,7 @@
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
 #include "TableViewGroupHeader.h"
+#include "TableViewCell.h"
 
 #include <algorithm>
 #include <cmath>
@@ -675,18 +676,20 @@ void TableView::RefreshResizeGripperAvailability()
         {
             continue;
         }
+
+        // Only a peer a client already holds is notified; FromElement would create one.
+        auto const headerPeer = winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged)
+            ? TableViewCell::TryGetExistingPeer(headerCell) : nullptr;
+        const bool couldResize = headerPeer && CanResizeColumnFromAutomation(column);
         gripper.Visibility(visibility);
 
-        // The realized header owns the canonical peer. FromElement does not create one, so this never
-        // builds automation peers from inside layout.
-        if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+        if (headerPeer)
         {
-            if (auto const headerPeer = winrt::FrameworkElementAutomationPeer::FromElement(headerCell))
+            if (const bool canResize = CanResizeColumnFromAutomation(column); canResize != couldResize)
             {
-                const bool canResize = CanResizeColumnFromAutomation(column);
                 headerPeer.RaisePropertyChangedEvent(
                     winrt::TransformPatternIdentifiers::CanResizeProperty(),
-                    winrt::box_value(!canResize),
+                    winrt::box_value(couldResize),
                     winrt::box_value(canResize));
             }
         }

@@ -4,11 +4,13 @@
 #pragma once
 
 #include "TableViewColumnHeaderAutomationPeer.h"
+#include "TableViewCell.h"
 
 // Keep the existing Grid layout/input behavior, but attach the header peer to the
 // actual focus and hit-test target. This implementation-only type needs no WinRT API.
 class TableViewHeaderCell :
-    public ReferenceTracker<TableViewHeaderCell, winrt::Microsoft::UI::Xaml::Controls::GridT, winrt::composable>
+    public ReferenceTracker<TableViewHeaderCell, winrt::Microsoft::UI::Xaml::Controls::GridT,
+        winrt::composable, ITableViewCellAutomationPeerAccess>
 {
 public:
     TableViewHeaderCell(winrt::TableView const& table, winrt::TableViewColumn const& column)
@@ -33,8 +35,35 @@ public:
 
     winrt::AutomationPeer OnCreateAutomationPeer()
     {
-        return winrt::make<TableViewColumnHeaderAutomationPeer>(
+        if (auto const peer = m_automationPeer.get())
+        {
+            return peer;
+        }
+        winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(
             get_strong().as<winrt::FrameworkElement>(), m_table.get(), m_column.get());
+        m_automationPeer = winrt::make_weak(peer);
+        return peer;
+    }
+
+    // Read through TableViewCell::TryGetExistingPeer; never creates a peer.
+    HRESULT __stdcall GetExistingPeer(::IInspectable** result) noexcept
+    {
+        if (!result)
+        {
+            return E_POINTER;
+        }
+        *result = nullptr;
+        try
+        {
+            CheckThread();
+            auto peer = m_automationPeer.get();
+            *result = reinterpret_cast<::IInspectable*>(winrt::detach_abi(peer));
+            return S_OK;
+        }
+        catch (...)
+        {
+            return winrt::to_hresult();
+        }
     }
 
 private:
@@ -204,6 +233,7 @@ private:
 
     winrt::weak_ref<winrt::TableView> m_table;
     winrt::weak_ref<winrt::TableViewColumn> m_column;
+    winrt::weak_ref<winrt::AutomationPeer> m_automationPeer{ nullptr };
     PointerVisualState m_visualState{ PointerVisualState::Normal };
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
