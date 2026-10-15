@@ -404,7 +404,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(unchecked((int)0x80070057), hr, "Create(null) should throw E_INVALIDARG.");
 
                 // Attaching on the UI thread must not throw RPC_E_WRONG_THREAD (it would on the OS source).
-                Windows.Foundation.TypedEventHandler<CoreWetStrokeUpdateSource, Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs> handler = (s, e) => { };
+                global::Windows.Foundation.TypedEventHandler<CoreWetStrokeUpdateSource, global::Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs> handler = (s, e) => { };
                 source.WetStrokeStarting += handler;
                 source.WetStrokeContinuing += handler;
                 source.WetStrokeStopping += handler;
