@@ -330,6 +330,11 @@ namespace winrt::WinUICppDesktopSampleApp::implementation
         textBlockMUXCControls().Text(L"DropDownButton.Click");
     }
 
+    void MainWindow::InkCanvas_Loaded(IInspectable const&, RoutedEventArgs const&)
+    {
+        textBlockInking().Text(L"InkCanvas.Loaded");
+    }
+
     void MainWindow::ButtonResetBounds_Click(IInspectable const&, RoutedEventArgs const&)
     {
         textBlockBoundsX().Text(L"");
