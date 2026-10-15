@@ -16,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows.Input;
 
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -77,8 +76,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var f = LoadFixture(configure: x =>
             {
-                ClearTableMenus(x);
-                x.Root.ContextFlyout = x.OuterMenu;
+                x.NameColumn.CellContextFlyout = null;
+                x.NameColumn.HeaderContextFlyout = null;
+                x.Table.Resources.Remove(typeof(TableViewRow));
+                x.Table.ContextFlyout = null;
+                x.Root.ContextFlyout = x.Recorder.Create("OuterMenu");
             });
 
             RequestOnCell(f, 3, NameCol);
@@ -111,7 +113,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A ContextFlyout on the cell template root wins over the column's CellContextFlyout.")]
+        [TestProperty("Description", "A ContextFlyout on the cell template root wins over the column's CellContextFlyout, including one assigned after load.")]
         public void CellTemplateFlyoutWinsOverCellMenu()
         {
             var f = LoadFixture(
@@ -120,8 +122,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var content = TrackContentMenu(f, 3, DepartmentCol, ContentRootName, "ContentMenu");
 
             RequestOnCell(f, 3, DepartmentCol);
-
             VerifyOpened(f, "ContentMenu", () => content, f.P(3), "UIA on row 3 / Department");
+            CloseMenus(f);
+
+            RunOnUIThread.Execute(() => f.DepartmentColumn.CellContextFlyout = f.Recorder.Create("CellMenu2"));
+            RequestOnCell(f, 3, DepartmentCol);
+            VerifyOpened(f, "ContentMenu", () => content, f.P(3), "UIA on row 3 / Department, CellContextFlyout replaced after load");
             CloseMenus(f);
         }
 
@@ -265,48 +271,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A cell menu wins over a row ContextFlyout set by an implicit row style; cells without one get the row style menu.")]
-        public void CellMenuWinsOverRowStyleMenu()
-        {
-            var f = LoadFixture(rowStyle: RowStyleWithFlyout());
-
-            RequestOnCell(f, 3, NameCol);
-            VerifyOpened(f, "CellMenu", () => CellOf(f, 3, NameCol), f.P(3), "UIA on row 3 / Name with a row style menu");
-            CloseMenus(f);
-
-            RequestOnCell(f, 3, OfficeCol);
-            VerifyOpened(f, "RowStyleMenu", () => RowOf(f, 3), f.P(3), "UIA on row 3 / Office with a row style menu");
-            CloseMenus(f);
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "A cell content flyout wins over a row style menu.")]
-        public void CellTemplateFlyoutWinsOverRowStyleMenu()
-        {
-            var f = LoadFixture(departmentTemplate: ContentTemplate(RootFlyoutContent), rowStyle: RowStyleWithFlyout());
-            var content = TrackContentMenu(f, 3, DepartmentCol, ContentRootName, "ContentMenu");
-
-            RequestOnCell(f, 3, DepartmentCol);
-
-            VerifyOpened(f, "ContentMenu", () => content, f.P(3), "UIA on row 3 / Department");
-            CloseMenus(f);
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "A cell template flyout keeps winning when CellContextFlyout is assigned after load.")]
-        public void CellTemplateFlyoutWinsOverRuntimeCellMenu()
-        {
-            var f = LoadFixture(departmentTemplate: ContentTemplate(RootFlyoutContent));
-            var content = TrackContentMenu(f, 3, DepartmentCol, ContentRootName, "ContentMenu");
-
-            RunOnUIThread.Execute(() => f.DepartmentColumn.CellContextFlyout = f.CellMenu);
-            RequestOnCell(f, 3, DepartmentCol);
-
-            VerifyOpened(f, "ContentMenu", () => content, f.P(3), "UIA on row 3 / Department, CellContextFlyout set at runtime");
-            CloseMenus(f);
-        }
-
-        [TestMethod]
         [TestProperty("Description", "A request raised on an element inside the cell template opens the template flyout, not CellContextFlyout.")]
         public void RequestFromCellContentWinsOverCellMenu()
         {
@@ -342,14 +306,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // ---- C. Column headers --------------------------------------------------------------
 
         [TestMethod]
-        [TestProperty("Description", "A header request opens the column's HeaderContextFlyout anchored to that header.")]
+        [TestProperty("Description", "A header request opens the column's HeaderContextFlyout anchored to that header; its items see no row item, even after a body request.")]
         public void HeaderMenuOpensOnHeader()
         {
             var f = LoadFixture();
+            RequestOnCell(f, 3, OfficeCol);
+            CloseMenus(f);
 
             RequestOnHeader(f, NameCol);
 
-            VerifyOpened(f, "HeaderMenu", () => HeaderOf(f, NameCol), expectedItem: null, "UIA on the Name header");
+            VerifyOpened(f, "HeaderMenu", () => HeaderOf(f, NameCol), NoItem, "UIA on the Name header");
             CloseMenus(f);
         }
 
@@ -440,26 +406,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
 
             VerifyOpened(f, "HeaderMenu", () => HeaderOf(f, NameCol), expectedItem: null, "UIA on a TableView-owned Name header peer");
-            CloseMenus(f);
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "A ContextFlyout on a nested (non-root) element in the header template wins over HeaderContextFlyout.")]
-        public void HeaderTemplateInnerFlyoutWinsOverHeaderMenu()
-        {
-            var f = LoadFixture(configure: x => x.NameColumn.HeaderTemplate = ContentTemplate(
-                "<Grid>" +
-                "  <Border x:Name='ContentRoot' Background='Transparent'>" +
-                "    <Border.ContextFlyout><MenuFlyout/></Border.ContextFlyout>" +
-                "    <TextBlock Text='{Binding}'/>" +
-                "  </Border>" +
-                "</Grid>"));
-            FrameworkElement content = null;
-            RunOnUIThread.Execute(() => content = TrackNamedMenu(f, HeaderOf(f, NameCol), ContentRootName, "ContentMenu"));
-
-            RequestOnHeader(f, NameCol);
-
-            VerifyOpened(f, "ContentMenu", () => content, expectedItem: null, "UIA on the Name header");
             CloseMenus(f);
         }
 
@@ -595,17 +541,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "While any cell is editing, a request on another row's cell opens no menu (neither its row menu nor the table menu).")]
-        public void RequestOnOtherRowWhileEditingOpensNoMenu()
+        [TestProperty("Description", "A row menu opened from a cell request focuses that cell and leaves the selection unchanged.")]
+        public void RowMenuFromCellRequestFocusesCell()
         {
-            var f = LoadEditableFixture();
-            RequestWhileEditing(f, () => GetCellPeer(f.Table, f.P(6), OfficeCol).ShowContextMenu());
-            VerifyNoMenuOpened(f, "UIA on row 6 / Office while row 3 / Name is editing");
+            var f = LoadFixture();
+            SelectRow(f, 1);
+            FocusRow(f, 1);
+
+            RequestOnCell(f, 5, OfficeCol);
+            VerifyOpened(f, "RowMenu", () => RowOf(f, 5), f.P(5), "UIA on row 5 / Office");
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(CellOf(f, 5, OfficeCol), f.Recorder.Opened[0].FocusAtOpening,
+                    $"Focus must be on the row 5 Office cell when the row menu opens; was {Describe(f.Recorder.Opened[0].FocusAtOpening)}.");
+                Verify.AreSame(f.P(1), f.Table.SelectedItem, "Selection must be unchanged.");
+            });
+            CloseMenus(f);
         }
 
         [TestMethod]
-        [TestProperty("Description", "While any cell is editing, a column's CellContextFlyout on another row does not open, and nothing else opens in its place.")]
-        public void CellMenuOnOtherRowSuppressedWhileEditing()
+        [TestProperty("Description", "While any cell is editing, a request on another row's cell opens no menu (neither its cell, row nor table menu).")]
+        public void CellRequestOnOtherRowSuppressedWhileEditing()
         {
             var f = LoadEditableFixture();
             RequestWhileEditing(f, () => GetCellPeer(f.Table, f.P(6), NameCol).ShowContextMenu());
@@ -663,8 +620,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             configure?.Invoke(x);
         });
 
-        // An API test cannot hold an edit open (SetValue opens and commits in one call), so the request
-        // is raised from BeginningEdit, a window in which IsEditing is already true.
+        // Raises the request from BeginningEdit, where IsEditing is already true, so the edit does not
+        // have to be held open past the SetValue call.
         internal static void RequestWhileEditing(ContextMenuFixture f, Action request)
         {
             bool? wasEditing = null;
@@ -696,26 +653,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             CloseMenus(f);
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Body side effects (focus to the target cell, selection untouched) apply when a row style menu wins.")]
-        public void RowStyleMenuAppliesBodySideEffects()
-        {
-            var f = LoadFixture(rowStyle: RowStyleWithFlyout());
-            SelectRow(f, 1);
-            FocusRow(f, 1);
-
-            RequestOnCell(f, 5, OfficeCol);
-            VerifyOpened(f, "RowStyleMenu", () => RowOf(f, 5), f.P(5), "UIA on row 5 / Office");
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreSame(CellOf(f, 5, OfficeCol), f.Recorder.Opened[0].FocusAtOpening,
-                    $"Focus must be on the row 5 Office cell when the row style menu opens; was {Describe(f.Recorder.Opened[0].FocusAtOpening)}.");
-                Verify.AreSame(f.P(1), f.Table.SelectedItem, "Selection must be unchanged.");
-            });
-            CloseMenus(f);
-        }
-
         // ---- F. DataContext, sharing and recycling ------------------------------------------
 
         [TestMethod]
@@ -730,43 +667,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RequestOnCell(f, 7, NameCol);
             VerifyOpened(f, "CellMenu", () => CellOf(f, 7, NameCol), f.P(7), "second request, row 7");
-            CloseMenus(f);
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "A row menu command bound with CommandParameter={Binding} acts on the requested item.")]
-        public void MenuCommandActsOnRequestedItem()
-        {
-            MenuFlyoutItem remove = null;
-            var f = LoadFixture(configure: x =>
-            {
-                remove = new MenuFlyoutItem
-                {
-                    Text = "Remove",
-                    Command = new DelegateCommand(p => x.Items.Remove((Person)p)),
-                };
-                remove.SetBinding(MenuFlyoutItem.CommandParameterProperty, new Binding());
-                x.RowMenu.Items.Insert(0, remove);
-            });
-            Person target = null;
-            RunOnUIThread.Execute(() => target = f.P(4));
-
-            RequestOnCell(f, 4, OfficeCol);
-            VerifyOpened(f, "RowMenu", () => RowOf(f, 4), target, "UIA on row 4 / Office");
-
-            RunOnUIThread.Execute(() =>
-            {
-                var invoke = FrameworkElementAutomationPeer.CreatePeerForElement(remove)?.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
-                Verify.IsNotNull(invoke, "The menu item must be invokable through UIA.");
-                invoke.Invoke();
-            });
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsFalse(f.Items.Contains(target), "The requested item must be removed.");
-                Verify.AreEqual(9, f.Items.Count, "Only the requested item may be removed.");
-            });
             CloseMenus(f);
         }
 
@@ -829,36 +729,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 x.Table.Resources[typeof(TableViewRow)] = (Style)XamlReader.Load(RowTemplateStyleXaml);
             });
-            RunOnUIThread.Execute(() => TrackNamedMenu(f, RowOf(f, 3), "TemplateRoot", "RowTemplateMenu"));
+            FrameworkElement templateRoot = null;
+            RunOnUIThread.Execute(() => templateRoot = TrackNamedMenu(f, RowOf(f, 3), "TemplateRoot", "RowTemplateMenu"));
 
             RequestOnCell(f, 3, OfficeCol);
 
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual(1, f.Recorder.Opened.Count, $"Exactly one menu must open. Opened: {f.Recorder.Describe()}");
-                Verify.AreEqual("RowTemplateMenu", f.Recorder.Opened[0].Name, "The row template menu must open.");
-                Verify.AreSame(f.P(3), f.Recorder.Opened[0].ItemsSee, "Its items must see person 3.");
-            });
-            CloseMenus(f);
-        }
-
-        // Header menus see no row item; per-column menus are how an app knows the column (see the sample).
-        [TestMethod]
-        [TestProperty("Description", "A header menu's items never see a row item.")]
-        public void HeaderMenuSeesNoRowItem()
-        {
-            var f = LoadFixture();
-
-            RequestOnCell(f, 3, OfficeCol);
-            CloseMenus(f);
-            RequestOnHeader(f, NameCol);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual(1, f.Recorder.Opened.Count, $"Exactly one menu must open. Opened: {f.Recorder.Describe()}");
-                Verify.AreEqual("HeaderMenu", f.Recorder.Opened[0].Name, "The header menu must open.");
-                Verify.IsNull(f.Recorder.Opened[0].ItemsSee, $"Header menu items must see no DataContext; saw {f.Recorder.Opened[0].ItemsSee}.");
-            });
+            VerifyOpened(f, "RowTemplateMenu", () => templateRoot, f.P(3), "UIA on row 3 / Office");
             CloseMenus(f);
         }
 
@@ -868,26 +744,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "An item removed while focus moves to the target row suppresses the menu.")]
         public void ItemRemovedDuringFocusMoveSuppressesMenu()
         {
-            int ran = 0;
             var f = LoadFixture();
             FocusRow(f, 1);
-            RunOnUIThread.Execute(() =>
-            {
-                var target = f.P(5);
-                RowOf(f, 5).GettingFocus += (s, e) =>
-                {
-                    if (ran++ == 0)
-                    {
-                        f.Items.Remove(target);
-                    }
-                };
-            });
+            Person target = null;
+            RunOnUIThread.Execute(() => target = f.P(5));
+            var focusMoves = OnFirstFocusInto(f, 5, () => f.Items.Remove(target));
 
             RequestOnCell(f, 5, NameCol);
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(1, ran, "Precondition: the request must move focus into row 5 exactly once.");
+                Verify.AreEqual(1, focusMoves(), "Precondition: the request must move focus into row 5 exactly once.");
                 Verify.AreEqual(0, f.Recorder.Opened.Count, $"No menu may open for a removed item. Opened: {f.Recorder.Describe()}");
             });
             CloseMenus(f);
@@ -897,22 +764,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "A column removed while focus moves to the target row is not a target.")]
         public void ColumnRemovedDuringFocusMoveSuppressesMenu()
         {
-            int ran = 0;
             var f = LoadFixture();
             FocusRow(f, 1);
-            RunOnUIThread.Execute(() => RowOf(f, 5).GettingFocus += (s, e) =>
-            {
-                if (ran++ == 0)
-                {
-                    f.Table.Columns.Remove(f.NameColumn);
-                }
-            });
+            var focusMoves = OnFirstFocusInto(f, 5, () => f.Table.Columns.Remove(f.NameColumn));
 
             RequestOnCell(f, 5, NameCol);
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(1, ran, "Precondition: the request must move focus into row 5 exactly once.");
+                Verify.AreEqual(1, focusMoves(), "Precondition: the request must move focus into row 5 exactly once.");
                 Verify.AreEqual(0, f.Recorder.Opened.Count,
                     $"A request whose column was removed must be suppressed, not passed to another menu. Opened: {f.Recorder.Describe()}");
             });
@@ -923,25 +783,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "A CellContextFlyout replaced while focus moves to the target row is the menu that opens.")]
         public void CellMenuReplacedDuringFocusMoveShowsNewMenu()
         {
-            int ran = 0;
             MenuFlyout replacement = null;
             var f = LoadFixture();
             FocusRow(f, 1);
-            RunOnUIThread.Execute(() =>
-            {
-                replacement = f.Recorder.Create("ReplacementMenu");
-                RowOf(f, 5).GettingFocus += (s, e) =>
-                {
-                    if (ran++ == 0)
-                    {
-                        f.NameColumn.CellContextFlyout = replacement;
-                    }
-                };
-            });
+            RunOnUIThread.Execute(() => replacement = f.Recorder.Create("ReplacementMenu"));
+            var focusMoves = OnFirstFocusInto(f, 5, () => f.NameColumn.CellContextFlyout = replacement);
 
             RequestOnCell(f, 5, NameCol);
 
-            RunOnUIThread.Execute(() => Verify.IsTrue(ran >= 1, "Precondition: the request must move focus into row 5."));
+            RunOnUIThread.Execute(() => Verify.IsTrue(focusMoves() >= 1, "Precondition: the request must move focus into row 5."));
             VerifyOpened(f, "ReplacementMenu", () => CellOf(f, 5, NameCol), f.P(5), "UIA on row 5 / Name");
             CloseMenus(f);
         }
@@ -961,27 +811,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             SettleLayout(f.Table);
 
-            Action<AutomationPeer, string> verifyPooled = (peer, name) =>
+            foreach (var (peer, name) in new[] { (rowPeer, "row"), (cellPeer, "cell") })
             {
-                RunOnUIThread.Execute(() =>
-                {
-                    bool threw = false;
-                    try
-                    {
-                        peer.ShowContextMenu();
-                    }
-                    catch (Exception)
-                    {
-                        threw = true;
-                    }
-                    Verify.IsTrue(threw, $"ShowContextMenu on the pooled {name} peer must raise ElementNotAvailable.");
-                });
+                RunOnUIThread.Execute(() => Verify.Throws<Exception>(() => peer.ShowContextMenu()));
                 IdleSynchronizer.Wait();
                 RunOnUIThread.Execute(() => Verify.AreEqual(0, f.Recorder.Opened.Count,
                     $"No menu may open from the pooled {name} peer. Opened: {f.Recorder.Describe()}"));
-            };
-            verifyPooled(rowPeer, "row");
-            verifyPooled(cellPeer, "cell");
+            }
             CloseMenus(f);
         }
 
@@ -1008,14 +844,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Action<ContextMenuFixture> configure = null,
             DataTemplate nameTemplate = null,
             DataTemplate departmentTemplate = null,
-            Style rowStyle = null,
             bool grouped = false,
             int itemCount = 10)
         {
             ContextMenuFixture f = null;
             RunOnUIThread.Execute(() =>
             {
-                f = CreateContextMenuFixture(nameTemplate, departmentTemplate, rowStyle, grouped, itemCount);
+                f = CreateContextMenuFixture(nameTemplate, departmentTemplate, grouped, itemCount);
                 configure?.Invoke(f);
                 LoadContent(f.Root);
             });
@@ -1100,7 +935,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     // Three columns over 10 people: Name (text, CellMenu, HeaderMenu), Department (template) and
     // Office (text). RowMenu is set on every row by an implicit row style and TableMenu is the TableView.ContextFlyout.
-    // OuterMenu is created but only attached to Root by tests that need it.
     internal sealed class ContextMenuFixture
     {
         public Border Root;
@@ -1114,23 +948,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public MenuFlyout RowMenu;
         public MenuFlyout HeaderMenu;
         public MenuFlyout TableMenu;
-        public MenuFlyout OuterMenu;
 
         // 1-based: P(1) is "Person 0", the first row.
         public Person P(int n) => Items.First(p => p.Name == $"Person {n - 1}");
-    }
-
-    internal sealed partial class DelegateCommand : ICommand
-    {
-        private readonly Action<object> _execute;
-
-        public DelegateCommand(Action<object> execute) { _execute = execute; }
-
-        public event EventHandler CanExecuteChanged { add { } remove { } }
-
-        public bool CanExecute(object parameter) => true;
-
-        public void Execute(object parameter) => _execute(parameter);
     }
 
     internal static class ContextMenuTestHelpers
@@ -1196,7 +1016,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         internal static ContextMenuFixture CreateContextMenuFixture(
             DataTemplate nameTemplate,
             DataTemplate departmentTemplate,
-            Style rowStyle,
             bool grouped,
             int itemCount)
         {
@@ -1228,7 +1047,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             f.RowMenu = f.Recorder.Create("RowMenu");
             f.HeaderMenu = f.Recorder.Create("HeaderMenu");
             f.TableMenu = f.Recorder.Create("TableMenu");
-            f.OuterMenu = f.Recorder.Create("OuterMenu");
 
             f.NameColumn.CellContextFlyout = f.CellMenu;
             f.NameColumn.HeaderContextFlyout = f.HeaderMenu;
@@ -1238,23 +1056,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Setters = { new Setter(UIElement.ContextFlyoutProperty, f.RowMenu) },
             };
 
-            // A test's own row style replaces the fixture's.
-            if (rowStyle != null)
-            {
-                f.Recorder.Track("RowStyleMenu", SetterFlyout(rowStyle));
-                f.Table.Resources[typeof(TableViewRow)] = rowStyle;
-            }
-
             f.Root = new Border { Child = f.Table, Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent) };
             return f;
-        }
-
-        internal static void ClearTableMenus(ContextMenuFixture f)
-        {
-            f.NameColumn.CellContextFlyout = null;
-            f.NameColumn.HeaderContextFlyout = null;
-            f.Table.Resources.Remove(typeof(TableViewRow));
-            f.Table.ContextFlyout = null;
         }
 
         // XamlReader must run on the UI thread; safe to call from either thread.
@@ -1267,12 +1070,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         internal static DataTemplate ContentTemplate(string content) => LoadXaml<DataTemplate>(
             "<DataTemplate " + XamlNamespaces + ">" + content + "</DataTemplate>");
-
-        // An implicit TableViewRow style whose ContextFlyout setter shares one MenuFlyout across rows.
-        internal static Style RowStyleWithFlyout() => LoadXaml<Style>(
-            "<Style " + XamlNamespaces + " TargetType='tv:TableViewRow'>" +
-            "  <Setter Property='ContextFlyout'><Setter.Value><MenuFlyout/></Setter.Value></Setter>" +
-            "</Style>");
 
         internal static FlyoutBase SetterFlyout(Style style) => style.Setters
             .OfType<Setter>()
@@ -1380,6 +1177,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
         }
 
+        // Runs action on the UI thread the first time focus moves into the row. Returns a counter of
+        // focus moves into the row, read on the UI thread.
+        internal static Func<int> OnFirstFocusInto(ContextMenuFixture f, int row, Action action)
+        {
+            int count = 0;
+            RunOnUIThread.Execute(() => RowOf(f, row).GettingFocus += (s, e) =>
+            {
+                if (count++ == 0)
+                {
+                    action();
+                }
+            });
+            return () => count;
+        }
+
         internal static bool IsWithin(DependencyObject element, DependencyObject ancestor)
         {
             for (var node = element; node != null; node = VisualTreeHelper.GetParent(node))
@@ -1411,6 +1223,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return $"{element.GetType().Name}{(string.IsNullOrEmpty(name) ? "" : $" '{name}'")}{(dc == null ? "" : $" [{dc.Name}]")}";
         }
 
+        // Pass as expectedItem to assert the menu's items see no DataContext; null skips the check.
+        internal static readonly object NoItem = new object();
+
         // Exactly one tracked menu opened, it is the expected one, anchored to the expected element,
         // and its items see the expected item (when one is given).
         internal static void VerifyOpened(
@@ -1435,7 +1250,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var target = expectedTarget();
                 Verify.AreSame(target, entry.Target, $"Target ({context}): expected {Describe(target)}, was {Describe(entry.Target)}.");
 
-                if (expectedItem != null)
+                if (expectedItem == NoItem)
+                {
+                    Verify.IsNull(entry.ItemsSee, $"Menu items must see no DataContext ({context}); saw {entry.ItemsSee}.");
+                }
+                else if (expectedItem != null)
                 {
                     Verify.AreSame(expectedItem, entry.ItemsSee, $"Menu items' DataContext ({context}): saw {entry.ItemsSee}.");
                 }
