@@ -26,6 +26,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTelemetry.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTip.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTipTests.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTipTypes.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewColumn.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTextColumn.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTemplateColumn.h" />

@@ -397,14 +397,24 @@ void TableView::PushSelectionProperties()
     const int32_t index = SelectedIndexInternal();
     auto const item = SelectedItemForIndex(index);
 
-    if (SelectedIndex() != index)
+    // Only app property observers and bindings run from these writes; a throw from them is the app's.
+    AppEscapeScope escapes{ *this };
+    try
     {
-        SelectedIndex(index);
-    }
+        if (SelectedIndex() != index)
+        {
+            SelectedIndex(index);
+        }
 
-    if (!SameInspectableIdentity(SelectedItem(), item))
+        if (!SameInspectableIdentity(SelectedItem(), item))
+        {
+            SelectedItem(item);
+        }
+    }
+    catch (...)
     {
-        SelectedItem(item);
+        NoteAppEscape(TableViewTip::AppFaultKind::Callback, winrt::to_hresult());
+        throw;
     }
 }
 
@@ -460,9 +470,9 @@ void TableView::RaiseSelectionChanged(winrt::IInspectable const& addedItem)
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(removed)),
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(added)) };
 
-    AppCalloutTip callout{ *this, TableViewTip::Stage::Selection, TableViewTip::AppFaultKind::Callback };
+    AppEscapeScope escapes{ *this };
     try { m_selectionChangedEventSource(*this, args); }
-    catch (...) { callout.Fault(winrt::to_hresult()); throw; }
+    catch (...) { NoteAppEscape(TableViewTip::AppFaultKind::Callback, winrt::to_hresult()); throw; }
 }
 
 void TableView::RaiseSelectionAutomationEvents(

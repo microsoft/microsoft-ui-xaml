@@ -11,6 +11,7 @@
 #include "TableViewToolTipHelpers.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewSource.h"
+#include "ShapingHelpers.h"
 #include "TableViewRowTemplateSelector.h"
 #include "TableViewGroupHeader.h"
 #include "SortIndicator.h"
@@ -555,6 +556,8 @@ winrt::Brush TableView::LookupHeaderStateBrush(std::wstring_view key)
 TableView::~TableView()
 {
     IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
+    // Unloaded can run after the window is destroyed, or not at all; the summary goes out once either way.
+    TableViewTelemetry::EndSession(m_telemetrySession);
     // Must run while this control still holds the selector: once anything has been recycled the
     // pools hang off the cached templates and close a cycle the reference tracker cannot walk.
     // Destructor runs off the reference tracker's teardown path (e.g. UIAffinityReleaseQueue),
@@ -723,6 +726,12 @@ TableView::TableView()
 void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
     TableViewTelemetry::BeginSession(m_telemetrySession);
+    TableViewTelemetry::ReportFirstLoad();
+    // ItemsSource is usually set before the control first loads; those sets count into this session.
+    for (; m_sourceSetsBeforeLoad; --m_sourceSetsBeforeLoad)
+    {
+        TableViewTelemetry::CountOperation(m_telemetrySession, m_telemetrySession.generation, TableViewTip::Operation::ReplaceSource);
+    }
     ReclaimItemsSource();
 
     // ThemeSettings requires a WindowId, so it can only be created once we have a XamlRoot.
@@ -806,6 +815,7 @@ try
     m_headerSortSpaceArmedColumn = nullptr;
     IgnoreTip(TableViewTip::IgnoreReason::Retemplated);
     TableViewTip::StartSetup(m_tip);
+    m_tipAppEscapesAtSetupStart = m_tipAppEscapes;
     __super::OnApplyTemplate();
     InvalidateTableViewResourceCache(this);
     CancelHeaderFocusRestore();
@@ -1074,9 +1084,16 @@ try
 }
 catch (...)
 {
-    // The control, row and cell templates are expanded outside this method, and a tagged app callout
-    // here has already closed the run as an application fault; any other throw counts as a setup failure.
-    TableViewTip::FailSetup(m_tip, winrt::to_hresult());
+    // The control, row and cell templates are expanded outside this method; an exception app code
+    // rethrew while setup ran is the app's, and any other throw counts as a setup failure.
+    auto const error = winrt::to_hresult();
+    if (m_tip.setupPending && AppEscapedSince(m_tipAppEscapesAtSetupStart, error))
+    {
+        TableViewTip::IgnoreSetup(m_tip, TableViewTip::IgnoreReason::ApplicationFault, m_tipAppEscapeError, m_tipAppEscapeKind);
+        TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::Setup, TableViewTip::Stage::Template,
+            false, TableViewTip::Attribution::Application, m_tipAppEscapeError, m_tipAppEscapeKind);
+    }
+    else { TableViewTip::FailSetup(m_tip, error); }
     throw;
 }
 
@@ -1214,55 +1231,73 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     }
 
     auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::ReplaceSource);
+    ShapingHelpers::ClearCallerFault();
     bool completed = false;
-    auto tipCompletion = wil::scope_exit([this, tipGeneration, &completed]() noexcept
+    std::optional<HRESULT> failure;
+    auto tipCompletion = wil::scope_exit([this, tipGeneration, &completed, &failure]() noexcept
     {
         if (!completed)
         {
-            FailTipOperation(tipGeneration, TableViewTip::Stage::Source, {});
+            FailTipOperation(tipGeneration, TableViewTip::Stage::Source, failure);
         }
         else { CompleteTipOperation(tipGeneration); }
         EndTipOperation();
     });
 
-    // The edited item is about to leave the control. Forced, because the data set is already gone
-    // by the time a handler could react, so the close cannot be vetoed. No-focus teardown: this is
-    // a dependency-property change callback, and moving focus from one re-enters the framework.
-    if (IsEditing())
+    try
     {
-        TerminateEditWithoutVisualRestore(false /* insideLayoutPass */, true /* sourceReplaced */);
+        // The edited item is about to leave the control. Forced, because the data set is already gone
+        // by the time a handler could react, so the close cannot be vetoed. No-focus teardown: this is
+        // a dependency-property change callback, and moving focus from one re-enters the framework.
+        if (IsEditing())
+        {
+            TerminateEditWithoutVisualRestore(false /* insideLayoutPass */, true /* sourceReplaced */);
+        }
+
+        // The current cell belongs to the old data set. Left alone, CurrentItem keeps returning an item
+        // that is not in the new source, BeginEdit fails with no diagnostic, and the discarded item
+        // stays rooted by the tracker. WPF DataGrid likewise resets CurrentItem/CurrentCell here.
+        //
+        // Per-row begin-edit press state needs no reset: it is compared by item identity, so an entry
+        // left over from the previous data set can never match an item from the new one.
+        SetCurrentCell(nullptr, nullptr);
+
+        // The column set changed; reset the shared cursor so first header entry does not skip an
+        // unvisited column.
+        ResetColumnCursorInternal();
+
+        // New data set: clear the grow-only Auto accumulators so widths recompute from scratch. The next
+        // table measure pass pulls measured widths from the by-then re-realized rows, so the outgoing rows'
+        // stale content no longer pins the columns.
+        ResetColumnDesiredWidths();
+
+        // A different collection invalidates any projection we synthesized over the old one, so the
+        // shaping state that lived in it goes with it. AdoptItemsSource mints a fresh projection here
+        // (the active source is still available to it as the previous source to detach), and
+        // RefreshRowsPipeline then pushes the new view into the repeater. This is the only path that
+        // reassigns the active source - every other re-entry keeps it and only refreshes the pipeline.
+
+        // PART_RowsRepeater is driven from the flat ItemsSource DP. The sort belonged to the discarded
+        // projection, so the reported sort state and the chevron go with it - otherwise they describe
+        // an order the new rows are not in.
+        ResetSortStateForNewItemsSource();
+        AdoptItemsSource();
+        RefreshRowsPipeline();
     }
-
-    // The current cell belongs to the old data set. Left alone, CurrentItem keeps returning an item
-    // that is not in the new source, BeginEdit fails with no diagnostic, and the discarded item
-    // stays rooted by the tracker. WPF DataGrid likewise resets CurrentItem/CurrentCell here.
-    //
-    // Per-row begin-edit press state needs no reset: it is compared by item identity, so an entry
-    // left over from the previous data set can never match an item from the new one.
-    SetCurrentCell(nullptr, nullptr);
-
-    // The column set changed; reset the shared cursor so first header entry does not skip an
-    // unvisited column.
-    ResetColumnCursorInternal();
-
-    // New data set: clear the grow-only Auto accumulators so widths recompute from scratch. The next
-    // table measure pass pulls measured widths from the by-then re-realized rows, so the outgoing rows'
-    // stale content no longer pins the columns.
-    ResetColumnDesiredWidths();
-
-    // A different collection invalidates any projection we synthesized over the old one, so the
-    // shaping state that lived in it goes with it. AdoptItemsSource mints a fresh projection here
-    // (the active source is still available to it as the previous source to detach), and
-    // RefreshRowsPipeline then pushes the new view into the repeater. This is the only path that
-    // reassigns the active source - every other re-entry keeps it and only refreshes the pipeline.
-
-    // PART_RowsRepeater is driven from the flat ItemsSource DP. The sort belonged to the discarded
-    // projection, so the reported sort state and the chevron go with it - otherwise they describe
-    // an order the new rows are not in.
-    ResetSortStateForNewItemsSource();
-    AdoptItemsSource();
-    RefreshRowsPipeline();
+    catch (...)
+    {
+        failure = winrt::to_hresult();
+        // Reading the new collection, or its contract, failed: that is the app's.
+        if (ShapingHelpers::TakeCallerFault(*failure)) { NoteAppEscape(TableViewTip::AppFaultKind::Data, failure); }
+        throw;
+    }
     completed = true;
+    // Counted into the first session, unless a nested swap superseded this one (as after Loaded).
+    if (m_telemetrySession.generation == 0 && tipGeneration && tipGeneration == m_tip.operationGeneration &&
+        m_sourceSetsBeforeLoad < (std::numeric_limits<uint32_t>::max)())
+    {
+        ++m_sourceSetsBeforeLoad;
+    }
 }
 
 void TableView::OnHeadersVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)

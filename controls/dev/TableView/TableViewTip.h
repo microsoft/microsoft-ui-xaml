@@ -9,7 +9,7 @@
 #include "TableViewTelemetry.h"
 
 // TiP: one setup test per template application and one test per key operation (TableViewTipTests.h).
-// Completed operations, and deferred or unattributed ones, also count into the session telemetry.
+// Completed operations, and deferred ones, also count into the session telemetry.
 namespace TableViewTip
 {
     struct ShapingObservation
