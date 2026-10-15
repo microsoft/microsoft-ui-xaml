@@ -3792,6 +3792,71 @@ void TableView::CancelColumnResizeDrag()
     }
 }
 
+// The same gates that decide whether the gripper exists and is shown, so UIA never offers a
+// resize the pointer cannot perform.
+winrt::ResizeGripper TableView::GetAvailableResizeGripper(const winrt::TableViewColumn& column)
+{
+    if (!column ||
+        !CanUserResizeColumns() ||
+        !column.CanResize() ||
+        column.Visibility() != winrt::Visibility::Visible ||
+        winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != *this)
+    {
+        return nullptr;
+    }
+
+    auto const host = m_headerHost.get();
+    if (!host)
+    {
+        return nullptr;
+    }
+
+    auto const headerCell = TableViewCellsPanel::CellForColumn(host, column);
+    if (!headerCell || IsColumnResizePinned(column))
+    {
+        return nullptr;
+    }
+
+    return FindResizeGripperInCell(headerCell);
+}
+
+bool TableView::CanResizeColumnFromAutomation(const winrt::TableViewColumn& column)
+{
+    return GetAvailableResizeGripper(column) != nullptr;
+}
+
+bool TableView::TryResizeColumnFromAutomation(const winrt::TableViewColumn& column, double width)
+{
+    auto const gripper = GetAvailableResizeGripper(column);
+    if (!gripper || gripper.IsDragging())
+    {
+        return false;
+    }
+
+    // DragStarted anchors the gesture at ActualWidth, so the offset is taken from the same value.
+    const double totalDelta = width - column.ActualWidth();
+
+    gripper.BeginDrag();
+    // DragStarted ends the gesture at once while another column's drag is in flight.
+    if (!gripper.IsDragging())
+    {
+        return false;
+    }
+
+    try
+    {
+        gripper.TryDrag(totalDelta);
+    }
+    catch (...)
+    {
+        gripper.EndDrag(true /* canceled */);
+        throw;
+    }
+
+    gripper.EndDrag(false /* canceled */);
+    return true;
+}
+
 // The header cell is tagged with its column; the gripper is one of its children.
 // The gripper is one of the header cell's children; the caller already has the cell.
 winrt::ResizeGripper TableView::FindResizeGripperInCell(const winrt::FrameworkElement& headerCell) const
