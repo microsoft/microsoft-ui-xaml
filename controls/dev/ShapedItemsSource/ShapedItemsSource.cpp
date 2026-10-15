@@ -440,7 +440,7 @@ void ShapedItemsSource::SubscribeToSourceCollectionChanges()
 
     // Classify the source once, here, where it is bound. Every later indexed read, count and
     // observability check reads off this resolution instead of re-probing.
-    m_sourceAccessor = ShapingHelpers::CollectionAccessor{ m_source };
+    m_sourceAccessor = ShapingHelpers::CollectionAccessor{ m_source, ShapingHelpers::CollectionOwner::Caller };
 
     if (!m_source)
     {
@@ -2021,7 +2021,7 @@ void ShapedItemsSource::RebuildFlat(std::vector<winrt::IInspectable>& rows)
 
 std::vector<winrt::IInspectable> ShapedItemsSource::Materialize(winrt::IInspectable const& source)
 {
-    return ShapingHelpers::EnumerateInspectableItems(source, true);
+    return ShapingHelpers::EnumerateInspectableItems(source, true, ShapingHelpers::CollectionOwner::Caller);
 }
 
 void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)

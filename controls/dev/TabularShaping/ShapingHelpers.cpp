@@ -655,15 +655,6 @@ namespace ShapingHelpers
     {
         thread_local bool t_callerFault{};
         thread_local HRESULT t_callerFaultError{};
-
-        // In a catch only: notes the app's collection as the origin, unless the failure was our own allocation.
-        void NoteCollectionFault() noexcept
-        {
-            if (auto const error = winrt::to_hresult(); error != E_OUTOFMEMORY)
-            {
-                NoteCallerFault(error);
-            }
-        }
     }
 
     void NoteCallerFault(HRESULT error) noexcept
@@ -686,15 +677,16 @@ namespace ShapingHelpers
 
     std::vector<winrt::IInspectable> EnumerateInspectableItems(
         winrt::IInspectable const& source,
-        bool throwIfUnsupported)
+        bool throwIfUnsupported,
+        CollectionOwner owner)
     {
         // Single entry point for callers holding a raw source. The classification and the walk both
         // live on CollectionAccessor so there is exactly one interface ladder in the stack.
-        return CollectionAccessor{ source }.Enumerate(throwIfUnsupported);
+        return CollectionAccessor{ source, owner }.Enumerate(throwIfUnsupported);
     }
 
-    CollectionAccessor::CollectionAccessor(winrt::IInspectable const& source) :
-        m_source(source)
+    CollectionAccessor::CollectionAccessor(winrt::IInspectable const& source, CollectionOwner owner) :
+        m_source(source), m_callerOwned(owner == CollectionOwner::Caller)
     {
         if (!source)
         {
@@ -757,7 +749,8 @@ namespace ShapingHelpers
     }
     catch (...)
     {
-        NoteCollectionFault();
+        // Only the collection runs here, so any failure, out-of-memory included, is its own.
+        if (m_callerOwned) { NoteCallerFault(winrt::to_hresult()); }
         throw;
     }
 
@@ -776,7 +769,7 @@ namespace ShapingHelpers
     }
     catch (...)
     {
-        NoteCollectionFault();
+        if (m_callerOwned) { NoteCallerFault(winrt::to_hresult()); }
         throw;
     }
 
@@ -866,7 +859,9 @@ namespace ShapingHelpers
     }
     catch (...)
     {
-        NoteCollectionFault();
+        // This also grows its own vector, so an out-of-memory here may be shaping's. A caller's indexed read that
+        // ran out of memory was already noted by Count or GetAtUnchecked.
+        if (auto const error = winrt::to_hresult(); m_callerOwned && error != E_OUTOFMEMORY) { NoteCallerFault(error); }
         throw;
     }
 
