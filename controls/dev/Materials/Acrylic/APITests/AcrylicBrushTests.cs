@@ -10,7 +10,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Shapes;
 using Microsoft.UI.Xaml.Media;
-using Windows.Foundation.Metadata;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Common;
@@ -108,6 +107,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Verifying AcrylicBrush default property values");
                 Verify.AreEqual(acrylicBrush.FallbackColor, Microsoft.UI.ColorHelper.FromArgb(0, 255, 255, 255));
                 Verify.AreEqual(acrylicBrush.AlwaysUseFallback, false);
+                Verify.AreEqual(acrylicBrush.IsNoiseEnabled, true);
                 Verify.AreEqual(acrylicBrush.TintColor, Microsoft.UI.ColorHelper.FromArgb(204, 255, 255, 255));
                 Verify.AreEqual(acrylicBrush.TintOpacity, 1.0);
                 Verify.AreEqual(acrylicBrush.Opacity, 1.0);
