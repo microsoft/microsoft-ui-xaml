@@ -126,7 +126,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [CodeGen(partial: true)]
     [PropertyChange(PropertyChangeCallbackType.NoCallback)]
     [Guids(ClassGuid = "b1b5d90d-aba6-436b-bf32-2f9f7f780429")]
-    public sealed class PivotPanel : Controls.Panel
+    public class PivotPanel : Controls.Panel
     {
     }
 

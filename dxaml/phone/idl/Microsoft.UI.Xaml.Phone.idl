@@ -479,12 +479,12 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [default_interface]
-    runtimeclass PivotPanel
+    unsealed runtimeclass PivotPanel
         : Microsoft.UI.Xaml.Controls.Panel
         , [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         Microsoft.UI.Xaml.Controls.Primitives.IScrollSnapPointsInfo
     {
-        PivotPanel();
+        [method_name("CreateInstance")] PivotPanel();
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
