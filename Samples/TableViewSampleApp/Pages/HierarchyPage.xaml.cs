@@ -365,9 +365,8 @@ public sealed partial class HierarchyPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    // MenuFlyout has no item filter, so the full XAML list is cached on the first open and the
-    // subset for this row's kind is re-added on every open. Re-adding, rather than setting
-    // Visibility, leaves the HasMentor Visibility bindings in charge of their items.
+    // MenuFlyout has no item filter: cache the XAML items, re-add this row kind's subset on each open.
+    // Re-adding (not Visibility) leaves the HasMentor bindings in charge.
     private List<MenuFlyoutItemBase>? _rowMenuItems;
 
     private void OnRowMenuOpening(object sender, object e)

@@ -21,13 +21,8 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPa
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    // TableView context menu interaction tests: real right-click, Shift+F10 and Menu key input, end to end.
-    //
-    // Every test runs on the page's ContextMenu host (ContextMenuTable, laid out as TableViewTestPageFacts
-    // describes), which gives each resolution level its own menu. Which menu opened, for which item and with focus
-    // where, is read from ContextMenuReadout (written by the menus' Opening handlers); the open menu itself is
-    // confirmed through UIA by its item's AutomationId. Resolution order, DataContext and recycling are covered by
-    // the API tests; these cover input routing.
+    // Real right-click, Shift+F10 and Menu key input on ContextMenuTable. The opened menu, item and focus
+    // are read from ContextMenuReadout; resolution order is covered by the API tests.
     [TestClass]
     public class TableViewContextMenuInteractionTests
     {
