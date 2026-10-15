@@ -655,7 +655,7 @@ Template parts. All are optional; a missing part disables only its feature:
 | Part | Type | Purpose |
 |---|---|---|
 | `PART_ContentPresenter` | `ContentPresenter` | Content region. On a sortable column the control adds the sort glyph's width to its right `Margin`, so text trims before the glyph. |
-| `PART_GridLine` | `Border` | Vertical separator. Its `Visibility` follows the table's grid-line settings; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
+| `PART_GridLine` | `Border` | Vertical separator. Its `Visibility` follows `HeaderGridLinesVisibility`; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
 | `PART_SortIndicatorHost` | `Border` | Hosts the sort glyph on a sortable column. Under a High Contrast highlight state the glyph takes `PART_ContentPresenter`'s `Foreground`. |
 | `PART_ResizeGripperHost` | `Border` | Hosts the resize gripper on a resizable column. Without it the column cannot be resized from the header, by pointer, keyboard or UI Automation. |
 
