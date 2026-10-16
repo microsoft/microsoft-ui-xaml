@@ -618,6 +618,7 @@ private:
     void ApplySelection(int32_t index, bool measureTip = false);
 
     void ReleaseHeaderCells(const winrt::Panel& host, bool detachedColumnsOnly = false);
+    winrt::Style CompatibleHeaderStyle(const winrt::Style& style);
     winrt::TableViewColumn GetFocusedHeaderColumn(const winrt::Panel& host, winrt::FocusState& focusState) const;
     // Refocuses the rebuilt header for column; retries once after layout if it cannot take focus yet.
     void RestoreHeaderFocus(const winrt::TableViewColumn& column, winrt::FocusState focusState);
@@ -1382,6 +1383,8 @@ private:
 
     bool m_rebuildHeadersQueued{ false };
     bool m_rebuildingHeaders{ false };
+    // Incompatible header Styles already reported, so each is logged once.
+    std::vector<winrt::weak_ref<winrt::Style>> m_loggedIncompatibleHeaderStyles;
 
     bool m_columnsStructureChangedQueued{ false };
 
