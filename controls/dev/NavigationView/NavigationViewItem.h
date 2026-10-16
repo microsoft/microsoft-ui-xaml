@@ -100,6 +100,7 @@ private:
     void UpdateVisualStateForKeyboardFocusedState();
     void UpdateVisualStateForToolTip();
     void UpdateVisualStateForPointer();
+    void UpdateAnimatedIconState(wstring_view const& state);
     void UpdateVisualStateForChevron();
     void UpdateVisualStateForClosedCompact();
 

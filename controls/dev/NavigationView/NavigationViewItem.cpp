@@ -573,6 +573,78 @@ void NavigationViewItem::UpdateVisualStateForPointer()
         winrt::VisualStateManager::GoToState(*this, enabledStateValue, true);
         winrt::VisualStateManager::GoToState(*this, selectedStateValue, true);
     }
+
+    UpdateAnimatedIconState(selectedStateValue);
+}
+
+// The default templates forward the pointer states to an AnimatedIcon in the Icon slot, but map the selected
+// states onto the unselected ones (Selected -> Normal, PointerOverSelected -> PointerOver, PressedSelected -> Pressed)
+// so that icons authored with only Normal/PointerOver/Pressed markers (such as AnimatedSettingsVisualSource) keep
+// animating. When the icon's source defines markers for the selected states, give it the real visual state instead.
+void NavigationViewItem::UpdateAnimatedIconState(wstring_view const& state)
+{
+    auto const animatedIcon = Icon().try_as<winrt::AnimatedIcon>();
+    if (!animatedIcon)
+    {
+        return;
+    }
+
+    auto const source = animatedIcon.Source();
+    if (!source)
+    {
+        return;
+    }
+
+    auto const markers = source.Markers();
+    if (!markers)
+    {
+        return;
+    }
+
+    auto const hasMarkersForState = [&markers](wstring_view const& markerState)
+    {
+        const std::wstring stateTo = std::wstring(markerState) + L"To";
+        const std::wstring toState = L"To" + std::wstring(markerState);
+        const std::wstring toStateWithSuffix = toState + L"_";
+        for (auto const& marker : markers)
+        {
+            const std::wstring key{ marker.Key().c_str() };
+            if (key == markerState ||
+                key.rfind(stateTo, 0) == 0 ||
+                key.find(toStateWithSuffix) != std::wstring::npos ||
+                (key.size() >= toState.size() && key.compare(key.size() - toState.size(), toState.size(), toState) == 0))
+            {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    if (!hasMarkersForState(c_selected) && !hasMarkersForState(c_pointerOverSelected) && !hasMarkersForState(c_pressedSelected))
+    {
+        // Not a selection-aware icon: leave it to the template, which preserves the existing behavior.
+        return;
+    }
+
+    auto const unselectedState = [state]()
+    {
+        if (state == c_selected)
+        {
+            return c_normal;
+        }
+        else if (state == c_pointerOverSelected)
+        {
+            return c_pointerOver;
+        }
+        else if (state == c_pressedSelected)
+        {
+            return c_pressed;
+        }
+        return state;
+    }();
+
+    auto const iconState = (state == unselectedState || hasMarkersForState(state)) ? state : unselectedState;
+    winrt::AnimatedIcon::SetState(animatedIcon, winrt::hstring{ iconState });
 }
 
 void NavigationViewItem::UpdateVisualState(bool useTransitions)
