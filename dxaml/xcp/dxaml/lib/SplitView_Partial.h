@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <deque>
+#include <map>
+#include <optional>
 #include "SplitView.g.h"
 
 namespace DirectUI
@@ -115,8 +118,14 @@ namespace DirectUI
         TrackerPtr<xaml::IFrameworkElement> m_tpContentRoot;
         TrackerPtr<xaml::IVisualStateGroup> m_tpDisplayModeStates;
 
-        bool m_isPaneOpeningOrClosing{ false };
-        bool m_pendingPaneOpen{ false };
-        uint64_t m_paneChangeStateSequence{ 0 };
+        struct PendingPaneStateChange
+        {
+            uint64_t completionSequence;
+            uint64_t requestId;
+            bool isPaneOpen;
+        };
+        std::deque<PendingPaneStateChange> m_pendingPaneStateChanges;
+        std::map<uint64_t, std::optional<bool>> m_receivedPaneStateChanges;
+        uint64_t m_nextPaneRequestId{ 0 };
     };
 }

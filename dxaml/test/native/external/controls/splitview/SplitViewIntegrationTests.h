@@ -168,6 +168,38 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that queued pane completions retain their open or closed state across subsequent property changes.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(DoesQueuePaneCompletionsWithoutDisplayModeStates)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that completions remain deferred and ordered when a template omits DisplayModeStates.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesOrderMixedVisualStateManagerCompletions)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that newer synchronous custom-manager callbacks cannot overtake older queued completions.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRecoverMissingStateWithOutOfOrderNotification)
+            TEST_METHOD_PROPERTY(L"Description", L"Preserves a synchronous recovery that arrives before an older wrong-category notification.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesPreserveCommittedCompletionAfterFailedRequest)
+            TEST_METHOD_PROPERTY(L"Description", L"A failing later request must not discard an earlier committed pane completion.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRaisePaneOpenedWhenNotLive)
+            TEST_METHOD_PROPERTY(L"Description", L"Preserves PaneOpened before entering the live tree and after unloading a template without DisplayModeStates.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesCompletePaneTransitionsAfterUnload)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that an interrupted operation abandoned on unload cannot block later completions.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRestoreLightDismissAfterReopeningWithoutDisplayModeStates)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that reentrant reopening restores outside-click dismissal when a template omits DisplayModeStates.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRaiseClosingAfterNestedCloseWithoutDisplayModeStates)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that a nested manual close is not mistaken for the executing light dismiss.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(DoesCompleteInterruptedPaneTransitions)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that interrupted pane transitions complete after display mode or placement changes.")
         END_TEST_METHOD()
@@ -204,6 +236,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
     private:
+        void VerifyLightDismissReentrancyWithoutDisplayModeStates(bool closeAgain);
+
         void ValidateLightDismissBehaviorWorker(
             xaml_controls::SplitViewDisplayMode displayMode,
             xaml_controls::SplitViewPanePlacement placement,

@@ -847,6 +847,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             foreach (bool cancel in new[] { false, true })
             {
+                using var closingEvent = new ManualResetEvent(false);
                 NavigationView navView = null;
                 SplitView splitView = null;
                 Grid root = null;
@@ -903,11 +904,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         root.UpdateLayout();
                         Verify.AreEqual(SplitViewDisplayMode.CompactInline, splitView.DisplayMode);
                         Verify.IsTrue(splitView.IsPaneOpen);
+                        closingEvent.Set();
                     };
                     splitView.PaneClosed += (sender, args) => closedCount++;
                     splitView.Width = 240;
                     root.UpdateLayout();
                 });
+                Verify.IsTrue(closingEvent.WaitOne(TimeSpan.FromSeconds(5)), "Light-dismiss preparation should be raised.");
                 IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
