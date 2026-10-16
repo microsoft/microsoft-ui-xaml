@@ -2144,6 +2144,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies changing a string Header keeps the header's content and tooltip until the header band rebuilds.")]
+        public void VerifyStringHeaderChangeKeepsHeaderContentUntilRebuild()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                tableView.Columns[0].HeaderToolTip = "Tip";
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                Verify.IsNotNull(ToolTipService.GetToolTip(header), "Precondition: the header has a tooltip.");
+                tableView.Columns[0].Header = "Renamed";
+                Verify.IsNotNull(header.Content, "A string Header change must not blank the header before the rebuild.");
+                Verify.IsNotNull(ToolTipService.GetToolTip(header), "A string Header change must not drop the tooltip before the rebuild.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.AreEqual("Renamed", (RequireColumnHeader(tableView, 0).Content as TextBlock)?.Text,
+                "The header band must show the new Header."));
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a header rebuild started from app code while another rebuild releases headers keeps UIElement Headers hosted.")]
         public void VerifyReentrantHeaderRebuildKeepsUIElementHeader()
         {

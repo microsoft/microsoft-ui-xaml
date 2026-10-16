@@ -44,6 +44,10 @@ public:
     winrt::Border GetGridLineInternal() const { return m_gridLine.get(); }
     winrt::SortIndicator GetSortIndicatorInternal() const { return m_sortIndicator.get(); }
 
+    // True while Content is the TextBlock the TableView made for a string Header.
+    void SetOwnsContentInternal(bool ownsContent) { m_ownsContent = ownsContent; }
+    bool OwnsContentInternal() const { return m_ownsContent; }
+
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateContentReserve();
@@ -72,4 +76,5 @@ private:
     winrt::SortDirection m_sortDirection{ winrt::SortDirection::None };
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
+    bool m_ownsContent{ false };
 };
