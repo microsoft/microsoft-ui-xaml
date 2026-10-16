@@ -1388,7 +1388,13 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
 
 void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    IsOpen(false);
+    // Only write IsOpen when the tip is open. Setting it while it is already closed would replace an app's
+    // IsOpen binding with a local value, so the tip could never be opened through that binding again. That
+    // happens for a Target inside a NavigationViewItem, which can be unloaded while NavigationView (re)hosts its items.
+    if (IsOpen())
+    {
+        IsOpen(false);
+    }
     ClosePopup();
 }
 
