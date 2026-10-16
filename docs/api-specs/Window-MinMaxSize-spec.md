@@ -1,199 +1,302 @@
-Window MinWidth, MinHeight, MaxWidth, MaxHeight
+Window.MinWidth, MinHeight, MaxWidth, and MaxHeight
 ===
 
-> **STATUS: DRAFT - EXPERIMENTAL - NOT APPROVED**
->
-> This spec covers an **experimental** API. It has **NOT** been through the Windows API review board and
-> is **NOT approved**. The API surface, behavior, and defaults may all change. Experimental APIs ship only
-> in experimental releases of the Windows App SDK, never in a stable release. See
-> [api-review-process.md](./api-review-process.md) for how an experimental API becomes stable.
->
-> In IDL these properties live behind `[feature(Feature_ExperimentalApi)]` on `Microsoft.UI.Xaml.Window`.
+- [Window.MinWidth, MinHeight, MaxWidth, and MaxHeight](#windowminwidth-minheight-maxwidth-and-maxheight)
+- [1. Background](#1-background)
+- [2. Conceptual pages (How-to)](#2-conceptual-pages-how-to)
+  - [2.1. The Window size constraint properties (MinWidth, MinHeight, MaxWidth, MaxHeight)](#21-the-window-size-constraint-properties-minwidth-minheight-maxwidth-maxheight)
+  - [2.2. Relationship to AppWindow and OverlappedPresenter](#22-relationship-to-appwindow-and-overlappedpresenter)
+    - [2.2.1. Switching presenters](#221-switching-presenters)
+    - [2.2.2. Limits of AppWindow integration](#222-limits-of-appwindow-integration)
+  - [2.3. Relationship to other Window properties](#23-relationship-to-other-window-properties)
+  - [2.4. Window SizeChanged event and reentrancy](#24-window-sizechanged-event-and-reentrancy)
+  - [2.5. Use in XAML markup](#25-use-in-xaml-markup)
+  - [2.6. Errors and threading](#26-errors-and-threading)
+- [3. Examples](#3-examples)
+  - [3.1. Set initial size and constraints](#31-set-initial-size-and-constraints)
+  - [3.2. Change or remove constraints](#32-change-or-remove-constraints)
+- [4. API pages](#4-api-pages)
+  - [4.1. Window.MinWidth property](#41-windowminwidth-property)
+  - [4.2. Window.MinHeight property](#42-windowminheight-property)
+  - [4.3. Window.MaxWidth property](#43-windowmaxwidth-property)
+  - [4.4. Window.MaxHeight property](#44-windowmaxheight-property)
+- [5. API details](#5-api-details)
+- [6. Appendix](#6-appendix)
 
-> **AI GENERATED - NEEDS THOROUGH HUMAN REVIEW**
->
-> This document was drafted by an AI assistant. It has **not** been fully vetted by a human yet. Do not
-> treat anything here as authoritative until a human has carefully reviewed every claim against the actual
-> implementation. Expect mistakes.
+# 1. Background
 
-# Background
+_Spec Note: Background for reviewers; not intended for public documentation._
 
-_Spec Note: this Background section is for reviewers and is not meant for the public docs._
+`Window.MinWidth`, `MinHeight`, `MaxWidth`, and `MaxHeight` let apps constrain a window's size
+in XAML markup or code.
 
-WinUI 3 apps can already set a window's restored size with the experimental `Window.Width` and
-`Window.Height` properties (see [PR #11171](https://github.com/microsoft/microsoft-ui-xaml/pull/11171)).
-The natural next ask is "let me stop the user from making the window too small or too large." WPF developers
-already know `MinWidth`, `MinHeight`, `MaxWidth`, and `MaxHeight`, so we mirror that shape on
-`Microsoft.UI.Xaml.Window`.
+These properties have the same names and similar semantics as the size constraint properties on WinUI's `FrameworkElement`
+and WPF's `Window`.
 
-Guiding principles:
+The `MinWidth`/`MinHeight` properties are in more demand than the maximum properties.
 
-- Familiar to folks coming from WPF.
-- Consistent with the existing experimental `Window.Width` / `Window.Height`, including the idea of a
-  "restored size" that the constraints act on.
-- Implemented on top of `AppWindow`'s `OverlappedPresenter` (`PreferredMinimumWidth` and friends). We do
-  not invent a new windowing model.
-- The headline scenario is setting the values in XAML markup: `<Window MinWidth="320" MinHeight="240" />`.
-  That has to feel good.
+_Spec Note: This document follows the
+[API spec template](https://github.com/microsoft/WindowsAppSDK/blob/main/specs/spec_template.md).
+These APIs are experimental. Implementation work to match this spec is tracked in
+[#11965](https://github.com/microsoft/microsoft-ui-xaml/issues/11965)._
 
-Non-goals:
+# 2. Conceptual pages (How-to)
 
-- No special snap-layout behavior. Snapping flows through the normal platform sizing path.
-- No cap on the maximized size. `MaxWidth` / `MaxHeight` only limit the restored size.
-- No WPF-style unit suffixes in XAML (`px`, `in`, `cm`, `pt`).
-- No new property-change notification. `Window` is not a `DependencyObject`, so these stay plain properties.
+_Spec Note: Intended for a learn.microsoft.com how-to page._
 
-# API Pages
+## 2.1. The Window size constraint properties (MinWidth, MinHeight, MaxWidth, MaxHeight)
 
-## Meaning
+The `Window` size constraint properties `MinWidth`, `MinHeight`, `MaxWidth`, and `MaxHeight` let you put limits on the
+size of your window. The values describe the width or height of the client area in logical pixels.
+These properties use the same units as the `Width` and `Height` properties.
 
-These four properties describe the window's **restored client-size constraints**.
+`MinWidth` and `MinHeight` have a default value of `0`. `MaxWidth` and `MaxHeight` have a default value of `Double.PositiveInfinity`.
 
-- Values are in DIPs (device-independent pixels), the same unit as `Window.Width` and `Window.Height`.
-- They apply to the **client area** (the content area inside the window frame), matching `Window.Width` and
-  `Window.Height`.
-- They change the live window only when the window's `AppWindow` is using an `OverlappedPresenter` and the
-  window is in the restored state (not minimized, not maximized).
-- In any other state (minimized, maximized, full screen, compact overlay, or a different presenter), the
-  value is remembered but does not resize the live window right then. When the window comes back to the
-  restored overlapped state, the restored size is clamped by these constraints.
+WinUI does not adjust the size constraint values to keep each minimum less than or equal to its corresponding maximum.
+If a minimum exceeds its corresponding maximum, the minimum takes precedence.
 
-`MaxWidth` and `MaxHeight` do **not** limit the maximized size. A maximized window is allowed to be larger
-than its `MaxWidth` / `MaxHeight`.
+The order in which you set these properties generally doesn't matter.  The one exception: if you've previously set a minimum value
+to be greater than its corresponding maximum, and then relax both constraints (to their defaults, for example), the order
+in which you set the properties _can_ result in a different window size. 
 
-## Important: this overwrites the OverlappedPresenter constraints
+## 2.2. Relationship to AppWindow and OverlappedPresenter
 
-**If you set any of these Window properties, do NOT also set the matching constraint directly on the
-`AppWindow`'s `OverlappedPresenter`.** Once you set `Window.MinWidth` (or `MinHeight` / `MaxWidth` /
-`MaxHeight`), the `Window` treats itself as the single source of truth and will **overwrite** the
-presenter's `PreferredMinimumWidth` (or the matching `PreferredMinimumHeight` / `PreferredMaximumWidth` /
-`PreferredMaximumHeight`) with its own value.
+WinUI implements these size constraints by configuring the underlying `AppWindow` object, specifically by
+setting properties on the `AppWindow`'s `OverlappedPresenter`. This is the same object you get by querying
+`Window.AppWindow.Presenter` in your own code. By default, this property returns an `OverlappedPresenter` object,
+but the active presenter can be another type, such as `FullScreenPresenter`. The `Window` size constraint
+properties only have an effect when the active presenter is an `OverlappedPresenter`.
 
-This overwrite ("clobber") happens at several times, not just when you set the property:
+Each `Window` size constraint property maps to an `OverlappedPresenter` property:
 
-- Right when you set the `Window` property.
-- Every time the window returns to the overlapped presenter after using another presenter (full screen,
-  compact overlay, etc.).
-- On every DPI change (the value is re-scaled and re-pushed to the presenter).
+| `Window` property (logical pixels, client area only) | `OverlappedPresenter` property (physical pixels, includes window frame) |
+| --- | --- |
+| `Window.MinWidth` | `OverlappedPresenter.PreferredMinimumWidth` |
+| `Window.MinHeight` | `OverlappedPresenter.PreferredMinimumHeight` |
+| `Window.MaxWidth` | `OverlappedPresenter.PreferredMaximumWidth` |
+| `Window.MaxHeight` | `OverlappedPresenter.PreferredMaximumHeight` |
 
-So any value you write to `OverlappedPresenter.PreferredMinimumWidth` and friends yourself will be silently
-replaced the next time one of the above happens. Pick one owner: either drive the constraint through these
-`Window` properties, or drive it through the `OverlappedPresenter` directly. Do not mix the two for the same
-dimension.
+Set either a `Window` size constraint
+property or the corresponding `OverlappedPresenter` size constraint property, not both, because WinUI overwrites the
+`OverlappedPresenter` value.
+When you set a `Window` size constraint property to a non-default value,
+WinUI sets and manages the corresponding `OverlappedPresenter` property until the `Window` property is set
+back to the default value. When WinUI is managing a particular `OverlappedPresenter` property, it updates that property
+when the window DPI changes, when `Window.ExtendsContentIntoTitleBar` changes, and when the `AppWindow.Presenter` is set
+to a new `OverlappedPresenter` object.
 
-## Defaults and valid values
+When you set a `Window` size constraint property back to its default, WinUI clears the corresponding
+`OverlappedPresenter` property and then stops managing it. If you assign a size constraint property the same value it already has
+(whether default or non-default), nothing happens.
 
-Defaults are deliberately liberal so existing apps keep working unchanged:
+### 2.2.1. Switching presenters
 
-| Property | Default | Valid values |
-| --- | --- | --- |
-| `MinWidth`, `MinHeight` | `0` | any finite value `>= 0` |
-| `MaxWidth`, `MaxHeight` | `PositiveInfinity` | any finite value `>= 0`, or `PositiveInfinity` |
+While the window is open, you can set the size constraint properties even if the active presenter is not an
+`OverlappedPresenter`. This is not an error. WinUI stores the values to apply them later.
+When an `OverlappedPresenter` becomes active, WinUI updates the new presenter with all the non-default size
+constraints.  This also happens when one `OverlappedPresenter` replaces another.
 
-Setting an invalid value throws `ArgumentException`:
+If you reset a size constraint property to its default while no `OverlappedPresenter` is active, WinUI defers
+clearing the matching presenter constraint until an `OverlappedPresenter` becomes active. WinUI clears that
+constraint once, then stops managing it. Clearing does not restore an earlier presenter value.
 
-- a negative value
-- `NaN`
-- `NegativeInfinity`
-- `PositiveInfinity` for `MinWidth` / `MinHeight` (a minimum of "infinity" makes no sense)
+WinUI detects presenter changes through the `AppWindow.Changed` event. Your app can call `AppWindow.SetPresenter`
+to set a new presenter. 
 
-To remove a constraint, set it back to its default: `0` for a minimum, `PositiveInfinity` for a maximum.
+### 2.2.2. Limits of AppWindow integration
 
-`PositiveInfinity` cannot be written in XAML, so `MaxWidth` / `MaxHeight` are effectively "set to a finite
-value" from markup. Leave the attribute off to keep the default of "no maximum."
+Changes to the `OverlappedPresenter` size constraint properties do not change the corresponding `Window`
+property values. The values also don't change in response to the user resizing the window, pixel rounding,
+or operating system limits.
 
-## Constraint conflicts
+WinUI does not detect every change that requires recalculating the size constraints. For example, WinUI does not detect
+changes made through `OverlappedPresenter.SetBorderAndTitleBar` or other AppWindow or native HWND APIs that could change
+the size of the client area.
 
-If the minimum and maximum disagree, the **minimum wins** for the effective size. Both app-set values are
-kept as-is (we don't rewrite one to match the other). This matches how `OverlappedPresenter` behaves.
+## 2.3. Relationship to other Window properties
 
-```csharp
-window.MinWidth = 500;
-window.MaxWidth = 300;
-// Effective restored width is 500.
-```
+Unlike `Width` and `Height`, the `MinWidth`, `MinHeight`, `MaxWidth`, and `MaxHeight` properties **do** constrain the size
+of a window in the maximized state. By contrast, `Width` and `Height` only represent the size of the window in the restored state
+(not maximized or minimized).
 
-## Relationship with Window.Width and Window.Height
+WinUI does not guarantee that the `Width` and `Height` properties always return values within the size constraints.
+Here are some scenarios where they may be outside the constraints:
 
-`Window.Width` and `Window.Height` are the restored client size. The min/max constraints clamp that restored
-size, and the clamped value is what the getter reports.
+- The `Window` has not yet been shown.
+- The `Window` is minimized or maximized.
+- The `AppWindow.Presenter` property is set to a presenter that's not an `OverlappedPresenter`.
 
-```csharp
-window.Width = 300;
-window.MinWidth = 500;
-// window.Width now reports 500.
-// If the window is restored and overlapped, the live client width also becomes 500.
-// Otherwise the stored restore size becomes 500 and is applied when the window next returns to
-// restored overlapped state.
-```
+When `Window.ExtendsContentIntoTitleBar` is `true`, WinUI removes the system caption bar and expands the client area so that WinUI
+content fills the caption area. When this property changes, WinUI recalculates and updates the constraints it manages
+on the `OverlappedPresenter`, which can change the window's size.
 
-The order in XAML does not matter. Both of these produce an effective restored width of 500:
+## 2.4. Window SizeChanged event and reentrancy
+
+If you set a size constraint on a restored or maximized window, the window can resize before the setter returns.
+A maximized window stays maximized even if a constraint resizes it. If you set a constraint while the window is
+minimized, WinUI applies the constraint without resizing the window.
+
+If setting a constraint causes the window to resize, WinUI raises `Window.SizeChanged` as normal. Storing a constraint
+alone does not raise this event. Your `SizeChanged` event handler may run before the constraint setter returns.
+Setting a constraint does not guarantee a particular number or order of size-change events.
+
+In some cases, for example during a DPI change, WinUI sets all the `OverlappedPresenter` properties it's managing
+one by one. This can trigger window resizes, which can raise the `SizeChanged` event. If you close the window
+during one of these `SizeChanged` events, WinUI stops updating the remaining presenter constraints.
+
+## 2.5. Use in XAML markup
+
+You can set these properties directly in XAML markup, as shown in [Set initial size and constraints](#31-set-initial-size-and-constraints).
+Use `MaxWidth="Infinity"` or `MaxHeight="Infinity"` to specify no app-requested maximum for that dimension.
+You can also omit either maximum to use its default value of `Double.PositiveInfinity`.
+
+Compiled `x:Bind` can assign these properties. Classic `Binding` is not supported.
+These properties are not dependency properties and do not provide property-change notifications.
+
+## 2.6. Errors and threading
+
+The following table lists accepted values and the errors returned for invalid values:
+
+| Input                         | Result                              |
+| ----------------------------- | ----------------------------------- |
+| `value < 0`                   | Returns `E_INVALIDARG`.             |
+| `Double.NaN`                  | Returns `E_INVALIDARG`.             |
+| `Double.PositiveInfinity`     | Allowed for `MaxWidth` and `MaxHeight` only. Otherwise, returns `E_INVALIDARG`. |
+| `Double.NegativeInfinity`     | Returns `E_INVALIDARG`.             |
+| `0`                           | Allowed.                            |
+| Very large value (> screen)   | Allowed. The OS may enforce a limit. |
+
+In .NET, `E_INVALIDARG` is reported as an `ArgumentException`.
+
+Read and write these properties only on the thread that owns the window. Calls from other threads return `RPC_E_WRONG_THREAD`.
+This requirement still applies after the window closes.
+
+When you set a size constraint property to a valid value, WinUI stores the value before updating the `OverlappedPresenter`.
+If that update fails, the setter returns the error, but the property retains the value you assigned. The property also retains
+its value if a later update, such as one triggered by a presenter change, fails.
+
+# 3. Examples
+
+_Spec Note: Intended for examples in the public documentation._
+
+## 3.1. Set initial size and constraints
 
 ```xaml
-<Window Width="300" MinWidth="500" />
-<Window MinWidth="500" Width="300" />
+<Window
+    x:Class="Contoso.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Width="800" Height="600"
+    MinWidth="480" MinHeight="320"
+    MaxWidth="1200" MaxHeight="900">
+    <Grid />
+</Window>
 ```
 
-## AppWindow and Win32 behavior
+All sizes describe the client area in logical pixels. The window frame is not included.
+Omit `MaxWidth` or `MaxHeight` from the XAML if you do not want to set that maximum.
 
-_Spec Note: implementation detail, useful for reviewers, trim as needed for public docs._
-
-These APIs layer over `AppWindow` / `OverlappedPresenter` / Win32. The implementation converts:
-
-```text
-client DIPs -> client physical pixels -> outer-window physical pixels -> OverlappedPresenter tracking constraint
-```
-
-It uses the same DPI and client-to-window conversion rules as `Window.Width` / `Window.Height`: DIPs are
-scaled to physical pixels at the current DPI and rounded to the nearest integer pixel.
-
-```text
-physicalPixels = round(dips * GetDpiForWindow(hwnd) / 96.0)
-```
-
-The OS can still win. For example `MaxWidth = 0` is a legal value, but the live window may still be wider
-because of the system minimum tracking size and the non-client frame. Very large finite values are passed
-straight through to the windowing layer; WinUI does not add its own cap.
-
-## Events
-
-Changing one of these properties fires the normal `Window.SizeChanged` event **only if the live size
-actually changes**.
-
-- If the live window resizes, size events behave exactly as they do for any other resize.
-- If only the stored restore size changes (window not currently restored/overlapped), no size event fires
-  until a real size change happens later.
-- `Window` is not a `DependencyObject`, so there is no dependency-property change notification and no
-  `INotifyPropertyChanged` here.
-
-## Threading
-
-Call these on the same thread that created the `Window`. A call from another thread fails with an illegal
-thread error (`RPC_E_WRONG_THREAD`).
-
-## Platform support
-
-These properties are supported for WinUI Desktop apps. On UWP they return `E_NOTIMPL`.
-
-# API Details
+## 3.2. Change or remove constraints
 
 ```csharp
+window.ExtendsContentIntoTitleBar = true;
+window.MinHeight = 320; // Includes the custom title-bar region.
+
+window.MinWidth = 0;
+window.MaxWidth = double.PositiveInfinity;
+```
+
+If `MinWidth` and `MaxWidth` had non-default values, the last two assignments clear the
+matching `OverlappedPresenter` constraints once, and then WinUI stops updating those presenter
+properties. If the `MinWidth` and `MaxWidth` properties were already at their defaults,
+these assignments do nothing. Assigning a non-default value to either
+`Window` property makes WinUI manage that constraint again.
+
+# 4. API pages
+
+_Spec Note: Each subsection corresponds to a learn.microsoft.com property page.
+Shared behavior is documented above rather than repeated on all four pages._
+
+All four properties remain readable and writable after the window is closed. Each getter
+returns the latest value your app assigned to that property, or its default if never assigned.
+When you set a property after the window is closed, WinUI updates only the stored value. There are
+no other side effects.
+
+## 4.1. Window.MinWidth property
+
+Gets or sets the minimum width of the window's client area, in logical pixels.
+
+```csharp
+public double MinWidth { get; set; }
+```
+
+Accepts finite values greater than or equal to zero. The default is `0` (no app-requested minimum).
+Negative values, `NaN`, and either infinity are invalid.
+
+## 4.2. Window.MinHeight property
+
+Gets or sets the minimum height of the window's client area, in logical pixels.
+
+```csharp
+public double MinHeight { get; set; }
+```
+
+Accepts finite values greater than or equal to zero. The default is `0` (no app-requested minimum).
+Negative values, `NaN`, and either infinity are invalid.
+
+## 4.3. Window.MaxWidth property
+
+Gets or sets the maximum width of the window's client area, in logical pixels.
+
+```csharp
+public double MaxWidth { get; set; }
+```
+
+Accepts finite values greater than or equal to zero, or `Double.PositiveInfinity`.
+The default is `Double.PositiveInfinity` (no app-requested maximum).
+Negative values, `NaN`, and negative infinity are invalid.
+
+## 4.4. Window.MaxHeight property
+
+Gets or sets the maximum height of the window's client area, in logical pixels.
+
+```csharp
+public double MaxHeight { get; set; }
+```
+
+Accepts finite values greater than or equal to zero, or `Double.PositiveInfinity`.
+The default is `Double.PositiveInfinity` (no app-requested maximum).
+Negative values, `NaN`, and negative infinity are invalid.
+
+# 5. API details
+
+_Spec Note: API declarations for review; public reference pages document these members individually._
+
+```idl
 namespace Microsoft.UI.Xaml
 {
-    // NOTE: Experimental. Shown as the delta added to the existing Window runtimeclass.
+    [webhosthidden]
+    [contentproperty("Content")]
     unsealed runtimeclass Window
     {
-        // ... existing members ...
+        // (existing APIs...)
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        {
+            // (existing APIs...)
 
-        // [feature(Feature_ExperimentalApi)]
-        Double MinWidth;
-        Double MinHeight;
-        Double MaxWidth;
-        Double MaxHeight;
-    }
+            // New APIs:
+            Double MinWidth;
+            Double MinHeight;
+            Double MaxWidth;
+            Double MaxHeight;
+        }
+    };
 }
 ```
 
-# Open questions
+# 6. Appendix
 
-- Get/set behavior after `Window.Close()` is still being finalized.
+Design changes from past iterations:
+
+- Earlier designs reapplied all non-default constraints when an app changed any one constraint.
+  The current design updates only the corresponding presenter constraint.
