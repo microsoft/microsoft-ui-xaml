@@ -106,6 +106,10 @@ public:
     _Check_return_ HRESULT RegisterDeviceRemovedEvent(_In_ HANDLE event, _Out_ DWORD* cookie);
     void UnregisterDeviceRemoved(DWORD cookie);
 
+    _Check_return_ HRESULT RegisterAdaptersChangedEvent(_In_ HANDLE event);
+    void UnregisterAdaptersChangedEvent(_In_ HANDLE event);
+    _Check_return_ HRESULT CheckForAdapterChange();
+
     _Check_return_ HRESULT InitializeWithD3DDeviceAndContext(
                             _In_ ID3D11Device *pD3DDevice,
                             _In_ ID3D11DeviceContext *pD3DDeviceContext);
