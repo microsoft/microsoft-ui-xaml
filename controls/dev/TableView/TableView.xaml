@@ -457,6 +457,8 @@
         is declared here rather than assigned from C++.
     -->
     <x:Double x:Key="TableViewGroupExpanderSize">24</x:Double>
+    <!-- Gap between the expander gutter and the content; root rows are indented by size + spacing. -->
+    <x:Double x:Key="TableViewGroupExpanderSpacing">8</x:Double>
     <Thickness x:Key="TableViewGroupHeaderPadding">8,8,12,8</Thickness>
 
     <!-- BodyStrongTextBlockStyle equivalent, single line. -->
@@ -561,7 +563,7 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}"
                                 HorizontalAlignment="Stretch">
-                        <Grid ColumnSpacing="8">
+                        <Grid ColumnSpacing="{ThemeResource TableViewGroupExpanderSpacing}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
