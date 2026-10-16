@@ -1822,8 +1822,17 @@ void NavigationView::UpdatePaneButtonsWidths()
         return CompactPaneLength();
     }();
 
+    const bool paneToggleButtonWidthChanged = templateSettings->PaneToggleButtonWidth() != newButtonWidths;
+
     templateSettings->PaneToggleButtonWidth(newButtonWidths);
     templateSettings->SmallerPaneToggleButtonWidth(std::max(0.0, newButtonWidths - 8));
+
+    // UpdatePaneToggleSize copies PaneToggleButtonWidth into TogglePaneButton.Width. It can run before this
+    // template setting is first initialized (still 0), so re-apply it when the width changes.
+    if (paneToggleButtonWidthChanged)
+    {
+        UpdatePaneToggleSize();
+    }
 }
 
 void NavigationView::OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
