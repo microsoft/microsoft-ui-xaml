@@ -1422,30 +1422,40 @@ void InkToolbar::SetStencilVisibility(bool isVisible, winrt::InkToolbarStencilKi
 
     // UWP parity: expose the shown stencil through InkToolbarStencilButton.Ruler / Protractor so apps can
     // position it (Transform) and hit-test against it. The OS stencils are agile.
+    // Show it and record the state first, and set the app-visible property last: setting it can run app code
+    // (a property-changed callback) that changes the target. Recording first means the target-change cleanup
+    // sees this stencil and hides it on this canvas; and the property is only set if the target is still this one.
+    auto isStillTarget = [this, &proxy]()
+    {
+        muxc::InkPresenter current{ nullptr };
+        if (auto target = TargetInkPresenter()) { current = target.try_as<muxc::InkPresenter>(); }
+        else if (auto canvas = TargetInkCanvas()) { current = canvas.InkPresenter(); }
+        return current == proxy;
+    };
     switch (kind)
     {
     case winrt::InkToolbarStencilKind::Ruler:
-        if (isVisible)
-        {
-            if (auto ruler = proxyImpl->EnsureRuler())
-            {
-                stencilImpl->Ruler(ruler);
-            }
-        }
+    {
+        auto ruler = isVisible ? proxyImpl->EnsureRuler() : nullptr;
         proxyImpl->SetRulerEnabled(isVisible);
         m_rulerVisible = isVisible;
-        break;
-    case winrt::InkToolbarStencilKind::Protractor:
-        if (isVisible)
+        if (ruler && isStillTarget())
         {
-            if (auto protractor = proxyImpl->EnsureProtractor())
-            {
-                stencilImpl->Protractor(protractor);
-            }
+            stencilImpl->Ruler(ruler);
         }
+        break;
+    }
+    case winrt::InkToolbarStencilKind::Protractor:
+    {
+        auto protractor = isVisible ? proxyImpl->EnsureProtractor() : nullptr;
         proxyImpl->SetProtractorEnabled(isVisible);
         m_protractorVisible = isVisible;
+        if (protractor && isStillTarget())
+        {
+            stencilImpl->Protractor(protractor);
+        }
         break;
+    }
     default:
         break;
     }
@@ -1633,6 +1643,15 @@ void InkToolbar::OnTargetInkPresenterChanged(
 {
     UNREFERENCED_PARAMETER(oldInkPresenter);
     UNREFERENCED_PARAMETER(newInkPresenter);
+
+    // Ruler / Protractor belong to the old presenter. Clear them so changing SelectedStencil can't hide a stencil
+    // on the old canvas; they are set again when a stencil is shown on the new target.
+    if (auto stencilButton = m_buttonManager ? m_buttonManager->GetStencilButton() : nullptr)
+    {
+        auto stencilImpl = winrt::get_self<InkToolbarStencilButton>(stencilButton);
+        stencilImpl->Ruler(nullptr);
+        stencilImpl->Protractor(nullptr);
+    }
 
     // Portable core: reconcile the stencil button state and push the current tool state to the canvas.
     UpdateStencilButtonState();
