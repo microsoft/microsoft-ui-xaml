@@ -6,8 +6,11 @@ using System.Windows.Input;
 
 using MUXControlsTestApp.Utilities;
 
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Common;
+using System.Linq;
 
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -70,6 +73,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 bool isChecked = (bool)toggleSplitButton.GetValue(ToggleSplitButton.IsCheckedProperty);
                 Verify.IsTrue(isChecked, "ToggleSplitButton is not checked");
             });
+        }
+
+        [TestMethod]
+        [Description("Verifies IsEnabled changes immediately update SplitButton visual states.")]
+        public void VerifyIsEnabledChangeUpdatesVisualState()
+        {
+            VerifyIsEnabledChangeUpdatesVisualStateHelper();
+        }
+
+        [TestMethod]
+        [Description("Verifies IsEnabled changes immediately update SplitButton visual states with legacy styles.")]
+        [TestProperty("Data:XamlOptionalChanges", "{DefaultStyleOptimizations:false}")]
+        public void VerifyIsEnabledChangeUpdatesVisualStateWithLegacyStyles()
+        {
+            VerifyIsEnabledChangeUpdatesVisualStateHelper();
+        }
+
+        private void VerifyIsEnabledChangeUpdatesVisualStateHelper()
+        {
+            ToggleSplitButton checkedToggleSplitButton = null;
+            SplitButton disabledSplitButton = null;
+            VisualStateGroup toggleSplitButtonCommonStates = null;
+            VisualStateGroup splitButtonCommonStates = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                checkedToggleSplitButton = new ToggleSplitButton
+                {
+                    IsChecked = true,
+                };
+                disabledSplitButton = new SplitButton
+                {
+                    IsEnabled = false,
+                };
+
+                var panel = new StackPanel();
+                panel.Children.Add(checkedToggleSplitButton);
+                panel.Children.Add(disabledSplitButton);
+                Content = panel;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content.UpdateLayout();
+                toggleSplitButtonCommonStates = GetCommonStates(checkedToggleSplitButton);
+                splitButtonCommonStates = GetCommonStates(disabledSplitButton);
+
+                Verify.IsTrue(toggleSplitButtonCommonStates.States.Any(state => state.Name == "CheckedDisabled"));
+                Verify.AreEqual("Checked", toggleSplitButtonCommonStates.CurrentState.Name);
+                Verify.AreEqual("Disabled", splitButtonCommonStates.CurrentState.Name);
+
+                checkedToggleSplitButton.IsEnabled = false;
+                Verify.AreEqual("CheckedDisabled", toggleSplitButtonCommonStates.CurrentState.Name);
+                Verify.IsTrue(checkedToggleSplitButton.IsChecked);
+
+                disabledSplitButton.IsEnabled = true;
+                Verify.AreEqual("Normal", splitButtonCommonStates.CurrentState.Name);
+                Verify.IsTrue(disabledSplitButton.IsEnabled);
+
+                checkedToggleSplitButton.IsEnabled = true;
+                Verify.AreEqual("Checked", toggleSplitButtonCommonStates.CurrentState.Name);
+            });
+        }
+
+        private static VisualStateGroup GetCommonStates(Control control)
+        {
+            var layoutRoot = (FrameworkElement)VisualTreeHelper.GetChild(control, 0);
+            return VisualStateManager.GetVisualStateGroups(layoutRoot).Single(group => group.Name == "CommonStates");
         }
     }
 
