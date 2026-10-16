@@ -2761,27 +2761,59 @@ static bool IsPlainStringHeader(const winrt::TableViewColumn& column)
     return propValue && propValue.Type() == winrt::PropertyType::String;
 }
 
-// Applying a Style whose TargetType the header is not would throw out of RebuildHeaders.
-static winrt::Style CompatibleHeaderStyle(const winrt::Style& style)
+// Applying a Style whose TargetType the header is not, at any level of its BasedOn chain, would throw
+// out of RebuildHeaders.
+winrt::Style TableView::CompatibleHeaderStyle(const winrt::Style& style)
 {
     if (!style)
     {
         return nullptr;
     }
 
-    const std::wstring_view targetType = style.TargetType().Name;
-    if (targetType.empty() ||
-        targetType == winrt::name_of<winrt::TableViewColumnHeader>() ||
-        targetType == winrt::name_of<winrt::ContentControl>() ||
-        targetType == winrt::name_of<winrt::Control>() ||
-        targetType == winrt::name_of<winrt::FrameworkElement>() ||
-        targetType == winrt::name_of<winrt::UIElement>() ||
-        targetType == winrt::name_of<winrt::DependencyObject>())
+    // Depth in TableViewColumnHeader's base chain, or -1 outside it. A BasedOn Style may only target
+    // the same type as the Style it bases, or a base type.
+    static constexpr int c_untyped = INT_MAX;
+    auto const targetDepth = [](const winrt::Style& level) -> int
+    {
+        const std::wstring_view targetType = level.TargetType().Name;
+        if (targetType.empty()) return c_untyped;
+        if (targetType == winrt::name_of<winrt::TableViewColumnHeader>()) return 5;
+        if (targetType == winrt::name_of<winrt::ContentControl>()) return 4;
+        if (targetType == winrt::name_of<winrt::Control>()) return 3;
+        if (targetType == winrt::name_of<winrt::FrameworkElement>()) return 2;
+        if (targetType == winrt::name_of<winrt::UIElement>()) return 1;
+        if (targetType == winrt::name_of<winrt::DependencyObject>()) return 0;
+        return -1;
+    };
+
+    bool compatible = true;
+    int derivedDepth = c_untyped;
+    winrt::Style level = style;
+    // Bounded: a BasedOn cycle would otherwise never end.
+    for (int guard = 0; level && compatible && guard < 64; ++guard, level = level.BasedOn())
+    {
+        const int depth = targetDepth(level);
+        compatible = depth >= 0 && (depth == c_untyped || derivedDepth == c_untyped || depth <= derivedDepth);
+        if (depth != c_untyped)
+        {
+            derivedDepth = depth;
+        }
+    }
+    if (compatible)
     {
         return style;
     }
 
-    TVDiag::LogRetailF(L"[TableView] Ignored a column header Style whose TargetType is not TableViewColumnHeader or a base type.");
+    // Once per Style: a rebuild runs on every Density, sort or column change.
+    auto const known = std::find_if(m_loggedIncompatibleHeaderStyles.begin(), m_loggedIncompatibleHeaderStyles.end(),
+        [&style](auto const& weakStyle) { return weakStyle.get() == style; });
+    if (known == m_loggedIncompatibleHeaderStyles.end())
+    {
+        m_loggedIncompatibleHeaderStyles.erase(std::remove_if(m_loggedIncompatibleHeaderStyles.begin(), m_loggedIncompatibleHeaderStyles.end(),
+            [](auto const& weakStyle) { return !weakStyle.get(); }), m_loggedIncompatibleHeaderStyles.end());
+        m_loggedIncompatibleHeaderStyles.push_back(winrt::make_weak(style));
+        TVDiag::LogRetailF(L"[TableView] Ignored a column header Style whose TargetType or BasedOn chain is not TableViewColumnHeader or a base type.");
+    }
     return nullptr;
 }
 
