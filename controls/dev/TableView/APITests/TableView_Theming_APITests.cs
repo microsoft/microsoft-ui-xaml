@@ -1918,6 +1918,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a UIElement column Header moves to the new header when the header band is rebuilt.")]
+        public void VerifyUIElementHeaderSurvivesHeaderRebuild()
+        {
+            TableView tableView = null;
+            Border headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new Border { Width = 20, Height = 12, Background = new SolidColorBrush(Microsoft.UI.Colors.Blue) };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => tableView.ColumnHeaderStyle = new Style(typeof(TableViewColumnHeader)));
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => tableView.Density = TableViewDensity.Compact);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                Verify.IsTrue(ReferenceEquals(headerElement, header.Content), "The rebuilt header must show the column's UIElement Header.");
+
+                DependencyObject current = headerElement;
+                while (current != null && !ReferenceEquals(current, header))
+                {
+                    current = VisualTreeHelper.GetParent(current);
+                }
+                Verify.IsNotNull(current, "The UIElement Header must be parented under the rebuilt header.");
+                Verify.AreEqual(20.0, headerElement.ActualWidth, "The UIElement Header must be laid out in the rebuilt header.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the default header template provides its parts and hosts the sort glyph and resize gripper in them.")]
         public void VerifyColumnHeaderTemplateParts()
         {

@@ -2834,6 +2834,15 @@ void TableView::RebuildHeaders()
             });
     }
 
+    // A UIElement Header stays parented to the old header's presenter until released, and the
+    // new header could not host it.
+    for (auto const& child : host.Children())
+    {
+        if (auto const oldHeader = child.try_as<winrt::ContentControl>())
+        {
+            oldHeader.ClearValue(winrt::ContentControl::ContentProperty());
+        }
+    }
     host.Children().Clear();
 
     m_rebuildingHeaders = true;
