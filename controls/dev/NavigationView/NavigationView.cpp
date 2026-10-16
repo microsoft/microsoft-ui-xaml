@@ -131,6 +131,7 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_titleBarMetricsChangedRevoker.revoke();
     m_titleBarIsVisibleChangedRevoker.revoke();
     m_paneToggleButtonClickRevoker.revoke();
+    m_paneOpeningFocusedElement = nullptr;
 
     m_settingsItem.set(nullptr);
 
@@ -1061,7 +1062,7 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
     }
 
     ToggleIsExpandedNavigationViewItem(nvi);
-    ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
+    ClosePaneIfNeccessaryAfterItemIsClicked(nvi, true /*isItemInvoked*/);
 
     if (updateSelection)
     {
@@ -1655,7 +1656,34 @@ void NavigationView::UpdatePaneLayout()
 void NavigationView::OnPaneToggleButtonClick(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
     const auto paneToggleButton = m_paneToggleButton.get();
-    const auto focusState = paneToggleButton ? paneToggleButton.FocusState() : winrt::FocusState::Unfocused;
+    winrt::FocusManager::GettingFocus_revoker gettingFocusRevoker{};
+    winrt::SplitView::PaneOpening_revoker paneOpeningRevoker{};
+    if (!IsPaneOpen() && IsLightDismissible() && paneToggleButton &&
+        paneToggleButton.FocusState() != winrt::FocusState::Unfocused)
+    {
+        if (const auto splitView = m_rootSplitView.get())
+        {
+            paneOpeningRevoker = splitView.PaneOpening(winrt::auto_revoke,
+                [this, splitView, paneToggleButton, &gettingFocusRevoker](auto const&, auto const&)
+                {
+                    // The NavigationView PaneOpening handlers run before this handler.
+                    const auto xamlRoot = XamlRoot();
+                    if (xamlRoot && winrt::FocusManager::GetFocusedElement(xamlRoot) == paneToggleButton)
+                    {
+                        const auto defaultTarget = winrt::FocusManager::FindFirstFocusableElement(splitView.Pane());
+                        gettingFocusRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke,
+                            [paneToggleButton, defaultTarget](auto const&, winrt::GettingFocusEventArgs const& args)
+                            {
+                                if (!args.Cancel() && !args.Handled() &&
+                                    args.OldFocusedElement() == paneToggleButton && args.NewFocusedElement() == defaultTarget)
+                                {
+                                    args.Handled(args.TrySetNewFocusedElement(paneToggleButton));
+                                }
+                            });
+                    }
+                });
+        }
+    }
 
     if (IsPaneOpen())
     {
@@ -1666,12 +1694,6 @@ void NavigationView::OnPaneToggleButtonClick(const winrt::IInspectable& /*sender
     {
         m_wasForceClosed = false;
         OpenPane();
-    }
-
-    // SplitView moves focus on opening and restores the opening-time focus state on closing.
-    if (focusState != winrt::FocusState::Unfocused)
-    {
-        paneToggleButton.Focus(focusState);
     }
 }
 
@@ -1743,6 +1765,10 @@ void NavigationView::OnSplitViewClosedCompactChanged(const winrt::DependencyObje
 
 void NavigationView::OnSplitViewPaneClosed(const winrt::DependencyObject& /*sender*/, const winrt::IInspectable& obj)
 {
+    if (!IsPaneOpen())
+    {
+        m_paneOpeningFocusedElement = nullptr;
+    }
     m_paneClosedEventSource(*this, nullptr);
 }
 
@@ -1793,6 +1819,13 @@ void NavigationView::OnSplitViewPaneOpening(const winrt::DependencyObject& /*sen
     }
 
     m_paneOpeningEventSource(*this, nullptr);
+
+    m_paneOpeningFocusedElement = nullptr;
+    if (const auto xamlRoot = XamlRoot())
+    {
+        m_paneOpeningFocusedElement = winrt::make_weak(
+            winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>());
+    }
 }
 
 void NavigationView::UpdateIsClosedCompact()
@@ -2345,6 +2378,7 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
 void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem)
 {
     const bool isSettingsItem = IsSettingsItem(nextItem);
+    const bool isItemInvoked = m_shouldRaiseItemInvokedAfterSelection;
 
     if (IsSelectionSuppressed(nextItem))
     {
@@ -2425,7 +2459,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         {
             AnimateSelectionChanged(nvi);
             RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
-            ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
+            ClosePaneIfNeccessaryAfterItemIsClicked(nvi, isItemInvoked);
         }
         else
         {
@@ -3119,6 +3153,8 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
         break;
     case winrt::VirtualKey::GoBack:
     case winrt::VirtualKey::XButton1:
+    case winrt::VirtualKey::Escape:
+    case winrt::VirtualKey::GamepadB:
         if (IsPaneOpen() && IsLightDismissible())
         {
             handled = AttemptClosePaneLightly();
@@ -4847,20 +4883,28 @@ void NavigationView::OnTitleBarIsVisibleChanged(const winrt::CoreApplicationView
     UpdateTitleBarPadding();
 }
 
-void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::NavigationViewItem& selectedContainer)
+void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::NavigationViewItem& selectedContainer, bool isItemInvoked)
 {
     if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && !DoesNavigationViewItemHaveChildren(selectedContainer) && !m_shouldIgnoreNextSelectionChange)
     {
-        const auto focusState = selectedContainer.FocusState();
-        const auto paneToggleButton = m_paneToggleButton.get();
-        ClosePane();
-
-        // Only undo SplitView's restore to the toggle; preserve application focus redirection.
-        if (m_isClosedCompact && focusState != winrt::FocusState::Unfocused &&
-            paneToggleButton && paneToggleButton.FocusState() != winrt::FocusState::Unfocused)
+        winrt::FocusManager::GettingFocus_revoker gettingFocusRevoker{};
+        const auto splitView = m_rootSplitView.get();
+        const auto opener = m_paneOpeningFocusedElement.get();
+        if (isItemInvoked && selectedContainer.IsSelected() &&
+            selectedContainer.FocusState() != winrt::FocusState::Unfocused &&
+            splitView && splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay && opener)
         {
-            selectedContainer.Focus(focusState);
+            gettingFocusRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke,
+                [selectedContainer, opener](auto const&, winrt::GettingFocusEventArgs const& args)
+                {
+                    if (!args.Cancel() && !args.Handled() && selectedContainer.IsSelected() &&
+                        args.OldFocusedElement() == selectedContainer && args.NewFocusedElement() == opener)
+                    {
+                        args.Handled(args.TrySetNewFocusedElement(selectedContainer));
+                    }
+                });
         }
+        ClosePane();
     }
 }
 

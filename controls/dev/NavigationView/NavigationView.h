@@ -153,7 +153,7 @@ private:
 
     void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);
 
-    void ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::NavigationViewItem& selectedItem);
+    void ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::NavigationViewItem& selectedItem, bool isItemInvoked);
     bool NeedTopPaddingForRS5OrHigher(winrt::CoreApplicationViewTitleBar const& coreTitleBar);
     void OnAccessKeyInvoked(winrt::IInspectable const& sender, winrt::AccessKeyInvokedEventArgs const& args);
     winrt::NavigationTransitionInfo CreateNavigationTransitionInfo(NavigationRecommendedTransitionDirection recommendedTransitionDirection);
@@ -521,5 +521,6 @@ private:
     bool m_isLeftPaneTitleEmpty{ false };
 
     double m_OpenPaneLength{ 320.0 };
+    winrt::weak_ref<winrt::DependencyObject> m_paneOpeningFocusedElement;
 };
 
