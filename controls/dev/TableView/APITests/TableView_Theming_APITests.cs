@@ -772,8 +772,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // One Border is both the pointer target (Transparent background) and the separator. The resize
-        // cursor is the hover affordance, so the separator shows only while dragging.
         [TestMethod]
         public void VerifyResizeGripperSeparatorShowsOnlyWhileDragging()
         {
@@ -1304,8 +1302,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Density is one of the better-specified areas in the control: the presets are literal values in
         // TableView_themeresources.xaml rather than constants in code.
         //
-        // Table-driven over all three values deliberately. The row's Style carries no MinHeight setter:
-        // the density value applied in code is the only source, and each preset must reach the row.
+        // The row Style has no MinHeight setter, so each preset must reach the row from code.
         [TestMethod]
         public void VerifyRowMinHeightFollowsDensity()
         {

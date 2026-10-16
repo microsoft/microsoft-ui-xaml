@@ -20,9 +20,8 @@
                     <!-- The resize cursor is the hover affordance, so the separator only marks the edge
                          while dragging. Restyled through ResizeGripperSeparatorBrush and
                          ResizeGripperSeparatorThickness. -->
-                    <!-- One Border: the Transparent Background keeps the whole gripper a pointer
-                         target, and the border is the separator. States other than Pressed hide it by
-                         clearing the brush, so leaving them restores the templated BorderBrush. -->
+                    <!-- The Transparent Background makes the whole gripper a pointer target. Non-Pressed
+                         states clear the brush, so leaving them restores the templated BorderBrush. -->
                     <Border x:Name="Separator"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"

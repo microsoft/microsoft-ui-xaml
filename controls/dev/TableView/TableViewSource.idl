@@ -96,11 +96,8 @@ runtimeclass TableViewSource
     // instead of leaving one describing a sort that is no longer primary. Prefer the
     // sortMemberPath overload whenever the key is a property.
     //
-    // The axis is identified by the delegate object itself. Passing the same delegate instance
-    // again re-sorts that axis in place, and SortDirection.None removes it. Any other instance is
-    // a new axis even when its logic is identical (a capturing lambda is typically a new instance
-    // each time it is evaluated): it is added as the least significant tie-break, and None with it
-    // removes nothing. Keep the delegate to re-sort or remove its axis, or call ClearSort().
+    // The axis is keyed by delegate instance: the same instance re-sorts it in place and None removes
+    // it; any other instance (e.g. a re-evaluated lambda) adds a new least-significant axis.
     [default_overload] [method_name("Sort")]
     TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
 

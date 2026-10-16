@@ -334,9 +334,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateToolTipTable(items, cellToolTipPath: null);
-                // An explicit Source keeps the value constant through the repeater's DataContext
-                // reset, so a recycled cell gets no property-changed callback to revive the tooltip
-                // the recycle-out neutralized.
+                // An explicit Source keeps the value constant across the DataContext reset, so a
+                // recycled cell gets no property-changed callback to revive its tooltip.
                 tableView.Columns[0].CellToolTipBinding = new Binding { Source = "Shared role", Mode = BindingMode.OneWay };
                 LoadContent(tableView);
             });
