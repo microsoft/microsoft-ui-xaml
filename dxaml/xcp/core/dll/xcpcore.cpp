@@ -5803,26 +5803,30 @@ CCoreServices::UIAClientsAreListening(_In_ UIAXcp::APAutomationEvents eAutomatio
             }
         }
 
-        // Windowed popups have their own UIA subscription counts.
-        for (const auto& contentRoot : m_contentRootCoordinator.GetContentRoots())
+        // A popup can close during a click handler, before its automation event is raised.
+        // Its UIA host and subscriptions remain valid until that host is deinitialized.
+        if (m_uiaWindowRegistry)
         {
-            if (auto popupRoot = contentRoot->GetVisualTreeNoRef()->GetPopupRoot())
+            for (auto window : *m_uiaWindowRegistry)
             {
-                for (auto popup : popupRoot->GetOpenPopupList(true /* includeUnloadingPopups */))
+                if (S_OK == window->UIAClientsAreListening(eAutomationEvent))
                 {
-                    if (auto popupWindow = popup->GetUIAWindow())
-                    {
-                        if (S_OK == popupWindow->UIAClientsAreListening(eAutomationEvent))
-                        {
-                            return S_OK;
-                        }
-                    }
+                    return S_OK;
                 }
             }
         }
     }
 
     return hr;
+}
+
+std::shared_ptr<std::vector<CUIAWindow*>> CCoreServices::GetUIAWindowRegistry()
+{
+    if (!m_uiaWindowRegistry)
+    {
+        m_uiaWindowRegistry = std::make_shared<std::vector<CUIAWindow*>>();
+    }
+    return m_uiaWindowRegistry;
 }
 
 //------------------------------------------------------------------------

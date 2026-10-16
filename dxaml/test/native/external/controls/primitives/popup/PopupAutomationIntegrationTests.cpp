@@ -291,12 +291,76 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupInvokedEventWithStructu
     VerifyWindowedPopupProviderLifetime(PopupHostChange::None, true /* createWithStructureListener */, true /* verifyInvokedEvent */);
 }
 
+void PopupAutomationIntegrationTests::VerifyWindowedPopupInvokedEventAfterClickClosesPopup()
+{
+    xaml_primitives::Popup^ popup;
+    xaml_controls::MenuFlyoutItem^ item;
+    int clickCount = 0;
+    wrl::ComPtr<AutomationClient::AutomationEventHandler> handler;
+    TestCleanupWrapper cleanup([&]()
+    {
+        if (handler)
+        {
+            UIAutomationHelper::RunOnCorrectThreadForUIA([&]() { handler->RemoveEventHandler(); });
+        }
+        TestServices::WindowHelper->WaitForIdle();
+        TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+    });
+    RunOnUIThread([&]()
+    {
+        auto root = ref new xaml_controls::Grid();
+        TestServices::WindowHelper->WindowContent = root;
+        item = ref new xaml_controls::MenuFlyoutItem();
+        item->Text = L"Close from Click";
+        popup = ref new xaml_primitives::Popup();
+        popup->XamlRoot = root->XamlRoot;
+        popup->ShouldConstrainToRootBounds = false;
+        popup->Child = item;
+        item->Click += ref new xaml::RoutedEventHandler([&](Platform::Object^, xaml::RoutedEventArgs^)
+        {
+            clickCount++;
+            popup->IsOpen = false;
+        });
+    });
+    PopupHelper::OpenPopup(popup);
+    HWND popupWindow = nullptr;
+    RunOnUIThread([&]()
+    {
+        popupWindow = reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popup));
+        VERIFY_IS_NOT_NULL(popupWindow);
+    });
+    UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+    {
+        AutomationClient::UIAElementInfo info{};
+        info.m_Name = L"Close from Click";
+        auto client = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, info);
+        auto event = std::make_shared<Event>();
+        handler.Attach(new AutomationClient::AutomationEventHandler(client, event, TreeScope_Element, UIA_Invoke_InvokedEventId));
+        handler->AttachEventHandler();
+        wrl::ComPtr<IUIAutomationElement> element;
+        client->GetCurrentUIAutomationElement(&element);
+        VERIFY_IS_NOT_NULL(element.Get());
+        wrl::ComPtr<IUIAutomationInvokePattern> pattern;
+        LogThrow_IfFailed(element->GetCurrentPatternAs(UIA_InvokePatternId, IID_PPV_ARGS(&pattern)));
+        LogThrow_IfFailed(pattern->Invoke());
+        handler->ConfirmAndUnregister();
+    });
+    RunOnUIThread([&]()
+    {
+        VERIFY_IS_FALSE(popup->IsOpen);
+        VERIFY_ARE_EQUAL(1, clickCount);
+        VERIFY_IS_FALSE(xaml_automation_peers::AutomationPeer::ListenerExists(
+            xaml_automation_peers::AutomationEvents::InvokePatternOnInvoked));
+    });
+}
+
 void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange, bool createWithStructureListener, bool verifyInvokedEvent)
 {
     wrl::ComPtr<AutomationClient::AutomationStructureChangeHandler> structureHandler;
     wrl::ComPtr<AutomationClient::AutomationEventHandler> invokedHandler;
     wrl::ComPtr<IUIAutomationInvokePattern> invokePattern;
     auto invokedEvent = verifyInvokedEvent ? std::make_shared<Event>() : nullptr;
+    auto clickCount = verifyInvokedEvent ? std::make_shared<int>(0) : nullptr;
     int invocationCount = 0;
     TestCleanupWrapper cleanup([&]()
     {
@@ -342,6 +406,13 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
         button = ref new xaml_controls::Button();
         button->Content = ref new Platform::String(s_automationPopupButtonName);
         xaml_automation::AutomationProperties::SetName(button, ref new Platform::String(s_automationPopupButtonName));
+        if (verifyInvokedEvent)
+        {
+            button->Click += ref new xaml::RoutedEventHandler([clickCount](Platform::Object^, xaml::RoutedEventArgs^)
+            {
+                (*clickCount)++;
+            });
+        }
 
         popup = ref new xaml_primitives::Popup();
         popup->ShouldConstrainToRootBounds = false;
@@ -440,10 +511,15 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
             });
             UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
             {
+                invokedEvent->Reset();
                 LogThrow_IfFailed(invokePattern->Invoke());
                 invokedHandler->Confirm();
                 invocationCount++;
-                VERIFY_ARE_EQUAL(invocationCount, invokedEvent->TimesFired());
+                LOG_OUTPUT(L"Invoked callbacks for this action: %d", invokedEvent->TimesFired());
+            });
+            RunOnUIThread([&]()
+            {
+                VERIFY_ARE_EQUAL(invocationCount, *clickCount);
             });
         }
     };

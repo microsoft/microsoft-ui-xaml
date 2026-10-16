@@ -16,6 +16,7 @@
 #include <DependencyObject.h>
 #include <RootScale.h>
 #include <xcpwindow.h>
+#include <algorithm>
 
 HRESULT GetCurrentDisplayName(_Out_ BSTR *outString);
 
@@ -318,11 +319,26 @@ HRESULT CUIAWindow::Init()
     }
 
     m_fInitialized = true;
+    if (auto browserHost = m_pHost->GetBrowserHost())
+    {
+        if (auto core = browserHost->GetContextInterface())
+        {
+            auto registry = core->GetUIAWindowRegistry();
+            registry->push_back(this);
+            m_uiaWindowRegistry = registry;
+        }
+    }
     return S_OK;
 }
 
 void CUIAWindow::Deinit()
 {
+    if (auto registry = m_uiaWindowRegistry.lock())
+    {
+        registry->erase(std::remove(registry->begin(), registry->end(), this), registry->end());
+    }
+    m_uiaWindowRegistry.reset();
+
     // Flush the existing events provider to avoid the memory leak
     FlushUiaBridgeEventTable();
 

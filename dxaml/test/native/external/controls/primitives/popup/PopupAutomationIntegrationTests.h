@@ -108,6 +108,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyWindowedPopupInvokedEventAfterClickClosesPopup)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify MenuFlyoutItem delivers Invoked after its Click handler closes the popup.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
     private:
         enum class PopupHostChange { None, NewPopup, NonWindowed, NestedInline };
 
