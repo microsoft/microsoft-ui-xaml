@@ -383,7 +383,7 @@ runtimeclass TableViewGroupHeaderToggleRequestedEventArgs
 // nested Button, so there is one interactive element and one automation story.
 //
 // Parts: PART_Root, PART_ContentPresenter, PART_ExpanderIcon (targeted by the default states), PART_ExpanderGutter;
-// optional PART_GridLineBorder and PART_ItemCountForeground (its Foreground colors the item count).
+// optional PART_GridLineBorder. The default template's ItemCountForegroundSource is internal, not a part.
 //
 // States: CommonStates Normal|PointerOver|Pressed|Disabled
 //         ExpansionStates Expanded|Collapsed

@@ -621,7 +621,7 @@ The realized group-header container: a templated `ContentControl` whose `Content
 | `IsExpandable` | `Boolean` DP | Whether this header can expand. |
 | `ToggleRequested` | event (`TableViewGroupHeaderToggleRequestedEventArgs`) | Raised when the band is activated. The args carry `GroupKey`, so a handler that re-enters and mutates the header still sees the key that was actually activated. |
 
-Template parts. Code looks up only `PART_GridLineBorder`, and degrades without it. The default visual states, however, target `PART_Root`, `PART_ContentPresenter` and `PART_ExpanderIcon` by name, so a template that keeps those state definitions must declare all three:
+Template parts. Code looks up `PART_ContentPresenter` and `PART_GridLineBorder`, and degrades without either. The default visual states, however, target `PART_Root`, `PART_ContentPresenter` and `PART_ExpanderIcon` by name, so a template that keeps those state definitions must declare all three:
 
 | Part | Type | Purpose |
 |---|---|---|
@@ -630,6 +630,8 @@ Template parts. Code looks up only `PART_GridLineBorder`, and degrades without i
 | `PART_ExpanderGutter` | `Border` | Reserves the chevron column so header content stays aligned with the rows below. It keeps its width when the chevron hides. |
 | `PART_ExpanderIcon` | `FontIcon` | Glyph driven by `ExpansionStates`, not by code; hidden by `NotExpandable`; recoloured by `CommonStates`. |
 | `PART_GridLineBorder` | `Border` | Optional. Renders the border chrome; on the last row the control clears its bottom edge so it does not double the table's own border. |
+
+The default template also holds a hidden, internal `ItemCountForegroundSource` element that the `CommonStates` recolor so the default content template's item count follows `PointerOver`, `Pressed` and `Disabled`. It is not part of the template contract: a replacement template without it leaves the count in the content's inherited foreground.
 
 Visual states: `CommonStates` (`Normal`/`PointerOver`/`Pressed`/`Disabled`), `ExpansionStates` (`Expanded`/`Collapsed`), `ExpandabilityStates` (`Expandable`/`NotExpandable`).
 
