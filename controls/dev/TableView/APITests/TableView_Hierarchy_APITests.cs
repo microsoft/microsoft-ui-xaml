@@ -1297,7 +1297,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a grouped root row's chevron starts where the group header's content starts.")]
+        [TestProperty("Description", "Verifies a grouped root row is indented by the group header's expander gutter plus its spacing.")]
         public void VerifyGroupedRootAlignsWithGroupHeaderContent()
         {
             TableViewSource source = null;
@@ -1310,10 +1310,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var presenter = header.FindVisualChildByName("PART_ContentPresenter") as UIElement;
                 Verify.IsNotNull(presenter, "The group header should have PART_ContentPresenter.");
 
-                double headerX = presenter.TransformToVisual(tableView).TransformPoint(new Point(0, 0)).X;
+                // The row indent covers the header's gutter and spacing, not its own Padding.
+                double headerX = presenter.TransformToVisual(tableView).TransformPoint(new Point(0, 0)).X - header.Padding.Left;
                 double chevronX = GetChevron(tableView, "Ada").TransformToVisual(tableView).TransformPoint(new Point(0, 0)).X;
-                Log.Comment($"Group header content X={headerX}, root chevron X={chevronX}");
-                Verify.IsLessThan(Math.Abs(headerX - chevronX), 0.5, "Root rows must start at the group header's content.");
+                Log.Comment($"Group header content X (less padding)={headerX}, root chevron X={chevronX}");
+                Verify.IsLessThan(Math.Abs(headerX - chevronX), 0.5, "Root rows must be indented by the group header's gutter and spacing.");
             });
         }
 
