@@ -1376,6 +1376,101 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies moving, replacing or ungating the columns keeps an app-declared TableViewSource sort and re-lights the matching column.")]
+        [TestProperty("data:Change", "{MoveColumn, ReplaceColumns, CanUserSortColumnsFalse}")]
+        public void VerifyImplicitClearKeepsSourceSort()
+        {
+            var change = ((string)TestContext.DataRow["Change"]).Trim();
+            TableView tableView = null;
+            TableViewSource source = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateSortTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Descending));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection,
+                    "Precondition: the source sort lights the Name column.");
+
+                switch (change)
+                {
+                    case "MoveColumn":
+                        var column = tableView.Columns[0];
+                        tableView.Columns.RemoveAt(0);
+                        tableView.Columns.Insert(1, column);
+                        break;
+                    case "ReplaceColumns":
+                        tableView.Columns.Clear();
+                        tableView.Columns.Add(MakeTextColumn("Name"));
+                        tableView.Columns.Add(MakeTextColumn("Role"));
+                        break;
+                    default:
+                        tableView.CanUserSortColumns = false;
+                        break;
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(tableView, person => person.Name),
+                    $"{change}: the app-declared sort must stay on the source");
+                var nameColumn = tableView.Columns.First(c => c.Header as string == "Name");
+                Verify.AreEqual(SortDirection.Descending, nameColumn.SortDirection,
+                    $"{change}: the Name column must re-light from the source sort");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a clear queued by removing the sorted column leaves the app-declared sort of the next ItemsSource alone.")]
+        public void VerifyColumnRemovalClearKeepsNewItemsSourceSort()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable(TableViewSource.From(MakeShapedPeople()));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending),
+                "Precondition: the Role column sorts."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Columns.RemoveAt(1);
+                var next = TableViewSource.From(MakeShapedPeople());
+                next.Sort("Name", SortDirection.Descending);
+                tableView.ItemsSource = next;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(tableView, person => person.Name),
+                    "the new ItemsSource must keep the sort the app declared on it");
+                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection,
+                    "The Name column must reflect the new source's sort.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies invoking a column header toggles the sort and updates the sort indicator.")]
         public void VerifyHeaderInvokeTogglesSortAndUpdatesIndicator()
         {
