@@ -2198,6 +2198,83 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return hasSelectionIndicator;
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a NavigationViewItem forwards the Selected visual states to an AnimatedIcon whose source defines markers for them, and keeps the legacy states for icons that don't (GitHub #11080).")]
+        public void VerifyAnimatedIconReceivesSelectedStates()
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                Log.Comment("PaneDisplayMode: " + paneDisplayMode);
+
+                NavigationView navView = null;
+                NavigationViewItem selectedAwareItem = null;
+                NavigationViewItem legacyItem = null;
+                AnimatedIcon selectedAwareIcon = null;
+                AnimatedIcon legacyIcon = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var legacyMarkers = new Dictionary<string, double>
+                    {
+                        { "NormalToPointerOver_Start", 0.0 }, { "NormalToPointerOver_End", 0.1 },
+                        { "PointerOverToNormal_Start", 0.1 }, { "PointerOverToNormal_End", 0.0 },
+                        { "PointerOverToPressed_Start", 0.1 }, { "PointerOverToPressed_End", 0.2 },
+                        { "PressedToPointerOver_Start", 0.2 }, { "PressedToPointerOver_End", 0.1 },
+                        { "PressedToNormal_Start", 0.2 }, { "PressedToNormal_End", 0.0 },
+                    };
+                    var selectedAwareMarkers = new Dictionary<string, double>(legacyMarkers)
+                    {
+                        { "NormalToSelected_Start", 0.0 }, { "NormalToSelected_End", 0.5 },
+                        { "SelectedToNormal_Start", 0.5 }, { "SelectedToNormal_End", 0.0 },
+                        { "PointerOverToPointerOverSelected_Start", 0.1 }, { "PointerOverToPointerOverSelected_End", 0.6 },
+                        { "PointerOverSelectedToSelected_Start", 0.6 }, { "PointerOverSelectedToSelected_End", 0.5 },
+                        { "PointerOverSelectedToPressedSelected_Start", 0.6 }, { "PointerOverSelectedToPressedSelected_End", 0.7 },
+                    };
+
+                    selectedAwareIcon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(selectedAwareMarkers) };
+                    legacyIcon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(legacyMarkers) };
+                    selectedAwareItem = new NavigationViewItem() { Content = "SelectedAware", Icon = selectedAwareIcon };
+                    legacyItem = new NavigationViewItem() { Content = "Legacy", Icon = legacyIcon };
+
+                    navView = new NavigationView() { PaneDisplayMode = paneDisplayMode, IsSettingsVisible = false };
+                    navView.MenuItems.Add(selectedAwareItem);
+                    navView.MenuItems.Add(legacyItem);
+                    Content = navView;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("Normal", AnimatedIcon.GetState(selectedAwareIcon), "Unselected item with selected-aware icon");
+                    Verify.AreEqual("Normal", AnimatedIcon.GetState(legacyIcon), "Unselected item with legacy icon");
+                });
+
+                SelectItem(navView, selectedAwareItem);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(selectedAwareItem.IsSelected);
+                    Verify.AreEqual("Selected", AnimatedIcon.GetState(selectedAwareIcon), "Selected item with selected-aware icon");
+                    Verify.AreEqual("Normal", AnimatedIcon.GetState(legacyIcon), "Unselected item with legacy icon");
+                });
+
+                SelectItem(navView, legacyItem);
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(legacyItem.IsSelected);
+                    Verify.AreEqual("Normal", AnimatedIcon.GetState(selectedAwareIcon), "Deselected item with selected-aware icon");
+                    // Icons without Selected markers keep the pre-existing behavior: the Selected state maps to Normal.
+                    Verify.AreEqual("Normal", AnimatedIcon.GetState(legacyIcon), "Selected item with legacy icon");
+                });
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Content = null;
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
         static void SelectItem(NavigationView navView, object item, ManualResetEvent selectionChangedEvent = null)
         {
             IdleSynchronizer.Wait();
