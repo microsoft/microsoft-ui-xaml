@@ -4448,6 +4448,12 @@ void NavigationView::UpdatePaneDisplayMode()
     if (auto selectedItem = SelectedItem())
     {
         m_OrientationChangedPendingAnimation = true;
+
+        // OnLayoutUpdated plays the pending animation, but it's only hooked in MeasureOverride and unhooks itself after one call.
+        // A synchronous layout pass above (e.g. the footer repeater's UpdateLayout() when switching to a left mode) can already
+        // have raised LayoutUpdated before this flag was set. Hook it again so the indicator is restored after the next layout pass.
+        m_layoutUpdatedToken.revoke();
+        m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
     }
 }
 
