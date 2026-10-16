@@ -2431,7 +2431,9 @@ double TableView::GetRowExpanderSize()
     return resolved;
 }
 
-// Group header content start (expander gutter + column spacing), so root rows align with it.
+// Grouped root-row indent: the group header's expander gutter plus TableViewGroupExpanderSpacing.
+// The header's Padding is not included, so a root chevron sits Padding.Left (8px by default) left of
+// the group key text.
 double TableView::GetGroupHeaderContentOffset()
 {
     auto& cache = GetTableViewResourceCache(this);
