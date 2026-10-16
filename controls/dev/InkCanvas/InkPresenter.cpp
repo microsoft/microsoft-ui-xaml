@@ -733,24 +733,34 @@ muxc::InkSynchronizer InkPresenter::ActivateCustomDrying()
 
 muxc::CoreWetStrokeUpdateSource InkPresenter::GetWetStrokeUpdateSource()
 {
-    if (m_wetStrokeUpdateSource)
     {
-        return m_wetStrokeUpdateSource;
+        std::scoped_lock lock(m_wetStrokeUpdateSourceLock);
+        if (m_wetStrokeUpdateSource)
+        {
+            return m_wetStrokeUpdateSource;
+        }
     }
 
-    // Created on the UI (calling) thread like the other mirrors, then attached to the OS source on the ink
-    // thread, the only thread the OS source accepts handlers on.
-    auto source = winrt::make<::CoreWetStrokeUpdateSource>(winrt::weak_ref<muxc::InkPresenter>{ *this });
-    bool attached = false;
+    // Create and attach on the ink thread, the only thread the OS source accepts handlers on. Create can be called
+    // from any thread (an app can call it inside another wet-stroke callback, which runs on the ink thread), and all
+    // first uses end up in this ink-thread work item, which runs one at a time. Checking the cache again inside it
+    // makes every caller get the one source; none replaces another's.
+    muxc::CoreWetStrokeUpdateSource result{ nullptr };
     RunInkPresenterWorkItemSync(
         [&](inking::InkPresenter const& osPresenter)
         {
-            winrt::get_self<::CoreWetStrokeUpdateSource>(source)->Attach(inking::Core::CoreWetStrokeUpdateSource::Create(osPresenter));
-            attached = true;
+            std::scoped_lock lock(m_wetStrokeUpdateSourceLock);
+            if (!m_wetStrokeUpdateSource)
+            {
+                auto source = winrt::make<::CoreWetStrokeUpdateSource>(winrt::weak_ref<muxc::InkPresenter>{ *this });
+                winrt::get_self<::CoreWetStrokeUpdateSource>(source)->Attach(inking::Core::CoreWetStrokeUpdateSource::Create(osPresenter));
+                m_wetStrokeUpdateSource = source;
+            }
+            result = m_wetStrokeUpdateSource;
         },
         /* pumpMessages */ false);
 
-    if (!attached)
+    if (!result)
     {
         InkTelemetry::ReportError(
             InkTelemetry::ErrorCategory::ApiMisuse,
@@ -759,9 +769,7 @@ muxc::CoreWetStrokeUpdateSource InkPresenter::GetWetStrokeUpdateSource()
             E_ILLEGAL_METHOD_CALL);
         throw winrt::hresult_error(E_ILLEGAL_METHOD_CALL, L"InkPresenter is not ready for wet stroke updates.");
     }
-
-    m_wetStrokeUpdateSource = source;
-    return m_wetStrokeUpdateSource;
+    return result;
 }
 
 // -- CoreWetStrokeUpdateSource mirror --------------------------------------------------------------

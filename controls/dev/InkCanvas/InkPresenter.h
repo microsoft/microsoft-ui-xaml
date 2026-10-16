@@ -24,6 +24,7 @@
 #include <winrt/Windows.UI.Input.Inking.Core.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <functional>
+#include <mutex>
 #include <vector>
 
 // The OS Windows.UI.Input.Inking types and the MUXC types are both folded into winrt::,
@@ -447,8 +448,9 @@ private:
     // only this projected wrapper, never the raw OS one.
     muxc::InkSynchronizer m_customDrySynchronizer{ nullptr };
 
-    // The wet-stroke update source handed out by CoreWetStrokeUpdateSource.Create (UI-thread cached;
-    // one per presenter, like the OS source it fronts).
+    // The wet-stroke update source handed out by CoreWetStrokeUpdateSource.Create (one per presenter, like the
+    // OS source it fronts). Create can run on the UI thread or the ink thread, so it is guarded by a lock.
+    std::mutex m_wetStrokeUpdateSourceLock;
     muxc::CoreWetStrokeUpdateSource m_wetStrokeUpdateSource{ nullptr };
 
     // Ruler / protractor stencils bound to the OS presenter. Thread-affine to the ink
