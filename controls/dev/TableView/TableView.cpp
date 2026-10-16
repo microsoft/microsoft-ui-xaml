@@ -2734,9 +2734,6 @@ void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t
 
 using TableViewDetails::GetColumnHeaderText;
 
-// GetColumnHeaderText renders an untemplated IStringable for automation purposes, but only a genuine string
-// may be swapped for a TextBlock -- a UIElement or a type with an implicit DataTemplate must keep
-// the ContentPresenter's content model.
 // Includes BasedOn styles.
 static bool StyleSetsProperty(const winrt::Style& style, const winrt::DependencyProperty& property)
 {
@@ -2753,6 +2750,9 @@ static bool StyleSetsProperty(const winrt::Style& style, const winrt::Dependency
     return false;
 }
 
+// GetColumnHeaderText renders an untemplated IStringable for automation purposes, but only a genuine string
+// may be swapped for a TextBlock -- a UIElement or a type with an implicit DataTemplate must keep
+// the ContentPresenter's content model.
 static bool IsPlainStringHeader(const winrt::TableViewColumn& column)
 {
     const auto propValue = column.Header().try_as<winrt::IPropertyValue>();
