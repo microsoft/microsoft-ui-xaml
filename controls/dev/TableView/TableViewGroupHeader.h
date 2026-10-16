@@ -76,23 +76,41 @@ public:
     // ancestor walk from a detached element silently finds nothing and no-ops.
     void SetOwningTableViewInternal(winrt::TableView const& owner);
     winrt::TableView GetOwningTableView() const;
+    void SetTerminalBottomGridLineSuppression(bool suppress);
 
     // Internal: single-subscription guard for the ToggleRequested handler.
     // PrepareGroupHeaderElement sets this once so repeated prepares are no-ops.
     bool IsToggleHooked() const { return m_toggleHooked; }
     void SetToggleHooked() { m_toggleHooked = true; }
 
+    void ResetPointerStateInternal();
+
+    // Consumed once by RequestGroupExpansion so the focus restore uses the gesture's state.
+    void SetGestureFocusStateInternal(winrt::FocusState state) noexcept { m_gestureFocusState = state; }
+    winrt::FocusState TakeGestureFocusStateInternal() noexcept
+    {
+        return std::exchange(m_gestureFocusState, winrt::FocusState::Unfocused);
+    }
+
 private:
     void UpdateVisualStates(bool useTransitions);
+    void UpdateTerminalBottomGridLineSuppression();
 
+    winrt::hstring GetGroupIdentity();
 
     // Mirror the authoritative IsExpandable/IsExpanded DPs onto the bound projection.
     void SyncExpansionToContent();
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
+    winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
+    tracker_ref<winrt::Border> m_gridLineBorder{ this };
 
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
+    uint32_t m_pressedPointerId{};
+    bool m_suppressBottomGridLine{ false };
+    winrt::hstring m_pressedGroupIdentity{};
+    winrt::FocusState m_gestureFocusState{ winrt::FocusState::Unfocused };
 
     winrt::weak_ref<winrt::TableView> m_owningTableView{ nullptr };
 

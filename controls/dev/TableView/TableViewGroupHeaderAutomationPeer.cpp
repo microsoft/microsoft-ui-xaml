@@ -7,6 +7,7 @@
 #include "TableViewGroupHeader.h"
 #include "TableViewGroupInfo.h"
 #include "TableView.h"
+#include "TableViewAutomationHelpers.h"
 
 #include "ResourceAccessor.h"
 
@@ -60,22 +61,54 @@ winrt::hstring TableViewGroupHeaderAutomationPeer::GetNameCore()
     // being assembled here.
     if (auto const header = GetHeader())
     {
+        if (auto const name = winrt::AutomationProperties::GetName(header); !name.empty())
+        {
+            return name;
+        }
+        if (auto const label = GetLabeledBy())
+        {
+            if (auto const name = label.GetName(); !name.empty())
+            {
+                return name;
+            }
+        }
         if (auto const info = header.Content().try_as<winrt::TableViewGroupInfo>())
         {
-            auto const keyText = info.KeyText();
-            auto const countText = info.ItemCountText();
-            if (!keyText.empty() && !countText.empty())
+            if (auto const name = GroupInfoToName(info); !name.empty())
             {
-                return winrt::hstring{ std::wstring{ keyText } + L" " + std::wstring{ countText } };
-            }
-            if (!keyText.empty())
-            {
-                return keyText;
+                return name;
             }
         }
     }
 
     return __super::GetNameCore();
+}
+
+void TableViewGroupHeaderAutomationPeer::SetFocusCore()
+{
+    // Base peer focuses as Programmatic, which FocusManager coerces (e.g. to Pointer: no focus
+    // visual, and group-expansion focus restore skips it), hence explicit Keyboard.
+    if (auto const header = GetHeader())
+    {
+        if (header.Focus(winrt::FocusState::Keyboard))
+        {
+            return;
+        }
+    }
+
+    __super::SetFocusCore();
+}
+
+int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
+{
+    // An app-set AutomationProperties.Level wins, as in the dxaml peers that compute this.
+    if (const auto provided = __super::GetLevelCore(); provided > 0)
+    {
+        return provided;
+    }
+
+    // Grouping is single-level: no synthesized Level (0 = not specified) unless the app sets one.
+    return 0;
 }
 
 void TableViewGroupHeaderAutomationPeer::RaiseExpandCollapseAutomationEvent(
@@ -172,11 +205,15 @@ int32_t TableViewGroupHeaderAutomationPeer::Row()
         {
             if (auto const repeater = winrt::get_self<TableView>(owner)->GetRowsRepeaterForPeer())
             {
-                return repeater.GetElementIndex(header);
+                if (const auto index = repeater.GetElementIndex(header); index >= 0)
+                {
+                    return index;
+                }
             }
         }
     }
-    return -1;
+    // A recycled header has no row; -1 would read as a real coordinate.
+    ThrowElementNotAvailable();
 }
 
 int32_t TableViewGroupHeaderAutomationPeer::Column()

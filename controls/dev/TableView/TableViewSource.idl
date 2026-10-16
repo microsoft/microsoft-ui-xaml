@@ -28,9 +28,15 @@ runtimeclass TableViewSource
     //  * UI-thread affinity, like any XAML items source. The underlying collection must also
     //    raise its change notifications on that thread; raising them from a background thread
     //    is not supported. The verbs hold no lock.
-    //  * Rows are identified by their item's OBJECT identity; there is no app-supplied row key.
-    //    So selection and focus re-anchor across a reshape, but NOT across an item being
-    //    re-created, and the same object in two rows fails fast at materialization.
+    //  * Rows are identified by their item's OBJECT identity (under ParentBy, by its node key,
+    //    which also survives re-creation). So selection and focus re-anchor across a reshape, but
+    //    NOT across an item being re-created, and the same object in two rows fails fast at
+    //    materialization.
+    //  * A TableViewSource can be the ItemsSource of one TableView at a time. A second table it is
+    //    bound to is refused and renders empty until the owner releases it (assigns a different
+    //    ItemsSource or is unloaded), then binds it. The refusal is not an error: nothing throws.
+    //    An unloaded owner that is loaded again reacquires the source automatically, or waits for
+    //    it if another table took it meanwhile.
 
     // Accepts the same collection interfaces as ItemsSourceView: IVector<Object> (so also
     // IObservableVector<Object>), IBindableVector, IIterable<Object>, or IBindableIterable.
@@ -43,12 +49,25 @@ runtimeclass TableViewSource
     // keySelector: required, non-null (throws E_INVALIDARG when null; use ClearGroupBy() to
     // remove grouping). Overload metadata is frozen at v1 — without it MIDL bakes GroupBy2 into
     // the ABI.
+    //
+    // Grouping FAILS FAST. When a group's identity cannot be resolved, the call that builds the
+    // projection throws E_INVALIDARG; the projection is never silently flattened, because a
+    // grouping request that quietly renders ungrouped is a bug an app ships without noticing.
+    // An identity is unresolvable when:
+    //   * the key is null, or is a reference type and no groupIdentitySelector was supplied;
+    //   * the key is the EMPTY STRING, or a supplied groupIdentitySelector returns the empty
+    //     string. String is a supported key type, but "" is not a usable identity, so an app
+    //     grouping on a property that can be null/blank must coalesce it to a real bucket label
+    //     (e.g. "(none)") itself;
+    //   * a supplied groupIdentitySelector throws;
+    //   * two logically-different keys resolve to the same identity string and no
+    //     groupIdentitySelector was supplied to declare that collapse intentional.
     [default_overload] [method_name("GroupBy")]
     TableViewSource GroupBy(TableViewKeySelector keySelector);
 
     // groupIdentitySelector is OPTIONAL: null selects the built-in value-type group identity
     // (String/Int32/Int64/Guid/Boolean/enum); a reference-type group key with no selector fails
-    // fast at projection time.
+    // fast at projection time, as does an empty identity from either source (see above).
     [method_name("GroupByWithIdentity")]
     TableViewSource GroupBy(TableViewKeySelector keySelector, TableViewIdentitySelector groupIdentitySelector);
 
@@ -82,6 +101,26 @@ runtimeclass TableViewSource
     TableViewSource ClearFilter();
     TableViewSource ClearGroupBy();
     TableViewSource ClearSort();
+
+    // Declares a self-referencing parent/child relation over the flat source: keySelector returns
+    // each item's unique key, parentKeySelector its parent's key (null or empty for a root; an
+    // unknown parent key makes an orphan root). Null selectors, duplicate/empty keys, self-parent
+    // and cycles throw E_INVALIDARG and keep the previous projection. Value-typed keys compare by
+    // value and type; other objects (including app-defined enums and structs) by reference, never
+    // by Equals. Rows start collapsed; sort applies per sibling set, filter keeps matching rows plus
+    // their ancestors, and GroupBy buckets the roots.
+    // See docs/design-notes/TabularControls/Hierarchical-Data-Rows-Parent-Key-Design.md.
+    TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
+
+    // Removes the relation and shows the source flat again. Resets expansion state.
+    TableViewSource ClearParentBy();
+
+    // Opt-in: reshapes when an item's sort key, group key, filter result or parent relation changes
+    // (PropertyChanged), coalesced to one reshape per dispatcher turn and deferred while a cell is
+    // being edited. Each reshape re-reads every item (O(n) in the source size), however few
+    // changed. A PropertyChanged raised off the UI thread is marshalled to it; one that cannot be
+    // is picked up by the next live change on the UI thread.
+    Boolean IsLiveShaping{ get; set; };
 
 }
 

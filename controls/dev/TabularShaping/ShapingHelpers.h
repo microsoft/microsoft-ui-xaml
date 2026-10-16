@@ -4,6 +4,8 @@
 #pragma once
 
 #include <atomic>
+#include <bit>
+#include <cmath>
 #include <cstdint>
 #include <functional>
 #include <unordered_map>
@@ -32,6 +34,29 @@ namespace ShapingHelpers
     {
         virtual winrt::hstring StableGroupIdentity() const = 0;
     };
+
+    // A group's count of IMMEDIATE children. Over a hierarchy a group's rows include visible
+    // descendants, so only the projection that sliced the group knows the root count.
+    struct __declspec(uuid("9D3B0F7A-6B2E-4E67-93A2-1C8A9F5E4B10")) IGroupChildCount : ::IUnknown
+    {
+        virtual int32_t GroupChildCount() const = 0;
+    };
+
+    // Value keys compare numerically equal floats as equal: -0 folds into +0 and every NaN into one
+    // canonical NaN, so the key is not the raw bit pattern.
+    inline uint32_t CanonicalFloatBits(float value) noexcept
+    {
+        if (std::isnan(value)) return 0x7FC00000u;
+        if (value == 0.0f) return 0u;
+        return std::bit_cast<uint32_t>(value);
+    }
+
+    inline uint64_t CanonicalDoubleBits(double value) noexcept
+    {
+        if (std::isnan(value)) return 0x7FF8000000000000ull;
+        if (value == 0.0) return 0ull;
+        return std::bit_cast<uint64_t>(value);
+    }
 
     struct ValueKey
     {
@@ -166,19 +191,26 @@ namespace ShapingHelpers
     //
     // Callbacks (all supplied by the adapter, which owns the WinRT-coupled policy):
     //   resolveKey(item)            -> the group key (adapter wraps its selector incl. throw->null).
-    //   resolveIdentity(key,id,why) -> false signals the caller MUST degrade to a flat projection
-    //                                  (e.g. unstable/unresolvable identity); *why is a static reason.
+    //   resolveIdentity(key,id,why) -> false signals the bucketization CANNOT be produced (unstable
+    //                                  or unresolvable identity); *why is a static reason string.
     //   keysConsideredEqual(a,b)    -> false on a genuine identity COLLISION (same identity string,
-    //                                  logically-different keys) which also forces a flat degrade.
+    //                                  logically-different keys), which also fails the bucketization.
     // Returns true with outBuckets populated (first-seen order); returns false and sets
-    // degradeReason when the adapter must fall back to flat.
+    // rejectReason otherwise.
+    //
+    // This function itself does not throw and has no opinion about recovery -- it is pure, so it
+    // reports and the caller decides. What the caller decides is NOT open, though: the shipped
+    // policy is FAIL FAST. ShapedItemsSource::RebuildGroupedRows turns a false return into
+    // hresult_invalid_argument. It deliberately does NOT fall back to a flat projection: a
+    // grouping request that silently renders ungrouped is a bug an app ships without noticing.
+    // A new caller that "recovers" by flattening is reintroducing exactly that bug.
     bool BucketizeToGroups(
         std::vector<winrt::IInspectable> const& items,
         std::function<winrt::IInspectable(winrt::IInspectable const& item)> const& resolveKey,
         std::function<bool(winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason)> const& resolveIdentity,
         std::function<bool(winrt::IInspectable const& existingKey, winrt::IInspectable const& newKey)> const& keysConsideredEqual,
         std::vector<KeyedBucket>& outBuckets,
-        wchar_t const*& degradeReason);
+        wchar_t const*& rejectReason);
 
     // Upper-bound insertion index shared by the incremental fast-paths. Given an already-sorted
     // range of `count` items, returns the position where a newly-arrived item should be inserted
@@ -227,14 +259,35 @@ namespace ShapingHelpers
         // that closed over it by shared_ptr stays valid.
         void Reset();
 
+        // Re-places an item whose comparer-read property changed; true when any row's key changed.
+        // With deferPlacement the rank is only dropped and the next KeyFor re-places it (or
+        // re-ranks everything once that is cheaper).
+        bool Reposition(winrt::IInspectable const& item, bool deferPlacement);
+
+        // Every ranked item may have changed untracked (live shaping was off); the next key read
+        // re-ranks everything once.
+        void InvalidateRanks() noexcept;
+
         bool HasComparer() const noexcept { return static_cast<bool>(m_comparer); }
+
+        // Drop rows that left the source so the ranks stop keeping them alive. Rank gaps left
+        // behind are harmless: keys only have to order. Both are no-ops inside a comparer callback.
+        void Forget(winrt::IInspectable const& item);
+        void RetainOnly(std::vector<winrt::IInspectable> const& liveRows);
 
     private:
         struct RankEntry
         {
             winrt::IInspectable Item{ nullptr };
             int32_t Rank{};
+            // COM identity (IUnknown), cached so lookups compare pointers instead of calling QI.
+            void* Identity{ nullptr };
         };
+
+        static void* IdentityOf(winrt::IInspectable const& item);
+        // m_ranks stays ordered by rank; PlaceUnranked relies on it to binary-search.
+        void AddRanked(winrt::IInspectable const& item, int32_t rank);
+        void InsertRanked(size_t position, winrt::IInspectable const& item, int32_t rank);
 
         // App code, so it never escapes: a throwing comparer degrades to "equal", which keeps the
         // merge stable rather than random. Also normalizes the result to -1 / 0 / 1.
@@ -264,8 +317,33 @@ namespace ShapingHelpers
         // before trusting ranks written for a pass that is no longer current.
         void ClearRanks();
 
+        // Orders `rows` with the comparer and writes their dense ranks. Callers hold the reentrancy
+        // guard and have just cleared the ranks.
+        void PopulateRanks(std::vector<winrt::IInspectable> const& rows, uint64_t generation);
+
+        // Re-ranks every ranked and evicted item; current order breaks ties.
+        void RerankAll();
+
+        // Places an unranked item. False when a reentrant comparer cleared the ranks. `tied`: it
+        // joined an existing rank.
+        bool PlaceUnranked(winrt::IInspectable const& item, uint64_t generation, int32_t& rank, bool& tied);
+
+        // Drops an item's rank (closing any gap) and queues it for re-placement. False if unranked.
+        bool EvictEntry(winrt::IInspectable const& item, int32_t& oldRank, bool& wasShared);
+
+        // Re-places all evicted items before handing out any key, so keys are consistent.
+        void PlaceEvicted();
+
+        // True when re-placing the evicted items costs more than re-ranking everything.
+        bool ShouldRerankAll() const noexcept;
+
         PairwiseComparer m_comparer{ nullptr };
         std::vector<RankEntry> m_ranks;
+        // Items whose rank was dropped by Evict and not yet re-placed.
+        std::vector<winrt::IInspectable> m_evicted;
+        // Set once enough items are evicted that PlaceEvicted will re-rank everything; further
+        // deferred evictions are then skipped (the re-rank covers them).
+        bool m_rerankAllPending{ false };
         // O(1) identity -> rank lookup for the common (reference-type item) case; falls back to the
         // comparer scan on a miss, e.g. a boxed value type whose CCW churned.
         std::unordered_map<void*, int32_t> m_rankByIdentity;

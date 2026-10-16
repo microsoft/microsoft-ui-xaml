@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="TableViewSampleApp.Controls.SamplePresenter"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TableViewSampleApp.Controls"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch">
+
+    <!--
+        The header sits above OuterScroller so it stays visible. The Options column is a fixed 320 px:
+        auto-sizing made the table shake between pages. Narrow layouts stack the rail under the Example.
+    -->
+    <Grid>
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+
+    <Grid x:Name="HeaderPanel" Grid.Row="0" RowSpacing="8" MaxWidth="{StaticResource PageMaxContentWidth}" HorizontalAlignment="Left">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            x:Name="HeaderText"
+            Grid.Row="0"
+            Style="{ThemeResource TitleTextBlockStyle}"
+            Text="{x:Bind Header, Mode=OneWay}"
+            AutomationProperties.HeadingLevel="Level1"
+            VerticalAlignment="Center"/>
+
+        <!-- Description -->
+        <TextBlock
+            x:Name="DescriptionText"
+            Grid.Row="1"
+            Style="{ThemeResource BodyTextBlockStyle}"
+            Text="{x:Bind Description, Mode=OneWay}"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            TextWrapping="Wrap"
+            MaxWidth="1000"
+            HorizontalAlignment="Left"/>
+    </Grid>
+
+    <ScrollViewer
+        x:Name="OuterScroller"
+        Grid.Row="1"
+        VerticalScrollMode="Auto"
+        VerticalScrollBarVisibility="Auto"
+        HorizontalScrollMode="Disabled"
+        HorizontalScrollBarVisibility="Disabled">
+    <Grid x:Name="OuterGrid" Margin="{StaticResource PageContentMargin}" RowSpacing="8" MaxWidth="{StaticResource PageMaxContentWidth}" HorizontalAlignment="Left">
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="ExampleRow" Height="Auto" MinHeight="320"/>
+            <RowDefinition x:Name="SourceRow" Height="Auto"/>
+            <RowDefinition x:Name="NarrowSourceRow" Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition x:Name="OptionsColumn" Width="0"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Example container (live demo) -->
+        <Border
+            x:Name="ExampleContainer"
+            Grid.Row="0" Grid.Column="0"
+            CornerRadius="6"
+            BorderThickness="1"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            Background="{ThemeResource SubtleFillColorTransparentBrush}">
+            <!-- No x:Name on the InfoBars: WinUI reports an unset AutomationId as the x:Name. -->
+            <Grid x:Name="ExampleGrid" RowSpacing="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition x:Name="ExampleHostRow" Height="Auto"/>
+                </Grid.RowDefinitions>
+                <!-- Not an InfoBar: it announces on open (64477279). Unnamed: WinUI reports an unset AutomationId as the x:Name. -->
+                <Border
+                    Grid.Row="0"
+                    MinHeight="104"
+                    Padding="16,14"
+                    CornerRadius="{ThemeResource ControlCornerRadius}"
+                    BorderThickness="1"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}"
+                    Visibility="Collapsed">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            Glyph="&#xE946;"
+                            FontSize="16"
+                            VerticalAlignment="Top"
+                            Margin="0,2,0,0"
+                            Foreground="{ThemeResource SystemFillColorAttentionBrush}"
+                            AutomationProperties.AccessibilityView="Raw"/>
+                        <TextBlock Grid.Column="1" TextWrapping="Wrap">
+                            <Run Text="Try it" FontWeight="SemiBold"/><Run Text="  "/><Run x:Name="TryItMessageRun"/>
+                        </TextBlock>
+                    </Grid>
+                </Border>
+                <ContentControl
+                    x:Name="ExampleHost"
+                    Grid.Row="1"
+                    IsTabStop="False"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"
+                    Content="{x:Bind Example, Mode=OneWay}"/>
+            </Grid>
+        </Border>
+
+        <!-- Options rail (right in wide layouts, stacked under the example in narrow
+             layouts) — collapses when Options is null. In wide mode its width is
+             governed by the parent OptionsColumn (fixed 320 px) so the table never
+             shakes, and RailHost bounds its height so the rail scrolls, not the page. -->
+        <local:RailHost
+            x:Name="OptionsRail"
+            Grid.Row="0" Grid.Column="1"
+            Margin="12,0,0,0"
+            Visibility="Collapsed">
+        <Border
+            x:Name="OptionsBorder"
+            CornerRadius="6"
+            BorderThickness="1"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Grid x:Name="RailGrid">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <SelectorBar
+                    x:Name="RailTabs"
+                    Margin="8,4,8,0"
+                    AutomationProperties.AutomationId="RailTabs"
+                    AutomationProperties.Name="Sample panels"
+                    SelectionChanged="OnRailTabsSelectionChanged">
+                    <SelectorBarItem
+                        x:Name="RailOptionsTab"
+                        Text="Options"
+                        IsSelected="True"
+                        AutomationProperties.AutomationId="RailOptionsTab"
+                        AutomationProperties.Name="Options"/>
+                    <SelectorBarItem
+                        x:Name="RailInfoTab"
+                        Text="Info"
+                        AutomationProperties.AutomationId="RailInfoTab"
+                        AutomationProperties.Name="Info"/>
+                </SelectorBar>
+                <!-- A tab stop only while the text-only Info tab is shown, so arrows can scroll it. -->
+                <ScrollViewer
+                    Grid.Row="1"
+                    VerticalScrollMode="Auto"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollMode="Disabled"
+                    HorizontalScrollBarVisibility="Disabled"
+                    IsVerticalScrollChainingEnabled="False"
+                    IsTabStop="False"
+                    UseSystemFocusVisuals="True"
+                    AutomationProperties.Name="Sample panel content">
+                    <!-- Right padding clears the overlay scrollbar when it expands (64478783). -->
+                    <Grid Padding="16,8,24,16">
+                        <ContentControl
+                            x:Name="OptionsHost"
+                            IsTabStop="False"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Content="{x:Bind Options, Mode=OneWay}"/>
+                        <StackPanel x:Name="InfoPanel" Spacing="12" Visibility="Collapsed">
+                            <InfoBar
+                                Title="What to look for"
+                                Severity="Informational"
+                                IsOpen="True"
+                                IsClosable="False"
+                                Visibility="Collapsed"/>
+                            <ContentControl
+                                x:Name="InfoExtrasHost"
+                                IsTabStop="False"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                Content="{x:Bind InfoExtras, Mode=OneWay}"/>
+                            <local:KeyboardReference x:Name="KeyboardReferenceSection"/>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+        </local:RailHost>
+
+        <!-- Source expander spans both columns -->
+        <Expander
+            x:Name="SourceExpander"
+            Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+            Margin="0,4,0,0"
+            MinHeight="40"
+            Padding="12"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Stretch"
+            AutomationProperties.AutomationId="SampleSourceExpander"
+            AutomationProperties.Name="Source code"
+            Expanding="OnSourceExpanderExpanding"
+            Collapsed="OnSourceExpanderCollapsed"
+            Visibility="Collapsed">
+            <Expander.Header>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE943;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+                    <TextBlock Text="Source" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Expander.Header>
+            <ScrollViewer
+                x:Name="SourceContentScroller"
+                VerticalScrollMode="Auto"
+                VerticalScrollBarVisibility="Auto"
+                HorizontalScrollMode="Disabled"
+                HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="12">
+                    <local:CodeBlock
+                        x:Name="SourceCodeBlock"
+                        Caption="{x:Bind SourceCaption, Mode=OneWay}"
+                        Code="{x:Bind SourceXaml, Mode=OneWay}"/>
+                    <local:CodeBlock
+                        x:Name="AdditionalSourceCodeBlock"
+                        Caption="{x:Bind AdditionalSnippetCaption, Mode=OneWay}"
+                        Code="{x:Bind AdditionalSourceCode, Mode=OneWay}"
+                        Visibility="{x:Bind AdditionalSourceVisibility, Mode=OneWay}"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Expander>
+    </Grid>
+    </ScrollViewer>
+    </Grid>
+</UserControl>
