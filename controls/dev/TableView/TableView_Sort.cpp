@@ -556,7 +556,9 @@ bool TableView::SyncTableViewSourceSort(
     // ordering is the comparer's, not the path's, so nothing else may claim the axis sorts by a
     // property.
     winrt::hstring axisSortMemberPath;
-    if (trigger)
+    // A clear removes the installed axis by its token, so it must not depend on the trigger's sort
+    // path, which a Sorting handler may have changed or emptied since the axis was installed.
+    if (trigger && direction != winrt::SortDirection::None)
     {
         if (const auto customComparer = trigger.CustomSortComparer())
         {
@@ -621,7 +623,7 @@ bool TableView::SyncTableViewSourceSort(
     }
     else
     {
-        // Clear-all: reuse whatever axis is currently installed so it can be removed by token.
+        // A clear: reuse whatever axis is currently installed so it can be removed by token.
         keySelector = m_tableViewSourceSort.KeySelector;
         sortAxisToken = m_tableViewSourceSort.AxisToken;
         if (direction == winrt::SortDirection::None)
