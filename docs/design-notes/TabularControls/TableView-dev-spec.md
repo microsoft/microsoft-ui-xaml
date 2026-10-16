@@ -376,6 +376,11 @@ recycling a header does not re-evaluate every binding in the template. `KeyText`
 are computed lazily through a `DecimalFormatter`, so a template that binds only `Key`/`ItemCount`
 pays nothing for them.
 
+Under grouping, a hierarchical root row's lead cell is indented by the group header's expander
+gutter plus its spacing (`TableViewGroupExpanderSize` + `TableViewGroupExpanderSpacing`, 32px by
+default). The header's own `Padding` is not part of the indent, so the root row's chevron starts
+`Padding.Left` (8px by default) left of the group key text rather than under it.
+
 **Interaction with selection.** Group headers share the flat projection's index space with data
 rows but are **not** selectable. `Select(index)` on a header index is rejected rather than coerced
 (without that, the internal grouped entry would be handed to the app as `SelectedItem`), and
