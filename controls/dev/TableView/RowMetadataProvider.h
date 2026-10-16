@@ -56,8 +56,8 @@ public:
     TableViewRowInfo GetRowInfo(int32_t index) override;
     winrt::hstring GetIdentity(int32_t index) override;
     bool TryGetIndexForIdentity(winrt::hstring const& identity, int32_t& index) override;
-    void Expand(winrt::hstring const& key) override;
-    void Collapse(winrt::hstring const& key) override;
+    bool Expand(winrt::hstring const& key) override;
+    bool Collapse(winrt::hstring const& key) override;
     bool Toggle(winrt::hstring const& key) override;
 
     // Bulk group commands. No-ops when the source is not grouped.

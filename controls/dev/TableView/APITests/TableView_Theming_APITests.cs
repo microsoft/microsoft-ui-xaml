@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using System;
@@ -75,8 +76,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
 
                 Verify.IsNotNull(row.Template, "TableViewRow must resolve its default ControlTemplate.");
-                Verify.AreEqual(new Thickness(0), row.Padding,
-                    "TableViewRow's default style sets Padding to 0; the row itself adds no inset, cells carry the density padding.");
+                Verify.AreEqual(new Thickness(0, 0, 0, 1), row.BorderThickness,
+                    "TableViewRow's default style sets BorderThickness to 0,0,0,1, the bottom grid line the default GridLinesVisibility keeps.");
 
                 var groupHeader = FindVisualChildrenByType<TableViewGroupHeader>(tableView).FirstOrDefault();
                 if (groupHeader == null)
@@ -238,12 +239,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 foreach (var key in CollectKeys(highContrast))
                 {
                     // Only the canonical palette entries, which declare an explicit
-                    // Color="{ThemeResource SystemColor*}". The MUX_-prefixed keys are StaticResource
-                    // aliases; a StaticResource inside a theme dictionary is resolved when that
-                    // dictionary loads, so reading one off a detached TabularControlsResources yields
-                    // whichever sibling theme XAML happened to bind - an artifact of the read, not the
-                    // value a high-contrast user would see. Same for SortIndicatorForeground, which is
-                    // an alias to SystemColorWindowTextColorBrush.
+                    // Color="{ThemeResource SystemColor*}". SortIndicatorForeground is a StaticResource
+                    // alias to SystemColorWindowTextColorBrush; a StaticResource inside a theme
+                    // dictionary is resolved when that dictionary loads, so reading one off a detached
+                    // TabularControlsResources yields whichever sibling theme XAML happened to bind - an
+                    // artifact of the read, not the value a high-contrast user would see.
                     if (!key.StartsWith("TabularSurface", StringComparison.Ordinal))
                     {
                         continue;
@@ -279,12 +279,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // One of very few exact values the spec states outright (TableView-dev-spec.md:176): the dark
-        // TabularSurfaceGridLineBrush is #29FFFFFF and the C++ fallback uses the same 16% white.
-        //
-        // Pinning a literal colour is normally weak. Here the spec names it, and the test's real job is
-        // the cross-source agreement: the two sources drifting apart gives a host that merges
-        // TabularSurfaces a different gridline colour from one that does not, which is the same app
-        // looking different depending on how it was packaged.
+        // TabularSurfaceGridLineBrush is #29FFFFFF. Pinning a literal colour is normally weak; here the
+        // spec names it.
         [TestMethod]
         public void VerifyDarkGridLineBrushMatchesTheDocumentedValue()
         {
@@ -301,11 +297,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(Color.FromArgb(0x29, 0xFF, 0xFF, 0xFF), dark.Color,
                     "Dark TabularSurfaceGridLineBrush must be #29FFFFFF - 16% white, bumped from DividerStrokeColorDefault's " +
-                    "8.2% for readability over row banding. TableView.cpp's CreateGridLineFallbackBrush hardcodes the same value.");
+                    "8.2% for readability over row banding.");
 
                 Verify.AreEqual(Color.FromArgb(0x29, 0x00, 0x00, 0x00), light.Color,
-                    "Light TabularSurfaceGridLineBrush must be #29000000, matching CreateGridLineFallbackBrush's light branch. " +
-                    "If these disagree, the gridline colour depends on whether the host merged TabularSurfaces.");
+                    "Light TabularSurfaceGridLineBrush must be #29000000, the Light counterpart of the Dark value.");
             });
         }
 
@@ -671,6 +666,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifyHeaderPointerStateBrushesResolveInEveryTheme()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var resources = new TabularControlsResources();
+
+                foreach (var themeName in new[] { "Default", "Light" })
+                {
+                    Verify.AreEqual(
+                        RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundPointerOverBrush").Color,
+                        RequireBrush(resources, themeName, "TabularSurfaceHeaderBackgroundPointerOverBrush").Color,
+                        $"'{themeName}' header pointer-over fill must match the row pointer-over fill.");
+                    Verify.AreEqual(
+                        RequireBrush(resources, themeName, "TabularSurfaceRowBackgroundPressedBrush").Color,
+                        RequireBrush(resources, themeName, "TabularSurfaceHeaderBackgroundPressedBrush").Color,
+                        $"'{themeName}' header pressed fill must match the row pressed fill.");
+
+                    // Header text inherits TableView.Foreground (TabularSurfaceRowForegroundBrush); the
+                    // state keys only apply in High Contrast but must still match it elsewhere.
+                    var restForeground = RequireBrush(resources, themeName, "TabularSurfaceRowForegroundBrush").Color;
+                    Verify.AreEqual(restForeground,
+                        RequireBrush(resources, themeName, "TabularSurfaceHeaderForegroundPointerOverBrush").Color,
+                        $"'{themeName}' header text must keep its rest colour on hover.");
+                    Verify.AreEqual(restForeground,
+                        RequireBrush(resources, themeName, "TabularSurfaceHeaderForegroundPressedBrush").Color,
+                        $"'{themeName}' header text must keep its rest colour when pressed.");
+                }
+
+                var systemColors = CollectSystemColors();
+                Verify.IsGreaterThan(systemColors.Count, 0,
+                    "SystemColor* resources must resolve from the application resources before validating HighContrast.");
+
+                var highlight = RequireBrush(resources, "HighContrast", "TabularSurfaceRowBackgroundPointerOverBrush").Color;
+                var highlightText = RequireBrush(resources, "HighContrast", "TabularSurfaceRowForegroundPointerOverBrush").Color;
+                foreach (var state in new[] { "PointerOver", "Pressed" })
+                {
+                    var background = RequireBrush(resources, "HighContrast", $"TabularSurfaceHeaderBackground{state}Brush").Color;
+                    var foreground = RequireBrush(resources, "HighContrast", $"TabularSurfaceHeaderForeground{state}Brush").Color;
+                    Verify.IsTrue(systemColors.Contains(background) && systemColors.Contains(foreground),
+                        $"HighContrast header {state} brushes must resolve through system colours.");
+                    Verify.AreEqual(highlight, background, $"HighContrast header {state} fill must be SystemColorHighlightColor.");
+                    Verify.AreEqual(highlightText, foreground, $"HighContrast header {state} text must be SystemColorHighlightTextColor.");
+                }
+            });
+        }
+
         // If the sort glyph cannot be themed it may end up invisible against a customised header
         // background.
         [TestMethod]
@@ -856,6 +899,101 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // In High Contrast every state below paints an opaque SystemColorHighlightColor fill that a
+        // text backplate fights.
+        [TestMethod]
+        public void VerifyPointerOverAndPressedRowsSuppressHighContrastBackplate()
+        {
+            foreach (var state in new[] { "PointerOver", "Pressed", "Selected", "SelectedPointerOver", "SelectedPressed" })
+            {
+                TableView tableView = null;
+                TableViewRow row = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateThemingTable();
+                    LoadContent(tableView);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    row = GetRealizedRows(tableView).FirstOrDefault();
+                    if (row == null)
+                    {
+                        Verify.Fail("The TableView should realize at least one row.");
+                        return;
+                    }
+
+                    Verify.IsTrue(VisualStateManager.GoToState(row, state, false), $"The row template must define the {state} state.");
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var presenter = row?.FindVisualChildByName("PART_CellForegroundPresenter") as ContentPresenter;
+                    if (presenter == null)
+                    {
+                        Verify.Fail("The row template must contain PART_CellForegroundPresenter.");
+                        return;
+                    }
+
+                    Verify.AreEqual(ElementHighContrastAdjustment.None, presenter.HighContrastAdjustment,
+                        $"The {state} state must turn off the High Contrast text backplate.");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyPointerOverAndPressedGroupHeadersSuppressHighContrastBackplate()
+        {
+            foreach (var state in new[] { "PointerOver", "Pressed" })
+            {
+                TableView tableView = null;
+                TableViewGroupHeader groupHeader = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateGroupedThemingTable();
+                    LoadContent(tableView);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    groupHeader = FindVisualChildrenByType<TableViewGroupHeader>(tableView).FirstOrDefault();
+                    if (groupHeader == null)
+                    {
+                        Verify.Fail("A grouped TableView should realize at least one TableViewGroupHeader.");
+                        return;
+                    }
+
+                    Verify.IsTrue(VisualStateManager.GoToState(groupHeader, state, false), $"The group header template must define the {state} state.");
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var partName in new[] { "PART_ContentPresenter", "PART_ExpanderIcon" })
+                    {
+                        var part = groupHeader?.FindVisualChildByName(partName) as UIElement;
+                        if (part == null)
+                        {
+                            Verify.Fail($"The group header template must contain {partName}.");
+                            return;
+                        }
+
+                        Verify.AreEqual(ElementHighContrastAdjustment.None, part.HighContrastAdjustment,
+                            $"The {state} state must turn off the High Contrast text backplate on {partName}.");
+                    }
+                });
+            }
+        }
+
         #endregion
 
         #region 13.3 Density
@@ -981,6 +1119,150 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         $"Density={testCase.Density} must give header cells the same padding as body cells.");
                 });
             }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies header cells are rounded only while keyboard-focused, so their system focus visual is rounded without clipping.")]
+        public void VerifyHeaderCellCornerRadiusMatchesControlCornerRadius()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            VerifyRoundedOnlyWhileKeyboardFocused(tableView,
+                () => GetHeaderCell(tableView, 0) as Grid, () => GetHeaderCell(tableView, 1), "header cell");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies data cells are rounded only while keyboard-focused, so their system focus visual is rounded without clipping.")]
+        public void VerifyCellCornerRadiusMatchesControlCornerRadius()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            VerifyRoundedOnlyWhileKeyboardFocused(tableView,
+                () => GetRowCell(FindVisualChildrenByType<TableViewRow>(tableView).First(), 0),
+                () => GetHeaderCell(tableView, 0), "cell");
+        }
+
+        // A rounded Grid clips its children and hit-testing, so it may round only while keyboard-focused.
+        private static void VerifyRoundedOnlyWhileKeyboardFocused(
+            TableView tableView, Func<Grid> getTarget, Func<UIElement> getOther, string what)
+        {
+            var expected = new CornerRadius(0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
+                Verify.IsNotNull(row, "The TableView should realize at least one row.");
+                expected = row.CornerRadius;
+                Verify.AreNotEqual(new CornerRadius(0), expected, "The row style should round row focus.");
+
+                var target = getTarget();
+                Verify.IsNotNull(target, $"The {what} should be a Grid.");
+                Verify.IsTrue(target.UseSystemFocusVisuals, $"The {what} should use the system focus visual.");
+                Verify.AreEqual(new CornerRadius(0), target.CornerRadius,
+                    $"An unfocused {what} must stay square: a rounded Grid clips its children.");
+                target.IsTabStop = true;
+                Verify.IsTrue(target.Focus(FocusState.Keyboard), $"Precondition: the {what} takes keyboard focus.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var target = getTarget();
+                Verify.IsTrue(ReferenceEquals(target, FocusManager.GetFocusedElement(target.XamlRoot)),
+                    $"Precondition: keyboard focus stays on the {what}.");
+                Verify.AreEqual(FocusState.Keyboard, target.FocusState, $"Precondition: the {what} is keyboard-focused.");
+                Verify.AreEqual(expected, target.CornerRadius,
+                    $"A keyboard-focused {what} must be rounded like the rows' focus rect.");
+                Verify.IsTrue(getOther().Focus(FocusState.Programmatic), "Precondition: focus moves elsewhere.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var target = getTarget();
+                Verify.AreEqual(new CornerRadius(0), target.CornerRadius, $"The {what} must drop its radius when it loses focus.");
+                target.IsTabStop = true;
+                Verify.IsTrue(target.Focus(FocusState.Pointer), $"Precondition: the {what} takes pointer focus.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(new CornerRadius(0), getTarget().CornerRadius,
+                    $"Pointer focus shows no focus rect, so the {what} must stay square.");
+                Verify.IsTrue(getOther().Focus(FocusState.Programmatic), "Precondition: focus moves elsewhere.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var target = getTarget();
+                target.IsTabStop = true;
+                Verify.IsTrue(target.Focus(FocusState.Programmatic), $"Precondition: the {what} takes programmatic focus.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // XAML coerces programmatic focus to Keyboard or Pointer from the content root's last
+                // input device, which earlier tests or the harness may have left as keyboard; the
+                // focus rect, and so the radius, follows the coerced state.
+                var target = getTarget();
+                var state = target.FocusState;
+                Log.Comment($"Programmatic focus on the {what} was coerced to {state}.");
+                Verify.IsTrue(state == FocusState.Keyboard || state == FocusState.Pointer,
+                    $"Precondition: programmatic focus on the {what} is coerced to Keyboard or Pointer.");
+                Verify.AreEqual(state == FocusState.Keyboard ? expected : new CornerRadius(0), target.CornerRadius,
+                    $"Programmatic focus shows the focus rect only after keyboard input, so the {what} is rounded only then.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies group headers carry ControlCornerRadius so their system focus visual is rounded.")]
+        public void VerifyGroupHeaderCornerRadiusMatchesRowCornerRadius()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
+                var groupHeader = FindVisualChildrenByType<TableViewGroupHeader>(tableView).FirstOrDefault();
+                Verify.IsNotNull(row, "A grouped TableView should realize at least one row.");
+                Verify.IsNotNull(groupHeader, "A grouped TableView should realize at least one group header.");
+                Verify.IsTrue(groupHeader.UseSystemFocusVisuals, "Group headers should use the system focus visual.");
+                Verify.AreNotEqual(new CornerRadius(0), row.CornerRadius, "The row style should round row focus.");
+                Verify.AreEqual(row.CornerRadius, groupHeader.CornerRadius,
+                    "Group headers must carry ControlCornerRadius so the keyboard focus rect is rounded like the rows'.");
+            });
         }
 
         // Distinct from the tests above, which set density before load. Without this, density applies
@@ -1140,6 +1422,117 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var headerPresenter = GetHeaderPresenter(tableView, 0);
                     Verify.AreEqual(expectedFontSize, headerPresenter.FontSize,
                         $"Header font size must stay {expectedFontSize} at Density={testCase.Density}.");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyHeaderFontWeightDefaultIsSemiBold()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual((ushort)600, GetHeaderPresenter(tableView, 0).FontWeight.Weight,
+                    "TableViewHeaderFontWeight defaults to SemiBold.");
+            });
+        }
+
+        // Override before load: the resolved weight is cached per instance.
+        [TestMethod]
+        public void VerifyHeaderFontWeightResourceOverrideApplies()
+        {
+            TableView appScoped = null;
+            TableView elementScoped = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TableViewHeaderFontWeight", Microsoft.UI.Text.FontWeights.Normal);
+
+                appScoped = CreateThemingTable();
+                LoadContent(appScoped);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual((ushort)400, GetHeaderPresenter(appScoped, 0).FontWeight.Weight,
+                        "An app-scope TableViewHeaderFontWeight override must win over the SemiBold default.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => ClearApplicationResource("TableViewHeaderFontWeight"));
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                elementScoped = CreateThemingTable();
+                elementScoped.Resources["TableViewHeaderFontWeight"] = Microsoft.UI.Text.FontWeights.Bold;
+                LoadContent(elementScoped);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual((ushort)700, GetHeaderPresenter(elementScoped, 0).FontWeight.Weight,
+                    "A TableViewHeaderFontWeight in the TableView's own Resources must win.");
+            });
+        }
+
+        // FontWeight comes back as a fresh box per lookup, so the own-entry check must compare it by
+        // value; otherwise the APP-theme dictionary's entry reads as an own entry and wins. Both themes
+        // run so one of them always differs from the app theme.
+        [TestMethod]
+        public void VerifyHeaderFontWeightThemeDictionaryOverrideFollowsElementTheme()
+        {
+            var cases = new[]
+            {
+                (Theme: ElementTheme.Light, Weight: (ushort)700),
+                (Theme: ElementTheme.Dark, Weight: (ushort)300),
+            };
+
+            foreach (var testCase in cases)
+            {
+                TableView tableView = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    EnsureTabularControlsResources();
+                    tableView = CreateThemingTable();
+                    tableView.RequestedTheme = testCase.Theme;
+                    tableView.Resources.ThemeDictionaries["Light"] = new ResourceDictionary
+                    {
+                        ["TableViewHeaderFontWeight"] = Microsoft.UI.Text.FontWeights.Bold,
+                    };
+                    tableView.Resources.ThemeDictionaries["Dark"] = new ResourceDictionary
+                    {
+                        ["TableViewHeaderFontWeight"] = Microsoft.UI.Text.FontWeights.Light,
+                    };
+                    LoadContent(tableView);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(testCase.Theme, tableView.ActualTheme, "Precondition: RequestedTheme picks the table's theme.");
+                    Verify.AreEqual(testCase.Weight, GetHeaderPresenter(tableView, 0).FontWeight.Weight,
+                        $"Under {testCase.Theme}, the TableView's ThemeDictionaries[\"{testCase.Theme}\"] TableViewHeaderFontWeight must win.");
                 });
             }
         }

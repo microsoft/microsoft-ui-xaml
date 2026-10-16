@@ -53,7 +53,8 @@ enum TableViewDensity
     Comfortable = 2,
 };
 
-// How an edit closed.
+// How an edit closed. A forced close reports Cancel, writing nothing, when the item was removed,
+// filtered out, or ItemsSource was replaced; an item still present commits a valid pending value.
 [MUX_PREVIEW]
 [webhosthidden]
 enum TableViewEditAction
@@ -420,11 +421,12 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
 //
 //   CommonStates:        Normal, PointerOver, Pressed, Disabled,
 //                        Selected, SelectedPointerOver, SelectedPressed, SelectedDisabled
-//   HierarchyStates:     Hierarchical, NotHierarchical
-//   ExpandabilityStates: Expandable, NotExpandable
-//   ExpansionStates:     Expanded, Collapsed
+//   RowHierarchyStates:     RowHierarchical, RowNotHierarchical
+//   RowExpandabilityStates: RowExpandable, RowNotExpandable
+//   RowExpansionStates:     RowExpanded, RowCollapsed
 //
-// The hierarchy groups are entered on every row, including in flat and grouped tables.
+// The hierarchy groups are entered on every row, including in flat and grouped tables. Names are
+// Row-prefixed so they cannot collide with an app's own Expanded/Collapsed states in a retemplate.
 //
 // Selected states share this one group so nothing depends on GoToState call order.
 // Multiple/Extended selection will add a separate MultiSelectStates group (and a checkbox part)
@@ -446,7 +448,7 @@ unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("0")]
     Int32 Level { get; };
 
-    // True when this row has children. Drives ExpandabilityStates.
+    // True when this row has children. Drives RowExpandabilityStates.
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsExpandable { get; };
 
@@ -616,11 +618,13 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     Boolean CanUserSortColumns { get; set; };
 
     // Clears any other sort state, then sets this column's SortDirection. Pass SortDirection.None
-    // to clear. Returns true when the sort state changed.
+    // to clear. Returns true when the sort state changed; returns false when the sort could not be
+    // applied (for example, when the rows cannot be ordered).
     Boolean SortByColumn(MU_XC_NAMESPACE.TableViewColumn column, SortDirection direction);
 
     // Cycles the trigger column's direction per SortCycle, clearing any other sort state first.
-    // Returns true when the sort state changed.
+    // Returns true when the sort state changed; returns false when the sort could not be applied
+    // (for example, when the rows cannot be ordered).
     Boolean ToggleSortDirection(MU_XC_NAMESPACE.TableViewColumn column);
 
     // Clears every column's sort state in one batch. Returns true when anything was cleared.
@@ -710,7 +714,11 @@ unsealed runtimeclass TableViewColumnHeaderAutomationPeer
     TableViewColumnHeaderAutomationPeer(MU_XC_NAMESPACE.TableView owner, MU_XC_NAMESPACE.TableViewColumn column);
 }
 
-// Cell peer supplies per-cell grid/table structure and "{column header}, {cell value}" names.
+// Cell peer supplies per-cell grid/table structure. Its name is the cell value ("blank" when empty);
+// the column header is reported through ITableItemProvider.GetColumnHeaderItems while column headers
+// are shown and the column is visible. Only when column headers are hidden does the name become
+// "{column header}, {cell value}". A cell holding an interactive control is named after its column
+// header, since the control names itself.
 [MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass TableViewCellAutomationPeer

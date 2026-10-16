@@ -34,11 +34,11 @@
 
     <controls:SamplePresenter
         Header="Keyboard navigation + accessibility"
-        Description="TableView is fully keyboard operable: arrow keys move between rows and cells, Enter moves into the control inside a template cell and Esc comes back out, and Page Up, Page Down and Ctrl+Home jump through the table. The table body is one tab stop, so Tab enters the table and the next Tab leaves it. It also reports its rows, cells and group headers to UI Automation, so Narrator can announce where you are. Below the first table, a fixed 24-record assessment fixture lets you compare what UI Automation reports for text columns, template columns and an unlabeled table."
+        Description="TableView is fully keyboard operable: arrow keys move between rows and cells, Enter moves into the control inside a template cell and Esc comes back out, and Page Up, Page Down and Ctrl+Home jump through the table. The column headers and the table body are one tab stop each, so Tab stops on the headers, then the body, and the next Tab leaves the table. It also reports its rows, cells and group headers to UI Automation, so Narrator can announce where you are. Below the first table, a fixed 24-record assessment fixture lets you compare what UI Automation reports for text columns, template columns and an unlabeled table."
         Snippet="KeyboardNav"
         StretchExample="False"
-        TryIt="Tab to Before table, then Tab into the table. Use Up and Down, Page Up and Page Down, and Ctrl+Home to move between rows, then Right and Left to move across cells. On the Active, Office or Details cell press Enter to reach its control and Esc to come back. Press Tab once more to leave the table at After table."
-        WhatToLookFor="Arrow keys move between cells; Enter moves into the control of a template cell and Esc brings focus back to the cell. Tab leaves the table, because its body is one tab stop. The Photo column is decorative and never takes focus. Rows, Columns and Expected RowOrColumnMajor are what a UI Automation inspector should report for the first table; compare them rather than trusting them, because these readouts come from the app, not from UI Automation.">
+        TryIt="Tab to Before table, then Tab into the table. Use Up and Down, Page Up and Page Down, and Ctrl+Home to move between rows, then Right and Left to move across cells. On the Active, Office or Details cell press Enter to reach its control and Esc to come back. Press Tab once more to leave the table at After table, then Shift+Tab to come back."
+        WhatToLookFor="Arrow keys move between cells; Enter moves into the control of a template cell and Esc brings focus back to the cell. Tab leaves the table, because its body is one tab stop. Shift+Tab from the After button returns to the cell you left. When grouped, clicking a group header moves focus to it. The Photo column is decorative and never takes focus. Rows, Columns and Expected RowOrColumnMajor are what a UI Automation inspector should report for the first table; compare them rather than trusting them, because these readouts come from the app, not from UI Automation.">
 
         <controls:SamplePresenter.Example>
             <!-- Two tables: every Example row is Auto and each table has a fixed Height, so both stay virtualized. -->
@@ -54,25 +54,24 @@
                 <Button Grid.Row="0" Content="Before table" HorizontalAlignment="Left"
                         AutomationProperties.AutomationId="KeyboardNavBeforeTable"
                         AutomationProperties.HelpText="Focus sentinel just before the table, so you can check the tab order into the table."/>
-                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}">
-                    <tv:TableView
-                        x:Name="PeopleTable"
-                        AutomationProperties.AutomationId="KeyboardNavTable"
-                        AutomationProperties.Name="Keyboard navigation people"
-                        SelectionMode="Single"
-                        Height="360">
-                        <!-- Decorative: the avatar template is never a tab stop. -->
-                        <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}" IsReadOnly="True"/>
-                        <!-- Sortable template column: Enter or Space on its focused header sorts by Department. -->
-                        <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                        <!-- Controls in cells: arrow to the cell, Enter moves into the control, Esc returns to the cell.
-                             The table body is one tab stop, so Tab leaves the table. -->
-                        <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanSort="False"/>
-                        <tv:TableViewTemplateColumn Header="Office" Width="{StaticResource ColWidthCombo}" CellTemplate="{StaticResource OfficeComboTemplate}" CanSort="False"/>
-                        <tv:TableViewTemplateColumn Header="Details" Width="{StaticResource ColWidthAction}" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False"/>
-                    </tv:TableView>
-                </Border>
+                <tv:TableView
+                    x:Name="PeopleTable"
+                    Grid.Row="1"
+                    AutomationProperties.AutomationId="KeyboardNavTable"
+                    AutomationProperties.Name="Keyboard navigation people"
+                    SelectionMode="Single"
+                    Height="360">
+                    <!-- Decorative: the avatar template is never a tab stop. -->
+                    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}" IsReadOnly="True"/>
+                    <!-- Sortable template column: Enter or Space on its focused header sorts by Department. -->
+                    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                    <!-- Controls in cells: arrow to the cell, Enter moves into the control, Esc returns to the cell.
+                         The table body is one tab stop, so Tab leaves the table. -->
+                    <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanSort="False"/>
+                    <tv:TableViewTemplateColumn Header="Office" Width="{StaticResource ColWidthCombo}" CellTemplate="{StaticResource OfficeComboTemplate}" CanSort="False"/>
+                    <tv:TableViewTemplateColumn Header="Details" Width="{StaticResource ColWidthAction}" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False"/>
+                </tv:TableView>
                 <Button Grid.Row="2" Content="After table" HorizontalAlignment="Left"
                         AutomationProperties.AutomationId="KeyboardNavAfterTable"
                         AutomationProperties.HelpText="Focus sentinel just after the table, so you can check the tab order out of the table."/>
@@ -90,21 +89,19 @@
                     <Button Content="Before fixture table" HorizontalAlignment="Left"
                             AutomationProperties.AutomationId="A11yBeforeTable"
                             AutomationProperties.HelpText="Focus sentinel just before the fixture table."/>
-                    <Border Style="{StaticResource TableHostBorderStyle}">
-                        <!-- snippet -->
-                        <!-- Height 248 shows about five rows, which keeps record 24 off screen. -->
-                        <tv:TableView
-                            x:Name="AssessmentTable"
-                            AutomationProperties.AutomationId="KeyboardNavFixtureTable"
-                            AutomationProperties.Name="Accessibility regression records"
-                            SelectionMode="Single"
-                            SelectionChanged="OnFixtureSelectionChanged"
-                            BeginningEdit="OnBeginningEdit"
-                            CellEditEnding="OnCellEditEnding"
-                            IsReadOnly="True"
-                            Height="248"/>
-                        <!-- /snippet -->
-                    </Border>
+                    <!-- snippet -->
+                    <!-- Height 248 shows about five rows, which keeps record 24 off screen. -->
+                    <tv:TableView
+                        x:Name="AssessmentTable"
+                        AutomationProperties.AutomationId="KeyboardNavFixtureTable"
+                        AutomationProperties.Name="Accessibility regression records"
+                        SelectionMode="Single"
+                        SelectionChanged="OnFixtureSelectionChanged"
+                        BeginningEdit="OnBeginningEdit"
+                        CellEditEnding="OnCellEditEnding"
+                        IsReadOnly="True"
+                        Height="248"/>
+                    <!-- /snippet -->
                     <Button Content="After fixture table" HorizontalAlignment="Left"
                             AutomationProperties.AutomationId="A11yAfterTable"
                             AutomationProperties.HelpText="Focus sentinel just after the fixture table."/>
@@ -133,11 +130,12 @@
             <controls:RailSection
                 IsFirst="True"
                 Header="Keyboard"
-                Description="The shortcuts the first table supports. The table body is a single tab stop: Tab and Shift+Tab move between the Before table button, the table and the After table button, and the arrow keys move inside it.">
+                Description="The shortcuts the first table supports. The column headers and the table body are one tab stop each: Tab moves to the headers, then the body, then out, and the arrow keys move inside it. Shift+Tab back into the body resumes the row or cell you left.">
                 <Grid Style="{StaticResource StatusGridStyle}">
+                    <!-- Proportional, not Auto: at 200% text the key column must not starve the descriptions. -->
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="3*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

@@ -1740,7 +1740,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+             if (bindAssignment.BindUniverse.IsFileRoot) { #>
                     dataRoot.FindName("<#=element.ElementName#>");
 <#+             } else { #>
-                    <#=bindAssignment.BindUniverse.RootElement.ReferenceExpression#>.FindName("<#=element.ElementName#>");
+                    <#=bindAssignment.BindUniverse.LoadRootElement.ReferenceExpression#>.FindName("<#=element.ElementName#>");
 <#+             }#>
                 }
                 else

@@ -93,6 +93,24 @@
                     IsTabStop="False"
                     AllowFocusOnInteraction="False"
                     Click="OnFilterSourceClick" />
+            <Button Content="Disable Focused Row (focus-neutral)"
+                    AutomationProperties.Name="DisableFocusedRowButton"
+                    AutomationProperties.AutomationId="DisableFocusedRowButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnDisableFocusedRowClick" />
+            <Button x:Name="navigateToTouch"
+                    Content="Touch Page"
+                    AutomationProperties.Name="navigateToTouch"
+                    AutomationProperties.AutomationId="navigateToTouch"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False" />
+            <Button x:Name="navigateToVirtualization"
+                    Content="Virtualization"
+                    AutomationProperties.Name="navigateToVirtualization"
+                    AutomationProperties.AutomationId="navigateToVirtualization"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False" />
         </StackPanel>
 
         <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in
@@ -188,6 +206,30 @@
                                     SelectionMode="Single">
                     <controls:TableViewTextColumn Header="GroupedName" Width="200" Binding="{Binding Name}" />
                     <controls:TableViewTextColumn Header="GroupedCity" Width="160" Binding="{Binding City}" />
+                </controls:TableView>
+            </Grid>
+
+            <!-- Fixed container heights and a body 3.5 containers tall; see TableViewTestPageFacts.GroupedPagingContainerHeight.
+                 Height is 3.5 * 40 plus the table's 1px border. -->
+            <Grid x:Name="GroupedPagingTableHost" Visibility="Collapsed">
+                <Grid.Resources>
+                    <Style TargetType="controls:TableViewRow">
+                        <Setter Property="Height" Value="40" />
+                    </Style>
+                    <Style TargetType="controls:TableViewGroupHeader">
+                        <Setter Property="Height" Value="40" />
+                    </Style>
+                </Grid.Resources>
+                <controls:TableView x:Name="GroupedPagingTableView"
+                                    AutomationProperties.Name="GroupedPagingTableView"
+                                    AutomationProperties.AutomationId="GroupedPagingTableView"
+                                    HeadersVisibility="None"
+                                    Height="142"
+                                    Width="320"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="PagerName" Width="200" Binding="{Binding Name}" />
                 </controls:TableView>
             </Grid>
 
@@ -289,7 +331,8 @@
         </Grid>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
-            <Button Content="After Table Button"
+            <Button x:Name="AfterTableButton"
+                    Content="After Table Button"
                     AutomationProperties.Name="AfterTableButton"
                     AutomationProperties.AutomationId="AfterTableButton" />
             <Button Content="Basic"
@@ -312,6 +355,10 @@
                     AutomationProperties.Name="GoToHierarchyButton"
                     AutomationProperties.AutomationId="GoToHierarchyButton"
                     Click="OnGoToHierarchyClick" />
+            <Button Content="Grouped Paging"
+                    AutomationProperties.Name="GoToGroupedPagingButton"
+                    AutomationProperties.AutomationId="GoToGroupedPagingButton"
+                    Click="OnGoToGroupedPagingClick" />
             <TextBlock x:Name="StatusTextBlock"
                        AutomationProperties.Name="StatusTextBlock"
                        AutomationProperties.AutomationId="StatusTextBlock"

@@ -194,8 +194,17 @@ public partial class StatusPanel : RailSection
         var changed = !string.Equals(_lastActionValue.Text, text, System.StringComparison.Ordinal);
         _lastActionValue.Text = text;
 
-        // TextBlock does not raise LiveRegionChanged on a text change; raise it once per new message.
-        if (changed && _lastActionValue.IsLoaded)
+        if (changed)
+        {
+            AnnounceLastAction();
+        }
+    }
+
+    // TextBlock does not raise LiveRegionChanged on a text change; raise it once per new message, or
+    // when a page repeats the current message (setting the DP to the same value raises no change).
+    public void AnnounceLastAction()
+    {
+        if (_lastActionValue.IsLoaded)
         {
             (FrameworkElementAutomationPeer.FromElement(_lastActionValue)
                 ?? FrameworkElementAutomationPeer.CreatePeerForElement(_lastActionValue))

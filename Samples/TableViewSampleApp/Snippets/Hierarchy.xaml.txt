@@ -2,6 +2,7 @@
      resource, not a property; set it on this table's Resources to retheme it only. -->
 <tv:TableView
     x:Name="ManagerTable"
+    Grid.Row="1"
     AutomationProperties.AutomationId="HierarchyManagerTable"
     AutomationProperties.Name="Employees by manager"
     SelectionMode="Single"

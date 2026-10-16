@@ -29,5 +29,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Hierarchy_APITests_Common.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Hierarchy_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_LiveShaping_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Localization_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Recycling_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Lifetime_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Intersections_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_HierarchyLive_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_SourceOwnership_APITests.cs" />
   </ItemGroup>
 </Project>

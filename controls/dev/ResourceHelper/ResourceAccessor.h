@@ -161,6 +161,7 @@ public:
 #define SR_TableViewCellLocalizedControlType L"TableViewCellLocalizedControlType"
 #define SR_TableViewCellTextSeparator L"TableViewCellTextSeparator"
 #define SR_TableViewCellNameFormat L"TableViewCellNameFormat"
+#define SR_TableViewCellBlankName L"TableViewCellBlankName"
 #define SR_TableViewBooleanTrue L"TableViewBooleanTrue"
 #define SR_TableViewBooleanFalse L"TableViewBooleanFalse"
 #define SR_TableViewGroupHeaderNameFormat L"TableViewGroupHeaderNameFormat"

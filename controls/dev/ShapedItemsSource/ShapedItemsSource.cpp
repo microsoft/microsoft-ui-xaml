@@ -81,24 +81,30 @@ void ShapedItemsSource::Start()
 {
     // Not in the constructor: needs weak_from_this so an off-thread handler cannot outlive us.
     m_liveShaping->SetChangeHandler(
-        [weakThis = weak_from_this(), queue = m_ownerQueue, ownerThreadId = m_ownerThreadId](winrt::IInspectable const& item, winrt::hstring const& propertyName)
+        [weakThis = weak_from_this(), queue = m_ownerQueue, ownerThreadId = m_ownerThreadId, dropped = m_liveShapingChangeDropped](winrt::IInspectable const& item, winrt::hstring const& propertyName)
         {
             if (queue && !queue.HasThreadAccess())
             {
                 // Off-thread: all touched state belongs to the owning thread, so marshal it.
-                queue.TryEnqueue([weakThis, item, propertyName]()
+                const bool posted = queue.TryEnqueue([weakThis, item, propertyName]()
                     {
                         if (auto const strongThis = weakThis.lock())
                         {
                             strongThis->OnLiveShapedItemChanged(item, propertyName);
                         }
                     });
+                if (!posted)
+                {
+                    dropped->store(true);
+                }
                 return;
             }
 
             if (!queue && ::GetCurrentThreadId() != ownerThreadId)
             {
-                // No queue to marshal to; drop it. The next owner-thread reshape re-reads items.
+                // No queue to marshal to. Flag it; the owner's next live change forces a full
+                // restore, which re-reads every item.
+                dropped->store(true);
                 return;
             }
 
@@ -1325,6 +1331,10 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
         filteredSource.erase(filteredSource.begin() + removal.SourceIndex);
         m_shapingState.Items.erase(m_shapingState.Items.begin() + removal.RowIndex);
         UntrackFlatItemPropertyChanged(removal.Item);
+        if (m_rowsReleasedHook)
+        {
+            m_rowsReleasedHook(removal.Item, {});
+        }
         m_rows.RemoveAt(removal.RowIndex);
         return true;
     };
@@ -1497,6 +1507,31 @@ bool ShapedItemsSource::ValidateRowIdentities(
     wchar_t const*& reason) const
 {
     return RowIdentity::ValidateRowIdentities(rows, EffectiveIdentitySelector(), reason);
+}
+
+bool ShapedItemsSource::CanProjectWithRowIdentity() const
+{
+    // A shaped projection validated its rows when it was built.
+    if (m_kind != ProjectionKind::None && m_kind != ProjectionKind::Unshaped &&
+        m_validatedSourceStamp == m_sourceChangeStamp)
+    {
+        return true;
+    }
+
+    // Mirrors Refresh: identity is validated over the rows a shaped projection would publish.
+    auto rows = Materialize(m_source);
+    if (!m_parentKeySelector)
+    {
+        ApplyFilter(rows);
+    }
+
+    wchar_t const* reason = nullptr;
+    if (!ValidateRowIdentities(rows, reason))
+    {
+        LogIdentityProjectionDisabled(reason);
+        return false;
+    }
+    return true;
 }
 
 void ShapedItemsSource::ClearFlatRowIdentityTracking()
@@ -1675,6 +1710,15 @@ void ShapedItemsSource::AttachGroupSource(std::vector<winrt::IInspectable> const
     m_groupedAdapter->Source(m_groupSource);
 }
 
+void ShapedItemsSource::ReattachGroupedAdapterAfterFailedRefill()
+{
+    // Reattach so a refill that threw after the quiet detach does not orphan the adapter.
+    if (m_groupedAdapter && m_groupSource && !m_groupedAdapter->Source())
+    {
+        m_groupedAdapter->Source(m_groupSource);
+    }
+}
+
 void ShapedItemsSource::ReleaseGroupedProjection()
 {
     if (m_groupSource)
@@ -1745,10 +1789,19 @@ void ShapedItemsSource::Refresh()
 
         auto const authoritativeSource = m_source;
         m_refreshSourceStamp = m_sourceChangeStamp;
+
+        // Cleared before the re-read: an off-thread change dropped while the items are being read
+        // keeps the flag set, so the next live change still forces a rebuild.
+        m_liveShapingChangeDropped->store(false);
         auto rows = Materialize(authoritativeSource);
+        if (m_rowsReleasedHook)
+        {
+            m_rowsReleasedHook(nullptr, rows);
+        }
         RefreshLiveShapingSubscriptions(rows);
 
-        // All snapshots were just recaptured, so any pending live restore is satisfied.
+        // All snapshots were just recaptured, so any pending live restore is satisfied -- unless
+        // the rebuild below throws, in which case the catch re-marks it.
         m_liveShapingDirty = false;
 
         if (!HasAnyShapingVerb())
@@ -1817,16 +1870,27 @@ void ShapedItemsSource::Refresh()
             {
                 RebuildFlat(rows);
             }
+            m_validatedSourceStamp = m_refreshSourceStamp;
         }
         MUX_ASSERT(m_source == authoritativeSource);
     }
     catch (...)
     {
+        // The snapshots may already describe data the kept projection does not show (a transient
+        // duplicate key, say). Stay dirty without posting, so the next live change retries the
+        // full rebuild instead of matching the fresh snapshots and dropping the change.
+        if (IsLiveShapingEnabled())
+        {
+            m_liveShapingDirty = true;
+        }
+        m_validatedSourceStamp = ~uint64_t{ 0 };
+
         // A request that arrived during the failed pass describes newer state; post it (inline
         // would throw into the same app call). Only such requests replay, so bad data cannot loop.
+        // Contained: a scheduling failure must not replace the actionable exception rethrown below.
         if (runPendingRefresh)
         {
-            ScheduleRefreshReplay();
+            try { ScheduleRefreshReplay(); } catch (...) {}
         }
 
         // An in-pass ClearParentBy must still take effect; its rebuild just failed.
@@ -1981,8 +2045,8 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     std::unordered_set<winrt::hstring> liveKeys;
 
     // The flat shaped rows kept under grouping: every kept row, in group order, with the
-    // per-bucket sort applied and no header entries. Accumulated here rather than re-derived
-    // afterwards because this loop already walks the buckets in their final order. This keeps
+    // per-bucket sort applied and no header entries. Accumulated while the per-bucket sort walks
+    // the buckets in their final order. This keeps
     // Rows() coherent as the flat shaped projection even while the presented row axis is the
     // grouped adapter.
     std::vector<winrt::IInspectable> flatRows;
@@ -1992,15 +2056,7 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     {
         ApplySort(bucket.Items, m_pipeline.GroupOrder(), -1);
         flatRows.insert(flatRows.end(), bucket.Items.begin(), bucket.Items.end());
-
-        auto group = AcquireCachedGroup(bucket);
-        group->SetItems(bucket.Items);
-        groups.push_back(group.as<winrt::IInspectable>());
-        liveKeys.insert(bucket.Identity);
     }
-
-    PruneGroupCache(liveKeys);
-    AttachGroupSource(groups);
 
     // The presented row axis under grouping is the adapter's computed ItemsSourceView, which has
     // no vector form. Keep Rows() maintained as the flat shaped projection anyway: without this
@@ -2011,7 +2067,36 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     // Expansion is deliberately not applied: this is the shaped DATA. Collapsing a group hides
     // rows from the presented row axis without removing them from the projection, and a flat
     // vector whose size changed when a chevron is clicked would be reporting UI state.
+    //
+    // Written before the groups are filled: the adapter's Reset below closes an open edit, which
+    // asks Rows() whether the edited item is still present.
     m_rows.ReplaceAll(flatRows);
+
+    // Detach first: a live adapter would rebuild per changed group, briefly publishing a moved row
+    // in no group, which drops its selection.
+    if (m_groupedAdapter)
+    {
+        m_groupedAdapter->DetachSourceQuietly();
+    }
+
+    try
+    {
+        for (auto& bucket : keyedBuckets)
+        {
+            auto group = AcquireCachedGroup(bucket);
+            group->SetItems(bucket.Items);
+            groups.push_back(group.as<winrt::IInspectable>());
+            liveKeys.insert(bucket.Identity);
+        }
+    }
+    catch (...)
+    {
+        ReattachGroupedAdapterAfterFailedRefill();
+        throw;
+    }
+
+    PruneGroupCache(liveKeys);
+    AttachGroupSource(groups);
 
     m_kind = ProjectionKind::Grouped;
     m_projectedAsGrouped = true;
@@ -2130,7 +2215,19 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
     PruneGroupCache(liveKeys);
 
     // Fill groups BEFORE attaching the grouped adapter so it publishes one coherent Reset.
-    ResliceGroupsFromHierarchy();
+    if (m_groupedAdapter)
+    {
+        m_groupedAdapter->DetachSourceQuietly();
+    }
+    try
+    {
+        ResliceGroupsFromHierarchy();
+    }
+    catch (...)
+    {
+        ReattachGroupedAdapterAfterFailedRefill();
+        throw;
+    }
     AttachGroupSource(groups);
 
     // Rows(): visible rows in group order, headers excluded.
@@ -2297,11 +2394,11 @@ void ShapedItemsSource::ReleaseHierarchyProjection()
 {
     if (m_hierarchicalAdapter)
     {
-        // Replacement may fail: keep visible rows for the inert fallback (see
+        // Replacement may fail: keep every row for the inert fallback (see
         // CompleteDeferredHierarchyTeardown). Grouped trees keep rows in the slices.
         if (m_pendingHierarchyTeardown && m_kind == ProjectionKind::Hierarchical)
         {
-            m_releasedHierarchyRows = VisibleHierarchicalRows();
+            m_releasedHierarchyRows = HierarchyFallbackRows();
         }
 
         // Callback first: nothing below may drive a re-slice on the way out.
@@ -2321,6 +2418,27 @@ void ShapedItemsSource::ReleaseHierarchyProjection()
     m_rootBucketIndex.clear();
     // Holds every source row alive; a later relation rebuilds it anyway.
     m_hierarchyStructure.reset();
+}
+
+std::vector<winrt::IInspectable> ShapedItemsSource::HierarchyFallbackRows() const
+{
+    // The flat view of the last good structure: every row in source order, so descendants of a
+    // collapsed node are not lost with the tree. Filtered as a flat source would be, best-effort.
+    if (!m_hierarchyStructure)
+    {
+        return VisibleHierarchicalRows();
+    }
+
+    auto rows = m_hierarchyStructure->Rows;
+    try
+    {
+        ApplyFilter(rows);
+    }
+    catch (...)
+    {
+        rows = m_hierarchyStructure->Rows;
+    }
+    return rows;
 }
 
 std::vector<winrt::IInspectable> ShapedItemsSource::VisibleHierarchicalRows() const
@@ -2500,17 +2618,13 @@ void ShapedItemsSource::TryCompleteDeferredHierarchyTeardown()
         }
         else if (m_kind == ProjectionKind::Hierarchical)
         {
-            if (m_hierarchicalAdapter)
-            {
-                m_releasedHierarchyRows = VisibleHierarchicalRows();
-            }
-            auto const visibleRows = std::move(m_releasedHierarchyRows);
-            m_releasedHierarchyRows.clear();
+            // Release captures the fallback rows while the tree is still alive; an earlier release
+            // already captured them otherwise.
             ReleaseHierarchyProjection();
-            m_releasedHierarchyRows.clear();
+            auto const flatRows = std::exchange(m_releasedHierarchyRows, {});
             InvalidateShapingState();
             ClearFlatRowIdentityTracking();
-            m_rows.ReplaceAll(visibleRows);
+            m_rows.ReplaceAll(flatRows);
             // Degraded: later changes re-shape through Refresh.
             m_kind = ProjectionKind::Unshaped;
         }
@@ -2717,8 +2831,9 @@ void ShapedItemsSource::AddLiveShapingSubscription(winrt::IInspectable const& it
 
 void ShapedItemsSource::RemoveLiveShapingSubscription(winrt::IInspectable const& item)
 {
-    // Not gated on IsLiveShapingEnabled: pruning leftovers is always correct.
-    if (!item)
+    // Not gated on IsLiveShapingEnabled: pruning leftovers is always correct. Gated on there being
+    // anything to prune, so a source that never went live pays no identity QI per removal.
+    if (!item || (m_liveShaping->Empty() && m_liveShapeSnapshots.empty()))
     {
         return;
     }
@@ -2788,8 +2903,11 @@ void ShapedItemsSource::ClearLiveShapingSubscriptions()
 {
     m_liveShaping->UnsubscribeAll();
     m_liveShapeSnapshots.clear();
-    // Nothing tracked, so a posted restore must not reshape.
+    // Nothing tracked, so nothing live is pending: a posted restore finds the flag clear and
+    // returns, and a later re-enable starts from a fresh restore.
     m_liveShapingDirty = false;
+    m_liveShapingHeld = false;
+    m_liveShapingChangeDropped->store(false);
 }
 
 void ShapedItemsSource::ResubscribeLiveShapingFromSource()
@@ -2812,6 +2930,13 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
         return;
     }
 
+    // A change the owner could not be told about off-thread: snapshots cannot reveal it, so force
+    // the full restore, which re-reads every item.
+    if (m_liveShapingChangeDropped->exchange(false))
+    {
+        MarkLiveShapingDirty();
+    }
+
     // Before the coalescing early-out: the owner must see every changed item.
     if (m_liveItemChangedHook && m_liveItemChangedHook(item, m_liveShapingDirty))
     {
@@ -2819,9 +2944,12 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
         return;
     }
 
-    // A full restore is already posted; skip snapshot capture so bulk edits cost one capture.
+    // A full restore is already pending; skip snapshot capture so bulk edits cost one capture.
+    // Still re-arm it: an earlier post may have been refused, failed, or parked behind a hold
+    // that has since lifted.
     if (m_liveShapingDirty)
     {
+        EnsureLiveShapingRestore();
         return;
     }
 
@@ -2840,43 +2968,73 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
 
 void ShapedItemsSource::MarkLiveShapingDirty()
 {
-    if (m_liveShapingDirty)
+    m_liveShapingDirty = true;
+    EnsureLiveShapingRestore();
+}
+
+void ShapedItemsSource::EnsureLiveShapingRestore()
+{
+    if (!m_liveShapingDirty || m_liveShapingRestorePosted)
     {
         return;
     }
-    m_liveShapingDirty = true;
 
-    // Post, don't reshape inline: coalesces a turn's writes into one rebuild and stays out of the
-    // app's PropertyChanged handler.
+    if (m_liveShapingHeld)
+    {
+        // A held restore normally waits for ResumeHeldLiveShaping. If the hold has since lifted
+        // without one (the owner was destroyed mid-edit), re-post so live shaping does not stall.
+        if (m_liveShapingHold && m_liveShapingHold())
+        {
+            return;
+        }
+        m_liveShapingHeld = false;
+    }
+
+    // Posted: coalesces a turn's writes into one rebuild and stays out of the app's
+    // PropertyChanged handler.
     PostLiveShapingRestore();
 }
 
 void ShapedItemsSource::PostLiveShapingRestore()
 {
-    auto weakThis = weak_from_this();
-    if (auto const queue = winrt::DispatcherQueue::GetForCurrentThread())
+    if (m_liveShapingRestorePosted)
     {
-        if (queue.TryEnqueue([weakThis]()
+        return;
+    }
+
+    if (m_ownerQueue)
+    {
+        auto weakThis = weak_from_this();
+        // A refused post means the owner's queue is shutting down. Stay dirty rather than rebuild
+        // inside the app's PropertyChanged; the next change re-arms it.
+        m_liveShapingRestorePosted = m_ownerQueue.TryEnqueue([weakThis]()
             {
                 if (auto const strongThis = weakThis.lock())
                 {
+                    strongThis->m_liveShapingRestorePosted = false;
                     try
                     {
                         strongThis->RestoreLiveShaping();
                     }
                     catch (...)
                     {
-                        // No app call to receive this; as in ScheduleRefreshReplay.
+                        // No app call to receive this; Refresh left the source dirty, so the
+                        // next live change retries.
                     }
                 }
-            }))
-        {
-            return;
-        }
+            });
+        return;
     }
 
-    // Couldn't post: restore eagerly rather than leave the projection stale.
-    RestoreLiveShaping();
+    // The owner thread has no dispatcher at all (test host), so there is no later turn to post to.
+    // This is the one case that restores inside the caller; contain failures as the posted path does.
+    try
+    {
+        RestoreLiveShaping();
+    }
+    catch (...)
+    {
+    }
 }
 
 void ShapedItemsSource::RestoreLiveShaping()
@@ -2914,6 +3072,7 @@ void ShapedItemsSource::ResumeHeldLiveShaping()
         return;
     }
 
-    // Posted: caller is closing an edit, often inside app callbacks or layout.
-    PostLiveShapingRestore();
+    // Posted: caller is closing an edit, often inside app callbacks or layout. Skips the post when a
+    // refresh in the meantime already satisfied the restore.
+    EnsureLiveShapingRestore();
 }

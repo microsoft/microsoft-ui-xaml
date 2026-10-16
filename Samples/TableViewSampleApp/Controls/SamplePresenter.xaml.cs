@@ -196,6 +196,7 @@ public sealed partial class SamplePresenter : UserControl
 
         OptionsHost.Visibility = showInfo ? Visibility.Collapsed : Visibility.Visible;
         InfoPanel.Visibility = showInfo ? Visibility.Visible : Visibility.Collapsed;
+        RailScroller.IsTabStop = showInfo;
         RailScroller.ChangeView(null, 0, null, disableAnimation: true);
     }
 
@@ -544,7 +545,7 @@ public sealed partial class SamplePresenter : UserControl
     }
 
     // Unnamed on purpose (see SamplePresenter.xaml): WinUI would surface an x:Name as the AutomationId.
-    private InfoBar TryItInfoBar => (InfoBar)ExampleGrid.Children[0];
+    private Border TryItCallout => (Border)ExampleGrid.Children[0];
 
     private InfoBar WhatToLookForInfoBar => (InfoBar)InfoPanel.Children[0];
 
@@ -554,8 +555,8 @@ public sealed partial class SamplePresenter : UserControl
     {
         var text = TryIt;
         var hasTryIt = !string.IsNullOrEmpty(text);
-        TryItInfoBar.Message = text ?? string.Empty;
-        TryItInfoBar.Visibility = hasTryIt ? Visibility.Visible : Visibility.Collapsed;
+        TryItMessageRun.Text = text ?? string.Empty;
+        TryItCallout.Visibility = hasTryIt ? Visibility.Visible : Visibility.Collapsed;
         ExampleGrid.RowSpacing = hasTryIt ? 12 : 0;
         ExampleHostRow.Height = StretchExample ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
     }

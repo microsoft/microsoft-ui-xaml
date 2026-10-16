@@ -10,6 +10,7 @@
 
 <tv:TableView
     x:Name="FileTable"
+    Grid.Row="1"
     AutomationProperties.AutomationId="FileExplorerTable"
     AutomationProperties.Name="Folder contents"
     ItemsSource="{x:Bind Source}"
