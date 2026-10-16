@@ -1858,7 +1858,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 if (scale == 1.0)
                 {
                     // Not settable from a test, and at 1.0 pixels equal DIPs, so the conversion is unobservable.
-                    Log.Comment("SKIPPED: the physical-pixel conversion cannot be observed at RasterizationScale 1.0.");
+                    Log.Warning("SKIPPED (reported as passed): the physical-pixel conversion cannot be observed at RasterizationScale 1.0; run on a scaled display to cover it.");
                     return;
                 }
 
