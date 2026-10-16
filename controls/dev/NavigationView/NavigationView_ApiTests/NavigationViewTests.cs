@@ -1286,6 +1286,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyHeaderIsNotClippedInLeftMinimalWhenBackAndPaneToggleButtonsAreHidden()
+        {
+            // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/9789
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView()
+                {
+                    Header = "HEADER",
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal,
+                    IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                    IsPaneToggleButtonVisible = true,
+                    IsPaneOpen = false,
+                    Width = 400.0
+                };
+                Content = navView;
+                Content.UpdateLayout();
+
+                var headerContent = VisualTreeUtils.FindVisualChildByName(navView, "HeaderContent") as FrameworkElement;
+                Verify.IsNotNull(headerContent);
+                Verify.AreEqual(Visibility.Visible, headerContent.Visibility);
+
+                double headerLeftWithToggleButton = headerContent.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0)).X;
+                Log.Comment($"Header left offset with only the pane toggle button visible: {headerLeftWithToggleButton}");
+
+                navView.IsPaneToggleButtonVisible = false;
+                Content.UpdateLayout();
+
+                Verify.AreEqual(Visibility.Visible, headerContent.Visibility);
+                double headerLeftWithNoButtons = headerContent.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0)).X;
+                Log.Comment($"Header left offset with neither back nor pane toggle button visible: {headerLeftWithNoButtons}");
+
+                Verify.IsGreaterThanOrEqual(headerLeftWithNoButtons, 0.0, "Header should not be pushed past the left edge of the NavigationView");
+                Verify.AreEqual(headerLeftWithToggleButton, headerLeftWithNoButtons, "Header should keep the same left inset as when only one button is visible");
+            });
+        }
+
+        [TestMethod]
         public void VerifyMenuItemAndContainerMappingMenuItemsSource()
         {
             RunOnUIThread.Execute(() =>
