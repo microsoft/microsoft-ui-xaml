@@ -903,6 +903,95 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that NavigationViewItems placed directly in PaneFooter/PaneCustomContent are not clipped when the pane is closed in compact mode (#10415, #11108).")]
+        public void VerifyPaneFooterItemIsNotClippedInClosedCompactPane()
+        {
+            NavigationView navView = null;
+            NavigationViewItem menuItem = null;
+            NavigationViewItem footerItem = null;
+            NavigationViewItem customContentItem = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                menuItem = new NavigationViewItem() { Content = "Menu", Icon = new SymbolIcon(Symbol.Home) };
+                footerItem = new NavigationViewItem() { Content = "Exit", Icon = new SymbolIcon(Symbol.Home) };
+                customContentItem = new NavigationViewItem() { Content = "Custom", Icon = new SymbolIcon(Symbol.Home) };
+                navView.MenuItems.Add(menuItem);
+                navView.PaneFooter = footerItem;
+                navView.PaneCustomContent = customContentItem;
+                navView.IsSettingsVisible = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                navView.IsPaneOpen = false;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(menuItem), "Menu item state");
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "PaneFooter item state");
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(customContentItem), "PaneCustomContent item state");
+
+                VerifyContentGridIsNotClipped(menuItem, "Menu item");
+                VerifyContentGridIsNotClipped(footerItem, "PaneFooter item");
+                VerifyContentGridIsNotClipped(customContentItem, "PaneCustomContent item");
+
+                navView.IsPaneOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // When the pane is open, the items should go back to the regular (non compact) layout.
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(menuItem), "Menu item state (pane open)");
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "PaneFooter item state (pane open)");
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(customContentItem), "PaneCustomContent item state (pane open)");
+
+                navView.IsPaneOpen = false;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "PaneFooter item state (pane closed again)");
+                VerifyContentGridIsNotClipped(footerItem, "PaneFooter item (pane closed again)");
+            });
+        }
+
+        private static string GetPaneAndTopLevelItemState(NavigationViewItem item)
+        {
+            var presenter = VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+            var presenterLayoutRoot = VisualTreeHelper.GetChild(presenter, 0) as FrameworkElement;
+            foreach (var visualStateGroup in VisualStateManager.GetVisualStateGroups(presenterLayoutRoot))
+            {
+                if (visualStateGroup.Name == "PaneAndTopLevelItemStates")
+                {
+                    return visualStateGroup.CurrentState?.Name;
+                }
+            }
+            return null;
+        }
+
+        private static void VerifyContentGridIsNotClipped(NavigationViewItem item, string description)
+        {
+            var presenter = VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+            var contentRootGrid = VisualTreeUtils.FindVisualChildByName(presenter, "PresenterContentRootGrid");
+            var contentGrid = VisualTreeUtils.FindVisualChildByName(presenter, "ContentGrid");
+            var iconColumn = VisualTreeUtils.FindVisualChildByName(presenter, "IconColumn");
+
+            // The layout slot that ContentGrid gets is its parent's width minus its own margins. If the grid is
+            // larger than that slot, the right side (and with it part of the icon) gets clipped.
+            double availableWidth = contentRootGrid.ActualWidth - contentGrid.Margin.Left - contentGrid.Margin.Right;
+            Log.Comment($"{description}: ContentGrid margin={contentGrid.Margin}, available={availableWidth}, IconColumn width={iconColumn.ActualWidth}");
+            Verify.IsLessThanOrEqual(iconColumn.ActualWidth, availableWidth, $"{description}: the icon column should fit in the item without being clipped");
+        }
+
 
         [TestMethod]
         public void VerifyNavigationItemUIAType()
