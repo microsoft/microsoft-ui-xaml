@@ -1139,9 +1139,11 @@ private:
     void ApplySingleColumnSortState(const winrt::TableViewColumn& column, winrt::SortDirection direction);
     // Applies the current sort state to the bound TableViewSource. Returns false when there is no
     // TableViewSource, or the trigger column resolves no sort key.
-    bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t tipGeneration);
+    // explicitClear: the app or user asked to clear, so a clear also removes app-declared axes.
+    // Any other clear (a column leaving, CanUserSortColumns turning off) removes only this table's axis.
+    bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t tipGeneration, bool explicitClear = false);
     bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort = true);
-    bool ClearSortInternal(bool measureTip);
+    bool ClearSortInternal(bool measureTip, bool explicitClear = false);
     winrt::TableViewKeySelector GetTableViewSourceSortKeySelector(const winrt::hstring& sortMemberPath);
     // Re-places a live-tracked item among CustomSortComparer ranks. True if any sort key moved.
     bool RepositionCustomSortItem(const winrt::IInspectable& item, bool reshapePending);
@@ -1153,7 +1155,8 @@ private:
     bool RaiseSortingAndCheckCanceled(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
     // Single funnel for "the sort state has been written to the columns": reshapes, restores the
     // selection, raises Sorted, and announces.
-    void RecomputeSortDPsAndRaiseInternal(const winrt::TableViewColumn& trigger, bool measureTip = true);
+    // A non-null trigger is always an explicit request; a null one is explicit only when asked.
+    void RecomputeSortDPsAndRaiseInternal(const winrt::TableViewColumn& trigger, bool measureTip = true, bool explicitClear = false);
 
     // Silently drops the active sort when the data set is replaced. See the definition for why this
     // is not ClearSort.

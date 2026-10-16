@@ -153,6 +153,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies clearing a column on an unloaded table leaves the sort of the shared TableViewSource its new owner shows.")]
+        public void VerifyUnloadedTableClearKeepsSharedSourceSort()
+        {
+            TableView first = null;
+            TableView second = null;
+            TableViewSource shared = null;
+            StackPanel host = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                shared = TableViewSource.From(MakeShapedPeople());
+                first = CreateTableView(shared, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host = new StackPanel();
+                host.Children.Add(first);
+                LoadContent(host);
+            });
+
+            SettleLayout(first);
+            RunOnUIThread.Execute(() => shared.Sort("Name", SortDirection.Descending));
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, first.Columns[0].SortDirection, "Precondition: the source sort lights the first table.");
+                host.Children.Remove(first);
+                second = CreateTableView(shared, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host.Children.Add(second);
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(second, person => person.Name),
+                    "precondition: the new owner shows the source sort");
+                first.SortByColumn(first.Columns[0], SortDirection.None);
+                Verify.AreEqual(SortDirection.None, first.Columns[0].SortDirection, "The unloaded table clears its own column.");
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(second, person => person.Name),
+                    "a table that released the shared source must not clear the sort its new owner shows");
+                Verify.AreEqual(SortDirection.Descending, second.Columns[0].SortDirection, "The new owner keeps its indicator.");
+            });
+        }
     }
 
     [TestClass]

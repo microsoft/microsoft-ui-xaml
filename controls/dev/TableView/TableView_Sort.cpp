@@ -398,10 +398,10 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
 
 bool TableView::ClearSort()
 {
-    return ClearSortInternal(true);
+    return ClearSortInternal(true, true);
 }
 
-bool TableView::ClearSortInternal(bool measureTip)
+bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
 {
     if (m_sortedColumns.empty())
     {
@@ -412,9 +412,9 @@ bool TableView::ClearSortInternal(bool measureTip)
     {
         if (m_editState == EditState::Ending && !m_isApplyingCoalescedEditReshape)
         {
-            QueueCoalescedEditReshape([this, measureTip]()
+            QueueCoalescedEditReshape([this, measureTip, explicitClear]()
             {
-                ClearSortInternal(measureTip);
+                ClearSortInternal(measureTip, explicitClear);
             });
         }
         return false;
@@ -444,7 +444,7 @@ bool TableView::ClearSortInternal(bool measureTip)
     m_sortedColumns.clear();
 
     // Null trigger: Sorted fires with Column=null to signal a full clear.
-    RecomputeSortDPsAndRaiseInternal(nullptr, measureTip);
+    RecomputeSortDPsAndRaiseInternal(nullptr, measureTip, explicitClear);
     DrainCoalescedEditReshape();
     return true;
 }
@@ -549,11 +549,20 @@ winrt::TableViewKeySelector TableView::GetTableViewSourceSortKeySelector(
 bool TableView::SyncTableViewSourceSort(
     const winrt::TableViewColumn& trigger,
     winrt::SortDirection direction,
-    uint64_t tipGeneration)
+    uint64_t tipGeneration,
+    bool explicitClear)
 {
     auto tableViewSource = ShapingSourceInternal();
     if (!tableViewSource)
     {
+        return false;
+    }
+
+    // Released on Unloaded: another table may own the source now, so a clear changes only this
+    // table's state. A path axis left behind re-lights the column when the source is reclaimed.
+    if (direction == winrt::SortDirection::None && m_activeSourceReleased)
+    {
+        m_tableViewSourceSort.Clear();
         return false;
     }
 
@@ -643,11 +652,13 @@ bool TableView::SyncTableViewSourceSort(
     // INotifyPropertyChanged-only mutations of the active sort key do not live re-sort until the
     // next collection change.
     auto tableViewSourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
-    // A clear needs no key selector: an app-declared axis lit on a column was never installed by
-    // this control, yet clearing that column must still remove it.
-    if (direction == winrt::SortDirection::None
+    // An explicit clear needs no key selector: an app-declared axis lit on a column was never
+    // installed by this control, yet clearing that column must still remove it. Any other clear
+    // removes only the axis this control installed.
+    const bool clearsAppAxes = direction == winrt::SortDirection::None && explicitClear;
+    if (clearsAppAxes
         ? !keySelector && tableViewSourceImpl->ActiveSortAxisInfos().empty()
-        : !keySelector)
+        : !keySelector || (direction == winrt::SortDirection::None && sortAxisToken.empty()))
     {
         return false;
     }
@@ -655,12 +666,16 @@ bool TableView::SyncTableViewSourceSort(
     // app-declared fluent Sort axis would survive alongside it and, being declared earlier, would
     // outrank it as the primary sort while the chevron advertised this column.
     auto const reconcileGuard = BeginControlInitiatedSortScope(tipGeneration);
-    if (direction == winrt::SortDirection::None)
+    if (clearsAppAxes)
     {
-        // A control-initiated clear means "nothing is sorted", so it clears EVERY axis, not just
-        // the one this control installed. Clearing only its own token would leave an app-declared
-        // fluent axis ordering the rows while every chevron said the sort was off.
+        // An explicit clear means "nothing is sorted", so it clears EVERY axis, not just the one
+        // this control installed. Clearing only its own token would leave an app-declared fluent
+        // axis ordering the rows while every chevron said the sort was off.
         tableViewSourceImpl->ClearSort();
+    }
+    else if (direction == winrt::SortDirection::None)
+    {
+        tableViewSourceImpl->ClearSort(sortAxisToken);
     }
     else
     {
@@ -757,7 +772,7 @@ int32_t TableView::FindEntryIndexForDataItem(const winrt::IInspectable& item) co
 }
 
 void TableView::RecomputeSortDPsAndRaiseInternal(
-    const winrt::TableViewColumn& trigger, bool measureTip)
+    const winrt::TableViewColumn& trigger, bool measureTip, bool explicitClear)
 {
     // Stale-deferred-clear guard. A null trigger means "clear", and every legitimate null-trigger
     // caller - ClearSort, SortByColumn(col, None), ToggleSortDirection cycling to None - clears
@@ -800,7 +815,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     // Selection is index-based, and a re-sort moves every index. Capture the item, then re-find it
     // afterwards so the selection follows the row rather than the slot.
     const auto preservedSelection = SelectedItemInternal();
-    const bool reshaped = SyncTableViewSourceSort(trigger, requestedDirection, tipGeneration);
+    const bool reshaped = SyncTableViewSourceSort(trigger, requestedDirection, tipGeneration, explicitClear || static_cast<bool>(trigger));
     if (reshaped && invalidatedSort)
     {
         TableViewTip::IgnoreOperation(m_tip, invalidatedSort, TableViewTip::IgnoreReason::Stale);
@@ -876,6 +891,12 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     // The chevrons are already current: SetSortStateInternal republished them through
     // RefreshSortIndicators as each column's DP was written.
     completed = true;
+
+    // An app-declared axis that survived the clear re-lights its column (for example a moved one).
+    if (!trigger && !explicitClear)
+    {
+        QueueReconcileSortStateWithSource();
+    }
 }
 
 void TableView::QueueReconcileSortStateWithSource()
