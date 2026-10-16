@@ -2436,6 +2436,48 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a disabled header keeps one glyph Foreground binding across visual state updates instead of rebinding each time.")]
+        public void VerifyDisabledSortGlyphBindingIsNotRecreated()
+        {
+            TableView tableView = null;
+            Control glyph = null;
+            BindingExpression binding = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                tableView.Columns[0].CanSort = true;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the column sorts.");
+                tableView.IsEnabled = false;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                glyph = RequireColumnHeader(tableView, 0).FindVisualChildByName("TableViewSortIndicator") as Control;
+                Verify.IsNotNull(glyph, "Precondition: a sorted column hosts the sort glyph.");
+                binding = glyph.GetBindingExpression(Control.ForegroundProperty);
+                Verify.IsNotNull(binding, "Precondition: the disabled glyph is bound to the header text.");
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Precondition: the sort direction changes.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(ReferenceEquals(glyph, RequireColumnHeader(tableView, 0).FindVisualChildByName("TableViewSortIndicator")),
+                    "Precondition: the sort change updates the realized header in place.");
+                Verify.IsTrue(ReferenceEquals(binding, glyph.GetBindingExpression(Control.ForegroundProperty)),
+                    "A state update must keep the glyph's existing binding.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the default header template provides its parts and hosts the sort glyph and resize gripper in them.")]
         public void VerifyColumnHeaderTemplateParts()
         {
