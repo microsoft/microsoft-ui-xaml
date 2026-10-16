@@ -194,7 +194,7 @@ void TableViewColumnHeader::HostSortIndicator()
     }
 }
 
-void TableViewColumnHeader::SyncSortIndicatorForeground(bool highlighted)
+void TableViewColumnHeader::SyncSortIndicatorForeground(bool followText, bool highlighted)
 {
     auto const indicator = m_sortIndicator.get();
     if (!indicator)
@@ -202,17 +202,24 @@ void TableViewColumnHeader::SyncSortIndicatorForeground(bool highlighted)
         return;
     }
 
-    // The glyph's style sets Foreground, so it cannot inherit; under a High Contrast highlight it
-    // must follow the text the template recolored, or it vanishes on the highlight fill.
+    // The glyph's style sets Foreground, so it cannot inherit; when a state recolors the text
+    // (Disabled, or a High Contrast highlight) the glyph must follow it.
     auto const presenter = m_contentPresenter.get();
-    if (highlighted && presenter)
+    if (followText && presenter)
     {
         indicator.Foreground(presenter.Foreground());
-        indicator.HighContrastAdjustment(winrt::ElementHighContrastAdjustment::None);
     }
     else
     {
         indicator.ClearValue(winrt::Control::ForegroundProperty());
+    }
+
+    if (highlighted)
+    {
+        indicator.HighContrastAdjustment(winrt::ElementHighContrastAdjustment::None);
+    }
+    else
+    {
         indicator.ClearValue(winrt::UIElement::HighContrastAdjustmentProperty());
     }
 }
@@ -244,7 +251,8 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
         }
     }
     winrt::VisualStateManager::GoToState(*this, highContrastState, useTransitions);
-    SyncSortIndicatorForeground(highContrastState != std::wstring_view{ L"HighContrastNormal" });
+    const bool highlighted = highContrastState != std::wstring_view{ L"HighContrastNormal" };
+    SyncSortIndicatorForeground(highlighted || !IsEnabled(), highlighted);
 
     const wchar_t* sortState = L"Unsorted";
     if (m_sortDirection == winrt::SortDirection::Ascending)
