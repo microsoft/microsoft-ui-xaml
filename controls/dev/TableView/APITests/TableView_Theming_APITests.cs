@@ -2371,6 +2371,71 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header Style whose BasedOn chain loops is ignored instead of breaking the header band.")]
+        public void VerifyColumnHeaderStyleWithBasedOnCycleIsIgnored()
+        {
+            TableView tableView = null;
+            SolidColorBrush brush = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                brush = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                var first = new Style(typeof(TableViewColumnHeader));
+                var second = new Style(typeof(TableViewColumnHeader)) { BasedOn = first };
+                first.BasedOn = second;
+                first.Setters.Add(new Setter(Control.BackgroundProperty, brush));
+                tableView = CreateThemingTable();
+                tableView.ColumnHeaderStyle = first;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var index in new[] { 0, 1 })
+                {
+                    var header = RequireColumnHeader(tableView, index);
+                    Verify.IsNull(header.Style, $"Header {index} must not take a Style whose BasedOn chain loops.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header Style without a TargetType, alone or as a BasedOn, is ignored instead of breaking the header band.")]
+        public void VerifyUntypedColumnHeaderStyleIsIgnored()
+        {
+            TableView tableView = null;
+            SolidColorBrush tableBrush = null;
+            SolidColorBrush columnBrush = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableBrush = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                columnBrush = new SolidColorBrush(Microsoft.UI.Colors.Green);
+                var untyped = new Style();
+                untyped.Setters.Add(new Setter(Control.BackgroundProperty, tableBrush));
+                var untypedBase = new Style();
+                untypedBase.Setters.Add(new Setter(Control.BackgroundProperty, columnBrush));
+                tableView = CreateThemingTable();
+                tableView.ColumnHeaderStyle = untyped;
+                tableView.Columns[1].HeaderStyle = new Style(typeof(TableViewColumnHeader)) { BasedOn = untypedBase };
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var index in new[] { 0, 1 })
+                {
+                    var header = RequireColumnHeader(tableView, index);
+                    Verify.IsNull(header.Style, $"Header {index} must not take a Style chain without a TargetType.");
+                    Verify.IsFalse(ReferenceEquals(tableBrush, header.Background) || ReferenceEquals(columnBrush, header.Background),
+                        $"Header {index} must keep its default look.");
+                }
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the default header template provides its parts and hosts the sort glyph and resize gripper in them.")]
         public void VerifyColumnHeaderTemplateParts()
         {

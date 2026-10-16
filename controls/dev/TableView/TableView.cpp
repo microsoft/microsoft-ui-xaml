@@ -2771,12 +2771,11 @@ winrt::Style TableView::CompatibleHeaderStyle(const winrt::Style& style)
     }
 
     // Depth in TableViewColumnHeader's base chain, or -1 outside it. A BasedOn Style may only target
-    // the same type as the Style it bases, or a base type.
-    static constexpr int c_untyped = INT_MAX;
+    // the same type as the Style it bases, or a base type. A Style without a TargetType hangs when
+    // applied, so it is outside the chain too.
     auto const targetDepth = [](const winrt::Style& level) -> int
     {
         const std::wstring_view targetType = level.TargetType().Name;
-        if (targetType.empty()) return c_untyped;
         if (targetType == winrt::name_of<winrt::TableViewColumnHeader>()) return 5;
         if (targetType == winrt::name_of<winrt::ContentControl>()) return 4;
         if (targetType == winrt::name_of<winrt::Control>()) return 3;
@@ -2787,17 +2786,19 @@ winrt::Style TableView::CompatibleHeaderStyle(const winrt::Style& style)
     };
 
     bool compatible = true;
-    int derivedDepth = c_untyped;
+    int derivedDepth = INT_MAX;
     winrt::Style level = style;
     // Bounded: a BasedOn cycle would otherwise never end.
     for (int guard = 0; level && compatible && guard < 64; ++guard, level = level.BasedOn())
     {
         const int depth = targetDepth(level);
-        compatible = depth >= 0 && (depth == c_untyped || derivedDepth == c_untyped || depth <= derivedDepth);
-        if (depth != c_untyped)
-        {
-            derivedDepth = depth;
-        }
+        compatible = depth >= 0 && depth <= derivedDepth;
+        derivedDepth = depth;
+    }
+    // A chain still going when the guard runs out loops, and applying it would throw.
+    if (level)
+    {
+        compatible = false;
     }
     if (compatible)
     {
@@ -2849,7 +2850,6 @@ void TableView::ReleaseHeaderCells(const winrt::Panel& host, HeaderRelease scope
             cells.push_back(headerCell);
         }
     }
-
     if (cells.empty())
     {
         return;
@@ -2870,6 +2870,7 @@ void TableView::ReleaseHeaderCells(const winrt::Panel& host, HeaderRelease scope
             }
         }
     }
+
     for (auto const& headerCell : cells)
     {
         TableViewDetails::ClearOwnedToolTip(headerCell);
@@ -2884,7 +2885,6 @@ void TableView::ReleaseHeaderCells(const winrt::Panel& host, HeaderRelease scope
 }
 
 void TableView::RebuildHeaders()
-{
 {
     // App code run while the old headers are released (focus, tooltip and content changes) can ask
     // for a rebuild. A nested one would build cells the outer one then drops without releasing.
@@ -2907,6 +2907,7 @@ void TableView::RebuildHeaders()
 }
 
 void TableView::RebuildHeadersCore()
+{
     m_headerSortSpaceArmedColumn = nullptr;
     auto host = m_headerHost.get();
     if (!host)
