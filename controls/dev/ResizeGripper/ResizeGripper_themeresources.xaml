@@ -10,9 +10,8 @@
     <Thickness x:Key="ResizeGripperSeparatorThicknessVertical">0,0,0,1</Thickness>
 
     <ResourceDictionary.ThemeDictionaries>
-        <!-- Once any theme dictionary defines "Light", "Default" means Dark. ControlStrongStrokeColorDefault
-             values as literals: a theme-dependent {ThemeResource} here resolves against the app theme,
-             not this dictionary's. -->
+        <!-- Literal ControlStrongStrokeColorDefault values: a {ThemeResource} here resolves against the
+             app theme. "Default" means Dark once "Light" is defined. -->
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="ResizeGripperSeparatorBrush" Color="#72000000" />
         </ResourceDictionary>

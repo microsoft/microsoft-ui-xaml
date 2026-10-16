@@ -164,9 +164,8 @@ bool TableView::HasVisibleAutoColumn()
     return false;
 }
 
-// A newly prepared row's first measure has no width history, so it raises no change signal of its
-// own (see TableViewCellsPanel::RecordAndDetectMeasuredWidthChange); Auto columns need this table
-// pass to pick its cells up. Nothing else in ResolveColumnWidths reads rows.
+// A newly prepared row's first measure raises no width-change signal, so Auto columns need this
+// table pass to pick its cells up.
 void TableView::InvalidateMeasureForRowRealizationChange()
 {
     if (HasVisibleAutoColumn())
@@ -251,10 +250,8 @@ void TableView::ResolveColumnWidths()
         {
             ForEachRealizedRow([&realizedRows, &repeater](winrt::TableViewRow const& row)
             {
-                // Skip pooled/recycled rows: ItemsRepeater keeps them parented in the pool, but they carry
-                // stale measured widths (GetElementIndex < 0). Consuming them would re-pin Auto columns at
-                // the previous width after ItemsSource shrinks, making ResetColumnDesiredWidths a no-op
-                // (grow-only keeps the max). Only genuinely bound rows contribute to Auto sizing.
+                // Skip pooled rows (GetElementIndex < 0): their stale widths would re-pin Auto
+                // columns after ItemsSource shrinks.
                 if (repeater.GetElementIndex(row) >= 0)
                 {
                     realizedRows.push_back(row);

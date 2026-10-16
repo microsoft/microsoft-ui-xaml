@@ -1260,9 +1260,8 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
     m_abandonPendingBeginEdit = false;
     m_editSourceWritten = false;
 
-    // Every normal return leaves Beginning, so only a throw reaches the guard still Beginning.
-    // Without the unwind IsEditing would stay true and every later edit would be rejected as
-    // reentrant.
+    // Only a throw reaches here still Beginning; without this unwind IsEditing would stay true and
+    // every later edit would be rejected as reentrant.
     auto unwindOnThrow = wil::scope_exit([this]() noexcept
     {
         if (m_editState != EditState::Beginning)

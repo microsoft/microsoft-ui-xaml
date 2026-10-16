@@ -1125,10 +1125,8 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
     auto* const peerImpl = rowPeer ? winrt::get_self<TableViewRowAutomationPeer>(rowPeer) : nullptr;
     if (peerImpl && !peerImpl->CanReuseForRowItem(*this, owner))
     {
-        // Cell providers are bound to their element, so once a client may hold one the cells must be
-        // replaced for the new item. With no cell peer realized nothing can observe the reuse, so
-        // keep the cells and let them restamp from the inherited DataContext. (FromElement above creates
-        // the row peer, so this branch runs on every recycle, not only under a UIA client.)
+        // Cell providers are bound to their element, so replace the cells only if a cell peer exists;
+        // otherwise keep them and let them restamp from the inherited DataContext.
         bool chromeRefreshed = false;
         if (HasCellAutomationPeers())
         {
@@ -2551,9 +2549,8 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         return false;
     }
 
-    // A throw past here (the editor factory, the child swap, or tooltip retraction) must put the display
-    // element back and drop the half-captured edit state; otherwise the cell is left blank and the row
-    // half-editing.
+    // A throw past here must restore the display element and drop the half-captured edit state, or
+    // the cell is left blank and the row half-editing.
     auto const displayElement = TableViewCell::Child(cellWrapper);
     auto const focusRoot = XamlRoot();
     auto const restoreFocusState = [&]()

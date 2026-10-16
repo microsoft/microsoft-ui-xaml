@@ -76,8 +76,7 @@ void ResizeGripper::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
     UpdateVisualState();
 }
 
-// Pressed stays on for the whole drag even if the pointer leaves the gripper: the column keeps
-// resizing.
+// Pressed holds for the whole drag, even after the pointer leaves the gripper.
 void ResizeGripper::UpdateVisualState()
 {
     auto const state =
@@ -101,9 +100,8 @@ void ResizeGripper::UpdateOrientationVisualState()
     winrt::VisualStateManager::GoToState(*this, IsHorizontalDrag() ? L"Horizontal" : L"Vertical", true /* useTransitions */);
 }
 
-// Assigned once and held: the input system uses the nearest ancestor's ProtectedCursor on every
-// pointer move. Not before OnApplyTemplate (microsoft-ui-xaml#7062), and never reassigned with the
-// same shape, which visibly resets the pointer.
+// Assigned once, after OnApplyTemplate: the input system re-reads it on every pointer move, and
+// reassigning the same shape visibly resets the pointer.
 void ResizeGripper::UpdateResizeCursor()
 {
     if (!m_templateApplied)

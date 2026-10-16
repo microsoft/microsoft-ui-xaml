@@ -280,8 +280,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 foreach (var row in RealizedProjectedRows(tableView))
                 {
-                    // A row peer tracks its item, which is what used to force a whole-row regeneration on
-                    // recycle. Cells are only enumerated, never asked for peers (FromElement would create one).
+                    // Cells are only enumerated, never asked for peers (FromElement would create one).
                     GetRowPeer(row);
                     cellsBefore[row] = GetCellsHost(row).Children.ToList();
                 }

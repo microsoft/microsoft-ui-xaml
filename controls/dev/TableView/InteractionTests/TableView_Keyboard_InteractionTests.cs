@@ -1400,10 +1400,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "A header click on a CanSort=False column does not sort, while a sortable sibling column still does (TableView.idl CanSort).")]
         public void HeaderClickDoesNotSortColumnWithCanSortFalse()
         {
-            // TableView.idl states CanSort as: "When false the control will not sort by this column: the
-            // header click handler ignores it, and SortByColumn and ToggleSortDirection return false without
-            // changing state." VerifyToggleSortDirectionRespectsCanSort and VerifySortByColumnRespectsCanSort
-            // cover the programmatic half, so the route test is the only place the click opt-out is checked.
+            // The only check of the click half of CanSort; API tests cover SortByColumn/ToggleSortDirection.
             //
             // The ReadOnlyCity column of BasicTableView is authored CanSort="False"; Age is CanSort="True".
             // Clicking Age afterwards is a NEGATIVE CONTROL and is the point of the test: without it, a click
