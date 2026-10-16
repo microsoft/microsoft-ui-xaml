@@ -863,8 +863,8 @@ try
     }
     if (auto oldHeaderHost = m_headerHost.get())
     {
-        // A live popup would still host content parented into the abandoned band.
-        ReleaseHeaderToolTips(oldHeaderHost);
+        // The abandoned band still parents its tooltips and UIElement Headers.
+        ReleaseHeaderCells(oldHeaderHost);
 
         // Mirror the rowsRepeater Loaded cleanup for the header host.
         if (m_headerHostLoadedToken.value)
@@ -2783,14 +2783,17 @@ static winrt::Style CompatibleHeaderStyle(const winrt::Style& style)
     return nullptr;
 }
 
-void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
+// A header cell keeps its column's UIElement Header and tooltip content parented until released, and
+// no other header can host them meanwhile. Every path that drops a header cell must release it first.
+void TableView::ReleaseHeaderCells(const winrt::Panel& host, bool detachedColumnsOnly)
 {
     if (!host)
     {
         return;
     }
 
-    // Snapshot: Closed runs app code that can re-enter RebuildHeaders and clear this collection.
+    // Snapshot: Closed and the Content change run app code that can re-enter RebuildHeaders and
+    // clear this collection.
     auto const children = host.Children();
     std::vector<winrt::FrameworkElement> cells;
     cells.reserve(children.Size());
@@ -2798,6 +2801,14 @@ void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
     {
         if (auto const headerCell = children.GetAt(i).try_as<winrt::FrameworkElement>())
         {
+            if (detachedColumnsOnly)
+            {
+                auto const column = headerCell.Tag().try_as<winrt::TableViewColumn>();
+                if (!column || winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this)
+                {
+                    continue;
+                }
+            }
             cells.push_back(headerCell);
         }
     }
@@ -2805,6 +2816,13 @@ void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
     for (auto const& headerCell : cells)
     {
         TableViewDetails::ClearOwnedToolTip(headerCell);
+    }
+    for (auto const& headerCell : cells)
+    {
+        if (auto const header = headerCell.try_as<winrt::ContentControl>())
+        {
+            header.ClearValue(winrt::ContentControl::ContentProperty());
+        }
     }
 }
 
@@ -2820,9 +2838,6 @@ void TableView::RebuildHeaders()
     // Clearing the host drops focus with the cell; remember which header held it.
     winrt::FocusState focusedHeaderState = winrt::FocusState::Unfocused;
     auto const focusedHeaderColumn = GetFocusedHeaderColumn(host, focusedHeaderState);
-
-    // Clearing the host under a live popup tears its child down reentrantly.
-    ReleaseHeaderToolTips(host);
 
     // Any focus move during the rebuild other than XAML's rescue off the removed cell belongs to
     // the app or user, and the restore below must not pull focus back from it.
@@ -2858,15 +2873,8 @@ void TableView::RebuildHeaders()
             });
     }
 
-    // A UIElement Header stays parented to the old header's presenter until released, and the
-    // new header could not host it.
-    for (auto const& child : host.Children())
-    {
-        if (auto const oldHeader = child.try_as<winrt::ContentControl>())
-        {
-            oldHeader.ClearValue(winrt::ContentControl::ContentProperty());
-        }
-    }
+    // Clearing the host under a live popup tears its child down reentrantly.
+    ReleaseHeaderCells(host);
     host.Children().Clear();
 
     m_rebuildingHeaders = true;

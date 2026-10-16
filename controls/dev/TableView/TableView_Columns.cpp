@@ -325,6 +325,12 @@ void TableView::OnColumnsVectorChanged(
     }
     }
 
+    // A column that left may be added to another TableView before the queued rebuild runs.
+    if (change != winrt::CollectionChange::ItemInserted)
+    {
+        ReleaseHeaderCells(m_headerHost.get(), true /* detachedColumnsOnly */);
+    }
+
     QueueRebuildHeaders();
 
     // QueueRebuildHeaders updates visuals only; UIA clients must be told the grid shape changed.
