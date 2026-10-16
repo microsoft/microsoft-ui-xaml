@@ -28,6 +28,77 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     public partial class LayoutTests : ApiTestBase
     {
         [TestMethod]
+        [TestProperty("Description", "UniformGridLayout must not recycle the recommended anchor when measuring item zero for sizing.")]
+        public void UniformGridLayoutPreservesFirstItemAnchorDuringSizing()
+        {
+            ItemsRepeater repeater = null;
+            ScrollViewer scrollViewer = null;
+            using (var viewChanged = new AutoResetEvent(false))
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    repeater = new ItemsRepeater()
+                    {
+                        ItemsSource = Enumerable.Range(0, 500).ToList(),
+                        Layout = new UniformGridLayout() { MinItemWidth = 180, MinItemHeight = 84 },
+                        ItemTemplate = GetDataTemplate("<Border Width='170' Height='68'/>")
+                    };
+                    scrollViewer = new ScrollViewer()
+                    {
+                        Width = 620,
+                        Height = 450,
+                        HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                        Content = repeater
+                    };
+                    scrollViewer.ViewChanged += (sender, args) =>
+                    {
+                        if (!args.IsIntermediate)
+                        {
+                            viewChanged.Set();
+                        }
+                    };
+                    Content = scrollViewer;
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    viewChanged.Reset();
+                    Verify.IsTrue(scrollViewer.ChangeView(null, 10000.0, null, disableAnimation: true));
+                });
+
+                Verify.IsTrue(viewChanged.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for the viewport to move away from item zero.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsNull(repeater.TryGetElement(0), "Item zero must start outside the realized range.");
+                    var anchor = repeater.GetOrCreateElement(0);
+                    int anchorClearingCount = 0;
+                    repeater.ElementClearing += (sender, args) =>
+                    {
+                        if (args.Element == anchor)
+                        {
+                            anchorClearingCount++;
+                        }
+                    };
+
+                    // ForceCreate can return this made anchor to the sizing pass before the flow algorithm owns it.
+                    Content.UpdateLayout();
+
+                    Verify.AreEqual(0, anchorClearingCount, "Sizing must not recycle the recommended anchor.");
+                    Verify.AreEqual(0, repeater.GetElementIndex(anchor));
+                    Verify.AreSame(anchor, repeater.TryGetElement(0));
+                    var bounds = LayoutInformation.GetLayoutSlot((FrameworkElement)anchor);
+                    Verify.IsGreaterThan(bounds.Width, 0.0);
+                    Verify.IsGreaterThan(bounds.Height, 0.0);
+                    Verify.IsLessThan(Math.Abs(bounds.Y), 1.0, "The anchor must be arranged at the first row, not parked offscreen.");
+                });
+            }
+        }
+
+        [TestMethod]
         public void ValidateMappingAndAutoRecycling()
         {
             ItemsRepeater repeater = null;
