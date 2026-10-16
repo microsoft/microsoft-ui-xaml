@@ -16,6 +16,17 @@
 
 namespace ShapingHelpers
 {
+    ObjectAddress GetObjectAddress(winrt::IInspectable const& item) noexcept
+    {
+        if (!item)
+        {
+            return ObjectAddress::Null;
+        }
+
+        auto const unknown = item.try_as<::IUnknown>();
+        return static_cast<ObjectAddress>(reinterpret_cast<uintptr_t>(unknown.get()));
+    }
+
     namespace
     {
         enum class NumericKind { None, Signed, Unsigned, Floating };
@@ -1104,13 +1115,6 @@ namespace ShapingHelpers
         m_rerankAllPending = false;
     }
 
-    void* CustomSortRankAdapter::IdentityOf(winrt::IInspectable const& item)
-    {
-        // The entry's Item keeps the object alive, so the raw identity stays valid while ranked.
-        auto const unknown = item.try_as<::IUnknown>();
-        return unknown ? unknown.get() : nullptr;
-    }
-
     void CustomSortRankAdapter::AddRanked(winrt::IInspectable const& item, int32_t rank)
     {
         InsertRanked(m_ranks.size(), item, rank);
@@ -1118,9 +1122,9 @@ namespace ShapingHelpers
 
     void CustomSortRankAdapter::InsertRanked(size_t position, winrt::IInspectable const& item, int32_t rank)
     {
-        void* const identity = IdentityOf(item);
+        auto const identity = GetObjectAddress(item);
         m_ranks.insert(m_ranks.begin() + position, RankEntry{ item, rank, identity });
-        if (identity)
+        if (identity != ObjectAddress::Null)
         {
             m_rankByIdentity[identity] = rank;
         }
@@ -1147,18 +1151,18 @@ namespace ShapingHelpers
             return;
         }
 
-        void* const identity = IdentityOf(item);
-        auto const isItem = [&](winrt::IInspectable const& candidate, void* candidateIdentity)
+        auto const identity = GetObjectAddress(item);
+        auto const isItem = [&](winrt::IInspectable const& candidate, ObjectAddress candidateIdentity)
         {
-            return candidate == item || (identity && candidateIdentity == identity);
+            return candidate == item || (identity != ObjectAddress::Null && candidateIdentity == identity);
         };
         m_ranks.erase(
             std::remove_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry) { return isItem(entry.Item, entry.Identity); }),
             m_ranks.end());
         m_evicted.erase(
-            std::remove_if(m_evicted.begin(), m_evicted.end(), [&](winrt::IInspectable const& evicted) { return isItem(evicted, IdentityOf(evicted)); }),
+            std::remove_if(m_evicted.begin(), m_evicted.end(), [&](winrt::IInspectable const& evicted) { return isItem(evicted, GetObjectAddress(evicted)); }),
             m_evicted.end());
-        if (identity)
+        if (identity != ObjectAddress::Null)
         {
             m_rankByIdentity.erase(identity);
         }
@@ -1171,16 +1175,16 @@ namespace ShapingHelpers
             return;
         }
 
-        std::unordered_set<void*> live;
+        std::unordered_set<ObjectAddress> live;
         live.reserve(liveRows.size());
         for (auto const& row : liveRows)
         {
-            if (void* const identity = row ? IdentityOf(row) : nullptr)
+            if (auto const identity = GetObjectAddress(row); identity != ObjectAddress::Null)
             {
                 live.insert(identity);
             }
         }
-        auto const isLive = [&](void* identity) { return identity && live.find(identity) != live.end(); };
+        auto const isLive = [&](ObjectAddress identity) { return identity != ObjectAddress::Null && live.find(identity) != live.end(); };
 
         m_ranks.erase(
             std::remove_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry)
@@ -1189,7 +1193,7 @@ namespace ShapingHelpers
                 {
                     return false;
                 }
-                if (entry.Identity)
+                if (entry.Identity != ObjectAddress::Null)
                 {
                     m_rankByIdentity.erase(entry.Identity);
                 }
@@ -1197,7 +1201,7 @@ namespace ShapingHelpers
             }),
             m_ranks.end());
         m_evicted.erase(
-            std::remove_if(m_evicted.begin(), m_evicted.end(), [&](winrt::IInspectable const& evicted) { return !isLive(IdentityOf(evicted)); }),
+            std::remove_if(m_evicted.begin(), m_evicted.end(), [&](winrt::IInspectable const& evicted) { return !isLive(GetObjectAddress(evicted)); }),
             m_evicted.end());
     }
 
@@ -1284,9 +1288,9 @@ namespace ShapingHelpers
 
         const auto generation = m_generation;
 
-        if (auto unknown = item.try_as<::IUnknown>())
+        if (auto const identity = GetObjectAddress(item); identity != ObjectAddress::Null)
         {
-            auto const found = m_rankByIdentity.find(unknown.get());
+            auto const found = m_rankByIdentity.find(identity);
             if (found != m_rankByIdentity.end())
             {
                 return winrt::box_value(found->second);
@@ -1350,7 +1354,7 @@ namespace ShapingHelpers
         {
             auto& entry = m_ranks[i];
             ++entry.Rank;
-            if (entry.Identity)
+            if (entry.Identity != ObjectAddress::Null)
             {
                 m_rankByIdentity[entry.Identity] = entry.Rank;
             }
@@ -1426,10 +1430,10 @@ namespace ShapingHelpers
         bool& wasShared)
     {
 
-        void* const identity = IdentityOf(item);
+        auto const identity = GetObjectAddress(item);
         auto const found = std::find_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry)
         {
-            return entry.Item == item || (identity && entry.Identity == identity);
+            return entry.Item == item || (identity != ObjectAddress::Null && entry.Identity == identity);
         });
         if (found == m_ranks.end())
         {
@@ -1439,7 +1443,7 @@ namespace ShapingHelpers
         const int32_t rank = found->Rank;
         oldRank = rank;
         m_ranks.erase(found);
-        if (identity)
+        if (identity != ObjectAddress::Null)
         {
             m_rankByIdentity.erase(identity);
         }
@@ -1458,7 +1462,7 @@ namespace ShapingHelpers
                 if (entry.Rank > rank)
                 {
                     --entry.Rank;
-                    if (entry.Identity)
+                    if (entry.Identity != ObjectAddress::Null)
                     {
                         m_rankByIdentity[entry.Identity] = entry.Rank;
                     }

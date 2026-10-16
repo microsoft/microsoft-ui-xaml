@@ -19,6 +19,11 @@
 
 namespace ShapingHelpers
 {
+    // Canonical IUnknown address, never dereferenced. Unique only while the object is alive.
+    enum class ObjectAddress : uintptr_t { Null = 0 };
+
+    ObjectAddress GetObjectAddress(winrt::IInspectable const& item) noexcept;
+
     // A group object that already knows its own stable identity.
     //
     // The key OBJECT is not a usable identity on its own. A key selector run twice can return
@@ -280,11 +285,10 @@ namespace ShapingHelpers
         {
             winrt::IInspectable Item{ nullptr };
             int32_t Rank{};
-            // COM identity (IUnknown), cached so lookups compare pointers instead of calling QI.
-            void* Identity{ nullptr };
+            // Cached COM identity; Item keeps the object alive while ranked.
+            ObjectAddress Identity{ ObjectAddress::Null };
         };
 
-        static void* IdentityOf(winrt::IInspectable const& item);
         // m_ranks stays ordered by rank; PlaceUnranked relies on it to binary-search.
         void AddRanked(winrt::IInspectable const& item, int32_t rank);
         void InsertRanked(size_t position, winrt::IInspectable const& item, int32_t rank);
@@ -346,7 +350,7 @@ namespace ShapingHelpers
         bool m_rerankAllPending{ false };
         // O(1) identity -> rank lookup for the common (reference-type item) case; falls back to the
         // comparer scan on a miss, e.g. a boxed value type whose CCW churned.
-        std::unordered_map<void*, int32_t> m_rankByIdentity;
+        std::unordered_map<ObjectAddress, int32_t> m_rankByIdentity;
         uint64_t m_generation{ 0 };
         // Reentrancy guard for the app comparer. Both rank paths iterate m_ranks and invoke the
         // comparer inside that iteration; a comparer that re-enters lands in the same vector and

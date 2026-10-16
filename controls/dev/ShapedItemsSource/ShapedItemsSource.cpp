@@ -940,7 +940,7 @@ bool ShapedItemsSource::TryReshapeStaleSortedFlatProjection()
         return !m_liveShapingDirty;
     }
 
-    std::unordered_set<uintptr_t> dirtyRows;
+    std::unordered_set<ShapingHelpers::ObjectAddress> dirtyRows;
     dirtyRows.swap(m_sortDirtyRows);
     const bool overflow = std::exchange(m_sortDirtyOverflow, false);
 
@@ -1055,7 +1055,7 @@ void ShapedItemsSource::UpdateSortKeyPropertyFilter()
     m_anyPropertyMayAffectSort = anyProperty;
 }
 
-void ShapedItemsSource::OnFlatItemPropertyChanged(uintptr_t itemAddress, winrt::hstring const& propertyName)
+void ShapedItemsSource::OnFlatItemPropertyChanged(ShapingHelpers::ObjectAddress itemAddress, winrt::hstring const& propertyName)
 {
     // Beyond this, one linear check is cheaper than per-row lookups.
     constexpr size_t c_maxIndividuallyTrackedDirtyRows = 256;
@@ -1093,7 +1093,7 @@ void ShapedItemsSource::TrackFlatItemPropertyChanged(winrt::IInspectable const& 
         return;
     }
 
-    auto const address = RowIdentity::GetObjectAddress(item);
+    auto const address = ShapingHelpers::GetObjectAddress(item);
     if (m_flatItemPropertyChangedRevokers.find(address) != m_flatItemPropertyChangedRevokers.end())
     {
         return;
@@ -1141,7 +1141,7 @@ void ShapedItemsSource::UntrackFlatItemPropertyChanged(winrt::IInspectable const
 {
     if (item && !m_flatItemPropertyChangedRevokers.empty())
     {
-        m_flatItemPropertyChangedRevokers.erase(RowIdentity::GetObjectAddress(item));
+        m_flatItemPropertyChangedRevokers.erase(ShapingHelpers::GetObjectAddress(item));
     }
 }
 
@@ -1176,7 +1176,7 @@ void ShapedItemsSource::RebuildFlatItemPropertyChangedTracking(std::vector<winrt
     {
         if (item && !previous.empty())
         {
-            if (auto const it = previous.find(RowIdentity::GetObjectAddress(item)); it != previous.end())
+            if (auto const it = previous.find(ShapingHelpers::GetObjectAddress(item)); it != previous.end())
             {
                 m_flatItemPropertyChangedRevokers.insert(previous.extract(it));
                 continue;
@@ -2673,17 +2673,6 @@ winrt::hstring ShapedItemsSource::Diagnostic(std::wstring_view text) const
     return m_diagnosticName + L": " + winrt::hstring{ text };
 }
 
-void const* ShapedItemsSource::LiveShapingKeyFor(winrt::IInspectable const& item)
-{
-    if (!item)
-    {
-        return nullptr;
-    }
-
-    auto const unknown = item.as<winrt::Windows::Foundation::IUnknown>();
-    return winrt::get_abi(unknown);
-}
-
 ShapedItemsSource::LiveShapeSnapshot ShapedItemsSource::CaptureLiveShapeSnapshot(
     winrt::IInspectable const& item) const
 {
@@ -2765,11 +2754,11 @@ void ShapedItemsSource::RefreshLiveShapingSubscriptions(
     }
 
     // Mark-and-sweep: only arrivals subscribe and departures revoke, avoiding per-row COM churn.
-    std::unordered_set<void const*> live;
+    std::unordered_set<ShapingHelpers::ObjectAddress> live;
     live.reserve(items.size());
 
     // Snapshots are rebuilt, not reconciled: the committed spec may have changed.
-    std::unordered_map<void const*, LiveShapeSnapshot> snapshots;
+    std::unordered_map<ShapingHelpers::ObjectAddress, LiveShapeSnapshot> snapshots;
     snapshots.reserve(items.size());
 
     // Comparing fresh edge keys with previous ones validates the retained structure for free,
@@ -2784,7 +2773,7 @@ void ShapedItemsSource::RefreshLiveShapingSubscriptions(
             continue;
         }
 
-        auto const key = LiveShapingKeyFor(item);
+        auto const key = ShapingHelpers::GetObjectAddress(item);
         live.insert(key);
         m_liveShaping->Subscribe(item);
         auto const& snapshot = snapshots[key] = CaptureLiveShapeSnapshot(item);
@@ -2820,7 +2809,7 @@ void ShapedItemsSource::AddLiveShapingSubscription(winrt::IInspectable const& it
     }
 
     m_liveShaping->Subscribe(item);
-    m_liveShapeSnapshots[LiveShapingKeyFor(item)] = CaptureLiveShapeSnapshot(item);
+    m_liveShapeSnapshots[ShapingHelpers::GetObjectAddress(item)] = CaptureLiveShapeSnapshot(item);
 
     // A re-inserted item may still hold a rank from before it was edited while out of the source.
     if (m_liveItemChangedHook)
@@ -2839,7 +2828,7 @@ void ShapedItemsSource::RemoveLiveShapingSubscription(winrt::IInspectable const&
     }
 
     m_liveShaping->Unsubscribe(item);
-    m_liveShapeSnapshots.erase(LiveShapingKeyFor(item));
+    m_liveShapeSnapshots.erase(ShapingHelpers::GetObjectAddress(item));
 }
 
 void ShapedItemsSource::ApplyLiveShapingDelta(
@@ -2955,7 +2944,7 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
 
     // Discards changes no verb reads. Compare, don't store: the cached snapshot must keep matching
     // the projection until the restore runs.
-    auto const key = LiveShapingKeyFor(item);
+    auto const key = ShapingHelpers::GetObjectAddress(item);
     auto const existing = m_liveShapeSnapshots.find(key);
     if (existing != m_liveShapeSnapshots.end() &&
         !LiveShapeSnapshotsDiffer(existing->second, CaptureLiveShapeSnapshot(item)))

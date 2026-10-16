@@ -206,7 +206,7 @@ private:
     // handler per row observing the same change.
     bool ShouldTrackSortKeyChanges() const { return HasActiveSort() && !IsLiveShapingEnabled(); }
     void ClearSortDirtyRows();
-    void OnFlatItemPropertyChanged(uintptr_t itemAddress, winrt::hstring const& propertyName);
+    void OnFlatItemPropertyChanged(ShapingHelpers::ObjectAddress itemAddress, winrt::hstring const& propertyName);
     void UpdateSortKeyPropertyFilter();
     void ApplyShapingChange();
     bool TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta const& delta, bool allowDuringIncrementalChange = false);
@@ -334,7 +334,6 @@ private:
     static bool LiveShapeSnapshotsDiffer(
         LiveShapeSnapshot const& left,
         LiveShapeSnapshot const& right);
-    static void const* LiveShapingKeyFor(winrt::IInspectable const& item);
     // Mark-and-sweep reconcile; surviving items keep their subscription.
     void RefreshLiveShapingSubscriptions(std::vector<winrt::IInspectable> const& items);
     void ClearLiveShapingSubscriptions();
@@ -395,7 +394,7 @@ private:
         winrt::IInspectable Item{ nullptr };
         winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged::PropertyChanged_revoker Revoker{};
     };
-    std::unordered_map<uintptr_t, FlatItemPropertyChangedSubscription> m_flatItemPropertyChangedRevokers;
+    std::unordered_map<ShapingHelpers::ObjectAddress, FlatItemPropertyChangedSubscription> m_flatItemPropertyChangedRevokers;
     bool m_flatItemPropertyChangedTrackingActive{ false };
     bool m_flatItemsMayChangeSortWithoutNotification{ false };
     // First path segment of each active sort axis' SortMemberPath.
@@ -403,7 +402,7 @@ private:
     // Some axis has no path (delegate key / comparer), so any property may affect the sort.
     bool m_anyPropertyMayAffectSort{ false };
     // Owner thread only: off-thread PropertyChanged is marshalled before it reaches these.
-    std::unordered_set<uintptr_t> m_sortDirtyRows;
+    std::unordered_set<ShapingHelpers::ObjectAddress> m_sortDirtyRows;
     bool m_sortDirtyOverflow{ false };
     bool m_raiseReorderAfterIncrementalChange{ false };
     // Bumped by every rebuild and every invalidation of the retained shaping state. The sorted
@@ -435,7 +434,7 @@ private:
     // live change forces a full restore. Shared so the handler never has to lock `this` off-thread.
     std::shared_ptr<std::atomic<bool>> m_liveShapingChangeDropped{ std::make_shared<std::atomic<bool>>(false) };
     bool m_liveShapingEnabled{ false };
-    std::unordered_map<void const*, LiveShapeSnapshot> m_liveShapeSnapshots;
+    std::unordered_map<ShapingHelpers::ObjectAddress, LiveShapeSnapshot> m_liveShapeSnapshots;
     // Pending live reshape: the projection may not reflect the captured snapshots.
     bool m_liveShapingDirty{ false };
     // A restore is queued on m_ownerQueue (so it implies m_ownerQueue is set). Separate from dirty
