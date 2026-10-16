@@ -325,12 +325,6 @@ void TableView::OnColumnsVectorChanged(
     }
     }
 
-    // A column that left may be added to another TableView before the queued rebuild runs.
-    if (change != winrt::CollectionChange::ItemInserted)
-    {
-        ReleaseHeaderCells(m_headerHost.get(), true /* detachedColumnsOnly */);
-    }
-
     QueueRebuildHeaders();
 
     // QueueRebuildHeaders updates visuals only; UIA clients must be told the grid shape changed.
@@ -349,6 +343,13 @@ void TableView::OnColumnsVectorChanged(
         // currently realized rows). A newly inserted column starts fresh at 0 and grows from content;
         // re-resolve to pick up the new fixed total and star share.
         InvalidateMeasure();
+    }
+
+    // A column that left may be added to another TableView before the queued rebuild runs. Last,
+    // because releasing runs app code that can change Columns again.
+    if (change != winrt::CollectionChange::ItemInserted)
+    {
+        ReleaseHeaderCells(m_headerHost.get(), HeaderRelease::DetachedColumns);
     }
 }
 
@@ -502,6 +503,8 @@ void TableView::OnColumnHeaderChanged(const winrt::TableViewColumn& column)
     // grow-only accumulator -- a global reset would shrink UNRELATED Auto columns to only the
     // currently-realized rows. Resetting even when the column is currently Pixel/Star preserves the
     // "switched back to Auto" stale-width safeguard for that one column.
+    // The old Header is the app's again now, as with ContentControl.Content, not after the rebuild.
+    ReleaseHeaderCells(m_headerHost.get(), HeaderRelease::Column, column);
     QueueRebuildHeaders();
     if (column)
     {
