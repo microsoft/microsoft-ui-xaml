@@ -467,6 +467,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a CanSort = false clear still removes the installed sort when the Sorting handler leaves the column without a sort path.")]
+        public void VerifyCanSortFalseClearRemovesSortWhenHandlerDropsSortPath()
+        {
+            TableView tableView = null;
+            var sortedArgs = new List<TableViewSortedEventArgs>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending),
+                    "Baseline: the column must sort.");
+                tableView.Sorting += (sender, args) =>
+                {
+                    if (args.Direction == SortDirection.None && args.Column is TableViewTextColumn column)
+                    {
+                        column.Binding = null;
+                    }
+                };
+                tableView.Sorted += (sender, args) => sortedArgs.Add(args);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name),
+                    "baseline: the rows must be sorted");
+                tableView.Columns[0].CanSort = false;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The opted-out column's sort must be cleared.");
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name),
+                    "the clear must remove the sort the column installed");
+                Verify.AreEqual(1, sortedArgs.Count, "The clear must raise Sorted once.");
+                Verify.AreEqual(SortDirection.None, sortedArgs[0].Direction, "Sorted must report None.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a canceled CanSort = false clear keeps the sort, and SortByColumn(column, None) can still clear it.")]
         public void VerifyCanceledCanSortClearCanBeClearedBySortByColumnNone()
         {
