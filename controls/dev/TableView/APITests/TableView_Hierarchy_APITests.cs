@@ -12,7 +12,9 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Windows.Foundation;
 
+using WEX.Logging.Interop;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
@@ -1291,6 +1293,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("ok", CheckChevronClip(tableView, "Dan"), "Widened: chevron clip for Dan.");
                 Verify.AreEqual("ok", CheckChevronClip(tableView, "Ben"), "Widened: chevron clip for Ben.");
                 Verify.IsTrue(GetChevron(tableView, "Dan").IsHitTestVisible, "Widened: Dan's chevron is hit-testable.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped root row's chevron starts where the group header's content starts.")]
+        public void VerifyGroupedRootAlignsWithGroupHeaderContent()
+        {
+            TableViewSource source = null;
+            RunOnUIThread.Execute(() => source = Tree(MakeTree()).GroupBy(ByDept));
+            var tableView = Place(source);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = GetProjectedElements(tableView).OfType<TableViewGroupHeader>().First();
+                var presenter = header.FindVisualChildByName("PART_ContentPresenter") as UIElement;
+                Verify.IsNotNull(presenter, "The group header should have PART_ContentPresenter.");
+
+                double headerX = presenter.TransformToVisual(tableView).TransformPoint(new Point(0, 0)).X;
+                double chevronX = GetChevron(tableView, "Ada").TransformToVisual(tableView).TransformPoint(new Point(0, 0)).X;
+                Log.Comment($"Group header content X={headerX}, root chevron X={chevronX}");
+                Verify.IsLessThan(Math.Abs(headerX - chevronX), 0.5, "Root rows must start at the group header's content.");
             });
         }
 

@@ -159,8 +159,8 @@ struct TableViewResourceCache
         double rowIndentSize{ 0.0 };
         bool hasRowExpanderSize{ false };
         double rowExpanderSize{ 0.0 };
-        bool hasGroupExpanderSize{ false };
-        double groupExpanderSize{ 0.0 };
+        bool hasGroupHeaderContentOffset{ false };
+        double groupHeaderContentOffset{ 0.0 };
     };
     HierarchyInfo hierarchy{};
 

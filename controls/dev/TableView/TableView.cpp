@@ -39,9 +39,7 @@ static constexpr double c_resizeGripperWidthFallback{ 8.0 };
 static constexpr double c_defaultRowIndentSize{ 16.0 };
 static constexpr double c_defaultRowExpanderSize{ 24.0 };
 static constexpr double c_defaultGroupExpanderSize{ 24.0 };
-
-// The ColumnSpacing of the Grid hosting PART_ExpanderGutter in the group-header template.
-static constexpr double c_groupHeaderExpanderSpacing{ 6.0 };
+static constexpr double c_defaultGroupExpanderSpacing{ 8.0 };
 static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"sv };
 // Matches SortIndicatorSize in SortIndicator_themeresources.xaml; used only when that key is
 // missing or unusable.
@@ -468,7 +466,7 @@ namespace
         cache.font.hasCellFontSize = false;
         cache.hierarchy.hasRowIndentSize = false;
         cache.hierarchy.hasRowExpanderSize = false;
-        cache.hierarchy.hasGroupExpanderSize = false;
+        cache.hierarchy.hasGroupHeaderContentOffset = false;
         cache.gridLine.hasBrush = false;
     }
 
@@ -2437,23 +2435,28 @@ double TableView::GetRowExpanderSize()
 double TableView::GetGroupHeaderContentOffset()
 {
     auto& cache = GetTableViewResourceCache(this);
-    if (!cache.hierarchy.hasGroupExpanderSize)
+    if (!cache.hierarchy.hasGroupHeaderContentOffset)
     {
-        double resolved = c_defaultGroupExpanderSize;
-        if (auto raw = LookupElementResource(*this, L"TableViewGroupExpanderSize"))
+        auto const lookup = [this](std::wstring_view key, double fallback)
         {
-            const double value = winrt::unbox_value_or<double>(raw, c_defaultGroupExpanderSize);
-            if (std::isfinite(value) && value >= 0.0)
+            if (auto raw = LookupElementResource(*this, key))
             {
-                resolved = value;
+                const double value = winrt::unbox_value_or<double>(raw, fallback);
+                if (std::isfinite(value) && value >= 0.0)
+                {
+                    return value;
+                }
             }
-        }
+            return fallback;
+        };
 
-        cache.hierarchy.groupExpanderSize = resolved;
-        cache.hierarchy.hasGroupExpanderSize = true;
+        cache.hierarchy.groupHeaderContentOffset =
+            lookup(L"TableViewGroupExpanderSize", c_defaultGroupExpanderSize) +
+            lookup(L"TableViewGroupExpanderSpacing", c_defaultGroupExpanderSpacing);
+        cache.hierarchy.hasGroupHeaderContentOffset = true;
     }
 
-    return cache.hierarchy.groupExpanderSize + c_groupHeaderExpanderSpacing;
+    return cache.hierarchy.groupHeaderContentOffset;
 }
 
 void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
