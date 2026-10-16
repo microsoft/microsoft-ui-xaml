@@ -140,6 +140,10 @@ CVisualStateGroup::NotifyVisualStateEvent(
     {
         xref_ptr<CVisualStateChangedEventArgs> spArgs;
         spArgs.init(new CVisualStateChangedEventArgs(pOldState, pNewState, pControl));
+        if (VisualStateEventChanged == EventState)
+        {
+            spArgs->SetCurrentStateChangedSequence(NextCurrentStateChangedSequence());
+        }
 
         // To maintain SL5 comptability, the VisualStateChanged/Changing events need to arrive with their sender set
         // to the template root, not the VSG

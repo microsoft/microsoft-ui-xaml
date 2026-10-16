@@ -116,5 +116,7 @@ namespace DirectUI
         TrackerPtr<xaml::IVisualStateGroup> m_tpDisplayModeStates;
 
         bool m_isPaneOpeningOrClosing{ false };
+        bool m_pendingPaneOpen{ false };
+        uint64_t m_paneChangeStateSequence{ 0 };
     };
 }

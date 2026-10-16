@@ -6,6 +6,8 @@
 
 // Core headers.
 #include "SplitView.h"
+#include "VisualStateChangedEventArgs.h"
+#include "VisualStateGroup.h"
 
 // DXaml headers
 #include "LineSegment.g.h"
@@ -16,6 +18,8 @@
 #include "Popup.g.h"
 #include "SolidColorBrush.g.h"
 #include "Window.g.h"
+#include "VisualStateChangedEventArgs.g.h"
+#include "VisualStateGroup.g.h"
 #include "Activators.g.h"
 #include "XboxUtility.h"
 #include "KeyRoutedEventArgs.g.h"
@@ -294,13 +298,23 @@ SplitView::OnDisplayModeStateChanged(_In_ IInspectable* /*sender*/, _In_ xaml::I
             || name == wrl_wrappers::HStringReference(L"ClosedCompactRight");
     };
 
-    // These notifications are queued. A subsequent IsPaneOpen change must not
-    // relabel this completion or consume another queued pane transition.
+    xref_ptr<CVisualStateChangedEventArgs> coreArgs;
+    coreArgs.attach(static_cast<CVisualStateChangedEventArgs*>(static_cast<VisualStateChangedEventArgs*>(args)->GetCorePeer()));
+
+    // A mode/placement change can finish an interrupted transition without
+    // crossing the open/closed boundary. Only notifications created after the
+    // latest pane request, in its requested direction, may consume it.
+    // Visual-state objects can be reused, and a custom template may omit states.
     const bool paneStateChanged = oldState && isClosedState(oldStateName) != isClosedState(newStateName);
-    const bool initialOrInterruptedTransition = !oldState || oldState.Get() == newState.Get();
-    if (paneStateChanged || (m_isPaneOpeningOrClosing && initialOrInterruptedTransition))
+    const bool completesPendingTransition = m_isPaneOpeningOrClosing
+        && coreArgs->GetCurrentStateChangedSequence() > m_paneChangeStateSequence
+        && m_pendingPaneOpen == !isClosedState(newStateName);
+    if (completesPendingTransition)
     {
         m_isPaneOpeningOrClosing = false;
+    }
+    if (paneStateChanged || completesPendingTransition)
+    {
         IFC_RETURN(OnPaneOpenedOrClosed(!isClosedState(newStateName)));
     }
 
@@ -495,6 +509,12 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
     IFC_RETURN(RegisterForDisplayModeStatesChangedEvent());
 
     m_isPaneOpeningOrClosing = true;
+    m_pendingPaneOpen = isOpen;
+    if (m_tpDisplayModeStates)
+    {
+        m_paneChangeStateSequence = static_cast<CVisualStateGroup*>(
+            static_cast<VisualStateGroup*>(m_tpDisplayModeStates.Get())->GetHandle())->GetCurrentStateChangedSequence();
+    }
 
     IFC_RETURN(UpdateVisualState());
 
