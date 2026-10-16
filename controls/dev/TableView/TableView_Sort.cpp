@@ -558,11 +558,14 @@ bool TableView::SyncTableViewSourceSort(
         return false;
     }
 
-    // Released on Unloaded: another table may own the source now, so a clear changes only this
-    // table's state. A path axis left behind re-lights the column when the source is reclaimed.
-    if (direction == winrt::SortDirection::None && m_activeSourceReleased)
+    // Released on Unloaded or before the first Loaded. While another table owns the source, this
+    // table changes only its own state; a path axis left behind re-lights the column on reclaim.
+    if (m_activeSourceReleased && winrt::get_self<::TableViewSource>(tableViewSource)->IsOwnedByOther(*this))
     {
-        m_tableViewSourceSort.Clear();
+        if (direction == winrt::SortDirection::None)
+        {
+            m_tableViewSourceSort.Clear();
+        }
         return false;
     }
 

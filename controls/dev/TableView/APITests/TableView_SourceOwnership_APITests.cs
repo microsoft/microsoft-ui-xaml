@@ -203,6 +203,78 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(SortDirection.Descending, second.Columns[0].SortDirection, "The new owner keeps its indicator.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a clear made before the table first loads still holds after it loads.")]
+        public void VerifyClearBeforeLoadedStaysCleared()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(TableViewSource.From(MakeShapedPeople()), headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Precondition: the unloaded table sorts.");
+                Verify.IsTrue(tableView.ClearSort(), "Precondition: the unloaded table clears its sort.");
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The cleared column must stay cleared once the table loads.");
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name), "the rows must stay in source order");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies sorting an unloaded table leaves the shared TableViewSource its new owner shows unchanged.")]
+        public void VerifyUnloadedTableSortKeepsSharedSourceOrder()
+        {
+            TableView first = null;
+            TableView second = null;
+            TableViewSource shared = null;
+            StackPanel host = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                shared = TableViewSource.From(MakeShapedPeople());
+                first = CreateTableView(shared, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host = new StackPanel();
+                host.Children.Add(first);
+                LoadContent(host);
+            });
+
+            SettleLayout(first);
+            RunOnUIThread.Execute(() => shared.Sort("Name", SortDirection.Descending));
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, first.Columns[0].SortDirection, "Precondition: the source sort lights the first table.");
+                host.Children.Remove(first);
+                second = CreateTableView(shared, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host.Children.Add(second);
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(second, person => person.Name),
+                    "precondition: the new owner shows the source sort");
+                first.SortByColumn(first.Columns[0], SortDirection.Ascending);
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(second, person => person.Name),
+                    "a table that released the shared source must not re-sort the rows its new owner shows");
+                Verify.AreEqual(SortDirection.Descending, second.Columns[0].SortDirection, "The new owner keeps its indicator.");
+            });
+        }
     }
 
     [TestClass]
