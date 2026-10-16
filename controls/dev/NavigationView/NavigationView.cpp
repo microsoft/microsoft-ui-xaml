@@ -352,6 +352,13 @@ void NavigationView::SelectandMoveOverflowItem(winrt::IInspectable const& select
     if (closeFlyout)
     {
         CloseTopNavigationViewFlyout();
+
+        // The flyout's Closing handler can modify the items source or the selection.
+        const auto currentIndex = m_selectionModel.SelectedIndex();
+        if (!currentIndex || currentIndex.CompareTo(selectedIndex) != 0)
+        {
+            return;
+        }
     }
 
     SelectOverflowItem(selectedItem, selectedIndex);
@@ -2314,6 +2321,7 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
 void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem)
 {
     const auto pendingPreviousItem = std::exchange(m_itemPendingUnselection, std::nullopt);
+    const auto generation = ++m_selectionChangeGeneration;
     const bool isSettingsItem = IsSettingsItem(nextItem);
 
     // Other transition other than default only apply to topnav
@@ -2359,18 +2367,40 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         }
     }
 
-    if (pendingPreviousItem)
+    if (pendingPreviousItem && *pendingPreviousItem && *pendingPreviousItem != nextItem)
     {
-        UnselectPrevItem(*pendingPreviousItem, nextItem);
+        // The selection model has already moved to the invoked item, so this deselection cannot change it.
+        // Don't suppress the model callback: a selection made from this item's IsSelected callback must take ownership.
+        ChangeSelectStatusForItem(*pendingPreviousItem, false /*selected*/);
     }
     // Unselecting the original item can itself redirect selection through a property callback.
-    if (selectedItem != SelectedItem())
+    // Any reentrant ChangeSelection has completed the selection, even if it returned to nextItem.
+    if (generation != m_selectionChangeGeneration || selectedItem != SelectedItem())
     {
         return;
     }
     UnselectPrevItem(prevItem, nextItem);
     ChangeSelectStatusForItem(nextItem, true /*selected*/);
     UpdateSelectionModelSelectionForSelectedItem(nextItem);
+
+    if (!nextItem && m_selectionModel)
+    {
+        // A redirect can clear SelectedItem before the invoked item's container was selected,
+        // so no container deselection removes the invoked item from the selection model.
+        if (auto const selectedIndexPath = m_selectionModel.SelectedIndex())
+        {
+            auto scopeGuard = gsl::finally([this, setIgnoreNextSelectionChangeToFalse = !m_shouldIgnoreNextSelectionChange]()
+            {
+                if (setIgnoreNextSelectionChangeToFalse)
+                {
+                    m_shouldIgnoreNextSelectionChange = false;
+                }
+            });
+            m_shouldIgnoreNextSelectionChange = true;
+            UpdateIsChildSelected(selectedIndexPath, nullptr);
+            m_selectionModel.ClearSelection();
+        }
+    }
 
     {
         auto scopeGuard = gsl::finally([this]()

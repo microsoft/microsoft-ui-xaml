@@ -499,6 +499,8 @@ private:
     // A reentrant selection consumes this item before notifying selection changes.
     // An engaged null value also tracks invocation without a previous selection.
     std::optional<winrt::IInspectable> m_itemPendingUnselection;
+    // Incremented by every ChangeSelection so an outer call can detect that a reentrant one completed the selection.
+    uint32_t m_selectionChangeGeneration{ 0 };
 
     TopNavigationViewLayoutState m_topNavigationMode{ TopNavigationViewLayoutState::Uninitialized };
 
