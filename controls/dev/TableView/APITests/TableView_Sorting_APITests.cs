@@ -380,6 +380,186 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies SortByColumn refuses a column whose CanSort is false.")]
+        public void VerifySortByColumnRespectsCanSort()
+        {
+            TableView tableView = null;
+            var returned = true;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                tableView.Columns[0].CanSort = false;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => returned = tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(returned, "SortByColumn must refuse a column with CanSort = false.");
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection,
+                    "A column with CanSort = false must not acquire a sort direction.");
+
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name),
+                    "a column that opted out of sorting must leave the rows in source order");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies setting CanSort = false on the sorted column clears its sort and raises Sorting/Sorted.")]
+        public void VerifyCanSortFalseClearsActiveSort()
+        {
+            TableView tableView = null;
+            var sortingArgs = new List<TableViewSortingEventArgs>();
+            var sortedArgs = new List<TableViewSortedEventArgs>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending),
+                    "Baseline: the column must sort.");
+                tableView.Sorting += (sender, args) => sortingArgs.Add(args);
+                tableView.Sorted += (sender, args) => sortedArgs.Add(args);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name),
+                    "baseline: the rows must be sorted");
+                tableView.Columns[0].CanSort = false;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                Verify.AreEqual(SortDirection.None, column.SortDirection,
+                    "Opting a sorted column out of sorting must clear its sort direction.");
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name),
+                    "clearing the opted-out column's sort must restore source order");
+
+                var indicator = FindSortIndicator(tableView, 0);
+                Verify.IsTrue(indicator == null || indicator.Direction == SortIndicatorDirection.None,
+                    "The header arrow must be cleared.");
+
+                Verify.AreEqual(1, sortingArgs.Count, "The clear must raise Sorting once.");
+                Verify.AreEqual(column, sortingArgs[0].Column, "Sorting must name the opted-out column.");
+                Verify.AreEqual(SortDirection.None, sortingArgs[0].Direction, "Sorting must request None.");
+                Verify.AreEqual(1, sortedArgs.Count, "The clear must raise Sorted once.");
+                Verify.AreEqual(column, sortedArgs[0].Column, "Sorted must name the opted-out column.");
+                Verify.AreEqual(SortDirection.None, sortedArgs[0].Direction, "Sorted must report None.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a CanSort = false clear still removes the installed sort when the Sorting handler leaves the column without a sort path.")]
+        public void VerifyCanSortFalseClearRemovesSortWhenHandlerDropsSortPath()
+        {
+            TableView tableView = null;
+            var sortedArgs = new List<TableViewSortedEventArgs>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending),
+                    "Baseline: the column must sort.");
+                tableView.Sorting += (sender, args) =>
+                {
+                    if (args.Direction == SortDirection.None && args.Column is TableViewTextColumn column)
+                    {
+                        column.Binding = null;
+                    }
+                };
+                tableView.Sorted += (sender, args) => sortedArgs.Add(args);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name),
+                    "baseline: the rows must be sorted");
+                tableView.Columns[0].CanSort = false;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The opted-out column's sort must be cleared.");
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name),
+                    "the clear must remove the sort the column installed");
+                Verify.AreEqual(1, sortedArgs.Count, "The clear must raise Sorted once.");
+                Verify.AreEqual(SortDirection.None, sortedArgs[0].Direction, "Sorted must report None.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a canceled CanSort = false clear keeps the sort, and SortByColumn(column, None) can still clear it.")]
+        public void VerifyCanceledCanSortClearCanBeClearedBySortByColumnNone()
+        {
+            TableView tableView = null;
+            var cancel = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                tableView.Sorting += (sender, args) => args.Cancel = cancel;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                Verify.IsTrue(tableView.SortByColumn(column, SortDirection.Ascending), "Baseline: the column must sort.");
+
+                cancel = true;
+                column.CanSort = false;
+                cancel = false;
+                Verify.AreEqual(SortDirection.Ascending, column.SortDirection,
+                    "A Sorting handler that cancels the opt-out clear keeps the sort.");
+
+                Verify.IsFalse(tableView.SortByColumn(column, SortDirection.Descending),
+                    "CanSort = false must still refuse a new direction.");
+                Verify.IsTrue(tableView.SortByColumn(column, SortDirection.None),
+                    "SortByColumn(column, None) must clear a sort the opted-out column still holds.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The sort must be cleared.");
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name),
+                    "clearing the sort must restore source order");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies ClearSort resets every column and restores source order.")]
         public void VerifyClearSortClearsEveryColumnAndRestoresSourceOrder()
         {
@@ -1136,6 +1316,161 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection,
                     "The column that wrote last owns the indicator.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies clearing a column lit by an app-declared TableViewSource sort removes that sort.")]
+        [TestProperty("data:Clear", "{SortByColumnNone, CanSortFalse, HeaderInvoke}")]
+        public void VerifyClearingColumnLitBySourceSortRemovesSourceSort()
+        {
+            var clear = ((string)TestContext.DataRow["Clear"]).Trim();
+            TableView tableView = null;
+            TableViewSource source = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateSortTable(source);
+                tableView.Columns[0].SortCycle = TableViewSortCycle.AscendingDescendingNone;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Descending));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection,
+                    "Precondition: the source sort lights the Name column.");
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(tableView, person => person.Name),
+                    "precondition: the source sort orders the rows");
+
+                switch (clear)
+                {
+                    case "SortByColumnNone":
+                        tableView.SortByColumn(tableView.Columns[0], SortDirection.None);
+                        break;
+                    case "CanSortFalse":
+                        tableView.Columns[0].CanSort = false;
+                        break;
+                    default:
+                        var provider = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0])
+                            .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                        provider.Invoke();
+                        break;
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, $"{clear}: the column must be cleared.");
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name),
+                    $"{clear}: the clear must remove the app-declared sort");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies moving, replacing or ungating the columns keeps an app-declared TableViewSource sort and re-lights the matching column.")]
+        [TestProperty("data:Change", "{MoveColumn, ReplaceColumns, CanUserSortColumnsFalse}")]
+        public void VerifyImplicitClearKeepsSourceSort()
+        {
+            var change = ((string)TestContext.DataRow["Change"]).Trim();
+            TableView tableView = null;
+            TableViewSource source = null;
+            var sortedArgs = new List<TableViewSortedEventArgs>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateSortTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Descending));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection,
+                    "Precondition: the source sort lights the Name column.");
+                tableView.Sorted += (s, e) => sortedArgs.Add(e);
+
+                switch (change)
+                {
+                    case "MoveColumn":
+                        var column = tableView.Columns[0];
+                        tableView.Columns.RemoveAt(0);
+                        tableView.Columns.Insert(1, column);
+                        break;
+                    case "ReplaceColumns":
+                        tableView.Columns.Clear();
+                        tableView.Columns.Add(MakeTextColumn("Name"));
+                        tableView.Columns.Add(MakeTextColumn("Role"));
+                        break;
+                    default:
+                        tableView.CanUserSortColumns = false;
+                        break;
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(tableView, person => person.Name),
+                    $"{change}: the app-declared sort must stay on the source");
+                var nameColumn = tableView.Columns.First(c => c.Header as string == "Name");
+                Verify.AreEqual(SortDirection.Descending, nameColumn.SortDirection,
+                    $"{change}: the Name column must re-light from the source sort");
+                Verify.IsFalse(sortedArgs.Any(e => e.Column == null && e.Direction == SortDirection.None),
+                    $"{change}: a clear that left the source sort in place must not report that sorting was cleared");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a clear queued by removing the sorted column leaves the app-declared sort of the next ItemsSource alone.")]
+        public void VerifyColumnRemovalClearKeepsNewItemsSourceSort()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable(TableViewSource.From(MakeShapedPeople()));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending),
+                "Precondition: the Role column sorts."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Columns.RemoveAt(1);
+                var next = TableViewSource.From(MakeShapedPeople());
+                next.Sort("Name", SortDirection.Descending);
+                tableView.ItemsSource = next;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(tableView, person => person.Name),
+                    "the new ItemsSource must keep the sort the app declared on it");
+                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection,
+                    "The Name column must reflect the new source's sort.");
             });
         }
 

@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TableView.h"
-#include "TableViewHeaderCell.h"
+#include "TableViewColumnHeader.h"
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
 #include "TableViewCellsPanel.h"
@@ -30,7 +30,6 @@ static constexpr std::wstring_view s_RowsRepeaterPartName{ L"PART_RowsRepeater"s
 static constexpr std::wstring_view s_HeaderRowPartName{ L"PART_HeaderRow"sv };
 static constexpr std::wstring_view s_HeaderHostPartName{ L"PART_HeaderHost"sv };
 static constexpr std::wstring_view s_EmptyStatePresenterPartName{ L"PART_EmptyStatePresenter"sv };
-static constexpr std::wstring_view s_HeaderGridLineName{ L"TableViewHeaderGridLine"sv };
 static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGripperWidth"sv };
 // Matches TableViewResizeGripperWidth in the theme dictionaries; used when that key is missing or
 // unusable.
@@ -40,10 +39,7 @@ static constexpr double c_resizeGripperWidthFallback{ 8.0 };
 static constexpr double c_defaultRowIndentSize{ 16.0 };
 static constexpr double c_defaultRowExpanderSize{ 24.0 };
 static constexpr double c_defaultGroupExpanderSize{ 24.0 };
-
-// The ColumnSpacing of the Grid hosting PART_ExpanderGutter in the group-header template.
-static constexpr double c_groupHeaderExpanderSpacing{ 6.0 };
-static constexpr std::wstring_view s_SortIndicatorName{ L"TableViewSortIndicator"sv };
+static constexpr double c_defaultGroupExpanderSpacing{ 8.0 };
 static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"sv };
 // Matches SortIndicatorSize in SortIndicator_themeresources.xaml; used only when that key is
 // missing or unusable.
@@ -69,10 +65,12 @@ namespace
                right.as<winrt::Windows::Foundation::IUnknown>();
     }
 
-    winrt::ScrollViewer FindScrollViewerAncestor(winrt::DependencyObject const& start)
+    // Stops at the TableView: past it, the nearest ScrollViewer belongs to the app, and latching it
+    // would sync and pin against a scroller the control does not own.
+    winrt::ScrollViewer FindScrollViewerAncestor(winrt::DependencyObject const& start, winrt::DependencyObject const& boundary)
     {
         winrt::DependencyObject node = start;
-        while (node)
+        while (node && !IsSameObject(node, boundary))
         {
             if (auto sv = node.try_as<winrt::ScrollViewer>())
             {
@@ -466,11 +464,9 @@ namespace
         cache.density.hasCellPadding = false;
         cache.density.hasHeaderCellPadding = false;
         cache.font.hasCellFontSize = false;
-        cache.font.hasHeaderFontSize = false;
-        cache.font.hasHeaderFontWeight = false;
         cache.hierarchy.hasRowIndentSize = false;
         cache.hierarchy.hasRowExpanderSize = false;
-        cache.hierarchy.hasGroupExpanderSize = false;
+        cache.hierarchy.hasGroupHeaderContentOffset = false;
         cache.gridLine.hasBrush = false;
     }
 
@@ -538,6 +534,12 @@ winrt::Brush TableView::GetGridLineBrush()
     if (!brush)
     {
         brush = CreateGridLineFallbackBrush(*this, highContrast);
+        // Outside High Contrast a miss draws no grid lines; say so once per instance.
+        if (!brush && !m_reportedMissingGridLineBrush)
+        {
+            m_reportedMissingGridLineBrush = true;
+            TVDiag::DbgLogF(L"TableView: TabularSurfaceGridLineBrush not found - merge TabularControlsResources; grid lines are not drawn.");
+        }
     }
 
     cache.gridLine.hasBrush = true;
@@ -545,11 +547,6 @@ winrt::Brush TableView::GetGridLineBrush()
     cache.gridLine.highContrast = highContrast;
     cache.gridLine.brush = brush;
     return brush;
-}
-
-winrt::Brush TableView::LookupHeaderStateBrush(std::wstring_view key)
-{
-    return LookupElementResource(*this, key, IsHighContrast()).try_as<winrt::Brush>();
 }
 
 TableView::~TableView()
@@ -866,8 +863,8 @@ try
     }
     if (auto oldHeaderHost = m_headerHost.get())
     {
-        // A live popup would still host content parented into the abandoned band.
-        ReleaseHeaderToolTips(oldHeaderHost);
+        // The abandoned band still parents its tooltips and UIElement Headers.
+        ReleaseHeaderCells(oldHeaderHost);
 
         // Mirror the rowsRepeater Loaded cleanup for the header host.
         if (m_headerHostLoadedToken.value)
@@ -1111,7 +1108,7 @@ void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const 
     if (auto headerHost = m_headerHost.get())
     {
         winrt::ScrollViewer scroller{ nullptr };
-        try { scroller = FindScrollViewerAncestor(headerHost); } catch (...) {}
+        try { scroller = FindScrollViewerAncestor(headerHost, *this); } catch (...) {}
         m_headerScroller.set(scroller);
         // Header pans can transiently desync; reverse-sync can clamp when header/body extents differ.
         UpdateHeaderVisibility();
@@ -1134,7 +1131,7 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
     if (auto repeater = m_rowsRepeater.get())
     {
         winrt::ScrollViewer scroller{ nullptr };
-        try { scroller = FindScrollViewerAncestor(repeater); } catch (...) {}
+        try { scroller = FindScrollViewerAncestor(repeater, *this); } catch (...) {}
         m_bodyScroller.set(scroller);
         if (auto bodyScroller = m_bodyScroller.get())
         {
@@ -1324,6 +1321,17 @@ void TableView::OnGridLinesVisibilityPropertyChanged(const winrt::DependencyProp
     QueueTerminalGridLineRefresh();
 }
 
+void TableView::OnHeaderGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (args.OldValue() == args.NewValue())
+    {
+        return;
+    }
+
+    ApplyGridLinesToHeader();
+    QueueTerminalGridLineRefresh();
+}
+
 void TableView::OnRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (args.OldValue() == args.NewValue())
@@ -1347,7 +1355,7 @@ void TableView::OnAlternatingRowBackgroundPropertyChanged(const winrt::Dependenc
 
 void TableView::ApplyGridLinesToHeader()
 {
-    const auto visibility = GridLinesVisibility();
+    const auto visibility = HeaderGridLinesVisibility();
 
     if (auto headerFE = m_headerRow.get())
     {
@@ -1371,13 +1379,12 @@ void TableView::ApplyGridLinesToHeader()
     }
 
     const bool wantVertical = WantsVerticalLines(visibility);
-    const auto headerGridLineName = winrt::hstring{ s_HeaderGridLineName };
     const auto headerCells = host.Children();
     const uint32_t headerCellCount = headerCells.Size();
     uint32_t lastVisibleHeaderCell = headerCellCount;
     for (uint32_t i = headerCellCount; i > 0; --i)
     {
-        if (auto headerCell = headerCells.GetAt(i - 1).try_as<winrt::Panel>())
+        if (auto headerCell = headerCells.GetAt(i - 1).try_as<winrt::FrameworkElement>())
         {
             const auto column = headerCell.Tag().try_as<winrt::TableViewColumn>();
             if (headerCell.Visibility() == winrt::Visibility::Visible &&
@@ -1392,24 +1399,25 @@ void TableView::ApplyGridLinesToHeader()
 
     for (uint32_t i = 0; i < headerCellCount; ++i)
     {
-        if (auto headerCell = headerCells.GetAt(i).try_as<winrt::Panel>())
+        if (auto header = headerCells.GetAt(i).try_as<winrt::TableViewColumnHeader>())
         {
-            const auto children = headerCell.Children();
-            const uint32_t childCount = children.Size();
-            for (uint32_t childIndex = 0; childIndex < childCount; ++childIndex)
+            if (auto const gridLine = winrt::get_self<TableViewColumnHeader>(header)->GetGridLineInternal())
             {
-                if (auto border = children.GetAt(childIndex).try_as<winrt::Border>())
-                {
-                    if (border.Name() == headerGridLineName)
-                    {
-                        border.Visibility(
-                            wantVertical && !(m_suppressTrailingGridLine && i == lastVisibleHeaderCell)
-                                ? winrt::Visibility::Visible
-                                : winrt::Visibility::Collapsed);
-                    }
-                }
+                gridLine.Visibility(
+                    wantVertical && !(m_suppressTrailingGridLine && i == lastVisibleHeaderCell)
+                        ? winrt::Visibility::Visible
+                        : winrt::Visibility::Collapsed);
             }
         }
+    }
+}
+
+void TableView::OnColumnHeaderTemplateApplied(winrt::TableViewColumnHeader const& /*header*/)
+{
+    if (!m_rebuildingHeaders)
+    {
+        ApplyGridLinesToHeader();
+        RefreshResizeGripperAvailability();
     }
 }
 
@@ -1480,7 +1488,7 @@ void TableView::QueueTerminalGridLineRefresh(bool isGeometryRetry)
 
 std::optional<bool> TableView::ShouldSuppressTrailingGridLine()
 {
-    if (!WantsVerticalLines(GridLinesVisibility()))
+    if (!WantsVerticalLines(GridLinesVisibility()) && !WantsVerticalLines(HeaderGridLinesVisibility()))
     {
         return false;
     }
@@ -2349,64 +2357,27 @@ double TableView::GetCellFontSize()
     return cache.font.cellFontSize;
 }
 
-double TableView::GetHeaderFontSize()
-{
-    auto& cache = GetTableViewResourceCache(this);
-    if (cache.font.hasHeaderFontSize)
-    {
-        return cache.font.headerFontSize;
-    }
-
-    constexpr double fallback = 14.0;
-    if (auto raw = LookupElementResource(*this, L"TableViewHeaderFontSize"))
-    {
-        cache.font.headerFontSize = winrt::unbox_value_or<double>(raw, fallback);
-        cache.font.hasHeaderFontSize = true;
-        return cache.font.headerFontSize;
-    }
-    cache.font.headerFontSize = fallback;
-    cache.font.hasHeaderFontSize = true;
-    return cache.font.headerFontSize;
-}
-
-winrt::Windows::UI::Text::FontWeight TableView::GetHeaderFontWeight()
-{
-    auto& cache = GetTableViewResourceCache(this);
-    if (cache.font.hasHeaderFontWeight)
-    {
-        return cache.font.headerFontWeight;
-    }
-
-    const auto fallback = winrt::FontWeights::SemiBold();
-    if (auto raw = LookupElementResource(*this, L"TableViewHeaderFontWeight", IsHighContrast()))
-    {
-        cache.font.headerFontWeight = winrt::unbox_value_or<winrt::Windows::UI::Text::FontWeight>(raw, fallback);
-        cache.font.hasHeaderFontWeight = true;
-        return cache.font.headerFontWeight;
-    }
-    cache.font.headerFontWeight = fallback;
-    cache.font.hasHeaderFontWeight = true;
-    return cache.font.headerFontWeight;
-}
-
-// The system focus visual takes its corners from the focused Grid's CornerRadius, but a rounded Grid
-// also clips its children and hit-testing, so round only while the focus rect shows. Programmatic
+// The system focus visual takes its corners from the focused element's CornerRadius, but a rounded
+// root also clips its children and hit-testing, so round only while the focus rect shows. Programmatic
 // focus is coerced to Keyboard or Pointer by the last input device, so Keyboard is exactly that case.
-void TableView::AttachFocusCornerRadius(winrt::Grid const& target)
+void TableView::AttachFocusCornerRadius(winrt::FrameworkElement const& target)
 {
+    auto const radiusProperty = target.try_as<winrt::Control>()
+        ? winrt::Control::CornerRadiusProperty()
+        : winrt::Grid::CornerRadiusProperty();
     target.RegisterPropertyChangedCallback(winrt::UIElement::FocusStateProperty(),
-        [weakThis = get_weak()](winrt::DependencyObject const& sender, winrt::DependencyProperty const&)
+        [weakThis = get_weak(), radiusProperty](winrt::DependencyObject const& sender, winrt::DependencyProperty const&)
         {
-            auto const grid = sender.as<winrt::Grid>();
+            auto const element = sender.as<winrt::UIElement>();
             auto const self = weakThis.get();
-            if (self && grid.FocusState() == winrt::FocusState::Keyboard)
+            if (self && element.FocusState() == winrt::FocusState::Keyboard)
             {
                 // The TableView style sets CornerRadius from ControlCornerRadius, so the value stays in XAML.
-                grid.CornerRadius(self->CornerRadius());
+                sender.SetValue(radiusProperty, winrt::box_value(self->CornerRadius()));
             }
             else
             {
-                grid.ClearValue(winrt::Grid::CornerRadiusProperty());
+                sender.ClearValue(radiusProperty);
             }
         });
 }
@@ -2460,27 +2431,34 @@ double TableView::GetRowExpanderSize()
     return resolved;
 }
 
-// Group header content start (expander gutter + column spacing), so root rows align with it.
+// Grouped root-row indent: the group header's expander gutter plus TableViewGroupExpanderSpacing.
+// The header's Padding is not included, so a root chevron sits Padding.Left (8px by default) left of
+// the group key text.
 double TableView::GetGroupHeaderContentOffset()
 {
     auto& cache = GetTableViewResourceCache(this);
-    if (!cache.hierarchy.hasGroupExpanderSize)
+    if (!cache.hierarchy.hasGroupHeaderContentOffset)
     {
-        double resolved = c_defaultGroupExpanderSize;
-        if (auto raw = LookupElementResource(*this, L"TableViewGroupExpanderSize"))
+        auto const lookup = [this](std::wstring_view key, double fallback)
         {
-            const double value = winrt::unbox_value_or<double>(raw, c_defaultGroupExpanderSize);
-            if (std::isfinite(value) && value >= 0.0)
+            if (auto raw = LookupElementResource(*this, key))
             {
-                resolved = value;
+                const double value = winrt::unbox_value_or<double>(raw, fallback);
+                if (std::isfinite(value) && value >= 0.0)
+                {
+                    return value;
+                }
             }
-        }
+            return fallback;
+        };
 
-        cache.hierarchy.groupExpanderSize = resolved;
-        cache.hierarchy.hasGroupExpanderSize = true;
+        cache.hierarchy.groupHeaderContentOffset =
+            lookup(L"TableViewGroupExpanderSize", c_defaultGroupExpanderSize) +
+            lookup(L"TableViewGroupExpanderSpacing", c_defaultGroupExpanderSpacing);
+        cache.hierarchy.hasGroupHeaderContentOffset = true;
     }
 
-    return cache.hierarchy.groupExpanderSize + c_groupHeaderExpanderSpacing;
+    return cache.hierarchy.groupHeaderContentOffset;
 }
 
 void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -2583,14 +2561,20 @@ void TableView::OnRowElementPrepared(
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
         auto rowImpl = winrt::get_self<TableViewRow>(row);
-        rowImpl->EnsureOwningTableViewInternal(*this);
+        // Stage the suppression state first so the cell rebuild's chrome refresh paints it; refresh
+        // grid lines and banding here only if the rebuild did not (each grid-line pass walks every cell).
         rowImpl->SetTerminalGridLineSuppression({
             .suppressTrailing = m_suppressTrailingGridLine,
-            .suppressBottom = false });
-        rowImpl->RefreshRowBackground();
+            .suppressBottom = false }, false /* refresh */);
+        if (!rowImpl->EnsureOwningTableViewInternal(*this))
+        {
+            rowImpl->RefreshGridLines();
+            rowImpl->RefreshRowBackground();
+        }
+        rowImpl->RefreshCellToolTips();
         RefreshRowHierarchyState(row, args.Index());
         RefreshRowSelectionState(row);
-        InvalidateMeasure();
+        InvalidateMeasureForRowRealizationChange();
         QueueTerminalGridLineRefresh();
     }
     else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
@@ -2618,8 +2602,8 @@ void TableView::OnRowElementClearing(
             if (!TerminateEditWithoutVisualRestore(true /* insideLayoutPass */))
             {
                 // The teardown was refused - the only way that happens here is an edit still in the
-                // Beginning window, where app code (a BeginningEdit handler, ITableViewEditableItem
-                // .BeginEdit) mutated the collection and recycled the row underneath us. The row
+                // Beginning window, where app code (a BeginningEdit handler or the editing binding)
+                // mutated the collection and recycled the row underneath us. The row
                 // must not go back to the pool holding a live editor, so abandon it directly and
                 // make BeginEdit unwind instead of promoting to Editing.
                 winrt::get_self<TableViewRow>(row)->AbandonCellEdit();
@@ -2643,7 +2627,7 @@ void TableView::OnRowElementClearing(
         }
         // Release app-supplied tooltip content rather than pinning it in the recycle pool.
         rowImpl->ReleaseCellToolTips();
-        rowImpl->SetTerminalGridLineSuppression({});
+        rowImpl->SetTerminalGridLineSuppression({}, false /* refresh */);
         if (auto terminalRow = m_terminalGridLineRow.get(); terminalRow && IsSameObject(row, terminalRow))
         {
             m_terminalGridLineRowSizeChangedRevoker.revoke();
@@ -2655,8 +2639,11 @@ void TableView::OnRowElementClearing(
         // ElementPrepared/ElementIndexChanged callback. Keep the weak owner available so that path
         // can rebuild cells and publish a live row peer; item-identity tracking still rejects stale
         // peers after the rebind.
-        rowImpl->EnsureOwningTableViewInternal(*this);
-        InvalidateMeasure();
+        if (!rowImpl->EnsureOwningTableViewInternal(*this))
+        {
+            rowImpl->RefreshGridLines();
+        }
+        InvalidateMeasureForRowRealizationChange();
         QueueTerminalGridLineRefresh();
     }
     else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
@@ -2749,6 +2736,22 @@ void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t
 
 using TableViewDetails::GetColumnHeaderText;
 
+// Includes BasedOn styles.
+static bool StyleSetsProperty(const winrt::Style& style, const winrt::DependencyProperty& property)
+{
+    for (auto current = style; current; current = current.BasedOn())
+    {
+        for (auto const& setterBase : current.Setters())
+        {
+            if (auto const setter = setterBase.try_as<winrt::Setter>(); setter && setter.Property() == property)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 // GetColumnHeaderText renders an untemplated IStringable for automation purposes, but only a genuine string
 // may be swapped for a TextBlock -- a UIElement or a type with an implicit DataTemplate must keep
 // the ContentPresenter's content model.
@@ -2758,14 +2761,74 @@ static bool IsPlainStringHeader(const winrt::TableViewColumn& column)
     return propValue && propValue.Type() == winrt::PropertyType::String;
 }
 
-void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
+// Applying a Style whose TargetType the header is not, at any level of its BasedOn chain, would throw
+// out of RebuildHeaders.
+winrt::Style TableView::CompatibleHeaderStyle(const winrt::Style& style)
+{
+    if (!style)
+    {
+        return nullptr;
+    }
+
+    // Depth in TableViewColumnHeader's base chain, or -1 outside it. A BasedOn Style may only target
+    // the same type as the Style it bases, or a base type. A Style without a TargetType hangs when
+    // applied, so it is outside the chain too.
+    auto const targetDepth = [](const winrt::Style& level) -> int
+    {
+        const std::wstring_view targetType = level.TargetType().Name;
+        if (targetType == winrt::name_of<winrt::TableViewColumnHeader>()) return 5;
+        if (targetType == winrt::name_of<winrt::ContentControl>()) return 4;
+        if (targetType == winrt::name_of<winrt::Control>()) return 3;
+        if (targetType == winrt::name_of<winrt::FrameworkElement>()) return 2;
+        if (targetType == winrt::name_of<winrt::UIElement>()) return 1;
+        if (targetType == winrt::name_of<winrt::DependencyObject>()) return 0;
+        return -1;
+    };
+
+    bool compatible = true;
+    int derivedDepth = INT_MAX;
+    winrt::Style level = style;
+    // Bounded: a BasedOn cycle would otherwise never end.
+    for (int guard = 0; level && compatible && guard < 64; ++guard, level = level.BasedOn())
+    {
+        const int depth = targetDepth(level);
+        compatible = depth >= 0 && depth <= derivedDepth;
+        derivedDepth = depth;
+    }
+    // A chain still going when the guard runs out loops, and applying it would throw.
+    if (level)
+    {
+        compatible = false;
+    }
+    if (compatible)
+    {
+        return style;
+    }
+
+    // Once per Style: a rebuild runs on every Density, sort or column change.
+    auto const known = std::find_if(m_loggedIncompatibleHeaderStyles.begin(), m_loggedIncompatibleHeaderStyles.end(),
+        [&style](auto const& weakStyle) { return weakStyle.get() == style; });
+    if (known == m_loggedIncompatibleHeaderStyles.end())
+    {
+        m_loggedIncompatibleHeaderStyles.erase(std::remove_if(m_loggedIncompatibleHeaderStyles.begin(), m_loggedIncompatibleHeaderStyles.end(),
+            [](auto const& weakStyle) { return !weakStyle.get(); }), m_loggedIncompatibleHeaderStyles.end());
+        m_loggedIncompatibleHeaderStyles.push_back(winrt::make_weak(style));
+        TVDiag::LogRetailF(L"[TableView] Ignored a column header Style whose TargetType or BasedOn chain is not TableViewColumnHeader or a base type.");
+    }
+    return nullptr;
+}
+
+// A header cell keeps its column's UIElement Header and tooltip content parented until released, and
+// no other header can host them meanwhile. Every path that drops a header cell must release it first.
+void TableView::ReleaseHeaderCells(const winrt::Panel& host, HeaderRelease scope, const winrt::TableViewColumn& column)
 {
     if (!host)
     {
         return;
     }
 
-    // Snapshot: Closed runs app code that can re-enter RebuildHeaders and clear this collection.
+    // Snapshot: Closed and the Content change run app code that can re-enter RebuildHeaders and
+    // clear this collection.
     auto const children = host.Children();
     std::vector<winrt::FrameworkElement> cells;
     cells.reserve(children.Size());
@@ -2773,7 +2836,46 @@ void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
     {
         if (auto const headerCell = children.GetAt(i).try_as<winrt::FrameworkElement>())
         {
+            if (scope != HeaderRelease::All)
+            {
+                auto const cellColumn = headerCell.Tag().try_as<winrt::TableViewColumn>();
+                const bool released = scope == HeaderRelease::Column
+                    ? cellColumn && cellColumn == column
+                    : cellColumn && winrt::get_self<TableViewColumn>(cellColumn)->GetOwningTableView() != *this;
+                if (!released)
+                {
+                    continue;
+                }
+            }
             cells.push_back(headerCell);
+        }
+    }
+    if (cells.empty())
+    {
+        return;
+    }
+
+    // Only a rebuild captures and restores header focus itself. Elsewhere the cell stays until the
+    // queued rebuild, so park focus on it rather than lose it with the content. Focus leaves a removed
+    // column's cell for the nearest remaining header, and stays parked on it only when none can take it.
+    if (scope != HeaderRelease::All)
+    {
+        winrt::FocusState focusState = winrt::FocusState::Unfocused;
+        if (auto const focusedColumn = GetFocusedHeaderColumn(host, focusState))
+        {
+            auto const focusedCell = std::find_if(cells.begin(), cells.end(),
+                [&focusedColumn](auto const& cell) { return cell.Tag().try_as<winrt::TableViewColumn>() == focusedColumn; });
+            if (focusedCell != cells.end())
+            {
+                if (scope == HeaderRelease::Column)
+                {
+                    focusedCell->Focus(focusState);
+                }
+                else
+                {
+                    MoveHeaderFocusOffRemovedColumn(host, *focusedCell, focusedColumn, focusState);
+                }
+            }
         }
     }
 
@@ -2781,11 +2883,139 @@ void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
     {
         TableViewDetails::ClearOwnedToolTip(headerCell);
     }
+    for (auto const& headerCell : cells)
+    {
+        if (auto const header = headerCell.try_as<winrt::ContentControl>())
+        {
+            header.ClearValue(winrt::ContentControl::ContentProperty());
+        }
+    }
+}
+
+void TableView::MoveHeaderFocusOffRemovedColumn(
+    const winrt::Panel& host,
+    const winrt::FrameworkElement& removedCell,
+    const winrt::TableViewColumn& removedColumn,
+    winrt::FocusState focusState)
+{
+    // Snapshot: Focus raises app focus handlers that can re-enter RebuildHeaders and clear Children.
+    std::vector<winrt::UIElement> cells;
+    {
+        auto const children = host.Children();
+        const uint32_t size = children.Size();
+        cells.reserve(size);
+        for (uint32_t i = 0; i < size; ++i)
+        {
+            cells.push_back(children.GetAt(i));
+        }
+    }
+    auto const removedIt = std::find(cells.begin(), cells.end(), removedCell);
+    if (removedIt == cells.end())
+    {
+        return;
+    }
+    const size_t removedIndex = static_cast<size_t>(removedIt - cells.begin());
+
+    auto const isHosted = [&host](const winrt::UIElement& cell)
+    {
+        return winrt::VisualTreeHelper::GetParent(cell) == host;
+    };
+    auto const tryFocus = [this, &cells, &isHosted, focusState](size_t index) -> winrt::TableViewColumn
+    {
+        auto const cell = cells[index].try_as<winrt::Control>();
+        winrt::TableViewColumn column{ nullptr };
+        if (cell)
+        {
+            column = cell.Tag().try_as<winrt::TableViewColumn>();
+        }
+        if (column
+            && winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this
+            && cell.Visibility() == winrt::Visibility::Visible
+            && isHosted(cell)
+            && cell.Focus(focusState))
+        {
+            return column;
+        }
+        return nullptr;
+    };
+
+    winrt::TableViewColumn fallbackColumn{ nullptr };
+    const size_t count = cells.size();
+    for (size_t distance = 1; !fallbackColumn && distance < count; ++distance)
+    {
+        if (removedIndex + distance < count)
+        {
+            fallbackColumn = tryFocus(removedIndex + distance);
+        }
+        if (!fallbackColumn && removedIndex >= distance)
+        {
+            fallbackColumn = tryFocus(removedIndex - distance);
+        }
+    }
+
+    // With no header to take it, focus parks on the removed cell until the queued rebuild, which
+    // returns it to the column if it came back and otherwise moves it to the first header or the body.
+    m_headerFocusRemovedColumn = winrt::make_weak(removedColumn);
+    m_headerFocusFallbackColumn = nullptr;
+    if (fallbackColumn)
+    {
+        m_headerFocusFallbackColumn = winrt::make_weak(fallbackColumn);
+    }
+    m_headerFocusRemovedState = focusState;
+    if (!fallbackColumn)
+    {
+        if (auto const parkCell = removedCell.try_as<winrt::Control>(); parkCell && isHosted(parkCell))
+        {
+            parkCell.Focus(winrt::FocusState::Programmatic);
+        }
+    }
+}
+
+// The body element focus enters on from outside: the current row or cell, else the viewport edge.
+bool TableView::FocusBodyAfterHeaderRemoval(winrt::FocusState focusState)
+{
+    winrt::UIElement target{ nullptr };
+    if (auto const edgeRow = FindViewportEdgeRowInternal(false))
+    {
+        target = ResolveFocusEntryTarget(edgeRow, nullptr, winrt::FocusNavigationDirection::None).Element;
+    }
+    if (!target)
+    {
+        target = FindViewportEdgeElementInternal(false, true /* includeGroupHeaders */);
+    }
+    return target && target.Focus(focusState);
 }
 
 void TableView::RebuildHeaders()
 {
+    // App code run while the old headers are released (focus, tooltip and content changes) can ask
+    // for a rebuild. A nested one would build cells the outer one then drops without releasing.
+    if (m_inRebuildHeaders)
+    {
+        m_rebuildHeadersRequested = true;
+        return;
+    }
+
+    m_rebuildHeadersRequested = false;
+    {
+        m_inRebuildHeaders = true;
+        auto const inRebuildGuard = wil::scope_exit([this]() noexcept { m_inRebuildHeaders = false; });
+        RebuildHeadersCore();
+    }
+    if (std::exchange(m_rebuildHeadersRequested, false))
+    {
+        QueueRebuildHeaders();
+    }
+}
+
+void TableView::RebuildHeadersCore()
+{
     m_headerSortSpaceArmedColumn = nullptr;
+    auto const removedFocusColumn = m_headerFocusRemovedColumn.get();
+    auto const fallbackFocusColumn = m_headerFocusFallbackColumn.get();
+    auto const removedFocusState = m_headerFocusRemovedState;
+    m_headerFocusRemovedColumn = nullptr;
+    m_headerFocusFallbackColumn = nullptr;
     auto host = m_headerHost.get();
     if (!host)
     {
@@ -2794,16 +3024,30 @@ void TableView::RebuildHeaders()
 
     // Clearing the host drops focus with the cell; remember which header held it.
     winrt::FocusState focusedHeaderState = winrt::FocusState::Unfocused;
-    auto const focusedHeaderColumn = GetFocusedHeaderColumn(host, focusedHeaderState);
-
-    // Clearing the host under a live popup tears its child down reentrantly.
-    ReleaseHeaderToolTips(host);
+    auto focusedHeaderColumn = GetFocusedHeaderColumn(host, focusedHeaderState);
+    // A removed column that came back (a move) gets back the focus that left its header. Focus
+    // still parked on a removed column that did not come back moves to the first header or the body.
+    bool focusBody = false;
+    if (removedFocusColumn && focusedHeaderColumn
+        && (focusedHeaderColumn == fallbackFocusColumn || focusedHeaderColumn == removedFocusColumn))
+    {
+        if (winrt::get_self<TableViewColumn>(removedFocusColumn)->GetOwningTableView() == *this)
+        {
+            focusedHeaderColumn = removedFocusColumn;
+            focusedHeaderState = removedFocusState;
+        }
+        else if (focusedHeaderColumn == removedFocusColumn)
+        {
+            focusedHeaderColumn = nullptr;
+            focusBody = true;
+        }
+    }
 
     // Any focus move during the rebuild other than XAML's rescue off the removed cell belongs to
     // the app or user, and the restore below must not pull focus back from it.
     bool headerFocusMovedAway = false;
     winrt::FocusManager::GettingFocus_revoker headerFocusMoveRevoker{};
-    if (focusedHeaderColumn)
+    if (focusedHeaderColumn || focusBody)
     {
         auto const root = XamlRoot();
         auto const focusedAtTeardown = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
@@ -2833,18 +3077,15 @@ void TableView::RebuildHeaders()
             });
     }
 
+    // Clearing the host under a live popup tears its child down reentrantly.
+    ReleaseHeaderCells(host);
     host.Children().Clear();
 
-    // Cache theme-resource padding once per header rebuild; values are stable for the pass.
-    winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
-    // Always cache the header grid-line brush at rebuild time; visibility toggles do not reassign it later.
-    const bool wantVerticalHeaderLines = WantsVerticalLines(GridLinesVisibility());
-    const auto cachedHeaderGridLineBrush = GetGridLineBrush();
-    // Header cells share the density row min-height so the header band matches the body rows.
+    m_rebuildingHeaders = true;
+    auto const rebuildingGuard = wil::scope_exit([this]() noexcept { m_rebuildingHeaders = false; });
+
+    const winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
     const double cachedRowMinHeight = GetDensityRowMinHeight();
-    const double cachedHeaderFontSize = GetHeaderFontSize();
-    const auto cachedHeaderFontWeight = GetHeaderFontWeight();
-    const winrt::Brush cachedHeaderCellFill = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
     // of RebuildHeaders; a non-positive or non-finite override would flow straight into Width().
     double cachedResizeGripperWidth = winrt::unbox_value_or<double>(
@@ -2860,11 +3101,7 @@ void TableView::RebuildHeaders()
         cachedSortIndicatorWidth = c_sortIndicatorSizeFallback;
     }
     const bool canUserSortColumns = CanUserSortColumns();
-
-    // XAML mirrors an RTL subtree with one transform where FlowDirection changes, so logical Right
-    // is the trailing edge in both directions. Never swap sides by hand in a header cell (grid
-    // line, sort indicator, resize gripper).
-    const auto logicalEndAlignment = winrt::HorizontalAlignment::Right;
+    auto const tableHeaderStyle = CompatibleHeaderStyle(ColumnHeaderStyle());
 
     if (auto columns = Columns())
     {
@@ -2875,45 +3112,45 @@ void TableView::RebuildHeaders()
                 continue;
             }
 
-            // Header cell root: TableViewHeaderCell is the focus/hit-test target so its automation
-            // peer attaches to the right element.
-            auto const headerCell = winrt::make<TableViewHeaderCell>(*this, column).as<winrt::Grid>();
-            headerCell.Visibility(column.Visibility());
-            // Header cells are the named keyboard/UIA targets; the host is one Tab stop, and arrows
-            // must still reach every visible header. Every visible header is a tab stop by product
-            // decision, including non-actionable ones: ARIA permits skipping them, but skipping makes
-            // the band's keyboard model depend on per-column capability, which is harder to explain
-            // than one uniform rule.
+            auto const header = winrt::make<TableViewColumnHeader>();
+            auto const headerImpl = winrt::get_self<TableViewColumnHeader>(header);
+            headerImpl->SetOwnerInternal(*this, column);
+            header.Visibility(column.Visibility());
+
+            auto const columnHeaderStyle = CompatibleHeaderStyle(column.HeaderStyle());
+            auto const headerStyle = columnHeaderStyle ? columnHeaderStyle : tableHeaderStyle;
+            if (headerStyle)
+            {
+                header.Style(headerStyle);
+            }
+
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
-            headerCell.IsTabStop(true);
-            headerCell.UseSystemFocusVisuals(true);
-            AttachFocusCornerRadius(headerCell);
+            AttachFocusCornerRadius(header);
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {
-                winrt::AutomationProperties::SetName(headerCell, headerText);
+                winrt::AutomationProperties::SetName(header, headerText);
             }
-            winrt::AutomationProperties::SetAccessibilityView(headerCell, winrt::AccessibilityView::Content);
-            headerCell.MinHeight(cachedRowMinHeight);
-            // Without a fill the padding takes no pointer input, killing the tooltip and
-            // click-to-sort there.
-            headerCell.Background(cachedHeaderCellFill);
+            winrt::AutomationProperties::SetAccessibilityView(header, winrt::AccessibilityView::Content);
+            if (!StyleSetsProperty(headerStyle, winrt::FrameworkElement::MinHeightProperty()))
+            {
+                header.MinHeight(cachedRowMinHeight);
+            }
+            if (!StyleSetsProperty(headerStyle, winrt::Control::PaddingProperty()))
+            {
+                header.Padding(cachedHeaderCellPadding);
+            }
 
-
-            winrt::ContentPresenter content;
-            content.Content(column.Header());
-            // Header peer already names this subtree; leaving it in Content view double-announces.
-            winrt::AutomationProperties::SetAccessibilityView(content, winrt::AccessibilityView::Raw);
             if (auto headerTemplateSelector = column.HeaderTemplateSelector())
             {
-                content.Content(column.Header());
-                content.ContentTemplateSelector(headerTemplateSelector);
+                header.Content(column.Header());
+                header.ContentTemplateSelector(headerTemplateSelector);
             }
             else if (auto headerTemplate = column.HeaderTemplate())
             {
-                content.Content(column.Header());
-                content.ContentTemplate(headerTemplate);
+                header.Content(column.Header());
+                header.ContentTemplate(headerTemplate);
             }
             else if (!headerText.empty() && IsPlainStringHeader(column))
             {
@@ -2923,62 +3160,29 @@ void TableView::RebuildHeaders()
                 headerBlock.Text(headerText);
                 headerBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
                 headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
-                // The header cell's peer already announces this text.
+                // The header's peer already announces this text.
                 winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
-                content.Content(headerBlock);
+                header.Content(headerBlock);
+                headerImpl->SetOwnsContentInternal(true);
             }
-            // Consume TableViewHeaderCellPadding from theme resources (cached once per rebuild).
-            // Sortable headers reserve the chevron's themed width so text trims before the overlay.
-            auto contentPadding = cachedHeaderCellPadding;
-            if (headerIsSortable)
+            else
             {
-                contentPadding.Right += cachedSortIndicatorWidth;
-            }
-            content.Padding(contentPadding);
-            content.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
-            content.VerticalAlignment(winrt::VerticalAlignment::Center);
-            // Column-header text: theme font size and weight (templates override).
-            content.FontSize(cachedHeaderFontSize);
-            content.FontWeight(cachedHeaderFontWeight);
-            headerCell.Children().Append(content);
-
-            // Resolve from TableView so header grid lines track theme.
-            {
-                winrt::Border headerGridLine;
-                headerGridLine.Name(winrt::hstring{ s_HeaderGridLineName });
-                headerGridLine.Width(1);
-                headerGridLine.HorizontalAlignment(logicalEndAlignment);
-                headerGridLine.IsHitTestVisible(false);
-                winrt::AutomationProperties::SetAccessibilityView(headerGridLine, winrt::AccessibilityView::Raw);
-                headerGridLine.Visibility(wantVerticalHeaderLines ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
-                headerGridLine.Background(cachedHeaderGridLineBrush);
-                headerCell.Children().Append(headerGridLine);
+                header.Content(column.Header());
             }
 
-            headerCell.Tag(column);
+            header.Tag(column);
 
-            TableViewDetails::ApplyHeaderToolTip(headerCell, column.HeaderToolTip());
+            TableViewDetails::ApplyHeaderToolTip(header, column.HeaderToolTip());
+
+            headerImpl->SetSortableInternal(headerIsSortable, cachedSortIndicatorWidth);
+            headerImpl->SetSortDirectionInternal(column.SortDirection());
 
             if (headerIsSortable)
             {
-                // Hosted in its own panel so the chevron sits on the logical trailing edge without
-                // competing with the header content's Stretch alignment.
-                winrt::StackPanel indicatorHost;
-                indicatorHost.Orientation(winrt::Orientation::Horizontal);
-                indicatorHost.HorizontalAlignment(logicalEndAlignment);
-                indicatorHost.VerticalAlignment(winrt::VerticalAlignment::Center);
-                // The chevron is decoration on top of a clickable header: letting it take the hit
-                // would create a dead spot in the middle of the click target.
-                indicatorHost.IsHitTestVisible(false);
-                indicatorHost.Visibility(column.SortDirection() == winrt::SortDirection::None
-                    ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
-                AppendSortIndicatorVisual(indicatorHost, column);
-                headerCell.Children().Append(indicatorHost);
-
                 // Weak: the handler is owned by a visual the control also owns, so a strong
                 // capture would keep the TableView alive through its own header.
                 auto weakThis = get_weak();
-                headerCell.Tapped([weakThis, column](auto const&, winrt::TappedRoutedEventArgs const& args)
+                header.Tapped([weakThis, column](auto const&, winrt::TappedRoutedEventArgs const& args)
                 {
                     if (auto strongThis = weakThis.get())
                     {
@@ -2990,15 +3194,17 @@ void TableView::RebuildHeaders()
                 });
             }
 
-            // Last, so it wins the hit test on the edge it shares with the grid line and the sort
-            // affordance. The gripper marks the press handled, which also keeps a resize drag from
-            // reaching the header's Tapped handler and sorting the column.
+            // The gripper marks the press handled, which also keeps a resize drag from reaching the
+            // header's Tapped handler and sorting the column.
             if (headerIsResizable)
             {
-                AppendResizeGripperVisual(headerCell, column, cachedResizeGripperWidth, headerText);
+                headerImpl->SetResizeGripperInternal(
+                    CreateResizeGripper(header, column, cachedResizeGripperWidth, headerText));
             }
 
-            host.Children().Append(headerCell);
+            host.Children().Append(header);
+            // Template now so the parts exist for the passes below and for callers right after.
+            header.ApplyTemplate();
         }
     }
 
@@ -3011,6 +3217,32 @@ void TableView::RebuildHeaders()
     if (focusedHeaderColumn && !headerFocusMovedAway)
     {
         RestoreHeaderFocus(focusedHeaderColumn, focusedHeaderState);
+    }
+    else if (focusBody && !headerFocusMovedAway)
+    {
+        // Focus parks only when no other header could take it, so headers built now replaced the
+        // removed columns; keep focus in the header band before falling back to the body.
+        winrt::TableViewColumn firstHeaderColumn{ nullptr };
+        if (auto const columns = Columns())
+        {
+            for (auto const& column : columns)
+            {
+                if (column && column.Visibility() == winrt::Visibility::Visible &&
+                    winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this)
+                {
+                    firstHeaderColumn = column;
+                    break;
+                }
+            }
+        }
+        if (firstHeaderColumn)
+        {
+            RestoreHeaderFocus(firstHeaderColumn, removedFocusState);
+        }
+        else
+        {
+            FocusBodyAfterHeaderRemoval(removedFocusState);
+        }
     }
 }
 
@@ -3129,25 +3361,6 @@ void TableView::CancelHeaderFocusRestore()
     }
 }
 
-// Builds the chevron for one header. The indicator is a display-only primitive: it owns no sort
-// policy, so the control sets Direction and nothing else.
-void TableView::AppendSortIndicatorVisual(const winrt::Panel& host, const winrt::TableViewColumn& column)
-{
-    if (!host || !column)
-    {
-        return;
-    }
-
-    winrt::SortIndicator indicator;
-    indicator.Name(winrt::hstring{ s_SortIndicatorName });
-    indicator.VerticalAlignment(winrt::VerticalAlignment::Center);
-    indicator.Direction(ToSortIndicatorDirection(column.SortDirection()));
-    // The header cell already reports the sort state through its automation peer's help text;
-    // surfacing the chevron separately would make AT announce the same thing twice.
-    winrt::AutomationProperties::SetAccessibilityView(indicator, winrt::AccessibilityView::Raw);
-    host.Children().Append(indicator);
-}
-
 winrt::SortIndicatorDirection TableView::ToSortIndicatorDirection(winrt::SortDirection direction)
 {
     // Two distinct WinRT enums with matching numeric values; map explicitly rather than casting so
@@ -3164,33 +3377,6 @@ winrt::SortIndicatorDirection TableView::ToSortIndicatorDirection(winrt::SortDir
     }
 }
 
-winrt::SortIndicator TableView::FindSortIndicator(const winrt::Panel& root)
-{
-    if (!root)
-    {
-        return nullptr;
-    }
-
-    // The chevron lives one level down inside its own host StackPanel today, but recurse so a
-    // future template tweak that nests it deeper does not silently break the refresh.
-    for (auto const& child : root.Children())
-    {
-        if (auto const indicator = child.try_as<winrt::SortIndicator>())
-        {
-            return indicator;
-        }
-        if (auto const childPanel = child.try_as<winrt::Panel>())
-        {
-            if (auto const found = FindSortIndicator(childPanel))
-            {
-                return found;
-            }
-        }
-    }
-
-    return nullptr;
-}
-
 void TableView::RefreshSortIndicators()
 {
     auto host = m_headerHost.get();
@@ -3201,33 +3387,23 @@ void TableView::RefreshSortIndicators()
 
     for (auto const& child : host.Children())
     {
-        auto const headerCell = child.try_as<winrt::Panel>();
-        if (!headerCell)
+        auto const header = child.try_as<winrt::TableViewColumnHeader>();
+        if (!header)
         {
             continue;
         }
 
-        auto const column = headerCell.Tag().try_as<winrt::TableViewColumn>();
-        if (!column)
+        if (auto const column = header.Tag().try_as<winrt::TableViewColumn>())
         {
-            continue;
-        }
-
-        // A child walk by type rather than FindName: the indicator is code-created into a nested
-        // host panel, so its Name was never registered in a namescope and FindName returns null --
-        // which left a programmatic sort (no header rebuild) with a stale chevron.
-        if (auto const indicator = FindSortIndicator(headerCell))
-        {
-            const auto direction = column.SortDirection();
-            indicator.Direction(ToSortIndicatorDirection(direction));
-            // Keep the host in step with the chevron.
-            if (auto const indicatorHost = indicator.Parent().try_as<winrt::UIElement>())
-            {
-                indicatorHost.Visibility(direction == winrt::SortDirection::None
-                    ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
-            }
+            winrt::get_self<TableViewColumnHeader>(header)->SetSortDirectionInternal(column.SortDirection());
         }
     }
+}
+
+void TableView::OnColumnHeaderStylePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
+{
+    // Rebuild, not restyle in place: the style also decides whether density sets MinHeight/Padding.
+    QueueRebuildHeaders();
 }
 
 void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
@@ -3248,7 +3424,8 @@ void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
     // A column that just opted out must not keep an active sort applied to it.
     if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None)
     {
-        SortByColumnInternal(column, winrt::SortDirection::None, false);
+        // Bypasses the CanSort gate that just closed; the public methods keep refusing.
+        SortByColumnInternal(column, winrt::SortDirection::None, false, false);
     }
 
     // The chevron and the click handler are stamped at header-build time.
@@ -3586,8 +3763,8 @@ void TableView::OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequest
     }
 }
 
-void TableView::AppendResizeGripperVisual(
-    const winrt::Grid& headerCell,
+winrt::ResizeGripper TableView::CreateResizeGripper(
+    const winrt::FrameworkElement& headerCell,
     const winrt::TableViewColumn& column,
     double gripperWidth,
     const winrt::hstring& headerText)
@@ -3764,7 +3941,7 @@ void TableView::AppendResizeGripperVisual(
             strongThis->RefreshResizeGripperAvailability();
         }
     });
-    headerCell.Children().Append(gripperVisual);
+    return gripperVisual;
 }
 
 // Escape is the only host-driven cancel left: the gripper ends its own gesture on release, on a
@@ -3789,26 +3966,82 @@ void TableView::CancelColumnResizeDrag()
     }
 }
 
-// The header cell is tagged with its column; the gripper is one of its children.
-// The gripper is one of the header cell's children; the caller already has the cell.
-winrt::ResizeGripper TableView::FindResizeGripperInCell(const winrt::FrameworkElement& headerCell) const
+// The same gates that decide whether the gripper exists and is shown, so UIA never offers a
+// resize the pointer cannot perform.
+bool TableView::IsColumnResizeAllowed(const winrt::TableViewColumn& column)
 {
-    auto const cell = headerCell.try_as<winrt::Panel>();
-    if (!cell)
+    return column &&
+        CanUserResizeColumns() &&
+        column.CanResize() &&
+        column.Visibility() == winrt::Visibility::Visible &&
+        winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this;
+}
+
+winrt::ResizeGripper TableView::GetAvailableResizeGripper(const winrt::TableViewColumn& column)
+{
+    if (!IsColumnResizeAllowed(column))
     {
         return nullptr;
     }
 
-    auto const cellChildren = cell.Children();
-    const uint32_t cellCount = cellChildren.Size();
-    for (uint32_t j = 0; j < cellCount; ++j)
+    auto const host = m_headerHost.get();
+    if (!host)
     {
-        if (auto const gripper = cellChildren.GetAt(j).try_as<winrt::ResizeGripper>())
-        {
-            return gripper;
-        }
+        return nullptr;
     }
 
+    auto const headerCell = TableViewCellsPanel::CellForColumn(host, column);
+    if (!headerCell || IsColumnResizePinned(column))
+    {
+        return nullptr;
+    }
+
+    return FindResizeGripperInCell(headerCell);
+}
+
+bool TableView::CanResizeColumnFromAutomation(const winrt::TableViewColumn& column)
+{
+    return GetAvailableResizeGripper(column) != nullptr;
+}
+
+bool TableView::TryResizeColumnFromAutomation(const winrt::TableViewColumn& column, double width)
+{
+    auto const gripper = GetAvailableResizeGripper(column);
+    if (!gripper || gripper.IsDragging())
+    {
+        return false;
+    }
+
+    // DragStarted anchors the gesture at ActualWidth, so the offset is taken from the same value.
+    const double totalDelta = width - column.ActualWidth();
+
+    gripper.BeginDrag();
+    // DragStarted ends the gesture at once while another column's drag is in flight.
+    if (!gripper.IsDragging())
+    {
+        return false;
+    }
+
+    try
+    {
+        gripper.TryDrag(totalDelta);
+    }
+    catch (...)
+    {
+        gripper.EndDrag(true /* canceled */);
+        throw;
+    }
+
+    gripper.EndDrag(false /* canceled */);
+    return true;
+}
+
+winrt::ResizeGripper TableView::FindResizeGripperInCell(const winrt::FrameworkElement& headerCell) const
+{
+    if (auto const header = headerCell.try_as<winrt::TableViewColumnHeader>())
+    {
+        return winrt::get_self<TableViewColumnHeader>(header)->GetResizeGripperInternal();
+    }
     return nullptr;
 }
 

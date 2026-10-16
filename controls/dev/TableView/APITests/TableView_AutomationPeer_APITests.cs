@@ -633,6 +633,48 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the public cell peer constructor rejects arguments that cannot describe a cell, and accepts ones that can.")]
+        public void VerifyCellPeerConstructorValidatesArguments()
+        {
+            TableView tableView = null;
+            TableView otherTable = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                otherTable = CreateAutomationTable();
+                var host = new StackPanel();
+                host.Children.Add(tableView);
+                host.Children.Add(otherTable);
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(tableView).First();
+                var cell = GetRowCell(row, 0);
+                var column = tableView.Columns[0];
+                int count = tableView.Columns.Count;
+
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(null, row, column, 0), "A null cell must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, null, column, 0), "A null row must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, null, 0), "A null column must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, column, -1), "A negative column index must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, column, count), "A column index past the table's columns must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, otherTable.Columns[0], 0), "A column from another table must be rejected.");
+
+                var peer = new TableViewCellAutomationPeer(cell, row, column, count - 1);
+                Verify.IsNotNull(peer, "In-range arguments must construct a peer.");
+
+                // A row no TableView owns has no column set to check against, so only the index sign is enforced.
+                Verify.IsNotNull(new TableViewCellAutomationPeer(new Grid(), new TableViewRow(), new TableViewTextColumn(), 3),
+                    "An unowned row must accept any non-negative index.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a cell peer whose row is gone throws ElementNotAvailable from GridItem.Row instead of reporting -1.")]
         public void VerifyStaleCellPeerGridItemRowThrowsElementNotAvailable()
         {
@@ -1624,6 +1666,237 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 column.CanSort = false;
                 Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, column).GetPattern(PatternInterface.Invoke),
                     "Invoke must be withheld while the column's CanSort is false.");
+            });
+        }
+
+        private const int UIA_E_INVALIDOPERATION = unchecked((int)0x80131509);
+        private const int E_INVALIDARG = unchecked((int)0x80070057);
+
+        // By HRESULT rather than exception type: the projected type for a UIA_E_* code is not a contract.
+        private static void VerifyFailsWithHResult(int expectedHResult, Action action, string message)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                Verify.AreEqual(expectedHResult, e.HResult, $"{message} ({e.GetType().Name})");
+                return;
+            }
+
+            Verify.Fail($"{message} The call did not fail.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the Transform pattern is offered only for columns the user may resize, and never moves or rotates.")]
+        public void VerifyTransformPatternTracksColumnResizability()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                tableView.Columns[1].CanResize = false;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // UIA requires Transform on a HeaderItem the user can resize.
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0])
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+                Verify.IsTrue(transform.CanResize, "A resizable column must report CanResize.");
+                Verify.IsFalse(transform.CanMove, "A column header cannot be moved through Transform.");
+                Verify.IsFalse(transform.CanRotate, "A column header cannot be rotated.");
+
+                Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[1]).GetPattern(PatternInterface.Transform),
+                    "Transform must be withheld for a column whose CanResize is false.");
+
+                tableView.CanUserResizeColumns = false;
+                Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]).GetPattern(PatternInterface.Transform),
+                    "Transform must be withheld while CanUserResizeColumns is false.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a pinned column keeps the Transform pattern but reports CanResize=false and rejects Resize.")]
+        public void VerifyTransformCanResizeIsFalseForPinnedColumns()
+        {
+            TableView starTable = null;
+            TableView pixelTable = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                starTable = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(1.0, GridUnitType.Star)),
+                    ("Second", new GridLength(1.0, GridUnitType.Star)));
+                LoadContent(starTable);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Same rule as gripper visibility: the last Star column has no later Star column to trade with.
+                var first = new TableViewColumnHeaderAutomationPeer(starTable, starTable.Columns[0])
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                var last = new TableViewColumnHeaderAutomationPeer(starTable, starTable.Columns[1])
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(first, "The first Star column opts in to resizing, so Transform must be offered.");
+                Verify.IsNotNull(last, "The pinned Star column still opts in to resizing, so Transform must be offered.");
+                Verify.IsTrue(first.CanResize, "A Star column with a later Star donor can be resized.");
+                Verify.IsFalse(last.CanResize, "The last Star column is pinned, so CanResize must be false.");
+
+                var widthBefore = starTable.Columns[1].Width;
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => last.Resize(80.0, 0.0),
+                    "Resize on a pinned column must fail.");
+                Verify.AreEqual(widthBefore, starTable.Columns[1].Width, "A rejected Resize must not touch Width.");
+
+                pixelTable = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(120.0, GridUnitType.Pixel)));
+                LoadContent(pixelTable);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var fixedColumn = pixelTable.Columns[0];
+                fixedColumn.MinWidth = 120.0;
+                fixedColumn.MaxWidth = 120.0;
+                var fixedTransform = new TableViewColumnHeaderAutomationPeer(pixelTable, fixedColumn)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(fixedTransform, "A fixed-width column that opts in to resizing still offers Transform.");
+                Verify.IsFalse(fixedTransform.CanResize, "MinWidth == MaxWidth pins the column, so CanResize must be false.");
+
+                fixedColumn.MaxWidth = double.PositiveInfinity;
+                Verify.IsTrue(fixedTransform.CanResize, "Lifting MaxWidth must make the column resizable again.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Transform.Resize sets the column width through the resize path and clamps to MinWidth/MaxWidth.")]
+        public void VerifyTransformResizeSetsWidthAndClampsToBounds()
+        {
+            TableView tableView = null;
+            ITransformProvider transform = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                tableView.Columns[0].MinWidth = 80.0;
+                tableView.Columns[0].MaxWidth = 260.0;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+
+                // Height is ignored: a column only resizes along its width. UIA widths are physical pixels.
+                transform.Resize(200.0 * tableView.XamlRoot.RasterizationScale, 999.0);
+                Verify.AreEqual(GridUnitType.Pixel, column.Width.GridUnitType, "A resize writes a pixel width.");
+                Verify.AreEqual(200.0, column.Width.Value, "Resize must set the requested width.");
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                Verify.AreEqual(200.0, column.ActualWidth, "ActualWidth must follow the width Resize wrote.");
+                Verify.AreEqual(150.0, tableView.Columns[1].Width.Value, "Resizing one column must not change another fixed column.");
+
+                transform.Resize(1000.0 * tableView.XamlRoot.RasterizationScale, 0.0);
+                Verify.AreEqual(260.0, column.Width.Value, "Resize must clamp to MaxWidth.");
+                Content.UpdateLayout();
+
+                transform.Resize(10.0 * tableView.XamlRoot.RasterizationScale, 0.0);
+                Verify.AreEqual(80.0, column.Width.Value, "Resize must clamp to MinWidth.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Transform.Resize reads its width in physical pixels, the units UIA reports bounds in.")]
+        public void VerifyTransformResizeWidthIsPhysicalPixels()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+
+                var scale = tableView.XamlRoot.RasterizationScale;
+                Log.Comment($"RasterizationScale = {scale}");
+                if (scale == 1.0)
+                {
+                    // Not settable from a test, and at 1.0 pixels equal DIPs, so the conversion is unobservable.
+                    Log.Warning("SKIPPED (reported as passed): the physical-pixel conversion cannot be observed at RasterizationScale 1.0; run on a scaled display to cover it.");
+                    return;
+                }
+
+                transform.Resize(180.0 * scale, 0.0);
+                Verify.IsTrue(Math.Abs(column.Width.Value - 180.0) < 0.01,
+                    $"Resize must convert physical pixels to DIPs; expected 180, got {column.Width.Value}.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Transform.Move and Rotate fail, and Resize rejects a non-finite or negative width.")]
+        public void VerifyTransformMoveRotateAndInvalidResizeFail()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => transform.Move(10.0, 10.0), "Move must fail: CanMove is false.");
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => transform.Rotate(90.0), "Rotate must fail: CanRotate is false.");
+                VerifyFailsWithHResult(E_INVALIDARG, () => transform.Resize(double.NaN, 0.0), "Resize must reject NaN.");
+                VerifyFailsWithHResult(E_INVALIDARG, () => transform.Resize(double.PositiveInfinity, 0.0), "Resize must reject infinity.");
+                VerifyFailsWithHResult(E_INVALIDARG, () => transform.Resize(-1.0, 0.0), "Resize must reject a negative width.");
+
+                Verify.AreEqual(150.0, column.Width.Value, "A failed Transform call must leave the width untouched.");
             });
         }
 

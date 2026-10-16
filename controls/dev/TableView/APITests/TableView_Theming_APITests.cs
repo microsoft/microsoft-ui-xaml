@@ -91,7 +91,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // Hardcoded rather than looked up: TableViewGroupHeaderPadding is declared at the root
                 // of TableView.xaml, the default-style page, which reaches a control through
                 // DefaultStyleResourceUri and is never merged into Application.Current.Resources.
-                Verify.AreEqual(new Thickness(8, 6, 16, 6), groupHeader.Padding,
+                Verify.AreEqual(new Thickness(8, 8, 12, 8), groupHeader.Padding,
                     "TableViewGroupHeader's default style must take Padding from TableViewGroupHeaderPadding.");
             });
         }
@@ -278,11 +278,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // One of very few exact values the spec states outright (TableView-dev-spec.md:176): the dark
-        // TabularSurfaceGridLineBrush is #29FFFFFF. Pinning a literal colour is normally weak; here the
-        // spec names it.
+        // Values mirror Common_themeresources_any.xaml.
         [TestMethod]
-        public void VerifyDarkGridLineBrushMatchesTheDocumentedValue()
+        public void VerifyGridLineAndOuterBorderBrushesMatchFluentStrokeTokens()
         {
             RunOnUIThread.Execute(() =>
             {
@@ -290,18 +288,68 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var dark = RequireBrush(resources, "Default", "TabularSurfaceGridLineBrush");
                 var light = RequireBrush(resources, "Light", "TabularSurfaceGridLineBrush");
-                if (dark == null || light == null)
+                var darkBorder = RequireBrush(resources, "Default", "TabularSurfaceOuterBorderBrush");
+                var lightBorder = RequireBrush(resources, "Light", "TabularSurfaceOuterBorderBrush");
+                var darkHeader = RequireBrush(resources, "Default", "TabularSurfaceHeaderSeparatorBrush");
+                var lightHeader = RequireBrush(resources, "Light", "TabularSurfaceHeaderSeparatorBrush");
+                if (dark == null || light == null || darkBorder == null || lightBorder == null || darkHeader == null || lightHeader == null)
                 {
                     return;
                 }
 
-                Verify.AreEqual(Color.FromArgb(0x29, 0xFF, 0xFF, 0xFF), dark.Color,
-                    "Dark TabularSurfaceGridLineBrush must be #29FFFFFF - 16% white, bumped from DividerStrokeColorDefault's " +
-                    "8.2% for readability over row banding.");
-
-                Verify.AreEqual(Color.FromArgb(0x29, 0x00, 0x00, 0x00), light.Color,
-                    "Light TabularSurfaceGridLineBrush must be #29000000, the Light counterpart of the Dark value.");
+                Verify.AreEqual(Color.FromArgb(0x15, 0xFF, 0xFF, 0xFF), dark.Color,
+                    "Dark TabularSurfaceGridLineBrush must be DividerStrokeColorDefault (#15FFFFFF).");
+                Verify.AreEqual(Color.FromArgb(0x0F, 0x00, 0x00, 0x00), light.Color,
+                    "Light TabularSurfaceGridLineBrush must be DividerStrokeColorDefault (#0F000000).");
+                Verify.AreEqual(Color.FromArgb(0x19, 0x00, 0x00, 0x00), darkBorder.Color,
+                    "Dark TabularSurfaceOuterBorderBrush must be CardStrokeColorDefault (#19000000).");
+                Verify.AreEqual(Color.FromArgb(0x0F, 0x00, 0x00, 0x00), lightBorder.Color,
+                    "Light TabularSurfaceOuterBorderBrush must be CardStrokeColorDefault (#0F000000).");
+                Verify.AreEqual(dark.Color, darkHeader.Color, "Dark header lines must match the body grid lines (DividerStrokeColorDefault).");
+                Verify.AreEqual(light.Color, lightHeader.Color, "Light header lines must match the body grid lines (DividerStrokeColorDefault).");
             });
+        }
+
+        [TestMethod]
+        public void VerifyOuterBorderAndHeaderRuleUseTheirOwnBrushes()
+        {
+            var border = Color.FromArgb(0xFF, 0x20, 0x40, 0xC0);
+            var gridLine = Color.FromArgb(0xFF, 0xC0, 0x40, 0x20);
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TabularSurfaceOuterBorderBrush", new SolidColorBrush(border));
+                SetApplicationResource("TabularSurfaceHeaderSeparatorBrush", new SolidColorBrush(gridLine));
+
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(border, (tableView.BorderBrush as SolidColorBrush)?.Color ?? default,
+                        "The outer border must come from TabularSurfaceOuterBorderBrush.");
+
+                    var headerRow = tableView.FindVisualChildByName("PART_HeaderRow") as Border;
+                    Verify.IsNotNull(headerRow, "The template must contain PART_HeaderRow.");
+                    Verify.AreEqual(gridLine, (headerRow?.BorderBrush as SolidColorBrush)?.Color ?? default,
+                        "The header bottom rule must come from TabularSurfaceHeaderSeparatorBrush.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    ClearApplicationResource("TabularSurfaceOuterBorderBrush");
+                    ClearApplicationResource("TabularSurfaceHeaderSeparatorBrush");
+                });
+            }
         }
 
         // TableView-dev-spec.md:227-231 makes overriding a TabularSurface* key THE supported way to
@@ -361,6 +409,96 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Each pair sets header and body differently, so either following the other fails.
+        [TestMethod]
+        public void VerifyHeaderAndBodyGridLinesAreIndependent()
+        {
+            var separatorColor = Color.FromArgb(0xFF, 0x12, 0x9E, 0x5A);
+            var cases = new[]
+            {
+                (Header: TableViewGridLinesVisibility.All, Body: TableViewGridLinesVisibility.None),
+                (Header: TableViewGridLinesVisibility.None, Body: TableViewGridLinesVisibility.All),
+                (Header: TableViewGridLinesVisibility.Horizontal, Body: TableViewGridLinesVisibility.Vertical),
+                (Header: TableViewGridLinesVisibility.Vertical, Body: TableViewGridLinesVisibility.Horizontal),
+            };
+
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TabularSurfaceHeaderSeparatorBrush", new SolidColorBrush(separatorColor));
+
+                tableView = CreateThemingTable();
+                Verify.AreEqual(TableViewGridLinesVisibility.All, tableView.HeaderGridLinesVisibility,
+                    "HeaderGridLinesVisibility defaults to All.");
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                foreach (var testCase in cases)
+                {
+                    var current = testCase;
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        tableView.HeaderGridLinesVisibility = current.Header;
+                        tableView.GridLinesVisibility = current.Body;
+                        Content.UpdateLayout();
+                    });
+
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var context = $"header {current.Header}, body {current.Body}";
+                        bool headerVertical = current.Header == TableViewGridLinesVisibility.All || current.Header == TableViewGridLinesVisibility.Vertical;
+                        bool headerHorizontal = current.Header == TableViewGridLinesVisibility.All || current.Header == TableViewGridLinesVisibility.Horizontal;
+                        bool bodyVertical = current.Body == TableViewGridLinesVisibility.All || current.Body == TableViewGridLinesVisibility.Vertical;
+                        bool bodyHorizontal = current.Body == TableViewGridLinesVisibility.All || current.Body == TableViewGridLinesVisibility.Horizontal;
+
+                        var separator = GetHeaderCell(tableView, 0).FindVisualChildByName("PART_GridLine") as Border;
+                        if (separator == null)
+                        {
+                            Verify.Fail("Every header cell must contain its separator.");
+                            return;
+                        }
+
+                        Verify.AreEqual(headerVertical ? Visibility.Visible : Visibility.Collapsed, separator.Visibility,
+                            $"The non-terminal header separator must follow HeaderGridLinesVisibility ({context}).");
+                        Verify.AreEqual(VerticalAlignment.Stretch, separator.VerticalAlignment, "Header separators are full height.");
+                        Verify.AreEqual(separatorColor, (separator.Background as SolidColorBrush)?.Color ?? default,
+                            "Header separators paint TabularSurfaceHeaderSeparatorBrush.");
+
+                        var headerRow = tableView.FindVisualChildByName("PART_HeaderRow") as Border;
+                        Verify.IsNotNull(headerRow, "The template must contain PART_HeaderRow.");
+                        if (headerRow != null)
+                        {
+                            Verify.AreEqual(headerHorizontal, headerRow.BorderThickness.Bottom > 0.0,
+                                $"The header bottom rule must follow HeaderGridLinesVisibility ({context}).");
+                        }
+
+                        var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
+                        if (row == null)
+                        {
+                            Verify.Fail("The TableView should realize at least one row.");
+                            return;
+                        }
+
+                        Verify.AreEqual(bodyHorizontal, row.BorderThickness.Bottom > 0.0,
+                            $"Row dividers must follow GridLinesVisibility ({context}).");
+                        Verify.AreEqual(bodyVertical, GetRowCell(row, 0).BorderThickness.Right > 0.0,
+                            $"Body column separators must follow GridLinesVisibility ({context}).");
+                    });
+                }
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceHeaderSeparatorBrush"));
+            }
+        }
         [TestMethod]
         public void VerifyGridLineBrushAppOverrideWinsInsideElementTheme()
         {
@@ -520,7 +658,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyGridLineBrushSameColorOverrideKeepsObjectAndOpacity()
         {
-            var themeColor = Color.FromArgb(0x29, 0x00, 0x00, 0x00);
+            var themeColor = Color.FromArgb(0x0F, 0x00, 0x00, 0x00);
             SolidColorBrush expectedBrush = null;
             TableView tableView = null;
             Grid host = null;
@@ -635,6 +773,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyResizeGripperSeparatorShowsOnlyWhileDragging()
+        {
+            ResizeGripper gripper = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                gripper = new ResizeGripper { Width = 8, Height = 24 };
+                LoadContent(gripper);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var separator = gripper.FindVisualChildByName("Separator") as Border;
+                if (separator == null)
+                {
+                    Verify.Fail("The ResizeGripper template must contain the 'Separator' part its visual states target by name.");
+                    return;
+                }
+
+                Verify.AreEqual(separator, VisualTreeHelper.GetChild(gripper, 0),
+                    "'Separator' must be the template root.");
+                Verify.IsNull(separator.Child, "The separator Border must not wrap another element.");
+                Verify.IsNotNull(separator.Background, "A null Background would stop the gripper from hit-testing.");
+
+                var rest = separator.BorderBrush as SolidColorBrush;
+                Verify.IsTrue(rest != null && rest.Color.A == 0, "The separator must be hidden in the Normal state.");
+
+                VisualStateManager.GoToState(gripper, "PointerOver", false);
+                var hover = separator.BorderBrush as SolidColorBrush;
+                Verify.IsTrue(hover != null && hover.Color.A == 0, "Hover must not draw the separator.");
+
+                VisualStateManager.GoToState(gripper, "Pressed", false);
+                Verify.AreEqual(gripper.BorderBrush, separator.BorderBrush,
+                    "The Pressed state must show the separator with the gripper's BorderBrush.");
+
+                VisualStateManager.GoToState(gripper, "Normal", false);
+                rest = separator.BorderBrush as SolidColorBrush;
+                Verify.IsTrue(rest != null && rest.Color.A == 0, "Returning to Normal must hide the separator again.");
+            });
+        }
+
+        [TestMethod]
         public void VerifyResizeGripperDefaultSeparatorBrushesResolve()
         {
             RunOnUIThread.Execute(() =>
@@ -642,20 +825,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 EnsureTabularControlsResources();
                 var resources = new TabularControlsResources();
 
-                // Read expected colours from the live accent palette, not hex: valid for any user
-                // accent, and a reintroduced literal fails.
-                var expectedLight = RequireApplicationColor("SystemAccentColorDark1");
-                var expectedDark = RequireApplicationColor("SystemAccentColorLight2");
+                var expectedLight = RequireThemeColor("Light", "ControlStrongStrokeColorDefault");
+                var expectedDark = RequireThemeColor("Default", "ControlStrongStrokeColorDefault");
                 Verify.AreNotEqual(expectedLight, expectedDark,
-                    "SystemAccentColorDark1 and SystemAccentColorLight2 must differ, or a Light/Dark swap could not be detected.");
+                    "ControlStrongStrokeColorDefault must differ between Light and Dark, or a swap could not be detected.");
 
                 var light = RequireBrush(resources, "Light", "ResizeGripperSeparatorBrush");
                 Verify.AreEqual(expectedLight, light.Color,
-                    "The Light default ResizeGripperSeparatorBrush must follow AccentFillColorDefaultBrush's Light tier, SystemAccentColorDark1.");
+                    "The Light ResizeGripperSeparatorBrush must be the neutral ControlStrongStrokeColorDefault.");
 
                 var dark = RequireBrush(resources, "Default", "ResizeGripperSeparatorBrush");
                 Verify.AreEqual(expectedDark, dark.Color,
-                    "The Default/Dark ResizeGripperSeparatorBrush must follow AccentFillColorDefaultBrush's Dark tier, SystemAccentColorLight2.");
+                    "The Dark ResizeGripperSeparatorBrush must be the neutral ControlStrongStrokeColorDefault.");
+
+                var accents = new[] { "SystemAccentColorDark1", "SystemAccentColorLight2" }
+                    .Select(RequireApplicationColor).ToList();
+                Verify.IsFalse(accents.Contains(light.Color) || accents.Contains(dark.Color),
+                    "The gripper separator must not use an accent colour.");
 
                 var highContrast = RequireBrush(resources, "HighContrast", "ResizeGripperSeparatorBrush");
                 var systemColors = CollectSystemColors();
@@ -663,6 +849,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "SystemColor* resources must resolve from the application resources before validating HighContrast.");
                 Verify.IsTrue(systemColors.Contains(highContrast.Color),
                     "The HighContrast default ResizeGripperSeparatorBrush must resolve through a system colour, not a hardcoded accent or cross-dictionary StaticResource alias.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifySelectionIndicatorBrushFollowsAccentFillTiers()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var resources = new TabularControlsResources();
+
+                var expectedLight = RequireApplicationColor("SystemAccentColorDark1");
+                var expectedDark = RequireApplicationColor("SystemAccentColorLight2");
+                Verify.AreNotEqual(expectedLight, expectedDark,
+                    "SystemAccentColorDark1 and SystemAccentColorLight2 must differ, or a Light/Dark swap could not be detected.");
+
+                Verify.AreEqual(expectedLight, RequireBrush(resources, "Light", "TabularSurfaceSelectionIndicatorBrush").Color,
+                    "The Light TabularSurfaceSelectionIndicatorBrush must follow AccentFillColorDefaultBrush's Light tier, SystemAccentColorDark1.");
+                Verify.AreEqual(expectedDark, RequireBrush(resources, "Default", "TabularSurfaceSelectionIndicatorBrush").Color,
+                    "The Default/Dark TabularSurfaceSelectionIndicatorBrush must follow AccentFillColorDefaultBrush's Dark tier, SystemAccentColorLight2.");
+
+                // Unread by the control: header text inherits the row foreground.
+                foreach (var themeName in new[] { "Default", "Light", "HighContrast" })
+                {
+                    var dictionary = (ResourceDictionary)resources.ThemeDictionaries[themeName];
+                    Verify.IsFalse(dictionary.ContainsKey("TabularSurfaceHeaderForegroundBrush"),
+                        $"{themeName} must not declare the unused TabularSurfaceHeaderForegroundBrush.");
+                    Verify.IsTrue(dictionary.ContainsKey("TabularSurfaceHeaderSeparatorBrush"),
+                        $"{themeName} must keep TabularSurfaceHeaderSeparatorBrush.");
+                }
             });
         }
 
@@ -795,8 +1011,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 lightGridLine = RequireCellSeparatorColor(tableView, "in Light");
 
-                Verify.AreEqual(Color.FromArgb(0x29, 0x00, 0x00, 0x00), lightGridLine,
-                    "The light-theme gridline must resolve to #29000000 before the theme switch, or the rest of this test proves nothing.");
+                Verify.AreEqual(Color.FromArgb(0x0F, 0x00, 0x00, 0x00), lightGridLine,
+                    "The light-theme gridline must resolve to #0F000000 before the theme switch, or the rest of this test proves nothing.");
 
                 host.RequestedTheme = ElementTheme.Dark;
                 host.UpdateLayout();
@@ -820,7 +1036,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreNotEqual(lightGridLine, darkGridLine,
                     "The gridline brush must change with the theme; an unchanged value means the per-instance resource cache " +
                     "was not invalidated on the theme change.");
-                Verify.AreEqual(Color.FromArgb(0x29, 0xFF, 0xFF, 0xFF), darkGridLine,
+                Verify.AreEqual(Color.FromArgb(0x15, 0xFF, 0xFF, 0xFF), darkGridLine,
                     "After switching to Dark the gridline must re-resolve to the dark TabularSurfaceGridLineBrush.");
             });
         }
@@ -994,6 +1210,91 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void VerifyDefaultGroupHeaderCountUsesSecondaryBrushThatFollowsStates()
+        {
+            var rest = Color.FromArgb(0xFF, 0x10, 0x80, 0x40);
+            var pointerOver = Color.FromArgb(0xFF, 0x80, 0x10, 0x40);
+            TableView tableView = null;
+            TableViewGroupHeader groupHeader = null;
+            TextBlock count = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TabularSurfaceGroupHeaderCountForegroundBrush", new SolidColorBrush(rest));
+                SetApplicationResource("TabularSurfaceGroupHeaderCountForegroundPointerOverBrush", new SolidColorBrush(pointerOver));
+
+                tableView = CreateGroupedThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    groupHeader = FindVisualChildrenByType<TableViewGroupHeader>(tableView).FirstOrDefault();
+                    count = groupHeader?.FindVisualChildByName("TableViewGroupHeaderItemCountText") as TextBlock;
+                    if (count == null)
+                    {
+                        Verify.Fail("The default group header content must contain the item-count TextBlock.");
+                        return;
+                    }
+
+                    Verify.AreEqual(1.0, count.Opacity, "The count must not be dimmed with Opacity.");
+                    Verify.AreEqual(rest, (count.Foreground as SolidColorBrush)?.Color ?? default,
+                        "At rest the count must use TabularSurfaceGroupHeaderCountForegroundBrush.");
+
+                    var contentPresenter = groupHeader.FindVisualChildByName("PART_ContentPresenter") as ContentPresenter;
+                    var key = contentPresenter == null ? null :
+                        FindVisualChildrenByType<TextBlock>(contentPresenter).FirstOrDefault(t => t != count);
+                    Verify.IsNotNull(key, "The default group header content must contain the key TextBlock.");
+                    Verify.AreEqual(DependencyProperty.UnsetValue, key?.ReadLocalValue(TextBlock.FontWeightProperty),
+                        "Key text weight must come from a style, not a local value.");
+                    Verify.AreEqual((ushort)600, key?.FontWeight.Weight ?? (ushort)0,
+                        "Key text must be SemiBold (BodyStrongTextBlockStyle equivalent).");
+                    Verify.AreEqual(TextWrapping.NoWrap, key?.TextWrapping ?? TextWrapping.Wrap, "Key text stays on one line.");
+
+                    Verify.IsTrue(VisualStateManager.GoToState(groupHeader, "PointerOver", false), "PointerOver must exist.");
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(pointerOver, (count.Foreground as SolidColorBrush)?.Color ?? default,
+                        "PointerOver must retarget the count brush.");
+                    Verify.IsTrue(VisualStateManager.GoToState(groupHeader, "Disabled", false), "Disabled must exist.");
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var presenter = groupHeader.FindVisualChildByName("PART_ContentPresenter") as ContentPresenter;
+                    Verify.AreEqual((presenter?.Foreground as SolidColorBrush)?.Color ?? default,
+                        (count.Foreground as SolidColorBrush)?.Color ?? rest,
+                        "Disabled must give the count the same disabled brush as the key text.");
+                    Verify.IsTrue(VisualStateManager.GoToState(groupHeader, "Normal", false), "Normal must exist.");
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() => Verify.AreEqual(rest, (count.Foreground as SolidColorBrush)?.Color ?? default,
+                    "Returning to Normal must restore the rest count brush."));
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    ClearApplicationResource("TabularSurfaceGroupHeaderCountForegroundBrush");
+                    ClearApplicationResource("TabularSurfaceGroupHeaderCountForegroundPointerOverBrush");
+                });
+            }
+        }
+
         #endregion
 
         #region 13.3 Density
@@ -1001,9 +1302,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Density is one of the better-specified areas in the control: the presets are literal values in
         // TableView_themeresources.xaml rather than constants in code.
         //
-        // Table-driven over all three values deliberately. The row's own Style carries a MinHeight
-        // setter of 40, so if the density value stopped being applied as a local value, Standard would
-        // keep passing and only Compact and Comfortable would fail.
+        // The row Style has no MinHeight setter, so each preset must reach the row from code.
         [TestMethod]
         public void VerifyRowMinHeightFollowsDensity()
         {
@@ -1031,8 +1330,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Verify.AreEqual(testCase.RowMinHeight, row.MinHeight,
                         $"Density={testCase.Density} must give rows a MinHeight of {testCase.RowMinHeight}, from " +
-                        $"TableView_themeresources.xaml. A value of 40 here means the density metric is not being applied " +
-                        "as a local value and the style's own setter is winning.");
+                        "TableView_themeresources.xaml, applied by the row in code.");
                 });
             }
         }
@@ -1136,7 +1434,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
 
             VerifyRoundedOnlyWhileKeyboardFocused(tableView,
-                () => GetHeaderCell(tableView, 0) as Grid, () => GetHeaderCell(tableView, 1), "header cell");
+                () => GetHeaderCell(tableView, 0) as TableViewColumnHeader, () => GetHeaderCell(tableView, 1), "header cell");
         }
 
         [TestMethod]
@@ -1159,8 +1457,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // A rounded Grid clips its children and hit-testing, so it may round only while keyboard-focused.
+        private static CornerRadius RadiusOf(FrameworkElement element)
+            => element is Control control ? control.CornerRadius : ((Grid)element).CornerRadius;
+
         private static void VerifyRoundedOnlyWhileKeyboardFocused(
-            TableView tableView, Func<Grid> getTarget, Func<UIElement> getOther, string what)
+            TableView tableView, Func<FrameworkElement> getTarget, Func<UIElement> getOther, string what)
         {
             var expected = new CornerRadius(0);
 
@@ -1172,10 +1473,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreNotEqual(new CornerRadius(0), expected, "The row style should round row focus.");
 
                 var target = getTarget();
-                Verify.IsNotNull(target, $"The {what} should be a Grid.");
+                Verify.IsNotNull(target, $"The {what} should exist.");
                 Verify.IsTrue(target.UseSystemFocusVisuals, $"The {what} should use the system focus visual.");
-                Verify.AreEqual(new CornerRadius(0), target.CornerRadius,
-                    $"An unfocused {what} must stay square: a rounded Grid clips its children.");
+                Verify.AreEqual(new CornerRadius(0), RadiusOf(target),
+                    $"An unfocused {what} must stay square: a rounded root clips its children.");
                 target.IsTabStop = true;
                 Verify.IsTrue(target.Focus(FocusState.Keyboard), $"Precondition: the {what} takes keyboard focus.");
             });
@@ -1188,7 +1489,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(ReferenceEquals(target, FocusManager.GetFocusedElement(target.XamlRoot)),
                     $"Precondition: keyboard focus stays on the {what}.");
                 Verify.AreEqual(FocusState.Keyboard, target.FocusState, $"Precondition: the {what} is keyboard-focused.");
-                Verify.AreEqual(expected, target.CornerRadius,
+                Verify.AreEqual(expected, RadiusOf(target),
                     $"A keyboard-focused {what} must be rounded like the rows' focus rect.");
                 Verify.IsTrue(getOther().Focus(FocusState.Programmatic), "Precondition: focus moves elsewhere.");
             });
@@ -1198,7 +1499,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var target = getTarget();
-                Verify.AreEqual(new CornerRadius(0), target.CornerRadius, $"The {what} must drop its radius when it loses focus.");
+                Verify.AreEqual(new CornerRadius(0), RadiusOf(target), $"The {what} must drop its radius when it loses focus.");
                 target.IsTabStop = true;
                 Verify.IsTrue(target.Focus(FocusState.Pointer), $"Precondition: the {what} takes pointer focus.");
             });
@@ -1207,7 +1508,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(new CornerRadius(0), getTarget().CornerRadius,
+                Verify.AreEqual(new CornerRadius(0), RadiusOf(getTarget()),
                     $"Pointer focus shows no focus rect, so the {what} must stay square.");
                 Verify.IsTrue(getOther().Focus(FocusState.Programmatic), "Precondition: focus moves elsewhere.");
             });
@@ -1233,7 +1534,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment($"Programmatic focus on the {what} was coerced to {state}.");
                 Verify.IsTrue(state == FocusState.Keyboard || state == FocusState.Pointer,
                     $"Precondition: programmatic focus on the {what} is coerced to Keyboard or Pointer.");
-                Verify.AreEqual(state == FocusState.Keyboard ? expected : new CornerRadius(0), target.CornerRadius,
+                Verify.AreEqual(state == FocusState.Keyboard ? expected : new CornerRadius(0), RadiusOf(target),
                     $"Programmatic focus shows the focus rect only after keyboard input, so the {what} is rounded only then.");
             });
         }
@@ -1538,6 +1839,1068 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
+
+        #region 13.4 Column header style
+
+        private static TableViewColumnHeader RequireColumnHeader(TableView tableView, int index)
+        {
+            var header = GetHeaderCell(tableView, index) as TableViewColumnHeader;
+            Verify.IsNotNull(header, $"Header {index} should be a TableViewColumnHeader.");
+            return header;
+        }
+
+        private static string CurrentState(TableViewColumnHeader header, string groupName)
+        {
+            var root = VisualTreeHelper.GetChild(header, 0) as FrameworkElement;
+            Verify.IsNotNull(root, "The header template should have applied.");
+            var group = VisualStateManager.GetVisualStateGroups(root).FirstOrDefault(g => g.Name == groupName);
+            Verify.IsNotNull(group, $"The header template should declare {groupName}.");
+            return group.CurrentState?.Name;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies TableView.ColumnHeaderStyle reaches every header, TableViewColumn.HeaderStyle wins for its column, and a style Padding/MinHeight beats the density values.")]
+        public void VerifyColumnHeaderStyleApplies()
+        {
+            TableView tableView = null;
+            SolidColorBrush tableBrush = null;
+            SolidColorBrush columnBrush = null;
+            var stylePadding = new Thickness(20, 1, 20, 1);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableBrush = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                columnBrush = new SolidColorBrush(Microsoft.UI.Colors.Green);
+                tableView = CreateThemingTable();
+                var tableStyle = new Style(typeof(TableViewColumnHeader));
+                tableStyle.Setters.Add(new Setter(Control.BackgroundProperty, tableBrush));
+                tableStyle.Setters.Add(new Setter(Control.FontWeightProperty, Microsoft.UI.Text.FontWeights.Bold));
+                tableStyle.Setters.Add(new Setter(Control.PaddingProperty, stylePadding));
+                tableStyle.Setters.Add(new Setter(FrameworkElement.MinHeightProperty, 60.0));
+                tableView.ColumnHeaderStyle = tableStyle;
+
+                var columnStyle = new Style(typeof(TableViewColumnHeader));
+                columnStyle.Setters.Add(new Setter(Control.BackgroundProperty, columnBrush));
+                tableView.Columns[1].HeaderStyle = columnStyle;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var first = RequireColumnHeader(tableView, 0);
+                Verify.IsTrue(ReferenceEquals(tableBrush, first.Background), "ColumnHeaderStyle's Background setter must reach the header.");
+                Verify.AreEqual((ushort)700, GetHeaderPresenter(tableView, 0).FontWeight.Weight,
+                    "ColumnHeaderStyle's FontWeight setter must reach the header text.");
+                Verify.AreEqual(stylePadding, first.Padding, "A style Padding must win over the density padding.");
+                Verify.AreEqual(60.0, first.MinHeight, "A style MinHeight must win over the density row height.");
+
+                var second = RequireColumnHeader(tableView, 1);
+                Verify.IsTrue(ReferenceEquals(tableView.Columns[1], second.Column), "A header's Column must be the column it represents.");
+                Verify.IsTrue(ReferenceEquals(columnBrush, second.Background), "TableViewColumn.HeaderStyle must win over ColumnHeaderStyle.");
+                Verify.AreEqual((ushort)600, GetHeaderPresenter(tableView, 1).FontWeight.Weight,
+                    "A column style without a FontWeight setter keeps the default SemiBold.");
+                Verify.AreEqual(40.0, second.MinHeight, "Without a style MinHeight the header follows the density row height.");
+
+                tableView.ColumnHeaderStyle = null;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(ReferenceEquals(tableBrush, RequireColumnHeader(tableView, 0).Background),
+                    "Clearing ColumnHeaderStyle must restyle the realized headers.");
+                Verify.AreEqual((ushort)600, GetHeaderPresenter(tableView, 0).FontWeight.Weight,
+                    "Clearing ColumnHeaderStyle must restore the default header weight.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a UIElement column Header moves to the new header when the header band is rebuilt.")]
+        public void VerifyUIElementHeaderSurvivesHeaderRebuild()
+        {
+            TableView tableView = null;
+            Border headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new Border { Width = 20, Height = 12, Background = new SolidColorBrush(Microsoft.UI.Colors.Blue) };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => tableView.ColumnHeaderStyle = new Style(typeof(TableViewColumnHeader)));
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => tableView.Density = TableViewDensity.Compact);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                Verify.IsTrue(ReferenceEquals(headerElement, header.Content), "The rebuilt header must show the column's UIElement Header.");
+
+                DependencyObject current = headerElement;
+                while (current != null && !ReferenceEquals(current, header))
+                {
+                    current = VisualTreeHelper.GetParent(current);
+                }
+                Verify.IsNotNull(current, "The UIElement Header must be parented under the rebuilt header.");
+                Verify.AreEqual(20.0, headerElement.ActualWidth, "The UIElement Header must be laid out in the rebuilt header.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a UIElement column Header moves to the new header band when the TableView is re-templated.")]
+        public void VerifyUIElementHeaderSurvivesRetemplate()
+        {
+            TableView tableView = null;
+            Border headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new Border { Width = 20, Height = 12, Background = new SolidColorBrush(Microsoft.UI.Colors.Blue) };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Template = (ControlTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                    @"<ControlTemplate
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:tabular='using:Microsoft.UI.Xaml.Controls.Tabular'
+                        TargetType='tabular:TableView'>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height='Auto' />
+                                <RowDefinition Height='*' />
+                            </Grid.RowDefinitions>
+                            <Border x:Name='PART_HeaderRow'>
+                                <tabular:TableViewCellsPanel x:Name='PART_HeaderHost' HorizontalAlignment='Left' />
+                            </Border>
+                            <ItemsRepeater x:Name='PART_RowsRepeater' Grid.Row='1'>
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Orientation='Vertical' />
+                                </ItemsRepeater.Layout>
+                            </ItemsRepeater>
+                        </Grid>
+                    </ControlTemplate>");
+                tableView.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => VerifyHostedUnderHeader(tableView, 0, headerElement, "after re-templating"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a column with a UIElement Header can move from one TableView to another.")]
+        public void VerifyUIElementHeaderSurvivesMoveToAnotherTableView()
+        {
+            TableView source = null;
+            TableView target = null;
+            StackPanel host = null;
+            Border headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = CreateThemingTable();
+                headerElement = new Border { Width = 20, Height = 12, Background = new SolidColorBrush(Microsoft.UI.Colors.Blue) };
+                source.Columns[0].Header = headerElement;
+                host = new StackPanel();
+                host.Children.Add(source);
+                LoadContent(host);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = source.Columns[0];
+                source.Columns.RemoveAt(0);
+                target = new TableView();
+                target.Columns.Add(column);
+                // Templating the target now rebuilds its headers before the source's queued rebuild runs.
+                host.Children.Add(target);
+                host.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => VerifyHostedUnderHeader(target, 0, headerElement, "after the move"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies focus inside a UIElement column Header returns to that header after the header band is rebuilt.")]
+        public void VerifyFocusInUIElementHeaderIsRestoredAfterRebuild()
+        {
+            TableView tableView = null;
+            CheckBox headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => tableView.Density = TableViewDensity.Compact);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                DependencyObject current = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused after rebuild: {current}");
+                while (current != null && !ReferenceEquals(current, header))
+                {
+                    current = VisualTreeHelper.GetParent(current);
+                }
+                Verify.IsNotNull(current, "Focus must return to the rebuilt header of the column that held it.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a replaced UIElement column Header can be re-parented right away, before the header band rebuilds.")]
+        public void VerifyReplacedUIElementHeaderCanBeReparentedImmediately()
+        {
+            TableView tableView = null;
+            StackPanel root = null;
+            Border headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new Border { Width = 20, Height = 12, Background = new SolidColorBrush(Microsoft.UI.Colors.Blue) };
+                tableView.Columns[0].Header = headerElement;
+                root = new StackPanel();
+                root.Children.Add(tableView);
+                LoadContent(root);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Columns[0].Header = "Name";
+                var other = new StackPanel();
+                root.Children.Add(other);
+                other.Children.Add(headerElement);
+                Verify.IsTrue(ReferenceEquals(other, VisualTreeHelper.GetParent(headerElement)), "The old Header must move to the new panel.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.AreEqual("Name", (RequireColumnHeader(tableView, 0).Content as TextBlock)?.Text,
+                "The header band must show the new Header."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies focus inside a UIElement column Header follows the column when it moves within the same TableView.")]
+        public void VerifyFocusInUIElementHeaderFollowsColumnMove()
+        {
+            TableView tableView = null;
+            CheckBox headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                tableView.Columns.RemoveAt(0);
+                tableView.Columns.Insert(1, column);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 1);
+                Verify.IsTrue(ReferenceEquals(headerElement, header.Content), "Precondition: the moved column's header hosts its Header.");
+                DependencyObject current = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused after the move: {current}");
+                while (current != null && !ReferenceEquals(current, header))
+                {
+                    current = VisualTreeHelper.GetParent(current);
+                }
+                Verify.IsNotNull(current, "Focus must follow the moved column to its rebuilt header.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies removing a column whose UIElement Header holds focus moves focus to the nearest remaining header, never onto the removed one.")]
+        public void VerifyFocusInRemovedColumnHeaderMovesToNearestHeader()
+        {
+            TableView tableView = null;
+            CheckBox headerElement = null;
+            var removedHeaderFocused = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var removedHeader = RequireColumnHeader(tableView, 0);
+                EventHandler<GettingFocusEventArgs> handler = (s, args) =>
+                {
+                    if (ReferenceEquals(args.NewFocusedElement, removedHeader))
+                    {
+                        removedHeaderFocused = true;
+                    }
+                };
+                FocusManager.GettingFocus += handler;
+                try
+                {
+                    tableView.Columns.RemoveAt(0);
+                }
+                finally
+                {
+                    FocusManager.GettingFocus -= handler;
+                }
+                Verify.IsFalse(removedHeaderFocused, "Focus must not move onto the removed column's header.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                DependencyObject focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused after the removal: {focused}");
+                Verify.IsTrue(focused != null && IsUnder(focused, header), "Focus must move to the nearest remaining header.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies focus in the header of a column that is moved or re-added with no other header to hold focus returns to that column's header.")]
+        [TestProperty("data:Change", "{MoveOnlyColumn, ClearAndReAddLast}")]
+        public void VerifyHeaderFocusReturnsWhenNoOtherHeaderCanHoldIt()
+        {
+            var change = ((string)TestContext.DataRow["Change"]).Trim();
+            var focusedIndex = change == "ClearAndReAddLast" ? 1 : 0;
+            TableView tableView = null;
+            CheckBox headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = change == "MoveOnlyColumn" ? CreateTableView(headers: new[] { "Name" }) : CreateThemingTable();
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[focusedIndex].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var columns = tableView.Columns.ToList();
+                if (change == "MoveOnlyColumn")
+                {
+                    tableView.Columns.RemoveAt(0);
+                    tableView.Columns.Insert(0, columns[0]);
+                }
+                else
+                {
+                    tableView.Columns.Clear();
+                    foreach (var column in columns)
+                    {
+                        tableView.Columns.Add(column);
+                    }
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, focusedIndex);
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"{change}: focused {focused}");
+                Verify.IsTrue(focused != null && IsUnder(focused, header), $"{change}: focus must return to the column's header.");
+                Verify.AreEqual(FocusState.Keyboard, ((UIElement)focused).FocusState, $"{change}: keyboard focus must stay keyboard focus.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies focus in the header of the only column moves into the body when that column is removed.")]
+        public void VerifyFocusInOnlyRemovedColumnHeaderMovesToBody()
+        {
+            TableView tableView = null;
+            CheckBox headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(headers: new[] { "Name" });
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => tableView.Columns.RemoveAt(0));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused after the removal: {focused}");
+                Verify.IsTrue(focused != null && IsUnder(focused, GetRowsRepeater(tableView)), "Focus must move into the table body.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies focus in a header stays in the header band when the columns are replaced by new instances.")]
+        [TestProperty("data:Change", "{ClearAndAddNew, ReplaceOnlyColumnWithoutRows}")]
+        public void VerifyHeaderFocusStaysInHeaderBandWhenColumnsReplaced()
+        {
+            var change = ((string)TestContext.DataRow["Change"]).Trim();
+            TableView tableView = null;
+            CheckBox headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = change == "ReplaceOnlyColumnWithoutRows"
+                    ? CreateTableView(new List<Person>(), headers: new[] { "Name" })
+                    : CreateThemingTable();
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                if (change == "ClearAndAddNew")
+                {
+                    tableView.Columns.Clear();
+                    tableView.Columns.Add(MakeTextColumn("Name"));
+                    tableView.Columns.Add(MakeTextColumn("Role"));
+                }
+                else
+                {
+                    tableView.Columns[0] = MakeTextColumn("Name");
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"{change}: focused {focused}");
+                Verify.IsTrue(focused != null && IsUnder(focused, RequireColumnHeader(tableView, 0)), $"{change}: focus must move to the first header of the new columns.");
+                Verify.AreEqual(FocusState.Keyboard, ((UIElement)focused).FocusState, $"{change}: keyboard focus must stay keyboard focus.");
+            });
+        }
+
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies changing a string Header keeps the header's content and tooltip until the header band rebuilds.")]
+        public void VerifyStringHeaderChangeKeepsHeaderContentUntilRebuild()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                tableView.Columns[0].HeaderToolTip = "Tip";
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                Verify.IsNotNull(ToolTipService.GetToolTip(header), "Precondition: the header has a tooltip.");
+                tableView.Columns[0].Header = "Renamed";
+                Verify.IsNotNull(header.Content, "A string Header change must not blank the header before the rebuild.");
+                Verify.IsNotNull(ToolTipService.GetToolTip(header), "A string Header change must not drop the tooltip before the rebuild.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.AreEqual("Renamed", (RequireColumnHeader(tableView, 0).Content as TextBlock)?.Text,
+                "The header band must show the new Header."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header rebuild started from app code while another rebuild releases headers keeps UIElement Headers hosted.")]
+        public void VerifyReentrantHeaderRebuildKeepsUIElementHeader()
+        {
+            TableView tableView = null;
+            CheckBox headerElement = null;
+            bool reentered = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                EventHandler<GettingFocusEventArgs> handler = (s, args) =>
+                {
+                    if (!reentered && ReferenceEquals(args.OldFocusedElement, headerElement))
+                    {
+                        reentered = true;
+                        // Rebuilds the header band synchronously, from inside the outer rebuild.
+                        tableView.CanUserResizeColumns = !tableView.CanUserResizeColumns;
+                    }
+                };
+                FocusManager.GettingFocus += handler;
+                try
+                {
+                    tableView.Density = TableViewDensity.Compact;
+                }
+                finally
+                {
+                    FocusManager.GettingFocus -= handler;
+                }
+                Verify.IsTrue(reentered, "Precondition: releasing the focused Header re-entered the rebuild.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                Verify.IsTrue(ReferenceEquals(headerElement, header.Content), "The header must show the column's UIElement Header.");
+                Verify.IsTrue(IsUnder(headerElement, header), "The UIElement Header must be parented under the rebuilt header.");
+            });
+        }
+
+        private static bool IsUnder(DependencyObject element, DependencyObject ancestor)
+        {
+            for (var current = element; current != null; current = VisualTreeHelper.GetParent(current))
+            {
+                if (ReferenceEquals(current, ancestor))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static void VerifyHostedUnderHeader(TableView tableView, int index, FrameworkElement headerElement, string when)
+        {
+            var header = RequireColumnHeader(tableView, index);
+            Verify.IsTrue(ReferenceEquals(headerElement, header.Content), $"The header must show the column's UIElement Header {when}.");
+
+            DependencyObject current = headerElement;
+            while (current != null && !ReferenceEquals(current, header))
+            {
+                current = VisualTreeHelper.GetParent(current);
+            }
+            Verify.IsNotNull(current, $"The UIElement Header must be parented under the header {when}.");
+            Verify.AreEqual(20.0, headerElement.ActualWidth, $"The UIElement Header must be laid out {when}.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a disabled TableView puts its headers in Disabled, dimming the header text and sort glyph.")]
+        public void VerifyDisabledHeaderDimsText()
+        {
+            var disabled = Color.FromArgb(0xFF, 0x20, 0x40, 0x60);
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TabularSurfaceRowForegroundDisabledBrush", new SolidColorBrush(disabled));
+                tableView = CreateThemingTable();
+                tableView.Columns[0].CanSort = true;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the column sorts.");
+                    tableView.IsEnabled = false;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var header = RequireColumnHeader(tableView, 0);
+                    Verify.AreEqual("Disabled", CurrentState(header, "CommonStates"), "A disabled table's header must be Disabled.");
+                    Verify.AreEqual(disabled, (GetHeaderPresenter(tableView, 0).Foreground as SolidColorBrush)?.Color ?? default,
+                        "Disabled must dim the header text.");
+                    var glyph = header.FindVisualChildByName("TableViewSortIndicator") as Control;
+                    Verify.IsNotNull(glyph, "A sorted column must host the sort glyph.");
+                    Verify.AreEqual(disabled, (glyph?.Foreground as SolidColorBrush)?.Color ?? default, "Disabled must dim the sort glyph.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceRowForegroundDisabledBrush"));
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a disabled header's sort glyph follows the header text when its theme brush re-resolves without a visual state change.")]
+        public void VerifyDisabledSortGlyphFollowsTextAcrossThemeChange()
+        {
+            TableView tableView = null;
+            TableViewColumnHeader header = null;
+            Color before = default;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                tableView.RequestedTheme = ElementTheme.Light;
+                tableView.Columns[0].CanSort = true;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the column sorts.");
+                tableView.IsEnabled = false;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                header = RequireColumnHeader(tableView, 0);
+                Verify.AreEqual("Disabled", CurrentState(header, "CommonStates"), "Precondition: a disabled table's header is Disabled.");
+                before = (GetHeaderPresenter(tableView, 0).Foreground as SolidColorBrush)?.Color ?? default;
+
+                // Re-resolves the header's ThemeResources without re-running its visual states, as a
+                // High Contrast toggle does.
+                header.RequestedTheme = ElementTheme.Dark;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var text = (GetHeaderPresenter(tableView, 0).Foreground as SolidColorBrush)?.Color ?? default;
+                Verify.AreNotEqual(before, text, "Precondition: the disabled text brush differs between Light and Dark.");
+                var glyph = header.FindVisualChildByName("TableViewSortIndicator") as Control;
+                Verify.IsNotNull(glyph, "A sorted column must host the sort glyph.");
+                Verify.AreEqual(text, (glyph?.Foreground as SolidColorBrush)?.Color ?? default,
+                    "The disabled sort glyph must keep the header text's brush after it re-resolves.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header Style with an incompatible TargetType is ignored instead of breaking the header band.")]
+        public void VerifyIncompatibleColumnHeaderStyleIsIgnored()
+        {
+            TableView tableView = null;
+            SolidColorBrush brush = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                brush = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                var buttonStyle = new Style(typeof(Button));
+                buttonStyle.Setters.Add(new Setter(Control.BackgroundProperty, brush));
+                tableView = CreateThemingTable();
+                tableView.ColumnHeaderStyle = buttonStyle;
+                tableView.Columns[1].HeaderStyle = buttonStyle;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var index in new[] { 0, 1 })
+                {
+                    var header = RequireColumnHeader(tableView, index);
+                    Verify.IsNull(header.Style, $"Header {index} must not take a Style targeting another type.");
+                    Verify.IsFalse(ReferenceEquals(brush, header.Background), $"Header {index} must keep its default look.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header Style whose BasedOn targets an incompatible type is ignored instead of breaking the header band.")]
+        public void VerifyColumnHeaderStyleWithIncompatibleBasedOnIsIgnored()
+        {
+            TableView tableView = null;
+            SolidColorBrush brush = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                brush = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                var headerStyle = new Style(typeof(TableViewColumnHeader)) { BasedOn = new Style(typeof(Button)) };
+                headerStyle.Setters.Add(new Setter(Control.BackgroundProperty, brush));
+                tableView = CreateThemingTable();
+                tableView.ColumnHeaderStyle = headerStyle;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var index in new[] { 0, 1 })
+                {
+                    var header = RequireColumnHeader(tableView, index);
+                    Verify.IsNull(header.Style, $"Header {index} must not take a Style based on another type.");
+                    Verify.IsFalse(ReferenceEquals(brush, header.Background), $"Header {index} must keep its default look.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header Style whose BasedOn chain loops is ignored instead of breaking the header band.")]
+        public void VerifyColumnHeaderStyleWithBasedOnCycleIsIgnored()
+        {
+            TableView tableView = null;
+            SolidColorBrush brush = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                brush = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                var first = new Style(typeof(TableViewColumnHeader));
+                var second = new Style(typeof(TableViewColumnHeader)) { BasedOn = first };
+                first.BasedOn = second;
+                first.Setters.Add(new Setter(Control.BackgroundProperty, brush));
+                tableView = CreateThemingTable();
+                tableView.ColumnHeaderStyle = first;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var index in new[] { 0, 1 })
+                {
+                    var header = RequireColumnHeader(tableView, index);
+                    Verify.IsNull(header.Style, $"Header {index} must not take a Style whose BasedOn chain loops.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header Style without a TargetType, alone or as a BasedOn, is ignored instead of breaking the header band.")]
+        public void VerifyUntypedColumnHeaderStyleIsIgnored()
+        {
+            TableView tableView = null;
+            SolidColorBrush tableBrush = null;
+            SolidColorBrush columnBrush = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableBrush = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                columnBrush = new SolidColorBrush(Microsoft.UI.Colors.Green);
+                var untyped = new Style();
+                untyped.Setters.Add(new Setter(Control.BackgroundProperty, tableBrush));
+                var untypedBase = new Style();
+                untypedBase.Setters.Add(new Setter(Control.BackgroundProperty, columnBrush));
+                tableView = CreateThemingTable();
+                tableView.ColumnHeaderStyle = untyped;
+                tableView.Columns[1].HeaderStyle = new Style(typeof(TableViewColumnHeader)) { BasedOn = untypedBase };
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var index in new[] { 0, 1 })
+                {
+                    var header = RequireColumnHeader(tableView, index);
+                    Verify.IsNull(header.Style, $"Header {index} must not take a Style chain without a TargetType.");
+                    Verify.IsFalse(ReferenceEquals(tableBrush, header.Background) || ReferenceEquals(columnBrush, header.Background),
+                        $"Header {index} must keep its default look.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a disabled header keeps one glyph Foreground binding across visual state updates instead of rebinding each time.")]
+        public void VerifyDisabledSortGlyphBindingIsNotRecreated()
+        {
+            TableView tableView = null;
+            Control glyph = null;
+            BindingExpression binding = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                tableView.Columns[0].CanSort = true;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the column sorts.");
+                tableView.IsEnabled = false;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                glyph = RequireColumnHeader(tableView, 0).FindVisualChildByName("TableViewSortIndicator") as Control;
+                Verify.IsNotNull(glyph, "Precondition: a sorted column hosts the sort glyph.");
+                binding = glyph.GetBindingExpression(Control.ForegroundProperty);
+                Verify.IsNotNull(binding, "Precondition: the disabled glyph is bound to the header text.");
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Precondition: the sort direction changes.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(ReferenceEquals(glyph, RequireColumnHeader(tableView, 0).FindVisualChildByName("TableViewSortIndicator")),
+                    "Precondition: the sort change updates the realized header in place.");
+                Verify.IsTrue(ReferenceEquals(binding, glyph.GetBindingExpression(Control.ForegroundProperty)),
+                    "A state update must keep the glyph's existing binding.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the default header template provides its parts and hosts the sort glyph and resize gripper in them.")]
+        public void VerifyColumnHeaderTemplateParts()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                var presenter = header.FindVisualChildByName("PART_ContentPresenter") as ContentPresenter;
+                Verify.IsNotNull(presenter, "PART_ContentPresenter should exist.");
+                Verify.IsTrue(ReferenceEquals(presenter, GetHeaderPresenter(tableView, 0)), "The content presenter should be the header's first ContentPresenter.");
+                Verify.IsNotNull(header.FindVisualChildByName("PART_GridLine") as Border, "PART_GridLine should exist.");
+
+                var indicatorHost = header.FindVisualChildByName("PART_SortIndicatorHost") as Border;
+                Verify.IsNotNull(indicatorHost, "PART_SortIndicatorHost should exist.");
+                Verify.IsTrue(indicatorHost.Child is SortIndicator, "A sortable header should host its sort glyph in PART_SortIndicatorHost.");
+
+                var gripperHost = header.FindVisualChildByName("PART_ResizeGripperHost") as Border;
+                Verify.IsNotNull(gripperHost, "PART_ResizeGripperHost should exist.");
+                Verify.IsTrue(gripperHost.Child is ResizeGripper, "A resizable header should host its gripper in PART_ResizeGripperHost.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies SortStates follow the column's sort direction and show the glyph only while sorted.")]
+        public void VerifyColumnHeaderSortStates()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            void VerifyState(string expected, Visibility hostVisibility, string context)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var header = RequireColumnHeader(tableView, 0);
+                    Verify.AreEqual(expected, CurrentState(header, "SortStates"), $"SortStates ({context}).");
+                    var host = (UIElement)header.FindVisualChildByName("PART_SortIndicatorHost");
+                    Verify.AreEqual(hostVisibility, host.Visibility, $"Sort glyph visibility ({context}).");
+                    Verify.AreEqual("Unsorted", CurrentState(RequireColumnHeader(tableView, 1), "SortStates"),
+                        $"The other column stays Unsorted ({context}).");
+                });
+            }
+
+            VerifyState("Unsorted", Visibility.Collapsed, "initial");
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending)));
+            IdleSynchronizer.Wait();
+            VerifyState("SortAscending", Visibility.Visible, "ascending");
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending)));
+            IdleSynchronizer.Wait();
+            VerifyState("SortDescending", Visibility.Visible, "descending");
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.ClearSort()));
+            IdleSynchronizer.Wait();
+            VerifyState("Unsorted", Visibility.Collapsed, "cleared");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies header typography comes from the header Style, not from local values written by the control.")]
+        public void VerifyColumnHeaderTypographyHasNoLocalValues()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                var presenter = GetHeaderPresenter(tableView, 0);
+                var text = presenter.Content as TextBlock;
+                Verify.IsNotNull(text, "A plain string header should render through a TextBlock.");
+
+                foreach (var (element, fontSize, fontWeight, name) in new (DependencyObject, DependencyProperty, DependencyProperty, string)[]
+                {
+                    (header, Control.FontSizeProperty, Control.FontWeightProperty, "header"),
+                    (presenter, ContentPresenter.FontSizeProperty, ContentPresenter.FontWeightProperty, "content presenter"),
+                    (text, TextBlock.FontSizeProperty, TextBlock.FontWeightProperty, "header text"),
+                })
+                {
+                    Verify.AreEqual(DependencyProperty.UnsetValue, element.ReadLocalValue(fontSize), $"The {name} must not carry a local FontSize.");
+                    Verify.AreEqual(DependencyProperty.UnsetValue, element.ReadLocalValue(fontWeight), $"The {name} must not carry a local FontWeight.");
+                }
+
+                Verify.AreEqual((ushort)600, text.FontWeight.Weight, "The default header style keeps SemiBold.");
+                Verify.AreEqual(14.0, text.FontSize, "The default header style keeps TableViewHeaderFontSize.");
+            });
+        }
+
+        #endregion
+
+        #region 13.6 Row banding under an element theme
+
+        // The subtree runs opposite to the app theme so an Application-theme resolution is detectable.
+        [TestMethod]
+        public void VerifyAlternatingRowBackgroundFollowsElementThemeOppositeToApp()
+        {
+            const string appDictionaryXaml =
+                @"<ResourceDictionary xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                      xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+                    <ResourceDictionary.ThemeDictionaries>
+                      <ResourceDictionary x:Key=""Light"">
+                        <SolidColorBrush x:Key=""TvBandLiteral"" Color=""#FF112233""/>
+                        <SolidColorBrush x:Key=""TvBandNestedThemeColor"" Color=""{ThemeResource SubtleFillColorSecondary}""/>
+                      </ResourceDictionary>
+                      <ResourceDictionary x:Key=""Dark"">
+                        <SolidColorBrush x:Key=""TvBandLiteral"" Color=""#FF445566""/>
+                        <SolidColorBrush x:Key=""TvBandNestedThemeColor"" Color=""{ThemeResource SubtleFillColorSecondary}""/>
+                      </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                  </ResourceDictionary>";
+
+            ResourceDictionary appDictionary = null;
+            StackPanel root = null;
+            ElementTheme elementTheme = ElementTheme.Default;
+            ElementTheme appTheme = ElementTheme.Default;
+            var cases = new[] { "Direct", "Setter", "Literal", "NestedThemeColor" };
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                appTheme = Application.Current.RequestedTheme == ApplicationTheme.Dark ? ElementTheme.Dark : ElementTheme.Light;
+                elementTheme = appTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
+                Log.Comment($"Application theme {appTheme}; window-root theme {elementTheme}.");
+
+                appDictionary = (ResourceDictionary)Microsoft.UI.Xaml.Markup.XamlReader.Load(appDictionaryXaml);
+                Application.Current.Resources.MergedDictionaries.Add(appDictionary);
+
+                root = (StackPanel)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                    $@"<StackPanel xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                  xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                                  xmlns:tv=""using:Microsoft.UI.Xaml.Controls.Tabular""
+                                  RequestedTheme=""{elementTheme}"">
+                        <StackPanel.Resources>
+                          <Style x:Key=""BandStyle"" TargetType=""tv:TableView"">
+                            <Setter Property=""AlternatingRowBackground"" Value=""{{ThemeResource SubtleFillColorSecondaryBrush}}""/>
+                          </Style>
+                        </StackPanel.Resources>
+                        <Border x:Name=""Reference"" Width=""10"" Height=""10"" Background=""{{ThemeResource SubtleFillColorSecondaryBrush}}""/>
+                        <tv:TableView x:Name=""Direct"" Width=""300"" Height=""120"" AlternatingRowBackground=""{{ThemeResource SubtleFillColorSecondaryBrush}}""/>
+                        <tv:TableView x:Name=""Setter"" Width=""300"" Height=""120"" Style=""{{StaticResource BandStyle}}""/>
+                        <tv:TableView x:Name=""Literal"" Width=""300"" Height=""120"" AlternatingRowBackground=""{{ThemeResource TvBandLiteral}}""/>
+                        <tv:TableView x:Name=""NestedThemeColor"" Width=""300"" Height=""120"" AlternatingRowBackground=""{{ThemeResource TvBandNestedThemeColor}}""/>
+                      </StackPanel>");
+
+                foreach (var name in cases)
+                {
+                    var tableView = (TableView)root.FindName(name);
+                    tableView.Columns.Add(MakeTextColumn("Name"));
+                    tableView.ItemsSource = MakeItems();
+                }
+
+                LoadContent(root);
+            });
+
+            try
+            {
+                foreach (var theme in new[] { elementTheme, appTheme })
+                {
+                    RunOnUIThread.Execute(() => root.RequestedTheme = theme);
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() => root.UpdateLayout());
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var expected = ((SolidColorBrush)((Border)root.FindName("Reference")).Background).Color;
+                        var expectedLiteral = theme == ElementTheme.Dark
+                            ? Color.FromArgb(0xFF, 0x44, 0x55, 0x66)
+                            : Color.FromArgb(0xFF, 0x11, 0x22, 0x33);
+
+                        foreach (var name in cases)
+                        {
+                            var tableView = (TableView)root.FindName(name);
+                            Verify.AreEqual(theme, tableView.ActualTheme, $"Precondition: {name} runs under {theme}.");
+                            var oddRow = GetProjectedRow(tableView, 1);
+                            var actual = (oddRow?.Background as SolidColorBrush)?.Color;
+                            var want = name == "Literal" ? expectedLiteral : expected;
+                            Log.Comment($"{theme} {name}: band {actual}, expected {want}.");
+                            Verify.AreEqual(want, actual, $"Under {theme}, the {name} banding pattern must paint the {theme} color on odd rows.");
+                            Verify.IsNull(GetProjectedRow(tableView, 0)?.ReadLocalValue(Control.BackgroundProperty) as Brush,
+                                $"Even rows stay unbanded without RowBackground ({name}).");
+                        }
+                    });
+                }
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Application.Current.Resources.MergedDictionaries.Remove(appDictionary));
+            }
+        }
+
+        #endregion
     }
 
     internal static class TableViewThemingTestHelpers
@@ -1654,6 +3017,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             return color;
+        }
+
+        internal static Color RequireThemeColor(string themeName, string key)
+        {
+            var pending = new Stack<ResourceDictionary>();
+            pending.Push(Application.Current.Resources);
+            while (pending.Count > 0)
+            {
+                var dictionary = pending.Pop();
+                if (dictionary.ThemeDictionaries.TryGetValue(themeName, out var theme) &&
+                    theme is ResourceDictionary themeDictionary &&
+                    themeDictionary.TryGetValue(key, out var value) &&
+                    value is Color color)
+                {
+                    return color;
+                }
+
+                foreach (var merged in dictionary.MergedDictionaries)
+                {
+                    pending.Push(merged);
+                }
+            }
+
+            Verify.Fail($"'{key}' must resolve to a Color in an application '{themeName}' theme dictionary.");
+            return default;
         }
 
         internal static SolidColorBrush RequireBrush(ResourceDictionary resources, string themeName, string key)

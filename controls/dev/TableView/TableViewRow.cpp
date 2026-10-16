@@ -308,11 +308,14 @@ void TableViewRow::OnApplyTemplate()
     UpdateVisualState(false /* useTransitions */);
 }
 
-void TableViewRow::SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state)
+void TableViewRow::SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state, bool refresh)
 {
     m_suppressTrailingGridLine = state.suppressTrailing;
     m_suppressBottomGridLine = state.suppressBottom;
-    RefreshGridLines();
+    if (refresh)
+    {
+        RefreshGridLines();
+    }
 }
 
 winrt::AutomationPeer TableViewRow::OnCreateAutomationPeer()
@@ -1047,13 +1050,13 @@ void TableViewRow::AttachColumnsSubscription(winrt::TableView const& owner)
     }
 }
 
-void TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
+bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
 {
     auto const currentOwner = GetOwningTableView();
     // Compare through the typed accessor so unchanged weak refs hit the no-op path.
     if (currentOwner == owner)
     {
-        return;
+        return false;
     }
 
     // Single-writer: the recycle cycle clears the owner to null between tables; a direct
@@ -1063,7 +1066,7 @@ void TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
         // Runs inside an ItemsRepeater callback; an escaping throw would failfast.
         // Assert in debug, no-op in retail (keep current owner, skip re-attach).
         MUX_ASSERT_MSG(false, "TableViewRow re-owned without an intervening clear");
-        return;
+        return false;
     }
 
     DetachColumnsSubscription();
@@ -1102,20 +1105,19 @@ void TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
     // Observe the new owner's Columns vector (no-op on recycle-out when owner is null).
     AttachColumnsSubscription(owner);
 
-    RebuildCells();
+    return RebuildCells();
 }
 
-void TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
+bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
 {
     if (!owner)
     {
-        return;
+        return false;
     }
 
     if (m_owningTableView.get() != owner)
     {
-        SetOwningTableViewInternal(owner);
-        return;
+        return SetOwningTableViewInternal(owner);
     }
 
     auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
@@ -1123,23 +1125,36 @@ void TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
     auto* const peerImpl = rowPeer ? winrt::get_self<TableViewRowAutomationPeer>(rowPeer) : nullptr;
     if (peerImpl && !peerImpl->CanReuseForRowItem(*this, owner))
     {
-        if (auto host = m_cellsHost.get())
+        // Cell providers are bound to their element, so replace the cells only if a cell peer exists;
+        // otherwise keep them and let them restamp from the inherited DataContext.
+        bool chromeRefreshed = false;
+        if (HasCellAutomationPeers())
         {
-            ResetCellAutomationNames();
-            host.Children().Clear();
+            if (auto host = m_cellsHost.get())
+            {
+                ResetCellAutomationNames();
+                host.Children().Clear();
+            }
+            peerImpl->DropCellPeerCache();
+            chromeRefreshed = RebuildCells(false /* updateExistingCellPeerItems */);
         }
-        peerImpl->DropCellPeerCache();
-        RebuildCells(false /* updateExistingCellPeerItems */);
+        else
+        {
+            peerImpl->DropCellPeerCache();
+            chromeRefreshed = RebuildCells();
+        }
         peerImpl->TrackCurrentRowItem(*this, owner);
-        return;
+        return chromeRefreshed;
     }
 
-    RebuildCells();
+    const bool chromeRefreshed = RebuildCells();
 
     if (peerImpl)
     {
         peerImpl->TrackCurrentRowItem(*this, owner);
     }
+
+    return chromeRefreshed;
 }
 
 // Rewire realized rows when Columns changes but the owner identity does not.
@@ -1552,7 +1567,8 @@ double TableViewRow::HierarchyIndent()
 
         indentSize = ownerImpl->GetRowIndentSize();
 
-        // Under a group header, roots start at the header's text; ungrouped roots stay flush.
+        // Under a group header, roots are indented by its gutter + spacing (not its Padding);
+        // ungrouped roots stay flush.
         if (ownerImpl->IsTableViewSourceGrouped())
         {
             baseIndent = ownerImpl->GetGroupHeaderContentOffset();
@@ -1850,6 +1866,29 @@ void TableViewRow::ResetCellAutomationNames()
     }
 }
 
+bool TableViewRow::HasCellAutomationPeers() const
+{
+    if (auto const host = m_cellsHost.get())
+    {
+        for (auto const& cell : host.Children())
+        {
+            try
+            {
+                if (TableViewCell::TryGetExistingPeer(cell))
+                {
+                    return true;
+                }
+            }
+            catch (...)
+            {
+                // Unknown provider state: take the replace path, which is always correct.
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void TableViewRow::RaiseCellAutomationNamesChangedInternal(winrt::UIElement const& skipCell)
 {
     if (auto const host = m_cellsHost.get())
@@ -1884,20 +1923,20 @@ void TableViewRow::RaiseCellAutomationNamesChangedInternal(winrt::UIElement cons
     }
 }
 
-void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
+bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
 {
     RestoreCellContentTabStopsInternal();
 
     auto host = m_cellsHost.get();
     if (!host)
     {
-        return;
+        return false;
     }
 
     // Re-entry guard. See OnDataContextChanged.
     if (m_isRebuildingCells)
     {
-        return;
+        return false;
     }
     m_isRebuildingCells = true;
     // Synchronous RAII guard: captures this only until RebuildCells returns.
@@ -1908,7 +1947,7 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     {
         // Keep realized cells on recycle-out so the next ElementPrepared restamps
         // instead of re-generating every cell (the restamp fast-path exists for this).
-        return;
+        return false;
     }
 
     // Density: apply the owning TableView's row min-height (Fluent Standard = 40,
@@ -1947,13 +1986,13 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
             // rather than orphan the editor; the next pass retries once the edit has closed.
             if (m_editingCellWrapper.get())
             {
-                return;
+                return false;
             }
         }
 
         ResetCellAutomationNames();
         host.Children().Clear();
-        return;
+        return false;
     }
 
     auto dataContext = DataContext();
@@ -2082,7 +2121,7 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         RefreshGridLines();
         RefreshRowBackground();
         ApplyHierarchyAffordance();
-        return;
+        return true;
     }
 
     // Column adds/removes/reorders or template changes rebuild cells; width-only changes are picked
@@ -2111,7 +2150,7 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         // rebuild happens on the next pass once the edit has actually closed.
         if (m_editingCellWrapper.get())
         {
-            return;
+            return false;
         }
     }
 
@@ -2174,15 +2213,54 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     RefreshGridLines();
     RefreshRowBackground();
     ApplyHierarchyAffordance();
+    return true;
 }
 
-// Recycle-out. Always walks: the restamp fast-path revives tooltips through the binding, so a
-// cached per-row flag would go stale and strand app content in the pool.
+// Recycle-out. Always walks: the bound value can revive a tooltip at any time, so a cached
+// per-row flag would go stale and strand app content in the pool.
 void TableViewRow::ReleaseCellToolTips()
 {
     if (auto const host = m_cellsHost.get())
     {
         ClearOwnedCellToolTips(host);
+    }
+}
+
+// Recycle-in. ReleaseCellToolTips neutralized the tooltips, and a bound value that did not change
+// (an explicit Source, or equal across the DataContext reset) raises no callback to revive them.
+void TableViewRow::RefreshCellToolTips()
+{
+    auto const host = m_cellsHost.get();
+    if (!host)
+    {
+        return;
+    }
+
+    auto const editingWrapper = m_editingCellWrapper.get();
+    auto const children = host.Children();
+    const uint32_t count = children.Size();
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        if (auto const cellWrapper = children.GetAt(i).try_as<winrt::Grid>();
+            cellWrapper && cellWrapper != editingWrapper)
+        {
+            // Usually the value changed with the DataContext and the tooltip is already live.
+            auto const record = TableViewDetails::GetRecord(cellWrapper);
+            if (!record || !record->ToolTip || record->ToolTip.IsEnabled())
+            {
+                continue;
+            }
+
+            try
+            {
+                TableViewDetails::RefreshOwnedToolTip(cellWrapper);
+            }
+            catch (...)
+            {
+                TVDiag::LogRetailF(L"[TableView] Re-applying a cell tooltip failed (HRESULT 0x%08X).",
+                    static_cast<unsigned int>(winrt::to_hresult()));
+            }
+        }
     }
 }
 
@@ -2472,9 +2550,83 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         return false;
     }
 
+    // A throw past here must restore the display element and drop the half-captured edit state, or
+    // the cell is left blank and the row half-editing.
+    auto const displayElement = TableViewCell::Child(cellWrapper);
+    auto const focusRoot = XamlRoot();
+    auto const restoreFocusState = [&]()
+    {
+        auto const focused = focusRoot ? winrt::FocusManager::GetFocusedElement(focusRoot) : nullptr;
+        if (!TableViewDetails::IsWithinElementPopupAware(focused, cellWrapper, focusRoot))
+        {
+            return winrt::FocusState::Unfocused;
+        }
+        auto const focusedElement = focused.try_as<winrt::UIElement>();
+        return focusedElement && focusedElement.FocusState() != winrt::FocusState::Unfocused
+            ? focusedElement.FocusState() : winrt::FocusState::Programmatic;
+    }();
+    auto unwindOnThrow = wil::scope_exit([this, cellWrapper, displayElement, focusRoot, restoreFocusState]() noexcept
+    {
+        try
+        {
+            if (auto const peer = TableViewCell::TryGetExistingPeer(cellWrapper)
+                .try_as<winrt::TableViewCellAutomationPeer>())
+            {
+                winrt::get_self<TableViewCellAutomationPeer>(peer)->ResetEditName();
+            }
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] Optional abandoned-cell name state could not be reset.");
+        }
+        try
+        {
+            if (TableViewCell::Child(cellWrapper) != displayElement)
+            {
+                TableViewCell::Child(cellWrapper, displayElement);
+                TableViewDetails::RefreshOwnedToolTip(cellWrapper);
+            }
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] A failed BeginCellEdit could not restore the display cell.");
+        }
+        m_editingAutomationPeer = nullptr;
+        m_editingAutomationItem.set(nullptr);
+        m_editingAutomationValue = {};
+        m_editingAutomationName = {};
+        m_editingRowAutomationName.reset();
+        m_editingColumn.set(nullptr);
+        m_editingCellWrapper.set(nullptr);
+        m_editingElement.set(nullptr);
+        m_editingDisplayElement.set(nullptr);
+
+        // Not a layout pass (unlike AbandonCellEdit's callers), so focus the editor took or dropped
+        // can go back to the cell.
+        try
+        {
+            if (restoreFocusState != winrt::FocusState::Unfocused &&
+                !TableViewDetails::IsWithinElementPopupAware(
+                    focusRoot ? winrt::FocusManager::GetFocusedElement(focusRoot) : nullptr, cellWrapper, focusRoot))
+            {
+                SetCellLevelInternal(true);
+                if (!cellWrapper.Focus(restoreFocusState))
+                {
+                    SetCellLevelInternal(false);
+                    Focus(restoreFocusState);
+                }
+            }
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] A failed BeginCellEdit could not restore focus to the cell.");
+        }
+    });
+
     auto const editingElement = winrt::get_self<TableViewColumn>(column)->GenerateEditingElement(dataItem);
     if (!editingElement)
     {
+        unwindOnThrow.release();
         return false;
     }
 
@@ -2528,7 +2680,7 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
     {
         TVDiag::LogRetailF(L"[TableView] Optional stable cell-name capture failed.");
     }
-    m_editingDisplayElement.set(TableViewCell::Child(cellWrapper));
+    m_editingDisplayElement.set(displayElement);
     m_pendingEditingCell = winrt::make_weak(cellWrapper.as<winrt::UIElement>());
     auto pendingCellGuard = wil::scope_exit([this]() noexcept { m_pendingEditingCell = nullptr; });
     TableViewCell::Child(cellWrapper, editingElement);
@@ -2538,7 +2690,7 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
     TableViewDetails::ClearOwnedToolTip(cellWrapper);
     m_editingElement.set(editingElement);
 
-
+    unwindOnThrow.release();
     return true;
 }
 

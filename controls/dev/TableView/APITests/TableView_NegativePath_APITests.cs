@@ -63,6 +63,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 resources["TabularSurfaceRowBackgroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.White);
                 resources["TabularSurfaceRowForegroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Black);
                 resources["TabularSurfaceGridLineBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Gray);
+                resources["TabularSurfaceOuterBorderBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Gray);
 
                 try
                 {

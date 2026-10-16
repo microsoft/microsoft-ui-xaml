@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Private.Controls;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
@@ -12,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using Windows.Foundation;
 using Windows.System;
 
@@ -977,6 +979,89 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // ProtectedCursor is protected, so it is read by reflection.
+        private static InputSystemCursor GetGripperCursor(ResizeGripper gripper)
+        {
+            var property = typeof(UIElement).GetProperty("ProtectedCursor", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            Verify.IsNotNull(property, "UIElement.ProtectedCursor must be reachable by reflection.");
+            return property.GetValue(gripper) as InputSystemCursor;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the resize gripper holds one size cursor matching its drag axis, keeps it across pointer states and drags, and drops it while disabled.")]
+        public void VerifyResizeGripperHoldsResizeCursor()
+        {
+            TableView tableView = null;
+            ResizeGripper standalone = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(headers: new[] { "Name", "Role" });
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var gripper = FindGripper(GetHeaderCell(tableView, 0));
+                Verify.IsNotNull(gripper, "A resizable column must have a gripper.");
+
+                var cursor = GetGripperCursor(gripper);
+                Verify.IsNotNull(cursor, "A loaded column gripper must carry a resize cursor.");
+                Verify.AreEqual(InputSystemCursorShape.SizeWestEast, cursor.CursorShape,
+                    "A column gripper drags horizontally, so it must show the west-east size cursor.");
+
+                foreach (var state in new[] { "PointerOver", "Pressed", "Normal" })
+                {
+                    VisualStateManager.GoToState(gripper, state, false);
+                }
+                gripper.BeginDrag();
+                gripper.TryDrag(10);
+                gripper.EndDrag(true /* canceled */);
+                Verify.AreSame(cursor, GetGripperCursor(gripper),
+                    "The cursor must be held, not recreated, across pointer states and a drag.");
+
+                standalone = new ResizeGripper { Width = 8, Height = 24 };
+                LoadContent(standalone);
+            });
+
+            IdleSynchronizer.Wait();
+
+            // IsEnabledChanged is raised asynchronously; the gripper's own handler was attached first.
+            var enabledChanged = new global::System.Threading.AutoResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(InputSystemCursorShape.SizeWestEast, GetGripperCursor(standalone)?.CursorShape,
+                    "A standalone gripper defaults to a horizontal drag.");
+
+                standalone.DragOrientation = Orientation.Vertical;
+                Verify.AreEqual(InputSystemCursorShape.SizeNorthSouth, GetGripperCursor(standalone)?.CursorShape,
+                    "A vertical drag must switch to the north-south size cursor.");
+
+                standalone.IsEnabledChanged += (s, e) => enabledChanged.Set();
+                standalone.IsEnabled = false;
+            });
+
+            Verify.IsTrue(enabledChanged.WaitOne(TimeSpan.FromSeconds(5)), "IsEnabledChanged must be raised.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(GetGripperCursor(standalone), "A disabled gripper must not advertise resizing.");
+                standalone.IsEnabled = true;
+            });
+
+            Verify.IsTrue(enabledChanged.WaitOne(TimeSpan.FromSeconds(5)), "IsEnabledChanged must be raised.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(InputSystemCursorShape.SizeNorthSouth, GetGripperCursor(standalone)?.CursorShape,
+                    "Re-enabling must restore the size cursor for the current axis.");
+            });
+        }
+
         [TestMethod]
         [TestProperty("Description", "Verifies a drag applies the total offset against the width captured when the drag started.")]
         public void VerifyResizeDragUpdatesColumnWidth()
@@ -1581,6 +1666,81 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a template without its own scrollers does not latch onto an app ScrollViewer above the TableView.")]
+        public void VerifyScrollerLookupStopsAtTheTableView()
+        {
+            TableView tableView = null;
+            ScrollViewer appScroller = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+
+                tableView = CreateScrollableTable(columnCount: 5);
+                tableView.Width = 800;
+                tableView.Columns[0].FrozenEdge = TableViewFrozenEdge.Leading;
+                tableView.Template = (ControlTemplate)XamlReader.Load(
+                    @"<ControlTemplate
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:tabular='using:Microsoft.UI.Xaml.Controls.Tabular'
+                        TargetType='tabular:TableView'>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height='Auto' />
+                                <RowDefinition Height='*' />
+                            </Grid.RowDefinitions>
+                            <Border x:Name='PART_HeaderRow'>
+                                <tabular:TableViewCellsPanel x:Name='PART_HeaderHost' HorizontalAlignment='Left' />
+                            </Border>
+                            <ItemsRepeater x:Name='PART_RowsRepeater' Grid.Row='1'>
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Orientation='Vertical' />
+                                </ItemsRepeater.Layout>
+                            </ItemsRepeater>
+                        </Grid>
+                    </ControlTemplate>");
+
+                appScroller = new ScrollViewer
+                {
+                    Width = 300,
+                    Height = 300,
+                    HorizontalScrollMode = ScrollMode.Enabled,
+                    HorizontalScrollBarVisibility = ScrollBarVisibility.Visible,
+                    Content = tableView,
+                };
+                LoadContent(appScroller);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(appScroller.ScrollableWidth, c_scrollOffset,
+                    "Precondition: the app scroller must be able to scroll the table horizontally.");
+                appScroller.ChangeView(c_scrollOffset, null, null, true);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(appScroller.HorizontalOffset, 0.0, "Precondition: the app scroller must have scrolled.");
+
+                // Pinning against the app's scroller would counter-translate the frozen cell by its offset.
+                Verify.AreEqual(0.0f, GetHeaderCell(tableView, 0).Translation.X,
+                    "A frozen header cell must not be pinned against an app-owned scroller.");
+                var rows = GetRealizedRows(tableView);
+                Verify.IsGreaterThan(rows.Count, 0, "At least one row should be realized.");
+                foreach (var row in rows)
+                {
+                    Verify.AreEqual(0.0f, GetRowCell(row, 0).Translation.X,
+                        "A frozen row cell must not be pinned against an app-owned scroller.");
+                }
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies several leading frozen columns stay pinned side by side, including after a sibling is collapsed.")]
         public void VerifyMultipleLeadingFrozenColumnsStayPinnedInOrder()
         {
@@ -1858,7 +2018,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var cellRight = GetVisualRight(headerCell, wrapper);
                 Log.Comment($"Header cell spans {cellLeft}..{cellRight}.");
 
-                var gridLine = headerCell.FindVisualChildByName("TableViewHeaderGridLine");
+                var gridLine = headerCell.FindVisualChildByName("PART_GridLine");
                 Verify.IsNotNull(gridLine, "The header cell must contain its vertical grid line.");
                 Verify.AreEqual(Visibility.Visible, gridLine.Visibility,
                     "Precondition: a non-terminal header grid line must be visible with GridLinesVisibility.All.");

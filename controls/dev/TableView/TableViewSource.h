@@ -111,6 +111,12 @@ public:
     bool SetOwningTableView(winrt::IInspectable const& owner);
     // Detaches `owner`; a no-op when another TableView owns this source.
     void ReleaseOwningTableView(winrt::IInspectable const& owner);
+    // True when a TableView other than `candidate` owns this source.
+    bool IsOwnedByOther(winrt::IInspectable const& candidate) const
+    {
+        auto const owner = m_owningTableView.get();
+        return owner && owner != candidate;
+    }
     // A refused TableView waits here. On release, waiters run in order until one claims the
     // source; each waiter that runs is dropped. Keyed by the waiter's identity, one entry each.
     void AddOwnerReleasedHandler(winrt::IInspectable const& waiter, std::function<void()> handler);
