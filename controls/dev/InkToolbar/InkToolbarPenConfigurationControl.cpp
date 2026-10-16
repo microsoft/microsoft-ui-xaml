@@ -73,6 +73,11 @@ void InkToolbarPenConfigurationControl::DetachTemplateHandlers()
                 colorPicker.as<winrt::Microsoft::UI::Xaml::Controls::Primitives::Selector>().SelectionChanged(m_selectionChangedToken);
                 m_selectionChangedToken = {};
             }
+            if (m_itemsChangedToken)
+            {
+                colorPicker.Items().VectorChanged(m_itemsChangedToken);
+                m_itemsChangedToken = {};
+            }
         }
         if (auto slider = m_strokeWidthSlider.get())
         {
@@ -154,6 +159,12 @@ void InkToolbarPenConfigurationControl::ConfigureColorPicker(winrt::Control cons
     auto selector = colorPicker.as<winrt::Microsoft::UI::Xaml::Controls::Primitives::Selector>();
     m_selectionChangedToken = selector.SelectionChanged(
         winrt::SelectionChangedEventHandler([this](winrt::IInspectable const& s, winrt::SelectionChangedEventArgs const& e) { OnSelectedItemChanged(s, e); }));
+
+    // An observable palette bound directly can change while the flyout is open. Inserting or removing a color before
+    // the selected one moves the picker's SelectedIndex without raising SelectionChanged, so keep the pen's index in
+    // step here. (Not while regenerating: the picker resets its selection then and RegenerateItemSource restores it.)
+    m_itemsChangedToken = colorPicker.Items().VectorChanged(
+        [this](auto const&, auto const&) { OnColorPickerItemsChanged(); });
 
     m_containerContentChangingToken = colorPicker.ContainerContentChanging(
         winrt::TypedEventHandler<winrt::ListViewBase, winrt::ContainerContentChangingEventArgs>(
@@ -359,6 +370,26 @@ void InkToolbarPenConfigurationControl::RegenerateItemSource()
     }
 
     m_regeneratingItemSource = false;
+}
+
+void InkToolbarPenConfigurationControl::OnColorPickerItemsChanged()
+{
+    if (m_regeneratingItemSource)
+    {
+        return;
+    }
+    auto colorPicker = m_colorPicker.get();
+    auto button = PenButton();
+    if (!colorPicker || !button)
+    {
+        return;
+    }
+    const int selectedIndex = colorPicker.as<winrt::Microsoft::UI::Xaml::Controls::Primitives::Selector>().SelectedIndex();
+    if (selectedIndex >= 0 && selectedIndex != button.SelectedBrushIndex())
+    {
+        // The selected color moved; this re-reads SelectedBrush from the palette at the new index.
+        button.SelectedBrushIndex(selectedIndex);
+    }
 }
 
 void InkToolbarPenConfigurationControl::OnSelectedItemChanged(winrt::IInspectable const& sender, winrt::SelectionChangedEventArgs const& args)

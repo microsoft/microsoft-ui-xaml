@@ -731,6 +731,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             return false;
         }
+
         // ====================================================================
         // Missing API coverage: EraserButton, CustomPen, CustomPenButton, Events
         // ====================================================================
