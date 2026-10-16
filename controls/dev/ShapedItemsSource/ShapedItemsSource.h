@@ -159,7 +159,7 @@ public:
     std::shared_ptr<HierarchicalSourceAdapter> HierarchicalAdapter() const noexcept { return m_hierarchicalAdapter; }
     // The selector every identity consumer must use. Derives identity from each item's object
     // identity, so shaping never depends on the app having a unique domain key.
-    ShapingHelpers::KeySelector const& IdentitySelector() const noexcept { return EffectiveIdentitySelector(); }
+    ShapingHelpers::KeySelector const& IdentitySelector() const noexcept { return m_intrinsicKeySelector; }
 
     void Refresh();
 
@@ -289,12 +289,6 @@ private:
     // which is also true for a merely mutable source: a mutable source with no verbs still wants
     // no identity, because there is no projection to anchor.
     bool HasAnyShapingVerb() const;
-    // Every identity consumer funnels through here. Identity comes from each item's object
-    // identity, so a row ALWAYS has one and no shaping verb has to refuse to run for want of one.
-    ShapingHelpers::KeySelector const& EffectiveIdentitySelector() const noexcept
-    {
-        return m_intrinsicKeySelector;
-    }
     // Confirm every row in the set a rebuild is about to publish has a usable, distinct identity.
     bool ValidateRowIdentities(std::vector<winrt::IInspectable> const& rows, wchar_t const*& reason) const;
     bool IsSourceMutable() const;

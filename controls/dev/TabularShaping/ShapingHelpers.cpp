@@ -566,10 +566,10 @@ namespace ShapingHelpers
             }
         }
 
-        if (auto unknown = value.try_as<::IUnknown>())
+        if (auto const address = GetObjectAddress(value); address != ObjectAddress::Null)
         {
             wchar_t buffer[40];
-            swprintf_s(buffer, 40, L"o:%016llX", static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(unknown.get())));
+            swprintf_s(buffer, 40, L"o:%016llX", static_cast<unsigned long long>(address));
             return winrt::hstring{ buffer };
         }
 
@@ -589,10 +589,10 @@ namespace ShapingHelpers
             return L"value:" + key;
         }
 
-        if (auto unknown = value.try_as<::IUnknown>())
+        if (auto const address = GetObjectAddress(value); address != ObjectAddress::Null)
         {
             wchar_t buffer[32];
-            swprintf_s(buffer, 32, L"object:%p", unknown.get());
+            swprintf_s(buffer, 32, L"object:%p", reinterpret_cast<void*>(static_cast<uintptr_t>(address)));
             return winrt::hstring{ buffer };
         }
 

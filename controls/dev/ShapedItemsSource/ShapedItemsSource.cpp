@@ -371,7 +371,7 @@ bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta
     // An unshaped mirror is not a shaped projection at all; re-sorting it in place would apply
     // shaping that Refresh deliberately refuses to apply. The m_shapingState.HasProjection test
     // above already rejects that case, and identity is never the blocker now --
-    // EffectiveIdentitySelector always yields one -- so no further gate is needed here.
+    // IdentitySelector always yields one -- so no further gate is needed here.
 
     // Prove the retained state still describes the live projection instead of trusting that every
     // mutation site remembered to invalidate it. The invalidation calls are the cheap first line
@@ -1499,14 +1499,14 @@ bool ShapedItemsSource::TryGetRequiredRowIdentity(
     winrt::hstring& identity,
     wchar_t const*& reason) const
 {
-    return RowIdentity::TryGetRequiredRowIdentity(item, EffectiveIdentitySelector(), identity, reason);
+    return RowIdentity::TryGetRequiredRowIdentity(item, IdentitySelector(), identity, reason);
 }
 
 bool ShapedItemsSource::ValidateRowIdentities(
     std::vector<winrt::IInspectable> const& rows,
     wchar_t const*& reason) const
 {
-    return RowIdentity::ValidateRowIdentities(rows, EffectiveIdentitySelector(), reason);
+    return RowIdentity::ValidateRowIdentities(rows, IdentitySelector(), reason);
 }
 
 bool ShapedItemsSource::CanProjectWithRowIdentity() const
@@ -1544,7 +1544,7 @@ void ShapedItemsSource::RebuildFlatRowIdentityTracking(std::vector<winrt::IInspe
     RowIdentity::RebuildFlatRowIdentityTracking(
         rows,
         IsIdentityRequired(),
-        EffectiveIdentitySelector(),
+        IdentitySelector(),
         m_flatRowIdentities,
         m_flatRowIdentityToIndex);
 }
@@ -1554,7 +1554,7 @@ bool ShapedItemsSource::TryGetTrackedFlatRowIndex(winrt::hstring const& identity
     return RowIdentity::TryGetTrackedFlatRowIndex(
         identity,
         m_rows,
-        EffectiveIdentitySelector(),
+        IdentitySelector(),
         m_flatRowIdentityToIndex,
         index);
 }
@@ -2320,6 +2320,7 @@ std::shared_ptr<const ShapingHelpers::ParentStructure> ShapedItemsSource::TryReu
     }
 
     // Silent sources can change too; O(n) pointer compares are cheaper than selector calls.
+    // Same source vector: raw ABI equality avoids per-row QI; a mismatch only forces a rebuild.
     for (size_t i = 0; i < rows.size(); ++i)
     {
         if (winrt::get_abi(structure->Rows[i]) != winrt::get_abi(rows[i]))
