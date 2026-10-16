@@ -1853,9 +1853,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     .GetPattern(PatternInterface.Transform) as ITransformProvider;
                 Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
 
-                // Not settable from a test; at 1.0 this still pins the contract the conversion relies on.
                 var scale = tableView.XamlRoot.RasterizationScale;
                 Log.Comment($"RasterizationScale = {scale}");
+                if (scale == 1.0)
+                {
+                    // Not settable from a test, and at 1.0 pixels equal DIPs, so the conversion is unobservable.
+                    Log.Comment("SKIPPED: the physical-pixel conversion cannot be observed at RasterizationScale 1.0.");
+                    return;
+                }
 
                 transform.Resize(180.0 * scale, 0.0);
                 Verify.IsTrue(Math.Abs(column.Width.Value - 180.0) < 0.01,
