@@ -192,7 +192,7 @@ void ProgressBar::SetProgressBarIndicatorWidth()
                 const double increment = maxIndicatorWidth / (maximum - minimum);
                 const double indicatorWidth = increment * (Value() - minimum);
                 const double widthDelta = indicatorWidth - prevIndicatorWidth;
-                templateSettings->IndicatorLengthDelta(-widthDelta);
+                templateSettings->IndicatorLengthDelta(widthDelta < 0.0 ? 0.0 : -widthDelta);
                 determinateProgressBarIndicator.Width(indicatorWidth);
             }
             else
