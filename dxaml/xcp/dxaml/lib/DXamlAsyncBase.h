@@ -74,6 +74,10 @@ namespace DirectUI
             {
                 return __super::ContinueAsyncOperation();
             }
+            void CoreCancelAsyncActionImpl()
+            {
+                (void)__super::Cancel();
+            }
             void CoreFireCompletionImpl()
             {
                 // If we have a dispatcher use it
@@ -159,6 +163,11 @@ namespace DirectUI
         bool CoreContinueAsyncAction() override
         {
             return DXamlAsyncBaseImpl::CoreContinueAsyncActionImpl();
+        }
+
+        void CoreCancelAsyncAction() override
+        {
+            DXamlAsyncBaseImpl::CoreCancelAsyncActionImpl();
         }
 
         void CoreFireCompletion() override
