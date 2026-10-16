@@ -425,7 +425,13 @@ void NavigationViewItem::UpdateVisualStateForClosedCompact()
 {
     if (const auto presenter = GetPresenter())
     {
-        presenter->UpdateClosedCompactVisualState(IsTopLevelItem(), m_isClosedCompact);
+        // Items placed directly in PaneFooter or PaneCustomContent are not prepared by a NavigationView-owned
+        // repeater, so IsTopLevelItem() is never set for them. They are still shown at the root level of the pane
+        // and need the same closed compact layout as top-level menu items, otherwise the icon gets clipped.
+        // Items that a repeater has recycled (no parent) keep the previous behavior.
+        const bool isRootLevelItem = IsTopLevelItem() ||
+            (!IsInNavigationViewOwnedRepeater() && winrt::VisualTreeHelper::GetParent(*this));
+        presenter->UpdateClosedCompactVisualState(isRootLevelItem, m_isClosedCompact);
     }
 }
 
