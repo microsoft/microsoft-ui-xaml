@@ -619,6 +619,7 @@ private:
 
     enum class HeaderRelease { All, DetachedColumns, Column };
     void ReleaseHeaderCells(const winrt::Panel& host, HeaderRelease scope = HeaderRelease::All, const winrt::TableViewColumn& column = nullptr);
+    void MoveHeaderFocusOffRemovedColumn(const winrt::Panel& host, const winrt::FrameworkElement& removedCell, const winrt::TableViewColumn& removedColumn, winrt::FocusState focusState);
     void RebuildHeadersCore();
     winrt::Style CompatibleHeaderStyle(const winrt::Style& style);
     winrt::TableViewColumn GetFocusedHeaderColumn(const winrt::Panel& host, winrt::FocusState& focusState) const;
@@ -1203,6 +1204,10 @@ private:
     // changes without changing row/cell layout thickness.
     winrt::event_token m_terminalGridLinesLayoutToken{};
     winrt::event_token m_headerFocusRestoreLayoutToken{};
+    // Focus moved off a removed column's header onto a remaining one; if the column comes back
+    // before the rebuild (a move), the rebuild returns focus to it.
+    winrt::weak_ref<winrt::TableViewColumn> m_headerFocusRemovedColumn{ nullptr };
+    winrt::weak_ref<winrt::TableViewColumn> m_headerFocusFallbackColumn{ nullptr };
     winrt::weak_ref<winrt::TableViewRow> m_terminalGridLineRow{};
     winrt::weak_ref<winrt::TableViewGroupHeader> m_terminalGridLineGroupHeader{};
     winrt::FrameworkElement::SizeChanged_revoker m_terminalGridLineRowSizeChangedRevoker{};
