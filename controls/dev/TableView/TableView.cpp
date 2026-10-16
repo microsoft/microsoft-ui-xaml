@@ -3039,6 +3039,7 @@ void TableView::RebuildHeadersCore()
                 // The header's peer already announces this text.
                 winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
                 header.Content(headerBlock);
+                headerImpl->SetOwnsContentInternal(true);
             }
             else
             {
