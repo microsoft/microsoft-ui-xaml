@@ -1383,6 +1383,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var change = ((string)TestContext.DataRow["Change"]).Trim();
             TableView tableView = null;
             TableViewSource source = null;
+            var sortedArgs = new List<TableViewSortedEventArgs>();
 
             RunOnUIThread.Execute(() =>
             {
@@ -1401,6 +1402,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection,
                     "Precondition: the source sort lights the Name column.");
+                tableView.Sorted += (s, e) => sortedArgs.Add(e);
 
                 switch (change)
                 {
@@ -1429,6 +1431,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var nameColumn = tableView.Columns.First(c => c.Header as string == "Name");
                 Verify.AreEqual(SortDirection.Descending, nameColumn.SortDirection,
                     $"{change}: the Name column must re-light from the source sort");
+                Verify.IsFalse(sortedArgs.Any(e => e.Column == null && e.Direction == SortDirection.None),
+                    $"{change}: a clear that left the source sort in place must not report that sorting was cleared");
             });
         }
 

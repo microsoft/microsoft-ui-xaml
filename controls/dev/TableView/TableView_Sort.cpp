@@ -835,7 +835,18 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         ApplySelection(FindEntryIndexForDataItem(preservedSelection));
     }
 
-    if (m_sortedEventSource)
+    // An implicit clear that left the app's sort on the source is not a clear: the rows keep their
+    // order and the reconcile below re-lights the column.
+    bool keptSourceSort = false;
+    if (!trigger && !explicitClear && !reshaped && !m_activeSourceReleased)
+    {
+        if (auto const source = ShapingSourceInternal())
+        {
+            keptSourceSort = !winrt::get_self<::TableViewSource>(source)->ActiveSortAxisInfos().empty();
+        }
+    }
+
+    if (m_sortedEventSource && !keptSourceSort)
     {
         const auto appliedDirection = trigger ? trigger.SortDirection() : winrt::SortDirection::None;
         auto args = winrt::make_self<TableViewSortedEventArgs>(trigger, appliedDirection);
@@ -851,7 +862,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         }
     }
 
-    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::Notification))
+    if (!keptSourceSort && winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::Notification))
     {
         // A programmatic or header-driven re-sort has no input event behind it, so without an
         // announcement a screen-reader user has no way to learn the order changed.
