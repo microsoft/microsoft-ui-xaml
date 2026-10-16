@@ -174,6 +174,8 @@ void SystemBackdropElement::UpdatePlacementVisualClip()
     
     // Apply the clip to the placement visual
     m_backdropLink.PlacementVisual().Clip(m_clip);
+
+    m_backdropLink.ExternalBackdropBorderMode(winrt::Microsoft::UI::Composition::CompositionBorderMode::Soft);
 }
 
 void SystemBackdropElement::EnsureCompositionResources()
