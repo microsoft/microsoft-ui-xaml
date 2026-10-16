@@ -1065,6 +1065,210 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyOverflowSelectionWhenFlyoutClosingRemovesItem()
+        {
+            foreach (var selectsOnInvoked in new[] { false, true })
+            {
+                NavigationView navView = null;
+                NavigationViewItem firstItem = null;
+                NavigationViewItem targetItem = null;
+                ObservableCollection<NavigationViewItem> items = null;
+                int invokedCount = 0;
+                int closingCount = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"SelectsOnInvoked={selectsOnInvoked}");
+                    items = new ObservableCollection<NavigationViewItem>();
+                    for (int index = 0; index < 8; index++)
+                    {
+                        items.Add(new NavigationViewItem { Content = $"Menu item {index}" });
+                    }
+                    firstItem = items[0];
+                    targetItem = new NavigationViewItem { Content = "Target", SelectsOnInvoked = selectsOnInvoked };
+                    items.Add(targetItem);
+                    navView = new NavigationView { PaneDisplayMode = NavigationViewPaneDisplayMode.Top, Width = 350, MenuItemsSource = items };
+                    navView.ItemInvoked += (sender, args) => invokedCount++;
+                    Content = navView;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var primaryItems = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                    Verify.AreEqual(-1, primaryItems.GetElementIndex(targetItem), "The target must start outside the primary items.");
+                    var overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                    overflowButton.Flyout.Closing += (sender, args) =>
+                    {
+                        if (closingCount++ == 0)
+                        {
+                            items.Remove(targetItem);
+                        }
+                    };
+                    overflowButton.Flyout.ShowAt(overflowButton);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    // Selecting an overflow item closes the flyout before promoting the item.
+                    targetItem.IsSelected = true;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(1, closingCount);
+                    Verify.IsFalse(items.Contains(targetItem));
+                    Verify.AreNotEqual(targetItem, navView.SelectedItem, "A removed item must not become the selection.");
+                    Verify.AreEqual(0, invokedCount);
+
+                    navView.SelectedItem = firstItem;
+                    Content.UpdateLayout();
+                    Verify.AreEqual(firstItem, navView.SelectedItem);
+                    Verify.IsTrue(firstItem.IsSelected);
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        [TestMethod]
+        public void VerifyOverflowButtonAfterSelectingOnlyOverflowItemProgrammatically()
+        {
+            foreach (var useMenuItemsSource in new[] { false, true })
+            {
+                foreach (var selectsOnInvoked in new[] { false, true })
+                {
+                    NavigationView navView = null;
+                    NavigationViewItem selectedItem = null;
+                    Button overflowButton = null;
+                    ItemsRepeater overflowRepeater = null;
+                    int invokedCount = 0;
+                    bool overflowButtonVisible = false;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment($"UseMenuItemsSource={useMenuItemsSource}, SelectsOnInvoked={selectsOnInvoked}");
+                        navView = new NavigationView
+                        {
+                            PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                            IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                            IsSettingsVisible = false,
+                            Width = 240,
+                            Height = 300
+                        };
+                        var items = new ObservableCollection<NavigationViewItem>
+                        {
+                            new NavigationViewItem { Content = "AA" },
+                            new NavigationViewItem { Content = "BBBBBBB" },
+                            new NavigationViewItem { Content = "CCCCCCCCCCCCCCC", SelectsOnInvoked = selectsOnInvoked }
+                        };
+                        if (useMenuItemsSource)
+                        {
+                            navView.MenuItemsSource = items;
+                        }
+                        else
+                        {
+                            foreach (var item in items)
+                            {
+                                navView.MenuItems.Add(item);
+                            }
+                        }
+                        selectedItem = items[2];
+                        navView.ItemInvoked += (sender, args) => invokedCount++;
+                        Content = navView;
+                        Content.UpdateLayout();
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        overflowButton = VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton") as Button;
+                        Verify.IsNotNull(overflowButton);
+                        Verify.AreEqual(Visibility.Visible, overflowButton.Visibility);
+                        var provider = FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                            .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                        Verify.IsNotNull(provider);
+                        provider.Invoke();
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var flyout = overflowButton.Flyout as Flyout;
+                        Verify.IsNotNull(flyout);
+                        overflowRepeater = VisualTreeUtils.FindVisualChildByName(
+                            flyout.Content, "TopNavMenuItemsOverflowHost") as ItemsRepeater;
+                        Verify.IsNotNull(overflowRepeater);
+                        Verify.AreEqual(1, overflowRepeater.ItemsSourceView.Count, "The target must be the only overflow item.");
+                        Verify.AreEqual(selectedItem, overflowRepeater.ItemsSourceView.GetAt(0));
+                        selectedItem.IsSelected = true;
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(selectedItem, navView.SelectedItem);
+                        Verify.IsTrue(selectedItem.IsSelected);
+                        Verify.AreEqual(0, invokedCount, "Programmatic selection must not invoke the item.");
+                        var primaryRepeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                        Verify.IsGreaterThanOrEqual(primaryRepeater.GetElementIndex(selectedItem), 0);
+                        Verify.AreEqual(2, overflowRepeater.ItemsSourceView.Count, "Both displaced items should remain reachable.");
+                        Verify.AreEqual(Visibility.Visible, navView.TemplateSettings.OverflowButtonVisibility);
+                        Verify.AreEqual(Visibility.Visible, overflowButton.Visibility);
+                        Verify.IsFalse(overflowButton.Flyout.IsOpen);
+                        overflowButtonVisible = overflowButton.Visibility == Visibility.Visible;
+                        if (overflowButtonVisible)
+                        {
+                            (FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                                .GetPattern(PatternInterface.Invoke) as IInvokeProvider).Invoke();
+                        }
+                    });
+                    IdleSynchronizer.Wait();
+
+                    if (!overflowButtonVisible)
+                    {
+                        Log.Comment("Visibility assertions failed; do not invoke an inaccessible overflow button.");
+                        continue;
+                    }
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsTrue(overflowButton.Flyout.IsOpen);
+                        selectedItem = overflowRepeater.TryGetElement(0) as NavigationViewItem;
+                        Verify.IsNotNull(selectedItem);
+                        var provider = FrameworkElementAutomationPeer.CreatePeerForElement(selectedItem) as IInvokeProvider;
+                        Verify.IsNotNull(provider);
+                        provider.Invoke();
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(selectedItem, navView.SelectedItem);
+                        Verify.IsTrue(selectedItem.IsSelected);
+                        Verify.AreEqual(1, invokedCount, "The displaced item must remain invokable exactly once.");
+                        Verify.IsTrue(overflowRepeater.ItemsSourceView.Count > 0);
+                        Verify.AreEqual(Visibility.Visible, navView.TemplateSettings.OverflowButtonVisibility);
+                        Verify.AreEqual(Visibility.Visible, overflowButton.Visibility);
+                        navView.Width = 1008;
+                        Content.UpdateLayout();
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(0, overflowRepeater.ItemsSourceView.Count);
+                        Verify.AreEqual(Visibility.Collapsed, navView.TemplateSettings.OverflowButtonVisibility);
+                        Verify.AreEqual(Visibility.Collapsed, overflowButton.Visibility);
+                        Verify.AreEqual(selectedItem, navView.SelectedItem);
+                        Verify.AreEqual(1, invokedCount);
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
         public void VerifyProgrammaticSelectionOfNonSelectingDataItem()
         {
             foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
@@ -1373,8 +1577,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
             {
-                foreach (var destination in new[] { "NonSelecting", "Selecting", "Previous", "None", "Invoked", "Repeated", "InitiallyUnselected", "DeselectionRedirect", "NestedInvocation" })
+                foreach (var destination in new[] { "NonSelecting", "Selecting", "Previous", "None", "Invoked", "Repeated", "InitiallyUnselected", "DeselectionRedirect", "NestedInvocation",
+                    "DeselectionSelectsAnother", "DeselectionRoundTrip", "DeselectionClear" })
                 {
+                    bool redirectsFromDeselection = destination.StartsWith("Deselection");
+                    bool reinvoking = false;
                     NavigationView navView = null;
                     NavigationViewItem previousItem = null;
                     NavigationViewItem invokedItem = null;
@@ -1430,14 +1637,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     RunOnUIThread.Execute(() =>
                     {
-                        if (destination == "DeselectionRedirect")
+                        if (redirectsFromDeselection)
                         {
                             deselectionToken = previousItem.RegisterPropertyChangedCallback(NavigationViewItem.IsSelectedProperty, (sender, property) =>
                             {
                                 if (!previousItem.IsSelected)
                                 {
-                                    expectedItem = finalItem;
-                                    navView.SelectedItem = expectedItem;
+                                    switch (destination)
+                                    {
+                                        case "DeselectionRedirect":
+                                            expectedItem = finalItem;
+                                            navView.SelectedItem = expectedItem;
+                                            break;
+                                        case "DeselectionSelectsAnother":
+                                            expectedItem = finalItem;
+                                            finalItem.IsSelected = true;
+                                            break;
+                                        case "DeselectionRoundTrip":
+                                            expectedItem = finalItem;
+                                            navView.SelectedItem = finalItem;
+                                            expectedItem = redirectItem;
+                                            navView.SelectedItem = redirectItem;
+                                            break;
+                                        case "DeselectionClear":
+                                            expectedItem = null;
+                                            navView.SelectedItem = null;
+                                            break;
+                                    }
                                 }
                             });
                         }
@@ -1451,6 +1677,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         navView.ItemInvoked += (sender, args) =>
                         {
                             events.Add("ItemInvoked");
+                            if (reinvoking)
+                            {
+                                return;
+                            }
                             if (destination == "NestedInvocation" && args.InvokedItemContainer == finalItem)
                             {
                                 Verify.AreEqual(2, events.Count, "Each explicitly invoked item must raise exactly one invocation.");
@@ -1504,15 +1734,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         {
                             "Repeated" => "ItemInvoked,SelectionChanged,SelectionChanged",
                             "NestedInvocation" => "ItemInvoked,ItemInvoked,SelectionChanged",
+                            "DeselectionRoundTrip" => "ItemInvoked,SelectionChanged,SelectionChanged",
                             _ => "ItemInvoked,SelectionChanged"
                         };
                         Verify.AreEqual(expectedEvents, string.Join(",", events));
-                        if (destination == "DeselectionRedirect")
+                        if (destination == "DeselectionRedirect" || destination == "DeselectionSelectsAnother")
                         {
                             Verify.AreEqual(finalItem, navView.SelectedItem, "A redirect from the previous item's deselection must not be overwritten.");
+                        }
+                        if (redirectsFromDeselection)
+                        {
                             previousItem.UnregisterPropertyChangedCallback(NavigationViewItem.IsSelectedProperty, deselectionToken);
                         }
                     });
+
+                    if (destination == "None" || destination == "DeselectionClear")
+                    {
+                        RunOnUIThread.Execute(() =>
+                        {
+                            // Clearing the selection during the redirect must not leave the invoked item in the selection model.
+                            reinvoking = true;
+                            events.Clear();
+                            expectedItem = invokedItem;
+                            var provider = FrameworkElementAutomationPeer.CreatePeerForElement(invokedItem) as IInvokeProvider;
+                            Verify.IsNotNull(provider);
+                            provider.Invoke();
+                            verifySelection();
+                            Verify.AreEqual("ItemInvoked,SelectionChanged", string.Join(",", events), "Invoking the item again must select it.");
+                        });
+                        IdleSynchronizer.Wait();
+                    }
                 }
             }
         }
