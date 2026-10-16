@@ -23,6 +23,7 @@ using WEX.TestExecution.Markup;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewShapingTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewGroupingTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewEditingTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -814,6 +815,82 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 }
             }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a focused group toggle dropped because the open edit would not end does not stop a row from being brought into view afterwards.")]
+        [TestProperty("data:Reveal", "{KeyboardFocus, StartBringIntoView}")]
+        public void VerifyDroppedGroupToggleKeepsRowBringIntoView()
+        {
+            var reveal = ((string)TestContext.DataRow["Reveal"]).Trim();
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            var vetoing = true;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = Enumerable.Range(0, 30).Select(i => new EditablePerson { Name = $"P{i:D2}", Role = $"R{i / 10}" }).ToList();
+                var source = TableViewSource.From(items);
+                source.GroupBy(o => ((EditablePerson)o).Role);
+                tableView = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 600, height: 300);
+                tableView.IsReadOnly = false;
+                tableView.CellEditEnding += (s, e) => e.Cancel = vetoing;
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Vetoed"),
+                    "Precondition: the vetoed commit fails.");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the edit stays open.");
+                var header = FindRealizedGroupHeader(tableView, "R0");
+                Verify.IsTrue(header.Focus(FocusState.Keyboard), "Precondition: the header takes keyboard focus.");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the edit is still open.");
+                (FrameworkElementAutomationPeer.CreatePeerForElement(header).GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider).Collapse();
+            });
+            SettleLayout(tableView);
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(GetGroupInfoByKey(tableView, "R0")?.IsExpanded ?? false, "Precondition: the toggle is dropped while the edit cannot end.");
+                vetoing = false;
+                Verify.IsTrue(tableView.CancelEdit(), "Precondition: the edit closes.");
+            });
+            SettleLayout(tableView);
+
+            TableViewRow target = null;
+            double offsetBefore = 0.0;
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                offsetBefore = scroller.VerticalOffset;
+                target = GetRealizedRows(tableView)
+                    .Select(r => (Row: r, Top: r.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y))
+                    .Where(r => r.Top >= scroller.ViewportHeight)
+                    .OrderBy(r => r.Top)
+                    .Select(r => r.Row)
+                    .FirstOrDefault();
+                Verify.IsNotNull(target, "Precondition: a realized row lies below the viewport.");
+                if (reveal == "KeyboardFocus")
+                {
+                    Verify.IsTrue(target.Focus(FocusState.Keyboard), "Precondition: the row takes keyboard focus.");
+                }
+                else
+                {
+                    target.StartBringIntoView();
+                }
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = GetBodyScroller(tableView);
+                var top = target.TransformToVisual(scroller).TransformPoint(new global::Windows.Foundation.Point(0.0, 0.0)).Y;
+                Verify.IsTrue(scroller.VerticalOffset > offsetBefore + 0.5 && top < scroller.ViewportHeight,
+                    $"{reveal}: the row must be brought into view after the dropped toggle: offset {offsetBefore:F1} -> {scroller.VerticalOffset:F1}, top {top:F1}, viewport {scroller.ViewportHeight:F1}.");
+            });
         }
 
         private static TableViewGroupHeader FindRealizedGroupHeader(TableView tableView, string key)
