@@ -52,7 +52,7 @@ public:
     _Check_return_ HRESULT OnPaneClosing();
     _Check_return_ HRESULT OnPaneClosed();
 
-    void OnCancelClosing();
+    void OnLightDismissCompleted();
 
     CDependencyObject* ProcessTabStop(
         _In_ bool isForward,

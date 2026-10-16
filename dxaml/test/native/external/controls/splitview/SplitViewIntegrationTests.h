@@ -164,6 +164,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the Opened event is not re-fired if changing display modes while open.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(DoesCompleteQueuedPaneTransitions)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that queued pane completions retain their open or closed state across subsequent property changes.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRaiseClosingAfterReopeningDuringLightDismiss)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that interrupting a light-dismiss animation does not suppress the next PaneClosing event.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(DoesFireOpenedAndClosedEventsWhenRetemplated)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the opened &closed events fire even when SplitView is re-templated to excluded the DisplayModesStates state group.")
         END_TEST_METHOD()

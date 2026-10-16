@@ -268,18 +268,40 @@ SplitView::OnOuterDismissElementPointerPressed(IInspectable* /*pSender*/, xaml_i
 }
 
 _Check_return_ HRESULT
-SplitView::OnDisplayModeStateChanged(_In_ IInspectable* /*sender*/, _In_ xaml::IVisualStateChangedEventArgs* /*args*/)
+SplitView::OnDisplayModeStateChanged(_In_ IInspectable* /*sender*/, _In_ xaml::IVisualStateChangedEventArgs* args)
 {
-    // Only respond to visual state changes between opened and closed states.
-    // We could get state changes between opened states if display mode is changed (such as going from Compact to Overlay)
-    // while the pane is open.
-    if (m_isPaneOpeningOrClosing)
+    ctl::ComPtr<xaml::IVisualState> oldState;
+    ctl::ComPtr<xaml::IVisualState> newState;
+    IFC_RETURN(args->get_OldState(&oldState));
+    IFC_RETURN(args->get_NewState(&newState));
+    if (!newState)
+    {
+        return S_OK;
+    }
+
+    wrl_wrappers::HString oldStateName;
+    wrl_wrappers::HString newStateName;
+    if (oldState)
+    {
+        IFC_RETURN(oldState->get_Name(oldStateName.GetAddressOf()));
+    }
+    IFC_RETURN(newState->get_Name(newStateName.GetAddressOf()));
+
+    const auto isClosedState = [](const wrl_wrappers::HString& name)
+    {
+        return name == wrl_wrappers::HStringReference(L"Closed")
+            || name == wrl_wrappers::HStringReference(L"ClosedCompactLeft")
+            || name == wrl_wrappers::HStringReference(L"ClosedCompactRight");
+    };
+
+    // These notifications are queued. A subsequent IsPaneOpen change must not
+    // relabel this completion or consume another queued pane transition.
+    const bool paneStateChanged = oldState && isClosedState(oldStateName) != isClosedState(newStateName);
+    const bool initialOrInterruptedTransition = !oldState || oldState.Get() == newState.Get();
+    if (paneStateChanged || (m_isPaneOpeningOrClosing && initialOrInterruptedTransition))
     {
         m_isPaneOpeningOrClosing = false;
-
-        BOOLEAN isPaneOpen = FALSE;
-        IFC_RETURN(get_IsPaneOpen(&isPaneOpen));
-        IFC_RETURN(OnPaneOpenedOrClosed(!!isPaneOpen));
+        IFC_RETURN(OnPaneOpenedOrClosed(!isClosedState(newStateName)));
     }
 
     return S_OK;
@@ -508,6 +530,7 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
     // state group.
     if (!m_displayModeStateChangedEventHandler)
     {
+        m_isPaneOpeningOrClosing = false;
         IFC_RETURN(OnPaneOpenedOrClosed(isOpen));
     }
 

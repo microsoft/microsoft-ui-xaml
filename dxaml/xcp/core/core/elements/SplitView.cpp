@@ -26,9 +26,15 @@ public:
 
     _Check_return_ HRESULT Execute() override
     {
+        // The light-dismiss operation ends here even if its close animation is
+        // interrupted by reopening the pane and never raises PaneClosed.
+        auto completeLightDismiss = wil::scope_exit([this]()
+        {
+            m_spSplitView->OnLightDismissCompleted();
+        });
+
         if (m_spPaneClosingEventArgs->m_cancel)
         {
-            m_spSplitView->OnCancelClosing();
             return S_OK;
         }
 
@@ -243,7 +249,7 @@ CSplitView::TryCloseLightDismissiblePane()
     return S_OK;
 }
 
-void CSplitView::OnCancelClosing()
+void CSplitView::OnLightDismissCompleted()
 {
     m_isPaneClosingByLightDismiss = false;
 }
@@ -465,8 +471,6 @@ _Check_return_ HRESULT CSplitView::OnPaneClosing()
 
 _Check_return_ HRESULT CSplitView::OnPaneClosed()
 {
-    m_isPaneClosingByLightDismiss = false;
-
     // Fire the closed event.
     CEventManager *pEventManager = GetContext()->GetEventManager();
     if (pEventManager != nullptr)
