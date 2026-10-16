@@ -2759,6 +2759,30 @@ static bool IsPlainStringHeader(const winrt::TableViewColumn& column)
     return propValue && propValue.Type() == winrt::PropertyType::String;
 }
 
+// Applying a Style whose TargetType the header is not would throw out of RebuildHeaders.
+static winrt::Style CompatibleHeaderStyle(const winrt::Style& style)
+{
+    if (!style)
+    {
+        return nullptr;
+    }
+
+    const std::wstring_view targetType = style.TargetType().Name;
+    if (targetType.empty() ||
+        targetType == winrt::name_of<winrt::TableViewColumnHeader>() ||
+        targetType == winrt::name_of<winrt::ContentControl>() ||
+        targetType == winrt::name_of<winrt::Control>() ||
+        targetType == winrt::name_of<winrt::FrameworkElement>() ||
+        targetType == winrt::name_of<winrt::UIElement>() ||
+        targetType == winrt::name_of<winrt::DependencyObject>())
+    {
+        return style;
+    }
+
+    TVDiag::LogRetailF(L"[TableView] Ignored a column header Style whose TargetType is not TableViewColumnHeader or a base type.");
+    return nullptr;
+}
+
 void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
 {
     if (!host)
@@ -2865,7 +2889,7 @@ void TableView::RebuildHeaders()
         cachedSortIndicatorWidth = c_sortIndicatorSizeFallback;
     }
     const bool canUserSortColumns = CanUserSortColumns();
-    auto const tableHeaderStyle = ColumnHeaderStyle();
+    auto const tableHeaderStyle = CompatibleHeaderStyle(ColumnHeaderStyle());
 
     if (auto columns = Columns())
     {
@@ -2881,7 +2905,8 @@ void TableView::RebuildHeaders()
             headerImpl->SetOwnerInternal(*this, column);
             header.Visibility(column.Visibility());
 
-            auto const headerStyle = column.HeaderStyle() ? column.HeaderStyle() : tableHeaderStyle;
+            auto const columnHeaderStyle = CompatibleHeaderStyle(column.HeaderStyle());
+            auto const headerStyle = columnHeaderStyle ? columnHeaderStyle : tableHeaderStyle;
             if (headerStyle)
             {
                 header.Style(headerStyle);
