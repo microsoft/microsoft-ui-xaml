@@ -988,6 +988,21 @@ namespace MUXControlsTestApp
             }
         }
 
+        // MinWidth == MaxWidth pins the column, which withdraws its resize gripper.
+        private void OnToggleScorePinClick(object sender, RoutedEventArgs e)
+        {
+            if (double.IsPositiveInfinity(ScoreColumn.MaxWidth))
+            {
+                ScoreColumn.MinWidth = ScoreColumn.ActualWidth;
+                ScoreColumn.MaxWidth = ScoreColumn.ActualWidth;
+            }
+            else
+            {
+                ScoreColumn.ClearValue(TableViewColumn.MaxWidthProperty);
+                ScoreColumn.ClearValue(TableViewColumn.MinWidthProperty);
+            }
+        }
+
         private void OnExpandAllGroupsClick(object sender, RoutedEventArgs e)
         {
             GroupedTableView.ExpandAllGroups();

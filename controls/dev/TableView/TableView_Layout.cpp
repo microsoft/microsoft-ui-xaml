@@ -679,7 +679,8 @@ void TableView::RefreshResizeGripperAvailability()
         auto const header = headerCell.try_as<winrt::TableViewColumnHeader>();
         auto const headerPeer = header && winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged)
             ? winrt::get_self<TableViewColumnHeader>(header)->GetExistingAutomationPeerInternal() : nullptr;
-        const bool couldResize = headerPeer && CanResizeColumnFromAutomation(column);
+        // The pin state is already updated, so the old value comes from the visibility being replaced.
+        const bool couldResize = gripper.Visibility() == winrt::Visibility::Visible && IsColumnResizeAllowed(column);
         gripper.Visibility(visibility);
 
         if (headerPeer)

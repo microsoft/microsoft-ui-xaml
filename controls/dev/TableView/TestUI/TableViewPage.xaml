@@ -55,6 +55,10 @@
                     AutomationProperties.Name="RemoveColumnButton"
                     AutomationProperties.AutomationId="RemoveColumnButton"
                     Click="OnRemoveColumnClick" />
+            <Button Content="Toggle Score Pin"
+                    AutomationProperties.Name="ToggleScorePinButton"
+                    AutomationProperties.AutomationId="ToggleScorePinButton"
+                    Click="OnToggleScorePinClick" />
             <Button Content="Filter Source"
                     AutomationProperties.Name="FilterSourceButton"
                     AutomationProperties.AutomationId="FilterSourceButton"
