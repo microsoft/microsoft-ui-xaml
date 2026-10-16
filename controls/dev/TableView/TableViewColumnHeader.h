@@ -11,7 +11,7 @@
 // The owning TableView decides sortability/resizability, wires the gripper and drives the grid
 // line; this type hosts those in its template parts and maps state onto VisualStates.
 class TableViewColumnHeader :
-    public ReferenceTracker<TableViewColumnHeader, winrt::implementation::TableViewColumnHeaderT>
+    public ReferenceTracker<TableViewColumnHeader, winrt::implementation::TableViewColumnHeaderT, winrt::composable>
 {
 public:
     TableViewColumnHeader();
@@ -31,6 +31,7 @@ public:
     void SetOwnerInternal(winrt::TableView const& table, winrt::TableViewColumn const& column);
     winrt::TableView GetOwningTableView() const { return m_table.get(); }
     winrt::TableViewColumn GetColumnInternal() const { return m_column.get(); }
+    winrt::TableViewColumn Column() const { return m_column.get(); }
 
     void SetSortableInternal(bool sortable, double indicatorReserve);
     void SetSortDirectionInternal(winrt::SortDirection direction);
