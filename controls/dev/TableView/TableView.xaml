@@ -476,7 +476,7 @@
     <DataTemplate x:Key="TableViewDefaultGroupHeaderContentTemplate">
         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
             <TextBlock Text="{Binding KeyText, Mode=OneWay}"
-                       Style="{ThemeResource TableViewGroupHeaderKeyTextStyle}" />
+                       Style="{StaticResource TableViewGroupHeaderKeyTextStyle}" />
             <!-- Foreground is bound in code to the header template's ItemCountForegroundSource. -->
             <TextBlock x:Name="TableViewGroupHeaderItemCountText"
                        Text="{Binding ItemCountText, Mode=OneWay}"
