@@ -203,11 +203,15 @@ void TableViewColumnHeader::SyncSortIndicatorForeground(bool followText, bool hi
     }
 
     // The glyph's style sets Foreground, so it cannot inherit; when a state recolors the text
-    // (Disabled, or a High Contrast highlight) the glyph must follow it.
+    // (Disabled, or a High Contrast highlight) the glyph must follow it. Bound, not copied, so it
+    // also follows a re-resolved theme brush (High Contrast toggle) without a state change.
     auto const presenter = m_contentPresenter.get();
     if (followText && presenter)
     {
-        indicator.Foreground(presenter.Foreground());
+        winrt::Binding binding;
+        binding.Source(presenter);
+        binding.Path(winrt::PropertyPath(L"Foreground"));
+        indicator.SetBinding(winrt::Control::ForegroundProperty(), binding);
     }
     else
     {
