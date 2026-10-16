@@ -1,0 +1,18 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "MonitorTopologyTestDriver", "MonitorTopologyTestDriver\MonitorTopologyTestDriver.vcxproj", "{69792D17-4B52-4077-BE9C-42353146EC7E}"
+EndProject
+Global
+    GlobalSection(SolutionConfigurationPlatforms) = preSolution
+        Debug|x64 = Debug|x64
+        Release|x64 = Release|x64
+    EndGlobalSection
+    GlobalSection(ProjectConfigurationPlatforms) = postSolution
+        {69792D17-4B52-4077-BE9C-42353146EC7E}.Debug|x64.ActiveCfg = Debug|x64
+        {69792D17-4B52-4077-BE9C-42353146EC7E}.Debug|x64.Build.0 = Debug|x64
+        {69792D17-4B52-4077-BE9C-42353146EC7E}.Release|x64.ActiveCfg = Release|x64
+        {69792D17-4B52-4077-BE9C-42353146EC7E}.Release|x64.Build.0 = Release|x64
+    EndGlobalSection
+EndGlobal

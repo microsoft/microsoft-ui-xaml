@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: MS-PL
+     Copyright (c) Microsoft Corporation.
+     Derived from Windows-driver-samples 3c3fb49073c047c4cc8e6c203c6331f62b426507. -->
+<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{69792D17-4B52-4077-BE9C-42353146EC7E}</ProjectGuid>
+    <RootNamespace>MonitorTopologyTestDriver</RootNamespace>
+    <ProjectName>MonitorTopologyTestDriver</ProjectName>
+    <MinimumVisualStudioVersion>17.0</MinimumVisualStudioVersion>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <Platform Condition="'$(Platform)' == ''">x64</Platform>
+    <!-- Do not import the repository's managed TargetFramework/build settings. -->
+    <ImportDirectoryBuildProps>false</ImportDirectoryBuildProps>
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">10.0.26100.0</WindowsTargetPlatformVersion>
+    <PlatformToolset>WindowsUserModeDriver10.0</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <DriverTargetPlatform>Universal</DriverTargetPlatform>
+    <SignMode>Off</SignMode>
+    <EnableTestSign>false</EnableTestSign>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <TargetVersion>Windows10</TargetVersion>
+    <DriverType>UMDF</DriverType>
+    <UMDF_VERSION_MAJOR>2</UMDF_VERSION_MAJOR>
+    <UMDF_VERSION_MINOR>25</UMDF_VERSION_MINOR>
+    <IndirectDisplayDriver>true</IndirectDisplayDriver>
+    <IDDCX_VERSION_MAJOR>1</IDDCX_VERSION_MAJOR>
+    <IDDCX_VERSION_MINOR>4</IDDCX_VERSION_MINOR>
+    <UseDebugLibraries Condition="'$(Configuration)' == 'Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)' == 'Release'">false</UseDebugLibraries>
+    <Driver_SpectreMitigation>Spectre</Driver_SpectreMitigation>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <TargetName>MonitorTopologyTestDriver</TargetName>
+    <OutDir>$(MSBuildProjectDirectory)\out\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(MSBuildProjectDirectory)\obj\$(Platform)\$(Configuration)\</IntDir>
+    <SignMode>Off</SignMode>
+    <EnableTestSign>false</EnableTestSign>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <WarningLevel>Level4</WarningLevel>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <WppEnabled>false</WppEnabled>
+      <PreprocessorDefinitions>UMDF_DRIVER;_WIN64;_AMD64_;AMD64;UNICODE;_UNICODE;IDDCX_VERSION_MAJOR=1;IDDCX_VERSION_MINOR=4;IDDCX_MINIMUM_VERSION_REQUIRED=4;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>OneCoreUAP.lib;d3d11.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Driver.cpp" />
+    <ClInclude Include="Driver.h" />
+    <ClInclude Include="Trace.h" />
+    <ClInclude Include="..\shared\TopologyDriverProtocol.h" />
+    <Inf Include="MonitorTopologyTestDriver.inf" />
+    <ResourceCompile Include="MonitorTopologyTestDriver.rc" />
+    <None Include="LICENSE" />
+    <FilesToPackage Include="$(TargetPath)" />
+    <FilesToPackage Include="$(MSBuildProjectDirectory)\LICENSE" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="RequireUnsignedTopologyBuild" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(SignMode)' != 'Off'" Text="This project only builds unsigned artifacts. SignMode must be Off. No signing or deployment targets are provided." />
+    <Error Condition="'$(Platform)' != 'x64'" Text="MonitorTopologyTestDriver supports only x64." />
+  </Target>
+</Project>

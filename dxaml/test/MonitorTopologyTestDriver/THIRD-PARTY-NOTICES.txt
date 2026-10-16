@@ -1,0 +1,39 @@
+Microsoft Windows Driver Samples - IndirectDisplay
+==================================================
+Source:
+https://github.com/microsoft/Windows-driver-samples/tree/3c3fb49073c047c4cc8e6c203c6331f62b426507/video/IndirectDisplay
+Revision: 3c3fb49073c047c4cc8e6c203c6331f62b426507
+Copyright (c) Microsoft Corporation
+Repository license: Copyright (c) 2015 Microsoft
+License: Microsoft Public License (MS-PL)
+
+The native driver under MonitorTopologyTestDriver adapts the public sample's
+UMDF/IddCx lifecycle, mode callbacks, and Direct3D frame-processing approach.
+That directory, including modifications to sample-derived code, is distributed
+under MS-PL. The complete license is in MonitorTopologyTestDriver\LICENSE.
+Preserve that license and the source copyright notices when redistributing.
+The native solution and Build-Driver.ps1 also use MS-PL.
+
+The original driver control ABI under shared and managed client under
+controls\test\MUXControls.Test are covered by the root MIT license. The driver
+DLL/package should not be described as MIT-only. Signing and binary
+redistribution need a separate review.
+
+No internal SoftGPU source or binaries were used.
+
+Windows SDK .NET projections
+===========================
+The capture library, controller and self-test target a Windows-version-specific
+.NET TFM. The .NET SDK resolves the official Microsoft.Windows.SDK.NET.Ref
+targeting pack (10.0.19041.57 in this build), including Windows SDK projections
+and the C#/WinRT runtime. Its package metadata points to Microsoft's Windows
+SDK license, not the root MIT license:
+  https://aka.ms/WinSDKLicenseURL
+  https://aka.ms/WinSDKProjectURL
+C#/WinRT source and notices:
+  https://github.com/microsoft/CsWinRT
+
+These are Microsoft platform dependencies, not a third-party virtual-display
+driver or graphics wrapper. Preserve applicable SDK/runtime redistribution
+terms and notices. Self-contained .NET output also includes the .NET runtime's
+licenses/notices. Our original capture source remains MIT.

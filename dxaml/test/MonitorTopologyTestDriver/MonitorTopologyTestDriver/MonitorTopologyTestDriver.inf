@@ -1,0 +1,75 @@
+; SPDX-License-Identifier: MS-PL
+; Copyright (c) Microsoft Corporation.
+; Derived from Windows-driver-samples commit
+; 3c3fb49073c047c4cc8e6c203c6331f62b426507, video/IndirectDisplay/IddSampleDriver.
+; Test-only root-enumerated UMDF2 driver, not a kernel display miniport.
+
+[Version]
+Signature="$Windows NT$"
+Class=Display
+ClassGuid={4D36E968-E325-11CE-BFC1-08002BE10318}
+ClassVer=2.0
+Provider=%ProviderName%
+CatalogFile=MonitorTopologyTestDriver.cat
+DriverVer=09/23/2026,1.0.0.0
+PnpLockDown=1
+
+[Manufacturer]
+%ProviderName%=Models,NTamd64.10.0...22000
+
+[Models.NTamd64.10.0...22000]
+%DeviceName%=MonitorTopologyTest_Install,Root\MonitorTopologyTest
+
+[SourceDisksNames]
+1=%DiskName%
+
+[SourceDisksFiles]
+MonitorTopologyTestDriver.dll=1
+
+[DestinationDirs]
+DriverCopy=13
+
+[DriverCopy]
+MonitorTopologyTestDriver.dll
+
+[MonitorTopologyTest_Install.NT]
+Include=WUDFRD.inf
+Needs=WUDFRD.NT
+CopyFiles=DriverCopy
+
+[MonitorTopologyTest_Install.NT.HW]
+Include=WUDFRD.inf
+Needs=WUDFRD.NT.HW
+AddReg=MonitorTopologyTest_Hardware
+
+[MonitorTopologyTest_Hardware]
+HKR,,"UpperFilters",0x00010000,"IndirectKmd"
+; Isolate this driver from other UMDF device groups.
+HKR,"WUDF","DeviceGroupId",0x00000000,"MonitorTopologyTestDriver_064CBEC3_A0A1_4765_BCF5_9B9F7EC02ACA"
+; The packaged managed test host needs read/write access to the control interface.
+; This driver is installed only on disposable test VMs.
+HKR,,"Security",0x00000000,"D:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;GRGW;;;BU)(A;;GRGW;;;AC)"
+HKR,,"DeviceType",0x00010001,0x00008000
+HKR,,"DeviceCharacteristics",0x00010001,0x00000100
+; IddCx/IndirectKmd open the adapter internally. The named control interface
+; enforces one controller in TopologyFileCreate without excluding those stack opens.
+HKR,,"Exclusive",0x00010001,0
+
+[MonitorTopologyTest_Install.NT.Services]
+Include=WUDFRD.inf
+Needs=WUDFRD.NT.Services
+
+[MonitorTopologyTest_Install.NT.Wdf]
+UmdfService=MonitorTopologyTestDriver,MonitorTopologyTest_Service
+UmdfServiceOrder=MonitorTopologyTestDriver
+UmdfKernelModeClientPolicy=AllowKernelModeClients
+
+[MonitorTopologyTest_Service]
+UmdfLibraryVersion=2.25.0
+ServiceBinary=%13%\MonitorTopologyTestDriver.dll
+UmdfExtensions=IddCx0102
+
+[Strings]
+ProviderName="Topology Test"
+DeviceName="Monitor Topology Test Virtual Adapter"
+DiskName="Monitor Topology Test Driver"
