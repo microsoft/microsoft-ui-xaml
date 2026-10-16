@@ -208,10 +208,15 @@ void TableViewColumnHeader::SyncSortIndicatorForeground(bool followText, bool hi
     auto const presenter = m_contentPresenter.get();
     if (followText && presenter)
     {
-        winrt::Binding binding;
-        binding.Source(presenter);
-        binding.Path(winrt::PropertyPath(L"Foreground"));
-        indicator.SetBinding(winrt::Control::ForegroundProperty(), binding);
+        // Rebinding on every state change would rebuild an identical expression.
+        auto const bound = indicator.GetBindingExpression(winrt::Control::ForegroundProperty());
+        if (!bound || bound.ParentBinding().Source() != presenter)
+        {
+            winrt::Binding binding;
+            binding.Source(presenter);
+            binding.Path(winrt::PropertyPath(L"Foreground"));
+            indicator.SetBinding(winrt::Control::ForegroundProperty(), binding);
+        }
     }
     else
     {
