@@ -2127,6 +2127,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a disabled header's sort glyph follows the header text when its theme brush re-resolves without a visual state change.")]
+        public void VerifyDisabledSortGlyphFollowsTextAcrossThemeChange()
+        {
+            TableView tableView = null;
+            TableViewColumnHeader header = null;
+            Color before = default;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                tableView.RequestedTheme = ElementTheme.Light;
+                tableView.Columns[0].CanSort = true;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the column sorts.");
+                tableView.IsEnabled = false;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                header = RequireColumnHeader(tableView, 0);
+                Verify.AreEqual("Disabled", CurrentState(header, "CommonStates"), "Precondition: a disabled table's header is Disabled.");
+                before = (GetHeaderPresenter(tableView, 0).Foreground as SolidColorBrush)?.Color ?? default;
+
+                // Re-resolves the header's ThemeResources without re-running its visual states, as a
+                // High Contrast toggle does.
+                header.RequestedTheme = ElementTheme.Dark;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var text = (GetHeaderPresenter(tableView, 0).Foreground as SolidColorBrush)?.Color ?? default;
+                Verify.AreNotEqual(before, text, "Precondition: the disabled text brush differs between Light and Dark.");
+                var glyph = header.FindVisualChildByName("TableViewSortIndicator") as Control;
+                Verify.IsNotNull(glyph, "A sorted column must host the sort glyph.");
+                Verify.AreEqual(text, (glyph?.Foreground as SolidColorBrush)?.Color ?? default,
+                    "The disabled sort glyph must keep the header text's brush after it re-resolves.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a header Style with an incompatible TargetType is ignored instead of breaking the header band.")]
         public void VerifyIncompatibleColumnHeaderStyleIsIgnored()
         {
