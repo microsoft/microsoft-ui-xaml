@@ -1997,6 +1997,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header Style with an incompatible TargetType is ignored instead of breaking the header band.")]
+        public void VerifyIncompatibleColumnHeaderStyleIsIgnored()
+        {
+            TableView tableView = null;
+            SolidColorBrush brush = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                brush = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                var buttonStyle = new Style(typeof(Button));
+                buttonStyle.Setters.Add(new Setter(Control.BackgroundProperty, brush));
+                tableView = CreateThemingTable();
+                tableView.ColumnHeaderStyle = buttonStyle;
+                tableView.Columns[1].HeaderStyle = buttonStyle;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var index in new[] { 0, 1 })
+                {
+                    var header = RequireColumnHeader(tableView, index);
+                    Verify.IsNull(header.Style, $"Header {index} must not take a Style targeting another type.");
+                    Verify.IsFalse(ReferenceEquals(brush, header.Background), $"Header {index} must keep its default look.");
+                }
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the default header template provides its parts and hosts the sort glyph and resize gripper in them.")]
         public void VerifyColumnHeaderTemplateParts()
         {
