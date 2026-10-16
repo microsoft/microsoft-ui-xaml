@@ -1725,7 +1725,7 @@ DXamlCore::GetPeerPrivate(
                 // handle is computed the same way every other profiler event computes it, so
                 // the value matches and the consumer's "first non-zero wins" stamping just works.
 #ifdef XAMLPROFILER_ENABLED
-                if (XamlProfilerTracing::IsProfilingEnabled())
+                if (XamlProfilerTracing::IsEnabled())
                 {
                     const uint64_t peerHandle = XamlProfilerGetPeerHandle(pCoreDO);
                     if (peerHandle != 0)

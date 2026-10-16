@@ -41,15 +41,9 @@ uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
 // Provider Name: "Microsoft-Windows-XAML-Profiler"
 //
 // This is a diagnostics-only provider, so it is registered WITHOUT the Microsoft telemetry
-// provider group: only a trace session that enables this provider explicitly can turn it on.
-// Every event is logged at WINEVENT_LEVEL_VERBOSE with XAMLPROFILER_KEYWORD, and every call
-// site gates its work on XamlProfilerTracing::IsProfilingEnabled(), which checks that same
-// level and keyword.
-
-// Keyword carried by every XAML Profiler event. Sessions that enable the provider with
-// MatchAnyKeyword 0 (all keywords) also match it. Keep in sync with XamlProfilerKeyword in
-// tools/XamlProfiler/XamlProfilerApp/Services/EtwListenerService.cs and XamlProfiler.wprp.
-#define XAMLPROFILER_KEYWORD 0x0000000000000001
+// provider group (DECLARE_TRACELOGGING_CLASS would join it, letting telemetry sessions turn
+// the profiler on in every XAML process). Only a trace session that enables this provider
+// explicitly can turn it on.
 
 class XamlProfilerLogging : public wil::TraceLoggingProvider
 {
@@ -63,15 +57,6 @@ class XamlProfilerTracing final : public TelemetryBase
     IMPLEMENT_TELEMETRY_CLASS(XamlProfilerTracing, XamlProfilerLogging);
 
 public:
-
-    // Gate for all XAML Profiler instrumentation: true only when a session has enabled this
-    // provider at Verbose level with XAMLPROFILER_KEYWORD. Use this rather than the inherited
-    // IsEnabled(), whose defaults (level 0, keyword 0) match any session that enables the
-    // provider at any level or keyword.
-    static bool IsProfilingEnabled() noexcept
-    {
-        return IsEnabled(WINEVENT_LEVEL_VERBOSE, XAMLPROFILER_KEYWORD);
-    }
 
     // =====================================================================
     // Logical Tree Events
@@ -88,8 +73,7 @@ public:
         PCWSTR,   ChildLabel,
         bool,     IsTemplateChild,
         uint64_t, ChildPeerHandle,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a child UIElement is inserted at a specific index.
     // ChildLabel is the child's GetDebugLabel() — x:Name if set, else class name.
@@ -102,16 +86,14 @@ public:
         PCWSTR,   ChildLabel,
         bool,     IsTemplateChild,
         uint64_t, ChildPeerHandle,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a child UIElement is removed from a parent's children collection.
     // No label — the consumer already has it from the original ChildAdded/ChildInserted event.
     DEFINE_TRACELOGGING_EVENT_PARAM2(ChildRemoved,
         uint64_t, ParentId,
         uint64_t, ChildId,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a UIElement enters the live tree.
     // Label is the element's GetDebugLabel().
@@ -131,16 +113,14 @@ public:
         PCWSTR,   SourceFileUri,
         uint32_t, SourceLine,
         uint32_t, SourceColumn,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a UIElement leaves the live tree.
     DEFINE_TRACELOGGING_EVENT_PARAM3(ElementLeftTree,
         uint64_t, ElementId,
         uint64_t, ParentId,
         bool, IsLive,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Snapshot of XAML allocator-owned CPU heap blocks. This excludes GPU texture backing and
     // process allocations owned by other components/runtimes.
@@ -152,8 +132,7 @@ public:
         uint64_t, CumulativeAllocatedBytes,
         uint64_t, CumulativeAllocationCount,
         uint64_t, CumulativeDeallocationCount,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // =====================================================================
     // Peer Association Events
@@ -169,8 +148,7 @@ public:
     DEFINE_TRACELOGGING_EVENT_PARAM2(PeerAssociated,
         uint64_t, ElementId,
         uint64_t, PeerHandle,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // =====================================================================
     // Content Change Events
@@ -186,8 +164,7 @@ public:
         uint64_t, NewContentId,
         PCWSTR,   NewContentLabel,
         uint64_t, NewContentPeerHandle,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // =====================================================================
     // Popup Events
@@ -202,16 +179,14 @@ public:
         PCWSTR,   PopupLabel,
         PCWSTR,   ChildLabel,
         uint64_t, ChildPeerHandle,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a Popup is closed and its child leaves the visual tree.
     // No label — consumer already has it from PopupOpened.
     DEFINE_TRACELOGGING_EVENT_PARAM2(PopupClosed,
         uint64_t, PopupId,
         uint64_t, ChildId,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // =====================================================================
     // Composition Tree Events
@@ -228,29 +203,25 @@ public:
         uint64_t, ParentCompNodeId,
         PCWSTR,   ElementLabel,
         uint64_t, UIElementPeerHandle,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a UIElement's composition peer is unlinked.
     DEFINE_TRACELOGGING_EVENT_PARAM2(CompPeerUnlinked,
         uint64_t, UIElementId,
         uint64_t, CompNodeId,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a comp node child is inserted into a parent comp node.
     DEFINE_TRACELOGGING_EVENT_PARAM2(CompNodeChildInserted,
         uint64_t, ParentCompNodeId,
         uint64_t, ChildCompNodeId,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a comp node child is removed from a parent comp node.
     DEFINE_TRACELOGGING_EVENT_PARAM2(CompNodeChildRemoved,
         uint64_t, ParentCompNodeId,
         uint64_t, ChildCompNodeId,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // =====================================================================
     // WUC (Windows.UI.Composition) Visual Tree Events
@@ -284,23 +255,20 @@ public:
         int32_t,  Index,
         PCWSTR,   VisualType,
         PCWSTR,   Properties,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a WUC visual is removed from its parent's children collection.
     DEFINE_TRACELOGGING_EVENT_PARAM2(WucVisualChildRemoved,
         uint64_t, ParentVisualId,
         uint64_t, ChildVisualId,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when *all* children of a WUC container are removed at once (RemoveAll),
     // e.g. when an element re-renders its content. The consumer should drop every
     // child currently recorded under ParentVisualId.
     DEFINE_TRACELOGGING_EVENT_PARAM1(WucVisualChildrenCleared,
         uint64_t, ParentVisualId,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a WUC visual is set as the root of a composition target/island
     // (ContentIsland::Root or XamlIslandRoot::SetRootVisual). This is how the very
@@ -312,14 +280,12 @@ public:
         uint64_t, OwnerCompNodeId,
         PCWSTR,   VisualType,
         PCWSTR,   Properties,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a composition target/island root is cleared (Root set to null).
     DEFINE_TRACELOGGING_EVENT_PARAM1(WucVisualRootCleared,
         uint64_t, TargetId,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // =====================================================================
     // GPU Memory Events
@@ -336,8 +302,7 @@ public:
         uint32_t, Height,
         uint32_t, PixelStride,
         bool,     IsVirtual,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Reports the transient D3D11 texture exposed by DComp during BeginDraw. For atlased
     // surfaces, Width/Height describe the shared backing texture and OffsetX/OffsetY locate
@@ -353,8 +318,7 @@ public:
         uint32_t, SampleCount,
         int32_t,  OffsetX,
         int32_t,  OffsetY,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Associates a rendered IVisual with the DComp surface used by one of its brush roles.
     // SurfaceId == 0 clears the role. Role 0 is the brush texture; role 1 is the mask texture.
@@ -363,8 +327,7 @@ public:
         uint64_t, VisualId,
         uint64_t, SurfaceId,
         uint32_t, Role,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Driver-reported memory usage for this process on the D3D device's adapter. This is the
     // closest available view of committed GPU memory, but allocations owned by DWM/DComp may
@@ -376,8 +339,7 @@ public:
         uint64_t, NonLocalCurrentUsage,
         uint64_t, NonLocalBudget,
         bool,     NonLocalAvailable,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-        TraceLoggingKeyword(XAMLPROFILER_KEYWORD));
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 };
 
 #endif // XAMLPROFILER_ENABLED

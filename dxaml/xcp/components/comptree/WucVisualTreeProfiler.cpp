@@ -18,7 +18,7 @@
 // This file ports the WUC-visual property extraction used by DCompTreeHelper's live
 // <VisualTree> dump and reuses the identical attribute serialization, so the profiler
 // stream and the live dump describe visuals the same way. All work here is gated behind
-// XamlProfilerTracing::IsProfilingEnabled() by the callers below.
+// XamlProfilerTracing::IsEnabled() by the callers below.
 
 namespace
 {
@@ -411,7 +411,7 @@ namespace WucVisualTreeProfiler
 {
     bool IsEnabled()
     {
-        return XamlProfilerTracing::IsProfilingEnabled();
+        return XamlProfilerTracing::IsEnabled();
     }
 
     void NotifyChildInserted(

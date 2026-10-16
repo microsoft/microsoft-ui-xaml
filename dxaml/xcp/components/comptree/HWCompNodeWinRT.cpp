@@ -3502,7 +3502,7 @@ void HWCompTreeNodeWinRT::InsertChildSynchronous(
     // nodes and become inconsistent with the real m_children structure.
     // Skip comp-node-tree edges touching a suppressed pick-overlay node.
 #ifdef XAMLPROFILER_ENABLED
-    if (XamlProfilerTracing::IsProfilingEnabled() &&
+    if (XamlProfilerTracing::IsEnabled() &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(child)))
     {
@@ -3781,7 +3781,7 @@ void HWCompTreeNodeWinRT::RemoveSynchronous()
         // this node left the tree and would keep it forever.
         // Skip comp-node-tree edges touching a suppressed pick-overlay node.
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsProfilingEnabled() &&
+        if (XamlProfilerTracing::IsEnabled() &&
             !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(parentCompNode)) &&
             !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)))
         {

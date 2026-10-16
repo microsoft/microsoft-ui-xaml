@@ -48,12 +48,6 @@ All events go out on a single TraceLogging provider, defined in
   `IMPLEMENT_TRACELOGGING_CLASS_WITHOUT_TELEMETRY`, so the provider is not part of
   the Microsoft telemetry provider group; only a session that enables this
   provider explicitly can turn it on.
-- **Level / keyword:** every event is `WINEVENT_LEVEL_VERBOSE` (5) with keyword
-  `XAMLPROFILER_KEYWORD` (`0x1`). Call sites gate on
-  `XamlProfilerTracing::IsProfilingEnabled()`, which checks that same level and
-  keyword, so no instrumentation work runs unless a session enables the provider
-  at Verbose with `0x1` (a `MatchAnyKeyword` of `0`, meaning all keywords, also
-  matches).
 
 Because TraceLogging is **self-describing**, adding a field or a whole new event
 never changes the GUID and never breaks an older consumer — old consumers ignore
@@ -212,7 +206,7 @@ inserted visual.
   `NotifyChildInserted / NotifyChildRemoved / NotifyChildrenCleared /
   NotifyRootSet / NotifyRootCleared`.
 - `dxaml/xcp/components/comptree/WucVisualTreeProfiler.cpp` **(new)** — implements
-  them. Every function **early-returns unless `XamlProfilerTracing::IsProfilingEnabled()`**
+  them. Every function **early-returns unless `XamlProfilerTracing::IsEnabled()`**
   (so building the property string costs nothing when no session is attached).
   Internally it ports, byte-for-byte, `DCompTreeHelper`'s serialization
   (`BuildPropertiesString`, enum-name helpers, `GetWucVisualTypeName`) and
@@ -297,8 +291,7 @@ phantom nodes in the very tree being inspected. Suppression is producer-side:
   safe. No string outlives the notify call.
 - **Pointer ids** are `reinterpret_cast<uint64_t>` of objects alive at the emit
   point (the mutation already succeeded).
-- **Cost when idle:** the WUC layer is gated behind `IsProfilingEnabled()`
-  (Verbose level + profiler keyword); the label /
+- **Cost when idle:** the WUC layer is gated behind `IsEnabled()`; the label /
   peer-handle / template reads are cheap member/pointer reads. No behavioral
   runtime logic changes — only the ETW payload is enriched.
 - **Compatibility:** provider GUID unchanged; self-describing TraceLogging makes

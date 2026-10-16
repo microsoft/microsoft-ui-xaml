@@ -1376,7 +1376,7 @@ void DCompSurface::TraceProfilerTextureObserved(
     _In_ IUnknown* updateObject,
     const POINT& offset) noexcept
 {
-    if (!XamlProfilerTracing::IsProfilingEnabled())
+    if (!XamlProfilerTracing::IsEnabled())
     {
         return;
     }
@@ -1422,7 +1422,7 @@ void DCompSurface::TraceProfilerTextureObserved(
 
 void DCompSurface::TraceProfilerMemoryChange(bool isAllocation)
 {
-    if (!XamlProfilerTracing::IsProfilingEnabled())
+    if (!XamlProfilerTracing::IsEnabled())
     {
         return;
     }

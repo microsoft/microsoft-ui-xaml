@@ -78,8 +78,7 @@ on MSBuild Core which can't compile a vcxproj. So:
 
 **Subscription.** `Start()` creates a real-time `TraceEventSession`
 (`Microsoft.Diagnostics.Tracing`, TraceEvent library), enables the provider GUID
-`{A1B2C3D4-…}` at `Verbose` with the profiler keyword (`0x1`, matching
-`XAMLPROFILER_KEYWORD`), and pumps events on a dedicated background thread via
+`{A1B2C3D4-…}` at `Verbose`, and pumps events on a dedicated background thread via
 `_source.Process()`. Requires **Administrator** (ETW real-time sessions do).
 
 **The recycled-buffer hazard (critical).** The `TraceEvent` instance and its

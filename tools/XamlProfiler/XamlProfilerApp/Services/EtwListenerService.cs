@@ -17,10 +17,6 @@ public sealed class EtwListenerService : IDisposable
     private static readonly Guid XamlProfilerProviderGuid =
         new("A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D");
 
-    // Must match XAMLPROFILER_KEYWORD in XamlProfilerTracing.h. Every profiler event carries it,
-    // and the framework only runs its instrumentation for sessions that enable it at Verbose.
-    private const ulong XamlProfilerKeyword = 0x1;
-
     private const string SessionName = "XamlProfilerSession";
 
     // Batching: events arrive on the ETW pump thread far faster than the UI
@@ -79,7 +75,7 @@ public sealed class EtwListenerService : IDisposable
                 StopOnDispose = true
             };
 
-            _session.EnableProvider(XamlProfilerProviderGuid, TraceEventLevel.Verbose, XamlProfilerKeyword);
+            _session.EnableProvider(XamlProfilerProviderGuid, TraceEventLevel.Verbose);
 
             var pidInfo = _targetProcessId != 0 ? $" (PID: {_targetProcessId})" : " (all processes)";
             StatusChanged?.Invoke($"Session started{pidInfo} — waiting for events...");
