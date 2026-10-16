@@ -2144,6 +2144,58 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies removing a column whose UIElement Header holds focus moves focus to the nearest remaining header, never onto the removed one.")]
+        public void VerifyFocusInRemovedColumnHeaderMovesToNearestHeader()
+        {
+            TableView tableView = null;
+            CheckBox headerElement = null;
+            var removedHeaderFocused = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var removedHeader = RequireColumnHeader(tableView, 0);
+                EventHandler<GettingFocusEventArgs> handler = (s, args) =>
+                {
+                    if (ReferenceEquals(args.NewFocusedElement, removedHeader))
+                    {
+                        removedHeaderFocused = true;
+                    }
+                };
+                FocusManager.GettingFocus += handler;
+                try
+                {
+                    tableView.Columns.RemoveAt(0);
+                }
+                finally
+                {
+                    FocusManager.GettingFocus -= handler;
+                }
+                Verify.IsFalse(removedHeaderFocused, "Focus must not move onto the removed column's header.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                DependencyObject focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused after the removal: {focused}");
+                Verify.IsTrue(focused != null && IsUnder(focused, header), "Focus must move to the nearest remaining header.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies changing a string Header keeps the header's content and tooltip until the header band rebuilds.")]
         public void VerifyStringHeaderChangeKeepsHeaderContentUntilRebuild()
         {
