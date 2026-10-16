@@ -2856,8 +2856,8 @@ void TableView::ReleaseHeaderCells(const winrt::Panel& host, HeaderRelease scope
     }
 
     // Only a rebuild captures and restores header focus itself. Elsewhere the cell stays until the
-    // queued rebuild, so park focus on it rather than lose it with the content. A removed column's
-    // cell must not take focus, so focus moves to the nearest remaining header instead.
+    // queued rebuild, so park focus on it rather than lose it with the content. Focus leaves a removed
+    // column's cell for the nearest remaining header, and stays parked on it only when none can take it.
     if (scope != HeaderRelease::All)
     {
         winrt::FocusState focusState = winrt::FocusState::Unfocused;
@@ -2898,16 +2898,31 @@ void TableView::MoveHeaderFocusOffRemovedColumn(
     const winrt::TableViewColumn& removedColumn,
     winrt::FocusState focusState)
 {
-    auto const children = host.Children();
-    uint32_t removedIndex = 0;
-    if (!children.IndexOf(removedCell, removedIndex))
+    // Snapshot: Focus raises app focus handlers that can re-enter RebuildHeaders and clear Children.
+    std::vector<winrt::UIElement> cells;
+    {
+        auto const children = host.Children();
+        const uint32_t size = children.Size();
+        cells.reserve(size);
+        for (uint32_t i = 0; i < size; ++i)
+        {
+            cells.push_back(children.GetAt(i));
+        }
+    }
+    auto const removedIt = std::find(cells.begin(), cells.end(), removedCell);
+    if (removedIt == cells.end())
     {
         return;
     }
+    const size_t removedIndex = static_cast<size_t>(removedIt - cells.begin());
 
-    auto const tryFocus = [this, &children, focusState](uint32_t index) -> winrt::TableViewColumn
+    auto const isHosted = [&host](const winrt::UIElement& cell)
     {
-        auto const cell = children.GetAt(index).try_as<winrt::Control>();
+        return winrt::VisualTreeHelper::GetParent(cell) == host;
+    };
+    auto const tryFocus = [this, &cells, &isHosted, focusState](size_t index) -> winrt::TableViewColumn
+    {
+        auto const cell = cells[index].try_as<winrt::Control>();
         winrt::TableViewColumn column{ nullptr };
         if (cell)
         {
@@ -2916,6 +2931,7 @@ void TableView::MoveHeaderFocusOffRemovedColumn(
         if (column
             && winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this
             && cell.Visibility() == winrt::Visibility::Visible
+            && isHosted(cell)
             && cell.Focus(focusState))
         {
             return column;
@@ -2924,8 +2940,8 @@ void TableView::MoveHeaderFocusOffRemovedColumn(
     };
 
     winrt::TableViewColumn fallbackColumn{ nullptr };
-    const uint32_t count = children.Size();
-    for (uint32_t distance = 1; !fallbackColumn && distance < count; ++distance)
+    const size_t count = cells.size();
+    for (size_t distance = 1; !fallbackColumn && distance < count; ++distance)
     {
         if (removedIndex + distance < count)
         {
@@ -2937,15 +2953,37 @@ void TableView::MoveHeaderFocusOffRemovedColumn(
         }
     }
 
+    // With no header to take it, focus parks on the removed cell until the queued rebuild, which
+    // returns it to the column if it came back and otherwise moves it into the body.
+    m_headerFocusRemovedColumn = winrt::make_weak(removedColumn);
+    m_headerFocusFallbackColumn = nullptr;
     if (fallbackColumn)
     {
-        m_headerFocusRemovedColumn = winrt::make_weak(removedColumn);
         m_headerFocusFallbackColumn = winrt::make_weak(fallbackColumn);
     }
-    else
+    m_headerFocusRemovedState = focusState;
+    if (!fallbackColumn)
     {
-        static_cast<winrt::TableView>(*this).Focus(focusState);
+        if (auto const parkCell = removedCell.try_as<winrt::Control>(); parkCell && isHosted(parkCell))
+        {
+            parkCell.Focus(winrt::FocusState::Programmatic);
+        }
     }
+}
+
+// The body element focus enters on from outside: the current row or cell, else the viewport edge.
+bool TableView::FocusBodyAfterHeaderRemoval(winrt::FocusState focusState)
+{
+    winrt::UIElement target{ nullptr };
+    if (auto const edgeRow = FindViewportEdgeRowInternal(false))
+    {
+        target = ResolveFocusEntryTarget(edgeRow, nullptr, winrt::FocusNavigationDirection::None).Element;
+    }
+    if (!target)
+    {
+        target = FindViewportEdgeElementInternal(false, true /* includeGroupHeaders */);
+    }
+    return target && target.Focus(focusState);
 }
 
 void TableView::RebuildHeaders()
@@ -2975,6 +3013,7 @@ void TableView::RebuildHeadersCore()
     m_headerSortSpaceArmedColumn = nullptr;
     auto const removedFocusColumn = m_headerFocusRemovedColumn.get();
     auto const fallbackFocusColumn = m_headerFocusFallbackColumn.get();
+    auto const removedFocusState = m_headerFocusRemovedState;
     m_headerFocusRemovedColumn = nullptr;
     m_headerFocusFallbackColumn = nullptr;
     auto host = m_headerHost.get();
@@ -2986,18 +3025,29 @@ void TableView::RebuildHeadersCore()
     // Clearing the host drops focus with the cell; remember which header held it.
     winrt::FocusState focusedHeaderState = winrt::FocusState::Unfocused;
     auto focusedHeaderColumn = GetFocusedHeaderColumn(host, focusedHeaderState);
-    // A removed column that came back (a move) gets back the focus that left its header.
-    if (removedFocusColumn && focusedHeaderColumn && focusedHeaderColumn == fallbackFocusColumn
-        && winrt::get_self<TableViewColumn>(removedFocusColumn)->GetOwningTableView() == *this)
+    // A removed column that came back (a move) gets back the focus that left its header. Focus
+    // still parked on a removed column that did not come back moves into the body.
+    bool focusBody = false;
+    if (removedFocusColumn && focusedHeaderColumn
+        && (focusedHeaderColumn == fallbackFocusColumn || focusedHeaderColumn == removedFocusColumn))
     {
-        focusedHeaderColumn = removedFocusColumn;
+        if (winrt::get_self<TableViewColumn>(removedFocusColumn)->GetOwningTableView() == *this)
+        {
+            focusedHeaderColumn = removedFocusColumn;
+            focusedHeaderState = removedFocusState;
+        }
+        else if (focusedHeaderColumn == removedFocusColumn)
+        {
+            focusedHeaderColumn = nullptr;
+            focusBody = true;
+        }
     }
 
     // Any focus move during the rebuild other than XAML's rescue off the removed cell belongs to
     // the app or user, and the restore below must not pull focus back from it.
     bool headerFocusMovedAway = false;
     winrt::FocusManager::GettingFocus_revoker headerFocusMoveRevoker{};
-    if (focusedHeaderColumn)
+    if (focusedHeaderColumn || focusBody)
     {
         auto const root = XamlRoot();
         auto const focusedAtTeardown = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
@@ -3167,6 +3217,10 @@ void TableView::RebuildHeadersCore()
     if (focusedHeaderColumn && !headerFocusMovedAway)
     {
         RestoreHeaderFocus(focusedHeaderColumn, focusedHeaderState);
+    }
+    else if (focusBody && !headerFocusMovedAway)
+    {
+        FocusBodyAfterHeaderRemoval(removedFocusState);
     }
 }
 
