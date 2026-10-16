@@ -2622,6 +2622,12 @@ CInputServices::RaiseDelayedPointerUpEvent(
         // cause pendingPointerEventArgs to be cleaned up.
         pendingPointerEventArgs->m_bFiredDelayedPointerUp = TRUE;
 
+        // Keep this release's press alive across nested input, but not while apps retain the event args.
+        auto pressStateCleanup = wil::scope_exit([args = pendingPointerEventArgs]
+        {
+            args->m_pointerPressedEventArgs.reset();
+        });
+
         // SYNC_CALL_TO_APP - This is a synchronous callout to application code that allows the application to re-enter
         // XAML. The application could change state and release objects, so protect against reentrancy by ensuring that
         // objects are alive and state is re-validated after return.

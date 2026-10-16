@@ -71,6 +71,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void NestedHandledReleasePreservesOuterScrollViewerFocus()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Pointer Focus Test" }))
+            {
+                FindElement.ByName<CheckBox>("Nested release mode").Check();
+                Wait.ForIdle();
+                var initialFocus = FindElement.ByName("Initial nested focus");
+                var status = FindElement.ByName<TextBlock>("Nested release status");
+                InputHelper.LeftClick(initialFocus);
+                Verify.IsTrue(initialFocus.HasKeyboardFocus);
+
+                InputHelper.LeftClick(FindElement.ByName("Outer release"), skipWait: true);
+                Wait.ForIdle();
+                Verify.AreEqual("Waiting", status.GetText());
+                InputHelper.LeftClick(FindElement.ByName("Inner release"));
+                Wait.ForIdle();
+                Verify.AreEqual("Completed", status.GetText());
+                Verify.IsTrue(FindElement.ByName("Input root ScrollViewer").HasKeyboardFocus,
+                    "The nested handled release must not consume the outer release's pending focus.");
+            }
+        }
+
+        [TestMethod]
         public void UnhandledReleaseAfterCaptureStillFocusesScrollViewer()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Pointer Focus Test" }))
