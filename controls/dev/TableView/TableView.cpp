@@ -3692,13 +3692,18 @@ void TableView::CancelColumnResizeDrag()
 
 // The same gates that decide whether the gripper exists and is shown, so UIA never offers a
 // resize the pointer cannot perform.
+bool TableView::IsColumnResizeAllowed(const winrt::TableViewColumn& column)
+{
+    return column &&
+        CanUserResizeColumns() &&
+        column.CanResize() &&
+        column.Visibility() == winrt::Visibility::Visible &&
+        winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this;
+}
+
 winrt::ResizeGripper TableView::GetAvailableResizeGripper(const winrt::TableViewColumn& column)
 {
-    if (!column ||
-        !CanUserResizeColumns() ||
-        !column.CanResize() ||
-        column.Visibility() != winrt::Visibility::Visible ||
-        winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != *this)
+    if (!IsColumnResizeAllowed(column))
     {
         return nullptr;
     }
