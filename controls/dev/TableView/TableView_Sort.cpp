@@ -639,15 +639,18 @@ bool TableView::SyncTableViewSourceSort(
         }
     }
 
-    if (!keySelector)
-    {
-        return false;
-    }
-
     // Limitation: this reshapes on explicit sort and on collection notifications only.
     // INotifyPropertyChanged-only mutations of the active sort key do not live re-sort until the
     // next collection change.
     auto tableViewSourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
+    // A clear needs no key selector: an app-declared axis lit on a column was never installed by
+    // this control, yet clearing that column must still remove it.
+    if (direction == winrt::SortDirection::None
+        ? !keySelector && tableViewSourceImpl->ActiveSortAxisInfos().empty()
+        : !keySelector)
+    {
+        return false;
+    }
     // The control is the last writer here, so its axis becomes the only one. Without this an
     // app-declared fluent Sort axis would survive alongside it and, being declared earlier, would
     // outrank it as the primary sort while the chevron advertised this column.

@@ -1320,6 +1320,62 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies clearing a column lit by an app-declared TableViewSource sort removes that sort.")]
+        [TestProperty("data:Clear", "{SortByColumnNone, CanSortFalse, HeaderInvoke}")]
+        public void VerifyClearingColumnLitBySourceSortRemovesSourceSort()
+        {
+            var clear = ((string)TestContext.DataRow["Clear"]).Trim();
+            TableView tableView = null;
+            TableViewSource source = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateSortTable(source);
+                tableView.Columns[0].SortCycle = TableViewSortCycle.AscendingDescendingNone;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Descending));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection,
+                    "Precondition: the source sort lights the Name column.");
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(tableView, person => person.Name),
+                    "precondition: the source sort orders the rows");
+
+                switch (clear)
+                {
+                    case "SortByColumnNone":
+                        tableView.SortByColumn(tableView.Columns[0], SortDirection.None);
+                        break;
+                    case "CanSortFalse":
+                        tableView.Columns[0].CanSort = false;
+                        break;
+                    default:
+                        var provider = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0])
+                            .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                        provider.Invoke();
+                        break;
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, $"{clear}: the column must be cleared.");
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name),
+                    $"{clear}: the clear must remove the app-declared sort");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies invoking a column header toggles the sort and updates the sort indicator.")]
         public void VerifyHeaderInvokeTogglesSortAndUpdatesIndicator()
         {
