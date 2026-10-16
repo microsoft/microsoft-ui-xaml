@@ -17,12 +17,11 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="privatecontrols:ResizeGripper">
-                    <!-- The separator is the whole visual: it tells the user this edge is draggable
-                         before any press. Owned here rather than by the host so every consumer gets
-                         it, and so it can be restyled through ResizeGripperSeparatorBrush and
+                    <!-- The resize cursor is the hover affordance, so the separator only marks the edge
+                         while dragging. Restyled through ResizeGripperSeparatorBrush and
                          ResizeGripperSeparatorThickness. -->
                     <!-- One Border: the Transparent Background keeps the whole gripper a pointer
-                         target, and the border is the separator. Normal and Disabled hide it by
+                         target, and the border is the separator. States other than Pressed hide it by
                          clearing the brush, so leaving them restores the templated BorderBrush. -->
                     <Border x:Name="Separator"
                             Background="{TemplateBinding Background}"
@@ -36,9 +35,11 @@
                                         <Setter Target="Separator.BorderBrush" Value="Transparent" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="PointerOver" />
-                                <!-- Same weight as PointerOver: the pointer is still over the
-                                     gripper during a drag, and a change mid-gesture reads as a glitch. -->
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="Separator.BorderBrush" Value="Transparent" />
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="Pressed" />
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
