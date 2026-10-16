@@ -281,11 +281,32 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupListViewDataPeerHost(bo
     }
 }
 
-void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange, bool createWithStructureListener)
+void PopupAutomationIntegrationTests::VerifyWindowedPopupInvokedEventSurvivesReopen()
+{
+    VerifyWindowedPopupProviderLifetime(PopupHostChange::None, false /* createWithStructureListener */, true /* verifyInvokedEvent */);
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupInvokedEventWithStructureListenerSurvivesReopen()
+{
+    VerifyWindowedPopupProviderLifetime(PopupHostChange::None, true /* createWithStructureListener */, true /* verifyInvokedEvent */);
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange, bool createWithStructureListener, bool verifyInvokedEvent)
 {
     wrl::ComPtr<AutomationClient::AutomationStructureChangeHandler> structureHandler;
+    wrl::ComPtr<AutomationClient::AutomationEventHandler> invokedHandler;
+    wrl::ComPtr<IUIAutomationInvokePattern> invokePattern;
+    auto invokedEvent = verifyInvokedEvent ? std::make_shared<Event>() : nullptr;
+    int invocationCount = 0;
     TestCleanupWrapper cleanup([&]()
     {
+        if (invokedHandler)
+        {
+            UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+            {
+                invokedHandler->RemoveEventHandler();
+            });
+        }
         if (structureHandler)
         {
             UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
@@ -396,7 +417,36 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
         {
             structureHandler->RemoveEventHandler();
         }
+        if (verifyInvokedEvent)
+        {
+            invokedHandler.Attach(new AutomationClient::AutomationEventHandler(
+                client, invokedEvent, TreeScope_Element, UIA_Invoke_InvokedEventId));
+            invokedHandler->AttachEventHandler();
+            wrl::ComPtr<IUIAutomationElement> element;
+            client->GetCurrentUIAutomationElement(&element);
+            VERIFY_IS_NOT_NULL(element.Get());
+            LogThrow_IfFailed(element->GetCurrentPatternAs(UIA_InvokePatternId, IID_PPV_ARGS(&invokePattern)));
+        }
     });
+
+    auto verifyInvocation = [&]()
+    {
+        if (verifyInvokedEvent)
+        {
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(xaml_automation_peers::AutomationPeer::ListenerExists(
+                    xaml_automation_peers::AutomationEvents::InvokePatternOnInvoked));
+            });
+            UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+            {
+                LogThrow_IfFailed(invokePattern->Invoke());
+                invokedHandler->Confirm();
+                invocationCount++;
+                VERIFY_ARE_EQUAL(invocationCount, invokedEvent->TimesFired());
+            });
+        }
+    };
 
     RunOnUIThread([&]()
     {
@@ -408,6 +458,7 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
         LogThrow_IfFailed(retainedProvider->get_FragmentRoot(&retainedRoot));
         CheckUIAElementName(retainedProvider, s_automationPopupButtonName);
     });
+    verifyInvocation();
 
     const int reopenCount = hostChange == PopupHostChange::NonWindowed ? 1 : 3;
     for (int cycle = 0; cycle < reopenCount; cycle++)
@@ -529,6 +580,20 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
             retainedProvider = currentProvider;
             retainedRoot = currentRoot;
             previousPopup = nullptr;
+        });
+        verifyInvocation();
+    }
+
+    if (invokedHandler)
+    {
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            invokedHandler->RemoveEventHandler();
+        });
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(xaml_automation_peers::AutomationPeer::ListenerExists(
+                xaml_automation_peers::AutomationEvents::InvokePatternOnInvoked));
         });
     }
 

@@ -98,6 +98,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyWindowedPopupInvokedEventSurvivesReopen)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify an element-scoped Invoked subscription on a popup button receives events across reopening.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWindowedPopupInvokedEventWithStructureListenerSurvivesReopen)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify an event-created popup provider delivers Invoked events across reopening.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
     private:
         enum class PopupHostChange { None, NewPopup, NonWindowed, NestedInline };
 
@@ -130,7 +140,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         wrl::ComPtr<IRawElementProviderFragment> GetUIAWindow();
         void CheckUIAElementName(_In_ wrl::ComPtr<IRawElementProviderFragment> uiaElement, _In_ const WCHAR* expectedName);
         void VerifyParentlessPopupAutomationTreeCommon(bool hasFrameAP);
-        void VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange, bool createWithStructureListener = false);
+        void VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange, bool createWithStructureListener = false, bool verifyInvokedEvent = false);
         void VerifyWindowedPopupListViewDataPeerHost(bool createBeforeNavigation);
 
         static WCHAR s_automationName[];

@@ -1680,7 +1680,9 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseAutomationEvent(
     xref_ptr<CUIAWrapper> wrapper;
     xref_ptr<IRawElementProviderSimple> provider;
 
-    if (S_FALSE == UIAClientsAreListening(eAutomationEvent))
+    // The provider factory can select a popup host with listeners of its own.
+    if (S_FALSE == UIAClientsAreListening(eAutomationEvent) &&
+        (!pAP || !pAP->ListenerExists(eAutomationEvent)))
     {
         return S_OK;
     }

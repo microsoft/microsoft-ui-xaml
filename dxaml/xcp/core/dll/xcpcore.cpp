@@ -5802,6 +5802,24 @@ CCoreServices::UIAClientsAreListening(_In_ UIAXcp::APAutomationEvents eAutomatio
                 }
             }
         }
+
+        // Windowed popups have their own UIA subscription counts.
+        for (const auto& contentRoot : m_contentRootCoordinator.GetContentRoots())
+        {
+            if (auto popupRoot = contentRoot->GetVisualTreeNoRef()->GetPopupRoot())
+            {
+                for (auto popup : popupRoot->GetOpenPopupList(true /* includeUnloadingPopups */))
+                {
+                    if (auto popupWindow = popup->GetUIAWindow())
+                    {
+                        if (S_OK == popupWindow->UIAClientsAreListening(eAutomationEvent))
+                        {
+                            return S_OK;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     return hr;
