@@ -2954,7 +2954,7 @@ void TableView::MoveHeaderFocusOffRemovedColumn(
     }
 
     // With no header to take it, focus parks on the removed cell until the queued rebuild, which
-    // returns it to the column if it came back and otherwise moves it into the body.
+    // returns it to the column if it came back and otherwise moves it to the first header or the body.
     m_headerFocusRemovedColumn = winrt::make_weak(removedColumn);
     m_headerFocusFallbackColumn = nullptr;
     if (fallbackColumn)
@@ -3026,7 +3026,7 @@ void TableView::RebuildHeadersCore()
     winrt::FocusState focusedHeaderState = winrt::FocusState::Unfocused;
     auto focusedHeaderColumn = GetFocusedHeaderColumn(host, focusedHeaderState);
     // A removed column that came back (a move) gets back the focus that left its header. Focus
-    // still parked on a removed column that did not come back moves into the body.
+    // still parked on a removed column that did not come back moves to the first header or the body.
     bool focusBody = false;
     if (removedFocusColumn && focusedHeaderColumn
         && (focusedHeaderColumn == fallbackFocusColumn || focusedHeaderColumn == removedFocusColumn))
@@ -3220,7 +3220,29 @@ void TableView::RebuildHeadersCore()
     }
     else if (focusBody && !headerFocusMovedAway)
     {
-        FocusBodyAfterHeaderRemoval(removedFocusState);
+        // Focus parks only when no other header could take it, so headers built now replaced the
+        // removed columns; keep focus in the header band before falling back to the body.
+        winrt::TableViewColumn firstHeaderColumn{ nullptr };
+        if (auto const columns = Columns())
+        {
+            for (auto const& column : columns)
+            {
+                if (column && column.Visibility() == winrt::Visibility::Visible &&
+                    winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this)
+                {
+                    firstHeaderColumn = column;
+                    break;
+                }
+            }
+        }
+        if (firstHeaderColumn)
+        {
+            RestoreHeaderFocus(firstHeaderColumn, removedFocusState);
+        }
+        else
+        {
+            FocusBodyAfterHeaderRemoval(removedFocusState);
+        }
     }
 }
 

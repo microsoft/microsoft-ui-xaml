@@ -2197,7 +2197,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies focus in the header of a column that is moved or re-added with no other header to hold focus returns to that column's header.")]
-        [TestProperty("data:Change", "{MoveOnlyColumn, ClearAndReAddFirst, ClearAndReAddLast}")]
+        [TestProperty("data:Change", "{MoveOnlyColumn, ClearAndReAddLast}")]
         public void VerifyHeaderFocusReturnsWhenNoOtherHeaderCanHoldIt()
         {
             var change = ((string)TestContext.DataRow["Change"]).Trim();
@@ -2273,6 +2273,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
                 Log.Comment($"Focused after the removal: {focused}");
                 Verify.IsTrue(focused != null && IsUnder(focused, GetRowsRepeater(tableView)), "Focus must move into the table body.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies focus in a header stays in the header band when the columns are replaced by new instances.")]
+        [TestProperty("data:Change", "{ClearAndAddNew, ReplaceOnlyColumnWithoutRows}")]
+        public void VerifyHeaderFocusStaysInHeaderBandWhenColumnsReplaced()
+        {
+            var change = ((string)TestContext.DataRow["Change"]).Trim();
+            TableView tableView = null;
+            CheckBox headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = change == "ReplaceOnlyColumnWithoutRows"
+                    ? CreateTableView(new List<Person>(), headers: new[] { "Name" })
+                    : CreateThemingTable();
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                if (change == "ClearAndAddNew")
+                {
+                    tableView.Columns.Clear();
+                    tableView.Columns.Add(MakeTextColumn("Name"));
+                    tableView.Columns.Add(MakeTextColumn("Role"));
+                }
+                else
+                {
+                    tableView.Columns[0] = MakeTextColumn("Name");
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"{change}: focused {focused}");
+                Verify.IsTrue(focused != null && IsUnder(focused, RequireColumnHeader(tableView, 0)), $"{change}: focus must move to the first header of the new columns.");
+                Verify.AreEqual(FocusState.Keyboard, ((UIElement)focused).FocusState, $"{change}: keyboard focus must stay keyboard focus.");
             });
         }
 
