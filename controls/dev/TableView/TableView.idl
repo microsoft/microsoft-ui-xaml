@@ -414,13 +414,15 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
     static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
 }
 
-// Templated header, one per column; restyled via TableView.ColumnHeaderStyle or TableViewColumn.HeaderStyle.
+// Templated header, one per column, created only by TableView; restyled via TableView.ColumnHeaderStyle
+// or TableViewColumn.HeaderStyle.
 // Optional parts: PART_ContentPresenter, PART_GridLine, PART_SortIndicatorHost, PART_ResizeGripperHost.
 [MUX_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass TableViewColumnHeader : Microsoft.UI.Xaml.Controls.ContentControl
+runtimeclass TableViewColumnHeader : Microsoft.UI.Xaml.Controls.ContentControl
 {
-    TableViewColumnHeader();
+    // The column this header represents.
+    TableViewColumn Column { get; };
 }
 
 [MUX_PREVIEW]

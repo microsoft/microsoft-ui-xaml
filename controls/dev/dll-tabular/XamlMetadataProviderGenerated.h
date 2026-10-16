@@ -292,10 +292,19 @@ Entry c_typeEntries[] =
                 /* Arg 2 - BaseTypeName */ 
                 (PCWSTR)L"Microsoft.UI.Xaml.Controls.ContentControl",
                 /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ITableViewColumnHeaderFactory>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewColumnHeader"); },
+                nullptr,
                 /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    xamlType.AddMember(
+                        L"Column", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::TableViewColumnHeader>().Column(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                });
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }

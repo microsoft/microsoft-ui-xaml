@@ -400,8 +400,8 @@ only the bulk commands plus the header's own gesture and UIA pattern. Grouping i
 
 Styling is layered so the display-only base stays minimal while a richer surface can grow
 additively — the realized row/cell/header are already styleable targets (`TableViewRow` is a
-public `Control`; cell wrappers are `Border`s; column headers are public `TableViewColumnHeader`
-controls), so the additions below
+public `Control`; cell wrappers are `Border`s; column headers are public, sealed
+`TableViewColumnHeader` controls that only the TableView creates), so the additions below
 need no new base API or re-plumbing.
 
 **v1 (this base):**

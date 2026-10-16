@@ -65,7 +65,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewGroupHeader.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewRowTemplateSelector.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewColumnHeader.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewTelemetry.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewTip.cpp" />

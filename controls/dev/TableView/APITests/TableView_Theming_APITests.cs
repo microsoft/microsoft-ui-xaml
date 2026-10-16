@@ -1897,6 +1897,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(60.0, first.MinHeight, "A style MinHeight must win over the density row height.");
 
                 var second = RequireColumnHeader(tableView, 1);
+                Verify.IsTrue(ReferenceEquals(tableView.Columns[1], second.Column), "A header's Column must be the column it represents.");
                 Verify.IsTrue(ReferenceEquals(columnBrush, second.Background), "TableViewColumn.HeaderStyle must win over ColumnHeaderStyle.");
                 Verify.AreEqual((ushort)600, GetHeaderPresenter(tableView, 1).FontWeight.Weight,
                     "A column style without a FontWeight setter keeps the default SemiBold.");
