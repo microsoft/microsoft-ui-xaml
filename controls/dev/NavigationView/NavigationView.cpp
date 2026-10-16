@@ -1672,13 +1672,14 @@ void NavigationView::OnPaneToggleButtonClick(const winrt::IInspectable& /*sender
                     {
                         const auto defaultTarget = winrt::FocusManager::FindFirstFocusableElement(splitView.Pane());
                         gettingFocusRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke,
-                            [paneToggleButton, defaultTarget](auto const&, winrt::GettingFocusEventArgs const& args)
+                            [paneToggleButton, defaultTarget, &gettingFocusRevoker](auto const&, winrt::GettingFocusEventArgs const& args)
                             {
                                 if (!args.Cancel() && !args.Handled() &&
                                     args.OldFocusedElement() == paneToggleButton && args.NewFocusedElement() == defaultTarget)
                                 {
                                     args.Handled(args.TrySetNewFocusedElement(paneToggleButton));
                                 }
+                                gettingFocusRevoker.revoke();
                             });
                     }
                 });
@@ -4895,13 +4896,14 @@ void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::Naviga
             splitView && splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay && opener)
         {
             gettingFocusRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke,
-                [selectedContainer, opener](auto const&, winrt::GettingFocusEventArgs const& args)
+                [selectedContainer, opener, &gettingFocusRevoker](auto const&, winrt::GettingFocusEventArgs const& args)
                 {
                     if (!args.Cancel() && !args.Handled() && selectedContainer.IsSelected() &&
                         args.OldFocusedElement() == selectedContainer && args.NewFocusedElement() == opener)
                     {
                         args.Handled(args.TrySetNewFocusedElement(selectedContainer));
                     }
+                    gettingFocusRevoker.revoke();
                 });
         }
         ClosePane();
