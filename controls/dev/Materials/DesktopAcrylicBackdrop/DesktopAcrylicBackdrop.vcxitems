@@ -15,6 +15,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Generated\DesktopAcrylicBackdrop.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)DesktopAcrylicBackdrop.cpp" />
   </ItemGroup>
   <ItemGroup>
