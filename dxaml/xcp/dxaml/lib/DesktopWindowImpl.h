@@ -134,7 +134,7 @@ namespace DirectUI
 
     private:
         LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
-        _Check_return_ HRESULT OnShowWindow(WPARAM wParam, LPARAM lParam);
+        _Check_return_ HRESULT UpdateWindowVisibility();
         _Check_return_ HRESULT OnSizeChanged(WPARAM wParam, LPARAM lParam);
         _Check_return_ HRESULT OnMoved(WPARAM wParam, LPARAM lParam);
         _Check_return_ HRESULT OnActivate(WPARAM wParam, LPARAM lParam);
@@ -219,7 +219,7 @@ namespace DirectUI
         wil::critical_section m_weakWindowLock;
         ctl::WeakRefPtr m_weakWindow;
         DXamlCore* m_dxamlCoreNoRef = nullptr;
-        bool m_bMinimizedOrHidden = false;
+        bool m_bWindowVisible = false;
         bool m_bInitialWindowActivation = true;
 
         // --------------------------------------------------
