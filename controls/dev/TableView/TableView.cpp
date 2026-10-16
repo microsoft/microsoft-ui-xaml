@@ -2819,7 +2819,7 @@ winrt::Style TableView::CompatibleHeaderStyle(const winrt::Style& style)
 
 // A header cell keeps its column's UIElement Header and tooltip content parented until released, and
 // no other header can host them meanwhile. Every path that drops a header cell must release it first.
-void TableView::ReleaseHeaderCells(const winrt::Panel& host, bool detachedColumnsOnly)
+void TableView::ReleaseHeaderCells(const winrt::Panel& host, HeaderRelease scope, const winrt::TableViewColumn& column)
 {
     if (!host)
     {
@@ -2835,10 +2835,13 @@ void TableView::ReleaseHeaderCells(const winrt::Panel& host, bool detachedColumn
     {
         if (auto const headerCell = children.GetAt(i).try_as<winrt::FrameworkElement>())
         {
-            if (detachedColumnsOnly)
+            if (scope != HeaderRelease::All)
             {
-                auto const column = headerCell.Tag().try_as<winrt::TableViewColumn>();
-                if (!column || winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this)
+                auto const cellColumn = headerCell.Tag().try_as<winrt::TableViewColumn>();
+                const bool released = scope == HeaderRelease::Column
+                    ? cellColumn && cellColumn == column
+                    : cellColumn && winrt::get_self<TableViewColumn>(cellColumn)->GetOwningTableView() != *this;
+                if (!released)
                 {
                     continue;
                 }
@@ -2847,6 +2850,26 @@ void TableView::ReleaseHeaderCells(const winrt::Panel& host, bool detachedColumn
         }
     }
 
+    if (cells.empty())
+    {
+        return;
+    }
+
+    // Only a rebuild captures and restores header focus itself. Elsewhere the cell stays until the
+    // queued rebuild, so park focus on it rather than lose it with the content.
+    if (scope != HeaderRelease::All)
+    {
+        winrt::FocusState focusState = winrt::FocusState::Unfocused;
+        if (auto const focusedColumn = GetFocusedHeaderColumn(host, focusState))
+        {
+            auto const focusedCell = std::find_if(cells.begin(), cells.end(),
+                [&focusedColumn](auto const& cell) { return cell.Tag().try_as<winrt::TableViewColumn>() == focusedColumn; });
+            if (focusedCell != cells.end())
+            {
+                focusedCell->Focus(focusState);
+            }
+        }
+    }
     for (auto const& headerCell : cells)
     {
         TableViewDetails::ClearOwnedToolTip(headerCell);
@@ -2862,6 +2885,28 @@ void TableView::ReleaseHeaderCells(const winrt::Panel& host, bool detachedColumn
 
 void TableView::RebuildHeaders()
 {
+{
+    // App code run while the old headers are released (focus, tooltip and content changes) can ask
+    // for a rebuild. A nested one would build cells the outer one then drops without releasing.
+    if (m_inRebuildHeaders)
+    {
+        m_rebuildHeadersRequested = true;
+        return;
+    }
+
+    m_rebuildHeadersRequested = false;
+    {
+        m_inRebuildHeaders = true;
+        auto const inRebuildGuard = wil::scope_exit([this]() noexcept { m_inRebuildHeaders = false; });
+        RebuildHeadersCore();
+    }
+    if (std::exchange(m_rebuildHeadersRequested, false))
+    {
+        QueueRebuildHeaders();
+    }
+}
+
+void TableView::RebuildHeadersCore()
     m_headerSortSpaceArmedColumn = nullptr;
     auto host = m_headerHost.get();
     if (!host)

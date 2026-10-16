@@ -617,7 +617,9 @@ private:
     // Drives the SelectionModel; its SelectionChanged is the single funnel that publishes.
     void ApplySelection(int32_t index, bool measureTip = false);
 
-    void ReleaseHeaderCells(const winrt::Panel& host, bool detachedColumnsOnly = false);
+    enum class HeaderRelease { All, DetachedColumns, Column };
+    void ReleaseHeaderCells(const winrt::Panel& host, HeaderRelease scope = HeaderRelease::All, const winrt::TableViewColumn& column = nullptr);
+    void RebuildHeadersCore();
     winrt::Style CompatibleHeaderStyle(const winrt::Style& style);
     winrt::TableViewColumn GetFocusedHeaderColumn(const winrt::Panel& host, winrt::FocusState& focusState) const;
     // Refocuses the rebuilt header for column; retries once after layout if it cannot take focus yet.
@@ -1383,6 +1385,8 @@ private:
 
     bool m_rebuildHeadersQueued{ false };
     bool m_rebuildingHeaders{ false };
+    bool m_inRebuildHeaders{ false };
+    bool m_rebuildHeadersRequested{ false };
     // Incompatible header Styles already reported, so each is logged once.
     std::vector<winrt::weak_ref<winrt::Style>> m_loggedIncompatibleHeaderStyles;
 

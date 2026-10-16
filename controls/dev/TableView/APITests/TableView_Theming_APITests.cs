@@ -2069,6 +2069,144 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a replaced UIElement column Header can be re-parented right away, before the header band rebuilds.")]
+        public void VerifyReplacedUIElementHeaderCanBeReparentedImmediately()
+        {
+            TableView tableView = null;
+            StackPanel root = null;
+            Border headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new Border { Width = 20, Height = 12, Background = new SolidColorBrush(Microsoft.UI.Colors.Blue) };
+                tableView.Columns[0].Header = headerElement;
+                root = new StackPanel();
+                root.Children.Add(tableView);
+                LoadContent(root);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Columns[0].Header = "Name";
+                var other = new StackPanel();
+                root.Children.Add(other);
+                other.Children.Add(headerElement);
+                Verify.IsTrue(ReferenceEquals(other, VisualTreeHelper.GetParent(headerElement)), "The old Header must move to the new panel.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.AreEqual("Name", (RequireColumnHeader(tableView, 0).Content as TextBlock)?.Text,
+                "The header band must show the new Header."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies focus inside a UIElement column Header follows the column when it moves within the same TableView.")]
+        public void VerifyFocusInUIElementHeaderFollowsColumnMove()
+        {
+            TableView tableView = null;
+            CheckBox headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                tableView.Columns.RemoveAt(0);
+                tableView.Columns.Insert(1, column);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 1);
+                Verify.IsTrue(ReferenceEquals(headerElement, header.Content), "Precondition: the moved column's header hosts its Header.");
+                DependencyObject current = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused after the move: {current}");
+                while (current != null && !ReferenceEquals(current, header))
+                {
+                    current = VisualTreeHelper.GetParent(current);
+                }
+                Verify.IsNotNull(current, "Focus must follow the moved column to its rebuilt header.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header rebuild started from app code while another rebuild releases headers keeps UIElement Headers hosted.")]
+        public void VerifyReentrantHeaderRebuildKeepsUIElementHeader()
+        {
+            TableView tableView = null;
+            CheckBox headerElement = null;
+            bool reentered = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                EventHandler<GettingFocusEventArgs> handler = (s, args) =>
+                {
+                    if (!reentered && ReferenceEquals(args.OldFocusedElement, headerElement))
+                    {
+                        reentered = true;
+                        // Rebuilds the header band synchronously, from inside the outer rebuild.
+                        tableView.CanUserResizeColumns = !tableView.CanUserResizeColumns;
+                    }
+                };
+                FocusManager.GettingFocus += handler;
+                try
+                {
+                    tableView.Density = TableViewDensity.Compact;
+                }
+                finally
+                {
+                    FocusManager.GettingFocus -= handler;
+                }
+                Verify.IsTrue(reentered, "Precondition: releasing the focused Header re-entered the rebuild.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                Verify.IsTrue(ReferenceEquals(headerElement, header.Content), "The header must show the column's UIElement Header.");
+                Verify.IsTrue(IsUnder(headerElement, header), "The UIElement Header must be parented under the rebuilt header.");
+            });
+        }
+
+        private static bool IsUnder(DependencyObject element, DependencyObject ancestor)
+        {
+            for (var current = element; current != null; current = VisualTreeHelper.GetParent(current))
+            {
+                if (ReferenceEquals(current, ancestor))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private static void VerifyHostedUnderHeader(TableView tableView, int index, FrameworkElement headerElement, string when)
         {
             var header = RequireColumnHeader(tableView, index);
