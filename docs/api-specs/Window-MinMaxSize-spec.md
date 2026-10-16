@@ -52,6 +52,13 @@ These properties use the same units as the `Width` and `Height` properties.
 
 `MinWidth` and `MinHeight` have a default value of `0`. `MaxWidth` and `MaxHeight` have a default value of `Double.PositiveInfinity`.
 
+WinUI does not adjust the size constraint values to keep each minimum less than or equal to its corresponding maximum.
+If a minimum exceeds its corresponding maximum, the minimum takes precedence.
+
+The order in which you set these properties generally doesn't matter.  The one exception: if you've previously set a minimum value
+to be greater than its corresponding maximum, and then relax both constraints (to their defaults, for example), the order
+in which you set the properties _can_ result in a different window size. 
+
 ## 2.2. Relationship to AppWindow and OverlappedPresenter
 
 WinUI implements these size constraints by configuring the underlying `AppWindow` object, specifically by
@@ -112,9 +119,6 @@ the size of the client area.
 Unlike `Width` and `Height`, the `MinWidth`, `MinHeight`, `MaxWidth`, and `MaxHeight` properties **do** constrain the size
 of a window in the maximized state. By contrast, `Width` and `Height` only represent the size of the window in the restored state
 (not maximized or minimized).
-
-WinUI does not adjust the size constraint values to keep each minimum less than or equal to its corresponding maximum.
-If a minimum exceeds its corresponding maximum, the minimum takes precedence.
 
 WinUI does not guarantee that the `Width` and `Height` properties always return values within the size constraints.
 Here are some scenarios where they may be outside the constraints:
