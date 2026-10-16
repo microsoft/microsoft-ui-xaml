@@ -1954,6 +1954,49 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a disabled TableView puts its headers in Disabled, dimming the header text and sort glyph.")]
+        public void VerifyDisabledHeaderDimsText()
+        {
+            var disabled = Color.FromArgb(0xFF, 0x20, 0x40, 0x60);
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TabularSurfaceRowForegroundDisabledBrush", new SolidColorBrush(disabled));
+                tableView = CreateThemingTable();
+                tableView.Columns[0].CanSort = true;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the column sorts.");
+                    tableView.IsEnabled = false;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var header = RequireColumnHeader(tableView, 0);
+                    Verify.AreEqual("Disabled", CurrentState(header, "CommonStates"), "A disabled table's header must be Disabled.");
+                    Verify.AreEqual(disabled, (GetHeaderPresenter(tableView, 0).Foreground as SolidColorBrush)?.Color ?? default,
+                        "Disabled must dim the header text.");
+                    var glyph = header.FindVisualChildByName("TableViewSortIndicator") as Control;
+                    Verify.IsNotNull(glyph, "A sorted column must host the sort glyph.");
+                    Verify.AreEqual(disabled, (glyph?.Foreground as SolidColorBrush)?.Color ?? default, "Disabled must dim the sort glyph.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceRowForegroundDisabledBrush"));
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the default header template provides its parts and hosts the sort glyph and resize gripper in them.")]
         public void VerifyColumnHeaderTemplateParts()
         {

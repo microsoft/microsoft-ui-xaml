@@ -665,7 +665,7 @@ Visual states:
 
 | Group | States | Notes |
 |---|---|---|
-| `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled` | `PointerOver`/`Pressed` are entered only on a column the user can sort, and change only the fill (`TabularSurfaceHeaderBackgroundPointerOverBrush` / `...PressedBrush`). |
+| `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled` | `PointerOver`/`Pressed` are entered only on a column the user can sort, and change only the fill (`TabularSurfaceHeaderBackgroundPointerOverBrush` / `...PressedBrush`). `Disabled` dims the text and sort glyph with `TabularSurfaceRowForegroundDisabledBrush`, as on rows. |
 | `HighContrastStates` | `HighContrastNormal`, `HighContrastPointerOver`, `HighContrastPressed` | Entered alongside `PointerOver`/`Pressed` only under High Contrast: text and glyph switch to `TabularSurfaceHeaderForeground*Brush` and drop the text backplate. |
 | `SortStates` | `Unsorted`, `SortAscending`, `SortDescending` | Show or hide the sort glyph; the glyph is hidden until the column is sorted. |
 

@@ -129,7 +129,11 @@
                                         <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="Disabled" />
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="HighContrastStates">
