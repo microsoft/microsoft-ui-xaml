@@ -463,16 +463,20 @@ _Check_return_ HRESULT CSplitView::OnPaneClosing()
     return S_OK;
 }
 
-_Check_return_ HRESULT CSplitView::OnPaneClosed()
+_Check_return_ HRESULT CSplitView::OnPaneOpenedOrClosed(bool isPaneOpen)
 {
-    m_isPaneClosingByLightDismiss = false;
+    // An older queued completion must not reset a newer light dismiss on a reopened pane.
+    if (!isPaneOpen && !m_isPaneOpen)
+    {
+        m_isPaneClosingByLightDismiss = false;
+    }
 
-    // Fire the closed event.
+    // Queue both completion events so an opening cannot overtake an earlier closing.
     CEventManager *pEventManager = GetContext()->GetEventManager();
     if (pEventManager != nullptr)
     {
         pEventManager->Raise(
-            EventHandle(KnownEventIndex::SplitView_PaneClosed),
+            EventHandle(isPaneOpen ? KnownEventIndex::SplitView_PaneOpened : KnownEventIndex::SplitView_PaneClosed),
             TRUE /*bRefire*/,
             this /*pSender*/,
             nullptr /*pArgs*/,
