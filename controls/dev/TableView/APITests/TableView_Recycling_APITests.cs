@@ -266,6 +266,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             TableView tableView = null;
             List<Person> items = null;
             var cellsBefore = new Dictionary<TableViewRow, List<UIElement>>();
+            var contentBefore = new Dictionary<TableViewRow, List<object>>();
 
             RunOnUIThread.Execute(() =>
             {
@@ -283,6 +284,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     // Cells are only enumerated, never asked for peers (FromElement would create one).
                     GetRowPeer(row);
                     cellsBefore[row] = GetCellsHost(row).Children.ToList();
+                    contentBefore[row] = cellsBefore[row].Select(cell => (object)GetCellContent((Grid)cell)).ToList();
                 }
 
                 Verify.IsGreaterThan(cellsBefore.Count, 0, "Precondition: rows must be realized before scrolling.");
@@ -314,7 +316,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Verify.IsTrue(ReferenceEquals(previous[i], cells[i]),
                             $"Recycling '{item.Name}' into a row with no cell peers must reuse cell {i}, not regenerate it.");
-                        Verify.IsTrue(ReferenceEquals(GetCellContent((Grid)previous[i]), GetCellContent((Grid)cells[i])),
+                        Verify.IsNotNull(contentBefore[row][i], $"Precondition: cell {i} had generated content before recycling.");
+                        Verify.IsTrue(ReferenceEquals(contentBefore[row][i], GetCellContent((Grid)cells[i])),
                             $"Recycling '{item.Name}' must keep the generated content of cell {i}.");
                     }
                 }
