@@ -2196,6 +2196,88 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies focus in the header of a column that is moved or re-added with no other header to hold focus returns to that column's header.")]
+        [TestProperty("data:Change", "{MoveOnlyColumn, ClearAndReAddFirst, ClearAndReAddLast}")]
+        public void VerifyHeaderFocusReturnsWhenNoOtherHeaderCanHoldIt()
+        {
+            var change = ((string)TestContext.DataRow["Change"]).Trim();
+            var focusedIndex = change == "ClearAndReAddLast" ? 1 : 0;
+            TableView tableView = null;
+            CheckBox headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = change == "MoveOnlyColumn" ? CreateTableView(headers: new[] { "Name" }) : CreateThemingTable();
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[focusedIndex].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var columns = tableView.Columns.ToList();
+                if (change == "MoveOnlyColumn")
+                {
+                    tableView.Columns.RemoveAt(0);
+                    tableView.Columns.Insert(0, columns[0]);
+                }
+                else
+                {
+                    tableView.Columns.Clear();
+                    foreach (var column in columns)
+                    {
+                        tableView.Columns.Add(column);
+                    }
+                }
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, focusedIndex);
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"{change}: focused {focused}");
+                Verify.IsTrue(focused != null && IsUnder(focused, header), $"{change}: focus must return to the column's header.");
+                Verify.AreEqual(FocusState.Keyboard, ((UIElement)focused).FocusState, $"{change}: keyboard focus must stay keyboard focus.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies focus in the header of the only column moves into the body when that column is removed.")]
+        public void VerifyFocusInOnlyRemovedColumnHeaderMovesToBody()
+        {
+            TableView tableView = null;
+            CheckBox headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(headers: new[] { "Name" });
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => tableView.Columns.RemoveAt(0));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused after the removal: {focused}");
+                Verify.IsTrue(focused != null && IsUnder(focused, GetRowsRepeater(tableView)), "Focus must move into the table body.");
+            });
+        }
+
+
+        [TestMethod]
         [TestProperty("Description", "Verifies changing a string Header keeps the header's content and tooltip until the header band rebuilds.")]
         public void VerifyStringHeaderChangeKeepsHeaderContentUntilRebuild()
         {
