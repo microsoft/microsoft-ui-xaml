@@ -549,6 +549,60 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Asha", items[0].Name, "The cancel must leave the pre-edit value in place.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a CanSort = false clear queued behind a sort on another column, both requested from CellEditEnding, does not clear that newer sort.")]
+        public void VerifyQueuedCanSortClearDoesNotClearNewerSortRequestedDuringEditEnding()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            bool requested = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the Name column sorts.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = tableView.Columns[0];
+                var role = tableView.Columns[1];
+                tableView.CellEditEnding += (s, e) =>
+                {
+                    if (requested)
+                    {
+                        return;
+                    }
+                    requested = true;
+                    tableView.SortByColumn(role, SortDirection.Ascending);
+                    name.CanSort = false;
+                };
+
+                var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Asha K");
+                Verify.IsNull(error, "The commit must succeed.");
+                Verify.IsTrue(requested, "Precondition: CellEditEnding requested both changes.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The opted-out column must not stay sorted.");
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[1].SortDirection,
+                    "The stale opt-out clear must not remove the newer sort on another column.");
+                var roles = GetProjectedItems(tableView).Select(item => ((EditablePerson)item).Role).ToList();
+                Verify.AreEqual("Architect,Designer,Engineer", string.Join(",", roles), "The rows must stay sorted by Role.");
+            });
+        }
     }
 
     // Category 10.5 of the TableView test plan: validation, teardown and reentrancy.

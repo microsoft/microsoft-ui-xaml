@@ -217,6 +217,13 @@ bool TableView::IsSortRequestStillValid(const winrt::TableViewColumn& column, bo
         return false;
     }
 
+    // A clear that skips the CanSort gate clears only the column's own sort. A replayed or
+    // re-entered one may find another column sorted since, and must not clear that sort.
+    if (!requireCanSort && column.SortDirection() == winrt::SortDirection::None)
+    {
+        return false;
+    }
+
     // The column must still be one of ours: a Sorting handler is free to remove it.
     if (auto columns = const_cast<TableView*>(this)->Columns())
     {
