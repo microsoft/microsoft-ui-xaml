@@ -617,7 +617,7 @@ private:
     // Drives the SelectionModel; its SelectionChanged is the single funnel that publishes.
     void ApplySelection(int32_t index, bool measureTip = false);
 
-    void ReleaseHeaderToolTips(const winrt::Panel& host);
+    void ReleaseHeaderCells(const winrt::Panel& host, bool detachedColumnsOnly = false);
     winrt::TableViewColumn GetFocusedHeaderColumn(const winrt::Panel& host, winrt::FocusState& focusState) const;
     // Refocuses the rebuilt header for column; retries once after layout if it cannot take focus yet.
     void RestoreHeaderFocus(const winrt::TableViewColumn& column, winrt::FocusState focusState);

@@ -1954,6 +1954,136 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a UIElement column Header moves to the new header band when the TableView is re-templated.")]
+        public void VerifyUIElementHeaderSurvivesRetemplate()
+        {
+            TableView tableView = null;
+            Border headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new Border { Width = 20, Height = 12, Background = new SolidColorBrush(Microsoft.UI.Colors.Blue) };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Template = (ControlTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                    @"<ControlTemplate
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:tabular='using:Microsoft.UI.Xaml.Controls.Tabular'
+                        TargetType='tabular:TableView'>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height='Auto' />
+                                <RowDefinition Height='*' />
+                            </Grid.RowDefinitions>
+                            <Border x:Name='PART_HeaderRow'>
+                                <tabular:TableViewCellsPanel x:Name='PART_HeaderHost' HorizontalAlignment='Left' />
+                            </Border>
+                            <ItemsRepeater x:Name='PART_RowsRepeater' Grid.Row='1'>
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Orientation='Vertical' />
+                                </ItemsRepeater.Layout>
+                            </ItemsRepeater>
+                        </Grid>
+                    </ControlTemplate>");
+                tableView.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => VerifyHostedUnderHeader(tableView, 0, headerElement, "after re-templating"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a column with a UIElement Header can move from one TableView to another.")]
+        public void VerifyUIElementHeaderSurvivesMoveToAnotherTableView()
+        {
+            TableView source = null;
+            TableView target = null;
+            StackPanel host = null;
+            Border headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = CreateThemingTable();
+                headerElement = new Border { Width = 20, Height = 12, Background = new SolidColorBrush(Microsoft.UI.Colors.Blue) };
+                source.Columns[0].Header = headerElement;
+                host = new StackPanel();
+                host.Children.Add(source);
+                LoadContent(host);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = source.Columns[0];
+                source.Columns.RemoveAt(0);
+                target = new TableView();
+                target.Columns.Add(column);
+                // Templating the target now rebuilds its headers before the source's queued rebuild runs.
+                host.Children.Add(target);
+                host.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => VerifyHostedUnderHeader(target, 0, headerElement, "after the move"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies focus inside a UIElement column Header returns to that header after the header band is rebuilt.")]
+        public void VerifyFocusInUIElementHeaderIsRestoredAfterRebuild()
+        {
+            TableView tableView = null;
+            CheckBox headerElement = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                headerElement = new CheckBox { MinWidth = 0 };
+                tableView.Columns[0].Header = headerElement;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(headerElement.Focus(FocusState.Keyboard), "Precondition: the header CheckBox takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => tableView.Density = TableViewDensity.Compact);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = RequireColumnHeader(tableView, 0);
+                DependencyObject current = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused after rebuild: {current}");
+                while (current != null && !ReferenceEquals(current, header))
+                {
+                    current = VisualTreeHelper.GetParent(current);
+                }
+                Verify.IsNotNull(current, "Focus must return to the rebuilt header of the column that held it.");
+            });
+        }
+
+        private static void VerifyHostedUnderHeader(TableView tableView, int index, FrameworkElement headerElement, string when)
+        {
+            var header = RequireColumnHeader(tableView, index);
+            Verify.IsTrue(ReferenceEquals(headerElement, header.Content), $"The header must show the column's UIElement Header {when}.");
+
+            DependencyObject current = headerElement;
+            while (current != null && !ReferenceEquals(current, header))
+            {
+                current = VisualTreeHelper.GetParent(current);
+            }
+            Verify.IsNotNull(current, $"The UIElement Header must be parented under the header {when}.");
+            Verify.AreEqual(20.0, headerElement.ActualWidth, $"The UIElement Header must be laid out {when}.");
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a disabled TableView puts its headers in Disabled, dimming the header text and sort glyph.")]
         public void VerifyDisabledHeaderDimsText()
         {
