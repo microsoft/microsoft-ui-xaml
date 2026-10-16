@@ -639,7 +639,7 @@ HWCompTreeNode::InsertChild(
 
 #ifdef XAMLPROFILER_ENABLED
     // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-    if (XamlProfilerTracing::IsEnabled() &&
+    if (XamlProfilerTracing::IsProfilingEnabled() &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
     {
@@ -686,7 +686,7 @@ HWCompTreeNode::InsertChildAtBeginning(
 
 #ifdef XAMLPROFILER_ENABLED
     // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-    if (XamlProfilerTracing::IsEnabled() &&
+    if (XamlProfilerTracing::IsProfilingEnabled() &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
         !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
     {
@@ -723,7 +723,7 @@ HWCompTreeNode::RemoveChild(
 
 #ifdef XAMLPROFILER_ENABLED
             // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-            if (XamlProfilerTracing::IsEnabled() &&
+            if (XamlProfilerTracing::IsProfilingEnabled() &&
                 !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
                 !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
             {

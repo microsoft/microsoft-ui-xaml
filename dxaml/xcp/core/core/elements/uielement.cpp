@@ -1303,7 +1303,7 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
     static auto runtimeEnabledFeatureDetector = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector();
 
 #ifdef XAMLPROFILER_ENABLED
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsProfilingEnabled())
     {
         // Best-effort XAML source location for this element. Populated only when source-info
         // storage is enabled in the process (e.g. the profiler enables the XAML-Diagnostics
@@ -1945,7 +1945,7 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
     }
 
 #ifdef XAMLPROFILER_ENABLED
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsProfilingEnabled())
     {
         XamlProfilerTracing::ElementLeftTree(
             reinterpret_cast<uint64_t>(this),
@@ -6995,7 +6995,7 @@ CUIElement::AddChild(_In_ CUIElement *pChild)
         IFC_RETURN(m_pChildren->OnAddToCollection(pChild));
 
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilingEnabled())
         {
             XamlProfilerTracing::ChildAdded(
                 reinterpret_cast<uint64_t>(this),
@@ -7055,7 +7055,7 @@ CUIElement::InsertChild(_In_ XUINT32 nIndex, _In_ CUIElement *pChild)
         IFC_RETURN(m_pChildren->OnAddToCollection(pChild));
 
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilingEnabled())
         {
             XamlProfilerTracing::ChildInserted(
                 reinterpret_cast<uint64_t>(this),
@@ -7117,7 +7117,7 @@ CUIElement::RemoveChild(_In_ CUIElement *pChild)
         pChild->TryPegPeer(&peggedPeer, &peerIsPendingDelete);
 
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilingEnabled())
         {
             XamlProfilerTracing::ChildRemoved(
                 reinterpret_cast<uint64_t>(this),
@@ -11212,7 +11212,7 @@ CUIElement::EnsureCompositionPeer(
 
         // Suppressed pick-overlay comp nodes are never advertised to the profiler.
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled() &&
+        if (XamlProfilerTracing::IsProfilingEnabled() &&
             !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pCompositionPeer)))
         {
             XamlProfilerTracing::CompPeerLinked(
@@ -11357,7 +11357,7 @@ CUIElement::RemoveCompositionPeer()
 
             // Suppressed pick-overlay comp nodes were never advertised, so don't emit unlink.
 #ifdef XAMLPROFILER_ENABLED
-            if (XamlProfilerTracing::IsEnabled() &&
+            if (XamlProfilerTracing::IsProfilingEnabled() &&
                 !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(m_pCompositionPeer)))
             {
                 XamlProfilerTracing::CompPeerUnlinked(

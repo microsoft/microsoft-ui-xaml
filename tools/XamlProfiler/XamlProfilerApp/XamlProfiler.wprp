@@ -8,8 +8,12 @@
       <Buffers Value="64" />
     </EventCollector>
 
-    <!-- XAML Profiler TraceLogging Provider -->
-    <EventProvider Id="EP_XamlProfiler" Name="A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D" Level="5" />
+    <!-- XAML Profiler TraceLogging Provider. Keyword 0x1 must match XAMLPROFILER_KEYWORD in XamlProfilerTracing.h. -->
+    <EventProvider Id="EP_XamlProfiler" Name="A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D" Level="5">
+      <Keywords>
+        <Keyword Value="0x1" />
+      </Keywords>
+    </EventProvider>
 
     <!-- Also capture the existing Microsoft-Windows-XAML provider for reference -->
     <EventProvider Id="EP_MicrosoftWindowsXaml" Name="531A35AB-63CE-4BCF-AA98-F88C7A89E455" Level="5">

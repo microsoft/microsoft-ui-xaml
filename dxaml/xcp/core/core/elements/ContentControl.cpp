@@ -326,7 +326,7 @@ CContentControl::Content(
         IFC(FxCallbacks::ContentControl_OnContentChanged(pThis, &oldForManaged, &newForManaged, pValueOuter));
 
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilingEnabled())
         {
             XamlProfilerTracing::ContentChanged(
                 reinterpret_cast<uint64_t>(pThis),
