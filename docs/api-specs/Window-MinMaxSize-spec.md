@@ -101,8 +101,7 @@ clearing the matching presenter constraint until an `OverlappedPresenter` become
 constraint once, then stops managing it. Clearing does not restore an earlier presenter value.
 
 WinUI detects presenter changes through the `AppWindow.Changed` event. Your app can call `AppWindow.SetPresenter`
-to set a new presenter.  WinUI does not guarantee it will configure the new presenter before the
-call to `SetPresenter` returns.
+to set a new presenter. 
 
 ### 2.2.2. Limits of AppWindow integration
 
