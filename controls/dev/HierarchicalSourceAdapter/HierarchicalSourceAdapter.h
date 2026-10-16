@@ -167,8 +167,8 @@ private:
     mutable std::unordered_map<winrt::hstring, int32_t> m_indexByNodeKey;
     mutable bool m_indexByNodeKeyValid{ true };
 
-    // Item ABI pointer -> index; the item is the only handle shared with the grouped axis.
-    mutable std::unordered_map<void*, int32_t> m_indexByItem;
+    // Canonical object address -> index; the item is the only handle shared with the grouped axis.
+    mutable std::unordered_map<ShapingHelpers::ObjectAddress, int32_t> m_indexByItem;
     mutable bool m_indexByItemValid{ false };
 
     ShapingHelpers::RowExpansionModel m_expansion;

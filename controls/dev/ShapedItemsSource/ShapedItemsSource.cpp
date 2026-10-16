@@ -2166,7 +2166,7 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
     orderedRoots.reserve(roots.size());
     std::vector<size_t> segments;
     segments.reserve(keyedBuckets.size());
-    std::unordered_map<void*, size_t> rootBucketIndex;
+    std::unordered_map<ShapingHelpers::ObjectAddress, size_t> rootBucketIndex;
 
     for (size_t bucketIndex = 0; bucketIndex < keyedBuckets.size(); ++bucketIndex)
     {
@@ -2174,8 +2174,7 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
         ApplySort(bucket.Items, m_pipeline.GroupOrder(), -1);
         for (auto const& root : bucket.Items)
         {
-            // Keyed by raw COM pointer: the re-slice looks up the same objects.
-            rootBucketIndex[winrt::get_abi(root)] = bucketIndex;
+            rootBucketIndex[ShapingHelpers::GetObjectAddress(root)] = bucketIndex;
             orderedRoots.push_back(root);
         }
         segments.push_back(bucket.Items.size());
@@ -2518,7 +2517,7 @@ void ShapedItemsSource::ResliceGroupsFromHierarchy()
 
             if (node->Depth == 0)
             {
-                auto const it = m_rootBucketIndex.find(winrt::get_abi(node->Item));
+                auto const it = m_rootBucketIndex.find(ShapingHelpers::GetObjectAddress(node->Item));
                 if (it == m_rootBucketIndex.end())
                 {
                     // Unknown root (source mutated; rebuild queued): drop its subtree.

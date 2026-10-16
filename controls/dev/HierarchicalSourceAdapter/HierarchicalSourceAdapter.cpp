@@ -699,7 +699,7 @@ HierarchicalSourceAdapter::NodeRow const* HierarchicalSourceAdapter::TryGetNodeR
 
     EnsureItemIndex();
 
-    const auto found = m_indexByItem.find(winrt::get_abi(item));
+    const auto found = m_indexByItem.find(ShapingHelpers::GetObjectAddress(item));
     if (found == m_indexByItem.end() ||
         found->second < 0 ||
         static_cast<size_t>(found->second) >= m_descriptors.size())
@@ -761,7 +761,7 @@ void HierarchicalSourceAdapter::EnsureItemIndex() const
     {
         if (auto const& descriptorItem = m_descriptors[i].Item)
         {
-            m_indexByItem.emplace(winrt::get_abi(descriptorItem), static_cast<int32_t>(i));
+            m_indexByItem.emplace(ShapingHelpers::GetObjectAddress(descriptorItem), static_cast<int32_t>(i));
         }
     }
 

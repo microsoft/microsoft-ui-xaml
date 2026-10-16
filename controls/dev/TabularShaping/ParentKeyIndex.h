@@ -24,8 +24,8 @@ struct ParentStructure
     // intent and selection anchors until the next structure prunes them; holding the objects
     // means no new key can take a still-referenced address in the meantime.
     std::vector<winrt::IInspectable> KeyObjects;
-    // ABI pointer -> nodeKey, for every row.
-    std::unordered_map<void*, std::wstring> KeyByItem;
+    // Canonical object address -> nodeKey, for every row.
+    std::unordered_map<ObjectAddress, std::wstring> KeyByItem;
     // nodeKey -> position in Rows. Keys view KeyByItem's values (node-based, so they stay put).
     std::unordered_map<std::wstring_view, size_t> IndexByKey;
     // Per row: key (into KeyByItem), parent position or Root, children in source order.

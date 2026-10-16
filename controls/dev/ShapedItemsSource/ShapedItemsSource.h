@@ -258,7 +258,7 @@ private:
     void ResliceGroupsFromHierarchy();
 
     // Root -> bucket, by object identity.
-    std::unordered_map<void*, size_t> m_rootBucketIndex;
+    std::unordered_map<ShapingHelpers::ObjectAddress, size_t> m_rootBucketIndex;
     std::vector<winrt::com_ptr<ShapedGroup>> m_hierarchyGroups;
 
     // Tears down the hierarchical projection and adapter. Every non-hierarchical rebuild calls it,

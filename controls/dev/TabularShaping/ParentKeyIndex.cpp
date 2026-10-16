@@ -166,7 +166,7 @@ std::wstring const* ParentKeyIndex::TryGetKey(winrt::IInspectable const& item) c
     {
         return nullptr;
     }
-    auto it = Structure->KeyByItem.find(winrt::get_abi(item));
+    auto it = Structure->KeyByItem.find(GetObjectAddress(item));
     return it == Structure->KeyByItem.end() ? nullptr : &it->second;
 }
 
@@ -220,7 +220,7 @@ bool BuildParentStructure(
             return false;
         }
         // The same object on two rows yields the same key, so it is reported as a duplicate below.
-        auto const [entry, inserted] = result.KeyByItem.emplace(winrt::get_abi(rows[i]), std::move(nodeKey));
+        auto const [entry, inserted] = result.KeyByItem.emplace(GetObjectAddress(rows[i]), std::move(nodeKey));
         std::wstring const& stored = entry->second;
         if (!inserted || !indexByKey.emplace(stored, i).second)
         {
