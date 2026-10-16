@@ -604,12 +604,13 @@ void InkCanvas::AttachToLiftedCompositor()
     m_lastPlacementHeight = -1;
 
     // Keep the lifted PlacementVisual sized to the control as layout changes so it has a hit-test area.
+    // make_weak on the projected type, as in OnLoaded: get_weak() can over-release a derived (composed) canvas.
     m_layoutUpdatedRevoker = LayoutUpdated(winrt::auto_revoke,
-        [weakThis{ get_weak() }](auto const& /*sender*/, auto const& /*args*/)
+        [weakThis = winrt::make_weak(static_cast<winrt::InkCanvas>(*this))](auto const& /*sender*/, auto const& /*args*/)
         {
             if (auto strongThis = weakThis.get())
             {
-                strongThis->PositionInkVisual();
+                winrt::get_self<InkCanvas>(strongThis)->PositionInkVisual();
             }
         });
 
