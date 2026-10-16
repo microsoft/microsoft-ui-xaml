@@ -2132,6 +2132,143 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(ItemHasSelectionIndicator(navView, "Menu Item 7"));
         }
 
+        [TestMethod]
+        public void VerifySelectionIndicatorIsRestoredAfterTogglingPaneDisplayMode()
+        {
+            // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/9812
+            var failures = new List<string>();
+
+            foreach (var startMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                var otherMode = startMode == NavigationViewPaneDisplayMode.Left ? NavigationViewPaneDisplayMode.Top : NavigationViewPaneDisplayMode.Left;
+
+                foreach (var useItemsSource in new[] { false, true })
+                {
+                    var targets = useItemsSource ? new[] { "Menu 1" } : new[] { "Menu 0", "Menu 1", "Menu 2", "Footer 0", "Footer 1" };
+
+                    foreach (var target in targets)
+                    {
+                        var scenario = $"start={startMode}, itemsSource={useItemsSource}, selected='{target}'";
+                        Log.Comment($"Scenario: {scenario}");
+                        VerifySelectionIndicatorAfterTogglingPaneDisplayModeScenario(scenario, startMode, otherMode, useItemsSource, target, failures);
+                    }
+                }
+            }
+
+            foreach (var failure in failures)
+            {
+                Log.Error(failure);
+            }
+
+            Verify.AreEqual(0, failures.Count, "Selection indicator should be visible on the selected item after every PaneDisplayMode change");
+        }
+
+        private void VerifySelectionIndicatorAfterTogglingPaneDisplayModeScenario(
+            string scenario,
+            NavigationViewPaneDisplayMode startMode,
+            NavigationViewPaneDisplayMode otherMode,
+            bool useItemsSource,
+            string target,
+            List<string> failures)
+        {
+            NavigationView navView = null;
+            var allItems = new List<object>();
+            object selectedItem = null;
+            var loadedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView {
+                    PaneDisplayMode = startMode,
+                    IsSettingsVisible = false,
+                    Width = 800,
+                    Height = 460,
+                    // Fixed-size content (like a navigated page) means nothing else re-measures the NavigationView after the mode switch.
+                    Content = new Grid { Height = 600 }
+                };
+
+                if (useItemsSource)
+                {
+                    var menuItems = new ObservableCollection<string> { "Menu 0", "Menu 1", "Menu 2" };
+                    navView.MenuItemsSource = menuItems;
+                    allItems.AddRange(menuItems);
+                }
+                else
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        var menuItem = new NavigationViewItem { Content = $"Menu {i}", Icon = new SymbolIcon(Symbol.Library) };
+                        navView.MenuItems.Add(menuItem);
+                        allItems.Add(menuItem);
+                    }
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        var footerItem = new NavigationViewItem { Content = $"Footer {i}", Icon = new SymbolIcon(Symbol.Contact) };
+                        navView.FooterMenuItems.Add(footerItem);
+                        allItems.Add(footerItem);
+                    }
+                }
+
+                foreach (var item in allItems)
+                {
+                    if ((item as NavigationViewItem)?.Content as string == target || item as string == target)
+                    {
+                        selectedItem = item;
+                    }
+                }
+
+                navView.SelectedItem = selectedItem;
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                Content = navView;
+            });
+
+            loadedEvent.WaitOne();
+            WaitForSelectionIndicatorAnimation();
+            CheckSelectionIndicator(navView, allItems, selectedItem, $"{scenario}, initial {startMode}", failures);
+
+            foreach (var mode in new[] { otherMode, startMode, otherMode })
+            {
+                RunOnUIThread.Execute(() => navView.PaneDisplayMode = mode);
+                WaitForSelectionIndicatorAnimation();
+                CheckSelectionIndicator(navView, allItems, selectedItem, $"{scenario}, after switching to {mode}", failures);
+            }
+        }
+
+        private static void WaitForSelectionIndicatorAnimation()
+        {
+            IdleSynchronizer.Wait();
+            // The selection indicator animations run for 600ms.
+            Thread.Sleep(1000);
+            IdleSynchronizer.Wait();
+        }
+
+        private static void CheckSelectionIndicator(NavigationView navView, List<object> allItems, object selectedItem, string step, List<string> failures)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(selectedItem, navView.SelectedItem, step);
+
+                foreach (var item in allItems)
+                {
+                    var container = navView.ContainerFromMenuItem(item);
+                    var indicator = container == null ? null : VisualTreeUtils.FindVisualChildByName(container, "SelectionIndicator");
+                    var opacity = indicator?.Opacity ?? -1;
+                    Log.Comment($"  {step}: item={(item as NavigationViewItem)?.Content ?? item}, container={(container != null)}, indicator={(indicator != null)}, " +
+                        $"opacity={opacity}, size={indicator?.ActualWidth}x{indicator?.ActualHeight}");
+
+                    if (item == selectedItem && !(opacity > 0))
+                    {
+                        failures.Add($"{step}: selected item has no visible selection indicator (container={(container != null)}, indicator={(indicator != null)}, opacity={opacity})");
+                    }
+                    else if (item != selectedItem && opacity > 0)
+                    {
+                        failures.Add($"{step}: unselected item {(item as NavigationViewItem)?.Content ?? item} shows a selection indicator (opacity={opacity})");
+                    }
+                }
+            });
+        }
+
         static ItemsRepeater GetRepeater(DependencyObject parent)
         {
             static ItemsRepeater GetNavigationViewRepeaterHelper(DependencyObject root)
