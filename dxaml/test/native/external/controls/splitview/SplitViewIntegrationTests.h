@@ -164,6 +164,66 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the Opened event is not re-fired if changing display modes while open.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(DoesCompleteQueuedPaneTransitions)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that queued pane completions retain their open or closed state across subsequent property changes.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesQueuePaneCompletionsWithoutDisplayModeStates)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that completions remain deferred and ordered when a template omits DisplayModeStates.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesOrderMixedVisualStateManagerCompletions)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that newer synchronous custom-manager callbacks cannot overtake older queued completions.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRecoverMissingStateWithOutOfOrderNotification)
+            TEST_METHOD_PROPERTY(L"Description", L"Preserves a synchronous recovery that arrives before an older wrong-category notification.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesPreserveCommittedCompletionAfterFailedRequest)
+            TEST_METHOD_PROPERTY(L"Description", L"A failing later request must not discard an earlier committed pane completion.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRaisePaneOpenedWhenNotLive)
+            TEST_METHOD_PROPERTY(L"Description", L"Preserves PaneOpened before entering the live tree and after unloading a template without DisplayModeStates.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesCompletePaneTransitionsAfterUnload)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that an interrupted operation abandoned on unload cannot block later completions.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRestoreLightDismissAfterReopeningWithoutDisplayModeStates)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that reentrant reopening restores outside-click dismissal when a template omits DisplayModeStates.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRaiseClosingAfterNestedCloseWithoutDisplayModeStates)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that a nested manual close is not mistaken for the executing light dismiss.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesCompleteInterruptedPaneTransitions)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that interrupted pane transitions complete after display mode or placement changes.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesIgnoreQueuedDisplayModeRoundTrips)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that stale display mode notifications cannot complete a later pane transition.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesPreservePendingPaneTransitionAfterQueuedCompletion)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that an earlier pane completion does not consume a later interrupted transition.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesCompletePaneTransitionsWithCustomVisualStateManager)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that a custom visual state manager can synchronously complete interrupted pane transitions.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesNotCompletePaneTransitionInOppositeState)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that a missing template state cannot let an older opposite-direction animation complete a pending pane request.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRaiseClosingAfterReopeningDuringLightDismiss)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that interrupting a light-dismiss animation does not suppress the next PaneClosing event.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(DoesFireOpenedAndClosedEventsWhenRetemplated)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the opened &closed events fire even when SplitView is re-templated to excluded the DisplayModesStates state group.")
         END_TEST_METHOD()
@@ -176,6 +236,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
     private:
+        void VerifyLightDismissReentrancyWithoutDisplayModeStates(bool closeAgain);
+
         void ValidateLightDismissBehaviorWorker(
             xaml_controls::SplitViewDisplayMode displayMode,
             xaml_controls::SplitViewPanePlacement placement,

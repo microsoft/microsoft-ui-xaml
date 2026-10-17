@@ -49,10 +49,11 @@ public:
     _Check_return_ HRESULT TryCloseLightDismissiblePane();
 
     _Check_return_ HRESULT OnPaneOpening();
-    _Check_return_ HRESULT OnPaneClosing();
-    _Check_return_ HRESULT OnPaneClosed();
+    _Check_return_ HRESULT OnPaneClosing(bool isLightDismissClose);
+    _Check_return_ HRESULT OnPaneOpenedOrClosed(bool isPaneOpen);
 
-    void OnCancelClosing();
+    _Check_return_ HRESULT ExecuteLightDismiss(bool isCanceled);
+    bool ConsumeLightDismissClose();
 
     CDependencyObject* ProcessTabStop(
         _In_ bool isForward,
@@ -92,7 +93,8 @@ private:
     xref::weakref_ptr<CDependencyObject> m_spPrevFocusedElementWeakRef;
     DirectUI::FocusState m_prevFocusState{ DirectUI::FocusState::Unfocused };
 
-    bool m_isPaneClosingByLightDismiss{ false };
+    bool m_isLightDismissPending{ false };
+    bool m_isLightDismissClose{ false };
     double m_paneMeasuredLength{ 0.0 };
 
 }; // class CSplitView

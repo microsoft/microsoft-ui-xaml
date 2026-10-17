@@ -843,6 +843,116 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyPaneListSizeAfterAdaptiveLightDismiss()
+        {
+            foreach (bool cancel in new[] { false, true })
+            {
+                using var closingEvent = new ManualResetEvent(false);
+                NavigationView navView = null;
+                SplitView splitView = null;
+                Grid root = null;
+                bool closingRaised = false;
+                bool closeAfterReopening = false;
+                int closingCount = 0;
+                int closedCount = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    navView = new NavigationView
+                    {
+                        Width = 250,
+                        Height = 400,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        CompactModeThresholdWidth = 300,
+                        ExpandedModeThresholdWidth = 600,
+                        IsPaneOpen = false,
+                        IsSettingsVisible = false
+                    };
+                    navView.MenuItems.Add(new NavigationViewItem { Content = "Home", Icon = new SymbolIcon(Symbol.Home) });
+                    root = new Grid();
+                    root.Children.Add(navView);
+                    Content = root;
+                    root.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    splitView = VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView") as SplitView;
+                    Verify.IsNotNull(splitView);
+                    Verify.AreEqual(NavigationViewDisplayMode.Minimal, navView.DisplayMode);
+                    Verify.AreEqual(SplitViewDisplayMode.Overlay, splitView.DisplayMode);
+                    navView.IsPaneOpen = true;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    splitView.PaneClosing += (sender, args) =>
+                    {
+                        closingCount++;
+                        if (closingRaised)
+                        {
+                            return;
+                        }
+                        closingRaised = true;
+                        Verify.IsTrue(splitView.IsPaneOpen, "The deferred close must not have executed yet.");
+                        Verify.AreEqual(SplitViewDisplayMode.Overlay, splitView.DisplayMode);
+                        args.Cancel = cancel;
+
+                        // Reproduce the adaptive layout change between preparation and execution of light dismiss.
+                        navView.Width = 800;
+                        root.UpdateLayout();
+                        Verify.AreEqual(SplitViewDisplayMode.CompactInline, splitView.DisplayMode);
+                        Verify.IsTrue(splitView.IsPaneOpen);
+                        closingEvent.Set();
+                    };
+                    splitView.PaneClosed += (sender, args) => closedCount++;
+                    splitView.Width = 240;
+                    root.UpdateLayout();
+                });
+                Verify.IsTrue(closingEvent.WaitOne(TimeSpan.FromSeconds(5)), "Light-dismiss preparation should be raised.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(closingRaised);
+                    if (!cancel && navView.IsPaneOpen)
+                    {
+                        closeAfterReopening = true;
+                        navView.IsPaneOpen = false;
+                    }
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(closingRaised);
+                    Verify.AreEqual(cancel, navView.IsPaneOpen);
+                    Verify.AreEqual(cancel, splitView.IsPaneOpen);
+                    Verify.AreEqual(closeAfterReopening ? 2 : 1, closingCount);
+                    Verify.AreEqual(cancel ? 0 : (closeAfterReopening ? 2 : 1), closedCount);
+                    Verify.AreEqual(SplitViewDisplayMode.CompactInline, splitView.DisplayMode);
+
+                    string listSizeState = null;
+                    var templateRoot = (FrameworkElement)VisualTreeHelper.GetChild(navView, 0);
+                    foreach (var group in VisualStateManager.GetVisualStateGroups(templateRoot))
+                    {
+                        if (group.Name == "PaneStateListSizeGroup")
+                        {
+                            listSizeState = group.CurrentState.Name;
+                        }
+                    }
+                    Verify.AreEqual(cancel ? "ListSizeFull" : "ListSizeCompact", listSizeState);
+                    if (!cancel)
+                    {
+                        var paneContent = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(navView, "PaneContentGrid");
+                        Verify.AreEqual(navView.CompactPaneLength, paneContent.ActualWidth);
+                    }
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyClosedCompactVisualState()
         {
             NavigationView navView = null;

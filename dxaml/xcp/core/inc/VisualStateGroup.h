@@ -44,6 +44,9 @@ public:
     _Check_return_ HRESULT GetCurrentVisualState(_Outptr_result_maybenull_ CVisualState **ppVisualState);
     _Check_return_ HRESULT SetCurrentVisualState(_In_opt_ CVisualState *pVisualState);
 
+    uint64_t GetCurrentStateChangedSequence() const { return m_currentStateChangedSequence; }
+    uint64_t NextCurrentStateChangedSequence() { return ++m_currentStateChangedSequence; }
+
     enum VisualStateGroupEvent
     {
         VisualStateEventChanging = 0,
@@ -59,6 +62,7 @@ public:
 private:
     CVisualState *m_pCurrentState;
     std::unique_ptr<std::vector<REQUEST>> m_eventList;
+    uint64_t m_currentStateChangedSequence{ 0 };
 
 #pragma region Legacy VSM
 public:
