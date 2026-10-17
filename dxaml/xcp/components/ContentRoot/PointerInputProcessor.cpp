@@ -175,6 +175,7 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerInput(
     HRESULT hr = S_OK;
     xref_ptr<CDependencyObject> spDOContact;
     xref_ptr<CPointerEventArgs> pPointerArgs;
+    xref_ptr<CPointerEventArgs> pointerPressedEventArgs;
     XPOINTF xpContact;
     CUIElement* pContactElement = nullptr;
     XUINT32 pointerId = 0;
@@ -213,6 +214,30 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerInput(
     if (mapPointerState.ContainsKey(pointerId))
     {
         IFC(mapPointerState.Get(pointerId, pointerState));
+    }
+    if (pMsg->m_msgID == XCP_POINTERDOWN && !pMsg->m_pointerInfo.m_bCanceled)
+    {
+        if (!pointerState)
+        {
+            pointerState = std::make_shared<CPointerState>(pMsg->m_hWindow, pointerId, pMsg->m_pointerInfo.m_pointerInputType);
+            IFC(mapPointerState.Add(pointerId, pointerState));
+        }
+        // Publish this press before focus/input-device changes can pump nested input.
+        pointerPressedEventArgs.attach(new CPointerEventArgs(&m_inputManager.m_coreServices));
+        pointerState->m_pointerPressedEventArgs = pointerPressedEventArgs;
+    }
+    else if (pointerState)
+    {
+        if (pMsg->m_msgID == XCP_POINTERUP)
+        {
+            // Detach before any callout can process another press with this pointer ID.
+            pointerPressedEventArgs = std::move(pointerState->m_pointerPressedEventArgs);
+        }
+        if (pMsg->m_pointerInfo.m_bCanceled || pMsg->m_msgID == XCP_POINTERSUSPENDED)
+        {
+            pointerState->m_pointerPressedEventArgs.reset();
+            pointerPressedEventArgs.reset();
+        }
     }
 
     // Set the last input device type.  If this is a replay message, don't set the last input
@@ -365,7 +390,15 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerInput(
     }
 
     // Create PointerEventArgs for PointerDown/Move/Up events
-    pPointerArgs.attach(new CPointerEventArgs(&m_inputManager.m_coreServices));
+    if (pMsg->m_msgID == XCP_POINTERDOWN && pointerPressedEventArgs)
+    {
+        pPointerArgs = std::move(pointerPressedEventArgs);
+    }
+    else
+    {
+        pPointerArgs.attach(new CPointerEventArgs(&m_inputManager.m_coreServices));
+        pPointerArgs->m_pointerPressedEventArgs = std::move(pointerPressedEventArgs);
+    }
 
     pPointerArgs->SetGlobalPoint(xpContact);
     pPointerArgs->m_pPointerPoint = pMsg->m_pPointerPointNoRef;

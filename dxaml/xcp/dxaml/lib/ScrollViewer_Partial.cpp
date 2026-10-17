@@ -14,6 +14,7 @@
 #include "DiscreteObjectKeyFrame.g.h"
 #include "ScrollViewerAutomationPeer.g.h"
 #include "PointerRoutedEventArgs.g.h"
+#include "PointerEventArgs.h"
 #include "CarouselPanel.g.h"
 #include "ItemsPresenter.g.h"
 #include "ScrollViewerViewChangingEventArgs.g.h"
@@ -179,7 +180,6 @@ ScrollViewer::ScrollViewer()
     , m_areViewportConfigurationsInvalid(FALSE)
     , m_isCanManipulateElementsInvalid(FALSE)
     , m_isScrollBarIgnoringUserInputInvalid(FALSE)
-    , m_isPointerLeftButtonPressed(FALSE)
     , m_shouldFocusOnRightTapUnhandled(FALSE)
     , m_showingMouseIndicators(FALSE)
     , m_preferMouseIndicators(FALSE)
@@ -2470,6 +2470,8 @@ IFACEMETHODIMP ScrollViewer::OnPointerPressed(
     ctl::ComPtr<ixp::IPointerPoint> spPointerPoint;
     ctl::ComPtr<ixp::IPointerPointProperties> spPointerProperties;
     BOOLEAN handled = false;
+    BOOLEAN isLeftButtonPressed = FALSE;
+    xref_ptr<CPointerEventArgs> coreArgs;
 
     IFC(ScrollViewerGenerated::OnPointerPressed(pArgs));
     IFC(pArgs->get_Handled(&handled));
@@ -2489,8 +2491,12 @@ IFACEMETHODIMP ScrollViewer::OnPointerPressed(
     IFCPTR(spPointerPoint);
     IFC(spPointerPoint->get_Properties(&spPointerProperties));
     IFCPTR(spPointerProperties);
-    IFC(spPointerProperties->get_IsLeftButtonPressed(&m_isPointerLeftButtonPressed));
-
+    IFC(spPointerProperties->get_IsLeftButtonPressed(&isLeftButtonPressed));
+    if (isLeftButtonPressed)
+    {
+        coreArgs.attach(static_cast<CPointerEventArgs*>(static_cast<PointerRoutedEventArgs*>(pArgs)->GetCorePeer()));
+        coreArgs->m_scrollViewersWithPointerPressed.push_back(xref::get_weakref(GetHandle()));
+    }
 
     // Don't handle PointerPressed event to raise up
 
@@ -2506,6 +2512,7 @@ IFACEMETHODIMP ScrollViewer::OnPointerReleased(
     BOOLEAN handled = FALSE;
     BOOLEAN focused = FALSE;
     bool isFocusedOnLightDismissPopupOfFlyout = false;
+    xref_ptr<CPointerEventArgs> coreArgs;
 
     IFC(ScrollViewerGenerated::OnPointerReleased(pArgs));
     IFC(pArgs->get_Handled(&handled));
@@ -2514,12 +2521,19 @@ IFACEMETHODIMP ScrollViewer::OnPointerReleased(
         goto Cleanup;
     }
 
-    if (m_isPointerLeftButtonPressed)
+    coreArgs.attach(static_cast<CPointerEventArgs*>(static_cast<PointerRoutedEventArgs*>(pArgs)->GetCorePeer()));
+    if (auto pressedArgs = coreArgs->m_pointerPressedEventArgs)
     {
-        GestureModes gestureFollowing = GestureModes::None;
+        auto& scrollViewers = pressedArgs->m_scrollViewersWithPointerPressed;
+        const auto entry = std::find_if(scrollViewers.begin(), scrollViewers.end(),
+            [this](const auto& scrollViewer) { return scrollViewer.lock().get() == GetHandle(); });
+        if (entry == scrollViewers.end())
+        {
+            goto Cleanup;
+        }
+        scrollViewers.erase(entry);
 
-        // Reset the pointer left button pressed state
-        m_isPointerLeftButtonPressed = FALSE;
+        GestureModes gestureFollowing = GestureModes::None;
 
         IFC(static_cast<PointerRoutedEventArgs*>(pArgs)->get_GestureFollowing(&gestureFollowing));
 
