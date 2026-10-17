@@ -54,11 +54,16 @@ void UniformGridLayoutState::EnsureElementSize(
             // has the potential to repeatedly invalidate layout due to recycling causing layout cycles.
             if (!m_isEffectiveSizeValid)
             {
+                const bool isFirstElementAnchor = context.RecommendedAnchorIndex() == 0;
                 if (const auto firstElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate))
                 {
                     firstElement.Measure(CalculateAvailableSize(availableSize, orientation, stretch, maxItemsPerLine, layoutItemWidth, layoutItemHeight, minRowSpacing, minColumnSpacing));
                     SetSize(firstElement.DesiredSize(), layoutItemWidth, layoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
-                    context.RecycleElement(firstElement);
+                    // ForceCreate can return the bring-into-view anchor rather than a temporary sizing element.
+                    if (!isFirstElementAnchor)
+                    {
+                        context.RecycleElement(firstElement);
+                    }
                 }
             }
         }
