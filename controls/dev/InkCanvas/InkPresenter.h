@@ -335,11 +335,18 @@ public:
     void RunInkPresenterWorkItemSync(std::function<void(inking::InkPresenter const&)> workItem, bool pumpMessages);
 
     // Internal (not on the winmd surface). Shows/hides the ruler / protractor stencils on the OS
-    // presenter. InkPresenterRuler / InkPresenterProtractor are thread-affine, so they are created
-    // and toggled entirely on the ink thread; InkToolBar (same DLL) drives these via winrt::get_self
-    // when its ruler toggle / stencil menu button changes.
+    // presenter. The stencils are constructed against the OS presenter, which lives on the ink thread,
+    // so creation and the member are kept on that thread; InkToolBar (same DLL) drives these via
+    // winrt::get_self when its ruler toggle / stencil menu button changes.
     void SetRulerEnabled(bool enabled);
     void SetProtractorEnabled(bool enabled);
+
+    // Internal (not on the winmd surface). Return the OS ruler / protractor for this presenter, creating
+    // it on the ink thread if needed (null if the OS presenter does not exist). The returned objects are
+    // agile (MarshalingBehavior(Agile)), so InkToolbar hands them to the app through
+    // InkToolbarStencilButton.Ruler / Protractor, like UWP.
+    inking::InkPresenterRuler EnsureRuler();
+    inking::InkPresenterProtractor EnsureProtractor();
 
     // Internal (not on the winmd surface). Fire our StrokesCollected/StrokesErased events on the UI
     // thread. Called from the stroke-forwarding lambdas after the (agile) strokes have been
@@ -393,9 +400,8 @@ private:
     // only this projected wrapper, never the raw OS one.
     muxc::InkSynchronizer m_customDrySynchronizer{ nullptr };
 
-    // Ruler / protractor stencils bound to the OS presenter. Thread-affine to the ink
-    // thread, so they are only ever constructed and touched inside serialized ink-thread
-    // work items (never accessed from the UI thread).
+    // Ruler / protractor stencils bound to the OS presenter. Only assigned inside serialized
+    // ink-thread work items; the objects themselves are agile (see EnsureRuler).
     inking::InkPresenterRuler m_inkRuler{ nullptr };
     inking::InkPresenterProtractor m_inkProtractor{ nullptr };
 
