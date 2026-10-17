@@ -34,6 +34,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void EscapeAfterToggleOpenRespectsPaneClosingCancellation()
+        {
+            foreach (bool cancelClosing in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+                {
+                    SetNavViewWidth(ControlWidth.Medium);
+                    var isPaneOpen = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
+                    isPaneOpen.Uncheck();
+                    if (cancelClosing)
+                    {
+                        new CheckBox(FindElement.ByName("CancelClosingEvents")).Check();
+                    }
+                    Wait.ForIdle();
+                    var toggle = new Button(FindElement.ById("TogglePaneButton"));
+                    toggle.SetFocus();
+                    KeyboardHelper.PressKey(Key.Space);
+                    Wait.ForIdle();
+                    Verify.AreEqual(ToggleState.On, isPaneOpen.ToggleState);
+                    KeyboardHelper.PressKey(Key.Escape);
+                    Wait.ForIdle();
+                    Verify.AreEqual("PaneClosing event fired", new TextBlock(FindElement.ByName("LastIngEventText")).GetText());
+                    Verify.AreEqual(cancelClosing ? ToggleState.On : ToggleState.Off, isPaneOpen.ToggleState);
+                }
+            }
+        }
+
+        [TestMethod]
         public void EnsureTopSettingsRetainsFocusAfterOrientationChanges()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
