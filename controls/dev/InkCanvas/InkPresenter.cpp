@@ -735,20 +735,26 @@ muxc::InkSynchronizer InkPresenter::ActivateCustomDrying()
 // Owns the OS InkSynchronizer (adopted on the ink thread from the presenter's OS ActivateCustomDrying)
 // and marshals its BeginDry/EndDry onto the ink thread through the owning InkPresenter proxy's work
 // queue. UWP hands the app the OS object directly; this proxy exists only because that object is
-// ink-thread affine, so it forwards both calls and keeps no dry-transaction state of its own.
+// ink-thread affine, so it forwards both calls. Its only state is an EndDry held for XAML's next frame
+// when the ink is on XAML's device (InkPresenter::IsDryHandoffInXamlFrame).
 // No-ops once the owner has been torn down.
 
 winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkSynchronizer::BeginDry()
 {
+    // A held EndDry must reach the OS before this BeginDry.
+    FlushPendingEndDry();
+
     std::vector<inking::InkStroke> strokes;
+    bool began = false;
     RunOnInkHostThreadSync(m_owner,
-        [this, &strokes](inking::InkPresenter const&)
+        [this, &strokes, &began](inking::InkPresenter const&)
         {
             if (!m_osSynchronizer)
             {
                 return;
             }
             auto dry = m_osSynchronizer.BeginDry();
+            began = true;
             if (dry && dry.Size())
             {
                 strokes.resize(dry.Size(), nullptr);
@@ -756,12 +762,65 @@ winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkSynch
             }
         },
         /* pumpMessages */ false);
+    m_dryState = began ? DryState::InDry : DryState::Idle;
     // Build the returned collection on the calling (UI) thread so the app is never handed an
     // ink-thread-affine object.
     return winrt::single_threaded_vector<inking::InkStroke>(std::move(strokes)).GetView();
 }
 
 void InkSynchronizer::EndDry()
+{
+    auto owner = m_owner.get();
+    auto ownerImpl = owner ? winrt::get_self<::InkPresenter>(owner) : nullptr;
+    if (!ownerImpl || !ownerImpl->IsDryHandoffInXamlFrame() || !ownerImpl->IsOnUIThread())
+    {
+        // Ink on its own device (or called off the UI thread): forward now, as before.
+        EndDryOnOs();
+        m_dryState = DryState::Idle;
+        return;
+    }
+
+    // Same error the OS gives for EndDry without BeginDry, raised now because the OS call is held.
+    if (m_dryState != DryState::InDry)
+    {
+        throw winrt::hresult_illegal_method_call();
+    }
+
+    // The app's dry ink is in XAML's tree now and XAML renders it in its next frame. Forward EndDry when that
+    // frame starts (Rendering): the OS detaches the wet ink from its host visual on XAML's device, and XAML's
+    // commit of that frame carries both changes. On the UI thread, adding a Rendering handler does not fail.
+    m_dryState = DryState::EndDryPending;
+    auto token = std::make_shared<winrt::event_token>();
+    *token = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(
+        [weakThis = get_weak(), token](auto const&, auto const&)
+        {
+            if (auto self = weakThis.get())
+            {
+                self->FlushPendingEndDry();
+            }
+            else
+            {
+                // The synchronizer is gone; just unhook (this runs on the UI thread).
+                winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(*token);
+            }
+        });
+    m_renderingToken = std::move(token);
+}
+
+// Sends a held EndDry to the OS. Runs on the UI thread: from Rendering, or from BeginDry (StrokesCollected).
+void InkSynchronizer::FlushPendingEndDry()
+{
+    if (m_dryState != DryState::EndDryPending)
+    {
+        return;
+    }
+    m_dryState = DryState::Idle;
+    winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(*m_renderingToken);
+    m_renderingToken = nullptr;
+    EndDryOnOs();
+}
+
+void InkSynchronizer::EndDryOnOs()
 {
     RunOnInkHostThreadSync(m_owner,
         [this](inking::InkPresenter const&)
