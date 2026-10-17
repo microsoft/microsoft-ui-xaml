@@ -155,7 +155,12 @@ AutomaticDragHelper::RegisterDragPointerEvents()
                 xaml_input::IPointerRoutedEventArgs>(m_pOwnerNoRef, &UIElement::OnPointerReleased));
 
 
-            IFC_RETURN(m_pOwnerNoRef->add_PointerReleased(spDragDropPointerReleasedHandler.Get(), &m_dragDropPointerReleasedToken));
+            // Controls can handle release while invoking a click. Drag tracking must
+            // still end, even if releasing pen capture raises no PointerCaptureLost.
+            UIElement::PointerReleasedEventSourceType* pointerReleasedEventSource = nullptr;
+            IFC_RETURN(m_pOwnerNoRef->GetPointerReleasedEventSourceNoRef(&pointerReleasedEventSource));
+            IFC_RETURN(pointerReleasedEventSource->AddHandler(spDragDropPointerReleasedHandler.Get(), true /* handledEventsToo */));
+            m_dragDropPointerReleasedToken.value = reinterpret_cast<INT64>(spDragDropPointerReleasedHandler.Get());
         }
 
         if (m_dragDropPointerCaptureLostToken.value == 0)
@@ -209,6 +214,7 @@ AutomaticDragHelper::HandlePointerPressedEventArgs(
         // If the left mouse button was the one pressed...
         if (!m_isLeftButtonPressed && isLeftButtonPressed)
         {
+            IFC_RETURN(spPointer->get_PointerId(&m_mouseDragPointerId));
             m_isLeftButtonPressed = true;
             // Start listening for a mouse drag gesture
             IFC_RETURN(spPointerPoint->get_Position(&m_lastMouseLeftButtonDownPosition));
@@ -272,6 +278,11 @@ AutomaticDragHelper::HandlePointerMovedEventArgs(
         if (ShouldStartMouseDrag(newMousePosition))
         {
             ctl::ComPtr<wf::IAsyncOperation<wadt::DataPackageOperation>> spAsyncOperation;
+
+            // Releasing pen capture may not raise PointerCaptureLost, and the
+            // release after a drag may occur elsewhere. End tracking explicitly.
+            m_isLeftButtonPressed = false;
+            IFC_RETURN(UnregisterEvents());
             IFC_RETURN(StopCheckingForMouseDrag(spPointer.Get()));
 
             IFC_RETURN(m_pOwnerNoRef->StartDragAsync(spPointerPoint.Get(), &spAsyncOperation));
@@ -292,6 +303,16 @@ _In_ xaml_input::IPointerRoutedEventArgs* pArgs)
     ASSERT(pArgs);
 
     IFC_RETURN(pArgs->get_Pointer(&spPointer));
+    if (m_isLeftButtonPressed)
+    {
+        UINT pointerId = 0;
+        IFC_RETURN(spPointer->get_PointerId(&pointerId));
+        // A handled release from a descendant may belong to another pointer.
+        if (pointerId != m_mouseDragPointerId)
+        {
+            return S_OK;
+        }
+    }
     IFC_RETURN(spPointer->get_PointerDeviceType(&pointerDeviceType));
 
     // Check if this is a mouse button up
