@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewRow.h"
+#include "ShapingHelpers.h"
 
 #include <utility>
 #include <vector>
@@ -168,6 +169,108 @@ void TableView::ClearPendingSelection()
 {
     m_pendingSelectedItem.set(nullptr);
     m_pendingSelectedIdentity.clear();
+}
+
+void TableView::RetainSourceItemState(std::vector<winrt::IInspectable> const& items)
+{
+    auto const ranks = m_tableViewSourceSort.CustomSortState;
+    const bool retainRanks = ranks && ranks->HasComparer();
+    auto const sticky = m_stickySelectedItem.get();
+    auto const pending = m_pendingSelectedItem.get();
+    ShapingHelpers::ObjectAddress focusAddress;
+    const bool hasObjectFocus = ShapingHelpers::TryParseObjectAddress(
+        std::wstring_view{ m_pendingGroupFocusIdentity }, focusAddress);
+    if (!retainRanks && !sticky && !pending && !hasObjectFocus)
+    {
+        return;
+    }
+
+    auto const stickyAddress = ShapingHelpers::GetObjectAddress(sticky);
+    auto const pendingAddress = ShapingHelpers::GetObjectAddress(pending);
+    bool stickySurvives = !sticky;
+    bool pendingSurvives = !pending;
+    bool focusSurvives = !hasObjectFocus;
+    std::unordered_set<ShapingHelpers::ObjectAddress> live;
+    if (retainRanks)
+    {
+        live.reserve(items.size());
+    }
+    for (auto const& item : items)
+    {
+        auto const address = ShapingHelpers::GetObjectAddress(item);
+        if (retainRanks)
+        {
+            live.insert(address);
+        }
+        stickySurvives |= address == stickyAddress;
+        pendingSurvives |= address == pendingAddress;
+        focusSurvives |= address == focusAddress;
+        if (!retainRanks && stickySurvives && pendingSurvives && focusSurvives)
+        {
+            break;
+        }
+    }
+    if (retainRanks)
+    {
+        ranks->RetainOnly(live);
+    }
+    if (!stickySurvives)
+    {
+        m_stickySelectedItem.set(nullptr);
+        m_stickySelectedIdentity.clear();
+    }
+    if (!pendingSurvives)
+    {
+        ClearPendingSelection();
+    }
+    if (!focusSurvives)
+    {
+        m_pendingGroupFocusIdentity.clear();
+        m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+    }
+}
+
+void TableView::RemoveSourceItemState(
+    winrt::IInspectable const& item,
+    std::vector<winrt::IInspectable> const& sourceItems)
+{
+    if (auto const ranks = m_tableViewSourceSort.CustomSortState)
+    {
+        ranks->Remove(item);
+    }
+    auto const sticky = m_stickySelectedItem.get();
+    auto const pending = m_pendingSelectedItem.get();
+    const bool removesSticky = sticky && SameInspectableIdentity(sticky, item);
+    const bool removesPending = pending && SameInspectableIdentity(pending, item);
+    if (removesSticky || removesPending)
+    {
+        // Unshaped sources allow duplicate objects; retiring one occurrence may leave another.
+        auto const address = ShapingHelpers::GetObjectAddress(item);
+        size_t occurrences = 0;
+        for (auto const& candidate : sourceItems)
+        {
+            if (ShapingHelpers::GetObjectAddress(candidate) == address && ++occurrences > 1)
+            {
+                return;
+            }
+        }
+    }
+    if (removesSticky)
+    {
+        m_stickySelectedItem.set(nullptr);
+        m_stickySelectedIdentity.clear();
+    }
+    if (removesPending)
+    {
+        ClearPendingSelection();
+    }
+    ShapingHelpers::ObjectAddress focusAddress;
+    if (ShapingHelpers::TryParseObjectAddress(std::wstring_view{ m_pendingGroupFocusIdentity }, focusAddress) &&
+        focusAddress == ShapingHelpers::GetObjectAddress(item))
+    {
+        m_pendingGroupFocusIdentity.clear();
+        m_pendingGroupFocusState = winrt::FocusState::Unfocused;
+    }
 }
 
 winrt::hstring TableView::HierarchyIdentityForIndex(int32_t index) const

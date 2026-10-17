@@ -10,6 +10,7 @@
 #include <functional>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include <winrt/Microsoft.UI.Dispatching.h>
@@ -277,20 +278,21 @@ namespace ShapingHelpers
         // re-ranks everything once.
         void InvalidateRanks() noexcept;
 
-        bool HasComparer() const noexcept { return static_cast<bool>(m_comparer); }
+        void Remove(winrt::IInspectable const& item);
+        void RetainOnly(std::unordered_set<ObjectAddress> const& live);
 
-        // Drop rows that left the source so the ranks stop keeping them alive. Rank gaps left
-        // behind are harmless: keys only have to order. Both are no-ops inside a comparer callback.
-        void Forget(winrt::IInspectable const& item);
-        void RetainOnly(std::vector<winrt::IInspectable> const& liveRows);
+        bool HasComparer() const noexcept { return static_cast<bool>(m_comparer); }
 
     private:
         struct RankEntry
         {
-            winrt::IInspectable Item{ nullptr };
+            winrt::weak_ref<winrt::IInspectable> WeakItem{ nullptr };
+            // Only for objects without IWeakReferenceSource; source-lifetime callbacks retire it.
+            winrt::IInspectable StrongItem{ nullptr };
             int32_t Rank{};
-            // Cached COM identity; Item keeps the object alive while ranked.
             ObjectAddress Identity{ ObjectAddress::Null };
+
+            winrt::IInspectable Item() const { return StrongItem ? StrongItem : WeakItem.get(); }
         };
 
         // m_ranks stays ordered by rank; PlaceUnranked relies on it to binary-search.
@@ -348,13 +350,19 @@ namespace ShapingHelpers
         PairwiseComparer m_comparer{ nullptr };
         std::vector<RankEntry> m_ranks;
         // Items whose rank was dropped by Evict and not yet re-placed.
-        std::vector<winrt::IInspectable> m_evicted;
+        std::vector<RankEntry> m_evicted;
         // Set once enough items are evicted that PlaceEvicted will re-rank everything; further
         // deferred evictions are then skipped (the re-rank covers them).
         bool m_rerankAllPending{ false };
         // O(1) identity -> rank lookup for the common (reference-type item) case; falls back to the
         // comparer scan on a miss, e.g. a boxed value type whose CCW churned.
-        std::unordered_map<ObjectAddress, int32_t> m_rankByIdentity;
+        struct RankLookup
+        {
+            int32_t Rank{};
+            winrt::weak_ref<winrt::IInspectable> Item{ nullptr };
+            bool CanResolveItem{ false };
+        };
+        std::unordered_map<ObjectAddress, RankLookup> m_rankByIdentity;
         uint64_t m_generation{ 0 };
         // Reentrancy guard for the app comparer. Both rank paths iterate m_ranks and invoke the
         // comparer inside that iteration; a comparer that re-enters lands in the same vector and

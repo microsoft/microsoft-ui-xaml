@@ -85,7 +85,7 @@ void HierarchicalSourceAdapter::SetIndex(std::shared_ptr<const ShapingHelpers::P
     auto const keepAlive = shared_from_this();
 
     m_detached = false;
-    m_index = std::move(index);
+    auto previousIndex = std::exchange(m_index, std::move(index));
     m_rootSegments = std::move(rootSegments);
 
     // A collapse override only means something on a row that is still a context row.
@@ -101,9 +101,7 @@ void HierarchicalSourceAdapter::SetIndex(std::shared_ptr<const ShapingHelpers::P
         m_filterOverlayCollapsed.clear();
     }
 
-    Rebuild();
-
-    // Pruned after publish, against UNFILTERED identities, so intent for filtered-out rows survives.
+    // Prune before publishing or releasing the old index, including its hidden rows.
     if (m_index && m_index->Structure && m_prunedForStructure.lock() != m_index->Structure)
     {
         // Same structure means already pruned.
@@ -116,6 +114,13 @@ void HierarchicalSourceAdapter::SetIndex(std::shared_ptr<const ShapingHelpers::P
         m_expansion.RetainOnly(liveIdentities);
         m_prunedForStructure = m_index->Structure;
     }
+    else if (!m_index)
+    {
+        m_expansion.RetainOnly({});
+        m_prunedForStructure.reset();
+    }
+
+    Rebuild();
 }
 
 void HierarchicalSourceAdapter::ClearIndex()
@@ -123,13 +128,15 @@ void HierarchicalSourceAdapter::ClearIndex()
     // No Rebuild: the repeater may still be bound mid-teardown, so an empty Reset is a hazard.
     // May run inside our own notification; m_detached stops the still-publishing frame.
     m_detached = true;
-    m_index.reset();
-    m_rootSegments.clear();
+    ResetIntentQuietly();
     m_filterOverlayCollapsed.clear();
 
     // Descriptors kept: stale rows may stay bound until the projection swap.
     m_indexByIdentity.clear();
     m_indexByIdentityValid = true;
+    m_prunedForStructure.reset();
+    m_rootSegments.clear();
+    m_index.reset();
 }
 
 void HierarchicalSourceAdapter::ResetIntentQuietly()

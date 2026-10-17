@@ -533,7 +533,7 @@ void TableViewSource::ReleaseOwningTableView(winrt::IInspectable const& owner)
     // hear the end of.
     m_engine->SetLiveShapingHold(nullptr);
     m_engine->SetLiveItemChangedHook(nullptr);
-    m_engine->SetRowsReleasedHook(nullptr);
+    m_engine->SetSourceItemLifetimeHandlers(nullptr, nullptr);
     m_engine->ResumeHeldLiveShaping();
 
     // Last, after the former owner's handlers are dropped. Each waiter is popped before it runs:
@@ -559,9 +559,11 @@ void TableViewSource::SetLiveItemChangedHook(std::function<bool(winrt::IInspecta
     m_engine->SetLiveItemChangedHook(std::move(hook));
 }
 
-void TableViewSource::SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook)
+void TableViewSource::SetSourceItemLifetimeHandlers(
+    std::function<void(std::vector<winrt::IInspectable> const&)> retain,
+    std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> remove)
 {
-    m_engine->SetRowsReleasedHook(std::move(hook));
+    m_engine->SetSourceItemLifetimeHandlers(std::move(retain), std::move(remove));
 }
 
 void TableViewSource::ResumeHeldLiveShaping()

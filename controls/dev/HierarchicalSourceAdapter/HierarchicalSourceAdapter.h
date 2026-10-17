@@ -32,11 +32,11 @@ public:
     // Created once over m_entries, whose identity is stable for the adapter's lifetime.
     winrt::ItemsSourceView Entries() const { return m_entriesView; }
 
-    // Publishes a projection over `index`, then prunes intent to identities in the UNFILTERED source.
+    // Prunes intent to the UNFILTERED source before publishing or releasing the previous index.
     // `rootSegments` splits index->Roots into per-group-bucket runs; empty means one segment.
     void SetIndex(std::shared_ptr<const ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments);
 
-    // Drops the index without publishing; keeps intent. Detaches the adapter so an unwinding
+    // Drops the index and intent without publishing. Detaches the adapter so an unwinding
     // publication stops at the next safe point. Only SetIndex re-attaches.
     void ClearIndex();
 

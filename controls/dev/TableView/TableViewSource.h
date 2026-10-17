@@ -134,9 +134,9 @@ public:
     // Lets the owner refresh a custom comparer's ranks as items change (see
     // ShapedItemsSource::SetLiveItemChangedHook).
     void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook);
-    // Lets the owner drop comparer ranks for rows that left the source (see
-    // ShapedItemsSource::SetRowsReleasedHook).
-    void SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook);
+    void SetSourceItemLifetimeHandlers(
+        std::function<void(std::vector<winrt::IInspectable> const&)> retain,
+        std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> remove);
     // False when sorting would fail because the rows include a null item or one object twice.
     bool CanApplySort() const;
 
