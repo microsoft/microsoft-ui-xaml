@@ -196,11 +196,12 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass DatePickerFlyoutItem
+    unsealed runtimeclass DatePickerFlyoutItem
         : Microsoft.UI.Xaml.DependencyObject
         , [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         Microsoft.UI.Xaml.Data.ICustomPropertyProvider
     {
+        [method_name("CreateInstance")] DatePickerFlyoutItem();
         String PrimaryText;
         String SecondaryText;
         static Microsoft.UI.Xaml.DependencyProperty PrimaryTextProperty{ get; };
