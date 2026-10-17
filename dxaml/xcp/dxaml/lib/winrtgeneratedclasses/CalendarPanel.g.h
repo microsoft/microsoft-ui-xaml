@@ -96,11 +96,16 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) CalendarPanelFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::Primitives::ICalendarPanelFactory
     {
+        BEGIN_INTERFACE_MAP(CalendarPanelFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(CalendarPanelFactory, ABI::Microsoft::UI::Xaml::Controls::Primitives::ICalendarPanelFactory)
+        END_INTERFACE_MAP(CalendarPanelFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ICalendarPanel** ppInstance);
 
         // Static properties.
 
@@ -120,6 +125,7 @@ namespace DirectUI
         // Static events.
 
     protected:
+        HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
         KnownTypeIndex GetTypeIndex() const override
         {
