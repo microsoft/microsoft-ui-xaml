@@ -8,6 +8,15 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
+    <local:TestPage.Resources>
+        <!-- Used by RefreshContainerTests (API): a template whose "Root" panel is itself the IRefreshInfoProvider. -->
+        <ControlTemplate x:Key="ProviderRootRefreshContainerTemplate" TargetType="muxcontrols:RefreshContainer">
+            <local:RefreshInfoProviderPanel x:Name="Root">
+                <ContentPresenter Content="{TemplateBinding Content}"/>
+                <Grid x:Name="RefreshVisualizerPresenter"/>
+            </local:RefreshInfoProviderPanel>
+        </ControlTemplate>
+    </local:TestPage.Resources>
     <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="10">
       <Button x:Name="AdaptButton" AutomationProperties.Name="AdaptButton" Content="Adapt" Width="200" Margin="2"/>
       <StackPanel Orientation="Horizontal">
@@ -70,5 +79,11 @@
           <TextBox x:Name="ScrollerOffset" Grid.Column="1" Grid.Row="2"/>
           <TextBox x:Name="RefreshCount" AutomationProperties.Name="RefreshCount" IsReadOnly="True" Grid.Column="1" Grid.Row="3"/>
       </Grid>
+      <StackPanel Orientation="Horizontal">
+          <!-- When checked, the list is scrolled (twice, without animation) as soon as a pull reaches Interacting. -->
+          <CheckBox x:Name="ScrollAwayDuringPullCheckBox" AutomationProperties.Name="ScrollAwayDuringPullCheckBox" Content="Scroll away during pull" Margin="2"/>
+          <TextBox x:Name="StateTransitions" AutomationProperties.Name="StateTransitions" IsReadOnly="True" Width="400" Margin="2"/>
+          <TextBox x:Name="ScrollAwayTrace" AutomationProperties.Name="ScrollAwayTrace" IsReadOnly="True" Width="300" Margin="2"/>
+      </StackPanel>
   </StackPanel>
 </local:TestPage>
