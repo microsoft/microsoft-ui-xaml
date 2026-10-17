@@ -20,17 +20,20 @@ class TableViewSource2 :
 public:
     // Not activatable in IDL: instances are created only through From(items).
     explicit TableViewSource2(winrt::IInspectable const& items);
+    ~TableViewSource2();
 
     static winrt::TableViewSource2 From(winrt::IInspectable const& items);
 
-    winrt::TableViewSource2 Filter(winrt::TableViewPredicate const& predicate);
-    winrt::TableViewSource2 GroupBy(winrt::TableViewKeySelector const& key);
-    winrt::TableViewSource2 GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewIdentitySelector const& groupIdentitySelector);
-    winrt::TableViewSource2 Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
-    winrt::TableViewSource2 Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction);
+    winrt::TableViewSource2 Filter(winrt::TableViewPredicate2 const& predicate);
+    winrt::TableViewSource2 GroupBy(winrt::TableViewKeySelector2 const& key);
+    winrt::TableViewSource2 Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection2 direction);
+    winrt::TableViewSource2 Sort(winrt::TableViewKeySelector2 const& key, winrt::SortDirection2 direction);
+    winrt::TableViewSource2 ParentBy(winrt::TableViewKeySelector2 const& key, winrt::TableViewKeySelector2 const& parentKey);
+    winrt::TableViewSource2 ChildrenBy(winrt::TableViewChildrenSelector2 const& childrenSelector);
     winrt::TableViewSource2 ClearFilter();
     winrt::TableViewSource2 ClearGroupBy();
     winrt::TableViewSource2 ClearSort();
+    winrt::TableViewSource2 ClearHierarchy();
 
 private:
     [[noreturn]] static void ThrowNotImplemented(wchar_t const* verb);

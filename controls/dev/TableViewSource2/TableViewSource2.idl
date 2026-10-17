@@ -1,10 +1,31 @@
 namespace MU_XC_NAMESPACE
 {
 
+[MUX_PREVIEW]
+[webhosthidden]
+delegate Boolean TableViewPredicate2(Object item);
+
+[MUX_PREVIEW]
+[webhosthidden]
+delegate Object TableViewKeySelector2(Object item);
+
+// Returns an item's child collection (any collection type From accepts), or null for a leaf.
+[MUX_PREVIEW]
+[webhosthidden]
+delegate Object TableViewChildrenSelector2(Object item);
+
+[MUX_PREVIEW]
+[webhosthidden]
+enum SortDirection2
+{
+    None = 0,
+    Ascending = 1,
+    Descending = 2,
+};
+
 // Scaffold for the shaping redesign (docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md).
 // Mirrors TableViewSource's public verb surface so the two can be compared side by side; every verb
-// is a stub until the new engine lands. Reuses TableViewPredicate, TableViewKeySelector,
-// TableViewIdentitySelector (TableViewSource.idl) and SortDirection (SortDirection.idl).
+// is a stub until the new engine lands. Uses its own delegate and sort direction types.
 [MUX_PREVIEW]
 [webhosthidden]
 runtimeclass TableViewSource2
@@ -13,23 +34,29 @@ runtimeclass TableViewSource2
     // items is null.
     static TableViewSource2 From(Object items);
 
-    TableViewSource2 Filter(TableViewPredicate predicate);
+    TableViewSource2 Filter(TableViewPredicate2 predicate);
 
-    [default_overload] [method_name("GroupBy")]
-    TableViewSource2 GroupBy(TableViewKeySelector keySelector);
-
-    [method_name("GroupByWithIdentity")]
-    TableViewSource2 GroupBy(TableViewKeySelector keySelector, TableViewIdentitySelector groupIdentitySelector);
+    TableViewSource2 GroupBy(TableViewKeySelector2 keySelector);
 
     [method_name("SortByPath")]
-    TableViewSource2 Sort(String sortMemberPath, SortDirection direction);
+    TableViewSource2 Sort(String sortMemberPath, SortDirection2 direction);
 
     [default_overload] [method_name("Sort")]
-    TableViewSource2 Sort(TableViewKeySelector keySelector, SortDirection direction);
+    TableViewSource2 Sort(TableViewKeySelector2 keySelector, SortDirection2 direction);
+
+    // Hierarchy over a flat source: keySelector returns each item's unique key, parentKeySelector
+    // its parent's key (null for a root).
+    TableViewSource2 ParentBy(TableViewKeySelector2 keySelector, TableViewKeySelector2 parentKeySelector);
+
+    // Hierarchy over a nested source: childrenSelector returns each item's child collection.
+    TableViewSource2 ChildrenBy(TableViewChildrenSelector2 childrenSelector);
 
     TableViewSource2 ClearFilter();
     TableViewSource2 ClearGroupBy();
     TableViewSource2 ClearSort();
+
+    // Removes the hierarchy declared by ParentBy or ChildrenBy.
+    TableViewSource2 ClearHierarchy();
 }
 
 }

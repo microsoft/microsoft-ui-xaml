@@ -10,6 +10,8 @@ TableViewSource2::TableViewSource2(winrt::IInspectable const& items)
     m_items.set(items);
 }
 
+TableViewSource2::~TableViewSource2() = default;
+
 winrt::TableViewSource2 TableViewSource2::From(winrt::IInspectable const& items)
 {
     if (!items)
@@ -20,29 +22,34 @@ winrt::TableViewSource2 TableViewSource2::From(winrt::IInspectable const& items)
     return winrt::make<::TableViewSource2>(items);
 }
 
-winrt::TableViewSource2 TableViewSource2::Filter(winrt::TableViewPredicate const& /*predicate*/)
+winrt::TableViewSource2 TableViewSource2::Filter(winrt::TableViewPredicate2 const& /*predicate*/)
 {
     ThrowNotImplemented(L"Filter");
 }
 
-winrt::TableViewSource2 TableViewSource2::GroupBy(winrt::TableViewKeySelector const& /*key*/)
+winrt::TableViewSource2 TableViewSource2::GroupBy(winrt::TableViewKeySelector2 const& /*key*/)
 {
     ThrowNotImplemented(L"GroupBy");
 }
 
-winrt::TableViewSource2 TableViewSource2::GroupBy(winrt::TableViewKeySelector const& /*key*/, winrt::TableViewIdentitySelector const& /*groupIdentitySelector*/)
-{
-    ThrowNotImplemented(L"GroupBy");
-}
-
-winrt::TableViewSource2 TableViewSource2::Sort(winrt::hstring const& /*sortMemberPath*/, winrt::SortDirection /*direction*/)
+winrt::TableViewSource2 TableViewSource2::Sort(winrt::hstring const& /*sortMemberPath*/, winrt::SortDirection2 /*direction*/)
 {
     ThrowNotImplemented(L"Sort");
 }
 
-winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewKeySelector const& /*key*/, winrt::SortDirection /*direction*/)
+winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewKeySelector2 const& /*key*/, winrt::SortDirection2 /*direction*/)
 {
     ThrowNotImplemented(L"Sort");
+}
+
+winrt::TableViewSource2 TableViewSource2::ParentBy(winrt::TableViewKeySelector2 const& /*key*/, winrt::TableViewKeySelector2 const& /*parentKey*/)
+{
+    ThrowNotImplemented(L"ParentBy");
+}
+
+winrt::TableViewSource2 TableViewSource2::ChildrenBy(winrt::TableViewChildrenSelector2 const& /*childrenSelector*/)
+{
+    ThrowNotImplemented(L"ChildrenBy");
 }
 
 winrt::TableViewSource2 TableViewSource2::ClearFilter()
@@ -58,6 +65,11 @@ winrt::TableViewSource2 TableViewSource2::ClearGroupBy()
 winrt::TableViewSource2 TableViewSource2::ClearSort()
 {
     ThrowNotImplemented(L"ClearSort");
+}
+
+winrt::TableViewSource2 TableViewSource2::ClearHierarchy()
+{
+    ThrowNotImplemented(L"ClearHierarchy");
 }
 
 void TableViewSource2::ThrowNotImplemented(wchar_t const* verb)

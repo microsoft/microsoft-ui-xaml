@@ -4,8 +4,8 @@
     TableViewSource2: scaffold for the shaping redesign
     (docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md).
 
-    Depends on TableViewSource.idl (delegate types) and TabularShaping (SortDirection), so it must be
-    imported after both, under the same feature condition as TableView.
+    Declares its own delegate and sort direction types in TableViewSource2.idl.
+    Imported under the same feature condition as TableView.
   -->
   <PropertyGroup Label="Globals">
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
