@@ -119,7 +119,7 @@ public:
         {
             if (owner->IsChecked())
             {
-                if (owner->Kind() == winrt::InkToolbarFlyoutItemKind::Radio)
+                if (owner->RequiresSelectionInGroup())
                 {
                     throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
                 }
