@@ -829,48 +829,68 @@ private:
         void Complete() noexcept { m_completed = true; }
         void Ignore(TableViewTip::IgnoreReason reason) noexcept { m_completed = false; m_ignoreReason = reason; }
         void Fail(std::optional<HRESULT> error) noexcept;
+        // The owner records the HRESULT of an exception leaving the action, so the app is blamed only when that
+        // HRESULT is the one its code rethrew.
+        void Escaping(HRESULT error) noexcept { m_escapingError = error; }
+        // App code stopped the operation: its write did not land.
         void ApplicationFault(TableViewTip::AppFaultKind kind, std::optional<HRESULT> error = {}) noexcept;
+        // App code failed (threw, or its write did not land) and TableView carried on: reported, and the
+        // outcome stays TableView's.
+        void RecoveredAppFault(TableViewTip::AppFaultKind kind, std::optional<HRESULT> error = {}) noexcept;
         uint64_t ControlGenerationAtAdmission() const noexcept { return m_controlGenerationAtAdmission; }
 
     private:
+        void ReportAppFault(TableViewTip::AppFaultKind kind, std::optional<HRESULT> error, bool recoverable) noexcept;
+
         TableView& m_owner;
         ActionTip* m_previousAction{};
-        TableViewTip::OperationState m_state;
+        std::optional<TableViewTip::OperationState> m_state; // only while measured
         TableViewTip::Stage m_stage;
         uint64_t m_generation{};
         uint64_t m_controlGenerationAtAdmission{};
         uint64_t m_lifetimeGeneration{};
+        uint64_t m_appEscapesAtStart{};
         int m_exceptions{};
-        uint32_t m_appFaultsAtStart{};
         bool m_completed{};
         bool m_failed{};
         TableViewTip::IgnoreReason m_ignoreReason{ TableViewTip::IgnoreReason::Stale };
-        std::optional<HRESULT> m_error;
+        std::optional<HRESULT> m_failError;
+        std::optional<HRESULT> m_escapingError;
         TableViewTip::AppFaultKind m_appFaultKind{};
+        std::optional<HRESULT> m_appFaultError;
+        TableViewTip::AppFaultKind m_recoveredKind{};
+        std::optional<HRESULT> m_recoveredError;
     };
 
-    // Marks a throw from app code (handler, factory, validation, write) so the TiP closes as an
-    // application fault rather than counting against TableView.
-    class AppCalloutTip
+    // Wraps a call into app code. An app escape noted inside it is retired unless an exception leaves the
+    // scope: the app or TableView swallowed that exception, so it cannot blame a later failure on the app.
+    class AppEscapeScope
     {
     public:
-        AppCalloutTip(TableView& owner, TableViewTip::Stage stage, TableViewTip::AppFaultKind kind) noexcept;
-        void Fault(std::optional<HRESULT> error = {}) noexcept;
+        explicit AppEscapeScope(TableView& owner) noexcept;
+        ~AppEscapeScope();
+        AppEscapeScope(AppEscapeScope const&) = delete;
+        AppEscapeScope& operator=(AppEscapeScope const&) = delete;
+
     private:
         TableView& m_owner;
-        ActionTip* m_action{};
-        TableViewTip::Operation m_operation{};
-        TableViewTip::Stage m_stage{};
-        TableViewTip::AppFaultKind m_kind{};
-        uint64_t m_generation{};
-        uint64_t m_lifetime{};
+        uint64_t m_escapes;
+        TableViewTip::AppFaultKind m_kind;
+        std::optional<HRESULT> m_error;
+        int m_exceptions;
     };
 
     void AttachSourceTip(winrt::TableViewSource const& source);
     uint64_t BeginTipOperation(TableViewTip::Operation operation, bool admitted = true) noexcept;
     void EndTipOperation() noexcept;
     void SupersedeTipOperation() noexcept;
-    void NoteTipAppFault(TableViewTip::AppFaultKind kind) noexcept;
+    // In a catch, right before rethrowing an exception from app code.
+    void NoteAppEscape(TableViewTip::AppFaultKind kind, std::optional<HRESULT> error) noexcept;
+    // App code failed (threw, or its write did not land) and TableView carried on without rethrowing.
+    void NoteRecoveredAppFault(TableViewTip::Operation operation, TableViewTip::Stage stage,
+        TableViewTip::AppFaultKind kind, std::optional<HRESULT> error) noexcept;
+    bool AppEscapedSince(uint64_t escapes, HRESULT escaping) const noexcept;
+    ActionTip* CalloutAction() const noexcept;
     void FailTipOperation(uint64_t generation, TableViewTip::Stage stage, std::optional<HRESULT> error) noexcept;
     void CompleteTipOperation(uint64_t generation) noexcept;
     void IgnoreTip(TableViewTip::IgnoreReason reason) noexcept;
@@ -883,10 +903,15 @@ private:
     TableViewTip::IgnoreReason m_tipCancellationReason{ TableViewTip::IgnoreReason::Cancelled };
     uint32_t m_tipMutationDepth{};
     uint32_t m_tipSourceMutationDepth{};
-    // App faults tagged so far; an exception escaping an operation during which this moved is the app's.
-    uint32_t m_tipAppFaults{};
-    uint32_t m_tipAppFaultsAtOperationStart{};
-    TableViewTip::AppFaultKind m_tipLastAppFaultKind{};
+    // App code that rethrows bumps this, and an AppEscapeScope retires it again once nothing propagates;
+    // an exception leaving an operation is the app's when it moved while the operation ran (AppEscapedSince).
+    uint64_t m_tipAppEscapes{};
+    TableViewTip::AppFaultKind m_tipAppEscapeKind{};
+    std::optional<HRESULT> m_tipAppEscapeError;
+    uint64_t m_tipAppEscapesAtOperationStart{};
+    uint64_t m_tipAppEscapesAtSetupStart{};
+    // Completed source swaps before the first Loaded; they count into the first session.
+    uint32_t m_sourceSetsBeforeLoad{};
 
     void OnColumnsVectorChanged(
         const winrt::IObservableVector<winrt::TableViewColumn>& sender,

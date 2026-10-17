@@ -4,10 +4,12 @@
 #include "pch.h"
 #include "common.h"
 #include "TableViewSource.h"
+#include "TableViewTip.h"
 #include "RowMetadataProvider.h"
 #include "GroupedSourceAdapter.h"
 #include "HierarchicalSourceAdapter.h"
 #include "ShapedItemsSource.h"
+#include "ShapingHelpers.h"
 #include "SortMemberPathResolver.h"
 #include "SharedHelpers.h"
 
@@ -22,6 +24,8 @@ struct TableViewSource::ShapingTip
         source(source), kind(kind), handlers(source.m_shapingTipHandlers),
         previous(std::exchange(source.m_shapingTip, this)), ownerGeneration(source.m_ownerGeneration)
     {
+        // A note an earlier, swallowed failure left behind must not attribute this verb's failure.
+        ShapingHelpers::ClearCallerFault();
         observation.unproven = previous || source.m_notificationDepth;
         if (previous) { previous->observation.unproven = true; }
         if (handlers)
@@ -53,18 +57,15 @@ struct TableViewSource::ShapingTip
             std::forward<Callback>(callback)();
             observation.completed = true;
         }
-        catch (winrt::hresult_invalid_argument const&)
-        {
-            if (observation.appFaultKind == TableViewTip::AppFaultKind::None)
-            {
-                observation.appFaultKind = TableViewTip::AppFaultKind::Data;
-                observation.error = winrt::to_hresult();
-            }
-            throw;
-        }
         catch (...)
         {
-            if (!observation.error) { observation.error = winrt::to_hresult(); }
+            auto const error = winrt::to_hresult();
+            if (!observation.error) { observation.error = error; }
+            // The caller's collection or contract failed; TableView's own invalid arguments stay its own.
+            if (observation.appFaultKind == TableViewTip::AppFaultKind::None && ShapingHelpers::TakeCallerFault(error))
+            {
+                observation.appFaultKind = TableViewTip::AppFaultKind::Data;
+            }
             throw;
         }
     }
@@ -124,7 +125,6 @@ winrt::TableViewSource TableViewSource::Filter(winrt::TableViewPredicate const& 
         throw winrt::hresult_invalid_argument(L"predicate cannot be null.");
     }
     ShapingTip tip{ *this, TableViewTip::Operation::Filter };
-    m_hasFilter = true;
     tip.Apply([&]()
     {
         m_engine->SetFilter([predicate](winrt::IInspectable const& item) { return predicate(item); });
@@ -151,7 +151,6 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
         groupIdentity = [groupIdentitySelector](winrt::IInspectable const& item) { return groupIdentitySelector(item); };
     }
 
-    m_hasGroup = true;
     tip.Apply([&]()
     {
         m_engine->SetGroup([key](winrt::IInspectable const& item) { return key(item); }, groupIdentity);
@@ -159,18 +158,18 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
     return *this;
 }
 
+// A clear is measured only when the engine holds something to clear. The engine keeps a declaration
+// even when re-projecting it throws, so it, not a flag set around the call, is the answer.
 winrt::TableViewSource TableViewSource::ClearFilter()
 {
-    ShapingTip tip{ *this, TableViewTip::Operation::Filter, m_hasFilter };
-    m_hasFilter = false;
+    ShapingTip tip{ *this, TableViewTip::Operation::Filter, m_engine->HasFilter() };
     tip.Apply([&]() { m_engine->ClearFilter(); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearGroupBy()
 {
-    ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration, m_hasGroup };
-    m_hasGroup = false;
+    ShapingTip tip{ *this, TableViewTip::Operation::GroupConfiguration, m_engine->HasGroup() };
     tip.Apply([&]() { m_engine->ClearGroup(); });
     return *this;
 }
@@ -196,21 +195,21 @@ winrt::TableViewSource TableViewSource::ClearParentBy()
 
 winrt::TableViewSource TableViewSource::ClearSort()
 {
-    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortAxis({}) };
     tip.Apply([&]() { m_engine->ClearSorts(); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSort(winrt::hstring const& sortAxisToken)
 {
-    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortAxis(sortAxisToken) };
     tip.Apply([&]() { m_engine->ClearSort(sortAxisToken); });
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSortsExcept(winrt::hstring const& sortAxisToken)
 {
-    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, m_engine->HasSortOtherThan(sortAxisToken) };
     tip.Apply([&]() { m_engine->ClearSortsExcept(sortAxisToken); });
     return *this;
 }
@@ -293,17 +292,22 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
         throw winrt::hresult_invalid_argument(L"direction must be a defined SortDirection value.");
     }
 
-    ShapingTip tip{ *this, TableViewTip::Operation::Sort };
     // The engine stores a std::function, which cannot be compared, so the delegate itself is
     // handed over as the axis identity. The wrapping lambda holds a strong ref to that same
     // delegate, so the identity stays valid for as long as the axis lives.
+    auto const keyIdentity = key.as<winrt::Windows::Foundation::IUnknown>();
+    // Removing an axis that is not there is a no-op, measured no more than a clear with nothing to clear.
+    bool const meaningful = direction != winrt::SortDirection::None ||
+        m_engine->HasMatchingSort(sortAxisToken, keyIdentity) ||
+        (!previousSortAxisToken.empty() && previousSortAxisToken != sortAxisToken && m_engine->HasSortAxis(previousSortAxisToken));
+    ShapingTip tip{ *this, TableViewTip::Operation::Sort, meaningful };
     tip.Apply([&]()
     {
         m_engine->SetSort(
             previousSortAxisToken,
             sortAxisToken,
             [key](winrt::IInspectable const& item) { return key(item); },
-            key.as<winrt::Windows::Foundation::IUnknown>(),
+            keyIdentity,
             sortMemberPath,
             direction);
     });

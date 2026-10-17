@@ -46,6 +46,20 @@ namespace
             visibility == winrt::TableViewGridLinesVisibility::All;
     }
 
+    // Failure path only: the element a column factory returned already sits in another parent. The logical
+    // parent is checked first: an element held by a container outside the live tree has no visual parent yet.
+    bool HasForeignParent(winrt::FrameworkElement const& element, winrt::DependencyObject const& host) noexcept
+    {
+        try
+        {
+            if (!element) { return false; }
+            auto parent = element.Parent();
+            if (!parent) { parent = winrt::VisualTreeHelper::GetParent(element); }
+            return parent && parent != host;
+        }
+        catch (...) { return false; }
+    }
+
     // These run from OnDataContextChanged inside the rows list measure. A redundant write still
     // invalidates measure, which repeated per row per pass trips the layout-cycle failfast, so every
     // layout-affecting write on that path must be a no-op when the value is already in place.
@@ -2557,9 +2571,10 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<
         if (auto const column = m_editingColumn.get())
         {
             bool factoryReturned = false;
+            winrt::FrameworkElement refreshed{ nullptr };
             try
             {
-                auto const refreshed = column.GenerateElement(DataContext());
+                refreshed = column.GenerateElement(DataContext());
                 factoryReturned = true;
                 if (refreshed)
                 {
@@ -2570,7 +2585,8 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<
             catch (...)
             {
                 if (displayFailure) { *displayFailure = winrt::to_hresult(); }
-                if (applicationFault) { *applicationFault = !factoryReturned; }
+                // The factory threw, or returned an element that already has a parent: both are the app's.
+                if (applicationFault) { *applicationFault = !factoryReturned || HasForeignParent(refreshed, cellWrapper); }
                 // A column that throws while regenerating must not strand the row in edit mode;
                 // fall back to the parked element, which is stale but present.
                 displayElement = m_editingDisplayElement.get();

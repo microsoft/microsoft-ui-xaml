@@ -510,6 +510,66 @@ Row recycling, cell rebuild and dependency-property change callbacks can all run
 - **`TableViewRowTemplateSelector`** — picks the container kind for an entry in the projection: a `TableViewGroupHeader` for a group entry, a `TableViewRow` for a data row.
 - **`RowExpansionModel`** — internal layer-1 store of expand/collapse *intent*, keyed by group identity and holding only the exceptions to a default. Carries no XAML or tabular vocabulary, so hierarchy can reuse it unchanged.
 
+# Telemetry and TiP
+
+TableView reports whether its own work succeeded (TiP) and how it is used (telemetry), on the Tabular
+providers. On success an operation pays for its TiP start and stop, a counter update and, at each source
+swap, sort or shaping step, a thread-local reset. Attribution work runs only when something throws.
+
+## TiP tests
+
+| Test | Runs on | Fails with `internal_failure` when |
+|---|---|---|
+| `TableViewInitializationTest` (64477764) | Every `OnApplyTemplate` | Setup throws and no app code rethrew (the HRESULT is included) |
+| `TableViewOperationTest` (64477774) | Source swap (also before the first `Loaded`), sort, filter, group configuration, selection, begin/commit/cancel edit | TableView's own code throws, or a commit's display cannot be restored (the HRESULT is included) |
+
+Scrolling, measure/arrange, cell realization and group expansion are not measured. A clear verb, or a
+`Sort` with `SortDirection.None`, that has nothing to remove is not measured either. Internal pipeline
+builds warn when Tabular falls back to the public TiP stub; `UseTestInProductionStub=true` chooses the
+stub without a warning.
+
+## Who is blamed
+
+- App code is blamed only when it decided the outcome: its exception left the operation, or its write
+  stopped it. The test closes Ignored with `application_fault`; the `TableView_Error` diagnostic carries
+  the category (callback, validation, write, factory or data).
+- An app fault TableView recovers from (a throwing `BeginningEdit` or `CellEditEnding` handler,
+  validation read, editing template or display factory) is reported, and the outcome stays TableView's.
+- An app exception that was swallowed (by the app inside a handler, or by TableView) no longer counts:
+  the app is blamed only when the exception leaving the operation has the HRESULT its code rethrew.
+- An app fault never overrides TableView's own failure in the same operation; each is reported, subject to
+  the diagnostic's once-per-session limit.
+- An app-supplied collection that throws when read, and broken caller contracts (one object on two rows, a
+  row without an identity, invalid group or parent identities), are data faults. Exception types decide
+  nothing: TableView's own invalid arguments, and failures reading collections TableView builds (such as
+  the group list), stay TableView's.
+
+Known gaps: app code TableView calls without tagging it (for example a header's `ToString`) counts as
+TableView's if it throws inside a measured operation, and so does an element from a column factory that
+XAML refuses because a container outside the visual tree holds it. A built-in column's display factory
+that throws after a commit counts as the app's. Running out of memory while walking an enumeration-only
+source counts as TableView's, because TableView's own allocation may be what failed. An app exception
+swallowed outside TableView's own callouts (for example by an event source that drops handler exceptions)
+can still take the blame for a later TableView failure in the same operation that has the same HRESULT. A
+source setter that throws during a `{Binding}` write never reaches TableView (`UpdateSource` returns
+normally), so that commit counts as completed although the value did not land.
+
+## Events
+
+| Event | When | Contents |
+|---|---|---|
+| `TableView_Loaded` | First `Loaded` in a process while a listener is enabled (a later `Loaded` retries) | `LoadedVersion`, control version, `UTCReplace_AppSessionGuid` |
+| `TableView_SessionSummary` | Unloaded or destruction, once per session, only when something was counted | `SessionSummaryVersion`; completed-operation counts (source swaps made before the first `Loaded` count into the first session); deferred count; `CounterOverflowMask` (bit n is the n-th count in field order, bit 8 the deferred count) |
+| `TableView_Error` | A TableView failure, an app fault, or a caught header-rebuild error | Operation, stage, attribution, category, `HResult` with `HResultAvailable`, `IsRecoverable` (true when TableView carried on). Logging provider, VERBOSE, `KEYWORD_TABLEVIEW`, no telemetry keyword; the first per operation, attribution and recoverability in a session (within an edit or selection, an app fault that decided the outcome comes first) |
+
+Every event also carries `SchemaVersion`.
+
+## Versions
+
+- A TiP test's data version: when its outcome rules or its data change.
+- `SessionSummaryVersion` and `LoadedVersion`: when that event's fields or their meaning change.
+- `SchemaVersion`: when any TableView event changes.
+
 # Appendix
 
 ## Non-goals

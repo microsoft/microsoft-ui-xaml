@@ -93,9 +93,24 @@ namespace ShapingHelpers
         static bool UsesFallbackKey(winrt::IInspectable const& value);
     };
 
+    // Whose collection is read. A read of the caller's collection that throws is noted as a caller fault (see
+    // NoteCallerFault), except running out of memory while enumerating a collection with no indexed read, which
+    // may be shaping's own allocation; a read of shaping's own collections, such as the group list it builds,
+    // never is.
+    enum class CollectionOwner { Shaping, Caller };
+
     std::vector<winrt::IInspectable> EnumerateInspectableItems(
         winrt::IInspectable const& source,
-        bool throwIfUnsupported = false);
+        bool throwIfUnsupported = false,
+        CollectionOwner owner = CollectionOwner::Shaping);
+
+    // Where an exception leaving shaping came from. Shaping rethrows it unchanged; an owner uses this to
+    // tell the caller's collection or a broken caller contract from shaping's own failures. Noted on the
+    // failure path only, and thread-local: shaping runs on its owner's thread.
+    void NoteCallerFault(HRESULT error) noexcept;
+    // Whether a caller fault was noted for exactly this HRESULT; clears the note.
+    bool TakeCallerFault(HRESULT escaping) noexcept;
+    void ClearCallerFault() noexcept;
 
     // Resolves ONCE what a collection is and how to read it.
     //
@@ -113,7 +128,7 @@ namespace ShapingHelpers
     {
     public:
         CollectionAccessor() = default;
-        explicit CollectionAccessor(winrt::IInspectable const& source);
+        explicit CollectionAccessor(winrt::IInspectable const& source, CollectionOwner owner);
 
         // True when Count/GetAt are a direct call rather than an enumeration. An enumerable-only
         // source reports false; callers that need indexed access degrade instead of materializing
@@ -141,6 +156,7 @@ namespace ShapingHelpers
         winrt::IInspectable GetAtUnchecked(uint32_t index) const;
 
         winrt::IInspectable m_source{ nullptr };
+        bool m_callerOwned{};
 
         // Read: at most one of these is set, in IVector > IVectorView > IBindableVector order.
         winrt::Windows::Foundation::Collections::IVector<winrt::IInspectable> m_vector{ nullptr };

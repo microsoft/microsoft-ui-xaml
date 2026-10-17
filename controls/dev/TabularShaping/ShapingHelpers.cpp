@@ -651,17 +651,42 @@ namespace ShapingHelpers
         return keyA < keyB ? -1 : (keyA > keyB ? 1 : 0);
     }
 
+    namespace
+    {
+        thread_local bool t_callerFault{};
+        thread_local HRESULT t_callerFaultError{};
+    }
+
+    void NoteCallerFault(HRESULT error) noexcept
+    {
+        t_callerFault = true;
+        t_callerFaultError = error;
+    }
+
+    bool TakeCallerFault(HRESULT escaping) noexcept
+    {
+        auto const taken = t_callerFault && t_callerFaultError == escaping;
+        t_callerFault = false;
+        return taken;
+    }
+
+    void ClearCallerFault() noexcept
+    {
+        t_callerFault = false;
+    }
+
     std::vector<winrt::IInspectable> EnumerateInspectableItems(
         winrt::IInspectable const& source,
-        bool throwIfUnsupported)
+        bool throwIfUnsupported,
+        CollectionOwner owner)
     {
         // Single entry point for callers holding a raw source. The classification and the walk both
         // live on CollectionAccessor so there is exactly one interface ladder in the stack.
-        return CollectionAccessor{ source }.Enumerate(throwIfUnsupported);
+        return CollectionAccessor{ source, owner }.Enumerate(throwIfUnsupported);
     }
 
-    CollectionAccessor::CollectionAccessor(winrt::IInspectable const& source) :
-        m_source(source)
+    CollectionAccessor::CollectionAccessor(winrt::IInspectable const& source, CollectionOwner owner) :
+        m_source(source), m_callerOwned(owner == CollectionOwner::Caller)
     {
         if (!source)
         {
@@ -706,6 +731,7 @@ namespace ShapingHelpers
     }
 
     uint32_t CollectionAccessor::Count() const
+    try
     {
         if (m_vector)
         {
@@ -721,8 +747,15 @@ namespace ShapingHelpers
         }
         return 0;
     }
+    catch (...)
+    {
+        // Only the collection runs here, so any failure, out-of-memory included, is its own.
+        if (m_callerOwned) { NoteCallerFault(winrt::to_hresult()); }
+        throw;
+    }
 
     winrt::IInspectable CollectionAccessor::GetAtUnchecked(uint32_t index) const
+    try
     {
         if (m_vector)
         {
@@ -733,6 +766,11 @@ namespace ShapingHelpers
             return m_vectorView.GetAt(index);
         }
         return m_bindableVector.GetAt(index);
+    }
+    catch (...)
+    {
+        if (m_callerOwned) { NoteCallerFault(winrt::to_hresult()); }
+        throw;
     }
 
     bool CollectionAccessor::TryGetAt(uint32_t index, winrt::IInspectable& item) const
@@ -748,6 +786,7 @@ namespace ShapingHelpers
     }
 
     std::vector<winrt::IInspectable> CollectionAccessor::Enumerate(bool throwIfUnsupported) const
+    try
     {
         std::vector<winrt::IInspectable> result;
         if (!m_source)
@@ -817,6 +856,13 @@ namespace ShapingHelpers
         }
 
         return result;
+    }
+    catch (...)
+    {
+        // This also grows its own vector, so an out-of-memory here may be shaping's. A caller's indexed read that
+        // ran out of memory was already noted by Count or GetAtUnchecked.
+        if (auto const error = winrt::to_hresult(); m_callerOwned && error != E_OUTOFMEMORY) { NoteCallerFault(error); }
+        throw;
     }
 
     void ApplyPredicateFilter(

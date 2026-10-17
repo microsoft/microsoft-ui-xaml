@@ -122,7 +122,7 @@ namespace TableViewTip
 
     uint64_t BeginOperation(OperationState& state, Operation operation) noexcept
     {
-        if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(Operation::CancelEdit))
+        if (static_cast<uint32_t>(operation) >= static_cast<uint32_t>(Operation::Max))
         {
             OutputDebugStringW(L"TableView TiP: invalid operation.\n");
             return 0;

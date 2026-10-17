@@ -6,11 +6,13 @@
 #include "pch.h"
 #include "common.h"
 
+#include <functional>
 #include <memory>
+#include <optional>
 
 #include "TableViewSource.g.h"
 #include "TableViewRowInfo.h"
-#include "TableViewTip.h"
+#include "TableViewTipTypes.h"
 
 class ShapedItemsSource;
 
@@ -171,8 +173,6 @@ private:
     ShapingTip* m_shapingTip{};
     uint64_t m_ownerGeneration{};
     uint32_t m_notificationDepth{};
-    bool m_hasFilter{};
-    bool m_hasGroup{};
     struct OwnerReleasedWaiter
     {
         winrt::weak_ref<winrt::IInspectable> Waiter;

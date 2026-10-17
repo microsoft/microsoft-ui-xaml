@@ -117,6 +117,13 @@ namespace ShapingHelpers
         // holding one token cannot address the axes it does not own by token alone.
         void ClearSortsExcept(winrt::hstring const& axisToken) noexcept;
         bool HasActiveSort() const noexcept;
+        // True when ClearSort(axisToken) would remove an axis; as there, the empty token addresses every axis.
+        bool HasSortAxis(winrt::hstring const& axisToken) const noexcept;
+        // True when ClearSortsExcept(axisToken) would remove an axis; as there, the empty token preserves none.
+        bool HasSortOtherThan(winrt::hstring const& axisToken) const noexcept;
+        // True when SetSort(..., axisToken, ..., keyIdentity, ..., None) would remove an axis: the same axis
+        // match SetSort uses, by token, or by key identity for an untokenized axis.
+        bool HasMatchingSort(winrt::hstring const& axisToken, winrt::Windows::Foundation::IUnknown const& keyIdentity) const noexcept;
 
         // Axes with a live key and direction whose Order falls strictly between the bounds. A
         // negative bound is unbounded, so ActiveSortAxes(-1, -1) is every active axis. Returned in

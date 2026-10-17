@@ -6,25 +6,29 @@
 #include <array>
 #include <cstdint>
 #include <optional>
-#include "TableViewTipTests.h"
+#include "TableViewTipTypes.h"
 
-// Telemetry: one TableView_SessionSummary per loaded session, plus the local-only TableView_Error
-// diagnostic. TiP outcomes live in TableViewTip.h.
+// Telemetry: a once-per-process TableView_Loaded, one TableView_SessionSummary per loaded session that
+// counted something, and the local-only TableView_Error diagnostic. TiP outcomes live in TableViewTip.h.
 namespace TableViewTelemetry
 {
-    // Completed-operation counts for one loaded session, written once at Unloaded.
+    // Completed-operation counts for one loaded session, written once at Unloaded or destruction.
     struct Session
     {
-        std::array<uint32_t, 12> counts{};
+        // One slot per measured operation (TableViewTelemetry.cpp CountSlot).
+        std::array<uint32_t, 8> counts{};
         uint64_t generation{};
         uint32_t deferredCount{};
         uint32_t overflowMask{};
+        // TableView_Error dedupe: one bit per operation, attribution and recoverability.
         uint64_t reportedErrors{};
         bool active{};
     };
 
     void BeginSession(Session& session) noexcept;
     void EndSession(Session& session) noexcept;
+    // Presence: once per process, at the first Loaded.
+    void ReportFirstLoad() noexcept;
     // An operation counts only into the session it started in, and only while that session is active.
     // An empty ignore reason means it completed.
     void CountOperation(Session& session, uint64_t startedIn, TableViewTip::Operation operation,
