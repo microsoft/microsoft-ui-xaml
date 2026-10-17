@@ -5755,6 +5755,33 @@ bool NavigationView::IsTopLevelItem(const winrt::NavigationViewItemBase& nvib)
     return IsRootItemsRepeater(GetParentItemsRepeaterForContainer(nvib));
 }
 
+// Returns true if the item lives in the left pane's PaneFooter or PaneCustomContent (and is not nested inside another item).
+bool NavigationView::IsInLeftPaneFooterOrCustomContent(const winrt::NavigationViewItemBase& nvib)
+{
+    auto const footerContentBorder = m_leftNavFooterContentBorder.get();
+    auto const paneCustomContentBorder = m_leftNavPaneCustomContentBorder.get();
+    if (!footerContentBorder && !paneCustomContentBorder)
+    {
+        return false;
+    }
+
+    winrt::NavigationView const navView = *this;
+    auto parent = winrt::VisualTreeHelper::GetParent(nvib);
+    while (parent)
+    {
+        if (parent == footerContentBorder || parent == paneCustomContentBorder)
+        {
+            return true;
+        }
+        if (parent == navView || parent.try_as<winrt::NavigationViewItemBase>())
+        {
+            return false;
+        }
+        parent = winrt::VisualTreeHelper::GetParent(parent);
+    }
+    return false;
+}
+
 bool NavigationView::IsVisible(const winrt::DependencyObject& obj)
 {
     // We'll go up the visual tree until we find this NavigationView.
