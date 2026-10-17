@@ -4935,43 +4935,56 @@ _Check_return_ HRESULT CTextBoxBase::SendTextCompositionEvent(TextCompositionSta
 _Check_return_ HRESULT CTextBoxBase::EnableCandidateWindowBoundsTracking(EventHandle event)
 {
     m_CandidateWindowevent = event;
-    if (GetContext()->IsTSF3Enabled())
+    // The CoreInputView occlusion stream reports IME candidate-window bounds, so take that path
+    // under XAML islands as well. TSF3 is force-disabled for islands, which previously left this
+    // control on the legacy IUIManagerEventSink path - a path the modern out-of-process IME no
+    // longer drives for desktop-hosted apps, so CandidateWindowBoundsChanged never fired
+    // (microsoft/microsoft-ui-xaml#12195).
+    //
+    // Under islands the registration is deferred to UpdateFocusState: at add_ time this control is
+    // typically not parented yet, so VisualTree::GetContentRootForElement would bind the handler to
+    // the wrong ContentRoot - leaving it with a focus manager that never reports a focused element,
+    // and creating a second handler that wins the occlusion callback.
+    if (GetContext()->GetInitializationType() != InitializationType::IslandsOnly)
     {
-        if (CContentRoot* contentRoot = VisualTree::GetContentRootForElement(this))
+        if (GetContext()->IsTSF3Enabled())
         {
-            IFC_RETURN(contentRoot->GetInputManager().RegisterFrameworkInputView());
+            if (CContentRoot* contentRoot = VisualTree::GetContentRootForElement(this))
+            {
+                IFC_RETURN(contentRoot->GetInputManager().RegisterFrameworkInputView());
+            }
         }
-    }
-    else // TODO: remove the block below and TextBoxUIManagerEventSink.h/.cpp once we enable TSF3 completely
-    {
-        if (!m_uiManagerEventSink)
+        else // TODO: remove the block below and TextBoxUIManagerEventSink.h/.cpp once we enable TSF3 completely
         {
-            m_uiManagerEventSink.Attach(new TextBoxUIManagerEventSink(this));
+            if (!m_uiManagerEventSink)
+            {
+                m_uiManagerEventSink.Attach(new TextBoxUIManagerEventSink(this));
 
-            // Note: 0x0435446 is a magic number not defined in any of the RichEdit headers (see cmsgflt.cpp).
-            // It is the ascii digits for 'CTF', and will get the TSF (Cicero) Context object
-            // when used as the WPARAM for the EM_GETOLEINTERFACE message.
-            const WPARAM RICHEDIT_GETOLEINTERFACE_CTF = 0x0435446;
+                // Note: 0x0435446 is a magic number not defined in any of the RichEdit headers (see cmsgflt.cpp).
+                // It is the ascii digits for 'CTF', and will get the TSF (Cicero) Context object
+                // when used as the WPARAM for the EM_GETOLEINTERFACE message.
+                const WPARAM RICHEDIT_GETOLEINTERFACE_CTF = 0x0435446;
 
-            // Get the TSF (Cicero) Context object for the control; does AddRef, we need to Release.
-            Microsoft::WRL::ComPtr<ITfContext> tfContext;
-            BOOL success = FALSE;
-            IFC_RETURN(GetTextServices()->TxSendMessage(EM_GETOLEINTERFACE, RICHEDIT_GETOLEINTERFACE_CTF,
-                (LPARAM)tfContext.ReleaseAndGetAddressOf(), (LRESULT*)&success));
-            IFCCHECK_RETURN(tfContext && success);
+                // Get the TSF (Cicero) Context object for the control; does AddRef, we need to Release.
+                Microsoft::WRL::ComPtr<ITfContext> tfContext;
+                BOOL success = FALSE;
+                IFC_RETURN(GetTextServices()->TxSendMessage(EM_GETOLEINTERFACE, RICHEDIT_GETOLEINTERFACE_CTF,
+                    (LPARAM)tfContext.ReleaseAndGetAddressOf(), (LRESULT*)&success));
+                IFCCHECK_RETURN(tfContext && success);
 
-            Microsoft::WRL::ComPtr<ITfDocumentMgr> editDocMgr;
-            IFC_RETURN(tfContext->GetDocumentMgr(&editDocMgr)); // if not available, returns S_FALSE and nullptr
-            IFCPTR_RETURN(editDocMgr);
+                Microsoft::WRL::ComPtr<ITfDocumentMgr> editDocMgr;
+                IFC_RETURN(tfContext->GetDocumentMgr(&editDocMgr)); // if not available, returns S_FALSE and nullptr
+                IFCPTR_RETURN(editDocMgr);
 
-            Microsoft::WRL::ComPtr<ITfSource> tfSource;
-            IFC_RETURN(editDocMgr.As(&tfSource));
-            IFCPTR_RETURN(tfSource);
+                Microsoft::WRL::ComPtr<ITfSource> tfSource;
+                IFC_RETURN(editDocMgr.As(&tfSource));
+                IFCPTR_RETURN(tfSource);
 
-            IFC_RETURN(tfSource->AdviseSink(IID_IUIManagerEventSink, m_uiManagerEventSink.Get(), &m_uiManagerSinkCookie));
+                IFC_RETURN(tfSource->AdviseSink(IID_IUIManagerEventSink, m_uiManagerEventSink.Get(), &m_uiManagerSinkCookie));
 
-            // Only keep source if AdviseSink succeeded to not attempt to UnadviseSink in the destructor otherwise
-            m_tfSource = tfSource;
+                // Only keep source if AdviseSink succeeded to not attempt to UnadviseSink in the destructor otherwise
+                m_tfSource = tfSource;
+            }
         }
     }
 
@@ -4983,6 +4996,19 @@ _Check_return_ HRESULT CTextBoxBase::UpdateFocusState(_In_ DirectUI::FocusState 
     IFC_RETURN(__super::UpdateFocusState(focusState));
     if (focusState != DirectUI::FocusState::Unfocused) // only check and update SIP settings when textbox has focus
     {
+        // Under XAML islands the FrameworkInputView registration is deferred to here rather than
+        // done when the app subscribes, so that it binds to this control's final ContentRoot and
+        // its focus manager actually reports the focused element. RegisterFrameworkInputView is
+        // idempotent per ContentRoot. See EnableCandidateWindowBoundsTracking.
+        if (m_CandidateWindowevent.index != KnownEventIndex::UnknownType_UnknownEvent &&
+            GetContext()->GetInitializationType() == InitializationType::IslandsOnly)
+        {
+            if (CContentRoot* candidateContentRoot = VisualTree::GetContentRootForElement(this))
+            {
+                IFC_RETURN(candidateContentRoot->GetInputManager().RegisterFrameworkInputView());
+            }
+        }
+
         CFocusManager *pFocusManager = VisualTree::GetFocusManagerForElement(this);
         focusState = pFocusManager->GetRealFocusStateForFocusedElement();
         IFC_RETURN(UpdateSIPSettings(focusState));
