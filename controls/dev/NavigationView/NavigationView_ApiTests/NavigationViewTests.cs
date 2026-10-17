@@ -1264,6 +1264,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyHeaderContentMargin(NavigationViewPaneDisplayMode.LeftMinimal, "VerifyVerifyHeaderContentMarginOnMinimalNav");
         }
 
+        [TestMethod]
+        public void VerifyBackButtonHitTargetDoesNotShiftContent()
+        {
+            // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/5306: the back button's
+            // larger hit target must not change the Width that NavigationView adds to ContentLeftPadding.
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView()
+                {
+                    Header = "HEADER",
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal,
+                    IsBackButtonVisible = NavigationViewBackButtonVisible.Visible,
+                    Width = 400.0
+                };
+                Content = navView;
+                Content.UpdateLayout();
+
+                var rootGrid = VisualTreeHelper.GetChild(navView, 0) as Grid;
+                var backButton = rootGrid.FindName("NavigationViewBackButton") as Button;
+                var contentLeftPadding = rootGrid.FindName("ContentLeftPadding") as FrameworkElement;
+
+                Verify.AreEqual(40.0, backButton.Width, "Back button Width");
+                Verify.AreEqual(48.0, backButton.ActualWidth, "Back button hit target width");
+                Verify.AreEqual(44.0, backButton.ActualHeight, "Back button hit target height");
+                // PaneToggleButtonWidth (40) + back button Width (40).
+                Verify.AreEqual(80.0, contentLeftPadding.Width, "ContentLeftPadding Width");
+            });
+        }
+
         private void VerifyHeaderContentMargin(NavigationViewPaneDisplayMode paneDisplayMode, string verificationFileNamePrefix)
         {
             UIElement headerContent = null;

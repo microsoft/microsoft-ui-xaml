@@ -16,7 +16,7 @@
                 <VisualState x:Name="Minimal">
                   <VisualState.Setters>
                     <Setter Target="HeaderContent.Margin" Value="{ThemeResource NavigationViewMinimalHeaderMargin}" />
-                    <Setter Target="NavigationViewBackButton.Style" Value="{ThemeResource NavigationBackButtonSmallStyle}" />
+                    <Setter Target="NavigationViewBackButton.Margin" Value="0,-4,-4,0" />
                     <Setter Target="ContentGrid.BorderThickness" Value="{ThemeResource NavigationViewMinimalContentGridBorderThickness}" />
                     <Setter Target="ContentGrid.CornerRadius" Value="{ThemeResource NavigationViewMinimalContentGridCornerRadius}" />
                     <Setter Target="ContentGrid.Margin" Value="{ThemeResource NavigationViewMinimalContentMargin}" />
@@ -32,7 +32,7 @@
                 <VisualState x:Name="MinimalWithBackButton">
                   <VisualState.Setters>
                     <Setter Target="HeaderContent.Margin" Value="{ThemeResource NavigationViewMinimalHeaderMargin}" />
-                    <Setter Target="NavigationViewBackButton.Style" Value="{ThemeResource NavigationBackButtonSmallStyle}" />
+                    <Setter Target="NavigationViewBackButton.Margin" Value="0,-4,-4,0" />
                     <Setter Target="ContentGrid.BorderThickness" Value="{ThemeResource NavigationViewMinimalContentGridBorderThickness}" />
                     <Setter Target="ContentGrid.CornerRadius" Value="{ThemeResource NavigationViewMinimalContentGridCornerRadius}" />
                     <Setter Target="ContentGrid.Margin" Value="{ThemeResource NavigationViewMinimalContentMargin}" />
@@ -184,7 +184,7 @@
               </Grid.RowDefinitions>
               <Grid x:Name="TogglePaneTopPadding" Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}" />
               <Grid x:Name="ButtonHolderGrid" Grid.Row="1" Margin="{ThemeResource NavigationViewButtonHolderGridMargin}">
-                <Button x:Name="NavigationViewBackButton" Style="{StaticResource NavigationBackButtonNormalStyle}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerPaneToggleButtonWidth}" VerticalAlignment="Top" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.BackButtonVisibility}" IsEnabled="{TemplateBinding IsBackEnabled}">
+                <Button x:Name="NavigationViewBackButton" Style="{StaticResource NavigationViewBackButtonStyle}" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerPaneToggleButtonWidth}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PaneToggleButtonWidth}" Height="Auto" Margin="0,-4,0,0" Padding="4,6,4,2" FocusVisualMargin="4,6,4,2" VerticalAlignment="Top" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.BackButtonVisibility}" IsEnabled="{TemplateBinding IsBackEnabled}">
                   <ToolTipService.ToolTip>
                     <ToolTip x:Name="NavigationViewBackButtonToolTip" />
                   </ToolTipService.ToolTip>
