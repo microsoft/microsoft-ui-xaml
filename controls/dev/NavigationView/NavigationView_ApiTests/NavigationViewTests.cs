@@ -964,6 +964,84 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a NavigationViewItem with children in PaneFooter gets the closed compact layout and its icon is not clipped.")]
+        public void VerifyHierarchicalPaneFooterItemIsNotClippedInClosedCompactPane()
+        {
+            NavigationView navView = null;
+            NavigationViewItem footerItem = null;
+            NavigationViewItem footerChildItem = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Menu", Icon = new SymbolIcon(Symbol.Home) });
+                footerChildItem = new NavigationViewItem() { Content = "Child", Icon = new SymbolIcon(Symbol.Home) };
+                footerItem = new NavigationViewItem() { Content = "Account", Icon = new SymbolIcon(Symbol.Home) };
+                footerItem.MenuItems.Add(footerChildItem);
+                navView.PaneFooter = footerItem;
+                navView.IsSettingsVisible = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                navView.IsPaneOpen = false;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "Hierarchical PaneFooter item state");
+                VerifyContentGridIsNotClipped(footerItem, "Hierarchical PaneFooter item");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a NavigationViewItem in NavigationView.Content does not switch to the closed compact layout when the pane is closed in compact mode.")]
+        public void VerifyContentAreaItemKeepsLayoutInClosedCompactPane()
+        {
+            NavigationView navView = null;
+            NavigationViewItem contentItem = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Menu", Icon = new SymbolIcon(Symbol.Home) });
+                contentItem = new NavigationViewItem() { Content = "Row in content", Icon = new SymbolIcon(Symbol.Home) };
+                var contentPanel = new StackPanel();
+                contentPanel.Children.Add(contentItem);
+                navView.Content = contentPanel;
+                navView.IsSettingsVisible = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                navView.IsPaneOpen = false;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(contentItem), "Content area item state (pane closed)");
+
+                navView.IsPaneOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView.IsPaneOpen = false;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(contentItem), "Content area item state (pane closed again)");
+            });
+        }
+
         private static string GetPaneAndTopLevelItemState(NavigationViewItem item)
         {
             var presenter = VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
