@@ -29,6 +29,8 @@ namespace ctl
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(SetCompiledBinding)(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pDp, _In_ ABI::Microsoft::UI::Xaml::Data::ICompiledBindingGetter* pGetter) override { return This()->SetCompiledBinding(pDp, pGetter); }
+        IFACEMETHOD(SetCompiledBindingWithSetter)(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pDp, _In_ ABI::Microsoft::UI::Xaml::Data::ICompiledBindingGetter* pGetter, _In_ ABI::Microsoft::UI::Xaml::Data::ICompiledBindingSetter* pSetter) override { return This()->SetCompiledBindingWithSetter(pDp, pGetter, pSetter); }
         IFACEMETHOD(SetThemeResourceBinding)(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pProperty, _In_ HSTRING resourceKey) override { return This()->SetThemeResourceBinding(pProperty, resourceKey); }
     };
 }
@@ -202,6 +204,12 @@ namespace DirectUI
         IFACEMETHOD(OnApplyTemplate)() override;
         _Check_return_ HRESULT OnApplyTemplateProtected();
         IFACEMETHOD(SetBinding)(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pDp, _In_ ABI::Microsoft::UI::Xaml::Data::IBindingBase* pBinding) override;
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        _Check_return_ HRESULT STDMETHODCALLTYPE SetCompiledBinding(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pDp, _In_ ABI::Microsoft::UI::Xaml::Data::ICompiledBindingGetter* pGetter);
+#endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        _Check_return_ HRESULT STDMETHODCALLTYPE SetCompiledBindingWithSetter(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pDp, _In_ ABI::Microsoft::UI::Xaml::Data::ICompiledBindingGetter* pGetter, _In_ ABI::Microsoft::UI::Xaml::Data::ICompiledBindingSetter* pSetter);
+#endif
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         _Check_return_ HRESULT STDMETHODCALLTYPE SetThemeResourceBinding(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pProperty, _In_ HSTRING resourceKey);
 #endif
