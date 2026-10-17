@@ -1268,11 +1268,8 @@ void WebView2::HandleAcceleratorKeyActivated(const winrt::Windows::UI::Core::Cor
         const WPARAM wparam = VK_TAB;
         const LPARAM lparam = MAKELPARAM(0x0001, 0x000f);  // flags copied from matching WM_KEYDOWN
 
-        LRESULT result = m_fnSendMessageW(GetActiveInputWindowHwnd(), message, wparam, lparam);
-        if (!result)
-        {
-            winrt::check_hresult(HRESULT_FROM_WIN32(::GetLastError()));
-        }
+        // WM_KEYDOWN returns zero when it is processed, so its return value is not an error indicator.
+        m_fnSendMessageW(GetActiveInputWindowHwnd(), message, wparam, lparam);
     }
 }
 
