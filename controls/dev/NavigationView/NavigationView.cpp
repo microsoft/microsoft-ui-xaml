@@ -4206,7 +4206,12 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         // m_wasForceClosed is set to true because ToggleButton is clicked and Pane is closed.
         // When PaneDisplayMode is changed, reset the force flag to make the Pane can be opened automatically again.
-        m_wasForceClosed = false;
+        // Before the template is applied, the flag can only have come from the app setting IsPaneOpen=false
+        // (e.g. in XAML ahead of PaneDisplayMode), so keep it to honor that initial state.
+        if (m_appliedTemplate)
+        {
+            m_wasForceClosed = false;
+        }
 
         UpdatePaneToggleButtonVisibility();
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
