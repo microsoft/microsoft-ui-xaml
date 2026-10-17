@@ -4043,7 +4043,7 @@ namespace Microsoft.UI.Xaml.Controls
     [TypeFlags(IsCreateableFromXAML = false)]
     [NativeName("CColumnDefinitionCollection")]
     [Guids(ClassGuid = "4a83c97d-4e54-456d-a921-82b57d317445")]
-    public sealed class ColumnDefinitionCollection
+    public class ColumnDefinitionCollection
      : Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection<ColumnDefinition>
     {
         [NativeStorageType(ValueType.valueObject)]
@@ -4053,7 +4053,7 @@ namespace Microsoft.UI.Xaml.Controls
             set;
         }
 
-        internal ColumnDefinitionCollection() { }
+        public ColumnDefinitionCollection() { }
     }
 
     [CodeGen(partial: true)]

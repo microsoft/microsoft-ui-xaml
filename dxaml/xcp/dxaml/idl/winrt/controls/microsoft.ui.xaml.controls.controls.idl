@@ -1061,9 +1061,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass ColumnDefinitionCollection
+    unsealed runtimeclass ColumnDefinitionCollection
         :[default] Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.ColumnDefinition>
     {
+        [method_name("CreateInstance")] ColumnDefinitionCollection();
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
