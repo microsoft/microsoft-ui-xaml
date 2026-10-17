@@ -4704,6 +4704,13 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
         }
     }
 
+    if (useLeftPaddingForBackOrCloseButton && leftPaddingForBackOrCloseButton == 0.0)
+    {
+        // NavigationViewMinimalHeaderMargin has a negative left value that pulls the header back into the
+        // first button slot. Keep that slot reserved when no buttons are shown, so the header isn't clipped.
+        leftPaddingForBackOrCloseButton = GetPaneToggleButtonWidth();
+    }
+
     if (auto contentLeftPadding = m_contentLeftPadding.get())
     {
         contentLeftPadding.Width(leftPaddingForBackOrCloseButton);
