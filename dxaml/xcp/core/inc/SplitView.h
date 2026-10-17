@@ -50,7 +50,7 @@ public:
 
     _Check_return_ HRESULT OnPaneOpening();
     _Check_return_ HRESULT OnPaneClosing();
-    _Check_return_ HRESULT OnPaneClosed();
+    _Check_return_ HRESULT OnPaneOpenedOrClosed(bool isPaneOpen);
 
     void OnCancelClosing();
 
