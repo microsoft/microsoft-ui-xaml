@@ -2326,7 +2326,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
     };
     class LoopingSelectorFactory
         :
-        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::Primitives::ILoopingSelectorStatics>
+        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::Primitives::ILoopingSelectorFactory, ABI::Microsoft::UI::Xaml::Controls::Primitives::ILoopingSelectorStatics>
     {
 
     friend class LoopingSelectorGenerated;
@@ -2336,6 +2336,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
          _Check_return_ HRESULT RuntimeClassInitialize();
          static _Check_return_ HRESULT EnsureProperties();
          static void ClearProperties();
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ILoopingSelector** ppInstance);
 
         // Properties.
 
@@ -2380,6 +2381,9 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         : public LoopingSelectorRuntimeClass
     {
         friend class ABI::Microsoft::UI::Xaml::Controls::Primitives::LoopingSelector;
+        friend class pctl::AggregableComObject< 
+            ABI::Microsoft::UI::Xaml::Controls::Primitives::LoopingSelector,
+            ABI::Microsoft::UI::Xaml::Controls::Primitives::ILoopingSelector>;
         WuxpInspectableClass(RuntimeClass_Microsoft_UI_Xaml_Controls_Primitives_LoopingSelector, TrustLevel::BaseTrust);
 
     public:
@@ -2516,8 +2520,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Customized properties.
 
-        // Initialization methods
-        virtual _Check_return_ HRESULT InitializeImpl();
+        // Initialization methods required by AggregableComObject to make this an aggregable class.
+        virtual _Check_return_ HRESULT InitializeImpl(_In_opt_ IInspectable* pOuter = nullptr);
 
         // Event Sources
         Private::TrackerEventSource<ABI::Microsoft::UI::Xaml::Controls::ISelectionChangedEventHandler> m_SelectionChangedEventSource;

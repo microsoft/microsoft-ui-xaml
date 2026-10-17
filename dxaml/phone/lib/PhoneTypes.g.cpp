@@ -11897,14 +11897,15 @@ Cleanup:
 _Check_return_ HRESULT 
 LoopingSelectorGenerated::RuntimeClassInitialize()
 {
-    RRETURN(InitializeImpl());
+    RRETURN(InitializeImpl(nullptr));
 }
 
 _Check_return_ HRESULT
-LoopingSelectorGenerated::InitializeImpl()
+LoopingSelectorGenerated::InitializeImpl(_In_opt_ IInspectable* pOuter)
 {
     HRESULT hr = S_OK;
 
+    UNREFERENCED_PARAMETER(pOuter);
 
     // When types are created internally there is no guarantee that
     // the factory has been previously instantiated. 
@@ -13212,6 +13213,20 @@ void LoopingSelectorFactory::ClearProperties()
         s_ItemTemplateProperty.Reset();
 }
 
+IFACEMETHODIMP LoopingSelectorFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ILoopingSelector** ppInstance)
+{
+    HRESULT hr = S_OK;
+
+    IFC((pctl::AggregableComObject<
+            ABI::Microsoft::UI::Xaml::Controls::Primitives::LoopingSelector,
+            ABI::Microsoft::UI::Xaml::Controls::Primitives::ILoopingSelector>::CreateInstance(
+            pOuter,
+            ppInner,
+            ppInstance)));
+
+Cleanup:
+    RRETURN(hr);
+}
 // Static properties.
 
 // Dependency properties initializing functions
