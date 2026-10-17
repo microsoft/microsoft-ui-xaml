@@ -30,6 +30,7 @@
 #include <PerfOptIn.h>
 #include <stack_allocator.h>
 #include "theming\inc\Theme.h"
+#include "theming\inc\FrameworkTheming.h"
 #include "resources\inc\ResourceResolver.h"
 #include <FxCallbacks.h>
 
@@ -135,25 +136,66 @@ _Check_return_ HRESULT CDependencyObject::NotifyThemeChanged(_In_ Theme theme, b
         return S_OK;
     }
 
-    SetIsProcessingThemeWalk(TRUE);
-
-    bool removeRequestedTheme = false;
-    const auto oldRequestedThemeForSubTree = GetRequestedThemeForSubTreeFromCore();
-    if (Theming::GetBaseValue(theme) != oldRequestedThemeForSubTree)
+    auto oldBaseTheme = GetBaseValue(m_theme);
+    if (thisAsFe && oldBaseTheme == Theme::None)
     {
-        GetContext()->SetRequestedThemeForSubTree(theme);
-        removeRequestedTheme = true;
+        auto theming = GetContext()->GetFrameworkTheming();
+        oldBaseTheme = theming->GetBaseTheme();
+        // An element without a local theme reads the app/system base theme.
+        // During a global change that base has already been updated.
+        if (theming->IsBaseThemeChanging())
+        {
+            oldBaseTheme = oldBaseTheme == Theme::Light ? Theme::Dark : Theme::Light;
+        }
     }
-    auto themeguard = wil::scope_exit([&] {
-        SetIsProcessingThemeWalk(FALSE);
-        if (removeRequestedTheme) SetRequestedThemeForSubTreeOnCore(oldRequestedThemeForSubTree);
-    });
 
-    // Notify children and properties of theme change
-    IFC_RETURN(NotifyThemeChangedCore(theme, forceRefresh));
+    {
+        SetIsProcessingThemeWalk(TRUE);
 
-    // Persist the theme on success
-    m_theme = theme;
+        bool removeRequestedTheme = false;
+        const auto oldRequestedThemeForSubTree = GetRequestedThemeForSubTreeFromCore();
+        if (Theming::GetBaseValue(theme) != oldRequestedThemeForSubTree)
+        {
+            GetContext()->SetRequestedThemeForSubTree(theme);
+            removeRequestedTheme = true;
+        }
+        auto themeguard = wil::scope_exit([&] {
+            SetIsProcessingThemeWalk(FALSE);
+            if (removeRequestedTheme) SetRequestedThemeForSubTreeOnCore(oldRequestedThemeForSubTree);
+        });
+
+        // Notify children and properties of theme change
+        IFC_RETURN(NotifyThemeChangedCore(theme, forceRefresh));
+
+        // Persist the theme on success
+        m_theme = theme;
+    }
+
+    if (thisAsFe && HasManagedPeer())
+    {
+        auto newBaseTheme = GetBaseValue(m_theme);
+        if (newBaseTheme == Theme::None)
+        {
+            newBaseTheme = GetContext()->GetFrameworkTheming()->GetBaseTheme();
+        }
+
+        if (oldBaseTheme != newBaseTheme)
+        {
+            // ActualTheme is computed rather than set through the property
+            // system. Notify DP listeners as well as ActualThemeChanged so
+            // OneWay bindings can observe it. The getter must already return
+            // the new value, and a callback may start another theme walk.
+            CValue oldValue;
+            CValue newValue;
+            oldValue.Set(static_cast<ElementTheme>(oldBaseTheme), KnownTypeIndex::ElementTheme);
+            newValue.Set(static_cast<ElementTheme>(newBaseTheme), KnownTypeIndex::ElementTheme);
+            IFC_RETURN(NotifyPropertyChanged(PropertyChangedParams(
+                MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::FrameworkElement_ActualTheme),
+                oldValue,
+                newValue)));
+        }
+    }
+
     return S_OK;
 }
 
