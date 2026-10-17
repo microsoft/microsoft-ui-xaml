@@ -412,7 +412,7 @@ namespace Microsoft.UI.Xaml.Documents
     [DXamlIdlGroup("Controls2")]
     [NativeName("CGlyphs")]
     [Guids(ClassGuid = "a1ba5ea2-aee8-4085-b254-6c97a8de1afe")]
-    public sealed class Glyphs
+    public class Glyphs
      : Microsoft.UI.Xaml.FrameworkElement
     {
 
