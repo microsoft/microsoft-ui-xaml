@@ -53,6 +53,40 @@ namespace ABI::Microsoft::UI::Composition::Experimental
 }
 #endif
 
+// The OS shared-visual interop (DCompositionCreateSharedVisualHandle, ICompositorSharedVisualInterop and
+// IDCompositionDeviceSharedVisualInterop) is the public replacement for the IExpCompositorInterop2 splice.
+// dcomp.h and windows.ui.composition.interop.h declare it only for NTDDI_WIN11_GE, which the Windows SDK
+// used here predates, so the two interfaces are declared locally with their published IIDs and vtable
+// order. They live in their own namespace so they cannot collide with the SDK declarations once those
+// ship. The compositor-side out parameters are IUnknown so no ABI composition header is needed; callers
+// query the returned objects for the projected types.
+namespace SharedVisualInterop
+{
+    MIDL_INTERFACE("1E4FCC3A-0E4E-4808-9ADC-5C532414D7B8")
+    ICompositorSharedVisualInterop : public ::IUnknown
+    {
+        virtual HRESULT STDMETHODCALLTYPE OpenSharedVisualFromHandle(
+            _In_ HANDLE sharedVisualHandle,
+            _COM_Outptr_ ::IUnknown** visual) = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE OpenSharedTargetFromHandle(
+            _In_ HANDLE sharedVisualHandle,
+            _COM_Outptr_ ::IUnknown** target) = 0;
+    };
+
+    MIDL_INTERFACE("B16C8321-4866-4F48-9BE8-8EA87FF51BB8")
+    IDCompositionDeviceSharedVisualInterop : public ::IUnknown
+    {
+        virtual HRESULT STDMETHODCALLTYPE OpenSharedVisualFromHandle(
+            _In_ HANDLE sharedVisualHandle,
+            _COM_Outptr_ ::IDCompositionVisual** visual) = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE OpenSharedTargetFromHandle(
+            _In_ HANDLE sharedVisualHandle,
+            _COM_Outptr_ ::IDCompositionTarget** target) = 0;
+    };
+}
+
 // We use a weak pointer to track this so that it goes away when the last Ink control goes
 // away, rather than living until the end of the thread.
 thread_local std::weak_ptr<ThreadData> s_tlsThreadData;
@@ -524,20 +558,103 @@ void InkCanvas::SetInkRootVisual(IDCompositionTarget* target)
     winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
 }
 
-// System compositor path: splices the ink visual directly under a lifted MUC visual via
-// IExpCompositorInterop2::CreateDCompVisualUnderMUCVisual, so lifted XAML natively clips/scrolls/
-// z-orders it. Only reached when IsSystemCompositor() is true, so the interop must be present.
+// System compositor path: splices the ink visual directly under a lifted MUC visual, so lifted XAML
+// natively clips/scrolls/z-orders it. Only reached when IsSystemCompositor() is true. The public OS
+// shared-visual API is preferred; OS builds without it use the IXP IExpCompositorInterop2 splice. Both
+// leave m_systemDCompTarget as the DComp target that roots the ink under the MUC visual.
 void InkCanvas::AttachToSystemCompositor()
 {
     // Create the ink visual and bind it to the presenter before the compositor-specific splice.
     AttachInkVisualToPresenter();
 
     auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    auto mucRootVisual = compositor.CreateContainerVisual();
 
+    if (!TrySpliceWithSharedVisual(compositor, mucRootVisual))
+    {
+        SpliceWithExpCompositorInterop(compositor, mucRootVisual);
+    }
+
+    SetInkRootVisual(m_systemDCompTarget.get());
+    winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
+
+    winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
+}
+
+// Splices through the OS shared-visual API: one shared-visual handle is opened in the visual role by the
+// system Windows.UI.Composition compositor, which hosts it under the system ContainerVisual behind
+// mucRootVisual, and in the composition-target role by our DComp device, whose root becomes the ink.
+// Returns false with nothing attached when the OS does not provide the API, so the caller can fall back:
+// before 10D there is no by-name export; from 10D with the PublishSharedVisualAPI velocity feature off,
+// the DComp device does not expose its interop (and the compositor's opens return E_NOTIMPL).
+bool InkCanvas::TrySpliceWithSharedVisual(
+    winrt::Microsoft::UI::Composition::Compositor const& compositor,
+    winrt::Microsoft::UI::Composition::ContainerVisual const& mucRootVisual)
+{
+    // The function name was published together with the interfaces; earlier builds export it only by
+    // ordinal, so a by-name lookup is also the availability check.
+    using DCompositionCreateSharedVisualHandleFn = HRESULT(WINAPI*)(HANDLE*);
+    auto createSharedVisualHandle = reinterpret_cast<DCompositionCreateSharedVisualHandleFn>(
+        ::GetProcAddress(m_threadData->m_hmodDComp.get(), "DCompositionCreateSharedVisualHandle"));
+    if (!createSharedVisualHandle)
+    {
+        return false;
+    }
+
+    namespace muc = winrt::Microsoft::UI::Composition;
+    namespace wuc = winrt::Windows::UI::Composition;
+
+    // On the system engine every lifted composition object is backed by a system one.
+    auto systemCompositor = muc::CompositionEngine::GetForSystemEngine(compositor);
+    auto systemContainer = muc::CompositionEngine::GetForSystemEngine(mucRootVisual).try_as<wuc::ContainerVisual>();
+    if (!systemCompositor || !systemContainer)
+    {
+        return false;
+    }
+
+    winrt::com_ptr<SharedVisualInterop::ICompositorSharedVisualInterop> compositorInterop;
+    winrt::com_ptr<SharedVisualInterop::IDCompositionDeviceSharedVisualInterop> deviceInterop;
+    if (FAILED(winrt::get_unknown(systemCompositor)->QueryInterface(IID_PPV_ARGS(compositorInterop.put()))) ||
+        FAILED(m_threadData->m_compositionDevice->QueryInterface(IID_PPV_ARGS(deviceInterop.put()))))
+    {
+        return false;
+    }
+
+    // The handle only brokers the two opens; the opened objects keep the shared visual alive after it closes.
+    wil::unique_handle sharedVisualHandle;
+    if (FAILED(createSharedVisualHandle(sharedVisualHandle.put())))
+    {
+        return false;
+    }
+
+    winrt::com_ptr<IDCompositionTarget> target;
+    if (FAILED(deviceInterop->OpenSharedTargetFromHandle(sharedVisualHandle.get(), target.put())))
+    {
+        return false;
+    }
+
+    winrt::com_ptr<::IUnknown> sharedVisual;
+    if (FAILED(compositorInterop->OpenSharedVisualFromHandle(sharedVisualHandle.get(), sharedVisual.put())))
+    {
+        return false;
+    }
+
+    // The system ContainerVisual owns the shared visual from here and releases it, and with it the
+    // visual role, when DetachFromVisualLink drops mucRootVisual. m_systemDCompTarget holds the target role.
+    systemContainer.Children().InsertAtTop(sharedVisual.as<wuc::Visual>());
+    m_systemDCompTarget = std::move(target);
+    return true;
+}
+
+// Splices through the IXP experimental interop, IExpCompositorInterop2::CreateDCompVisualUnderMUCVisual.
+// Used on OS builds without the shared-visual API; throws if the interop is unavailable.
+void InkCanvas::SpliceWithExpCompositorInterop(
+    winrt::Microsoft::UI::Composition::Compositor const& compositor,
+    winrt::Microsoft::UI::Composition::ContainerVisual const& mucRootVisual)
+{
     winrt::com_ptr<ABI::Microsoft::UI::Composition::Experimental::IExpCompositorInterop2> interop;
     winrt::check_hresult(winrt::get_unknown(compositor)->QueryInterface(IID_PPV_ARGS(interop.put())));
 
-    auto mucRootVisual = compositor.CreateContainerVisual();
     auto desktopDevice = m_threadData->m_compositionDevice.as<IDCompositionDesktopDevice>();
 
     // Get the MUC visual's IVisual interface pointer through the projection: up-cast to Visual (whose
@@ -558,10 +675,6 @@ void InkCanvas::AttachToSystemCompositor()
 #endif
         desktopDevice.get(),
         m_systemDCompTarget.put()));
-    SetInkRootVisual(m_systemDCompTarget.get());
-    winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
-
-    winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
 }
 
 // Lifted compositor path: ContentExternalOutputLink produces a lifted PlacementVisual (backed by a
