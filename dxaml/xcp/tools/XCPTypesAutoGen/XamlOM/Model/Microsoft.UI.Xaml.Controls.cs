@@ -3839,7 +3839,7 @@ namespace Microsoft.UI.Xaml.Controls
     [Guids(ClassGuid = "21210372-dbf3-4f19-91ba-ee08043b5de8")]
     [ClassFlags(HasTypeConverter = true)]
     [ContentProperty(nameof(Width))]
-    public sealed class ColumnDefinition
+    public class ColumnDefinition
      : Microsoft.UI.Xaml.DependencyObject
     {
         [PropertyFlags(AffectsMeasure = true)]

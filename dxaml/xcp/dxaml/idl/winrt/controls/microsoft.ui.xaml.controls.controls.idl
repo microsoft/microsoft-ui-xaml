@@ -1343,10 +1343,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [contentproperty("Width")]
-    runtimeclass ColumnDefinition
+    unsealed runtimeclass ColumnDefinition
         : Microsoft.UI.Xaml.DependencyObject
     {
-        ColumnDefinition();
+        [method_name("CreateInstance")] ColumnDefinition();
         Microsoft.UI.Xaml.GridLength Width;
         Double MaxWidth;
         Double MinWidth;
