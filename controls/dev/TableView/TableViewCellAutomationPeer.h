@@ -34,6 +34,7 @@ public:
     // Overrides base IsTabStop-derived focusability for the two-level body navigation model.
     bool IsKeyboardFocusableCore();
     void SetFocusCore();
+    void ShowContextMenuCore();
 
     // IGridItemProvider — per-cell coordinates in the owning TableView.
     int32_t Row();
