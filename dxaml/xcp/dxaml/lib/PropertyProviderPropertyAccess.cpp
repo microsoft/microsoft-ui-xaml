@@ -110,13 +110,17 @@ _Check_return_
 HRESULT
 PropertyProviderPropertyAccess::GetValue(_COM_Outptr_result_maybenull_ IInspectable **ppValue)
 {
-    if (IsConnected())
+    *ppValue = nullptr;
+
+    auto spSource = m_tpSource.GetSafeReference();
+    if (spSource && IsConnected())
     {
-        IFC_RETURN(m_tpProperty->GetValue(m_tpSource.Get(), ppValue));
-    }
-    else
-    {
-        *ppValue = nullptr;
+        ctl::ComPtr<xaml_data::ICustomProperty> spProperty;
+        IFC_RETURN(GetProperty(spSource.Get(), &spProperty));
+        if (spProperty)
+        {
+            IFC_RETURN(spProperty->GetValue(spSource.Get(), ppValue));
+        }
     }
     return S_OK;
 }
@@ -125,8 +129,44 @@ _Check_return_
 HRESULT
 PropertyProviderPropertyAccess::SetValue(_In_ IInspectable *pValue)
 {
+    auto spSource = m_tpSource.GetSafeReference();
+    if (!spSource)
+    {
+        return S_OK;
+    }
+
     IFCEXPECT_RETURN(IsConnected());
-    IFC_RETURN(m_tpProperty->SetValue(m_tpSource.Get(), pValue));
+    ctl::ComPtr<xaml_data::ICustomProperty> spProperty;
+    IFC_RETURN(GetProperty(spSource.Get(), &spProperty));
+    if (spProperty)
+    {
+        IFC_RETURN(spProperty->SetValue(spSource.Get(), pValue));
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT
+PropertyProviderPropertyAccess::GetProperty(
+    _In_ xaml_data::ICustomPropertyProvider *pSource,
+    _COM_Outptr_result_maybenull_ xaml_data::ICustomProperty **ppProperty)
+{
+    *ppProperty = nullptr;
+
+    auto spProperty = m_tpProperty.GetSafeReference();
+    if (!spProperty)
+    {
+        // The provider can reenter binding and replace this accessor during the lookup.
+        ctl::ComPtr<PropertyProviderPropertyAccess> spThis(this);
+        IFC_RETURN(pSource->GetCustomProperty(
+            wrl_wrappers::HStringReference(GetPropertyName()).Get(),
+            spProperty.ReleaseAndGetAddressOf()));
+        if (spProperty && m_tpSource.Get() == pSource)
+        {
+            SetPtrValue(m_tpProperty, spProperty.Get());
+        }
+    }
+
+    *ppProperty = spProperty.Detach();
     return S_OK;
 }
 

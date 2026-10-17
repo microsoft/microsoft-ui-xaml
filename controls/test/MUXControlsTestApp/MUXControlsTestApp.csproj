@@ -111,6 +111,7 @@
     <Compile Remove="LeakTestPage.xaml.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
     <Compile Remove="ThemeResourcesTests.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
     <Compile Remove="MiscTests\FocusTests.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
+    <Compile Remove="MiscTests\CustomPropertyBindingTests.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
     <Compile Remove="LeakTests.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
   </ItemGroup>
   <ItemGroup>
