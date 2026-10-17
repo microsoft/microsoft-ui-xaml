@@ -794,6 +794,162 @@ void InkPresenter::StrokesErased(winrt::event_token const& token)
     m_strokesErasedEvent.remove(token);
 }
 
+// -- Pointer input snapshots -----------------------------------------------------------------------
+
+namespace
+{
+    // The snapshot implements the runtime class's default interface, so its ABI pointer is a valid instance
+    // of the projected runtime class.
+    template <typename TRuntimeClass, typename TInterface>
+    TRuntimeClass AsProjectedRuntimeClass(TInterface const& value)
+    {
+        TRuntimeClass result{ nullptr };
+        winrt::copy_from_abi(result, winrt::get_abi(value));
+        return result;
+    }
+
+    winrt::Windows::UI::Input::PointerPoint SnapshotPointerPoint(winrt::Windows::UI::Input::PointerPoint const& point,
+        winrt::Windows::Devices::Input::PointerDevice const& device)
+    {
+        return AsProjectedRuntimeClass<winrt::Windows::UI::Input::PointerPoint>(
+            winrt::make<InkPointerPointSnapshot>(point, device));
+    }
+
+    // Must run on the ink thread while 'point' is live. Null if the device can't be read; the point then falls back
+    // to a lookup by id.
+    winrt::Windows::Devices::Input::PointerDevice SnapshotPointerDevice(winrt::Windows::UI::Input::PointerPoint const& point)
+    {
+        try
+        {
+            if (auto device = point.PointerDevice())
+            {
+                return AsProjectedRuntimeClass<winrt::Windows::Devices::Input::PointerDevice>(
+                    winrt::make<InkPointerDeviceSnapshot>(device));
+            }
+        }
+        catch (winrt::hresult_error const&)
+        {
+        }
+        return nullptr;
+    }
+}
+
+InkPointerDeviceSnapshot::InkPointerDeviceSnapshot(winrt::Windows::Devices::Input::PointerDevice const& device) :
+    m_pointerDeviceType(device.PointerDeviceType()),
+    m_isIntegrated(device.IsIntegrated()),
+    m_maxContacts(device.MaxContacts()),
+    m_physicalDeviceRect(device.PhysicalDeviceRect()),
+    m_screenRect(device.ScreenRect()),
+    m_maxPointersWithZDistance(device.MaxPointersWithZDistance())
+{
+    if (auto usages = device.SupportedUsages())
+    {
+        m_supportedUsages.resize(usages.Size());
+        usages.GetMany(0, m_supportedUsages);
+    }
+}
+
+winrt::Windows::Foundation::Collections::IVectorView<winrt::Windows::Devices::Input::PointerDeviceUsage> InkPointerDeviceSnapshot::SupportedUsages() const
+{
+    return winrt::single_threaded_vector<winrt::Windows::Devices::Input::PointerDeviceUsage>(
+        std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage>(m_supportedUsages)).GetView();
+}
+
+InkPointerPointPropertiesSnapshot::InkPointerPointPropertiesSnapshot(winrt::Windows::UI::Input::PointerPointProperties const& properties) :
+    m_pressure(properties.Pressure()),
+    m_isInverted(properties.IsInverted()),
+    m_isEraser(properties.IsEraser()),
+    m_orientation(properties.Orientation()),
+    m_xTilt(properties.XTilt()),
+    m_yTilt(properties.YTilt()),
+    m_twist(properties.Twist()),
+    m_contactRect(properties.ContactRect()),
+    m_contactRectRaw(properties.ContactRectRaw()),
+    m_touchConfidence(properties.TouchConfidence()),
+    m_isLeftButtonPressed(properties.IsLeftButtonPressed()),
+    m_isRightButtonPressed(properties.IsRightButtonPressed()),
+    m_isMiddleButtonPressed(properties.IsMiddleButtonPressed()),
+    m_mouseWheelDelta(properties.MouseWheelDelta()),
+    m_isHorizontalMouseWheel(properties.IsHorizontalMouseWheel()),
+    m_isPrimary(properties.IsPrimary()),
+    m_isInRange(properties.IsInRange()),
+    m_isCanceled(properties.IsCanceled()),
+    m_isBarrelButtonPressed(properties.IsBarrelButtonPressed()),
+    m_isXButton1Pressed(properties.IsXButton1Pressed()),
+    m_isXButton2Pressed(properties.IsXButton2Pressed()),
+    m_pointerUpdateKind(properties.PointerUpdateKind())
+{
+    // Re-box so the app never receives the OS (non-agile) reference.
+    if (auto zDistance = properties.ZDistance())
+    {
+        m_zDistance = winrt::Windows::Foundation::IReference<float>{ zDistance.Value() };
+    }
+}
+
+InkPointerPointSnapshot::InkPointerPointSnapshot(winrt::Windows::UI::Input::PointerPoint const& point,
+    winrt::Windows::Devices::Input::PointerDevice const& device) :
+    m_position(point.Position()),
+    m_rawPosition(point.RawPosition()),
+    m_pointerId(point.PointerId()),
+    m_frameId(point.FrameId()),
+    m_timestamp(point.Timestamp()),
+    m_isInContact(point.IsInContact()),
+    m_properties(AsProjectedRuntimeClass<winrt::Windows::UI::Input::PointerPointProperties>(
+        winrt::make<InkPointerPointPropertiesSnapshot>(point.Properties()))),
+    m_device(device)
+{
+}
+
+winrt::Windows::Devices::Input::PointerDevice InkPointerPointSnapshot::PointerDevice() const
+{
+    if (m_device)
+    {
+        return m_device;
+    }
+
+    // The lookup fails once the pointer is gone (e.g. a pen lifted before a queued event is handled).
+    try
+    {
+        return winrt::Windows::Devices::Input::PointerDevice::GetPointerDevice(m_pointerId);
+    }
+    catch (winrt::hresult_error const&)
+    {
+        return nullptr;
+    }
+}
+
+InkPointerEventArgsSnapshot::InkPointerEventArgsSnapshot(winrt::Windows::UI::Core::PointerEventArgs const& args) :
+    m_keyModifiers(args.KeyModifiers()),
+    m_handled(args.Handled())
+{
+    // One pointer per event, so the current and intermediate points share one device snapshot.
+    auto currentPoint = args.CurrentPoint();
+    auto device = SnapshotPointerDevice(currentPoint);
+    m_currentPoint = SnapshotPointerPoint(currentPoint, device);
+
+    if (auto intermediatePoints = args.GetIntermediatePoints())
+    {
+        m_intermediatePoints.reserve(intermediatePoints.Size());
+        for (auto const& point : intermediatePoints)
+        {
+            m_intermediatePoints.push_back(SnapshotPointerPoint(point, device));
+        }
+    }
+}
+
+winrt::Windows::Foundation::Collections::IVector<winrt::Windows::UI::Input::PointerPoint> InkPointerEventArgsSnapshot::GetIntermediatePoints() const
+{
+    // A fresh vector per call, as the OS returns.
+    return winrt::single_threaded_vector<winrt::Windows::UI::Input::PointerPoint>(
+        std::vector<winrt::Windows::UI::Input::PointerPoint>(m_intermediatePoints));
+}
+
+winrt::Windows::UI::Core::PointerEventArgs SnapshotPointerEventArgs(winrt::Windows::UI::Core::PointerEventArgs const& args)
+{
+    return AsProjectedRuntimeClass<winrt::Windows::UI::Core::PointerEventArgs>(
+        winrt::make<InkPointerEventArgsSnapshot>(args));
+}
+
 // Runs on the ink thread as soon as an OS presenter is created: once from Start's work item, and again
 // from ActivateCustomDrying when it swaps in a freshly-created presenter to activate custom drying. The
 // proxy adopts the given OS presenter and (re)establishes everything about it from here on: initial
@@ -864,23 +1020,21 @@ void InkPresenter::InitializeOsPresenter(inking::InkPresenter const& osPresenter
         });
 
     // Subscribe to the OS presenter's raw pointer-input events (InkStrokeInput / InkUnprocessedInput)
-    // and re-raise them on the UI thread through our mirror proxies. The OS PointerEventArgs is
-    // passed through unchanged. NOTE: because delivery is marshaled to the UI thread, the
-    // args.Handled round-trip back to the OS is best-effort (the OS has already proceeded).
+    // and re-raise them on the UI thread through our mirror proxies. The OS PointerEventArgs can't be
+    // read off the ink thread, so an agile snapshot of it is taken here and raised in its place. NOTE:
+    // because delivery is marshaled to the UI thread, the args.Handled round-trip back to the OS is
+    // best-effort (the OS has already proceeded).
     auto osStrokeInput = osPresenter.StrokeInput();
     auto marshalStroke = [marshalToUi](void (::InkStrokeInput::* raise)(winrt::Windows::UI::Core::PointerEventArgs const&))
     {
         return [marshalToUi, raise](inking::InkStrokeInput const&, winrt::Windows::UI::Core::PointerEventArgs const& args)
         {
-            // PointerEventArgs is not agile; capture an agile reference so the UI-thread read
-            // marshals through a proxy instead of touching the ink-thread object directly (which
-            // would risk RPC_E_WRONG_THREAD or a recycled args).
-            winrt::agile_ref<winrt::Windows::UI::Core::PointerEventArgs> agileArgs{ args };
-            marshalToUi([agileArgs, raise](::InkPresenter* self)
+            auto snapshot = SnapshotPointerEventArgs(args);
+            marshalToUi([snapshot, raise](::InkPresenter* self)
                 {
                     if (self->m_strokeInput)
                     {
-                        (winrt::get_self<::InkStrokeInput>(self->m_strokeInput)->*raise)(agileArgs.get());
+                        (winrt::get_self<::InkStrokeInput>(self->m_strokeInput)->*raise)(snapshot);
                     }
                 });
         };
@@ -895,15 +1049,12 @@ void InkPresenter::InitializeOsPresenter(inking::InkPresenter const& osPresenter
     {
         return [marshalToUi, raise](inking::InkUnprocessedInput const&, winrt::Windows::UI::Core::PointerEventArgs const& args)
         {
-            // PointerEventArgs is not agile; capture an agile reference so the UI-thread read
-            // marshals through a proxy instead of touching the ink-thread object directly (which
-            // would risk RPC_E_WRONG_THREAD or a recycled args).
-            winrt::agile_ref<winrt::Windows::UI::Core::PointerEventArgs> agileArgs{ args };
-            marshalToUi([agileArgs, raise](::InkPresenter* self)
+            auto snapshot = SnapshotPointerEventArgs(args);
+            marshalToUi([snapshot, raise](::InkPresenter* self)
                 {
                     if (self->m_unprocessedInput)
                     {
-                        (winrt::get_self<::InkUnprocessedInput>(self->m_unprocessedInput)->*raise)(agileArgs.get());
+                        (winrt::get_self<::InkUnprocessedInput>(self->m_unprocessedInput)->*raise)(snapshot);
                     }
                 });
         };
