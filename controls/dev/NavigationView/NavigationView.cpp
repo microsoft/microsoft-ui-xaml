@@ -1404,6 +1404,24 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
     }
 }
 
+void NavigationView::OnSelectionIndicatorReplaced(const winrt::UIElement& oldIndicator, const winrt::UIElement& newIndicator)
+{
+    // An item that shows the selection indicator got a new template, e.g. because its presenter style switched between the
+    // Left and Top pane styles after a PaneDisplayMode change. The new indicator starts hidden. If no pending PaneDisplayMode
+    // animation is going to pick it up, move the indicator state over now so the selected item doesn't lose its indicator.
+    if (!oldIndicator || oldIndicator == newIndicator || oldIndicator != m_activeIndicator.get() || m_OrientationChangedPendingAnimation)
+    {
+        return;
+    }
+
+    if (m_nextIndicator.get() == oldIndicator)
+    {
+        m_nextIndicator.set(newIndicator);
+    }
+    m_activeIndicator.set(newIndicator);
+    ResetElementAnimationProperties(newIndicator, 1.0f);
+}
+
 void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& args)
 {
     const auto width = args.NewSize().Width;

@@ -5,6 +5,7 @@
 #include "common.h"
 #include "NavigationViewItemPresenter.h"
 #include "NavigationViewItem.h"
+#include "NavigationView.h"
 #include "SharedHelpers.h"
 
 static constexpr auto c_contentGrid = L"PresenterContentRootGrid"sv;
@@ -41,6 +42,7 @@ void NavigationViewItemPresenter::OnApplyTemplate()
     winrt::IControlProtected controlProtected = *this;
 
     // Retrieve pointers to stable controls 
+    const auto oldSelectionIndicator = m_helper.GetSelectionIndicator();
     m_helper.Init(*this);
 
     UnhookEventsAndClearFields();
@@ -66,6 +68,11 @@ void NavigationViewItemPresenter::OnApplyTemplate()
             if (navigationView.PaneDisplayMode() != winrt::NavigationViewPaneDisplayMode::Top)
             {
                 UpdateCompactPaneLength(m_compactPaneLengthValue, true);
+            }
+
+            if (oldSelectionIndicator && (navigationViewItem->IsSelected() || navigationViewItem->IsChildSelected()))
+            {
+                winrt::get_self<NavigationView>(navigationView)->OnSelectionIndicatorReplaced(oldSelectionIndicator, m_helper.GetSelectionIndicator());
             }
         }
     }
