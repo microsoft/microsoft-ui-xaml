@@ -86,6 +86,606 @@ void PopupAutomationIntegrationTests::CheckUIAElementName(_In_ wrl::ComPtr<IRawE
 
 // Test Cases
 
+void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderSurvivesReopen()
+{
+    VerifyWindowedPopupProviderLifetime(PopupHostChange::None);
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderCreatedWithStructureListenerSurvivesReopen()
+{
+    VerifyWindowedPopupProviderLifetime(PopupHostChange::None, true /* createWithStructureListener */);
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderIsRecreatedAfterHostChange()
+{
+    VerifyWindowedPopupProviderLifetime(PopupHostChange::NewPopup);
+}
+
+void PopupAutomationIntegrationTests::VerifyPopupProviderIsRecreatedAfterWindowedFallback()
+{
+    VerifyWindowedPopupProviderLifetime(PopupHostChange::NonWindowed);
+}
+
+void PopupAutomationIntegrationTests::VerifyInlinePopupProviderUsesAncestorWindowedHost()
+{
+    VerifyWindowedPopupProviderLifetime(PopupHostChange::NestedInline);
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupListViewDataPeerUsesPopupHost()
+{
+    VerifyWindowedPopupListViewDataPeerHost(false /* createBeforeNavigation */);
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupListViewDataPeerCreatedBeforeNavigationUsesPopupHost()
+{
+    VerifyWindowedPopupListViewDataPeerHost(true /* createBeforeNavigation */);
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupListViewDataPeerHost(bool createBeforeNavigation)
+{
+    TestCleanupWrapper cleanup;
+    xaml_controls::Button^ mainAnchor;
+    xaml_controls::Button^ popupAnchor;
+    xaml_controls::ListView^ listView;
+    xaml_primitives::Popup^ popup;
+    PeerReferenceButton^ dataReference;
+    PeerReferenceButton^ popupReference;
+    RunOnUIThread([&]()
+    {
+        VERIFY_IS_FALSE(xaml_automation_peers::AutomationPeer::ListenerExists(
+            xaml_automation_peers::AutomationEvents::StructureChanged));
+        auto root = ref new xaml_controls::Grid();
+        mainAnchor = ref new xaml_controls::Button();
+        mainAnchor->Content = L"Main host anchor";
+        root->Children->Append(mainAnchor);
+        if (createBeforeNavigation)
+        {
+            dataReference = ref new PeerReferenceButton();
+            popupReference = ref new PeerReferenceButton();
+            xaml_automation::AutomationProperties::SetName(dataReference, L"Data peer reference");
+            xaml_automation::AutomationProperties::SetName(popupReference, L"Popup peer reference");
+            root->Children->Append(dataReference);
+            root->Children->Append(popupReference);
+        }
+        TestServices::WindowHelper->WindowContent = root;
+
+        popupAnchor = ref new xaml_controls::Button();
+        popupAnchor->Content = L"Popup host anchor";
+        listView = ref new xaml_controls::ListView();
+        listView->Width = 300;
+        listView->Height = 180;
+        listView->Items->Append(ref new Platform::String(L"Popup data item"));
+        auto content = ref new xaml_controls::StackPanel();
+        content->Children->Append(popupAnchor);
+        content->Children->Append(listView);
+        popup = ref new xaml_primitives::Popup();
+        popup->ShouldConstrainToRootBounds = false;
+        popup->Child = content;
+        root->Children->Append(popup);
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    AutomationClient::UIAElementInfo mainInfo{};
+    mainInfo.m_Name = L"Main host anchor";
+    AutomationClient::UIAElementInfo anchorInfo{};
+    anchorInfo.m_Name = L"Popup host anchor";
+    AutomationClient::UIAElementInfo itemInfo{};
+    itemInfo.m_Name = L"Popup data item";
+    std::shared_ptr<AutomationClient::AutomationClientManager> mainClient;
+    std::shared_ptr<AutomationClient::AutomationClientManager> anchorClient;
+    std::shared_ptr<AutomationClient::AutomationClientManager> itemClient;
+    wrl::ComPtr<IUIAutomationElement> dataReferenceElement;
+    wrl::ComPtr<IUIAutomationElement> popupReferenceElement;
+    wrl::ComPtr<IUIAutomationElement> directlyCreatedItem;
+    wrl::ComPtr<IUIAutomationElement> directlyCreatedAnchor;
+    UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+    {
+        mainClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(mainInfo);
+        if (createBeforeNavigation)
+        {
+            AutomationClient::UIAElementInfo referenceInfo{};
+            referenceInfo.m_Name = L"Data peer reference";
+            auto referenceClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(referenceInfo);
+            referenceClient->GetCurrentUIAutomationElement(&dataReferenceElement);
+            referenceInfo.m_Name = L"Popup peer reference";
+            referenceClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(referenceInfo);
+            referenceClient->GetCurrentUIAutomationElement(&popupReferenceElement);
+            VERIFY_IS_NOT_NULL(dataReferenceElement.Get());
+            VERIFY_IS_NOT_NULL(popupReferenceElement.Get());
+        }
+    });
+
+    for (int cycle = 0; cycle < 4; cycle++)
+    {
+        PopupHelper::OpenPopup(popup);
+        HWND popupWindow = nullptr;
+        RunOnUIThread([&]()
+        {
+            popupWindow = reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popup));
+            VERIFY_IS_NOT_NULL(popupWindow);
+            if (createBeforeNavigation)
+            {
+                auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(listView);
+                auto children = peer->GetChildren();
+                VERIFY_ARE_EQUAL(1u, children->Size);
+                auto dataPeer = dynamic_cast<xaml_automation_peers::ListViewItemDataAutomationPeer^>(children->GetAt(0));
+                VERIFY_IS_NOT_NULL(dataPeer);
+                dataReference->SetReferencedPeer(dataPeer);
+                popupReference->SetReferencedPeer(xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(popupAnchor));
+            }
+        });
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            if (createBeforeNavigation)
+            {
+                // These main-window property queries create providers without navigating
+                // into the popup. Retain the returned clients through the root checks.
+                LogThrow_IfFailed(dataReferenceElement->get_CurrentLabeledBy(directlyCreatedItem.ReleaseAndGetAddressOf()));
+                LogThrow_IfFailed(popupReferenceElement->get_CurrentLabeledBy(directlyCreatedAnchor.ReleaseAndGetAddressOf()));
+                VERIFY_IS_NOT_NULL(directlyCreatedItem.Get());
+                VERIFY_IS_NOT_NULL(directlyCreatedAnchor.Get());
+            }
+            else
+            {
+                anchorClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, anchorInfo);
+                itemClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, itemInfo);
+            }
+            wrl::ComPtr<IUIAutomationElement> itemElement;
+            if (createBeforeNavigation)
+            {
+                itemElement = directlyCreatedItem;
+            }
+            else
+            {
+                itemClient->GetCurrentUIAutomationElement(&itemElement);
+            }
+            VERIFY_IS_NOT_NULL(itemElement.Get());
+            CONTROLTYPEID controlType;
+            LogThrow_IfFailed(itemElement->get_CurrentControlType(&controlType));
+            VERIFY_ARE_EQUAL(UIA_ListItemControlTypeId, controlType);
+        });
+        RunOnUIThread([&]()
+        {
+            auto rootIdentity = [](xaml_automation_peers::AutomationPeer^ peer)
+            {
+                VERIFY_IS_NOT_NULL(peer);
+                wrl::ComPtr<IInspectable> inspectable(reinterpret_cast<IInspectable*>(peer));
+                wrl::ComPtr<IRawElementProviderFragment> provider;
+                wrl::ComPtr<IRawElementProviderFragmentRoot> fragmentRoot;
+                wrl::ComPtr<IUnknown> identity;
+                LogThrow_IfFailed(inspectable.As(&provider));
+                LogThrow_IfFailed(provider->get_FragmentRoot(&fragmentRoot));
+                LogThrow_IfFailed(fragmentRoot.As(&identity));
+                return identity;
+            };
+            // Retained clients ensure peer QI checks the existing wrappers.
+            auto popupRoot = rootIdentity(xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(popupAnchor));
+            auto mainRoot = rootIdentity(xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(mainAnchor));
+            VERIFY_ARE_NOT_EQUAL(mainRoot, popupRoot);
+            auto listPeer = xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(listView);
+            VERIFY_IS_NOT_NULL(listPeer);
+            unsigned int dataPeerCount = 0;
+            for (xaml_automation_peers::AutomationPeer^ child : listPeer->GetChildren())
+            {
+                if (auto dataPeer = dynamic_cast<xaml_automation_peers::ListViewItemDataAutomationPeer^>(child))
+                {
+                    VERIFY_ARE_EQUAL(popupRoot, rootIdentity(dataPeer),
+                        L"The item data peer must use the popup root, not the main root.");
+                    dataPeerCount++;
+                }
+            }
+            VERIFY_ARE_EQUAL(1u, dataPeerCount);
+            popup->IsOpen = false;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupInvokedEventSurvivesReopen()
+{
+    VerifyWindowedPopupProviderLifetime(PopupHostChange::None, false /* createWithStructureListener */, true /* verifyInvokedEvent */);
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupInvokedEventWithStructureListenerSurvivesReopen()
+{
+    VerifyWindowedPopupProviderLifetime(PopupHostChange::None, true /* createWithStructureListener */, true /* verifyInvokedEvent */);
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupInvokedEventAfterClickClosesPopup()
+{
+    xaml_primitives::Popup^ popup;
+    xaml_controls::MenuFlyoutItem^ item;
+    int clickCount = 0;
+    wrl::ComPtr<AutomationClient::AutomationEventHandler> handler;
+    TestCleanupWrapper cleanup([&]()
+    {
+        if (handler)
+        {
+            UIAutomationHelper::RunOnCorrectThreadForUIA([&]() { handler->RemoveEventHandler(); });
+        }
+        TestServices::WindowHelper->WaitForIdle();
+        TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+    });
+    RunOnUIThread([&]()
+    {
+        auto root = ref new xaml_controls::Grid();
+        TestServices::WindowHelper->WindowContent = root;
+        item = ref new xaml_controls::MenuFlyoutItem();
+        item->Text = L"Close from Click";
+        popup = ref new xaml_primitives::Popup();
+        popup->XamlRoot = root->XamlRoot;
+        popup->ShouldConstrainToRootBounds = false;
+        popup->Child = item;
+        item->Click += ref new xaml::RoutedEventHandler([&](Platform::Object^, xaml::RoutedEventArgs^)
+        {
+            clickCount++;
+            popup->IsOpen = false;
+        });
+    });
+    PopupHelper::OpenPopup(popup);
+    HWND popupWindow = nullptr;
+    RunOnUIThread([&]()
+    {
+        popupWindow = reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popup));
+        VERIFY_IS_NOT_NULL(popupWindow);
+    });
+    UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+    {
+        AutomationClient::UIAElementInfo info{};
+        info.m_Name = L"Close from Click";
+        auto client = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, info);
+        auto event = std::make_shared<Event>();
+        handler.Attach(new AutomationClient::AutomationEventHandler(client, event, TreeScope_Element, UIA_Invoke_InvokedEventId));
+        handler->AttachEventHandler();
+        wrl::ComPtr<IUIAutomationElement> element;
+        client->GetCurrentUIAutomationElement(&element);
+        VERIFY_IS_NOT_NULL(element.Get());
+        wrl::ComPtr<IUIAutomationInvokePattern> pattern;
+        LogThrow_IfFailed(element->GetCurrentPatternAs(UIA_InvokePatternId, IID_PPV_ARGS(&pattern)));
+        LogThrow_IfFailed(pattern->Invoke());
+        handler->ConfirmAndUnregister();
+    });
+    RunOnUIThread([&]()
+    {
+        VERIFY_IS_FALSE(popup->IsOpen);
+        VERIFY_ARE_EQUAL(1, clickCount);
+        VERIFY_IS_FALSE(xaml_automation_peers::AutomationPeer::ListenerExists(
+            xaml_automation_peers::AutomationEvents::InvokePatternOnInvoked));
+    });
+}
+
+void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange, bool createWithStructureListener, bool verifyInvokedEvent)
+{
+    wrl::ComPtr<AutomationClient::AutomationStructureChangeHandler> structureHandler;
+    wrl::ComPtr<AutomationClient::AutomationEventHandler> invokedHandler;
+    wrl::ComPtr<IUIAutomationInvokePattern> invokePattern;
+    auto invokedEvent = verifyInvokedEvent ? std::make_shared<Event>() : nullptr;
+    auto clickCount = verifyInvokedEvent ? std::make_shared<int>(0) : nullptr;
+    int invocationCount = 0;
+    TestCleanupWrapper cleanup([&]()
+    {
+        if (invokedHandler)
+        {
+            UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+            {
+                invokedHandler->RemoveEventHandler();
+            });
+        }
+        if (structureHandler)
+        {
+            UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+            {
+                structureHandler->RemoveEventHandler();
+            });
+        }
+        TestServices::WindowHelper->WaitForIdle();
+        TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+    });
+    xaml_controls::Grid^ root;
+    xaml_controls::Button^ button;
+    xaml_controls::Button^ mainAnchor;
+    xaml_controls::Button^ popupAnchor;
+    xaml_primitives::Popup^ popup;
+    xaml_primitives::Popup^ previousPopup;
+    xaml_primitives::Popup^ inlinePopup = nullptr;
+    HWND popupWindow = nullptr;
+    wrl::ComPtr<IRawElementProviderFragment> retainedProvider;
+    wrl::ComPtr<IRawElementProviderFragmentRoot> retainedRoot;
+
+    RunOnUIThread([&]()
+    {
+        // Structure listeners can precreate island-rooted wrappers and mask the popup-host mismatch.
+        VERIFY_IS_FALSE(xaml_automation_peers::AutomationPeer::ListenerExists(
+            xaml_automation_peers::AutomationEvents::StructureChanged));
+
+        root = ref new xaml_controls::Grid();
+        mainAnchor = ref new xaml_controls::Button();
+        mainAnchor->Content = L"Main host anchor";
+        root->Children->Append(mainAnchor);
+        TestServices::WindowHelper->WindowContent = root;
+        button = ref new xaml_controls::Button();
+        button->Content = ref new Platform::String(s_automationPopupButtonName);
+        xaml_automation::AutomationProperties::SetName(button, ref new Platform::String(s_automationPopupButtonName));
+        if (verifyInvokedEvent)
+        {
+            button->Click += ref new xaml::RoutedEventHandler([clickCount](Platform::Object^, xaml::RoutedEventArgs^)
+            {
+                (*clickCount)++;
+            });
+        }
+
+        popup = ref new xaml_primitives::Popup();
+        popup->ShouldConstrainToRootBounds = false;
+        popup->XamlRoot = root->XamlRoot;
+        auto popupContent = ref new xaml_controls::StackPanel();
+        popupAnchor = ref new xaml_controls::Button();
+        popupAnchor->Content = L"Popup host anchor";
+        popupContent->Children->Append(popupAnchor);
+        if (hostChange == PopupHostChange::NestedInline)
+        {
+            inlinePopup = ref new xaml_primitives::Popup();
+            inlinePopup->ShouldConstrainToRootBounds = true;
+            inlinePopup->Child = button;
+            popupContent->Children->Append(inlinePopup);
+        }
+        else
+        {
+            popupContent->Children->Append(button);
+        }
+        popup->Child = popupContent;
+        xaml_automation::AutomationProperties::SetName(popup, ref new Platform::String(s_automationName));
+        if (hostChange == PopupHostChange::NonWindowed)
+        {
+            root->Children->Append(popup);
+        }
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    AutomationClient::UIAElementInfo uiaInfo;
+    uiaInfo.m_Name = s_automationPopupButtonName;
+    AutomationClient::UIAElementInfo popupAnchorInfo;
+    popupAnchorInfo.m_Name = L"Popup host anchor";
+    AutomationClient::UIAElementInfo mainAnchorInfo;
+    mainAnchorInfo.m_Name = L"Main host anchor";
+    std::shared_ptr<AutomationClient::AutomationClientManager> client;
+    std::shared_ptr<AutomationClient::AutomationClientManager> popupAnchorClient;
+    std::shared_ptr<AutomationClient::AutomationClientManager> mainAnchorClient;
+    UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+    {
+        mainAnchorClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(mainAnchorInfo);
+        if (createWithStructureListener)
+        {
+            auto windowClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromWindow();
+            auto event = std::make_shared<Event>();
+            structureHandler.Attach(new AutomationClient::AutomationStructureChangeHandler(windowClient, event, TreeScope_Subtree));
+            structureHandler->Init(StructureChangeType_ChildAdded);
+            structureHandler->AttachEventHandler();
+        }
+    });
+    if (createWithStructureListener)
+    {
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(xaml_automation_peers::AutomationPeer::ListenerExists(
+                xaml_automation_peers::AutomationEvents::StructureChanged));
+        });
+    }
+    PopupHelper::OpenPopup(popup);
+    if (inlinePopup)
+    {
+        PopupHelper::OpenPopup(inlinePopup);
+    }
+    RunOnUIThread([&]()
+    {
+        popupWindow = reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popup));
+        VERIFY_IS_NOT_NULL(popupWindow);
+    });
+    UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+    {
+        popupAnchorClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, popupAnchorInfo);
+        client = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, uiaInfo);
+        if (structureHandler)
+        {
+            structureHandler->RemoveEventHandler();
+        }
+        if (verifyInvokedEvent)
+        {
+            invokedHandler.Attach(new AutomationClient::AutomationEventHandler(
+                client, invokedEvent, TreeScope_Element, UIA_Invoke_InvokedEventId));
+            invokedHandler->AttachEventHandler();
+            wrl::ComPtr<IUIAutomationElement> element;
+            client->GetCurrentUIAutomationElement(&element);
+            VERIFY_IS_NOT_NULL(element.Get());
+            LogThrow_IfFailed(element->GetCurrentPatternAs(UIA_InvokePatternId, IID_PPV_ARGS(&invokePattern)));
+        }
+    });
+
+    auto verifyInvocation = [&]()
+    {
+        if (verifyInvokedEvent)
+        {
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(xaml_automation_peers::AutomationPeer::ListenerExists(
+                    xaml_automation_peers::AutomationEvents::InvokePatternOnInvoked));
+            });
+            UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+            {
+                invokedEvent->Reset();
+                LogThrow_IfFailed(invokePattern->Invoke());
+                invokedHandler->Confirm();
+                invocationCount++;
+                LOG_OUTPUT(L"Invoked callbacks for this action: %d", invokedEvent->TimesFired());
+            });
+            RunOnUIThread([&]()
+            {
+                VERIFY_ARE_EQUAL(invocationCount, *clickCount);
+            });
+        }
+    };
+
+    RunOnUIThread([&]()
+    {
+        VERIFY_IS_TRUE(TestServices::WindowHelper->Popup_GetWindow(popup) != 0);
+        auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(button);
+        VERIFY_IS_NOT_NULL(peer);
+        wrl::ComPtr<IInspectable> inspectable(reinterpret_cast<IInspectable*>(peer));
+        LogThrow_IfFailed(inspectable.As(&retainedProvider));
+        LogThrow_IfFailed(retainedProvider->get_FragmentRoot(&retainedRoot));
+        CheckUIAElementName(retainedProvider, s_automationPopupButtonName);
+    });
+    verifyInvocation();
+
+    const int reopenCount = hostChange == PopupHostChange::NonWindowed ? 1 : 3;
+    for (int cycle = 0; cycle < reopenCount; cycle++)
+    {
+        const bool changeHost = hostChange == PopupHostChange::NewPopup ||
+            (hostChange == PopupHostChange::NonWindowed && cycle == 0);
+        RunOnUIThread([&]()
+        {
+            (inlinePopup ? inlinePopup : popup)->IsOpen = false;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            if (hostChange == PopupHostChange::NewPopup)
+            {
+                safe_cast<xaml_controls::StackPanel^>(popup->Child)->Children->RemoveAt(1);
+                previousPopup = popup;
+                popup = ref new xaml_primitives::Popup();
+                popup->ShouldConstrainToRootBounds = false;
+                popup->XamlRoot = root->XamlRoot;
+                auto popupContent = ref new xaml_controls::StackPanel();
+                popupAnchor = ref new xaml_controls::Button();
+                popupAnchor->Content = L"Popup host anchor";
+                popupContent->Children->Append(popupAnchor);
+                popupContent->Children->Append(button);
+                popup->Child = popupContent;
+                xaml_automation::AutomationProperties::SetName(popup, ref new Platform::String(s_automationName));
+            }
+            else if (hostChange == PopupHostChange::NonWindowed && cycle == 0)
+            {
+                auto rotation = ref new xaml_media::RotateTransform();
+                rotation->Angle = 15;
+                popup->Child->RenderTransform = rotation;
+            }
+        });
+        PopupHelper::OpenPopup(inlinePopup ? inlinePopup : popup);
+        RunOnUIThread([&]()
+        {
+            if (hostChange != PopupHostChange::NonWindowed)
+            {
+                popupWindow = reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popup));
+            }
+        });
+
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            popupAnchorClient = hostChange == PopupHostChange::NonWindowed ?
+                AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(popupAnchorInfo) :
+                AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, popupAnchorInfo);
+            client = hostChange == PopupHostChange::NonWindowed ?
+                AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(uiaInfo) :
+                AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, uiaInfo);
+        });
+
+        RunOnUIThread([&]()
+        {
+            wrl::ComPtr<IRawElementProviderSimple> retainedSimple;
+            LogThrow_IfFailed(retainedProvider.As(&retainedSimple));
+            Common::AutoVariant name;
+            const HRESULT result = retainedSimple->GetPropertyValue(UIA_NamePropertyId, name.ReleaseAndGetAddressOf());
+            if (changeHost)
+            {
+                VERIFY_IS_TRUE(FAILED(result), L"The provider for the previous host must be invalidated.");
+            }
+            else
+            {
+                LogThrow_IfFailed(result);
+                CheckUIAElementName(retainedProvider, s_automationPopupButtonName);
+            }
+
+            wrl::ComPtr<IRawElementProviderFragment> currentProvider;
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(button);
+            VERIFY_IS_NOT_NULL(peer);
+            wrl::ComPtr<IInspectable> inspectable(reinterpret_cast<IInspectable*>(peer));
+            LogThrow_IfFailed(inspectable.As(&currentProvider));
+            CheckUIAElementName(currentProvider, s_automationPopupButtonName);
+            wrl::ComPtr<IRawElementProviderFragmentRoot> currentRoot;
+            LogThrow_IfFailed(currentProvider->get_FragmentRoot(&currentRoot));
+
+            // The independently discovered anchor stays in the destination host. Its UIA
+            // client is retained so QI cannot fall back to creating an island-rooted wrapper.
+            auto expectedHostPeer = xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(
+                hostChange == PopupHostChange::NonWindowed ? mainAnchor : popupAnchor);
+            VERIFY_IS_NOT_NULL(expectedHostPeer);
+            wrl::ComPtr<IInspectable> expectedInspectable(reinterpret_cast<IInspectable*>(expectedHostPeer));
+            wrl::ComPtr<IRawElementProviderFragment> expectedProvider;
+            wrl::ComPtr<IRawElementProviderFragmentRoot> expectedRoot;
+            LogThrow_IfFailed(expectedInspectable.As(&expectedProvider));
+            LogThrow_IfFailed(expectedProvider->get_FragmentRoot(&expectedRoot));
+            wrl::ComPtr<IUnknown> currentRootIdentity;
+            wrl::ComPtr<IUnknown> expectedRootIdentity;
+            LogThrow_IfFailed(currentRoot.As(&currentRootIdentity));
+            LogThrow_IfFailed(expectedRoot.As(&expectedRootIdentity));
+            VERIFY_ARE_EQUAL(expectedRootIdentity, currentRootIdentity,
+                L"The provider must use the current popup host, or the main host after non-windowed fallback.");
+            if (hostChange != PopupHostChange::NonWindowed)
+            {
+                auto mainPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(mainAnchor);
+                wrl::ComPtr<IInspectable> mainInspectable(reinterpret_cast<IInspectable*>(mainPeer));
+                wrl::ComPtr<IRawElementProviderFragment> mainProvider;
+                wrl::ComPtr<IRawElementProviderFragmentRoot> mainRoot;
+                wrl::ComPtr<IUnknown> mainRootIdentity;
+                LogThrow_IfFailed(mainInspectable.As(&mainProvider));
+                LogThrow_IfFailed(mainProvider->get_FragmentRoot(&mainRoot));
+                LogThrow_IfFailed(mainRoot.As(&mainRootIdentity));
+                VERIFY_ARE_NOT_EQUAL(mainRootIdentity, currentRootIdentity,
+                    L"A windowed-popup item must not be recreated against the main root.");
+            }
+            if (!changeHost)
+            {
+                VERIFY_ARE_EQUAL(retainedProvider, currentProvider);
+                VERIFY_ARE_EQUAL(retainedRoot, currentRoot);
+            }
+            else
+            {
+                VERIFY_ARE_NOT_EQUAL(retainedRoot, currentRoot);
+            }
+            retainedProvider = currentProvider;
+            retainedRoot = currentRoot;
+            previousPopup = nullptr;
+        });
+        verifyInvocation();
+    }
+
+    if (invokedHandler)
+    {
+        UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+        {
+            invokedHandler->RemoveEventHandler();
+        });
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(xaml_automation_peers::AutomationPeer::ListenerExists(
+                xaml_automation_peers::AutomationEvents::InvokePatternOnInvoked));
+        });
+    }
+
+    RunOnUIThread([&]()
+    {
+        if (inlinePopup)
+        {
+            inlinePopup->IsOpen = false;
+        }
+        popup->IsOpen = false;
+        retainedProvider.Reset();
+        retainedRoot.Reset();
+    });
+    TestServices::WindowHelper->WaitForIdle();
+}
+
 void PopupAutomationIntegrationTests::VerifyParentlessPopupAutomationTree_NoFrameAP()
 {
     VerifyParentlessPopupAutomationTreeCommon(false /* hasFrameAP */);

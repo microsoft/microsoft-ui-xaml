@@ -16,6 +16,7 @@
 #include <DependencyObject.h>
 #include <RootScale.h>
 #include <xcpwindow.h>
+#include <algorithm>
 
 HRESULT GetCurrentDisplayName(_Out_ BSTR *outString);
 
@@ -318,11 +319,26 @@ HRESULT CUIAWindow::Init()
     }
 
     m_fInitialized = true;
+    if (auto browserHost = m_pHost->GetBrowserHost())
+    {
+        if (auto core = browserHost->GetContextInterface())
+        {
+            auto registry = core->GetUIAWindowRegistry();
+            registry->push_back(this);
+            m_uiaWindowRegistry = registry;
+        }
+    }
     return S_OK;
 }
 
 void CUIAWindow::Deinit()
 {
+    if (auto registry = m_uiaWindowRegistry.lock())
+    {
+        registry->erase(std::remove(registry->begin(), registry->end(), this), registry->end());
+    }
+    m_uiaWindowRegistry.reset();
+
     // Flush the existing events provider to avoid the memory leak
     FlushUiaBridgeEventTable();
 
@@ -1680,7 +1696,9 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseAutomationEvent(
     xref_ptr<CUIAWrapper> wrapper;
     xref_ptr<IRawElementProviderSimple> provider;
 
-    if (S_FALSE == UIAClientsAreListening(eAutomationEvent))
+    // The provider factory can select a popup host with listeners of its own.
+    if (S_FALSE == UIAClientsAreListening(eAutomationEvent) &&
+        (!pAP || !pAP->ListenerExists(eAutomationEvent)))
     {
         return S_OK;
     }
@@ -2957,7 +2975,43 @@ HRESULT CUIAWindow::CreateProviderForAP(CAutomationPeer* pAP, CUIAWrapper** ppRe
 
     IFCPTR_RETURN(pAP);
 
-    IFC_RETURN(CUIAWrapper::Create(m_uiaHostEnvironmentInfo, m_pHost, this, pAP, m_pUIAIds, wrapper.ReleaseAndGetAddressOf()));
+    CUIAWindow* providerWindow = this;
+    // Data peers reach their element owner through their parent automation peers.
+    // Preserve the supplied host only when no element owner can be resolved.
+    if (auto owner = pAP->GetElementOwnerNoRef())
+    {
+        if (auto root = pAP->GetRootNoRef())
+        {
+            if (auto rootWindow = pAP->GetContext()->GetUIAWindowForElementRootNoRef(root))
+            {
+                providerWindow = rootWindow;
+            }
+        }
+        xref_ptr<CPopup> popup(do_pointer_cast<CPopup>(owner));
+        if (!popup || !popup->IsOpen() || !popup->IsWindowed())
+        {
+            popup = owner->GetFirstAncestorPopup(true /* windowedPopupOnly */);
+        }
+
+        // Event delivery and peer QI can start at the island window. Newly exposed
+        // popup providers must use the same host as providers discovered by navigation.
+        if (popup && popup->IsOpen() && popup->IsWindowed())
+        {
+            popup->EnsureUIAWindow();
+            if (auto popupWindow = popup->GetUIAWindow())
+            {
+                providerWindow = popupWindow;
+            }
+        }
+    }
+
+    IFC_RETURN(CUIAWrapper::Create(
+        providerWindow->m_uiaHostEnvironmentInfo,
+        providerWindow->m_pHost,
+        providerWindow,
+        pAP,
+        providerWindow->m_pUIAIds,
+        wrapper.ReleaseAndGetAddressOf()));
 
     *ppRet = wrapper.detach();
 

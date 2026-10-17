@@ -5802,9 +5802,31 @@ CCoreServices::UIAClientsAreListening(_In_ UIAXcp::APAutomationEvents eAutomatio
                 }
             }
         }
+
+        // A popup can close during a click handler, before its automation event is raised.
+        // Its UIA host and subscriptions remain valid until that host is deinitialized.
+        if (m_uiaWindowRegistry)
+        {
+            for (auto window : *m_uiaWindowRegistry)
+            {
+                if (S_OK == window->UIAClientsAreListening(eAutomationEvent))
+                {
+                    return S_OK;
+                }
+            }
+        }
     }
 
     return hr;
+}
+
+std::shared_ptr<std::vector<CUIAWindow*>> CCoreServices::GetUIAWindowRegistry()
+{
+    if (!m_uiaWindowRegistry)
+    {
+        m_uiaWindowRegistry = std::make_shared<std::vector<CUIAWindow*>>();
+    }
+    return m_uiaWindowRegistry;
 }
 
 //------------------------------------------------------------------------

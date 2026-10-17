@@ -745,17 +745,31 @@ _Check_return_ HRESULT CDependencyObject::TryReCreateUIAWrapper()
                 CUIAWindow* oldUIAWindow = static_cast<CUIAWrapper*>(wrapper)->GetUIAWindow();
                 CUIAWindow* uiaWindow = GetContext()->GetUIAWindowForElementRootNoRef(visualTree->GetRootElementNoRef());
 
-                // This indicates that the UIAWindows are different. Invalidate the current UIAWrapper and create a new one with the correct UIAWindow
+                // Use the destination popup host for both comparison and provider creation.
+                xref_ptr<CPopup> popup(do_pointer_cast<CPopup>(this));
+                if (!popup || !popup->IsOpen() || !popup->IsWindowed())
+                {
+                    popup = GetFirstAncestorPopup(true /* windowedPopupOnly */);
+                }
+                if (popup && popup->IsOpen() && popup->IsWindowed())
+                {
+                    popup->EnsureUIAWindow();
+                    if (auto popupWindow = popup->GetUIAWindow())
+                    {
+                        uiaWindow = popupWindow;
+                    }
+                }
+
                 if (oldUIAWindow != uiaWindow)
                 {
-                     currentAP->InvalidateUIAWrapper();
-                     wrapper->Invalidate();
+                    currentAP->InvalidateUIAWrapper();
+                    wrapper->Invalidate();
 
-                     if (uiaWindow)
-                     {
-                         xref_ptr<CUIAWrapper> spWrapper;
-                         IFC_RETURN(uiaWindow->CreateProviderForAP(currentAP, spWrapper.ReleaseAndGetAddressOf()));
-                     }
+                    if (uiaWindow)
+                    {
+                        xref_ptr<CUIAWrapper> spWrapper;
+                        IFC_RETURN(uiaWindow->CreateProviderForAP(currentAP, spWrapper.ReleaseAndGetAddressOf()));
+                    }
                 }
             }
         }

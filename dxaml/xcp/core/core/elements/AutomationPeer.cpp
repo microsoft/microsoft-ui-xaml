@@ -1958,16 +1958,13 @@ _Check_return_ HRESULT CAutomationPeer::IsDialog(_Out_ XINT32* returnValue)
     return GetAutomationPeerIntValueFromManaged(UIAXcp::APIsDialogProperty, returnValue);
 }
 
-// Find the root for the given AutomationPeer.
-// Since AutomationPeers don't enter the live tree, we need to look at a few pointers to figure out which
-// tree of XAML the peer belongs to.
-CDependencyObject* CAutomationPeer::GetRootNoRef() const
+CDependencyObject* CAutomationPeer::GetElementOwnerNoRef() const
 {
     // Note: m_pDO usually refers to the element peer of the AutomationPeer, but not always. In some cases m_pDO points to the parent.
     // See for example ListViewItemDataAutomationPeerFactory::CreateInstanceWithParentAndItemImpl, where we pass the parent as the
     // 2nd parameter to ActivateInstance, which is then assigned to m_pDO.
     // In order to deal with this case, we first follow the m_pDO pointer as long as it's pointing to an AutomationPeer.  When
-    // we hit a non-automation peer, we're back to the live XAML element tree, and return the root for that element.
+    // we hit a non-automation peer, we're back to the live XAML element tree, and return that element.
     // http://osgvsowi/14707451 -- clean this up.
     const CAutomationPeer* node = this;
 
@@ -1984,14 +1981,21 @@ CDependencyObject* CAutomationPeer::GetRootNoRef() const
         }
     }
 
-    if (node->m_pDO == nullptr && m_pAPParent != nullptr)
+    return node->m_pDO;
+}
+
+// AutomationPeers don't enter the live tree, so find the root through their element owner.
+CDependencyObject* CAutomationPeer::GetRootNoRef() const
+{
+    auto owner = GetElementOwnerNoRef();
+    if (owner == nullptr && m_pAPParent != nullptr)
     {
         // In some cases (such as LoopingSelector), we may not have a pointer to a DependencyObject in the live tree.
         // If we have an AP parent, let's try following that chain to the root instead.
         return m_pAPParent->GetRootNoRef();
     }
 
-    return GetContext()->GetRootForElement(node->m_pDO);
+    return GetContext()->GetRootForElement(owner);
 }
 
 CFocusManager* CAutomationPeer::GetFocusManagerNoRef() const

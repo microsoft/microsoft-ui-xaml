@@ -63,10 +63,90 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verify that when a parentless popup opens, the main tree is still accessible")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyWindowedPopupProviderSurvivesReopen)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a retained popup content provider stays usable when the same popup reopens without structure listeners.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWindowedPopupProviderCreatedWithStructureListenerSurvivesReopen)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a provider initially created for structure events uses the popup host and survives reopening.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWindowedPopupProviderIsRecreatedAfterHostChange)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a retained provider is invalidated when its content moves to another popup host.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyPopupProviderIsRecreatedAfterWindowedFallback)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a retained provider is invalidated when a parented popup falls back to non-windowed rendering.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyInlinePopupProviderUsesAncestorWindowedHost)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify inline popup content uses its nearest enclosing windowed popup root.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWindowedPopupListViewDataPeerUsesPopupHost)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a ListView item data peer preserves the popup host supplied by UIA navigation.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWindowedPopupListViewDataPeerCreatedBeforeNavigationUsesPopupHost)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a main-window peer reference creates a ListView item data provider against its popup host before popup navigation.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWindowedPopupInvokedEventSurvivesReopen)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify an element-scoped Invoked subscription on a popup button receives events across reopening.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWindowedPopupInvokedEventWithStructureListenerSurvivesReopen)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify an event-created popup provider delivers Invoked events across reopening.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWindowedPopupInvokedEventAfterClickClosesPopup)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify MenuFlyoutItem delivers Invoked after its Click handler closes the popup.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
     private:
+        enum class PopupHostChange { None, NewPopup, NonWindowed, NestedInline };
+
+        ref class PeerReferenceAutomationPeer sealed : public xaml_automation_peers::ButtonAutomationPeer
+        {
+        public:
+            PeerReferenceAutomationPeer(xaml_controls::Button^ owner) : ButtonAutomationPeer(owner) {}
+            property xaml_automation_peers::AutomationPeer^ ReferencedPeer;
+
+        protected:
+            xaml_automation_peers::AutomationPeer^ GetLabeledByCore() override { return ReferencedPeer; }
+        };
+
+        ref class PeerReferenceButton sealed : public xaml_controls::Button
+        {
+        public:
+            void SetReferencedPeer(xaml_automation_peers::AutomationPeer^ peer)
+            {
+                safe_cast<PeerReferenceAutomationPeer^>(
+                    xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(this))->ReferencedPeer = peer;
+            }
+
+        protected:
+            xaml_automation_peers::AutomationPeer^ OnCreateAutomationPeer() override
+            {
+                return ref new PeerReferenceAutomationPeer(this);
+            }
+        };
+
         wrl::ComPtr<IRawElementProviderFragment> GetUIAWindow();
         void CheckUIAElementName(_In_ wrl::ComPtr<IRawElementProviderFragment> uiaElement, _In_ const WCHAR* expectedName);
         void VerifyParentlessPopupAutomationTreeCommon(bool hasFrameAP);
+        void VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange, bool createWithStructureListener = false, bool verifyInvokedEvent = false);
+        void VerifyWindowedPopupListViewDataPeerHost(bool createBeforeNavigation);
 
         static WCHAR s_automationName[];
         static WCHAR s_automationId[];
