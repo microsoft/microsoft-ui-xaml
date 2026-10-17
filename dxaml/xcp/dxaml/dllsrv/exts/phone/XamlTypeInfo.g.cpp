@@ -1942,6 +1942,7 @@ XamlRuntimeType::ResetDependencyProperties() const
     ABI::Microsoft::UI::Xaml::Controls::ListPickerFlyoutFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Controls::ListPickerFlyoutPresenterFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Controls::Primitives::LoopingSelectorFactory::ClearProperties();
+    ABI::Microsoft::UI::Xaml::Controls::Primitives::LoopingSelectorItemFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Media::Animation::NavigationThemeTransitionFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Controls::PickerFlyoutFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Controls::Primitives::PickerFlyoutBaseFactory::ClearProperties();
@@ -1983,6 +1984,8 @@ XamlRuntimeType::EnsureDependencyProperties(_In_ UINT16 typeLabel) const
             return ABI::Microsoft::UI::Xaml::Controls::ListPickerFlyoutFactory::EnsureProperties();
         case activate_LoopingSelector:
             return ABI::Microsoft::UI::Xaml::Controls::Primitives::LoopingSelectorFactory::EnsureProperties();
+        case activate_LoopingSelectorItem:
+            return ABI::Microsoft::UI::Xaml::Controls::Primitives::LoopingSelectorItemFactory::EnsureProperties();
         case activate_NavigationThemeTransition:
             return ABI::Microsoft::UI::Xaml::Media::Animation::NavigationThemeTransitionFactory::EnsureProperties();
         case activate_PickerFlyout:
