@@ -18,18 +18,25 @@ struct ParentStructure
 {
     static constexpr size_t Root = SIZE_MAX;
 
-    // Source order. Keeps keyed rows alive so no KeyByItem address can be recycled.
+    struct NodeIdentity
+    {
+        ObjectAddress Address{ ObjectAddress::Null };
+        winrt::hstring Identity;
+    };
+
+    // Source order. Keeps addressed rows alive so their identities cannot be recycled.
     std::vector<winrt::IInspectable> Rows;
-    // Object (identity) keys, held for the structure's lifetime. Node keys persist as expansion
-    // intent and selection anchors until the next structure prunes them; holding the objects
-    // means no new key can take a still-referenced address in the meantime.
+    // Object (identity) keys, held for the structure's lifetime so no new key can take an address
+    // still referenced by NodeKeys/IndexByKey.
     std::vector<winrt::IInspectable> KeyObjects;
-    // Canonical object address -> nodeKey, for every row.
-    std::unordered_map<ObjectAddress, std::wstring> KeyByItem;
-    // nodeKey -> position in Rows. Keys view KeyByItem's values (node-based, so they stay put).
+    // Index-aligned with Rows; independent of app keys used to resolve parent links.
+    std::vector<NodeIdentity> RowIdentities;
+    std::unordered_map<ObjectAddress, size_t> IndexByAddress;
+    // App-key snapshots for parent resolution and structure-reuse checks, not row identity.
+    std::vector<std::wstring> NodeKeys;
+    // nodeKey -> position in Rows. Keys view NodeKeys, which is sized once before population.
     std::unordered_map<std::wstring_view, size_t> IndexByKey;
-    // Per row: key (into KeyByItem), parent position or Root, children in source order.
-    std::vector<std::wstring const*> NodeKeys;
+    // Per row: parent position or Root, children in source order.
     std::vector<size_t> ParentIndex;
     std::vector<std::vector<size_t>> ChildIndices;
     std::vector<size_t> RootIndices;
@@ -40,14 +47,15 @@ struct ParentKeyIndex
 {
     // Items are in sorted order within every sibling list.
     std::vector<winrt::IInspectable> Roots;
-    // parent nodeKey -> children. Keys view strings owned by Structure.
-    std::unordered_map<std::wstring_view, std::vector<winrt::IInspectable>> Children;
-    std::unordered_set<std::wstring> ContextKeys; // kept only because a descendant matched the filter
-    // Owns the keys all lookups resolve against; its key set is complete and unfiltered.
+    // Parent object address -> children.
+    std::unordered_map<ObjectAddress, std::vector<winrt::IInspectable>> Children;
+    std::unordered_set<winrt::hstring> ContextIdentities; // kept only because a descendant matched the filter
+    // Owns the complete, unfiltered node identities and app-key snapshots.
     std::shared_ptr<const ParentStructure> Structure;
 
-    const std::vector<winrt::IInspectable>* TryGetChildren(std::wstring_view nodeKey) const;
-    std::wstring const* TryGetKey(winrt::IInspectable const& item) const;
+    const std::vector<winrt::IInspectable>* TryGetChildren(ObjectAddress address) const;
+    ParentStructure::NodeIdentity const* TryGetNodeForItem(winrt::IInspectable const& item) const;
+    ParentStructure::NodeIdentity const* TryGetNodeForIdentity(winrt::hstring const& identity) const;
 };
 
 using ParentKeyFilter = std::function<bool(winrt::IInspectable const&)>;

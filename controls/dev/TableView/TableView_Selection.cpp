@@ -200,8 +200,8 @@ bool TableView::DrainPendingSelection()
         auto const pendingIdentity = m_pendingSelectedIdentity;
         ClearPendingSelection();
 
-        // Tree: re-anchor on node key first (app may have replaced the object); object identity is
-        // the fallback.
+        // Tree: use the object-identity index first, then scan for the same object.
+        // A replacement object with the same app key does not inherit selection.
         int32_t index = -1;
         if (!pendingIdentity.empty() && m_tableViewSourceRowMetadata &&
             m_tableViewSourceRowMetadata->IsHierarchicalSource())

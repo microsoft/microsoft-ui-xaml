@@ -15,9 +15,6 @@
 
 namespace
 {
-    // Every node key the index mints starts with this. A bare prefix is not a key.
-    constexpr std::wstring_view c_nodeKeyPrefix{ L"node:" };
-
     // Above this run length, one Rebuild + Reset beats per-row splice notifications.
     constexpr int32_t c_maxSpliceRows{ 64 };
 }
@@ -75,10 +72,9 @@ void HierarchicalSourceAdapter::RaiseProjectionChanged()
     }
 }
 
-bool HierarchicalSourceAdapter::IsNodeKey(winrt::hstring const& key)
+bool HierarchicalSourceAdapter::ContainsIdentity(winrt::hstring const& identity) const
 {
-    const std::wstring_view view{ key.c_str(), key.size() };
-    return view.size() > c_nodeKeyPrefix.size() && view.starts_with(c_nodeKeyPrefix);
+    return m_index && m_index->TryGetNodeForIdentity(identity);
 }
 
 // --- Index hand-off -------------------------------------------------------------------------------
@@ -95,9 +91,9 @@ void HierarchicalSourceAdapter::SetIndex(std::shared_ptr<const ShapingHelpers::P
     // A collapse override only means something on a row that is still a context row.
     if (m_index)
     {
-        std::erase_if(m_filterOverlayCollapsed, [this](winrt::hstring const& key)
+        std::erase_if(m_filterOverlayCollapsed, [this](winrt::hstring const& identity)
         {
-            return !m_index->ContextKeys.contains(std::wstring{ key });
+            return !m_index->ContextIdentities.contains(identity);
         });
     }
     else
@@ -107,17 +103,17 @@ void HierarchicalSourceAdapter::SetIndex(std::shared_ptr<const ShapingHelpers::P
 
     Rebuild();
 
-    // Pruned after publish, against the UNFILTERED key set, so intent for filtered-out rows survives.
+    // Pruned after publish, against UNFILTERED identities, so intent for filtered-out rows survives.
     if (m_index && m_index->Structure && m_prunedForStructure.lock() != m_index->Structure)
     {
         // Same structure means already pruned.
-        std::unordered_set<winrt::hstring> liveKeys;
-        liveKeys.reserve(m_index->Structure->KeyByItem.size());
-        for (auto const& [item, key] : m_index->Structure->KeyByItem)
+        std::unordered_set<winrt::hstring> liveIdentities;
+        liveIdentities.reserve(m_index->Structure->RowIdentities.size());
+        for (auto const& node : m_index->Structure->RowIdentities)
         {
-            liveKeys.emplace(winrt::hstring{ key });
+            liveIdentities.insert(node.Identity);
         }
-        m_expansion.RetainOnly(liveKeys);
+        m_expansion.RetainOnly(liveIdentities);
         m_prunedForStructure = m_index->Structure;
     }
 }
@@ -132,8 +128,8 @@ void HierarchicalSourceAdapter::ClearIndex()
     m_filterOverlayCollapsed.clear();
 
     // Descriptors kept: stale rows may stay bound until the projection swap.
-    m_indexByNodeKey.clear();
-    m_indexByNodeKeyValid = true;
+    m_indexByIdentity.clear();
+    m_indexByIdentityValid = true;
 }
 
 void HierarchicalSourceAdapter::ResetIntentQuietly()
@@ -150,7 +146,7 @@ void HierarchicalSourceAdapter::ResetFilterOverlay()
 
 // --- The one responsibility: materialize the visible rows ----------------------------------------
 
-bool HierarchicalSourceAdapter::EffectiveExpanded(winrt::hstring const& nodeKey, bool hasChildren, bool isContext) const
+bool HierarchicalSourceAdapter::EffectiveExpanded(winrt::hstring const& identity, bool hasChildren, bool isContext) const
 {
     if (!hasChildren)
     {
@@ -158,26 +154,26 @@ bool HierarchicalSourceAdapter::EffectiveExpanded(winrt::hstring const& nodeKey,
     }
 
     // Context rows follow the overlay only, so toggling them never writes intent.
-    return isContext ? !m_filterOverlayCollapsed.contains(nodeKey) : m_expansion.IsExpanded(nodeKey);
+    return isContext ? !m_filterOverlayCollapsed.contains(identity) : m_expansion.IsExpanded(identity);
 }
 
-bool HierarchicalSourceAdapter::EffectiveExpandedForKey(winrt::hstring const& nodeKey) const
+bool HierarchicalSourceAdapter::EffectiveExpandedForIdentity(winrt::hstring const& identity) const
 {
-    if (!m_index)
+    auto const* const node = m_index ? m_index->TryGetNodeForIdentity(identity) : nullptr;
+    if (!node)
     {
-        return m_expansion.IsExpanded(nodeKey);
+        return false;
     }
 
-    const std::wstring key{ nodeKey };
-    auto const* const children = m_index->TryGetChildren(key);
-    return EffectiveExpanded(nodeKey, children && !children->empty(), m_index->ContextKeys.contains(key));
+    auto const* const children = m_index->TryGetChildren(node->Address);
+    return EffectiveExpanded(identity, children && !children->empty(), m_index->ContextIdentities.contains(identity));
 }
 
 void HierarchicalSourceAdapter::EmitRange(
     std::vector<winrt::IInspectable> const& siblings,
     size_t begin,
     size_t end,
-    winrt::hstring const& parentKey,
+    winrt::hstring const& parentIdentity,
     int32_t depth,
     std::vector<winrt::IInspectable>& built,
     std::vector<NodeRow>& descriptors) const
@@ -193,12 +189,12 @@ void HierarchicalSourceAdapter::EmitRange(
         size_t Begin;
         size_t End;
         size_t Next;
-        winrt::hstring ParentKey;
+        winrt::hstring ParentIdentity;
         int32_t Depth;
     };
 
     std::vector<Frame> stack;
-    stack.push_back({ &siblings, begin, end, begin, parentKey, depth });
+    stack.push_back({ &siblings, begin, end, begin, parentIdentity, depth });
 
     while (!stack.empty())
     {
@@ -211,38 +207,39 @@ void HierarchicalSourceAdapter::EmitRange(
 
         const size_t i = frame.Next++;
         auto const& item = (*frame.Siblings)[i];
-        auto const* const key = m_index->TryGetKey(item);
-        if (!key)
+        auto const* const node = m_index->TryGetNodeForItem(item);
+        if (!node)
         {
-            // Every indexed item has a key; an unknown one cannot be addressed, so it is skipped.
+            // Every indexed item has an identity; an unknown one cannot be addressed.
             continue;
         }
 
-        auto const* const children = m_index->TryGetChildren(*key);
+        auto const* const children = m_index->TryGetChildren(node->Address);
 
         NodeRow row;
         row.Item = item;
-        row.NodeKey = winrt::hstring{ *key };
-        row.ParentKey = frame.ParentKey;
+        row.Address = node->Address;
+        row.Identity = node->Identity;
+        row.ParentIdentity = frame.ParentIdentity;
         row.Depth = frame.Depth;
         row.ChildCount = children ? static_cast<int32_t>(children->size()) : 0;
         row.SiblingIndex = static_cast<int32_t>(i - frame.Begin + 1);
         row.SiblingCount = static_cast<int32_t>(frame.End - frame.Begin);
         row.HasChildren = row.ChildCount > 0;
-        row.IsContext = m_index->ContextKeys.contains(*key);
-        row.IsExpanded = EffectiveExpanded(row.NodeKey, row.HasChildren, row.IsContext);
+        row.IsContext = m_index->ContextIdentities.contains(row.Identity);
+        row.IsExpanded = EffectiveExpanded(row.Identity, row.HasChildren, row.IsContext);
 
         // Captured before the push below, which may reallocate the stack and invalidate `frame`.
         const int32_t childDepth = frame.Depth + 1;
         const bool descend = row.IsExpanded;
-        auto nodeKey = row.NodeKey;
+        auto identity = row.Identity;
 
         built.push_back(item);
         descriptors.push_back(std::move(row));
 
         if (descend)
         {
-            stack.push_back({ children, 0, children->size(), 0, std::move(nodeKey), childDepth });
+            stack.push_back({ children, 0, children->size(), 0, std::move(identity), childDepth });
         }
     }
 }
@@ -302,18 +299,17 @@ void HierarchicalSourceAdapter::Rebuild()
         }
 
         // Built into a local so a failure cannot publish a partial map.
-        std::unordered_map<winrt::hstring, int32_t> indexByNodeKey;
-        indexByNodeKey.reserve(descriptors.size());
+        std::unordered_map<winrt::hstring, int32_t> indexByIdentity;
+        indexByIdentity.reserve(descriptors.size());
         for (size_t i = 0; i < descriptors.size(); ++i)
         {
-            indexByNodeKey.emplace(descriptors[i].NodeKey, static_cast<int32_t>(i));
+            indexByIdentity.emplace(descriptors[i].Identity, static_cast<int32_t>(i));
         }
 
         // Publish metadata before the Reset so synchronous handlers see agreeing state. Moves; no-throw.
         auto previousDescriptors = std::exchange(m_descriptors, std::move(descriptors));
-        auto previousIndex = std::exchange(m_indexByNodeKey, std::move(indexByNodeKey));
-        const bool previousIndexValid = std::exchange(m_indexByNodeKeyValid, true);
-        m_indexByItemValid = false;
+        auto previousIndex = std::exchange(m_indexByIdentity, std::move(indexByIdentity));
+        const bool previousIndexValid = std::exchange(m_indexByIdentityValid, true);
 
         // Roll back metadata only if ReplaceAll's assignment threw (old rows still published, detected
         // by row count). A throw from a Reset handler happens after the new rows are live; keep them.
@@ -326,9 +322,8 @@ void HierarchicalSourceAdapter::Rebuild()
             }
 
             m_descriptors = std::move(previousDescriptors);
-            m_indexByNodeKey = std::move(previousIndex);
-            m_indexByNodeKeyValid = previousIndexValid;
-            m_indexByItemValid = false;
+            m_indexByIdentity = std::move(previousIndex);
+            m_indexByIdentityValid = previousIndexValid;
         });
 
         m_entries.ReplaceAll(built);
@@ -349,12 +344,17 @@ void HierarchicalSourceAdapter::Rebuild()
 
 // --- Expansion -----------------------------------------------------------------------------------
 
-bool HierarchicalSourceAdapter::IsNodeExpanded(winrt::hstring const& nodeKey) const
+bool HierarchicalSourceAdapter::IsNodeExpanded(winrt::hstring const& identity) const
 {
+    if (!ContainsIdentity(identity))
+    {
+        return false;
+    }
+
     // Answer the presented state (incl. overlay), so toggling an overlay-expanded context row
     // collapses it rather than no-op expanding.
     int32_t index = -1;
-    if (TryGetIndexForNodeKey(nodeKey, index))
+    if (TryGetIndexForIdentity(identity, index))
     {
         if (auto const* const row = TryGetNodeRow(index))
         {
@@ -363,14 +363,14 @@ bool HierarchicalSourceAdapter::IsNodeExpanded(winrt::hstring const& nodeKey) co
     }
 
     // Not visible: context rows answer from the overlay, others from intent.
-    if (m_index && m_index->ContextKeys.contains(std::wstring{ nodeKey }))
+    if (m_index->ContextIdentities.contains(identity))
     {
-        return EffectiveExpandedForKey(nodeKey);
+        return EffectiveExpandedForIdentity(identity);
     }
-    return m_expansion.IsExpanded(nodeKey);
+    return m_expansion.IsExpanded(identity);
 }
 
-void HierarchicalSourceAdapter::SetNodeExpanded(winrt::hstring const& nodeKey, bool isExpanded)
+void HierarchicalSourceAdapter::SetNodeExpanded(winrt::hstring const& identity, bool isExpanded)
 {
     auto const keepAlive = shared_from_this();
 
@@ -380,7 +380,7 @@ void HierarchicalSourceAdapter::SetNodeExpanded(winrt::hstring const& nodeKey, b
     }
 
     int32_t index = -1;
-    if (!TryGetIndexForNodeKey(nodeKey, index))
+    if (!TryGetIndexForIdentity(identity, index))
     {
         return;
     }
@@ -398,30 +398,30 @@ void HierarchicalSourceAdapter::SetNodeExpanded(winrt::hstring const& nodeKey, b
         // Overlay-only for context rows; discarded when the filter changes.
         if (isExpanded)
         {
-            m_filterOverlayCollapsed.erase(nodeKey);
+            m_filterOverlayCollapsed.erase(identity);
         }
         else
         {
-            m_filterOverlayCollapsed.insert(nodeKey);
+            m_filterOverlayCollapsed.insert(identity);
         }
 
-        const bool after = EffectiveExpanded(nodeKey, true, true);
+        const bool after = EffectiveExpanded(identity, true, true);
         if (before != after)
         {
-            ApplySingleToggle(nodeKey, after);
+            ApplySingleToggle(identity, after);
         }
         return;
     }
 
-    if (m_expansion.IsExpanded(nodeKey) != isExpanded)
+    if (m_expansion.IsExpanded(identity) != isExpanded)
     {
         // Through the model, so its Changed notification drives ApplySingleToggle.
-        m_expansion.SetExpanded(nodeKey, isExpanded);
+        m_expansion.SetExpanded(identity, isExpanded);
     }
     else if (before != isExpanded)
     {
         // Intent agrees but presented state does not (earlier materialization never landed); reconcile.
-        ApplySingleToggle(nodeKey, isExpanded);
+        ApplySingleToggle(identity, isExpanded);
     }
 }
 
@@ -450,9 +450,9 @@ void HierarchicalSourceAdapter::CollapseAll()
     bool overlayChanged = false;
     if (m_index)
     {
-        for (auto const& key : m_index->ContextKeys)
+        for (auto const& identity : m_index->ContextIdentities)
         {
-            overlayChanged |= m_filterOverlayCollapsed.emplace(winrt::hstring{ key }).second;
+            overlayChanged |= m_filterOverlayCollapsed.insert(identity).second;
         }
     }
 
@@ -462,11 +462,11 @@ void HierarchicalSourceAdapter::CollapseAll()
     }
 }
 
-void HierarchicalSourceAdapter::ExpandSubtree(winrt::hstring const& nodeKey)
+void HierarchicalSourceAdapter::ExpandSubtree(winrt::hstring const& identity)
 {
     auto const keepAlive = shared_from_this();
 
-    if (!m_index || !IsNodeKey(nodeKey))
+    if (!ContainsIdentity(identity))
     {
         return;
     }
@@ -474,34 +474,38 @@ void HierarchicalSourceAdapter::ExpandSubtree(winrt::hstring const& nodeKey)
     bool overlayChanged = false;
     const bool changed = MutateExpansionQuietly([&]()
     {
-        std::vector<std::wstring> pending{ std::wstring{ nodeKey } };
+        std::vector<winrt::hstring> pending{ identity };
         while (!pending.empty())
         {
-            const std::wstring key = std::move(pending.back());
+            auto const currentIdentity = std::move(pending.back());
             pending.pop_back();
 
-            auto const* const children = m_index->TryGetChildren(key);
+            auto const* const node = m_index->TryGetNodeForIdentity(currentIdentity);
+            if (!node)
+            {
+                continue;
+            }
+            auto const* const children = m_index->TryGetChildren(node->Address);
             if (!children || children->empty())
             {
                 continue;
             }
 
-            const winrt::hstring hkey{ key };
-            if (m_index->ContextKeys.contains(key))
+            if (m_index->ContextIdentities.contains(currentIdentity))
             {
                 // A context row is presented from the overlay alone; expanding it writes no intent.
-                overlayChanged |= m_filterOverlayCollapsed.erase(hkey) > 0;
+                overlayChanged |= m_filterOverlayCollapsed.erase(currentIdentity) > 0;
             }
             else
             {
-                m_expansion.SetExpanded(hkey, true);
+                m_expansion.SetExpanded(currentIdentity, true);
             }
 
             for (auto const& child : *children)
             {
-                if (auto const* const childKey = m_index->TryGetKey(child))
+                if (auto const* const childNode = m_index->TryGetNodeForItem(child))
                 {
-                    pending.push_back(*childKey);
+                    pending.push_back(childNode->Identity);
                 }
             }
         }
@@ -525,10 +529,10 @@ void HierarchicalSourceAdapter::OnExpansionChanged(ShapingHelpers::RowExpansionM
     }
 
     // Splice to the presented state; for context rows intent changes move nothing.
-    ApplySingleToggle(change.Keys.front(), EffectiveExpandedForKey(change.Keys.front()));
+    ApplySingleToggle(change.Keys.front(), EffectiveExpandedForIdentity(change.Keys.front()));
 }
 
-void HierarchicalSourceAdapter::ApplySingleToggle(winrt::hstring const& nodeKey, bool isExpanded)
+void HierarchicalSourceAdapter::ApplySingleToggle(winrt::hstring const& identity, bool isExpanded)
 {
     AssertRebuildOnUiThread();
 
@@ -551,7 +555,7 @@ void HierarchicalSourceAdapter::ApplySingleToggle(winrt::hstring const& nodeKey,
             m_pendingRebuild = false;
         });
 
-        applied = TryApplyExpansionSplice(nodeKey, isExpanded);
+        applied = TryApplyExpansionSplice(identity, isExpanded);
     }
 
     // Re-entrant or unresolved: one Rebuild after unwind (no-op once detached).
@@ -561,7 +565,7 @@ void HierarchicalSourceAdapter::ApplySingleToggle(winrt::hstring const& nodeKey,
     }
 }
 
-bool HierarchicalSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& nodeKey, bool expand)
+bool HierarchicalSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& identity, bool expand)
 {
     // Structures must already agree or a ranged splice would corrupt the pairing.
     if (!m_index || m_descriptors.size() != static_cast<size_t>(m_entries.Size()))
@@ -570,7 +574,7 @@ bool HierarchicalSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& no
     }
 
     int32_t index = -1;
-    if (!TryGetIndexForNodeKey(nodeKey, index) || index < 0 || static_cast<size_t>(index) >= m_descriptors.size())
+    if (!TryGetIndexForIdentity(identity, index) || index < 0 || static_cast<size_t>(index) >= m_descriptors.size())
     {
         // Not visible (behind a collapsed ancestor); Rebuild reconciles.
         return false;
@@ -609,7 +613,7 @@ bool HierarchicalSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& no
         return true;
     }
 
-    auto const* const children = m_index->TryGetChildren(std::wstring{ nodeKey });
+    auto const* const children = m_index->TryGetChildren(node.Address);
     if (!children || children->empty())
     {
         return false;
@@ -618,7 +622,7 @@ bool HierarchicalSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& no
     // Expand: emit the subtree from the index (honouring nested intent), then insert.
     std::vector<winrt::IInspectable> built;
     std::vector<NodeRow> descriptors;
-    EmitRange(*children, 0, children->size(), nodeKey, nodeDepth + 1, built, descriptors);
+    EmitRange(*children, 0, children->size(), identity, nodeDepth + 1, built, descriptors);
 
     if (built.size() > static_cast<size_t>(c_maxSpliceRows))
     {
@@ -649,13 +653,12 @@ void HierarchicalSourceAdapter::InsertRows(
     }
 
     // One row at a time, descriptor before its row: InsertAt notifies synchronously and handlers
-    // read descriptors by index. The node-key map is invalidated and rebuilt lazily.
+    // read descriptors by index. The identity map is invalidated and rebuilt lazily.
     uint32_t insertAt = static_cast<uint32_t>(index);
     for (size_t i = 0; i < items.size() && !m_detached; ++i)
     {
         m_descriptors.insert(m_descriptors.begin() + insertAt, descriptors[i]);
-        m_indexByNodeKeyValid = false;
-        m_indexByItemValid = false;
+        m_indexByIdentityValid = false;
         m_entries.InsertAt(insertAt++, items[i]);
     }
 }
@@ -672,8 +675,7 @@ void HierarchicalSourceAdapter::RemoveRows(int32_t index, int32_t count)
     for (int32_t i = index + count - 1; i >= index && !m_detached; --i)
     {
         m_descriptors.erase(m_descriptors.begin() + i);
-        m_indexByNodeKeyValid = false;
-        m_indexByItemValid = false;
+        m_indexByIdentityValid = false;
         m_entries.RemoveAt(static_cast<uint32_t>(i));
     }
 }
@@ -692,22 +694,19 @@ HierarchicalSourceAdapter::NodeRow const* HierarchicalSourceAdapter::TryGetNodeR
 
 HierarchicalSourceAdapter::NodeRow const* HierarchicalSourceAdapter::TryGetNodeRowForItem(winrt::IInspectable const& item) const
 {
-    if (!item)
+    if (!m_index || !item)
     {
         return nullptr;
     }
 
-    EnsureItemIndex();
-
-    const auto found = m_indexByItem.find(ShapingHelpers::GetObjectAddress(item));
-    if (found == m_indexByItem.end() ||
-        found->second < 0 ||
-        static_cast<size_t>(found->second) >= m_descriptors.size())
+    auto const* const node = m_index->TryGetNodeForItem(item);
+    int32_t index = -1;
+    if (!node || !TryGetIndexForIdentity(node->Identity, index))
     {
         return nullptr;
     }
 
-    return &m_descriptors[static_cast<size_t>(found->second)];
+    return TryGetNodeRow(index);
 }
 
 bool HierarchicalSourceAdapter::IndexContainsItem(winrt::IInspectable const& item) const
@@ -718,14 +717,14 @@ bool HierarchicalSourceAdapter::IndexContainsItem(winrt::IInspectable const& ite
     }
 
     auto const& structure = *m_index->Structure;
-    auto const* const key = m_index->TryGetKey(item);
-    if (!key)
+    auto const* const node = m_index->TryGetNodeForItem(item);
+    if (!node)
     {
         return false;
     }
 
-    const auto position = structure.IndexByKey.find(*key);
-    if (position == structure.IndexByKey.end())
+    const auto position = structure.IndexByAddress.find(node->Address);
+    if (position == structure.IndexByAddress.end())
     {
         return false;
     }
@@ -735,69 +734,48 @@ bool HierarchicalSourceAdapter::IndexContainsItem(winrt::IInspectable const& ite
     std::vector<winrt::IInspectable> const* siblings = &m_index->Roots;
     if (parent != ShapingHelpers::ParentStructure::Root)
     {
-        siblings = m_index->TryGetChildren(*structure.NodeKeys[parent]);
+        siblings = m_index->TryGetChildren(structure.RowIdentities[parent].Address);
         if (!siblings)
         {
             return false;
         }
     }
 
-    auto const* const target = winrt::get_abi(structure.Rows[position->second]);
+    auto const target = node->Address;
     return std::any_of(siblings->begin(), siblings->end(),
-        [target](winrt::IInspectable const& sibling) { return winrt::get_abi(sibling) == target; });
+        [target](winrt::IInspectable const& sibling) { return ShapingHelpers::GetObjectAddress(sibling) == target; });
 }
 
-void HierarchicalSourceAdapter::EnsureItemIndex() const
+void HierarchicalSourceAdapter::EnsureIdentityIndex() const
 {
-    if (m_indexByItemValid)
+    if (m_indexByIdentityValid)
     {
         return;
     }
 
-    m_indexByItem.clear();
-    m_indexByItem.reserve(m_descriptors.size());
+    m_indexByIdentity.clear();
+    m_indexByIdentity.reserve(m_descriptors.size());
 
     for (size_t i = 0; i < m_descriptors.size(); ++i)
     {
-        if (auto const& descriptorItem = m_descriptors[i].Item)
-        {
-            m_indexByItem.emplace(ShapingHelpers::GetObjectAddress(descriptorItem), static_cast<int32_t>(i));
-        }
+        m_indexByIdentity.emplace(m_descriptors[i].Identity, static_cast<int32_t>(i));
     }
 
-    m_indexByItemValid = true;
+    m_indexByIdentityValid = true;
 }
 
-void HierarchicalSourceAdapter::EnsureNodeKeyIndex() const
-{
-    if (m_indexByNodeKeyValid)
-    {
-        return;
-    }
-
-    m_indexByNodeKey.clear();
-    m_indexByNodeKey.reserve(m_descriptors.size());
-
-    for (size_t i = 0; i < m_descriptors.size(); ++i)
-    {
-        m_indexByNodeKey.emplace(m_descriptors[i].NodeKey, static_cast<int32_t>(i));
-    }
-
-    m_indexByNodeKeyValid = true;
-}
-
-bool HierarchicalSourceAdapter::TryGetIndexForNodeKey(winrt::hstring const& nodeKey, int32_t& index) const
+bool HierarchicalSourceAdapter::TryGetIndexForIdentity(winrt::hstring const& identity, int32_t& index) const
 {
     index = -1;
-    if (nodeKey.empty())
+    if (identity.empty())
     {
         return false;
     }
 
-    EnsureNodeKeyIndex();
+    EnsureIdentityIndex();
 
-    const auto found = m_indexByNodeKey.find(nodeKey);
-    if (found == m_indexByNodeKey.end())
+    const auto found = m_indexByIdentity.find(identity);
+    if (found == m_indexByIdentity.end())
     {
         return false;
     }

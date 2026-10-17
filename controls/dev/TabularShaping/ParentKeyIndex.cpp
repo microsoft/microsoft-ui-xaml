@@ -154,20 +154,36 @@ bool IsObjectNodeKey(std::wstring_view nodeKey) noexcept
     return nodeKey.starts_with(c_objectNodeKeyPrefix);
 }
 
-const std::vector<winrt::IInspectable>* ParentKeyIndex::TryGetChildren(std::wstring_view nodeKey) const
+const std::vector<winrt::IInspectable>* ParentKeyIndex::TryGetChildren(ObjectAddress address) const
 {
-    auto it = Children.find(nodeKey);
+    auto it = Children.find(address);
     return it == Children.end() ? nullptr : &it->second;
 }
 
-std::wstring const* ParentKeyIndex::TryGetKey(winrt::IInspectable const& item) const
+ParentStructure::NodeIdentity const* ParentKeyIndex::TryGetNodeForItem(winrt::IInspectable const& item) const
 {
     if (!Structure)
     {
         return nullptr;
     }
-    auto it = Structure->KeyByItem.find(GetObjectAddress(item));
-    return it == Structure->KeyByItem.end() ? nullptr : &it->second;
+    auto const it = Structure->IndexByAddress.find(GetObjectAddress(item));
+    return it == Structure->IndexByAddress.end() ? nullptr : &Structure->RowIdentities[it->second];
+}
+
+ParentStructure::NodeIdentity const* ParentKeyIndex::TryGetNodeForIdentity(winrt::hstring const& identity) const
+{
+    ObjectAddress address;
+    if (!Structure || !TryParseObjectAddress(std::wstring_view{ identity }, address))
+    {
+        return nullptr;
+    }
+    auto const it = Structure->IndexByAddress.find(address);
+    if (it == Structure->IndexByAddress.end())
+    {
+        return nullptr;
+    }
+    auto const& node = Structure->RowIdentities[it->second];
+    return node.Identity == identity ? &node : nullptr;
 }
 
 bool BuildParentStructure(
@@ -182,9 +198,10 @@ bool BuildParentStructure(
 
     ParentStructure result;
     result.Rows = rows;
-    result.KeyByItem.reserve(n);
+    result.RowIdentities.reserve(n);
+    result.IndexByAddress.reserve(n);
     result.IndexByKey.reserve(n);
-    result.NodeKeys.resize(n, nullptr);
+    result.NodeKeys.resize(n);
     result.ParentIndex.assign(n, c_root);
     result.ChildIndices.resize(n);
 
@@ -219,15 +236,21 @@ bool BuildParentStructure(
                 + L".";
             return false;
         }
-        // The same object on two rows yields the same key, so it is reported as a duplicate below.
-        auto const [entry, inserted] = result.KeyByItem.emplace(GetObjectAddress(rows[i]), std::move(nodeKey));
-        std::wstring const& stored = entry->second;
-        if (!inserted || !indexByKey.emplace(stored, i).second)
+        // Duplicate object addresses and app keys are both rejected.
+        auto const address = GetObjectAddress(rows[i]);
+        if (address == ObjectAddress::Null)
+        {
+            error = L"ParentBy: item has no object identity.";
+            return false;
+        }
+        result.NodeKeys[i] = std::move(nodeKey);
+        std::wstring const& stored = result.NodeKeys[i];
+        if (!result.IndexByAddress.emplace(address, i).second || !indexByKey.emplace(stored, i).second)
         {
             error = L"ParentBy: duplicate key '" + DescribeNodeKey(stored) + L"'.";
             return false;
         }
-        result.NodeKeys[i] = &stored;
+        result.RowIdentities.push_back({ address, FormatObjectAddress(address) });
     }
 
     // Pass 2: resolve parents; self-parent is an error, unknown parent = orphan root.
@@ -237,9 +260,9 @@ bool BuildParentStructure(
         auto parentKey = MakeNodeKey(parentKeyValue);
         keepAlive.push_back(std::move(parentKeyValue));
         if (parentKey.empty()) continue;
-        if (parentKey == *result.NodeKeys[i])
+        if (parentKey == result.NodeKeys[i])
         {
-            error = L"ParentBy: item with key '" + DescribeNodeKey(*result.NodeKeys[i]) + L"' is its own parent.";
+            error = L"ParentBy: item with key '" + DescribeNodeKey(result.NodeKeys[i]) + L"' is its own parent.";
             return false;
         }
         if (auto it = indexByKey.find(parentKey); it != indexByKey.end())
@@ -282,7 +305,7 @@ bool BuildParentStructure(
                     onPath[p] = true;
                     p = result.ParentIndex[p];
                 }
-                error = L"ParentBy: cycle detected involving key '" + DescribeNodeKey(*result.NodeKeys[p]) + L"'.";
+                error = L"ParentBy: cycle detected involving key '" + DescribeNodeKey(result.NodeKeys[p]) + L"'.";
                 return false;
             }
         }
@@ -303,7 +326,7 @@ bool ParentStructureStillMatches(
     for (size_t i = 0; i < s.Rows.size(); ++i)
     {
         auto const nodeKey = MakeNodeKey(SafeSelect(keySelector, s.Rows[i]));
-        if (nodeKey.empty() || IsObjectNodeKey(nodeKey) || nodeKey != *s.NodeKeys[i])
+        if (nodeKey.empty() || IsObjectNodeKey(nodeKey) || nodeKey != s.NodeKeys[i])
         {
             return false;
         }
@@ -363,12 +386,12 @@ void BuildParentKeyIndex(
     for (size_t i = 0; i < n; ++i)
     {
         if (!state[i]) continue;
-        if (state[i] == 2) result.ContextKeys.insert(*s.NodeKeys[i]);
+        if (state[i] == 2) result.ContextIdentities.insert(s.RowIdentities[i].Identity);
         std::vector<winrt::IInspectable> kids;
         for (size_t c : s.ChildIndices[i]) if (state[c]) kids.push_back(s.Rows[c]);
         if (kids.empty()) continue;
         if (sort && kids.size() > 1) sort(kids);
-        result.Children.emplace(std::wstring_view{ *s.NodeKeys[i] }, std::move(kids));
+        result.Children.emplace(s.RowIdentities[i].Address, std::move(kids));
     }
     result.Structure = structure;
     out = std::move(result);

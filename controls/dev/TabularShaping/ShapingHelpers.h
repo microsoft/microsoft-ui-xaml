@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstdint>
 #include <functional>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -23,6 +24,9 @@ namespace ShapingHelpers
     enum class ObjectAddress : uintptr_t { Null = 0 };
 
     ObjectAddress GetObjectAddress(winrt::IInspectable const& item) noexcept;
+    winrt::hstring FormatObjectAddress(ObjectAddress address);
+    // Accepts only the canonical lowercase, unpadded form produced by FormatObjectAddress.
+    bool TryParseObjectAddress(std::wstring_view identity, ObjectAddress& address) noexcept;
 
     // A group object that already knows its own stable identity.
     //

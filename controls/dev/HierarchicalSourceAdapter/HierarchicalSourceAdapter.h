@@ -32,7 +32,7 @@ public:
     // Created once over m_entries, whose identity is stable for the adapter's lifetime.
     winrt::ItemsSourceView Entries() const { return m_entriesView; }
 
-    // Publishes a projection over `index`, then prunes intent to keys in the UNFILTERED source.
+    // Publishes a projection over `index`, then prunes intent to identities in the UNFILTERED source.
     // `rootSegments` splits index->Roots into per-group-bucket runs; empty means one segment.
     void SetIndex(std::shared_ptr<const ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments);
 
@@ -51,25 +51,26 @@ public:
     // and once per spliced row.
     void ProjectionChanged(std::function<void()> fn);
 
-    // Addressed by node key ("node:" + app key lookup form). SetNodeExpanded on a context row
+    // Addressed by object identity ("0x..."). SetNodeExpanded on a context row
     // moves only the filter overlay, never intent.
-    bool IsNodeExpanded(winrt::hstring const& nodeKey) const;
-    void SetNodeExpanded(winrt::hstring const& nodeKey, bool isExpanded);
+    bool IsNodeExpanded(winrt::hstring const& identity) const;
+    void SetNodeExpanded(winrt::hstring const& identity, bool isExpanded);
 
     // Move the model's baseline, so not-yet-existing nodes inherit it. One Reset, no splice.
     void ExpandAll();
     void CollapseAll();
 
-    // Expands `nodeKey` and all descendants (context rows via overlay), then publishes once.
-    void ExpandSubtree(winrt::hstring const& nodeKey);
+    // Expands `identity` and all descendants (context rows via overlay), then publishes once.
+    void ExpandSubtree(winrt::hstring const& identity);
 
     // Row metadata, index-aligned 1:1 with the visible rows.
     struct NodeRow
     {
         winrt::IInspectable Item{ nullptr };
-        winrt::hstring NodeKey;
-        // Node key of the parent row; empty for roots.
-        winrt::hstring ParentKey;
+        ShapingHelpers::ObjectAddress Address{ ShapingHelpers::ObjectAddress::Null };
+        winrt::hstring Identity;
+        // Object identity of the parent row; empty for roots.
+        winrt::hstring ParentIdentity;
 
         // 0-based (roots render flush); TableViewRowInfo::Level is Depth + 1.
         int32_t Depth{ 0 };
@@ -89,7 +90,7 @@ public:
     };
 
     NodeRow const* TryGetNodeRow(int32_t index) const;
-    bool TryGetIndexForNodeKey(winrt::hstring const& nodeKey, int32_t& index) const;
+    bool TryGetIndexForIdentity(winrt::hstring const& identity, int32_t& index) const;
 
     // Lookup by item, for grouped hierarchies where presented indices include header rows. Sound
     // because an item occupies at most one row. Null if not visible.
@@ -99,8 +100,8 @@ public:
     bool IndexContainsItem(winrt::IInspectable const& item) const;
     bool HasIndex() const noexcept { return m_index != nullptr; }
 
-    // Positive prefix test, so a stale or foreign key cannot become node intent.
-    static bool IsNodeKey(winrt::hstring const& key);
+    // Includes filtered-out nodes, but rejects identities outside the current source.
+    bool ContainsIdentity(winrt::hstring const& identity) const;
 
 private:
     void Rebuild();
@@ -109,27 +110,27 @@ private:
     void OnExpansionChanged(ShapingHelpers::RowExpansionModel::Change const& change);
 
     // Splice when possible, Rebuild otherwise. Coalesces with an in-flight rebuild.
-    void ApplySingleToggle(winrt::hstring const& nodeKey, bool isExpanded);
+    void ApplySingleToggle(winrt::hstring const& identity, bool isExpanded);
 
     // Context rows follow the filter overlay; all others follow persistent intent.
-    bool EffectiveExpanded(winrt::hstring const& nodeKey, bool hasChildren, bool isContext) const;
+    bool EffectiveExpanded(winrt::hstring const& identity, bool hasChildren, bool isContext) const;
 
-    bool EffectiveExpandedForKey(winrt::hstring const& nodeKey) const;
+    bool EffectiveExpandedForIdentity(winrt::hstring const& identity) const;
 
     // Explicit stack, not recursion, so depth is unbounded.
     void EmitRange(
         std::vector<winrt::IInspectable> const& siblings,
         size_t begin,
         size_t end,
-        winrt::hstring const& parentKey,
+        winrt::hstring const& parentIdentity,
         int32_t depth,
         std::vector<winrt::IInspectable>& built,
         std::vector<NodeRow>& descriptors) const;
 
     // Splices one node's visible subtree (the contiguous run of deeper rows after it) in or out.
-    // Returns false, so the caller rebuilds, if the key does not resolve, descriptor/entry counts
+    // Returns false, so the caller rebuilds, if the identity does not resolve, descriptor/entry counts
     // disagree, or the run exceeds c_maxSpliceRows.
-    bool TryApplyExpansionSplice(winrt::hstring const& nodeKey, bool expand);
+    bool TryApplyExpansionSplice(winrt::hstring const& identity, bool expand);
 
     // Entries, descriptors and index maps are only correct as a set; mutate only through these.
     void InsertRows(int32_t index, std::vector<winrt::IInspectable> const& items, std::vector<NodeRow> const& descriptors);
@@ -137,8 +138,7 @@ private:
 
     void RaiseProjectionChanged();
 
-    void EnsureItemIndex() const;
-    void EnsureNodeKeyIndex() const;
+    void EnsureIdentityIndex() const;
 
     // Mutates expansion without Changed driving a splice/rebuild; returns whether anything changed.
     template <typename Fn>
@@ -163,13 +163,9 @@ private:
     // Index-aligned 1:1 with m_entries.
     std::vector<NodeRow> m_descriptors;
 
-    // Lazy caches over m_descriptors: invalidated by mutations, rebuilt in one O(V) pass on lookup.
-    mutable std::unordered_map<winrt::hstring, int32_t> m_indexByNodeKey;
-    mutable bool m_indexByNodeKeyValid{ true };
-
-    // Canonical object address -> index; the item is the only handle shared with the grouped axis.
-    mutable std::unordered_map<ShapingHelpers::ObjectAddress, int32_t> m_indexByItem;
-    mutable bool m_indexByItemValid{ false };
+    // Lazy cache over m_descriptors: invalidated by mutations, rebuilt in one O(V) pass on lookup.
+    mutable std::unordered_map<winrt::hstring, int32_t> m_indexByIdentity;
+    mutable bool m_indexByIdentityValid{ true };
 
     ShapingHelpers::RowExpansionModel m_expansion;
 

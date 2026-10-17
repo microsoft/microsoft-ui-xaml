@@ -44,9 +44,7 @@ namespace RowIdentity
 
     winrt::hstring FormatObjectIdentity(ShapingHelpers::ObjectAddress address)
     {
-        wchar_t buffer[2 + (sizeof(uintptr_t) * 2) + 1]{};
-        swprintf_s(buffer, L"0x%zx", static_cast<size_t>(address));
-        return winrt::hstring{ buffer };
+        return ShapingHelpers::FormatObjectAddress(address);
     }
 
     ShapingHelpers::KeySelector MakeObjectIdentitySelector()

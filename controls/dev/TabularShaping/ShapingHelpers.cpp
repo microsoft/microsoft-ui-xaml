@@ -27,6 +27,45 @@ namespace ShapingHelpers
         return static_cast<ObjectAddress>(reinterpret_cast<uintptr_t>(unknown.get()));
     }
 
+    winrt::hstring FormatObjectAddress(ObjectAddress address)
+    {
+        wchar_t buffer[2 + (sizeof(uintptr_t) * 2) + 1]{};
+        swprintf_s(buffer, L"0x%zx", static_cast<size_t>(address));
+        return winrt::hstring{ buffer };
+    }
+
+    bool TryParseObjectAddress(std::wstring_view identity, ObjectAddress& address) noexcept
+    {
+        address = ObjectAddress::Null;
+        if (identity.size() < 3 || identity.size() > 2 + sizeof(uintptr_t) * 2 ||
+            !identity.starts_with(L"0x") || (identity.size() > 3 && identity[2] == L'0'))
+        {
+            return false;
+        }
+
+        uintptr_t value = 0;
+        for (wchar_t ch : identity.substr(2))
+        {
+            uintptr_t digit;
+            if (ch >= L'0' && ch <= L'9')
+            {
+                digit = static_cast<uintptr_t>(ch - L'0');
+            }
+            else if (ch >= L'a' && ch <= L'f')
+            {
+                digit = static_cast<uintptr_t>(ch - L'a' + 10);
+            }
+            else
+            {
+                return false;
+            }
+            value = (value << 4) | digit;
+        }
+
+        address = static_cast<ObjectAddress>(value);
+        return true;
+    }
+
     namespace
     {
         enum class NumericKind { None, Signed, Unsigned, Floating };

@@ -687,8 +687,8 @@ private:
     // "restored".
     tracker_ref<winrt::IInspectable> m_stickySelectedItem{ this };
 
-    // Tree sources only: node key of m_stickySelectedItem, so a re-created row keeps selection
-    // across the Reset. Used only for Reset restore, never across a source swap.
+    // Tree sources only: object identity of m_stickySelectedItem for indexed Reset restore.
+    // A replacement object does not inherit selection, even when its app key matches.
     winrt::hstring m_stickySelectedIdentity;
     winrt::hstring m_pendingSelectedIdentity;
     winrt::hstring HierarchyIdentityForIndex(int32_t index) const;
