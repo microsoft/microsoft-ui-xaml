@@ -44,6 +44,10 @@ All events go out on a single TraceLogging provider, defined in
 - **GUID:** `{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D}`
 - **Class:** `XamlProfilerTracing` (derives from `TelemetryBase`), events declared
   with the `DEFINE_TRACELOGGING_EVENT_PARAMn` WIL macros (max `PARAM10`).
+- **Registration:** `XamlProfilerLogging` uses
+  `IMPLEMENT_TRACELOGGING_CLASS_WITHOUT_TELEMETRY`, so the provider is not part of
+  the Microsoft telemetry provider group; only a session that enables this
+  provider explicitly can turn it on.
 
 Because TraceLogging is **self-describing**, adding a field or a whole new event
 never changes the GUID and never breaks an older consumer — old consumers ignore

@@ -39,10 +39,17 @@ uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
 //
 // Provider GUID: {A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D}
 // Provider Name: "Microsoft-Windows-XAML-Profiler"
+//
+// This is a diagnostics-only provider, so it is registered WITHOUT the Microsoft telemetry
+// provider group (DECLARE_TRACELOGGING_CLASS would join it, letting telemetry sessions turn
+// the profiler on in every XAML process). Only a trace session that enables this provider
+// explicitly can turn it on.
 
-#pragma warning (suppress : 6387)
-DECLARE_TRACELOGGING_CLASS(XamlProfilerLogging, "Microsoft-Windows-XAML-Profiler",
-    (0xa1b2c3d4, 0xe5f6, 0x4a5b, 0x9c, 0x8d, 0x7e, 0x6f, 0x5a, 0x4b, 0x3c, 0x2d));
+class XamlProfilerLogging : public wil::TraceLoggingProvider
+{
+    #pragma warning (suppress : 6387)
+    IMPLEMENT_TRACELOGGING_CLASS_WITHOUT_TELEMETRY(XamlProfilerLogging, "Microsoft-Windows-XAML-Profiler", (0xa1b2c3d4, 0xe5f6, 0x4a5b, 0x9c, 0x8d, 0x7e, 0x6f, 0x5a, 0x4b, 0x3c, 0x2d));
+};
 
 class XamlProfilerTracing final : public TelemetryBase
 {
