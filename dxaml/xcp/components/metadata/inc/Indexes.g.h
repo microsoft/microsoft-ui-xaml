@@ -3202,6 +3202,7 @@ enum class KnownMethodIndex: UINT16
     UIElement_OnBringIntoViewRequested,
     UIElement_Focus,
     UIElement_RegisterAsScrollPort,
+    UIElement_InvalidateViewport,
     UIElement_StartAnimation,
     UIElement_StopAnimation,
     UIElement_PopulatePropertyInfoOverride,
