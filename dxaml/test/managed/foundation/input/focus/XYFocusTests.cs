@@ -1077,6 +1077,19 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
                 Verify.AreEqual(null, focusCandidate);
                 Verify.AreEqual(buttonA, FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
             });
+
+            TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
+            UIExecutor.Execute(() =>
+            {
+                rootPanel = null;
+                buttonA = null;
+                buttonB = null;
+                navigationOptions = null;
+                focusCandidate = null;
+            });
+            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+            GC.WaitForPendingFinalizers();
+            TestServices.WindowHelper.WaitForIdle();
         }
 
 

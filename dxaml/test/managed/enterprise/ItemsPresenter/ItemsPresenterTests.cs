@@ -141,60 +141,75 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "WPF")] // Reliability issue in WPF mode.
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanUseMouseWheelToNavigate()
         {
             ListView list = PrepareListView();
             ScrollViewer scrollViewer = null;
             double lastOffset = 0.0;
 
-            UIExecutor.Execute(() =>
+            try
             {
-                scrollViewer = list.FindElementOfTypeInSubtree<ScrollViewer>();
-                lastOffset = scrollViewer.VerticalOffset;
-            });
+                UIExecutor.Execute(() =>
+                {
+                    scrollViewer = list.FindElementOfTypeInSubtree<ScrollViewer>();
+                    lastOffset = scrollViewer.VerticalOffset;
+                });
 
-            Log.Comment("Invoke ItemsPresenter.MouseWheelDown()");
-            TestServices.InputHelper.ScrollMouseWheel(list, -10);
-            TestServices.WindowHelper.WaitForIdle();
-            UIExecutor.Execute(() =>
+                Log.Comment("Invoke ItemsPresenter.MouseWheelDown()");
+                TestServices.InputHelper.ScrollMouseWheel(list, -10);
+                TestServices.WindowHelper.WaitForIdle();
+                UIExecutor.Execute(() =>
+                {
+                    Verify.IsGreaterThan(scrollViewer.VerticalOffset, lastOffset); // logical offsets
+                    lastOffset = scrollViewer.VerticalOffset;
+                });
+
+                Log.Comment("Invoke ItemsPresenter.MouseWheelUp()");
+                TestServices.InputHelper.ScrollMouseWheel(list, 10);
+                TestServices.WindowHelper.WaitForIdle();
+                UIExecutor.Execute(() =>
+                {
+                    Verify.IsLessThan(scrollViewer.VerticalOffset, lastOffset);
+                });
+
+                list = PrepareListView(true /* isHorizontal */);
+
+                UIExecutor.Execute(() =>
+                {
+                    scrollViewer = list.FindElementOfTypeInSubtree<ScrollViewer>();
+                    lastOffset = scrollViewer.HorizontalOffset;
+                });
+
+                Log.Comment("Invoke ItemsPresenter.MouseWheelRight()");
+                TestServices.InputHelper.ScrollMouseWheel(list, -10);
+                TestServices.WindowHelper.WaitForIdle();
+                UIExecutor.Execute(() =>
+                {
+                    Verify.IsGreaterThan(scrollViewer.HorizontalOffset, lastOffset); // logical offsets
+                    lastOffset = scrollViewer.HorizontalOffset;
+                });
+
+                Log.Comment("Invoke ItemsPresenter.MouseWheelLeft()");
+                TestServices.InputHelper.ScrollMouseWheel(list, 10);
+                TestServices.WindowHelper.WaitForIdle();
+                UIExecutor.Execute(() =>
+                {
+                    Verify.IsLessThan(scrollViewer.HorizontalOffset, lastOffset);
+                });
+            }
+            finally
             {
-                Verify.IsGreaterThan(scrollViewer.VerticalOffset, lastOffset); // logical offsets
-                lastOffset = scrollViewer.VerticalOffset;
-            });
-
-            Log.Comment("Invoke ItemsPresenter.MouseWheelUp()");
-            TestServices.InputHelper.ScrollMouseWheel(list, 10);
-            TestServices.WindowHelper.WaitForIdle();
-            UIExecutor.Execute(() =>
-            {
-                Verify.IsLessThan(scrollViewer.VerticalOffset, lastOffset);
-            });
-
-            list = PrepareListView(true /* isHorizontal */);
-
-            UIExecutor.Execute(() =>
-            {
-                scrollViewer = list.FindElementOfTypeInSubtree<ScrollViewer>();
-                lastOffset = scrollViewer.HorizontalOffset;
-            });
-
-            Log.Comment("Invoke ItemsPresenter.MouseWheelRight()");
-            TestServices.InputHelper.ScrollMouseWheel(list, -10);
-            TestServices.WindowHelper.WaitForIdle();
-            UIExecutor.Execute(() =>
-            {
-                Verify.IsGreaterThan(scrollViewer.HorizontalOffset, lastOffset); // logical offsets
-                lastOffset = scrollViewer.HorizontalOffset;
-            });
-
-            Log.Comment("Invoke ItemsPresenter.MouseWheelLeft()");
-            TestServices.InputHelper.ScrollMouseWheel(list, 10);
-            TestServices.WindowHelper.WaitForIdle();
-            UIExecutor.Execute(() =>
-            {
-                Verify.IsLessThan(scrollViewer.HorizontalOffset, lastOffset);
-            });
+                TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
+                UIExecutor.Execute(() =>
+                {
+                    list = null;
+                    scrollViewer = null;
+                });
+                GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+                GC.WaitForPendingFinalizers();
+                TestServices.WindowHelper.WaitForIdle();
+            }
         }
 
         [TestMethod]

@@ -186,7 +186,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies VerticalOffset grows to max value when inserting an item at the end (VerticalAnchorRatio=1).")]
-        [TestProperty("Hosting:Mode", "WPF")] // Reliability issue in WPF mode.
+        [TestProperty("Hosting:Mode", "WPF")]
         public void AnchoringAtBottomEdgeWhileIncreasingContentHeight()
         {
             AnchoringAtFarEdgeWhileIncreasingContent(Orientation.Vertical, 0 /*viewportSizeChange*/);
@@ -314,6 +314,17 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
                  Verify.AreEqual(scrollViewer.HorizontalOffset, horizontalOffset);
                  Verify.AreEqual(scrollViewer.VerticalOffset, verticalOffset);
              });
+
+            TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
+            UIExecutor.Execute(() =>
+            {
+                scrollViewer = null;
+            });
+            scrollViewerLoadedEvent.Dispose();
+            scrollViewerViewChangedEvent.Dispose();
+            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+            GC.WaitForPendingFinalizers();
+            TestServices.WindowHelper.WaitForIdle();
         }
 
         [TestMethod]
