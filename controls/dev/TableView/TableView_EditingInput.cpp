@@ -6,6 +6,7 @@
 #include "TableView.h"
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
+#include "TableViewFocusHelpers.h"
 #include "TVDiag.h"
 
 #include <algorithm>
@@ -20,7 +21,8 @@
 
 namespace
 {
-    // True when `candidate` is `ancestor` or sits underneath it.
+    // True when `candidate` is `ancestor` or sits underneath it, including the ancestor's own
+    // popups (a ComboBox editor's dropdown items).
     bool IsWithinElement(winrt::IInspectable const& candidate, winrt::FrameworkElement const& ancestor)
     {
         if (!ancestor)
@@ -28,17 +30,7 @@ namespace
             return false;
         }
 
-        auto current = candidate.try_as<winrt::DependencyObject>();
-        while (current)
-        {
-            if (current == ancestor)
-            {
-                return true;
-            }
-            current = winrt::VisualTreeHelper::GetParent(current);
-        }
-
-        return false;
+        return TableViewDetails::IsWithinElementPopupAware(candidate, ancestor, ancestor.XamlRoot());
     }
 
 }

@@ -87,6 +87,29 @@ namespace MUXControlsTestApp
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
+    // Data item for the Hierarchy pivot. Flat: the tree comes from ParentBy(Id, ManagerId).
+    public sealed class HierarchyTestEmployee
+    {
+        public HierarchyTestEmployee(int id, int? managerId, string name, string dept, int score)
+        {
+            Id = id;
+            ManagerId = managerId;
+            Name = name;
+            Dept = dept;
+            Score = score;
+        }
+
+        public int Id { get; }
+
+        public int? ManagerId { get; }
+
+        public string Name { get; set; }
+
+        public string Dept { get; set; }
+
+        public int Score { get; }
+    }
+
     [TopLevelTestPage(Name = "TableView")]
     [AxeScanTestPage(Name = "TableView-Axe")]
     public sealed partial class TableViewPage : TestPage
@@ -96,6 +119,8 @@ namespace MUXControlsTestApp
         private readonly ObservableCollection<TableViewTestPerson> _groupedItems = new ObservableCollection<TableViewTestPerson>();
         private TableViewSource _groupedSource;
         private int _addedColumnCount;
+        private TableViewRow _disabledRow;
+        private object _disabledRowItem;
 
         public TableViewPage()
         {
@@ -107,6 +132,9 @@ namespace MUXControlsTestApp
             }
 
             InitializeComponent();
+
+            navigateToTouch.Click += delegate { Frame.NavigateWithoutAnimation(typeof(TableViewTouchPage), 0); };
+            navigateToVirtualization.Click += delegate { Frame.NavigateWithoutAnimation(typeof(TableViewVirtualizationPage), 0); };
 
             for (int i = 0; i < Facts.BasicItemCount; i++)
             {
@@ -126,6 +154,14 @@ namespace MUXControlsTestApp
             _groupedSource = TableViewSource.From(_groupedItems)
                 .GroupBy(item => ((TableViewTestPerson)item).City);
 
+            var groupedPagingItems = new ObservableCollection<TableViewTestPerson>();
+            for (int i = 0; i < Facts.GroupedPagingItemCount; i++)
+            {
+                groupedPagingItems.Add(new TableViewTestPerson(i, Facts.GroupedPagingName(i), Facts.GroupedAge(i), Facts.GroupedPagingSection(i)));
+            }
+            GroupedPagingTableView.ItemsSource = TableViewSource.From(groupedPagingItems)
+                .GroupBy(item => ((TableViewTestPerson)item).City);
+
             BasicTableView.ItemsSource = _basicItems;
             ScrollingTableView.ItemsSource = _scrollingItems;
             RtlTableView.ItemsSource = _scrollingItems;
@@ -140,6 +176,8 @@ namespace MUXControlsTestApp
             FirstItemNameTextBlock.Text = _basicItems[0].Name;
 
             ScrollingTableView.LayoutUpdated += OnScrollingTableViewLayoutUpdated;
+
+            HookHierarchyTables();
         }
 
         private ScrollViewer _scrollingBodyScroller;
@@ -165,22 +203,102 @@ namespace MUXControlsTestApp
             ScrollingTableView.LayoutUpdated -= OnScrollingTableViewLayoutUpdated;
 
             _scrollingHeaderScroller = FindDescendantByName<ScrollViewer>(ScrollingTableView, "PART_HeaderScroller");
+            _scrollingHeaderHost = FindDescendantByName<Panel>(ScrollingTableView, "PART_HeaderHost");
 
             scroller.ViewChanged += (s, args) => ReportScrollOffsets(scroller);
+
+            // The header band and counter-translation settle only after ViewChanged returns, so refresh on
+            // LayoutUpdated too.
+            ScrollingTableView.LayoutUpdated += (s, args) => ReportScrollOffsets(_scrollingBodyScroller);
+
             ReportScrollOffsets(scroller);
         }
 
         private ScrollViewer _scrollingHeaderScroller;
+        private Panel _scrollingHeaderHost;
 
+        // Publishes scroll offsets plus frozen-band geometry that UIA cannot see (the pin is a composition-only
+        // Translation). Format:
+        //   "H=<h>;V=<v>;HeaderH=<h>;FrozenX=<x>;FrozenT=<tx>;ScrollX=<x>;BodyFrozenX=<x>;BodyFrozenT=<tx>;BodyScrollX=<x>;VH=<vh>;RowH=<rh>"
+        // *X is TransformToVisual(ScrollingTableView).X, which already includes Translation; *T is diagnostic only.
+        // Frozen*/Scroll* sample the header band, Body* the first row's PART_CellsHost. VH and RowH are in DIPs.
         private void ReportScrollOffsets(ScrollViewer scroller)
         {
-            ScrollOffsetTextBlock.Text = string.Format(
-                "H={0:F0};V={1:F0};HeaderH={2}",
+            if (scroller == null)
+            {
+                return;
+            }
+
+            Panel bodyCellsHost = FindDescendantByName<Panel>(ScrollingTableView, "PART_CellsHost");
+            TableViewRow firstRow = FindDescendant<TableViewRow>(ScrollingTableView);
+
+            string text = string.Format(
+                System.Globalization.CultureInfo.InvariantCulture,
+                "H={0:F0};V={1:F0};HeaderH={2};FrozenX={3};FrozenT={4};ScrollX={5};BodyFrozenX={6};BodyFrozenT={7};BodyScrollX={8};VH={9:F2};RowH={10}",
                 scroller.HorizontalOffset,
                 scroller.VerticalOffset,
                 _scrollingHeaderScroller == null
                     ? "<none>"
-                    : _scrollingHeaderScroller.HorizontalOffset.ToString("F0"));
+                    : _scrollingHeaderScroller.HorizontalOffset.ToString("F0"),
+                FormatCellRenderedLeft(_scrollingHeaderHost, frozen: true),
+                FormatCellTranslationX(_scrollingHeaderHost, frozen: true),
+                FormatCellRenderedLeft(_scrollingHeaderHost, frozen: false),
+                FormatCellRenderedLeft(bodyCellsHost, frozen: true),
+                FormatCellTranslationX(bodyCellsHost, frozen: true),
+                FormatCellRenderedLeft(bodyCellsHost, frozen: false),
+                scroller.ViewportHeight,
+                firstRow == null || firstRow.ActualHeight <= 0
+                    ? "<none>"
+                    : firstRow.ActualHeight.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
+
+            // Write only on change: LayoutUpdated also drives this, so an unconditional write would loop layout.
+            if (ScrollOffsetTextBlock.Text != text)
+            {
+                ScrollOffsetTextBlock.Text = text;
+            }
+        }
+
+        // Cells carry their TableViewColumn in Tag, the same key the product's frozen layout uses.
+        private static FrameworkElement FindCell(Panel cellsHost, bool frozen)
+        {
+            if (cellsHost == null)
+            {
+                return null;
+            }
+
+            foreach (UIElement child in cellsHost.Children)
+            {
+                if (child is FrameworkElement element &&
+                    element.Tag is TableViewColumn column &&
+                    (column.FrozenEdge == TableViewFrozenEdge.Leading) == frozen)
+                {
+                    return element;
+                }
+            }
+
+            return null;
+        }
+
+        // Already includes the scroller offset and the cell's Translation; add nothing to it.
+        private string FormatCellRenderedLeft(Panel cellsHost, bool frozen)
+        {
+            var cell = FindCell(cellsHost, frozen);
+            if (cell == null)
+            {
+                return "<none>";
+            }
+
+            return cell.TransformToVisual(ScrollingTableView)
+                       .TransformPoint(new Windows.Foundation.Point(0, 0))
+                       .X
+                       .ToString("F0");
+        }
+
+        // Diagnostic only: the counter-translation the product wrote. Never summed into the rendered x.
+        private static string FormatCellTranslationX(Panel cellsHost, bool frozen)
+        {
+            var cell = FindCell(cellsHost, frozen);
+            return cell == null ? "<none>" : cell.Translation.X.ToString("F0");
         }
 
         private static T FindDescendantByName<T>(DependencyObject root, string name) where T : FrameworkElement
@@ -401,6 +519,156 @@ namespace MUXControlsTestApp
             return null;
         }
 
+        // ---------- Hierarchy pivot ----------
+
+        private TableViewSource _hierarchySource;
+        private TableViewSource _hierarchyRtlSource;
+        private int _hierarchyBeginningEditCount;
+        private bool _hierarchyRefreshQueued;
+
+        private static TableViewSource CreateHierarchySource()
+        {
+            var items = new ObservableCollection<HierarchyTestEmployee>();
+            for (int i = 0; i < Facts.HierarchyIds.Length; i++)
+            {
+                items.Add(new HierarchyTestEmployee(
+                    Facts.HierarchyIds[i],
+                    Facts.HierarchyManagerIds[i],
+                    Facts.HierarchyNames[i],
+                    Facts.HierarchyDepts[i],
+                    Facts.HierarchyScores[i]));
+            }
+
+            return TableViewSource.From(items).ParentBy(
+                new TableViewKeySelector(item => ((HierarchyTestEmployee)item).Id),
+                new TableViewKeySelector(item => ((HierarchyTestEmployee)item).ManagerId));
+        }
+
+        private void HookHierarchyTables()
+        {
+            HierarchyTable.BeginningEdit += (s, args) =>
+            {
+                _hierarchyBeginningEditCount++;
+                QueueHierarchyReadoutRefresh();
+            };
+            HierarchyTable.CellEditEnding += (s, args) => QueueHierarchyReadoutRefresh();
+            HierarchyTable.SelectionChanged += (s, args) => QueueHierarchyReadoutRefresh();
+
+            // Expansion changes re-project rows, which always re-lays out the table.
+            HierarchyTable.LayoutUpdated += (s, args) => RefreshHierarchyReadout();
+            HierarchyRtlTable.LayoutUpdated += (s, args) => RefreshHierarchyReadout();
+
+            ResetHierarchy();
+        }
+
+        // A fresh source per table: every test starts from the same all-collapsed, unshaped, unselected state.
+        private void ResetHierarchy()
+        {
+            if (HierarchyTable.IsEditing)
+            {
+                HierarchyTable.CancelEdit();
+            }
+
+            _hierarchySource = CreateHierarchySource();
+            _hierarchyRtlSource = CreateHierarchySource();
+            HierarchyTable.ItemsSource = _hierarchySource;
+            HierarchyRtlTable.ItemsSource = _hierarchyRtlSource;
+            if (HierarchyTable.IsLoaded)
+            {
+                HierarchyTable.DeselectAll();
+                HierarchyRtlTable.DeselectAll();
+            }
+
+            _hierarchyBeginningEditCount = 0;
+            QueueHierarchyReadoutRefresh();
+        }
+
+        private void OnResetHierarchyClick(object sender, RoutedEventArgs e) => ResetHierarchy();
+
+        // Low priority so the readout describes the settled state, after focus and layout have moved.
+        private void QueueHierarchyReadoutRefresh()
+        {
+            if (_hierarchyRefreshQueued)
+            {
+                return;
+            }
+
+            _hierarchyRefreshQueued = true;
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            {
+                _hierarchyRefreshQueued = false;
+                RefreshHierarchyReadout();
+            });
+        }
+
+        // Assigns only on change: the assignment re-lays out the TextBox, which raises LayoutUpdated again.
+        private void RefreshHierarchyReadout()
+        {
+            if (HierarchyReadout == null || HierarchyTable == null || HierarchyRtlTable == null)
+            {
+                return;
+            }
+
+            var selected = HierarchyTable.SelectedItem as HierarchyTestEmployee;
+            string text =
+                Facts.TreeField + "=" + ProjectionLabel(HierarchyTable) + ";" +
+                Facts.RtlTreeField + "=" + ProjectionLabel(HierarchyRtlTable) + ";" +
+                Facts.SelectedField + "=" + (selected == null ? Facts.NoneValue : selected.Name) + ";" +
+                Facts.BeginningEditField + "=" + _hierarchyBeginningEditCount + ";" +
+                Facts.EditingField + "=" + HierarchyTable.IsEditing;
+
+            if (HierarchyReadout.Text != text)
+            {
+                HierarchyReadout.Text = text;
+            }
+        }
+
+        // Realized elements in projection order. The fixture is small enough that every row is realized.
+        private static string ProjectionLabel(TableView table)
+        {
+            var repeater = FindDescendantByName<ItemsRepeater>(table, "PART_RowsRepeater");
+            if (repeater == null)
+            {
+                return string.Empty;
+            }
+
+            var entries = new SortedDictionary<int, string>();
+            int count = VisualTreeHelper.GetChildrenCount(repeater);
+            for (int i = 0; i < count; i++)
+            {
+                var element = VisualTreeHelper.GetChild(repeater, i) as UIElement;
+                if (element == null)
+                {
+                    continue;
+                }
+
+                int index = repeater.GetElementIndex(element);
+                if (index < 0)
+                {
+                    continue;
+                }
+
+                entries[index] = DescribeProjectedElement(element);
+            }
+
+            return string.Join(" ", entries.Values);
+        }
+
+        private static string DescribeProjectedElement(UIElement element)
+        {
+            var row = element as TableViewRow;
+            if (row != null)
+            {
+                var employee = row.DataContext as HierarchyTestEmployee;
+                string mark = row.IsExpandable ? (row.IsExpanded ? "-" : "+") : string.Empty;
+                return (employee == null ? "?" : employee.Name) + row.Level + mark;
+            }
+
+            var header = element as TableViewGroupHeader ?? FindDescendant<TableViewGroupHeader>(element);
+            var info = header == null ? null : header.Content as TableViewGroupInfo;
+            return "[" + (info == null || info.Key == null ? "?" : info.Key.ToString()) + "]";
+        }
+
         // Unloads the Basic table from the tree shortly after the click, then restores it. The delay
         // exists so a test can start a pointer drag and have the unload land mid-gesture, which a
         // direct click cannot do while the control holds pointer capture.
@@ -455,12 +723,18 @@ namespace MUXControlsTestApp
 
         private void OnGoToScrollingClick(object sender, RoutedEventArgs e) => ShowTableHost(ScrollingTableHost);
 
+        private void OnGoToHierarchyClick(object sender, RoutedEventArgs e) => ShowTableHost(HierarchyTableHost);
+
+        private void OnGoToGroupedPagingClick(object sender, RoutedEventArgs e) => ShowTableHost(GroupedPagingTableHost);
+
         private void ShowTableHost(FrameworkElement host)
         {
             BasicTableHost.Visibility = Visibility.Collapsed;
             RtlTableHost.Visibility = Visibility.Collapsed;
             GroupedTableHost.Visibility = Visibility.Collapsed;
+            GroupedPagingTableHost.Visibility = Visibility.Collapsed;
             ScrollingTableHost.Visibility = Visibility.Collapsed;
+            HierarchyTableHost.Visibility = Visibility.Collapsed;
             host.Visibility = Visibility.Visible;
         }
 
@@ -534,6 +808,53 @@ namespace MUXControlsTestApp
         private void OnClearFilterClick(object sender, RoutedEventArgs e)
         {
             _groupedSource.ClearFilter();
+        }
+
+        private void OnFocusNeutralSortBasicByAgeClick(object sender, RoutedEventArgs e)
+        {
+            TableViewColumn age = BasicTableView.Columns.FirstOrDefault(column => (column.Header as string) == "Age");
+            if (age != null)
+            {
+                BasicTableView.SortByColumn(age, SortDirection.Descending);
+            }
+        }
+
+        // Moves focus out first so disabling the row cannot shift focus to another row of the table.
+        private void OnDisableFocusedRowClick(object sender, RoutedEventArgs e)
+        {
+            for (var node = FocusManager.GetFocusedElement(XamlRoot) as DependencyObject; node != null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (node is TableViewRow row)
+                {
+                    AfterTableButton.Focus(FocusState.Programmatic);
+                    ReenableDisabledRow();
+                    _disabledRow = row;
+                    _disabledRowItem = row.DataContext;
+                    row.DataContextChanged += OnDisabledRowDataContextChanged;
+                    row.IsEnabled = false;
+                    return;
+                }
+            }
+        }
+
+        // The row is a recycled container, so it is re-enabled once it is reused for another item.
+        private void OnDisabledRowDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (!object.Equals(args.NewValue, _disabledRowItem))
+            {
+                ReenableDisabledRow();
+            }
+        }
+
+        private void ReenableDisabledRow()
+        {
+            if (_disabledRow != null)
+            {
+                _disabledRow.DataContextChanged -= OnDisabledRowDataContextChanged;
+                _disabledRow.IsEnabled = true;
+                _disabledRow = null;
+                _disabledRowItem = null;
+            }
         }
     }
 }

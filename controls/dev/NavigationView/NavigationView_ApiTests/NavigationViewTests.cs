@@ -782,6 +782,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifySelectionWithOpacityTransition()
+        {
+            if (!new UISettings().AnimationsEnabled)
+            {
+                Log.Result(TestResult.Skipped, "Selection indicator animations must be enabled to exercise this regression.");
+                return;
+            }
+
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                var navView = SetupNavigationView(paneDisplayMode);
+                NavigationViewItem first = null;
+                NavigationViewItem second = null;
+                ScalarTransition transition = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    first = (NavigationViewItem)navView.MenuItems[0];
+                    second = (NavigationViewItem)navView.MenuItems[1];
+                    transition = new ScalarTransition();
+                    navView.OpacityTransition = transition;
+                    Verify.Throws<UnauthorizedAccessException>(() =>
+                    {
+                        Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(navView);
+                    });
+                    navView.SelectedItem = first;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(first.IsSelected);
+                    Verify.IsNotNull(VisualTreeUtils.FindVisualChildByName(first, "SelectionIndicator"));
+                    Verify.IsNotNull(VisualTreeUtils.FindVisualChildByName(second, "SelectionIndicator"));
+                    navView.SelectedItem = second;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(second, navView.SelectedItem);
+                    Verify.IsTrue(second.IsSelected);
+                    Verify.IsFalse(first.IsSelected);
+                    Verify.AreEqual(transition, navView.OpacityTransition);
+                    navView.Opacity = 0.5;
+                    navView.SelectedItem = first;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(first, navView.SelectedItem);
+                    Verify.IsTrue(first.IsSelected);
+                    Verify.IsFalse(second.IsSelected);
+                    Verify.AreEqual(0.5, navView.Opacity);
+                    navView.Opacity = 1.0;
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyClosedCompactVisualState()
         {
             NavigationView navView = null;
@@ -1406,6 +1467,104 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyOverflowButtonRemainsVisibleAfterSelectingOnlyOverflowItem()
+        {
+            foreach (bool useMenuItemsSource in new[] { false, true })
+            {
+                NavigationView navView = null;
+                Button overflowButton = null;
+                ItemsRepeater overflowRepeater = null;
+                NavigationViewItem selectedItem = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    navView = new NavigationView
+                    {
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                        IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                        IsSettingsVisible = false,
+                        Width = 240,
+                        Height = 300
+                    };
+                    var items = new ObservableCollection<NavigationViewItem>
+                    {
+                        new NavigationViewItem { Content = "AA" },
+                        new NavigationViewItem { Content = "BBBBBBB" },
+                        new NavigationViewItem { Content = "CCCCCCCCCCCCCCC" }
+                    };
+                    if (useMenuItemsSource)
+                    {
+                        navView.MenuItemsSource = items;
+                    }
+                    else
+                    {
+                        foreach (var item in items)
+                        {
+                            navView.MenuItems.Add(item);
+                        }
+                    }
+                    selectedItem = items[2];
+                    Content = navView;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    overflowButton = VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton") as Button;
+                    Verify.IsNotNull(overflowButton);
+                    Verify.AreEqual(Visibility.Visible, overflowButton.Visibility);
+                    var provider = FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                        .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                    Verify.IsNotNull(provider);
+                    provider.Invoke();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var flyout = overflowButton.Flyout as Flyout;
+                    Verify.IsNotNull(flyout);
+                    overflowRepeater = VisualTreeUtils.FindVisualChildByName(
+                        flyout.Content, "TopNavMenuItemsOverflowHost") as ItemsRepeater;
+                    Verify.IsNotNull(overflowRepeater);
+                    Verify.AreEqual(1, overflowRepeater.ItemsSourceView.Count);
+                    Verify.AreEqual(selectedItem, overflowRepeater.ItemsSourceView.GetAt(0));
+                    var provider = FrameworkElementAutomationPeer.CreatePeerForElement(selectedItem) as IInvokeProvider;
+                    Verify.IsNotNull(provider);
+                    provider.Invoke();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(selectedItem, navView.SelectedItem);
+                    Verify.AreEqual(2, overflowRepeater.ItemsSourceView.Count, "Both displaced items should remain reachable.");
+                    Verify.AreEqual(Visibility.Visible, navView.TemplateSettings.OverflowButtonVisibility);
+                    Verify.AreEqual(Visibility.Visible, overflowButton.Visibility);
+                    (FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                        .GetPattern(PatternInterface.Invoke) as IInvokeProvider).Invoke();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(overflowButton.Flyout.IsOpen);
+                    selectedItem = overflowRepeater.TryGetElement(0) as NavigationViewItem;
+                    Verify.IsNotNull(selectedItem);
+                    (FrameworkElementAutomationPeer.CreatePeerForElement(selectedItem) as IInvokeProvider).Invoke();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(selectedItem, navView.SelectedItem);
+                    Verify.IsTrue(overflowRepeater.ItemsSourceView.Count > 0);
+                    Verify.AreEqual(Visibility.Visible, navView.TemplateSettings.OverflowButtonVisibility);
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyOverflowButtonToolTip()
         {
             RunOnUIThread.Execute(() =>
@@ -1589,6 +1748,81 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(expectedDefaultToolTip, ToolTipService.GetToolTip(menuItem1), $"Item 1's tooltip should have been \"{expectedDefaultToolTip ?? "null"}\".");
                     Verify.AreEqual(expectedCustomToolTip, ToolTipService.GetToolTip(menuItem2), $"Item 2's tooltip should have been {expectedCustomToolTip}.");
                 }
+            });
+        }
+
+        [TestMethod]
+        public void VerifyRemovedNavigationViewItemDoesNotReceivePaneChanges()
+        {
+            VerifyRemovedNavigationViewItemDoesNotReceiveSplitViewChanges(navView =>
+            {
+                navView.IsPaneOpen = false;
+                navView.IsPaneOpen = true;
+                Verify.IsTrue(navView.IsPaneOpen);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyRemovedNavigationViewItemDoesNotReceiveDisplayModeChanges()
+        {
+            VerifyRemovedNavigationViewItemDoesNotReceiveSplitViewChanges(navView =>
+            {
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                Verify.AreEqual(NavigationViewPaneDisplayMode.Left, navView.PaneDisplayMode);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyRemovedNavigationViewItemDoesNotReceiveCompactPaneLengthChanges()
+        {
+            VerifyRemovedNavigationViewItemDoesNotReceiveSplitViewChanges(navView =>
+            {
+                navView.CompactPaneLength = 64;
+                Verify.AreEqual(64.0, ((NavigationViewItem)navView.MenuItems[0]).CompactPaneLength);
+            });
+        }
+
+        private void VerifyRemovedNavigationViewItemDoesNotReceiveSplitViewChanges(Action<NavigationView> updatePane)
+        {
+            NavigationView navView = null;
+            NavigationViewItem parent = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsPaneOpen = true,
+                    Width = 800,
+                    Height = 600
+                };
+                parent = new NavigationViewItem { Content = "Parent", IsExpanded = true };
+                for (int index = 0; index < 6; index++)
+                {
+                    parent.MenuItems.Add(new NavigationViewItem
+                    {
+                        Content = new TextBlock { Text = $"Child {index}" }
+                    });
+                }
+                navView.MenuItems.Add(parent);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                parent.MenuItems.Clear();
+                parent.MenuItems.Add(new NavigationViewItem { Content = "Replacement" });
+                // Keep the callback in the gap between GC disconnection and deferred native deletion.
+                GC.Collect();
+                updatePane(navView);
+                parent.IsExpanded = true;
+                Content.UpdateLayout();
+                Verify.IsTrue(parent.IsExpanded);
+                Verify.AreEqual(1, parent.MenuItems.Count);
+                Verify.IsGreaterThan(parent.ActualHeight, 0.0);
             });
         }
 

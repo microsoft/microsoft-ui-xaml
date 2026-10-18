@@ -14,6 +14,9 @@
 #include "ResourceAccessor.h"
 #include "Utils.h"
 
+#include <UIAutomationCore.h>
+#include <UIAutomationCoreApi.h>
+
 // Shared helpers for the TableView automation peers, so the visible-column and column-header-string
 // logic lives in one place instead of being copy-pasted across the peer translation units. Assumes
 // pch.h (winrt type aliases) is included first, per the TableView header convention.
@@ -66,6 +69,12 @@ private:
     winrt::weak_ref<winrt::IInspectable> m_weakItem{ nullptr };
     winrt::IInspectable m_strongItem{ nullptr };
 };
+
+// A stale provider must fail rather than report coordinates that now belong to another element.
+[[noreturn]] inline void ThrowElementNotAvailable()
+{
+    throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
+}
 
 // Resource lookups feeding UIA are supplementary: degrade instead of letting a missing PRI (a host
 // app that does not merge the control's resources) escape into a UIA call.
@@ -243,21 +252,19 @@ inline int32_t CountVisibleColumns(winrt::IVector<winrt::TableViewColumn> const&
     return count;
 }
 
-// Returns the text a cell displays: the column-generated TextBlock's text, else the content's own
-// computed UIA name. Shared so a cell's name and the row name composed from its cells agree.
-//
-// allowPeerCreation gates the fallback: CreatePeerForElement does not just read a name, it creates
-// and permanently attaches a peer. Worth it for a cell naming itself; not for the row name, which
-// walks every cell on every name query, so it passes false and skips template content.
-inline winrt::hstring GetCellContentName(
-    winrt::FrameworkElement const& content, bool allowPeerCreation, uint32_t depth, uint32_t& remaining)
-{
-    if (!content || content.Visibility() != winrt::Visibility::Visible || depth == 0 || remaining == 0)
-    {
-        return {};
-    }
-    --remaining;
+constexpr int32_t c_maxCellContentChildrenPerLevel = 32;
 
+inline bool ShouldWalkCellContentSubtree(winrt::FrameworkElement const& content)
+{
+    return content &&
+        (content.try_as<winrt::ContentPresenter>() ||
+            content.try_as<winrt::Panel>() ||
+            content.try_as<winrt::Border>());
+}
+
+inline winrt::hstring GetExplicitCellContentName(
+    winrt::FrameworkElement const& content, bool allowPeerCreation)
+{
     if (auto const name = winrt::AutomationProperties::GetName(content); !name.empty())
     {
         return name;
@@ -274,6 +281,28 @@ inline winrt::hstring GetCellContentName(
                 return name;
             }
         }
+    }
+    return {};
+}
+
+// Returns the text a cell displays: the column-generated TextBlock's text, else the content's own
+// computed UIA name. Shared so a cell's name and the row name composed from its cells agree.
+//
+// allowPeerCreation gates the fallback: CreatePeerForElement does not just read a name, it creates
+// and permanently attaches a peer. Worth it for a cell naming itself; not for the row name, which
+// walks every cell on every name query, so it passes false and only reads already-realized content.
+inline winrt::hstring GetCellContentName(
+    winrt::FrameworkElement const& content, bool allowPeerCreation, uint32_t depth, uint32_t& remaining)
+{
+    if (!content || content.Visibility() != winrt::Visibility::Visible || depth == 0 || remaining == 0)
+    {
+        return {};
+    }
+    --remaining;
+
+    if (auto const name = GetExplicitCellContentName(content, allowPeerCreation); !name.empty())
+    {
+        return name;
     }
     if (auto const textBlock = content.try_as<winrt::TextBlock>())
     {
@@ -298,20 +327,53 @@ inline winrt::hstring GetCellContentName(
 
     // A named control describes its own content; do not repeat its inner interactive labels.
     // Only traverse layout wrappers, and bound the work of each cell-name query.
-    if (presenter || content.try_as<winrt::Panel>() || content.try_as<winrt::Border>())
+    // Per-level cap retained: removing it destabilised the column-header peers.
+    if (ShouldWalkCellContentSubtree(content))
     {
         const auto count = winrt::VisualTreeHelper::GetChildrenCount(content);
-        for (int32_t i = 0; i < count && remaining > 0; ++i)
+        for (int32_t i = 0; i < count && i < c_maxCellContentChildrenPerLevel && remaining > 0; ++i)
         {
             if (auto const child = winrt::VisualTreeHelper::GetChild(content, i).try_as<winrt::FrameworkElement>())
             {
-                if (auto const name = GetCellContentName(child, allowPeerCreation, depth - 1, remaining); !name.empty())
+                if (auto const name = GetCellContentName(child, allowPeerCreation, depth - 1, remaining);
+                    !name.empty())
                 {
                     return name;
                 }
             }
         }
     }
+    return {};
+}
+
+// The name UIA uses for a column: its string header, else an element header's own name (hidden
+// headers collapse their header cells), else the name its realized header item exposes, which is
+// the only source for an object or templated header. Shared by the cell peer and the built-in
+// editor so both name the column the same way.
+inline winrt::hstring ResolveColumnAccessibleName(winrt::TableView const& table, winrt::TableViewColumn const& column)
+{
+    if (auto const headerString = TableViewDetails::TryGetColumnHeaderText(column))
+    {
+        return *headerString;
+    }
+
+    if (auto const headerElement = column ? column.Header().try_as<winrt::FrameworkElement>() : nullptr)
+    {
+        uint32_t remaining = 32;
+        if (auto const name = GetCellContentName(headerElement, false /* allowPeerCreation */, 8, remaining); !name.empty())
+        {
+            return name;
+        }
+    }
+
+    if (table)
+    {
+        if (auto const headerPeer = GetRealizedColumnHeaderPeer(table, column))
+        {
+            return headerPeer.GetName();
+        }
+    }
+
     return {};
 }
 
@@ -367,9 +429,8 @@ inline bool ContainsFocusableElement(
         return true;
     }
 
-    constexpr int32_t maxChildrenPerLevel = 32;
     auto const childCount = winrt::VisualTreeHelper::GetChildrenCount(element);
-    for (int32_t i = 0; i < childCount && i < maxChildrenPerLevel && *budget > 0; ++i)
+    for (int32_t i = 0; i < childCount && i < c_maxCellContentChildrenPerLevel && *budget > 0; ++i)
     {
         if (auto const child = winrt::VisualTreeHelper::GetChild(element, i).try_as<winrt::UIElement>())
         {
@@ -429,9 +490,8 @@ inline void SetCellContentAccessibilityViewRaw(winrt::FrameworkElement const& ro
 
     SetAccessibilityViewIfNeeded(root, winrt::AccessibilityView::Raw);
 
-    constexpr int32_t maxChildrenPerLevel = 32;
     auto const childCount = winrt::VisualTreeHelper::GetChildrenCount(root);
-    for (int32_t i = 0; i < childCount && i < maxChildrenPerLevel; ++i)
+    for (int32_t i = 0; i < childCount && i < c_maxCellContentChildrenPerLevel; ++i)
     {
         if (auto const child = winrt::VisualTreeHelper::GetChild(root, i).try_as<winrt::FrameworkElement>())
         {
@@ -453,9 +513,8 @@ inline void SetInteractiveCellContentAccessibilityViewContent(winrt::FrameworkEl
         return;
     }
 
-    constexpr int32_t maxChildrenPerLevel = 32;
     auto const childCount = winrt::VisualTreeHelper::GetChildrenCount(root);
-    for (int32_t i = 0; i < childCount && i < maxChildrenPerLevel; ++i)
+    for (int32_t i = 0; i < childCount && i < c_maxCellContentChildrenPerLevel; ++i)
     {
         if (auto const child = winrt::VisualTreeHelper::GetChild(root, i).try_as<winrt::FrameworkElement>())
         {
@@ -469,27 +528,4 @@ inline winrt::hstring GetCellDisplayText(winrt::FrameworkElement const& cell, bo
     auto const content = GetCellContentElement(cell);
     uint32_t remaining = 32;
     return GetCellContentName(content, allowPeerCreation, 8, remaining);
-}
-
-// Returns the column Header's string form (an IStringable, or a String-typed IPropertyValue), or
-// nullopt when the header is not a string (or the column is null). Returning nullopt rather than an
-// empty string lets callers distinguish "no string header" from "an explicitly empty string header".
-inline std::optional<winrt::hstring> TryGetColumnHeaderString(winrt::TableViewColumn const& column)
-{
-    if (column)
-    {
-        auto const header = column.Header();
-        if (auto const stringable = header.try_as<winrt::IStringable>())
-        {
-            return stringable.ToString();
-        }
-        if (auto const propValue = header.try_as<winrt::IPropertyValue>())
-        {
-            if (propValue.Type() == winrt::PropertyType::String)
-            {
-                return propValue.GetString();
-            }
-        }
-    }
-    return std::nullopt;
 }

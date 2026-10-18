@@ -14,6 +14,39 @@
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
 
+namespace Local
+{
+    // IconNoGridOptimization removes the Grid used by FontIcon and BitmapIcon.
+    // An app can still use a PathIcon as a workaround to inject custom content
+    // inside an IconElement, such as with this custom ContentIcon subclass.
+    ref class ContentIcon sealed : public xaml_controls::PathIcon
+    {
+    public:
+        ContentIcon()
+        {
+            Loaded += ref new xaml::RoutedEventHandler(this, &ContentIcon::OnLoaded);
+        }
+
+        property xaml::UIElement^ Content;
+
+    private:
+        void OnLoaded(Platform::Object^, xaml::RoutedEventArgs^)
+        {
+            // PathIcon is expected to always have a Grid as the root of its subtree.
+            VERIFY_ARE_EQUAL(1, xaml_media::VisualTreeHelper::GetChildrenCount(this));
+            auto grid = dynamic_cast<xaml_controls::Grid^>(
+                xaml_media::VisualTreeHelper::GetChild(this, 0));
+            VERIFY_IS_NOT_NULL(grid);
+
+            if (Content != nullptr)
+            {
+                grid->Children->Clear();
+                grid->Children->Append(Content);
+            }
+        }
+    };
+}
+
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace PathIcon {
 
     bool PathIconIntegrationTests::ClassSetup()
@@ -63,6 +96,70 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             auto foreground = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Red);
             pathIcon->Foreground = foreground;
             VERIFY_ARE_EQUAL(pathIcon->Foreground, foreground);
+        });
+    }
+
+    void PathIconIntegrationTests::ChildAfterLayoutIsGrid()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::PathIcon^ pathIcon = nullptr;
+
+        VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(
+            xaml_settings::XamlChangeId::IconNoGridOptimization));
+
+        RunOnUIThread([&]
+        {
+            pathIcon = ref new xaml_controls::PathIcon();
+            TestServices::WindowHelper->WindowContent = pathIcon;
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]
+        {
+            VERIFY_ARE_EQUAL(1, xaml_media::VisualTreeHelper::GetChildrenCount(pathIcon));
+
+            // IconNoGridOptimization removes the Grid used by FontIcon and BitmapIcon.
+            // Verify that the Grid still exists for PathIcon, in case any app is using
+            // PathIcon as a workaround to inject custom content inside an IconElement.
+            VERIFY_IS_NOT_NULL(dynamic_cast<xaml_controls::Grid^>(
+                xaml_media::VisualTreeHelper::GetChild(pathIcon, 0)));
+        });
+    }
+
+    void PathIconIntegrationTests::PathIconSubclassCanReplaceGridContent()
+    {
+        TestCleanupWrapper cleanup;
+        Local::ContentIcon^ contentIcon = nullptr;
+        xaml_shapes::Rectangle^ content = nullptr;
+
+        VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(
+            xaml_settings::XamlChangeId::IconNoGridOptimization));
+
+        RunOnUIThread([&]
+        {
+            content = ref new xaml_shapes::Rectangle();
+            contentIcon = ref new Local::ContentIcon();
+            contentIcon->Content = content;
+
+            auto root = ref new xaml_controls::Grid();
+            root->Children->Append(contentIcon);
+            TestServices::WindowHelper->WindowContent = root;
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]
+        {
+            // Find the expected Grid created by PathIcon
+            VERIFY_ARE_EQUAL(1, xaml_media::VisualTreeHelper::GetChildrenCount(contentIcon));
+            auto grid = dynamic_cast<xaml_controls::Grid^>(
+                xaml_media::VisualTreeHelper::GetChild(contentIcon, 0));
+            VERIFY_IS_NOT_NULL(grid);
+
+            // Verify that the ContentIcon class successfully inserted its custom content
+            VERIFY_ARE_EQUAL(1u, grid->Children->Size);
+            VERIFY_ARE_EQUAL(content, grid->Children->GetAt(0));
         });
     }
 

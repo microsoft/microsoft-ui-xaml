@@ -1,45 +1,48 @@
-<!-- GroupsPage.xaml: the table. The Department ComboBox and the Active CheckBox are the values
-     the page groups on, so editing one moves the row to another group. -->
-<tv:TableView x:Name="PeopleTable"
-              AutomationProperties.AutomationId="GroupsTable"
-              AutomationProperties.Name="Grouped people"
-              ItemsSource="{x:Bind Source}"
-              SelectionMode="Single"
-              EmptyTemplate="{StaticResource GroupsEmptyTemplate}"
-              VerticalAlignment="Stretch" MinHeight="320">
-    <tv:TableViewTemplateColumn Header="Photo"      Width="{StaticResource ColWidthAvatar}"       CellTemplate="{StaticResource AvatarTemplate}"           CanSort="False"/>
-    <tv:TableViewTextColumn     Header="Name"       Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthCombo}"        CellTemplate="{StaticResource DeptComboTemplate}"        SortMemberPath="Department"/>
-    <tv:TableViewTemplateColumn Header="Active"     Width="{StaticResource ColWidthBoolean}"      CellTemplate="{StaticResource ActiveCheckBoxTemplate}"   SortMemberPath="IsActive"/>
-    <tv:TableViewTemplateColumn Header="Join date"  Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
-    <tv:TableViewTextColumn     Header="Salary"     Width="{StaticResource ColWidthNumber}"       Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
-</tv:TableView>
-
-<!-- TableView.GroupHeaderTemplate fills the header's content region; the control keeps the
-     expander and the band. The template binds TableViewGroupInfo. -->
+<!-- Left-aligned StackPanel, not a stretched Grid: the group-header ContentPresenter sizes
+     the header content to its desired width, so a Grid with a `*` first column collapsed
+     the count and the expansion chip to zero width. The count binds ItemCount (Int32)
+     rather than ItemCountText so it is always populated. -->
 <DataTemplate x:Key="CustomGroupHeaderTemplate" x:DataType="tv:TableViewGroupInfo">
     <StackPanel Orientation="Horizontal" Spacing="10" Padding="0,6" VerticalAlignment="Center">
-        <TextBlock Text="{x:Bind KeyText, Mode=OneWay}" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
-        <TextBlock Text="{x:Bind ItemCount, Mode=OneWay, Converter={StaticResource GroupCountTextConverter}}"
-                   Style="{ThemeResource CaptionTextBlockStyle}"/>
-        <Border Padding="8,2" CornerRadius="10" Background="{ThemeResource ControlAltFillColorSecondaryBrush}">
-            <TextBlock Text="{x:Bind IsExpanded, Mode=OneWay, Converter={StaticResource GroupExpansionTextConverter}}"
-                       Style="{ThemeResource CaptionTextBlockStyle}"/>
+        <TextBlock
+            Text="{x:Bind KeyText, Mode=OneWay}"
+            Style="{ThemeResource BodyStrongTextBlockStyle}"
+            VerticalAlignment="Center"
+            TextTrimming="CharacterEllipsis"/>
+        <TextBlock
+            Text="{x:Bind ItemCount, Mode=OneWay, Converter={StaticResource GroupCountTextConverter}}"
+            Style="{ThemeResource CaptionTextBlockStyle}"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            VerticalAlignment="Center"/>
+        <Border
+            Padding="8,2"
+            CornerRadius="10"
+            VerticalAlignment="Center"
+            Background="{ThemeResource ControlAltFillColorSecondaryBrush}">
+            <TextBlock
+                Text="{x:Bind IsExpanded, Mode=OneWay, Converter={StaticResource GroupExpansionTextConverter}}"
+                Style="{ThemeResource CaptionTextBlockStyle}"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
         </Border>
     </StackPanel>
 </DataTemplate>
 
-<ComboBox x:Name="ShapingModeSelector" Header="Shaping mode" SelectedIndex="1"
-          SelectionChanged="OnShapingModeChanged">
-    <ComboBoxItem Content="Flat" Tag="flat"/>
-    <ComboBoxItem Content="Grouped" Tag="grouped"/>
-    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"/>
-    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"/>
-</ComboBox>
-<ComboBox x:Name="GroupKeySelector" Header="Group key" SelectedIndex="0"
-          SelectionChanged="OnGroupKeyChanged">
-    <ComboBoxItem Content="Department" Tag="Department"/>
-    <ComboBoxItem Content="Office" Tag="Office"/>
-    <ComboBoxItem Content="Role" Tag="Role"/>
-    <ComboBoxItem Content="Active" Tag="IsActive"/>
-</ComboBox>
+<!-- … -->
+
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.AutomationId="GroupsTable"
+    AutomationProperties.Name="Grouped people"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    EmptyTemplate="{StaticResource GroupsEmptyTemplate}"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
+    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthCombo}" CellTemplate="{StaticResource DeptComboTemplate}" SortMemberPath="Department" HeaderToolTip="The grouped-on value when the group key is Department. Picking another one moves the row to that group."/>
+    <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" HeaderToolTip="The grouped-on value when the group key is Active. Toggling it moves the row between the Active and Inactive groups."/>
+    <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate" HeaderToolTip="Editable date. Sorts by the JoinDate value."/>
+    <tv:TableViewTextColumn Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}" HeaderToolTip="Annual salary in whole currency units. Sorts by the number, not the text."/>
+</tv:TableView>

@@ -751,6 +751,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies closing the window that hosts a loaded TableView does not fail-fast while ThemeSettings is torn down.")]
+        public void VerifyClosingHostWindowDoesNotCrash()
+        {
+            Window window = null;
+            var loaded = new global::System.Threading.AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var tableView = CreateTableView(headers: new[] { "Name", "Role" });
+                tableView.Loaded += (sender, args) => loaded.Set();
+                window = new Window() { Content = tableView };
+                window.Activate();
+            });
+
+            try
+            {
+                Verify.IsTrue(loaded.WaitOne(DefaultWaitTimeInMS), "Waiting for the TableView to load in its own window.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    window.Close();
+                    window = null;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                });
+                IdleSynchronizer.Wait();
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    window?.Close();
+                    MUXControlsTestApp.App.CurrentWindow.Activate();
+                });
+            }
+
+            Log.Comment("Closing the host window completed without crashing.");
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies TableView applies its default template and creates required template parts.")]
         public void VerifyTemplatePartsAfterTemplateApplication()
         {

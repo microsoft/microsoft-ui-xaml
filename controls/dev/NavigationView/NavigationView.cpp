@@ -273,6 +273,10 @@ void NavigationView::OnOverflowItemsSourceCollectionChanged(const winrt::IInspec
     {
         SetOverflowButtonVisibility(winrt::Visibility::Collapsed);
     }
+    else
+    {
+        SetOverflowButtonVisibility(winrt::Visibility::Visible);
+    }
 }
 
 void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)
@@ -2071,8 +2075,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
                 areElementsAtSameDepth = prevPosPoint.X == nextPosPoint.X;
             }
 
-            winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
-            winrt::CompositionScopedBatch scopedBatch = visual.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+            // Creating the batch must not request the NavigationView's non-strict handoff visual.
+            winrt::CompositionScopedBatch scopedBatch = winrt::CompositionTarget::GetCompositorForCurrentThread().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
 
             if (!areElementsAtSameDepth)
             {

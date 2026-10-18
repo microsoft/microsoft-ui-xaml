@@ -96,11 +96,21 @@ visible on purpose.
 - Column layout &amp; sizing (Pixel / Star widths, Min/Max clamps, drag-to-resize) and column
   lifecycle (add, remove, reorder at runtime), plus header visibility
 - Tooltips, grid lines, cell templating, text wrapping, row height, cell editing,
-  empty state, density, and grouped rows (hierarchical rows are not available in this release)
+  empty state, density, and grouped rows
+- Hierarchical rows (`TableViewSource.ParentBy`): one flat list, two relations, composed with
+  filter, sort and grouping, and `IsLiveShaping` reshaping both trees when a row's property changes.
+  The table pages' Shaping section also offers Hierarchy and Grouped hierarchy (ParentBy, plus
+  GroupBy on the roots) over their own data: people by manager, files by folder, processes by app;
+  pages whose rows have no parent relation show those modes disabled with the reason
 - Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
 - `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
-  sample assembly. Snippet references declared on `SamplePresenter` are validated during compile so
-  a stale `SourceSnippet` / `AdditionalSnippet` value fails the build instead of rendering fake code.
+  sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing
+  a region, run `powershell -File tools\Update-Snippets.ps1` and include the result. The build checks
+  that every snippet is current and that every `Snippet` / `SourceSnippet` / `AdditionalSnippet` a
+  page names exists: a warning locally, an error in CI.
+
+The pages are code-behind on purpose (no view models): each one demonstrates TableView API calls,
+not app architecture.
 
 ## More detail
 

@@ -387,6 +387,7 @@ void ImageTests::JxrImage()
     VERIFY_IS_NOT_NULL(pTestImage);
 
     pTestImage->ImagePath = GetResourcesPath() + L"journey.jxr";
+    pTestImage->ImageEventWaitTime = 10000;
     pEngine->AddTestImage(pTestImage);
     pEngine->Execute();
 }
@@ -400,6 +401,7 @@ void ImageTests::JxrImageSDR()
     VERIFY_IS_NOT_NULL(pTestImage);
 
     pTestImage->ImagePath = GetResourcesPath() + L"journey.jxr";
+    pTestImage->ImageEventWaitTime = 10000;
     pEngine->AddTestImage(pTestImage);
     pEngine->Execute();
 }
