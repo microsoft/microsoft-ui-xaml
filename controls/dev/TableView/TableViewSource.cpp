@@ -319,6 +319,33 @@ bool TableViewSource::IsGrouped() const
     return m_engine->IsProjectedAsGrouped();
 }
 
+bool TableViewSource::HasFilter() const
+{
+    return m_engine->HasFilter();
+}
+
+bool TableViewSource::HasGroupBy() const
+{
+    return m_engine->HasGroup();
+}
+
+bool TableViewSource::HasParentBy() const
+{
+    return m_engine->HasParentBy();
+}
+
+uint32_t TableViewSource::DataRowCount() const
+{
+    // Rows() is only a snapshot of a tree's visible rows; the published index holds every node.
+    if (auto const adapter = m_engine->HierarchicalAdapter(); adapter && adapter->HasIndex())
+    {
+        return adapter->NodeCount();
+    }
+    // Rows() is the shaped data without headers and ignores group expansion.
+    auto const rows = m_engine->Rows();
+    return rows ? rows.Size() : 0;
+}
+
 bool TableViewSource::ContainsShapedItem(winrt::IInspectable const& item) const
 {
     if (!item)
@@ -538,6 +565,7 @@ void TableViewSource::ReleaseOwningTableView(winrt::IInspectable const& owner)
     m_engine->SetLiveShapingHold(nullptr);
     m_engine->SetLiveItemChangedHook(nullptr);
     m_engine->SetRowsReleasedHook(nullptr);
+    m_engine->SetLiveItemReshapeHandler(nullptr);
     m_engine->ResumeHeldLiveShaping();
 
     // Last, after the former owner's handlers are dropped. Each waiter is popped before it runs:
@@ -561,6 +589,11 @@ void TableViewSource::SetLiveShapingHold(std::function<bool()> isHeld)
 void TableViewSource::SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook)
 {
     m_engine->SetLiveItemChangedHook(std::move(hook));
+}
+
+void TableViewSource::SetLiveItemReshapeHandler(std::function<void()> handler)
+{
+    m_engine->SetLiveItemReshapeHandler(std::move(handler));
 }
 
 void TableViewSource::SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook)

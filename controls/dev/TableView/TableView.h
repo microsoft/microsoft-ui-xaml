@@ -894,8 +894,10 @@ private:
     void FailTipOperation(uint64_t generation, TableViewTip::Stage stage, std::optional<HRESULT> error) noexcept;
     void CompleteTipOperation(uint64_t generation) noexcept;
     void IgnoreTip(TableViewTip::IgnoreReason reason) noexcept;
+    // TableView_Instance's two sample points, Loaded and Unloaded (TableView_Telemetry.cpp).
+    void SampleInstanceTelemetry() noexcept;
 
-    // Telemetry: usage counts for the loaded session. TiP: the setup and operation tests.
+    // Telemetry: the loaded session's TableView_Instance. TiP: the setup and operation tests.
     TableViewTelemetry::Session m_telemetrySession;
     TableViewTip::State m_tip{ m_telemetrySession };
     ActionTip* m_activeActionTip{};
@@ -910,8 +912,8 @@ private:
     std::optional<HRESULT> m_tipAppEscapeError;
     uint64_t m_tipAppEscapesAtOperationStart{};
     uint64_t m_tipAppEscapesAtSetupStart{};
-    // Completed source swaps before the first Loaded; they count into the first session.
-    uint32_t m_sourceSetsBeforeLoad{};
+    // TableView_Instance: how the current ItemsSource arrived (TableViewTelemetry::SourceKind), 0 with none.
+    uint32_t m_telemetrySourceKinds{};
 
     void OnColumnsVectorChanged(
         const winrt::IObservableVector<winrt::TableViewColumn>& sender,

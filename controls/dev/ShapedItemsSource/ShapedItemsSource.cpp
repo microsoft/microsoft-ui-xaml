@@ -2941,13 +2941,13 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
     // the full restore, which re-reads every item.
     if (m_liveShapingChangeDropped->exchange(false))
     {
-        MarkLiveShapingDirty();
+        MarkLiveShapingDirtyForItem();
     }
 
     // Before the coalescing early-out: the owner must see every changed item.
     if (m_liveItemChangedHook && m_liveItemChangedHook(item, m_liveShapingDirty))
     {
-        MarkLiveShapingDirty();
+        MarkLiveShapingDirtyForItem();
         return;
     }
 
@@ -2970,13 +2970,22 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
         return;
     }
 
-    MarkLiveShapingDirty();
+    MarkLiveShapingDirtyForItem();
 }
 
 void ShapedItemsSource::MarkLiveShapingDirty()
 {
     m_liveShapingDirty = true;
     EnsureLiveShapingRestore();
+}
+
+void ShapedItemsSource::MarkLiveShapingDirtyForItem()
+{
+    if (!m_liveShapingDirty && m_liveItemReshape)
+    {
+        m_liveItemReshape();
+    }
+    MarkLiveShapingDirty();
 }
 
 void ShapedItemsSource::EnsureLiveShapingRestore()

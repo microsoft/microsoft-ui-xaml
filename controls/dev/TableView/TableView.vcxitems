@@ -69,6 +69,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewTelemetry.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewTip.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Tip.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Telemetry.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Columns.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Keyboard.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Layout.cpp" />

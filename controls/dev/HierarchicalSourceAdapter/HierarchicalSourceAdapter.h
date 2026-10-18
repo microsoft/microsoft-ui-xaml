@@ -98,6 +98,11 @@ public:
     // True when `item` is a node of the filtered tree, whether or not its ancestors are expanded.
     bool IndexContainsItem(winrt::IInspectable const& item) const;
     bool HasIndex() const noexcept { return m_index != nullptr; }
+    // Every node of the tree, before filtering; 0 with no index.
+    uint32_t NodeCount() const noexcept
+    {
+        return m_index && m_index->Structure ? static_cast<uint32_t>(m_index->Structure->Rows.size()) : 0;
+    }
 
     // Positive prefix test, so a stale or foreign key cannot become node intent.
     static bool IsNodeKey(winrt::hstring const& key);

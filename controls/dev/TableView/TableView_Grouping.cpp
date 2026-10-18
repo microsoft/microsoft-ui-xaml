@@ -249,6 +249,13 @@ void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::op
         ? BulkExpansionAxis::Groups
         : BulkExpansionAxis::Rows;
 
+    // One group or node is use; a subtree is a bulk request, like ExpandAllGroups.
+    if (!subtree && !identity.empty())
+    {
+        TableViewTelemetry::MarkUsed(m_telemetrySession, m_telemetrySession.generation,
+            axis == BulkExpansionAxis::Groups ? TableViewTelemetry::Feature::Grouping : TableViewTelemetry::Feature::Hierarchy);
+    }
+
     QueueGroupExpansionByIdentity(identity, desired, axis, subtree);
 }
 

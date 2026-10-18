@@ -513,7 +513,7 @@ Row recycling, cell rebuild and dependency-property change callbacks can all run
 # Telemetry and TiP
 
 TableView reports whether its own work succeeded (TiP) and how it is used (telemetry), on the Tabular
-providers. On success an operation pays for its TiP start and stop, a counter update and, at each source
+providers. On success an operation pays for its TiP start and stop, a used-feature bit and, at each source
 swap, sort or shaping step, a thread-local reset. Attribution work runs only when something throws.
 
 ## TiP tests
@@ -559,15 +559,45 @@ normally), so that commit counts as completed although the value did not land.
 | Event | When | Contents |
 |---|---|---|
 | `TableView_Loaded` | First `Loaded` in a process while a listener is enabled (a later `Loaded` retries) | `LoadedVersion`, control version, `UTCReplace_AppSessionGuid` |
-| `TableView_SessionSummary` | Unloaded or destruction, once per session, only when something was counted | `SessionSummaryVersion`; completed-operation counts (source swaps made before the first `Loaded` count into the first session); deferred count; `CounterOverflowMask` (bit n is the n-th count in field order, bit 8 the deferred count) |
+| `TableView_Instance` | Unloaded or destruction, once per loaded session, at most 64 per process | `InstanceVersion` and the fields below, `UTCReplace_AppSessionGuid` |
 | `TableView_Error` | A TableView failure, an app fault, or a caught header-rebuild error | Operation, stage, attribution, category, `HResult` with `HResultAvailable`, `IsRecoverable` (true when TableView carried on). Logging provider, VERBOSE, `KEYWORD_TABLEVIEW`, no telemetry keyword; the first per operation, attribution and recoverability in a session (within an edit or selection, an app fault that decided the outcome comes first) |
 
 Every event also carries `SchemaVersion`.
 
+`TableView_Instance` fields:
+
+| Field | Values |
+|---|---|
+| `IsFirstLoad` | True for the instance's first loaded session |
+| `ContentShown` | Across the instance's loads: 0 nothing yet; 1 a row or group header was shown; 2 no row was shown and a sample saw a source with no data rows |
+| `EnabledFeatures`, `UsedFeatures` | Sorting 1, editing 2, filtering 4, grouping 8, hierarchy 16, live shaping 32 |
+| `DataRowsBucket` | Data rows, without group headers and whatever is expanded: the rows that pass the filter, or for a tree every node before filtering |
+| `PeakRealizedRowsBucket` | Containers the rows repeater has created. It creates one only when none is free, so this is the most rows realized at once, plus the most group headers. Carries across the instance's loads |
+| `ColumnKinds` | Text 1, template 2, app-derived 4 (a column class that is not TableView's) |
+| `SourceKinds` | A collection TableView projected 1, the app's own `TableViewSource` 2 |
+| `IsRightToLeft` | The table flows right to left |
+
+TableView samples at `Loaded` and `Unloaded` while the event can still be written. An event carries the union of
+the bits and the larger count, as a bucket: 0 for none, k for 2^(k-1) up to 2^k - 1. A session that ends by
+destruction without `Unloaded` carries the `Loaded` sample alone.
+
+Enabled means allowed by the table for sorting (`CanUserSortColumns` and a column that can sort) and editing (not
+`IsReadOnly`, and an editable column), and declared on the `TableViewSource` for the other four. Used counts only
+after the instance has shown rows: a sort, filter or edit commit that ran; a request to expand or collapse one
+group or tree node (expand-all and subtree requests do not count); or an item change that live shaping had to
+reshape for. A used feature is always reported enabled.
+
+Three counts answer different questions and are never divided into one another: constructions
+(RuntimeProfiler), instances (`TableView_Instance` with `IsFirstLoad`), and TiP results.
+
+Not collected: action counts, cosmetic settings (density, grid lines, header visibility, row height),
+tooltips, keyboard paging, column add or remove, automation peers, whether an `EmptyTemplate` is set, and
+per-row or per-cell counters.
+
 ## Versions
 
 - A TiP test's data version: when its outcome rules or its data change.
-- `SessionSummaryVersion` and `LoadedVersion`: when that event's fields or their meaning change.
+- `InstanceVersion` and `LoadedVersion`: when that event's fields or their meaning change.
 - `SchemaVersion`: when any TableView event changes.
 
 # Appendix

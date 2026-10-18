@@ -144,6 +144,7 @@ public:
     // Whether a clear verb has anything to clear, so an owner can tell a no-op clear from a real one.
     bool HasFilter() const noexcept { return m_pipeline.HasFilter(); }
     bool HasGroup() const noexcept { return static_cast<bool>(m_groupSelector); }
+    bool HasParentBy() const noexcept { return static_cast<bool>(m_parentKeySelector); }
     bool HasSortAxis(winrt::hstring const& axisToken) const noexcept { return m_pipeline.HasSortAxis(axisToken); }
     bool HasSortOtherThan(winrt::hstring const& axisToken) const noexcept { return m_pipeline.HasSortOtherThan(axisToken); }
     bool HasMatchingSort(winrt::hstring const& axisToken, winrt::Windows::Foundation::IUnknown const& keyIdentity) const noexcept
@@ -193,6 +194,10 @@ public:
     // Lets the owner drop per-row state (comparer ranks) for rows that left the source: called with the
     // removed item after an in-place sorted removal, or with null and every source row after a rebuild.
     void SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook) { m_rowsReleasedHook = std::move(hook); }
+
+    // Lets the owner learn that live shaping is reacting to the app's items: called when an item change leaves the
+    // projection stale, at most once until the projection is next rebuilt, and not when live shaping turns on.
+    void SetLiveItemReshapeHandler(std::function<void()> handler) { m_liveItemReshape = std::move(handler); }
 
 private:
     void SubscribeToSourceCollectionChanges();
@@ -359,6 +364,8 @@ private:
         winrt::hstring const& propertyName);
     // Marks stale and posts ONE restore; N changes in a turn cost one reshape.
     void MarkLiveShapingDirty();
+    // MarkLiveShapingDirty for an item change; the first since the last rebuild also notifies the owner.
+    void MarkLiveShapingDirtyForItem();
     // Posts a restore for a dirty projection unless one is queued or the hold still applies.
     void EnsureLiveShapingRestore();
     // Posts RestoreLiveShaping to the owner's queue. Runs it now only when the owner has no
@@ -458,6 +465,7 @@ private:
     bool m_liveShapingHeld{ false };
     std::function<bool(winrt::IInspectable const&, bool)> m_liveItemChangedHook{};
     std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> m_rowsReleasedHook{};
+    std::function<void()> m_liveItemReshape{};
 
     // Both set or both null; m_parentKeySelector is the "hierarchy declared" test.
     ShapingHelpers::KeySelector m_keySelector{ nullptr };

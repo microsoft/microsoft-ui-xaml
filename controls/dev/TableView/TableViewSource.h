@@ -95,6 +95,14 @@ public:
     // this to decide how to interpret a row DataContext, so reporting intent here would make them
     // read a flat item as a GroupedEntry.
     bool IsGrouped() const;
+    // What the app declared on this source, not the projection in effect (unlike IsGrouped), read without calling
+    // app code (TableView_Instance).
+    bool HasFilter() const;
+    bool HasGroupBy() const;
+    bool HasParentBy() const;
+    // Data rows, without group headers and whatever is expanded: the rows that pass the filter, or for a tree
+    // every node before filtering. Reads no app code.
+    uint32_t DataRowCount() const;
     // True when `item` (by object identity) is in the shaped, filtered rows, regardless of group or
     // node expansion. Header rows never match.
     bool ContainsShapedItem(winrt::IInspectable const& item) const;
@@ -139,6 +147,9 @@ public:
     // Lets the owner drop comparer ranks for rows that left the source (see
     // ShapedItemsSource::SetRowsReleasedHook).
     void SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook);
+    // Lets the owner learn that live shaping reacted to an item change (see
+    // ShapedItemsSource::SetLiveItemReshapeHandler).
+    void SetLiveItemReshapeHandler(std::function<void()> handler);
     // False when sorting would fail because the rows include a null item or one object twice.
     bool CanApplySort() const;
 

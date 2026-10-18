@@ -152,7 +152,7 @@ namespace TableViewTip
             return;
         }
         if (state.operationTipPending) { CloseCompleted(state.operationTest); }
-        TableViewTelemetry::CountOperation(state.session, state.operationSessionGeneration, state.operation);
+        TableViewTelemetry::MarkUsed(state.session, state.operationSessionGeneration, TableViewTelemetry::FeatureOf(state.operation));
         StopOperation(state);
     }
 
@@ -165,7 +165,11 @@ namespace TableViewTip
         {
             CloseIgnored(state.operationTest, reason, name, error, kind);
         }
-        TableViewTelemetry::CountOperation(state.session, state.operationSessionGeneration, state.operation, reason);
+        // The operation ran; TiP only could not prove it published.
+        if (reason == IgnoreReason::DeferredOrUnproven)
+        {
+            TableViewTelemetry::MarkUsed(state.session, state.operationSessionGeneration, TableViewTelemetry::FeatureOf(state.operation));
+        }
         StopOperation(state);
     }
 

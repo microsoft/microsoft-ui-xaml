@@ -556,7 +556,8 @@ winrt::Brush TableView::LookupHeaderStateBrush(std::wstring_view key)
 TableView::~TableView()
 {
     IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
-    // Unloaded can run after the window is destroyed, or not at all; the summary goes out once either way.
+    // Unloaded can run after the window is destroyed, or not at all; TableView_Instance goes out at most once
+    // either way.
     TableViewTelemetry::EndSession(m_telemetrySession);
     // Must run while this control still holds the selector: once anything has been recycled the
     // pools hang off the cached templates and close a cycle the reference tracker cannot walk.
@@ -727,12 +728,9 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
 {
     TableViewTelemetry::BeginSession(m_telemetrySession);
     TableViewTelemetry::ReportFirstLoad();
-    // ItemsSource is usually set before the control first loads; those sets count into this session.
-    for (; m_sourceSetsBeforeLoad; --m_sourceSetsBeforeLoad)
-    {
-        TableViewTelemetry::CountOperation(m_telemetrySession, m_telemetrySession.generation, TableViewTip::Operation::ReplaceSource);
-    }
     ReclaimItemsSource();
+    // The first of the session's two samples; a session that ends without Unloaded carries this one alone.
+    SampleInstanceTelemetry();
 
     // ThemeSettings requires a WindowId, so it can only be created once we have a XamlRoot.
     if (m_themeSettings)
@@ -1292,12 +1290,6 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
         throw;
     }
     completed = true;
-    // Counted into the first session, unless a nested swap superseded this one (as after Loaded).
-    if (m_telemetrySession.generation == 0 && tipGeneration && tipGeneration == m_tip.operationGeneration &&
-        m_sourceSetsBeforeLoad < (std::numeric_limits<uint32_t>::max)())
-    {
-        ++m_sourceSetsBeforeLoad;
-    }
 }
 
 void TableView::OnHeadersVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -1808,6 +1800,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
     if (!tableViewSource)
     {
         tableViewSource = itemsSource.try_as<winrt::TableViewSource>();
+        m_telemetrySourceKinds = tableViewSource ? TableViewTelemetry::SourceKind::AppSupplied : 0u;
     }
 
     // Normalize the source. When the app hands us a plain collection, project it through a
@@ -1825,6 +1818,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
         // ItemsSourceView does, so a source it refuses is one XAML cannot project either, and
         // ItemsRepeater raises that as an error rather than degrading. Let it surface.
         tableViewSource = winrt::TableViewSource::From(itemsSource);
+        m_telemetrySourceKinds = TableViewTelemetry::SourceKind::Projected;
     }
 
     StopAwaitingSource();
@@ -1897,6 +1891,14 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
             if (auto strongThis = weakThis.get())
             {
                 strongThis->ReleaseCustomSortRows(item, liveRows);
+            }
+        });
+        sourceImpl->SetLiveItemReshapeHandler([weakThis]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                TableViewTelemetry::MarkUsed(strongThis->m_telemetrySession, strongThis->m_telemetrySession.generation,
+                    TableViewTelemetry::Feature::LiveShaping);
             }
         });
 
@@ -2593,6 +2595,7 @@ void TableView::OnRowElementPrepared(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementPreparedEventArgs& args)
 {
+    TableViewTelemetry::NoteContent(m_telemetrySession, TableViewTelemetry::ContentShown::Rows);
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
         auto rowImpl = winrt::get_self<TableViewRow>(row);
@@ -3421,6 +3424,7 @@ void TableView::OnTableViewUnloaded()
 
     m_headerSortSpaceArmedColumn = nullptr;
     IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
+    SampleInstanceTelemetry();
     TableViewTelemetry::EndSession(m_telemetrySession);
     // Neither a pending restore nor a remembered position may outlive this tree.
     CancelReshapeFocusRestore();
