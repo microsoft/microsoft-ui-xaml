@@ -2400,6 +2400,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyOffTreePaneOpenedWithoutDisplayModeStateGroup()
+        {
+            SplitView splitView = null;
+            int openedCount = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                splitView = new SplitView
+                {
+                    DisplayMode = SplitViewDisplayMode.Inline,
+                    Template = (ControlTemplate)XamlReader.Load(
+                        "<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' TargetType='SplitView'><Grid /></ControlTemplate>")
+                };
+                Verify.IsTrue(splitView.ApplyTemplate());
+                splitView.PaneOpened += (sender, args) => openedCount++;
+                splitView.IsPaneOpen = true;
+                Verify.AreEqual(1, openedCount, "An off-tree opening must retain its immediate completion fallback.");
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.AreEqual(1, openedCount));
+        }
+
+        [TestMethod]
         public void VerifyOverlappingCompletionOrderWithoutDisplayModeStateGroup()
         {
             foreach (bool initiallyOpen in new[] { false, true })
@@ -2580,6 +2602,137 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsFalse(navView.IsPaneOpen);
                 Verify.AreEqual(1, closingCount, "Opening must not reset a light dismiss started by the app's opening handler.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyCanceledLightDismissDoesNotResetReentrantDismiss()
+        {
+            var navView = SetupNavigationViewWithOpenOverlayPane();
+            var closed = new TaskCompletionSource<bool>();
+            var closingPaneStates = new List<bool>();
+            bool reopened = false;
+            RunOnUIThread.Execute(() =>
+            {
+                var splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                splitView.PaneOpening += (sender, args) =>
+                {
+                    if (!reopened)
+                    {
+                        reopened = true;
+                        LightDismissPane(splitView);
+                    }
+                };
+                splitView.PaneClosing += (sender, args) =>
+                {
+                    closingPaneStates.Add(splitView.IsPaneOpen);
+                    if (closingPaneStates.Count == 1)
+                    {
+                        args.Cancel = true;
+                        splitView.IsPaneOpen = false;
+                        splitView.IsPaneOpen = true;
+                    }
+                };
+                splitView.PaneClosed += (sender, args) =>
+                {
+                    if (!splitView.IsPaneOpen)
+                    {
+                        closed.TrySetResult(true);
+                    }
+                };
+                LightDismissPane(splitView);
+            });
+            Verify.IsTrue(closed.Task.Wait(TimeSpan.FromSeconds(5)), "The reentrant dismissal must close the reopened pane.");
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(reopened);
+                Verify.IsFalse(navView.IsPaneOpen);
+                Verify.AreEqual("True, True, True", string.Join(", ", closingPaneStates),
+                    "The canceled dismiss, manual close, and new dismiss each need one notification, without a duplicate after closure.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifySupersededLightDismissDoesNotCloseReopenedPane()
+        {
+            var navView = SetupNavigationViewWithOpenOverlayPane();
+            var canceled = new TaskCompletionSource<bool>();
+            int closingCount = 0;
+            bool reopened = false;
+            RunOnUIThread.Execute(() =>
+            {
+                var splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                splitView.PaneOpening += (sender, args) =>
+                {
+                    if (!reopened)
+                    {
+                        reopened = true;
+                        LightDismissPane(splitView);
+                    }
+                };
+                splitView.PaneClosing += (sender, args) =>
+                {
+                    if (++closingCount == 1)
+                    {
+                        splitView.IsPaneOpen = false;
+                        splitView.IsPaneOpen = true;
+                    }
+                    else
+                    {
+                        args.Cancel = true;
+                        canceled.TrySetResult(true);
+                    }
+                };
+                LightDismissPane(splitView);
+            });
+            Verify.IsTrue(canceled.Task.Wait(TimeSpan.FromSeconds(5)));
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(reopened);
+                Verify.IsTrue(navView.IsPaneOpen, "The superseded executor must not close the pane before the newer dismiss can be canceled.");
+                Verify.AreEqual(3, closingCount, "The original dismiss, manual close, and canceled new dismiss each notify once.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyLightDismissIntentSurvivesSynchronousStateReopening()
+        {
+            var navView = SetupNavigationViewWithOpenOverlayPane();
+            var reopened = new TaskCompletionSource<bool>();
+            int closingCount = 0;
+            int popupCount = 0;
+            bool reentered = false;
+            RunOnUIThread.Execute(() =>
+            {
+                var splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                var templateRoot = (FrameworkElement)VisualTreeHelper.GetChild(splitView, 0);
+                var group = VisualStateManager.GetVisualStateGroups(templateRoot).Single(item => item.Name == "DisplayModeStates");
+                popupCount = VisualTreeHelper.GetOpenPopupsForXamlRoot(splitView.XamlRoot).Count;
+                Verify.IsTrue(popupCount > 0, "The initial open pane needs an outside-dismiss popup.");
+                VisualStateManager.SetCustomVisualStateManager(templateRoot, new CompletingVisualStateManager());
+                group.CurrentStateChanged += (sender, args) =>
+                {
+                    if (!reentered && args.NewState.Name == "Closed")
+                    {
+                        reentered = true;
+                        splitView.IsPaneOpen = true;
+                    }
+                };
+                splitView.PaneClosing += (sender, args) => closingCount++;
+                splitView.PaneOpened += (sender, args) => reopened.TrySetResult(true);
+                LightDismissPane(splitView);
+            });
+            Verify.IsTrue(reopened.Task.Wait(TimeSpan.FromSeconds(5)), "The synchronous closing callback must reopen the pane.");
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(reentered);
+                Verify.IsTrue(navView.IsPaneOpen);
+                Verify.AreEqual(1, closingCount, "Reopening must not make the original light-dismiss close notify twice.");
+                Verify.AreEqual(popupCount, VisualTreeHelper.GetOpenPopupsForXamlRoot(navView.XamlRoot).Count,
+                    "The resumed close must not tear down the reopened pane's outside-dismiss popup.");
             });
         }
 
@@ -2962,6 +3115,78 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(1, openedCount);
                 Verify.AreEqual(1, closedCount);
             });
+        }
+
+        [TestMethod]
+        public void VerifyPaneCompletionAfterReparentingBeforeUnloaded()
+        {
+            VerifyPaneCompletionAfterReparenting(changeBeforeRemoval: false);
+        }
+
+        [TestMethod]
+        public void VerifyReparentingDiscardsPreRemovalPaneCompletion()
+        {
+            VerifyPaneCompletionAfterReparenting(changeBeforeRemoval: true);
+        }
+
+        private void VerifyPaneCompletionAfterReparenting(bool changeBeforeRemoval)
+        {
+            foreach (bool initiallyOpen in new[] { false, true })
+            {
+                SplitView splitView = null;
+                var unloaded = new TaskCompletionSource<bool>();
+                var completed = new TaskCompletionSource<bool>();
+                int openedCount = 0;
+                int closedCount = 0;
+                bool expectedOpen = changeBeforeRemoval ? initiallyOpen : !initiallyOpen;
+                RunOnUIThread.Execute(() =>
+                {
+                    splitView = new SplitView
+                    {
+                        DisplayMode = SplitViewDisplayMode.Inline,
+                        IsPaneOpen = initiallyOpen,
+                        Width = 300,
+                        Height = 400
+                    };
+                    Content = splitView;
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    splitView.Unloaded += (sender, args) =>
+                    {
+                        unloaded.TrySetResult(Content == splitView && VisualTreeHelper.GetParent(splitView) != null);
+                    };
+                    splitView.PaneOpened += (sender, args) =>
+                    {
+                        openedCount++;
+                        completed.TrySetResult(true);
+                    };
+                    splitView.PaneClosed += (sender, args) =>
+                    {
+                        closedCount++;
+                        completed.TrySetResult(true);
+                    };
+                    if (changeBeforeRemoval)
+                    {
+                        splitView.IsPaneOpen = !initiallyOpen;
+                    }
+                    Content = null;
+                    Content = splitView;
+                    splitView.IsPaneOpen = expectedOpen;
+                });
+                Verify.IsTrue(unloaded.Task.Wait(TimeSpan.FromSeconds(5)));
+                Verify.IsTrue(unloaded.Task.Result, "Deliver the old unload after reattachment.");
+                Verify.IsTrue(completed.Task.Wait(TimeSpan.FromSeconds(5)),
+                    "A queued unload must not discard the transition started after reattachment.");
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(expectedOpen ? 1 : 0, openedCount);
+                    Verify.AreEqual(expectedOpen ? 0 : 1, closedCount);
+                    Verify.AreEqual(expectedOpen, splitView.IsPaneOpen);
+                });
+            }
         }
 
         [TestMethod]

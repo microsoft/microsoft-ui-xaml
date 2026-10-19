@@ -74,6 +74,7 @@ namespace DirectUI
 
         _Check_return_ HRESULT RegisterForDisplayModeStatesChangedEvent();
         _Check_return_ HRESULT OnPaneOpenedOrClosed(bool isPaneOpen);
+        void DiscardObsoletePaneStateChanges();
 
         static _Check_return_ HRESULT CreatePolygonalPath(
             _In_ xaml_controls::IGrid* hostElement,
@@ -123,5 +124,6 @@ namespace DirectUI
             bool completionReceived{ false };
         };
         std::deque<PendingPaneStateChange> m_pendingPaneStateChanges;
+        uint64_t m_paneStateChangeGeneration{ 0 };
     };
 }
