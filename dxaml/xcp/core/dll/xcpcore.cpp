@@ -10411,6 +10411,11 @@ HRESULT CCoreServices::ShutdownToIdle()
         m_pAllVirtualSurfaceImageSources = nullptr;
     }
 
+    if (m_uiaWindowRegistry && m_uiaWindowRegistry->empty())
+    {
+        m_uiaWindowRegistry.reset();
+    }
+
     SetDefaultNavigationTransition(nullptr);
 
     m_connectedAnimationService.reset();
