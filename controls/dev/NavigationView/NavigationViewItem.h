@@ -100,9 +100,10 @@ private:
     void UpdateVisualStateForKeyboardFocusedState();
     void UpdateVisualStateForToolTip();
     void UpdateVisualStateForPointer();
-    void HookAnimatedIconEvents();
+    void HookAnimatedIconEvents(winrt::IInspectable const& oldIcon);
     void OnAnimatedIconPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void UpdateAnimatedIconState();
+    void UpdateAnimatedIconState(winrt::AnimatedIcon const& animatedIcon, bool isSelected);
     void UpdateVisualStateForChevron();
     void UpdateVisualStateForClosedCompact();
 
@@ -184,7 +185,4 @@ private:
     // NavigationView needs to force collapse top level items when the pane closes.
     // This bool is used to remember which items need to be restored to expanded state when the pane is opened again.
     bool m_restoreToExpandedState{ false };
-
-    // Whether UpdateAnimatedIconState gave the icon a selected state, so it knows to hand back the legacy one.
-    bool m_isAnimatedIconStateOverridden{ false };
 };
