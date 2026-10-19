@@ -6420,8 +6420,8 @@ void ScrollPresenter::ProcessOffsetsChange(
                 // after a content resize. Clamp to the UI thread's up-to-date extent instead, and disable the tracker's
                 // clamping below so it cannot re-apply the stale bounds.
                 // These bounds must stay in sync with ComputeMinMaxPositions / ComputePositionFromOffsets.
-                zoomedHorizontalOffset = std::clamp(zoomedHorizontalOffset, 0.0, AnticipatedScrollableWidth());
-                zoomedVerticalOffset = std::clamp(zoomedVerticalOffset, 0.0, AnticipatedScrollableHeight());
+                zoomedHorizontalOffset = std::clamp(zoomedHorizontalOffset, 0.0, ScrollableWidth());
+                zoomedVerticalOffset = std::clamp(zoomedVerticalOffset, 0.0, ScrollableHeight());
             }
 
             const winrt::float2 targetPosition = ComputePositionFromOffsets(zoomedHorizontalOffset, zoomedVerticalOffset);
