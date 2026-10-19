@@ -6,6 +6,7 @@
 #include "ItemsRepeater.common.h"
 #include "IFlowLayoutAlgorithmDelegates.h"
 #include "FlowLayoutAlgorithm.h"
+#include "ItemsRepeater.h"
 #include "UniformGridLayoutState.h"
 
 #include "UniformGridLayoutState.properties.cpp"
@@ -54,13 +55,13 @@ void UniformGridLayoutState::EnsureElementSize(
             // has the potential to repeatedly invalidate layout due to recycling causing layout cycles.
             if (!m_isEffectiveSizeValid)
             {
-                const bool isFirstElementAnchor = context.RecommendedAnchorIndex() == 0;
                 if (const auto firstElement = context.GetOrCreateElementAt(0, winrt::ElementRealizationOptions::ForceCreate))
                 {
                     firstElement.Measure(CalculateAvailableSize(availableSize, orientation, stretch, maxItemsPerLine, layoutItemWidth, layoutItemHeight, minRowSpacing, minColumnSpacing));
                     SetSize(firstElement.DesiredSize(), layoutItemWidth, layoutItemHeight, availableSize, stretch, orientation, minRowSpacing, minColumnSpacing, maxItemsPerLine);
                     // ForceCreate can return the bring-into-view anchor rather than a temporary sizing element.
-                    if (!isFirstElementAnchor)
+                    const auto itemsRepeater = CachedVisualTreeHelpers::GetParent(firstElement).try_as<winrt::ItemsRepeater>();
+                    if (!itemsRepeater || winrt::get_self<ItemsRepeater>(itemsRepeater)->MadeAnchor() != firstElement)
                     {
                         context.RecycleElement(firstElement);
                     }

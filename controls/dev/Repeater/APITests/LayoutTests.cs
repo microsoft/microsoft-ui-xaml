@@ -13,6 +13,7 @@ using Windows.Foundation;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Common;
@@ -28,7 +29,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     public partial class LayoutTests : ApiTestBase
     {
         [TestMethod]
-        [TestProperty("Description", "UniformGridLayout must not recycle the recommended anchor when measuring item zero for sizing.")]
+        [TestProperty("Description", "UniformGridLayout must not recycle the made bring-into-view anchor when measuring item zero for sizing.")]
         public void UniformGridLayoutPreservesFirstItemAnchorDuringSizing()
         {
             ItemsRepeater repeater = null;
@@ -87,7 +88,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     // ForceCreate can return this made anchor to the sizing pass before the flow algorithm owns it.
                     Content.UpdateLayout();
 
-                    Verify.AreEqual(0, anchorClearingCount, "Sizing must not recycle the recommended anchor.");
+                    Verify.AreEqual(0, anchorClearingCount, "Sizing must not recycle the made anchor.");
                     Verify.AreEqual(0, repeater.GetElementIndex(anchor));
                     Verify.AreSame(anchor, repeater.TryGetElement(0));
                     var bounds = LayoutInformation.GetLayoutSlot((FrameworkElement)anchor);
@@ -96,6 +97,80 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Verify.IsLessThan(Math.Abs(bounds.Y), 1.0, "The anchor must be arranged at the first row, not parked offscreen.");
                 });
             }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "UniformGridLayout must reuse a focused scroller-selected anchor when switching layouts without a made anchor.")]
+        public void UniformGridLayoutReusesFocusedAnchorDuringLayoutSwitch()
+        {
+            ItemsRepeater repeater = null;
+            ScrollView scrollView = null;
+            Button anchor = null;
+            int anchorRequestedCount = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater()
+                {
+                    ItemsSource = Enumerable.Range(0, 100).ToList(),
+                    Layout = new StackLayout(),
+                    ItemTemplate = GetDataTemplate("<Button Width='170' Height='68' Content='{Binding}'/>")
+                };
+                scrollView = new ScrollView()
+                {
+                    Width = 620,
+                    Height = 450,
+                    VerticalAnchorRatio = 0.5,
+                    Content = repeater
+                };
+                Content = scrollView;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                anchor = (Button)repeater.TryGetElement(0);
+                Verify.IsNotNull(anchor);
+                Verify.IsTrue(anchor.Focus(FocusState.Programmatic));
+                scrollView.AnchorRequested += (sender, args) =>
+                {
+                    args.AnchorElement = anchor;
+                    anchorRequestedCount++;
+                };
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                anchorRequestedCount = 0;
+                // Do not call GetOrCreateElement: the anchor must come only from the scroller.
+                repeater.Layout = new UniformGridLayout() { MinItemWidth = 180, MinItemHeight = 84 };
+
+                for (int pass = 0; pass < 2; pass++)
+                {
+                    repeater.InvalidateMeasure();
+                    Content.UpdateLayout();
+
+                    Verify.IsGreaterThan(anchorRequestedCount, 0, "The scroller must have supplied the recommended anchor.");
+                    Verify.AreSame(anchor, FocusManager.GetFocusedElement(repeater.XamlRoot));
+                    Verify.AreSame(anchor, repeater.TryGetElement(0));
+                    int containersForFirstItem = 0;
+                    for (int childIndex = 0; childIndex < VisualTreeHelper.GetChildrenCount(repeater); childIndex++)
+                    {
+                        var child = (UIElement)VisualTreeHelper.GetChild(repeater, childIndex);
+                        if (repeater.GetElementIndex(child) == 0)
+                        {
+                            containersForFirstItem++;
+                        }
+                    }
+                    Verify.AreEqual(1, containersForFirstItem, "Only one container may represent item zero.");
+                    var bounds = LayoutInformation.GetLayoutSlot(anchor);
+                    Verify.IsGreaterThan(bounds.Width, 0.0);
+                    Verify.IsGreaterThan(bounds.Height, 0.0);
+                    Verify.IsLessThan(Math.Abs(bounds.Y), 1.0, "The focused anchor must be arranged in the first row.");
+                }
+            });
         }
 
         [TestMethod]
