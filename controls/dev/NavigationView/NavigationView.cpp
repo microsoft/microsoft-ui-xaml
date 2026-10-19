@@ -1423,10 +1423,18 @@ void NavigationView::UpdateOpenPaneLength(double width)
 {
     if (!IsTopNavigationView() && m_rootSplitView)
     {
-        m_OpenPaneLength = std::max(0.0, std::min(width, OpenPaneLength()));
+        const auto newOpenPaneLength = std::max(0.0, std::min(width, OpenPaneLength()));
+        const bool openPaneLengthChanged = m_OpenPaneLength != newOpenPaneLength;
+        m_OpenPaneLength = newOpenPaneLength;
 
         const auto templateSettings = GetTemplateSettings();
         templateSettings->OpenPaneLength(m_OpenPaneLength);
+
+        // With a PaneTitle, UpdatePaneToggleSize stretches TogglePaneButton to m_OpenPaneLength.
+        if (openPaneLengthChanged)
+        {
+            UpdatePaneToggleSize();
+        }
     }
 }
 
