@@ -775,7 +775,7 @@ void ObjectWriterNodeList::Optimize_SetDirectiveProperty(
     std::vector<ObjectWriterNode> poppedList;
 
     // Transform:
-    //     PushConstant (string)
+    //     PushConstant (string or connection ID)
     //     SetDirectiveProperty
     // To:
     //     CheckPeerType (if x:Class)
@@ -786,8 +786,11 @@ void ObjectWriterNodeList::Optimize_SetDirectiveProperty(
         auto& directiveNode = poppedList[1];
         auto directiveProperty = std::static_pointer_cast<DirectiveProperty>(directiveNode.GetXamlProperty());
 
+        // A saved connection directive may already contain its converted integer ID.
         ASSERT(directiveProperty->IsDirective());
-        ASSERT(constantNode.GetValue()->GetValue().GetType() == valueString);
+        ASSERT(constantNode.GetValue()->GetValue().GetType() == valueString ||
+            (directiveProperty->get_DirectiveKind() == XamlDirectives::xdConnectionId &&
+             constantNode.GetValue()->GetValue().GetType() == valueSigned));
         ASSERT(directiveProperty->get_DirectiveKind() == XamlDirectives::xdKey
             || directiveProperty->get_DirectiveKind() == XamlDirectives::xdName
             || directiveProperty->get_DirectiveKind() == XamlDirectives::xdClass
@@ -795,7 +798,8 @@ void ObjectWriterNodeList::Optimize_SetDirectiveProperty(
             || directiveProperty->get_DirectiveKind() == XamlDirectives::xdLoad
             || directiveProperty->get_DirectiveKind() == XamlDirectives::xdFieldModifier
             || directiveProperty->get_DirectiveKind() == XamlDirectives::xdClassModifier
-            || directiveProperty->get_DirectiveKind() == XamlDirectives::xdSpace);
+            || directiveProperty->get_DirectiveKind() == XamlDirectives::xdSpace
+            || directiveProperty->get_DirectiveKind() == XamlDirectives::xdConnectionId);
 
         if (directiveProperty->get_DirectiveKind() == XamlDirectives::xdClass)
         {
@@ -1570,5 +1574,3 @@ _Check_return_ HRESULT ObjectWriterNodeList::Dump(
 }
 
 #endif
-
-

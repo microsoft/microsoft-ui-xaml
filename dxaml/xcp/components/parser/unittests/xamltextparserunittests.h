@@ -34,6 +34,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates parsing of x:String elements.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ParseNamedXStringInXaml)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates directives and text initialization on named strings.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ParseEmptyNamedXStringInXaml)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates directives on empty named strings.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EncodeNamedStringConnectsInitializedValue)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that named strings are initialized before connecting.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EncodeNamedStringConnectsConvertedId)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates initialization with an already converted connection ID.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EncodeUnknownConditionalTypeWithConnectionId)
+            TEST_METHOD_PROPERTY(L"Description", L"Preserves encoding of unresolved conditional types with connection IDs.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(ParseIgnorableElements)
             TEST_METHOD_PROPERTY(L"Description", L"Validates parsing of ignorable elements.")
         END_TEST_METHOD()
@@ -41,6 +61,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyParseFailures)
             TEST_METHOD_PROPERTY(L"Description", L"Validates parsing failures.")
         END_TEST_METHOD()
+
+    private:
+        void VerifyStringConnection(bool numericConnection);
     };
 
 } } } } }

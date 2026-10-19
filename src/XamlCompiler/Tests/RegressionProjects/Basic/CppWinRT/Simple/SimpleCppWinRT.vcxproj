@@ -60,6 +60,9 @@
     <Page Include="MainPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="NamedStrings.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="BlankPage.With.Dots.xaml">
       <SubType>Designer</SubType>
     </Page>

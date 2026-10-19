@@ -22,6 +22,7 @@ namespace Win8Xaml.CompilerProxies
         static PropertyInfo _genXbfArm64Path;
         static PropertyInfo _targetPlatformMinVersion;
         static PropertyInfo _codeGenFlagsProperty;
+        static PropertyInfo _usingCSWinRTProperty;
 
         object _instance;
 
@@ -37,6 +38,7 @@ namespace Win8Xaml.CompilerProxies
             _genXbfArm64Path = _xamlProjectInfoType.GetProperty("GenXbfArm64Path");
             _targetPlatformMinVersion = _xamlProjectInfoType.GetProperty("TargetPlatformMinVersion");
             _codeGenFlagsProperty = _xamlProjectInfoType.GetProperty("CodeGenFlags");
+            _usingCSWinRTProperty = _xamlProjectInfoType.GetProperty("UsingCSWinRT");
         }
 
         public XamlProjectInfo()
@@ -100,6 +102,12 @@ namespace Win8Xaml.CompilerProxies
         {
             object value = Enum.Parse(_codeGenFlagsProperty.PropertyType, flags);
             _codeGenFlagsProperty.SetValue(_instance, value);
+        }
+
+        public bool UsingCSWinRT
+        {
+            get { return (bool)_usingCSWinRTProperty.GetValue(_instance, null); }
+            set { _usingCSWinRTProperty.SetValue(_instance, value); }
         }
 
         public Dictionary<String, String> ClassToHeaderFileMap

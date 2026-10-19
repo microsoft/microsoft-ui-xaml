@@ -8,6 +8,11 @@
 #include "ParserUnitTestIncludes.h"
 #include "MockParserCoreServices.h"
 #include <XamlLogging.h>
+#include <ObjectWriter.h>
+#include <ObjectWriterSettings.h>
+#include <ObjectWriterNode.h>
+#include <ObjectWriterNodeList.h>
+#include <XamlPredicateHelpers.h>
 
 using namespace DirectUI;
 
@@ -77,6 +82,280 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         // </x:String>
         VERIFY_IS_TRUE(nodeList[6].get_NodeType() == xntEndObject);
+    }
+
+    void XamlTextParserUnitTests::ParseNamedXStringInXaml()
+    {
+        // x:Name must remain a directive even when its namespace also owns the string element.
+        ParserUtilities parserUtils;
+        const WCHAR* fragments[] =
+        {
+            L"<x:String xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='named'>stringValue</x:String>",
+            L"<x:String xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:ConnectionId='2' x:Key='key' x:Name='named'>stringValue</x:String>",
+            L"<s:String xmlns:s='http://schemas.microsoft.com/winfx/2006/xaml' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='named'>stringValue</s:String>"
+        };
+
+        for (const WCHAR* fragment : fragments)
+        {
+            xstring_ptr markup;
+            VERIFY_SUCCEEDED(xstring_ptr::CloneBuffer(fragment, static_cast<XUINT32>(wcslen(fragment)), &markup));
+            auto nodes = parserUtils.ParseTextXaml(markup);
+            bool hasNameDirective = false;
+            bool hasInitialization = false;
+            bool hasStringValue = false;
+
+            for (const auto& node : nodes)
+            {
+                if (node.get_NodeType() == xntStartProperty)
+                {
+                    const auto& property = node.get_Property();
+                    if (property->IsDirective())
+                    {
+                        hasNameDirective |= std::static_pointer_cast<DirectiveProperty>(property)->get_DirectiveKind() == xdName;
+                    }
+                    else if (property->IsImplicit())
+                    {
+                        hasInitialization |= std::static_pointer_cast<ImplicitProperty>(property)->get_ImplicitPropertyType() == iptInitialization;
+                    }
+                }
+                else if (node.get_NodeType() == xntText)
+                {
+                    xstring_ptr text;
+                    VERIFY_SUCCEEDED(node.get_Text()->get_Text(&text));
+                    hasStringValue |= text.Equals(XSTRING_PTR_EPHEMERAL(L"stringValue"));
+                }
+            }
+
+            VERIFY_IS_TRUE(hasNameDirective);
+            VERIFY_IS_TRUE(hasInitialization);
+            VERIFY_IS_TRUE(hasStringValue);
+            VERIFY_IS_TRUE(nodes.back().get_NodeType() == xntEndObject);
+        }
+    }
+
+    void XamlTextParserUnitTests::ParseEmptyNamedXStringInXaml()
+    {
+        // An absent text initializer must not prevent the name directive from being parsed.
+        ParserUtilities parserUtils;
+        DECLARE_CONST_STRING_IN_TEST_CODE(c_strXamlBuffer,
+            L"<x:String xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='named'/>");
+        auto nodes = parserUtils.ParseTextXaml(c_strXamlBuffer);
+        bool hasNameDirective = false;
+
+        for (const auto& node : nodes)
+        {
+            if (node.get_NodeType() == xntStartProperty && node.get_Property()->IsDirective())
+            {
+                hasNameDirective |= std::static_pointer_cast<DirectiveProperty>(node.get_Property())->get_DirectiveKind() == xdName;
+            }
+        }
+
+        VERIFY_IS_TRUE(hasNameDirective);
+        VERIFY_IS_TRUE(nodes.back().get_NodeType() == xntEndObject);
+    }
+
+    void XamlTextParserUnitTests::EncodeNamedStringConnectsInitializedValue()
+    {
+        // Exercise the textual connection IDs produced by the XAML reader.
+        VerifyStringConnection(false);
+    }
+
+    void XamlTextParserUnitTests::EncodeNamedStringConnectsConvertedId()
+    {
+        // Also accept connection IDs converted before they reach the object writer.
+        VerifyStringConnection(true);
+    }
+
+    void XamlTextParserUnitTests::VerifyStringConnection(bool numericConnection)
+    {
+        // Connection callbacks and name registration must observe one fully initialized string.
+        ParserUtilities parserUtils;
+        std::shared_ptr<ParserErrorReporter> errorReporter;
+        auto schema = parserUtils.GetSchemaContext(errorReporter);
+        std::shared_ptr<XamlType> stringType;
+        std::shared_ptr<XamlNamespace> xamlNamespace;
+        std::shared_ptr<DirectiveProperty> connectionProperty;
+        std::shared_ptr<DirectiveProperty> nameProperty;
+        std::shared_ptr<ImplicitProperty> initializationProperty;
+        VERIFY_SUCCEEDED(schema->get_StringXamlType(stringType));
+        DECLARE_CONST_STRING_IN_TEST_CODE(c_strMarkupNamespace, L"http://schemas.microsoft.com/winfx/2006/xaml");
+        VERIFY_SUCCEEDED(schema->GetXamlXmlNamespace(c_strMarkupNamespace, xamlNamespace));
+        VERIFY_SUCCEEDED(schema->get_X_ConnectionIdProperty(connectionProperty));
+        VERIFY_SUCCEEDED(schema->get_X_NameProperty(nameProperty));
+        VERIFY_SUCCEEDED(schema->get_InitializationProperty(initializationProperty));
+
+        for (bool empty : { false, true })
+        {
+            ObjectWriterSettings settings;
+            settings.set_EnableEncoding(true);
+            std::shared_ptr<ObjectWriter> writer;
+            VERIFY_SUCCEEDED(ObjectWriter::Create(schema, settings, writer));
+            DECLARE_CONST_STRING_IN_TEST_CODE(c_strPrefix, L"x");
+            VERIFY_SUCCEEDED(writer->WriteNamespace(c_strPrefix, xamlNamespace));
+            VERIFY_SUCCEEDED(writer->WriteObject(stringType, false));
+            // Model the reader's text-valued directives separately from preconverted IDs.
+            auto writeProperty = [&](const std::shared_ptr<XamlProperty>& property, const xstring_ptr_view& text)
+            {
+                auto value = std::make_shared<XamlQualifiedObject>();
+                xstring_ptr valueText;
+                VERIFY_SUCCEEDED(text.Promote(&valueText));
+                VERIFY_SUCCEEDED(value->CreateFromXStringPtr(valueText, value));
+                VERIFY_SUCCEEDED(writer->WriteMember(property));
+                VERIFY_SUCCEEDED(writer->WriteValue(value));
+                VERIFY_SUCCEEDED(writer->WriteEndMember());
+            };
+            if (numericConnection)
+            {
+                auto connection = std::make_shared<XamlQualifiedObject>(XamlTypeToken(tpkNative, KnownTypeIndex::Int32));
+                CValue value;
+                value.SetSigned(2);
+                VERIFY_SUCCEEDED(connection->SetValue(value));
+                VERIFY_SUCCEEDED(writer->WriteMember(connectionProperty));
+                VERIFY_SUCCEEDED(writer->WriteValue(connection));
+                VERIFY_SUCCEEDED(writer->WriteEndMember());
+            }
+            else
+            {
+                writeProperty(connectionProperty, XSTRING_PTR_EPHEMERAL(L"2"));
+            }
+            writeProperty(nameProperty, XSTRING_PTR_EPHEMERAL(L"named"));
+            if (!empty)
+            {
+                writeProperty(initializationProperty, XSTRING_PTR_EPHEMERAL(L"stringValue"));
+            }
+            VERIFY_SUCCEEDED(writer->WriteEndObject());
+
+            // Check construction order before the optimizer combines the creation nodes.
+            auto nodeList = writer->GetNodeList();
+            unsigned int creations = 0;
+            bool connected = false;
+            for (const auto& node : nodeList->GetNodeList())
+            {
+                if (node.GetNodeType() == ObjectWriterNodeType::CreateType ||
+                    node.GetNodeType() == ObjectWriterNodeType::CreateTypeWithInitialValue)
+                {
+                    VERIFY_IS_TRUE(empty ? node.GetNodeType() == ObjectWriterNodeType::CreateType :
+                        node.GetNodeType() == ObjectWriterNodeType::CreateTypeWithInitialValue);
+                    ++creations;
+                    VERIFY_IS_FALSE(connected);
+                }
+                else if (node.GetNodeType() == ObjectWriterNodeType::SetConnectionId)
+                {
+                    VERIFY_ARE_EQUAL(1u, creations);
+                    connected = true;
+                }
+            }
+            VERIFY_ARE_EQUAL(1u, creations);
+            VERIFY_IS_TRUE(connected);
+            VERIFY_SUCCEEDED(nodeList->Optimize());
+
+            bool initialized = false;
+            bool named = false;
+            connected = false;
+            // Optimization must preserve initialization, connection IDs, and names.
+            for (const auto& node : nodeList->GetNodeList())
+            {
+                if (node.GetNodeType() == ObjectWriterNodeType::CreateTypeWithConstantBeginInit ||
+                    node.GetNodeType() == ObjectWriterNodeType::PushScopeCreateTypeWithConstantBeginInit ||
+                    node.GetNodeType() == ObjectWriterNodeType::CreateTypeWithTypeConvertedConstantBeginInit ||
+                    node.GetNodeType() == ObjectWriterNodeType::PushScopeCreateTypeWithTypeConvertedConstantBeginInit)
+                {
+                    VERIFY_IS_FALSE(empty);
+                    VERIFY_IS_TRUE(node.GetXamlType()->get_TypeToken() == stringType->get_TypeToken());
+                    const auto& value = node.GetValue()->GetValue().AsString();
+                    VERIFY_IS_FALSE(value.IsNull());
+                    VERIFY_IS_TRUE(value.Equals(XSTRING_PTR_EPHEMERAL(L"stringValue")));
+                    initialized = true;
+                }
+                else if (node.GetNodeType() == ObjectWriterNodeType::CreateTypeBeginInit ||
+                    node.GetNodeType() == ObjectWriterNodeType::PushScopeCreateTypeBeginInit)
+                {
+                    VERIFY_IS_TRUE(empty);
+                    initialized = true;
+                }
+                else if (node.GetNodeType() == ObjectWriterNodeType::SetConnectionId)
+                {
+                    VERIFY_IS_TRUE(initialized);
+                    VERIFY_ARE_EQUAL(2, node.GetValue()->GetValue().AsSigned());
+                    connected = true;
+                }
+                else if (node.GetNodeType() == ObjectWriterNodeType::SetName)
+                {
+                    VERIFY_IS_TRUE(initialized);
+                    VERIFY_IS_TRUE(node.GetValue()->GetValue().AsString().Equals(XSTRING_PTR_EPHEMERAL(L"named")));
+                    named = true;
+                }
+            }
+            VERIFY_IS_TRUE(initialized);
+            VERIFY_IS_TRUE(connected);
+            VERIFY_IS_TRUE(named);
+        }
+    }
+
+    void XamlTextParserUnitTests::EncodeUnknownConditionalTypeWithConnectionId()
+    {
+        // Conditional unknown types must retain constructor-first connection ordering.
+        ParserUtilities parserUtils;
+        std::shared_ptr<ParserErrorReporter> errorReporter;
+        auto schema = parserUtils.GetSchemaContext(errorReporter);
+        std::shared_ptr<XamlNamespace> xamlNamespace;
+        DECLARE_CONST_STRING_IN_TEST_CODE(c_strNamespace, L"http://schemas.microsoft.com/winfx/2006/xaml/presentation");
+        VERIFY_SUCCEEDED(schema->GetXamlXmlNamespace(c_strNamespace, xamlNamespace));
+        std::shared_ptr<XamlType> containerType;
+        VERIFY_SUCCEEDED(schema->GetXamlType(XamlTypeToken(tpkNative, KnownTypeIndex::ContentControl), containerType));
+        std::shared_ptr<XamlProperty> contentProperty;
+        VERIFY_SUCCEEDED(schema->GetXamlProperty(XamlPropertyToken(tpkNative, KnownPropertyIndex::ContentControl_Content), contentProperty));
+        std::shared_ptr<XamlType> unknownType;
+        DECLARE_CONST_STRING_IN_TEST_CODE(c_strFutureControl, L"FutureControl");
+        VERIFY_SUCCEEDED(UnknownType::Create(schema, xamlNamespace, c_strFutureControl, unknownType));
+        std::shared_ptr<XamlType> predicateType;
+        VERIFY_SUCCEEDED(schema->GetXamlType(XamlTypeToken(tpkNative, KnownTypeIndex::IsApiContractPresent), predicateType));
+        DECLARE_CONST_STRING_IN_TEST_CODE(c_strArguments, L"Windows.Foundation.UniversalApiContract,999");
+        auto predicate = std::make_shared<::Parser::XamlPredicateAndArgs>(predicateType, c_strArguments);
+        std::shared_ptr<DirectiveProperty> connectionProperty;
+        VERIFY_SUCCEEDED(schema->get_X_ConnectionIdProperty(connectionProperty));
+        auto connection = std::make_shared<XamlQualifiedObject>(XamlTypeToken(tpkNative, KnownTypeIndex::Int32));
+        CValue value;
+        value.SetSigned(2);
+        VERIFY_SUCCEEDED(connection->SetValue(value));
+
+        ObjectWriterSettings settings;
+        settings.set_EnableEncoding(true);
+        std::shared_ptr<ObjectWriter> writer;
+        VERIFY_SUCCEEDED(ObjectWriter::Create(schema, settings, writer));
+        DECLARE_CONST_STRING_IN_TEST_CODE(c_strPrefix, L"p");
+        VERIFY_SUCCEEDED(writer->WriteNamespace(c_strPrefix, xamlNamespace));
+        VERIFY_SUCCEEDED(writer->WriteObject(containerType, false));
+        VERIFY_SUCCEEDED(writer->WriteMember(contentProperty));
+        VERIFY_SUCCEEDED(writer->WriteConditionalScope(predicate));
+        VERIFY_SUCCEEDED(writer->WriteObject(unknownType, false));
+        VERIFY_SUCCEEDED(writer->WriteMember(connectionProperty));
+        VERIFY_SUCCEEDED(writer->WriteValue(connection));
+        VERIFY_SUCCEEDED(writer->WriteEndMember());
+        VERIFY_SUCCEEDED(writer->WriteEndObject());
+        VERIFY_SUCCEEDED(writer->WriteEndConditionalScope());
+        VERIFY_SUCCEEDED(writer->WriteEndMember());
+        VERIFY_SUCCEEDED(writer->WriteEndObject());
+        auto nodeList = writer->GetNodeList();
+        VERIFY_SUCCEEDED(nodeList->Optimize());
+
+        bool created = false;
+        bool connected = false;
+        for (const auto& node : nodeList->GetNodeList())
+        {
+            if (node.GetNodeType() == ObjectWriterNodeType::PushScopeCreateTypeBeginInit)
+            {
+                created |= node.GetXamlType() == unknownType;
+            }
+            else if (node.GetNodeType() == ObjectWriterNodeType::SetConnectionId)
+            {
+                VERIFY_IS_TRUE(created);
+                VERIFY_ARE_EQUAL(2, node.GetValue()->GetValue().AsSigned());
+                connected = true;
+            }
+        }
+        VERIFY_IS_TRUE(created);
+        VERIFY_IS_TRUE(connected);
     }
 
     void XamlTextParserUnitTests::ParseIgnorableElements()

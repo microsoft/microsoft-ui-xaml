@@ -505,7 +505,12 @@ HRESULT XamlSortedAttributes::GetXamlAttributeProperty(
     }
     else
     {
-        if (bNamespaceIsOwnerNamespace && inTagType)
+        std::shared_ptr<DirectiveProperty> directiveProperty;
+        IFC_RETURN(schemaContext->GetXamlDirective(xamlNamespace, inPropertyName->get_Name(), directiveProperty));
+
+        // An explicitly qualified directive takes precedence even when the element is in the same namespace.
+        if (bNamespaceIsOwnerNamespace && inTagType &&
+            (!directiveProperty || inPropertyName->get_Prefix().GetCount() == 0))
         {
             IFC_RETURN(m_ParserContext->GetXamlProperty(inTagType, inPropertyName->get_Name(), xamlProperty));
 
@@ -521,9 +526,6 @@ HRESULT XamlSortedAttributes::GetXamlAttributeProperty(
         if (!xamlProperty)
         {
             // Check if it's a processing attribute e.g. x:Key, x:Name, x:Class, etc.
-            std::shared_ptr<DirectiveProperty> directiveProperty;
-            IFC_RETURN(schemaContext->GetXamlDirective(xamlNamespace, inPropertyName->get_Name(), directiveProperty));
-
             if (directiveProperty && xamlNamespace->IsConditional())
             {
                 // Conditionally declared directives are not permitted, as this opens
@@ -610,5 +612,4 @@ HRESULT XamlSortedAttributes::ReportError(XUINT32 errorCode, _In_ const xstring_
 
     return S_OK;
 }
-
 

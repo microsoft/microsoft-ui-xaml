@@ -227,7 +227,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 <#+             if(fieldInfo != null) #>
 <#+             { #>
 <#+                 Output_ApiInformationCall_Push(element.ApiInformation, Indent.TwoTabs); #>
-                <#=fieldInfo.FieldName#>(nullptr);
+                <#=fieldInfo.FieldName#>(<#=fieldInfo.FieldTypeName == typeof(string).FullName ? "::winrt::hstring{}" : "nullptr"#>);
 <#+                 Output_ApiInformationCall_Pop(element.ApiInformation, Indent.TwoTabs); #>
 <#+             } #>
                 break;
@@ -246,7 +246,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 <#+     string objectName = element.ElementCodeName;#>
 <#+     Output_PushDeprecated(element.Type.IsDeprecated()); #>
 <#+     Output_ApiInformationCall_Push(element.ApiInformation, Indent.TwoTabs); #>
-                auto targetElement = target.as<<#=element.Type#>>();
+                auto targetElement = <#=element.Type.IsString() ? "target ? " : ""#>target.as<<#=element.Type#>>()<#=element.Type.IsString() ? " : ::winrt::hstring{}" : ""#>;
 <#+     if (element.HasFieldDefinition) {#>
 <#+         objectName = $"{element.FieldDefinition.FieldName}()"; #>
                 this-><#=element.FieldDefinition.FieldName#>(targetElement);

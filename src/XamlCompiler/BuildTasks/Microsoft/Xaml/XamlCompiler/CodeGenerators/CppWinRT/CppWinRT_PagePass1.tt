@@ -51,16 +51,17 @@ namespace winrt::<#=Colonize(Model.CodeInfo.ClassName.Namespace)#>::implementati
         void UnloadObject(<#=Projection(KnownNamespaces.Xaml)#>::DependencyObject const& dependencyObject);
         void DisconnectUnloadedObject(int32_t connectionId);
 <#  foreach (var fieldData in Model.CodeInfo.FieldDeclarations) {
+        string fieldType = fieldData.FieldType != null ? fieldData.FieldType.FullName.CppWinRTName() : Projection(fieldData.FieldTypeName);
         if (fieldData.IsDeprecated) { #>
 #pragma warning(push)
 #pragma warning(disable : 4973)
 <#      }#>
 
-        <#=Projection(fieldData.FieldTypeName)#> <#=fieldData.FieldName#>()
+        <#=fieldType#> <#=fieldData.FieldName#>()
         {
             return _<#=fieldData.FieldName#>;
         }
-        void <#=fieldData.FieldName#>(<#=Projection(fieldData.FieldTypeName)#> value)
+        void <#=fieldData.FieldName#>(<#=fieldType#> value)
         {
             _<#=fieldData.FieldName#> = value;
         }
@@ -81,12 +82,14 @@ namespace winrt::<#=Colonize(Model.CodeInfo.ClassName.Namespace)#>::implementati
         struct <#=bindUniverse.BindingsClassName#>;
 <#  }#>
 
-<#  foreach (var fieldData in Model.CodeInfo.FieldDeclarations) { #>
+<#  foreach (var fieldData in Model.CodeInfo.FieldDeclarations) {
+        string fieldType = fieldData.FieldType != null ? fieldData.FieldType.FullName.CppWinRTName() : Projection(fieldData.FieldTypeName);
+        string initializer = fieldData.IsValueType || fieldData.FieldTypeName == typeof(string).FullName ? "" : "nullptr"; #>
 <#      if (fieldData.IsDeprecated) { #>
 #pragma warning(push)
 #pragma warning(disable : 4973)
 <#      }#>
-        <#=Projection(fieldData.FieldTypeName)#> _<#=fieldData.FieldName#>{nullptr};
+        <#=fieldType#> _<#=fieldData.FieldName#>{<#=initializer#>};
 <#      if (fieldData.IsDeprecated) { #>
 #pragma warning(pop)
 <#      }#>

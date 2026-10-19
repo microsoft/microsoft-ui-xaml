@@ -1284,7 +1284,18 @@ _Check_return_ HRESULT ObjectWriter::Logic_ShouldWriteMemberCreateWithCtor(_Out_
     {
         XamlDirectives directiveKind = std::static_pointer_cast<DirectiveProperty>(m_spContext->Current().get_Member())->get_DirectiveKind();
 
-        if (directiveKind == xdConnectionId || directiveKind == xdUid)
+        if (directiveKind == xdConnectionId)
+        {
+            // Wait for a string's text initializer instead of constructing it for the connection ID.
+            // Unresolved conditional types retain the existing constructor path.
+            if (!m_spContext->Current().get_Type()->IsUnknown())
+            {
+                bool isString = false;
+                IFC_RETURN(m_spContext->Current().get_Type()->IsString(isString));
+                fOut = !isString;
+            }
+        }
+        else if (directiveKind == xdUid)
         {
             fOut = true;
         }
@@ -1357,8 +1368,6 @@ _Check_return_ HRESULT ObjectWriter::Logic_CreateWithCtor()
         m_spContext->get_RootNamescope()->EnsureNamescopeOwner(qoInst->GetDependencyObject());
     }
 
-    IFC_RETURN(Logic_ApplyCurrentSavedDirectives());
-
     if (!(m_spContext->Current().get_Type()->IsUnknown()))
     {
         IFC_RETURN(m_spContext->Current().get_Type()->IsCollection(bIsCollection));
@@ -1381,6 +1390,9 @@ _Check_return_ HRESULT ObjectWriter::Logic_CreateWithCtor()
         objectLineInfo,
         m_spContext->Current().get_Type(),
         m_spContext->Current().get_Instance()));
+
+    // Saved name and language assignments require BeginInit's parsing state.
+    IFC_RETURN(Logic_ApplyCurrentSavedDirectives());
 
     return S_OK;
 }
@@ -1418,6 +1430,40 @@ _Check_return_ HRESULT ObjectWriter::Logic_ApplyCurrentSavedDirectives()
             ++iterSavedDirectives)
         {
             auto entry = *iterSavedDirectives;
+
+            // Connect deferred strings only after their initialized instance exists.
+            if (entry.first->get_DirectiveKind() == xdConnectionId)
+            {
+                auto connectionId = entry.second;
+                if (m_bIsEncoding)
+                {
+                    IFC_RETURN(m_spRuntime->PushConstant(GetLineInfo(), entry.second));
+                    // The connection ID may still be text at this point in which case it needs 
+                    // to be converted to a signed int so it can be consumed later by the 
+                    // SetConnectionId node.
+                    if (entry.second->GetValue().GetType() != valueSigned)
+                    {
+                        std::shared_ptr<XamlType> connectionType;
+                        std::shared_ptr<XamlTextSyntax> connectionSyntax;
+                        IFC_RETURN(entry.first->get_Type(connectionType));
+                        IFC_RETURN(entry.first->get_TextSyntax(connectionSyntax));
+                        IFC_RETURN(m_spRuntime->TypeConvertValue(
+                            GetLineInfo(),
+                            m_spContext->get_TextSyntaxContext(),
+                            connectionType,
+                            connectionSyntax,
+                            entry.second,
+                            true,
+                            connectionId));
+                    }
+                }
+                IFC_RETURN(m_spRuntime->SetConnectionId(
+                    GetLineInfo(),
+                    m_spContext->get_RootInstance(),
+                    connectionId,
+                    m_spContext->Current().get_Instance()));
+                continue;
+            }
 
             if (!XamlProperty::AreEqual(spKeyProperty, entry.first))
             {

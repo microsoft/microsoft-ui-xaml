@@ -55,29 +55,59 @@ namespace winrt::Simple::implementation
         {
         case 2:
             {
+                auto targetElement = target ? target.as<::winrt::hstring>() : ::winrt::hstring{};
+                this->NamedResourceString(targetElement);
+            }
+            break;
+        case 3:
+            {
+                auto targetElement = target ? target.as<::winrt::hstring>() : ::winrt::hstring{};
+                this->NamedEmptyString(targetElement);
+            }
+            break;
+        case 4:
+            {
                 auto targetElement = target.as<::winrt::Simple::PropBag>();
                 this->propertyBagObject(targetElement);
             }
             break;
-        case 3:
+        case 5:
             {
                 auto targetElement = target.as<::winrt::Simple::PropBag>();
                 this->propertyBagObjectSecond(targetElement);
             }
             break;
-        case 5:
+        case 6:
+            {
+                auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Grid>();
+                this->MainGrid(targetElement);
+            }
+            break;
+        case 7:
+            {
+                auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
+                this->NamedStringTextBlock(targetElement);
+            }
+            break;
+        case 8:
+            {
+                auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
+                this->EmptyStringTextBlock(targetElement);
+            }
+            break;
+        case 10:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 this->Button1(targetElement);
             }
             break;
-        case 6:
+        case 11:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 this->Button2(targetElement);
             }
             break;
-        case 7:
+        case 12:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 auto weakThis = ::winrt::make_weak<class_type>(*this);
@@ -95,7 +125,7 @@ namespace winrt::Simple::implementation
                 });
             }
             break;
-        case 8:
+        case 13:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 auto weakThis = ::winrt::make_weak<class_type>(*this);
@@ -105,6 +135,18 @@ namespace winrt::Simple::implementation
                         ::winrt::get_self<D>(t)->EventHandlerOnBase(p0, p1);
                     }
                 });
+            }
+            break;
+        case 14:
+            {
+                auto targetElement = target ? target.as<::winrt::hstring>() : ::winrt::hstring{};
+                this->NamedEmptyInlineString(targetElement);
+            }
+            break;
+        case 15:
+            {
+                auto targetElement = target ? target.as<::winrt::hstring>() : ::winrt::hstring{};
+                this->NamedInlineString(targetElement);
             }
             break;
         }
@@ -156,10 +198,10 @@ namespace winrt::Simple::implementation
         {
             switch(connectionId)
             {
-            case 4: // MainPage.xaml line 45
+            case 9: // MainPage.xaml line 54
                 {
                     auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Documents::Run>();
-                    obj4 = targetElement;
+                    obj9 = targetElement;
                 }
                 break;
             }
@@ -173,7 +215,7 @@ namespace winrt::Simple::implementation
 
     private:
         // Fields for each control that has bindings.
-        ::winrt::Microsoft::UI::Xaml::Documents::Run obj4 { nullptr };
+        ::winrt::Microsoft::UI::Xaml::Documents::Run obj9 { nullptr };
 
         // Update methods for each path node used in binding steps.
 
@@ -192,8 +234,8 @@ namespace winrt::Simple::implementation
         {
             if((phase & ((1 << 0) | NOT_PHASED )) != 0)
             {
-                // MainPage.xaml line 45
-                Set_Microsoft_UI_Xaml_Documents_Run_Text(obj4, obj);
+                // MainPage.xaml line 54
+                Set_Microsoft_UI_Xaml_Documents_Run_Text(obj9, obj);
             }
         }
 
