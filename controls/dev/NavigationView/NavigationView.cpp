@@ -1400,7 +1400,16 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
     if (m_OrientationChangedPendingAnimation)
     {
         m_OrientationChangedPendingAnimation = false;
-        AnimateSelectionChanged(SelectedItem());
+        // A selected child inside a collapsed parent shows its indicator on the parent.
+        auto const container = FindLowestLevelContainerToDisplaySelectionIndicator();
+        if (container && !container.IsSelected() && container.IsChildSelected())
+        {
+            AnimateSelectionChanged(container);
+        }
+        else
+        {
+            AnimateSelectionChanged(SelectedItem());
+        }
     }
 }
 
