@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -92,6 +93,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         }
 
         ApplySelectedMode();
+        AnnounceModeDescription(); // snippet:skip
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Width intent -> {0}", SampleShaping.Label(WidthModeSelector)));
     }
 
@@ -159,6 +161,12 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         RefreshReadouts();
     }
     // </snippet>
+
+    // TextBlock does not raise LiveRegionChanged on a text change; raise it for the user's mode change only.
+    private void AnnounceModeDescription() =>
+        (FrameworkElementAutomationPeer.FromElement(ModeDescription)
+            ?? FrameworkElementAutomationPeer.CreatePeerForElement(ModeDescription))
+            ?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
 
     private void PopulateColumnSelector(string? preferredHeader)
     {

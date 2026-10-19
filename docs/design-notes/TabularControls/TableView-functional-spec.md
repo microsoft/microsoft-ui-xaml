@@ -40,7 +40,7 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - Grouped/banded sections, declared on the data source as `TableViewSource.GroupBy(keySelector)` rather than as a separate `GroupedItemsSource` property. — **PR3, shipped**
 
 ### Column capabilities
-- Width + `MinWidth`/`MaxWidth` (pixel in v1; `Auto`/`*` fall back to default width). — **PR2** · UI resize **PR3**
+- Width + `MinWidth`/`MaxWidth` (`Pixel` exact; `Auto` grows to the widest realized cell within a data set; `*` shares the viewport). — **PR2** · UI resize **PR3**
 - Reorder (drag + `MoveColumn`). — **PR3**
 - Show/hide via `Visibility`. — **PR2**
 - Sticky (always-visible) header. — **PR2**
@@ -53,7 +53,7 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - Single + multi selection (Ctrl/Shift). — **PR3**
 - Per-row/cell context menu; checkbox selection (File-Explorer-specific). — **PR3** / surface
 - Single-level grouping with expand/collapse group headers. — **PR3, shipped** (see [Grouping](#grouping))
-- Hierarchical rows from a flat source via `TableViewSource.ParentBy(keySelector, parentKeySelector)` / `ClearParentBy()`, no depth limit; row expand/collapse, `TableView.ExpandAllRows()` / `CollapseAllRows()`. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md). — **PR3**
+- Hierarchical rows from a flat source via `TableViewSource.ParentBy(keySelector, parentKeySelector)` / `ClearParentBy()`, no depth limit; row expand/collapse, `TableView.ExpandAllRows()` / `CollapseAllRows()`; per-row programmatic expand/collapse is out of scope for v1. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md). — **PR3**
 - Opt-in live shaping (`TableViewSource.IsLiveShaping`): reshapes when an item's `PropertyChanged` moves a sort, filter, group or parent value. — **PR3**
 - Row drag-drop, marquee selection. — *out of scope*
 
