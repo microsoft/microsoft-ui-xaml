@@ -2689,6 +2689,49 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(WaitForTipState(tip, isOpen: false), "TeachingTip should close through its binding");
         }
 
+        // Scenario (issue #8095, light-dismiss variant): a light-dismiss tip whose IsOpen is bound by ElementName to a
+        //           ToggleButton is opened and then closed through the binding, which also closes its light-dismiss popup.
+        // Expected: the IsOpen binding survives the close, so checking the button opens the tip again.
+        // A failure means: closing the light-dismiss popup replaced the app's IsOpen binding with a local value.
+        [TestMethod]
+        public void BoundLightDismissTipReopensAfterBindingDrivenClose()
+        {
+            TeachingTip tip = null;
+            Microsoft.UI.Xaml.Controls.Primitives.ToggleButton toggle = null;
+            var closed = new AutoResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                var root = (StackPanel)XamlReader.Load(@"
+                    <StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                        <ToggleButton x:Name='Toggle' Content='Toggle'/>
+                        <controls:TeachingTip x:Name='Tip' Title='Title' Subtitle='Subtitle' IsLightDismissEnabled='True'
+                            IsOpen='{Binding ElementName=Toggle, Path=IsChecked}'/>
+                    </StackPanel>");
+                toggle = (Microsoft.UI.Xaml.Controls.Primitives.ToggleButton)root.FindName("Toggle");
+                tip = (TeachingTip)root.FindName("Tip");
+                tip.Closed += (s, e) => closed.Set();
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            for (int round = 1; round <= 2; round++)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), $"IsOpen binding should be set before opening (round {round})");
+                    toggle.IsChecked = true;
+                });
+                Verify.IsTrue(WaitForTipState(tip, isOpen: true), $"TeachingTip should open through its binding (round {round})");
+
+                RunOnUIThread.Execute(() => toggle.IsChecked = false);
+                Verify.IsTrue(closed.WaitOne(TimeSpan.FromSeconds(10)), $"TeachingTip should raise Closed (round {round})");
+                Verify.IsTrue(WaitForTipState(tip, isOpen: false), $"TeachingTip should close through its binding (round {round})");
+            }
+        }
+
         private static void VerifyBoundTipOpensAndCloses(TeachingTip tip, Microsoft.UI.Xaml.Controls.Primitives.ToggleButton target, string what)
         {
             RunOnUIThread.Execute(() =>
