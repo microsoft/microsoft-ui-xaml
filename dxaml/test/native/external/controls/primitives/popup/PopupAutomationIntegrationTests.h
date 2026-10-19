@@ -113,6 +113,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyPopupOnlySubscriberCreatesEventProvider)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a popup-root subscriber receives an event before any item provider or main UIA host exists.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
     private:
         enum class PopupHostChange { None, NewPopup, NonWindowed, NestedInline };
 
@@ -147,6 +152,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         void VerifyParentlessPopupAutomationTreeCommon(bool hasFrameAP);
         void VerifyWindowedPopupProviderLifetime(PopupHostChange hostChange, bool createWithStructureListener = false, bool verifyInvokedEvent = false);
         void VerifyWindowedPopupListViewDataPeerHost(bool createBeforeNavigation);
+        void VerifyPopupOnlyInvokedEvent(bool createEventProvider);
 
         static WCHAR s_automationName[];
         static WCHAR s_automationId[];

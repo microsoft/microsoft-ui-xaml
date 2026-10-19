@@ -55,6 +55,7 @@
 #include "CommonBrowserHost.h"
 #include "WinBrowserHost.h"
 #include "UIAWindow.h"
+#include "UIAWrapper.h"
 #include <windows.applicationmodel.preview.holographic.h>
 #include <XamlSchemaContext.h>
 #include "ParserSettings.h"
@@ -5841,7 +5842,7 @@ _Check_return_ HRESULT
 CCoreServices::UIARaiseAutomationEvent(_In_ CAutomationPeer *pAP,
                                        _In_ UIAXcp::APAutomationEvents eAutomationEvent)
 {
-    CUIAWindow* uiaWindow = GetUIAWindowForElementRootNoRef(pAP->GetRootNoRef());
+    CUIAWindow* uiaWindow = GetUIAWindowForAutomationPeerNoRef(pAP);
     if (uiaWindow)
     {
         IFC_RETURN_ALLOW(uiaWindow->UIARaiseAutomationEvent(pAP, eAutomationEvent), E_NOTIMPL);
@@ -5871,7 +5872,7 @@ CCoreServices::UIARaiseAutomationPropertyChangedEvent(_In_ CAutomationPeer *pAP,
                                                       _In_ const CValue& oldValue,
                                                       _In_ const CValue& newValue)
 {
-    CUIAWindow* uiaWindow = GetUIAWindowForElementRootNoRef(pAP->GetRootNoRef());
+    CUIAWindow* uiaWindow = GetUIAWindowForAutomationPeerNoRef(pAP);
     if (uiaWindow)
     {
         IFC_RETURN_ALLOW(uiaWindow->UIARaiseAutomationPropertyChangedEvent(pAP, eAutomationProperty, oldValue, newValue), E_NOTIMPL);
@@ -5910,7 +5911,7 @@ CCoreServices::UIARaiseFocusChangedEventOnUIAWindow(_In_ CDependencyObject* send
 _Check_return_ HRESULT
 CCoreServices::UIARaiseTextEditTextChangedEvent(_In_ CAutomationPeer *pAP, _In_ UIAXcp::AutomationTextEditChangeType automationTextEditType, _In_ CValue *pChangedData)
 {
-    CUIAWindow* uiaWindow = GetUIAWindowForElementRootNoRef(pAP->GetRootNoRef());
+    CUIAWindow* uiaWindow = GetUIAWindowForAutomationPeerNoRef(pAP);
     if (uiaWindow)
     {
         IFC_RETURN_ALLOW(uiaWindow->UIARaiseTextEditTextChangedEvent(pAP, automationTextEditType, pChangedData), E_NOTIMPL);
@@ -5925,12 +5926,48 @@ _Check_return_ HRESULT CCoreServices::UIARaiseNotificationEvent(
     xstring_ptr displayString,
     _In_ xstring_ptr activityId)
 {
-    CUIAWindow* uiaWindow = GetUIAWindowForElementRootNoRef(ap->GetRootNoRef());
+    CUIAWindow* uiaWindow = GetUIAWindowForAutomationPeerNoRef(ap);
     if (uiaWindow)
     {
         IFC_RETURN_ALLOW(uiaWindow->UIARaiseNotificationEvent(ap, notificationKind, notificationProcessing, displayString, activityId), E_NOTIMPL);
     }
     return S_OK;
+}
+
+CUIAWindow* CCoreServices::GetUIAWindowForAutomationPeerNoRef(_In_ CAutomationPeer* peer)
+{
+    // Popup-only clients may never create the main window's UIA host, and the
+    // element can leave its tree before raising an event. Reuse its valid provider host.
+    if (auto wrapper = static_cast<CUIAWrapper*>(peer->GetUIAWrapper()))
+    {
+        if (auto window = wrapper->GetUIAWindowIfValid())
+        {
+            return window;
+        }
+    }
+    if (auto owner = peer->GetElementOwnerNoRef())
+    {
+        return GetUIAWindowForElementNoRef(owner);
+    }
+    return GetUIAWindowForElementRootNoRef(peer->GetRootNoRef());
+}
+
+CUIAWindow* CCoreServices::GetUIAWindowForElementNoRef(_In_ CDependencyObject* element)
+{
+    xref_ptr<CPopup> popup(do_pointer_cast<CPopup>(element));
+    if (!popup || !popup->IsOpen() || !popup->IsWindowed())
+    {
+        popup = element->GetFirstAncestorPopup(true /* windowedPopupOnly */);
+    }
+    if (popup && popup->IsOpen() && popup->IsWindowed())
+    {
+        popup->EnsureUIAWindow();
+        if (auto popupWindow = popup->GetUIAWindow())
+        {
+            return popupWindow;
+        }
+    }
+    return GetUIAWindowForElementRootNoRef(GetRootForElement(element));
 }
 
 CUIAWindow* CCoreServices::GetUIAWindowForElementRootNoRef(_In_ CDependencyObject* elementRoot)

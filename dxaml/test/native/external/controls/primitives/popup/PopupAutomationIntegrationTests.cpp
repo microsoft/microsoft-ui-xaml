@@ -293,6 +293,16 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupInvokedEventWithStructu
 
 void PopupAutomationIntegrationTests::VerifyWindowedPopupInvokedEventAfterClickClosesPopup()
 {
+    VerifyPopupOnlyInvokedEvent(false /* createEventProvider */);
+}
+
+void PopupAutomationIntegrationTests::VerifyPopupOnlySubscriberCreatesEventProvider()
+{
+    VerifyPopupOnlyInvokedEvent(true /* createEventProvider */);
+}
+
+void PopupAutomationIntegrationTests::VerifyPopupOnlyInvokedEvent(bool createEventProvider)
+{
     xaml_primitives::Popup^ popup;
     xaml_controls::MenuFlyoutItem^ item;
     int clickCount = 0;
@@ -319,7 +329,10 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupInvokedEventAfterClickC
         item->Click += ref new xaml::RoutedEventHandler([&](Platform::Object^, xaml::RoutedEventArgs^)
         {
             clickCount++;
-            popup->IsOpen = false;
+            if (!createEventProvider)
+            {
+                popup->IsOpen = false;
+            }
         });
     });
     PopupHelper::OpenPopup(popup);
@@ -331,26 +344,57 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupInvokedEventAfterClickC
     });
     UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
     {
-        AutomationClient::UIAElementInfo info{};
-        info.m_Name = L"Close from Click";
-        auto client = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, info);
+        std::shared_ptr<AutomationClient::AutomationClientManager> client;
+        if (createEventProvider)
+        {
+            client = std::make_shared<AutomationClient::AutomationClientManager>();
+            wrl::ComPtr<IUIAutomation> automation;
+            client->GetAutomation(&automation);
+            wrl::ComPtr<IUIAutomationElement> rootElement;
+            LogThrow_IfFailed(automation->ElementFromHandle(popupWindow, &rootElement));
+            client->SetCurrentUIAutomationElement(rootElement.Get());
+        }
+        else
+        {
+            AutomationClient::UIAElementInfo info{};
+            info.m_Name = L"Close from Click";
+            client = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, info);
+        }
         auto event = std::make_shared<Event>();
-        handler.Attach(new AutomationClient::AutomationEventHandler(client, event, TreeScope_Element, UIA_Invoke_InvokedEventId));
+        handler.Attach(new AutomationClient::AutomationEventHandler(
+            client, event, createEventProvider ? TreeScope_Subtree : TreeScope_Element, UIA_Invoke_InvokedEventId));
         handler->AttachEventHandler();
         wrl::ComPtr<IUIAutomationElement> element;
         client->GetCurrentUIAutomationElement(&element);
         VERIFY_IS_NOT_NULL(element.Get());
-        wrl::ComPtr<IUIAutomationInvokePattern> pattern;
-        LogThrow_IfFailed(element->GetCurrentPatternAs(UIA_InvokePatternId, IID_PPV_ARGS(&pattern)));
-        LogThrow_IfFailed(pattern->Invoke());
+        if (!createEventProvider)
+        {
+            wrl::ComPtr<IUIAutomationInvokePattern> pattern;
+            LogThrow_IfFailed(element->GetCurrentPatternAs(UIA_InvokePatternId, IID_PPV_ARGS(&pattern)));
+            LogThrow_IfFailed(pattern->Invoke());
+        }
+    });
+    if (createEventProvider)
+    {
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(item);
+            auto provider = safe_cast<xaml_automation::Provider::IInvokeProvider^>(
+                peer->GetPattern(xaml_automation_peers::PatternInterface::Invoke));
+            provider->Invoke();
+        });
+    }
+    UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+    {
         handler->ConfirmAndUnregister();
     });
     RunOnUIThread([&]()
     {
-        VERIFY_IS_FALSE(popup->IsOpen);
+        VERIFY_ARE_EQUAL(createEventProvider, popup->IsOpen);
         VERIFY_ARE_EQUAL(1, clickCount);
         VERIFY_IS_FALSE(xaml_automation_peers::AutomationPeer::ListenerExists(
             xaml_automation_peers::AutomationEvents::InvokePatternOnInvoked));
+        popup->IsOpen = false;
     });
 }
 

@@ -2980,28 +2980,9 @@ HRESULT CUIAWindow::CreateProviderForAP(CAutomationPeer* pAP, CUIAWrapper** ppRe
     // Preserve the supplied host only when no element owner can be resolved.
     if (auto owner = pAP->GetElementOwnerNoRef())
     {
-        if (auto root = pAP->GetRootNoRef())
+        if (auto ownerWindow = pAP->GetContext()->GetUIAWindowForElementNoRef(owner))
         {
-            if (auto rootWindow = pAP->GetContext()->GetUIAWindowForElementRootNoRef(root))
-            {
-                providerWindow = rootWindow;
-            }
-        }
-        xref_ptr<CPopup> popup(do_pointer_cast<CPopup>(owner));
-        if (!popup || !popup->IsOpen() || !popup->IsWindowed())
-        {
-            popup = owner->GetFirstAncestorPopup(true /* windowedPopupOnly */);
-        }
-
-        // Event delivery and peer QI can start at the island window. Newly exposed
-        // popup providers must use the same host as providers discovered by navigation.
-        if (popup && popup->IsOpen() && popup->IsWindowed())
-        {
-            popup->EnsureUIAWindow();
-            if (auto popupWindow = popup->GetUIAWindow())
-            {
-                providerWindow = popupWindow;
-            }
+            providerWindow = ownerWindow;
         }
     }
 

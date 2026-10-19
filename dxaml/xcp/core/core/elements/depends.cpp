@@ -740,25 +740,10 @@ _Check_return_ HRESULT CDependencyObject::TryReCreateUIAWrapper()
     {
         if (auto wrapper = currentAP->GetUIAWrapper())
         {
-            if (VisualTree* visualTree = GetVisualTree())
+            if (GetVisualTree())
             {
                 CUIAWindow* oldUIAWindow = static_cast<CUIAWrapper*>(wrapper)->GetUIAWindow();
-                CUIAWindow* uiaWindow = GetContext()->GetUIAWindowForElementRootNoRef(visualTree->GetRootElementNoRef());
-
-                // Use the destination popup host for both comparison and provider creation.
-                xref_ptr<CPopup> popup(do_pointer_cast<CPopup>(this));
-                if (!popup || !popup->IsOpen() || !popup->IsWindowed())
-                {
-                    popup = GetFirstAncestorPopup(true /* windowedPopupOnly */);
-                }
-                if (popup && popup->IsOpen() && popup->IsWindowed())
-                {
-                    popup->EnsureUIAWindow();
-                    if (auto popupWindow = popup->GetUIAWindow())
-                    {
-                        uiaWindow = popupWindow;
-                    }
-                }
+                CUIAWindow* uiaWindow = GetContext()->GetUIAWindowForElementNoRef(this);
 
                 if (oldUIAWindow != uiaWindow)
                 {
