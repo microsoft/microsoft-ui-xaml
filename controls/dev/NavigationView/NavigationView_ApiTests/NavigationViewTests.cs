@@ -698,6 +698,55 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that with a PaneTitle the pane toggle button follows runtime OpenPaneLength and NavigationView width changes.")]
+        public void VerifyPaneToggleButtonWidthFollowsOpenPaneLengthWithPaneTitle()
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                // With a PaneTitle and the pane open, the toggle button is stretched to the effective OpenPaneLength.
+                navView = new NavigationView();
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                navView.PaneTitle = "Title";
+                navView.OpenPaneLength = 250.0;
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item", Icon = new SymbolIcon(Symbol.Home) });
+                navView.Width = 1200.0;
+                navView.Height = 600.0;
+                Content = navView;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var toggleButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                Verify.IsNotNull(toggleButton);
+                Verify.IsTrue(navView.IsPaneOpen);
+                Verify.AreEqual(250.0, toggleButton.Width, "TogglePaneButton should be OpenPaneLength wide on first render");
+
+                navView.OpenPaneLength = 280.0;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var toggleButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                Verify.AreEqual(280.0, toggleButton.Width, "TogglePaneButton should follow OpenPaneLength changes");
+
+                // A NavigationView narrower than OpenPaneLength clamps the effective open pane length to its width.
+                navView.Width = 200.0;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var toggleButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                Verify.AreEqual(200.0, toggleButton.Width, "TogglePaneButton should follow the clamped open pane length");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
         public void VerifyValuesCoercion()
         {
             RunOnUIThread.Execute(() =>
