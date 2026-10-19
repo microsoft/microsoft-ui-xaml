@@ -2316,19 +2316,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 LogHierarchyState(parent, child, $"after switching to {mode}");
             }
 
-            // Diagnostic only (not asserted): the same collapsed-parent state reached in Top without a mode switch.
-            RunOnUIThread.Execute(() => navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top);
-            WaitForSelectionIndicatorAnimation();
-            RunOnUIThread.Execute(() => navView.SelectedItem = allItems[0]);
-            WaitForSelectionIndicatorAnimation();
-            RunOnUIThread.Execute(() => parent.IsExpanded = true);
-            WaitForSelectionIndicatorAnimation();
-            RunOnUIThread.Execute(() => navView.SelectedItem = child);
-            WaitForSelectionIndicatorAnimation();
-            RunOnUIThread.Execute(() => parent.IsExpanded = false);
-            WaitForSelectionIndicatorAnimation();
-            LogHierarchyState(parent, child, "Top without a mode switch");
-
             foreach (var failure in failures)
             {
                 Log.Error(failure);

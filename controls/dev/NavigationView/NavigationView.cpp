@@ -1400,16 +1400,7 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
     if (m_OrientationChangedPendingAnimation)
     {
         m_OrientationChangedPendingAnimation = false;
-        // A selected child inside a collapsed parent shows its indicator on the parent.
-        auto const container = FindLowestLevelContainerToDisplaySelectionIndicator();
-        if (container && !container.IsSelected() && container.IsChildSelected())
-        {
-            AnimateSelectionChanged(container);
-        }
-        else
-        {
-            AnimateSelectionChanged(SelectedItem());
-        }
+        AnimateSelectionChangedToSelectedItem();
     }
 }
 
@@ -2030,6 +2021,20 @@ void NavigationView::AnimateSelectionChangedToItem(const winrt::IInspectable& se
     if (selectedItem && !IsSelectionSuppressed(selectedItem))
     {
         AnimateSelectionChanged(selectedItem);
+    }
+}
+
+void NavigationView::AnimateSelectionChangedToSelectedItem()
+{
+    // A selected child inside a collapsed parent shows its indicator on the parent.
+    auto const container = FindLowestLevelContainerToDisplaySelectionIndicator();
+    if (container && !container.IsSelected() && container.IsChildSelected())
+    {
+        AnimateSelectionChanged(container);
+    }
+    else
+    {
+        AnimateSelectionChanged(SelectedItem());
     }
 }
 
@@ -4350,7 +4355,7 @@ void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::
             // while the ItemsRepeater was still unloaded. Thus m_selectionModel still does not know about that selection.
             UpdateSelectionModelSelectionForSelectedItem(item);
         }
-        AnimateSelectionChanged(item);
+        AnimateSelectionChangedToSelectedItem();
     }
 }
 
