@@ -791,6 +791,78 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that an OpenPaneLength smaller than the close button does not give the pane toggle button a negative width.")]
+        public void VerifyPaneToggleButtonWidthIsNotNegativeWithSmallOpenPaneLength()
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+                navView.PaneTitle = "Title";
+                navView.CompactPaneLength = 24.0;
+                navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Visible;
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item", Icon = new SymbolIcon(Symbol.Home) });
+                navView.Width = 1200.0;
+                navView.Height = 600.0;
+                Content = navView;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView.IsPaneOpen = true;
+            });
+            IdleSynchronizer.Wait();
+
+            // Each step re-computes the toggle button width while the open overlay pane shows the 40px close button.
+            var steps = new (string Name, Action Change)[] {
+                ("OpenPaneLength = 32", () => navView.OpenPaneLength = 32.0),
+                ("CompactPaneLength = 28", () => navView.CompactPaneLength = 28.0),
+                ("IsBackButtonVisible = Collapsed", () => navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed),
+                ("IsBackButtonVisible = Visible", () => navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Visible),
+                ("NavigationView.Width = 30", () => navView.Width = 30.0),
+            };
+
+            foreach (var step in steps)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment(step.Name);
+                    try
+                    {
+                        step.Change();
+                    }
+                    catch (Exception e)
+                    {
+                        Verify.Fail(step.Name + " threw: " + e.Message);
+                    }
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var toggleButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                    Verify.IsNotNull(toggleButton);
+                    Log.Comment("IsPaneOpen: " + navView.IsPaneOpen + ", TogglePaneButton.Width: " + toggleButton.Width);
+                    Verify.IsTrue(toggleButton.Width >= 0.0, "TogglePaneButton.Width should not be negative");
+                    if (step.Name == "IsBackButtonVisible = Collapsed")
+                    {
+                        Verify.IsTrue(navView.IsPaneOpen);
+                        Verify.AreEqual(32.0, toggleButton.Width, "Without the close button the toggle button takes the whole pane width");
+                    }
+                });
+                IdleSynchronizer.Wait();
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
         public void VerifyValuesCoercion()
         {
             RunOnUIThread.Execute(() =>
