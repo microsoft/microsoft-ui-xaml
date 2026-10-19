@@ -1404,6 +1404,68 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyHeaderPaddingUpdatesWhenCompactModeThresholdWidthChangesDisplayMode()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                const double minimalThreshold = 641.0;
+                const double compactThreshold = 300.0;
+
+                foreach (bool isPaneToggleButtonVisible in new[] { true, false })
+                {
+                    Log.Comment($"Verify CompactModeThresholdWidth changes with IsPaneToggleButtonVisible={isPaneToggleButtonVisible}");
+
+                    Func<double, NavigationView> createNavView = (threshold) => new NavigationView()
+                    {
+                        Header = "HEADER",
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Auto,
+                        CompactModeThresholdWidth = threshold,
+                        IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                        IsPaneToggleButtonVisible = isPaneToggleButtonVisible,
+                        IsPaneOpen = false,
+                        Width = 400.0,
+                        Height = 280.0
+                    };
+
+                    Func<NavigationView, NavigationViewDisplayMode, double> getFreshPadding = (freshNavView, expectedDisplayMode) =>
+                    {
+                        Content = freshNavView;
+                        Content.UpdateLayout();
+                        Verify.AreEqual(expectedDisplayMode, freshNavView.DisplayMode);
+                        var freshPadding = VisualTreeUtils.FindVisualChildByName(freshNavView, "ContentLeftPadding") as FrameworkElement;
+                        Verify.IsNotNull(freshPadding);
+                        return freshPadding.ActualWidth;
+                    };
+
+                    double freshMinimalPadding = getFreshPadding(createNavView(minimalThreshold), NavigationViewDisplayMode.Minimal);
+                    double freshCompactPadding = getFreshPadding(createNavView(compactThreshold), NavigationViewDisplayMode.Compact);
+                    Verify.IsGreaterThan(freshMinimalPadding, 0.0, "Minimal should reserve the header button slot");
+
+                    var navView = createNavView(minimalThreshold);
+                    Content = navView;
+                    Content.UpdateLayout();
+                    var padding = VisualTreeUtils.FindVisualChildByName(navView, "ContentLeftPadding") as FrameworkElement;
+                    Verify.IsNotNull(padding);
+                    Verify.AreEqual(NavigationViewDisplayMode.Minimal, navView.DisplayMode);
+                    Verify.AreEqual(freshMinimalPadding, padding.ActualWidth);
+
+                    for (int transition = 0; transition < 2; transition++)
+                    {
+                        navView.CompactModeThresholdWidth = compactThreshold;
+                        Content.UpdateLayout();
+                        Verify.AreEqual(NavigationViewDisplayMode.Compact, navView.DisplayMode);
+                        Verify.AreEqual(freshCompactPadding, padding.ActualWidth, "Compact should match a fresh Compact NavigationView");
+
+                        navView.CompactModeThresholdWidth = minimalThreshold;
+                        Content.UpdateLayout();
+                        Verify.AreEqual(NavigationViewDisplayMode.Minimal, navView.DisplayMode);
+                        Verify.AreEqual(freshMinimalPadding, padding.ActualWidth, "Minimal should match a fresh Minimal NavigationView");
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
         public void VerifyMenuItemAndContainerMappingMenuItemsSource()
         {
             RunOnUIThread.Execute(() =>
