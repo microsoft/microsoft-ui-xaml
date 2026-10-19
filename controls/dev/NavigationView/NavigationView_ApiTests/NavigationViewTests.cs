@@ -2403,6 +2403,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a selected NavigationViewItem keeps a selection-aware AnimatedIcon in the selected states across runtime PaneDisplayMode changes (re-templated presenter), Icon replacement and IsEnabled changes (GitHub #11080).")]
+        public void VerifyAnimatedIconSelectedStateSurvivesRuntimeChanges()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                item = new NavigationViewItem() { Content = "Item", Icon = icon };
+
+                navView = new NavigationView() { PaneDisplayMode = NavigationViewPaneDisplayMode.Left, IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Other" });
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+
+            Action<Action, string, string> changeAndVerify = (change, expected, message) =>
+            {
+                RunOnUIThread.Execute(change);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(expected, AnimatedIcon.GetState(icon), message);
+                });
+            };
+
+            changeAndVerify(() => { }, "Selected", "Selected item in Left mode");
+            changeAndVerify(() => navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top, "Selected", "Selected item after switching to Top");
+            changeAndVerify(() =>
+            {
+                var presenter = (Control)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                Verify.IsTrue(VisualStateManager.GoToState(presenter, "PointerOverSelected", true));
+            }, "PointerOverSelected", "Hovered selected item in Top mode");
+            changeAndVerify(() => navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact, "Selected", "Selected item after switching to LeftCompact");
+            changeAndVerify(() => item.IsEnabled = false, "Selected", "Disabled selected item");
+            changeAndVerify(() => item.IsEnabled = true, "Selected", "Re-enabled selected item");
+
+            AnimatedIcon oldIcon = icon;
+            changeAndVerify(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                item.Icon = icon;
+            }, "Selected", "Selected item after replacing its Icon");
+
+            // The replaced icon is no longer observed: changing its Source must not touch the item or the new icon.
+            changeAndVerify(() => oldIcon.Source = new ControlledAnimatedVisualSource(CreateLegacyAnimatedIconMarkers()), "Selected", "New icon after changing the replaced icon's Source");
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
         static Dictionary<string, double> CreateLegacyAnimatedIconMarkers()
         {
             return new Dictionary<string, double>
