@@ -4147,6 +4147,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         property == s_ExpandedModeThresholdWidthProperty)
     {
         UpdateAdaptiveLayout(ActualWidth());
+        UpdateBackAndCloseButtonsVisibility();
     }
     else if (property == s_AlwaysShowHeaderProperty || property == s_HeaderProperty)
     {
