@@ -4214,6 +4214,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         UpdatePaneVisibility();
         UpdateVisualState();
         UpdatePaneButtonsWidths();
+        UpdateBackAndCloseButtonsVisibility();
     }
     else if (property == s_IsPaneVisibleProperty)
     {

@@ -1323,6 +1323,87 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyHeaderPaddingUpdatesWhenSwitchingBetweenLeftMinimalAndTop()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (bool isPaneToggleButtonVisible in new[] { true, false })
+                {
+                    Log.Comment($"Verify mode transitions with IsPaneToggleButtonVisible={isPaneToggleButtonVisible}");
+
+                    var topNavView = new NavigationView()
+                    {
+                        Header = "HEADER",
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                        IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                        IsPaneToggleButtonVisible = isPaneToggleButtonVisible,
+                        IsPaneOpen = false,
+                        Width = 400.0,
+                        Height = 280.0
+                    };
+                    Content = topNavView;
+                    Content.UpdateLayout();
+
+                    var topHeader = VisualTreeUtils.FindVisualChildByName(topNavView, "HeaderContent") as FrameworkElement;
+                    var topPadding = VisualTreeUtils.FindVisualChildByName(topNavView, "ContentLeftPadding") as FrameworkElement;
+                    Verify.IsNotNull(topHeader);
+                    Verify.IsNotNull(topPadding);
+                    Verify.AreEqual(0.0, topPadding.ActualWidth);
+                    double topHeaderLeft = topHeader.TransformToVisual(topNavView).TransformPoint(new global::Windows.Foundation.Point(0, 0)).X;
+                    double topHeaderWidth = topHeader.ActualWidth;
+
+                    var navView = new NavigationView()
+                    {
+                        Header = "HEADER",
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal,
+                        IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                        IsPaneToggleButtonVisible = isPaneToggleButtonVisible,
+                        IsPaneOpen = false,
+                        Width = 400.0,
+                        Height = 280.0
+                    };
+                    Content = navView;
+                    Content.UpdateLayout();
+
+                    var header = VisualTreeUtils.FindVisualChildByName(navView, "HeaderContent") as FrameworkElement;
+                    var padding = VisualTreeUtils.FindVisualChildByName(navView, "ContentLeftPadding") as FrameworkElement;
+                    var splitView = VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView") as SplitView;
+                    Verify.IsNotNull(header);
+                    Verify.IsNotNull(padding);
+                    Verify.IsNotNull(splitView);
+                    Verify.AreEqual(SplitViewDisplayMode.Overlay, splitView.DisplayMode);
+                    double minimalPadding = padding.ActualWidth;
+                    double minimalHeaderLeft = header.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0)).X;
+                    double minimalHeaderWidth = header.ActualWidth;
+                    Verify.IsGreaterThan(minimalPadding, 0.0, "LeftMinimal should reserve the header button slot");
+                    Verify.IsGreaterThanOrEqual(minimalHeaderLeft, 0.0, "The LeftMinimal header should not be clipped");
+
+                    for (int transition = 0; transition < 2; transition++)
+                    {
+                        navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+                        Content.UpdateLayout();
+
+                        Verify.AreEqual(SplitViewDisplayMode.Overlay, splitView.DisplayMode);
+                        Verify.IsFalse(navView.IsPaneOpen);
+                        Verify.AreEqual(0.0, padding.ActualWidth, "Top mode should clear the LeftMinimal header button slot");
+                        Verify.AreEqual(topHeaderLeft, header.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0)).X,
+                            "Switching to Top should match the header position of a fresh Top NavigationView");
+                        Verify.AreEqual(topHeaderWidth, header.ActualWidth, "Switching to Top should restore the full header width");
+
+                        navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+                        Content.UpdateLayout();
+
+                        Verify.AreEqual(SplitViewDisplayMode.Overlay, splitView.DisplayMode);
+                        Verify.IsFalse(navView.IsPaneOpen);
+                        Verify.AreEqual(minimalPadding, padding.ActualWidth, "Returning to LeftMinimal should restore the header button slot");
+                        Verify.AreEqual(minimalHeaderLeft, header.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0)).X);
+                        Verify.AreEqual(minimalHeaderWidth, header.ActualWidth);
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
         public void VerifyMenuItemAndContainerMappingMenuItemsSource()
         {
             RunOnUIThread.Execute(() =>
