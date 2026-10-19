@@ -430,7 +430,7 @@ void TreeViewNodeVector::RemoveAt(unsigned int index, bool updateItemsSource,boo
 void TreeViewNodeVector::RemoveAtEnd(bool updateItemsSource)
 {
     const auto index = GetVectorInnerImpl()->Size() - 1;
-    RemoveAt(updateItemsSource);
+    RemoveAt(index, updateItemsSource);
 }
 
 void TreeViewNodeVector::ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values, bool updateItemsSource)
