@@ -17,6 +17,8 @@ namespace MUXControlsTestApp
         public NavigationViewPointerFocusPage()
         {
             InitializeComponent();
+            ToggleState.Text = FocusToggle.IsOn.ToString();
+            FocusToggle.Toggled += delegate { ToggleState.Text = FocusToggle.IsOn.ToString(); };
             TopMode.Checked += delegate { NavView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top; };
             TopMode.Unchecked += delegate { NavView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left; };
             // An ordinary subscription must keep receiving navigation item presses.

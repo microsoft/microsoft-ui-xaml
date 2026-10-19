@@ -26,8 +26,7 @@
             <StackPanel x:Name="NormalContent" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="24" Spacing="12">
                 <ToggleSwitch x:Name="FocusToggle" AutomationProperties.Name="Focus toggle"
                               Width="44" MinWidth="0" OnContent="" OffContent="" />
-                <TextBlock x:Name="ToggleState" AutomationProperties.Name="Toggle state"
-                           Text="{Binding IsOn, ElementName=FocusToggle}" />
+                <TextBlock x:Name="ToggleState" AutomationProperties.Name="Toggle state" />
                 <Button x:Name="OtherButton" AutomationProperties.Name="Other button" Content="Other button" />
                 <TextBlock x:Name="CaptureTarget" AutomationProperties.Name="Capture target"
                            Text="Capture target" HorizontalAlignment="Left" />
