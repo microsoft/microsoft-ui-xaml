@@ -98,6 +98,9 @@ public:
 
     void OnNavigationViewItemClicked(const winrt::NavigationViewItem& sender);
 
+    // Used by NavigationViewItem for the closed compact layout of PaneFooter/PaneCustomContent items
+    bool IsInLeftPaneFooterOrCustomContent(const winrt::NavigationViewItemBase& nvib);
+
 private:
 
     void OnNavigationViewItemBaseVisibilityPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
@@ -134,7 +137,6 @@ private:
     bool IsSelectionSuppressed(const winrt::IInspectable& item);
     bool DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi);
     bool IsTopLevelItem(const winrt::NavigationViewItemBase& nvib);
-    bool IsInLeftPaneFooterOrCustomContent(const winrt::NavigationViewItemBase& nvib);
     winrt::IInspectable GetChildren(const winrt::NavigationViewItem& nvi);
 
     // Hierarchy related functions
