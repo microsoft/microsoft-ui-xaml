@@ -775,7 +775,7 @@ namespace Microsoft.UI.Xaml.Controls
     [NativeName("CSymbolIcon")]
     [ClassFlags(HasTypeConverter = true)]
     [Guids(ClassGuid = "610584aa-9a0f-4a60-93bc-52bb48367145")]
-    public sealed class SymbolIcon
+    public class SymbolIcon
      : Microsoft.UI.Xaml.Controls.IconElement
     {
         [NativeStorageType(ValueType.valueEnum)]
