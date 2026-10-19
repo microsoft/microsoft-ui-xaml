@@ -1509,10 +1509,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass Image
+    unsealed runtimeclass Image
         : Microsoft.UI.Xaml.FrameworkElement
     {
-        Image();
+        [method_name("CreateInstance")] Image();
         Microsoft.UI.Xaml.Media.ImageSource Source;
         Microsoft.UI.Xaml.Media.Stretch Stretch;
         Microsoft.UI.Xaml.Thickness NineGrid;
