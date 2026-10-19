@@ -747,6 +747,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that with a PaneTitle and an open overlay pane the pane toggle button follows IsBackButtonVisible changes.")]
+        public void VerifyPaneToggleButtonWidthFollowsIsBackButtonVisibleWithPaneTitle()
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+                navView.PaneTitle = "Title";
+                navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Visible;
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item", Icon = new SymbolIcon(Symbol.Home) });
+                navView.Width = 1200.0;
+                navView.Height = 600.0;
+                Content = navView;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView.IsPaneOpen = true;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // In an open overlay pane the close button takes 40px next to the toggle button.
+                var toggleButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                Verify.IsNotNull(toggleButton);
+                Verify.AreEqual(navView.OpenPaneLength - 40.0, toggleButton.Width, "TogglePaneButton should leave room for the close button");
+
+                navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var toggleButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                Verify.AreEqual(navView.OpenPaneLength, toggleButton.Width, "TogglePaneButton should take the whole pane width once the close button is hidden");
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
         public void VerifyValuesCoercion()
         {
             RunOnUIThread.Execute(() =>
