@@ -5947,12 +5947,12 @@ CUIAWindow* CCoreServices::GetUIAWindowForAutomationPeerNoRef(_In_ CAutomationPe
     }
     if (auto owner = peer->GetElementOwnerNoRef())
     {
-        return GetUIAWindowForElementNoRef(owner);
+        return GetUIAWindowForElementNoRef(owner, true /* onlyGet */);
     }
     return GetUIAWindowForElementRootNoRef(peer->GetRootNoRef());
 }
 
-CUIAWindow* CCoreServices::GetUIAWindowForElementNoRef(_In_ CDependencyObject* element)
+CUIAWindow* CCoreServices::GetUIAWindowForElementNoRef(_In_ CDependencyObject* element, bool onlyGet)
 {
     xref_ptr<CPopup> popup(do_pointer_cast<CPopup>(element));
     if (!popup || !popup->IsOpen() || !popup->IsWindowed())
@@ -5961,7 +5961,10 @@ CUIAWindow* CCoreServices::GetUIAWindowForElementNoRef(_In_ CDependencyObject* e
     }
     if (popup && popup->IsOpen() && popup->IsWindowed())
     {
-        popup->EnsureUIAWindow();
+        if (!onlyGet)
+        {
+            popup->EnsureUIAWindow();
+        }
         if (auto popupWindow = popup->GetUIAWindow())
         {
             return popupWindow;

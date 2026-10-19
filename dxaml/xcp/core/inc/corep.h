@@ -1248,7 +1248,7 @@ public:
         xstring_ptr displayString,
         _In_ xstring_ptr activityId);
     CUIAWindow* GetUIAWindowForElementRootNoRef(_In_ CDependencyObject* root);
-    CUIAWindow* GetUIAWindowForElementNoRef(_In_ CDependencyObject* element);
+    CUIAWindow* GetUIAWindowForElementNoRef(_In_ CDependencyObject* element, bool onlyGet = false);
     CUIAWindow* GetUIAWindowForAutomationPeerNoRef(_In_ CAutomationPeer* peer);
 
     void RegisterForStructureChangedEvent(
