@@ -208,12 +208,13 @@ _Check_return_ HRESULT CInputManager::ProcessFocusInput(
 
 _Check_return_ HRESULT CInputManager::RegisterFrameworkInputView()
 {
-    // If we're in the context of XAML islands, then we don't want to use FrameworkInputView -
-    // that requires a UIContext instance, which is not supported in WinUI 3.
-    if (m_coreServices.GetInitializationType() != InitializationType::IslandsOnly)
-    {
-        IFC_RETURN(m_inputPaneProcessor.RegisterFrameworkInputView());
-    }
+    // FrameworkInputView is used under XAML islands too. The previous IslandsOnly bail-out was
+    // based on the assumption that this requires a UIContext instance; it does not. The IME
+    // candidate window publishes a CoreInputViewOcclusion carrying its bounds, but
+    // CCoreInputViewManager drops it unless the app has registered a CoreInputView as its current
+    // proxy - which is why TextBox.CandidateWindowBoundsChanged never fired under islands
+    // (microsoft/microsoft-ui-xaml#12195).
+    IFC_RETURN(m_inputPaneProcessor.RegisterFrameworkInputView());
 
     return S_OK;
 }
