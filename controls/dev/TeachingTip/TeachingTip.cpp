@@ -1400,11 +1400,13 @@ void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::Rou
 
 void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
+    // The indicator popup also closes whenever the tip itself closes, so don't write IsOpen on an already closed tip
+    // (that would replace an app's IsOpen binding with a local value).
     if (IsOpen())
     {
         m_lastCloseReason = winrt::TeachingTipCloseReason::LightDismiss;
+        IsOpen(false);
     }
-    IsOpen(false);
 }
 
 void TeachingTip::RaiseClosingEvent(bool attachDeferralCompletedHandler)
