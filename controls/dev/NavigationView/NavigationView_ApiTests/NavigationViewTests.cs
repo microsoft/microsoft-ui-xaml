@@ -592,7 +592,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 return navView;
             }, expectedIsPaneOpen: true);
 
-            void VerifyLaunchState(Func<NavigationView> createNavView, bool expectedIsPaneOpen)
+            Log.Comment("Code: IsPaneOpen=false, PaneDisplayMode=Left, then IsPaneOpen=true before load (open wins)");
+            VerifyLaunchState(() =>
+            {
+                var navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "MenuItem" });
+                navView.IsPaneOpen = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                navView.IsPaneOpen = true;
+                return navView;
+            }, expectedIsPaneOpen: true);
+
+            Log.Comment("Code: IsPaneOpen=false, PaneDisplayMode=LeftCompact, then Auto launching in Expanded");
+            VerifyLaunchState(() =>
+            {
+                var navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "MenuItem" });
+                navView.IsPaneOpen = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Auto;
+                navView.ExpandedModeThresholdWidth = 600.0;
+                navView.CompactModeThresholdWidth = 400.0;
+                navView.Width = 610.0;
+                return navView;
+            }, expectedIsPaneOpen: false);
+
+            Log.Comment("Runtime: after launching closed, LeftMinimal -> Left still opens the pane (post-template behavior unchanged)");
+            var launchedNavView = VerifyLaunchState(() =>
+            {
+                var navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "MenuItem" });
+                navView.IsPaneOpen = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                return navView;
+            }, expectedIsPaneOpen: false);
+
+            RunOnUIThread.Execute(() => launchedNavView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal);
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => launchedNavView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left);
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(launchedNavView.IsPaneOpen, "Pane should open on a runtime LeftMinimal -> Left switch");
+            });
+
+            NavigationView VerifyLaunchState(Func<NavigationView> createNavView, bool expectedIsPaneOpen)
             {
                 NavigationView navView = null;
                 RunOnUIThread.Execute(() =>
@@ -611,6 +655,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsNotNull(splitView);
                     Verify.AreEqual(expectedIsPaneOpen, splitView.IsPaneOpen, "RootSplitView.IsPaneOpen");
                 });
+
+                return navView;
             }
         }
 
