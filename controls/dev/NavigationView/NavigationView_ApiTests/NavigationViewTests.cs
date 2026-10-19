@@ -2306,13 +2306,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var hierarchyItems = new List<object>(allItems) { parent };
             WaitForSelectionIndicatorAnimation();
             CheckSelectionIndicator(navView, hierarchyItems, child, "Left, collapsed parent of selected child", failures, parent);
+            LogHierarchyState(parent, child, "Left, collapsed parent");
 
             foreach (var mode in new[] { NavigationViewPaneDisplayMode.Top, NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact })
             {
                 RunOnUIThread.Execute(() => navView.PaneDisplayMode = mode);
                 WaitForSelectionIndicatorAnimation();
                 CheckSelectionIndicator(navView, hierarchyItems, child, $"collapsed parent, after switching to {mode}", failures, parent);
+                LogHierarchyState(parent, child, $"after switching to {mode}");
             }
+
+            // Diagnostic only (not asserted): the same collapsed-parent state reached in Top without a mode switch.
+            RunOnUIThread.Execute(() => navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => navView.SelectedItem = allItems[0]);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => parent.IsExpanded = true);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => navView.SelectedItem = child);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => parent.IsExpanded = false);
+            WaitForSelectionIndicatorAnimation();
+            LogHierarchyState(parent, child, "Top without a mode switch");
 
             foreach (var failure in failures)
             {
@@ -2322,6 +2337,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(0, failures.Count, "Selection indicator should stay on the selected item after pane layout changes");
         }
 
+        private static void LogHierarchyState(NavigationViewItem parent, NavigationViewItem child, string step)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var parentIndicator = VisualTreeUtils.FindVisualChildByName(parent, "SelectionIndicator");
+                var childIndicator = VisualTreeUtils.FindVisualChildByName(child, "SelectionIndicator");
+                Log.Comment($"  {step}: parent IsExpanded={parent.IsExpanded}, IsChildSelected={parent.IsChildSelected}, IsSelected={parent.IsSelected}, " +
+                    $"indicator opacity={parentIndicator?.Opacity}; child IsSelected={child.IsSelected}, indicator={(childIndicator != null)}, opacity={childIndicator?.Opacity}");
+            });
+        }
         private static void WaitForSelectionIndicatorAnimation()
         {
             IdleSynchronizer.Wait();
