@@ -1051,6 +1051,7 @@ namespace Controls {
     interface IVirtualizingStackPanelOverrides;
     interface IVirtualizingStackPanelStatics;
     interface IWrapGrid;
+    interface IWrapGridFactory;
     interface IWrapGridStatics;
 } // Controls
 } // Xaml
