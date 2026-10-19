@@ -328,14 +328,14 @@
                                                   <ColorBrush Color="#00000000" />
                                                 </wucSpriteVisual>
                                                 <Visual Tag="PrependVisual" SizeX="109" SizeY="60">
-                                                  <Clip ClipLeft="-49" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
+                                                  <Clip ClipLeft="-57" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
                                                   <Visual Tag="PrimaryVisual" SizeX="109" SizeY="60">
                                                     <Visual Tag="ContentVisual" />
                                                     <Visual SizeX="1e+04" SizeY="1e+04" />
                                                   </Visual>
                                                 </Visual>
                                                 <Visual Tag="PrependVisual" SizeX="109" SizeY="60">
-                                                  <Clip ClipLeft="-49" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
+                                                  <Clip ClipLeft="-57" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
                                                   <Visual Tag="PrimaryVisual" SizeX="109" SizeY="60">
                                                     <Visual Tag="RoundedCornerClipVisual">
                                                       <Clip ClipLeft="0" ClipTop="0" ClipRight="109" ClipBottom="60" ClipTopLeftRadiusX="8" ClipTopLeftRadiusY="8" ClipTopRightRadiusX="8" ClipTopRightRadiusY="8" ClipBottomLeftRadiusX="8" ClipBottomLeftRadiusY="8" ClipBottomRightRadiusX="8" ClipBottomRightRadiusY="8" TransformMatrix="Identity" />
