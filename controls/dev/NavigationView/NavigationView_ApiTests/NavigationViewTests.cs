@@ -965,6 +965,98 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that a PaneFooter/PaneCustomContent NavigationViewItem follows runtime changes that switch the pane in and out of closed compact (thresholds, PaneDisplayMode, moving the item).")]
+        public void VerifyPaneFooterItemClosedCompactStateFollowsRuntimeChanges()
+        {
+            NavigationView navView = null;
+            NavigationViewItem footerItem = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Menu", Icon = new SymbolIcon(Symbol.Home) });
+                navView.IsSettingsVisible = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Auto;
+                navView.CompactModeThresholdWidth = 400.0;
+                navView.ExpandedModeThresholdWidth = 500.0;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // PaneFooter is set after the NavigationView is loaded.
+                footerItem = new NavigationViewItem() { Content = "Exit", Icon = new SymbolIcon(Symbol.Home) };
+                navView.PaneFooter = footerItem;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(NavigationViewDisplayMode.Expanded, navView.DisplayMode);
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "Expanded");
+
+                // Auto mode: raising ExpandedModeThresholdWidth at runtime switches to compact.
+                navView.ExpandedModeThresholdWidth = 1000.0;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(NavigationViewDisplayMode.Compact, navView.DisplayMode);
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "Compact via ExpandedModeThresholdWidth");
+                VerifyContentGridIsNotClipped(footerItem, "Compact via ExpandedModeThresholdWidth");
+
+                // Raising CompactModeThresholdWidth at runtime switches to minimal (overlay, not compact).
+                navView.CompactModeThresholdWidth = 900.0;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(NavigationViewDisplayMode.Minimal, navView.DisplayMode);
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "Minimal via CompactModeThresholdWidth");
+
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "LeftCompact set at runtime");
+
+                // Move the item from PaneFooter to PaneCustomContent.
+                navView.PaneFooter = null;
+                navView.PaneCustomContent = footerItem;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "Moved to PaneCustomContent");
+                VerifyContentGridIsNotClipped(footerItem, "Moved to PaneCustomContent");
+
+                // Move the item out of the pane into the content area.
+                navView.PaneCustomContent = null;
+                navView.Content = footerItem;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(footerItem), "Moved to the content area");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies that a NavigationViewItem with children in PaneFooter gets the closed compact layout and its icon is not clipped.")]
         public void VerifyHierarchicalPaneFooterItemIsNotClippedInClosedCompactPane()
         {
