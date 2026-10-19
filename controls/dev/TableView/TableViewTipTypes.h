@@ -20,7 +20,7 @@ namespace TableViewTip
     {
         Cancelled = 100, Vetoed = 101, ValidationRejected = 102, Superseded = 103,
         Unloaded = 104, Retemplated = 105, Stale = 106,
-        DeferredOrUnproven = 107, ApplicationFault = 108
+        DeferredOrUnproven = 107, ApplicationFault = 108, AppTemplateIncomplete = 109
     };
     enum class AppFaultKind : uint32_t { None = 0, Callback = 1, Validation = 3, Write = 4, Factory = 5, Data = 6 };
     // Where a fault happened and whose it was; recorded on the TableView_Error diagnostic.
@@ -52,5 +52,12 @@ namespace TableViewTip
         default:
             return false;
         }
+    }
+
+    // Initialize's metrics bucket: 0 LTR-small, 1 LTR-large, 2 RTL-small, 3 RTL-large, where large is at least
+    // 1,000 data rows.
+    constexpr unsigned char MetricsBucket(bool rightToLeft, uint32_t dataRows) noexcept
+    {
+        return static_cast<unsigned char>((rightToLeft ? 2 : 0) + (dataRows >= 1000 ? 1 : 0));
     }
 }

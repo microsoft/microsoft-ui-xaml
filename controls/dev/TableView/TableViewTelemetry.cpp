@@ -16,8 +16,8 @@ namespace TableViewTelemetry
 {
     namespace
     {
-        constexpr uint32_t schemaVersion = 7;
-        constexpr uint32_t c_instanceVersion = 1;
+        constexpr uint32_t schemaVersion = 8;
+        constexpr uint32_t c_instanceVersion = 2;
         // A table that is reloaded or recreated writes one TableView_Instance per load; this bounds a process.
         constexpr uint32_t c_maxInstanceEvents = 64;
         constexpr ULONGLONG measuresKeyword = MICROSOFT_KEYWORD_MEASURES | KEYWORD_TABLEVIEW;
@@ -148,6 +148,7 @@ namespace TableViewTelemetry
             TraceLoggingUInt32(sampled.columnKinds, "ColumnKinds"),
             TraceLoggingUInt32(sampled.sourceKinds, "SourceKinds"),
             TraceLoggingBoolean(sampled.rightToLeft, "IsRightToLeft"),
+            TraceLoggingBoolean(sampled.templateIncomplete, "TemplateIncomplete"),
             TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage));
     }
@@ -162,6 +163,7 @@ namespace TableViewTelemetry
         sampled.dataRows = (std::max)(sampled.dataRows, sample.dataRows);
         sampled.peakRealizedRows = (std::max)(sampled.peakRealizedRows, sample.peakRealizedRows);
         sampled.rightToLeft = sampled.rightToLeft || sample.rightToLeft;
+        sampled.templateIncomplete = sampled.templateIncomplete || sample.templateIncomplete;
     }
 
     void MarkUsed(Session& session, uint64_t startedIn, uint32_t feature) noexcept

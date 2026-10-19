@@ -894,10 +894,20 @@ private:
     void FailTipOperation(uint64_t generation, TableViewTip::Stage stage, std::optional<HRESULT> error) noexcept;
     void CompleteTipOperation(uint64_t generation) noexcept;
     void IgnoreTip(TableViewTip::IgnoreReason reason) noexcept;
+    // Initialize: starts once the template is applied and a source is attached, and ends at the layout pass of the
+    // first realized row or group header, or at once for an empty view.
+    void StartTipInitialization() noexcept;
+    void CompleteTipInitializationIfEmpty() noexcept;
+    // After a source is attached or reclaimed: starts Initialize once the template is applied, and completes it for
+    // an empty view. Before Initialize has its verdict, a source swap is part of it rather than a ReplaceSource test.
+    void NoteTipInitializationSource() noexcept;
+    void FailTipInitializationAttach(uint64_t escapesAtStart, HRESULT error) noexcept;
+    void ArmTipInitializationLayout() noexcept;
+    void RevokeTipInitializationLayout() noexcept;
     // TableView_Instance's two sample points, Loaded and Unloaded (TableView_Telemetry.cpp).
     void SampleInstanceTelemetry() noexcept;
 
-    // Telemetry: the loaded session's TableView_Instance. TiP: the setup and operation tests.
+    // Telemetry: the loaded session's TableView_Instance. TiP: the initialization and operation tests.
     TableViewTelemetry::Session m_telemetrySession;
     TableViewTip::State m_tip{ m_telemetrySession };
     ActionTip* m_activeActionTip{};
@@ -912,6 +922,10 @@ private:
     std::optional<HRESULT> m_tipAppEscapeError;
     uint64_t m_tipAppEscapesAtOperationStart{};
     uint64_t m_tipAppEscapesAtSetupStart{};
+    winrt::event_token m_tipInitializationLayoutToken{};
+    bool m_templateApplied{};
+    // The applied template lacks PART_RowsRepeater, PART_HeaderRow or PART_HeaderHost (TableView_Instance).
+    bool m_templateIncomplete{};
     // TableView_Instance: how the current ItemsSource arrived (TableViewTelemetry::SourceKind), 0 with none.
     uint32_t m_telemetrySourceKinds{};
 

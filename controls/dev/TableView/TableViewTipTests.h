@@ -12,7 +12,8 @@ namespace TableViewTip
 {
     enum class TableViewTipReason : unsigned short
     {
-        scenario_completed = 1, scenario_not_completed = 2, internal_failure = 17
+        scenario_completed = 1, scenario_not_completed = 2, internal_failure = 17,
+        template_setup_failed = 18, source_attach_failed = 19
     };
 
     struct TableViewTipDimensions
@@ -30,9 +31,11 @@ namespace TableViewTip
         }
     };
 
+    // From inputs ready (template applied, source attached) to the layout pass of the first row or group header,
+    // or at once for an empty view.
     TIP_declare_test(TableViewInitializationTest, 64477764)
     {
-        TIP_set_data_version(6);
+        TIP_set_data_version(7);
         TIP_set_metrics_enabled();
         using reason = TableViewTipReason;
 
@@ -42,8 +45,10 @@ namespace TableViewTip
         HRESULT diagnosticHResult{};
         bool diagnosticHResultAvailable{};
         AppFaultKind appFaultKind{};
+        // MetricsBucket at start.
+        unsigned char metricsBucket{};
 
-        TIP_require_all_flags_clear(reason::internal_failure);
+        TIP_require_all_flags_clear(reason::template_setup_failed, reason::source_attach_failed);
 
         void evaluate()
         {
@@ -63,7 +68,7 @@ namespace TableViewTip
         unsigned char serialize_metrics(Archive& archive)
         {
             archive(TIP_value(dimensions));
-            return 0;
+            return metricsBucket;
         }
     };
 

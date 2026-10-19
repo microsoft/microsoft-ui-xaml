@@ -35,6 +35,7 @@ void TableView::SampleInstanceTelemetry() noexcept
         TableViewTelemetry::Sample sample;
         sample.sourceKinds = m_telemetrySourceKinds;
         sample.rightToLeft = FlowDirection() == winrt::FlowDirection::RightToLeft;
+        sample.templateIncomplete = m_templateIncomplete;
         bool anySortable{};
         bool anyEditable{};
         if (auto const columns = Columns())

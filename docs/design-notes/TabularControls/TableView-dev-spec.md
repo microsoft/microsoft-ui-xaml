@@ -518,10 +518,15 @@ swap, sort or shaping step, a thread-local reset. Attribution work runs only whe
 
 ## TiP tests
 
-| Test | Runs on | Fails with `internal_failure` when |
+| Test | Runs | Fails when TableView's own code throws (the HRESULT is included) |
 |---|---|---|
-| `TableViewInitializationTest` (64477764) | Every `OnApplyTemplate` | Setup throws and no app code rethrew (the HRESULT is included) |
-| `TableViewOperationTest` (64477774) | Source swap (also before the first `Loaded`), sort, filter, group configuration, selection, begin/commit/cancel edit | TableView's own code throws, or a commit's display cannot be restored (the HRESULT is included) |
+| `TableViewInitializationTest` (64477764) | Once per template application, from the template applied with a source attached (whichever comes later) to the layout pass of the first row or group header, or at once for an empty view | `template_setup_failed` in `OnApplyTemplate`, `source_attach_failed` while attaching the source |
+| `TableViewOperationTest` (64477774) | Source swap after Initialize's verdict (also before the first `Loaded`), sort, filter, group configuration, selection, begin/commit/cancel edit | `internal_failure`, also when a commit's display cannot be restored |
+
+Initialize closes Ignored with `app_template_incomplete` when a custom template lacks `PART_RowsRepeater`,
+`PART_HeaderRow` or `PART_HeaderHost`. Its metrics bucket is the flow direction and data size when it started:
+0 left-to-right, 1 left-to-right with at least 1,000 data rows, 2 right-to-left, 3 right-to-left with at least
+1,000 data rows. A source swap before Initialize has its verdict is part of Initialize.
 
 Scrolling, measure/arrange, cell realization and group expansion are not measured. A clear verb, or a
 `Sort` with `SortDirection.None`, that has nothing to remove is not measured either. Internal pipeline
@@ -576,6 +581,7 @@ Every event also carries `SchemaVersion`.
 | `ColumnKinds` | Text 1, template 2, app-derived 4 (a column class that is not TableView's) |
 | `SourceKinds` | A collection TableView projected 1, the app's own `TableViewSource` 2 |
 | `IsRightToLeft` | The table flows right to left |
+| `TemplateIncomplete` | The applied template lacks `PART_RowsRepeater`, `PART_HeaderRow` or `PART_HeaderHost` |
 
 TableView samples at `Loaded` and `Unloaded` while the event can still be written. An event carries the union of
 the bits and the larger count, as a bucket: 0 for none, k for 2^(k-1) up to 2^k - 1. A session that ends by

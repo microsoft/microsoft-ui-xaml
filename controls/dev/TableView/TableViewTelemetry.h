@@ -49,6 +49,7 @@ namespace TableViewTelemetry
         uint32_t dataRows{};
         uint32_t peakRealizedRows{};
         bool rightToLeft{};
+        bool templateIncomplete{};
     };
 
     // One loaded session, written once as TableView_Instance at Unloaded or destruction.

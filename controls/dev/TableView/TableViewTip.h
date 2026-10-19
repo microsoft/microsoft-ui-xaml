@@ -8,7 +8,7 @@
 #include "TableViewTipTests.h"
 #include "TableViewTelemetry.h"
 
-// TiP: one setup test per template application and one test per key operation (TableViewTipTests.h).
+// TiP: one initialization test per template application and one test per key operation (TableViewTipTests.h).
 // A sort, filter or edit commit that ran also marks its feature used on TableView_Instance.
 namespace TableViewTip
 {
@@ -48,21 +48,25 @@ namespace TableViewTip
         bool operationHandled{};
     };
 
-    // The control's tests: setup, plus the operation test its control and source operations share.
+    // The control's tests: initialization, plus the operation test its control and source operations share.
     struct State : OperationState
     {
         using OperationState::OperationState;
-        TableViewInitializationTest setupTest;
-        bool setupPending{};
-        bool setupTipPending{};
+        TableViewInitializationTest initializationTest;
+        bool initializationPending{};
+        bool initializationTipPending{};
+        // One verdict per template application; ResetInitialization clears it.
+        bool initializationDone{};
     };
 
     inline bool IsOperationStarted(OperationState const& state) noexcept { return state.operationPending; }
     bool IsOperationHandled(OperationState const& state, Operation operation, uint64_t generation) noexcept;
-    void StartSetup(State& state) noexcept;
-    void CompleteSetup(State& state) noexcept;
-    void FailSetup(State& state, HRESULT error) noexcept;
-    void IgnoreSetup(State& state, IgnoreReason reason,
+    // Starts Initialize unless it is running or this template application already has its verdict.
+    void StartInitialization(State& state, unsigned char metricsBucket) noexcept;
+    void ResetInitialization(State& state) noexcept;
+    void CompleteInitialization(State& state) noexcept;
+    void FailInitialization(State& state, Stage stage, HRESULT error) noexcept;
+    void IgnoreInitialization(State& state, IgnoreReason reason,
         std::optional<HRESULT> error = {}, AppFaultKind kind = AppFaultKind::None) noexcept;
     uint64_t BeginOperation(OperationState& state, Operation operation) noexcept;
     void CompleteOperation(OperationState& state, uint64_t generation) noexcept;

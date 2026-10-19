@@ -23,6 +23,7 @@ namespace TableViewTip
             case IgnoreReason::Stale: return "stale";
             case IgnoreReason::DeferredOrUnproven: return "deferred_or_unproven";
             case IgnoreReason::ApplicationFault: return "application_fault";
+            case IgnoreReason::AppTemplateIncomplete: return "app_template_incomplete";
             default:
                 OutputDebugStringW(L"TableView TiP: invalid ignore reason.\n");
                 return nullptr;
@@ -46,6 +47,20 @@ namespace TableViewTip
                 data->failureHResult = error.value_or(S_OK);
             }
             test.set_flag(TIP_reason(TableViewTipReason::internal_failure));
+            test.complete();
+            test.reset();
+        }
+
+        // TiP names a flag after its spelling, so each initialization failure reason is written out.
+        void CloseInitializationFailed(TableViewInitializationTest& test, Stage stage, HRESULT error) noexcept
+        {
+            {
+                auto data = test.data();
+                data->failureHResultAvailable = true;
+                data->failureHResult = error;
+            }
+            if (stage == Stage::Source) { test.set_flag(TIP_reason(TableViewTipReason::source_attach_failed)); }
+            else { test.set_flag(TIP_reason(TableViewTipReason::template_setup_failed)); }
             test.complete();
             test.reset();
         }
@@ -75,12 +90,13 @@ namespace TableViewTip
             state.operationTipPending = false;
         }
 
-        // Ends the setup run; returns whether its TiP test was running and still needs closing.
-        bool StopSetup(State& state) noexcept
+        // Ends the initialization run with its verdict; returns whether its TiP test was running and still needs closing.
+        bool StopInitialization(State& state) noexcept
         {
-            auto const tipPending = state.setupTipPending;
-            state.setupPending = false;
-            state.setupTipPending = false;
+            auto const tipPending = state.initializationTipPending;
+            state.initializationPending = false;
+            state.initializationTipPending = false;
+            state.initializationDone = true;
             return tipPending;
         }
     }
@@ -91,33 +107,47 @@ namespace TableViewTip
             operation == state.operation && state.operationHandled;
     }
 
-    // Every template application is one setup run; OnApplyTemplate ignores an unfinished one first.
-    // The run is tracked even when TiP is unavailable, so a setup failure still gets its diagnostic.
-    void StartSetup(State& state) noexcept
+    // The run is tracked even when TiP is unavailable, so a failure still gets its diagnostic.
+    void StartInitialization(State& state, unsigned char metricsBucket) noexcept
     {
-        state.setupPending = true;
-        state.setupTipPending = state.setupTest.start() != GUID{};
+        if (state.initializationPending || state.initializationDone) { return; }
+        state.initializationPending = true;
+        {
+            auto data = state.initializationTest.data();
+            data->metricsBucket = metricsBucket;
+        }
+        state.initializationTipPending = state.initializationTest.start() != GUID{};
     }
 
-    void CompleteSetup(State& state) noexcept
+    // A new template application; OnApplyTemplate ignores an unfinished run first.
+    void ResetInitialization(State& state) noexcept
     {
-        if (!state.setupPending) { return; }
-        if (StopSetup(state)) { CloseCompleted(state.setupTest); }
+        state.initializationDone = false;
     }
 
-    void FailSetup(State& state, HRESULT error) noexcept
+    void CompleteInitialization(State& state) noexcept
     {
-        if (!state.setupPending) { return; }
-        if (StopSetup(state)) { CloseFailed(state.setupTest, error); }
-        TableViewTelemetry::ReportError(state.session, 0, Operation::Setup, Stage::Template, false, Attribution::Product, error);
+        if (!state.initializationPending) { return; }
+        if (StopInitialization(state)) { CloseCompleted(state.initializationTest); }
     }
 
-    void IgnoreSetup(State& state, IgnoreReason reason, std::optional<HRESULT> error, AppFaultKind kind) noexcept
+    // Stage::Source fails with source_attach_failed, any other stage with template_setup_failed. The diagnostic is
+    // written even when Initialize already has its verdict.
+    void FailInitialization(State& state, Stage stage, HRESULT error) noexcept
     {
-        if (!state.setupPending) { return; }
+        if (state.initializationPending && StopInitialization(state))
+        {
+            CloseInitializationFailed(state.initializationTest, stage, error);
+        }
+        TableViewTelemetry::ReportError(state.session, 0, Operation::Setup, stage, false, Attribution::Product, error);
+    }
+
+    void IgnoreInitialization(State& state, IgnoreReason reason, std::optional<HRESULT> error, AppFaultKind kind) noexcept
+    {
+        if (!state.initializationPending) { return; }
         auto const name = GetIgnoreName(reason);
         if (!name) { return; }
-        if (StopSetup(state)) { CloseIgnored(state.setupTest, reason, name, error, kind); }
+        if (StopInitialization(state)) { CloseIgnored(state.initializationTest, reason, name, error, kind); }
     }
 
     uint64_t BeginOperation(OperationState& state, Operation operation) noexcept

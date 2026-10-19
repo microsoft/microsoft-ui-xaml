@@ -153,9 +153,9 @@ void TableView::NoteRecoveredAppFault(TableViewTip::Operation operation, TableVi
         action->RecoveredAppFault(kind, error);
         return;
     }
-    // Outside an action: the control operation in flight, else setup, else the callout's own operation.
+    // Outside an action: the control operation in flight, else initialization, else the callout's own operation.
     auto const reported = TableViewTip::IsOperationStarted(m_tip) ? m_tip.operation :
-        m_tip.setupPending ? TableViewTip::Operation::Setup : operation;
+        m_tip.initializationPending ? TableViewTip::Operation::Setup : operation;
     TableViewTelemetry::ReportError(m_telemetrySession, 0, reported, stage, true,
         TableViewTip::Attribution::Application, error, kind);
 }
@@ -164,8 +164,95 @@ void TableView::IgnoreTip(TableViewTip::IgnoreReason reason) noexcept
 {
     ++m_tipLifetimeGeneration;
     m_tipCancellationReason = reason;
-    TableViewTip::IgnoreSetup(m_tip, reason);
+    TableViewTip::IgnoreInitialization(m_tip, reason);
     TableViewTip::IgnoreOperation(m_tip, m_tip.operationGeneration, reason);
+}
+
+void TableView::StartTipInitialization() noexcept
+{
+    if (m_tip.initializationPending || m_tip.initializationDone) { return; }
+    unsigned char bucket{};
+    try
+    {
+        auto const source = m_activeSource.get();
+        bucket = TableViewTip::MetricsBucket(FlowDirection() == winrt::FlowDirection::RightToLeft,
+            source ? winrt::get_self<::TableViewSource>(source)->DataRowCount() : 0);
+    }
+    catch (...)
+    {
+        // The bucket is context only; the test still runs.
+    }
+    TableViewTip::StartInitialization(m_tip, bucket);
+}
+
+void TableView::CompleteTipInitializationIfEmpty() noexcept
+{
+    if (!m_tip.initializationPending) { return; }
+    try
+    {
+        auto const source = m_activeSource.get();
+        auto const view = source ? winrt::get_self<::TableViewSource>(source)->GetItemsSourceView() : nullptr;
+        if (!view || view.Count() == 0) { TableViewTip::CompleteInitialization(m_tip); }
+    }
+    catch (...)
+    {
+        // Left running: the first realized row, or unload, decides.
+    }
+}
+
+void TableView::NoteTipInitializationSource() noexcept
+{
+    if (m_templateApplied && m_activeSource.get()) { StartTipInitialization(); }
+    CompleteTipInitializationIfEmpty();
+}
+
+// A failed attach is Initialize's whether or not the test was running yet.
+void TableView::FailTipInitializationAttach(uint64_t escapesAtStart, HRESULT error) noexcept
+{
+    StartTipInitialization();
+    if (AppEscapedSince(escapesAtStart, error))
+    {
+        TableViewTip::IgnoreInitialization(m_tip, TableViewTip::IgnoreReason::ApplicationFault,
+            m_tipAppEscapeError, m_tipAppEscapeKind);
+        TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::Setup, TableViewTip::Stage::Source,
+            false, TableViewTip::Attribution::Application, m_tipAppEscapeError, m_tipAppEscapeKind);
+    }
+    else
+    {
+        TableViewTip::FailInitialization(m_tip, TableViewTip::Stage::Source, error);
+    }
+}
+
+// The first realized row or group header arms this once; its layout pass completes Initialize.
+void TableView::ArmTipInitializationLayout() noexcept
+{
+    try
+    {
+        auto weakThis = get_weak();
+        m_tipInitializationLayoutToken = LayoutUpdated(
+            [weakThis](winrt::IInspectable const&, winrt::IInspectable const&)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->RevokeTipInitializationLayout();
+                    TableViewTip::CompleteInitialization(strongThis->m_tip);
+                }
+            });
+    }
+    catch (...)
+    {
+        // Left unarmed: the next prepared element retries, or unload closes Initialize.
+    }
+}
+
+void TableView::RevokeTipInitializationLayout() noexcept
+{
+    if (m_tipInitializationLayoutToken.value)
+    {
+        try { LayoutUpdated(m_tipInitializationLayoutToken); }
+        catch (...) {}
+        m_tipInitializationLayoutToken = {};
+    }
 }
 
 uint64_t TableView::BeginTipOperation(TableViewTip::Operation operation, bool admitted) noexcept

@@ -812,7 +812,12 @@ try
 {
     m_headerSortSpaceArmedColumn = nullptr;
     IgnoreTip(TableViewTip::IgnoreReason::Retemplated);
-    TableViewTip::StartSetup(m_tip);
+    RevokeTipInitializationLayout();
+    TableViewTip::ResetInitialization(m_tip);
+    m_templateApplied = true;
+    m_templateIncomplete = false;
+    // The template is expanded before this runs, so with a source attached Initialize's inputs are ready.
+    if (m_activeSource.get()) { StartTipInitialization(); }
     m_tipAppEscapesAtSetupStart = m_tipAppEscapes;
     __super::OnApplyTemplate();
     InvalidateTableViewResourceCache(this);
@@ -909,6 +914,15 @@ try
     m_headerRow.set(GetTemplateChild(hstring{ s_HeaderRowPartName }).try_as<winrt::FrameworkElement>());
     m_headerHost.set(GetTemplateChild(hstring{ s_HeaderHostPartName }).try_as<winrt::Panel>());
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
+    // Every part is looked up as optional, so nothing else reports a template without one. TableView's own template
+    // has all three, so a missing one is the app's template.
+    if (!m_rowsRepeater.get() || !m_headerRow.get() || !m_headerHost.get())
+    {
+        m_templateIncomplete = true;
+        TVDiag::LogRetailF(L"[TableView] The control template lacks PART_RowsRepeater, PART_HeaderRow or PART_HeaderHost.");
+        StartTipInitialization();
+        TableViewTip::IgnoreInitialization(m_tip, TableViewTip::IgnoreReason::AppTemplateIncomplete);
+    }
     auto weakThis = get_weak();
 
     // Defer ScrollViewer ancestor lookup until Loaded because template parts are not fully connected here.
@@ -1078,20 +1092,24 @@ try
                 }
             });
     }
-    TableViewTip::CompleteSetup(m_tip);
+    CompleteTipInitializationIfEmpty();
 }
 catch (...)
 {
     // The control, row and cell templates are expanded outside this method; an exception app code
-    // rethrew while setup ran is the app's, and any other throw counts as a setup failure.
+    // rethrew while setup ran is the app's, and any other throw fails Initialize unless it has its verdict.
     auto const error = winrt::to_hresult();
-    if (m_tip.setupPending && AppEscapedSince(m_tipAppEscapesAtSetupStart, error))
+    StartTipInitialization();
+    if (AppEscapedSince(m_tipAppEscapesAtSetupStart, error))
     {
-        TableViewTip::IgnoreSetup(m_tip, TableViewTip::IgnoreReason::ApplicationFault, m_tipAppEscapeError, m_tipAppEscapeKind);
+        TableViewTip::IgnoreInitialization(m_tip, TableViewTip::IgnoreReason::ApplicationFault, m_tipAppEscapeError, m_tipAppEscapeKind);
         TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::Setup, TableViewTip::Stage::Template,
             false, TableViewTip::Attribution::Application, m_tipAppEscapeError, m_tipAppEscapeKind);
     }
-    else { TableViewTip::FailSetup(m_tip, error); }
+    else
+    {
+        TableViewTip::FailInitialization(m_tip, TableViewTip::Stage::Template, error);
+    }
     throw;
 }
 
@@ -1228,13 +1246,21 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
         return;
     }
 
-    auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::ReplaceSource);
+    // Until Initialize has its verdict, attaching a source is part of initialization rather than a measured swap.
+    auto const initializing = !m_tip.initializationDone;
+    auto const escapesAtStart = m_tipAppEscapes;
+    auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::ReplaceSource, !initializing);
     ShapingHelpers::ClearCallerFault();
     bool completed = false;
     std::optional<HRESULT> failure;
-    auto tipCompletion = wil::scope_exit([this, tipGeneration, &completed, &failure]() noexcept
+    auto tipCompletion = wil::scope_exit([this, tipGeneration, initializing, escapesAtStart, &completed, &failure]() noexcept
     {
-        if (!completed)
+        if (initializing)
+        {
+            if (completed) { NoteTipInitializationSource(); }
+            else { FailTipInitializationAttach(escapesAtStart, failure.value_or(E_FAIL)); }
+        }
+        else if (!completed)
         {
             FailTipOperation(tipGeneration, TableViewTip::Stage::Source, failure);
         }
@@ -2617,6 +2643,7 @@ void TableView::OnRowElementPrepared(
         InvalidateMeasure();
         QueueTerminalGridLineRefresh();
     }
+    if (m_tip.initializationPending && !m_tipInitializationLayoutToken.value) { ArmTipInitializationLayout(); }
 }
 
 void TableView::OnRowElementClearing(
@@ -3411,6 +3438,8 @@ void TableView::ReclaimItemsSource()
     {
         RefreshRowsPipeline();
     }
+    // A source refused while another table owned it arrives here.
+    NoteTipInitializationSource();
 }
 
 void TableView::OnTableViewUnloaded()
@@ -3432,6 +3461,7 @@ void TableView::OnTableViewUnloaded()
     m_reshapeFocusValid = false;
     m_reshapeFocusRow = -1;
     CancelHeaderFocusRestore();
+    RevokeTipInitializationLayout();
 
     if (m_pendingGroupFocusLayoutToken.value)
     {
