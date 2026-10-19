@@ -16,6 +16,7 @@
         <Button x:Name="RemoveButton" AutomationProperties.Name="RemoveButton" Content="Remove" Margin="0,4,0,4"/>
         <Button x:Name="GCButton" AutomationProperties.Name="GCButton" Content="Garbage Collect" Margin="0,4,0,4"/>
         <Button x:Name="CheckLeaksButton" AutomationProperties.Name="CheckLeaksButton" Content="Check Leaks" Margin="0,4,0,4"/>
+        <TextBlock x:Name="LeakCheckResult" AutomationProperties.AutomationId="LeakCheckResult" Text="Not checked" Margin="0,4,0,4"/>
 
         <TextBlock Text="Test Grid" Style="{ThemeResource StandardGroupHeader}" Margin="0,16,0,8"/>
         <Grid x:Name="TestRoot" Background="{ThemeResource SystemListLowColor}"/>
