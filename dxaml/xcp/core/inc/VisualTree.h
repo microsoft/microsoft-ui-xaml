@@ -64,6 +64,7 @@ public:
     _Check_return_ CLayoutManager *GetLayoutManager() const { return m_layoutManager.get();}
      CXamlIslandRootCollection* GetXamlIslandRootCollection();
      void GetAllVisibleRootsNoRef(_Out_writes_(3) CDependencyObject** roots);
+    void GetExistingRootsNoRef(_Inout_ std::vector<CUIElement*>& roots) const;
 
     _Check_return_ HRESULT ResetRoots(_Out_opt_ bool *pReleasePopup = NULL);
     _Check_return_ HRESULT Shutdown();

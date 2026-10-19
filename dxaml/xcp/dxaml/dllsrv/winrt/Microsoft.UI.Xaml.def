@@ -14,3 +14,4 @@ EXPORTS
     GetErrorContextIndex            PRIVATE
     GetHeapHandle                   PRIVATE
     XamlCheckProcessRequirements    PRIVATE
+    OnlineXamlProfilerCaptureSnapshot PRIVATE
