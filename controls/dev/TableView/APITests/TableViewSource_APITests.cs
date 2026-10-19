@@ -1026,6 +1026,265 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a second TableView cannot take over a TableViewSource another TableView owns.")]
+        public void VerifySecondTableViewCannotStealAnOwnedSource()
+        {
+            TableView first = null;
+            TableView second = null;
+            TableViewSource source = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                first = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                second = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                var host = new StackPanel();
+                host.Children.Add(first);
+                LoadContent(host);
+                host.Children.Add(second);
+            });
+
+            SettleLayout(first);
+            SettleLayout(second);
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Descending));
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, first.Columns[0].SortDirection,
+                    "The owning table must still hear the source's sort.");
+                Verify.AreEqual(0, GetRowsRepeater(second).ItemsSourceView?.Count ?? 0,
+                    "The refused table must render no rows.");
+
+                second.ItemsSource = null;
+            });
+
+            SettleLayout(second);
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Ascending));
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, first.Columns[0].SortDirection,
+                    "Unbinding the refused table must not release the owner's hold on the source.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a TableView adopts a TableViewSource whose owner was unloaded but not yet collected.")]
+        public void VerifyNewTableAdoptsSourceAfterOwnerUnloads()
+        {
+            TableView first = null;
+            TableView second = null;
+            TableViewSource source = null;
+            StackPanel host = null;
+            int rowCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var people = MakeShapedPeople();
+                rowCount = people.Count;
+                source = TableViewSource.From(people);
+                first = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host = new StackPanel();
+                host.Children.Add(first);
+                LoadContent(host);
+            });
+
+            SettleLayout(first);
+
+            // A navigation: the new page's table binds the source while the old one still owns it.
+            RunOnUIThread.Execute(() =>
+            {
+                second = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host.Children.Add(second);
+                host.Children.Remove(first);
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(rowCount, GetRowsRepeater(second).ItemsSourceView?.Count ?? 0,
+                    "The new table must render the source once its old owner unloads.");
+                source.Sort("Name", SortDirection.Descending);
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, second.Columns[0].SortDirection,
+                    "The new owner must hear the source's sort.");
+                GC.KeepAlive(first);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a reclaimed TableView's chevrons follow a sort applied while another table owned the source.")]
+        public void VerifyReclaimedTableReflectsSortChangedWhileUnloaded()
+        {
+            TableView first = null;
+            TableView second = null;
+            TableViewSource source = null;
+            StackPanel host = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                first = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host = new StackPanel();
+                host.Children.Add(first);
+                LoadContent(host);
+            });
+
+            SettleLayout(first);
+            RunOnUIThread.Execute(() => TableViewSortingTestHelpers.InvokeHeader(first, 0));
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreNotEqual(SortDirection.None, first.Columns[0].SortDirection, "Precondition: the header sorted Name.");
+                host.Children.Remove(first);
+                second = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host.Children.Add(second);
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(second.SortByColumn(second.Columns[1], SortDirection.Descending), "Precondition: the new owner sorts Role.");
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                host.Children.Remove(second);
+                host.Children.Add(first);
+            });
+
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, first.Columns[0].SortDirection,
+                    "The reclaimed table must drop the chevron for a sort the source no longer has.");
+                Verify.AreEqual(SortDirection.Descending, first.Columns[1].SortDirection,
+                    "The reclaimed table must light the chevron for the source's current sort.");
+                GC.KeepAlive(second);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an unloaded TableView given a TableViewSource does not keep a loaded one from binding it.")]
+        public void VerifyUnloadedTableDoesNotClaimNewSource()
+        {
+            TableView unloaded = null;
+            TableView loaded = null;
+            TableViewSource source = null;
+            int rowCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                unloaded = CreateTableView(TableViewSource.From(MakeShapedPeople()), headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                LoadContent(unloaded);
+            });
+
+            SettleLayout(unloaded);
+
+            RunOnUIThread.Execute(() =>
+            {
+                LoadContent(new Grid());
+                var people = MakeShapedPeople();
+                rowCount = people.Count;
+                source = TableViewSource.From(people);
+                unloaded.ItemsSource = source;
+
+                loaded = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                LoadContent(loaded);
+            });
+
+            SettleLayout(loaded);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(rowCount, GetRowsRepeater(loaded).ItemsSourceView?.Count ?? 0,
+                    "A loaded table must bind a source an unloaded table was handed.");
+                GC.KeepAlive(unloaded);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies every TableView refused a TableViewSource gets it in turn as each owner lets go.")]
+        public void VerifyAllWaitingTablesCanClaimAfterRelease()
+        {
+            TableView owner = null;
+            TableView firstWaiter = null;
+            TableView secondWaiter = null;
+            TableView claimant = null;
+            TableViewSource source = null;
+            StackPanel host = null;
+            int rowCount = 0;
+
+            Func<TableView, int> rows = tableView => GetRowsRepeater(tableView).ItemsSourceView?.Count ?? 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var people = MakeShapedPeople();
+                rowCount = people.Count;
+                source = TableViewSource.From(people);
+                owner = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 200);
+                host = new StackPanel();
+                host.Children.Add(owner);
+                LoadContent(host);
+            });
+
+            SettleLayout(owner);
+
+            RunOnUIThread.Execute(() =>
+            {
+                firstWaiter = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 200);
+                secondWaiter = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 200);
+                host.Children.Add(firstWaiter);
+                host.Children.Add(secondWaiter);
+            });
+
+            SettleLayout(firstWaiter);
+            SettleLayout(secondWaiter);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, rows(firstWaiter) + rows(secondWaiter), "Precondition: both waiters are refused.");
+                host.Children.Remove(owner);
+            });
+
+            SettleLayout(firstWaiter);
+            SettleLayout(secondWaiter);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(rowCount, rows(firstWaiter) + rows(secondWaiter),
+                    "Exactly one waiter must claim the source when its owner unloads.");
+                claimant = rows(firstWaiter) == rowCount ? firstWaiter : secondWaiter;
+                host.Children.Remove(claimant);
+            });
+
+            var remaining = default(TableView);
+            RunOnUIThread.Execute(() => remaining = claimant == firstWaiter ? secondWaiter : firstWaiter);
+            SettleLayout(remaining);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(rowCount, rows(remaining),
+                    "The other waiter must claim the source when the first claimant unloads.");
+                GC.KeepAlive(owner);
+                GC.KeepAlive(claimant);
+            });
+        }
+
         #endregion
 
         #region 8.5 Composition
@@ -1793,6 +2052,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         "#Engineer(4)", "Diego", "Mei", "Rafa", "Owen",
                     },
                     "the next collection change must re-bucket the row and refresh the counts");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies re-declaring GroupBy after a group key change reaches the row view as exactly one Reset.")]
+        public void VerifyRegroupAfterKeyChangePublishesOneReset()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            List<ShapedPerson> people = null;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeShapedPeople();
+                source = TableViewSource.From(people).GroupBy(o => Person(o).Role);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => people.First(p => p.Name == "Ines").Role = "Engineer");
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                source.GroupBy(o => Person(o).Role);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(
+                    tableView,
+                    new List<string>
+                    {
+                        "#Designer(1)", "Asha",
+                        "#Engineer(4)", "Diego", "Rafa", "Ines", "Owen",
+                        "#Architect(1)", "Mei",
+                    },
+                    "the regroup must move Ines into Engineer");
+                Verify.AreEqual("Reset", string.Join(",", actions),
+                    "a regroup must reach the row view as one Reset");
             });
         }
 

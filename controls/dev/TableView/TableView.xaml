@@ -32,8 +32,6 @@
         <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceRowForegroundBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGridLineBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <Setter Property="Template">
@@ -119,10 +117,8 @@
              the way back out. That is what keeps the body ONE tab stop in BOTH directions - see the
              comment on SetCellLevelInternal for why the framework's tab walk forces the trade. -->
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />        
-        <Setter Property="MinHeight" Value="40" />
-        <Setter Property="Padding" Value="0" />        
+        <Setter Property="MinHeight" Value="{ThemeResource TableViewRowMinHeight}" />
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGridLineBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
@@ -146,6 +142,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -155,6 +154,9 @@
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -229,7 +231,7 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <!-- Suppress the High Contrast text backplate only while selected, where it fights the selection fill. -->
+                                        <!-- Suppress the High Contrast text backplate wherever the row paints a state fill (hover, press, selection). -->
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -244,35 +246,35 @@
                             </VisualStateGroup>
 
                             <!-- Hierarchy groups. Inert for flat/grouped sources (Level 0). -->
-                            <VisualStateGroup x:Name="ExpansionStates">
-                                <VisualState x:Name="Collapsed">
+                            <VisualStateGroup x:Name="RowExpansionStates">
+                                <VisualState x:Name="RowCollapsed">
                                     <VisualState.Setters>
                                         <Setter Target="PART_RowExpanderIcon.Glyph" Value="&#xE76C;" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="Expanded">
+                                <VisualState x:Name="RowExpanded">
                                     <VisualState.Setters>
                                         <Setter Target="PART_RowExpanderIcon.Glyph" Value="&#xE70D;" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="ExpandabilityStates">
-                                <VisualState x:Name="Expandable" />
+                            <VisualStateGroup x:Name="RowExpandabilityStates">
+                                <VisualState x:Name="RowExpandable" />
                                 <!-- Only the glyph hides; the gutter keeps its width so leaf text
                                      aligns with sibling branch text. -->
-                                <VisualState x:Name="NotExpandable">
+                                <VisualState x:Name="RowNotExpandable">
                                     <VisualState.Setters>
                                         <Setter Target="PART_RowExpanderIcon.Visibility" Value="Collapsed" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="HierarchyStates">
+                            <VisualStateGroup x:Name="RowHierarchyStates">
                                 <!-- TableViewRow sets gutter Visibility directly; these states exist
                                      for retemplating apps to key off. -->
-                                <VisualState x:Name="NotHierarchical" />
-                                <VisualState x:Name="Hierarchical" />
+                                <VisualState x:Name="RowNotHierarchical" />
+                                <VisualState x:Name="RowHierarchical" />
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
@@ -388,6 +390,7 @@
              handles Enter/Space (toggle) and Right/Left (expand/collapse), matching TreeViewItem. -->
         <Setter Property="IsTabStop" Value="True" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="ContentTemplate" Value="{StaticResource TableViewDefaultGroupHeaderContentTemplate}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -402,6 +405,8 @@
                                         <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceRowBackgroundPointerOverBrush}" />
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
                                         <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
+                                        <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
+                                        <Setter Target="PART_ExpanderIcon.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -409,6 +414,8 @@
                                         <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceRowBackgroundPressedBrush}" />
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
                                         <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
+                                        <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
+                                        <Setter Target="PART_ExpanderIcon.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">

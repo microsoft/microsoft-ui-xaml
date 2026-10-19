@@ -58,7 +58,6 @@ public partial class SamplePageBase : Page
                 OnShapingAction(e);
                 SetLastAction(e.Message);
             };
-            shaping.SelectionRestored += (_, _) => RefreshReadouts();
 
             // A header-click sort raises Sorted to the page's own XAML handler BEFORE ShapingOptions
             // records it (XAML subscribes first), so refresh again once the sort state is current.

@@ -18,25 +18,23 @@
         WhatToLookFor="A bulk load of 100,000 rows finishes in well under a second, because only the visible rows are realized. Adding rows one at a time raises one change notification per row, so 10,000 Adds take far longer than the 10,000-row bulk load. Under GroupBy every Add also regroups every row, so the cost grows with each row: detach the grouping (ClearGroupBy), add, and group once. Sorting, filtering and grouping all 100,000 rows does real work inside the control and takes longer than loading them. Debug builds are several times slower than Release builds. For per-row costs, record a trace with WPR and open it in WPA.">
 
         <controls:SamplePresenter.Example>
-            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                <!-- snippet -->
-                <!-- Salary is formatted by a converter yet sorts by number: a text column sorts by its Binding path. -->
-                <tv:TableView
-                    x:Name="PerfTable"
-                    AutomationProperties.AutomationId="PerformanceTable"
-                    AutomationProperties.Name="Performance run dataset"
-                    SelectionMode="Single"
-                    IsReadOnly="True"
-                    VerticalAlignment="Stretch"
-                    MinHeight="320">
-                    <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="{StaticResource ColWidthId}" Binding="{Binding EmployeeId}"/>
-                    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-                    <tv:TableViewTextColumn x:Name="DepartmentTextColumn" Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"/>
-                    <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}" Binding="{Binding Office}"/>
-                    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
-                </tv:TableView>
-                <!-- /snippet -->
-            </Border>
+            <!-- snippet -->
+            <!-- Salary is formatted by a converter yet sorts by number: a text column sorts by its Binding path. -->
+            <tv:TableView
+                x:Name="PerfTable"
+                AutomationProperties.AutomationId="PerformanceTable"
+                AutomationProperties.Name="Performance run dataset"
+                SelectionMode="Single"
+                IsReadOnly="True"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="{StaticResource ColWidthId}" Binding="{Binding EmployeeId}"/>
+                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                <tv:TableViewTextColumn x:Name="DepartmentTextColumn" Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"/>
+                <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}" Binding="{Binding Office}"/>
+                <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+            </tv:TableView>
+            <!-- /snippet -->
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>

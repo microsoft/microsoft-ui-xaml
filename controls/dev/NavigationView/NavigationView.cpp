@@ -274,6 +274,10 @@ void NavigationView::OnOverflowItemsSourceCollectionChanged(const winrt::IInspec
     {
         SetOverflowButtonVisibility(winrt::Visibility::Collapsed);
     }
+    else
+    {
+        SetOverflowButtonVisibility(winrt::Visibility::Visible);
+    }
 }
 
 void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)

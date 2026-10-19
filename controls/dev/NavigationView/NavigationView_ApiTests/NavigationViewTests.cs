@@ -1874,6 +1874,104 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyOverflowButtonRemainsVisibleAfterSelectingOnlyOverflowItem()
+        {
+            foreach (bool useMenuItemsSource in new[] { false, true })
+            {
+                NavigationView navView = null;
+                Button overflowButton = null;
+                ItemsRepeater overflowRepeater = null;
+                NavigationViewItem selectedItem = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    navView = new NavigationView
+                    {
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                        IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                        IsSettingsVisible = false,
+                        Width = 240,
+                        Height = 300
+                    };
+                    var items = new ObservableCollection<NavigationViewItem>
+                    {
+                        new NavigationViewItem { Content = "AA" },
+                        new NavigationViewItem { Content = "BBBBBBB" },
+                        new NavigationViewItem { Content = "CCCCCCCCCCCCCCC" }
+                    };
+                    if (useMenuItemsSource)
+                    {
+                        navView.MenuItemsSource = items;
+                    }
+                    else
+                    {
+                        foreach (var item in items)
+                        {
+                            navView.MenuItems.Add(item);
+                        }
+                    }
+                    selectedItem = items[2];
+                    Content = navView;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    overflowButton = VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton") as Button;
+                    Verify.IsNotNull(overflowButton);
+                    Verify.AreEqual(Visibility.Visible, overflowButton.Visibility);
+                    var provider = FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                        .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                    Verify.IsNotNull(provider);
+                    provider.Invoke();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var flyout = overflowButton.Flyout as Flyout;
+                    Verify.IsNotNull(flyout);
+                    overflowRepeater = VisualTreeUtils.FindVisualChildByName(
+                        flyout.Content, "TopNavMenuItemsOverflowHost") as ItemsRepeater;
+                    Verify.IsNotNull(overflowRepeater);
+                    Verify.AreEqual(1, overflowRepeater.ItemsSourceView.Count);
+                    Verify.AreEqual(selectedItem, overflowRepeater.ItemsSourceView.GetAt(0));
+                    var provider = FrameworkElementAutomationPeer.CreatePeerForElement(selectedItem) as IInvokeProvider;
+                    Verify.IsNotNull(provider);
+                    provider.Invoke();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(selectedItem, navView.SelectedItem);
+                    Verify.AreEqual(2, overflowRepeater.ItemsSourceView.Count, "Both displaced items should remain reachable.");
+                    Verify.AreEqual(Visibility.Visible, navView.TemplateSettings.OverflowButtonVisibility);
+                    Verify.AreEqual(Visibility.Visible, overflowButton.Visibility);
+                    (FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                        .GetPattern(PatternInterface.Invoke) as IInvokeProvider).Invoke();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(overflowButton.Flyout.IsOpen);
+                    selectedItem = overflowRepeater.TryGetElement(0) as NavigationViewItem;
+                    Verify.IsNotNull(selectedItem);
+                    (FrameworkElementAutomationPeer.CreatePeerForElement(selectedItem) as IInvokeProvider).Invoke();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(selectedItem, navView.SelectedItem);
+                    Verify.IsTrue(overflowRepeater.ItemsSourceView.Count > 0);
+                    Verify.AreEqual(Visibility.Visible, navView.TemplateSettings.OverflowButtonVisibility);
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyOverflowButtonToolTip()
         {
             RunOnUIThread.Execute(() =>

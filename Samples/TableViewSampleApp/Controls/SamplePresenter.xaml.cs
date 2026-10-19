@@ -196,6 +196,7 @@ public sealed partial class SamplePresenter : UserControl
 
         OptionsHost.Visibility = showInfo ? Visibility.Collapsed : Visibility.Visible;
         InfoPanel.Visibility = showInfo ? Visibility.Visible : Visibility.Collapsed;
+        RailScroller.IsTabStop = showInfo;
         RailScroller.ChangeView(null, 0, null, disableAnimation: true);
     }
 

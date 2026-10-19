@@ -58,25 +58,23 @@
         WhatToLookFor="A null ItemsSource, an emptied source and a filter that matches nothing all look the same to the user: the column headers stay and the empty template fills the row area. When grouped, groups vanish with their last member; with zero rows there is no group band at all, only the template. Filtering keeps the 40 people in the collection, so Restore brings them back without reloading.">
 
         <controls:SamplePresenter.Example>
-            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                <!-- snippet -->
-                <tv:TableView
-                    x:Name="PeopleTable"
-                    AutomationProperties.AutomationId="EmptyStateTable"
-                    AutomationProperties.Name="People, with an empty state"
-                    ItemsSource="{x:Bind Source}"
-                    SelectionMode="Single"
-                    EmptyTemplate="{StaticResource EmptyStateTemplate}"
-                    VerticalAlignment="Stretch"
-                    MinHeight="320">
-                    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-                    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                    <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
-                    <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
-                </tv:TableView>
-                <!-- /snippet -->
-            </Border>
+            <!-- snippet -->
+            <tv:TableView
+                x:Name="PeopleTable"
+                AutomationProperties.AutomationId="EmptyStateTable"
+                AutomationProperties.Name="People, with an empty state"
+                ItemsSource="{x:Bind Source}"
+                SelectionMode="Single"
+                EmptyTemplate="{StaticResource EmptyStateTemplate}"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+                <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+            </tv:TableView>
+            <!-- /snippet -->
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>

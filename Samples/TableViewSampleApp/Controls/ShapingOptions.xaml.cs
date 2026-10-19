@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -65,8 +64,6 @@ public sealed partial class ShapingOptions : UserControl
     public event EventHandler<ShapingAppliedEventArgs>? ShapingApplied;
 
     public event EventHandler<ShapingActionEventArgs>? ActionPerformed;
-
-    public event EventHandler? SelectionRestored;
 
     public event EventHandler? SortStateChanged;
 
@@ -128,8 +125,6 @@ public sealed partial class ShapingOptions : UserControl
                 options.GroupedItem.IsEnabled = (bool)e.NewValue;
                 options.UpdateHierarchyItems();
             }));
-
-    public bool RestoreSelection { get; set; } = true;
 
     // Header of the column that hosts the chevron and indent in the Hierarchy modes.
     public string HierarchyColumnHeader { get; set; } = "Name";
@@ -239,7 +234,6 @@ public sealed partial class ShapingOptions : UserControl
 
         var mode = SelectedMode;
         var key = SelectedKey;
-        var selected = RestoreSelection ? _table.SelectedItem : null;
         ShapingApplying?.Invoke(this, new ShapingApplyingEventArgs(mode, key));
 
         var source = _source;
@@ -270,22 +264,6 @@ public sealed partial class ShapingOptions : UserControl
         _parentDeclared = IsHierarchicalMode(mode);
         ArrangeHierarchyColumn(_parentDeclared);
         _groupDeclaredAt = IsGrouped ? ++_declarations : -1;
-
-        // Workaround for AB#64548351: the control drops the selection when a row's group key changes.
-        // Workaround: the control re-anchors the selection after a reshape, except when the selected row's
-        // group key changed; then re-select it once the projection is rebuilt. A row inside a collapsed
-        // subtree has no index to select, so it stays unselected.
-        if (RestoreSelection && selected is not null && !ReferenceEquals(_table.SelectedItem, selected))
-        {
-            var table = _table;
-            table.DispatcherQueue?.TryEnqueue(DispatcherQueuePriority.Low, () =>
-            {
-                if (table.IsLoaded && table.SelectedItem is null && SampleShaping.SelectItem(table, selected))
-                {
-                    SelectionRestored?.Invoke(this, EventArgs.Empty);
-                }
-            });
-        }
 
         UpdateGating();
         var message = "Shaping -> " + AppliedText;

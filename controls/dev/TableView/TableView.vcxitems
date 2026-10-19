@@ -23,6 +23,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewCellsPanel.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewGroupHeader.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTelemetry.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTip.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTipTests.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewColumn.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTextColumn.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTemplateColumn.h" />
@@ -46,6 +49,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupInfo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewBeginningEditEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCellEditEndingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewFocusHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewToolTipHelpers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSortingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSortedEventArgs.h" />
@@ -61,6 +65,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewRowTemplateSelector.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewTelemetry.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewTip.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Tip.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Columns.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Keyboard.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Layout.cpp" />
