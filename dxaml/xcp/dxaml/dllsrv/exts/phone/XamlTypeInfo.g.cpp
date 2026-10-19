@@ -1945,6 +1945,7 @@ XamlRuntimeType::ResetDependencyProperties() const
     ABI::Microsoft::UI::Xaml::Media::Animation::NavigationThemeTransitionFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Controls::PickerFlyoutFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Controls::Primitives::PickerFlyoutBaseFactory::ClearProperties();
+    ABI::Microsoft::UI::Xaml::Controls::PickerFlyoutPresenterFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Controls::PivotFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Automation::Peers::PivotAutomationPeerFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Controls::Primitives::PivotHeaderItemFactory::ClearProperties();
@@ -1989,6 +1990,8 @@ XamlRuntimeType::EnsureDependencyProperties(_In_ UINT16 typeLabel) const
             return ABI::Microsoft::UI::Xaml::Controls::PickerFlyoutFactory::EnsureProperties();
         case activate_PickerFlyoutBase:
             return ABI::Microsoft::UI::Xaml::Controls::Primitives::PickerFlyoutBaseFactory::EnsureProperties();
+        case activate_PickerFlyoutPresenter:
+            return ABI::Microsoft::UI::Xaml::Controls::PickerFlyoutPresenterFactory::EnsureProperties();
         case activate_Pivot:
             return ABI::Microsoft::UI::Xaml::Controls::PivotFactory::EnsureProperties();
         case activate_PivotHeaderItem:

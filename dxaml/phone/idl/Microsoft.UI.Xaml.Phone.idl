@@ -353,9 +353,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [default_interface]
-    runtimeclass PickerFlyoutPresenter
+    unsealed runtimeclass PickerFlyoutPresenter
         : Microsoft.UI.Xaml.Controls.ContentControl
     {
+        [method_name("CreateInstance")] PickerFlyoutPresenter();
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
