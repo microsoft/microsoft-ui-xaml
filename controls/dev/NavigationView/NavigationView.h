@@ -141,8 +141,7 @@ private:
     void ChangeIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi, bool isExpanded);
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
     winrt::NavigationViewItem FindLowestLevelContainerToDisplaySelectionIndicator();
-    void UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected);
-    void UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP);
+    void UpdateIsChildSelected(const winrt::IndexPath& indexPath);
     void RaiseExpandingEvent(const winrt::NavigationViewItemBase& container);
     void RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container);
     void CloseFlyoutIfRequired(const winrt::NavigationViewItem& selectedItem);
@@ -473,6 +472,7 @@ private:
 
     winrt::SelectionModel m_selectionModel{};
     winrt::IVector<winrt::IInspectable> m_selectionModelSource{};
+    std::vector<winrt::weak_ref<winrt::NavigationViewItem>> m_selectedAncestorContainers;
 
     winrt::ItemsSourceView m_menuItemsSource{ nullptr };
     winrt::ItemsSourceView m_footerItemsSource{ nullptr };
@@ -522,4 +522,3 @@ private:
 
     double m_OpenPaneLength{ 320.0 };
 };
-
