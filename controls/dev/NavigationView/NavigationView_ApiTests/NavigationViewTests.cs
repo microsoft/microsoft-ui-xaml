@@ -2235,6 +2235,93 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void VerifySelectionIndicatorIsKeptAfterOtherPaneLayoutChanges()
+        {
+            // Other paths (besides PaneDisplayMode) that change the pane layout or re-template the item that shows the indicator (#9812)
+            var failures = new List<string>();
+            NavigationView navView = null;
+            NavigationViewItem parent = null;
+            NavigationViewItem child = null;
+            var allItems = new List<object>();
+            var loadedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Auto,
+                    IsSettingsVisible = false,
+                    Width = 1200,
+                    Height = 460,
+                    Content = new Grid { Height = 600 }
+                };
+
+                for (int i = 0; i < 3; i++)
+                {
+                    var menuItem = new NavigationViewItem { Content = $"Menu {i}", Icon = new SymbolIcon(Symbol.Library) };
+                    navView.MenuItems.Add(menuItem);
+                    allItems.Add(menuItem);
+                }
+
+                child = new NavigationViewItem { Content = "Child", Icon = new SymbolIcon(Symbol.Contact) };
+                parent = new NavigationViewItem { Content = "Parent", Icon = new SymbolIcon(Symbol.Contact) };
+                parent.MenuItems.Add(child);
+                navView.MenuItems.Add(parent);
+
+                navView.SelectedItem = allItems[1];
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                Content = navView;
+            });
+
+            loadedEvent.WaitOne();
+            WaitForSelectionIndicatorAnimation();
+            CheckSelectionIndicator(navView, allItems, allItems[1], "Auto, width=1200", failures);
+
+            // Auto mode: width and threshold changes switch DisplayMode (Expanded/Compact/Minimal) at runtime.
+            var steps = new (string, Action)[] {
+                ("width=700", () => navView.Width = 700),
+                ("width=400", () => navView.Width = 400),
+                ("width=1200", () => navView.Width = 1200),
+                ("CompactModeThresholdWidth=1300", () => navView.CompactModeThresholdWidth = 1300),
+                ("ExpandedModeThresholdWidth=2000", () => navView.ExpandedModeThresholdWidth = 2000),
+                ("thresholds restored", () => { navView.ExpandedModeThresholdWidth = 1008; navView.CompactModeThresholdWidth = 641; }),
+            };
+            foreach (var (name, change) in steps)
+            {
+                RunOnUIThread.Execute(change);
+                WaitForSelectionIndicatorAnimation();
+                CheckSelectionIndicator(navView, allItems, allItems[1], $"Auto, {name}", failures);
+            }
+
+            // Hierarchy: a collapsed parent shows the indicator for its selected child, and must keep it across mode switches.
+            RunOnUIThread.Execute(() =>
+            {
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                parent.IsExpanded = true;
+            });
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => navView.SelectedItem = child);
+            WaitForSelectionIndicatorAnimation();
+            RunOnUIThread.Execute(() => parent.IsExpanded = false);
+            var hierarchyItems = new List<object>(allItems) { parent };
+            WaitForSelectionIndicatorAnimation();
+            CheckSelectionIndicator(navView, hierarchyItems, child, "Left, collapsed parent of selected child", failures, parent);
+
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Top, NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact })
+            {
+                RunOnUIThread.Execute(() => navView.PaneDisplayMode = mode);
+                WaitForSelectionIndicatorAnimation();
+                CheckSelectionIndicator(navView, hierarchyItems, child, $"collapsed parent, after switching to {mode}", failures, parent);
+            }
+
+            foreach (var failure in failures)
+            {
+                Log.Error(failure);
+            }
+
+            Verify.AreEqual(0, failures.Count, "Selection indicator should stay on the selected item after pane layout changes");
+        }
+
         private static void WaitForSelectionIndicatorAnimation()
         {
             IdleSynchronizer.Wait();
@@ -2243,11 +2330,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
         }
 
-        private static void CheckSelectionIndicator(NavigationView navView, List<object> allItems, object selectedItem, string step, List<string> failures)
+        private static void CheckSelectionIndicator(NavigationView navView, List<object> allItems, object selectedItem, string step, List<string> failures, object indicatorItem = null)
         {
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(selectedItem, navView.SelectedItem, step);
+                var expectedIndicatorItem = indicatorItem ?? selectedItem;
 
                 foreach (var item in allItems)
                 {
@@ -2257,11 +2345,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment($"  {step}: item={(item as NavigationViewItem)?.Content ?? item}, container={(container != null)}, indicator={(indicator != null)}, " +
                         $"opacity={opacity}, size={indicator?.ActualWidth}x{indicator?.ActualHeight}");
 
-                    if (item == selectedItem && !(opacity > 0))
+                    if (item == expectedIndicatorItem && !(opacity > 0))
                     {
                         failures.Add($"{step}: selected item has no visible selection indicator (container={(container != null)}, indicator={(indicator != null)}, opacity={opacity})");
                     }
-                    else if (item != selectedItem && opacity > 0)
+                    else if (item != expectedIndicatorItem && opacity > 0)
                     {
                         failures.Add($"{step}: unselected item {(item as NavigationViewItem)?.Content ?? item} shows a selection indicator (opacity={opacity})");
                     }
