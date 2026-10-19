@@ -1467,6 +1467,44 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyTopNavigationViewIconOnlyChevronFits()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                    IsSettingsVisible = false,
+                    Width = 1008
+                };
+                var item = new NavigationViewItem { Icon = new SymbolIcon(Symbol.Home) };
+                navView.MenuItems.Add(item);
+                Content = navView;
+                Content.UpdateLayout();
+
+                var chevron = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(item, "ExpandCollapseChevron");
+                var presenter = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
+                var layoutRoot = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
+                var leafWidth = layoutRoot.ActualWidth;
+                Verify.AreEqual(Visibility.Collapsed, chevron.Visibility);
+
+                item.MenuItems.Add(new NavigationViewItem { Content = "Child" });
+                Content.UpdateLayout();
+                Verify.AreEqual(Visibility.Visible, chevron.Visibility);
+                Verify.IsTrue(chevron.ActualWidth > 0 && chevron.ActualHeight > 0);
+                var bounds = chevron.TransformToVisual(layoutRoot).TransformBounds(
+                    new Windows.Foundation.Rect(0, 0, chevron.ActualWidth, chevron.ActualHeight));
+                Verify.IsTrue(bounds.Left >= -0.5 && bounds.Right <= layoutRoot.ActualWidth + 0.5,
+                    "The visible chevron must fit inside the icon-only item's layout root.");
+
+                item.MenuItems.Clear();
+                Content.UpdateLayout();
+                Verify.AreEqual(Visibility.Collapsed, chevron.Visibility);
+                Verify.AreEqual(leafWidth, layoutRoot.ActualWidth, "Removing children should restore the icon-only leaf width.");
+            });
+        }
+
+        [TestMethod]
         public void VerifyOverflowButtonRemainsVisibleAfterSelectingOnlyOverflowItem()
         {
             foreach (bool useMenuItemsSource in new[] { false, true })
