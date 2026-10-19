@@ -2570,16 +2570,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
 
             SelectItem(navView, item);
+            Verify.IsTrue(WaitForAnimatedIconSegment(icon, segment => segment == "NormalToSelected"), "Selecting plays NormalToSelected");
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Selected item");
-                Verify.AreNotEqual("0.0", Microsoft.UI.Private.Controls.AnimatedIconTestHooks.GetLastAnimationSegmentEnd(icon), "Selected resolves to a marker, not frame 0");
+                Verify.AreEqual("NormalToSelected_End", Microsoft.UI.Private.Controls.AnimatedIconTestHooks.GetLastAnimationSegmentEnd(icon), "Selected resolves to its marker");
 
                 var presenter = (Control)VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter");
                 Verify.IsTrue(VisualStateManager.GoToState(presenter, "PointerOverSelected", true));
             });
             IdleSynchronizer.Wait();
 
+            // AnimatedIcon plays the transition on a later layout pass; wait until it has left Selected.
+            Verify.IsTrue(WaitForAnimatedIconSegment(icon, segment => segment.StartsWith("SelectedTo")), "Hovering plays a transition out of Selected");
             RunOnUIThread.Execute(() =>
             {
                 var segmentEnd = Microsoft.UI.Private.Controls.AnimatedIconTestHooks.GetLastAnimationSegmentEnd(icon);
@@ -2622,6 +2625,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
 
             SelectItem(navView, item);
+
+            // Give AnimatedIcon's deferred transition a chance to play: with the bug it plays NormalToSelected and cuts to
+            // frame 0; with the fix the state never leaves Normal, so no NormalTo* transition happens and this times out.
+            WaitForAnimatedIconSegment(icon, segment => segment.StartsWith("NormalTo"), 2000);
             RunOnUIThread.Execute(() =>
             {
                 var segmentEnd = Microsoft.UI.Private.Controls.AnimatedIconTestHooks.GetLastAnimationSegmentEnd(icon);
@@ -2635,6 +2642,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Content = null;
             });
             IdleSynchronizer.Wait();
+        }
+
+        // AnimatedIconTestHooks records the transition AnimatedIcon last resolved (e.g. "NormalToSelected"); it is
+        // updated on the layout pass after the State change, so poll for it.
+        static bool WaitForAnimatedIconSegment(AnimatedIcon icon, Func<string, bool> predicate, int timeoutMs = 5000)
+        {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            while (true)
+            {
+                string segment = null;
+                RunOnUIThread.Execute(() => segment = Microsoft.UI.Private.Controls.AnimatedIconTestHooks.GetLastAnimationSegment(icon) ?? string.Empty);
+                if (predicate(segment))
+                {
+                    return true;
+                }
+                if (stopwatch.ElapsedMilliseconds > timeoutMs)
+                {
+                    Log.Comment("Last AnimatedIcon segment: " + segment);
+                    return false;
+                }
+                Thread.Sleep(50);
+            }
         }
 
         static Dictionary<string, double> CreateLegacyAnimatedIconMarkers()
