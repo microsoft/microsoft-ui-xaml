@@ -4655,7 +4655,8 @@ void NavigationView::UpdatePaneToggleSize()
 
             if (auto toggleButton = m_paneToggleButton.get())
             {
-                toggleButton.Width(togglePaneButtonWidth);
+                // OpenPaneLength can be smaller than the back/close button, and Width rejects negative values.
+                toggleButton.Width(std::max(0.0, togglePaneButtonWidth));
             }
         }
     }
