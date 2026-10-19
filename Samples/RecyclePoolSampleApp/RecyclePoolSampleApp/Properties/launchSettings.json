@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "RecyclePoolSampleApp (Package)": {
+      "commandName": "MsixPackage",
+      "nativeDebugging": true
+    },
+    "RecyclePoolSampleApp (Unpackaged)": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
