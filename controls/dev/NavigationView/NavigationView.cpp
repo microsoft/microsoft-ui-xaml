@@ -4183,6 +4183,8 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         UpdateBackAndCloseButtonsVisibility();
         UpdateAdaptiveLayout(ActualWidth());
+        // With a PaneTitle and an open overlay pane, the toggle button leaves room for the back/close button.
+        UpdatePaneToggleSize();
         if (IsTopNavigationView())
         {
             InvalidateTopNavPrimaryLayout();
