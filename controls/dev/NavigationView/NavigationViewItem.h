@@ -100,7 +100,9 @@ private:
     void UpdateVisualStateForKeyboardFocusedState();
     void UpdateVisualStateForToolTip();
     void UpdateVisualStateForPointer();
-    void UpdateAnimatedIconState(wstring_view const& state);
+    void HookAnimatedIconEvents();
+    void OnAnimatedIconPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void UpdateAnimatedIconState();
     void UpdateVisualStateForChevron();
     void UpdateVisualStateForClosedCompact();
 
@@ -137,6 +139,8 @@ private:
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
     PropertyChanged_revoker m_splitViewCompactPaneLengthChangedRevoker{};
+    PropertyChanged_revoker m_animatedIconStateChangedRevoker{};
+    PropertyChanged_revoker m_animatedIconSourceChangedRevoker{};
 
     winrt::UIElement::PointerPressed_revoker m_presenterPointerPressedRevoker{};
     winrt::UIElement::PointerEntered_revoker m_presenterPointerEnteredRevoker{};
@@ -180,4 +184,7 @@ private:
     // NavigationView needs to force collapse top level items when the pane closes.
     // This bool is used to remember which items need to be restored to expanded state when the pane is opened again.
     bool m_restoreToExpandedState{ false };
+
+    // Whether UpdateAnimatedIconState gave the icon a selected state, so it knows to hand back the legacy one.
+    bool m_isAnimatedIconStateOverridden{ false };
 };

@@ -348,6 +348,7 @@ void NavigationViewItem::OnIsExpandedPropertyChanged(const winrt::DependencyProp
 
 void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    HookAnimatedIconEvents();
     UpdateVisualStateNoTransition();
 }
 
@@ -574,14 +575,34 @@ void NavigationViewItem::UpdateVisualStateForPointer()
         winrt::VisualStateManager::GoToState(*this, selectedStateValue, true);
     }
 
-    UpdateAnimatedIconState(selectedStateValue);
+    UpdateAnimatedIconState();
 }
 
 // The default templates forward the pointer states to an AnimatedIcon in the Icon slot, but map the selected
 // states onto the unselected ones (Selected -> Normal, PointerOverSelected -> PointerOver, PressedSelected -> Pressed)
 // so that icons authored with only Normal/PointerOver/Pressed markers (such as AnimatedSettingsVisualSource) keep
-// animating. When the icon's source defines markers for the selected states, give it the real visual state instead.
-void NavigationViewItem::UpdateAnimatedIconState(wstring_view const& state)
+// animating. When the icon's source defines markers for the selected states, give it the selected state instead.
+// AnimatedIcon.State is a custom property, so the template's setters (and the icon's copy of them) are applied on a
+// deferred tick; we therefore re-map the icon's own State whenever it changes rather than relying on call order.
+void NavigationViewItem::HookAnimatedIconEvents()
+{
+    m_animatedIconStateChangedRevoker.revoke();
+    m_animatedIconSourceChangedRevoker.revoke();
+    m_isAnimatedIconStateOverridden = false;
+
+    if (auto const animatedIcon = Icon().try_as<winrt::AnimatedIcon>())
+    {
+        m_animatedIconStateChangedRevoker = RegisterPropertyChanged(animatedIcon, winrt::AnimatedIcon::StateProperty(), { this, &NavigationViewItem::OnAnimatedIconPropertyChanged });
+        m_animatedIconSourceChangedRevoker = RegisterPropertyChanged(animatedIcon, winrt::AnimatedIcon::SourceProperty(), { this, &NavigationViewItem::OnAnimatedIconPropertyChanged });
+    }
+}
+
+void NavigationViewItem::OnAnimatedIconPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    UpdateAnimatedIconState();
+}
+
+void NavigationViewItem::UpdateAnimatedIconState()
 {
     auto const animatedIcon = Icon().try_as<winrt::AnimatedIcon>();
     if (!animatedIcon)
@@ -589,20 +610,22 @@ void NavigationViewItem::UpdateAnimatedIconState(wstring_view const& state)
         return;
     }
 
+    const std::wstring currentState{ winrt::AnimatedIcon::GetState(animatedIcon).c_str() };
+    if (currentState.empty())
+    {
+        // Not connected to the template's state yet; AnimatedIcon copies it when it loads, which brings us back here.
+        return;
+    }
+
     auto const source = animatedIcon.Source();
-    if (!source)
-    {
-        return;
-    }
-
-    auto const markers = source.Markers();
-    if (!markers)
-    {
-        return;
-    }
-
+    auto const markers = source ? source.Markers() : decltype(source.Markers()){ nullptr };
     auto const hasMarkersForState = [&markers](wstring_view const& markerState)
     {
+        if (!markers)
+        {
+            return false;
+        }
+
         const std::wstring stateTo = std::wstring(markerState) + L"To";
         const std::wstring toState = L"To" + std::wstring(markerState);
         const std::wstring toStateWithSuffix = toState + L"_";
@@ -620,31 +643,63 @@ void NavigationViewItem::UpdateAnimatedIconState(wstring_view const& state)
         return false;
     };
 
-    if (!hasMarkersForState(c_selected) && !hasMarkersForState(c_pointerOverSelected) && !hasMarkersForState(c_pressedSelected))
+    const wstring_view unselectedState = [&currentState]()
     {
-        // Not a selection-aware icon: leave it to the template, which preserves the existing behavior.
-        return;
-    }
-
-    auto const unselectedState = [state]()
-    {
-        if (state == c_selected)
+        if (currentState == c_selected)
         {
             return c_normal;
         }
-        else if (state == c_pointerOverSelected)
+        else if (currentState == c_pointerOverSelected)
         {
             return c_pointerOver;
         }
-        else if (state == c_pressedSelected)
+        else if (currentState == c_pressedSelected)
         {
             return c_pressed;
         }
-        return state;
+        return wstring_view{ currentState };
     }();
 
-    auto const iconState = (state == unselectedState || hasMarkersForState(state)) ? state : unselectedState;
-    winrt::AnimatedIcon::SetState(animatedIcon, winrt::hstring{ iconState });
+    wstring_view newState = currentState;
+    if (IsSelected() &&
+        (hasMarkersForState(c_selected) || hasMarkersForState(c_pointerOverSelected) || hasMarkersForState(c_pressedSelected)))
+    {
+        const wstring_view selectedState = [unselectedState]()
+        {
+            if (unselectedState == c_normal)
+            {
+                return c_selected;
+            }
+            else if (unselectedState == c_pointerOver)
+            {
+                return c_pointerOverSelected;
+            }
+            else if (unselectedState == c_pressed)
+            {
+                return c_pressedSelected;
+            }
+            return wstring_view{};
+        }();
+
+        if (!selectedState.empty())
+        {
+            // Partially authored icons fall back to the legacy state for selected states they don't have markers for.
+            newState = hasMarkersForState(selectedState) ? selectedState : unselectedState;
+            m_isAnimatedIconStateOverridden = true;
+        }
+    }
+    else if (m_isAnimatedIconStateOverridden)
+    {
+        // We gave the icon a selected state earlier; hand back the state the template would have given it.
+        newState = unselectedState;
+        m_isAnimatedIconStateOverridden = false;
+    }
+
+    if (newState != currentState)
+    {
+        // Re-enters through OnAnimatedIconPropertyChanged, which then finds nothing left to change.
+        winrt::AnimatedIcon::SetState(animatedIcon, winrt::hstring{ newState });
+    }
 }
 
 void NavigationViewItem::UpdateVisualState(bool useTransitions)
