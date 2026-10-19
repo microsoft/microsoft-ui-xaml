@@ -11,6 +11,8 @@ issue changes. The Markdown workflow is the source of truth; its compiled
 | --- | --- |
 | Clear primary area, no existing area label | Add one existing `area-*` label at HIGH confidence. |
 | One area with a configured owner, no existing team label | Derive and add its `team-*` label from the selected configured routing rule. |
+| Existing or newly selected `team-Reach`, `team-Rendering`, or `team-Markup` | Add `team-Core` if missing, without replacing the specific team label. |
+| Only `team-Core` is present | Add a specific child only when the area's routing rules identify one; never infer a child from the parent alone. |
 | Evidence clearly meets an area's conditional rule | Use that rule's configured owner rather than the default; the model cannot invent a team. |
 | Uncertain area or an unmapped team | Comment with the suggestion; leave the uncertain routing to a maintainer. |
 | Low-confidence or unresolved automatic routing | Keep or add `needs-triage` for human confirmation. Already-established human routing is not reset. |
@@ -72,6 +74,32 @@ It also provides keyword guidance, ownership confidence, and nine
 conditional routes: eight declared override rules and the explicit
 AnimatedVisualPlayer compositor case. Teams are derived from this configuration,
 never accepted as arbitrary model output.
+
+Parent relationships are maintained separately in `team-parent-map.json`:
+
+```json
+{
+  "team-Markup": "team-Core",
+  "team-Reach": "team-Core",
+  "team-Rendering": "team-Core"
+}
+```
+
+Each entry maps one child label to one parent. No entry means no parent.
+The trusted scripts load this file, validate all names against the live label
+catalog, and reject cycles before analysis or publication. Parent chains are
+expanded deterministically and duplicate ancestors are added only once.
+The mapping stays out of the model's evidence and prompt; the LLM neither
+chooses nor needs to know the parent labels. Editing this JSON changes parent
+routing without changing the LLM instructions or Python code.
+
+The publisher includes configured parents of existing or proposed team labels,
+and the comment shows the same final label set. Existing specific teams are
+preserved; an ancestor-only issue can gain an area-evidenced child without
+being reassigned to a sibling. Under the current configuration, Controls,
+CompInput, and Design have no parent. Adding a missing parent alone does not
+restart a completed human triage decision. This applies on normal eligible
+triage runs, not as a bulk relabeling operation.
 
 Each area entry contains:
 
@@ -160,6 +188,10 @@ stale handling, or the maintainer's acceptance/closure process.
 
 ## Trust boundaries and limits
 
+- The prepared JSON keeps each area, follow-up, and candidate on one line, while
+  preserving the complete bounded evidence and fingerprint. The agent reads it
+  with the native `view` tool in explicit line ranges. Shell readers/searches
+  (`cat`, `grep`, `head`, etc.) remain denied; only the safe-output CLI is allowed.
 - Issue content, comments, code samples, links, and candidate text are untrusted.
   The model cannot search GitHub, download attachments, run sample code, or write
   directly to issues. It can only return a structured triage result.
@@ -182,12 +214,21 @@ stale handling, or the maintainer's acceptance/closure process.
   additive label writes. GitHub does not provide a transaction across these
   operations; a concurrent edit can stop label publication after the comment
   was written. A later run safely refreshes the single comment.
-- Only allowlisted routing labels, `needs-triage`, and `needs-repro` can be added,
-  at most four per run. The publisher uses additive label writes, never replacement.
-- Per-issue concurrency cancels superseded runs. Actor rate limiting allows five
-  runs per hour. Ignored label events and other people's comments use separate
+- Only allowlisted routing labels, `needs-triage`, and `needs-repro` can be added.
+  The current parent configuration permits at most five additions per run (one
+  area, its specific team, the optional parent, and the two workflow-state
+  labels). The publisher uses additive label writes, never replacement.
+- Per-issue concurrency cancels superseded runs. `on.roles: all` permits external
+  issue authors: pre-activation is not a Microsoft organization-membership gate.
+  Its repository-permission lookup only exempts `admin`, `maintain`, and `write`
+  actors from rate limiting. Other actors, including non-collaborators, may
+  trigger five runs per hour. A permission-lookup failure continues through
+  that rate-limit check instead of rejecting the reporter. Manual dispatch still
+  requires GitHub's normal workflow-dispatch permissions.
+  Ignored label events and other people's comments use separate
   concurrency groups so they cannot cancel an active intake. The triage agent
-  is bounded to five turns and ten AI credits;
+  is bounded to twelve model invocations (including evidence/tool iterations)
+  and ten AI credits, leaving room to read the evidence and submit its result;
   the separate output-safety analysis has its own ten-credit budget. A
   one-hundred-credit daily guardrail stops starting further analyses after the
   measured threshold is reached; concurrent runs may already be in flight.

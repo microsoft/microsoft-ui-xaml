@@ -523,6 +523,8 @@ namespace Microsoft.UI.Xaml.Settings
         [feature(Feature_ExperimentalApi)]
         [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
         GamepadKeyRouting = 63117108,
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        CollectionMoveNotifications = 1503,
     };
 }
 
@@ -2367,3 +2369,4 @@ namespace Microsoft.UI.Xaml.Settings
     };
 
 }
+

@@ -18,6 +18,11 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
+    // Class-level [TestProperty("Ignore", "True")] (added when MUXControlsTestApp became a desktop .NET app)
+    // removed: a /runignoredtests trial of the 88 ignored tests passed 83/88 unmodified; the
+    // 5 failures were test-side (stale check-box tap geometry, fixed in ToggleTreeViewItemCheckBox) or infra
+    // (MUXTestInfra AppWatcher 15-minute app-lifetime limit; TestCleanup's RestartAppIfLongRunning schedules an
+    // app restart after 10 minutes). TreeViewFastReorderTest and TreeViewDataLateInitTest were re-enabled too.
     [TestClass]
     public class TreeViewTests
     {
@@ -26,7 +31,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Classification", "Integration")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("TestSuite", "A")]
-        [TestProperty("Ignore", "True")] // TODO 29556921: Disabled after converting MUXControlsTestApp to a desktop .NET 5 app.  Re-enable when fixed.
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
@@ -36,6 +40,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+            RestartAppIfLongRunning();
+        }
+
+        // MUXTestInfra's AppWatcherThread fails the test host once one app instance has run for 15 minutes
+        // (Application.cs: "Test app process ran for an unexpectedly long time"). This class has ~90 tests that share
+        // one instance, so whichever test straddles that mark fails with 0xE0434352 before it starts. Once the
+        // instance is older than the threshold, ask the next TestSetupHelper to restart it. Same mitigation as the
+        // TableView interaction tests (TableViewInteractionTestHelpers.RestartAppIfLongRunning), which can't be
+        // called from here because that file is only compiled when FeatureTableViewEnabled is set.
+        private static readonly TimeSpan s_appRestartThreshold = TimeSpan.FromMinutes(10);
+
+        private static void RestartAppIfLongRunning()
+        {
+            try
+            {
+                var process = TestEnvironment.Application.Process;
+                if (process != null && !process.HasExited && DateTime.Now - process.StartTime > s_appRestartThreshold)
+                {
+                    Log.Comment("Test app has run for over {0} minutes; scheduling a restart before the AppWatcherThread limit.",
+                        s_appRestartThreshold.TotalMinutes);
+                    TestEnvironment.ShouldRestartApplication = true;
+                }
+            }
+            catch (Exception e) when (e is InvalidOperationException || e is System.ComponentModel.Win32Exception)
+            {
+                // The process could not be queried; leave the restart decision to the infra.
+            }
         }
 
         private bool IsPhoneDevice()
@@ -108,6 +139,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: tap Root to expand, add second-level nodes, then tap Root.0, Root and Root.1 to
+        //   expand/collapse (the page's ItemInvoked handler toggles IsExpanded).
+        // Expected: GetItemCount (flattened list size) is 1, 4, 5 (Root.0 open), 1 (Root closed), 5 (Root.0
+        //   still open), 8 (Root.1 open), and 8 again after a collapse+expand of Root.
+        // Failure means: ViewModel no longer adds/removes the right descendants on IsExpanded changes
+        //   (TreeViewNodeIsExpandedPropertyChanged / AddNodeDescendantsToView) or loses nested expansion state.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -116,6 +153,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
            ExpandCollapseTest();
         }
 
+        // Scenario: Content mode (SetContentMode): tap Root to expand, add second-level nodes, then tap Root.0,
+        //   Root and Root.1 to expand/collapse (the page's ItemInvoked handler toggles IsExpanded).
+        // Expected: GetItemCount (flattened list size) is 1, 4, 5 (Root.0 open), 1 (Root closed), 5 (Root.0
+        //   still open), 8 (Root.1 open), and 8 again after a collapse+expand of Root.
+        // Failure means: ViewModel no longer adds/removes the right descendants on IsExpanded changes
+        //   (TreeViewNodeIsExpandedPropertyChanged / AddNodeDescendantsToView) or loses nested expansion state.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -180,6 +223,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: expand/collapse Root through the UIA ExpandCollapse pattern, then through the
+        //   UIA Invoke pattern, waiting for the expand/collapse UIA events.
+        // Expected: GetItemCount is 1, then 4 after Expand, 1 after Collapse, 4 after the first Invoke and 1
+        //   after the second.
+        // Failure means: TreeViewItemAutomationPeer::Expand/Collapse (TreeView::Expand/Collapse) or Invoke ->
+        //   ItemInvoked no longer changes the node's expansion, so the flattened list keeps the wrong size.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -188,6 +237,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             ExpandCollapseViaAutomationTest();
         }
 
+        // Scenario: Content mode (SetContentMode): expand/collapse Root through the UIA ExpandCollapse pattern,
+        //   then through the UIA Invoke pattern, waiting for the expand/collapse UIA events.
+        // Expected: GetItemCount is 1, then 4 after Expand, 1 after Collapse, 4 after the first Invoke and 1
+        //   after the second.
+        // Failure means: TreeViewItemAutomationPeer::Expand/Collapse (TreeView::Expand/Collapse) or Invoke ->
+        //   ItemInvoked no longer changes the node's expansion, so the flattened list keeps the wrong size.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -219,6 +274,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: tap the collapsed Root item once.
+        // Expected: GetItemCount is 1 before the tap; Results reads "ItemClicked:Root" (ItemInvoked raised for
+        //   Root).
+        // Failure means: TreeView::OnItemClick no longer raises ItemInvoked, or InvokedItem is not the clicked
+        //   node (node mode) / data item (content mode).
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -227,6 +287,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewItemClickTest();
         }
 
+        // Scenario: Content mode (SetContentMode): tap the collapsed Root item once.
+        // Expected: GetItemCount is 1 before the tap; Results reads "ItemClicked:Root" (ItemInvoked raised for
+        //   Root).
+        // Failure means: TreeView::OnItemClick no longer raises ItemInvoked, or InvokedItem is not the clicked
+        //   node (node mode) / data item (content mode).
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -235,6 +300,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewItemClickTest(isContentMode:true);
         }
 
+        // Scenario: TreeView hosted in a Flyout (TreeViewInFlyout): tap Root's chevron to expand, hide and
+        //   reopen the flyout (root node replaced), then expand again.
+        // Expected: GetFlyoutItemCount is 4 after each expansion.
+        // Failure means: Chevron tap (TreeViewItem::OnExpandCollapseChevronPointerPressed) or replacing
+        //   RootNodes[0] no longer expands a TreeView in a re-shown flyout.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -270,10 +340,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Regression test for bug 15801893
+        // Scenario: Open the flyout TreeView, expand Root via the chevron, Left + Escape to collapse and
+        //   dismiss, reopen, expand again, then Shift+Tab out of the item.
+        // Expected: The app is still alive and GetFlyoutItemCount is 4.
+        // Failure means: Shift+Tab from a TreeViewItem in a reopened flyout crashes the app again.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        // Regression test for bug 15801893
         public void FlyoutTreeViewItemTabTest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -394,6 +468,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode, LTR, DisableClickToExpand: tap Root, then Right/Left keys, gamepad DPad
+        //   Left/Right and left-thumbstick Left/Right on Root and its first child.
+        // Expected: Tap only invokes (count 1); Right expands (4), Right+Enter -> "ItemClicked:Root.0",
+        //   Left+Enter -> "ItemClicked:Root", Left collapses (1); DPad/thumbstick Right -> 4, Left -> 1.
+        // Failure means: TreeViewItem::OnKeyDown / IsExpandCollapse / HandleExpandCollapse no longer map
+        //   Right/Left (keyboard or gamepad) to expand / go to first child / go to parent / collapse in LTR.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -402,6 +482,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewKeyDownLeftToRightTest();
         }
 
+        // Scenario: Content mode (SetContentMode), LTR, DisableClickToExpand: tap Root, then Right/Left keys,
+        //   gamepad DPad Left/Right and left-thumbstick Left/Right on Root and its first child.
+        // Expected: Tap only invokes (count 1); Right expands (4), Right+Enter -> "ItemClicked:Root.0",
+        //   Left+Enter -> "ItemClicked:Root", Left collapses (1); DPad/thumbstick Right -> 4, Left -> 1.
+        // Failure means: TreeViewItem::OnKeyDown / IsExpandCollapse / HandleExpandCollapse no longer map
+        //   Right/Left (keyboard or gamepad) to expand / go to first child / go to parent / collapse in LTR.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -487,6 +573,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: ChangeFlowDirection sets RightToLeft, DisableClickToExpand; same steps as the
+        //   LTR test with Left/Right (keys, DPad, thumbstick) mirrored.
+        // Expected: Left expands (4) and moves to the first child ("ItemClicked:Root.0"); Right returns to Root
+        //   ("ItemClicked:Root") and collapses (1); DPad/thumbstick Left -> 4, Right -> 1.
+        // Failure means: TreeViewItem::HandleExpandCollapse no longer honors FlowDirection RightToLeft
+        //   (flowDirectionReversed), so keyboard/gamepad expand and collapse act in the wrong direction.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void TreeViewKeyDownRightToLeftTest_NodeMode()
@@ -494,6 +586,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewKeyDownRightToLeftTest();
         }
 
+        // Scenario: Content mode (SetContentMode): ChangeFlowDirection sets RightToLeft, DisableClickToExpand;
+        //   same steps as the LTR test with Left/Right (keys, DPad, thumbstick) mirrored.
+        // Expected: Left expands (4) and moves to the first child ("ItemClicked:Root.0"); Right returns to Root
+        //   ("ItemClicked:Root") and collapses (1); DPad/thumbstick Left -> 4, Right -> 1.
+        // Failure means: TreeViewItem::HandleExpandCollapse no longer honors FlowDirection RightToLeft
+        //   (flowDirectionReversed), so keyboard/gamepad expand and collapse act in the wrong direction.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void TreeViewKeyDownRightToLeftTest_ContentMode()
@@ -530,6 +628,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: tap Root to expand, then MoveNodesToNewTreeView moves the expanded root into the
+        //   second TreeView and removes the first tree from the page.
+        // Expected: Results is "ItemClicked:Root"; GetTree2ItemCount is 6 (2 existing items + Root and its 3
+        //   children).
+        // Failure means: An expanded node moved to another TreeView loses its expanded descendants in the new
+        //   ViewModel (ViewModel::TreeViewNodeVectorChanged / AddNodeDescendantsToView).
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -538,6 +642,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewSwappingNodesTest();
         }
 
+        // Scenario: Content mode (SetContentMode): tap Root to expand, then MoveNodesToNewTreeView moves the
+        //   expanded root into the second TreeView and removes the first tree from the page.
+        // Expected: Results is "ItemClicked:Root"; GetTree2ItemCount is 6 (2 existing items + Root and its 3
+        //   children).
+        // Failure means: An expanded node moved to another TreeView loses its expanded descendants in the new
+        //   ViewModel (ViewModel::TreeViewNodeVectorChanged / AddNodeDescendantsToView).
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -585,6 +695,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: SetUpExpandingNodeEvent adds a "Virtualized" child with HasUnrealizedChildren
+        //   whose Expanding handler adds 3 children; expand it with Down x4 + Right.
+        // Expected: Tapping Root gives "ItemClicked:Root" and 5 items; after Right on the virtualized node
+        //   Results is "Loaded" (Expanding raised) and GetItemCount is 8.
+        // Failure means: TreeView::OnNodeExpanding no longer raises Expanding for a node with
+        //   HasUnrealizedChildren, or children added in the handler are not inserted into the flattened list.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -593,6 +709,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewExpandingEventTest();
         }
 
+        // Scenario: Content mode (SetContentMode): SetUpExpandingNodeEvent adds a "Virtualized" child with
+        //   HasUnrealizedChildren whose Expanding handler adds 3 children; expand it with Down x4 + Right.
+        // Expected: Tapping Root gives "ItemClicked:Root" and 5 items; after Right on the virtualized node
+        //   Results is "Loaded" (Expanding raised) and GetItemCount is 8.
+        // Failure means: TreeView::OnNodeExpanding no longer raises Expanding for a node with
+        //   HasUnrealizedChildren, or children added in the handler are not inserted into the flattened list.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -672,6 +794,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode, DisableClickToExpand: expand Root; Alt+Shift+Down twice on Root.0, then
+        //   Alt+Shift+Up on the first child and Alt+Shift+Down on the last child and on Root.
+        // Expected: GetChildrenOrder is "Root | Root.1 | Root.2 | Root.0" after the two moves and stays so
+        //   after the boundary attempts; GetItemCount stays 4.
+        // Failure means: TreeViewItem::HandleReorder / ReorderItems no longer move the focused node within its
+        //   parent, move it past the first/last sibling, or desync ItemsSource and node order (content mode).
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -680,6 +808,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewKeyboardReorderTest();
         }
 
+        // Scenario: Content mode (SetContentMode), DisableClickToExpand: expand Root; Alt+Shift+Down twice on
+        //   Root.0, then Alt+Shift+Up on the first child and Alt+Shift+Down on the last child and on Root.
+        // Expected: GetChildrenOrder is "Root | Root.1 | Root.2 | Root.0" after the two moves and stays so
+        //   after the boundary attempts; GetItemCount stays 4.
+        // Failure means: TreeViewItem::HandleReorder / ReorderItems no longer move the focused node within its
+        //   parent, move it past the first/last sibling, or desync ItemsSource and node order (content mode).
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -727,6 +861,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: expand Root, DisableClickToExpand, then touch-drag Root.0 onto Root.1
+        //   (InputHelper.DragToTarget).
+        // Expected: GetItemCount drops from 4 to 3 (Root.0 now a child of collapsed Root.1); GetChildrenOrder
+        //   is "Root | Root.1 | Root.0 | Root.2".
+        // Failure means: TreeViewItem::OnDrop no longer reparents the dragged node as the last child of the
+        //   drop-target node, or TreeViewItem::OnDragEnter/OnDragOver stop accepting the Move.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -735,6 +875,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewDragAndDropOnNode();
         }
 
+        // Scenario: Content mode (SetContentMode): expand Root, DisableClickToExpand, then touch-drag Root.0
+        //   onto Root.1 (InputHelper.DragToTarget).
+        // Expected: GetItemCount drops from 4 to 3 (Root.0 now a child of collapsed Root.1); GetChildrenOrder
+        //   is "Root | Root.1 | Root.0 | Root.2".
+        // Failure means: TreeViewItem::OnDrop no longer reparents the dragged node as the last child of the
+        //   drop-target node, or TreeViewItem::OnDragEnter/OnDragOver stop accepting the Move.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -794,6 +940,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: expand Root, click Root.0, then touch-drag it 1.75 item heights south (between
+        //   Root.1 and Root.2).
+        // Expected: GetChildrenOrder becomes "Root | Root.1 | Root.0 | Root.2" (5 retries); GetItemCount is 4;
+        //   GetItemCommonStates (samples container 0) is all "Normal".
+        // Failure means: TreeViewList::OnDragOver slot computation or TreeViewList::OnDrop / MoveNodeInto no
+        //   longer moves the node between siblings, or an item stays in a drag visual state.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -802,6 +954,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewDragAndDropBetweenNodes();
         }
 
+        // Scenario: Open the TreeView page and measure the collapsed Root item.
+        // Expected: Root's UIA bounding rectangle height is 28 DIPs, scaled by the test window DPI (+/-1 px).
+        // Failure means: TreeViewItem default template/density resources (min height, padding, margins)
+        //   changed.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void TreeViewDensityChange()
@@ -809,11 +965,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("TreeView Tests"))
             {
                 UIObject root = LabelFirstItem();
-                int height = root.BoundingRectangle.Height;
-                Verify.AreEqual(height, 28);
+                VerifyHeightInDips(root.BoundingRectangle.Height, 28, "Root item");
             }
         }
 
+        // Scenario: Content mode (SetContentMode): expand Root, click Root.0, then touch-drag it 1.75 item
+        //   heights south (between Root.1 and Root.2).
+        // Expected: GetChildrenOrder becomes "Root | Root.1 | Root.0 | Root.2" (5 retries); GetItemCount is 4;
+        //   GetItemCommonStates (samples container 0) is all "Normal".
+        // Failure means: TreeViewList::OnDragOver slot computation or TreeViewList::OnDrop / MoveNodeInto no
+        //   longer moves the node between siblings, or an item stays in a drag visual state.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -869,6 +1030,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode, multi-select: select Root.0 and Root.1 with Space, then AddSecondLevelOfNodes,
+        //   ModifySecondLevelOfNode and RemoveSecondLevelOfNode.
+        // Expected: GetSelected: none; "Root.0, Root.1"; added children of selected nodes become selected;
+        //   "THIS IS NEW" replaces Root.0.0; the removed child leaves the selection.
+        // Failure means: ViewModel::SelectedNodeChildrenChanged no longer propagates selection to
+        //   added/replaced children or drop removed ones from SelectedNodes/SelectedItems.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -877,6 +1044,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewCollectionChangesEffectSelectedNodesTest();
         }
 
+        // Scenario: Content mode (SetContentMode), multi-select: select Root.0 and Root.1 with Space, then
+        //   AddSecondLevelOfNodes, ModifySecondLevelOfNode and RemoveSecondLevelOfNode.
+        // Expected: GetSelected: none; "Root.0, Root.1"; added children of selected nodes become selected;
+        //   "THIS IS NEW" replaces Root.0.0; the removed child leaves the selection.
+        // Failure means: ViewModel::SelectedNodeChildrenChanged no longer propagates selection to
+        //   added/replaced children or drop removed ones from SelectedNodes/SelectedItems.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -931,6 +1104,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode, multi-select: expand Root, select Root.0 and Root.1 with Space, then touch-drag
+        //   Root.0 onto Root.2.
+        // Expected: GetSelected is "Root.0, Root.1"; afterwards GetItemCount is 2 (both under collapsed Root.2)
+        //   and GetChildrenOrder is "Root | Root.2 | Root.0 | Root.1".
+        // Failure means: TreeViewItem::OnDrop's multi-select branch (GetRootsOfSelectedSubtrees + append) no
+        //   longer moves every selected subtree into the drop-target node.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -939,6 +1118,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewMultiSelectDragAndDropOnNode();
         }
 
+        // Scenario: Content mode (SetContentMode), multi-select: expand Root, select Root.0 and Root.1 with
+        //   Space, then touch-drag Root.0 onto Root.2.
+        // Expected: GetSelected is "Root.0, Root.1"; afterwards GetItemCount is 2 (both under collapsed Root.2)
+        //   and GetChildrenOrder is "Root | Root.2 | Root.0 | Root.1".
+        // Failure means: TreeViewItem::OnDrop's multi-select branch (GetRootsOfSelectedSubtrees + append) no
+        //   longer moves every selected subtree into the drop-target node.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -1000,6 +1185,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode, multi-select: select Root.0 and Root.1, then touch-drag Root.1 1.75 item heights
+        //   south (below Root.2).
+        // Expected: GetChildrenOrder is "Root | Root.2 | Root.0 | Root.1", GetItemCount stays 4 and GetSelected
+        //   is still "Root.0, Root.1".
+        // Failure means: TreeViewList::OnDrop's multi-select path (MoveNodeInto for each selected subtree root,
+        //   in order) no longer moves all selected nodes to the drop slot, or the move loses their selection.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -1008,6 +1199,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewMultiSelectDragAndDropBetweenNodes();
         }
 
+        // Scenario: Content mode (SetContentMode), multi-select: select Root.0 and Root.1, then touch-drag
+        //   Root.1 1.75 item heights south (below Root.2).
+        // Expected: GetChildrenOrder is "Root | Root.2 | Root.0 | Root.1", GetItemCount stays 4 and GetSelected
+        //   is still "Root.0, Root.1".
+        // Failure means: TreeViewList::OnDrop's multi-select path (MoveNodeInto for each selected subtree root,
+        //   in order) no longer moves all selected nodes to the drop slot, or the move loses their selection.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -1066,6 +1263,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode, multi-select: Space on Root selects Root and its children, then touch-drag
+        //   Root.1 1.45 item heights south (inside the selected subtree).
+        // Expected: GetChildrenOrder stays "Root | Root.0 | Root.1 | Root.2", GetItemCount stays 4 and all four
+        //   nodes remain selected.
+        // Failure means: TreeViewList::OnDragOver / TreeViewItem::OnDragOver no longer reject drops on or
+        //   beside selected nodes, so a selected subtree can be dropped into itself.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void ValidateCannotDragWithinSelectedSubtree_NodeMode()
@@ -1073,6 +1276,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             ValidateCannotDragWithinSelectedSubtree();
         }
 
+        // Scenario: Content mode (SetContentMode), multi-select: Space on Root selects Root and its children,
+        //   then touch-drag Root.1 1.45 item heights south (inside the selected subtree).
+        // Expected: GetChildrenOrder stays "Root | Root.0 | Root.1 | Root.2", GetItemCount stays 4 and all four
+        //   nodes remain selected.
+        // Failure means: TreeViewList::OnDragOver / TreeViewItem::OnDragOver no longer reject drops on or
+        //   beside selected nodes, so a selected subtree can be dropped into itself.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void ValidateCannotDragWithinSelectedSubtree_ContentMode()
@@ -1141,6 +1350,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode, multi-select: select subtree Root.0 (+Root.0.0) and nested leaf Root.1.0 by
+        //   keyboard, then drag Root.1.0 1.75 item heights south.
+        // Expected: Selection is "Root.0, Root.0.0, Root.1.0" before and after; order becomes "Root | Root.1 |
+        //   Root.1.1 | Root.0 | Root.0.0 | Root.1.0 | Root.1.2 | Root.2"; count 8.
+        // Failure means: TreeViewList::GetRootsOfSelectedSubtrees / MoveNodeInto mishandle a selection mixing a
+        //   subtree root and a nested leaf from different parents (wrong parent, order or lost nodes).
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -1149,6 +1364,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             ValidateMultiSelectDragDropRootsAndNonRoots();
         }
 
+        // Scenario: Content mode (SetContentMode), multi-select: select subtree Root.0 (+Root.0.0) and nested
+        //   leaf Root.1.0 by keyboard, then drag Root.1.0 1.75 item heights south.
+        // Expected: Selection is "Root.0, Root.0.0, Root.1.0" before and after; order becomes "Root | Root.1 |
+        //   Root.1.1 | Root.0 | Root.0.0 | Root.1.0 | Root.1.2 | Root.2"; count 8.
+        // Failure means: TreeViewList::GetRootsOfSelectedSubtrees / MoveNodeInto mishandle a selection mixing a
+        //   subtree root and a nested leaf from different parents (wrong parent, order or lost nodes).
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -1192,6 +1413,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: expand Root, SizeTreeViewsForDrags, then touch-drag the last item Root.2 90px
+        //   south past the end of the list to hit every DragOver path.
+        // Expected: No crash; GetItemCount is still 4.
+        // Failure means: TreeViewList::OnDragOver (insertion index clamping when belowIndex is -1 or past the
+        //   list) or UpdateDropTargetDropEffect crashes while dragging below the last item.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void TreeViewDragCrash_NodeMode()
@@ -1199,6 +1425,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewDragCrash();
         }
 
+        // Scenario: Content mode (SetContentMode): expand Root, SizeTreeViewsForDrags, then touch-drag the last
+        //   item Root.2 90px south past the end of the list to hit every DragOver path.
+        // Expected: No crash; GetItemCount is still 4.
+        // Failure means: TreeViewList::OnDragOver (insertion index clamping when belowIndex is -1 or past the
+        //   list) or UpdateDropTargetDropEffect crashes while dragging below the last item.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
         public void TreeViewDragCrash_ContentMode()
@@ -1250,14 +1481,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Per-method Ignore removed in this change. Node mode: SetupDragToDropTarget, expand Root,
+        //   drag Root.2 onto the external "DropTarget" Border (retried).
+        // Expected: DropTargetTextBlock reads "Root.2": the external target received the dragged item's data.
+        // Failure means: TreeViewList::OnDragItemsStarting / TreeView::OnListControlDragItemsStarting no longer
+        //   expose the dragged node/item (or its data package) to an external drop target.
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        [TestProperty("Ignore", "True")] //Task 24429465: DCPP: Multiple MUXControls interaction tests failing after IXP integration.
         public void DragItemOutOfTreeView_NodeMode()
         {
             DragItemOutOfTreeView();
         }
 
+        // Scenario: Content mode (SetContentMode): SetupDragToDropTarget (DragItemsStarting puts item names in
+        //   the data), expand Root, drag Root.2 onto the external "DropTarget" Border (retried).
+        // Expected: DropTargetTextBlock reads "Root.2": the external target received the dragged item's data.
+        // Failure means: TreeViewList::OnDragItemsStarting / TreeView::OnListControlDragItemsStarting no longer
+        //   expose the dragged node/item (or its data package) to an external drop target.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void DragItemOutOfTreeView_ContentMode()
@@ -1302,6 +1542,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: SetupDragToDropTarget, then drag the external DraggableElement (text "Test
+        //   Item", Copy) onto TestTreeView / ContentModeTestTreeView.
+        // Expected: Results reads "Dropped: Test Item": the TreeView's Drop event received the external data.
+        // Failure means: TreeViewList/TreeViewItem OnDragOver/OnDrop handle (or reject) external drags with no
+        //   DraggedTreeViewNode, so the app's TreeView DragOver/Drop handlers no longer run.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -1310,6 +1555,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             DragItemOntoTreeView();
         }
 
+        // Scenario: Content mode (SetContentMode): SetupDragToDropTarget, then drag the external
+        //   DraggableElement (text "Test Item", Copy) onto TestTreeView / ContentModeTestTreeView.
+        // Expected: Results reads "Dropped: Test Item": the TreeView's Drop event received the external data.
+        // Failure means: TreeViewList/TreeViewItem OnDragOver/OnDrop handle (or reject) external drags with no
+        //   DraggedTreeViewNode, so the app's TreeView DragOver/Drop handlers no longer run.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -1358,6 +1608,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: SetupNoReorderNodes sets AllowDrop=false on Root.0 and gives it 3 children;
+        //   expand it (7 items) and drag Root.1 north 1.45 heights into Root.0's children.
+        // Expected: GetItemCount is still 7 (only the count is asserted, not the order).
+        // Failure means: Dragging over a child of an AllowDrop=false container (TreeViewList::OnDragOver
+        //   allowReorder check) crashes or loses/duplicates nodes.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void TreeViewNoReorderIntoChildren_NodeMode()
@@ -1365,6 +1620,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewNoReorderIntoChildren();
         }
 
+        // Scenario: Content mode (SetContentMode): SetupNoReorderNodes sets AllowDrop=false on Root.0 and gives
+        //   it 3 children; expand it (7 items) and drag Root.1 north 1.45 heights into Root.0's children.
+        // Expected: GetItemCount is still 7 (only the count is asserted, not the order).
+        // Failure means: Dragging over a child of an AllowDrop=false container (TreeViewList::OnDragOver
+        //   allowReorder check) crashes or loses/duplicates nodes.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void TreeViewNoReorderIntoChildren_ContentMode()
@@ -1372,6 +1632,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewNoReorderIntoChildren(isContentMode:true);
         }
 
+        // Scenario: Open the flyout TreeView and expand Root, tap the TreeViewInFlyout button to dismiss it,
+        //   then ChangeSelectionAfterFlyout sets IsSelected=false on the cached flyout TreeViewItem.
+        // Expected: GetFlyoutItemCount is 4 before dismissing; afterwards only that the app does not crash.
+        // Failure means: TreeViewItem::OnIsSelectedChanged / UpdateSelection crashes for a container whose
+        //   flyout (and TreeView/list control) is closed.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void FlyoutTreeViewSelectionChangedCrash()
@@ -1472,6 +1737,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode, multi-select, DisableClickToExpand: tap Root at 75% width, then
+        //   Space/Right/Down/Left combinations on Root, Root.0 and Root.2.
+        // Expected: Space on Root selects all 4 (count 1); Space on Root.0 -> "Root.1, Root.2"; on Root.2 ->
+        //   "Root.1"; Left collapses (1) keeping "Root.1"; Space on partial Root selects all 4.
+        // Failure means: TreeViewItem::OnKeyDown Space handling in multi-select, or ViewModel::UpdateSelection
+        //   descendant/ancestor propagation, regressed; or collapsing drops the selection.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -1480,6 +1751,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewMultiSelectKeyboardingTest();
         }
 
+        // Scenario: Content mode (SetContentMode), multi-select, DisableClickToExpand: tap Root at 75% width,
+        //   then Space/Right/Down/Left combinations on Root, Root.0 and Root.2.
+        // Expected: Space on Root selects all 4 (count 1); Space on Root.0 -> "Root.1, Root.2"; on Root.2 ->
+        //   "Root.1"; Left collapses (1) keeping "Root.1"; Space on partial Root selects all 4.
+        // Failure means: TreeViewItem::OnKeyDown Space handling in multi-select, or ViewModel::UpdateSelection
+        //   descendant/ancestor propagation, regressed; or collapsing drops the selection.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -1513,29 +1790,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
                 ClickButton("LabelItems");
 
-                InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .05, ItemRoot.BoundingRectangle.Height * .5);
+                ToggleTreeViewItemCheckBox(ItemRoot, 1);
                 ClickButton("GetSelected");
                 Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
 
                 Log.Comment("Retrieve first item as generic UIElement");
                 UIObject Item0 = FindElement.ById("Root.0");
-                Verify.IsNotNull(ItemRoot, "Verifying that we found a UIElement called Root.0");
+                Verify.IsNotNull(Item0, "Verifying that we found a UIElement called Root.0");
 
-                InputHelper.Tap(Item0, Item0.BoundingRectangle.Width * .1, Item0.BoundingRectangle.Height * .5);
+                ToggleTreeViewItemCheckBox(Item0, 2);
                 ClickButton("GetSelected");
                 Verify.AreEqual("Selected: Root.1, Root.2", ReadResult());
 
                 // tap on partial selected node will set it to unselected state
-                InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .05, ItemRoot.BoundingRectangle.Height * .5);
+                ToggleTreeViewItemCheckBox(ItemRoot, 1);
                 ClickButton("GetSelected");
                 Verify.AreEqual("Nothing selected", ReadResult());
 
-                InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .05, ItemRoot.BoundingRectangle.Height * .5);
+                ToggleTreeViewItemCheckBox(ItemRoot, 1);
                 ClickButton("GetSelected");
                 Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
             }
         }
 
+        // Scenario: Node mode, multi-select: expand Root, then tap check boxes with ToggleTreeViewItemCheckBox
+        //   (template offsets x window DPI scale): Root, Root.0, Root twice.
+        // Expected: Count 1 -> 4; checking Root selects all 4; unchecking Root.0 -> "Root.1, Root.2"; tapping
+        //   the partial Root -> "Nothing selected"; tapping it again selects all 4.
+        // Failure means: TreeViewItem::OnCheckToggle -> ViewModel::SelectByIndex/UpdateSelection no longer
+        //   propagates the check state to descendants/ancestors, or a partial box no longer clears the subtree.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -1544,6 +1827,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewMultiSelectItemTest();
         }
 
+        // Scenario: Content mode (SetContentMode), multi-select: expand Root, then tap check boxes with
+        //   ToggleTreeViewItemCheckBox (template offsets x window DPI scale): Root, Root.0, Root twice.
+        // Expected: Count 1 -> 4; checking Root selects all 4; unchecking Root.0 -> "Root.1, Root.2"; tapping
+        //   the partial Root -> "Nothing selected"; tapping it again selects all 4.
+        // Failure means: TreeViewItem::OnCheckToggle -> ViewModel::SelectByIndex/UpdateSelection no longer
+        //   propagates the check state to descendants/ancestors, or a partial box no longer clears the subtree.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -1593,6 +1882,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode, multi-select: press gamepad A on Root seven times (VerifyGamepadAPress reads
+        //   count and selection after each).
+        // Expected: A cycles expand, select all, unselect, collapse, select all, unselect, expand: counts
+        //   4,4,4,1,1,1,4 with selection none/all/none/none/all/none/none.
+        // Failure means: TreeViewItem::HandleGamepadAInMultiselectMode / ToggleSelection no longer alternate
+        //   expansion and selection for a non-leaf node (m_expansionCycled).
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void TreeViewMultiSelectGamepadTest_NodeMode()
@@ -1600,6 +1895,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewMultiSelectGamepadTest();
         }
 
+        // Scenario: Content mode (SetContentMode), multi-select: press gamepad A on Root seven times
+        //   (VerifyGamepadAPress reads count and selection after each).
+        // Expected: A cycles expand, select all, unselect, collapse, select all, unselect, expand: counts
+        //   4,4,4,1,1,1,4 with selection none/all/none/none/all/none/none.
+        // Failure means: TreeViewItem::HandleGamepadAInMultiselectMode / ToggleSelection no longer alternate
+        //   expansion and selection for a non-leaf node (m_expansionCycled).
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void TreeViewMultiSelectGamepadTest_ContentMode()
@@ -1694,6 +1995,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: expand Root, switch to multi-select, focus Root.1 and get the Selection pattern
+        //   of its SelectionContainer (the TreeViewList peer).
+        // Expected: Selection pattern exists, CanSelectMultiple is true, IsSelectionRequired is false,
+        //   GetSelection is empty.
+        // Failure means: TreeViewListAutomationPeer (GetPatternCore / CanSelectMultiple / IsSelectionRequired /
+        //   GetSelection) or TreeViewItemAutomationPeer::SelectionContainer regressed in multi-select mode.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void TreeViewListMultipleSelectionUIATest()
@@ -1729,6 +2036,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: expand Root, read Root.1's UIA properties, select via tap and SelectionItem in
+        //   single mode, then Space/RemoveFromSelection/AddToSelection in multi-select.
+        // Expected: Root.1: PositionInSet 2, SizeOfSet 3, Level 2, LeafNode; Root Expanded; IsSelected follows
+        //   each step; AddToSelection on Root selects Root.1 too.
+        // Failure means: TreeViewItemAutomationPeer (PositionInSet/SizeOfSet/Level cores, ExpandCollapseState,
+        //   IsSelected, Add/RemoveFromSelection) misreports structure or selection.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -1737,6 +2050,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewItemUIATest();
         }
 
+        // Scenario: Content mode (SetContentMode): expand Root, read Root.1's UIA properties, select via tap
+        //   and SelectionItem in single mode, then Space/RemoveFromSelection/AddToSelection in multi-select.
+        // Expected: Root.1: PositionInSet 2, SizeOfSet 3, Level 2, LeafNode; Root Expanded; IsSelected follows
+        //   each step; AddToSelection on Root selects Root.1 too.
+        // Failure means: TreeViewItemAutomationPeer (PositionInSet/SizeOfSet/Level cores, ExpandCollapseState,
+        //   IsSelected, Add/RemoveFromSelection) misreports structure or selection.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -1779,6 +2098,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: UIA-expand Root, SetRoot1HasUnrealizedChildren on childless Root.1 (hooks
+        //   Expanding), then UIA-expand Root.1.
+        // Expected: GetItemCount is 4 after Root expands; Results reads "Expanding Raised".
+        // Failure means: Expanding is no longer raised for a childless node with HasUnrealizedChildren
+        //   (TreeView::OnNodeExpanding / TreeViewItemAutomationPeer::Expand).
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -1787,6 +2111,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             ValidateExpandingRaisedOnItemHavingUnrealizedChildren();
         }
 
+        // Scenario: Content mode (SetContentMode): UIA-expand Root, SetRoot1HasUnrealizedChildren on childless
+        //   Root.1 (hooks Expanding), then UIA-expand Root.1.
+        // Expected: GetItemCount is 4 after Root expands; Results reads "Expanding Raised".
+        // Failure means: Expanding is no longer raised for a childless node with HasUnrealizedChildren
+        //   (TreeView::OnNodeExpanding / TreeViewItemAutomationPeer::Expand).
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -1813,6 +2142,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: SetupDragDropHandlersForApiTest logs DragItemsStarting/Completed; touch-drag the
+        //   collapsed Root one item height south.
+        // Expected: Results is "DragItemsStarting:Root\nDragItemsCompleted:Root" (no NewParent line for a root
+        //   item).
+        // Failure means: TreeView::OnListControlDragItemsStarting/Completed no longer raise the TreeView drag
+        //   events with the dragged node/item, or NewParentItem is set for a root-level item.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void TreeViewDragItemTest_NodeMode()
@@ -1820,6 +2155,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewDragItemTest();
         }
 
+        // Scenario: Content mode (SetContentMode): SetupDragDropHandlersForApiTest logs
+        //   DragItemsStarting/Completed; touch-drag the collapsed Root one item height south.
+        // Expected: Results is "DragItemsStarting:Root\nDragItemsCompleted:Root" (no NewParent line for a root
+        //   item).
+        // Failure means: TreeView::OnListControlDragItemsStarting/Completed no longer raise the TreeView drag
+        //   events with the dragged node/item, or NewParentItem is set for a root-level item.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void TreeViewDragItemTest_ContentMode()
@@ -1863,6 +2204,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode, multi-select + API drag handlers: select Root.0 and Root.1 with Space, then
+        //   touch-drag Root.0 onto Root.2.
+        // Expected: Results is "DragItemsStarting:Root.0|Root.1\nDragItemsCompleted:Root.0|Root.1\nNewParent:
+        //   Root.2".
+        // Failure means: TreeViewList::OnDragItemsStarting no longer puts all selected nodes/items in
+        //   args.Items, or TreeView::OnListControlDragItemsCompleted reports the wrong NewParentItem.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -1871,6 +2218,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewDragMultipleItemsTest();
         }
 
+        // Scenario: Content mode (SetContentMode), multi-select + API drag handlers: select Root.0 and Root.1
+        //   with Space, then touch-drag Root.0 onto Root.2.
+        // Expected: Results is "DragItemsStarting:Root.0|Root.1\nDragItemsCompleted:Root.0|Root.1\nNewParent:
+        //   Root.2".
+        // Failure means: TreeViewList::OnDragItemsStarting no longer puts all selected nodes/items in
+        //   args.Items, or TreeView::OnListControlDragItemsCompleted reports the wrong NewParentItem.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -1905,6 +2258,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: API drag handlers on the second tree; drag the external draggable element to the
+        //   first tree, passing over (and leaving) the second tree.
+        // Expected: Results is "DragEnter->DragOver->DragLeave" from the second tree's handlers.
+        // Failure means: TreeViewList::OnDragEnter/OnDragOver/OnDragLeave (or TreeViewItem overrides) swallow
+        //   external drag events, so TreeView DragEnter/DragOver/DragLeave no longer reach the app.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -1913,6 +2271,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewDragEnterOverLeaveTest();
         }
 
+        // Scenario: Content mode (SetContentMode): API drag handlers on the second tree; drag the external
+        //   draggable element to the first tree, passing over (and leaving) the second tree.
+        // Expected: Results is "DragEnter->DragOver->DragLeave" from the second tree's handlers.
+        // Failure means: TreeViewList::OnDragEnter/OnDragOver/OnDragLeave (or TreeViewItem overrides) swallow
+        //   external drag events, so TreeView DragEnter/DragOver/DragLeave no longer reach the app.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -1946,6 +2309,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: API drag handlers on the second tree; drag the external draggable element and
+        //   drop it on the second tree.
+        // Expected: Results is "DragEnter->DragOver->Drop" from the second tree's handlers.
+        // Failure means: TreeViewList::OnDrop / TreeViewItem::OnDrop (or the drag-enter/over overrides) swallow
+        //   an external drop, so the TreeView Drop event no longer reaches the app.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -1954,6 +2322,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewDragEnterOverDropTest();
         }
 
+        // Scenario: Content mode (SetContentMode): API drag handlers on the second tree; drag the external
+        //   draggable element and drop it on the second tree.
+        // Expected: Results is "DragEnter->DragOver->Drop" from the second tree's handlers.
+        // Failure means: TreeViewList::OnDrop / TreeViewItem::OnDrop (or the drag-enter/over overrides) swallow
+        //   an external drop, so the TreeView Drop event no longer reaches the app.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -1994,6 +2367,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: API drag handlers, DisableItemDrag (CanDragItems=false), expand Root, then
+        //   touch-drag Root.1 onto Root.2.
+        // Expected: Results stays empty: DragItemsStarting/DragItemsCompleted were never raised.
+        // Failure means: TreeView.CanDragItems=false no longer reaches the inner TreeViewList, so items can
+        //   still be dragged.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewDisableItemDragTest_NodeMode()
@@ -2001,6 +2379,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewDisableItemDragTest();
         }
 
+        // Scenario: Content mode (SetContentMode): API drag handlers, DisableItemDrag (CanDragItems=false),
+        //   expand Root, then touch-drag Root.1 onto Root.2.
+        // Expected: Results stays empty: DragItemsStarting/DragItemsCompleted were never raised.
+        // Failure means: TreeView.CanDragItems=false no longer reaches the inner TreeViewList, so items can
+        //   still be dragged.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewDisableItemDragTest_ContentMode()
@@ -2059,6 +2442,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: expand Root, DisableItemReorder (CanReorderItems=false), drag Root.0 1.5 heights
+        //   south (between nodes), then drag Root.0 onto Root.1.
+        // Expected: GetChildrenOrder stays "Root | Root.0 | Root.1 | Root.2" before and after both drags.
+        // Failure means: TreeViewList::OnDragOver / TreeViewItem::OnDragEnter/OnDragOver no longer honor
+        //   CanReorderItems=false, allowing reorder or reparenting by drag.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewDisableItemReorderTest_NodeMode()
@@ -2066,6 +2454,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewDisableItemReorderTest();
         }
 
+        // Scenario: Content mode (SetContentMode): expand Root, DisableItemReorder (CanReorderItems=false),
+        //   drag Root.0 1.5 heights south (between nodes), then drag Root.0 onto Root.1.
+        // Expected: GetChildrenOrder stays "Root | Root.0 | Root.1 | Root.2" before and after both drags.
+        // Failure means: TreeViewList::OnDragOver / TreeViewItem::OnDragEnter/OnDragOver no longer honor
+        //   CanReorderItems=false, allowing reorder or reparenting by drag.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewDisableItemReorderTest_ContentMode()
@@ -2073,6 +2466,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewDisableItemReorderTest(isContentMode:true);
         }
 
+        // Scenario: Node mode: expand Root, DisableClickToExpand, Alt+Shift+Down on Root.0; then
+        //   DisableItemReorder (CanReorderItems=false) and repeat.
+        // Expected: First reorder gives "Root | Root.1 | Root.0 | Root.2"; with reorder disabled the order is
+        //   unchanged.
+        // Failure means: TreeViewItem::IsInReorderMode / HandleReorder no longer reorder by keyboard by default
+        //   or ignore CanReorderItems=false.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewDisableItemReorderKeyboardTest()
@@ -2107,6 +2506,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Navigate to ItemTemplateSelectorTestPage (TreeView with ItemTemplateSelector and
+        //   ItemContainerStyleSelector setting Height 50/60).
+        // Expected: Items "Template1" and "Template2" exist with heights 46 and 56 DIPs (style height minus 4px
+        //   margins), scaled by the test window DPI (+/-1 px).
+        // Failure means: TreeView no longer forwards ItemTemplateSelector / ItemContainerStyleSelector to the
+        //   inner TreeViewList and its TreeViewItem containers.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewItemTemplateSelectorTest()
@@ -2122,12 +2527,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 var topBottomMargin = 4; // To account for the 2px top and 2px bottom margins for TreeViewItem
 
                 // Verify item container styles are set correctly by checking heights
-                Verify.AreEqual(node1.BoundingRectangle.Height, 50 - topBottomMargin);
-                Verify.AreEqual(node2.BoundingRectangle.Height, 60 - topBottomMargin);
+                VerifyHeightInDips(node1.BoundingRectangle.Height, 50 - topBottomMargin, "Template1 item");
+                VerifyHeightInDips(node2.BoundingRectangle.Height, 60 - topBottomMargin, "Template2 item");
             }
         }
 
         //Bug 16396926
+        // Scenario: Node mode: AddNodeWithEmpyUnrealizedChildren adds Root.3 (HasUnrealizedChildren,
+        //   IsExpanded, no children); keyboard: Right expands Root, Down x4 to Root.3, Right on it.
+        // Expected: No crash; GetItemCount is 5 (Root + 4 children, nothing added under Root.3).
+        // Failure means: TreeViewItem::HandleExpandCollapse / ViewModel crash on an expanded node with
+        //   HasUnrealizedChildren but an empty Children vector.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewExpandNodeWithUnrealizedChildrenCrash()
@@ -2210,6 +2620,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: expand Root, Root.0, Root.1 (8 items), multi-select, tap check boxes via
+        //   ToggleTreeViewItemCheckBox (DPI-scaled): Root.0.0, Root.1.0, Root.1 twice, Root.2.
+        // Expected: GetMultiSelectCheckBoxStates (pre-order, u/s/p): u*8 -> p|s|s|u.. -> p|s|s|p|s|u.. ->
+        //   partial Root.1 clears to p|s|s|u.. -> p|s|s|s|s|s|s|u -> s*8.
+        // Failure means: ViewModel::UpdateSelectionStateOfAncestors/Descendants (SelectionStateBasedOnChildren)
+        //   compute wrong partial states, or TreeViewItem::OnCheckToggle ignores the box.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewPartialSelectionTest_NodeMode()
@@ -2217,6 +2633,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewPartialSelectionTest();
         }
 
+        // Scenario: Content mode (SetContentMode): expand Root, Root.0, Root.1 (8 items), multi-select, tap
+        //   check boxes via ToggleTreeViewItemCheckBox (DPI-scaled): Root.0.0, Root.1.0, Root.1 twice, Root.2.
+        // Expected: GetMultiSelectCheckBoxStates (pre-order, u/s/p): u*8 -> p|s|s|u.. -> p|s|s|p|s|u.. ->
+        //   partial Root.1 clears to p|s|s|u.. -> p|s|s|s|s|s|s|u -> s*8.
+        // Failure means: ViewModel::UpdateSelectionStateOfAncestors/Descendants (SelectionStateBasedOnChildren)
+        //   compute wrong partial states, or TreeViewItem::OnCheckToggle ignores the box.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewPartialSelectionTest_ContentMode()
@@ -2224,6 +2646,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewPartialSelectionTest(isContentMode:true);
         }
 
+        // Scenario: Node mode, single select: UIA-expand Root, tap Root.0, then ToggleRoot0Selection sets
+        //   TreeView.SelectedNode = null.
+        // Expected: GetSelected is "Selected: Root.0" (SelectedNode/Nodes/Item/Items consistent), then "Nothing
+        //   selected".
+        // Failure means: TreeView::SelectedNode getter/setter no longer reflects or clears the single selection
+        //   made by tap.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewSelectedNodeTest()
@@ -2250,6 +2678,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: UIA-expand Root; ToggleSelectedNodes (switches to Multiple) adds then removes
+        //   Root.0 and Root.2 in SelectedNodes; then tap Root.0 and press Space.
+        // Expected: Check boxes u|u|u|u| -> p|s|u|s| -> u|u|u|u|; GetSelected "Nothing selected", then
+        //   "Selected: Root.0".
+        // Failure means: SelectedTreeNodeVector Append/RemoveAt no longer update node/container selection
+        //   states, or UI selection no longer updates SelectedNodes (ViewModel::UpdateSelection).
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewSelectedNodesTest()
@@ -2287,6 +2721,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Content mode, single select: UIA-expand Root, tap Root.0, then ToggleRoot0Selection sets
+        //   TreeView.SelectedItem = null.
+        // Expected: GetSelected is "Selected: Root.0", then "Nothing selected".
+        // Failure means: TreeView::OnPropertyChanged(SelectedItem) -> ViewModel::SelectSingleItem no longer
+        //   clears (or reports) the content-mode selection.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewSelectedItemTest()
@@ -2315,6 +2754,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Content mode: UIA-expand Root; ToggleSelectedNodes (switches to Multiple) adds then removes
+        //   Root.0 and Root.2 in SelectedItems; then tap Root.0 and press Space.
+        // Expected: Check boxes u|u|u|u| -> p|s|u|s| -> u|u|u|u|; GetSelected "Nothing selected", then
+        //   "Selected: Root.0".
+        // Failure means: SelectedItemsVector Append/RemoveAt no longer update node/container selection states,
+        //   or UI selection no longer updates SelectedItems.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewSelectedItemsTest()
@@ -2355,8 +2800,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // test for #1756 https://github.com/microsoft/microsoft-ui-xaml/issues/1756
+        // Scenario: 5 iterations (flaky repro): AddExtraNodes adds Node 1..50, SelectLastRootNode sets
+        //   SelectedNode to the off-screen Node 50, then tap Node 1.
+        // Expected: GetSelected is "Selected: Node 50", then "Selected: Node 1" in every iteration.
+        // Failure means: Ignored (PC-7, product bug): in Single mode TreeView.SelectedItem only follows the inner
+        //   ListView's SelectionChanged, so selecting the unrealized Node 50 leaves SelectedItem stale until it is
+        //   realized. A pass on slow agents would mean SelectedItem is now synced from the ViewModel selection.
         [TestMethod]
         [TestProperty("TreeViewTestSuite", "B")]
+        // PC-7 (product bug): in Single mode TreeView.SelectedItem is only synced from the inner ListView's
+        // SelectionChanged, which needs a realized container; selecting an unrealized node via SelectedNode leaves
+        // SelectedItem stale until realization. Timing-dependent: fails consistently on Win10 RS5 x86chk CI agents
+        // (PR #12227), passes on faster Win11 agents. Re-enable once SelectedItem is updated from
+        // the ViewModel selection change.
+        [TestProperty("Ignore", "True")]
         public void TreeViewSelectRegressionTest()
         {
             // Running 5 times since the the bug doesn't repro consistently.
@@ -2382,6 +2839,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // Regression test for bug 16833853
+        // Scenario: Node mode: add second-level nodes, expand Root and Root.0, hold the focused UIA element of
+        //   Root.0.0, then RemoveSecondLevelOfNode removes that node.
+        // Expected: Before: PositionInSet 1, SizeOfSet 1, Level 3; after removal the stale peer reports -1 for
+        //   all three.
+        // Failure means: TreeViewItemAutomationPeer::GetPositionInSetCore/GetSizeOfSetCore/GetLevelCore crash
+        //   or return stale values for a container whose node was removed.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewNonexistNodeAutomationPeerTest()
@@ -2419,6 +2882,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // Regression test for bug 17644036
+        // Scenario: Node mode: focus Root's peer in the default Single mode, then ToggleSelectionMode twice
+        //   (Single -> Multiple -> None).
+        // Expected: Root's peer supports SelectionItem in Single mode and no longer supports it in None mode.
+        // Failure means: TreeViewItemAutomationPeer::GetPatternCore no longer omits SelectionItem when
+        //   SelectionMode is None (or omits it in Single).
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewItemAutomationPeerSelectionItemPatternTest()
@@ -2443,6 +2911,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode, multi-select: focus the collapsed Root and press Space three times while
+        //   listening for UIA selection events.
+        // Expected: IsSelected starts false; 1st Space fires IsSelected changed (true), 2nd
+        //   ElementRemovedFromSelection (false), 3rd ElementAddedToSelection (true).
+        // Failure means: TreeViewItem::OnCheckToggle -> RaiseSelectionChangeEvents no longer raises the
+        //   SelectionItem UIA events or the IsSelected property change.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewSelectionChangeUIAEventsTest()
@@ -2483,6 +2957,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: UIA-expand Root, AddInheritedTreeViewNode appends a TreeViewNode2 (C# subclass
+        //   of TreeViewNode), then LabelItems.
+        // Expected: An item with AutomationId "Inherited from TreeViewNode" exists (a container was realized
+        //   for it).
+        // Failure means: TreeViewNode can no longer be subclassed from app code, or derived nodes get no
+        //   container (TreeView::ContainerFromNode / ViewModel).
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewNodeInheritenceTest()
@@ -2500,7 +2980,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] Bug 24048408: DCPP: Multiple MUXC interaction tests fail in CatGates due to taking too long to execute
+        // Scenario: Re-enabled in this change. Node mode: AddExtraNodes (51 roots), focus Node 1, send 50 rapid
+        //   Alt+Shift+Down then 50 Alt+Shift+Up (SendKeysDelay 10ms).
+        // Expected: GetItemCount is 51 before and after: the app still responds and no node was lost or
+        //   duplicated.
+        // Failure means: TreeViewItem::HandleReorder / ReorderItems crash or corrupt the flattened list under
+        //   rapid repeated keyboard reorders.
+        [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewFastReorderTest()
         {
@@ -2508,23 +2994,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 ClickButton("AddExtraNodes");
                 ClickButton("LabelItems");
+                ClickButton("GetItemCount");
+                Verify.AreEqual("51", ReadResult());
                 var node = FindElement.ById("Node 1");
                 Verify.IsNotNull(node);
                 node.SetFocus();
                 Log.Comment("Move down node 1");
                 var originalDelay = Keyboard.SendKeysDelay;
                 Keyboard.SendKeysDelay = 10;
+                try
+                {
+                    KeyboardHelper.PressKey(Key.Down, ModifierKey.Alt | ModifierKey.Shift, 50);
+                    Log.Comment("Move up node 1");
+                    KeyboardHelper.PressKey(Key.Up, ModifierKey.Alt | ModifierKey.Shift, 50);
+                }
+                finally
+                {
+                    Keyboard.SendKeysDelay = originalDelay;
+                }
 
-                KeyboardHelper.PressKey(Key.Down, ModifierKey.Alt | ModifierKey.Shift, 50);
-                Log.Comment("Move up node 1");
-                KeyboardHelper.PressKey(Key.Up, ModifierKey.Alt | ModifierKey.Shift, 50);
+                // The app must still respond and no node may be lost or duplicated by the rapid reorders.
+                ClickButton("GetItemCount");
+                Verify.AreEqual("51", ReadResult());
                 Log.Comment("App didn't crash");
-
-                Keyboard.SendKeysDelay = originalDelay;
             }
         }
 
-        // [TestMethod] 24048500
+        // Scenario: Re-enabled in this change. TreeViewLateDataInitTestPage: the TreeView's ItemsSource is
+        //   bound (OneWay) to a null collection; InitializeItemsSource assigns it after load.
+        // Expected: An item named "Root" appears.
+        // Failure means: TreeView::OnPropertyChanged(ItemsSource) / TreeViewNode::ItemsSource no longer
+        //   populate the tree when ItemsSource is first set late.
+        [TestMethod]
         [TestProperty("TestSuite", "C")]
         public void TreeViewDataLateInitTest()
         {
@@ -2537,6 +3038,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Navigate to TreeViewNodeInMarkupTestPage, whose RootNodes (Root > Root.0) are declared in
+        //   XAML.
+        // Expected: An item named "Root" exists.
+        // Failure means: TreeViewNode objects declared in markup (TreeView.RootNodes / TreeViewNode.Children)
+        //   no longer load.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
@@ -2549,6 +3055,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Content mode: ClearNodes empties ItemsSource, AddRootNode twice adds Root0 and Root1, then
+        //   drag Root1 onto Root0 and UIA-expand Root0.
+        // Expected: GetItemCount 2, then 1 after the drop; GetChildrenOrder (ItemsSource and nodes in sync) is
+        //   "Root0 | Root1".
+        // Failure means: TreeViewItem::OnDrop no longer moves a root-level item into another item in both the
+        //   node tree and the bound ItemsSource (TreeViewNodeVector with updateItemsSource).
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
@@ -2582,9 +3094,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/1182
+        // Scenario: Content mode: add second-level items, drag Root.1.2 into Root.1.1, drag Root.1 into Root.0,
+        //   expand Root.0/Root.1/Root.1.1, then collapse and re-expand Root.0.
+        // Expected: GetChildrenOrder is "Root | Root.0 | Root.0.0 | Root.1 | Root.1.0 | Root.1.1 | Root.1.2 |
+        //   Root.2" before and after the collapse/expand.
+        // Failure means: Re-expanding a node with moved multi-level children re-syncs from ItemsSource wrongly
+        //   (TreeViewNode::SyncChildrenNodesWithItemsSource / OnItemsSourceChanged), dropping nested items.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
-        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/1182
         public void TreeViewWithMultiLevelChildrenExpandCollapseTest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -2631,9 +3149,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/1790
+        // Scenario: Content mode: ResetItemsSource assigns a new ItemsSource with Root expanded;
+        //   ResetItemsSourceAsync builds one off the UI thread (Root and Root.1 expanded) and rebinds.
+        // Expected: GetItemCount is 1, then 4, then 6.
+        // Failure means: TreeView::OnPropertyChanged(ItemsSource) / ViewModel no longer rebuild the flattened
+        //   view honoring IsExpanded of a newly assigned ItemsSource.
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/1790
         public void ItemsSourceResyncTest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
@@ -2655,6 +3178,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Content mode: SwapItemsSource to the 2-item collection, swap back to the original, then
+        //   ExpandRootNode toggles the original root's IsExpanded.
+        // Expected: GetItemCount is 2 after the first swap and 4 after swapping back and expanding.
+        // Failure means: Switching back to a previously used ItemsSource leaves stale node/ItemsSource
+        //   subscriptions, so its root no longer expands (TreeViewNode::ItemsSource / OnItemsSourceChanged).
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void ItemsSourceSwitchForthAndBackTest()
@@ -2677,6 +3205,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: Node mode: a button's Content is x:Bind TwoWay to TestTreeView.SelectedItem; set Content to
+        //   Root.1's node, then SelectRoot2Item sets SelectedItem to Root.2.
+        // Expected: ReadBindingResult (button content;SelectedItem) is "Root.1;Root.1", then "Root.2;Root.2".
+        // Failure means: TreeView.SelectedItem no longer accepts sets from a two-way binding or no longer
+        //   notifies the binding (TreeView::OnPropertyChanged(SelectedItem) -> ViewModel::SelectSingleItem).
         [TestMethod]
         [TestProperty("TestSuite","C")]
         public void SelectedItemBindingsWork()
@@ -2702,6 +3235,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: TreeViewUnrealizedChildrenTestPage (children created in Expanding, removed in Collapsed):
+        //   tap the first item to select it, then tap its chevron to expand it.
+        // Expected: SelectedItemName is "Item: 0; layer: 3" before and after the expansion.
+        // Failure means: Inserting children realized during Expanding shifts the single selection to another
+        //   item (ViewModel/TreeViewList selection index not adjusted).
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         public void SingleSelectWithUnrealizedChildrenDoesNotMoveSelection()
@@ -2730,6 +3268,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: TreeViewItemsSourceTestPage (multi-select, TreeViewItem.ItemsSource bound in the template):
+        //   UIA AddToSelection on Item 1 and Item 2, then Expand, Collapse, Expand Item 2.
+        // Expected: No crash (no explicit assertion; uses UIA only).
+        // Failure means: Expanding a selected item whose children come from TreeViewItem.ItemsSource crashes
+        //   again (TreeViewItem::SetItemsSource / ViewModel selection propagation; bug 39499253).
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         [TestProperty("Ignore", "False")] // Doesn't use input, so it's safe.
@@ -2770,6 +3313,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: TreeViewItemsSourceTestPage: SetUpContainerReuseTest1 binds 60 roots with children,
+        //   ExpandSecondItem expands Root1; scroll to the end (recycling containers) and back to the top.
+        // Expected: Root1's UIA ExpandCollapseState is Expanded before and after scrolling.
+        // Failure means: Container recycling (TreeViewList::PrepareContainerForItemOverride /
+        //   OnContainerContentChanging) writes a stale IsExpanded back to the node, collapsing it.
         [TestMethod]
         [TestProperty("TestSuite", "C")]
         [TestProperty("Ignore", "False")]
@@ -2860,9 +3408,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.AreEqual(expectedSelection, ReadResult());
         }
 
+        // Taps the item's multi-select check box. In the item template (TreeViewItem.xaml) the check box sits after the
+        // item's 4px left presenter margin, the indentation (16px per level below the root, see
+        // TreeViewItem::UpdateIndentation) and its own 10px left margin, and is 32px wide. Tap its center. These are XAML
+        // effective pixels, while InputHelper.Tap offsets are physical pixels relative to the UIA bounding rectangle, so
+        // scale by the test window's DPI (equal to the app's RasterizationScale), read at tap time so it is independent of
+        // the current page and of app restarts. The former width-proportional offset (5% of the item width per level)
+        // missed the box on narrower items.
         private void ToggleTreeViewItemCheckBox(UIObject item, int level)
         {
-            InputHelper.Tap(item, item.BoundingRectangle.Width * 0.05 * level, item.BoundingRectangle.Height * .5);
+            const double itemLeftMargin = 4;
+            const double indentationPerLevel = 16;
+            const double checkBoxLeftMargin = 10;
+            const double checkBoxWidth = 32;
+            double scale = GetTestWindowScale();
+            double x = (itemLeftMargin + indentationPerLevel * (level - 1) + checkBoxLeftMargin + checkBoxWidth / 2) * scale;
+            InputHelper.Tap(item, x, item.BoundingRectangle.Height * .5);
+        }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern uint GetDpiForWindow(IntPtr hwnd);
+
+        // Verifies a UIA bounding-rectangle height (physical px) against an expected XAML height in DIPs, scaled by
+        // the test window DPI and rounded, allowing +/-1 px for layout rounding.
+        private static void VerifyHeightInDips(int actualPx, double expectedDips, string what)
+        {
+            double scale = GetTestWindowScale();
+            int expectedPx = (int)Math.Round(expectedDips * scale);
+            Log.Comment(what + ": height " + actualPx + " px, expected " + expectedDips + " DIPs * " + scale + " = " + expectedPx + " px (+/-1)");
+            Verify.IsTrue(Math.Abs(actualPx - expectedPx) <= 1, what + " height " + actualPx + " px should be " + expectedPx + " px (+/-1)");
+        }
+
+        // DPI scale of the running test app's window (1.0 at 96 DPI). Falls back to 1.0 with a warning if the window
+        // handle is not available.
+        private static double GetTestWindowScale()
+        {
+            IntPtr hwnd = TestEnvironment.Application.Hwnd;
+            uint dpi = hwnd != IntPtr.Zero ? GetDpiForWindow(hwnd) : 0;
+            if (dpi == 0)
+            {
+                Log.Warning("Could not read the test window DPI; assuming scale 1.");
+                return 1.0;
+            }
+            double scale = dpi / 96.0;
+            Log.Comment("Test window DPI " + dpi + " (scale " + scale + ")");
+            return scale;
         }
     }
 }

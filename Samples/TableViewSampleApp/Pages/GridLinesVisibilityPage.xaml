@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pages:SamplePageBase
+    x:Class="TableViewSampleApp.Pages.GridLinesVisibilityPage"
+    NavigationCacheMode="Disabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:pages="using:TableViewSampleApp.Pages"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <Page.Resources>
+        <!-- snippet -->
+        <!-- App.xaml owns these ThemeResource keys, so Light, Dark and a Contrast theme each
+             resolve their own row brushes without code-behind. -->
+        <Style x:Key="CustomBandingTableViewStyle" TargetType="tv:TableView">
+            <Setter Property="RowBackground" Value="{ThemeResource SampleCustomRowBackgroundBrush}"/>
+            <Setter Property="AlternatingRowBackground" Value="{ThemeResource SampleCustomAlternatingRowBackgroundBrush}"/>
+        </Style>
+        <!-- /snippet -->
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="Grid lines visibility"
+        Description="TableView.GridLinesVisibility draws a bottom border under each row (Horizontal), a right border on each cell (Vertical), both (All, the default) or neither (None). The lines run through every kind of cell on this page: a photo, text, a chip, a checkbox, a date picker and a number. Row banding swaps RowBackground and AlternatingRowBackground through a Style, so you can check the lines against tinted rows, and Grouped shaping adds group header bands for them to meet."
+        Snippet="GridLinesVisibility"
+        StretchExample="True"
+        TryIt="Choose Horizontal, Vertical or None under Grid lines and watch the borders around the chip, checkbox and date picker cells. Switch Row banding to Custom colors, then set Shaping to Grouped and check where the lines meet the group header bands."
+        WhatToLookFor="Vertical lines run the full height of template cells too, so the chip, checkbox and date picker sit inside their cell borders, not on top of them. Under a Contrast theme the custom banding falls back to the theme's row brushes and the chips lose their tint, yet the lines stay visible.">
+
+        <controls:SamplePresenter.Example>
+            <!-- snippet -->
+            <tv:TableView
+                x:Name="PeopleTable"
+                AutomationProperties.AutomationId="GridLinesVisibilityTable"
+                AutomationProperties.Name="People with grid lines"
+                ItemsSource="{x:Bind Source}"
+                GridLinesVisibility="All"
+                SelectionMode="Single"
+                IsReadOnly="True"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+                <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+                <tv:TableViewTextColumn Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+            </tv:TableView>
+            <!-- /snippet -->
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <controls:RailSection
+                    IsFirst="True"
+                    Header="Grid lines"
+                    Description="Sets TableView.GridLinesVisibility. Horizontal separates rows, Vertical separates columns, All draws both and None draws neither.">
+                    <!-- snippet -->
+                    <ComboBox
+                        x:Name="GridLinesSelector"
+                        AutomationProperties.AutomationId="GridLinesVisibilityGridLinesSelector"
+                        Header="Grid lines"
+                        SelectedIndex="3"
+                        SelectionChanged="OnGridLinesChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="None" Tag="None"/>
+                        <ComboBoxItem Content="Horizontal" Tag="Horizontal"/>
+                        <ComboBoxItem Content="Vertical" Tag="Vertical"/>
+                        <ComboBoxItem Content="All (default)" Tag="All"/>
+                    </ComboBox>
+                    <!-- /snippet -->
+                </controls:RailSection>
+
+                <controls:RailSection
+                    Header="Row banding"
+                    Description="Custom colors applies a Style that sets RowBackground and AlternatingRowBackground. The grid lines keep their theme brush on top of either banding.">
+                    <ComboBox
+                        x:Name="RowBandingSelector"
+                        AutomationProperties.AutomationId="GridLinesVisibilityRowBandingSelector"
+                        Header="Row banding"
+                        SelectedIndex="0"
+                        SelectionChanged="OnRowBandingChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Default theme" Tag="default"/>
+                        <ComboBoxItem Content="Custom colors" Tag="custom"/>
+                    </ComboBox>
+                </controls:RailSection>
+
+                <controls:ShapingOptions
+                    x:Name="Shaping"
+                    AutomationIdPrefix="GridLinesVisibility"
+                    Description="Grouping adds group header bands, so you can see how row and cell borders meet them. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Office" Tag="Office"/>
+                    <ComboBoxItem Content="Active" Tag="IsActive"/>
+                </controls:ShapingOptions>
+
+                <controls:RailSection
+                    Header="Actions"
+                    Description="Adding, removing and moving rows makes the table redraw its separators; selecting a row shows the selection visual against the lines. Watch the table and the Last action readout. Actions that change one row need a selected row.">
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="SelectThirdButton"
+                            AutomationProperties.AutomationId="GridLinesVisibilitySelectThirdButton"
+                            Content="Select the third person"
+                            Click="OnSelectThirdClick"
+                            ToolTipService.ToolTip="Selects the third person in the list, wherever grouping or sorting has placed them."
+                            AutomationProperties.HelpText="Selects the third person in the list, wherever grouping or sorting has placed them."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="MoveToNextGroupButton"
+                            AutomationProperties.AutomationId="GridLinesVisibilityMoveToNextGroupButton"
+                            Content="Move selected person to the next group"
+                            Click="OnMoveToNextGroupClick"
+                            ToolTipService.ToolTip="Changes the selected person's group key value (next department, next office, or Active toggled). Grouped, the row moves to that group."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="AddPersonButton"
+                            AutomationProperties.AutomationId="GridLinesVisibilityAddPersonButton"
+                            Content="Add a person"
+                            Click="OnAddPersonClick"
+                            ToolTipService.ToolTip="Appends the next person from the sample data; a new row and its separators appear."
+                            AutomationProperties.HelpText="Appends the next person from the sample data; a new row and its separators appear."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RemovePersonButton"
+                            AutomationProperties.AutomationId="GridLinesVisibilityRemovePersonButton"
+                            Content="Remove selected person"
+                            Click="OnRemovePersonClick"
+                            ToolTipService.ToolTip="Removes the selected row; the separators close up around the gap."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RestoreRowsButton"
+                            AutomationProperties.AutomationId="GridLinesVisibilityRestoreRowsButton"
+                            Content="Restore rows"
+                            Click="OnRestoreRowsClick"
+                            ToolTipService.ToolTip="Puts back the original 40 people, undoing adds, removes and moves."
+                            AutomationProperties.HelpText="Puts back the original 40 people, undoing adds, removes and moves."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </controls:RailSection>
+
+                <controls:StatusPanel x:Name="Status" AutomationIdPrefix="GridLinesVisibility">
+                    <TextBlock x:Name="GridLinesText" controls:StatusPanel.Label="Grid lines" Text="All"/>
+                    <TextBlock x:Name="RowBandingText" controls:StatusPanel.Label="Row banding" Text="Default theme"/>
+                </controls:StatusPanel>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+    </controls:SamplePresenter>
+</pages:SamplePageBase>

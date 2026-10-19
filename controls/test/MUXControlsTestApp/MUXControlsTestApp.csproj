@@ -303,12 +303,14 @@
   <Import Project="$(MUXCProjectRoot)dev\TreeView\APITests\TreeView_APITests.projitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems" Label="Shared" Condition="$(FeatureTwoPaneViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems" Label="Shared" Condition="$(FeatureAnimatedVisualPlayerEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\AnimatedVisualPlayer\APITests\AnimatedVisualPlayer_APITests.projitems" Label="Shared" Condition="$(FeatureAnimatedVisualPlayerEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\CommonStyles\APITests\CommonStyles_ApiTests.projitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\AutoSuggestBox\APITests\AutoSuggestBox_APITests.projitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\AutoSuggestBox\TestUI\AutoSuggestBox_TestUI.projitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\TabView\TestUI\TabView_TestUI.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\TabView\APITests\TabView_APITests.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\TableView\APITests\TableView_APITests.projitems" Label="Shared" Condition="$(FeatureTableViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TableView\TestUI\TableView_TestUI.projitems" Label="Shared" Condition="$(FeatureTableViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\ComboBox\TestUI\ComboBox_TestUI.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\ComboBox\APITests\ComboBox_APITests.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\NumberBox\APITests\NumberBox_APITests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
@@ -318,6 +320,7 @@
   <Import Project="$(MUXCProjectRoot)dev\ProgressRing\TestUI\ProgressRing_TestUI.projitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\RadialGradientBrush\TestUI\RadialGradientBrush_TestUI.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\InfoBar\TestUI\InfoBar_TestUI.projitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\InfoBar\APITests\InfoBar_APITests.projitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\Expander\TestUI\Expander_TestUI.projitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\Expander\APITests\Expander_APITests.projitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\PagerControl\TestUI\PagerControl_TestUI.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
@@ -345,12 +348,15 @@
   <Import Project="$(MUXCProjectRoot)dev\SelectorBar\TestUI\SelectorBar_TestUI.projitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\SelectorBar\APITests\SelectorBar_APITests.projitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\TitleBar\TestUI\TitleBar_TestUI.projitems" Label="Shared" Condition="$(FeatureTitleBarEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TitleBar\APITests\TitleBar_APITests.projitems" Label="Shared" Condition="$(FeatureTitleBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\SystemBackdropElement\TestUI\SystemBackdropElement_TestUI.projitems" Label="Shared" Condition="$(FeatureSystemBackdropElementEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\SystemBackdropElement\APITests\SystemBackdropElement_APITests.projitems" Label="Shared" Condition="$(FeatureSystemBackdropElementEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\InkCanvas\TestUI\InkCanvas_TestUI.projitems" Label="Shared" Condition="$(FeatureInkCanvasEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\InkCanvas\APITests\InkCanvas_APITests.projitems" Label="Shared" Condition="$(FeatureInkCanvasEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\InkToolbar\TestUI\InkToolbar_TestUI.projitems" Label="Shared" Condition="$(FeatureInkToolbarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\InkToolbar\APITests\InkToolbar_APITests.projitems" Label="Shared" Condition="$(FeatureInkToolbarEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Charts\TestUI\Charts_TestUI.projitems" Label="Shared" Condition="$(FeatureChartsEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Charts\APITests\Charts_APITests.projitems" Label="Shared" Condition="$(FeatureChartsEnabled) == 'true'" />
 
   <!-- For some reason, TAEF binplaces the wrong version of Wex.Logger.Interop.dll - we need to fix that.
        Removing the version from the binaries directory to allow us to use the version from the lib directory is sufficient here.-->

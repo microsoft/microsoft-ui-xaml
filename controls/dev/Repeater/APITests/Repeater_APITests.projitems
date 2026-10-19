@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\ItemCollectionTransitionProviderDerived.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\LayoutExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\FlowLayoutDerived.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\HResults.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockNonVirtualizingLayout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\NamedGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\NonVirtualStackLayout.cs" />
@@ -47,6 +48,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)RepeaterTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SelectionModelTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ItemTemplateTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ItemsRepeaterScrollHostTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RepeaterApiContractTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewManagerTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewportTests.cs" />
   </ItemGroup>

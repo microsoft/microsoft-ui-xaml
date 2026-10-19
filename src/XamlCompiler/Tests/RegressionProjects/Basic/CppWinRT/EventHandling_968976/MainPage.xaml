@@ -10,6 +10,13 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <local:MyUserControl TheFirstEvent="FirstHandler" TheSecondEvent="SecondHandler" TheThirdEvent="ThirdHandler" TheFourthEvent="FourthHandler"/>
+        <local:MyUserControl
+            TheFirstEvent="FirstHandler"
+            TheSecondEvent="SecondHandler"
+            TheThirdEvent="ThirdHandler"
+            TheFourthEvent="FourthHandler"
+            GuidCharPass="GuidCharPassHandler"
+            GuidCharFill="GuidCharFillHandler"
+            GuidCharReceive="GuidCharReceiveHandler"/>
     </Grid>
 </Page>

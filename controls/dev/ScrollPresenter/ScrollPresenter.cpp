@@ -940,21 +940,7 @@ winrt::Size ScrollPresenter::ArrangeOverride(winrt::Size const& finalSize)
         renderSizeChanged = content.RenderSize() != oldRenderSize;
     }
 
-    // Set a rectangular clip on this ScrollPresenter the same size as the arrange
-    // rectangle so the content does not render beyond it.
-    auto rectangleGeometry = Clip().as<winrt::RectangleGeometry>();
-
-    if (!rectangleGeometry)
-    {
-        // Ensure that this ScrollPresenter has a rectangular clip.
-        winrt::RectangleGeometry newRectangleGeometry;
-        Clip(newRectangleGeometry);
-
-        rectangleGeometry = newRectangleGeometry;
-    }
-
-    const winrt::Rect newClipRect{ 0.0f, 0.0f, viewport.Width, viewport.Height };
-    rectangleGeometry.Rect(newClipRect);
+    UpdateViewportClip(viewport);
 
     if (layoutRoundFactorChanged)
     {
@@ -4060,6 +4046,10 @@ void ScrollPresenter::OnPropertyChanged(
 
         InvalidateMeasure();
     }
+    else if (dependencyProperty == s_CanContentRenderOutsideBoundsProperty)
+    {
+        InvalidateArrange();
+    }
     else if (dependencyProperty == s_HorizontalAnchorRatioProperty ||
         dependencyProperty == s_VerticalAnchorRatioProperty)
     {
@@ -5662,6 +5652,44 @@ void ScrollPresenter::UpdateManipulationRedirectionMode()
     if (m_scrollPresenterVisualInteractionSource)
     {
         SetupVisualInteractionSourceRedirectionMode(m_scrollPresenterVisualInteractionSource);
+    }
+}
+
+void ScrollPresenter::UpdateViewportClip(const winrt::Size& viewport)
+{
+    const winrt::Rect viewportRect{ 0.0f, 0.0f, viewport.Width, viewport.Height };
+
+    if (m_viewportClip)
+    {
+        m_viewportClip.get().Rect(viewportRect);
+    }
+
+    const auto currentClip = Clip();
+
+    if (currentClip && (!m_viewportClip || currentClip != m_viewportClip.get()))
+    {
+        return;
+    }
+
+    if (CanContentRenderOutsideBounds())
+    {
+        if (m_viewportClip && currentClip == m_viewportClip.get())
+        {
+            Clip(nullptr);
+        }
+
+        return;
+    }
+
+    if (!m_viewportClip)
+    {
+        m_viewportClip.set(winrt::RectangleGeometry());
+        m_viewportClip.get().Rect(viewportRect);
+    }
+
+    if (!currentClip)
+    {
+        Clip(m_viewportClip.get());
     }
 }
 
@@ -7835,6 +7863,10 @@ winrt::hstring ScrollPresenter::DependencyPropertyToString(const winrt::IDepende
     else if (dependencyProperty == s_BackgroundProperty)
     {
         return L"Background";
+    }
+    else if (dependencyProperty == s_CanContentRenderOutsideBoundsProperty)
+    {
+        return L"CanContentRenderOutsideBounds";
     }
     else if (dependencyProperty == s_ContentOrientationProperty)
     {

@@ -356,6 +356,16 @@ steps:
         }
       displayName: Build WinUI component package
 
+    # Producer for the WinUIComponentPackage folder that BuildScenarioApps downloads and installs.
+    - task: CopyFiles@2
+      displayName: Move WinUI Component Package To Output Directory
+      condition: succeeded()
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)\PackageStore'
+        TargetFolder: '$(ob_outputDirectory)\WinUIComponentPackage'
+        Contents: |
+          Microsoft.WindowsAppSDK.WinUI.*.nupkg
+
   # MUXControls.sln is test infra; monobuild skips it (depends on the AzureMaps token
   # and the WindowsAppSDKConfig overlay - both standalone-only).
   - ${{ if and(eq(parameters.buildProductOnly, 'false'), ne(parameters.IsMonobuild, 'true')) }}:

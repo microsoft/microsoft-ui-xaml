@@ -1,6 +1,9 @@
 * text=auto
 
 # Force specific files that git doesn't know should always be CRLF
+*.xml text eol=crlf
+*.xaml text eol=crlf
+*.tt text eol=crlf
 *.idl text eol=crlf
 *.h text eol=crlf
 *.cpp text eol=crlf

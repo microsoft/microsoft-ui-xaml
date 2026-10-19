@@ -3755,6 +3755,86 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     }
 
+    void FlyoutIntegrationTests::ValidateThemeChangeWhileStaged()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::Button^ button = nullptr;
+        xaml_controls::Flyout^ firstFlyout = nullptr;
+        xaml_controls::Flyout^ stagedFlyout = nullptr;
+        bool closingCanceled = false;
+        bool stagedFlyoutOpened = false;
+        Event stagedFlyoutOpenedEvent;
+        auto closingRegistration = CreateSafeEventRegistration(xaml_controls::Flyout, Closing);
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::Flyout, Opened);
+
+        SetupBasicFlyoutTest(firstFlyout, button);
+
+        RunOnUIThread([&]()
+        {
+            button->RequestedTheme = xaml::ElementTheme::Light;
+
+            auto content = ref new xaml_controls::TextBlock();
+            content->Text = L"Staged flyout";
+            stagedFlyout = ref new xaml_controls::Flyout();
+            stagedFlyout->Content = content;
+
+            closingRegistration.Attach(
+                firstFlyout,
+                ref new wf::TypedEventHandler<xaml_primitives::FlyoutBase^, xaml_primitives::FlyoutBaseClosingEventArgs^>(
+                    [&](xaml_primitives::FlyoutBase^, xaml_primitives::FlyoutBaseClosingEventArgs^ args)
+                    {
+                        args->Cancel = true;
+                        closingCanceled = true;
+                    }));
+
+            openedRegistration.Attach(stagedFlyout, [&]()
+            {
+                stagedFlyoutOpened = true;
+                stagedFlyoutOpenedEvent.Set();
+            });
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        FlyoutHelper::OpenFlyout(firstFlyout, button, FlyoutOpenMethod::Programmatic_ShowAt);
+
+        RunOnUIThread([&]()
+        {
+            // Keep the first flyout open so ShowAt stages the second without creating its presenter.
+            stagedFlyout->ShowAt(button);
+            VERIFY_IS_TRUE(closingCanceled);
+            VERIFY_IS_FALSE(stagedFlyoutOpened);
+            VERIFY_IS_NULL(FlyoutHelper::GetFlyoutPresenter(stagedFlyout));
+            VERIFY_ARE_EQUAL(xaml::ElementTheme::Light, button->ActualTheme);
+
+            // Do not query IsConstrainedToRootBounds: its getter creates the missing presenter.
+            button->RequestedTheme = xaml::ElementTheme::Dark;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(xaml::ElementTheme::Dark, button->ActualTheme);
+            VERIFY_IS_FALSE(stagedFlyoutOpened);
+            VERIFY_IS_NULL(FlyoutHelper::GetFlyoutPresenter(stagedFlyout));
+        });
+
+        closingRegistration.Detach();
+        FlyoutHelper::HideFlyout(firstFlyout);
+        stagedFlyoutOpenedEvent.WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto presenter = FlyoutHelper::GetFlyoutPresenter(stagedFlyout);
+            VERIFY_IS_NOT_NULL(presenter);
+            VERIFY_ARE_EQUAL(xaml::ElementTheme::Dark, presenter->RequestedTheme);
+            VERIFY_ARE_EQUAL(xaml::ElementTheme::Dark, presenter->ActualTheme);
+        });
+
+        FlyoutHelper::HideFlyout(stagedFlyout);
+    }
+
     void FlyoutIntegrationTests::ValidateHideInOpeningCancelsOpening()
     {
         TestCleanupWrapper cleanup;
@@ -4320,4 +4400,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     }
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::Flyout
-

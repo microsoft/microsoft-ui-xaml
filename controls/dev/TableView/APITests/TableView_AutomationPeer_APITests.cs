@@ -551,6 +551,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateAutomationTable();
                 tableView.Columns[1].Visibility = Visibility.Collapsed;
+                // Alias over Role, so its cells read differently from the Name column's.
+                tableView.Columns.RemoveAt(2);
+                tableView.Columns.Add(MakeTextColumn("Alias", "Role"));
                 LoadContent(tableView);
             });
 
@@ -577,11 +580,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
 
                 // Visible-column order: the collapsed column is the middle one, so the two survivors are
-                // the first and third columns' cells. Asserted through their composed names, which carry
-                // the owning column's header.
-                Verify.AreEqual("Name, Asha", ((TableViewCellAutomationPeer)children[0]).GetName(),
+                // the first and third columns' cells.
+                for (int i = 0; i < children.Count; i++)
+                {
+                    var gridItem = children[i].GetPattern(PatternInterface.GridItem) as IGridItemProvider;
+                    Verify.AreEqual(i, gridItem?.Column ?? -1, $"Cell peer {i} must report visible column {i}.");
+                }
+                Verify.AreEqual("Asha", ((TableViewCellAutomationPeer)children[0]).GetName(),
                     "The first cell peer must belong to the first visible column.");
-                Verify.AreEqual("Alias, Asha", ((TableViewCellAutomationPeer)children[1]).GetName(),
+                Verify.AreEqual("Designer", ((TableViewCellAutomationPeer)children[1]).GetName(),
                     "The second cell peer must belong to the third column, the next visible one.");
             });
         }
@@ -623,6 +630,127 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(1, gridItem.RowSpan, "Cells never span rows.");
                 Verify.AreEqual(1, gridItem.ColumnSpan, "Cells never span columns.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell peer whose row is gone throws ElementNotAvailable from GridItem.Row instead of reporting -1.")]
+        public void VerifyStaleCellPeerGridItemRowThrowsElementNotAvailable()
+        {
+            TableView tableView = null;
+            IGridItemProvider gridItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gridItem = GetCellPeer(RequireRowPeer(tableView, 1), 2).GetPattern(PatternInterface.GridItem) as IGridItemProvider;
+                Verify.IsNotNull(gridItem, "Precondition: the cell peer advertises GridItem.");
+                Verify.AreEqual(1, gridItem.Row, "Precondition: the live cell reports its row.");
+
+                tableView.ItemsSource = new List<Person>();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGridItemRowThrowsElementNotAvailable(gridItem, "a cell whose row was removed");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell peer replaced by a column reorder on the same row throws ElementNotAvailable from GridItem.Row and Column.")]
+        public void VerifyRebuiltCellPeerGridItemThrowsElementNotAvailable()
+        {
+            TableView tableView = null;
+            IGridItemProvider gridItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gridItem = GetCellPeer(RequireRowPeer(tableView, 0), 0).GetPattern(PatternInterface.GridItem) as IGridItemProvider;
+                Verify.IsNotNull(gridItem, "Precondition: the cell peer advertises GridItem.");
+                Verify.AreEqual(0, gridItem.Column, "Precondition: the live cell reports its column.");
+
+                // Only the row's cells are rebuilt, so the old provider's column would name another cell.
+                var alias = tableView.Columns[2];
+                tableView.Columns.RemoveAt(2);
+                tableView.Columns.Insert(0, alias);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGridItemCoordinateThrowsElementNotAvailable(() => gridItem.Row, "Row", "a cell rebuilt by a column reorder");
+                VerifyGridItemCoordinateThrowsElementNotAvailable(() => gridItem.Column, "Column", "a cell rebuilt by a column reorder");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a recycled group header peer throws ElementNotAvailable from GridItem.Row instead of reporting -1.")]
+        public void VerifyRecycledGroupHeaderGridItemRowThrowsElementNotAvailable()
+        {
+            TableView tableView = null;
+            IGridItemProvider gridItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gridItem = GetGroupHeaderPeer(tableView, 0).GetPattern(PatternInterface.GridItem) as IGridItemProvider;
+                Verify.IsNotNull(gridItem, "Precondition: the group header peer advertises GridItem.");
+                Verify.AreEqual(0, gridItem.Row, "Precondition: the live header reports its row.");
+
+                tableView.ItemsSource = new List<Person>();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGridItemRowThrowsElementNotAvailable(gridItem, "a recycled group header");
+            });
+        }
+
+        private static void VerifyGridItemRowThrowsElementNotAvailable(IGridItemProvider gridItem, string subject)
+            => VerifyGridItemCoordinateThrowsElementNotAvailable(() => gridItem.Row, "Row", subject);
+
+        private static void VerifyGridItemCoordinateThrowsElementNotAvailable(Func<int> read, string coordinate, string subject)
+        {
+            Exception error = null;
+            int value = int.MinValue;
+            try
+            {
+                value = read();
+            }
+            catch (Exception exception)
+            {
+                error = exception;
+            }
+
+            Verify.AreNotEqual(-1, value, $"GridItem.{coordinate} on {subject} must not report -1, which reads as a real coordinate.");
+            Verify.IsNotNull(error, $"GridItem.{coordinate} on {subject} must throw; it returned {value}.");
+            Verify.AreEqual(unchecked((int)0x80040201), error.HResult, $"GridItem.{coordinate} on {subject} must fail with UIA_E_ELEMENTNOTAVAILABLE.");
         }
 
         [TestMethod]
@@ -668,8 +796,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a cell's automation name is '{column header}, {cell value}'.")]
-        public void VerifyCellNameCombinesColumnHeaderAndValue()
+        [TestProperty("Description", "Verifies a cell's automation name is its value while column headers are shown.")]
+        public void VerifyCellNameIsValueWhenColumnHeadersAreShown()
         {
             TableView tableView = null;
 
@@ -686,19 +814,90 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var rowPeer = RequireRowPeer(tableView, 0);
                 var cellPeer = GetCellPeer(rowPeer, 0);
 
-                // TableView.idl:676 specifies the format outright: the cell peer supplies
-                // "{column header}, {cell value}" names. Without the prefix, moving across a row reads
-                // "Asha, Designer, 30" with no indication of what those are.
-                //
-                // The separator is a literal comma + space and is not localized. That is worth raising,
-                // but the test pins what the IDL says.
-                Verify.AreEqual("Name, Asha", cellPeer.GetName(),
-                    "The cell name must combine the column header and the cell value.");
+                Verify.AreEqual("Asha", cellPeer.GetName(),
+                    "The cell name must be the cell value while the column header is reachable.");
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a cell name degrades to the surviving part when the header or the value is missing.")]
+        [TestProperty("Description", "Verifies a cell name does not repeat a column header that GetColumnHeaderItems already reports.")]
+        public void VerifyCellNameDoesNotRepeatReachableColumnHeader()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cellPeer = GetCellPeer(RequireRowPeer(tableView, 0), 0);
+                var tableItem = cellPeer.GetPattern(PatternInterface.TableItem) as ITableItemProvider;
+                if (tableItem == null)
+                {
+                    Verify.Fail("The cell peer must advertise TableItem.");
+                    return;
+                }
+
+                // Screen readers already speak the header items on entering a column.
+                var columnHeaders = tableItem.GetColumnHeaderItems();
+                Verify.AreEqual(1, columnHeaders == null ? 0 : columnHeaders.Length,
+                    "The shown column header must be reported through GetColumnHeaderItems.");
+                Verify.AreEqual("Asha", cellPeer.GetName(),
+                    "The cell name must not repeat the column header reported through GetColumnHeaderItems.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell name carries the column header only while column headers are hidden.")]
+        public void VerifyCellNameKeepsHeaderPrefixWhenHeadersHidden()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cellPeer = GetCellPeer(RequireRowPeer(tableView, 0), 0);
+                var tableItem = cellPeer.GetPattern(PatternInterface.TableItem) as ITableItemProvider;
+                if (tableItem == null)
+                {
+                    Verify.Fail("The cell peer must advertise TableItem.");
+                    return;
+                }
+
+                Verify.AreEqual("Name, Asha", cellPeer.GetName(),
+                    "With column headers hidden the cell name must carry the column header.");
+                var hiddenHeaders = tableItem.GetColumnHeaderItems();
+                Verify.AreEqual(0, hiddenHeaders == null ? 0 : hiddenHeaders.Length,
+                    "With column headers hidden GetColumnHeaderItems must be empty.");
+
+                tableView.HeadersVisibility = TableViewHeadersVisibility.Column;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cellPeer = GetCellPeer(RequireRowPeer(tableView, 0), 0);
+                Verify.AreEqual("Asha", cellPeer.GetName(),
+                    "Once column headers are shown again the cell name must drop the header.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell name drops a missing header without a dangling separator and names an empty cell blank, with headers shown or hidden.")]
         public void VerifyCellNameFallsBackWhenEitherPartIsMissing()
         {
             TableView tableView = null;
@@ -735,13 +934,155 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // Narrator ("comma Designer"), and a name that is only punctuation is worse than none.
                 Verify.AreEqual("Designer", GetCellPeer(rowPeer, 0).GetName(),
                     "With no string header the value must stand alone, with no leading separator.");
-                Verify.AreEqual("Name", GetCellPeer(rowPeer, 1).GetName(),
-                    "With an empty value the header must stand alone, with no trailing separator.");
+                Verify.AreEqual("blank", GetCellPeer(rowPeer, 1).GetName(),
+                    "An empty cell under a shown header must be named blank, not after the header GetColumnHeaderItems already reports.");
+
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Name, blank", GetCellPeer(RequireRowPeer(tableView, 0), 1).GetName(),
+                    "An empty cell under a hidden header must carry the header and still read as blank.");
             });
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product bug: template-column cell names read the generated ContentPresenter, not the template root. Re-enable once cell naming uses the template content.
+        [TestProperty("Description", "Verifies a hidden non-string column header still names the cell through the header's automation name.")]
+        public void VerifyCellNameUsesObjectHeaderAutomationNameWhenHeadersHidden()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                var icon = new SymbolIcon { Symbol = Symbol.Important };
+                AutomationProperties.SetName(icon, "Priority");
+                tableView.Columns.Add(new TableViewTextColumn
+                {
+                    Header = icon,
+                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                });
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Priority, Asha", GetCellPeer(RequireRowPeer(tableView, 0), 0).GetName(),
+                    "A hidden object header must prefix the cell name with the header's automation name.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the table reports no column headers while HeadersVisibility hides them, matching its cells.")]
+        public void VerifyTableColumnHeadersFollowHeadersVisibility()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var table = RequireTablePeer(tableView).GetPattern(PatternInterface.Table) as ITableProvider;
+                if (table == null)
+                {
+                    Verify.Fail("The TableView peer must advertise the Table pattern.");
+                    return;
+                }
+
+                var hidden = table.GetColumnHeaders();
+                Verify.AreEqual(0, hidden == null ? 0 : hidden.Length,
+                    "With column headers hidden the table must report none, as its cells' GetColumnHeaderItems do.");
+
+                tableView.HeadersVisibility = TableViewHeadersVisibility.Column;
+                var shown = table.GetColumnHeaders();
+                Verify.AreEqual(3, shown == null ? 0 : shown.Length,
+                    "With column headers shown the table must report one per visible column.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell holding an interactive control is named after its column header, with headers shown or hidden.")]
+        public void VerifyInteractiveCellNameIsColumnHeader()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                tableView.Columns.Add(MakeTemplateColumn("Actions", (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <Button Content=""Delete"" />
+                      </DataTemplate>")));
+                tableView.Columns.Add(MakeTemplateColumn("Active", (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <ToggleSwitch />
+                      </DataTemplate>")));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            foreach (var visibility in new[] { TableViewHeadersVisibility.Column, TableViewHeadersVisibility.None })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView.HeadersVisibility = visibility;
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var rowPeer = RequireRowPeer(tableView, 0);
+
+                    // The control names itself ("Delete"), so a cell named "Delete" would be heard twice.
+                    Verify.AreEqual("Actions", GetCellPeer(rowPeer, 0).GetName(),
+                        $"A Button cell must be named after its column header (HeadersVisibility {visibility}).");
+                    Verify.AreEqual("Active", GetCellPeer(rowPeer, 1).GetName(),
+                        $"An unnamed ToggleSwitch cell must be named after its column header (HeadersVisibility {visibility}).");
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell showing an unnamed non-text visual is named after its column, not \"blank\".")]
+        public void VerifyUnnamedVisualCellIsNotNamedBlank()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                tableView.Columns.Add(MakeTemplateColumn("Progress", (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <ProgressBar Value=""40"" Width=""80"" />
+                      </DataTemplate>")));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Progress", GetCellPeer(RequireRowPeer(tableView, 0), 0).GetName(),
+                    "A cell showing an unnamed ProgressBar is not blank; it is named after its column header.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a template column's cell name uses the template content's automation name.")]
         public void VerifyTemplateColumnCellNameUsesContentAutomationName()
         {
@@ -772,7 +1113,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // Spec silent; reasoned from the text-column case being named and template columns having
                 // no reason to be a second-class citizen. A cell holding a button, a rating or a status
                 // glyph is a common shape, and it must not read as nothing.
-                Verify.AreEqual("Status, Active", cellPeer.GetName(),
+                Verify.AreEqual("Active", cellPeer.GetName(),
                     "A template column's cell name must incorporate the template content's automation name.");
             });
         }
@@ -1006,7 +1347,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product bug: non-string headers never receive an automation name. Re-enable once header naming falls back to the realized header content.
         [TestProperty("Description", "Verifies a template-header column peer falls back to the realized header cell's automation name.")]
         public void VerifyColumnHeaderPeerNameFallsBackToRealizedHeaderForTemplateHeaders()
         {
@@ -1018,7 +1358,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // A non-string header rendered through HeaderTemplate, with an automation name on the
                 // template root. The header object must be neither IStringable nor a String-typed
-                // IPropertyValue, or TryGetColumnHeaderString short-circuits the fallback under test -
+                // IPropertyValue, or TryGetColumnHeaderText short-circuits the fallback under test -
                 // a boxed primitive stringifies and would never reach it.
                 tableView.Columns.Add(new TableViewTextColumn
                 {
@@ -1044,6 +1384,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // primary source and template headers needing some name.
                 Verify.AreEqual("Priority", name,
                     "A template header's peer must take its name from the realized header, not from the TableView owner and not empty.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a templated managed-object header is named from its template, not from the object's ToString.")]
+        public void VerifyColumnHeaderNameIgnoresManagedObjectToStringWhenTemplated()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                tableView.Columns.Add(new TableViewTextColumn
+                {
+                    Header = new TitledColumnHeader { Title = "CPU" },
+                    HeaderTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock Text=""{Binding Title}"" />
+                          </DataTemplate>"),
+                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                });
+
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]).GetName();
+
+                Verify.AreEqual("CPU", name, "A templated object header must be named from the rendered template.");
+                Verify.IsFalse(name.Contains(nameof(TitledColumnHeader)),
+                    $"A templated object header must not be named after its type; saw '{name}'.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an unnamed template header is not named by the resize gripper in its header cell.")]
+        public void VerifyUnnamedTemplateHeaderIsNotNamedByResizeGripper()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                tableView.CanUserResizeColumns = true;
+                tableView.Columns.Add(new TableViewTextColumn
+                {
+                    Header = new Border { Width = 20, Height = 12 },
+                    CanResize = true,
+                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                });
+
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var gripperPeer = FrameworkElementAutomationPeer.CreatePeerForElement(RequireGripper(tableView, 0));
+                var gripperName = gripperPeer?.GetName();
+                Verify.IsFalse(string.IsNullOrEmpty(gripperName), "Precondition: the gripper must have a name.");
+
+                var name = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]).GetName();
+                Log.Comment($"Header name: '{name}'; gripper name: '{gripperName}'.");
+                Verify.IsFalse(!string.IsNullOrEmpty(name) && name.Contains(gripperName),
+                    $"An unnamed header must not take the resize gripper's name; saw '{name}'.");
             });
         }
 
@@ -1544,6 +1953,234 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // ---------- 12.6 Set metadata, names and re-exposure (#11820) ----------
+        //
+        // Moved here from the interaction tier: each asserts a peer VALUE an in-proc test reads just as
+        // well as a client. Authority: TableView-spec.md (api-spec) :884-886 and TableView-dev-spec.md:205-213.
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies row peers report 1-based PositionInSet and SizeOfSet over the rows of an ungrouped table.")]
+        public void VerifyRowPeerPositionInSetAndSizeOfSetAreOneBasedOverRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // api-spec:884 - "Rows report PositionInSet / SizeOfSet". UIA set metadata is 1-based and
+                // dev-spec:213 reserves 0 for "cannot be resolved", which a realized flat row never is.
+                for (int i = 0; i < 3; i++)
+                {
+                    var peer = GetRowPeer(GetProjectedRow(tableView, i));
+                    Verify.AreEqual(i + 1, peer.GetPositionInSet(), $"Row {i} must report PositionInSet {i + 1}.");
+                    Verify.AreEqual(3, peer.GetSizeOfSet(), $"Row {i} must report SizeOfSet 3.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies grouped row peers report PositionInSet and SizeOfSet relative to their own group, excluding header bands.")]
+        public void VerifyGroupedRowPeerPositionInSetIsRelativeToItsGroup()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTwoGroupAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // api-spec:884 - "When the source is grouped, both values are relative to the containing group and
+                // exclude the group-header bands, matching ItemsControlAutomationPeer". Owner confirmed within-group
+                // announcement; the #11820 PR's "flat" wording is superseded.
+                var groups = new List<List<TableViewRow>>();
+                foreach (var element in GetProjectedElements(tableView))
+                {
+                    if (element is TableViewGroupHeader)
+                    {
+                        groups.Add(new List<TableViewRow>());
+                    }
+                    else if (element is TableViewRow row)
+                    {
+                        if (groups.Count == 0)
+                        {
+                            Verify.Fail("A data row was projected before any group header.");
+                            return;
+                        }
+                        groups[groups.Count - 1].Add(row);
+                    }
+                }
+
+                var sizes = groups.Select(g => g.Count).OrderBy(c => c).ToList();
+                Verify.AreEqual("2,3", string.Join(",", sizes), "Precondition: the fixture groups five rows as 2 Designers and 3 Engineers.");
+
+                foreach (var group in groups)
+                {
+                    for (int i = 0; i < group.Count; i++)
+                    {
+                        var peer = GetRowPeer(group[i]);
+                        Verify.AreEqual(i + 1, peer.GetPositionInSet(),
+                            $"Row {i} of a {group.Count}-row group must report PositionInSet {i + 1}, relative to its group.");
+                        Verify.AreEqual(group.Count, peer.GetSizeOfSet(),
+                            $"A row in a {group.Count}-row group must report SizeOfSet {group.Count}, excluding header bands.");
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies app-set AutomationProperties.PositionInSet and SizeOfSet on a row win over the computed values.")]
+        public void VerifyAppSetPositionInSetAndSizeOfSetWinOnRowPeer()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // api-spec:884 / dev-spec:213 - "an app-set AutomationProperties value always wins".
+                var row = GetProjectedRow(tableView, 0);
+                AutomationProperties.SetPositionInSet(row, 7);
+                AutomationProperties.SetSizeOfSet(row, 42);
+
+                var peer = GetRowPeer(row);
+                Verify.AreEqual(7, peer.GetPositionInSet(), "An app-set PositionInSet must win over the computed one.");
+                Verify.AreEqual(42, peer.GetSizeOfSet(), "An app-set SizeOfSet must win over the computed one.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row peer's name is composed from its visible cells only, and an explicit AutomationProperties.Name wins.")]
+        public void VerifyRowPeerNameComposesVisibleCellTextAndExplicitNameWins()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // api-spec:884 - rows "compose their name from their visible cells"; api-spec:886 - explicit Name wins.
+                // Containment, not equality: the separator is a localized resource.
+                var composed = GetRowPeer(GetProjectedRow(tableView, 0)).GetName();
+                Log.Comment($"Composed row name: '{composed}'.");
+                Verify.IsTrue(composed.Contains("Asha"), "The row name must include the Name cell's text.");
+                Verify.IsTrue(composed.Contains("Designer"), "The row name must include the Role cell's text.");
+
+                tableView.Columns[1].Visibility = Visibility.Collapsed;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var narrowed = GetRowPeer(GetProjectedRow(tableView, 0)).GetName();
+                Log.Comment($"Row name with Role collapsed: '{narrowed}'.");
+                Verify.IsTrue(narrowed.Contains("Asha"), "The row name must still include visible cells.");
+                Verify.IsFalse(narrowed.Contains("Designer"), "The row name must not include a collapsed column's text.");
+
+                var row = GetProjectedRow(tableView, 0);
+                AutomationProperties.SetName(row, "Authored row name");
+                Verify.AreEqual("Authored row name", GetRowPeer(row).GetName(), "An explicit AutomationProperties.Name must win outright.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a single-level group header peer computes no Level (reports 0) and an app-set AutomationProperties.Level wins.")]
+        public void VerifyGroupHeaderPeerReportsNoLevelAndAppSetLevelWins()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Owner decision, recorded in the dev-spec accessibility list: the group header peer computes NO Level
+                // for single-level grouping, so it reports 0 ("not specified"). dev-spec:213 - an app-set value wins.
+                var computed = GetGroupHeaderPeer(tableView, 0).GetLevel();
+                Verify.AreEqual(0, computed, "A single-level group header must not announce a Level; it must report 0 ('not specified').");
+
+                AutomationProperties.SetLevel(GetGroupHeader(tableView, 0), 3);
+                Verify.AreEqual(3, GetGroupHeaderPeer(tableView, 0).GetLevel(), "An app-set Level must win over the computed one.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies every data row (with its cell children) is reachable from the TableView peer again after a group is collapsed and expanded.")]
+        public void VerifyGroupRowsAreReexposedAfterCollapseAndExpand()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTwoGroupAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var before = CollectRowPeers(RequireTablePeer(tableView));
+                Verify.AreEqual(5, before.Count, "Precondition: all five data rows are reachable from the table peer before the collapse.");
+                GetExpandCollapseProvider(tableView, 0).Collapse();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(ExpandCollapseState.Collapsed, GetExpandCollapseProvider(tableView, 0).ExpandCollapseState,
+                    "Precondition: the first group must report Collapsed.");
+                GetExpandCollapseProvider(tableView, 0).Expand();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // dev-spec:205 - a row peer exposes its cell peers as children; api-spec:894 - tree enumeration connects
+                // each cell to its row. The #11820 defect: cached peers outlived their containers, so the re-expanded
+                // group's rows were absent from the tree.
+                var after = CollectRowPeers(RequireTablePeer(tableView));
+                Verify.AreEqual(5, after.Count, "After collapse and expand, every data row must be reachable from the table peer again.");
+
+                foreach (var rowPeer in after)
+                {
+                    var children = rowPeer.GetChildren();
+                    Verify.AreEqual(3, children?.Count ?? 0, $"Re-exposed row '{rowPeer.GetName()}' must expose one cell per visible column.");
+                }
+            });
+        }
+
         // ---------- 12.5 Primitive peers ----------
         //
         // Both primitives are MUX_INTERNAL but are projected into the test app -
@@ -1731,6 +2368,199 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Column splitter", peer.GetName(), "An authored automation name must win outright.");
             });
         }
+
+        #region Hierarchical rows
+
+        // Tree fixture, ParentBy(Id, ManagerId): Ada > { Ben > { Dan }, Cy }, Eve > { Fay }, Gus.
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row of a flat projection exposes no ExpandCollapse pattern, including after ClearParentBy.")]
+        public void VerifyFlatRowHasNoExpandCollapse()
+        {
+            TableView flatTable = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                flatTable = CreateTableView();
+                LoadContent(flatTable);
+            });
+
+            SettleLayout(flatTable);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetProjectedRow(flatTable, 0);
+                Verify.AreEqual(0, row.Level, "A flat row must report Level 0.");
+                Verify.IsNull(GetRowPeer(row).GetPattern(PatternInterface.ExpandCollapse),
+                    "A flat row must not expose ExpandCollapse, or AT announces it as collapsed.");
+            });
+
+            TableViewSource source = null;
+            var tableView = PlaceTreeTable(() => source = TableViewSource.From(TableViewTreeTestHelpers.MakeTree())
+                .ParentBy(TableViewTreeTestHelpers.ById, TableViewTreeTestHelpers.ByManager));
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(TableViewTreeTestHelpers.GetRowExpandCollapse(TableViewTreeTestHelpers.FindTreeRow(tableView, "Ada")),
+                    "Precondition: a tree row exposes ExpandCollapse.");
+                source.ClearParentBy();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(TableViewTreeTestHelpers.GetRowExpandCollapse(TableViewTreeTestHelpers.FindTreeRow(tableView, "Ada")),
+                    "Once the relation is cleared the row is flat and must drop ExpandCollapse.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a tree row's ExpandCollapse state matches its node, and Expand() grows the projection.")]
+        public void VerifyExpandCollapseStates()
+        {
+            var tableView = PlaceTreeTable(() => TableViewSource.From(TableViewTreeTestHelpers.MakeTree())
+                .ParentBy(TableViewTreeTestHelpers.ById, TableViewTreeTestHelpers.ByManager));
+            var countBefore = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                countBefore = GetProjectedCount(tableView);
+                Verify.AreEqual(3, countBefore, "Precondition: only the roots Ada, Eve and Gus are projected.");
+                Verify.AreEqual("Collapsed", TreeRowState(tableView, "Ada"), "Ada has children and starts collapsed.");
+                Verify.AreEqual("LeafNode", TreeRowState(tableView, "Gus"), "Gus has no children.");
+
+                TableViewTreeTestHelpers.GetRowExpandCollapse(TableViewTreeTestHelpers.FindTreeRow(tableView, "Ada")).Expand();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Expanded", TreeRowState(tableView, "Ada"), "Expand() must report Expanded.");
+                Verify.AreEqual(countBefore + 2, GetProjectedCount(tableView), "Expanding Ada must project Ben and Cy.");
+                Verify.AreEqual("Collapsed", TreeRowState(tableView, "Ben"), "Ben has a child and starts collapsed.");
+                Verify.AreEqual("LeafNode", TreeRowState(tableView, "Cy"), "Cy has no children.");
+                Verify.AreEqual("LeafNode", TreeRowState(tableView, "Gus"), "Gus has no children.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies tree row peers report Level, PositionInSet and SizeOfSet relative to their sibling set.")]
+        public void VerifyLevelPositionSizeUngrouped()
+        {
+            var tableView = PlaceTreeTable(() => TableViewSource.From(TableViewTreeTestHelpers.MakeTree())
+                .ParentBy(TableViewTreeTestHelpers.ById, TableViewTreeTestHelpers.ByManager));
+
+            RunOnUIThread.Execute(() => TableViewTreeTestHelpers.ToggleTreeRow(tableView, "Ada", expand: true));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var levels = string.Join(" ", GetProjectedElements(tableView).OfType<TableViewRow>()
+                    .Select(r => $"{TableViewTreeTestHelpers.NameOf(r.DataContext)}:{GetRowPeer(r).GetLevel()}"));
+                Verify.AreEqual("Ada:1 Ben:2 Cy:2 Eve:1 Gus:1", levels, "Peer Level must be the 1-based tree depth.");
+                Verify.AreEqual("Ada 1/3 Ben 1/2 Cy 2/2 Eve 2/3 Gus 3/3", TableViewTreeTestHelpers.PositionLabels(tableView),
+                    "PositionInSet and SizeOfSet must count siblings, not projected rows.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies grouped tree root peers report PositionInSet and SizeOfSet scoped to their group.")]
+        public void VerifyPositionInSetGrouped()
+        {
+            var tableView = PlaceTreeTable(() => TableViewSource.From(TableViewTreeTestHelpers.MakeTree())
+                .ParentBy(TableViewTreeTestHelpers.ById, TableViewTreeTestHelpers.ByManager)
+                .GroupBy(TableViewTreeTestHelpers.EmpKey(e => e.Dept)));
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Ada 1/1 Eve 1/2 Gus 2/2", TableViewTreeTestHelpers.PositionLabels(tableView),
+                    "Root sibling sets must be scoped by group.");
+            });
+        }
+
+        private TableView PlaceTreeTable(Func<TableViewSource> makeSource)
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                tableView = TableViewTreeTestHelpers.CreateTreeTable(makeSource());
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            return tableView;
+        }
+
+        // The row's ExpandCollapseState as text, or "none" when the pattern is absent.
+        private static string TreeRowState(TableView tableView, string name)
+        {
+            var provider = TableViewTreeTestHelpers.GetRowExpandCollapse(TableViewTreeTestHelpers.FindTreeRow(tableView, name));
+            return provider == null ? "none" : provider.ExpandCollapseState.ToString();
+        }
+
+        #endregion
+
+        #region Teardown
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a keyboard-focused header cell's peer still answers after its TableView leaves the tree.")]
+        public void VerifyFocusedHeaderPeerAnswersAfterTableLeavesTree()
+        {
+            TableView tableView = null;
+            StackPanel host = null;
+            FrameworkElement headerCell = null;
+            AutomationPeer headerPeer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                host = new StackPanel();
+                host.Children.Add(new Button { Content = "Sink" });
+                host.Children.Add(tableView);
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                headerCell = GetHeaderCell(tableView, 1);
+                Verify.IsTrue(headerCell.Focus(FocusState.Keyboard), "Precondition: header cell 1 takes keyboard focus.");
+                headerPeer = FrameworkElementAutomationPeer.CreatePeerForElement(headerCell);
+                Verify.IsNotNull(headerPeer, "Precondition: the header cell has a peer.");
+                Verify.AreEqual("Role", headerPeer.GetName(), "Precondition: the live header peer is named by its column.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => host.Children.Remove(tableView));
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Exception error = null;
+                try
+                {
+                    Log.Comment($"Detached header peer name: '{headerPeer.GetName()}'");
+                    Verify.AreEqual(AutomationControlType.HeaderItem, headerPeer.GetAutomationControlType(),
+                        "A detached header peer must still report its control type.");
+                    Log.Comment($"Detached header peer has keyboard focus: {headerPeer.HasKeyboardFocus()}");
+                }
+                catch (Exception e)
+                {
+                    error = e;
+                }
+
+                Verify.IsTrue(error == null, $"Querying a detached header peer must not throw. Instead: {error?.Message}");
+            });
+        }
+
+        #endregion
     }
 
     internal static class TableViewAutomationTestHelpers
@@ -1758,6 +2588,48 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             tableView.Columns.Add(MakeTextColumn("Alias", "Name"));
 
             return tableView;
+        }
+
+        // Five rows grouped by Role into a 2-row and a 3-row group, so group-relative set metadata is distinguishable
+        // from flat metadata.
+        internal static TableView CreateTwoGroupAutomationTable()
+        {
+            var source = TableViewSource.From(new List<Person>
+            {
+                new Person { Name = "Asha", Role = "Designer" },
+                new Person { Name = "Bo", Role = "Designer" },
+                new Person { Name = "Diego", Role = "Engineer" },
+                new Person { Name = "Eli", Role = "Engineer" },
+                new Person { Name = "Fay", Role = "Engineer" },
+            });
+            source.GroupBy(item => (object)((Person)item).Role);
+
+            return AddAutomationColumns(CreateTableViewShell(source, 600, 500));
+        }
+
+        // Every row peer reachable from root, without descending into a row (its children are cells).
+        internal static List<TableViewRowAutomationPeer> CollectRowPeers(AutomationPeer root)
+        {
+            var found = new List<TableViewRowAutomationPeer>();
+            var children = root.GetChildren();
+            if (children == null)
+            {
+                return found;
+            }
+
+            foreach (var child in children)
+            {
+                if (child is TableViewRowAutomationPeer rowPeer)
+                {
+                    found.Add(rowPeer);
+                }
+                else
+                {
+                    found.AddRange(CollectRowPeers(child));
+                }
+            }
+
+            return found;
         }
 
         internal static TableViewAutomationPeer RequireTablePeer(TableView tableView)
@@ -1794,5 +2666,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 .OfType<FrameworkElement>()
                 .Where(child => child.Tag is TableViewColumn)
                 .ToList();
+    }
+
+    // A plain managed header object: CsWinRT gives it IStringable, whose ToString is the type name.
+    internal sealed class TitledColumnHeader
+    {
+        public string Title { get; set; }
     }
 }

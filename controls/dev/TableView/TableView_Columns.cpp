@@ -213,6 +213,9 @@ void TableView::OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedE
             winrt::get_self<TableViewRow>(row)->RefreshColumnsSubscriptionInternal();
         });
     }
+
+    // Replacing the whole vector raises no VectorChanged, so announce the shape change here.
+    QueueRaiseColumnsStructureChanged();
 }
 
 void TableView::OnColumnsVectorChanged(
@@ -324,6 +327,9 @@ void TableView::OnColumnsVectorChanged(
 
     QueueRebuildHeaders();
 
+    // QueueRebuildHeaders updates visuals only; UIA clients must be told the grid shape changed.
+    QueueRaiseColumnsStructureChanged();
+
     // Realized rows observe Columns directly; no TableView broadcast is needed.
     if (change == winrt::CollectionChange::Reset)
     {
@@ -353,7 +359,17 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
     {
         if (auto headerCell = TableViewCellsPanel::CellForColumn(headerHost, column))
         {
+            // Read before collapsing: a collapsed cell drops focus, leaving it nowhere.
+            const int32_t focusIndex = visibility == winrt::Visibility::Collapsed
+                ? GetCollapsingHeaderFocusIndex(headerHost, headerCell)
+                : -1;
+
             headerCell.Visibility(visibility);
+
+            if (focusIndex >= 0 && FocusVisibleHeaderFrom(focusIndex, +1) < 0)
+            {
+                FocusVisibleHeaderFrom(focusIndex - 1, -1);
+            }
         }
     }
 
@@ -373,6 +389,50 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
     // `changed` gate stays false and would never re-pin. Refresh it directly.
     InvalidateMeasure();
     RefreshFrozenColumns();
+    RefreshResizeGripperAvailability();
+
+    // UIA addresses only visible columns (IsVisibleColumn), so a visibility flip shifts column
+    // indices just like an add/remove.
+    QueueRaiseColumnsStructureChanged();
+}
+
+// The column is already Collapsed here, so its own cell is not counted: the result is the index the
+// next visible header takes.
+int32_t TableView::GetCollapsingHeaderFocusIndex(const winrt::Panel& host, const winrt::FrameworkElement& headerCell) const
+{
+    auto const root = XamlRoot();
+    if (!host || !headerCell || !root)
+    {
+        return -1;
+    }
+
+    auto current = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+    while (current && current != headerCell)
+    {
+        current = winrt::VisualTreeHelper::GetParent(current);
+    }
+    if (!current)
+    {
+        return -1;
+    }
+
+    int32_t index = 0;
+    for (auto const& child : host.Children())
+    {
+        if (child == headerCell)
+        {
+            return index;
+        }
+        if (auto const element = child.try_as<winrt::FrameworkElement>())
+        {
+            if (auto const childColumn = element.Tag().try_as<winrt::TableViewColumn>();
+                childColumn && childColumn.Visibility() == winrt::Visibility::Visible)
+            {
+                ++index;
+            }
+        }
+    }
+    return -1;
 }
 
 void TableView::OnColumnWidthChanged(const winrt::TableViewColumn& column)
@@ -396,9 +456,16 @@ void TableView::OnColumnWidthChanged(const winrt::TableViewColumn& column)
     InvalidateCellPanels();
     RefreshFrozenColumns();
     QueueTerminalGridLineRefresh();
+
+    // A drag converts columns to Pixel as it goes; re-evaluating then would pull the gripper out
+    // from under the pointer. DragCompleted refreshes instead.
+    if (!m_activeColumnResizeDrag)
+    {
+        RefreshResizeGripperAvailability();
+    }
 }
 
-void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column)
+void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column, bool resetAutoWidth)
 {
     if (!column)
     {
@@ -415,7 +482,10 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
     // content width. Reset only this column's grow-only accumulator -- a global reset would shrink
     // unrelated Auto columns to only the currently-realized rows (the same reason OnColumnsVectorChanged
     // does not reset pre-existing columns).
-    winrt::get_self<TableViewColumn>(column)->ResetDesiredWidthInternal();
+    if (resetAutoWidth)
+    {
+        winrt::get_self<TableViewColumn>(column)->ResetDesiredWidthInternal();
+    }
     InvalidateMeasure();
 }
 
