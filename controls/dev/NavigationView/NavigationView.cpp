@@ -2511,7 +2511,8 @@ void NavigationView::UpdateSelectionModelSelection(const winrt::IndexPath& ip)
 {
     auto const prevIndexPath = m_selectionModel.SelectedIndex();
     m_selectionModel.SelectAt(ip);
-    UpdateIsChildSelected(prevIndexPath, ip);
+    // SelectAt raises SelectionChanged synchronously, and handlers there can change the selection or remove the item.
+    UpdateIsChildSelected(prevIndexPath, m_selectionModel.SelectedIndex());
 }
 
 void NavigationView::UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP)
@@ -5382,6 +5383,12 @@ winrt::UIElement NavigationView::GetContainerForIndex(int index, bool inFooter)
 {
     if (IsTopNavigationView())
     {
+        // A stale index path can outlive an item removed during a selection callback.
+        if (!inFooter && (index < 0 || index >= m_topDataProvider.Size()))
+        {
+            return nullptr;
+        }
+
         // Get the repeater that is presenting the first item
         auto ir = inFooter ? m_topNavFooterMenuRepeater.get()
             : (m_topDataProvider.IsItemInPrimaryList(index) ? m_topNavRepeater.get() : m_topNavRepeaterOverflowView.get());
