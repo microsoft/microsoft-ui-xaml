@@ -2595,6 +2595,48 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a Source whose only Selected markers are OUTGOING (SelectedToNormal_Start/_End) does not opt the icon into Selected, which AnimatedIcon could not resolve and would cut to frame 0 (GitHub #11080, PR review).")]
+        public void VerifyAnimatedIconOutgoingOnlySelectedMarkersKeepLegacyState()
+        {
+            NavigationView navView = null;
+            NavigationViewItem item = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var markers = new Dictionary<string, double>(CreateLegacyAnimatedIconMarkers())
+                {
+                    { "Normal", 0.0 },
+                    { "SelectedToNormal_Start", 0.5 }, { "SelectedToNormal_End", 0.0 },
+                };
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(markers) };
+                item = new NavigationViewItem() { Content = "Item", Icon = icon };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(item);
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Other" });
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, item);
+            RunOnUIThread.Execute(() =>
+            {
+                var segmentEnd = Microsoft.UI.Private.Controls.AnimatedIconTestHooks.GetLastAnimationSegmentEnd(icon);
+                Log.Comment("Selected: State=" + AnimatedIcon.GetState(icon) + ", resolved segment end=" + segmentEnd);
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Selected item whose Source has only outgoing Selected markers");
+                Verify.AreNotEqual("0.0", segmentEnd, "No cut to frame 0");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
         static Dictionary<string, double> CreateLegacyAnimatedIconMarkers()
         {
             return new Dictionary<string, double>
