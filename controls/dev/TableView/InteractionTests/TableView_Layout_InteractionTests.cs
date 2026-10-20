@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Common;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
@@ -273,6 +274,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [DllImport("user32.dll")]
         private static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
 
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetAncestor(IntPtr hWnd, uint gaFlags);
+
+        private const uint GA_ROOT = 2;
         private static readonly IntPtr IDC_ARROW = new IntPtr(32512);
         private static readonly IntPtr IDC_SIZEWE = new IntPtr(32644);
 
@@ -281,6 +292,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             var info = new CURSORINFO { cbSize = Marshal.SizeOf<CURSORINFO>() };
             Verify.IsTrue(GetCursorInfo(ref info), "GetCursorInfo must succeed.");
             return info.hCursor;
+        }
+
+        // The cursor is updated asynchronously after the pointer moves, so poll rather than read once.
+        private static void VerifyCursorBecomes(IntPtr expected, string message)
+        {
+            var samples = new List<string>();
+            var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
+            IntPtr cursor;
+            while (true)
+            {
+                cursor = ReadCursor();
+                var sample = string.Format("0x{0:X}", cursor.ToInt64());
+                if (samples.Count == 0 || samples[samples.Count - 1] != sample)
+                {
+                    samples.Add(sample);
+                }
+                if (cursor == expected || DateTime.UtcNow >= deadline)
+                {
+                    break;
+                }
+                Wait.ForMilliseconds(50);
+            }
+
+            Verify.AreEqual(expected, cursor,
+                string.Format("{0} Expected 0x{1:X}; sampled [{2}].", message, expected.ToInt64(), string.Join(", ", samples)));
+        }
+
+        private static void EnsureAppWindowForeground()
+        {
+            IntPtr window = GetAncestor(TestEnvironment.Application.CoreWindow.NativeWindowHandle, GA_ROOT);
+            var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
+            while (GetForegroundWindow() != window && DateTime.UtcNow < deadline)
+            {
+                SetForegroundWindow(window);
+                Wait.ForMilliseconds(100);
+            }
+            Verify.AreEqual(window, GetForegroundWindow(), "The test app window must be in the foreground.");
         }
 
         [TestMethod]
@@ -303,6 +351,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     return;
                 }
 
+                EnsureAppWindowForeground();
                 IntPtr sizeWE = LoadCursor(IntPtr.Zero, IDC_SIZEWE);
                 IntPtr arrow = LoadCursor(IntPtr.Zero, IDC_ARROW);
 
@@ -313,36 +362,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 InputHelper.MoveMouse(centre);
                 Wait.ForIdle();
-                Log.Comment("Header centre cursor=0x{0:X} (arrow=0x{1:X}).", ReadCursor().ToInt64(), arrow.ToInt64());
-                Verify.AreEqual(arrow, ReadCursor(), "Away from the gripper the cursor must be the arrow.");
+                VerifyCursorBecomes(arrow, "Away from the gripper the cursor must be the arrow.");
 
                 foreach (int x in new[] { edgeX, edgeX - 1, edgeX - 2, edgeX, edgeX - 1 })
                 {
                     InputHelper.MoveMouse(new Point(x, y));
                     Wait.ForIdle();
+                    VerifyCursorBecomes(sizeWE, string.Format("Over the gripper at x={0} the cursor must be the west-east size cursor.", x));
                     for (int sample = 0; sample < 3; sample++)
                     {
+                        Wait.ForMilliseconds(50);
                         IntPtr cursor = ReadCursor();
                         Log.Comment("x={0} sample {1}: cursor=0x{2:X} (sizeWE=0x{3:X}).", x, sample, cursor.ToInt64(), sizeWE.ToInt64());
                         Verify.AreEqual(sizeWE, cursor, "Over the gripper the cursor must stay the west-east size cursor.");
-                        Wait.ForMilliseconds(50);
                     }
                 }
 
                 // The gripper travels with the edge, so the pointer stays over it.
                 InputHelper.LeftMouseButtonDown(nameHeader, (bounds.Width / 2) - 1, 0);
-                InputHelper.MoveMouse(new Point(edgeX + 20, y));
-                InputHelper.MoveMouse(new Point(edgeX + 40, y));
-                Wait.ForIdle();
-                IntPtr dragging = ReadCursor();
-                Log.Comment("Mid-drag cursor=0x{0:X}.", dragging.ToInt64());
-                InputHelper.LeftMouseButtonUp();
-                Wait.ForIdle();
-                Verify.AreEqual(sizeWE, dragging, "The west-east size cursor must hold during the drag.");
+                try
+                {
+                    InputHelper.MoveMouse(new Point(edgeX + 20, y));
+                    InputHelper.MoveMouse(new Point(edgeX + 40, y));
+                    Wait.ForIdle();
+                    VerifyCursorBecomes(sizeWE, "The west-east size cursor must hold during the drag.");
+                }
+                finally
+                {
+                    InputHelper.LeftMouseButtonUp();
+                    Wait.ForIdle();
+                }
 
                 InputHelper.MoveMouse(new Point(FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Left + 10, y));
                 Wait.ForIdle();
-                Verify.AreEqual(arrow, ReadCursor(), "Leaving the gripper must restore the arrow.");
+                VerifyCursorBecomes(arrow, "Leaving the gripper must restore the arrow.");
             }
         }
 
