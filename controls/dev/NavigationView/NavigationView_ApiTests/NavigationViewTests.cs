@@ -1403,6 +1403,137 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyIsChildSelectedCallbackSelectionReconcilesDeeperAncestors()
+        {
+            NavigationView navView = null;
+            NavigationViewItem parent1 = null;
+            NavigationViewItem intermediate = null;
+            NavigationViewItem parent2 = null;
+            NavigationViewItem firstItem = null;
+            NavigationViewItem secondItem = null;
+            NavigationViewItem callbackItem = null;
+            RunOnUIThread.Execute(() =>
+            {
+                // Parent1 > Intermediate > First, Parent2 > Second, Callback.
+                firstItem = new NavigationViewItem { Content = "First" };
+                intermediate = new NavigationViewItem { Content = "Intermediate" };
+                intermediate.MenuItems.Add(firstItem);
+                parent1 = new NavigationViewItem { Content = "Parent1" };
+                parent1.MenuItems.Add(intermediate);
+                secondItem = new NavigationViewItem { Content = "Second" };
+                parent2 = new NavigationViewItem { Content = "Parent2" };
+                parent2.MenuItems.Add(secondItem);
+                callbackItem = new NavigationViewItem { Content = "Callback" };
+                navView = new NavigationView { PaneDisplayMode = NavigationViewPaneDisplayMode.Left, Width = 1008 };
+                navView.MenuItems.Add(parent1);
+                navView.MenuItems.Add(parent2);
+                navView.MenuItems.Add(callbackItem);
+                Content = navView;
+                parent1.IsExpanded = true;
+                Content.UpdateLayout();
+                intermediate.IsExpanded = true;
+                parent2.IsExpanded = true;
+                Content.UpdateLayout();
+                navView.SelectedItem = firstItem;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(parent1.IsChildSelected);
+                Verify.IsTrue(intermediate.IsChildSelected);
+                bool redirected = false;
+                parent1.RegisterPropertyChangedCallback(NavigationViewItem.IsChildSelectedProperty, (sender, property) =>
+                {
+                    if (!parent1.IsChildSelected && !redirected)
+                    {
+                        redirected = true;
+                        navView.SelectedItem = callbackItem;
+                    }
+                });
+                var provider = FrameworkElementAutomationPeer.CreatePeerForElement(secondItem) as IInvokeProvider;
+                Verify.IsNotNull(provider);
+                provider.Invoke();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(callbackItem, navView.SelectedItem);
+                Verify.IsFalse(parent1.IsChildSelected, "Parent1");
+                Verify.IsFalse(intermediate.IsChildSelected, "Intermediate must not keep IsChildSelected for the abandoned chain.");
+                Verify.IsFalse(parent2.IsChildSelected, "Parent2");
+                Verify.IsTrue(callbackItem.IsSelected);
+                intermediate.IsExpanded = false;
+            });
+            IdleSynchronizer.Wait();
+
+            Verify.IsFalse(ItemHasSelectionIndicator(navView, "Intermediate"), "Collapsing the abandoned branch must not move the indicator there.");
+            Verify.IsTrue(ItemHasSelectionIndicator(navView, "Callback"));
+        }
+
+        [TestMethod]
+        public void VerifySelectionChangedHandlerSelectingChildKeepsParentIsChildSelected()
+        {
+            foreach (var expanded in new[] { false, true })
+            {
+                NavigationView navView = null;
+                Category parentItem = null;
+                Category childItem = null;
+                ManualResetEvent loadedEvent = new(false);
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"ParentExpanded={expanded}");
+                    childItem = new("Child", "Child", "Icon", null, true);
+                    parentItem = new("Parent", "Parent", "Icon", new ObservableCollection<Category> { childItem }, true);
+                    navView = new NavigationView {
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                        Width = 1008,
+                        MenuItemsSource = new ObservableCollection<Category> { new("Other", "Other", "Icon", null, true), parentItem },
+                        MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
+<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+  <NavigationViewItem Content='{Binding Content}' Name='{Binding Name}' MenuItemsSource='{Binding Children}' SelectsOnInvoked='{Binding SelectsOnInvoked}'/>
+</DataTemplate>")
+                    };
+                    navView.Loaded += (sender, args) => loadedEvent.Set();
+                    Content = navView;
+                });
+                loadedEvent.WaitOne();
+                IdleSynchronizer.Wait();
+
+                NavigationViewItem parentNvi = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    parentNvi = (NavigationViewItem)navView.ContainerFromMenuItem(parentItem);
+                    parentNvi.IsExpanded = expanded;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    // Common pattern: selecting a parent forwards the selection to its first child.
+                    navView.SelectionChanged += (sender, args) =>
+                    {
+                        if (args.SelectedItem == parentItem)
+                        {
+                            navView.SelectedItem = childItem;
+                        }
+                    };
+                    parentNvi.IsSelected = true;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(childItem, navView.SelectedItem);
+                    Verify.IsFalse(parentNvi.IsSelected);
+                    Verify.IsTrue(parentNvi.IsChildSelected, "The parent of the selected child must report IsChildSelected.");
+                });
+                Verify.IsTrue(ItemHasSelectionIndicator(navView, expanded ? "Child" : "Parent"), "The selection indicator must be shown.");
+            }
+        }
+
+        [TestMethod]
         public void VerifyHierarchicalOverflowSelectionWhenFlyoutClosingAppendsItem()
         {
             NavigationView navView = null;
