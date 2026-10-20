@@ -173,18 +173,14 @@ void NavigationViewItem::LoadMenuItemsHost()
 
 void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    // Items in a NavigationView-owned repeater are prepared in OnApplyTemplate and refreshed by the repeater.
-    if (IsInNavigationViewOwnedRepeater() && m_splitViewIsPaneOpenChangedRevoker)
-    {
-        return;
-    }
-
     // If the NVI is not prepared in an ItemPresenter, it will not have reference to SplitView, so it is prepared here once
-    // NavigationViewItemBase::OnLoaded() has set the NavigationView. This also runs again when the item is loaded in a new host,
-    // so the closed compact state is recomputed for that host. Re-preparing replaces the SplitView subscriptions.
+    // NavigationViewItemBase::OnLoaded() has set the NavigationView. This also runs again when the item is loaded in a new host
+    // (for example moved between MenuItems, PaneFooter, Content or another NavigationView), so the SplitView subscriptions and
+    // the closed compact state follow the new host. Re-preparing replaces the previous SplitView subscriptions.
     if (auto splitView = GetSplitView())
     {
         PrepNavigationViewItem(splitView);
+        ReparentRepeater();
     }
 
     UpdateVisualStateForChevron();
