@@ -2308,6 +2308,202 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void VerifyAncestorRefreshHonorsReentrantSelectionClear()
+        {
+            VerifyAncestorRefreshHonorsReentrantSelection(true);
+        }
+
+        [TestMethod]
+        public void VerifyAncestorRefreshHonorsReentrantSelectionRedirect()
+        {
+            VerifyAncestorRefreshHonorsReentrantSelection(false);
+        }
+
+        [TestMethod]
+        public void VerifyAncestorRefreshHonorsReentrantSelectionClearWhileMarking()
+        {
+            VerifyAncestorRefreshHonorsReentrantSelection(true, whenMarking: true);
+        }
+
+        [TestMethod]
+        public void VerifyAncestorRefreshHonorsReentrantSelectionRedirectWhileMarking()
+        {
+            VerifyAncestorRefreshHonorsReentrantSelection(false, whenMarking: true);
+        }
+
+        [TestMethod]
+        public void VerifyAncestorRefreshHonorsReentrantSelectionRedirectToChild()
+        {
+            VerifyAncestorRefreshHonorsReentrantSelection(false, selectChild: true);
+        }
+
+        private void VerifyAncestorRefreshHonorsReentrantSelection(bool clearSelection, bool whenMarking = false, bool selectChild = false)
+        {
+            var hierarchy = SetupSelectedNavigationViewHierarchy(false, true);
+            var redirectedItem = selectChild ? hierarchy.Destination.Children[0] : hierarchy.Destination;
+            NavigationViewItem formerParent = null;
+            NavigationViewItem formerLeafParent = null;
+            bool callbackInvoked = false;
+            long callbackToken = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                formerParent = (NavigationViewItem)hierarchy.NavView.ContainerFromMenuItem(hierarchy.FormerParent);
+                formerLeafParent = (NavigationViewItem)hierarchy.NavView.ContainerFromMenuItem(hierarchy.LeafParent);
+                callbackToken = formerParent.RegisterPropertyChangedCallback(
+                    NavigationViewItem.IsChildSelectedProperty, (sender, property) =>
+                    {
+                        if (!callbackInvoked && formerParent.IsChildSelected == whenMarking)
+                        {
+                            callbackInvoked = true;
+                            Log.Comment("Changing selection from the former ancestor's IsChildSelected callback.");
+                            hierarchy.NavView.SelectedItem = clearSelection ? null : redirectedItem;
+                        }
+                    });
+            });
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    hierarchy.Items.Insert(0, new Category("Inserted root", "InsertedRoot", "Icon", null, true));
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(callbackInvoked, "The same-item refresh must exercise reentrant ancestor cleanup.");
+                    if (clearSelection)
+                    {
+                        Verify.IsNull(hierarchy.NavView.SelectedItem, "The callback's selection clear must be preserved.");
+                    }
+                    else
+                    {
+                        Verify.AreEqual(redirectedItem, hierarchy.NavView.SelectedItem,
+                            "The callback's redirected selection must be preserved.");
+                    }
+                    Verify.IsFalse(formerParent.IsChildSelected, "A superseded refresh must not mark the old root again.");
+                    Verify.IsFalse(formerLeafParent.IsChildSelected, "Remaining old ancestors must still be cleaned up.");
+                    Verify.IsFalse(((NavigationViewItem)hierarchy.NavView.ContainerFromMenuItem(hierarchy.SelectedLeaf)).IsSelected);
+                    var destination = (NavigationViewItem)hierarchy.NavView.ContainerFromMenuItem(hierarchy.Destination);
+                    Verify.AreEqual(!clearSelection && !selectChild, destination.IsSelected);
+                    Verify.AreEqual(!clearSelection && selectChild, destination.IsChildSelected);
+                    if (selectChild)
+                    {
+                        Verify.IsTrue(((NavigationViewItem)hierarchy.NavView.ContainerFromMenuItem(redirectedItem)).IsSelected);
+                    }
+                    formerParent.IsExpanded = false;
+                });
+
+                IdleSynchronizer.Wait();
+                Verify.IsFalse(ItemHasSelectionIndicator(hierarchy.NavView, hierarchy.FormerParent.Content),
+                    "Collapsing the former root must not reveal an indicator for the superseded selection.");
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    formerParent.UnregisterPropertyChangedCallback(NavigationViewItem.IsChildSelectedProperty, callbackToken);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyAncestorRefreshAfterPaneModeChangePreservesExplicitItems()
+        {
+            VerifyAncestorRefreshPreservesExplicitItems(true);
+        }
+
+        [TestMethod]
+        public void VerifyAncestorRefreshWithoutPaneModeChangePreservesExplicitItems()
+        {
+            VerifyAncestorRefreshPreservesExplicitItems(false);
+        }
+
+        private void VerifyAncestorRefreshPreservesExplicitItems(bool changePaneMode)
+        {
+            NavigationView navView = null;
+            NavigationViewItem groupA = null;
+            NavigationViewItem groupB = null;
+            NavigationViewItem selectedLeaf = null;
+            ObservableCollection<NavigationViewItem> items = null;
+            RunOnUIThread.Execute(() =>
+            {
+                selectedLeaf = new NavigationViewItem { Content = "Selected leaf" };
+                groupA = new NavigationViewItem
+                {
+                    Content = "Group A",
+                    MenuItemsSource = new ObservableCollection<NavigationViewItem> { selectedLeaf }
+                };
+                groupB = new NavigationViewItem
+                {
+                    Content = "Group B",
+                    MenuItemsSource = new ObservableCollection<NavigationViewItem>
+                    {
+                        new NavigationViewItem { Content = "Other leaf" }
+                    }
+                };
+                items = new ObservableCollection<NavigationViewItem> { groupA, groupB };
+                navView = new NavigationView
+                {
+                    Width = 800,
+                    Height = 600,
+                    ExpandedModeThresholdWidth = 640,
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsPaneOpen = true,
+                    IsSettingsVisible = false,
+                    MenuItemsSource = items
+                };
+                Content = navView;
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                groupA.IsExpanded = true;
+                groupB.IsExpanded = true;
+            });
+
+            SelectItem(navView, selectedLeaf);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(groupA.IsChildSelected);
+                Verify.IsFalse(groupB.IsChildSelected);
+                if (changePaneMode)
+                {
+                    navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Auto;
+                }
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(NavigationViewDisplayMode.Expanded, navView.DisplayMode);
+                Verify.IsTrue(groupA.IsChildSelected, "The mode change alone must preserve ancestor selection.");
+                Verify.IsFalse(groupB.IsChildSelected);
+                items.Insert(0, new NavigationViewItem { Content = "Inserted root" });
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRepeater(navView);
+                Verify.IsNotNull(repeater);
+                Verify.AreEqual(1, repeater.GetElementIndex(groupA));
+                Verify.AreEqual(2, repeater.GetElementIndex(groupB));
+                Verify.AreEqual(selectedLeaf, navView.SelectedItem);
+                Verify.IsTrue(selectedLeaf.IsSelected);
+                Verify.IsTrue(groupA.IsChildSelected, "The selected group must remain marked after repeater indices settle.");
+                Verify.IsFalse(groupB.IsChildSelected, "The old repeater index must not mark a different group.");
+                groupB.IsExpanded = false;
+            });
+
+            IdleSynchronizer.Wait();
+            Verify.IsFalse(ItemHasSelectionIndicator(navView, "Group B"),
+                "Collapsing an unrelated group must not reveal a phantom selection indicator.");
+        }
+
         private (NavigationView NavView, ObservableCollection<Category> Items, Category FormerParent, Category Destination, Category SelectedLeaf, Category LeafParent)
             SetupSelectedNavigationViewHierarchy(bool bindContentToData, bool nested = false)
         {

@@ -293,6 +293,9 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
     {
         // Collection changes can move the selected item without changing its identity.
         UpdateIsChildSelected(selectionModel.SelectedIndex());
+        // The model can receive the collection change before the repeaters remap their indices.
+        m_isAncestorRefreshPendingAfterLayout = true;
+        InvalidateMeasure();
         return;
     }
 
@@ -1394,6 +1397,12 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
 {
     // We only need to handle once after MeasureOverride, so revoke the token.
     m_layoutUpdatedToken.revoke();
+
+    if (m_isAncestorRefreshPendingAfterLayout)
+    {
+        m_isAncestorRefreshPendingAfterLayout = false;
+        UpdateIsChildSelected(SelectedItem() ? m_selectionModel.SelectedIndex() : nullptr, false /* forceUpdate */);
+    }
 
     // In topnav, when an item in overflow menu is clicked, the animation is delayed because that item is not move to primary list yet.
     // And it depends on LayoutUpdated to re-play the animation. m_lastSelectedItemPendingAnimationInTopNav is the last selected overflow item.
@@ -2515,43 +2524,91 @@ void NavigationView::UpdateSelectionModelSelection(const winrt::IndexPath& ip)
     UpdateIsChildSelected(m_selectionModel.SelectedIndex());
 }
 
-void NavigationView::UpdateIsChildSelected(const winrt::IndexPath& indexPath)
+void NavigationView::UpdateIsChildSelected(const winrt::IndexPath& indexPath, bool forceUpdate)
 {
-    // Old indices may now refer to different items after a collection change.
-    auto previousAncestors = std::move(m_selectedAncestorContainers);
-    m_selectedAncestorContainers.clear();
-    for (auto const& ancestor : previousAncestors)
-    {
-        if (auto const container = ancestor.get())
-        {
-            container.IsChildSelected(false);
-        }
-    }
-
-    if (!indexPath || indexPath.GetSize() <= 2)
+    m_pendingAncestorIndexPath = indexPath;
+    m_isChildSelectedUpdatePending = true;
+    if (m_updatingIsChildSelected)
     {
         return;
     }
 
-    auto container = GetContainerForIndex(indexPath.GetAt(1), indexPath.GetAt(0) == c_footerMenuBlockIndex /*inFooter*/);
-    auto index = 2;
-    while (container)
+    m_updatingIsChildSelected = true;
+    auto scopeGuard = gsl::finally([this]()
     {
-        if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+        m_updatingIsChildSelected = false;
+        m_pendingAncestorIndexPath = nullptr;
+    });
+
+    auto const getAncestors = [this]()
+    {
+        auto const currentIndexPath = m_pendingAncestorIndexPath ? m_selectionModel.SelectedIndex() : nullptr;
+        std::vector<winrt::NavigationViewItem> ancestors;
+        if (currentIndexPath && currentIndexPath.GetSize() > 2)
         {
-            m_selectedAncestorContainers.push_back(winrt::make_weak(nvi));
-            nvi.IsChildSelected(true);
-            if (auto const nextIR = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
+            auto container = GetContainerForIndex(currentIndexPath.GetAt(1), currentIndexPath.GetAt(0) == c_footerMenuBlockIndex /*inFooter*/);
+            auto index = 2;
+            while (container)
             {
-                if (index < indexPath.GetSize() - 1)
+                if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
                 {
-                    container = nextIR.TryGetElement(indexPath.GetAt(index));
-                    index++;
-                    continue;
+                    ancestors.push_back(nvi);
+                    if (auto const nextIR = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
+                    {
+                        if (index < currentIndexPath.GetSize() - 1)
+                        {
+                            container = nextIR.TryGetElement(currentIndexPath.GetAt(index));
+                            index++;
+                            continue;
+                        }
+                    }
                 }
+                container = nullptr;
             }
         }
-        container = nullptr;
+        return ancestors;
+    };
+
+    while (m_isChildSelectedUpdatePending)
+    {
+        m_isChildSelectedUpdatePending = false;
+        if (!forceUpdate)
+        {
+            auto const ancestors = getAncestors();
+            if (ancestors.size() == m_selectedAncestorContainers.size() &&
+                std::equal(ancestors.begin(), ancestors.end(), m_selectedAncestorContainers.begin(),
+                    [](auto const& ancestor, auto const& previous) { return ancestor == previous.get() && ancestor.IsChildSelected(); }))
+            {
+                continue;
+            }
+        }
+        forceUpdate = true;
+
+        // Finish all cleanup even when an application callback requests a newer selection.
+        auto previousAncestors = std::move(m_selectedAncestorContainers);
+        m_selectedAncestorContainers.clear();
+        for (auto const& ancestor : previousAncestors)
+        {
+            if (auto const container = ancestor.get())
+            {
+                container.IsChildSelected(false);
+            }
+        }
+
+        if (m_isChildSelectedUpdatePending)
+        {
+            continue;
+        }
+
+        for (auto const& ancestor : getAncestors())
+        {
+            m_selectedAncestorContainers.push_back(winrt::make_weak(ancestor));
+            ancestor.IsChildSelected(true);
+            if (m_isChildSelectedUpdatePending)
+            {
+                break;
+            }
+        }
     }
 }
 
