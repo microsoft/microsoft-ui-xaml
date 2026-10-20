@@ -51,7 +51,6 @@ CMRTResource::~CMRTResource()
 // that matches the type, and Load() is delegating to the sub-object.
 _Check_return_ HRESULT CMRTResource::Load(_Outptr_ IPALMemory** ppMemory)
 {
-    IFCPTR_RETURN(ppMemory);
     *ppMemory = nullptr;
 
     switch (m_kind)

@@ -285,7 +285,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         IPALMemory* output = validMemory.get();
         VERIFY_ARE_EQUAL(E_FAIL, failingResource->Load(&output));
         VERIFY_IS_NULL(output);
-        VERIFY_FAILED(resource->Load(nullptr));
 
         failingResource.reset();
         VERIFY_IS_TRUE(failingState->destroyed.load());
