@@ -1493,7 +1493,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(Visibility.Visible, chevron.Visibility);
                 Verify.IsTrue(chevron.ActualWidth > 0 && chevron.ActualHeight > 0);
                 var bounds = chevron.TransformToVisual(layoutRoot).TransformBounds(
-                    new Windows.Foundation.Rect(0, 0, chevron.ActualWidth, chevron.ActualHeight));
+                    new global::Windows.Foundation.Rect(0, 0, chevron.ActualWidth, chevron.ActualHeight));
                 Verify.IsTrue(bounds.Left >= -0.5 && bounds.Right <= layoutRoot.ActualWidth + 0.5,
                     "The visible chevron must fit inside the icon-only item's layout root.");
 
