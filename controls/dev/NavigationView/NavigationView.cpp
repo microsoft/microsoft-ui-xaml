@@ -2322,8 +2322,12 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
         }
         else if (container = GetContainerForIndexPath(m_selectionModel.SelectedIndex(), false /* lastVisible */, true /* forceRealize */))
         {
-            MUX_ASSERT(MenuItemFromContainer(container) == nextItem);
-            eventArgs->SelectedItemContainer(container);
+            // A deferred notification (CompletePendingSelectionChange) can run after the item's containers were torn down,
+            // e.g. once the NavigationView is unloaded; only report a container that still presents nextItem.
+            if (MenuItemFromContainer(container) == nextItem)
+            {
+                eventArgs->SelectedItemContainer(container);
+            }
         }
     }
     eventArgs->RecommendedNavigationTransitionInfo(CreateNavigationTransitionInfo(recommendedDirection));
