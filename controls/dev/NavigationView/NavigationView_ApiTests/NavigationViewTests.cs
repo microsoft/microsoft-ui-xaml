@@ -1233,7 +1233,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "B PaneFooter, B closed");
 
-                // A's pane must no longer drive the item.
+                // The item now follows B's pane state: its NavigationView reference switched to B, so A's pane doesn't change it.
+                // (This doesn't prove A's callbacks were revoked, since a leaked callback would also re-read B's SplitView. The revoker
+                // assignment in PrepNavigationViewItem drops them.)
                 navViewA.IsPaneOpen = true;
                 Content.UpdateLayout();
             });
