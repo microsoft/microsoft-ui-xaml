@@ -904,6 +904,7 @@ private:
     TableViewTip::IgnoreReason m_tipCancellationReason{ TableViewTip::IgnoreReason::Cancelled };
     uint32_t m_tipMutationDepth{};
     uint32_t m_tipSourceMutationDepth{};
+    bool m_reportedMissingGridLineBrush{ false };
     // App faults tagged so far; an exception escaping an operation during which this moved is the app's.
     uint32_t m_tipAppFaults{};
     uint32_t m_tipAppFaultsAtOperationStart{};
