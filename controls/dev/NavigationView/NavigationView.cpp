@@ -2049,9 +2049,43 @@ winrt::IInspectable NavigationView::GetItemToDisplaySelectionIndicator(const win
             {
                 return container;
             }
+            if (!container || !container.IsSelected())
+            {
+                // The index path couldn't be resolved to a realized container (e.g. while the Top repeaters are being
+                // re-sourced), so look for a realized top-level container that shows the selection for a collapsed child.
+                if (auto const ancestor = FindCollapsedTopLevelAncestorOfSelection())
+                {
+                    return ancestor;
+                }
+            }
         }
     }
     return item;
+}
+
+winrt::NavigationViewItem NavigationView::FindCollapsedTopLevelAncestorOfSelection()
+{
+    const bool isTop = IsTopNavigationView();
+    for (auto const& repeater : { isTop ? m_topNavRepeater.get() : m_leftNavRepeater.get(), isTop ? m_topNavFooterMenuRepeater.get() : m_leftNavFooterMenuRepeater.get() })
+    {
+        if (repeater)
+        {
+            if (auto const itemsSourceView = repeater.ItemsSourceView())
+            {
+                for (int i = 0; i < itemsSourceView.Count(); i++)
+                {
+                    if (auto const nvi = repeater.TryGetElement(i).try_as<winrt::NavigationViewItem>())
+                    {
+                        if (!nvi.IsSelected() && nvi.IsChildSelected() && !nvi.IsExpanded())
+                        {
+                            return nvi;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return nullptr;
 }
 
 // Please clear the field m_lastSelectedItemPendingAnimationInTopNav when calling this method to prevent garbage value and incorrect animation
