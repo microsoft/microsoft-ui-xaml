@@ -66,6 +66,13 @@ public:
 
     bool UsesPlaceholderVisual() const { return m_usesPlaceholderVisual; }
 
+    // XAML Profiler: true when this comp node belongs to (or descends from) the profiler's own
+    // pick-mode overlay, so none of its comp-node-tree or WUC-visual events are emitted. Marked once
+    // by CUIElement::EnsureCompositionPeer and never cleared. The bit lives and dies with this node,
+    // so a later node reusing this address can't inherit it and teardown needs no bookkeeping.
+    bool IsProfilerSuppressed() const { return m_isProfilerSuppressed; }
+    void MarkProfilerSuppressed() { m_isProfilerSuppressed = true; }
+
     bool HasHitTestVisibleContent() const;
 
 protected:
@@ -84,6 +91,8 @@ protected:
     // elsewhere. Currently used only by HWWindowedPopupCompTreeNode, when the popup is
     // windowed and the real visual is added to that window.
     bool m_usesPlaceholderVisual : 1;
+    // See IsProfilerSuppressed(). Packs into the same byte as m_usesPlaceholderVisual (no size change).
+    bool m_isProfilerSuppressed : 1;
 };
 
 //------------------------------------------------------------------------------

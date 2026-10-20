@@ -35,6 +35,7 @@ HWCompNode::HWCompNode(
     : CDependencyObject(coreServices)
     , m_pCompositorTreeHostNoRef(pCompositorTreeHost)
     , m_usesPlaceholderVisual(false)
+    , m_isProfilerSuppressed(false)
 {
 }
 
@@ -639,9 +640,9 @@ HWCompTreeNode::InsertChild(
 
 #ifdef XAMLPROFILER_ENABLED
     // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-    if (XamlProfilerTracing::IsEnabled() &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::CompTree) &&
+        !IsProfilerSuppressed() &&
+        !pChild->IsProfilerSuppressed())
     {
         XamlProfilerTracing::CompNodeChildInserted(
             reinterpret_cast<uint64_t>(this),
@@ -686,9 +687,9 @@ HWCompTreeNode::InsertChildAtBeginning(
 
 #ifdef XAMLPROFILER_ENABLED
     // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-    if (XamlProfilerTracing::IsEnabled() &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::CompTree) &&
+        !IsProfilerSuppressed() &&
+        !pChild->IsProfilerSuppressed())
     {
         XamlProfilerTracing::CompNodeChildInserted(
             reinterpret_cast<uint64_t>(this),
@@ -723,9 +724,9 @@ HWCompTreeNode::RemoveChild(
 
 #ifdef XAMLPROFILER_ENABLED
             // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-            if (XamlProfilerTracing::IsEnabled() &&
-                !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
-                !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
+            if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::CompTree) &&
+                !IsProfilerSuppressed() &&
+                !pChild->IsProfilerSuppressed())
             {
                 XamlProfilerTracing::CompNodeChildRemoved(
                     reinterpret_cast<uint64_t>(this),

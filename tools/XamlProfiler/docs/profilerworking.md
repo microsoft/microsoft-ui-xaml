@@ -77,9 +77,29 @@ on MSBuild Core which can't compile a vcxproj. So:
 ## 4. The ETW listener — `EtwListenerService`
 
 **Subscription.** `Start()` creates a real-time `TraceEventSession`
-(`Microsoft.Diagnostics.Tracing`, TraceEvent library), enables the provider GUID
-`{A1B2C3D4-…}` at `Verbose`, and pumps events on a dedicated background thread via
+(`Microsoft.Diagnostics.Tracing`, TraceEvent library), enables the provider
+`Microsoft-Windows-XAML-Profiler` (`{26f28a5c-7d30-54c5-40f4-fff6d3beda7d}`) at
+`Verbose` with keywords `0x07` (`XamlTree | CompTree | WucTree`, the only groups the
+views consume), and pumps events on a dedicated background thread via
 `_source.Process()`. Requires **Administrator** (ETW real-time sessions do).
+
+**Start before launch.** The tree groups carry deltas, not snapshots, so the session
+is started before the target is launched; a session started after the UI is built
+misses the elements that already exist.
+
+**Process scope.** The session is scoped in ETW to the target's executable name
+(`TraceEventProviderOptions.ProcessNameFilter`), so other WinUI processes on the
+machine never turn the instrumentation on. Exe mode uses the chosen file's name;
+package mode reads the `Application@Executable` for the app from the installed
+package's `AppxManifest.xml`. If the name can't be resolved, the session isn't
+scoped. A target that is already running (PID passed to the constructor) is scoped
+with `ProcessIDFilter` instead.
+
+Once the launched target's process is found, `MainWindow` checks that it runs the
+executable the session was scoped to. If it doesn't (for example, a packaged app
+started through a launcher such as `PsfLauncher64.exe`), or no process was found,
+`RescopeToProcess` re-enables the provider for that PID, or for all processes, and
+the status bar warns that the target's startup events were missed.
 
 **The recycled-buffer hazard (critical).** The `TraceEvent` instance and its
 payload buffer are **reused** by the parser and become invalid the moment the
@@ -94,7 +114,7 @@ mutations apply under one layout pass. At most one drain is queued on the
 dispatcher at a time (`_flushScheduled` interlock).
 
 **Process filter.** When a target PID is known, events from other processes are
-dropped in `OnEvent`.
+also dropped in `OnEvent`.
 
 **Dispatch.** `Dispatch(name, payload)` switches on the event name to ~18
 handlers. Payload slots are read with typed helpers that tolerate missing/null
@@ -348,13 +368,15 @@ element's `PeerHandle` (or picked `IVisual`) only arrives over ETW a frame later
 
 - **Live:** run `XamlProfiler.exe` **as Administrator** (ETW real-time session),
   then Launch and Listen. Tap is optional and same-integrity-level only.
-- **Offline:** `XamlProfiler.wprp` records an `.etl` against the same provider via
-  WPR for later analysis; the same reconstruction logic applies to a recorded
-  stream.
-- **Runtime match:** to see labels/handles/WUC data, the target must load a
-  runtime built with the framework-side changes (see `frameworksidechanges.md`
-  §13). Against a stock runtime the trees still build but nodes fall back to bare
-  addresses / no live highlight.
+- **Offline:** `XamlProfiler.wprp` records an `.etl` against the same provider
+  (keywords `0x7`, the tree groups) via WPR for later analysis; the same
+  reconstruction logic applies to a recorded stream.
+- **Runtime match:** the target must load a runtime that includes the
+  framework-side changes (see `frameworksidechanges.md` §13). They are compiled
+  into every configuration unless the runtime is built with
+  `/p:XamlProfilerEnabled=false` (see `activateframework.md`). Runtimes from before
+  the provider moved to `{26f28a5c-7d30-54c5-40f4-fff6d3beda7d}` emit on the old
+  placeholder GUID, which this app no longer enables.
 
 ---
 

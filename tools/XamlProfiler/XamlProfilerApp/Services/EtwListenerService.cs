@@ -9,13 +9,21 @@ namespace XamlProfiler.Services;
 /// <summary>
 /// Real-time ETW listener that subscribes to the XamlProfilerTracing provider
 /// and dispatches tree mutations to the ProfilerTreeStore on the UI thread.
+/// The session enables only the tree keyword groups the views consume, and when the
+/// target is known up front it is scoped to that executable (or PID), so other WinUI
+/// processes on the machine don't turn the instrumentation on.
 /// </summary>
 public sealed class EtwListenerService : IDisposable
 {
-    // Must match the GUID in XamlProfilerTracing.h:
-    // {A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D}
+    // Must match the provider defined in XamlProfilerTracing.cpp ("Microsoft-Windows-XAML-Profiler"),
+    // whose GUID is the EventSource name hash of the provider name.
     private static readonly Guid XamlProfilerProviderGuid =
-        new("A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D");
+        new("26f28a5c-7d30-54c5-40f4-fff6d3beda7d");
+
+    // XamlProfilerKeywords (XamlProfilerTracing.h): XamlTree (0x01) | CompTree (0x02) | WucTree (0x04).
+    // The router only consumes the tree events, so the surface, texture, heap-snapshot and
+    // GPU-snapshot groups (and the work behind them) stay off in the target.
+    private const ulong TreeKeywords = 0x01 | 0x02 | 0x04;
 
     private const string SessionName = "XamlProfilerSession";
 
@@ -35,17 +43,29 @@ public sealed class EtwListenerService : IDisposable
     // volatile: written from the UI thread (SetTargetProcess) and read on the ETW pump
     // thread (OnEvent). 0 means "capture all processes".
     private volatile int _targetProcessId;
+    // File name (with extension, no path) of the process to launch; null when unknown.
+    private readonly string? _targetExecutableName;
     private readonly ConcurrentQueue<(string name, object?[] payload)> _pending = new();
     private System.Threading.Timer? _flushTimer;
     private int _flushScheduled;   // 0 = no flush in flight, 1 = one queued on dispatcher
     private bool _isRunning;
 
-    public EtwListenerService(ProfilerTreeStore store, DispatcherQueue dispatcherQueue, int targetProcessId = 0)
+    /// <param name="targetProcessId">An already-running target process (attach). Scopes the
+    /// session to that PID. 0 when the target isn't running yet.</param>
+    /// <param name="targetExecutableName">File name of a target that will be launched after
+    /// <see cref="Start"/> (for example "MyApp.exe"). Scopes the session to processes running
+    /// that executable. Takes precedence over <paramref name="targetProcessId"/>.</param>
+    public EtwListenerService(
+        ProfilerTreeStore store,
+        DispatcherQueue dispatcherQueue,
+        int targetProcessId = 0,
+        string? targetExecutableName = null)
     {
         _store = store;
         _router = new ProfilerEventRouter(store);
         _dispatcherQueue = dispatcherQueue;
         _targetProcessId = targetProcessId;
+        _targetExecutableName = string.IsNullOrWhiteSpace(targetExecutableName) ? null : targetExecutableName;
     }
 
     public event Action<string>? StatusChanged;
@@ -54,12 +74,42 @@ public sealed class EtwListenerService : IDisposable
     /// <summary>
     /// Narrows (or clears) the process filter after the session is already running.
     /// Pass the target PID once it is known; pass 0 to capture all processes.
-    /// Used to start capturing in all-process mode BEFORE the target is launched
-    /// (so boot events aren't missed), then focus on the target the moment its PID
-    /// is resolved. Only affects events processed after this call — events already
-    /// enqueued are kept.
+    /// Used to start capturing BEFORE the target is launched (so boot events aren't
+    /// missed), then focus on the target the moment its PID is resolved. Only affects
+    /// events processed after this call — events already enqueued are kept.
     /// </summary>
     public void SetTargetProcess(int processId) => _targetProcessId = processId;
+
+    /// <summary>
+    /// Re-enables the provider in the running session for one process, or for all processes
+    /// when <paramref name="processId"/> is 0, replacing the executable-name scope given at
+    /// construction, and narrows the consumer-side filter to match. Used when the process that
+    /// hosts XAML doesn't run the executable the session was scoped to, so ETW never enabled the
+    /// provider in it. That process's events from before this call were not captured.
+    /// Returns false if the provider couldn't be re-enabled.
+    /// </summary>
+    public bool RescopeToProcess(int processId)
+    {
+        _targetProcessId = processId;
+        if (_session == null || !_isRunning) return false;
+
+        var options = new TraceEventProviderOptions();
+        if (processId != 0)
+        {
+            options.ProcessIDFilter = new List<int> { processId };
+        }
+
+        try
+        {
+            _session.EnableProvider(XamlProfilerProviderGuid, TraceEventLevel.Verbose, TreeKeywords, options);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            StatusChanged?.Invoke($"ERROR: {ex.Message}");
+            return false;
+        }
+    }
 
     public void Start()
     {
@@ -75,10 +125,28 @@ public sealed class EtwListenerService : IDisposable
                 StopOnDispose = true
             };
 
-            _session.EnableProvider(XamlProfilerProviderGuid, TraceEventLevel.Verbose);
+            // Scope filter, applied by ETW in the target processes: only processes that match
+            // enable the provider. The consumer-side PID check in OnEvent still applies.
+            var options = new TraceEventProviderOptions();
+            string scopeInfo;
+            if (_targetExecutableName != null)
+            {
+                options.ProcessNameFilter = new List<string> { _targetExecutableName };
+                scopeInfo = $" ({_targetExecutableName})";
+            }
+            else if (_targetProcessId != 0)
+            {
+                options.ProcessIDFilter = new List<int> { _targetProcessId };
+                scopeInfo = $" (PID: {_targetProcessId})";
+            }
+            else
+            {
+                scopeInfo = " (all processes)";
+            }
 
-            var pidInfo = _targetProcessId != 0 ? $" (PID: {_targetProcessId})" : " (all processes)";
-            StatusChanged?.Invoke($"Session started{pidInfo} — waiting for events...");
+            _session.EnableProvider(XamlProfilerProviderGuid, TraceEventLevel.Verbose, TreeKeywords, options);
+
+            StatusChanged?.Invoke($"Session started{scopeInfo} — waiting for events...");
 
             _source = _session.Source;
             _source.Dynamic.All += OnEvent;

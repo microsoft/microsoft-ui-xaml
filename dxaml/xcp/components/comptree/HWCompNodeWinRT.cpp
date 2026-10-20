@@ -429,7 +429,7 @@ void HWCompTreeNodeWinRT::InsertWUCSpineVisual(_In_ WUComp::IVisual* parentVisua
 #ifdef XAMLPROFILER_ENABLED
     if (WucVisualTreeProfiler::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildInserted(parentVisual, childVisual, reinterpret_cast<uint64_t>(this), -1 /* index */);
+        WucVisualTreeProfiler::NotifyChildInserted(parentVisual, childVisual, this, -1 /* index */);
     }
 #endif // XAMLPROFILER_ENABLED
 }
@@ -610,7 +610,7 @@ void HWCompTreeNodeWinRT::ReparentVisualChildrenHelper(
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildInserted(newParent, visual.get(), reinterpret_cast<uint64_t>(this), -1 /* index */);
+            WucVisualTreeProfiler::NotifyChildInserted(newParent, visual.get(), this, -1 /* index */);
         }
 #endif // XAMLPROFILER_ENABLED
     }
@@ -2707,7 +2707,7 @@ void HWCompTreeNodeWinRT::EnsureDManipHitTestVisual(_In_ DCompTreeHost *dcompTre
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostNonContentVisual(), m_dmanipHitTestVisual.Get(), reinterpret_cast<uint64_t>(this), -1 /* index */);
+            WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostNonContentVisual(), m_dmanipHitTestVisual.Get(), this, -1 /* index */);
         }
 #endif // XAMLPROFILER_ENABLED
     }
@@ -3327,7 +3327,7 @@ void HWCompTreeNodeWinRT::UpdateHandInVisual()
 #ifdef XAMLPROFILER_ENABLED
             if (WucVisualTreeProfiler::IsEnabled())
             {
-                WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostNonContentVisual(), currentHandInVisual.get(), reinterpret_cast<uint64_t>(this), -1 /* index */);
+                WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostNonContentVisual(), currentHandInVisual.get(), this, -1 /* index */);
             }
 #endif // XAMLPROFILER_ENABLED
         }
@@ -3502,9 +3502,9 @@ void HWCompTreeNodeWinRT::InsertChildSynchronous(
     // nodes and become inconsistent with the real m_children structure.
     // Skip comp-node-tree edges touching a suppressed pick-overlay node.
 #ifdef XAMLPROFILER_ENABLED
-    if (XamlProfilerTracing::IsEnabled() &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(child)))
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::CompTree) &&
+        !IsProfilerSuppressed() &&
+        !child->IsProfilerSuppressed())
     {
         XamlProfilerTracing::CompNodeChildInserted(
             reinterpret_cast<uint64_t>(this),
@@ -3626,7 +3626,7 @@ void HWCompTreeNodeWinRT::InsertChildSynchronousInternal(
 #ifdef XAMLPROFILER_ENABLED
     if (WucVisualTreeProfiler::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostVisual(), wucChild.Get(), reinterpret_cast<uint64_t>(child), -1 /* index */);
+        WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostVisual(), wucChild.Get(), child, -1 /* index */);
     }
 #endif // XAMLPROFILER_ENABLED
 }
@@ -3649,7 +3649,7 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::InsertChildAtBeginningInternal(
 #ifdef XAMLPROFILER_ENABLED
     if (WucVisualTreeProfiler::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostVisual(), wucChild.get(), reinterpret_cast<uint64_t>(child), -1 /* index */);
+        WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostVisual(), wucChild.get(), child, -1 /* index */);
     }
 #endif // XAMLPROFILER_ENABLED
 
@@ -3781,9 +3781,9 @@ void HWCompTreeNodeWinRT::RemoveSynchronous()
         // this node left the tree and would keep it forever.
         // Skip comp-node-tree edges touching a suppressed pick-overlay node.
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled() &&
-            !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(parentCompNode)) &&
-            !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)))
+        if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::CompTree) &&
+            !parentCompNode->IsProfilerSuppressed() &&
+            !IsProfilerSuppressed())
         {
             XamlProfilerTracing::CompNodeChildRemoved(
                 reinterpret_cast<uint64_t>(parentCompNode),

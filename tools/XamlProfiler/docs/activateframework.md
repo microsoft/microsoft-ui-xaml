@@ -1,8 +1,8 @@
 # Activating / Deactivating the Framework-Side Profiler
 
-This document explains the single switch that turns all XamlProfiler
-*producer-side* code (the instrumentation compiled into `Microsoft.UI.Xaml.dll`)
-on or off, and its consequences.
+This document explains the single switch that compiles all XamlProfiler
+*producer-side* code (the instrumentation in `Microsoft.UI.Xaml.dll`) in or out,
+and what it costs when compiled in.
 
 > For *what* the instrumentation does, see `frameworksidechanges.md`.
 > For *how the consumer* (profiler app + tap) uses it, see `profilerworking.md`.
@@ -14,15 +14,17 @@ on or off, and its consequences.
 The profiler is gated by a single preprocessor macro, **`XAMLPROFILER_ENABLED`**,
 which is driven by **one MSBuild property, `XamlProfilerEnabled`**, declared in
 `dxaml\Xaml.Cpp.Props`. Every profiler `#include` and call site is wrapped in
-`#ifdef XAMLPROFILER_ENABLED`, so when the macro is undefined the compiler never
-sees any of it: **zero code, zero binary size, zero ETW events.**
+`#ifdef XAMLPROFILER_ENABLED`.
 
-- **Off (default):** `XamlProfilerEnabled` is `false`, so `XAMLPROFILER_ENABLED`
-  is never defined, the dedicated `.cpp` is not compiled, and no events are emitted.
-- **On:** flip the flag to `true` (one line) and rebuild.
-
-The property is **force-disabled outside `Configuration==Debug`**, so retail/fre
-builds never get the producer even if the flag is left on.
+- **On (default, every configuration):** the instrumentation is compiled into Debug
+  and Release builds. With no profiler session, each instrumented site costs one
+  inline provider check (load, compare, branch); no payload is built and no helper
+  is called. Events are written only to a session that enables the
+  `Microsoft-Windows-XAML-Profiler` provider at verbose level, and only for the
+  keyword groups that session enables (see `frameworksidechanges.md` §2).
+- **Off:** build with `/p:XamlProfilerEnabled=false`. `XAMLPROFILER_ENABLED` is
+  never defined, the dedicated `.cpp` files are not compiled, and the compiler never
+  sees any profiler code: **zero code, zero binary size, zero ETW events.**
 
 ---
 
@@ -31,16 +33,16 @@ builds never get the producer even if the flag is left on.
 **File:** `dxaml\Xaml.Cpp.Props`
 ```xml
 <PropertyGroup>
-  <XamlProfilerEnabled>false</XamlProfilerEnabled>
-  <XamlProfilerEnabled Condition="'$(Configuration)'!='Debug'">false</XamlProfilerEnabled>
+  <XamlProfilerEnabled>true</XamlProfilerEnabled>
 </PropertyGroup>
 ```
 
-- **To turn ON:** change the first line's value to `true`, then rebuild.
-- **To turn OFF:** change it back to `false` (the default).
+- **To turn OFF for one build:** pass `/p:XamlProfilerEnabled=false` to msbuild. A
+  command-line (global) property overrides the value in the file, so nothing is
+  edited.
+- **To turn OFF by default:** change the value to `false`.
 
-The second line is a guard: it re-forces `false` in any non-Debug configuration,
-so enabling the profiler can never leak into a retail/fre build.
+The same value applies to every configuration; there is no Debug-only guard.
 
 ---
 
@@ -64,15 +66,20 @@ Two define sites exist because `DBG=1` itself is defined in both `Xaml.Cpp.Targe
 and `LibraryCompile.props`; `XAMLPROFILER_ENABLED` mirrors that reach so every
 consumer project gets the macro.
 
-### Site 3 — the dedicated `.cpp` compilation
+### Site 3 — the dedicated `.cpp` files
+**File:** `dxaml\xcp\components\base\lib\Microsoft.UI.Xaml.Base.vcxproj`
+```xml
+<ClCompile Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\XamlProfilerTracing.cpp"/>
+```
 **File:** `dxaml\xcp\components\comptree\lib\Microsoft.UI.Xaml.CompTree.vcxproj`
 ```xml
 <ClCompile Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\WucVisualTreeProfiler.cpp"/>
 ```
-`WucVisualTreeProfiler.cpp` is the only dedicated profiler translation unit. It has
-a top-of-file `#error` safeguard that fires if it is ever compiled with
-`XAMLPROFILER_ENABLED` undefined — because all three sites share the same
-`XamlProfilerEnabled` property, they now stay in sync automatically.
+`XamlProfilerTracing.cpp` defines the provider and the out-of-line event emitters;
+`WucVisualTreeProfiler.cpp` holds the WUC visual-tree walker. Each has a top-of-file
+`#error` safeguard that fires if it is ever compiled with `XAMLPROFILER_ENABLED`
+undefined. Because all three sites read the same `XamlProfilerEnabled` property,
+they stay in sync automatically.
 
 ### Cosmetic (header project-membership, no build effect)
 Two `ClInclude` entries (in `Microsoft.UI.Xaml.CompTree.vcxproj` and
@@ -82,26 +89,48 @@ so these only affect Solution Explorer / project membership.
 
 ---
 
+## Cost in Release
+
+Measured on x64 `Microsoft.ui.xaml.dll`, Release (`amd64fre`), LTCG on, PGO off,
+with the switch off and on (`dumpbin /headers` virtual sizes, in bytes):
+
+| Section | Off | On | Delta |
+|---|---:|---:|---:|
+| `.text` | 10,183,372 | 10,201,852 | +18,480 |
+| `.rdata` | 3,124,994 | 3,129,890 | +4,896 |
+| `.data` | 61,808 | 61,872 | +64 |
+| `.pdata` | 348,264 | 348,840 | +576 |
+| `.reloc` | 503,116 | 503,144 | +28 |
+| File | 14,375,424 | 14,399,488 | +24,064 (+0.17%) |
+
+- **No session, a session below verbose level, or a session without a site's
+  keyword:** the site's inline `TraceLoggingProviderEnabled` check fails and nothing
+  else runs. Argument helpers and emitters are out of line (`__declspec(noinline)`).
+- **Profiler attached (keywords `0x07`):** the tree events are built and written.
+- **Release data:** `ElementEnteredTree.CoreSize` is 0 (unknown) and
+  `XamlHeapSnapshot` is never emitted; both need the Debug allocator.
+
+---
+
 ## Verifying the switch works
 
-1. Set `XamlProfilerEnabled` to `false` (default).
-2. Build: `.\initrun.ps1 build.cmd mux /q`
-   - A clean build with the profiler removed should succeed, and the output
-     `Microsoft.ui.xaml.dll` is measurably smaller than the profiler-on build
-     (~50 KB) — physical proof the code was excluded.
-   - If it fails with the `#error` from `WucVisualTreeProfiler.cpp`, the
-     `XamlProfilerEnabled` guard is out of sync (should not happen with the single
-     property).
-3. Attach the profiler / collect a trace → **no XamlProfiler events** should appear.
-4. Set `XamlProfilerEnabled` to `true`, rebuild → the DLL returns to full size and
-   events flow again.
+1. After `init.cmd amd64fre`, build with the switch off:
+   `msbuild dxaml\xcp\dxaml\dllsrv\winrt\native\Microsoft.ui.xaml.vcxproj /p:Configuration=Release /p:Platform=x64 /p:XamlProfilerEnabled=false`
+   - The build succeeds and `Microsoft.ui.xaml.dll` is about 24 KB (x64) smaller
+     than the default build — physical proof the code was excluded.
+   - If it fails with the `#error` from `XamlProfilerTracing.cpp` or
+     `WucVisualTreeProfiler.cpp`, a `ClCompile` condition is out of sync with the
+     property (should not happen with the single property).
+2. Attach the profiler / collect a trace → **no XamlProfiler events** appear.
+3. Build again without the override → the DLL returns to full size and events flow
+   to a verbose session again.
 
 ---
 
 ## Notes
 
-- The profiler is scoped to `Configuration==Debug` (chk) via the guard line in
-  `Xaml.Cpp.Props`. To ship the profiler in a specific fre flavor, adjust that guard
-  rather than the individual sites.
+- The switch has one value for every configuration. To exclude the profiler from a
+  particular build or flavor, pass `/p:XamlProfilerEnabled=false` for that build
+  rather than editing the individual sites.
 - All three build sites and the two cosmetic header entries reference the single
   `XamlProfilerEnabled` property, so there is exactly one place to change.

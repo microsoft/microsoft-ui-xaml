@@ -53,6 +53,21 @@
 using namespace DirectUI;
 using namespace Focus;
 
+#ifdef XAMLPROFILER_ENABLED
+// Out of line so the label and peer work stays out of CPopup::Open.
+static __declspec(noinline) void TraceProfilerPopupOpened(
+    _In_ const CPopup* popup,
+    _In_opt_ const CUIElement* child)
+{
+    XamlProfilerTracing::PopupOpened(
+        reinterpret_cast<uint64_t>(popup),
+        reinterpret_cast<uint64_t>(child),
+        popup->GetDebugLabel().GetBuffer(),
+        child ? child->GetDebugLabel().GetBuffer() : L"",
+        XamlProfilerGetPeerHandle(child));
+}
+#endif // XAMLPROFILER_ENABLED
+
 // Windowed popup's window class
 ATOM CPopup::s_windowedPopupWindowClass = 0;
 
@@ -537,14 +552,9 @@ _Check_return_ HRESULT CPopup::Open()
         IFC_RETURN(hr);
 
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::XamlTree))
         {
-            XamlProfilerTracing::PopupOpened(
-                reinterpret_cast<uint64_t>(this),
-                reinterpret_cast<uint64_t>(m_pChild),
-                GetDebugLabel().GetBuffer(),
-                m_pChild ? m_pChild->GetDebugLabel().GetBuffer() : L"",
-                XamlProfilerGetPeerHandle(m_pChild));
+            TraceProfilerPopupOpened(this, m_pChild);
         }
 #endif // XAMLPROFILER_ENABLED
 
@@ -772,7 +782,7 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
         IFC_RETURN(pPopupRoot->RemoveChild(m_pChild));
 
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::XamlTree))
         {
             XamlProfilerTracing::PopupClosed(
                 reinterpret_cast<uint64_t>(this),
@@ -2267,7 +2277,7 @@ _Check_return_ HRESULT CPopup::SetRootVisualForWindowedPopupWindow(_In_ ixp::IVi
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), m_publicRootVisual.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
+            WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), m_publicRootVisual.Get(), nullptr /* ownerCompNode */, -1 /* index */);
         }
 #endif // XAMLPROFILER_ENABLED
 
@@ -2304,7 +2314,7 @@ void CPopup::AddAdditionalVisualForWindowedPopupWindow(_In_ ixp::IVisual* popupV
 #ifdef XAMLPROFILER_ENABLED
     if (WucVisualTreeProfiler::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), popupVisual, 0 /* ownerCompNodeId */, -1 /* index */);
+        WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), popupVisual, nullptr /* ownerCompNode */, -1 /* index */);
     }
 #endif // XAMLPROFILER_ENABLED
 }
@@ -2396,7 +2406,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
 #ifdef XAMLPROFILER_ENABLED
             if (WucVisualTreeProfiler::IsEnabled())
             {
-                WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), m_systemBackdropPlacementVisual.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
+                WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), m_systemBackdropPlacementVisual.Get(), nullptr /* ownerCompNode */, -1 /* index */);
             }
 #endif // XAMLPROFILER_ENABLED
         }
@@ -2407,7 +2417,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildInserted(m_contentIslandRootVisual.Get(), animationV.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
+            WucVisualTreeProfiler::NotifyChildInserted(m_contentIslandRootVisual.Get(), animationV.Get(), nullptr /* ownerCompNode */, -1 /* index */);
         }
 #endif // XAMLPROFILER_ENABLED
 
@@ -2441,7 +2451,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyRootSet(m_contentIslandRootVisual.Get(), reinterpret_cast<uint64_t>(m_contentIsland.Get()), 0 /* ownerCompNodeId */);
+            WucVisualTreeProfiler::NotifyRootSet(m_contentIslandRootVisual.Get(), reinterpret_cast<uint64_t>(m_contentIsland.Get()), nullptr /* ownerCompNode */);
         }
 #endif // XAMLPROFILER_ENABLED
     }
