@@ -1275,6 +1275,14 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
             // A new or recycled container (e.g. after a PaneDisplayMode switch re-sources the repeaters) doesn't know
             // whether its item is an ancestor of the selected item, so recompute IsChildSelected from the selection model.
             UpdateIsChildSelectedForPreparedContainer(nvi);
+            if (nvi.IsChildSelected() && !nvi.IsExpanded())
+            {
+                // This container shows the selection indicator for a selected descendant, but it may be new or recycled
+                // (e.g. a data-bound parent after the repeaters were re-sourced), so restore the indicator after this layout pass.
+                m_OrientationChangedPendingAnimation = true;
+                m_layoutUpdatedToken.revoke();
+                m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
+            }
 
             auto item = MenuItemFromContainer(nvi);
 
