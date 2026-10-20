@@ -1029,37 +1029,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
 
             // IsEnabledChanged is raised asynchronously; the gripper's own handler was attached first.
-            var enabledChanged = new global::System.Threading.AutoResetEvent(false);
-            RunOnUIThread.Execute(() =>
+            using (var enabledChanged = new global::System.Threading.AutoResetEvent(false))
             {
-                Verify.AreEqual(InputSystemCursorShape.SizeWestEast, GetGripperCursor(standalone)?.CursorShape,
-                    "A standalone gripper defaults to a horizontal drag.");
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(InputSystemCursorShape.SizeWestEast, GetGripperCursor(standalone)?.CursorShape,
+                        "A standalone gripper defaults to a horizontal drag.");
 
-                standalone.DragOrientation = Orientation.Vertical;
-                Verify.AreEqual(InputSystemCursorShape.SizeNorthSouth, GetGripperCursor(standalone)?.CursorShape,
-                    "A vertical drag must switch to the north-south size cursor.");
+                    standalone.DragOrientation = Orientation.Vertical;
+                    Verify.AreEqual(InputSystemCursorShape.SizeNorthSouth, GetGripperCursor(standalone)?.CursorShape,
+                        "A vertical drag must switch to the north-south size cursor.");
 
-                standalone.IsEnabledChanged += (s, e) => enabledChanged.Set();
-                standalone.IsEnabled = false;
-            });
+                    standalone.IsEnabledChanged += (s, e) => SetIfNotDisposed(enabledChanged);
+                    standalone.IsEnabled = false;
+                });
 
-            Verify.IsTrue(enabledChanged.WaitOne(TimeSpan.FromSeconds(5)), "IsEnabledChanged must be raised.");
-            IdleSynchronizer.Wait();
+                Verify.IsTrue(enabledChanged.WaitOne(TimeSpan.FromSeconds(5)), "IsEnabledChanged must be raised.");
+                IdleSynchronizer.Wait();
 
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsNull(GetGripperCursor(standalone), "A disabled gripper must not advertise resizing.");
-                standalone.IsEnabled = true;
-            });
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsNull(GetGripperCursor(standalone), "A disabled gripper must not advertise resizing.");
+                    standalone.IsEnabled = true;
+                });
 
-            Verify.IsTrue(enabledChanged.WaitOne(TimeSpan.FromSeconds(5)), "IsEnabledChanged must be raised.");
-            IdleSynchronizer.Wait();
+                Verify.IsTrue(enabledChanged.WaitOne(TimeSpan.FromSeconds(5)), "IsEnabledChanged must be raised.");
+                IdleSynchronizer.Wait();
 
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual(InputSystemCursorShape.SizeNorthSouth, GetGripperCursor(standalone)?.CursorShape,
-                    "Re-enabling must restore the size cursor for the current axis.");
-            });
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(InputSystemCursorShape.SizeNorthSouth, GetGripperCursor(standalone)?.CursorShape,
+                        "Re-enabling must restore the size cursor for the current axis.");
+                });
+            }
         }
 
         [TestMethod]
@@ -1299,53 +1301,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView tableView = null;
             ResizeGripper gripper = null;
-            var enabledChanged = new global::System.Threading.AutoResetEvent(false);
-            var completions = new List<bool>();
-
-            RunOnUIThread.Execute(() =>
+            using (var enabledChanged = new global::System.Threading.AutoResetEvent(false))
             {
-                tableView = CreateResizableTable(
-                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
-                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
-                LoadContent(tableView);
-            });
+                var completions = new List<bool>();
 
-            IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateResizableTable(
+                        ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                        ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                    LoadContent(tableView);
+                });
 
-            RunOnUIThread.Execute(() =>
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    gripper = RequireGripper(tableView, 0);
+                    gripper.DragCompleted += (s, e) => completions.Add(e.Canceled);
+                    gripper.IsEnabledChanged += (s, e) => SetIfNotDisposed(enabledChanged);
+
+                    gripper.BeginDrag();
+                    gripper.TryDrag(40.0);
+                    Verify.AreEqual(190.0, tableView.Columns[0].Width.Value, "Precondition: the drag wrote a width.");
+
+                    gripper.IsEnabled = false;
+                });
+
+                Verify.IsTrue(enabledChanged.WaitOne(TimeSpan.FromSeconds(5)), "IsEnabledChanged must be raised.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(gripper.IsDragging, "Disabling the gripper must end its drag.");
+                    Verify.AreEqual(1, completions.Count, "The drag must complete exactly once.");
+                    Verify.IsTrue(completions.Count == 1 && completions[0], "A drag ended by disabling is canceled, not committed.");
+                    Verify.AreEqual(150.0, tableView.Columns[0].Width.Value, "The canceled drag must revert the width.");
+
+                    var second = RequireGripper(tableView, 1);
+                    second.BeginDrag();
+                    Verify.IsTrue(second.IsDragging, "Another column must accept a resize once the disabled drag has ended.");
+                    second.TryDrag(30.0);
+                    second.EndDrag(false);
+                    Verify.IsGreaterThan(tableView.Columns[1].Width.Value, 150.0, "The subsequent resize must apply.");
+
+                    gripper.IsEnabled = true;
+                    gripper.EndDrag(true /* canceled */);
+                    Verify.AreEqual(1, completions.Count, "EndDrag after the drag ended must not raise DragCompleted again.");
+                });
+            }
+        }
+
+        // IsEnabledChanged is raised asynchronously, so it can arrive after the test disposed its event.
+        private static void SetIfNotDisposed(global::System.Threading.EventWaitHandle handle)
+        {
+            try
             {
-                gripper = RequireGripper(tableView, 0);
-                gripper.DragCompleted += (s, e) => completions.Add(e.Canceled);
-                gripper.IsEnabledChanged += (s, e) => enabledChanged.Set();
-
-                gripper.BeginDrag();
-                gripper.TryDrag(40.0);
-                Verify.AreEqual(190.0, tableView.Columns[0].Width.Value, "Precondition: the drag wrote a width.");
-
-                gripper.IsEnabled = false;
-            });
-
-            Verify.IsTrue(enabledChanged.WaitOne(TimeSpan.FromSeconds(5)), "IsEnabledChanged must be raised.");
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
+                handle.Set();
+            }
+            catch (ObjectDisposedException)
             {
-                Verify.IsFalse(gripper.IsDragging, "Disabling the gripper must end its drag.");
-                Verify.AreEqual(1, completions.Count, "The drag must complete exactly once.");
-                Verify.IsTrue(completions.Count == 1 && completions[0], "A drag ended by disabling is canceled, not committed.");
-                Verify.AreEqual(150.0, tableView.Columns[0].Width.Value, "The canceled drag must revert the width.");
-
-                var second = RequireGripper(tableView, 1);
-                second.BeginDrag();
-                Verify.IsTrue(second.IsDragging, "Another column must accept a resize once the disabled drag has ended.");
-                second.TryDrag(30.0);
-                second.EndDrag(false);
-                Verify.IsGreaterThan(tableView.Columns[1].Width.Value, 150.0, "The subsequent resize must apply.");
-
-                gripper.IsEnabled = true;
-                gripper.EndDrag(true /* canceled */);
-                Verify.AreEqual(1, completions.Count, "EndDrag after the drag ended must not raise DragCompleted again.");
-            });
+            }
         }
 
         [TestMethod]
