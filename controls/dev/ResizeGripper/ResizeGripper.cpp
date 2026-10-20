@@ -43,6 +43,12 @@ ResizeGripper::ResizeGripper()
 // arrive to complete the drag and IsDragging would stay true for the rest of this instance's life.
 void ResizeGripper::OnUnloaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
+    // A re-parent raises Loaded before the stale Unloaded.
+    if (IsLoaded())
+    {
+        return;
+    }
+
     m_isPointerOver = false;
     EndDrag(true /* canceled */);
     // A press that never became a manipulation has no drag to end but still holds the capture.
