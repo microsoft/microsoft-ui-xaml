@@ -4,6 +4,7 @@ param(
     [Parameter(Mandatory, ParameterSetName='Launch')][string]$TargetExecutable
 )
 $ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName UIAutomationTypes
 Add-Type -AssemblyName UIAutomationClient
 $scope = [System.Windows.Automation.TreeScope]::Descendants
 $nameProperty = [System.Windows.Automation.AutomationElement]::NameProperty

@@ -135,7 +135,7 @@
         <ClCompile Include="..\DebugOutput.cpp"/>
         <ClCompile Include="..\PLMIntegration.cpp"/>
         <ClCompile Include="..\DXamlServices.cpp"/>
-        <ClCompile Include="..\OnlineXamlSnapshot.cpp"/>
+        <ClCompile Include="..\OnlineXamlTreeAccess.cpp"/>
         <ClCompile Include="..\TouchHitTestingHandler.cpp"/>
         <ClCompile Include="..\ContentManager.cpp"/>
         <ClCompile Include="..\CoreWindowWrapper.cpp"/>

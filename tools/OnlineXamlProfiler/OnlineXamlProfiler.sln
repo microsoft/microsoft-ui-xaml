@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineXamlProfiler.App", "O
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineXamlProfiler.Tests", "OnlineXamlProfiler.Tests\OnlineXamlProfiler.Tests.csproj", "{2C5417E4-2BCC-48E5-8E37-4C1A094E0604}"
 EndProject
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "OnlineXamlProfiler.NativeTests", "OnlineXamlProfiler.Tests\OnlineXamlProfiler.NativeTests.vcxproj", "{E1D83D9F-B823-4F19-8B3A-9B172BF1EB29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -28,6 +30,18 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E1D83D9F-B823-4F19-8B3A-9B172BF1EB29}.Debug|x64.ActiveCfg = Debug|x64
+		{E1D83D9F-B823-4F19-8B3A-9B172BF1EB29}.Debug|x64.Build.0 = Debug|x64
+		{E1D83D9F-B823-4F19-8B3A-9B172BF1EB29}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{E1D83D9F-B823-4F19-8B3A-9B172BF1EB29}.Debug|ARM64.Build.0 = Debug|ARM64
+		{E1D83D9F-B823-4F19-8B3A-9B172BF1EB29}.Debug|x86.ActiveCfg = Debug|Win32
+		{E1D83D9F-B823-4F19-8B3A-9B172BF1EB29}.Debug|x86.Build.0 = Debug|Win32
+		{E1D83D9F-B823-4F19-8B3A-9B172BF1EB29}.Release|x64.ActiveCfg = Release|x64
+		{E1D83D9F-B823-4F19-8B3A-9B172BF1EB29}.Release|x64.Build.0 = Release|x64
+		{E1D83D9F-B823-4F19-8B3A-9B172BF1EB29}.Release|ARM64.ActiveCfg = Release|ARM64
+		{E1D83D9F-B823-4F19-8B3A-9B172BF1EB29}.Release|ARM64.Build.0 = Release|ARM64
+		{E1D83D9F-B823-4F19-8B3A-9B172BF1EB29}.Release|x86.ActiveCfg = Release|Win32
+		{E1D83D9F-B823-4F19-8B3A-9B172BF1EB29}.Release|x86.Build.0 = Release|Win32
 		{5C019F75-47BD-4AD1-A54D-A3E89C6A3C78}.Debug|x64.ActiveCfg = Debug|x64
 		{5C019F75-47BD-4AD1-A54D-A3E89C6A3C78}.Debug|x64.Build.0 = Debug|x64
 		{5C019F75-47BD-4AD1-A54D-A3E89C6A3C78}.Debug|ARM64.ActiveCfg = Debug|ARM64

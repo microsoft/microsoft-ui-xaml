@@ -50,6 +50,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Tap.cpp" />
+    <ClCompile Include="SnapshotWalker.cpp" />
+    <ClInclude Include="SnapshotWalker.h" />
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="TapIdentity.h" />
     <None Include="OnlineXamlProfilerTap.def" />

@@ -13,7 +13,9 @@ Install Visual Studio's .NET desktop and C++ desktop workloads, the Windows
 ```
 
 The script restores public SDK package dependencies, builds the native injector and TAP first,
-builds the unpackaged WinUI app, and optionally runs focused protocol/tree tests.
+builds the unpackaged WinUI app, and optionally runs native TAP-walker tests and
+focused protocol/tree tests. Running tests requires a host that can execute the
+selected architecture.
 Use `ARM64` or `x86` for those targets. Profiler, TAP, and target must have the same
 architecture. Keep `OnlineXamlProfiler.Injector.exe` next to the TAP DLL. The output is under `artifacts\bin\OnlineXamlProfiler.App`; run
 `OnlineXamlProfiler.App.exe` in its output directory, with its dependencies.
@@ -28,7 +30,7 @@ dotnet test .\OnlineXamlProfiler.Tests\OnlineXamlProfiler.Tests.csproj --filter 
 
 The application being inspected **must load a runtime built from this change**.
 The tool intentionally fails with an actionable diagnostic when the runtime lacks
-the new `OnlineXamlProfilerCaptureSnapshot` export. It does not silently substitute
+the new `OnlineXamlProfilerWithTreeAccess` export. It does not silently substitute
 ETW reconstruction or another tree source.
 
 Build the repository's `Microsoft.UI.Xaml.dll` normally (initialize the repository
@@ -77,12 +79,35 @@ profiler disconnects; it never terminates the target.
 
 ## Snapshot contract and limits
 
-`OnlineXamlSnapshot.h` is a versioned private diagnostic ABI, not a supported SDK
-API. The runtime walks existing objects on each owning UI dispatcher without
-creating XAML roots or forcing layout/rendering. The fresh TAP copies callback
-values, serializes them on its worker, and returns bounded, correlated frames on
+`OnlineXamlTreeAccess.h` is a versioned private diagnostic ABI, not a supported SDK
+API. All three graph walks, node limits, properties, and snapshot assembly live
+in the TAP. MUX only supplies existing roots and read-only, one-node-at-a-time
+native access: immediate children, private HWCompNode parents, scalar XAML data,
+ownership links, and existing backing visuals. It neither walks the graph nor
+creates roots/visuals or forces layout/rendering. The TAP serializes the copied
+snapshot on its worker and returns bounded, correlated frames on
 a randomly named, current-user-only pipe. The profiler verifies the pipe client's
 PID, process creation time, runtime path, ABI, request ID, schema, and tree topology.
+
+```text
+Profiler UI -- named pipe --> TAP worker in target
+                                 |
+                                 v target UI DispatcherQueue
+                             TAP SnapshotWalker
+                                 |
+                                 v synchronous callback scope
+                             MUX thin TreeAccess adapter
+```
+
+`OnlineXamlProfilerWithTreeAccess` invokes the TAP's callback synchronously on
+the current UI thread. Its `TreeAccess` table supplies a `ReadNode` operation
+for XAML and HWCompNode metadata plus immediate-child enumeration; the TAP walks
+Composition IVisual objects itself. Native IDs, the adapter, and live COM references
+must not escape this scope. Borrowed strings are copied during each node callback,
+and visual references are released before returning from the access callback.
+Callbacks must not pump messages, mutate objects, or throw across the ABI. Only
+copied records remain for the worker. The previous full-walker runtime export is
+not used or retained; redeploy both the updated TAP and adapter-enabled MUX.
 
 - Each UI-thread capture is synchronous, but the collection of threads is **not a
   globally atomic snapshot or compositor-presented frame**. Capture QPC intervals

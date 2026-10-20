@@ -5,6 +5,7 @@
 #include <unknwn.h>
 #include <ocidl.h>
 #include <xamlom.h>
+#include <wil/cppwinrt.h>
 #include <wil/com.h>
 #include <wil/resource.h>
 #include <winrt/Windows.Foundation.Collections.h>
@@ -16,7 +17,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
-#include "OnlineXamlSnapshot.h"
+#include "SnapshotWalker.h"
 #include "Protocol.h"
 #include "TapIdentity.h"
 
@@ -63,82 +64,13 @@ namespace
         OutputDebugStringW(text);
     }
 
-    struct PropertyRecord
-    {
-        std::wstring Name;
-        std::wstring Value;
-        HRESULT Status{};
-    };
-
-    struct NodeRecord
-    {
-        OnlineXaml::Node Values;
-        std::wstring Type;
-        std::wstring Name;
-        std::vector<PropertyRecord> Properties;
-    };
-
     struct CaptureResult
     {
-        OnlineXaml::CaptureInfo Info;
-        std::vector<NodeRecord> Nodes;
-        std::map<std::pair<OnlineXaml::TreeKind, UINT64>, size_t> NodeIndex;
+        OnlineXamlProfiler::ThreadCapture Snapshot;
         wil::unique_event Done{wil::EventOptions::ManualReset};
         std::atomic<bool> Cancelled{};
         HRESULT Status = E_PENDING;
     };
-
-    HRESULT WINAPI AddNode(void* context, const OnlineXaml::Node* node) noexcept
-    try
-    {
-        auto& result = *static_cast<CaptureResult*>(context);
-        if (result.Cancelled)
-        {
-            return HRESULT_FROM_WIN32(ERROR_CANCELLED);
-        }
-        if (!node || node->Size != sizeof(*node) || !node->Id || !node->Type)
-        {
-            return E_INVALIDARG;
-        }
-        NodeRecord record;
-        record.Values = *node;
-        record.Values.Type = nullptr;
-        record.Values.Name = nullptr;
-        record.Type = node->Type;
-        record.Name = node->Name ? node->Name : L"";
-        if (!result.NodeIndex.emplace(std::make_pair(node->Tree, node->Id), result.Nodes.size()).second)
-        {
-            return E_INVALIDARG;
-        }
-        result.Nodes.push_back(std::move(record));
-        return S_OK;
-    }
-    catch (...)
-    {
-        return winrt::to_hresult();
-    }
-
-    HRESULT WINAPI AddProperty(
-        void* context, OnlineXaml::TreeKind tree, UINT64 id, PCWSTR name, PCWSTR value, HRESULT status) noexcept
-    try
-    {
-        auto& result = *static_cast<CaptureResult*>(context);
-        if (result.Cancelled)
-        {
-            return HRESULT_FROM_WIN32(ERROR_CANCELLED);
-        }
-        const auto node = result.NodeIndex.find({tree, id});
-        if (node == result.NodeIndex.end() || !name || (SUCCEEDED(status) && !value))
-        {
-            return E_INVALIDARG;
-        }
-        result.Nodes[node->second].Properties.push_back({name, value ? value : L"", status});
-        return S_OK;
-    }
-    catch (...)
-    {
-        return winrt::to_hresult();
-    }
 
     JsonObject SerializeThread(DWORD threadId, HRESULT status, const CaptureResult* result)
     {
@@ -146,25 +78,24 @@ namespace
         thread.Insert(L"ThreadId", JsonValue::CreateNumberValue(threadId));
         thread.Insert(L"Status", JsonValue::CreateNumberValue(status));
         String(thread, L"Error", FAILED(status) ? winrt::hresult_error(status).message() : winrt::hstring{});
-        String(thread, L"StartQpc", result ? std::to_wstring(result->Info.StartQpc) : L"0");
-        String(thread, L"EndQpc", result ? std::to_wstring(result->Info.EndQpc) : L"0");
-        String(thread, L"QpcFrequency", result ? std::to_wstring(result->Info.QpcFrequency) : L"0");
+        String(thread, L"StartQpc", result ? std::to_wstring(result->Snapshot.StartQpc) : L"0");
+        String(thread, L"EndQpc", result ? std::to_wstring(result->Snapshot.EndQpc) : L"0");
+        String(thread, L"QpcFrequency", result ? std::to_wstring(result->Snapshot.QpcFrequency) : L"0");
         JsonArray nodes;
         if (SUCCEEDED(status) && result)
         {
-            for (const auto& record : result->Nodes)
+            for (const auto& record : result->Snapshot.Nodes)
             {
-                const auto& values = record.Values;
                 JsonObject node;
-                node.Insert(L"Tree", JsonValue::CreateNumberValue(static_cast<UINT32>(values.Tree)));
-                String(node, L"Id", Hex(values.Id));
-                String(node, L"ParentId", Hex(values.ParentId));
-                node.Insert(L"ChildIndex", JsonValue::CreateNumberValue(values.ChildIndex));
+                node.Insert(L"Tree", JsonValue::CreateNumberValue(static_cast<UINT32>(record.Tree)));
+                String(node, L"Id", Hex(record.Id));
+                String(node, L"ParentId", Hex(record.ParentId));
+                node.Insert(L"ChildIndex", JsonValue::CreateNumberValue(record.ChildIndex));
                 String(node, L"Type", record.Type);
                 String(node, L"Name", record.Name);
-                String(node, L"XamlId", Hex(values.XamlId));
-                String(node, L"CompId", Hex(values.CompId));
-                String(node, L"VisualId", Hex(values.VisualId));
+                String(node, L"XamlId", Hex(record.XamlId));
+                String(node, L"CompId", Hex(record.CompId));
+                String(node, L"VisualId", Hex(record.VisualId));
                 JsonArray properties;
                 for (const auto& captured : record.Properties)
                 {
@@ -270,7 +201,7 @@ namespace
 
         JsonObject Capture(UINT64 requestId, UINT32 maximumNodes)
         {
-            THROW_HR_IF(E_INVALIDARG, maximumNodes == 0 || maximumNodes > OnlineXaml::MaximumNodeCount);
+            THROW_HR_IF(E_INVALIDARG, maximumNodes == 0 || maximumNodes > OnlineXamlProfiler::MaximumNodeCount);
             std::map<DWORD, DispatcherQueue> queues;
             {
                 std::scoped_lock guard(m_queueLock);
@@ -290,11 +221,8 @@ namespace
                         result->Status = HRESULT_FROM_WIN32(ERROR_CANCELLED);
                         return;
                     }
-                    OnlineXaml::Sink sink;
-                    sink.Context = result.get();
-                    sink.AddNode = AddNode;
-                    sink.AddProperty = AddProperty;
-                    result->Status = self->m_capture(OnlineXaml::SnapshotAbiVersion, remaining, &sink, &result->Info);
+                    result->Status = OnlineXamlProfiler::CaptureSnapshot(
+                        self->m_withTreeAccess, remaining, result->Cancelled, result->Snapshot);
                 };
                 if (!remaining)
                 {
@@ -318,8 +246,8 @@ namespace
                 }
                 if (SUCCEEDED(result->Status))
                 {
-                    THROW_HR_IF(E_UNEXPECTED, result->Nodes.size() > remaining);
-                    remaining -= static_cast<UINT32>(result->Nodes.size());
+                    THROW_HR_IF(E_UNEXPECTED, result->Snapshot.Nodes.size() > remaining);
+                    remaining -= static_cast<UINT32>(result->Snapshot.Nodes.size());
                 }
                 threads.Append(SerializeThread(threadId, result->Status, result.get()));
             }
@@ -345,12 +273,12 @@ namespace
                     OPEN_EXISTING, FILE_FLAG_OVERLAPPED | SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION, nullptr));
                 THROW_LAST_ERROR_IF(!m_pipe);
                 auto module = GetModuleHandleW(L"Microsoft.UI.Xaml.dll");
-                m_capture = reinterpret_cast<OnlineXaml::CaptureSnapshot>(
-                    module ? GetProcAddress(module, "OnlineXamlProfilerCaptureSnapshot") : nullptr);
-                if (!m_capture)
+                m_withTreeAccess = reinterpret_cast<OnlineXaml::WithTreeAccess>(
+                    module ? GetProcAddress(module, "OnlineXamlProfilerWithTreeAccess") : nullptr);
+                if (!m_withTreeAccess)
                 {
                     SendError(0, HRESULT_FROM_WIN32(ERROR_PROC_NOT_FOUND),
-                        L"The target must load a WinUI runtime built with OnlineXamlProfilerCaptureSnapshot. Deploy the modified runtime and restart the target.");
+                        L"The target must load a WinUI runtime built with the OnlineXamlProfilerWithTreeAccess adapter. Deploy the adapter-enabled runtime and restart the target.");
                 }
                 else
                 {
@@ -366,7 +294,7 @@ namespace
                     THROW_IF_FAILED(m_service->AdviseVisualTreeChange(this));
                     JsonObject hello;
                     hello.Insert(L"ProcessId", JsonValue::CreateNumberValue(GetCurrentProcessId()));
-                    hello.Insert(L"SnapshotAbiVersion", JsonValue::CreateNumberValue(OnlineXaml::SnapshotAbiVersion));
+                    hello.Insert(L"TreeAccessAbiVersion", JsonValue::CreateNumberValue(OnlineXaml::TreeAccessAbiVersion));
                     String(hello, L"ProcessStartTime", m_processStart);
                     String(hello, L"RuntimePath", runtimePath);
                     Send(Protocol::Kind::Hello, 0, hello);
@@ -433,7 +361,7 @@ namespace
         wil::unique_handle m_pipe;
         std::mutex m_queueLock;
         std::map<DWORD, DispatcherQueue> m_queues;
-        OnlineXaml::CaptureSnapshot m_capture{};
+        OnlineXaml::WithTreeAccess m_withTreeAccess{};
         std::wstring m_processStart;
     };
 

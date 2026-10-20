@@ -79,11 +79,11 @@ public sealed class ProfilerSession : IDisposable
             }
             var hello = JsonSerializer.Deserialize<SessionHello>(frame.Payload)
                 ?? throw new InvalidDataException("The TAP handshake is null.");
-            if (hello.ProcessId != processId || hello.SnapshotAbiVersion != 1 ||
+            if (hello.ProcessId != processId || hello.TreeAccessAbiVersion != 1 ||
                 hello.ProcessStartTime != processStart || string.IsNullOrWhiteSpace(hello.RuntimePath) ||
                 !string.Equals(hello.RuntimePath, runtime.XamlPath, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidDataException("The TAP runtime, process instance, or snapshot ABI does not match.");
+                throw new InvalidDataException("The TAP runtime, process instance, or native tree-access ABI does not match.");
             }
             return new(pipe, target, processStart, runtime.XamlPath);
         }
@@ -257,7 +257,7 @@ public sealed class ProfilerSession : IDisposable
         }
     }
 
-    private sealed record SessionHello(uint ProcessId, uint SnapshotAbiVersion, string ProcessStartTime, string RuntimePath);
+    private sealed record SessionHello(uint ProcessId, uint TreeAccessAbiVersion, string ProcessStartTime, string RuntimePath);
     private sealed record SessionError(int Status, string Message);
 
     [DllImport("kernel32.dll", SetLastError = true)]

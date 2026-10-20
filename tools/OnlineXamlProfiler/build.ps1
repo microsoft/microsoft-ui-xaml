@@ -16,6 +16,10 @@ try {
     & $msbuild 'OnlineXamlProfiler.App\OnlineXamlProfiler.App.csproj' /restore /m:2 /nologo /v:minimal "/p:Platform=$Platform" "/p:Configuration=$Configuration"
     if ($LASTEXITCODE -ne 0) { throw "App build failed ($LASTEXITCODE)." }
     if ($Test) {
+        & $msbuild 'OnlineXamlProfiler.Tests\OnlineXamlProfiler.NativeTests.vcxproj' /restore /m:2 /nologo /v:minimal "/p:Platform=$nativePlatform" "/p:Configuration=$Configuration"
+        if ($LASTEXITCODE -ne 0) { throw "Native walker tests build failed ($LASTEXITCODE)." }
+        & ".\artifacts\bin\OnlineXamlProfiler.NativeTests\$nativePlatform\$Configuration\OnlineXamlProfiler.NativeTests.exe"
+        if ($LASTEXITCODE -ne 0) { throw "Native walker tests failed ($LASTEXITCODE)." }
         & dotnet test 'OnlineXamlProfiler.Tests\OnlineXamlProfiler.Tests.csproj' --configuration $Configuration --filter 'TestCategory!=Live' --nologo
         if ($LASTEXITCODE -ne 0) { throw "Tests failed ($LASTEXITCODE)." }
     }
