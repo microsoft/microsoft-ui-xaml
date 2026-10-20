@@ -1412,7 +1412,7 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
     if (m_OrientationChangedPendingAnimation)
     {
         m_OrientationChangedPendingAnimation = false;
-        AnimateSelectionChangedToSelectedItem();
+        AnimateSelectionChanged(SelectedItem());
     }
 }
 
@@ -2036,18 +2036,22 @@ void NavigationView::AnimateSelectionChangedToItem(const winrt::IInspectable& se
     }
 }
 
-void NavigationView::AnimateSelectionChangedToSelectedItem()
+winrt::IInspectable NavigationView::GetItemToDisplaySelectionIndicator(const winrt::IInspectable& item)
 {
-    // A selected child inside a collapsed parent shows its indicator on the parent.
-    auto const container = FindLowestLevelContainerToDisplaySelectionIndicator();
-    if (container && !container.IsSelected() && container.IsChildSelected())
+    // A selected item inside a collapsed parent shows its selection indicator on that parent.
+    if (item)
     {
-        AnimateSelectionChanged(container);
+        auto const nvi = item.try_as<winrt::NavigationViewItem>();
+        if (item == SelectedItem() || (nvi && nvi.IsSelected()))
+        {
+            auto const container = FindLowestLevelContainerToDisplaySelectionIndicator();
+            if (container && !container.IsSelected() && container.IsChildSelected())
+            {
+                return container;
+            }
+        }
     }
-    else
-    {
-        AnimateSelectionChanged(SelectedItem());
-    }
+    return item;
 }
 
 // Please clear the field m_lastSelectedItemPendingAnimationInTopNav when calling this method to prevent garbage value and incorrect animation
@@ -2062,7 +2066,7 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
     }
 
     winrt::UIElement prevIndicator = m_activeIndicator.get();
-    winrt::UIElement nextIndicator = FindSelectionIndicator(nextItem);
+    winrt::UIElement nextIndicator = FindSelectionIndicator(GetItemToDisplaySelectionIndicator(nextItem));
 
     bool haveValidAnimation = false;
     // It's possible that AnimateSelectionChanged is called multiple times before the first animation is complete.
@@ -4395,7 +4399,7 @@ void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::
             // while the ItemsRepeater was still unloaded. Thus m_selectionModel still does not know about that selection.
             UpdateSelectionModelSelectionForSelectedItem(item);
         }
-        AnimateSelectionChangedToSelectedItem();
+        AnimateSelectionChanged(item);
     }
 }
 

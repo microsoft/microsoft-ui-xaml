@@ -2378,6 +2378,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() => navView.PaneDisplayMode = mode);
                 LogDataBoundContainers(navView, topLevelItems, $"{mode}, right after the switch");
+                IdleSynchronizer.Wait();
+                LogDataBoundContainers(navView, topLevelItems, $"{mode}, after idle");
                 WaitForSelectionIndicatorAnimation();
                 LogDataBoundContainers(navView, topLevelItems, $"{mode}, after waiting");
                 CheckCollapsedDataBoundParent(navView, topLevelItems, parentCategory, childCategory, $"after switching to {mode}", failures);
