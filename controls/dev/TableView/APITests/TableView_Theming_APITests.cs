@@ -667,6 +667,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifySelectionIndicatorBrushFollowsAccentFillTiers()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var resources = new TabularControlsResources();
+
+                var expectedLight = RequireApplicationColor("SystemAccentColorDark1");
+                var expectedDark = RequireApplicationColor("SystemAccentColorLight2");
+                Verify.AreNotEqual(expectedLight, expectedDark,
+                    "SystemAccentColorDark1 and SystemAccentColorLight2 must differ, or a Light/Dark swap could not be detected.");
+
+                Verify.AreEqual(expectedLight, RequireBrush(resources, "Light", "TabularSurfaceSelectionIndicatorBrush").Color,
+                    "The Light TabularSurfaceSelectionIndicatorBrush must follow AccentFillColorDefaultBrush's Light tier, SystemAccentColorDark1.");
+                Verify.AreEqual(expectedDark, RequireBrush(resources, "Default", "TabularSurfaceSelectionIndicatorBrush").Color,
+                    "The Default/Dark TabularSurfaceSelectionIndicatorBrush must follow AccentFillColorDefaultBrush's Dark tier, SystemAccentColorLight2.");
+
+                // Unread by the control: header text inherits the row foreground.
+                foreach (var themeName in new[] { "Default", "Light", "HighContrast" })
+                {
+                    var dictionary = (ResourceDictionary)resources.ThemeDictionaries[themeName];
+                    Verify.IsFalse(dictionary.ContainsKey("TabularSurfaceHeaderForegroundBrush"),
+                        $"{themeName} must not declare the unused TabularSurfaceHeaderForegroundBrush.");
+                    Verify.IsTrue(dictionary.ContainsKey("TabularSurfaceHeaderSeparatorBrush"),
+                        $"{themeName} must keep TabularSurfaceHeaderSeparatorBrush.");
+                }
+            });
+        }
+
+        [TestMethod]
         public void VerifyHeaderPointerStateBrushesResolveInEveryTheme()
         {
             RunOnUIThread.Execute(() =>
