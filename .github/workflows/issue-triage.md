@@ -96,7 +96,33 @@ jobs:
 safe-outputs:
   threat-detection:
     continue-on-error: false
-    max-ai-credits: 10
+    max-ai-credits: 20
+    prompt: >-
+      This detector has a 20-credit per-run budget, separate from the intake
+      agent and the daily allowance. Examine all supplied untrusted evidence
+      and output for the required security categories, but avoid repeated
+      reads and searches for optional artifacts already known to be absent.
+      Record your assessment with threat_detection_result as soon as the
+      evidence supports it; do not assume a clean result to save credits.
+    steps:
+      - name: Check out trusted detector diagnostics
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          sparse-checkout: .github/scripts/issue-triage
+      - name: Set up Python for detector diagnostics
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Expose detector budget to the harness
+        run: echo "GH_AW_MAX_AI_CREDITS=20" >> "$GITHUB_ENV"
+    post-steps:
+      - name: Report detector budget and result diagnostics
+        if: always()
+        run: >-
+          python .github/scripts/issue-triage/detection_diagnostics.py
+          /tmp/gh-aw "$GH_AW_MAX_AI_CREDITS"
   report-failure-as-issue: false
   report-failed-jobs: false
   report-incomplete:

@@ -223,7 +223,20 @@ class WorkflowRuntimeTests(unittest.TestCase):
             set(re.findall(r'(?m)^\s+GH_AW_MAX_DAILY_AI_CREDITS: "(\d+)"$', self.lock)),
             {"300"},
         )
-        self.assertRegex(self.source, r"threat-detection:\n(?:    [^\n]*\n)*?    max-ai-credits: 10\n")
+        self.assertRegex(self.source, r"threat-detection:\n(?:    [^\n]*\n)*?    max-ai-credits: 20\n")
+
+    def test_detector_budget_metadata_and_read_only_diagnostics_survive_compilation(self):
+        detection = re.search(r"(?ms)^  detection:\n.*?(?=^  \w|\Z)", self.lock).group()
+        self.assertIn('"maxAiCredits":20', detection)
+        self.assertIn('echo "GH_AW_MAX_AI_CREDITS=20" >> "$GITHUB_ENV"', detection)
+        expose = detection.index("name: Expose detector budget to the harness")
+        execute = detection.index("name: Execute threat detection with AWF")
+        report = detection.index("name: Report detector budget and result diagnostics")
+        self.assertLess(expose, execute)
+        self.assertLess(execute, report)
+        self.assertIn('detection_diagnostics.py /tmp/gh-aw "$GH_AW_MAX_AI_CREDITS"', detection)
+        report_step = detection[report:].split("\n      - ", 1)[0]
+        self.assertIn("if: always()", report_step)
 
     def test_fix_preserves_shell_and_publication_restrictions(self):
         self.assertIn("bash: false", self.source)

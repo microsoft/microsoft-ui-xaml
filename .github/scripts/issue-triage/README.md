@@ -238,6 +238,17 @@ overall green run with a skipped publisher. Real detection failures are still
 reported and block publication. Historical comments in the framework-managed
 Detection Runs issue are not edited or removed.
 
+The detector has a separate **20-credit per-run budget**; the intake agent
+remains capped at ten credits. The configured detector cap is also exported to
+the harness so a proxy budget rejection can be distinguished from the CLI's
+generic HTTP 403 authentication message. Additive detector instructions encourage
+bounded reads without removing untrusted evidence or weakening threat coverage.
+After execution, `detection_diagnostics.py` reports response-level credit usage,
+the configured cap, and result-file presence. Missing accounting is reported as
+unknown, not zero. These read-only diagnostics never create a verdict or authorize
+publication; the existing strict detector conclusion and publisher gate remain
+authoritative.
+
 ## Trust boundaries and limits
 
 - Prepared JSON is attached directly to the rendered prompt by trusted code,
@@ -281,7 +292,7 @@ Detection Runs issue are not edited or removed.
   concurrency groups so they cannot cancel an active intake. The triage agent
   is bounded to twelve model invocations (including evidence/tool iterations)
   and ten AI credits, leaving room to assess the supplied evidence and submit its result;
-  the separate output-safety analysis has its own ten-credit budget. A
+  the separate output-safety analysis has its own twenty-credit budget. A
   300-credit rolling 24-hour guardrail stops starting further automatic analyses
   after the measured threshold is reached; concurrent runs may already be in
   flight. Manual dispatch bypasses this daily guardrail, not the per-run limits.
