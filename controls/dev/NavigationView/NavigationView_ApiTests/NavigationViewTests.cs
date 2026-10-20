@@ -2307,6 +2307,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForSelectionIndicatorAnimation();
             CheckSelectionIndicator(navView, hierarchyItems, child, "Left, collapsed parent of selected child", failures, parent);
             CheckHiddenChildHasNoSelectionIndicator(child, "Left, collapsed parent of selected child", failures);
+            CheckNoOtherSelectionIndicatorIsLit(navView, parent, "Left, collapsed parent of selected child", failures);
 
             foreach (var mode in new[] { NavigationViewPaneDisplayMode.Top, NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact })
             {
@@ -2314,6 +2315,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 WaitForSelectionIndicatorAnimation();
                 CheckSelectionIndicator(navView, hierarchyItems, child, $"collapsed parent, after switching to {mode}", failures, parent);
                 CheckHiddenChildHasNoSelectionIndicator(child, $"collapsed parent, after switching to {mode}", failures);
+                CheckNoOtherSelectionIndicatorIsLit(navView, parent, $"collapsed parent, after switching to {mode}", failures);
             }
 
             foreach (var failure in failures)
@@ -2414,6 +2416,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             NavigationViewItem childContainer = null;
             RunOnUIThread.Execute(() => childContainer = navView.ContainerFromMenuItem(childItem) as NavigationViewItem);
             CheckHiddenChildHasNoSelectionIndicator(childContainer, step, failures);
+            CheckNoOtherSelectionIndicatorIsLit(navView, parentItem, step, failures);
+        }
+
+        // In Top the hidden child usually has no realized container, so also make sure that no SelectionIndicator anywhere
+        // under the NavigationView is lit except the collapsed parent's.
+        private static void CheckNoOtherSelectionIndicatorIsLit(NavigationView navView, object parentItem, string step, List<string> failures)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var parentContainer = parentItem as NavigationViewItem ?? navView.ContainerFromMenuItem(parentItem) as NavigationViewItem;
+                var pending = new Stack<DependencyObject>();
+                pending.Push(navView);
+                while (pending.Count > 0)
+                {
+                    var element = pending.Pop();
+                    if (element is FrameworkElement fe && fe.Name == "SelectionIndicator" && fe.Opacity > 0)
+                    {
+                        var owner = VisualTreeUtils.FindVisualParentByType<NavigationViewItem>(fe);
+                        if (owner != parentContainer)
+                        {
+                            failures.Add($"{step}: a SelectionIndicator of '{owner?.Content}' is lit (opacity={fe.Opacity}), expected only the collapsed parent's");
+                        }
+                    }
+                    for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+                    {
+                        pending.Push(VisualTreeHelper.GetChild(element, i));
+                    }
+                }
+            });
         }
 
         private static void CheckHiddenChildHasNoSelectionIndicator(NavigationViewItem child, string step, List<string> failures)
