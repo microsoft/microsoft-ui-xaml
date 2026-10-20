@@ -3146,6 +3146,10 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
 
     bool handled = false;
     m_TabKeyPrecedesFocusChange = false;
+    if (eventArgs.OriginalKey() == winrt::VirtualKey::GamepadB)
+    {
+        m_shouldConsumeGamepadBKeyUp = false;
+    }
 
     switch (key)
     {
@@ -3158,11 +3162,18 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
         break;
     case winrt::VirtualKey::GoBack:
     case winrt::VirtualKey::XButton1:
+        if (IsPaneOpen() && IsLightDismissible())
+        {
+            handled = AttemptClosePaneLightly();
+        }
+        break;
     case winrt::VirtualKey::Escape:
     case winrt::VirtualKey::GamepadB:
         if (IsPaneOpen() && IsLightDismissible())
         {
-            handled = AttemptClosePaneLightly();
+            m_shouldConsumeGamepadBKeyUp = eventArgs.OriginalKey() == winrt::VirtualKey::GamepadB;
+            AttemptClosePaneLightly();
+            handled = true;
         }
         break;
     case winrt::VirtualKey::GamepadLeftShoulder:
@@ -3175,6 +3186,42 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
         // arrow keys navigation through ItemsRepeater don't get here
         // so handle tab key to distinguish between tab focus and arrow focus navigation
         m_TabKeyPrecedesFocusChange = true;
+        if (IsPaneOpen() && IsLightDismissible())
+        {
+            const auto xamlRoot = XamlRoot();
+            const auto isPaneButton = [this](winrt::DependencyObject const& element)
+            {
+                return element && (element == m_paneToggleButton.get() ||
+                    element == m_backButton.get() || element == m_closeButton.get());
+            };
+            if (xamlRoot && isPaneButton(winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>()))
+            {
+                if (const auto splitView = m_rootSplitView.get())
+                {
+                    const auto pane = splitView.Pane();
+                    const bool reverse = (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(winrt::VirtualKey::Shift)
+                        & winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::None;
+                    const auto direction = reverse ? winrt::FocusNavigationDirection::Previous : winrt::FocusNavigationDirection::Next;
+                    const winrt::FindNextElementOptions options;
+                    options.SearchRoot(xamlRoot.Content());
+                    const auto next = winrt::FocusManager::FindNextElement(direction, options);
+                    if (pane && !isPaneButton(next) && next != pane && !SharedHelpers::IsAncestor(next, pane))
+                    {
+                        const auto target = reverse ? winrt::FocusManager::FindLastFocusableElement(pane)
+                            : winrt::FocusManager::FindFirstFocusableElement(pane);
+                        if (const auto element = target.try_as<winrt::UIElement>())
+                        {
+                            element.Focus(winrt::FocusState::Keyboard);
+                        }
+                        else if (const auto hyperlink = target.try_as<winrt::Hyperlink>())
+                        {
+                            hyperlink.Focus(winrt::FocusState::Keyboard);
+                        }
+                        handled = true;
+                    }
+                }
+            }
+        }
         break;
     case winrt::VirtualKey::Left:
         const auto altState = winrt::InputKeyboardSource::GetKeyStateForCurrentThread(winrt::VirtualKey::Menu);
@@ -3191,6 +3238,16 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
     eventArgs.Handled(handled);
 
     __super::OnKeyDown(e);
+}
+
+void NavigationView::OnKeyUp(winrt::KeyRoutedEventArgs const& args)
+{
+    if (args.OriginalKey() == winrt::VirtualKey::GamepadB && m_shouldConsumeGamepadBKeyUp)
+    {
+        m_shouldConsumeGamepadBKeyUp = false;
+        args.Handled(true);
+    }
+    __super::OnKeyUp(args);
 }
 
 bool NavigationView::BumperNavigation(int offset)
@@ -4378,6 +4435,7 @@ void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::
 // So we do hook it in Loaded and Unhook it in Unloaded
 void NavigationView::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
+    m_shouldConsumeGamepadBKeyUp = false;
     m_titleBarMetricsChangedRevoker.revoke();
     m_titleBarIsVisibleChangedRevoker.revoke();
 }
@@ -4895,14 +4953,20 @@ void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::Naviga
         winrt::FocusManager::GettingFocus_revoker gettingFocusRevoker{};
         const auto splitView = m_rootSplitView.get();
         const auto opener = m_paneOpeningFocusedElement.get();
-        if (isItemInvoked && selectedContainer.IsSelected() &&
-            selectedContainer.FocusState() != winrt::FocusState::Unfocused &&
-            splitView && splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay && opener)
+        const auto canRetainFocus = [selectedContainer, splitView]()
+        {
+            return splitView && splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay &&
+                splitView.CompactPaneLength() > 0 &&
+                winrt::get_self<NavigationViewItem>(selectedContainer)->IsTopLevelItem() &&
+                (!selectedContainer.SelectsOnInvoked() || selectedContainer.IsSelected());
+        };
+        if (isItemInvoked && canRetainFocus() && opener &&
+            selectedContainer.FocusState() != winrt::FocusState::Unfocused)
         {
             gettingFocusRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke,
-                [selectedContainer, opener, &gettingFocusRevoker](auto const&, winrt::GettingFocusEventArgs const& args)
+                [selectedContainer, opener, canRetainFocus, &gettingFocusRevoker](auto const&, winrt::GettingFocusEventArgs const& args)
                 {
-                    if (!args.Cancel() && !args.Handled() && selectedContainer.IsSelected() &&
+                    if (!args.Cancel() && !args.Handled() && canRetainFocus() &&
                         args.OldFocusedElement() == selectedContainer && args.NewFocusedElement() == opener)
                     {
                         args.Handled(args.TrySetNewFocusedElement(selectedContainer));

@@ -17,6 +17,7 @@ using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Shapes;
 using System.Runtime.InteropServices;
 using Windows.UI.Core;
+using WinRT;
 
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -220,7 +221,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyOverlayTabNavigationContainsToggle()
+        public void VerifyPaneEdgeFocusPreservesApplicationFocus()
         {
             foreach (bool reverse in new[] { false, true })
             {
@@ -251,9 +252,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 IdleSynchronizer.Wait();
                 RunOnUIThread.Execute(() =>
                 {
-                    Microsoft.UI.Xaml.Input.FocusManager.TryMoveFocus(
-                        reverse ? Microsoft.UI.Xaml.Input.FocusNavigationDirection.Previous : Microsoft.UI.Xaml.Input.FocusNavigationDirection.Next,
-                        new Microsoft.UI.Xaml.Input.FindNextElementOptions { SearchRoot = Content });
+                    Verify.IsTrue(toggle.Focus(FocusState.Keyboard));
+                    var pane = VisualTreeUtils.FindVisualChildByName(navView, "PaneContentGrid");
+                    var target = (UIElement)(reverse
+                        ? Microsoft.UI.Xaml.Input.FocusManager.FindLastFocusableElement(pane)
+                        : Microsoft.UI.Xaml.Input.FocusManager.FindFirstFocusableElement(pane));
+                    Verify.IsTrue(target.Focus(FocusState.Keyboard));
                 });
                 IdleSynchronizer.Wait();
                 RunOnUIThread.Execute(() =>
@@ -268,6 +272,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         focused = VisualTreeHelper.GetParent(focused);
                     }
                     Verify.IsTrue(inside, "Tab must not leave the open overlay for page content or siblings.");
+                });
+                RunOnUIThread.Execute(() =>
+                {
+                    var destination = new Button { Content = "App focus destination" };
+                    ((Grid)Content).Children.Add(destination);
+                    Content.UpdateLayout();
+                    Verify.IsTrue(toggle.Focus(FocusState.Keyboard));
+                    global::Windows.Foundation.TypedEventHandler<UIElement, Microsoft.UI.Xaml.Input.LosingFocusEventArgs> redirect = (sender, args) =>
+                    {
+                        if (args.OldFocusedElement == toggle)
+                        {
+                            Verify.IsTrue(args.TrySetNewFocusedElement(destination));
+                        }
+                    };
+                    navView.LosingFocus += redirect;
+                    try
+                    {
+                        var pane = VisualTreeUtils.FindVisualChildByName(navView, "PaneContentGrid");
+                        var target = (UIElement)(reverse
+                            ? Microsoft.UI.Xaml.Input.FocusManager.FindLastFocusableElement(pane)
+                            : Microsoft.UI.Xaml.Input.FocusManager.FindFirstFocusableElement(pane));
+                        Verify.IsTrue(target.Focus(FocusState.Keyboard));
+                        Verify.AreEqual(destination, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot));
+                    }
+                    finally
+                    {
+                        navView.LosingFocus -= redirect;
+                    }
                 });
             }
         }
@@ -527,6 +559,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 item = (NavigationViewItem)navView.MenuItems[1];
             });
             IdleSynchronizer.Wait();
+            using (var focusReady = new ManualResetEvent(false))
+            {
+                RoutedEventHandler onGotFocus = (sender, args) => focusReady.Set();
+                try
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        item.GotFocus += onGotFocus;
+                        Verify.IsFalse(item.IsSelected);
+                        Verify.IsTrue(item.Focus(FocusState.Keyboard));
+                        Verify.AreEqual(item, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot));
+                    });
+                    Verify.IsTrue(focusReady.WaitOne(DefaultWaitTimeInMS), "Waiting for the invocation target to receive keyboard focus.");
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() => item.GotFocus -= onGotFocus);
+                }
+            }
+            IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
             {
                 navView.ItemInvoked += (sender, args) =>
@@ -537,7 +589,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 };
                 navView.SelectionFollowsFocus = NavigationViewSelectionFollowsFocus.Enabled;
-                Verify.IsTrue(item.Focus(FocusState.Keyboard));
+                new NavigationViewItemAutomationPeer(item).As<IInvokeProvider>().Invoke();
+                Verify.AreEqual(1, invocationCount);
             });
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>

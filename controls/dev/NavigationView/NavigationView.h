@@ -64,6 +64,7 @@ public:
 
     void OnPreviewKeyDown(winrt::KeyRoutedEventArgs const& args);
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
+    void OnKeyUp(winrt::KeyRoutedEventArgs const& args);
 
     bool IsFullScreenOrTabletMode();
 
@@ -517,10 +518,10 @@ private:
     bool m_OrientationChangedPendingAnimation{ false };
 
     bool m_TabKeyPrecedesFocusChange{ false };
+    bool m_shouldConsumeGamepadBKeyUp{ false };
 
     bool m_isLeftPaneTitleEmpty{ false };
 
     double m_OpenPaneLength{ 320.0 };
     winrt::weak_ref<winrt::DependencyObject> m_paneOpeningFocusedElement;
 };
-
