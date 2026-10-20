@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "TableView.g.h"
+#include "TableViewContextMenu.h"
 #include "TableView.properties.h"
 #include "TableViewRowInfo.h"
 #include "TableViewTip.h"
@@ -418,6 +419,23 @@ public:
         int32_t visibleColumnIndex,
         winrt::FocusState focusState = winrt::FocusState::Keyboard);
 
+    // True when handled (menu shown, or suppressed: editing, nested or stale target); false lets the
+    // request bubble to the native ContextFlyout chain.
+    bool ProcessContextMenuRequest(
+        TableViewDetails::ContextMenuTarget const& target,
+        winrt::ContextRequestedEventArgs const& args);
+
+    // The one context menu policy check: no TableView menu opens while a cell is editing.
+    bool AreContextMenusSuppressed() const noexcept { return IsEditing(); }
+
+    // Marks an unhandled request handled while a cell is editing, so no ContextFlyout on the
+    // element that raised it or on any ancestor opens. Hooked below every element that can carry a
+    // TableView menu the request handlers do not reach (group headers, the table itself).
+    void SuppressContextRequestWhileEditing(winrt::ContextRequestedEventArgs const& args);
+
+    // A column a context menu request can target: in this table's Columns, owned by it, Visible.
+    bool IsContextMenuColumn(winrt::TableViewColumn const& column) const;
+
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 
 
@@ -493,7 +511,10 @@ public:
     void OnLosingFocusForEditing(
         const winrt::IInspectable& sender,
         const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args);
+    void QueueFocusLossCommit();
     void CompleteFocusLossCommit();
+    // Keeps the Escape that closed an editor's flyout from also cancelling the edit.
+    void MarkEditorFlyoutClosing();
 
     // ----- Selection (TableView_Selection.cpp) -----
     // SelectionModel owns the selected index and reconciles it across collection changes; this
@@ -1196,6 +1217,8 @@ private:
     tracker_ref<winrt::FrameworkElement> m_headerRow{ this };
     tracker_ref<winrt::Panel> m_headerHost{ this };
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
+    winrt::UIElement::ContextRequested_revoker m_headerContextRequestedRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     // Keeps the header band locked to the body when focus moves to an off-screen header.
     winrt::UIElement::BringIntoViewRequested_revoker m_headerBringIntoViewRevoker{};
     winrt::UIElement::BringIntoViewRequested_revoker m_bodyBringIntoViewRevoker{};
@@ -1357,6 +1380,26 @@ private:
     winrt::weak_ref<winrt::TableViewSource> m_awaitedSource{ nullptr };
     void StopAwaitingSource();
 
+    bool IsContextMenuTargetCurrent(TableViewDetails::ContextMenuTarget const& target) const;
+    // IsContextMenuTargetCurrent plus, for body targets, an unchanged source and no edit in progress.
+    bool IsContextMenuRequestCurrent(
+        TableViewDetails::ContextMenuTarget const& target,
+        winrt::IInspectable const& sourceSnapshot);
+    // Moves focus (and, for a cell, the current cell) to a context menu target. Returns false when
+    // app code run by the move made the request stale.
+    bool FocusContextMenuTarget(
+        TableViewDetails::ContextMenuTarget const& target,
+        winrt::IInspectable const& sourceSnapshot);
+    void OnHeaderContextRequested(winrt::ContextRequestedEventArgs const& args);
+    std::optional<TableViewDetails::ContextMenuTarget> ResolveHeaderContextMenuTarget(
+        winrt::ContextRequestedEventArgs const& args);
+    TableViewDetails::ContextMenuCandidate ResolveContextFlyout(TableViewDetails::ContextMenuTarget const& target);
+    void ShowContextFlyout(
+        TableViewDetails::ContextMenuTarget const& target,
+        TableViewDetails::ContextMenuCandidate const& candidate,
+        winrt::ContextRequestedEventArgs const& args);
+    bool m_isProcessingContextMenu{ false };
+
     double ComputeLeadingFrozenWidth();
     void RefreshFrozenColumns();
 
@@ -1435,6 +1478,13 @@ private:
     winrt::UIElement::LosingFocus_revoker m_editingLosingFocusRevoker{};
 
     bool m_focusLossCommitQueued{ false };
+    // Set while a focus-loss commit waits for the editor's own flyout to close.
+    winrt::FlyoutBase::Closed_revoker m_editorFlyoutClosedRevoker{};
+    winrt::FlyoutBase::Closing_revoker m_editorFlyoutClosingRevoker{};
+    // Same, for any other popup that took focus from the editor (a picker, a button flyout).
+    winrt::Popup::Closed_revoker m_editorPopupClosedRevoker{};
+    // True from the editor flyout's Closing until the current input has been dispatched.
+    bool m_editorFlyoutClosing{ false };
 
     int32_t m_navAnchorRow{ -1 };
     int32_t m_navAnchorCellRow{ -1 };

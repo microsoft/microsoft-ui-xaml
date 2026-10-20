@@ -151,6 +151,26 @@ void TableViewCellAutomationPeer::SetFocusCore()
     __super::SetFocusCore();
 }
 
+void TableViewCellAutomationPeer::ShowContextMenuCore()
+{
+    // Same tracking rule as SetFocusCore: a recycled cell must not raise a request for another item.
+    auto const row = m_row.get();
+    auto const cell = row && GetTrackedTableForRow(row) ? GetRealizedCellFromRow(row) : nullptr;
+    if (!cell)
+    {
+        ThrowElementNotAvailable();
+    }
+
+    if (cell == Owner())
+    {
+        __super::ShowContextMenuCore();
+    }
+    else if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(cell))
+    {
+        peer.ShowContextMenu();
+    }
+}
+
 hstring TableViewCellAutomationPeer::GetNameCore()
 {
     auto const row = m_row.get();

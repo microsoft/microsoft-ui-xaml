@@ -27,6 +27,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTip.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTipTests.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTipTypes.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewContextMenu.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewColumn.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTextColumn.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTemplateColumn.h" />
@@ -70,6 +71,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewTip.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Tip.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Telemetry.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView_ContextMenu.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Columns.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Keyboard.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Layout.cpp" />
