@@ -1,0 +1,189 @@
+// ---- Header menus -------------------------------------------------------------------------
+
+// A header menu item has no row item to bind to, so each column gets its own menu and the
+// handler closes over that column.
+private void AttachHeaderMenus()
+{
+    foreach (var column in new TableViewColumn[] { NameColumn, DepartmentColumn, OfficeColumn, SalaryColumn })
+    {
+        var hide = new MenuFlyoutItem
+        {
+            Text = string.Format(CultureInfo.CurrentCulture, "Hide {0}", column.Header),
+            Icon = new FontIcon { Glyph = "\uED1A" },
+        };
+        hide.Click += (_, _) => HideColumn(column);
+
+        var showAll = new MenuFlyoutItem { Text = "Show all columns", Icon = new FontIcon { Glyph = "\uE7B3" } };
+        showAll.Click += (_, _) => ShowAllColumns();
+
+        var menu = new MenuFlyout();
+        menu.Items.Add(hide);
+        menu.Items.Add(showAll);
+        column.HeaderContextFlyout = menu;
+        _headerMenus[column] = menu;
+    }
+}
+
+private void HideColumn(TableViewColumn column)
+{
+    column.Visibility = Visibility.Collapsed;
+}
+
+private void ShowAllColumns()
+{
+    foreach (var column in PeopleTable.Columns)
+    {
+        column.Visibility = Visibility.Visible;
+    }
+}
+
+// ---- Cell and row menu items ----------------------------------------------------------------
+
+// MenuFlyout has no item filter: cache the XAML items and re-add this row kind's subset on each
+// open. Re-adding (not Visibility) leaves the IsActive bindings in charge.
+private List<MenuFlyoutItemBase>? _rowMenuItems;
+
+private void OnRowMenuOpening(object sender, object e)
+{
+    var menu = (MenuFlyout)sender;
+    _rowMenuItems ??= new List<MenuFlyoutItemBase>(menu.Items);
+
+    // Target is the row, also when the request came from one of its cells. Under Hierarchy, a
+    // row with reports is expandable; Manager-tagged items show only on those rows.
+    var isManager = menu.Target is TableViewRow { IsExpandable: true };
+    menu.Items.Clear();
+    foreach (var item in _rowMenuItems)
+    {
+        if (item.Tag is null || (isManager && (item.Tag as string) == "Manager"))
+        {
+            menu.Items.Add(item);
+        }
+    }
+}
+
+// A menu item inherits the requested row item as its DataContext.
+private void OnCopyNameClick(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { DataContext: Person person })
+    {
+        CopyText(person.FullName);
+    }
+}
+
+private void OnCopyEmailClick(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { DataContext: Person person })
+    {
+        CopyText(person.Email);
+    }
+}
+
+private void OnCopyRowClick(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { DataContext: Person person })
+    {
+        CopyText(string.Join('\t', person.FullName, person.Department, person.Office,
+            person.Salary.ToString("C0", CultureInfo.CurrentCulture)));
+    }
+}
+
+private void OnNextDepartmentClick(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { DataContext: Person person })
+    {
+        var from = person.Department;
+        person.Department = SampleShaping.Next(PersonData.Departments, from);
+        ReapplyIfGroupedOn(nameof(Person.Department));
+    }
+}
+
+private void OnEmailTeamClick(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { DataContext: Person manager })
+    {
+        var reports = 0;
+        foreach (var person in People)
+        {
+            if (person.ManagerId == manager.EmployeeId)
+            {
+                reports++;
+            }
+        }
+    }
+}
+
+private void OnToggleActiveClick(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { DataContext: Person person })
+    {
+        person.IsActive = !person.IsActive;
+    }
+}
+
+// A group header menu item's DataContext is the header's TableViewGroupInfo.
+private void OnEmailGroupClick(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { DataContext: TableViewGroupInfo group })
+    {
+        // …
+    }
+}
+
+private void OnRemoveClick(object sender, RoutedEventArgs e)
+{
+    if (sender is FrameworkElement { DataContext: Person person } && People.Remove(person))
+    {
+        // …
+    }
+}
+
+private void OnRestoreListClick(object sender, RoutedEventArgs e)
+{
+    People.Clear();
+    foreach (var person in PersonData.Take(40))
+    {
+        People.Add(person);
+    }
+}
+
+// ---- Options ------------------------------------------------------------------------------
+
+// Setting a menu property to null removes that candidate; the request falls through.
+private void OnNameMenuToggled(object sender, RoutedEventArgs e)
+{
+    if (!IsLoaded)
+    {
+        return;
+    }
+
+    NameColumn.CellContextFlyout = NameMenuToggle.IsOn ? _nameCellMenu : null;
+}
+
+// The row menu lives in an implicit row style. Removing or adding an implicit style updates
+// the realized rows on the next layout pass; recycled rows pick it up when they are reused.
+private void OnRowMenuToggled(object sender, RoutedEventArgs e)
+{
+    if (!IsLoaded)
+    {
+        return;
+    }
+
+    PeopleTable.Resources.Remove(typeof(TableViewRow));
+    if (RowMenuToggle.IsOn)
+    {
+        PeopleTable.Resources[typeof(TableViewRow)] = _rowMenuStyle;
+    }
+}
+
+private void OnHeaderMenuToggled(object sender, RoutedEventArgs e)
+{
+    if (!IsLoaded)
+    {
+        return;
+    }
+
+    foreach (var (column, menu) in _headerMenus)
+    {
+        column.HeaderContextFlyout = HeaderMenuToggle.IsOn ? menu : null;
+    }
+}

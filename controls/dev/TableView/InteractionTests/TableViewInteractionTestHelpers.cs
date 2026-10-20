@@ -301,18 +301,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.IsTrue(focused != null && focused.Name == expectedHeader, message);
         }
 
-        // Focuses the row at index and drills into its first cell with Right. Returns false (after failing) if
-        // either step does not take; callers then stop, since every later assertion would be unmeasured.
-        internal static bool DrillIntoRow(string tableAutomationId, int rowIndex)
+        // Focuses the row at index through UIA. Returns null (after failing) if it is missing or does not take focus.
+        internal static UIObject FocusRowAt(string tableAutomationId, int rowIndex)
         {
             UIObject rowsHost = GetRowsHost(tableAutomationId);
-            if (rowsHost == null) { return false; }
-            if (rowsHost.Children.Count <= rowIndex) { Verify.Fail(string.Format("Need at least {0} realized rows.", rowIndex + 1)); return false; }
+            if (rowsHost == null) { return null; }
+            if (rowsHost.Children.Count <= rowIndex) { Verify.Fail(string.Format("Need at least {0} realized rows.", rowIndex + 1)); return null; }
 
             UIObject row = rowsHost.Children[rowIndex];
             row.SetFocus();
             Wait.ForIdle();
-            if (!row.HasKeyboardFocus) { Verify.Fail(string.Format("Precondition: row {0} did not take focus.", rowIndex)); return false; }
+            if (!row.HasKeyboardFocus) { Verify.Fail(string.Format("Precondition: row {0} did not take focus.", rowIndex)); return null; }
+            return row;
+        }
+
+        // Focuses the row at index and drills into its first cell with Right. Returns false (after failing) if
+        // either step does not take; callers then stop, since every later assertion would be unmeasured.
+        internal static bool DrillIntoRow(string tableAutomationId, int rowIndex)
+        {
+            if (FocusRowAt(tableAutomationId, rowIndex) == null) { return false; }
 
             KeyboardHelper.PressKey(Key.Right);
             Wait.ForIdle();
@@ -676,6 +683,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             Edit report = FindElement.ById<Edit>(automationId);
             return report == null ? null : report.Value;
+        }
+
+        // The value of one "key=value" field of a ';'-separated page readout, or null if the field is absent.
+        internal static string ReadReadoutField(string readoutId, string field)
+        {
+            string readout = ReadPageReadout(readoutId);
+            if (readout == null)
+            {
+                return null;
+            }
+
+            foreach (string part in readout.Split(';'))
+            {
+                int separator = part.IndexOf('=');
+                if (separator > 0 && part.Substring(0, separator) == field)
+                {
+                    return part.Substring(separator + 1);
+                }
+            }
+
+            return null;
+        }
+
+        // Pages refresh readouts on a dispatcher hop; a few idle waits let one settle. Returns the last value read, so
+        // the caller asserts on what was actually observed.
+        internal static string WaitForReadoutField(string readoutId, string field, string expected)
+        {
+            string value = ReadReadoutField(readoutId, field);
+            for (int attempt = 0; attempt < 5 && value != expected; attempt++)
+            {
+                Wait.ForIdle();
+                value = ReadReadoutField(readoutId, field);
+            }
+
+            Log.Comment("Readout {0} = '{1}' (expected '{2}').", field, value, expected);
+            return value;
         }
 
         internal static string ReadEditReport() => ReadPageReadout(EditColumnReport);
