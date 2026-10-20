@@ -41,6 +41,8 @@ public:
     void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);
     void OnPointerExited(winrt::PointerRoutedEventArgs const& args);
     void OnPointerPressed(winrt::PointerRoutedEventArgs const& args);
+    void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
+    void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
     void OnManipulationStarting(winrt::ManipulationStartingRoutedEventArgs const& args);
     void OnManipulationStarted(winrt::ManipulationStartedRoutedEventArgs const& args);
@@ -66,6 +68,7 @@ private:
 
     double m_lastRaisedDelta{ 0.0 };
     bool m_isPointerOver{ false };
+    bool m_isPointerReleased{ false };
     bool m_templateApplied{ false };
     // Boxed handler passed to AddHandler and its target; null when not dragging.
     winrt::IInspectable m_cancelKeyHandler{ nullptr };

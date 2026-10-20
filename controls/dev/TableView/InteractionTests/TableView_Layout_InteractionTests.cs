@@ -399,6 +399,59 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies Escape during a pointer resize releases the gripper's mouse capture, so the pointer stops showing the resize cursor away from the gripper.")]
+        public void PointerResizeEscapeReleasesCapture()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                if (tableView == null)
+                {
+                    Verify.Fail("BasicTableView was not found on the test page.");
+                    return;
+                }
+
+                UIObject nameHeader = FindColumnHeader(tableView, "Name");
+                if (nameHeader == null)
+                {
+                    Verify.Fail("The 'Name' column header peer was not found on the header host.");
+                    return;
+                }
+
+                EnsureAppWindowForeground();
+                IntPtr sizeWE = LoadCursor(IntPtr.Zero, IDC_SIZEWE);
+                IntPtr arrow = LoadCursor(IntPtr.Zero, IDC_ARROW);
+
+                var bounds = nameHeader.BoundingRectangle;
+                int edgeX = bounds.Left + bounds.Width - 1;
+                int y = bounds.Top + (bounds.Height / 2);
+                var table = tableView.BoundingRectangle;
+                // Over the body, well away from the gripper.
+                var awayY = Math.Min(bounds.Bottom + (3 * bounds.Height), table.Bottom - 10);
+
+                InputHelper.LeftMouseButtonDown(nameHeader, (bounds.Width / 2) - 1, 0);
+                try
+                {
+                    InputHelper.MoveMouse(new Point(edgeX + 20, y));
+                    InputHelper.MoveMouse(new Point(edgeX + 40, awayY));
+                    Wait.ForIdle();
+                    VerifyCursorBecomes(sizeWE, "Precondition: the captured drag must hold the resize cursor away from the gripper.");
+
+                    KeyboardHelper.PressKey(Key.Escape);
+                    Wait.ForIdle();
+                    InputHelper.MoveMouse(new Point(edgeX + 30, awayY));
+                    Wait.ForIdle();
+                    VerifyCursorBecomes(arrow, "After Escape the gripper must release capture, so the body's arrow cursor returns before the button is released.");
+                }
+                finally
+                {
+                    InputHelper.LeftMouseButtonUp();
+                    Wait.ForIdle();
+                }
+            }
+        }
+
         #endregion
 
         #region 7. Scrolling
