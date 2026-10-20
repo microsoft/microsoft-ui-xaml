@@ -443,11 +443,16 @@ def validate(output: dict, evidence: dict) -> dict:
         number = duplicate["number"]
         if type(number) is not int or number not in allowed or number in seen:
             raise TriageError("Duplicate is repeated or outside the retrieved candidate set")
-        if duplicate["confidence"] != "HIGH":
+        if duplicate["confidence"] not in ("HIGH", "MEDIUM"):
             raise TriageError("Only HIGH-confidence duplicate suggestions may be published")
         required_string(duplicate, "reason", 400)
         seen.add(number)
-    result["duplicates"] = duplicates
+    result["duplicates"] = [duplicate for duplicate in duplicates if duplicate["confidence"] == "HIGH"]
+    if len(result["duplicates"]) != len(duplicates):
+        result["normalization_notes"].append(
+            "MEDIUM-confidence duplicate suggestions were omitted; "
+            "only HIGH-confidence duplicate suggestions are published."
+        )
     reconcile_assessment(result, evidence)
     return result
 

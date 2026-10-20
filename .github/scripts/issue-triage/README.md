@@ -181,6 +181,12 @@ contradictory repro requests are deferred; unrelated valid triage remains usable
 Older output artifacts without a request category are accepted conservatively,
 but their free-form prose alone cannot authorize a `needs-repro` label.
 
+Well-formed MEDIUM-confidence duplicate suggestions are omitted without rejecting
+the remaining triage. HIGH-confidence suggestions, routing, and reproduction
+actions remain usable. The omission is reported without linking the excluded
+candidates. Duplicate schema, candidate membership, uniqueness, and reason bounds
+are still validated before filtering; LOW or unknown confidence remains an error.
+
 These recoveries are explicit, not silent defaults: review/normalization notes
 appear in the comment and job log. Schema/type errors, unknown labels, genuinely
 unconfigured routes, and out-of-set duplicate suggestions still fail closed.

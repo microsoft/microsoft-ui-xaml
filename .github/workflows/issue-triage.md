@@ -328,6 +328,8 @@ Return at most five HIGH-confidence candidates, each with its supplied integer
 `number`, a short plain-text `reason`, and `"confidence": "HIGH"`.
 Use the JSON string `[]` when none qualifies. Suggestions are advisory: the workflow
 never applies `duplicate`, closes issues, or submits a duplicate-close action.
+If a potential match has only MEDIUM confidence, omit that suggestion and
+complete the remaining classification, routing, and reproduction assessment.
 
 ## Output
 
