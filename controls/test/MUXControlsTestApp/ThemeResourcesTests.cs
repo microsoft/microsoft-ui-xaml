@@ -18,6 +18,7 @@ using Windows.Foundation.Metadata;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 
@@ -33,6 +34,73 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [ClassInitialize]
         [TestProperty("Classification", "Integration")]
         public static void Setup(TestContext context) { }
+
+        [TestMethod]
+        public void VerifyTemplateFlyoutResourcesWithCyclicOwner()
+        {
+            Button owner = null;
+            Button target = null;
+            Button flyoutContent = null;
+            Flyout flyout = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var root = new Grid { RequestedTheme = ElementTheme.Light };
+                target = new Button { Content = "External target" };
+                owner = (Button)XamlReader.Load(@"
+<Button xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        Width='240' Height='40' VerticalAlignment='Top'>
+    <Button.Template>
+        <ControlTemplate TargetType='Button'>
+            <Grid x:Name='TemplateOwner'>
+                <TextBlock Text='Template-owned flyout'/>
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout><Button Content='Flyout content'/></Flyout>
+                </FlyoutBase.AttachedFlyout>
+            </Grid>
+        </ControlTemplate>
+    </Button.Template>
+</Button>");
+                root.Children.Add(target);
+                root.Children.Add(owner);
+                Content = root;
+            });
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var ownerGrid = (Grid)VisualTreeUtils.FindVisualChildByName(owner, "TemplateOwner");
+                    flyout = (Flyout)FlyoutBase.GetAttachedFlyout(ownerGrid);
+                    flyoutContent = (Button)flyout.Content;
+                    flyoutContent.Flyout = flyout;
+                    flyout.ShowAt(target);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(flyout.IsOpen);
+                    Verify.AreEqual(
+                        ((SolidColorBrush)target.Foreground).Color,
+                        ((SolidColorBrush)flyoutContent.Foreground).Color);
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    flyout?.Hide();
+                    if (flyoutContent != null)
+                    {
+                        flyoutContent.Flyout = null;
+                    }
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
 
         [TestMethod]
         // Isolate this test because other tests might have run in this context and either loaded the brushes 
