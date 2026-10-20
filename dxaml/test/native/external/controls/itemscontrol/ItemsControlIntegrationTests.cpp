@@ -76,7 +76,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             auto verifyInvalidSource = [](xaml_controls::ItemsControl^ itemsControl)
             {
                 VERIFY_THROWS_SPECIFIC_WINRT(
-                    itemsControl->ItemsSource = ref new xaml_controls::Button(),
+                    itemsControl->ItemsSource = L"Not a collection",
                     Platform::InvalidArgumentException^,
                     [](Platform::InvalidArgumentException^ exception)
                     {
