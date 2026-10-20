@@ -1568,6 +1568,109 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
+
+        #region 13.6 Row banding under an element theme
+
+        // The subtree runs opposite to the app theme so an Application-theme resolution is detectable.
+        [TestMethod]
+        public void VerifyAlternatingRowBackgroundFollowsElementThemeOppositeToApp()
+        {
+            const string appDictionaryXaml =
+                @"<ResourceDictionary xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                      xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+                    <ResourceDictionary.ThemeDictionaries>
+                      <ResourceDictionary x:Key=""Light"">
+                        <SolidColorBrush x:Key=""TvBandLiteral"" Color=""#FF112233""/>
+                        <SolidColorBrush x:Key=""TvBandNestedThemeColor"" Color=""{ThemeResource SubtleFillColorSecondary}""/>
+                      </ResourceDictionary>
+                      <ResourceDictionary x:Key=""Dark"">
+                        <SolidColorBrush x:Key=""TvBandLiteral"" Color=""#FF445566""/>
+                        <SolidColorBrush x:Key=""TvBandNestedThemeColor"" Color=""{ThemeResource SubtleFillColorSecondary}""/>
+                      </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                  </ResourceDictionary>";
+
+            ResourceDictionary appDictionary = null;
+            StackPanel root = null;
+            ElementTheme elementTheme = ElementTheme.Default;
+            ElementTheme appTheme = ElementTheme.Default;
+            var cases = new[] { "Direct", "Setter", "Literal", "NestedThemeColor" };
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                appTheme = Application.Current.RequestedTheme == ApplicationTheme.Dark ? ElementTheme.Dark : ElementTheme.Light;
+                elementTheme = appTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
+                Log.Comment($"Application theme {appTheme}; window-root theme {elementTheme}.");
+
+                appDictionary = (ResourceDictionary)Microsoft.UI.Xaml.Markup.XamlReader.Load(appDictionaryXaml);
+                Application.Current.Resources.MergedDictionaries.Add(appDictionary);
+
+                root = (StackPanel)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                    $@"<StackPanel xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                  xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+                                  xmlns:tv=""using:Microsoft.UI.Xaml.Controls.Tabular""
+                                  RequestedTheme=""{elementTheme}"">
+                        <StackPanel.Resources>
+                          <Style x:Key=""BandStyle"" TargetType=""tv:TableView"">
+                            <Setter Property=""AlternatingRowBackground"" Value=""{{ThemeResource SubtleFillColorSecondaryBrush}}""/>
+                          </Style>
+                        </StackPanel.Resources>
+                        <Border x:Name=""Reference"" Width=""10"" Height=""10"" Background=""{{ThemeResource SubtleFillColorSecondaryBrush}}""/>
+                        <tv:TableView x:Name=""Direct"" Width=""300"" Height=""120"" AlternatingRowBackground=""{{ThemeResource SubtleFillColorSecondaryBrush}}""/>
+                        <tv:TableView x:Name=""Setter"" Width=""300"" Height=""120"" Style=""{{StaticResource BandStyle}}""/>
+                        <tv:TableView x:Name=""Literal"" Width=""300"" Height=""120"" AlternatingRowBackground=""{{ThemeResource TvBandLiteral}}""/>
+                        <tv:TableView x:Name=""NestedThemeColor"" Width=""300"" Height=""120"" AlternatingRowBackground=""{{ThemeResource TvBandNestedThemeColor}}""/>
+                      </StackPanel>");
+
+                foreach (var name in cases)
+                {
+                    var tableView = (TableView)root.FindName(name);
+                    tableView.Columns.Add(MakeTextColumn("Name"));
+                    tableView.ItemsSource = MakeItems();
+                }
+
+                LoadContent(root);
+            });
+
+            try
+            {
+                foreach (var theme in new[] { elementTheme, appTheme })
+                {
+                    RunOnUIThread.Execute(() => root.RequestedTheme = theme);
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() => root.UpdateLayout());
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var expected = ((SolidColorBrush)((Border)root.FindName("Reference")).Background).Color;
+                        var expectedLiteral = theme == ElementTheme.Dark
+                            ? Color.FromArgb(0xFF, 0x44, 0x55, 0x66)
+                            : Color.FromArgb(0xFF, 0x11, 0x22, 0x33);
+
+                        foreach (var name in cases)
+                        {
+                            var tableView = (TableView)root.FindName(name);
+                            Verify.AreEqual(theme, tableView.ActualTheme, $"Precondition: {name} runs under {theme}.");
+                            var oddRow = GetProjectedRow(tableView, 1);
+                            var actual = (oddRow?.Background as SolidColorBrush)?.Color;
+                            var want = name == "Literal" ? expectedLiteral : expected;
+                            Log.Comment($"{theme} {name}: band {actual}, expected {want}.");
+                            Verify.AreEqual(want, actual, $"Under {theme}, the {name} banding pattern must paint the {theme} color on odd rows.");
+                            Verify.IsNull(GetProjectedRow(tableView, 0)?.ReadLocalValue(Control.BackgroundProperty) as Brush,
+                                $"Even rows stay unbanded without RowBackground ({name}).");
+                        }
+                    });
+                }
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Application.Current.Resources.MergedDictionaries.Remove(appDictionary));
+            }
+        }
+
+        #endregion
     }
 
     internal static class TableViewThemingTestHelpers
