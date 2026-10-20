@@ -588,6 +588,7 @@ void NavigationViewItem::HookAnimatedIconEvents(winrt::IInspectable const& oldIc
 {
     m_animatedIconStateChangedRevoker.revoke();
     m_animatedIconSourceChangedRevoker.revoke();
+    m_animatedIconLoadedRevoker.revoke();
 
     auto const animatedIcon = Icon().try_as<winrt::AnimatedIcon>();
 
@@ -613,7 +614,15 @@ void NavigationViewItem::HookAnimatedIconEvents(winrt::IInspectable const& oldIc
     {
         m_animatedIconStateChangedRevoker = RegisterPropertyChanged(animatedIcon, winrt::AnimatedIcon::StateProperty(), { this, &NavigationViewItem::OnAnimatedIconPropertyChanged });
         m_animatedIconSourceChangedRevoker = RegisterPropertyChanged(animatedIcon, winrt::AnimatedIcon::SourceProperty(), { this, &NavigationViewItem::OnAnimatedIconPropertyChanged });
+        // A previously used icon already has a State, so when it is (re)attached to this item's template, AnimatedIcon
+        // doesn't copy the template's state and nothing changes. Re-map once it is actually hosted here.
+        m_animatedIconLoadedRevoker = animatedIcon.Loaded(winrt::auto_revoke, { this, &NavigationViewItem::OnAnimatedIconLoaded });
     }
+}
+
+void NavigationViewItem::OnAnimatedIconLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&)
+{
+    UpdateAnimatedIconState(sender.try_as<winrt::AnimatedIcon>());
 }
 
 void NavigationViewItem::OnAnimatedIconPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty&)

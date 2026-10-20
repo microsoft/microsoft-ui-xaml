@@ -102,6 +102,7 @@ private:
     void UpdateVisualStateForPointer();
     void HookAnimatedIconEvents(winrt::IInspectable const& oldIcon);
     void OnAnimatedIconPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void OnAnimatedIconLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void UpdateAnimatedIconState();
     void UpdateAnimatedIconState(winrt::AnimatedIcon const& animatedIcon);
     bool IsHostingAnimatedIcon(winrt::AnimatedIcon const& animatedIcon);
@@ -144,6 +145,7 @@ private:
     PropertyChanged_revoker m_splitViewCompactPaneLengthChangedRevoker{};
     PropertyChanged_revoker m_animatedIconStateChangedRevoker{};
     PropertyChanged_revoker m_animatedIconSourceChangedRevoker{};
+    winrt::FrameworkElement::Loaded_revoker m_animatedIconLoadedRevoker{};
 
     winrt::UIElement::PointerPressed_revoker m_presenterPointerPressedRevoker{};
     winrt::UIElement::PointerEntered_revoker m_presenterPointerEnteredRevoker{};
