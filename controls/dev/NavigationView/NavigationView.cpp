@@ -359,6 +359,11 @@ void NavigationView::SelectandMoveOverflowItem(winrt::IInspectable const& select
         {
             return;
         }
+        // An equal index path can now refer to a different item, e.g. when the item was removed and its successor selected.
+        if (selectedIndex.GetSize() == 2 && m_topDataProvider.IndexOf(selectedItem) != selectedIndex.GetAt(1))
+        {
+            return;
+        }
     }
 
     SelectOverflowItem(selectedItem, selectedIndex);
@@ -2373,15 +2378,31 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         // Don't suppress the model callback: a selection made from this item's IsSelected callback must take ownership.
         ChangeSelectStatusForItem(*pendingPreviousItem, false /*selected*/);
     }
-    // Unselecting the original item can itself redirect selection through a property callback.
+    // Each step below can run app callbacks (IsSelected / IsChildSelected) that start a reentrant selection.
     // Any reentrant ChangeSelection has completed the selection, even if it returned to nextItem.
-    if (generation != m_selectionChangeGeneration || selectedItem != SelectedItem())
+    const auto selectionOwnershipLost = [this, generation, &selectedItem]()
+    {
+        return generation != m_selectionChangeGeneration || selectedItem != SelectedItem();
+    };
+    if (selectionOwnershipLost())
     {
         return;
     }
     UnselectPrevItem(prevItem, nextItem);
+    if (selectionOwnershipLost())
+    {
+        return;
+    }
     ChangeSelectStatusForItem(nextItem, true /*selected*/);
+    if (selectionOwnershipLost())
+    {
+        return;
+    }
     UpdateSelectionModelSelectionForSelectedItem(nextItem);
+    if (selectionOwnershipLost())
+    {
+        return;
+    }
 
     if (!nextItem && m_selectionModel)
     {
@@ -2398,6 +2419,10 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             });
             m_shouldIgnoreNextSelectionChange = true;
             UpdateIsChildSelected(selectedIndexPath, nullptr);
+            if (selectionOwnershipLost())
+            {
+                return;
+            }
             m_selectionModel.ClearSelection();
         }
     }
@@ -3766,7 +3791,11 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
 
     // Calculate selected overflow item size.
     auto selectedOverflowItemIndex = m_topDataProvider.IndexOf(itemBeingMoved);
-    MUX_ASSERT(selectedOverflowItemIndex != s_itemNotFound);
+    if (selectedOverflowItemIndex == s_itemNotFound)
+    {
+        // The item left the source while it was being selected; there is nothing to promote.
+        return;
+    }
     const auto selectedOverflowItemWidth = m_topDataProvider.GetWidthForItem(selectedOverflowItemIndex);
 
     bool needInvalidMeasure = !m_topDataProvider.IsValidWidthForItem(selectedOverflowItemIndex);
