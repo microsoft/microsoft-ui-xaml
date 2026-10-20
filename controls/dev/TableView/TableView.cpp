@@ -69,10 +69,12 @@ namespace
                right.as<winrt::Windows::Foundation::IUnknown>();
     }
 
-    winrt::ScrollViewer FindScrollViewerAncestor(winrt::DependencyObject const& start)
+    // Stops at the TableView: past it, the nearest ScrollViewer belongs to the app, and latching it
+    // would sync and pin against a scroller the control does not own.
+    winrt::ScrollViewer FindScrollViewerAncestor(winrt::DependencyObject const& start, winrt::DependencyObject const& boundary)
     {
         winrt::DependencyObject node = start;
-        while (node)
+        while (node && !IsSameObject(node, boundary))
         {
             if (auto sv = node.try_as<winrt::ScrollViewer>())
             {
@@ -1117,7 +1119,7 @@ void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const 
     if (auto headerHost = m_headerHost.get())
     {
         winrt::ScrollViewer scroller{ nullptr };
-        try { scroller = FindScrollViewerAncestor(headerHost); } catch (...) {}
+        try { scroller = FindScrollViewerAncestor(headerHost, *this); } catch (...) {}
         m_headerScroller.set(scroller);
         // Header pans can transiently desync; reverse-sync can clamp when header/body extents differ.
         UpdateHeaderVisibility();
@@ -1140,7 +1142,7 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
     if (auto repeater = m_rowsRepeater.get())
     {
         winrt::ScrollViewer scroller{ nullptr };
-        try { scroller = FindScrollViewerAncestor(repeater); } catch (...) {}
+        try { scroller = FindScrollViewerAncestor(repeater, *this); } catch (...) {}
         m_bodyScroller.set(scroller);
         if (auto bodyScroller = m_bodyScroller.get())
         {
