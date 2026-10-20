@@ -1564,11 +1564,13 @@ namespace Microsoft.UI.Xaml.Data
     {
     };
 
-    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
     [webhosthidden]
     delegate Object CompiledBindingGetter(Object source);
 
-    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
     [webhosthidden]
     delegate void CompiledBindingSetter(Object source, Object value);
 

@@ -98,6 +98,8 @@ FrameworkElement::SetCompiledBindingImpl(
     IFC_RETURN(ctl::do_query_interface(spDP, pDP));
     IFC_RETURN(get_DataContext(&spDataContext));
 
+    // A null DataContext is valid. The expression uses the target property's default
+    // until this element acquires a DataContext.
     return DXamlCore::SetCompiledBinding(
         spDataContext.Get(),
         getter,
@@ -118,6 +120,8 @@ FrameworkElement::SetCompiledBindingWithSetterImpl(
     IFC_RETURN(ctl::do_query_interface(spDP, pDP));
     IFC_RETURN(get_DataContext(&spDataContext));
 
+    // A null DataContext is valid. The expression uses the target property's default
+    // until this element acquires a DataContext.
     return DXamlCore::SetCompiledBinding(
         spDataContext.Get(),
         getter,

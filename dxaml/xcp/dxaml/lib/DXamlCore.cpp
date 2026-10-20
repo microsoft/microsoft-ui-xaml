@@ -4710,14 +4710,13 @@ bool DXamlCore::TryGetXamlIslandBoundsForElement(_In_opt_ CDependencyObject* dep
         converter,
         spExpression.ReleaseAndGetAddressOf()));
 
-    // Attach the expression to the target using the public SetExpressionCore method
     IFC_RETURN(target->SetExpressionCore(pTargetProperty, spExpression.Get(), ::BaseValueSourceUnknown));
 
     return S_OK;
 }
 
 /* static */ _Check_return_ HRESULT DXamlCore::SetCompiledBinding(
-    _In_ IInspectable* source,
+    _In_opt_ IInspectable* source,
     _In_ xaml_data::ICompiledBindingGetter* getter,
     _In_opt_ xaml_data::ICompiledBindingSetter* setter,
     _In_ DependencyObject* target,
@@ -4732,7 +4731,6 @@ bool DXamlCore::TryGetXamlIslandBoundsForElement(_In_opt_ CDependencyObject* dep
         setter,
         spExpression.ReleaseAndGetAddressOf()));
 
-    // Attach the expression to the target using the public SetExpressionCore method
     IFC_RETURN(target->SetExpressionCore(pTargetProperty, spExpression.Get(), ::BaseValueSourceUnknown));
 
     if (setter)

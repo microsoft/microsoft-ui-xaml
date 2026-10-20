@@ -821,6 +821,115 @@ namespace Framework { namespace DataBinding {
         });
     }
 
+    void BindingIntegrationTests::CanUseStringDataContextForCompiledBinding()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto target = ref new StackPanel;
+            auto source = ref new String(L"String source");
+            target->DataContext = source;
+
+            target->SetCompiledBinding(
+                Panel::TagProperty,
+                ref new CompiledBindingGetter([](Object^ source) -> Object^
+                {
+                    return source;
+                }));
+
+            VERIFY_ARE_EQUAL(source, safe_cast<String^>(target->Tag));
+        });
+    }
+
+    void BindingIntegrationTests::CanIgnoreSourceChangesDuringCompiledBindingEvaluation()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto target = ref new StackPanel;
+            auto source = CreateInpcDataSource();
+            target->DataContext = source;
+
+            int getterInvocationCount = 0;
+            target->SetCompiledBinding(
+                Panel::TagProperty,
+                ref new CompiledBindingGetter([&getterInvocationCount](Object^ source) -> Object^
+                {
+                    auto dataSource = safe_cast<InpcDataSource^>(source);
+                    ++getterInvocationCount;
+                    if (getterInvocationCount == 1)
+                    {
+                        dataSource->StringProperty = L"Updated during getter";
+                    }
+
+                    return dataSource->StringProperty;
+                }));
+
+            VERIFY_ARE_EQUAL(
+                1,
+                getterInvocationCount,
+                L"PropertyChanged raised by the getter should not re-enter the getter");
+            VERIFY_ARE_EQUAL(source->StringProperty, safe_cast<String^>(target->Tag));
+
+            source->StringProperty = L"Updated after evaluation";
+
+            VERIFY_ARE_EQUAL(2, getterInvocationCount, L"Later source changes should still invoke the getter");
+            VERIFY_ARE_EQUAL(source->StringProperty, safe_cast<String^>(target->Tag));
+        });
+    }
+
+    void BindingIntegrationTests::CanReplaceCompiledBindingDuringTargetRefresh()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto target = ref new StackPanel;
+            auto source = CreateInpcDataSource();
+            target->DataContext = source;
+
+            int getterInvocationCount = 0;
+            target->SetCompiledBinding(
+                Panel::TagProperty,
+                ref new CompiledBindingGetter([&getterInvocationCount](Object^ source) -> Object^
+                {
+                    ++getterInvocationCount;
+                    return safe_cast<InpcDataSource^>(source)->StringProperty;
+                }));
+
+            bool replacedBinding = false;
+            const long long callbackToken = target->RegisterPropertyChangedCallback(
+                Panel::TagProperty,
+                ref new DependencyPropertyChangedCallback([&replacedBinding](DependencyObject^ sender, DependencyProperty^)
+                {
+                    if (!replacedBinding)
+                    {
+                        replacedBinding = true;
+                        safe_cast<StackPanel^>(sender)->Tag = L"Replacement value";
+                    }
+                }));
+            auto unregisterCallback = wil::scope_exit([target, callbackToken]()
+            {
+                target->UnregisterPropertyChangedCallback(Panel::TagProperty, callbackToken);
+            });
+
+            VERIFY_ARE_EQUAL(1, getterInvocationCount);
+
+            source->StringProperty = L"Trigger target refresh";
+
+            VERIFY_IS_TRUE(replacedBinding);
+            VERIFY_ARE_EQUAL(2, getterInvocationCount);
+            VERIFY_ARE_EQUAL(ref new String(L"Replacement value"), safe_cast<String^>(target->Tag));
+
+            source->StringProperty = L"Update after replacement";
+
+            VERIFY_ARE_EQUAL(
+                2,
+                getterInvocationCount,
+                L"Replacing the binding during refresh should detach it from the source");
+            VERIFY_ARE_EQUAL(ref new String(L"Replacement value"), safe_cast<String^>(target->Tag));
+        });
+    }
+
     void BindingIntegrationTests::CanUpdateTwoWayCompiledBinding()
     {
         TestCleanupWrapper cleanup;

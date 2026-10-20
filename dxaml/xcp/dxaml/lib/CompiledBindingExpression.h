@@ -44,15 +44,13 @@ namespace DirectUI
     // re-evaluates whenever the source raises INotifyPropertyChanged.
     //
     // Reference ownership notes (same model as DirectSourceBindingExpression):
-    // - Source: The expression holds a weak reference (IWeakReference) to the source to
-    //   avoid cycles, since the source's PropertyChanged event holds a strong reference
-    //   to this expression's handler.
-    // - Getter: The expression holds a STRONG reference to the getter delegate. The
-    //   target owns the expression (via EffectiveValueEntry), the expression owns the
-    //   getter, and the getter is what keeps the app's lambda (and its captures) alive
-    //   for the lifetime of the binding. This is not a cycle: the getter does not
-    //   reference the target. When the target tears the expression down (OnDetach ->
-    //   release), the getter - and the lambda it wraps - is released with it.
+    // - Source: The expression holds a weak reference when the source supports it. For
+    //   sources without IWeakReferenceSource, it falls back to a tracker-aware strong
+    //   reference so any valid DataContext can be used.
+    // - Getter/setter: TrackerPtr keeps native delegates strongly referenced and reports
+    //   reference-tracked delegates to the managed GC. This lets the GC collect an
+    //   otherwise unreachable target -> expression -> delegate -> target cycle. Native
+    //   callers must avoid strong target/ancestor captures or explicitly clear the binding.
     // - Target: The expression holds a no-ref raw pointer to the target. This is safe
     //   because the target owns this expression. The expression cannot outlive the
     //   target - OnDetach is always called before the expression is released, which
@@ -73,8 +71,9 @@ namespace DirectUI
 
     private:
         ctl::ComPtr<IWeakReference> m_spSourceRef;                       // Weak reference to source object
-        ctl::ComPtr<xaml_data::ICompiledBindingGetter> m_spGetter;      // Strong ref: app getter delegate (keeps the lambda alive)
-        ctl::ComPtr<xaml_data::ICompiledBindingSetter> m_spSetter;      // Strong ref: optional app setter delegate
+        TrackerPtr<IInspectable> m_tpStrongSource;                       // Fallback for sources that do not support weak references
+        TrackerPtr<xaml_data::ICompiledBindingGetter> m_tpGetter;       // Tracker-aware app getter delegate
+        TrackerPtr<xaml_data::ICompiledBindingSetter> m_tpSetter;       // Tracker-aware optional app setter delegate
         DependencyObject* m_pTarget = nullptr;                          // The target instance (no-ref, kept valid by attach/detach lifecycle)
         const CDependencyProperty* m_pTargetProperty = nullptr;         // The target property
         ctl::EventPtr<PropertyChangedEventCallback> m_epSourceChangedHandler; // INPC subscription on the source

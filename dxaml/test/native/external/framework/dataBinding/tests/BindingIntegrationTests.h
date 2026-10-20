@@ -113,6 +113,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     L"Set a compiled binding before and after setting DataContext and verify the value propagates")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CanUseStringDataContextForCompiledBinding)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Verify a compiled binding supports a DataContext that does not expose a weak reference")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CanIgnoreSourceChangesDuringCompiledBindingEvaluation)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Verify a source notification raised by the compiled binding getter does not re-enter the getter")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CanReplaceCompiledBindingDuringTargetRefresh)
+                TEST_METHOD_PROPERTY(L"Description",
+                    L"Verify a target property callback can replace a compiled binding during target refresh")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(CanUpdateTwoWayCompiledBinding)
                 TEST_METHOD_PROPERTY(L"Description",
                     L"Verify a compiled binding setter writes target changes to the current DataContext without recursive updates")

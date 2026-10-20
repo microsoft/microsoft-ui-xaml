@@ -611,10 +611,12 @@ namespace Microsoft.UI.Xaml.Data
     // generated getter. Non-generic at the ABI (source and result are Object) because WinRT cannot
     // express user-defined generic delegates; typed, boxing-free wrappers are layered on top in the
     // language projections.
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     public delegate Windows.Foundation.Object CompiledBindingGetter(Windows.Foundation.Object source);
 
     // Setter for a programmatic compiled binding: maps a value from the bound target property
     // back to the source object (typically the DataContext).
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     public delegate void CompiledBindingSetter(Windows.Foundation.Object source, Windows.Foundation.Object value);
 
     [CodeGen(partial: true)]

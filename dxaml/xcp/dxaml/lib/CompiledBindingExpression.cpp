@@ -75,8 +75,7 @@ private:
 CompiledBindingExpression::~CompiledBindingExpression()
 {
     m_spSourceRef.Reset();
-    m_spGetter.Reset();
-    m_spSetter.Reset();
+    m_tpStrongSource.Clear();
     m_spDataContextChangedHandler.Reset();
     m_spTargetChangedHandler.Reset();
     m_pTarget = nullptr;
@@ -97,10 +96,11 @@ _Check_return_ HRESULT CompiledBindingExpression::Create(
 
     IFC_RETURN(spExpression->SetSource(pSource));
 
-    // Strong reference to the getter delegate: this is what keeps the app's lambda (and its
-    // captured state) alive for the lifetime of the binding.
-    spExpression->m_spGetter = pGetter;
-    spExpression->m_spSetter = pSetter;
+    spExpression->SetPtrValue(spExpression->m_tpGetter, pGetter);
+    if (pSetter)
+    {
+        spExpression->SetPtrValue(spExpression->m_tpSetter, pSetter);
+    }
 
     *ppExpression = spExpression.Detach();
     return S_OK;
@@ -108,7 +108,7 @@ _Check_return_ HRESULT CompiledBindingExpression::Create(
 
 _Check_return_ HRESULT CompiledBindingExpression::GetCanSetValue(_Out_ bool *pValue)
 {
-    *pValue = !!m_spSetter;
+    *pValue = m_tpSetter.IsSet();
     return S_OK;
 }
 
@@ -241,8 +241,11 @@ _Check_return_ HRESULT CompiledBindingExpression::GetValue(
     }
     else
     {
+        auto spGetter = m_tpGetter.GetSafeReference();
+        IFCEXPECT_RETURN(spGetter);
+
         // SYNC_CALL_TO_APP DIRECT - This next line may directly call out to app code.
-        IFC_RETURN(m_spGetter->Invoke(spSource.Get(), spValue.ReleaseAndGetAddressOf()));
+        IFC_RETURN(spGetter->Invoke(spSource.Get(), spValue.ReleaseAndGetAddressOf()));
     }
 
     if (m_dataContextChangedDuringEvaluation)
@@ -256,6 +259,10 @@ _Check_return_ HRESULT CompiledBindingExpression::GetValue(
 
 _Check_return_ HRESULT CompiledBindingExpression::OnSourceChanged()
 {
+    // RefreshExpression can call app property-changed callbacks that replace this
+    // expression. Keep it alive until this notification has finished.
+    ctl::ComPtr<CompiledBindingExpression> spSelfRef(this);
+
     if (m_updatingSource)
     {
         m_sourceChangedDuringUpdate = true;
@@ -287,7 +294,7 @@ _Check_return_ HRESULT CompiledBindingExpression::RefreshTarget()
 
 _Check_return_ HRESULT CompiledBindingExpression::ConnectToTargetChanges()
 {
-    IFCEXPECT_RETURN(m_spSetter);
+    IFCEXPECT_RETURN(m_tpSetter.IsSet());
     IFCEXPECT_RETURN(m_pTarget);
     IFCEXPECT_RETURN(!m_bRegisteredForTargetChanges);
 
@@ -310,7 +317,8 @@ _Check_return_ HRESULT CompiledBindingExpression::OnTargetChanged()
         return S_OK;
     }
 
-    IFCEXPECT_RETURN(m_spSetter);
+    auto spSetter = m_tpSetter.GetSafeReference();
+    IFCEXPECT_RETURN(spSetter);
 
     ctl::ComPtr<IInspectable> spSource;
     IFC_RETURN(GetSource(&spSource));
@@ -330,7 +338,7 @@ _Check_return_ HRESULT CompiledBindingExpression::OnTargetChanged()
     });
 
     // SYNC_CALL_TO_APP DIRECT - This next line may directly call out to app code.
-    IFC_RETURN(m_spSetter->Invoke(spSource.Get(), spValue.Get()));
+    IFC_RETURN(spSetter->Invoke(spSource.Get(), spValue.Get()));
 
     m_updatingSource = false;
     updatingSourceGuard.release();
@@ -392,6 +400,11 @@ _Check_return_ HRESULT CompiledBindingExpression::GetSource(
         {
             IFC_RETURN(ctl::resolve_weakref(m_spSourceRef.Get(), *ppSource));
         }
+        else if (m_tpStrongSource)
+        {
+            auto spSource = m_tpStrongSource.GetSafeReference();
+            IFC_RETURN(spSource.CopyTo(ppSource));
+        }
     }
 
     return S_OK;
@@ -411,11 +424,20 @@ _Check_return_ HRESULT CompiledBindingExpression::SetSource(_In_opt_ IInspectabl
     }
 
     m_spSourceRef.Reset();
+    m_tpStrongSource.Clear();
     if (pSource)
     {
         IWeakReference* pSourceRef = nullptr;
-        IFC_RETURN(ctl::as_weakref(pSourceRef, pSource));
-        m_spSourceRef.Attach(pSourceRef);
+        const HRESULT weakReferenceResult = ctl::as_weakref(pSourceRef, pSource);
+        if (weakReferenceResult == E_NOINTERFACE)
+        {
+            SetPtrValue(m_tpStrongSource, pSource);
+        }
+        else
+        {
+            IFC_RETURN(weakReferenceResult);
+            m_spSourceRef.Attach(pSourceRef);
+        }
 
         if (m_pTarget)
         {
