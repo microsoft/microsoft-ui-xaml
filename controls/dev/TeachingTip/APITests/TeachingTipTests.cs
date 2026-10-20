@@ -2732,6 +2732,122 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario (issue #8095 review): a closed tip whose IsOpen is bound to a ToggleButton is closed again through its
+        //           automation peer (IWindowProvider.Close).
+        // Expected: the IsOpen binding survives, so checking the button still opens the tip.
+        // A failure means: the automation peer replaced the app's IsOpen binding with a local value.
+        [TestMethod]
+        public void BoundTipSurvivesAutomationPeerCloseWhileClosed()
+        {
+            var (tip, toggle) = CreateBoundTip(t => { });
+            SetBoundSourceAndWait(tip, toggle, true);
+            SetBoundSourceAndWait(tip, toggle, false);
+
+            RunOnUIThread.Execute(() => GetWindowProvider(tip).Close());
+            IdleSynchronizer.Wait();
+
+            VerifyBindingSurvivesAndTipReopens(tip, toggle, "after IWindowProvider.Close on a closed tip");
+        }
+
+        // Scenario (issue #8095 review): a bound tip is closed with its close button, and the app's CloseButtonClick
+        //           handler clears the bound source itself.
+        // Expected: the tip closes with reason CloseButton and the IsOpen binding survives, so the tip can open again.
+        // A failure means: the close button handler wrote IsOpen after the binding had already closed the tip.
+        [TestMethod]
+        public void BoundTipSurvivesCloseButtonHandlerClearingSource()
+        {
+            var (tip, toggle) = CreateBoundTip(t => t.CloseButtonContent = "Close");
+            var closedReasons = new List<TeachingTipCloseReason>();
+            var closedRaised = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                tip.CloseButtonClick += (s, a) => toggle.IsChecked = false;
+                tip.Closed += (s, a) => { closedReasons.Add(a.Reason); closedRaised.Set(); };
+            });
+            SetBoundSourceAndWait(tip, toggle, true);
+
+            RunOnUIThread.Execute(() => InvokeButton(GetTemplateButton(tip, "CloseButton")));
+            Verify.IsTrue(closedRaised.WaitOne(DefaultWaitTimeInMS), "Closed should be raised");
+            Verify.IsTrue(WaitForTipState(tip, isOpen: false), "The close button should close the tip");
+            RunOnUIThread.Execute(() => Verify.AreEqual("CloseButton", string.Join(",", closedReasons), "Close reason"));
+
+            VerifyBindingSurvivesAndTipReopens(tip, toggle, "after a CloseButtonClick handler cleared the source");
+        }
+
+        // Scenario (issue #8095 review): a bound tip is asked to open but does not fit, and the app's Closing handler clears
+        //           the bound source.
+        // Expected: the IsOpen binding survives, so the tip opens through it once there is room.
+        // A failure means: the "does not fit" path wrote IsOpen after the app's handler had already reset the source.
+        [TestMethod]
+        public void BoundTipSurvivesClosingHandlerClearingSourceWhenTipDoesNotFit()
+        {
+            var (tip, toggle) = CreateBoundTip(t => { });
+            // Open once so the tip has been measured.
+            SetBoundSourceAndWait(tip, toggle, true);
+            SetBoundSourceAndWait(tip, toggle, false);
+
+            var closedRaised = new ManualResetEvent(false);
+            TypedEventHandler<TeachingTip, TeachingTipClosingEventArgs> clearSource = (s, a) => toggle.IsChecked = false;
+            RunOnUIThread.Execute(() =>
+            {
+                tip.Closing += clearSource;
+                tip.Closed += (s, a) => closedRaised.Set();
+                TeachingTipTestHooks.SetUseTestWindowBounds(tip, true);
+                TeachingTipTestHooks.SetTestWindowBounds(tip, new Rect(0, 0, 10, 10));
+                toggle.IsChecked = true;
+            });
+            Verify.IsTrue(closedRaised.WaitOne(DefaultWaitTimeInMS), "Closed should be raised for a tip that does not fit");
+            Verify.IsTrue(WaitForTipState(tip, isOpen: false), "TeachingTip should settle closed");
+
+            RunOnUIThread.Execute(() =>
+            {
+                tip.Closing -= clearSource;
+                TeachingTipTestHooks.SetUseTestWindowBounds(tip, false);
+            });
+            VerifyBindingSurvivesAndTipReopens(tip, toggle, "after a Closing handler cleared the source of a tip that did not fit");
+        }
+
+        private (TeachingTip, Microsoft.UI.Xaml.Controls.Primitives.ToggleButton) CreateBoundTip(Action<TeachingTip> configure)
+        {
+            TeachingTip tip = null;
+            Microsoft.UI.Xaml.Controls.Primitives.ToggleButton toggle = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var root = (StackPanel)XamlReader.Load(@"
+                    <StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                        <ToggleButton x:Name='Toggle' Content='Toggle'/>
+                        <controls:TeachingTip x:Name='Tip' Title='Title' Subtitle='Subtitle'
+                            IsOpen='{Binding ElementName=Toggle, Path=IsChecked}'/>
+                    </StackPanel>");
+                toggle = (Microsoft.UI.Xaml.Controls.Primitives.ToggleButton)root.FindName("Toggle");
+                tip = (TeachingTip)root.FindName("Tip");
+                configure(tip);
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            return (tip, toggle);
+        }
+
+        private static void SetBoundSourceAndWait(TeachingTip tip, Microsoft.UI.Xaml.Controls.Primitives.ToggleButton toggle, bool isOpen)
+        {
+            RunOnUIThread.Execute(() => toggle.IsChecked = isOpen);
+            Verify.IsTrue(WaitForTipState(tip, isOpen), $"TeachingTip should {(isOpen ? "open" : "close")} through its binding");
+        }
+
+        private static void VerifyBindingSurvivesAndTipReopens(TeachingTip tip, Microsoft.UI.Xaml.Controls.Primitives.ToggleButton toggle, string what)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(tip.IsOpen, "Tip should be closed " + what);
+                Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), "IsOpen binding should survive " + what);
+            });
+            SetBoundSourceAndWait(tip, toggle, true);
+            SetBoundSourceAndWait(tip, toggle, false);
+        }
+
         private static void VerifyBoundTipOpensAndCloses(TeachingTip tip, Microsoft.UI.Xaml.Controls.Primitives.ToggleButton target, string what)
         {
             RunOnUIThread.Execute(() =>
