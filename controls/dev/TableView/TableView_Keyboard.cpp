@@ -2147,10 +2147,7 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
 
     if (bodyItem)
     {
-        // A group toggle recycles the focused container, and the repeater rescues focus to another
-        // realized row, often one in the cache outside the viewport. Bringing that row into view
-        // jumps the body before the armed restore returns focus, and the restore then lands on
-        // estimated extents. Only the row holding the rescued focus is ignored.
+        // A group toggle's rescued focus may sit on a cached row; revealing it would jump the body.
         if (m_pendingGroupFocusLayoutToken.value &&
             bodyItem.try_as<winrt::TableViewRow>() &&
             IsBodyFocusInContainer(bodyItem))
