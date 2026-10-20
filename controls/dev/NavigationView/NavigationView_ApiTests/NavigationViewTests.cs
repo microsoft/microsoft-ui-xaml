@@ -1210,6 +1210,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual("ClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "A PaneFooter, A closed");
 
+                navViewB.IsPaneOpen = true;
                 navViewA.PaneFooter = null;
                 Content.UpdateLayout();
                 navViewB.PaneFooter = item;
@@ -1219,6 +1220,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                Verify.IsTrue(navViewB.IsPaneOpen, "B pane is open");
+                Verify.IsFalse(navViewA.IsPaneOpen, "A pane is closed");
                 Verify.AreEqual("NotClosedCompactAndTopLevelItem", GetPaneAndTopLevelItemState(item), "B PaneFooter, B open");
 
                 navViewB.IsPaneOpen = false;
