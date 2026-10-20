@@ -1524,8 +1524,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
                 IdleSynchronizer.Wait();
 
+                var events = new List<object>();
+                bool containersMatch = true;
                 global::Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewSelectionChangedEventArgs> forwardToChild = (sender, args) =>
                 {
+                    events.Add(args.SelectedItem);
+                    // The reported container must be null or the one that presents the selected item.
+                    containersMatch &= args.SelectedItemContainer == null || args.SelectedItemContainer == navView.ContainerFromMenuItem(args.SelectedItem);
                     if (args.SelectedItem == parentItem)
                     {
                         navView.SelectedItem = childItem;
@@ -1537,18 +1542,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     navView.SelectionChanged += forwardToChild;
                     parentNvi.IsSelected = true;
                 });
-                IdleSynchronizer.Wait();
+                // A selection without a visible container is reported from a Low-priority callback; let it run while loaded.
+                DrainLowPriorityDispatcherQueue();
 
                 RunOnUIThread.Execute(() =>
                 {
                     Verify.AreEqual(childItem, navView.SelectedItem);
                     Verify.IsFalse(parentNvi.IsSelected);
                     Verify.IsTrue(parentNvi.IsChildSelected, "The parent of the selected child must report IsChildSelected.");
+                    Verify.AreEqual(2, events.Count, "SelectionChanged for the parent, then for the child.");
+                    Verify.AreEqual(parentItem, events[0]);
+                    Verify.AreEqual(childItem, events[1]);
+                    Verify.IsTrue(containersMatch, "SelectedItemContainer must be null or present the selected item.");
                 });
                 Verify.IsTrue(ItemHasSelectionIndicator(navView, expanded ? "Child" : "Parent"), "The selection indicator must be shown.");
 
-                // Tear this NavigationView down inside the test, so no work for it is still in flight when the next
-                // iteration or the class cleanup runs (see docs: a host assert was observed only in that window).
+                // Tear this NavigationView down inside the test, so no work for it is still in flight when the next iteration runs.
                 RunOnUIThread.Execute(() =>
                 {
                     navView.SelectionChanged -= forwardToChild;
@@ -1556,6 +1565,64 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
                 IdleSynchronizer.Wait();
             }
+        }
+
+        [TestMethod]
+        public void VerifyLaterSelectionSupersedesPendingSelectionChanged()
+        {
+            NavigationView navView = null;
+            Category topLevelItem = null;
+            Category childItem = null;
+            ManualResetEvent loadedEvent = new(false);
+            var events = new List<object>();
+            RunOnUIThread.Execute(() =>
+            {
+                childItem = new("Child", "Child", "Icon", null, true);
+                topLevelItem = new("TopLevel", "TopLevel", "Icon", null, true);
+                navView = new NavigationView {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    Width = 1008,
+                    // The parent stays collapsed, so the data-bound child has no visible container.
+                    MenuItemsSource = new ObservableCollection<Category> { topLevelItem, new("Parent", "Parent", "Icon", new ObservableCollection<Category> { childItem }, true) },
+                    MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
+<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+  <NavigationViewItem Content='{Binding Content}' Name='{Binding Name}' MenuItemsSource='{Binding Children}' SelectsOnInvoked='{Binding SelectsOnInvoked}'/>
+</DataTemplate>")
+                };
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                Content = navView;
+            });
+            loadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView.SelectionChanged += (sender, args) => events.Add(args.SelectedItem);
+                // Two assignments in one tick: the first is deferred (no container), the second is raised immediately.
+                navView.SelectedItem = childItem;
+                navView.SelectedItem = topLevelItem;
+            });
+            DrainLowPriorityDispatcherQueue();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(topLevelItem, navView.SelectedItem);
+                Verify.AreEqual(1, events.Count, "Only the current selection may be reported; the superseded deferred notification must not follow it.");
+                Verify.AreEqual(topLevelItem, events[events.Count - 1]);
+            });
+        }
+
+        static void DrainLowPriorityDispatcherQueue()
+        {
+            IdleSynchronizer.Wait();
+            using var drained = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                // Low-priority items run in order, so this one runs after any earlier Low-priority work.
+                global::Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().TryEnqueue(global::Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () => drained.Set());
+            });
+            Verify.IsTrue(drained.WaitOne(TimeSpan.FromSeconds(5)), "Low-priority dispatcher work should drain.");
+            IdleSynchronizer.Wait();
         }
 
         [TestMethod]
