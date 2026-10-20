@@ -103,7 +103,9 @@ private:
     void HookAnimatedIconEvents(winrt::IInspectable const& oldIcon);
     void OnAnimatedIconPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void UpdateAnimatedIconState();
-    void UpdateAnimatedIconState(winrt::AnimatedIcon const& animatedIcon, bool isSelected);
+    void UpdateAnimatedIconState(winrt::AnimatedIcon const& animatedIcon);
+    bool IsHostingAnimatedIcon(winrt::AnimatedIcon const& animatedIcon);
+    winrt::hstring MapAnimatedIconState(winrt::AnimatedIcon const& animatedIcon, bool isSelected);
     void UpdateVisualStateForChevron();
     void UpdateVisualStateForClosedCompact();
 
@@ -185,4 +187,8 @@ private:
     // NavigationView needs to force collapse top level items when the pane closes.
     // This bool is used to remember which items need to be restored to expanded state when the pane is opened again.
     bool m_restoreToExpandedState{ false };
+
+    // The AnimatedIcon state this item last wrote, so it only restores state it set itself when the Icon changes.
+    winrt::weak_ref<winrt::AnimatedIcon> m_lastWrittenAnimatedIcon{ nullptr };
+    winrt::hstring m_lastWrittenAnimatedIconState{};
 };

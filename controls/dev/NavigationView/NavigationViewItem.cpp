@@ -591,14 +591,23 @@ void NavigationViewItem::HookAnimatedIconEvents(winrt::IInspectable const& oldIc
 
     auto const animatedIcon = Icon().try_as<winrt::AnimatedIcon>();
 
-    // Don't leave a selected state behind on an icon that this item no longer owns.
+    // Don't leave a selected state that this item wrote behind on an icon it no longer uses. Only restore it if the
+    // icon still holds exactly what we wrote: anything else was set by the app or by another item.
     if (auto const oldAnimatedIcon = oldIcon.try_as<winrt::AnimatedIcon>())
     {
-        if (oldAnimatedIcon != animatedIcon)
+        if (oldAnimatedIcon != animatedIcon &&
+            oldAnimatedIcon == m_lastWrittenAnimatedIcon.get() &&
+            winrt::AnimatedIcon::GetState(oldAnimatedIcon) == m_lastWrittenAnimatedIconState)
         {
-            UpdateAnimatedIconState(oldAnimatedIcon, false /* isSelected */);
+            auto const unselectedState = MapAnimatedIconState(oldAnimatedIcon, false /* isSelected */);
+            if (unselectedState != m_lastWrittenAnimatedIconState)
+            {
+                winrt::AnimatedIcon::SetState(oldAnimatedIcon, unselectedState);
+            }
         }
     }
+    m_lastWrittenAnimatedIcon = nullptr;
+    m_lastWrittenAnimatedIconState = {};
 
     if (animatedIcon)
     {
@@ -609,26 +618,56 @@ void NavigationViewItem::HookAnimatedIconEvents(winrt::IInspectable const& oldIc
 
 void NavigationViewItem::OnAnimatedIconPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty&)
 {
-    UpdateAnimatedIconState(sender.try_as<winrt::AnimatedIcon>(), IsSelected());
+    UpdateAnimatedIconState(sender.try_as<winrt::AnimatedIcon>());
 }
 
 void NavigationViewItem::UpdateAnimatedIconState()
 {
-    UpdateAnimatedIconState(Icon().try_as<winrt::AnimatedIcon>(), IsSelected());
+    UpdateAnimatedIconState(Icon().try_as<winrt::AnimatedIcon>());
 }
 
-void NavigationViewItem::UpdateAnimatedIconState(winrt::AnimatedIcon const& animatedIcon, bool isSelected)
+void NavigationViewItem::UpdateAnimatedIconState(winrt::AnimatedIcon const& animatedIcon)
 {
-    if (!animatedIcon)
+    // An icon can be referenced by several items (e.g. a shared resource), but only the item whose template hosts it
+    // drives its state. Letting every item write would make them correct each other's writes forever.
+    if (!animatedIcon || !IsHostingAnimatedIcon(animatedIcon))
     {
         return;
     }
 
-    const std::wstring currentState{ winrt::AnimatedIcon::GetState(animatedIcon).c_str() };
+    auto const newState = MapAnimatedIconState(animatedIcon, IsSelected());
+    if (newState != winrt::AnimatedIcon::GetState(animatedIcon))
+    {
+        m_lastWrittenAnimatedIcon = winrt::make_weak(animatedIcon);
+        m_lastWrittenAnimatedIconState = newState;
+        // Re-enters through OnAnimatedIconPropertyChanged, which then finds nothing left to change.
+        winrt::AnimatedIcon::SetState(animatedIcon, newState);
+    }
+}
+
+bool NavigationViewItem::IsHostingAnimatedIcon(winrt::AnimatedIcon const& animatedIcon)
+{
+    // The nearest NavigationViewItem above the icon is the one whose template hosts it.
+    auto parent = winrt::VisualTreeHelper::GetParent(animatedIcon);
+    while (parent)
+    {
+        if (auto const item = parent.try_as<winrt::NavigationViewItem>())
+        {
+            return item == static_cast<winrt::NavigationViewItem>(*this);
+        }
+        parent = winrt::VisualTreeHelper::GetParent(parent);
+    }
+    return false;
+}
+
+winrt::hstring NavigationViewItem::MapAnimatedIconState(winrt::AnimatedIcon const& animatedIcon, bool isSelected)
+{
+    const winrt::hstring current = winrt::AnimatedIcon::GetState(animatedIcon);
+    const std::wstring currentState{ current.c_str() };
     if (currentState.empty())
     {
         // Not connected to the template's state yet; AnimatedIcon copies it when it loads, which brings us back here.
-        return;
+        return current;
     }
 
     const wstring_view unselectedState = [&currentState]()
@@ -668,12 +707,15 @@ void NavigationViewItem::UpdateAnimatedIconState(winrt::AnimatedIcon const& anim
     if (selectedState.empty())
     {
         // Not one of the pointer states this mapping is about (e.g. an app-defined state); leave it alone.
-        return;
+        return current;
     }
 
-    // Whether AnimatedIcon::TransitionStates can reach `state` from any other state without cutting to frame 0:
+    // Whether AnimatedIcon::TransitionStates can reach `state` from ANY other state without cutting to frame 0:
     // through a marker named after the state, or through any "<From>To<state>_End" marker. Outgoing
     // "<state>To<X>" markers don't count, the resolver never uses them to enter <state>.
+    // Deliberately conservative: TransitionStates can also enter <state> through a bare "<From>To<state>" or a
+    // "<From>To<state>_Start" without "_End", but only from that exact <From>, which this mapping can't know in
+    // advance. Such icons get the legacy (unselected) state, which is today's behavior, never a cut to frame 0.
     auto const canEnterState = [source = animatedIcon.Source()](wstring_view const& state)
     {
         if (!source)
@@ -702,11 +744,7 @@ void NavigationViewItem::UpdateAnimatedIconState(winrt::AnimatedIcon const& anim
     // Stateless on purpose: a selected state is only kept while the item is selected and the icon can play it,
     // so an icon that was detached, swapped or re-sourced never keeps a stale selected state.
     const wstring_view newState = (isSelected && canEnterState(selectedState)) ? selectedState : unselectedState;
-    if (newState != currentState)
-    {
-        // Re-enters through OnAnimatedIconPropertyChanged, which then finds nothing left to change.
-        winrt::AnimatedIcon::SetState(animatedIcon, winrt::hstring{ newState });
-    }
+    return winrt::hstring{ newState };
 }
 
 void NavigationViewItem::UpdateVisualState(bool useTransitions)
