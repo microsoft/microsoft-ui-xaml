@@ -617,7 +617,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 return navView;
             }, expectedIsPaneOpen: false);
 
-            Log.Comment("Runtime: after launching closed, LeftMinimal -> Left still opens the pane (post-template behavior unchanged)");
+            Log.Comment("Runtime: after launching closed, LeftCompact -> Left opens the pane (post-template PaneDisplayMode change still clears the force-close flag)");
+            var launchedNavViewCompact = VerifyLaunchState(() =>
+            {
+                var navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "MenuItem" });
+                navView.IsPaneOpen = false;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                return navView;
+            }, expectedIsPaneOpen: false);
+
+            RunOnUIThread.Execute(() => launchedNavViewCompact.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact);
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => launchedNavViewCompact.PaneDisplayMode = NavigationViewPaneDisplayMode.Left);
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(launchedNavViewCompact.IsPaneOpen, "NavigationView.IsPaneOpen after runtime LeftCompact -> Left");
+                var splitView = VisualTreeUtils.FindVisualChildByName(launchedNavViewCompact, "RootSplitView") as SplitView;
+                Verify.IsTrue(splitView.IsPaneOpen, "RootSplitView.IsPaneOpen after runtime LeftCompact -> Left");
+            });
+
+            Log.Comment("Runtime: after launching closed, LeftMinimal -> Left opens the pane (by-design explicit OpenPane in UpdatePaneDisplayMode)");
             var launchedNavView = VerifyLaunchState(() =>
             {
                 var navView = new NavigationView();
