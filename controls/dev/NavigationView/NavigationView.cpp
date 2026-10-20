@@ -989,7 +989,8 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
             }
         }
 
-        if (isSelectedInContainer)
+        // Re-read: the selection updates above can run a nested selection (e.g. of this item's child) that deselected it.
+        if (nvi.IsSelected())
         {
             nvi.IsChildSelected(false);
         }
@@ -2571,15 +2572,38 @@ void NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& i
     // second is index of item in mainmenu or footer
     // next in menuitem children
     auto index = 2;
+    bool reconcileWithCurrentSelection = false;
     while (container)
     {
         if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
         {
-            nvi.IsChildSelected(isChildSelected);
-            if (generation != m_selectionChangeGeneration)
+            if (reconcileWithCurrentSelection)
             {
-                // A callback started a new selection; the rest of this (now stale) path is no longer ours to update.
-                return;
+                // The container at this level owns the first `index` entries of ip. It has a selected child
+                // only if the current selection lies beneath it.
+                bool hasSelectedChild = false;
+                if (auto const selectedIndex = m_selectionModel.SelectedIndex())
+                {
+                    if (selectedIndex.GetSize() > index)
+                    {
+                        hasSelectedChild = true;
+                        for (int i = 0; i < index && hasSelectedChild; i++)
+                        {
+                            hasSelectedChild = selectedIndex.GetAt(i) == ip.GetAt(i);
+                        }
+                    }
+                }
+                nvi.IsChildSelected(hasSelectedChild);
+            }
+            else
+            {
+                nvi.IsChildSelected(isChildSelected);
+                if (generation != m_selectionChangeGeneration)
+                {
+                    // A callback started a new selection. Don't abandon the rest of this chain: the new selection
+                    // only updated its own previous and next paths, so bring the remaining levels in line with it.
+                    reconcileWithCurrentSelection = true;
+                }
             }
             if (auto const nextIR = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
             {
