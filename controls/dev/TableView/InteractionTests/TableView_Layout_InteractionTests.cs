@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Runtime.InteropServices;
 using Common;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
@@ -253,6 +254,95 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     widthAfter,
                     widthBefore + 20.0,
                     "A resize after a mid-drag unload/reload must still widen the column - i.e. no capture wedged the gripper (dev-spec:129).");
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct CURSORINFO
+        {
+            public int cbSize;
+            public int flags;
+            public IntPtr hCursor;
+            public int ptX;
+            public int ptY;
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool GetCursorInfo(ref CURSORINFO pci);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
+
+        private static readonly IntPtr IDC_ARROW = new IntPtr(32512);
+        private static readonly IntPtr IDC_SIZEWE = new IntPtr(32644);
+
+        private static IntPtr ReadCursor()
+        {
+            var info = new CURSORINFO { cbSize = Marshal.SizeOf<CURSORINFO>() };
+            Verify.IsTrue(GetCursorInfo(ref info), "GetCursorInfo must succeed.");
+            return info.hCursor;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the system cursor is the west-east size cursor while the mouse rests, moves or drags on a column gripper.")]
+        public void PointerOverGripperShowsResizeCursor()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                if (tableView == null)
+                {
+                    Verify.Fail("BasicTableView was not found on the test page.");
+                    return;
+                }
+
+                UIObject nameHeader = FindColumnHeader(tableView, "Name");
+                if (nameHeader == null)
+                {
+                    Verify.Fail("The 'Name' column header peer was not found on the header host.");
+                    return;
+                }
+
+                IntPtr sizeWE = LoadCursor(IntPtr.Zero, IDC_SIZEWE);
+                IntPtr arrow = LoadCursor(IntPtr.Zero, IDC_ARROW);
+
+                var bounds = nameHeader.BoundingRectangle;
+                int edgeX = bounds.Left + bounds.Width - 1;
+                int y = bounds.Top + (bounds.Height / 2);
+                var centre = new Point(bounds.Left + (bounds.Width / 2), y);
+
+                InputHelper.MoveMouse(centre);
+                Wait.ForIdle();
+                Log.Comment("Header centre cursor=0x{0:X} (arrow=0x{1:X}).", ReadCursor().ToInt64(), arrow.ToInt64());
+                Verify.AreEqual(arrow, ReadCursor(), "Away from the gripper the cursor must be the arrow.");
+
+                foreach (int x in new[] { edgeX, edgeX - 1, edgeX - 2, edgeX, edgeX - 1 })
+                {
+                    InputHelper.MoveMouse(new Point(x, y));
+                    Wait.ForIdle();
+                    for (int sample = 0; sample < 3; sample++)
+                    {
+                        IntPtr cursor = ReadCursor();
+                        Log.Comment("x={0} sample {1}: cursor=0x{2:X} (sizeWE=0x{3:X}).", x, sample, cursor.ToInt64(), sizeWE.ToInt64());
+                        Verify.AreEqual(sizeWE, cursor, "Over the gripper the cursor must stay the west-east size cursor.");
+                        Wait.ForMilliseconds(50);
+                    }
+                }
+
+                // The gripper travels with the edge, so the pointer stays over it.
+                InputHelper.LeftMouseButtonDown(nameHeader, (bounds.Width / 2) - 1, 0);
+                InputHelper.MoveMouse(new Point(edgeX + 20, y));
+                InputHelper.MoveMouse(new Point(edgeX + 40, y));
+                Wait.ForIdle();
+                IntPtr dragging = ReadCursor();
+                Log.Comment("Mid-drag cursor=0x{0:X}.", dragging.ToInt64());
+                InputHelper.LeftMouseButtonUp();
+                Wait.ForIdle();
+                Verify.AreEqual(sizeWE, dragging, "The west-east size cursor must hold during the drag.");
+
+                InputHelper.MoveMouse(new Point(FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Left + 10, y));
+                Wait.ForIdle();
+                Verify.AreEqual(arrow, ReadCursor(), "Leaving the gripper must restore the arrow.");
             }
         }
 
