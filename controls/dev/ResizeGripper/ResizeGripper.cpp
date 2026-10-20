@@ -258,21 +258,20 @@ void ResizeGripper::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& ar
 
 // Best effort: clears our state first, so the PointerCaptureLost this raises is ignored, and skips
 // the release once the gripper has no visual tree to release it from.
-void ResizeGripper::ReleaseCapturedPointer()
+void ResizeGripper::ReleaseCapturedPointer() noexcept
 {
     auto const pointer = std::exchange(m_capturedPointer, nullptr);
     m_isCapturedPointerReleased = false;
 
-    if (!pointer || !XamlRoot())
-    {
-        return;
-    }
-
+    // Runs from EndDrag's scope guard, whose destructor is noexcept: nothing may escape.
     try
     {
-        ReleasePointerCapture(pointer);
+        if (pointer && XamlRoot())
+        {
+            ReleasePointerCapture(pointer);
+        }
     }
-    catch (winrt::hresult_error const&)
+    catch (...)
     {
     }
 }
@@ -338,7 +337,7 @@ void ResizeGripper::EndDrag(bool canceled)
     // Clear the flag before raising: a throwing handler would otherwise leave IsDragging stuck
     // true, wedging every later BeginDrag.
     SetValue(s_IsDraggingProperty, box_value(false));
-    auto const releaseCapture = gsl::finally([this]() { ReleaseCapturedPointer(); });
+    auto const releaseCapture = gsl::finally([this]() noexcept { ReleaseCapturedPointer(); });
     UpdateVisualState();
 
     auto eventArgs = winrt::make<::ResizeGripperDragCompletedEventArgs>(totalDelta, canceled);

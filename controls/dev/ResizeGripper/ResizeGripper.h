@@ -65,7 +65,7 @@ private:
     void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void AttachCancelKeyHandler();
     void DetachCancelKeyHandler();
-    void ReleaseCapturedPointer();
+    void ReleaseCapturedPointer() noexcept;
     void OnCancelKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
 
     double m_lastRaisedDelta{ 0.0 };
