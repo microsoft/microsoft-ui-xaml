@@ -966,7 +966,14 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
             {
                 if (indexPath.CompareTo(indexPathFromModel) ==  0)
                 {
-                    m_selectionModel.DeselectAt(indexPath);
+                    // Clear the parent chain too: the next selection's SelectAt can no longer see this item as the previous one.
+                    // IsChildSelected callbacks can start a new selection, which then owns the selection model.
+                    const auto generation = m_selectionChangeGeneration;
+                    UpdateIsChildSelected(indexPath, nullptr);
+                    if (generation == m_selectionChangeGeneration)
+                    {
+                        m_selectionModel.DeselectAt(indexPath);
+                    }
                 }
                 else if (!IsPaneOpen() && indexPath.GetSize() == 0)
                 {
@@ -2542,12 +2549,14 @@ void NavigationView::UpdateSelectionModelSelection(const winrt::IndexPath& ip)
 
 void NavigationView::UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP)
 {
+    // IsChildSelected is public, so its callbacks can start a new selection, which updates the parent chain itself.
+    const auto generation = m_selectionChangeGeneration;
     if (prevIP && prevIP.GetSize() > 0)
     {
         UpdateIsChildSelectedForIndexPath(prevIP, false /*isChildSelected*/);
     }
 
-    if (nextIP && nextIP.GetSize() > 0)
+    if (generation == m_selectionChangeGeneration && nextIP && nextIP.GetSize() > 0)
     {
         UpdateIsChildSelectedForIndexPath(nextIP, true /*isChildSelected*/);
     }
@@ -2555,6 +2564,7 @@ void NavigationView::UpdateIsChildSelected(const winrt::IndexPath& prevIP, const
 
 void NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected)
 {
+    const auto generation = m_selectionChangeGeneration;
     // Update the isChildSelected property for every container on the IndexPath (with the exception of the actual container pointed to by the indexpath)
     auto container = GetContainerForIndex(ip.GetAt(1), ip.GetAt(0) == c_footerMenuBlockIndex /*inFooter*/);
     // first index is fo mainmenu or footer
@@ -2566,6 +2576,11 @@ void NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& i
         if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
         {
             nvi.IsChildSelected(isChildSelected);
+            if (generation != m_selectionChangeGeneration)
+            {
+                // A callback started a new selection; the rest of this (now stale) path is no longer ours to update.
+                return;
+            }
             if (auto const nextIR = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
             {
                 if (index < ip.GetSize() - 1)
@@ -3780,20 +3795,32 @@ void NavigationView::SetOverflowButtonVisibility(winrt::Visibility const& visibi
 void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::IndexPath const& ip)
 {
 
-    auto const itemBeingMoved = [item, ip, this]()
+    auto const itemBeingMoved = [item, ip, this]() -> winrt::IInspectable
     {
         if (ip.GetSize() > 2)
         {
-            return GetItemFromIndex(m_topNavRepeaterOverflowView.get(), m_topDataProvider.ConvertOriginalIndexToIndex(ip.GetAt(1)));
+            // Resolve the top-level ancestor from the source: the primary/overflow split can change while the flyout closes.
+            auto const topLevelIndex = ip.GetAt(1);
+            if (topLevelIndex >= 0 && topLevelIndex < m_topDataProvider.Size())
+            {
+                return m_topDataProvider.GetAt(topLevelIndex);
+            }
+            return nullptr;
         }
         return item;
     }();
 
     // Calculate selected overflow item size.
-    auto selectedOverflowItemIndex = m_topDataProvider.IndexOf(itemBeingMoved);
+    auto selectedOverflowItemIndex = itemBeingMoved ? m_topDataProvider.IndexOf(itemBeingMoved) : s_itemNotFound;
     if (selectedOverflowItemIndex == s_itemNotFound)
     {
         // The item left the source while it was being selected; there is nothing to promote.
+        return;
+    }
+    if (m_topDataProvider.IsItemInPrimaryList(selectedOverflowItemIndex))
+    {
+        // The item is no longer in the overflow (e.g. a source change moved every item back to the primary list).
+        SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(item);
         return;
     }
     const auto selectedOverflowItemWidth = m_topDataProvider.GetWidthForItem(selectedOverflowItemIndex);
