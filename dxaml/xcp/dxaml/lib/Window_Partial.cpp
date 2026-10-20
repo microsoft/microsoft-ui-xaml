@@ -454,27 +454,9 @@ _Check_return_ HRESULT Window::SetCoreWindow(_In_ wuc::ICoreWindow* pCoreWindow)
 
 _Check_return_ HRESULT Window::get_DispatcherQueueImpl(_Outptr_result_maybenull_ msy::IDispatcherQueue** ppValue)
 {
-    if (nullptr == ppValue) { IFC_RETURN(E_INVALIDARG); }
-    *ppValue = nullptr;
-
-    auto xamlCore = GetDXamlCore();
-    if (xamlCore)
-    {
-        auto coreServices = xamlCore->GetHandle();
-        if (coreServices)
-        {
-            auto hostSite = coreServices->GetHostSite();
-            if (hostSite)
-            {
-                auto xcpDispatcher = hostSite->GetXcpDispatcher();
-                if (xcpDispatcher)
-                {
-                    *ppValue = xcpDispatcher->GetDispatcherQueueNoRef();
-                    AddRefInterface(*ppValue);
-                }
-            }
-        }
-    }
+    // Callable from any thread: the generated getter has no CheckThread, and apps do read it from background threads.
+    // m_spWindowImpl is only assigned in the constructor, so reading it here is safe.
+    IFC_RETURN(m_spWindowImpl->get_DispatcherQueueImpl(ppValue));
 
     return S_OK;
 }

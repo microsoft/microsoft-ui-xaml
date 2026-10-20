@@ -1659,6 +1659,116 @@ void XamlIslandTests::FailFastWhenMessagesNotPumpedAfterClosing()
     WaitForSingleObjectWithTimeout(uiThread);
 }
 
+void XamlIslandTests::GetDispatcherQueueFromThreadpoolAfterCoreShutdown()
+{
+    // Regression test for Watson bucket 45261470-df6b-6b64-885d-aa1320507fbc (AB#55026189).
+    //
+    // GetHelp.exe crashed reading Window.DispatcherQueue from a background MTA thread-pool worker during process
+    // exit: its window had been closed and its thread's XAML core deleted, but GetHelp still held the Window.
+    // Window.DispatcherQueue has no CheckThread(), and it used to walk DesktopWindowImpl's cached, non-owning
+    // DXamlCore pointer (m_dxamlCoreNoRef), which is never cleared -- a use-after-free that AV'd in
+    // CCoreServices::GetHostSite. DesktopWindowImpl now resolves a weak reference to the DispatcherQueue it captured at
+    // construction instead.
+    //
+    // The test recreates the state found in the GetHelp dump:
+    //   1. Keep XAML alive on the test thread, so Microsoft.ui.xaml.dll stays loaded as it did in GetHelp. (Without
+    //      it the DLL can be unloaded once the UI thread uninitializes its apartment, and the call then faults in
+    //      unloaded code instead of reaching the freed core.)
+    //   2. On a UI thread, create, activate and close a Window while keeping a reference to it, as GetHelp did.
+    //   3. ShutdownQueue() -> XamlCore::Close -> DXamlCore::Deinitialize -> 'delete pCore': the teardown a desktop
+    //      app runs after its last window closes (DispatcherShutdownMode::OnLastWindowClose).
+    //   4. From an MTA thread-pool worker, read Window.DispatcherQueue.
+    // Without the fix, step 4 deterministically reads freed memory. With it, the getter returns the thread's
+    // DispatcherQueue (which this test keeps alive), and that queue has shut down and therefore refuses new work.
+
+    // 1. Keep XAML -- and therefore Microsoft.ui.xaml.dll -- alive on the test thread for the whole test.
+    XamlIslandTestHelper testHelper(this);
+    testHelper.StartAppOnCurrentThread();
+
+    wrl::ComPtr<ABI::Microsoft::UI::Xaml::IWindow> survivingWindow;
+    DispatcherQueue^ uiThreadQueue; // The Window holds its queue weakly; keep it alive so it can be compared at the end.
+    const auto identityOf = [](Platform::Object^ object) { return reinterpret_cast<uintptr_t>(CastHatTo<IUnknown>(object).Get()); };
+
+    // 2-3. On a dedicated UI thread: initialize XAML, show and close a Window while keeping an owning reference
+    //      to it, then shut that thread's queue down so its DXamlCore is deleted out from under the closed Window.
+    auto uiThread = RunOnNewThread([&]() {
+        VERIFY_SUCCEEDED(::RoInitialize(RO_INIT_SINGLETHREADED));
+        {
+            auto dqc { DispatcherQueueController::CreateOnCurrentThread() };
+            WindowsXamlManager^ wxm = WindowsXamlManager::InitializeForCurrentThread();
+            uiThreadQueue = dqc->DispatcherQueue;
+
+            Window^ window = ref new Window();
+            CopyObjectTo(window, survivingWindow.ReleaseAndGetAddressOf());
+            VERIFY_IS_NOT_NULL(window->DispatcherQueue);
+            VERIFY_ARE_EQUAL(identityOf(uiThreadQueue), identityOf(window->DispatcherQueue));
+
+            bool closedRaised = false;
+            window->Closed += ref new ::Windows::Foundation::TypedEventHandler<Platform::Object^, WindowEventArgs^>(
+                [&closedRaised](Platform::Object^, WindowEventArgs^) { closedRaised = true; });
+
+            window->Activate();
+            DrainMessageQueue();
+
+            LOG_OUTPUT(L"Closing the Window. It stays alive because we still hold a reference, as GetHelp did.");
+            window->Close();
+            DrainMessageQueue();
+            VERIFY_IS_TRUE(closedRaised);
+            VERIFY_IS_NOT_NULL(window->DispatcherQueue);
+            VERIFY_ARE_EQUAL(identityOf(uiThreadQueue), identityOf(window->DispatcherQueue));
+            window = nullptr;
+
+            LOG_OUTPUT(L"Shutting down the UI thread's DispatcherQueue (deletes that thread's DXamlCore).");
+            dqc->ShutdownQueue();
+
+            // XamlCore::Close clears the thread's WindowsXamlManager only after it has deinitialized the DXamlCore,
+            // so this confirms the core is really gone and the rest of the test isn't passing vacuously.
+            VERIFY_IS_NULL(WindowsXamlManager::GetForCurrentThread());
+        }
+        ::RoUninitialize();
+    });
+    WaitForSingleObjectWithTimeout(uiThread);
+
+    VERIFY_IS_NOT_NULL(survivingWindow.Get());
+
+    struct WorkerContext
+    {
+        ABI::Microsoft::UI::Xaml::IWindow* window;
+        HRESULT roInitializeHr = E_UNEXPECTED;
+        HRESULT hr = E_UNEXPECTED;
+        wrl::ComPtr<ABI::Microsoft::UI::Dispatching::IDispatcherQueue> queue;
+    } context { survivingWindow.Get() };
+
+    LOG_OUTPUT(L"Reading Window.DispatcherQueue from an MTA thread-pool worker after core shutdown.");
+    PTP_WORK work = ::CreateThreadpoolWork(
+        [](PTP_CALLBACK_INSTANCE, void* pv, PTP_WORK) {
+            auto* ctx = static_cast<WorkerContext*>(pv);
+            ctx->roInitializeHr = ::RoInitialize(RO_INIT_MULTITHREADED);
+            if (SUCCEEDED(ctx->roInitializeHr))
+            {
+                ctx->hr = ctx->window->get_DispatcherQueue(ctx->queue.ReleaseAndGetAddressOf());
+                ::RoUninitialize();
+            }
+        },
+        &context,
+        nullptr);
+    VERIFY_IS_NOT_NULL(work);
+    ::SubmitThreadpoolWork(work);
+    ::WaitForThreadpoolWorkCallbacks(work, FALSE);
+    ::CloseThreadpoolWork(work);
+    VERIFY_SUCCEEDED(context.roInitializeHr);
+
+    // 4. The getter must succeed and return the window's own DispatcherQueue. ShutdownQueue() above completed
+    //    synchronously, so that queue has shut down and refuses new work.
+    LOG_OUTPUT(L"Window.DispatcherQueue returned hr=0x%08x without crashing.", context.hr);
+    VERIFY_SUCCEEDED(context.hr);
+    VERIFY_IS_NOT_NULL(context.queue.Get());
+
+    DispatcherQueue^ queue = safe_cast<DispatcherQueue^>(ToObject(context.queue.Get()));
+    VERIFY_ARE_EQUAL(identityOf(uiThreadQueue), identityOf(queue));
+    VERIFY_IS_FALSE(queue->TryEnqueue(ref new DispatcherQueueHandler([]() {})));
+}
+
 
 void XamlIslandTests::IslandWithMuxcDoesntPoisonThread()
 {
