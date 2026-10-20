@@ -45,6 +45,8 @@ void ResizeGripper::OnUnloaded(const winrt::IInspectable&, const winrt::RoutedEv
 {
     m_isPointerOver = false;
     EndDrag(true /* canceled */);
+    // A press that never became a manipulation has no drag to end but still holds the capture.
+    ReleaseCapturedPointer();
 }
 
 void ResizeGripper::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
@@ -52,6 +54,7 @@ void ResizeGripper::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::
     if (!IsEnabled())
     {
         EndDrag(true /* canceled */);
+        ReleaseCapturedPointer();
     }
     UpdateVisualState();
     UpdateResizeCursor();
@@ -213,11 +216,13 @@ void ResizeGripper::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 
     if (IsEnabled())
     {
-        m_isPointerReleased = false;
         // Mouse only: touch capture would stop an ancestor ScrollViewer panning the cross axis.
-        if (args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Mouse)
+        auto const pointer = args.Pointer();
+        if (pointer.PointerDeviceType() == winrt::PointerDeviceType::Mouse && CapturePointer(pointer))
         {
-            CapturePointer(args.Pointer());
+            m_capturedPointer = pointer;
+            m_capturedPointerId = pointer.PointerId();
+            m_isCapturedPointerReleased = false;
         }
         args.Handled(true);
     }
@@ -226,7 +231,11 @@ void ResizeGripper::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 void ResizeGripper::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerReleased(args);
-    m_isPointerReleased = true;
+
+    if (m_capturedPointer && args.Pointer().PointerId() == m_capturedPointerId)
+    {
+        m_isCapturedPointerReleased = true;
+    }
 }
 
 // The release that completes a drag also drops the capture; only a capture lost before it cancels.
@@ -234,11 +243,38 @@ void ResizeGripper::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& ar
 {
     __super::OnPointerCaptureLost(args);
 
-    if (!m_isPointerReleased)
+    if (m_capturedPointer && args.Pointer().PointerId() == m_capturedPointerId)
     {
-        EndDrag(true /* canceled */);
+        const bool released = m_isCapturedPointerReleased;
+        m_capturedPointer = nullptr;
+        m_isCapturedPointerReleased = false;
+        if (!released)
+        {
+            EndDrag(true /* canceled */);
+        }
     }
     UpdateVisualState();
+}
+
+// Best effort: clears our state first, so the PointerCaptureLost this raises is ignored, and skips
+// the release once the gripper has no visual tree to release it from.
+void ResizeGripper::ReleaseCapturedPointer()
+{
+    auto const pointer = std::exchange(m_capturedPointer, nullptr);
+    m_isCapturedPointerReleased = false;
+
+    if (!pointer || !XamlRoot())
+    {
+        return;
+    }
+
+    try
+    {
+        ReleasePointerCapture(pointer);
+    }
+    catch (winrt::hresult_error const&)
+    {
+    }
 }
 
 // A contact the system takes away (palm rejection, the contact leaving the digitizer) is not a
@@ -302,8 +338,7 @@ void ResizeGripper::EndDrag(bool canceled)
     // Clear the flag before raising: a throwing handler would otherwise leave IsDragging stuck
     // true, wedging every later BeginDrag.
     SetValue(s_IsDraggingProperty, box_value(false));
-    // After clearing IsDragging, so the PointerCaptureLost this raises does not end the drag again.
-    ReleasePointerCaptures();
+    auto const releaseCapture = gsl::finally([this]() { ReleaseCapturedPointer(); });
     UpdateVisualState();
 
     auto eventArgs = winrt::make<::ResizeGripperDragCompletedEventArgs>(totalDelta, canceled);
