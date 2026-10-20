@@ -818,7 +818,8 @@ private:
         ActionTip* tip = nullptr);
 
 private:
-    // A synchronous action owns its own TiP test and shares the control's session counters and error mask.
+    // A synchronous action owns its own operation state (and TiP test, when the operation has one) and shares the
+    // control's session counters and error mask.
     class ActionTip
     {
     public:
@@ -844,7 +845,7 @@ private:
 
         TableView& m_owner;
         ActionTip* m_previousAction{};
-        std::optional<TableViewTip::OperationState> m_state; // only while measured
+        std::optional<TableViewTip::OperationState> m_state; // only while tracked
         TableViewTip::Stage m_stage;
         uint64_t m_generation{};
         uint64_t m_controlGenerationAtAdmission{};
@@ -894,12 +895,15 @@ private:
     void FailTipOperation(uint64_t generation, TableViewTip::Stage stage, std::optional<HRESULT> error) noexcept;
     void CompleteTipOperation(uint64_t generation) noexcept;
     void IgnoreTip(TableViewTip::IgnoreReason reason) noexcept;
+    TableViewTip::MetricsInputs TipMetricsInputs() noexcept;
+    TableViewTip::MetricsInputs TipMetricsInputs(TableViewTip::Operation operation) noexcept;
     // Initialize: starts once the template is applied and a source is attached, and ends at the layout pass of the
     // first realized row or group header, or at once for an empty view.
     void StartTipInitialization() noexcept;
     void CompleteTipInitializationIfEmpty() noexcept;
     // After a source is attached or reclaimed: starts Initialize once the template is applied, and completes it for
-    // an empty view. Before Initialize has its verdict, a source swap is part of it rather than a ReplaceSource test.
+    // an empty view. Before Initialize has its verdict, a source swap is part of it rather than a ReplaceSource
+    // operation.
     void NoteTipInitializationSource() noexcept;
     void FailTipInitializationAttach(uint64_t escapesAtStart, HRESULT error) noexcept;
     void ArmTipInitializationLayout() noexcept;

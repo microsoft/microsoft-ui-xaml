@@ -13,7 +13,7 @@ TableView::ActionTip::ActionTip(
     TableView& owner, TableViewTip::Operation operation, TableViewTip::Stage stage, bool admitted) noexcept :
     m_owner(owner), m_stage(stage)
 {
-    // An action that is not measured does no TiP work at all.
+    // An action that is not tracked does no TiP work at all.
     if (admitted && owner.m_telemetrySession.active && !owner.m_rowsSourceDrained)
     {
         m_state.emplace(owner.m_telemetrySession);
@@ -21,7 +21,7 @@ TableView::ActionTip::ActionTip(
         m_appEscapesAtStart = owner.m_tipAppEscapes;
         m_exceptions = std::uncaught_exceptions();
         m_controlGenerationAtAdmission = owner.m_tip.operationGeneration;
-        m_generation = TableViewTip::BeginOperation(*m_state, operation);
+        m_generation = TableViewTip::BeginOperation(*m_state, operation, owner.TipMetricsInputs(operation));
         if (m_generation) { m_previousAction = std::exchange(owner.m_activeActionTip, this); }
     }
 }
@@ -168,21 +168,34 @@ void TableView::IgnoreTip(TableViewTip::IgnoreReason reason) noexcept
     TableViewTip::IgnoreOperation(m_tip, m_tip.operationGeneration, reason);
 }
 
-void TableView::StartTipInitialization() noexcept
+// The metrics bucket's inputs, for a TiP test about to start.
+TableViewTip::MetricsInputs TableView::TipMetricsInputs() noexcept
 {
-    if (m_tip.initializationPending || m_tip.initializationDone) { return; }
-    unsigned char bucket{};
+    TableViewTip::MetricsInputs metrics;
     try
     {
+        metrics.rightToLeft = FlowDirection() == winrt::FlowDirection::RightToLeft;
         auto const source = m_activeSource.get();
-        bucket = TableViewTip::MetricsBucket(FlowDirection() == winrt::FlowDirection::RightToLeft,
-            source ? winrt::get_self<::TableViewSource>(source)->DataRowCount() : 0);
+        metrics.largeData = source &&
+            winrt::get_self<::TableViewSource>(source)->DataRowCount() >= TableViewTip::c_largeDataRows;
     }
     catch (...)
     {
         // The bucket is context only; the test still runs.
     }
-    TableViewTip::StartInitialization(m_tip, bucket);
+    return metrics;
+}
+
+// Read only for an operation with a TiP test.
+TableViewTip::MetricsInputs TableView::TipMetricsInputs(TableViewTip::Operation operation) noexcept
+{
+    return TableViewTip::OperationTestIdentity(operation) ? TipMetricsInputs() : TableViewTip::MetricsInputs{};
+}
+
+void TableView::StartTipInitialization() noexcept
+{
+    if (m_tip.initializationPending || m_tip.initializationDone) { return; }
+    TableViewTip::StartInitialization(m_tip, TipMetricsInputs());
 }
 
 void TableView::CompleteTipInitializationIfEmpty() noexcept
@@ -259,11 +272,11 @@ uint64_t TableView::BeginTipOperation(TableViewTip::Operation operation, bool ad
 {
     ++m_tipMutationDepth;
     if (!admitted) { return 0; }
-    // Before the first Loaded only a source swap is measured: that is when apps usually set ItemsSource.
+    // Before the first Loaded only a source swap is tracked: that is when apps usually set ItemsSource.
     auto const beforeFirstLoad = m_telemetrySession.generation == 0 && operation == TableViewTip::Operation::ReplaceSource;
     if ((m_telemetrySession.active || beforeFirstLoad) && !m_rowsSourceDrained)
     {
-        auto const generation = TableViewTip::BeginOperation(m_tip, operation);
+        auto const generation = TableViewTip::BeginOperation(m_tip, operation, TipMetricsInputs(operation));
         if (generation) { m_tipAppEscapesAtOperationStart = m_tipAppEscapes; }
         return generation;
     }

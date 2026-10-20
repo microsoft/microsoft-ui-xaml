@@ -56,7 +56,7 @@ namespace TableViewTelemetry
         // The diagnostic dedupe mask has a bit per attribution and recoverability in each diagnostic slot.
         constexpr uint32_t c_attributions = static_cast<uint32_t>(TableViewTip::Attribution::Max);
         constexpr uint32_t c_errorBitsPerSlot = c_attributions * 2;
-        constexpr uint32_t c_errorMaskBits = std::numeric_limits<decltype(Session::reportedErrors)>::digits;
+        constexpr uint32_t c_errorMaskBits = static_cast<uint32_t>(decltype(Session::reportedErrors){}.size());
 
         // One diagnostic per operation (setup and header refresh included), attribution and recoverability, per session.
         constexpr std::optional<uint32_t> DiagnosticSlot(TableViewTip::Operation operation) noexcept
@@ -73,6 +73,8 @@ namespace TableViewTelemetry
             case TableViewTip::Operation::BeginEdit: return 7;
             case TableViewTip::Operation::CommitEdit: return 8;
             case TableViewTip::Operation::CancelEdit: return 9;
+            case TableViewTip::Operation::GroupExpansion: return 10;
+            case TableViewTip::Operation::HierarchyExpansion: return 11;
             default: return std::nullopt;
             }
         }
@@ -83,7 +85,7 @@ namespace TableViewTelemetry
             for (uint32_t value = 0; value < static_cast<uint32_t>(TableViewTip::Operation::Max); ++value)
             {
                 auto const operation = static_cast<TableViewTip::Operation>(value);
-                auto const reports = TableViewTip::IsMeasuredOperation(operation) ||
+                auto const reports = TableViewTip::IsTrackedOperation(operation) ||
                     operation == TableViewTip::Operation::Setup || operation == TableViewTip::Operation::HeaderRefresh;
                 auto const slot = DiagnosticSlot(operation);
                 if (reports != slot.has_value() || (slot && (*slot + 1) * c_errorBitsPerSlot > c_errorMaskBits))
@@ -93,7 +95,7 @@ namespace TableViewTelemetry
             }
             return true;
         }
-        static_assert(SlotsFit(), "Update IsMeasuredOperation and DiagnosticSlot together.");
+        static_assert(SlotsFit(), "Update IsTrackedOperation and DiagnosticSlot together.");
     }
 
     bool ShouldSample() noexcept
@@ -184,11 +186,10 @@ namespace TableViewTelemetry
         if (startedIn && !IsCurrent(session, startedIn)) { return; }
         // One report per operation, attribution and recoverability: an app fault cannot hide a later product error,
         // and a fault TableView recovered from cannot hide a later one that stopped an operation.
-        auto const bit = uint64_t{ 1 } <<
-            (*slot * c_errorBitsPerSlot + static_cast<uint32_t>(attribution) * 2 + (recoverable ? 1 : 0));
-        if ((session.reportedErrors & bit) ||
+        auto const bit = *slot * c_errorBitsPerSlot + static_cast<uint32_t>(attribution) * 2 + (recoverable ? 1 : 0);
+        if (session.reportedErrors[bit] ||
             !TraceLoggingProviderEnabled(g_hLoggingProvider, WINEVENT_LEVEL_VERBOSE, KEYWORD_TABLEVIEW)) { return; }
-        session.reportedErrors |= bit;
+        session.reportedErrors[bit] = true;
         TraceLoggingWriteActivity(g_hLoggingProvider, "TableView_Error",
             g_TelemetryProviderActivityId != GUID{} ? &g_TelemetryProviderActivityId : nullptr, nullptr,
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE), TraceLoggingKeyword(KEYWORD_TABLEVIEW), TABLEVIEW_COMMON_FIELDS,

@@ -11,8 +11,8 @@ namespace TableViewTip
     enum class Operation : uint32_t
     {
         Setup = 0, ReplaceSource = 1, Sort = 2, HeaderRefresh = 3,
-        Filter = 5, GroupConfiguration = 6, Selection = 8,
-        BeginEdit = 9, CommitEdit = 10, CancelEdit = 11,
+        Filter = 5, GroupConfiguration = 6, GroupExpansion = 7, Selection = 8,
+        BeginEdit = 9, CommitEdit = 10, CancelEdit = 11, HierarchyExpansion = 12,
         // One past the last operation: add operations above it. TableViewTelemetry.cpp checks every value below it.
         Max
     };
@@ -20,14 +20,16 @@ namespace TableViewTip
     {
         Cancelled = 100, Vetoed = 101, ValidationRejected = 102, Superseded = 103,
         Unloaded = 104, Retemplated = 105, Stale = 106,
-        DeferredOrUnproven = 107, ApplicationFault = 108, AppTemplateIncomplete = 109
+        DeferredOrUnproven = 107, ApplicationFault = 108, AppTemplateIncomplete = 109,
+        // One past the last reason: add reasons above it. TableViewTip.cpp checks that each one has a name.
+        Max
     };
     enum class AppFaultKind : uint32_t { None = 0, Callback = 1, Validation = 3, Write = 4, Factory = 5, Data = 6 };
     // Where a fault happened and whose it was; recorded on the TableView_Error diagnostic.
     enum class Stage : uint32_t
     {
         None = 0, Template = 1, Source = 3, Sort = 4, HeaderRefresh = 5,
-        Selection = 6, Editing = 7, Filter = 8, Grouping = 9
+        Selection = 6, Editing = 7, Filter = 8, Grouping = 9, Expansion = 10
     };
     enum class Attribution : uint32_t
     {
@@ -36,7 +38,9 @@ namespace TableViewTip
         Max
     };
 
-    constexpr bool IsMeasuredOperation(Operation operation) noexcept
+    // Operations TableView tracks for supersession and TableView_Error. The ones with a TiP test are listed by
+    // OperationTestIdentity (TableViewTipTests.h).
+    constexpr bool IsTrackedOperation(Operation operation) noexcept
     {
         switch (operation)
         {
@@ -48,16 +52,24 @@ namespace TableViewTip
         case Operation::BeginEdit:
         case Operation::CommitEdit:
         case Operation::CancelEdit:
+        case Operation::GroupExpansion:
+        case Operation::HierarchyExpansion:
             return true;
         default:
             return false;
         }
     }
 
-    // Initialize's metrics bucket: 0 LTR-small, 1 LTR-large, 2 RTL-small, 3 RTL-large, where large is at least
-    // 1,000 data rows.
-    constexpr unsigned char MetricsBucket(bool rightToLeft, uint32_t dataRows) noexcept
+    // Every TiP test's metrics bucket, from inputs read when the test starts: 0 LTR-small, 1 LTR-large, 2 RTL-small,
+    // 3 RTL-large, where large is at least c_largeDataRows data rows.
+    struct MetricsInputs
     {
-        return static_cast<unsigned char>((rightToLeft ? 2 : 0) + (dataRows >= 1000 ? 1 : 0));
+        bool rightToLeft{};
+        bool largeData{};
+    };
+    constexpr uint32_t c_largeDataRows = 1000;
+    constexpr unsigned char MetricsBucket(bool rightToLeft, bool largeData) noexcept
+    {
+        return static_cast<unsigned char>((rightToLeft ? 2 : 0) + (largeData ? 1 : 0));
     }
 }

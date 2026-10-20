@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <bitset>
 #include <cstdint>
 #include <optional>
 #include "TableViewTipTypes.h"
@@ -57,7 +58,7 @@ namespace TableViewTelemetry
     {
         uint64_t generation{};
         // TableView_Error dedupe: one bit per operation, attribution and recoverability.
-        uint64_t reportedErrors{};
+        std::bitset<128> reportedErrors;
         Sample sampled;
         uint32_t usedFeatures{};
         // Per instance rather than per session: BeginSession keeps it.

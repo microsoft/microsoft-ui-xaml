@@ -513,25 +513,37 @@ Row recycling, cell rebuild and dependency-property change callbacks can all run
 # Telemetry and TiP
 
 TableView reports whether its own work succeeded (TiP) and how it is used (telemetry), on the Tabular
-providers. On success an operation pays for its TiP start and stop, a used-feature bit and, at each source
-swap, sort or shaping step, a thread-local reset. Attribution work runs only when something throws.
+providers. On success an operation with a TiP test pays for its TiP start and stop and for reading the flow
+direction and data row count for its metrics bucket; a sort, filter or edit commit, or a request to expand or collapse
+one group or tree node, also sets a used-feature bit, each source swap, sort or shaping step resets a thread-local,
+and an expansion request first looks up whether it changes its group or node. Attribution work runs only when
+something throws.
 
 ## TiP tests
 
 | Test | Runs | Fails when TableView's own code throws (the HRESULT is included) |
 |---|---|---|
 | `TableViewInitializationTest` (64477764) | Once per template application, from the template applied with a source attached (whichever comes later) to the layout pass of the first row or group header, or at once for an empty view | `template_setup_failed` in `OnApplyTemplate`, `source_attach_failed` while attaching the source |
-| `TableViewOperationTest` (64477774) | Source swap after Initialize's verdict (also before the first `Loaded`), sort, filter, group configuration, selection, begin/commit/cancel edit | `internal_failure`, also when a commit's display cannot be restored |
+| `TableViewSortTest` (64745033) | An accepted sort (column header, `SortByColumn`, `ClearSort`, or a `TableViewSource` sort verb), until the sorted rows are published and TableView has finished reacting on that turn (for a column sort, restoring selection, raising `Sorted` and the announcement) | `sort_failed` |
+| `TableViewEditBeginTest` (64745034) | A request to edit an editable cell, until its editor is ready | `edit_begin_failed` |
+| `TableViewEditCommitTest` (64745035) | A commit, until the value is written and the editor is closed | `edit_commit_failed`, also when a commit's display cannot be restored |
+| `TableViewFilterTest` (64745036) | `Filter` or `ClearFilter` on the table's `TableViewSource`, until the rows are published and TableView has finished reacting on that turn | `filter_failed` |
+| `TableViewGroupExpansionTest` (64745037) | Expanding or collapsing one group, on the turn TableView applies the request | `group_expansion_failed` |
+| `TableViewHierarchyExpansionTest` (64745038) | Expanding or collapsing one tree node, on the turn TableView applies the request | `hierarchy_expansion_failed` |
 
-Initialize closes Ignored with `app_template_incomplete` when a custom template lacks `PART_RowsRepeater`,
-`PART_HeaderRow` or `PART_HeaderHost`. Its metrics bucket is the flow direction and data size when it started:
-0 left-to-right, 1 left-to-right with at least 1,000 data rows, 2 right-to-left, 3 right-to-left with at least
-1,000 data rows. A source swap before Initialize has its verdict is part of Initialize.
+The operation tests share one implementation and report under their own measures (`OperationTestIdentity` in
+`TableViewTipTests.h`). Initialize closes Ignored with `app_template_incomplete` when a custom template lacks
+`PART_RowsRepeater`, `PART_HeaderRow` or `PART_HeaderHost`. Every test's metrics bucket is the flow direction and
+data size when it started: 0 left-to-right, 1 left-to-right with at least 1,000 data rows, 2 right-to-left, 3
+right-to-left with at least 1,000 data rows, counting data rows as `DataRowsBucket` does; the result's metrics carry
+`rightToLeft` and `largeData`. A source swap before Initialize has its verdict is part of Initialize. An expansion
+request that changes nothing (its group or node is already in that state, or is gone) runs no TiP test.
 
-Scrolling, measure/arrange, cell realization and group expansion are not measured. A clear verb, or a
-`Sort` with `SortDirection.None`, that has nothing to remove is not measured either. Internal pipeline
-builds warn when Tabular falls back to the public TiP stub; `UseTestInProductionStub=true` chooses the
-stub without a warning.
+A source swap after Initialize's verdict, selection, a cancelled edit and group configuration run no TiP test;
+a failure in one still writes `TableView_Error`. Scrolling, measure/arrange, cell realization, expanding or
+collapsing all groups or rows, and expanding a subtree are not measured. A clear verb, or a `Sort` with
+`SortDirection.None`, that has nothing to remove is not measured either. Internal pipeline builds warn when
+Tabular falls back to the public TiP stub; `UseTestInProductionStub=true` chooses the stub without a warning.
 
 ## Who is blamed
 

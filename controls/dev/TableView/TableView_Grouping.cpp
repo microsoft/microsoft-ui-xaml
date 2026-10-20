@@ -503,13 +503,19 @@ void TableView::ApplyGroupExpansionByIdentity(
     }
 
     bool changed = false;
-    try
+    // Local strong ref: a handler may re-declare the shape and replace the provider mid-call. Edit-ending handlers
+    // ran app code above, so re-check the source before mutating; a stale request still falls through to drain
+    // queued edit reshapes.
+    auto const provider = m_tableViewSourceRowMetadata;
+    if (provider && generation == m_rowMetadataGeneration)
     {
-        // Local strong ref: a handler may re-declare the shape and replace the provider mid-call.
-        // Edit-ending handlers ran app code above, so re-check the source before mutating; a stale
-        // request still falls through to drain queued edit reshapes.
-        auto const provider = m_tableViewSourceRowMetadata;
-        if (provider && generation == m_rowMetadataGeneration)
+        // A request that changes one group or tree node is a TiP test. A subtree is a bulk request, like
+        // ExpandAllGroups, and a request that changes nothing runs none: each arrow on a group header is requested by
+        // the header and again by TryHandleGroupHeaderExpandCollapseKey.
+        ActionTip tip{ *this, axis == BulkExpansionAxis::Groups ?
+                TableViewTip::Operation::GroupExpansion : TableViewTip::Operation::HierarchyExpansion,
+            TableViewTip::Stage::Expansion, !subtree && provider->WouldChangeExpansion(identity, desired) };
+        try
         {
             if (subtree)
             {
@@ -527,11 +533,19 @@ void TableView::ApplyGroupExpansionByIdentity(
             {
                 changed = provider->Toggle(identity);
             }
+
+            if (generation != m_rowMetadataGeneration) { tip.Ignore(TableViewTip::IgnoreReason::Stale); }
+            else if (changed) { tip.Complete(); }
+            // An admitted request expected a change; the provider has not shown it yet.
+            else { tip.Ignore(TableViewTip::IgnoreReason::DeferredOrUnproven); }
         }
-    }
-    catch (...)
-    {
-        // Best-effort: the grouping source or its state can change during cleanup.
+        catch (...)
+        {
+            // Best-effort: the grouping source or its state can change during cleanup. Expansion reads only the
+            // projection TableView built, so a failure is TableView's unless the source was replaced.
+            if (generation != m_rowMetadataGeneration) { tip.Ignore(TableViewTip::IgnoreReason::Stale); }
+            else { tip.Fail(winrt::to_hresult()); }
+        }
     }
 
     DrainCoalescedEditReshape();

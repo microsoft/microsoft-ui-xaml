@@ -31,7 +31,7 @@ namespace TableViewTip
         }
     };
 
-    // One in-flight operation test.
+    // One in-flight tracked operation, and its TiP test when the operation has one.
     struct OperationState
     {
         explicit OperationState(TableViewTelemetry::Session& session) noexcept : session(session) {}
@@ -62,13 +62,14 @@ namespace TableViewTip
     inline bool IsOperationStarted(OperationState const& state) noexcept { return state.operationPending; }
     bool IsOperationHandled(OperationState const& state, Operation operation, uint64_t generation) noexcept;
     // Starts Initialize unless it is running or this template application already has its verdict.
-    void StartInitialization(State& state, unsigned char metricsBucket) noexcept;
+    void StartInitialization(State& state, MetricsInputs metrics) noexcept;
     void ResetInitialization(State& state) noexcept;
     void CompleteInitialization(State& state) noexcept;
     void FailInitialization(State& state, Stage stage, HRESULT error) noexcept;
     void IgnoreInitialization(State& state, IgnoreReason reason,
         std::optional<HRESULT> error = {}, AppFaultKind kind = AppFaultKind::None) noexcept;
-    uint64_t BeginOperation(OperationState& state, Operation operation) noexcept;
+    // metrics is read only by an operation with a TiP test (OperationTestIdentity).
+    uint64_t BeginOperation(OperationState& state, Operation operation, MetricsInputs metrics) noexcept;
     void CompleteOperation(OperationState& state, uint64_t generation) noexcept;
     void IgnoreOperation(OperationState& state, uint64_t generation, IgnoreReason reason,
         std::optional<HRESULT> error = {}, AppFaultKind kind = AppFaultKind::None) noexcept;

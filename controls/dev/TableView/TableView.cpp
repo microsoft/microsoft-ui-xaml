@@ -1246,7 +1246,7 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
         return;
     }
 
-    // Until Initialize has its verdict, attaching a source is part of initialization rather than a measured swap.
+    // Until Initialize has its verdict, attaching a source is part of initialization rather than a tracked swap.
     auto const initializing = !m_tip.initializationDone;
     auto const escapesAtStart = m_tipAppEscapes;
     auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::ReplaceSource, !initializing);
