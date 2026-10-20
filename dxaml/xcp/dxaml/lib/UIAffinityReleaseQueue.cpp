@@ -178,16 +178,9 @@ HRESULT UIAffinityReleaseQueue::Cleanup( _In_ BOOLEAN bSync )
         // Synchronize the UI Thread and the Finalizer thread while we check the queue
         auto lock = m_CriticalSection.lock();
 
-        bool hasUnreachableObjects;
-        {
-            // GC appends under the core reference lock, not the finalizer-queue lock.
-            AutoReentrantReferenceLock coreLock(DXamlCore::GetCurrent());
-            hasUnreachableObjects = !m_queuedObjectsForUnreachableCleanup.empty();
-        }
-
         // If we haven't already registered for cleanup time, and we have something to clean up, register.
         if( !m_bIsRegisteredForCallbacks
-            && ( hasUnreachableObjects
+            && ( m_hasUnreachableObjects.load(std::memory_order_acquire)
                  || !m_queuedObjectsForFinalRelease.empty() ))
         {
             IFC(DXamlCore::GetCurrent()->GetBuildTreeService(spBuildTree));
@@ -236,7 +229,8 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
     // UI+Finalizer Lock inplace.
     //
 
-    // Take the core lock before reading the vector, including its empty check.
+    // Skip the GC lock when no unreachable work has been published; vector access still requires it.
+    if (m_hasUnreachableObjects.load(std::memory_order_acquire))
     {
         //
         // UI+GC+Finalizer Lock inplace.
@@ -273,6 +267,7 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
             // collection this array has capacity for over 90k elements yet has 0, which unnecessarily takes up memory.
             m_queuedObjectsForUnreachableCleanup.shrink_to_fit();
         }
+        m_hasUnreachableObjects.store(false, std::memory_order_release);
     }
 
 
@@ -416,8 +411,7 @@ _Check_return_ HRESULT DirectUI::UIAffinityReleaseQueue::put_IsRegisteredForCall
 BOOLEAN DirectUI::UIAffinityReleaseQueue::IsEmpty()
 {
     auto lock = m_CriticalSection.lock();
-    AutoReentrantReferenceLock coreLock(DXamlCore::GetCurrent());
-    return m_queuedObjectsForFinalRelease.empty() && m_queuedObjectsForUnreachableCleanup.empty();
+    return m_queuedObjectsForFinalRelease.empty() && !m_hasUnreachableObjects.load(std::memory_order_acquire);
 }
 
 HRESULT DirectUI::UIAffinityReleaseQueue::GetQueueObjects(wfc::IVector<IInspectable*>* queue)

@@ -46,6 +46,7 @@ namespace DirectUI
 
         std::vector<ObjectReleaseInfo> m_queuedObjectsForUnreachableCleanup;
         std::vector<ObjectReleaseInfo> m_queuedObjectsForFinalRelease;
+        std::atomic<bool> m_hasUnreachableObjects{ false };
 
         wil::critical_section m_CriticalSection;
         BOOLEAN m_bInCleanup = FALSE;
@@ -87,6 +88,7 @@ namespace DirectUI
         {
             m_queuedObjectsForUnreachableCleanup.emplace_back(pItem, reinterpret_cast<void*>(*reinterpret_cast<uintptr_t*>(pItem)));
             ctl::addref_interface_inner(pItem);
+            m_hasUnreachableObjects.store(true, std::memory_order_release);
             const auto dispatcher = m_wakeDispatcher;
             const auto wakeState = m_wakeState;
             return RequestCleanupWake(dispatcher.Get(), wakeState);
