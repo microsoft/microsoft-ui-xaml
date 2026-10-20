@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using MUXControlsTestApp.Utilities;
 
 // The Content Dialog item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -19,9 +20,43 @@ namespace MUXControlsTestApp
 {
     public sealed partial class DialogWithNavView : ContentDialog
     {
+        private int paneClosingCount;
+        private int dialogClosingCount;
+
         public DialogWithNavView()
         {
             this.InitializeComponent();
+            navigationView.PaneClosing += NavigationView_PaneClosing;
+            Opened += (sender, args) =>
+            {
+                var toggle = navigationView.FindVisualChildByName("TogglePaneButton");
+                var settings = navigationView.FindVisualChildByName("SettingsItem");
+                if (toggle == null || settings == null)
+                {
+                    throw new InvalidOperationException("The dialog NavigationView template is missing its toggle or settings item.");
+                }
+                Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(toggle, "DialogPaneToggle");
+                Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(settings, "DialogSettings");
+            };
+            Closing += (sender, args) =>
+            {
+                DialogClosingCount.Text = (++dialogClosingCount).ToString();
+                args.Cancel = KeepDialogOpen.IsChecked == true;
+            };
+        }
+
+        private void NavigationView_PaneClosing(NavigationView sender, NavigationViewPaneClosingEventArgs args)
+        {
+            DialogPaneClosingCount.Text = (++paneClosingCount).ToString();
+            args.Cancel = CancelDialogPaneClosing.IsChecked == true;
+        }
+
+        private void ResetDialogFocusCounts_Click(object sender, RoutedEventArgs e)
+        {
+            paneClosingCount = 0;
+            dialogClosingCount = 0;
+            DialogPaneClosingCount.Text = "0";
+            DialogClosingCount.Text = "0";
         }
 
         private void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)

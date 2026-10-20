@@ -139,6 +139,140 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyCompactHiddenItemRestoresOpener()
+        {
+            foreach (bool nestedItem in new[] { false, true })
+            {
+                var navView = SetupNavigationView(NavigationViewPaneDisplayMode.LeftCompact);
+                NavigationViewItem target = null;
+                Button toggle = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    navView.IsPaneOpen = false;
+                    var parent = (NavigationViewItem)navView.MenuItems[1];
+                    if (nestedItem)
+                    {
+                        target = new NavigationViewItem { Content = "Child" };
+                        parent.MenuItems.Add(target);
+                    }
+                    else
+                    {
+                        navView.CompactPaneLength = 0;
+                        target = parent;
+                    }
+                    Content.UpdateLayout();
+                    toggle = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                    Verify.IsTrue(toggle.Focus(FocusState.Pointer));
+                    navView.IsPaneOpen = true;
+                    if (nestedItem) { parent.IsExpanded = true; }
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(target.Focus(FocusState.Keyboard));
+                    Verify.AreEqual(target, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot));
+                    ((ISelectionItemProvider)new NavigationViewItemAutomationPeer(target).GetPattern(PatternInterface.SelectionItem)).Select();
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(navView.IsPaneOpen);
+                    Verify.AreEqual(toggle, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot));
+                    Verify.AreEqual(FocusState.Pointer, toggle.FocusState);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyCompactNonSelectingItemRetainsFocus()
+        {
+            var navView = SetupNavigationView(NavigationViewPaneDisplayMode.LeftCompact);
+            NavigationViewItem item = null;
+            int invocationCount = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                navView.IsPaneOpen = false;
+                navView.SelectedItem = navView.MenuItems[0];
+                item = (NavigationViewItem)navView.MenuItems[1];
+                item.SelectsOnInvoked = false;
+                Content.UpdateLayout();
+                var toggle = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                Verify.IsTrue(toggle.Focus(FocusState.Pointer));
+                navView.IsPaneOpen = true;
+                navView.ItemInvoked += (sender, args) => invocationCount++;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(item.Focus(FocusState.Keyboard));
+                ((ISelectionItemProvider)new NavigationViewItemAutomationPeer(item).GetPattern(PatternInterface.SelectionItem)).Select();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, invocationCount);
+                Verify.IsFalse(navView.IsPaneOpen);
+                Verify.IsFalse(item.IsSelected);
+                Verify.AreEqual(navView.MenuItems[0], navView.SelectedItem);
+                Verify.AreEqual(item, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot));
+                Verify.AreEqual(FocusState.Keyboard, item.FocusState);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyOverlayTabNavigationContainsToggle()
+        {
+            foreach (bool reverse in new[] { false, true })
+            {
+                var navView = SetupNavigationView(NavigationViewPaneDisplayMode.LeftCompact);
+                Button toggle = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    navView.IsPaneOpen = false;
+                    navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+                    Content = null;
+                    Content = new Grid
+                    {
+                        Children =
+                        {
+                            new Button { Content = "Before" },
+                            navView,
+                            new Button { Content = "After" }
+                        }
+                    };
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    toggle = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                    Verify.IsTrue(toggle.Focus(FocusState.Keyboard));
+                    ((IInvokeProvider)new ButtonAutomationPeer(toggle).GetPattern(PatternInterface.Invoke)).Invoke();
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Microsoft.UI.Xaml.Input.FocusManager.TryMoveFocus(
+                        reverse ? Microsoft.UI.Xaml.Input.FocusNavigationDirection.Previous : Microsoft.UI.Xaml.Input.FocusNavigationDirection.Next,
+                        new Microsoft.UI.Xaml.Input.FindNextElementOptions { SearchRoot = Content });
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(navView.IsPaneOpen);
+                    var pane = VisualTreeUtils.FindVisualChildByName(navView, "PaneContentGrid");
+                    var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot) as DependencyObject;
+                    bool inside = focused == toggle;
+                    while (focused != null && !inside)
+                    {
+                        inside = focused == pane;
+                        focused = VisualTreeHelper.GetParent(focused);
+                    }
+                    Verify.IsTrue(inside, "Tab must not leave the open overlay for page content or siblings.");
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyCompactItemPreservesSynchronousFocusRedirection()
         {
             foreach (bool redirectToToggle in new[] { false, true })

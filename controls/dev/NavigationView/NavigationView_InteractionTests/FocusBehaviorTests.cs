@@ -62,6 +62,125 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void CanceledPaneDismissalDoesNotCloseDialog()
+        {
+            foreach (bool useGamepad in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+                {
+                    new Button(FindElement.ById("ContentDialogNavViewButton")).Invoke();
+                    Wait.ForIdle();
+                    var keepDialogOpen = new CheckBox(FindElement.ById("KeepDialogOpen"));
+                    keepDialogOpen.Check();
+                    try
+                    {
+                        var paneOpen = new CheckBox(FindElement.ById("DialogPaneOpen"));
+                        paneOpen.Uncheck();
+                        new CheckBox(FindElement.ById("CancelDialogPaneClosing")).Check();
+                        new Button(FindElement.ById("ResetDialogFocusCounts")).Invoke();
+                        var toggle = new Button(FindElement.ById("DialogPaneToggle"));
+                        FocusHelper.SetFocus(toggle);
+                        KeyboardHelper.PressKey(Key.Space);
+                        Wait.ForIdle();
+                        Verify.AreEqual(ToggleState.On, paneOpen.ToggleState);
+                        if (useGamepad)
+                        {
+                            GamepadHelper.PressButton(toggle, GamepadButton.B);
+                        }
+                        else
+                        {
+                            KeyboardHelper.PressKey(Key.Escape);
+                        }
+                        Wait.ForIdle();
+                        Verify.AreEqual(ToggleState.On, paneOpen.ToggleState);
+                        Verify.AreEqual("1", new TextBlock(FindElement.ById("DialogPaneClosingCount")).GetText());
+                        Verify.AreEqual("0", new TextBlock(FindElement.ById("DialogClosingCount")).GetText(),
+                            "Canceling pane dismissal must not dismiss the enclosing dialog.");
+                    }
+                    finally
+                    {
+                        keepDialogOpen.Uncheck();
+                        new Button(FindElement.ByName("Button1ContentDialog")).Invoke();
+                        Wait.ForIdle();
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TabAfterToggleOpenStaysInsideOverlay()
+        {
+            foreach (bool reverse in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+                {
+                    new Button(FindElement.ById("ContentDialogNavViewButton")).Invoke();
+                    Wait.ForIdle();
+                    try
+                    {
+                        var paneOpen = new CheckBox(FindElement.ById("DialogPaneOpen"));
+                        paneOpen.Uncheck();
+                        FocusHelper.SetFocus(new Button(FindElement.ById("DialogPaneToggle")));
+                        KeyboardHelper.PressKey(Key.Space);
+                        Wait.ForIdle();
+                        Verify.AreEqual(ToggleState.On, paneOpen.ToggleState);
+                        if (reverse) { KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1); }
+                        else { KeyboardHelper.PressKey(Key.Tab); }
+                        Wait.ForIdle();
+                        Verify.IsTrue(FindElement.ById(reverse ? "DialogSettings" : "DialogHome").HasKeyboardFocus);
+                        Verify.AreEqual(ToggleState.On, paneOpen.ToggleState);
+                    }
+                    finally
+                    {
+                        new Button(FindElement.ByName("Button1ContentDialog")).Invoke();
+                        Wait.ForIdle();
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void CompactLeafInvocationPreservesVisibleFocus()
+        {
+            foreach (bool nested in new[] { false, true })
+            {
+                foreach (var key in new[] { Key.Enter, Key.Space })
+                {
+                    using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+                    {
+                        new Button(FindElement.ById("ContentDialogNavViewButton")).Invoke();
+                        Wait.ForIdle();
+                        try
+                        {
+                            var paneOpen = new CheckBox(FindElement.ById("DialogPaneOpen"));
+                            paneOpen.Uncheck();
+                            FocusHelper.SetFocus(new Button(FindElement.ById("DialogPaneToggle")));
+                            KeyboardHelper.PressKey(Key.Space);
+                            Wait.ForIdle();
+                            if (nested)
+                            {
+                                FocusHelper.SetFocus(FindElement.ById("DialogParent"));
+                                KeyboardHelper.PressKey(Key.Right);
+                                Wait.ForIdle();
+                            }
+                            var item = FindElement.ById(nested ? "DialogLeaf" : "DialogAction");
+                            FocusHelper.SetFocus(item);
+                            KeyboardHelper.PressKey(key);
+                            Wait.ForIdle();
+                            Verify.AreEqual(ToggleState.Off, paneOpen.ToggleState);
+                            Verify.IsTrue(FindElement.ById(nested ? "DialogPaneToggle" : "DialogAction").HasKeyboardFocus);
+                        }
+                        finally
+                        {
+                            new Button(FindElement.ByName("Button1ContentDialog")).Invoke();
+                            Wait.ForIdle();
+                        }
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
         public void EnsureTopSettingsRetainsFocusAfterOrientationChanges()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
