@@ -11,14 +11,13 @@
 
 #include "WucVisualTreeProfiler.h"
 #include <Windows.UI.Composition.h>
-#include "XcpAllocation.h"
+#include <HWCompNode.h>
 #include "XamlProfilerTracing.h"
-#include <unordered_set>
 
 // This file ports the WUC-visual property extraction used by DCompTreeHelper's live
 // <VisualTree> dump and reuses the identical attribute serialization, so the profiler
-// stream and the live dump describe visuals the same way. All work here is gated behind
-// XamlProfilerTracing::IsEnabled() by the callers below.
+// stream and the live dump describe visuals the same way. Every Notify* function below
+// returns immediately unless a session has the WucTree group enabled (IsEnabled()).
 
 namespace
 {
@@ -138,24 +137,6 @@ namespace
     // can skip emitting tree events for it (otherwise the adorner would surface as a phantom
     // node in the profiler's IVisual tree).
     constexpr const WCHAR* c_adornerCommentPrefix = L"__xp_adorner";
-
-    // Registry of comp-node ids that belong to the profiler's pick overlay and must be
-    // suppressed from all emitted trees. Comp-tree mutation + the IsEnabled()-gated Notify*
-    // paths run on the UI thread, but guard with an SRW lock so the set is never observed in a
-    // torn state if a tracing callback ever runs off-thread.
-    SRWLOCK g_suppressedCompNodesLock = SRWLOCK_INIT;
-
-    using SuppressedCompNodeSet = std::unordered_set<
-        uint64_t,
-        std::hash<uint64_t>,
-        std::equal_to<uint64_t>,
-        XcpAllocation::LeakIgnoringAllocator<uint64_t>>;
-
-    SuppressedCompNodeSet& SuppressedCompNodes()
-    {
-        static SuppressedCompNodeSet set;
-        return set;
-    }
 
     // True if the visual is the tap's highlight adorner (its Comment starts with the adorner
     // marker). Such visuals are skipped so they never appear in the profiler's tree.
@@ -409,15 +390,10 @@ namespace
 
 namespace WucVisualTreeProfiler
 {
-    bool IsEnabled()
-    {
-        return XamlProfilerTracing::IsEnabled();
-    }
-
     void NotifyChildInserted(
         _In_opt_ IUnknown* parentVisual,
         _In_opt_ IUnknown* childVisual,
-        uint64_t ownerCompNodeId,
+        _In_opt_ const HWCompNode* ownerCompNode,
         int32_t index)
     {
         if (!IsEnabled())
@@ -426,11 +402,12 @@ namespace WucVisualTreeProfiler
         }
 
         // Skip visuals owned by a suppressed pick-overlay comp node.
-        if (IsCompNodeSuppressed(ownerCompNodeId))
+        if (ownerCompNode != nullptr && ownerCompNode->IsProfilerSuppressed())
         {
             return;
         }
 
+        const uint64_t ownerCompNodeId = reinterpret_cast<uint64_t>(ownerCompNode);
         const uint64_t parentVisualId = VisualId(parentVisual);
         const uint64_t childVisualId = VisualId(childVisual);
         if (parentVisualId == 0 || childVisualId == 0)
@@ -502,7 +479,7 @@ namespace WucVisualTreeProfiler
     void NotifyRootSet(
         _In_opt_ IUnknown* visual,
         uint64_t targetId,
-        uint64_t ownerCompNodeId)
+        _In_opt_ const HWCompNode* ownerCompNode)
     {
         if (!IsEnabled())
         {
@@ -510,11 +487,12 @@ namespace WucVisualTreeProfiler
         }
 
         // Skip visuals owned by a suppressed pick-overlay comp node.
-        if (IsCompNodeSuppressed(ownerCompNodeId))
+        if (ownerCompNode != nullptr && ownerCompNode->IsProfilerSuppressed())
         {
             return;
         }
 
+        const uint64_t ownerCompNodeId = reinterpret_cast<uint64_t>(ownerCompNode);
         const uint64_t visualId = VisualId(visual);
         if (visualId == 0)
         {
@@ -546,39 +524,5 @@ namespace WucVisualTreeProfiler
         }
 
         XamlProfilerTracing::WucVisualRootCleared(targetId);
-    }
-
-    void SuppressCompNode(uint64_t compNodeId)
-    {
-        if (compNodeId == 0)
-        {
-            return;
-        }
-        AcquireSRWLockExclusive(&g_suppressedCompNodesLock);
-        SuppressedCompNodes().insert(compNodeId);
-        ReleaseSRWLockExclusive(&g_suppressedCompNodesLock);
-    }
-
-    void UnsuppressCompNode(uint64_t compNodeId)
-    {
-        if (compNodeId == 0)
-        {
-            return;
-        }
-        AcquireSRWLockExclusive(&g_suppressedCompNodesLock);
-        SuppressedCompNodes().erase(compNodeId);
-        ReleaseSRWLockExclusive(&g_suppressedCompNodesLock);
-    }
-
-    bool IsCompNodeSuppressed(uint64_t compNodeId)
-    {
-        if (compNodeId == 0)
-        {
-            return false;
-        }
-        AcquireSRWLockShared(&g_suppressedCompNodesLock);
-        const bool suppressed = SuppressedCompNodes().count(compNodeId) != 0;
-        ReleaseSRWLockShared(&g_suppressedCompNodesLock);
-        return suppressed;
     }
 }

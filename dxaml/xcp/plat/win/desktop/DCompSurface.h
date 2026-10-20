@@ -237,8 +237,15 @@ private:
         );
 
 #ifdef XAMLPROFILER_ENABLED
-    void TraceProfilerMemoryChange(bool isAllocation);
-    void TraceProfilerTextureObserved(
+    // XAML Profiler gates, defined in DCompSurface.cpp, where every caller lives. With no
+    // session listening they are one load, compare and branch; the work is in the
+    // out-of-line ...Impl functions.
+    __forceinline void TraceProfilerMemoryChange(bool isAllocation);
+    __forceinline void TraceProfilerTextureObserved(
+        _In_ IUnknown* updateObject,
+        const POINT& offset) noexcept;
+    void TraceProfilerMemoryChangeImpl(bool isAllocation);
+    void TraceProfilerTextureObservedImpl(
         _In_ IUnknown* updateObject,
         const POINT& offset) noexcept;
 #endif

@@ -970,7 +970,7 @@ _Check_return_ HRESULT DCompTreeHost::SetRootForCorrectContext(_In_ WUComp::IVis
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyRootSet(visual, reinterpret_cast<uint64_t>(compositionContent), 0 /* ownerCompNodeId unknown */);
+            WucVisualTreeProfiler::NotifyRootSet(visual, reinterpret_cast<uint64_t>(compositionContent), nullptr /* ownerCompNode unknown */);
         }
 #endif // XAMLPROFILER_ENABLED
     }
@@ -1065,7 +1065,7 @@ _Check_return_ HRESULT DCompTreeHost::ConnectXamlIslandTargetRoots()
                     WucVisualTreeProfiler::NotifyRootSet(
                         wucVisual,
                         reinterpret_cast<uint64_t>(xamlIslandRoot),
-                        reinterpret_cast<uint64_t>(compositionPeer));
+                        compositionPeer);
                 }
 #endif // XAMLPROFILER_ENABLED
 

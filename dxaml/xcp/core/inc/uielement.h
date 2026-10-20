@@ -330,6 +330,13 @@ private:
         _Out_ bool* isReverse,
         _Outptr_ ITransformer** returnValue);
 
+#ifdef XAMLPROFILER_ENABLED
+    // Emits the XAML Profiler ElementEnteredTree event for EnterImpl. Out of line so the label,
+    // peer and source-info work stays out of EnterImpl; a member because it reads the protected
+    // TryGetSourceInfoFromPeer. Defined in uielement.cpp.
+    void TraceProfilerElementEnteredTree(bool isLive);
+#endif // XAMLPROFILER_ENABLED
+
 public:
     // GetClickablePoint for AutomationPeer
     _Check_return_ HRESULT GetClickablePointRasterizedClient(_Out_ XPOINTF *pPoint);

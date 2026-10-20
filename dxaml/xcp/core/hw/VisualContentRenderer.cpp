@@ -81,7 +81,7 @@ VisualContentRenderer::RenderSolidColorRectangle(
     IFC_RETURN(LinkVisual(pBrush, nullptr, spVisual.Get()));
 
 #ifdef XAMLPROFILER_ENABLED
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::Surfaces))
     {
         const auto visualId = reinterpret_cast<uint64_t>(spVisual.Get());
         XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 0);
@@ -425,7 +425,7 @@ _Check_return_ HRESULT VisualContentRenderer::RenderPrimitive(
     IFC_RETURN(LinkVisual(brush, nullptr, spVisual.Get()));
 
 #ifdef XAMLPROFILER_ENABLED
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::Surfaces))
     {
         const auto getSurfaceId = [](HWTexture* texture) -> uint64_t
         {

@@ -123,6 +123,18 @@ using namespace WRLHelper;
 using namespace DirectUI;
 using namespace DirectUISynonyms;
 
+#ifdef XAMLPROFILER_ENABLED
+// Out of line so the peer QueryInterface stays out of GetPeerPrivate.
+static __declspec(noinline) void TraceProfilerPeerAssociated(_In_ const CDependencyObject* coreDO)
+{
+    const uint64_t peerHandle = XamlProfilerGetPeerHandle(coreDO);
+    if (peerHandle != 0)
+    {
+        XamlProfilerTracing::PeerAssociated(reinterpret_cast<uint64_t>(coreDO), peerHandle);
+    }
+}
+#endif // XAMLPROFILER_ENABLED
+
 extern HINSTANCE g_hInstance;
 
 // The platform-specific resource module handle - see dllentry.cpp
@@ -1725,13 +1737,9 @@ DXamlCore::GetPeerPrivate(
                 // handle is computed the same way every other profiler event computes it, so
                 // the value matches and the consumer's "first non-zero wins" stamping just works.
 #ifdef XAMLPROFILER_ENABLED
-                if (XamlProfilerTracing::IsEnabled())
+                if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::XamlTree))
                 {
-                    const uint64_t peerHandle = XamlProfilerGetPeerHandle(pCoreDO);
-                    if (peerHandle != 0)
-                    {
-                        XamlProfilerTracing::PeerAssociated(reinterpret_cast<uint64_t>(pCoreDO), peerHandle);
-                    }
+                    TraceProfilerPeerAssociated(pCoreDO);
                 }
 #endif // XAMLPROFILER_ENABLED
 

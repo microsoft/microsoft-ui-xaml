@@ -193,7 +193,8 @@ public sealed partial class MainWindow : Window
                         {
                             DisplayName = pkg.DisplayName,
                             PackageFamilyName = pkg.Id.FamilyName,
-                            AppUserModelId = appListEntries[0].AppUserModelId
+                            AppUserModelId = appListEntries[0].AppUserModelId,
+                            Package = pkg
                         });
                     }
                 }
@@ -214,6 +215,18 @@ public sealed partial class MainWindow : Window
         catch (Exception ex)
         {
             StatusText.Text = $"Could not enumerate packages: {ex.Message}";
+        }
+    }
+
+    private static string? TryGetInstalledPath(Windows.ApplicationModel.Package? pkg)
+    {
+        try
+        {
+            return pkg?.InstalledLocation.Path;
+        }
+        catch
+        {
+            return null;
         }
     }
 
@@ -288,17 +301,21 @@ public sealed partial class MainWindow : Window
             pkgInfo = _packages[PackageComboBox.SelectedIndex];
         }
 
-        // Start the ETW listener BEFORE launching the target. We enable the provider in
-        // all-process mode (pid 0) first so it is already live when the target executes its
-        // very first instruction, then narrow the filter to the target PID the moment we
-        // know it. This closes the boot-capture race: previously the app was launched first
-        // and the session came up afterwards, so tree events emitted during startup (which
-        // are only emitted while a session has the provider enabled) were lost.
+        // Start the ETW listener BEFORE launching the target, so the provider is already
+        // enabled when the target executes its very first instruction; tree events emitted
+        // during startup are only emitted while a session has the provider enabled. The
+        // session is scoped to the target's executable name when we know it, so other WinUI
+        // processes don't turn the instrumentation on. The consumer-side filter is then
+        // narrowed to the target PID the moment we know it.
+        string? targetExecutableName = mode == "exe"
+            ? System.IO.Path.GetFileName(exePath)
+            : ProcessResolver.TryGetPackagedAppExecutableName(TryGetInstalledPath(pkgInfo!.Package), pkgInfo.AppUserModelId);
+
         _listener?.Dispose();
         // Reset the spotlight baseline so this session's initial tree flood is consumed
         // silently rather than glowing every node on connect.
         ResetSpotlightArming();
-        _listener = new EtwListenerService(Store, this.DispatcherQueue, 0);
+        _listener = new EtwListenerService(Store, this.DispatcherQueue, 0, targetExecutableName);
 
         _listener.StatusChanged += msg =>
             DispatcherQueue.TryEnqueue(() => StatusText.Text = msg);
@@ -353,8 +370,7 @@ public sealed partial class MainWindow : Window
                 Process.Start(psi);
 
                 // Wait briefly for the app to start, then find its process. The listener is
-                // already running (all-process mode), so boot events fired during this window
-                // are captured, not missed.
+                // already running, so boot events fired during this window are captured, not missed.
                 await Task.Delay(2000);
 
                 _targetProcess = ProcessResolver.FindProcessByPackageFamily(pkgInfo.PackageFamilyName);
@@ -384,7 +400,22 @@ public sealed partial class MainWindow : Window
         // Narrow the listener to the target process now that we know its PID. Events already
         // captured from the target during the all-process window are kept; only future events
         // from other processes are filtered out. (0 = keep listening to all processes.)
-        if (targetPid != 0)
+        // If the session is scoped to an executable the target doesn't run (for example a
+        // packaged app started through a launcher such as PsfLauncher64.exe), or no target was
+        // found, ETW never enabled the provider in it, so re-scope the session to the target's
+        // PID, or to all processes.
+        if (targetExecutableName != null &&
+            (_targetProcess == null || ProcessResolver.RunsOtherExecutable(_targetProcess, targetExecutableName)))
+        {
+            if (_listener.RescopeToProcess(targetPid) && targetPid != 0)
+            {
+                // Queued like the listener's status messages, so it isn't overwritten by them.
+                string warning = $"PID {targetPid} doesn't run {targetExecutableName}, so the session now listens to that PID. " +
+                    "Its startup events were missed, so the trees may be incomplete.";
+                DispatcherQueue.TryEnqueue(() => StatusText.Text = warning);
+            }
+        }
+        else if (targetPid != 0)
         {
             _listener.SetTargetProcess(targetPid);
         }
@@ -1019,5 +1050,6 @@ public sealed partial class MainWindow : Window
         public string DisplayName { get; set; } = string.Empty;
         public string PackageFamilyName { get; set; } = string.Empty;
         public string AppUserModelId { get; set; } = string.Empty;
+        public Windows.ApplicationModel.Package? Package { get; set; }
     }
 }

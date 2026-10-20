@@ -24,6 +24,7 @@
         <ClCompile Include="..\FloatUtil.cpp"/>
         <ClCompile Include="..\bit_vector.cpp"/>
         <ClCompile Include="..\DesignMode.cpp"/>
+        <ClCompile Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\XamlProfilerTracing.cpp"/>
     </ItemGroup>
 
     <ItemGroup>

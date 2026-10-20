@@ -5,6 +5,16 @@
 
 #include <wil\common.h>
 
+// Outstanding-allocation counters (GetOutstandingAllocationCount/Size) are maintained only in
+// debug builds with the XAML Profiler compiled in; elsewhere those getters return 0. Callers that
+// report the counters test this so they don't emit zeros as data. It depends only on build-wide
+// defines, so every file sees the same value whatever it includes first.
+#if DBG && defined(XAMLPROFILER_ENABLED)
+#define XCP_COUNT_OUTSTANDING_ALLOC 1
+#else
+#define XCP_COUNT_OUTSTANDING_ALLOC 0
+#endif
+
 enum NoFailFastAllocationPolicy
 {
     NO_FAIL_FAST

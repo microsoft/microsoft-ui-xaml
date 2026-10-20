@@ -113,17 +113,113 @@ uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexce
 
 uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
 {
-    if (obj == nullptr)
-    {
-        return 0;
-    }
 #if XCP_MONITOR && DBG && !defined(NO_XCP_NEW_AND_DELETE) && !defined(_PREFAST_)
+    // Validated against the debug allocator's block header; 0 for null or on a mismatch.
     return XcpDebugGetAllocationSize(obj);
-#elif !defined(NO_XCP_NEW_AND_DELETE)
-    return static_cast<uint64_t>(XcpAllocation::OSMemoryGetBlockSize(obj));
 #else
+    // 0 = unknown. HeapSize needs the exact block start, which a base-class pointer isn't
+    // guaranteed to be, and retail blocks have no header to validate.
+    UNREFERENCED_PARAMETER(obj);
     return 0;
 #endif
+}
+
+// Out-of-line argument work for the hot instrumented sites below. Each site is an inline
+// keyword gate plus one call, so labels, peer handles and source info are only computed while
+// a session has the group enabled, and none of that code is in the hot functions.
+__declspec(noinline) void CUIElement::TraceProfilerElementEnteredTree(bool isLive)
+{
+    // Best-effort XAML source location for this element. Populated only when source-info
+    // storage is enabled in the process (e.g. the profiler enables the XAML-Diagnostics
+    // provider) and this element has a peer carrying stored source info; otherwise the
+    // values remain empty/0 and the profiler simply shows no location.
+    UINT32 sourceLine = 0;
+    UINT32 sourceColumn = 0;
+    xstring_ptr sourceUri;
+    xstring_ptr sourceHash;
+    TryGetSourceInfoFromPeer(&sourceLine, &sourceColumn, &sourceUri, &sourceHash);
+
+    XamlProfilerTracing::ElementEnteredTree(
+        reinterpret_cast<uint64_t>(this),
+        reinterpret_cast<uint64_t>(GetUIElementParentInternal()),
+        isLive,
+        GetDebugLabel().GetBuffer(),
+        GetTemplatedParent() != nullptr,
+        XamlProfilerGetPeerHandle(this),
+        // Core block size (bytes) of the concrete object. It's a fixed per-type struct size —
+        // timing- and live-state-independent — so we always measure it here, for both live and
+        // non-live enters. (Elements frequently first enter as non-live, e.g. during parse, so
+        // gating on fIsLive would leave most nodes reporting 0.)
+        XamlProfilerGetCoreSize(this),
+        sourceUri.GetBuffer(),
+        sourceLine,
+        sourceColumn);
+}
+
+static __declspec(noinline) void TraceProfilerChildAdded(
+    _In_ const CUIElement* parent,
+    _In_ CUIElement* child,
+    uint32_t index)
+{
+    XamlProfilerTracing::ChildAdded(
+        reinterpret_cast<uint64_t>(parent),
+        reinterpret_cast<uint64_t>(child),
+        index,
+        child->GetDebugLabel().GetBuffer(),
+        child->GetTemplatedParent() != nullptr,
+        XamlProfilerGetPeerHandle(child));
+}
+
+static __declspec(noinline) void TraceProfilerChildInserted(
+    _In_ const CUIElement* parent,
+    _In_ CUIElement* child,
+    uint32_t index)
+{
+    XamlProfilerTracing::ChildInserted(
+        reinterpret_cast<uint64_t>(parent),
+        reinterpret_cast<uint64_t>(child),
+        index,
+        child->GetDebugLabel().GetBuffer(),
+        child->GetTemplatedParent() != nullptr,
+        XamlProfilerGetPeerHandle(child));
+}
+
+// Marks the comp node of the profiler's pick-mode capture overlay, and of everything under it,
+// so that none of the overlay's comp-tree or WUC events are emitted (see EnsureCompositionPeer).
+static __declspec(noinline) void TraceProfilerMarkOverlay(
+    _In_opt_ const CUIElement* element,
+    _In_opt_ const HWCompTreeNode* parentNode,
+    _In_ HWCompTreeNode* compositionPeer)
+{
+    bool suppress = (parentNode != nullptr) && parentNode->IsProfilerSuppressed();
+    if (!suppress && element != nullptr)
+    {
+        const xstring_ptr label = element->GetDebugLabel();
+        const WCHAR* labelBuffer = label.GetBuffer();
+        if (labelBuffer != nullptr &&
+            wcsncmp(labelBuffer, WucVisualTreeProfiler::c_overlayNamePrefix,
+                    wcslen(WucVisualTreeProfiler::c_overlayNamePrefix)) == 0)
+        {
+            suppress = true;
+        }
+    }
+    if (suppress)
+    {
+        compositionPeer->MarkProfilerSuppressed();
+    }
+}
+
+static __declspec(noinline) void TraceProfilerCompPeerLinked(
+    _In_opt_ CUIElement* element,
+    _In_ const HWCompTreeNode* compositionPeer,
+    _In_opt_ const HWCompTreeNode* parentNode)
+{
+    XamlProfilerTracing::CompPeerLinked(
+        reinterpret_cast<uint64_t>(element),
+        reinterpret_cast<uint64_t>(compositionPeer),
+        reinterpret_cast<uint64_t>(parentNode),
+        element != nullptr ? element->GetDebugLabel().GetBuffer() : L"",
+        XamlProfilerGetPeerHandle(element));
 }
 #endif // XAMLPROFILER_ENABLED
 
@@ -1303,43 +1399,16 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
     static auto runtimeEnabledFeatureDetector = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector();
 
 #ifdef XAMLPROFILER_ENABLED
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::XamlTree))
     {
-        // Best-effort XAML source location for this element. Populated only when source-info
-        // storage is enabled in the process (e.g. the profiler enables the XAML-Diagnostics
-        // provider) and this element has a peer carrying stored source info; otherwise the
-        // values remain empty/0 and the profiler simply shows no location.
-        UINT32 sourceLine = 0;
-        UINT32 sourceColumn = 0;
-        xstring_ptr sourceUri;
-        xstring_ptr sourceHash;
-        TryGetSourceInfoFromPeer(&sourceLine, &sourceColumn, &sourceUri, &sourceHash);
-
-        XamlProfilerTracing::ElementEnteredTree(
-            reinterpret_cast<uint64_t>(this),
-            reinterpret_cast<uint64_t>(GetUIElementParentInternal()),
-            static_cast<bool>(params.fIsLive),
-            GetDebugLabel().GetBuffer(),
-            GetTemplatedParent() != nullptr,
-            XamlProfilerGetPeerHandle(this),
-            // Core block size (bytes) of the concrete object. It's a fixed per-type struct size —
-            // timing- and live-state-independent — so we always measure it here, for both live and
-            // non-live enters. (Elements frequently first enter as non-live, e.g. during parse, so
-            // gating on fIsLive would leave most nodes reporting 0.)
-            XamlProfilerGetCoreSize(this),
-            sourceUri.GetBuffer(),
-            sourceLine,
-            sourceColumn);
-
-        XamlProfilerTracing::XamlHeapSnapshot(
-            XcpAllocation::GetHeapHandle(),
-            XcpAllocation::IsUsingPrivateHeap(),
-            XcpAllocation::GetOutstandingAllocationSize(),
-            XcpAllocation::GetOutstandingAllocationCount(),
-            XcpAllocation::GetAllocationSize(),
-            XcpAllocation::GetAllocationCount(),
-            XcpAllocation::GetDeallocationCount());
+        TraceProfilerElementEnteredTree(static_cast<bool>(params.fIsLive));
     }
+#if XCP_COUNT_OUTSTANDING_ALLOC
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::HeapSnapshots))
+    {
+        XamlProfilerTraceHeapSnapshot();
+    }
+#endif // XCP_COUNT_OUTSTANDING_ALLOC
 #endif // XAMLPROFILER_ENABLED
 
     // When Xaml Diagnostics is enabled we need to peg the peer to make sure that it enters the tree so that
@@ -1945,22 +2014,19 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
     }
 
 #ifdef XAMLPROFILER_ENABLED
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::XamlTree))
     {
         XamlProfilerTracing::ElementLeftTree(
             reinterpret_cast<uint64_t>(this),
             reinterpret_cast<uint64_t>(GetUIElementParentInternal()),
             static_cast<bool>(params.fIsLive));
-
-        XamlProfilerTracing::XamlHeapSnapshot(
-            XcpAllocation::GetHeapHandle(),
-            XcpAllocation::IsUsingPrivateHeap(),
-            XcpAllocation::GetOutstandingAllocationSize(),
-            XcpAllocation::GetOutstandingAllocationCount(),
-            XcpAllocation::GetAllocationSize(),
-            XcpAllocation::GetAllocationCount(),
-            XcpAllocation::GetDeallocationCount());
     }
+#if XCP_COUNT_OUTSTANDING_ALLOC
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::HeapSnapshots))
+    {
+        XamlProfilerTraceHeapSnapshot();
+    }
+#endif // XCP_COUNT_OUTSTANDING_ALLOC
 #endif // XAMLPROFILER_ENABLED
 
     // Work on the children
@@ -6995,15 +7061,9 @@ CUIElement::AddChild(_In_ CUIElement *pChild)
         IFC_RETURN(m_pChildren->OnAddToCollection(pChild));
 
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::XamlTree))
         {
-            XamlProfilerTracing::ChildAdded(
-                reinterpret_cast<uint64_t>(this),
-                reinterpret_cast<uint64_t>(pChild),
-                m_pChildren->GetCount() - 1,
-                pChild->GetDebugLabel().GetBuffer(),
-                pChild->GetTemplatedParent() != nullptr,
-                XamlProfilerGetPeerHandle(pChild));
+            TraceProfilerChildAdded(this, pChild, m_pChildren->GetCount() - 1);
         }
 #endif // XAMLPROFILER_ENABLED
     }
@@ -7055,15 +7115,9 @@ CUIElement::InsertChild(_In_ XUINT32 nIndex, _In_ CUIElement *pChild)
         IFC_RETURN(m_pChildren->OnAddToCollection(pChild));
 
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::XamlTree))
         {
-            XamlProfilerTracing::ChildInserted(
-                reinterpret_cast<uint64_t>(this),
-                reinterpret_cast<uint64_t>(pChild),
-                nIndex,
-                pChild->GetDebugLabel().GetBuffer(),
-                pChild->GetTemplatedParent() != nullptr,
-                XamlProfilerGetPeerHandle(pChild));
+            TraceProfilerChildInserted(this, pChild, nIndex);
         }
 #endif // XAMLPROFILER_ENABLED
     }
@@ -7117,7 +7171,7 @@ CUIElement::RemoveChild(_In_ CUIElement *pChild)
         pChild->TryPegPeer(&peggedPeer, &peerIsPendingDelete);
 
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::XamlTree))
         {
             XamlProfilerTracing::ChildRemoved(
                 reinterpret_cast<uint64_t>(this),
@@ -11115,33 +11169,19 @@ CUIElement::EnsureCompositionPeer(
 
     // XAML Profiler: detect the profiler pick-mode capture overlay (a Popup/Border the tap
     // injects, identified by the Name it stamped) BEFORE inserting its comp peer, so none of
-    // the overlay's comp-node-tree or WUC-visual events are ever emitted. Suppression must be
+    // the overlay's comp-node-tree or WUC-visual events are ever emitted. The mark must be
     // set before InsertChildSynchronous below (which fires those events) and propagates down:
     // any comp node whose parent is a suppressed overlay node is itself suppressed. Without
     // this the profiler's own pick overlay surfaces as phantom nodes in the trees it inspects.
-    // Gated on IsEnabled(): with no session attached nothing is emitted, so the suppression
-    // bookkeeping (and its GetDebugLabel() allocation) is pointless. The overlay is only ever
-    // created while a profiler session is attached, so this always runs when it matters.
+    // Gated on the two groups that honor the mark: with neither enabled nothing is emitted, so
+    // the check (and its GetDebugLabel() allocation) is pointless. The overlay is only ever
+    // created while a profiler session is attached, so this always runs when it matters. The
+    // mark is a bit on the comp node itself, so teardown (RemoveCompositionPeer) needs no
+    // profiler work at all.
 #ifdef XAMLPROFILER_ENABLED
-    if (WucVisualTreeProfiler::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::CompTree | XamlProfilerKeywords::WucTree))
     {
-        const uint64_t thisCompNodeId = reinterpret_cast<uint64_t>(pCompositionPeer);
-        bool suppress = WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pParentNode));
-        if (!suppress && pElement != nullptr)
-        {
-            const xstring_ptr label = pElement->GetDebugLabel();
-            const WCHAR* labelBuffer = label.GetBuffer();
-            if (labelBuffer != nullptr &&
-                wcsncmp(labelBuffer, WucVisualTreeProfiler::c_overlayNamePrefix,
-                        wcslen(WucVisualTreeProfiler::c_overlayNamePrefix)) == 0)
-            {
-                suppress = true;
-            }
-        }
-        if (suppress)
-        {
-            WucVisualTreeProfiler::SuppressCompNode(thisCompNodeId);
-        }
+        TraceProfilerMarkOverlay(pElement, pParentNode, pCompositionPeer);
     }
 #endif // XAMLPROFILER_ENABLED
 
@@ -11212,15 +11252,10 @@ CUIElement::EnsureCompositionPeer(
 
         // Suppressed pick-overlay comp nodes are never advertised to the profiler.
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled() &&
-            !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pCompositionPeer)))
+        if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::CompTree) &&
+            !pCompositionPeer->IsProfilerSuppressed())
         {
-            XamlProfilerTracing::CompPeerLinked(
-                reinterpret_cast<uint64_t>(pElement),
-                reinterpret_cast<uint64_t>(pCompositionPeer),
-                reinterpret_cast<uint64_t>(pParentNode),
-                pElement->GetDebugLabel().GetBuffer(),
-                XamlProfilerGetPeerHandle(pElement));
+            TraceProfilerCompPeerLinked(pElement, pCompositionPeer, pParentNode);
         }
 #endif // XAMLPROFILER_ENABLED
 
@@ -11357,8 +11392,8 @@ CUIElement::RemoveCompositionPeer()
 
             // Suppressed pick-overlay comp nodes were never advertised, so don't emit unlink.
 #ifdef XAMLPROFILER_ENABLED
-            if (XamlProfilerTracing::IsEnabled() &&
-                !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(m_pCompositionPeer)))
+            if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::CompTree) &&
+                !m_pCompositionPeer->IsProfilerSuppressed())
             {
                 XamlProfilerTracing::CompPeerUnlinked(
                     reinterpret_cast<uint64_t>(this),
@@ -11382,13 +11417,6 @@ CUIElement::RemoveCompositionPeer()
                 // GetDCompTreeHost()->GetProjectedShadowManager()->SetReceiversDirty(true);
             }
         }
-
-        // Clear any pick-overlay suppression so the (now freed) comp-node pointer address can
-        // be reused later without wrongly suppressing an unrelated comp node. Cheap no-op when
-        // this node was never suppressed.
-#ifdef XAMLPROFILER_ENABLED
-        WucVisualTreeProfiler::UnsuppressCompNode(reinterpret_cast<uint64_t>(m_pCompositionPeer));
-#endif // XAMLPROFILER_ENABLED
 
         ReleaseInterface(m_pCompositionPeer);
     }

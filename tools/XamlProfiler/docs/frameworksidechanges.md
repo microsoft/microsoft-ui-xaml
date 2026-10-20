@@ -37,13 +37,50 @@ Nothing is ever read back out of the target process by the profiler; the tap
 
 ## 2. The one ETW provider
 
-All events go out on a single TraceLogging provider, defined in
-`dxaml/xcp/components/base/inc/XamlProfilerTracing.h`:
+All events go out on a single TraceLogging provider, declared in
+`dxaml/xcp/components/base/inc/XamlProfilerTracing.h` and defined in
+`dxaml/xcp/components/base/XamlProfilerTracing.cpp`:
 
 - **Name:** `Microsoft-Windows-XAML-Profiler`
-- **GUID:** `{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D}`
-- **Class:** `XamlProfilerTracing` (derives from `TelemetryBase`), events declared
-  with the `DEFINE_TRACELOGGING_EVENT_PARAMn` WIL macros (max `PARAM10`).
+- **GUID:** `{26f28a5c-7d30-54c5-40f4-fff6d3beda7d}` — the EventSource-style hash of
+  the name, so tools can also enable it as `*Microsoft-Windows-XAML-Profiler`.
+- **Definition:** a plain `TRACELOGGING_DEFINE_PROVIDER` with **no provider group**,
+  so only sessions that enable this provider turn the instrumentation on (Microsoft
+  telemetry group sessions don't). It is registered in `InitializeDll` and
+  unregistered in `DeinitializeDll` (`dllentry.cpp`).
+- **Events:** one out-of-line (`noinline`) emitter per event in the
+  `XamlProfilerTracing` namespace, each a `TraceLoggingWrite` at
+  `WINEVENT_LEVEL_VERBOSE` with exactly one keyword. Event names, field names, field
+  types and field order are the wire contract with the profiler tools.
+
+### Keyword groups
+
+Each marker group has its own ETW keyword. A session enables only the groups it
+needs, and the work behind a group runs only while that group is enabled. A session
+that passes no keywords (MatchAnyKeyword 0) receives every group.
+
+| Keyword | Value | Events | Work behind the group |
+| --- | --- | --- | --- |
+| `XamlTree` | `0x01` | `ChildAdded`, `ChildInserted`, `ChildRemoved`, `ElementEnteredTree`, `ElementLeftTree`, `PeerAssociated`, `ContentChanged`, `PopupOpened`, `PopupClosed` | Labels, peer handles, source info |
+| `CompTree` | `0x02` | `CompPeerLinked`, `CompPeerUnlinked`, `CompNodeChildInserted`, `CompNodeChildRemoved` | Pick-overlay marking |
+| `WucTree` | `0x04` | `WucVisualChildInserted`, `WucVisualChildRemoved`, `WucVisualChildrenCleared`, `WucVisualRootSet`, `WucVisualRootCleared` | `IVisual` QI and property serialization |
+| `Surfaces` | `0x08` | `DCompSurfaceMemoryChanged`, `VisualSurfaceChanged` | Surface size and id reads |
+| `SurfaceTextures` | `0x10` | `DCompSurfaceTextureObserved` | QI to the D3D texture on every draw |
+| `HeapSnapshots` | `0x20` | `XamlHeapSnapshot` | Allocator counter reads on element enter/leave and surface changes |
+| `GpuSnapshots` | `0x40` | `GpuMemorySnapshot` | D3D device lock and DXGI video-memory query on surface changes |
+
+The live profiler app enables `0x07` (the three tree groups). The tree groups carry
+deltas, so a session has to start before the UI it wants to see is built.
+
+### Gates
+
+Every instrumented site checks only its own group with the inline
+`XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::<Group>)`, which is
+`TraceLoggingProviderEnabled(provider, WINEVENT_LEVEL_VERBOSE, keywords)` — a load,
+compare and branch. Sessions below verbose level would drop every event, so they
+don't turn the gates on. Argument work (labels, peer handles, core size, source info)
+lives in out-of-line helpers next to the call sites, and the `TraceLoggingWrite`
+expansion lives in the emitters, so neither lands in a hot function.
 
 Because TraceLogging is **self-describing**, adding a field or a whole new event
 never changes the GUID and never breaks an older consumer — old consumers ignore
@@ -54,21 +91,21 @@ No `.wprp`/manifest change is required for new payload fields.
 
 ## 3. The complete event schema
 
-### Logical / Visual (UIElement) tree
+### Logical / Visual (UIElement) tree — `XamlTree`
 
 | Event | Params | Fired from | Meaning |
 | --- | --- | --- | --- |
 | `ChildAdded` | `ParentId, ChildId, Index, ChildLabel, IsTemplateChild, ChildPeerHandle` | `CUIElement::AddChild` | Child appended to a parent's children collection |
 | `ChildInserted` | `ParentId, ChildId, Index, ChildLabel, IsTemplateChild, ChildPeerHandle` | `CUIElement::InsertChild` | Child inserted at an index |
 | `ChildRemoved` | `ParentId, ChildId` | `CUIElement::RemoveChild` | Child removed (no label — consumer already has it) |
-| `ElementEnteredTree` | `ElementId, ParentId, IsLive, Label, IsTemplateChild, PeerHandle` | `CUIElement::EnterImpl` | Element entered the live tree (authoritative parent source) |
+| `ElementEnteredTree` | `ElementId, ParentId, IsLive, Label, IsTemplateChild, PeerHandle, CoreSize, SourceFileUri, SourceLine, SourceColumn` | `CUIElement::EnterImpl` | Element entered the live tree (authoritative parent source). `CoreSize` is the core object's allocation size in Debug builds and 0 (unknown) in other builds |
 | `ElementLeftTree` | `ElementId, ParentId, IsLive` | `CUIElement::LeaveImpl` | Element left the live tree |
 | `PeerAssociated` | `ElementId, PeerHandle` | `DXamlCore::GetPeerPrivate` (peer creation) | A DXaml peer was just bound to a core element — **lazily back-fills** the peer handle for nodes that traced `PeerHandle=0` before the peer existed |
 | `ContentChanged` | `ParentId, OldContentId, NewContentId, NewContentLabel, NewContentPeerHandle` | `CContentControl` content set | `ContentControl.Content` replaced |
 | `PopupOpened` | `PopupId, ChildId, PopupLabel, ChildLabel, ChildPeerHandle` | `CPopup::Open` | Popup opened, child entered the tree (**two** labels) |
 | `PopupClosed` | `PopupId, ChildId` | `CPopup` close | Popup closed |
 
-### Composition (HWCompTreeNode) tree
+### Composition (HWCompTreeNode) tree — `CompTree`
 
 | Event | Params | Meaning |
 | --- | --- | --- |
@@ -77,7 +114,7 @@ No `.wprp`/manifest change is required for new payload fields.
 | `CompNodeChildInserted` | `ParentCompNodeId, ChildCompNodeId` | A comp node was parented under another |
 | `CompNodeChildRemoved` | `ParentCompNodeId, ChildCompNodeId` | A comp node was removed from its parent |
 
-### WUC (Windows.UI.Composition `IVisual`) tree
+### WUC (Windows.UI.Composition `IVisual`) tree — `WucTree`
 
 | Event | Params | Meaning |
 | --- | --- | --- |
@@ -90,6 +127,16 @@ No `.wprp`/manifest change is required for new payload fields.
 **Removal/clear events carry no label/handle/properties on purpose** — the
 consumer already learned those from the matching introduce event and keys
 everything by pointer identity.
+
+### Surfaces and memory — `Surfaces`, `SurfaceTextures`, `HeapSnapshots`, `GpuSnapshots`
+
+| Event | Keyword | Params | Meaning |
+| --- | --- | --- | --- |
+| `DCompSurfaceMemoryChanged` | `Surfaces` | `SurfaceId, IsAllocation, EstimatedSizeBytes, Width, Height, PixelStride, IsVirtual` | A DComp surface was allocated, resized or released |
+| `VisualSurfaceChanged` | `Surfaces` | `VisualId, SurfaceId, Role` | A rendered `IVisual` started or stopped using a surface for its brush (role 0) or mask (role 1) |
+| `DCompSurfaceTextureObserved` | `SurfaceTextures` | `SurfaceId, ResourceId, Width, Height, MipLevels, ArraySize, Format, SampleCount, OffsetX, OffsetY` | The D3D texture DComp exposed for a draw |
+| `XamlHeapSnapshot` | `HeapSnapshots` | `HeapHandle, IsPrivateHeap, OutstandingBytes, OutstandingAllocationCount, CumulativeAllocatedBytes, CumulativeAllocationCount, CumulativeDeallocationCount` | XAML allocator counters. Emitted only in builds that keep outstanding-allocation counters (`XCP_COUNT_OUTSTANDING_ALLOC`: Debug builds), never as zeros |
+| `GpuMemorySnapshot` | `GpuSnapshots` | `LocalCurrentUsage, LocalBudget, LocalAvailable, NonLocalCurrentUsage, NonLocalBudget, NonLocalAvailable` | Driver-reported video memory for the process |
 
 ---
 
@@ -202,8 +249,9 @@ inserted visual.
   `NotifyChildInserted / NotifyChildRemoved / NotifyChildrenCleared /
   NotifyRootSet / NotifyRootCleared`.
 - `dxaml/xcp/components/comptree/WucVisualTreeProfiler.cpp` **(new)** — implements
-  them. Every function **early-returns unless `XamlProfilerTracing::IsEnabled()`**
-  (so building the property string costs nothing when no session is attached).
+  them. Every function **early-returns unless `WucVisualTreeProfiler::IsEnabled()`**
+  (the inline `WucTree` keyword check), so building the property string costs nothing
+  unless a session has that group enabled.
   Internally it ports, byte-for-byte, `DCompTreeHelper`'s serialization
   (`BuildPropertiesString`, enum-name helpers, `GetWucVisualTypeName`) and
   normalizes every id by QI-ing to `WUComp::IVisual*` so ids match the live dump.
@@ -245,16 +293,20 @@ The tap's "Pick from app" mode opens a XAML `Popup`+`Border` capture surface,
 which XAML renders into its own comp node + WUC spine — otherwise emitted as
 phantom nodes in the very tree being inspected. Suppression is producer-side:
 
-- `WucVisualTreeProfiler` gained a SRW-guarded **suppressed comp-node-id registry**
-  (`SuppressCompNode` / `UnsuppressCompNode` / `IsCompNodeSuppressed`) and an
-  overlay-name marker constant.
-- `CUIElement::EnsureCompositionPeer` calls `SuppressCompNode` before the
+- `HWCompNode` gained a one-bit **per-node suppression mark**
+  (`MarkProfilerSuppressed` / `IsProfilerSuppressed`), packed next to
+  `m_usesPlaceholderVisual` so the class size is unchanged; `WucVisualTreeProfiler`
+  exposes the overlay-name marker constant.
+- `CUIElement::EnsureCompositionPeer` marks the new comp node before the
   comp-node/WUC events fire when the element's `GetDebugLabel()` starts with the
   overlay name marker (`__xp_pick_overlay`, stamped by the tap) **or** its parent
-  comp node is already suppressed — so suppression **propagates** down the subtree.
+  comp node is already marked — so suppression **propagates** down the subtree.
+  This runs only while a session has the `CompTree` or `WucTree` group enabled.
 - `CompPeerLinked` / `CompPeerUnlinked` / `CompNodeChild*` / `WucVisual*` all gate
-  on `!IsCompNodeSuppressed`. `RemoveCompositionPeer` calls `UnsuppressCompNode`
-  so a reused pointer address is never wrongly suppressed later.
+  on `!IsProfilerSuppressed()`; `NotifyChildInserted` / `NotifyRootSet` take the
+  owning `HWCompNode*` so they can check the mark. The mark lives and dies with the
+  comp node, so there is no global registry, no lock, and no teardown work in
+  `RemoveCompositionPeer` — a reused pointer address can never inherit it.
 
 **Detailed doc:** `resources/pick-overlay-etl-suppression.md`.
 
@@ -264,18 +316,27 @@ phantom nodes in the very tree being inspected. Suppression is producer-side:
 
 | File | Role in the change |
 | --- | --- |
-| `dxaml/xcp/components/base/inc/XamlProfilerTracing.h` | The provider + **all** event schemas; `XamlProfilerGetPeerHandle` declaration |
-| `dxaml/xcp/components/comptree/inc/WucVisualTreeProfiler.h` | **New.** WUC notify API + comp-node suppression API |
-| `dxaml/xcp/components/comptree/WucVisualTreeProfiler.cpp` | **New.** WUC serialization, `IsEnabled()` gating, `IVisual` identity normalization, suppression registry |
+| `dxaml/Xaml.Cpp.Props` | `XamlProfilerEnabled` master switch (on for every configuration; see `activateframework.md`) |
+| `dxaml/xcp/components/base/inc/XamlProfilerTracing.h` | Provider declaration, keyword groups, inline `IsEnabled(keywords)` gate, emitter declarations (**all** event schemas); `XamlProfilerGetPeerHandle` / `XamlProfilerGetCoreSize` declarations; inline `XamlProfilerTraceHeapSnapshot` (Debug builds) |
+| `dxaml/xcp/components/base/XamlProfilerTracing.cpp` | **New.** Provider definition and the out-of-line emitters |
+| `dxaml/xcp/components/base/lib/Microsoft.UI.Xaml.Base.vcxproj` | Registered `XamlProfilerTracing.cpp` in `ClCompile` |
+| `dxaml/xcp/dxaml/dllsrv/winrt/dllentry.cpp` | Registers / unregisters the provider with the DLL |
+| `dxaml/xcp/components/comptree/inc/WucVisualTreeProfiler.h` | **New.** WUC notify API, inline `WucTree` gate, pick-overlay name marker |
+| `dxaml/xcp/components/comptree/WucVisualTreeProfiler.cpp` | **New.** WUC serialization, `IVisual` identity normalization, owner-node suppression check |
 | `dxaml/xcp/components/comptree/lib/Microsoft.UI.Xaml.CompTree.vcxproj` | Registered the new `.cpp` in `ClCompile` |
 | `dxaml/xcp/components/comptree/HWCompNodeWinRT.cpp` | Sync comp-node events; WUC spine/inter-node/hand-in/DManip/reparent/bulk-clear edges |
 | `dxaml/xcp/components/comptree/DCompTreeHost.cpp` | WUC in-proc island + Xaml-island root attach (`WucVisualRootSet`) |
 | `dxaml/xcp/core/hw/hwwalk.cpp` | WUC sprite/leaf visual insert chokepoints |
+| `dxaml/xcp/core/hw/hwcompnode.h` | Per-node pick-overlay suppression bit (`MarkProfilerSuppressed` / `IsProfilerSuppressed`) |
 | `dxaml/xcp/core/hw/hwcompnode.cpp` | Async comp-node events; render-data node bulk clear |
-| `dxaml/xcp/core/core/elements/uielement.cpp` | `ChildAdded`/`ChildInserted`/`ElementEnteredTree`/`CompPeerLinked` call sites; `XamlProfilerGetPeerHandle` definition; pick-overlay suppression hooks |
+| `dxaml/xcp/core/core/elements/uielement.cpp` | `ChildAdded`/`ChildInserted`/`ElementEnteredTree`/`CompPeerLinked` call sites and their out-of-line argument helpers; `XamlProfilerGetPeerHandle` / `XamlProfilerGetCoreSize` definitions; pick-overlay suppression hooks |
+| `dxaml/xcp/core/inc/uielement.h` | Declaration of the out-of-line `TraceProfilerElementEnteredTree` member helper |
 | `dxaml/xcp/core/core/elements/ContentControl.cpp` | `ContentChanged` call site |
 | `dxaml/xcp/core/core/elements/Popup.cpp` | `PopupOpened`/`PopupClosed`; windowed-popup island WUC root tree |
 | `dxaml/xcp/dxaml/lib/DXamlCore.cpp` | `PeerAssociated` emit after `SetDXamlPeer` — lazy peer-handle back-fill (§6) |
+| `dxaml/xcp/core/hw/VisualContentRenderer.cpp` | `VisualSurfaceChanged` call sites |
+| `dxaml/xcp/plat/win/desktop/DCompSurface.h` / `.cpp` | `DCompSurfaceMemoryChanged` / `DCompSurfaceTextureObserved` / snapshot emits behind inline per-group gates |
+| `dxaml/xcp/components/allocation/inc/XcpAllocation.h`, `lib/XcpAllocation.cpp` | `XCP_COUNT_OUTSTANDING_ALLOC` and the allocator counter getters used by `XamlHeapSnapshot` |
 
 ---
 
@@ -287,12 +348,20 @@ phantom nodes in the very tree being inspected. Suppression is producer-side:
   safe. No string outlives the notify call.
 - **Pointer ids** are `reinterpret_cast<uint64_t>` of objects alive at the emit
   point (the mutation already succeeded).
-- **Cost when idle:** the WUC layer is gated behind `IsEnabled()`; the label /
-  peer-handle / template reads are cheap member/pointer reads. No behavioral
-  runtime logic changes — only the ETW payload is enriched.
-- **Compatibility:** provider GUID unchanged; self-describing TraceLogging makes
-  every change backward- and forward-compatible. This matters because the runtime
-  ships via the Windows App SDK NuGet, so old DLLs coexist for a long time.
+- **Cost when idle:** each instrumented site is one inline keyword check
+  (`XamlProfilerTracing::IsEnabled(<group>)`); the label / peer-handle / core-size /
+  source-info reads and the `TraceLoggingWrite` itself are in out-of-line helpers and
+  emitters that run only while that group is enabled. No behavioral runtime logic
+  changes — only the ETW payload is enriched.
+- **Release data:** builds without allocator counters never emit `XamlHeapSnapshot`
+  and report `CoreSize` 0 (unknown) instead of reading the heap with a base-class
+  pointer.
+- **Compatibility:** the provider GUID moved from the early placeholder
+  `{A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D}` to the name-hash GUID above; event names,
+  fields and field order are unchanged and only the keyword is new. Self-describing
+  TraceLogging keeps payload additions backward- and forward-compatible. This matters
+  because the runtime ships via the Windows App SDK NuGet, so old DLLs coexist for a
+  long time.
 
 ---
 
@@ -301,12 +370,12 @@ phantom nodes in the very tree being inspected. Suppression is producer-side:
 ```powershell
 # Build the merged runtime DLL (smallest target containing all changed .cpp):
 .\initrun.ps1 build.cmd mux /q
-# Output: BuildOutput\bin\amd64chk\Product\Microsoft.ui.xaml.dll
+# Output: BuildOutput\bin\amd64chk\Product\Microsoft.ui.xaml.dll (amd64fre for Release)
 ```
 
-Because `Microsoft.UI.Xaml.CompTree.vcxproj` gained a **new** `ClCompile`, a
-plain `bt` inner-loop build is not sufficient for that file — use the MSBuild /
-`build.cmd mux` path (or build the CompTree lib project first).
+Because `Microsoft.UI.Xaml.CompTree.vcxproj` and `Microsoft.UI.Xaml.Base.vcxproj`
+gained **new** `ClCompile` items, a plain `bt` inner-loop build is not sufficient for
+those files — use the MSBuild / `build.cmd mux` path (or build those lib projects first).
 
 The target app loads the runtime from its NuGet-restored / MSIX-layout copy, **not**
 from `BuildOutput`. To test a locally-built runtime, overwrite every
