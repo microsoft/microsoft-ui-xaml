@@ -21,7 +21,7 @@ internal static class AppSettings
     /// <summary>
     /// Event raised whenever the persisted theme changes via
     /// <see cref="SaveTheme"/>. Listeners (the shell button glyph,
-    /// the Settings page radios when visible) re-sync from here.
+    /// the Settings page theme ComboBox when visible) re-sync from here.
     /// </summary>
     public static event EventHandler<ElementTheme>? ThemeChanged;
 

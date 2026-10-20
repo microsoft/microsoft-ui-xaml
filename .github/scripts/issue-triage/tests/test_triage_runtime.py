@@ -35,6 +35,7 @@ class ModelContextTests(unittest.TestCase):
         self.assertEqual(self.evidence, original)
         self.assertNotIn('"_snapshot"', formatted)
         self.assertNotIn('"_catalog"', formatted)
+        self.assertNotIn('"_team_parents"', formatted)
         self.assertTrue(formatted.isascii())
 
     def test_each_area_followup_and_candidate_occupies_one_line(self):
@@ -83,7 +84,9 @@ class ModelContextTests(unittest.TestCase):
                 patch.dict(os.environ, {"GITHUB_REPOSITORY": REPO, "GITHUB_TOKEN": "test-token"}),
                 patch.object(sys, "argv", ["triage.py", "prepare", "event.json", str(destination)]),
                 patch.object(t, "GitHub", return_value=self.client),
-                patch.object(t, "read_json", side_effect=[event(), MAPPING]),
+                patch.object(t, "read_json", side_effect=[
+                    event(), MAPPING, self.evidence["_team_parents"],
+                ]),
                 patch("sys.stdout", new_callable=io.StringIO),
             ):
                 self.assertEqual(t.main(), 0)
@@ -112,6 +115,11 @@ class WorkflowRuntimeTests(unittest.TestCase):
             self.assertIn(f'    - "--deny-tool"\n    - "{tool}"', self.source)
         self.assertIn("needs.agent.result == 'success'", self.source)
         self.assertIn("needs.detection.outputs.detection_success == 'true'", self.source)
+
+    def test_parent_inheritance_is_not_delegated_to_the_model(self):
+        self.assertNotIn("team-Core", self.source)
+        self.assertNotIn("team-parent-map.json", self.source)
+        self.assertIn("Never emit a team name.", self.source)
 
     def test_external_reporters_are_not_subject_to_a_role_gate(self):
         self.assertIn("  roles: all", self.source)

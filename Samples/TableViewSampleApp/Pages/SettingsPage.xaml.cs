@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using TableViewSampleApp.Services;
 using Windows.UI.ViewManagement;
@@ -81,7 +82,15 @@ public sealed partial class SettingsPage : Page
         }
     }
 
-    private void OnRefreshWindowsStateClick(object sender, RoutedEventArgs e) => RefreshWindowsState();
+    private void OnRefreshWindowsStateClick(object sender, RoutedEventArgs e)
+    {
+        RefreshWindowsState();
+
+        // TextBlock does not raise LiveRegionChanged on a text change; raise it for the user's refresh only.
+        (FrameworkElementAutomationPeer.FromElement(ContrastStatusText)
+            ?? FrameworkElementAutomationPeer.CreatePeerForElement(ContrastStatusText))
+            ?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+    }
 
     // Reads the OS high-contrast flag only. This is a Windows setting readout,
     // not a rendering, contrast-ratio, or UI Automation test result.

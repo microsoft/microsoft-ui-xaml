@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Navigation;
@@ -57,6 +58,7 @@ public sealed partial class ShowcasePage : SamplePageBase
         _columnToggles[DetailsColumnCheckBox] = DetailsColumn;
 
         _liveTimer.Interval = TimeSpan.FromMilliseconds(UpdateIntervalSlider.Value);
+        DescribeInterval(UpdateIntervalSlider.Value);
         _liveTimer.Tick += OnLiveTimerTick;
 
         _ready = true;
@@ -119,8 +121,13 @@ public sealed partial class ShowcasePage : SamplePageBase
         }
 
         _liveTimer.Interval = TimeSpan.FromMilliseconds(e.NewValue);
+        DescribeInterval(e.NewValue);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Update interval -> {0:N0} ms", e.NewValue));
     }
+
+    // Narrator reads a Slider's value as a percentage of its range; ItemStatus carries the milliseconds.
+    private void DescribeInterval(double value) =>
+        AutomationProperties.SetItemStatus(UpdateIntervalSlider, string.Format(CultureInfo.CurrentCulture, "{0:N0} milliseconds", value));
 
     // <snippet>
     private void OnLiveTimerTick(object? sender, object e)

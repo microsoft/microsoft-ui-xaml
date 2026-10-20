@@ -447,11 +447,6 @@ void TableViewRowAutomationPeer::DropCellPeerCache()
     m_cellPeerCache.clear();
 }
 
-[[noreturn]] void TableViewRowAutomationPeer::ThrowElementNotAvailable()
-{
-    throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
-}
-
 hstring TableViewRowAutomationPeer::GetNameCore()
 {
     auto const row = Owner().try_as<winrt::TableViewRow>();
@@ -537,6 +532,13 @@ std::wstring TableViewRowAutomationPeer::ComposeCellTexts(
 
 int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
 {
+    const int32_t value = ComputePositionInSet();
+    m_lastReportedPositionInSet = value;
+    return value;
+}
+
+int32_t TableViewRowAutomationPeer::ComputePositionInSet()
+{
     // An app-set AutomationProperties value wins, as in every dxaml peer that computes this.
     if (const auto provided = __super::GetPositionInSetCore(); provided > 0)
     {
@@ -576,6 +578,13 @@ int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
 }
 
 int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
+{
+    const int32_t value = ComputeSizeOfSet();
+    m_lastReportedSizeOfSet = value;
+    return value;
+}
+
+int32_t TableViewRowAutomationPeer::ComputeSizeOfSet()
 {
     if (const auto provided = __super::GetSizeOfSetCore(); provided > 0)
     {
@@ -783,14 +792,58 @@ void TableViewRowAutomationPeer::RaiseExpandCollapseAutomationEvent(
     }
 }
 
+void TableViewRowAutomationPeer::RaiseHierarchyPositionChanged()
+{
+    // A row that left the tree (ClearParentBy, or a recycled row bound to a flat item) still owes
+    // a client that read its tree Level the change back.
+    if (!IsHierarchicalRow() && m_lastReportedLevel <= 0)
+    {
+        return;
+    }
+
+    try
+    {
+        // Compare against what this peer last reported to a client (recorded by the Get*Core
+        // overrides). -1 means never reported, so no client can hold a stale value.
+        auto raiseIfChanged = [this](winrt::AutomationProperty const& property, int32_t& last, int32_t current)
+        {
+            if (last >= 0 && last != current)
+            {
+                RaisePropertyChangedEvent(property, box_value(last), box_value(current));
+                last = current;
+            }
+        };
+
+        raiseIfChanged(winrt::AutomationElementIdentifiers::LevelProperty(), m_lastReportedLevel, ComputeLevel());
+        raiseIfChanged(winrt::AutomationElementIdentifiers::PositionInSetProperty(), m_lastReportedPositionInSet, ComputePositionInSet());
+        raiseIfChanged(winrt::AutomationElementIdentifiers::SizeOfSetProperty(), m_lastReportedSizeOfSet, ComputeSizeOfSet());
+    }
+    catch (...)
+    {
+        // best-effort: the tree may be tearing down.
+    }
+}
+
 // ----- IAutomationPeerOverrides3 -----
 
 int32_t TableViewRowAutomationPeer::GetLevelCore()
 {
-    // Level is already 1-based. Non-tree rows defer to base (honours AutomationProperties.Level).
+    const int32_t value = ComputeLevel();
+    m_lastReportedLevel = value;
+    return value;
+}
+
+int32_t TableViewRowAutomationPeer::ComputeLevel()
+{
+    // An app-set AutomationProperties.Level wins, as in GetPositionInSetCore/GetSizeOfSetCore.
+    if (const auto provided = __super::GetLevelCore(); provided > 0)
+    {
+        return provided;
+    }
+
+    // Level is already 1-based; 0 (not a tree row) is UIA's "not specified".
     auto const row = GetRow();
-    const int32_t level = row ? row.Level() : 0;
-    return level > 0 ? level : __super::GetLevelCore();
+    return row ? row.Level() : 0;
 }
 
 // Position within the sibling set (not the flat axis), O(1) from the hierarchy descriptor.

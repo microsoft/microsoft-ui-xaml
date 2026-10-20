@@ -828,15 +828,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             Log.Comment($"Validate that shutdown log $logFilePath contains expected order of events.");
             
-            // NOTE: the dtors listed below are not officially part of the contract, but they can be important because
-            // Cpp apps may rely on the timing of when they're called (intentionally or not).
+            // XAML shutdown releases Page1. App then releases MainWindow from the first
+            // XamlShutdownCompletedOnThread handler. Retained dynamic metadata keeps App alive.
             string expectedShutdownLog =             
             @"  Window.Closed raised.
                 ShutdownStarting raised.
                 DispatcherQueue work is running.
                 Page1 Unloaded event raised.
                 Page1::~Page1 called.
-                App::~App called.
                 MainWindow::~MainWindow called.
                 XamlShutdownCompletedOnThread raised.
                 ShutdownCompleted raised.";

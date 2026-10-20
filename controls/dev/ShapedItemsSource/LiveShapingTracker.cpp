@@ -65,7 +65,13 @@ void LiveShapingTracker::Subscribe(winrt::IInspectable const& item)
         subscription.Token = observable.PropertyChanged(std::move(onChanged));
         subscription.StrongSource = observable;
     }
-    m_subscriptions.emplace(identity, std::move(subscription));
+    if (!m_subscriptions.try_emplace(identity, std::move(subscription)).second)
+    {
+        // Adding the handler ran app code that re-entered and subscribed this item first. Keep that
+        // entry and remove ours, or a strongly held handler would never be revoked. try_emplace
+        // leaves the argument untouched when it does not insert.
+        subscription.Revoke();
+    }
 }
 
 void LiveShapingTracker::Subscription::Revoke() noexcept

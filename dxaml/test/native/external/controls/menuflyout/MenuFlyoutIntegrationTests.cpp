@@ -6550,16 +6550,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             menuFlyout = safe_cast<xaml_controls::MenuFlyout^>(xaml_controls::MenuFlyout::GetAttachedFlyout(rootGrid));
             VERIFY_IS_NOT_NULL(menuFlyout);
 
-            openedRegistration.Attach(menuFlyout, ref new wf::EventHandler<Platform::Object^>([rootGrid, menuFlyout, menuFlyoutOpenedEvent, &initialMenuItemPosition](Platform::Object^, Platform::Object^)
+            openedRegistration.Attach(menuFlyout, ref new wf::EventHandler<Platform::Object^>([menuFlyoutOpenedEvent](Platform::Object^, Platform::Object^)
             {
                 LOG_OUTPUT(L"MenuFlyout.Opened event raised");
-
-                xaml_controls::MenuFlyoutItem^ menuItem = safe_cast<xaml_controls::MenuFlyoutItem^>(menuFlyout->Items->GetAt(0));
-                VERIFY_IS_NOT_NULL(menuItem);
-
-                initialMenuItemPosition = menuItem->TransformToVisual(rootGrid)->TransformPoint(wf::Point(0, 0));
-                LOG_OUTPUT(L"Initial MenuFlyoutItem position in MenuFlyout.Opened event handler: %f, %f.", initialMenuItemPosition.X, initialMenuItemPosition.Y);
-
                 menuFlyoutOpenedEvent->Set();
             }));
 
@@ -6575,11 +6568,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         LOG_OUTPUT(L"Waiting for root Grid to load.");
         loadedEvent->WaitForDefault();
 
+        LOG_OUTPUT(L"Clicking at 0, 0 before showing the MenuFlyout.");
+        TestServices::InputHelper->LeftMouseClick(wf::Point(0, 0));
+        TestServices::WindowHelper->WaitForIdle();
+
         RunOnUIThread([&]()
         {
             showAtPosition.X = static_cast<float>(rootGrid->ActualWidth) - 25.0f;
             showAtPosition.Y = static_cast<float>(rootGrid->ActualHeight) - 25.0f;
 
+            LOG_OUTPUT(L"Root Grid size: %f, %f.", rootGrid->ActualWidth, rootGrid->ActualHeight);
             LOG_OUTPUT(L"Showing MenuFlyout at position %f, %f.", showAtPosition.X, showAtPosition.Y);
             menuFlyout->ShowAt(rootGrid, showAtPosition);
         });
@@ -6590,6 +6588,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         RunOnUIThread([&]()
         {
+            xaml_controls::MenuFlyoutItem^ menuItem = safe_cast<xaml_controls::MenuFlyoutItem^>(menuFlyout->Items->GetAt(0));
+            VERIFY_IS_NOT_NULL(menuItem);
+
+            // Focus-driven padding changes can trigger layout after Opened.
+            initialMenuItemPosition = menuItem->TransformToVisual(rootGrid)->TransformPoint(wf::Point(0, 0));
+            LOG_OUTPUT(L"Initial MenuFlyoutItem position after settling: %f, %f.", initialMenuItemPosition.X, initialMenuItemPosition.Y);
+            LOG_OUTPUT(L"Initial MenuFlyoutItem height=%f, FocusState=%d (Unfocused=0, Pointer=1, Keyboard=2, Programmatic=3).",
+                menuItem->ActualHeight, static_cast<int>(menuItem->FocusState));
+
             LOG_OUTPUT(L"Showing MenuFlyout at position %f, %f again.", showAtPosition.X, showAtPosition.Y);
             menuFlyout->ShowAt(rootGrid, showAtPosition);
         });
@@ -6605,6 +6612,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             wf::Point finalMenuItemPosition = menuItem->TransformToVisual(rootGrid)->TransformPoint(wf::Point(0, 0));
             LOG_OUTPUT(L"Final MenuFlyoutItem position: %f, %f.", finalMenuItemPosition.X, finalMenuItemPosition.Y);
+            LOG_OUTPUT(L"Final MenuFlyoutItem height=%f, FocusState=%d (Unfocused=0, Pointer=1, Keyboard=2, Programmatic=3).",
+                menuItem->ActualHeight, static_cast<int>(menuItem->FocusState));
 
             LOG_OUTPUT(L"Verifying initial and final MenuFlyoutItem positions are identical.");
             VERIFY_ARE_EQUAL(finalMenuItemPosition.X, initialMenuItemPosition.X);
@@ -6643,6 +6652,83 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             LOG_OUTPUT(L"Actual keyboard accelerator text:   \"%s\"", item->KeyboardAcceleratorTextOverride->Data());
             VERIFY_IS_TRUE(Platform::String::CompareOrdinal(expectedKeyboardAcceleratorText, item->KeyboardAcceleratorTextOverride) == 0);
         });
+    }
+
+    void MenuFlyoutIntegrationTests::ValidateKeyboardAcceleratorsDoNotCreateMenuFlyoutItemToolTips()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::Button^ button = nullptr;
+        xaml_controls::MenuFlyout^ menuFlyout = nullptr;
+
+        auto menuFlyoutOpenedEvent = std::make_shared<Event>();
+        auto menuFlyoutClosedEvent = std::make_shared<Event>();
+
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::MenuFlyout, Opened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::MenuFlyout, Closed);
+
+        RunOnUIThread([&]
+        {
+            button = safe_cast<xaml_controls::Button^>(xaml_markup::XamlReader::Load(
+                L"<Button xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"        AccessKey='BB' Content='Menu'> "
+                L"  <Button.Flyout> "
+                L"    <MenuFlyout> "
+                L"      <MenuFlyoutItem AccessKey='N' Text='New'> "
+                L"        <MenuFlyoutItem.KeyboardAccelerators> "
+                L"          <KeyboardAccelerator Key='N' /> "
+                L"        </MenuFlyoutItem.KeyboardAccelerators> "
+                L"      </MenuFlyoutItem> "
+                L"      <MenuFlyoutItem AccessKey='O' Text='Open'> "
+                L"        <MenuFlyoutItem.KeyboardAccelerators> "
+                L"          <KeyboardAccelerator Key='O' /> "
+                L"        </MenuFlyoutItem.KeyboardAccelerators> "
+                L"      </MenuFlyoutItem> "
+                L"    </MenuFlyout> "
+                L"  </Button.Flyout> "
+                L"</Button>"));
+
+            menuFlyout = safe_cast<xaml_controls::MenuFlyout^>(button->Flyout);
+
+            openedRegistration.Attach(menuFlyout, [menuFlyoutOpenedEvent]()
+            {
+                menuFlyoutOpenedEvent->Set();
+            });
+
+            closedRegistration.Attach(menuFlyout, [menuFlyoutClosedEvent]()
+            {
+                menuFlyoutClosedEvent->Set();
+            });
+
+            TestServices::WindowHelper->WindowContent = button;
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]
+        {
+            menuFlyout->ShowAt(button);
+        });
+
+        menuFlyoutOpenedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]
+        {
+            for (unsigned int itemIndex = 0; itemIndex < menuFlyout->Items->Size; ++itemIndex)
+            {
+                auto menuFlyoutItem = safe_cast<xaml_controls::MenuFlyoutItem^>(menuFlyout->Items->GetAt(itemIndex));
+                // Regression test: The original OptimizeApplyStyles opt-in incorrectly resulted in KeyboardAccelerators
+                // on MenuFlyoutItems not seeing that MenuFlyoutItem sets KeyboardAcceleratorPlacementMode=Hidden, which
+                // prevents setting a keytip tooltip. Verify there is no tooltip.
+                auto toolTip = TestServices::WindowHelper->TestGetActualToolTip(menuFlyoutItem);
+                VERIFY_IS_NULL(toolTip);
+            }
+
+            menuFlyout->Hide();
+        });
+
+        menuFlyoutClosedEvent->WaitForDefault();
     }
 
     void MenuFlyoutIntegrationTests::ValidateSettingKeyboardAcceleratorDoesNotOverrideItemCustomKeyboardAcceleratorText()

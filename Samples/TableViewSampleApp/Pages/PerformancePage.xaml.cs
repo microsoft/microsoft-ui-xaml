@@ -46,8 +46,6 @@ public sealed partial class PerformancePage : SamplePageBase
         PerfTable.ItemsSource = _source;
         CaptureBaseline();
 
-        // No re-selection fallback: its deferred row lookup would add noise to the measurement.
-        Shaping.RestoreSelection = false;
         Shaping.TimeCall = Timed;   // GroupBy, ClearGroupBy, Expand all and Collapse all are timed like every run
         InitializeSample(Status, Shaping.Attach(PerfTable, _source));
     }

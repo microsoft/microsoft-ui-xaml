@@ -5,6 +5,8 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -91,6 +93,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         }
 
         ApplySelectedMode();
+        AnnounceModeDescription(); // snippet:skip
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Width intent -> {0}", SampleShaping.Label(WidthModeSelector)));
     }
 
@@ -158,6 +161,12 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         RefreshReadouts();
     }
     // </snippet>
+
+    // TextBlock does not raise LiveRegionChanged on a text change; raise it for the user's mode change only.
+    private void AnnounceModeDescription() =>
+        (FrameworkElementAutomationPeer.FromElement(ModeDescription)
+            ?? FrameworkElementAutomationPeer.CreatePeerForElement(ModeDescription))
+            ?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
 
     private void PopulateColumnSelector(string? preferredHeader)
     {
@@ -250,12 +259,16 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         finally
         {
             _suppressSliderHandlers = false;
+            DescribePixels(MinWidthSlider, MinWidthSlider.Value); // snippet:skip
+            DescribePixels(WidthSlider, WidthSlider.Value); // snippet:skip
+            DescribePixels(MaxWidthSlider, MaxWidthSlider.Value); // snippet:skip
         }
     }
     // </snippet>
 
     private void OnMinWidthSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
+        DescribePixels((Slider)sender, e.NewValue);
         if (_suppressSliderHandlers || _activeColumn is null)
         {
             return;
@@ -267,6 +280,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
 
     private void OnWidthSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
+        DescribePixels((Slider)sender, e.NewValue);
         if (_suppressSliderHandlers || _activeColumn is null)
         {
             return;
@@ -278,6 +292,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
 
     private void OnMaxWidthSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
+        DescribePixels((Slider)sender, e.NewValue);
         if (_suppressSliderHandlers || _activeColumn is null)
         {
             return;
@@ -286,6 +301,10 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
         _activeColumn.MaxWidth = e.NewValue;
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "MaxWidth of {0} -> {1:N0}", _activeColumn.Header, e.NewValue));
     }
+
+    // Narrator reads a Slider's value as a percentage of its range; ItemStatus carries the pixels.
+    private static void DescribePixels(Slider slider, double value) =>
+        AutomationProperties.SetItemStatus(slider, string.Format(CultureInfo.CurrentCulture, "{0:N0} pixels", value));
 
     // ---- Resize gates -------------------------------------------------------------------
 
