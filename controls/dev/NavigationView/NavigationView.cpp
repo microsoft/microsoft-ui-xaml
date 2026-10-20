@@ -1275,14 +1275,6 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
             // A new or recycled container (e.g. after a PaneDisplayMode switch re-sources the repeaters) doesn't know
             // whether its item is an ancestor of the selected item, so recompute IsChildSelected from the selection model.
             UpdateIsChildSelectedForPreparedContainer(nvi);
-            if (nvi.IsChildSelected() && !nvi.IsExpanded())
-            {
-                // This container shows the selection indicator for a selected descendant, but it may be new or recycled
-                // (e.g. a data-bound parent after the repeaters were re-sourced), so restore the indicator after this layout pass.
-                m_OrientationChangedPendingAnimation = true;
-                m_layoutUpdatedToken.revoke();
-                m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
-            }
 
             auto item = MenuItemFromContainer(nvi);
 
@@ -1412,7 +1404,7 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
     if (m_OrientationChangedPendingAnimation)
     {
         m_OrientationChangedPendingAnimation = false;
-        AnimateSelectionChanged(SelectedItem());
+        AnimateSelectionChangedToSelectedItem();
     }
 }
 
@@ -2036,56 +2028,18 @@ void NavigationView::AnimateSelectionChangedToItem(const winrt::IInspectable& se
     }
 }
 
-winrt::IInspectable NavigationView::GetItemToDisplaySelectionIndicator(const winrt::IInspectable& item)
+void NavigationView::AnimateSelectionChangedToSelectedItem()
 {
-    // A selected item inside a collapsed parent shows its selection indicator on that parent.
-    if (item)
+    // A selected child inside a collapsed parent shows its indicator on the parent.
+    auto const container = FindLowestLevelContainerToDisplaySelectionIndicator();
+    if (container && !container.IsSelected() && container.IsChildSelected())
     {
-        auto const nvi = item.try_as<winrt::NavigationViewItem>();
-        if (item == SelectedItem() || (nvi && nvi.IsSelected()))
-        {
-            auto const container = FindLowestLevelContainerToDisplaySelectionIndicator();
-            if (container && !container.IsSelected() && container.IsChildSelected())
-            {
-                return container;
-            }
-            if (!container || !container.IsSelected())
-            {
-                // The index path couldn't be resolved to a realized container (e.g. while the Top repeaters are being
-                // re-sourced), so look for a realized top-level container that shows the selection for a collapsed child.
-                if (auto const ancestor = FindCollapsedTopLevelAncestorOfSelection())
-                {
-                    return ancestor;
-                }
-            }
-        }
+        AnimateSelectionChanged(container);
     }
-    return item;
-}
-
-winrt::NavigationViewItem NavigationView::FindCollapsedTopLevelAncestorOfSelection()
-{
-    const bool isTop = IsTopNavigationView();
-    for (auto const& repeater : { isTop ? m_topNavRepeater.get() : m_leftNavRepeater.get(), isTop ? m_topNavFooterMenuRepeater.get() : m_leftNavFooterMenuRepeater.get() })
+    else
     {
-        if (repeater)
-        {
-            if (auto const itemsSourceView = repeater.ItemsSourceView())
-            {
-                for (int i = 0; i < itemsSourceView.Count(); i++)
-                {
-                    if (auto const nvi = repeater.TryGetElement(i).try_as<winrt::NavigationViewItem>())
-                    {
-                        if (!nvi.IsSelected() && nvi.IsChildSelected() && !nvi.IsExpanded())
-                        {
-                            return nvi;
-                        }
-                    }
-                }
-            }
-        }
+        AnimateSelectionChanged(SelectedItem());
     }
-    return nullptr;
 }
 
 // Please clear the field m_lastSelectedItemPendingAnimationInTopNav when calling this method to prevent garbage value and incorrect animation
@@ -2100,7 +2054,7 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
     }
 
     winrt::UIElement prevIndicator = m_activeIndicator.get();
-    winrt::UIElement nextIndicator = FindSelectionIndicator(GetItemToDisplaySelectionIndicator(nextItem));
+    winrt::UIElement nextIndicator = FindSelectionIndicator(nextItem);
 
     bool haveValidAnimation = false;
     // It's possible that AnimateSelectionChanged is called multiple times before the first animation is complete.
@@ -4433,7 +4387,7 @@ void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::
             // while the ItemsRepeater was still unloaded. Thus m_selectionModel still does not know about that selection.
             UpdateSelectionModelSelectionForSelectedItem(item);
         }
-        AnimateSelectionChanged(item);
+        AnimateSelectionChangedToSelectedItem();
     }
 }
 
@@ -5610,12 +5564,6 @@ bool NavigationView::IsContainerTheSelectedItemInTheSelectionModel(const winrt::
         auto selectedItemContainer = selectedItem.try_as<winrt::NavigationViewItemBase>();
         if (!selectedItemContainer)
         {
-            // A data-bound container that represents the selected item is the selected container, even when
-            // GetContainerForIndexPath can't resolve it (e.g. a child of a collapsed parent in Top mode).
-            if (MenuItemFromContainer(nvib) == selectedItem)
-            {
-                return true;
-            }
             selectedItemContainer = GetContainerForIndexPath(m_selectionModel.SelectedIndex());
         }
 
