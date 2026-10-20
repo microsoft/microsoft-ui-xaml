@@ -2322,8 +2322,9 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
         }
         else if (container = GetContainerForIndexPath(m_selectionModel.SelectedIndex(), false /* lastVisible */, true /* forceRealize */))
         {
-            // A deferred notification (CompletePendingSelectionChange) can run after the item's containers were torn down,
-            // e.g. once the NavigationView is unloaded; only report a container that still presents nextItem.
+            // A deferred notification (CompletePendingSelectionChange) can run after the item's containers were torn down
+            // (the NavigationView was unloaded); only report a container that still presents nextItem.
+            MUX_ASSERT(!IsLoaded() || MenuItemFromContainer(container) == nextItem);
             if (MenuItemFromContainer(container) == nextItem)
             {
                 eventArgs->SelectedItemContainer(container);
@@ -2467,6 +2468,13 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
     // If this item has an associated container, we'll raise the SelectionChanged event on it immediately.
     if (auto const nvi = NavigationViewItemOrSettingsContentFromData(nextItem))
     {
+        // This selection supersedes a notification still waiting for an earlier item's container;
+        // otherwise that stale SelectionChanged would be raised after this one.
+        m_isSelectionChangedPending = false;
+        m_pendingSelectionChangedItem = nullptr;
+        m_pendingSelectionChangedDirection = NavigationRecommendedTransitionDirection::Default;
+        m_selectedItemLayoutUpdatedRevoker.revoke();
+
         AnimateSelectionChanged(nvi);
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
