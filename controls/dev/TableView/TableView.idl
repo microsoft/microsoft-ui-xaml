@@ -183,7 +183,7 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     ITableViewSortComparer CustomSortComparer { get; set; };
 
     // Read-only DP driven by the owning TableView. None means the column is not part of the
-    // active sort.
+    // active sort. Apps change it through the TableView sort methods or TableViewSource.Sort.
     [MUX_DEFAULT_VALUE("winrt::SortDirection::None")]
     SortDirection SortDirection { get; };
 
@@ -264,8 +264,7 @@ runtimeclass TableViewSortingEventArgs
     SortDirection Direction { get; };
 
     // Set true to stop the control applying the sort, leaving the app to own the ordering. The
-    // control's sort state, header glyph and Sorted event are all suppressed, so an app that
-    // orders the rows itself and wants the glyph to follow sets the column's state explicitly.
+    // control's sort state, glyph and Sorted are suppressed; TableViewSource.Sort can light the glyph.
     Boolean Cancel;
 };
 
@@ -488,6 +487,9 @@ unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
 //   PART_HeaderHost     — Panel. Receives one header cell per column.
 //   PART_RowsRepeater   — ItemsRepeater. Hosts row containers; do not TemplateBind ItemsSource.
 //   PART_EmptyStatePresenter — ContentControl/ContentPresenter (optional). Hosts EmptyTemplate.
+//
+// Structure, not named parts: the header and body scrollers are the nearest ScrollViewer ancestors
+// of PART_HeaderHost / PART_RowsRepeater inside the template; their names are not looked up.
 //
 // Unsealed: ReferenceTracker requires the cppwinrt-projected derivable type surface.
 //
