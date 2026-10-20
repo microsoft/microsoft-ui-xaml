@@ -2429,7 +2429,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         $"IsChildSelected={container?.IsChildSelected}, IsExpanded={container?.IsExpanded}, indicator={indicator?.GetHashCode()}, " +
                         $"opacity={indicator?.Opacity}, visualOpacity={visual?.Opacity}, visualScale={visual?.Scale}");
                 }
+
+                // Find every lit SelectionIndicator, including ones in the (closed) top overflow flyout.
+                var roots = new List<DependencyObject> { navView };
+                if (VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton") is Button overflowButton && overflowButton.Flyout is Flyout flyout && flyout.Content != null)
+                {
+                    roots.Add(flyout.Content);
+                }
+                foreach (var root in roots)
+                {
+                    LogLitIndicators(root, step, root == navView ? "navView" : "overflow");
+                }
             });
+        }
+
+        private static void LogLitIndicators(DependencyObject element, string step, string rootName)
+        {
+            if (element is FrameworkElement fe && fe.Name == "SelectionIndicator" && (fe.Opacity > 0 || Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(fe).Opacity > 0))
+            {
+                var owner = VisualTreeUtils.FindVisualParentByType<NavigationViewItem>(fe);
+                Log.Comment($"  [diag] {step}: lit indicator {fe.GetHashCode()} in {rootName}, opacity={fe.Opacity}, " +
+                    $"visualOpacity={Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(fe).Opacity}, owner={owner?.GetHashCode()} '{owner?.Content}'");
+            }
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+            {
+                LogLitIndicators(VisualTreeHelper.GetChild(element, i), step, rootName);
+            }
         }
 
         private static void CheckHiddenChildHasNoSelectionIndicator(NavigationViewItem child, string step, List<string> failures)
