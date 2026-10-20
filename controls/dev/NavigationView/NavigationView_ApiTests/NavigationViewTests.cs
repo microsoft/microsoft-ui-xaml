@@ -2713,6 +2713,71 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a previously used AnimatedIcon gets the Selected state once it is re-attached to the same selected item, or moved to another already-selected item, without needing a pointer or selection change (GitHub #11080).")]
+        public void VerifyMovedAnimatedIconGetsSelectedStateFromNewHost()
+        {
+            NavigationView navView = null;
+            NavigationViewItem itemA = null;
+            NavigationViewItem itemB = null;
+            AnimatedIcon icon = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon() { Source = new ControlledAnimatedVisualSource(CreateSelectionAwareAnimatedIconMarkers()) };
+                itemA = new NavigationViewItem() { Content = "A", Icon = icon };
+                itemB = new NavigationViewItem() { Content = "B" };
+
+                navView = new NavigationView() { IsSettingsVisible = false };
+                navView.MenuItems.Add(itemA);
+                navView.MenuItems.Add(itemB);
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, itemA);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Selected item A");
+                itemA.Icon = null;
+            });
+            IdleSynchronizer.Wait();
+
+            // Re-attach to the same item, which stays selected.
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Icon released by A");
+                itemA.Icon = icon;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Icon re-attached to selected item A");
+                itemA.Icon = null;
+            });
+            IdleSynchronizer.Wait();
+
+            // Move to another item that is already selected and templated.
+            SelectItem(navView, itemB);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Normal", AnimatedIcon.GetState(icon), "Icon released by A again");
+                itemB.Icon = icon;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Selected", AnimatedIcon.GetState(icon), "Icon moved to selected item B");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
         // AnimatedIconTestHooks records the transition AnimatedIcon last resolved (e.g. "NormalToSelected"); it is
         // updated on the layout pass after the State change, so poll for it.
         static bool WaitForAnimatedIconSegment(AnimatedIcon icon, Func<string, bool> predicate, int timeoutMs = 5000)
