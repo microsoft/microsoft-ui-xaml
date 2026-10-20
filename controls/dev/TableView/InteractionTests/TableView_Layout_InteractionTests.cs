@@ -294,12 +294,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return info.hCursor;
         }
 
-        // The cursor is updated asynchronously after the pointer moves, so poll rather than read once.
+        // The cursor is updated asynchronously after the pointer moves, so poll until several
+        // consecutive samples agree rather than accepting a single transient match.
         private static void VerifyCursorBecomes(IntPtr expected, string message)
         {
+            const int requiredMatches = 3;
             var samples = new List<string>();
             var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
             IntPtr cursor;
+            int matches = 0;
             while (true)
             {
                 cursor = ReadCursor();
@@ -308,15 +311,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     samples.Add(sample);
                 }
-                if (cursor == expected || DateTime.UtcNow >= deadline)
+                matches = cursor == expected ? matches + 1 : 0;
+                if (matches >= requiredMatches || DateTime.UtcNow >= deadline)
                 {
                     break;
                 }
                 Wait.ForMilliseconds(50);
             }
 
-            Verify.AreEqual(expected, cursor,
-                string.Format("{0} Expected 0x{1:X}; sampled [{2}].", message, expected.ToInt64(), string.Join(", ", samples)));
+            Verify.IsTrue(matches >= requiredMatches,
+                string.Format("{0} Expected 0x{1:X} for {2} consecutive samples; last 0x{3:X}, sampled [{4}].",
+                    message, expected.ToInt64(), requiredMatches, cursor.ToInt64(), string.Join(", ", samples)));
         }
 
         private static void EnsureAppWindowForeground()
@@ -449,6 +454,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     InputHelper.LeftMouseButtonUp();
                     Wait.ForIdle();
                 }
+
+                UIObject header = FindColumnHeader(FindElement.ById(BasicTable), "Name");
+                double widthBefore = header.BoundingRectangle.Width;
+                DragColumnBoundary(header, 80, cancelWithEscape: false);
+                Wait.ForIdle();
+                double widthAfter = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("After the canceled drag: Name width before={0}, after a normal resize={1}.", widthBefore, widthAfter);
+                Verify.IsGreaterThan(widthAfter, widthBefore + 20.0, "A resize after an Escape-canceled drag must still widen the column.");
             }
         }
 
