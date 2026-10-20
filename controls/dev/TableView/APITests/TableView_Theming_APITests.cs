@@ -278,11 +278,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // One of very few exact values the spec states outright (TableView-dev-spec.md:176): the dark
-        // TabularSurfaceGridLineBrush is #29FFFFFF. Pinning a literal colour is normally weak; here the
-        // spec names it.
+        // Values mirror Common_themeresources_any.xaml.
         [TestMethod]
-        public void VerifyDarkGridLineBrushMatchesTheDocumentedValue()
+        public void VerifyGridLineBrushesMatchFluentStrokeTokens()
         {
             RunOnUIThread.Execute(() =>
             {
@@ -290,17 +288,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var dark = RequireBrush(resources, "Default", "TabularSurfaceGridLineBrush");
                 var light = RequireBrush(resources, "Light", "TabularSurfaceGridLineBrush");
-                if (dark == null || light == null)
+                var darkHeader = RequireBrush(resources, "Default", "TabularSurfaceHeaderSeparatorBrush");
+                var lightHeader = RequireBrush(resources, "Light", "TabularSurfaceHeaderSeparatorBrush");
+                if (dark == null || light == null || darkHeader == null || lightHeader == null)
                 {
                     return;
                 }
 
-                Verify.AreEqual(Color.FromArgb(0x29, 0xFF, 0xFF, 0xFF), dark.Color,
-                    "Dark TabularSurfaceGridLineBrush must be #29FFFFFF - 16% white, bumped from DividerStrokeColorDefault's " +
-                    "8.2% for readability over row banding.");
-
-                Verify.AreEqual(Color.FromArgb(0x29, 0x00, 0x00, 0x00), light.Color,
-                    "Light TabularSurfaceGridLineBrush must be #29000000, the Light counterpart of the Dark value.");
+                Verify.AreEqual(Color.FromArgb(0x15, 0xFF, 0xFF, 0xFF), dark.Color,
+                    "Dark TabularSurfaceGridLineBrush must be DividerStrokeColorDefault (#15FFFFFF).");
+                Verify.AreEqual(Color.FromArgb(0x0F, 0x00, 0x00, 0x00), light.Color,
+                    "Light TabularSurfaceGridLineBrush must be DividerStrokeColorDefault (#0F000000).");
+                Verify.AreEqual(dark.Color, darkHeader.Color, "Dark header lines must match the body grid lines (DividerStrokeColorDefault).");
+                Verify.AreEqual(light.Color, lightHeader.Color, "Light header lines must match the body grid lines (DividerStrokeColorDefault).");
             });
         }
 
@@ -520,7 +520,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyGridLineBrushSameColorOverrideKeepsObjectAndOpacity()
         {
-            var themeColor = Color.FromArgb(0x29, 0x00, 0x00, 0x00);
+            var themeColor = Color.FromArgb(0x0F, 0x00, 0x00, 0x00);
             SolidColorBrush expectedBrush = null;
             TableView tableView = null;
             Grid host = null;
@@ -873,8 +873,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 lightGridLine = RequireCellSeparatorColor(tableView, "in Light");
 
-                Verify.AreEqual(Color.FromArgb(0x29, 0x00, 0x00, 0x00), lightGridLine,
-                    "The light-theme gridline must resolve to #29000000 before the theme switch, or the rest of this test proves nothing.");
+                Verify.AreEqual(Color.FromArgb(0x0F, 0x00, 0x00, 0x00), lightGridLine,
+                    "The light-theme gridline must resolve to #0F000000 before the theme switch, or the rest of this test proves nothing.");
 
                 host.RequestedTheme = ElementTheme.Dark;
                 host.UpdateLayout();
@@ -898,7 +898,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreNotEqual(lightGridLine, darkGridLine,
                     "The gridline brush must change with the theme; an unchanged value means the per-instance resource cache " +
                     "was not invalidated on the theme change.");
-                Verify.AreEqual(Color.FromArgb(0x29, 0xFF, 0xFF, 0xFF), darkGridLine,
+                Verify.AreEqual(Color.FromArgb(0x15, 0xFF, 0xFF, 0xFF), darkGridLine,
                     "After switching to Dark the gridline must re-resolve to the dark TabularSurfaceGridLineBrush.");
             });
         }

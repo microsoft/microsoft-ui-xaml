@@ -247,7 +247,7 @@ Tabular's compiled `ResourceAccessor` reads `Microsoft.UI.Xaml.Controls.Tabular/
 
 Lifetime rules: columns and rows use weak owner back-pointers (`GetOwningTableView()` resolves a strong owner for synchronous work); runtime classes use `ReferenceTracker` where required; cross-object events use `auto_revoke`; recycled rows reset transient visual state before reuse.
 
-Theme values resolve through `TabularSurfaces` resources and re-resolve across theme (and high-contrast) changes. Dark `TabularSurfaceGridLineBrush` is `#29FFFFFF`. The stock style always provides the key; if it is missing, High Contrast falls back to `SystemColorWindowTextColor` and every other theme draws no grid line.
+Theme values resolve through `TabularSurfaces` resources and re-resolve across theme (and high-contrast) changes. `TabularSurfaceGridLineBrush` (grid lines, header lines and the control border) uses the Fluent `DividerStrokeColorDefault` value; High Contrast uses `SystemColorWindowTextColor`. The stock style always provides the key; if it is missing, High Contrast falls back to `SystemColorWindowTextColor` and every other theme draws no grid line.
 
 `TableView.xaml` does not redeclare the `TabularSurface*` brush keys: generic-style fallbacks would shadow the canonical palette and bypass its HighContrast system-color brushes. Consumers merge `TabularControlsResources` as documented by the sample.
 
