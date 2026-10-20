@@ -635,7 +635,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyResizeGripperSeparatorShowsOnlyInPointerStates()
+        public void VerifyResizeGripperSeparatorShowsOnlyWhileDragging()
         {
             ResizeGripper gripper = null;
 
@@ -665,12 +665,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var rest = separator.BorderBrush as SolidColorBrush;
                 Verify.IsTrue(rest != null && rest.Color.A == 0, "The separator must be hidden in the Normal state.");
 
-                foreach (var state in new[] { "PointerOver", "Pressed" })
-                {
-                    VisualStateManager.GoToState(gripper, state, false);
-                    Verify.AreEqual(gripper.BorderBrush, separator.BorderBrush,
-                        $"The {state} state must show the separator with the gripper's BorderBrush.");
-                }
+                VisualStateManager.GoToState(gripper, "PointerOver", false);
+                var hover = separator.BorderBrush as SolidColorBrush;
+                Verify.IsTrue(hover != null && hover.Color.A == 0, "Hover must not draw the separator.");
+
+                VisualStateManager.GoToState(gripper, "Pressed", false);
+                Verify.AreEqual(gripper.BorderBrush, separator.BorderBrush,
+                    "The Pressed state must show the separator with the gripper's BorderBrush.");
 
                 VisualStateManager.GoToState(gripper, "Normal", false);
                 rest = separator.BorderBrush as SolidColorBrush;
@@ -686,20 +687,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 EnsureTabularControlsResources();
                 var resources = new TabularControlsResources();
 
-                // Read expected colours from the live accent palette, not hex: valid for any user
-                // accent, and a reintroduced literal fails.
-                var expectedLight = RequireApplicationColor("SystemAccentColorDark1");
-                var expectedDark = RequireApplicationColor("SystemAccentColorLight2");
+                var expectedLight = RequireThemeColor("Light", "ControlStrongStrokeColorDefault");
+                var expectedDark = RequireThemeColor("Default", "ControlStrongStrokeColorDefault");
                 Verify.AreNotEqual(expectedLight, expectedDark,
-                    "SystemAccentColorDark1 and SystemAccentColorLight2 must differ, or a Light/Dark swap could not be detected.");
+                    "ControlStrongStrokeColorDefault must differ between Light and Dark, or a swap could not be detected.");
 
                 var light = RequireBrush(resources, "Light", "ResizeGripperSeparatorBrush");
                 Verify.AreEqual(expectedLight, light.Color,
-                    "The Light default ResizeGripperSeparatorBrush must follow AccentFillColorDefaultBrush's Light tier, SystemAccentColorDark1.");
+                    "The Light ResizeGripperSeparatorBrush must be the neutral ControlStrongStrokeColorDefault.");
 
                 var dark = RequireBrush(resources, "Default", "ResizeGripperSeparatorBrush");
                 Verify.AreEqual(expectedDark, dark.Color,
-                    "The Default/Dark ResizeGripperSeparatorBrush must follow AccentFillColorDefaultBrush's Dark tier, SystemAccentColorLight2.");
+                    "The Dark ResizeGripperSeparatorBrush must be the neutral ControlStrongStrokeColorDefault.");
+
+                var accents = new[] { "SystemAccentColorDark1", "SystemAccentColorLight2" }
+                    .Select(RequireApplicationColor).ToList();
+                Verify.IsFalse(accents.Contains(light.Color) || accents.Contains(dark.Color),
+                    "The gripper separator must not use an accent colour.");
 
                 var highContrast = RequireBrush(resources, "HighContrast", "ResizeGripperSeparatorBrush");
                 var systemColors = CollectSystemColors();
@@ -1828,6 +1832,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             return color;
+        }
+
+        internal static Color RequireThemeColor(string themeName, string key)
+        {
+            var pending = new Stack<ResourceDictionary>();
+            pending.Push(Application.Current.Resources);
+            while (pending.Count > 0)
+            {
+                var dictionary = pending.Pop();
+                if (dictionary.ThemeDictionaries.TryGetValue(themeName, out var theme) &&
+                    theme is ResourceDictionary themeDictionary &&
+                    themeDictionary.TryGetValue(key, out var value) &&
+                    value is Color color)
+                {
+                    return color;
+                }
+
+                foreach (var merged in dictionary.MergedDictionaries)
+                {
+                    pending.Push(merged);
+                }
+            }
+
+            Verify.Fail($"'{key}' must resolve to a Color in an application '{themeName}' theme dictionary.");
+            return default;
         }
 
         internal static SolidColorBrush RequireBrush(ResourceDictionary resources, string themeName, string key)

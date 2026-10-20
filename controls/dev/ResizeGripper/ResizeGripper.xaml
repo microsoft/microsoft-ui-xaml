@@ -17,10 +17,6 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="privatecontrols:ResizeGripper">
-                    <!-- The separator is the whole visual: it tells the user this edge is draggable
-                         before any press. Owned here rather than by the host so every consumer gets
-                         it, and so it can be restyled through ResizeGripperSeparatorBrush and
-                         ResizeGripperSeparatorThickness. -->
                     <!-- The Transparent Background makes the whole gripper a pointer target. Hidden states clear
                          the brush, so leaving them restores the templated BorderBrush. -->
                     <Border x:Name="Separator"
@@ -35,9 +31,11 @@
                                         <Setter Target="Separator.BorderBrush" Value="Transparent" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="PointerOver" />
-                                <!-- Same weight as PointerOver: the pointer is still over the
-                                     gripper during a drag, and a change mid-gesture reads as a glitch. -->
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="Separator.BorderBrush" Value="Transparent" />
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="Pressed" />
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
