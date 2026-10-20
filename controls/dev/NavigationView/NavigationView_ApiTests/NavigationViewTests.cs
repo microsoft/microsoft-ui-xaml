@@ -2377,7 +2377,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             foreach (var mode in new[] { NavigationViewPaneDisplayMode.Top, NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top, NavigationViewPaneDisplayMode.Left })
             {
                 RunOnUIThread.Execute(() => navView.PaneDisplayMode = mode);
+                LogDataBoundContainers(navView, topLevelItems, $"{mode}, right after the switch");
                 WaitForSelectionIndicatorAnimation();
+                LogDataBoundContainers(navView, topLevelItems, $"{mode}, after waiting");
                 CheckCollapsedDataBoundParent(navView, topLevelItems, parentCategory, childCategory, $"after switching to {mode}", failures);
             }
 
@@ -2405,6 +2407,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             NavigationViewItem childContainer = null;
             RunOnUIThread.Execute(() => childContainer = navView.ContainerFromMenuItem(childItem) as NavigationViewItem);
             CheckHiddenChildHasNoSelectionIndicator(childContainer, step, failures);
+        }
+
+        private static void LogDataBoundContainers(NavigationView navView, List<object> topLevelItems, string step)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var item in topLevelItems)
+                {
+                    var container = navView.ContainerFromMenuItem(item) as NavigationViewItem;
+                    var indicator = container == null ? null : VisualTreeUtils.FindVisualChildByName(container, "SelectionIndicator");
+                    var visual = indicator == null ? null : Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(indicator);
+                    DependencyObject ancestor = container;
+                    while (ancestor != null && ancestor != navView)
+                    {
+                        ancestor = VisualTreeHelper.GetParent(ancestor);
+                    }
+                    Log.Comment($"  [diag] {step}: {((Category)item).Content}: container={container?.GetHashCode()}, inTree={(ancestor == navView)}, " +
+                        $"IsChildSelected={container?.IsChildSelected}, IsExpanded={container?.IsExpanded}, indicator={indicator?.GetHashCode()}, " +
+                        $"opacity={indicator?.Opacity}, visualOpacity={visual?.Opacity}, visualScale={visual?.Scale}");
+                }
+            });
         }
 
         private static void CheckHiddenChildHasNoSelectionIndicator(NavigationViewItem child, string step, List<string> failures)
