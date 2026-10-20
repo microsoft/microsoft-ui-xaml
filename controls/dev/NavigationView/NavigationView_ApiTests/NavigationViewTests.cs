@@ -1328,6 +1328,146 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyIsChildSelectedCallbackSelectionLeavesNoStaleParent()
+        {
+            // invokeOtherParentChild=true: First under Parent1 is selected, the user invokes Second under Parent2,
+            //   and Parent1's IsChildSelected=false callback selects the top-level Callback item.
+            // invokeOtherParentChild=false: First and Second are siblings under Parent1, Second is selected programmatically,
+            //   and Parent1's IsChildSelected=false callback selects the top-level Callback item.
+            foreach (var invokeOtherParentChild in new[] { true, false })
+            {
+                NavigationView navView = null;
+                NavigationViewItem parent1 = null;
+                NavigationViewItem parent2 = null;
+                NavigationViewItem firstItem = null;
+                NavigationViewItem secondItem = null;
+                NavigationViewItem callbackItem = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"InvokeOtherParentChild={invokeOtherParentChild}");
+                    firstItem = new NavigationViewItem { Content = "First" };
+                    secondItem = new NavigationViewItem { Content = "Second" };
+                    parent1 = new NavigationViewItem { Content = "Parent1" };
+                    parent2 = new NavigationViewItem { Content = "Parent2" };
+                    callbackItem = new NavigationViewItem { Content = "Callback" };
+                    parent1.MenuItems.Add(firstItem);
+                    (invokeOtherParentChild ? parent2 : parent1).MenuItems.Add(secondItem);
+                    navView = new NavigationView { PaneDisplayMode = NavigationViewPaneDisplayMode.Left, Width = 1008 };
+                    navView.MenuItems.Add(parent1);
+                    navView.MenuItems.Add(parent2);
+                    navView.MenuItems.Add(callbackItem);
+                    Content = navView;
+                    parent1.IsExpanded = true;
+                    parent2.IsExpanded = true;
+                    Content.UpdateLayout();
+                    navView.SelectedItem = firstItem;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(parent1.IsChildSelected);
+                    bool redirected = false;
+                    parent1.RegisterPropertyChangedCallback(NavigationViewItem.IsChildSelectedProperty, (sender, property) =>
+                    {
+                        if (!parent1.IsChildSelected && !redirected)
+                        {
+                            redirected = true;
+                            navView.SelectedItem = callbackItem;
+                        }
+                    });
+                    if (invokeOtherParentChild)
+                    {
+                        var provider = FrameworkElementAutomationPeer.CreatePeerForElement(secondItem) as IInvokeProvider;
+                        Verify.IsNotNull(provider);
+                        provider.Invoke();
+                    }
+                    else
+                    {
+                        navView.SelectedItem = secondItem;
+                    }
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(callbackItem, navView.SelectedItem, "The selection made by the IsChildSelected callback must win.");
+                    foreach (var item in new[] { firstItem, secondItem, callbackItem })
+                    {
+                        Verify.AreEqual(item == callbackItem, item.IsSelected, $"IsSelected for {item.Content}");
+                    }
+                    Verify.IsFalse(parent1.IsChildSelected, "Parent1 must not keep a stale IsChildSelected.");
+                    Verify.IsFalse(parent2.IsChildSelected, "Parent2 must not keep a stale IsChildSelected.");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyHierarchicalOverflowSelectionWhenFlyoutClosingAppendsItem()
+        {
+            NavigationView navView = null;
+            NavigationViewItem parentItem = null;
+            NavigationViewItem leafItem = null;
+            ObservableCollection<NavigationViewItem> items = null;
+            int closingCount = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<NavigationViewItem>();
+                for (int index = 0; index < 8; index++)
+                {
+                    items.Add(new NavigationViewItem { Content = $"Menu item {index}" });
+                }
+                leafItem = new NavigationViewItem { Content = "Leaf" };
+                parentItem = new NavigationViewItem { Content = "Parent" };
+                parentItem.MenuItems.Add(leafItem);
+                items.Add(parentItem);
+                navView = new NavigationView { PaneDisplayMode = NavigationViewPaneDisplayMode.Top, Width = 350, MenuItemsSource = items };
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var primaryItems = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                Verify.AreEqual(-1, primaryItems.GetElementIndex(parentItem), "The parent must start outside the primary items.");
+                var overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                overflowButton.Flyout.Closing += (sender, args) =>
+                {
+                    if (closingCount++ == 0)
+                    {
+                        // Moves every item back to the primary list while the leaf's index path stays the same.
+                        items.Add(new NavigationViewItem { Content = "Appended" });
+                    }
+                };
+                overflowButton.Flyout.ShowAt(overflowButton);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                parentItem.IsExpanded = true;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // If this precondition fails the scenario can't be driven through the public API; the test is then only a guard.
+                Verify.IsTrue(leafItem.IsLoaded, "The leaf must be realized in the overflow flyout.");
+                leafItem.IsSelected = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(closingCount >= 1);
+                Verify.AreEqual(leafItem, navView.SelectedItem);
+                Verify.IsTrue(leafItem.IsSelected);
+            });
+        }
+
+        [TestMethod]
         public void VerifyOverflowButtonAfterSelectingOnlyOverflowItemProgrammatically()
         {
             foreach (var useMenuItemsSource in new[] { false, true })
