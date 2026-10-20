@@ -2381,7 +2381,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() => navView.PaneDisplayMode = mode);
                 WaitForSelectionIndicatorAnimation();
-                // Known gap (pre-existing, also on main): on the first switch to Top after a data-bound child of a collapsed parent
+                // Known gap (pre-existing, verified on main 866ba81a1 + this test): on the first switch to Top after a data-bound child of a collapsed parent
                 // is selected, no pill is shown until the next switch or selection. See the "Known gap" notes in the #9812 PR
                 // (https://github.com/microsoft/microsoft-ui-xaml/pull/12328). IsChildSelected and the hidden child are still checked.
                 var checkPill = !(mode == NavigationViewPaneDisplayMode.Top && isFirstSwitchToTop);
