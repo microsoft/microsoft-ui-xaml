@@ -5572,6 +5572,12 @@ bool NavigationView::IsContainerTheSelectedItemInTheSelectionModel(const winrt::
         auto selectedItemContainer = selectedItem.try_as<winrt::NavigationViewItemBase>();
         if (!selectedItemContainer)
         {
+            // A data-bound container that represents the selected item is the selected container, even when
+            // GetContainerForIndexPath can't resolve it (e.g. a child of a collapsed parent in Top mode).
+            if (MenuItemFromContainer(nvib) == selectedItem)
+            {
+                return true;
+            }
             selectedItemContainer = GetContainerForIndexPath(m_selectionModel.SelectedIndex());
         }
 
