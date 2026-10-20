@@ -920,7 +920,12 @@ void TeachingTip::IsOpenChangedToOpen()
         auto const closedArgs = winrt::make_self<TeachingTipClosedEventArgs>();
         closedArgs->Reason(m_lastCloseReason);
         m_closedEventSource(*this, *closedArgs);
-        IsOpen(false);
+        // The Closing/Closed handlers may already have reset an IsOpen binding's source; writing false again would
+        // replace that binding with a local value.
+        if (IsOpen())
+        {
+            IsOpen(false);
+        }
     }
     else
     {
@@ -1283,9 +1288,19 @@ void TeachingTip::OnAutomationIdChanged(const winrt::IInspectable&, const winrt:
 
 void TeachingTip::OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
+    // The click can arrive while the tip is already closing (the popup stays up during the close animation), and the
+    // CloseButtonClick handler may itself reset an IsOpen binding's source. Only claim the close (reason + IsOpen write)
+    // if the tip was open, and don't write IsOpen onto an already closed tip: that would replace an app's IsOpen binding.
+    const bool wasOpen = IsOpen();
     m_closeButtonClickEventSource(*this, nullptr);
-    m_lastCloseReason = winrt::TeachingTipCloseReason::CloseButton;
-    IsOpen(false);
+    if (wasOpen || IsOpen())
+    {
+        m_lastCloseReason = winrt::TeachingTipCloseReason::CloseButton;
+    }
+    if (IsOpen())
+    {
+        IsOpen(false);
+    }
 }
 
 void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
