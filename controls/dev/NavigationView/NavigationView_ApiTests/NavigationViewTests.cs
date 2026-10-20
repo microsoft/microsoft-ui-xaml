@@ -1135,6 +1135,199 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyOverflowSelectionWhenFlyoutClosingReplacesItem()
+        {
+            NavigationView navView = null;
+            NavigationViewItem targetItem = null;
+            NavigationViewItem successorItem = null;
+            ObservableCollection<NavigationViewItem> items = null;
+            int closingCount = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<NavigationViewItem>();
+                for (int index = 0; index < 10; index++)
+                {
+                    items.Add(new NavigationViewItem { Content = $"Menu item {index}" });
+                }
+                targetItem = items[7];
+                successorItem = items[8];
+                navView = new NavigationView { PaneDisplayMode = NavigationViewPaneDisplayMode.Top, Width = 350, MenuItemsSource = items };
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var primaryItems = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                Verify.AreEqual(-1, primaryItems.GetElementIndex(targetItem), "The target must start outside the primary items.");
+                var overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                overflowButton.Flyout.Closing += (sender, args) =>
+                {
+                    if (closingCount++ == 0)
+                    {
+                        // The successor takes over the removed item's index path.
+                        int index = items.IndexOf(targetItem);
+                        items.Remove(targetItem);
+                        navView.SelectedItem = items[index];
+                    }
+                };
+                overflowButton.Flyout.ShowAt(overflowButton);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                targetItem.IsSelected = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(closingCount >= 1);
+                Verify.IsFalse(items.Contains(targetItem));
+                Verify.AreEqual(successorItem, navView.SelectedItem, "The selection made while the flyout closed must win over the removed item.");
+                Verify.IsTrue(successorItem.IsSelected);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyDeselectionCallbackSelectionSurvivesSelectionChange()
+        {
+            // clickNext=false: SelectedItem = null; clickNext=true: invoke another selecting item. No ItemInvoked redirect.
+            foreach (var clickNext in new[] { false, true })
+            {
+                NavigationView navView = null;
+                NavigationViewItem firstItem = null;
+                NavigationViewItem clickedItem = null;
+                NavigationViewItem callbackItem = null;
+                var events = new List<string>();
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"ClickNext={clickNext}");
+                    firstItem = new NavigationViewItem { Content = "First" };
+                    clickedItem = new NavigationViewItem { Content = "Clicked" };
+                    callbackItem = new NavigationViewItem { Content = "Callback" };
+                    navView = new NavigationView { PaneDisplayMode = NavigationViewPaneDisplayMode.Left, Width = 1008 };
+                    navView.MenuItems.Add(firstItem);
+                    navView.MenuItems.Add(clickedItem);
+                    navView.MenuItems.Add(callbackItem);
+                    Content = navView;
+                    Content.UpdateLayout();
+                    navView.SelectedItem = firstItem;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    bool redirected = false;
+                    firstItem.RegisterPropertyChangedCallback(NavigationViewItem.IsSelectedProperty, (sender, property) =>
+                    {
+                        if (!firstItem.IsSelected && !redirected)
+                        {
+                            redirected = true;
+                            navView.SelectedItem = callbackItem;
+                        }
+                    });
+                    navView.SelectionChanged += (sender, args) => events.Add("SelectionChanged:" + ((args.SelectedItem as NavigationViewItem)?.Content ?? "null"));
+                    navView.ItemInvoked += (sender, args) => events.Add("ItemInvoked");
+                    if (clickNext)
+                    {
+                        var provider = FrameworkElementAutomationPeer.CreatePeerForElement(clickedItem) as IInvokeProvider;
+                        Verify.IsNotNull(provider);
+                        provider.Invoke();
+                    }
+                    else
+                    {
+                        navView.SelectedItem = null;
+                    }
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(callbackItem, navView.SelectedItem, "The selection made by the deselection callback must not be overwritten.");
+                    foreach (var item in new[] { firstItem, clickedItem, callbackItem })
+                    {
+                        Verify.AreEqual(item == callbackItem, item.IsSelected, $"IsSelected for {item.Content}");
+                        var provider = FrameworkElementAutomationPeer.CreatePeerForElement(item).GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                        Verify.IsNotNull(provider);
+                        Verify.AreEqual(item == callbackItem, provider.IsSelected, $"UIA selection for {item.Content}");
+                    }
+                    Verify.AreEqual(clickNext ? "ItemInvoked,SelectionChanged:Callback" : "SelectionChanged:Callback", string.Join(",", events));
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyIsChildSelectedCallbackSelectionSurvivesClearingSelection()
+        {
+            NavigationView navView = null;
+            NavigationViewItem previousItem = null;
+            NavigationViewItem parentItem = null;
+            NavigationViewItem childItem = null;
+            NavigationViewItem callbackItem = null;
+            var events = new List<string>();
+            RunOnUIThread.Execute(() =>
+            {
+                // The previous selection is a sibling of the invoked child, so the parent's IsChildSelected
+                // stays true until the explicit SelectionModel clear updates it.
+                previousItem = new NavigationViewItem { Content = "Previous" };
+                childItem = new NavigationViewItem { Content = "Child" };
+                parentItem = new NavigationViewItem { Content = "Parent" };
+                parentItem.MenuItems.Add(previousItem);
+                parentItem.MenuItems.Add(childItem);
+                callbackItem = new NavigationViewItem { Content = "Callback" };
+                navView = new NavigationView { PaneDisplayMode = NavigationViewPaneDisplayMode.Left, Width = 1008 };
+                navView.MenuItems.Add(parentItem);
+                navView.MenuItems.Add(callbackItem);
+                Content = navView;
+                parentItem.IsExpanded = true;
+                Content.UpdateLayout();
+                navView.SelectedItem = previousItem;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(parentItem.IsChildSelected);
+                bool redirected = false;
+                parentItem.RegisterPropertyChangedCallback(NavigationViewItem.IsChildSelectedProperty, (sender, property) =>
+                {
+                    if (!parentItem.IsChildSelected && !redirected)
+                    {
+                        redirected = true;
+                        navView.SelectedItem = callbackItem;
+                    }
+                });
+                navView.SelectionChanged += (sender, args) => events.Add("SelectionChanged:" + ((args.SelectedItem as NavigationViewItem)?.Content ?? "null"));
+                navView.ItemInvoked += (sender, args) =>
+                {
+                    events.Add("ItemInvoked");
+                    // Clearing the selection from the handler reaches the explicit SelectionModel clear,
+                    // which first updates the parent's IsChildSelected.
+                    navView.SelectedItem = null;
+                };
+                var provider = FrameworkElementAutomationPeer.CreatePeerForElement(childItem) as IInvokeProvider;
+                Verify.IsNotNull(provider);
+                provider.Invoke();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(callbackItem, navView.SelectedItem, "The selection made by the IsChildSelected callback must not be cleared.");
+                foreach (var item in new[] { previousItem, childItem, callbackItem })
+                {
+                    Verify.AreEqual(item == callbackItem, item.IsSelected, $"IsSelected for {item.Content}");
+                }
+                Verify.IsFalse(parentItem.IsChildSelected);
+                Verify.AreEqual("ItemInvoked,SelectionChanged:Callback", string.Join(",", events));
+            });
+        }
+
+        [TestMethod]
         public void VerifyOverflowButtonAfterSelectingOnlyOverflowItemProgrammatically()
         {
             foreach (var useMenuItemsSource in new[] { false, true })
