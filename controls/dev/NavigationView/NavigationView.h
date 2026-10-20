@@ -145,6 +145,7 @@ private:
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
     winrt::NavigationViewItem FindLowestLevelContainerToDisplaySelectionIndicator();
     void UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected);
+    void UpdateIsChildSelectedForPreparedContainer(const winrt::NavigationViewItem& nvi);
     void UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP);
     void RaiseExpandingEvent(const winrt::NavigationViewItemBase& container);
     void RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container);

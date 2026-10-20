@@ -1272,6 +1272,10 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
 
             SetNavigationViewItemRevokers(nvi);
 
+            // A new or recycled container (e.g. after a PaneDisplayMode switch re-sources the repeaters) doesn't know
+            // whether its item is an ancestor of the selected item, so recompute IsChildSelected from the selection model.
+            UpdateIsChildSelectedForPreparedContainer(nvi);
+
             auto item = MenuItemFromContainer(nvi);
 
             if (SelectedItem() == item && IsVisible(nvi))
@@ -2545,6 +2549,34 @@ void NavigationView::UpdateIsChildSelected(const winrt::IndexPath& prevIP, const
     if (nextIP && nextIP.GetSize() > 0)
     {
         UpdateIsChildSelectedForIndexPath(nextIP, true /*isChildSelected*/);
+    }
+}
+
+void NavigationView::UpdateIsChildSelectedForPreparedContainer(const winrt::NavigationViewItem& nvi)
+{
+    bool isChildSelected = false;
+    auto const selectedIndex = m_selectionModel.SelectedIndex();
+    // Only a selection below the top level (block, index, child...) can make an item child-selected.
+    if (selectedIndex && selectedIndex.GetSize() > 2)
+    {
+        auto const ip = GetIndexPathForContainer(nvi);
+        if (ip.GetSize() >= 2 && ip.GetSize() < selectedIndex.GetSize())
+        {
+            isChildSelected = true;
+            for (int i = 0; i < ip.GetSize(); i++)
+            {
+                if (ip.GetAt(i) != selectedIndex.GetAt(i))
+                {
+                    isChildSelected = false;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (nvi.IsChildSelected() != isChildSelected)
+    {
+        nvi.IsChildSelected(isChildSelected);
     }
 }
 
