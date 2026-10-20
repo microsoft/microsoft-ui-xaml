@@ -1,23 +1,28 @@
 <#
 .SYNOPSIS
-    Gate for the coverage skill: validate the VM and cache its credential WITHOUT the password ever
-    passing through the agent/chat.
+    Validate a Hyper-V test VM and cache its credential for the VM test tools, WITHOUT the password
+    ever passing through a chat or agent session.
 
 .DESCRIPTION
+    Shared by tools\run-tests-on-vm.ps1 users and the repo skills that run tests on a VM (for
+    example .github\skills\code-coverage-calculation).
     * Fails unless the Hyper-V VM exists and is Running.
     * Prompts for the password in a SEPARATE console window (username pre-filled), the same way
       tools\run-tests-on-vm.ps1 does, and writes the DPAPI-encrypted cache
-      %USERPROFILE%\.winui-test\vmcred-<VM>.xml - the cache that run-tests-on-vm.ps1 and the
-      Step3/Step4 scripts already read. (Step3 does not forward -Credential to run-tests-on-vm.ps1,
-      so the cache must exist; passing -Credential alone is not enough.)
-    * Validates the login over PowerShell Direct and that the user has an Active desktop session.
-    * Only replaces an existing cache after the new credential has been validated.
+      %USERPROFILE%\.winui-test\vmcred-<VM>.xml - the cache that run-tests-on-vm.ps1 reads.
+    * Validates the login over PowerShell Direct and that the user has an Active desktop session
+      (UI tests need one).
+    * A newly entered credential replaces the existing cache only after ALL of these checks pass;
+      otherwise the previous cache is left untouched.
+
+.EXAMPLE
+    .\tools\Set-VmCredential.ps1 -VMName MyTestVM -UserName TestUser
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$VMName,
-    # Plain account name exactly as qwinsta shows it on the VM (no ".\" or "VM\" prefix):
-    # Step3 matches the session row with the credential's UserName.
+    # Plain account name exactly as qwinsta shows it on the VM (no ".\" or "VM\" prefix): the
+    # active-session check matches the session row by this name.
     [Parameter(Mandatory)][string]$UserName,
     # Re-prompt even if a cached credential for this VM/user exists.
     [switch]$Force
@@ -66,10 +71,15 @@ try {
     } -ArgumentList $UserName
 } finally { Remove-PSSession $s }
 
+if ("$row" -notmatch '\sActive') {
+    # Keep the previous cache: a valid password for an account that is not logged on to the
+    # desktop must not replace a working credential.
+    Remove-Item $newFile -ErrorAction SilentlyContinue
+    throw "'$UserName' has no Active desktop session on '$VMName' (session: '$("$row".Trim())'). Log on to the VM desktop as that user, then retry."
+}
+
 if (Test-Path $newFile) { Move-Item $newFile $credFile -Force }
-$active = "$row" -match '\sActive'
 [pscustomobject]@{
     VMName = $VMName; UserName = $UserName; CredentialCache = $credFile
-    LogonOk = $true; DesktopSession = "$row".Trim(); DesktopActive = $active
+    LogonOk = $true; DesktopSession = "$row".Trim(); DesktopActive = $true
 }
-if (-not $active) { throw "'$UserName' has no Active desktop session on '$VMName'. Log on to the VM desktop, then retry." }

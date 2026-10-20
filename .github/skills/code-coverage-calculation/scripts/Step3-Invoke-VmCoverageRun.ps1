@@ -11,8 +11,10 @@
          as the logged-in VM user (interactive scheduled task - it must outlive the PS Direct session).
       3. Wait for \\.\pipe\CodeCoverage.pipe.<sid>, then give it a NULL DACL
          (lib\Set-CoveragePipeAcl.ps1) so low-integrity test processes can connect.
-      4. Run the tests with the repo's own tools\run-tests-on-vm.ps1 -SkipPayload (deploys the
-         instrumented payload incrementally and runs runtests.cmd on the interactive desktop).
+      4. Run the tests with the repo's own tools\run-tests-on-vm.ps1 -SkipPayload. -SkipPayload only
+         skips regenerating TestPayload from BuildOutput (which would overwrite the instrumented
+         DLLs); the runner still copies the changed payload files to the VM and runs runtests.cmd
+         on the interactive desktop.
       5. "Microsoft.CodeCoverage.Console.exe shutdown <sid>" -> collector finalizes the .coverage.
       6. Copy the .coverage + collector logs back to <WorkDir>\raw (also when the run fails), and
          always close the PowerShell Direct session.

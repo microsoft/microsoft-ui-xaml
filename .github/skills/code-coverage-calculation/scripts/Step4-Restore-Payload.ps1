@@ -4,7 +4,9 @@
 
 .DESCRIPTION
     Uses <WorkDir>\instrument-state.json written by Step 2:
-      * copies every backed-up original back over its payload copy (hash-verified),
+      * copies every backed-up original back over its payload copy (hash-verified; copies that
+        already match their original, e.g. because Step 2 was interrupted before overwriting them,
+        are left alone),
       * deletes the static_covrun*.dll files that Step 2 added,
       * optionally (-VMName) does the same inside the VM's deployed payload
         (C:\TestPayload\<HOSTNAME>-<repo-folder>, the path tools\run-tests-on-vm.ps1 uses) and
@@ -31,6 +33,8 @@ $payload = $state.payloadDir
 
 foreach ($c in $state.copies) {
     $dest = Join-Path $payload $c.relativePath
+    # Tolerate copies that were never overwritten (e.g. Step 2 was interrupted part-way).
+    if ((Test-Path $dest) -and (Get-FileHash $dest).Hash -eq $c.originalHash) { Info "unchanged $($c.relativePath)"; continue }
     Copy-Item $c.backup $dest -Force
     if ((Get-FileHash $dest).Hash -ne $c.originalHash) { throw "restore hash mismatch: $dest" }
     Info "restored $($c.relativePath)"

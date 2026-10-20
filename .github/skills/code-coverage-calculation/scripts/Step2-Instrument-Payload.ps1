@@ -7,7 +7,7 @@
     Hyper-V VM:
 
       * Instruments ONE copy (VS Microsoft.CodeCoverage.Console.exe, static native instrumentation,
-        a fresh 16-hex session id) - this is slow for a 38 MB chk DLL (~10-20 min), so the result is
+        a fresh 16-hex session id) - this is slow for a 38 MB chk DLL (~20-50 min), so the result is
         CACHED in <WorkDir>\instrumented keyed by the SHA256 of the input DLL and reused next time
         (together with the session id that is baked into it). The cache is only reused while the
         coverage tool that instrumented it still exists at the same file version, because the
@@ -20,10 +20,13 @@
         whenever that copy is not instrumented, so a rebuilt payload is never restored to an older
         build's DLL; an existing backup is kept only while the copy is still instrumented.
       * Writes <WorkDir>\instrument-state.json (session id, copies, backups, runtimes added) used by
-        the run and restore steps.
+        the run and restore steps. It is written after every backup is taken but BEFORE the first
+        payload file is overwritten ("complete": false until all copies are done), so an interrupted
+        run can always be restored by Step4-Restore-Payload.ps1 (the orchestrator does that
+        automatically at the start of the next run).
 
-    Never edits repo source. Only TestPayload\<flavor> (a generated folder) is modified, and
-    Step4-Restore-Payload.ps1 restores it byte-for-byte.
+    Never edits repo source or BuildOutput. Only TestPayload\<flavor> (a generated, git-ignored
+    folder) is modified, and Step4-Restore-Payload.ps1 restores it byte-for-byte.
 #>
 [CmdletBinding()]
 param(
@@ -120,6 +123,8 @@ $copies = @(Get-ChildItem $payload -Recurse -Filter $moduleName -File)
 if (-not $copies) { throw "No copies of $moduleName under $payload" }
 $instrHash = (Get-FileHash $instrDll).Hash
 $knownInstrumented = @($instrHash, $(if ($state) { $state.instrumentedHash })) | Where-Object { $_ }
+
+# Pass 1 (no destructive writes): back up every copy and work out which runtimes will be added.
 $entries = @()
 $runtimesAdded = @()
 foreach ($c in $copies) {
@@ -134,24 +139,33 @@ foreach ($c in $copies) {
         New-Item -ItemType Directory -Force (Split-Path $bak) | Out-Null
         Copy-Item $c.FullName $bak -Force
     } elseif (-not (Test-Path $bak)) {
-        throw "$rel is already instrumented but has no backup; recreate the payload."
+        throw "$rel is already instrumented but has no backup; recreate the payload (-RefreshPayload)."
     }
-    Copy-Item $instrDll $c.FullName -Force
     foreach ($rt in $runtimes) {
         $rtDest = Join-Path $c.DirectoryName $rt.Name
         if (-not (Test-Path $rtDest)) { $runtimesAdded += $rtDest.Substring($payload.Length + 1) }
-        Copy-Item $rt.FullName $rtDest -Force
     }
     $entries += [pscustomobject]@{ relativePath = $rel; backup = $bak; originalHash = (Get-FileHash $bak).Hash }
-    Info "  instrumented copy -> $rel"
 }
 if ($state -and $state.runtimesAdded) { $runtimesAdded = @($state.runtimesAdded) + $runtimesAdded | Select-Object -Unique }
 
+# Persist the recovery state BEFORE the first overwrite, so Step 4 can always restore, even if
+# a copy below fails or the process is killed part-way ("complete" stays false until the end).
 $newState = [pscustomobject]@{
     module = $moduleName; moduleStem = $stem; sessionId = $sessionId; payloadDir = $payload
     instrumentedDll = $instrDll; instrumentedHash = $instrHash; coverageTool = $CoverageConsole; toolVersion = $toolVersion
-    copies = $entries; runtimesAdded = @($runtimesAdded); instrumentedAt = (Get-Date).ToString('o')
+    copies = $entries; runtimesAdded = @($runtimesAdded); complete = $false; instrumentedAt = (Get-Date).ToString('o')
 }
+$newState | ConvertTo-Json -Depth 5 | Set-Content $statePath -Encoding UTF8
+
+# Pass 2: overwrite every copy and add the coverage runtimes next to it.
+foreach ($e in $entries) {
+    $dest = Join-Path $payload $e.relativePath
+    Copy-Item $instrDll $dest -Force
+    foreach ($rt in $runtimes) { Copy-Item $rt.FullName (Join-Path (Split-Path $dest) $rt.Name) -Force }
+    Info "  instrumented copy -> $($e.relativePath)"
+}
+$newState.complete = $true
 $newState | ConvertTo-Json -Depth 5 | Set-Content $statePath -Encoding UTF8
 Info "payload instrumented: $($entries.Count) copies, session $sessionId (state: $statePath)"
 $newState

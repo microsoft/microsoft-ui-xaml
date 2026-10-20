@@ -29,6 +29,9 @@ param(
     [string]$RunLabel = 'This run',
     # Root of the checkout that produced the coverage; used to make its paths repo-relative.
     [string]$RepoRoot = '',
+    # Root of the checkout (or build agent) that produced -BaselinePerFileCsv, when it is not a
+    # standard build-agent root such as C:\__w\1\s\ (e.g. D:\src\other-checkout).
+    [string]$BaselineRepoRoot = '',
     [switch]$SkipFunctionCoverage
 )
 $ErrorActionPreference = 'Stop'
@@ -54,15 +57,19 @@ if (-not $modDir) { throw "Module $Module not found in coverage (modules: $((Get
 $modCsv = Join-Path $modDir.FullName 'corrected-per-file.csv'
 $modSummary = Get-Content (Join-Path $modDir.FullName 'corrected-summary.json') -Raw | ConvertFrom-Json
 
-$rootKey = if ($RepoRoot) { ($RepoRoot.ToLowerInvariant() -replace '/', '\').TrimEnd('\') + '\' } else { '' }
+function Get-RootKey([string]$r) { if ($r) { ($r.ToLowerInvariant() -replace '/', '\').TrimEnd('\') + '\' } else { '' } }
+$rootKeys = @((Get-RootKey $RepoRoot), (Get-RootKey $BaselineRepoRoot)) | Where-Object { $_ }
 function Get-RepoKey([string]$p) {
-    # repo-relative key: strip the checkout root (this run), else a build-agent root (e.g. a CI
-    # baseline: C:\__w\1\s\), else everything up to the first top-level repo folder; then
-    # normalize build flavor dirs.
+    # repo-relative key: strip a known checkout root (this run's -RepoRoot or -BaselineRepoRoot),
+    # else a build-agent root (e.g. a CI baseline: C:\__w\1\s\), else everything up to the first
+    # distinctive top-level repo folder (controls, dxaml, BuildOutput) and only then the generic
+    # ones (src, test); then normalize build flavor dirs.
     $k = $p.ToLowerInvariant() -replace '/', '\'
-    if ($rootKey -and $k.StartsWith($rootKey)) { $k = $k.Substring($rootKey.Length) }
+    $root = $rootKeys | Where-Object { $k.StartsWith($_) } | Select-Object -First 1
+    if ($root) { $k = $k.Substring($root.Length) }
     elseif ($k -match '^[a-z]:\\+(__w|a)\\+\d+\\+s\\+') { $k = $k.Substring($Matches[0].Length) }
-    else { $k = $k -replace '^.*?\\(?=(controls|dxaml|buildoutput|src|test)\\)', '' }
+    elseif ($k -match '\\(controls|dxaml|buildoutput)\\') { $k = $k -replace '^.*?\\(?=(controls|dxaml|buildoutput)\\)', '' }
+    else { $k = $k -replace '^.*?\\(?=(src|test)\\)', '' }
     $k -replace '\\obj\\(x86|amd64|arm64)(chk|fre)\\', '\obj\<flavor>\'
 }
 
@@ -86,6 +93,16 @@ $comp = foreach ($r in $rows) {
     }
 }
 $comp = $comp | Sort-Object File
+$baselineWarning = ''
+if ($BaselinePerFileCsv) {
+    $matched = @($comp | Where-Object { $null -ne $_.BaselineTotal }).Count
+    if ($matched -eq 0) {
+        $baselineWarning = "The baseline matched none of the $(@($comp).Count) component files, so every baseline value is n/a. If the baseline came from a different checkout, pass its root with -BaselineRepoRoot."
+    } elseif ($matched -lt @($comp).Count / 2) {
+        $baselineWarning = "The baseline matched only $matched of $(@($comp).Count) component files. If it came from a different checkout, pass its root with -BaselineRepoRoot."
+    }
+    if ($baselineWarning) { Write-Warning $baselineWarning }
+}
 $comp | Export-Csv (Join-Path $OutputDir 'component-per-file.csv') -NoTypeInformation
 $tot = ($comp | Measure-Object TotalLines -Sum).Sum
 $cov = ($comp | Measure-Object CoveredLines -Sum).Sum
@@ -129,6 +146,7 @@ if ($BaselinePerFileCsv) {
     $bt = ($comp | Where-Object { $null -ne $_.BaselineTotal } | Measure-Object BaselineTotal -Sum).Sum
     $bc = ($comp | Where-Object { $null -ne $_.BaselineTotal } | Measure-Object BaselineCovered -Sum).Sum
     if ($bt) { [void]$md.AppendLine("`n$BaselineLabel for the same files: $bc / $bt = $([math]::Round(100.0*$bc/$bt,2)) %") }
+    if ($baselineWarning) { [void]$md.AppendLine("`n> **Warning:** $baselineWarning") }
 }
 [void]$md.AppendLine()
 [void]$md.AppendLine("| File | Covered / Total | $RunLabel % | $BaselineLabel % |")
@@ -159,4 +177,5 @@ if ($funcRows) {
 $md.ToString() | Set-Content (Join-Path $OutputDir 'coverage-summary.md') -Encoding UTF8
 Info "$ComponentName : $cov / $tot = $pct %  -> $(Join-Path $OutputDir 'coverage-summary.md')"
 [pscustomobject]@{ component = $ComponentName; coveredLines = $cov; totalLines = $tot; lineCoveragePct = $pct
-                   summary = (Join-Path $OutputDir 'coverage-summary.md'); perFile = (Join-Path $OutputDir 'component-per-file.csv') }
+                   summary = (Join-Path $OutputDir 'coverage-summary.md'); perFile = (Join-Path $OutputDir 'component-per-file.csv')
+                   baselineWarning = $baselineWarning }
