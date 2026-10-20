@@ -2648,7 +2648,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // updated on the layout pass after the State change, so poll for it.
         static bool WaitForAnimatedIconSegment(AnimatedIcon icon, Func<string, bool> predicate, int timeoutMs = 5000)
         {
-            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             while (true)
             {
                 string segment = null;
