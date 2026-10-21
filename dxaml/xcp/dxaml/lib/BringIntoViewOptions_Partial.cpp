@@ -64,7 +64,8 @@ _Check_return_ HRESULT BringIntoViewOptions::put_HorizontalOffsetImpl(DOUBLE val
 {
     if (DoubleUtil::IsNaN(value) || DoubleUtil::IsInfinity(value))
     {
-        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(E_INVALIDARG, ERROR_INVALID_DOUBLE_VALUE));
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingFormattedResourceID(
+            E_INVALIDARG, ERROR_INVALID_DOUBLE_VALUE_WITH_PROPERTY, XSTRING_PTR_EPHEMERAL(L"BringIntoViewOptions.HorizontalOffset")));
     }
     m_horizontalOffset = value;
     return S_OK;
@@ -81,7 +82,8 @@ _Check_return_ HRESULT BringIntoViewOptions::put_VerticalOffsetImpl(DOUBLE value
 {
     if (DoubleUtil::IsNaN(value) || DoubleUtil::IsInfinity(value))
     {
-        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(E_INVALIDARG, ERROR_INVALID_DOUBLE_VALUE));
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingFormattedResourceID(
+            E_INVALIDARG, ERROR_INVALID_DOUBLE_VALUE_WITH_PROPERTY, XSTRING_PTR_EPHEMERAL(L"BringIntoViewOptions.VerticalOffset")));
     }
     m_verticalOffset = value;
     return S_OK;

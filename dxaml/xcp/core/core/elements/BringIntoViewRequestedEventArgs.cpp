@@ -108,7 +108,8 @@ _Check_return_ HRESULT CBringIntoViewRequestedEventArgs::put_HorizontalOffset(DO
 {
     if (DirectUI::DoubleUtil::IsNaN(value) || DirectUI::DoubleUtil::IsInfinity(value))
     {
-        IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_INVALIDARG, ERROR_INVALID_DOUBLE_VALUE));
+        IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingFormattedResourceID(
+            E_INVALIDARG, ERROR_INVALID_DOUBLE_VALUE_WITH_PROPERTY, XSTRING_PTR_EPHEMERAL(L"BringIntoViewRequestedEventArgs.HorizontalOffset")));
     }
 
     m_horizontalOffset = value;
@@ -125,7 +126,8 @@ _Check_return_ HRESULT CBringIntoViewRequestedEventArgs::put_VerticalOffset(DOUB
 {
     if (DirectUI::DoubleUtil::IsNaN(value) || DirectUI::DoubleUtil::IsInfinity(value))
     {
-        IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_INVALIDARG, ERROR_INVALID_DOUBLE_VALUE));
+        IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingFormattedResourceID(
+            E_INVALIDARG, ERROR_INVALID_DOUBLE_VALUE_WITH_PROPERTY, XSTRING_PTR_EPHEMERAL(L"BringIntoViewRequestedEventArgs.VerticalOffset")));
     }
 
     m_verticalOffset = value;
