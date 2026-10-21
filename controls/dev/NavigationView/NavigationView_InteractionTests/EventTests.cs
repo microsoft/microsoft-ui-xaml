@@ -261,7 +261,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 checkBox.Check();
                 Wait.ForIdle();
 
-                foreach (var paneDisplayMode in new[] { "Left", "LeftMinimal" })
+                foreach (var paneDisplayMode in new[] { "Left", "LeftCompact", "Top", "LeftMinimal" })
                 {
                     Log.Comment("PaneDisplayMode: " + paneDisplayMode);
                     var paneDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
@@ -270,12 +270,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
 
                     UIObject navView = FindElement.ById("NavView");
                     Button backButton = new Button(FindElement.ByName("NavigationViewBackButton"));
-                    Button toggleButton = new Button(FindElement.ById("TogglePaneButton"));
 
                     var navViewBounds = navView.BoundingRectangle;
                     var backBounds = backButton.BoundingRectangle;
-                    var toggleBounds = toggleButton.BoundingRectangle;
-                    Log.Comment($"NavView: {navViewBounds}, BackButton: {backBounds}, TogglePaneButton: {toggleBounds}");
+                    Log.Comment($"NavView: {navViewBounds}, BackButton: {backBounds}");
 
                     Log.Comment("Verify the back button's bounds start at the NavigationView's top-left corner");
                     Verify.IsLessThanOrEqual(Math.Abs(backBounds.X - navViewBounds.X), 1);
@@ -284,15 +282,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     // Pane toggle button offsets from the NavigationView corner, in epx; these are unchanged by
                     // the larger back button hit area. Bounds are in physical pixels, so derive the scale from the
                     // back button's 44 epx height.
-                    double scale = backBounds.Height / 44.0;
-                    Log.Comment("Verify the pane toggle button has not moved");
-                    if (paneDisplayMode == "Left")
+                    // The pane toggle button is not shown in Top mode.
+                    if (paneDisplayMode != "Top")
                     {
-                        Verify.IsLessThanOrEqual(Math.Abs(toggleBounds.Y - navViewBounds.Y - 46 * scale), 2.0);
-                    }
-                    else
-                    {
-                        Verify.IsLessThanOrEqual(Math.Abs(toggleBounds.X - navViewBounds.X - 44 * scale), 2.0);
+                        double scale = backBounds.Height / 44.0;
+                        var toggleBounds = new Button(FindElement.ById("TogglePaneButton")).BoundingRectangle;
+                        Log.Comment($"Verify the pane toggle button has not moved: {toggleBounds}");
+                        if (paneDisplayMode == "LeftMinimal")
+                        {
+                            Verify.IsLessThanOrEqual(Math.Abs(toggleBounds.X - navViewBounds.X - 44 * scale), 2.0);
+                        }
+                        else
+                        {
+                            Verify.IsLessThanOrEqual(Math.Abs(toggleBounds.Y - navViewBounds.Y - 46 * scale), 2.0);
+                        }
                     }
 
                     resetButton.Invoke();
