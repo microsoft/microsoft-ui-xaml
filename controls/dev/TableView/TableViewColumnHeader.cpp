@@ -249,7 +249,6 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
     {
         commonState = L"PointerOver";
     }
-    winrt::VisualStateManager::GoToState(*this, commonState, useTransitions);
 
     const wchar_t* highContrastState = L"HighContrastNormal";
     if (commonState != std::wstring_view{ L"Normal" } && commonState != std::wstring_view{ L"Disabled" })
@@ -259,7 +258,19 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
             highContrastState = m_isPressed ? L"HighContrastPressed" : L"HighContrastPointerOver";
         }
     }
-    winrt::VisualStateManager::GoToState(*this, highContrastState, useTransitions);
+
+    // Both groups set the text Foreground, and leaving a state clears it whichever group set it,
+    // so the group that sets it must transition last.
+    if (IsEnabled())
+    {
+        winrt::VisualStateManager::GoToState(*this, commonState, useTransitions);
+        winrt::VisualStateManager::GoToState(*this, highContrastState, useTransitions);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, highContrastState, useTransitions);
+        winrt::VisualStateManager::GoToState(*this, commonState, useTransitions);
+    }
     const bool highlighted = highContrastState != std::wstring_view{ L"HighContrastNormal" };
     SyncSortIndicatorForeground(highlighted || !IsEnabled(), highlighted);
 

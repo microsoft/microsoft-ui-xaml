@@ -2474,6 +2474,66 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies disabling a header in its High Contrast hover state keeps the disabled text and glyph brush, and re-enabling drops it.")]
+        public void VerifyDisablingHighContrastHoveredHeaderKeepsDisabledForeground()
+        {
+            var disabled = Color.FromArgb(0xFF, 0x20, 0x40, 0x60);
+            TableView tableView = null;
+            TableViewColumnHeader header = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TabularSurfaceRowForegroundDisabledBrush", new SolidColorBrush(disabled));
+                tableView = CreateThemingTable();
+                tableView.Columns[0].CanSort = true;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the column sorts."));
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    header = RequireColumnHeader(tableView, 0);
+                    // The hovered High Contrast states, entered directly: a test cannot switch the system theme.
+                    Verify.IsTrue(VisualStateManager.GoToState(header, "PointerOver", false), "PointerOver must exist.");
+                    Verify.IsTrue(VisualStateManager.GoToState(header, "HighContrastPointerOver", false), "HighContrastPointerOver must exist.");
+                    header.IsEnabled = false;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("Disabled", CurrentState(header, "CommonStates"), "Precondition: the disabled header is Disabled.");
+                    Verify.AreEqual("HighContrastNormal", CurrentState(header, "HighContrastStates"), "Precondition: the hover highlight is gone.");
+                    Verify.AreEqual(disabled, (GetHeaderPresenter(tableView, 0).Foreground as SolidColorBrush)?.Color ?? default,
+                        "Leaving the High Contrast hover state must not drop the disabled text brush.");
+                    var glyph = header.FindVisualChildByName("TableViewSortIndicator") as Control;
+                    Verify.IsNotNull(glyph, "A sorted column must host the sort glyph.");
+                    Verify.AreEqual(disabled, (glyph?.Foreground as SolidColorBrush)?.Color ?? default,
+                        "Leaving the High Contrast hover state must not drop the disabled glyph brush.");
+                    header.IsEnabled = true;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("Normal", CurrentState(header, "CommonStates"), "Precondition: the re-enabled header is Normal.");
+                    Verify.AreNotEqual(disabled, (GetHeaderPresenter(tableView, 0).Foreground as SolidColorBrush)?.Color ?? default,
+                        "Re-enabling must drop the disabled text brush.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceRowForegroundDisabledBrush"));
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a disabled header's sort glyph follows the header text when its theme brush re-resolves without a visual state change.")]
         public void VerifyDisabledSortGlyphFollowsTextAcrossThemeChange()
         {
