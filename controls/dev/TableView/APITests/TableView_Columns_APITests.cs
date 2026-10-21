@@ -417,6 +417,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header rebuild leaves focus where the app moved it while the focused header's Content was being cleared.")]
+        public void VerifyHeaderRebuildKeepsAppFocusMoveFromFocusedHeader()
+        {
+            TableView tableView = null;
+            TextBox external = null;
+            bool moved = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
+                external = new TextBox();
+                var host = new StackPanel();
+                host.Children.Add(external);
+                host.Children.Add(tableView);
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = GetHeaderCell(tableView, 1) as ContentControl;
+                Verify.IsNotNull(header, "Precondition: the header cell is a ContentControl.");
+                Verify.IsTrue(header.Focus(FocusState.Keyboard), "Precondition: header 1 takes keyboard focus.");
+                header.RegisterPropertyChangedCallback(ContentControl.ContentProperty, (sender, property) =>
+                {
+                    if (!moved && ((ContentControl)sender).Content == null)
+                    {
+                        moved = true;
+                        external.Focus(FocusState.Programmatic);
+                    }
+                });
+                tableView.CanUserSortColumns = false;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(moved, "Precondition: the rebuild cleared the focused header's Content.");
+                Verify.IsTrue(ReferenceEquals(external, FocusManager.GetFocusedElement(tableView.XamlRoot)),
+                    "The rebuild must not pull focus back from where the app moved it.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a focused header keeps focus across the header rebuild a theme change performs.")]
         public void VerifyHeaderFocusSurvivesThemeChange()
         {

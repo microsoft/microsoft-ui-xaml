@@ -3046,13 +3046,16 @@ void TableView::RebuildHeadersCore()
     // Any focus move during the rebuild other than XAML's rescue off the removed cell belongs to
     // the app or user, and the restore below must not pull focus back from it.
     bool headerFocusMovedAway = false;
+    // XAML rescues focus only while the focused element is being removed.
+    bool removingFocused = false;
+    winrt::DependencyObject focusedAtTeardown{ nullptr };
     winrt::FocusManager::GettingFocus_revoker headerFocusMoveRevoker{};
     if (focusedHeaderColumn || focusBody)
     {
         auto const root = XamlRoot();
-        auto const focusedAtTeardown = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+        focusedAtTeardown = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
         headerFocusMoveRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke,
-            [&headerFocusMovedAway, root, focusedAtTeardown, weakHost = winrt::make_weak(host), rescueSeen = false](
+            [&headerFocusMovedAway, &removingFocused, root, focusedAtTeardown, weakHost = winrt::make_weak(host), rescueSeen = false](
                 winrt::IInspectable const&, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args) mutable
             {
                 auto const newFocus = args.NewFocusedElement().try_as<winrt::UIElement>();
@@ -3068,7 +3071,7 @@ void TableView::RebuildHeadersCore()
                         return;
                     }
                 }
-                if (!rescueSeen && focusedAtTeardown && args.OldFocusedElement() == focusedAtTeardown)
+                if (removingFocused && !rescueSeen && focusedAtTeardown && args.OldFocusedElement() == focusedAtTeardown)
                 {
                     rescueSeen = true;
                     return;
@@ -3077,9 +3080,13 @@ void TableView::RebuildHeadersCore()
             });
     }
 
-    // Clearing the host under a live popup tears its child down reentrantly.
+    // Clearing the host under a live popup tears its child down reentrantly. Releasing the cells
+    // removes only focus inside a header's content; clearing the host removes the headers too.
+    removingFocused = focusedAtTeardown && winrt::VisualTreeHelper::GetParent(focusedAtTeardown) != host;
     ReleaseHeaderCells(host);
+    removingFocused = true;
     host.Children().Clear();
+    removingFocused = false;
 
     m_rebuildingHeaders = true;
     auto const rebuildingGuard = wil::scope_exit([this]() noexcept { m_rebuildingHeaders = false; });
