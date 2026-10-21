@@ -108,6 +108,67 @@ winrt::AutomationControlType TableViewAutomationPeer::GetAutomationControlTypeCo
     return winrt::AutomationControlType::DataGrid;
 }
 
+// The default bounds include cache rows the scroller clips; best-effort clip to the layout box.
+winrt::Rect TableViewAutomationPeer::GetBoundingRectangleCore()
+{
+    auto const bounds = __super::GetBoundingRectangleCore();
+    if (bounds.Width <= 0.0f || bounds.Height <= 0.0f)
+    {
+        return bounds;
+    }
+
+    auto const owner = Owner().try_as<winrt::FrameworkElement>();
+    if (!owner || !owner.XamlRoot())
+    {
+        return bounds;
+    }
+
+    const winrt::Rect localBounds{
+        0.0f,
+        0.0f,
+        static_cast<float>(owner.ActualWidth()),
+        static_cast<float>(owner.ActualHeight()) };
+    if (localBounds.Width <= 0.0f || localBounds.Height <= 0.0f)
+    {
+        return bounds;
+    }
+
+    winrt::Rect layoutBounds{};
+    try
+    {
+        layoutBounds = SharedHelpers::ConvertDipsToPhysical(
+            owner, owner.TransformToVisual(nullptr).TransformBounds(localBounds));
+    }
+    catch (winrt::hresult_error const&)
+    {
+        // TransformToVisual throws while the owner is leaving the tree (teardown, window close).
+        return bounds;
+    }
+
+    // Intersect reports no overlap as RectHelper::Empty() (infinite extents); never return that.
+    auto const clipped = winrt::RectHelper::Intersect(bounds, layoutBounds);
+    if (!(clipped.Width > 0.0f) || !(clipped.Height > 0.0f) ||
+        !std::isfinite(clipped.X) || !std::isfinite(clipped.Y) ||
+        !std::isfinite(clipped.Width) || !std::isfinite(clipped.Height))
+    {
+        return bounds;
+    }
+
+    return clipped;
+}
+
+void TableViewAutomationPeer::ShowContextMenuCore()
+{
+    // The base raises ContextRequested on the TableView itself, which shows its own
+    // ContextFlyout before the template-root suppression hook can see it.
+    if (auto const impl = GetImpl(); impl && impl->AreContextMenusSuppressed())
+    {
+        return;
+    }
+
+    __super::ShowContextMenuCore();
+}
+
 void TableViewAutomationPeer::RaiseStructureChangedForSortChange()
 {
     // Same children, new order.
@@ -122,6 +183,12 @@ void TableViewAutomationPeer::RaiseStructureChangedForVirtualizationReset()
 
 void TableViewAutomationPeer::RaiseStructureChangedForGroupExpansion()
 {
+    RaiseStructureChanged(winrt::AutomationStructureChangeType::ChildrenInvalidated);
+}
+
+void TableViewAutomationPeer::RaiseStructureChangedForColumnsChange()
+{
+    // A column isn't a child of this peer, so ChildAdded/ChildRemoved don't apply.
     RaiseStructureChanged(winrt::AutomationStructureChangeType::ChildrenInvalidated);
 }
 
@@ -346,8 +413,10 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetC
     std::vector<winrt::IRawElementProviderSimple> headers;
     std::vector<ColumnHeaderPeerCacheEntry> liveCache;
 
-    // Key off visible logical Columns() so headers enumerate before templates realize.
-    if (auto const tableView = Owner().try_as<winrt::TableView>())
+    // Key off visible logical Columns() so headers enumerate before templates realize. Hidden column
+    // headers report none, matching each cell's GetColumnHeaderItems.
+    if (auto const tableView = Owner().try_as<winrt::TableView>();
+        tableView && winrt::get_self<TableView>(tableView)->AreColumnHeadersShownInternal())
     {
         if (auto const columns = tableView.Columns())
         {

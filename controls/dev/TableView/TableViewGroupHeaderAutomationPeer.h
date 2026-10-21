@@ -29,6 +29,12 @@ public:
     winrt::hstring GetClassNameCore();
     winrt::hstring GetNameCore();
 
+    // Lands keyboard focus for UIA SetFocus; see the definition.
+    void SetFocusCore();
+
+    // No menu while a cell is editing.
+    void ShowContextMenuCore();
+
     // IExpandCollapseProvider
     void Expand();
     void Collapse();

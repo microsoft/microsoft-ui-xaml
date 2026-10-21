@@ -17,9 +17,24 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <!-- ORDER MATTERS: the lab frame clips the page at 1024px, so anything past ~940px is off-window, where
+             UIA Invoke still works but a physical click misses. Physically-clicked controls go first, UIA-driven
+             ones last. Keep one row: the grouped tests need all 12 containers realized. -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
             <Button Content="Dummy Button" AutomationProperties.Name="DummyButton" AutomationProperties.AutomationId="DummyButton" />
             <Button Content="Trailing Button" AutomationProperties.Name="TrailingButton" AutomationProperties.AutomationId="TrailingButton" />
+            <Button Content="Expand All Groups"
+                    AutomationProperties.Name="ExpandAllGroupsButton"
+                    AutomationProperties.AutomationId="ExpandAllGroupsButton"
+                    Click="OnExpandAllGroupsClick" />
+            <Button Content="Collapse All Groups"
+                    AutomationProperties.Name="CollapseAllGroupsButton"
+                    AutomationProperties.AutomationId="CollapseAllGroupsButton"
+                    Click="OnCollapseAllGroupsClick" />
+            <Button Content="Delayed Unload"
+                    AutomationProperties.Name="DelayedUnloadButton"
+                    AutomationProperties.AutomationId="DelayedUnloadButton"
+                    Click="OnDelayedUnloadClick" />
             <CheckBox Content="IsReadOnly"
                       AutomationProperties.Name="IsReadOnlyCheckBox"
                       AutomationProperties.AutomationId="IsReadOnlyCheckBox"
@@ -48,18 +63,6 @@
                     AutomationProperties.Name="ClearFilterButton"
                     AutomationProperties.AutomationId="ClearFilterButton"
                     Click="OnClearFilterClick" />
-            <Button Content="Expand All Groups"
-                    AutomationProperties.Name="ExpandAllGroupsButton"
-                    AutomationProperties.AutomationId="ExpandAllGroupsButton"
-                    Click="OnExpandAllGroupsClick" />
-            <Button Content="Collapse All Groups"
-                    AutomationProperties.Name="CollapseAllGroupsButton"
-                    AutomationProperties.AutomationId="CollapseAllGroupsButton"
-                    Click="OnCollapseAllGroupsClick" />
-            <Button Content="Delayed Unload"
-                    AutomationProperties.Name="DelayedUnloadButton"
-                    AutomationProperties.AutomationId="DelayedUnloadButton"
-                    Click="OnDelayedUnloadClick" />
             <ComboBox AutomationProperties.Name="SelectionModeComboBox"
                       AutomationProperties.AutomationId="SelectionModeComboBox"
                       SelectedIndex="1"
@@ -76,6 +79,38 @@
                 <ComboBoxItem Content="DescendingAscending" AutomationProperties.Name="SortCycleDescendingAscending" />
                 <ComboBoxItem Content="DescendingAscendingNone" AutomationProperties.Name="SortCycleDescendingAscendingNone" />
             </ComboBox>
+            <!-- Focus-neutral re-shape triggers (UIA Invoke only, so last). Nothing can move focus onto them,
+                 so the re-shape runs with focus where the test left it. -->
+            <Button Content="Sort Basic By Age (focus-neutral)"
+                    AutomationProperties.Name="FocusNeutralSortBasicByAgeButton"
+                    AutomationProperties.AutomationId="FocusNeutralSortBasicByAgeButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnFocusNeutralSortBasicByAgeClick" />
+            <Button Content="Filter Source (focus-neutral)"
+                    AutomationProperties.Name="FocusNeutralFilterSourceButton"
+                    AutomationProperties.AutomationId="FocusNeutralFilterSourceButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnFilterSourceClick" />
+            <Button Content="Disable Focused Row (focus-neutral)"
+                    AutomationProperties.Name="DisableFocusedRowButton"
+                    AutomationProperties.AutomationId="DisableFocusedRowButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnDisableFocusedRowClick" />
+            <Button x:Name="navigateToTouch"
+                    Content="Touch Page"
+                    AutomationProperties.Name="navigateToTouch"
+                    AutomationProperties.AutomationId="navigateToTouch"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False" />
+            <Button x:Name="navigateToVirtualization"
+                    Content="Virtualization"
+                    AutomationProperties.Name="navigateToVirtualization"
+                    AutomationProperties.AutomationId="navigateToVirtualization"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False" />
         </StackPanel>
 
         <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in
@@ -174,6 +209,30 @@
                 </controls:TableView>
             </Grid>
 
+            <!-- Fixed container heights and a body 3.5 containers tall; see TableViewTestPageFacts.GroupedPagingContainerHeight.
+                 Height is 3.5 * 40 plus the table's 1px border. -->
+            <Grid x:Name="GroupedPagingTableHost" Visibility="Collapsed">
+                <Grid.Resources>
+                    <Style TargetType="controls:TableViewRow">
+                        <Setter Property="Height" Value="40" />
+                    </Style>
+                    <Style TargetType="controls:TableViewGroupHeader">
+                        <Setter Property="Height" Value="40" />
+                    </Style>
+                </Grid.Resources>
+                <controls:TableView x:Name="GroupedPagingTableView"
+                                    AutomationProperties.Name="GroupedPagingTableView"
+                                    AutomationProperties.AutomationId="GroupedPagingTableView"
+                                    HeadersVisibility="None"
+                                    Height="142"
+                                    Width="320"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="PagerName" Width="200" Binding="{Binding Name}" />
+                </controls:TableView>
+            </Grid>
+
             <Grid x:Name="ScrollingTableHost" Visibility="Collapsed">
                 <StackPanel Orientation="Vertical" Spacing="4">
                 <controls:TableView x:Name="ScrollingTableView"
@@ -192,22 +251,174 @@
                     <controls:TableViewTextColumn Header="ScrollAge" Width="220" Binding="{Binding Age}" />
                     <controls:TableViewTextColumn Header="ScrollId" Width="220" Binding="{Binding Id}" />
                 </controls:TableView>
-                <!-- Publishes PART_BodyScroller's offsets so an out-of-process test can tell whether the body
-                     actually scrolled. Without it, "the header did not move" is vacuous: it also holds when
-                     nothing scrolled at all. -->
+                <!-- Publishes PART_BodyScroller's offsets and the frozen band's rendered geometry for
+                     out-of-process tests. See ReportScrollOffsets in the code-behind. -->
                 <TextBlock x:Name="ScrollOffsetTextBlock"
                            AutomationProperties.Name="ScrollOffsetTextBlock"
                            AutomationProperties.AutomationId="ScrollOffsetTextBlock"
                            IsTabStop="False"
-                           Width="300"
+                           Width="520"
+                           TextWrapping="Wrap"
                            Text="&lt;not resolved&gt;" />
                 </StackPanel>
+            </Grid>
+
+            <!-- Hierarchical rows: the same ParentBy(Id, ManagerId) fixture shown left-to-right and
+                 right-to-left. ResetHierarchy rebuilds both sources, so each test starts all collapsed. -->
+            <Grid x:Name="HierarchyTableHost" Visibility="Collapsed" RowSpacing="4" ColumnSpacing="16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8">
+                    <Button Content="Reset"
+                            AutomationProperties.Name="ResetHierarchy"
+                            AutomationProperties.AutomationId="ResetHierarchy"
+                            Click="OnResetHierarchyClick" />
+                </StackPanel>
+
+                <!-- Format documented on TableViewTestPageFacts.HierarchyReadout. -->
+                <TextBox x:Name="HierarchyReadout"
+                         Grid.Row="1"
+                         Grid.ColumnSpan="2"
+                         AutomationProperties.Name="HierarchyReadout"
+                         AutomationProperties.AutomationId="HierarchyReadout"
+                         HorizontalAlignment="Left"
+                         Width="840"
+                         IsReadOnly="True"
+                         IsTabStop="False"
+                         Text="" />
+
+                <controls:TableView x:Name="HierarchyTable"
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    AutomationProperties.Name="HierarchyTable"
+                                    AutomationProperties.AutomationId="HierarchyTable"
+                                    Height="320"
+                                    Width="400"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    IsReadOnly="False"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="Name" Width="160" Binding="{Binding Name, Mode=TwoWay}" />
+                    <controls:TableViewTextColumn Header="Dept" Width="100" Binding="{Binding Dept, Mode=TwoWay}" />
+                    <controls:TableViewTextColumn Header="Score" Width="100" Binding="{Binding Score}" />
+                </controls:TableView>
+
+                <controls:TableView x:Name="HierarchyRtlTable"
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    AutomationProperties.Name="HierarchyRtlTable"
+                                    AutomationProperties.AutomationId="HierarchyRtlTable"
+                                    FlowDirection="RightToLeft"
+                                    Height="320"
+                                    Width="400"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="RtlName" Width="160" Binding="{Binding Name}" />
+                    <controls:TableViewTextColumn Header="RtlDept" Width="100" Binding="{Binding Dept}" />
+                    <controls:TableViewTextColumn Header="RtlScore" Width="100" Binding="{Binding Score}" />
+                </controls:TableView>
+            </Grid>
+
+            <!-- Context menus: one menu per resolution level, laid out as TableViewTestPageFacts describes. Each
+                 menu's Opening/Closed handlers write ContextMenuReadout. -->
+            <Grid x:Name="ContextMenuTableHost" Visibility="Collapsed" RowSpacing="4">
+                <Grid.Resources>
+                    <MenuFlyout x:Key="CellMenu">
+                        <MenuFlyoutItem Text="Cell menu" AutomationProperties.AutomationId="CellMenuItem" />
+                    </MenuFlyout>
+                    <MenuFlyout x:Key="HeaderMenu">
+                        <MenuFlyoutItem Text="Header menu" AutomationProperties.AutomationId="HeaderMenuItem" />
+                    </MenuFlyout>
+                    <MenuFlyout x:Key="TemplateMenu">
+                        <MenuFlyoutItem Text="Template menu" AutomationProperties.AutomationId="TemplateMenuItem" />
+                    </MenuFlyout>
+                    <MenuFlyout x:Key="RowMenu">
+                        <MenuFlyoutItem Text="Row menu" AutomationProperties.AutomationId="RowMenuItem" />
+                    </MenuFlyout>
+                    <MenuFlyout x:Key="TableMenu">
+                        <MenuFlyoutItem Text="Table menu" AutomationProperties.AutomationId="TableMenuItem" />
+                    </MenuFlyout>
+                </Grid.Resources>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                    <Button Content="Reset"
+                            AutomationProperties.Name="ResetContextMenu"
+                            AutomationProperties.AutomationId="ResetContextMenu"
+                            Click="OnResetContextMenuClick" />
+                    <Button Content="Grouped"
+                            AutomationProperties.Name="GroupContextMenuTable"
+                            AutomationProperties.AutomationId="GroupContextMenuTable"
+                            Click="OnGroupContextMenuTableClick" />
+                    <Button Content="Right to left"
+                            AutomationProperties.Name="MirrorContextMenuTable"
+                            AutomationProperties.AutomationId="MirrorContextMenuTable"
+                            Click="OnMirrorContextMenuTableClick" />
+                </StackPanel>
+
+                <!-- Format documented on TableViewTestPageFacts.ContextMenuReadout. -->
+                <TextBox x:Name="ContextMenuReadout"
+                         Grid.Row="1"
+                         AutomationProperties.Name="ContextMenuReadout"
+                         AutomationProperties.AutomationId="ContextMenuReadout"
+                         HorizontalAlignment="Left"
+                         Width="840"
+                         IsReadOnly="True"
+                         IsTabStop="False"
+                         Text="" />
+
+                <controls:TableView x:Name="ContextMenuTable"
+                                    Grid.Row="2"
+                                    AutomationProperties.Name="ContextMenuTable"
+                                    AutomationProperties.AutomationId="ContextMenuTable"
+                                    Height="400"
+                                    Width="600"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    IsReadOnly="False"
+                                    SelectionMode="Single"
+                                    ContextFlyout="{StaticResource TableMenu}">
+                    <controls:TableView.Resources>
+                        <Style TargetType="controls:TableViewRow">
+                            <Setter Property="ContextFlyout" Value="{StaticResource RowMenu}" />
+                        </Style>
+                    </controls:TableView.Resources>
+                    <controls:TableViewTextColumn Header="Name"
+                                                  Width="160"
+                                                  Binding="{Binding Name, Mode=TwoWay}"
+                                                  CellContextFlyout="{StaticResource CellMenu}"
+                                                  HeaderContextFlyout="{StaticResource HeaderMenu}" />
+                    <controls:TableViewTemplateColumn Header="City" Width="160">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <Grid Background="Transparent" ContextFlyout="{StaticResource TemplateMenu}">
+                                    <TextBlock Text="{x:Bind City, Mode=OneWay}" VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                    </controls:TableViewTemplateColumn>
+                    <controls:TableViewTextColumn Header="Age" Width="100" Binding="{Binding Age}" />
+                </controls:TableView>
             </Grid>
 
         </Grid>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
-            <Button Content="After Table Button"
+            <Button x:Name="AfterTableButton"
+                    Content="After Table Button"
                     AutomationProperties.Name="AfterTableButton"
                     AutomationProperties.AutomationId="AfterTableButton" />
             <Button Content="Basic"
@@ -226,6 +437,18 @@
                     AutomationProperties.Name="GoToScrollingButton"
                     AutomationProperties.AutomationId="GoToScrollingButton"
                     Click="OnGoToScrollingClick" />
+            <Button Content="Hierarchy"
+                    AutomationProperties.Name="GoToHierarchyButton"
+                    AutomationProperties.AutomationId="GoToHierarchyButton"
+                    Click="OnGoToHierarchyClick" />
+            <Button Content="Grouped Paging"
+                    AutomationProperties.Name="GoToGroupedPagingButton"
+                    AutomationProperties.AutomationId="GoToGroupedPagingButton"
+                    Click="OnGoToGroupedPagingClick" />
+            <Button Content="ContextMenu"
+                    AutomationProperties.Name="GoToContextMenuButton"
+                    AutomationProperties.AutomationId="GoToContextMenuButton"
+                    Click="OnGoToContextMenuClick" />
             <TextBlock x:Name="StatusTextBlock"
                        AutomationProperties.Name="StatusTextBlock"
                        AutomationProperties.AutomationId="StatusTextBlock"

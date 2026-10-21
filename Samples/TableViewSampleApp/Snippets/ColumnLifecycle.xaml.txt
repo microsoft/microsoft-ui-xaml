@@ -1,6 +1,4 @@
-<!-- The columns are declared in XAML; the page then moves, hides, adds and removes them in code.
-     Template columns sort by SortMemberPath, the value behind the control. -->
-
+<!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.AutomationId="ColumnLifecycleTable"
@@ -28,13 +26,3 @@
                                  Visibility="Collapsed"
                                  HeaderToolTip="Start of the daily shift, 24-hour clock. Editable."/>
 </tv:TableView>
-
-<!-- One checkbox per column sets TableViewColumn.Visibility. -->
-
-<CheckBox x:Name="VisShiftCheckBox" AutomationProperties.AutomationId="ColumnLifecycleVisShiftCheckBox" Content="Shift" Tag="6" IsChecked="False" Checked="OnColumnToggle" Unchecked="OnColumnToggle"/>
-
-<ComboBox
-    x:Name="ColumnPicker"
-    AutomationProperties.AutomationId="ColumnLifecycleColumnSelector"
-    Header="Column"
-    HorizontalAlignment="Stretch"/>

@@ -21,10 +21,12 @@
 #include "TableViewSource.h"
 #include "TableViewSortingEventArgs.h"
 #include "TableViewSortedEventArgs.h"
+#include "TableViewAutomationHelpers.h"
 #include "ResourceAccessor.h"
 #include "Utils.h"
 #include "ShapingHelpers.h"
 #include "SortMemberPathResolver.h"
+#include "TVDiag.h"
 
 #include <algorithm>
 #include <numeric>
@@ -43,7 +45,77 @@ void TableViewSourceSortBinding::Clear()
     MemberPath = {};
     AxisToken = {};
     KeySelector = nullptr;
-    ResetCustomSort();
+    // Dropped, not reset: the axis left on a source this table no longer owns still ranks through
+    // it. The next sort mints a fresh adapter and selector.
+    CustomSortState.reset();
+}
+
+bool TableView::RepositionCustomSortItem(const winrt::IInspectable& item, bool reshapePending)
+{
+    auto const& state = m_tableViewSourceSort.CustomSortState;
+    if (!state || !state->HasComparer())
+    {
+        return false;
+    }
+    if (!item)
+    {
+        state->InvalidateRanks();
+        return false;
+    }
+    return state->Reposition(item, reshapePending);
+}
+
+void TableView::ReleaseCustomSortRows(const winrt::IInspectable& item, const std::vector<winrt::IInspectable>& liveRows)
+{
+    auto const& state = m_tableViewSourceSort.CustomSortState;
+    if (!state || !state->HasComparer())
+    {
+        return;
+    }
+    if (item)
+    {
+        state->Forget(item);
+    }
+    else
+    {
+        state->RetainOnly(liveRows);
+    }
+}
+
+// Rank() starts from the current rows, so it drops ranks rooted while released and re-reads values
+// edited meanwhile; re-declaring the axis makes the projection read the new keys.
+void TableView::RerankCustomSortAfterReclaim()
+{
+    auto const& state = m_tableViewSourceSort.CustomSortState;
+    if (!state || !state->HasComparer() || m_sortedColumns.size() != 1)
+    {
+        return;
+    }
+    auto const column = m_sortedColumns.front().get();
+    if (!column || !column.CustomSortComparer())
+    {
+        return;
+    }
+    const auto direction = column.SortDirection();
+    if (direction == winrt::SortDirection::None || !CanApplySortTo(direction))
+    {
+        return;
+    }
+
+    const auto preservedSelection = SelectedItemInternal();
+    try
+    {
+        // A rerank after reclaim is control-driven, not a user sort, so it carries no TiP operation.
+        if (SyncTableViewSourceSort(column, direction, 0) && preservedSelection)
+        {
+            ApplySelection(FindEntryIndexForDataItem(preservedSelection));
+        }
+    }
+    catch (...)
+    {
+        // Dispatcher callback: best-effort, the previous order stands.
+        TVDiag::LogRetailF(L"[TableView] Re-ranking the custom sort after reclaim failed.");
+    }
 }
 
 namespace
@@ -117,9 +189,26 @@ bool TableView::IsSortClearStillValid() const
     return !m_sortedColumns.empty();
 }
 
+// Refused a source another table owns: there is nothing to sort until it is released, and the
+// columns keep their state for the reconcile that follows.
+bool TableView::CanSortColumnNow(const winrt::TableViewColumn& column) const
+{
+    return !m_awaitedSource.get() && CanSortColumn(column);
+}
+
+bool TableView::CanApplySortTo(winrt::SortDirection direction) const
+{
+    if (direction == winrt::SortDirection::None)
+    {
+        return true;
+    }
+    auto const source = ShapingSourceInternal();
+    return !source || winrt::get_self<::TableViewSource>(source)->CanApplySort();
+}
+
 bool TableView::IsSortRequestStillValid(const winrt::TableViewColumn& column) const
 {
-    if (!column || !CanSortColumn(column))
+    if (!column || !CanSortColumnNow(column))
     {
         return false;
     }
@@ -141,7 +230,13 @@ bool TableView::IsSortRequestStillValid(const winrt::TableViewColumn& column) co
 
 bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDirection direction)
 {
-    if (!CanSortColumn(column))
+    return SortByColumnInternal(column, direction, true);
+}
+
+bool TableView::SortByColumnInternal(
+    const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip)
+{
+    if (!CanSortColumnNow(column))
     {
         return false;
     }
@@ -162,15 +257,21 @@ bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDi
         }
     }
 
+    // A null item or one object on two rows can't be sorted; refuse before any state changes.
+    if (!CanApplySortTo(direction))
+    {
+        return false;
+    }
+
     // An open editor is showing a row at an index that is about to move. Close it first; if it
     // cannot close synchronously, replay this request once it does.
     if (!TryTerminateEditForControlInitiatedReshape())
     {
         if (m_editState == EditState::Ending && !m_isApplyingCoalescedEditReshape)
         {
-            QueueCoalescedEditReshape([this, column, direction]()
+            QueueCoalescedEditReshape([this, column, direction, measureTip]()
             {
-                SortByColumn(column, direction);
+                SortByColumnInternal(column, direction, measureTip);
             });
         }
         return false;
@@ -185,20 +286,21 @@ bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDi
         return false;
     }
 
-    if (!IsSortRequestStillValid(column))
+    // The edit commit and the Sorting handler are app code that can change the rows.
+    if (!IsSortRequestStillValid(column) || !CanApplySortTo(direction))
     {
         return false;
     }
 
     ApplySingleColumnSortState(column, direction);
-    RecomputeSortDPsAndRaiseInternal(column);
+    RecomputeSortDPsAndRaiseInternal(column, measureTip);
     DrainCoalescedEditReshape();
     return true;
 }
 
 bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
 {
-    if (!CanSortColumn(column))
+    if (!CanSortColumnNow(column))
     {
         return false;
     }
@@ -241,6 +343,11 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
         next = opening;
     }
 
+    if (!CanApplySortTo(next))
+    {
+        return false;
+    }
+
     if (!TryTerminateEditForControlInitiatedReshape())
     {
         if (m_editState == EditState::Ending && !m_isApplyingCoalescedEditReshape)
@@ -262,7 +369,7 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
         return false;
     }
 
-    if (!IsSortRequestStillValid(column))
+    if (!IsSortRequestStillValid(column) || !CanApplySortTo(next))
     {
         return false;
     }
@@ -275,6 +382,11 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
 
 bool TableView::ClearSort()
 {
+    return ClearSortInternal(true);
+}
+
+bool TableView::ClearSortInternal(bool measureTip)
+{
     if (m_sortedColumns.empty())
     {
         return false;
@@ -284,9 +396,9 @@ bool TableView::ClearSort()
     {
         if (m_editState == EditState::Ending && !m_isApplyingCoalescedEditReshape)
         {
-            QueueCoalescedEditReshape([this]()
+            QueueCoalescedEditReshape([this, measureTip]()
             {
-                ClearSort();
+                ClearSortInternal(measureTip);
             });
         }
         return false;
@@ -316,7 +428,7 @@ bool TableView::ClearSort()
     m_sortedColumns.clear();
 
     // Null trigger: Sorted fires with Column=null to signal a full clear.
-    RecomputeSortDPsAndRaiseInternal(nullptr);
+    RecomputeSortDPsAndRaiseInternal(nullptr, measureTip);
     DrainCoalescedEditReshape();
     return true;
 }
@@ -420,7 +532,8 @@ winrt::TableViewKeySelector TableView::GetTableViewSourceSortKeySelector(
 
 bool TableView::SyncTableViewSourceSort(
     const winrt::TableViewColumn& trigger,
-    winrt::SortDirection direction)
+    winrt::SortDirection direction,
+    uint64_t tipGeneration)
 {
     auto tableViewSource = ShapingSourceInternal();
     if (!tableViewSource)
@@ -484,7 +597,10 @@ bool TableView::SyncTableViewSourceSort(
         else
         {
             // Projected dispatch - see the note in HasResolvedSortMemberPath.
-            const auto sortMemberPath = trigger.GetSortMemberPathCore();
+            AppCalloutTip callout{ *this, TableViewTip::Stage::Sort, TableViewTip::AppFaultKind::Callback };
+            winrt::hstring sortMemberPath;
+            try { sortMemberPath = trigger.GetSortMemberPathCore(); }
+            catch (...) { callout.Fault(winrt::to_hresult()); throw; }
             if (sortMemberPath.empty())
             {
                 return false;
@@ -517,7 +633,7 @@ bool TableView::SyncTableViewSourceSort(
     // The control is the last writer here, so its axis becomes the only one. Without this an
     // app-declared fluent Sort axis would survive alongside it and, being declared earlier, would
     // outrank it as the primary sort while the chevron advertised this column.
-    auto const reconcileGuard = BeginControlInitiatedSortScope();
+    auto const reconcileGuard = BeginControlInitiatedSortScope(tipGeneration);
     if (direction == winrt::SortDirection::None)
     {
         // A control-initiated clear means "nothing is sorted", so it clears EVERY axis, not just
@@ -529,7 +645,17 @@ bool TableView::SyncTableViewSourceSort(
     {
         // Replacing rather than adding: re-sorting a column must swap its axis, not stack a
         // second one on top of the first.
-        tableViewSourceImpl->SortReplacing(m_tableViewSourceSort.AxisToken, sortAxisToken, keySelector, axisSortMemberPath, direction);
+        try
+        {
+            tableViewSourceImpl->SortReplacing(m_tableViewSourceSort.AxisToken, sortAxisToken, keySelector, axisSortMemberPath, direction);
+        }
+        catch (...)
+        {
+            // The axis is declared before the projection fails; keep owning it so the next sort
+            // replaces it instead of stacking on an orphan.
+            m_tableViewSourceSort.AxisToken = sortAxisToken;
+            throw;
+        }
         tableViewSourceImpl->ClearSortsExcept(sortAxisToken);
     }
 
@@ -610,7 +736,7 @@ int32_t TableView::FindEntryIndexForDataItem(const winrt::IInspectable& item) co
 }
 
 void TableView::RecomputeSortDPsAndRaiseInternal(
-    const winrt::TableViewColumn& trigger)
+    const winrt::TableViewColumn& trigger, bool measureTip)
 {
     // Stale-deferred-clear guard. A null trigger means "clear", and every legitimate null-trigger
     // caller - ClearSort, SortByColumn(col, None), ToggleSortDirection cycling to None - clears
@@ -624,6 +750,28 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         return;
     }
 
+    const auto invalidatedSort = !measureTip && m_tip.operation == TableViewTip::Operation::Sort
+        ? m_tip.operationGeneration : 0;
+    auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::Sort, measureTip);
+    m_controlSortPublishedGeneration = 0;
+    bool completed = false;
+    auto tipCompletion = wil::scope_exit([this, tipGeneration, measureTip, &completed]() noexcept
+    {
+        if (measureTip && !completed)
+        {
+            FailTipOperation(tipGeneration, TableViewTip::Stage::Sort, {});
+        }
+        else if (measureTip && m_controlSortPublishedGeneration == tipGeneration)
+        {
+            CompleteTipOperation(tipGeneration);
+        }
+        else if (measureTip)
+        {
+            TableViewTip::IgnoreOperation(m_tip, tipGeneration, TableViewTip::IgnoreReason::DeferredOrUnproven);
+        }
+        EndTipOperation();
+    });
+
     // Reshapes through whichever source is active. A cancelled Sorting never reaches this point,
     // so anything that does gets both the reshape and the published state.
     const auto requestedDirection = trigger ? trigger.SortDirection() : winrt::SortDirection::None;
@@ -631,7 +779,15 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     // Selection is index-based, and a re-sort moves every index. Capture the item, then re-find it
     // afterwards so the selection follows the row rather than the slot.
     const auto preservedSelection = SelectedItemInternal();
-    const bool reshaped = SyncTableViewSourceSort(trigger, requestedDirection);
+    const bool reshaped = SyncTableViewSourceSort(trigger, requestedDirection, tipGeneration);
+    if (reshaped && invalidatedSort)
+    {
+        TableViewTip::IgnoreOperation(m_tip, invalidatedSort, TableViewTip::IgnoreReason::Stale);
+    }
+    if (!reshaped && tipGeneration == m_tip.operationGeneration)
+    {
+        TableViewTip::IgnoreOperation(m_tip, tipGeneration, TableViewTip::IgnoreReason::Stale);
+    }
 
     if (reshaped && preservedSelection)
     {
@@ -644,7 +800,16 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     {
         const auto appliedDirection = trigger ? trigger.SortDirection() : winrt::SortDirection::None;
         auto args = winrt::make_self<TableViewSortedEventArgs>(trigger, appliedDirection);
-        m_sortedEventSource(*this, *args);
+        AppCalloutTip callout{ *this, TableViewTip::Stage::Sort, TableViewTip::AppFaultKind::Callback };
+        try
+        {
+            m_sortedEventSource(*this, *args);
+        }
+        catch (...)
+        {
+            callout.Fault(winrt::to_hresult());
+            throw;
+        }
     }
 
     if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::Notification))
@@ -653,14 +818,15 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         // announcement a screen-reader user has no way to learn the order changed.
         if (trigger)
         {
+            // The realized header peer also names template headers, which carry no string.
             winrt::hstring header;
-            if (auto const headerContent = trigger.Header())
+            if (auto const headerPeer = GetRealizedColumnHeaderPeer(*this, trigger))
             {
-                if (auto const headerString = headerContent.try_as<winrt::IPropertyValue>();
-                    headerString && headerString.Type() == winrt::PropertyType::String)
-                {
-                    header = headerString.GetString();
-                }
+                header = headerPeer.GetName();
+            }
+            if (header.empty())
+            {
+                header = TableViewDetails::GetColumnHeaderText(trigger);
             }
 
             switch (trigger.SortDirection())
@@ -688,6 +854,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
 
     // The chevrons are already current: SetSortStateInternal republished them through
     // RefreshSortIndicators as each column's DP was written.
+    completed = true;
 }
 
 void TableView::QueueReconcileSortStateWithSource()
@@ -721,14 +888,34 @@ void TableView::QueueReconcileSortStateWithSource()
 void TableView::ReconcileSortStateWithSource()
 {
     auto tableViewSource = ShapingSourceInternal();
-    if (!tableViewSource)
+    // Released on Unloaded: another table may own it now, and Loaded reconciles on reclaim.
+    if (!tableViewSource || m_activeSourceReleased)
     {
         return;
     }
+    const bool rerankCustomSort = std::exchange(m_rerankCustomSortOnReconcile, false);
 
     auto const& ownToken = m_tableViewSourceSort.AxisToken;
     auto tableViewSourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
-    auto const axes = tableViewSourceImpl->ActiveSortAxisInfos();
+    auto axes = tableViewSourceImpl->ActiveSortAxisInfos();
+
+    // A comparer axis another table (or this one, before an ItemsSource change) installed ranks
+    // through an adapter nothing here can update, so it would order rows on stale ranks.
+    bool clearedForeignComparerAxis = false;
+    for (auto const& axis : axes)
+    {
+        if (axis.AxisToken != ownToken && axis.SortMemberPath.empty() &&
+            std::wstring_view{ axis.AxisToken }.starts_with(L"column:"))
+        {
+            auto const reconcileGuard = BeginControlInitiatedSortScope();
+            tableViewSourceImpl->ClearSort(axis.AxisToken);
+            clearedForeignComparerAxis = true;
+        }
+    }
+    if (clearedForeignComparerAxis)
+    {
+        axes = tableViewSourceImpl->ActiveSortAxisInfos();
+    }
 
     bool ownAxisPresent = false;
     // Infos arrive in precedence order, so the first foreign axis is the one that outranks ours
@@ -749,6 +936,10 @@ void TableView::ReconcileSortStateWithSource()
     if (ownAxisPresent && primaryForeignAxis == nullptr)
     {
         // The control's axis is still the only sort: chevrons already describe it.
+        if (rerankCustomSort)
+        {
+            RerankCustomSortAfterReclaim();
+        }
         return;
     }
 
@@ -859,7 +1050,7 @@ void TableView::QueueClearSortAfterColumnRemoval(){
                 strongThis->m_clearSortAfterColumnRemovalQueued = false;
                 // RecomputeSortDPsAndRaiseInternal's stale-clear guard drops this if the app
                 // applied a new sort on a different column in the meantime.
-                strongThis->RecomputeSortDPsAndRaiseInternal(nullptr);
+                strongThis->RecomputeSortDPsAndRaiseInternal(nullptr, false);
             }
         });
     }

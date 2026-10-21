@@ -54,9 +54,9 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                     <x:String>Control type — Microsoft.UI.Xaml.Controls.Tabular.TableView</x:String>
-                    <x:String>Model-first source — TableViewSource.From(items) with Filter, GroupBy and Sort, reshaped in place</x:String>
+                    <x:String>Model-first source — TableViewSource.From(items) with Filter, GroupBy, ParentBy and Sort, reshaped in place</x:String>
                     <x:String>Columns — TableViewTextColumn for bound text and TableViewTemplateColumn for DataTemplate cells</x:String>
-                    <x:String>Template cells with editors — CheckBox, date and time pickers, ComboBox and Button with a Flyout, two-way bound and reachable with Tab</x:String>
+                    <x:String>Template cells with editors — CheckBox, date and time pickers, ComboBox and Button with a Flyout, two-way bound and reachable from the keyboard</x:String>
                     <x:String>Cell editing — double-click or F2 edits a cell in place, CellEditingTemplate supplies a custom editor, and TableView.IsReadOnly locks the whole table</x:String>
                     <x:String>Header-click sort via SortMemberPath, with a direction indicator</x:String>
                     <x:String>Filtering — TableViewSource.Filter(predicate)</x:String>
@@ -73,7 +73,7 @@
                     <x:String>Row virtualization — realizes only the visible rows, so large datasets scroll smoothly</x:String>
                     <x:String>Keyboard navigation and UI Automation peers for tables, rows, cells and headers</x:String>
                     <x:String>RTL flow — mirrored layout and resize gripper placement</x:String>
-                    <x:String>Hierarchical rows — not available in this release; the Hierarchy page describes the planned axis</x:String>
+                    <x:String>Hierarchical rows from a parent key (ParentBy), composed with filter, sort, grouping and live shaping, on the Hierarchy page and in the Hierarchy and Grouped hierarchy shaping modes of the table pages</x:String>
                 </ItemsControl>
             </StackPanel>
 
@@ -102,8 +102,8 @@
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Column lifecycle" Tag="ColumnLifecycle" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Column lifecycle sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Headers visibility" Tag="HeadersVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Headers visibility sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Tooltips" Tag="ToolTips" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Tooltips sample."/>
-                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Grouped rows" Tag="Groups" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grouped rows sample."/>
-                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Hierarchy" Tag="Hierarchy" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Hierarchy placeholder page."/>
+                                        <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Context menus" Tag="ContextMenus" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Context menus sample."/>                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Grouped rows" Tag="Groups" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grouped rows sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Hierarchy" Tag="Hierarchy" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Hierarchy page."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Grid lines visibility" Tag="GridLinesVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grid lines visibility sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Text wrap + row height" Tag="TextWrap" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Text wrap and row height sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Cell templating" Tag="CellTemplating" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Cell templating sample."/>
@@ -122,7 +122,7 @@
                     Text="First-party Windows surfaces and third-party app developers that need a native WinUI 3 tabular control. Today these experiences render tables on a mix of legacy stacks (DirectUI, ComCtl) or a partial WinUI 3 migration."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
-                <Border Style="{StaticResource TableHostBorderStyle}" HorizontalAlignment="Left" MaxWidth="640" Margin="0,4,0,0">
+                <Border Style="{StaticResource CardBorderStyle}" HorizontalAlignment="Left" MaxWidth="640" Margin="0,4,0,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="220"/>
@@ -189,12 +189,11 @@
                     Text="Found a bug or have feedback on TableView? File it in the public Microsoft UI XAML repository. Include the sample page name, repro steps, and the build (the About page shows the exact commit)."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
-                <Button x:Name="ReportIssueButton"
-                    Content="Report on GitHub"
+                <HyperlinkButton x:Name="ReportIssueButton"
+                    Content="Report an issue on GitHub"
                     HorizontalAlignment="Left"
                     Click="OnReportIssueClick"
                     AutomationProperties.AutomationId="HomeReportIssueButton"
-                    AutomationProperties.Name="Report an issue on GitHub"
                     AutomationProperties.HelpText="Opens the public Microsoft UI XAML bug report template to log a TableView samples issue."
                     ToolTipService.ToolTip="Opens the public Microsoft UI XAML bug report template on GitHub."/>
                 <TextBlock x:Name="ReportIssueFallbackText"

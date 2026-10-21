@@ -5,6 +5,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
@@ -186,6 +188,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyProjection(tableView, items.Select(p => p.Name).ToList(), "fresh source");
                 Verify.AreEqual(0, GroupHeaderCount(tableView),
                     "A source with no GroupBy must project no group header rows.");
+                Verify.IsFalse(TableViewSource.From(items).IsLiveShaping, "IsLiveShaping must default to false.");
             });
         }
 
@@ -1023,6 +1026,265 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a second TableView cannot take over a TableViewSource another TableView owns.")]
+        public void VerifySecondTableViewCannotStealAnOwnedSource()
+        {
+            TableView first = null;
+            TableView second = null;
+            TableViewSource source = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                first = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                second = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                var host = new StackPanel();
+                host.Children.Add(first);
+                LoadContent(host);
+                host.Children.Add(second);
+            });
+
+            SettleLayout(first);
+            SettleLayout(second);
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Descending));
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, first.Columns[0].SortDirection,
+                    "The owning table must still hear the source's sort.");
+                Verify.AreEqual(0, GetRowsRepeater(second).ItemsSourceView?.Count ?? 0,
+                    "The refused table must render no rows.");
+
+                second.ItemsSource = null;
+            });
+
+            SettleLayout(second);
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Ascending));
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, first.Columns[0].SortDirection,
+                    "Unbinding the refused table must not release the owner's hold on the source.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a TableView adopts a TableViewSource whose owner was unloaded but not yet collected.")]
+        public void VerifyNewTableAdoptsSourceAfterOwnerUnloads()
+        {
+            TableView first = null;
+            TableView second = null;
+            TableViewSource source = null;
+            StackPanel host = null;
+            int rowCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var people = MakeShapedPeople();
+                rowCount = people.Count;
+                source = TableViewSource.From(people);
+                first = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host = new StackPanel();
+                host.Children.Add(first);
+                LoadContent(host);
+            });
+
+            SettleLayout(first);
+
+            // A navigation: the new page's table binds the source while the old one still owns it.
+            RunOnUIThread.Execute(() =>
+            {
+                second = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host.Children.Add(second);
+                host.Children.Remove(first);
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(rowCount, GetRowsRepeater(second).ItemsSourceView?.Count ?? 0,
+                    "The new table must render the source once its old owner unloads.");
+                source.Sort("Name", SortDirection.Descending);
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, second.Columns[0].SortDirection,
+                    "The new owner must hear the source's sort.");
+                GC.KeepAlive(first);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a reclaimed TableView's chevrons follow a sort applied while another table owned the source.")]
+        public void VerifyReclaimedTableReflectsSortChangedWhileUnloaded()
+        {
+            TableView first = null;
+            TableView second = null;
+            TableViewSource source = null;
+            StackPanel host = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                first = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host = new StackPanel();
+                host.Children.Add(first);
+                LoadContent(host);
+            });
+
+            SettleLayout(first);
+            RunOnUIThread.Execute(() => TableViewSortingTestHelpers.InvokeHeader(first, 0));
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreNotEqual(SortDirection.None, first.Columns[0].SortDirection, "Precondition: the header sorted Name.");
+                host.Children.Remove(first);
+                second = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host.Children.Add(second);
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(second.SortByColumn(second.Columns[1], SortDirection.Descending), "Precondition: the new owner sorts Role.");
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                host.Children.Remove(second);
+                host.Children.Add(first);
+            });
+
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, first.Columns[0].SortDirection,
+                    "The reclaimed table must drop the chevron for a sort the source no longer has.");
+                Verify.AreEqual(SortDirection.Descending, first.Columns[1].SortDirection,
+                    "The reclaimed table must light the chevron for the source's current sort.");
+                GC.KeepAlive(second);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an unloaded TableView given a TableViewSource does not keep a loaded one from binding it.")]
+        public void VerifyUnloadedTableDoesNotClaimNewSource()
+        {
+            TableView unloaded = null;
+            TableView loaded = null;
+            TableViewSource source = null;
+            int rowCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                unloaded = CreateTableView(TableViewSource.From(MakeShapedPeople()), headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                LoadContent(unloaded);
+            });
+
+            SettleLayout(unloaded);
+
+            RunOnUIThread.Execute(() =>
+            {
+                LoadContent(new Grid());
+                var people = MakeShapedPeople();
+                rowCount = people.Count;
+                source = TableViewSource.From(people);
+                unloaded.ItemsSource = source;
+
+                loaded = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                LoadContent(loaded);
+            });
+
+            SettleLayout(loaded);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(rowCount, GetRowsRepeater(loaded).ItemsSourceView?.Count ?? 0,
+                    "A loaded table must bind a source an unloaded table was handed.");
+                GC.KeepAlive(unloaded);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies every TableView refused a TableViewSource gets it in turn as each owner lets go.")]
+        public void VerifyAllWaitingTablesCanClaimAfterRelease()
+        {
+            TableView owner = null;
+            TableView firstWaiter = null;
+            TableView secondWaiter = null;
+            TableView claimant = null;
+            TableViewSource source = null;
+            StackPanel host = null;
+            int rowCount = 0;
+
+            Func<TableView, int> rows = tableView => GetRowsRepeater(tableView).ItemsSourceView?.Count ?? 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var people = MakeShapedPeople();
+                rowCount = people.Count;
+                source = TableViewSource.From(people);
+                owner = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 200);
+                host = new StackPanel();
+                host.Children.Add(owner);
+                LoadContent(host);
+            });
+
+            SettleLayout(owner);
+
+            RunOnUIThread.Execute(() =>
+            {
+                firstWaiter = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 200);
+                secondWaiter = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 500, height: 200);
+                host.Children.Add(firstWaiter);
+                host.Children.Add(secondWaiter);
+            });
+
+            SettleLayout(firstWaiter);
+            SettleLayout(secondWaiter);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, rows(firstWaiter) + rows(secondWaiter), "Precondition: both waiters are refused.");
+                host.Children.Remove(owner);
+            });
+
+            SettleLayout(firstWaiter);
+            SettleLayout(secondWaiter);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(rowCount, rows(firstWaiter) + rows(secondWaiter),
+                    "Exactly one waiter must claim the source when its owner unloads.");
+                claimant = rows(firstWaiter) == rowCount ? firstWaiter : secondWaiter;
+                host.Children.Remove(claimant);
+            });
+
+            var remaining = default(TableView);
+            RunOnUIThread.Execute(() => remaining = claimant == firstWaiter ? secondWaiter : firstWaiter);
+            SettleLayout(remaining);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(rowCount, rows(remaining),
+                    "The other waiter must claim the source when the first claimant unloads.");
+                GC.KeepAlive(owner);
+                GC.KeepAlive(claimant);
+            });
+        }
+
         #endregion
 
         #region 8.5 Composition
@@ -1406,7 +1668,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product bug: the sorted flat path applies a later collection change as an incremental insert, so a stale row is never re-shaped. Re-enable once that path re-shapes.
         [TestProperty("Description", "Verifies an INotifyPropertyChanged-only sort key change defers the move until the next collection change.")]
         public void VerifySortKeyPropertyChangeDoesNotMoveTheRowUntilACollectionChange()
         {
@@ -1497,6 +1758,246 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a filter-key INPC change followed by Add rebuilds a filtered+sorted projection in source order.")]
+        public void VerifyFilterAndSortAfterFilterKeyPropertyChangeAndAdd()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>
+                {
+                    new ShapedPerson("A", "Engineer", "60"),
+                    new ShapedPerson("B", "Engineer", "70"),
+                    new ShapedPerson("C", "Engineer", "80"),
+                };
+
+                tableView = CreateShapedTable(
+                    TableViewSource
+                        .From(items)
+                        .Filter(o => int.Parse(Person(o).DepartmentName) > 50)
+                        .Sort("DepartmentName", SortDirection.Ascending));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "A", "B", "C" }, "baseline");
+
+                items[0].DepartmentName = "10";
+                VerifyProjection(tableView, new List<string> { "A", "B", "C" },
+                    "INPC-only filter-key changes keep the existing projection until a collection change");
+
+                items.Add(new ShapedPerson("D", "Engineer", "90"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "B", "C", "D" },
+                    "filtered+sorted collection changes must rebuild from current source contents");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the stale-sort repair a collection change triggers is reported as a re-shape, so body focus stays at its projected position.")]
+        public void VerifyStaleSortRepairIsReportedAsAReshape()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            const int focusedIndex = 4;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).Sort("Name", SortDirection.Ascending));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "baseline");
+                Verify.IsTrue(GetProjectedRow(tableView, focusedIndex).Focus(FocusState.Keyboard),
+                    "Baseline: the row at the focused index must take keyboard focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(IsFocusWithin(tableView, GetProjectedRow(tableView, focusedIndex)),
+                    "Baseline: keyboard focus must be on the row at the focused index.");
+
+                // The INPC-only rename leaves Owen stale; the Add repairs the order before appending Zed.
+                items.First(p => p.Name == "Owen").Name = "Abe";
+                items.Add(new ShapedPerson("Zed", "Engineer", "Platform"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Abe", "Asha", "Diego", "Ines", "Mei", "Rafa", "Zed" },
+                    "the collection change must repair the stale row and then apply the add");
+
+                // Focus is restored to the same projected position only when the repair is reported
+                // as a re-shape (ShapingChanged); a bare Reset would not restore it.
+                var row = GetProjectedRow(tableView, focusedIndex);
+                Verify.IsTrue(IsFocusWithin(tableView, row),
+                    $"Focus must stay at projected index {focusedIndex} (now '{Person(row.DataContext).Name}') across a stale-sort repair.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a PropertyChanged for a property the active sort does not read does not trigger a sort repair.")]
+        public void VerifyNonSortPropertyChangeDoesNotMarkTheSortStale()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).Sort("Name", SortDirection.Ascending));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "baseline");
+
+                // Silently change the sort key, then notify only for Role, which the sort does not read.
+                var asha = items.First(p => p.Name == "Asha");
+                asha.SetNameWithoutNotification("Zara");
+                asha.Role = "Engineer";
+
+                items.Add(new ShapedPerson("Bea", "Engineer", "Platform"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // No repair ran: Zara is still in Asha's old slot, with Bea inserted ahead of it.
+                VerifyProjection(tableView, new List<string> { "Bea", "Zara", "Diego", "Ines", "Mei", "Owen", "Rafa" },
+                    "a non-sort property notification must not re-sort the projection");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a shaping verb issued re-entrantly from a sort key during a sorted Replace rebuilds instead of splicing stale indices.")]
+        public void VerifyReentrantShapingDuringSortedReplaceRebuilds()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var reenter = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                source = TableViewSource.From(items).Sort(
+                    o =>
+                    {
+                        var name = Person(o).Name;
+                        // The incremental path plans the Replace by calling this key; filtering here
+                        // rebuilds and shrinks the projection under the indices it is planning.
+                        if (reenter && name == "Zed")
+                        {
+                            reenter = false;
+                            source.Filter(p => Person(p).Role == "Engineer");
+                        }
+                        return name;
+                    },
+                    SortDirection.Ascending);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "baseline");
+
+                reenter = true;
+                items[0] = new ShapedPerson("Zed", "Engineer", "Platform");
+                Verify.IsFalse(reenter, "Precondition: the sort key must have been asked about the replacement row.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Diego", "Owen", "Rafa", "Zed" },
+                    "the re-entrant filter and the replace must both be reflected exactly once");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sorted Add of rows that implement no change notification is inserted in place, without a Reset.")]
+        public void VerifySortedAddOfPlainItemsInsertsInPlaceWithoutReset()
+        {
+            TableView tableView = null;
+            ObservableCollection<PlainShapedPerson> items = null;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<PlainShapedPerson>(
+                    MakeShapedPeople().Select(p => new PlainShapedPerson { Name = p.Name, Role = p.Role }));
+                tableView = CreateShapedTable(TableViewSource.From(items).Sort("Name", SortDirection.Ascending));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha,Diego,Ines,Mei,Owen,Rafa", PlainNames(tableView), "baseline");
+
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                items.Add(new PlainShapedPerson { Name = "Nadia", Role = "Engineer" });
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha,Diego,Ines,Mei,Nadia,Owen,Rafa", PlainNames(tableView),
+                    "the added row must land at its sort position");
+                Verify.AreEqual("Add", string.Join(",", actions),
+                    "a single sorted Add must reach the projection as one Add, not a Reset");
+            });
+        }
+
+        private static string PlainNames(TableView tableView)
+            => string.Join(",", GetProjectedItems(tableView).Select(o => ((PlainShapedPerson)o).Name));
+
+        private static bool IsFocusWithin(TableView tableView, DependencyObject container)
+        {
+            for (var current = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                current != null;
+                current = VisualTreeHelper.GetParent(current))
+            {
+                if (ReferenceEquals(current, container))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a group key change follows the same deferred re-shape rule.")]
         public void VerifyGroupKeyPropertyChangeFollowsTheSameInvariant()
         {
@@ -1551,6 +2052,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         "#Engineer(4)", "Diego", "Mei", "Rafa", "Owen",
                     },
                     "the next collection change must re-bucket the row and refresh the counts");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies re-declaring GroupBy after a group key change reaches the row view as exactly one Reset.")]
+        public void VerifyRegroupAfterKeyChangePublishesOneReset()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            List<ShapedPerson> people = null;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeShapedPeople();
+                source = TableViewSource.From(people).GroupBy(o => Person(o).Role);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => people.First(p => p.Name == "Ines").Role = "Engineer");
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                source.GroupBy(o => Person(o).Role);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(
+                    tableView,
+                    new List<string>
+                    {
+                        "#Designer(1)", "Asha",
+                        "#Engineer(4)", "Diego", "Rafa", "Ines", "Owen",
+                        "#Architect(1)", "Mei",
+                    },
+                    "the regroup must move Ines into Engineer");
+                Verify.AreEqual("Reset", string.Join(",", actions),
+                    "a regroup must reach the row view as one Reset");
             });
         }
 
@@ -1835,7 +2383,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Nested object, so "Department.Name" exercises the dotted-path evaluator.
         public Department Department { get; private set; }
 
+        // Makes a row stale without announcing it.
+        internal void SetNameWithoutNotification(string name) => m_name = name;
+
         private void Raise(string propertyName)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    internal sealed class PlainShapedPerson
+    {
+        public string Name { get; set; }
+        public string Role { get; set; }
     }
 }

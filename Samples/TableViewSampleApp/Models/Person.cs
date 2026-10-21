@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 // Tabular aliases keep the sample code concise.
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
@@ -30,6 +31,7 @@ public sealed class Person : INotifyPropertyChanged
     private bool _isActive;
     private string? _avatarPath;
     private int _employeeId;
+    private int? _managerId;
     private string _office = string.Empty;
 
     public string FirstName
@@ -48,11 +50,21 @@ public sealed class Person : INotifyPropertyChanged
 
     /// <summary>
     /// Single-character initial. Falls back to '?' when neither name is set. The shared
-    /// AvatarTemplate does not need it (PersonPicture derives initials from FullName).
     /// </summary>
     public string Initial => _firstName.Length > 0
         ? _firstName.Substring(0, 1)
         : (_lastName.Length > 0 ? _lastName.Substring(0, 1) : "?");
+
+    // AvatarTemplate binds this: PersonPicture derives no initials from an Arabic or Hebrew DisplayName.
+    public string Initials => FirstTextElement(_firstName) + FirstTextElement(_lastName);
+
+    private static string FirstTextElement(string value)
+    {
+        var trimmed = value.Trim();
+        return trimmed.Length == 0
+            ? string.Empty
+            : StringInfo.GetNextTextElement(trimmed, 0).ToUpper(CultureInfo.CurrentCulture);
+    }
 
     public string Email
     {
@@ -147,6 +159,13 @@ public sealed class Person : INotifyPropertyChanged
         set => Set(ref _employeeId, value);
     }
 
+    /// <summary>EmployeeId of this person's manager, or null for a department head (a root of the org chart).</summary>
+    public int? ManagerId
+    {
+        get => _managerId;
+        set => Set(ref _managerId, value);
+    }
+
     /// <summary>Office location; one of <c>PersonData.Offices</c>.</summary>
     public string Office
     {
@@ -168,6 +187,7 @@ public sealed class Person : INotifyPropertyChanged
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullName)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Initial)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Initials)));
         }
         if (propertyName is nameof(JoinDate))
         {

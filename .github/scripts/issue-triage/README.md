@@ -5,12 +5,44 @@ Copilot to analyze it, and independently verifies the result before making any
 issue changes. The Markdown workflow is the source of truth; its compiled
 `issue-triage.lock.yml` is the workflow GitHub Actions executes.
 
+## Deterministic evidence handoff
+
+The trusted `prepare` step fetches and bounds the issue evidence. A
+`pre-agent-steps` hook then inserts that public JSON into the already-rendered
+prompt, before the model starts. The model receives the complete evidence in its
+initial input: it does not need to discover a filename, paginate a native file
+reader, search JSON, or build a temporary result file.
+
+The hook runs after gh-aw has rendered and downloaded the activation prompt.
+This is deliberately not `${{ steps.prepare.outputs.context }}` interpolation:
+agent-job step outputs do not exist when activation renders that prompt.
+Late insertion also leaves issue text that resembles Actions expressions or
+template directives as literal data; it is never reprocessed by the renderer.
+The hook requires exactly one trusted placeholder and rejects repeated
+attachment instead of silently omitting or duplicating context.
+
+Public JSON uses UTF-8 rather than escaping every non-ASCII character. It is
+enclosed in an untrusted-data block, with angle brackets in JSON values escaped
+so issue text cannot close that boundary. Escaping does not change parsed values
+or the input fingerprint. Maximum-length supplementary-Unicode bodies,
+follow-ups, and candidate records are passed directly, including their suffixes;
+they no longer depend on a tool's per-line output limit. A one-MiB evidence limit
+and two-MiB final-prompt limit fail visibly before inference rather than truncate
+input silently. These byte limits are separate from model credit/context limits.
+
+The model returns structured arguments through the native safe-output MCP tool,
+not a shell-mounted CLI. All agent shell execution and file writes are denied;
+trusted preprocessing steps still run outside the agent sandbox. The publisher
+still rebuilds live evidence independently.
+
 ## Behavior
 
 | Situation | Behavior |
 | --- | --- |
 | Clear primary area, no existing area label | Add one existing `area-*` label at HIGH confidence. |
 | One area with a configured owner, no existing team label | Derive and add its `team-*` label from the selected configured routing rule. |
+| Existing or newly selected `team-Reach`, `team-Rendering`, or `team-Markup` | Add `team-Core` if missing, without replacing the specific team label. |
+| Only `team-Core` is present | Add a specific child only when the area's routing rules identify one; never infer a child from the parent alone. |
 | Evidence clearly meets an area's conditional rule | Use that rule's configured owner rather than the default; the model cannot invent a team. |
 | Uncertain area or an unmapped team | Comment with the suggestion; leave the uncertain routing to a maintainer. |
 | Low-confidence or unresolved automatic routing | Keep or add `needs-triage` for human confirmation. Already-established human routing is not reset. |
@@ -73,6 +105,32 @@ conditional routes: eight declared override rules and the explicit
 AnimatedVisualPlayer compositor case. Teams are derived from this configuration,
 never accepted as arbitrary model output.
 
+Parent relationships are maintained separately in `team-parent-map.json`:
+
+```json
+{
+  "team-Markup": "team-Core",
+  "team-Reach": "team-Core",
+  "team-Rendering": "team-Core"
+}
+```
+
+Each entry maps one child label to one parent. No entry means no parent.
+The trusted scripts load this file, validate all names against the live label
+catalog, and reject cycles before analysis or publication. Parent chains are
+expanded deterministically and duplicate ancestors are added only once.
+The mapping stays out of the model's evidence and prompt; the LLM neither
+chooses nor needs to know the parent labels. Editing this JSON changes parent
+routing without changing the LLM instructions or Python code.
+
+The publisher includes configured parents of existing or proposed team labels,
+and the comment shows the same final label set. Existing specific teams are
+preserved; an ancestor-only issue can gain an area-evidenced child without
+being reassigned to a sibling. Under the current configuration, Controls,
+CompInput, and Design have no parent. Adding a missing parent alone does not
+restart a completed human triage decision. This applies on normal eligible
+triage runs, not as a bulk relabeling operation.
+
 Each area entry contains:
 
 - `team`: an existing team label, or `null` for no default owner.
@@ -123,6 +181,12 @@ contradictory repro requests are deferred; unrelated valid triage remains usable
 Older output artifacts without a request category are accepted conservatively,
 but their free-form prose alone cannot authorize a `needs-repro` label.
 
+Well-formed MEDIUM-confidence duplicate suggestions are omitted without rejecting
+the remaining triage. HIGH-confidence suggestions, routing, and reproduction
+actions remain usable. The omission is reported without linking the excluded
+candidates. Duplicate schema, candidate membership, uniqueness, and reason bounds
+are still validated before filtering; LOW or unknown confidence remains an error.
+
 These recoveries are explicit, not silent defaults: review/normalization notes
 appear in the comment and job log. Schema/type errors, unknown labels, genuinely
 unconfigured routes, and out-of-set duplicate suggestions still fail closed.
@@ -158,8 +222,45 @@ runs. Re-enable that workflow in Actions to resume intake.
 The initial rollout does not modify project boards, internal mirroring, existing
 stale handling, or the maintainer's acceptance/closure process.
 
+## Detection reports
+
+An `agent_failure` warning in the generated Detection Runs issue does not by
+itself establish prompt injection or another detected threat. The earlier runs
+linked from [#12206](https://github.com/microsoft/microsoft-ui-xaml/issues/12206)
+either exhausted the old five-invocation budget while reading evidence or were
+superseded before activation/agent artifacts were available.
+
+Threat detection now starts only after successful activation and agent analysis,
+and not after workflow cancellation. Cancelled/superseded runs no longer launch
+a detector with missing artifacts and produce a misleading detector-failure
+warning. A failed analysis remains a failed workflow with its original job logs
+and failure handling; it is not converted to success.
+
+This does not relax publication safety. Successful analysis still requires a
+successful detection job **and** `detection_success == true` before the
+independent publisher can run. Detection has `continue-on-error: false`: an
+incomplete/failed safety analysis fails the job visibly rather than producing an
+overall green run with a skipped publisher. Real detection failures are still
+reported and block publication. Historical comments in the framework-managed
+Detection Runs issue are not edited or removed.
+
+The detector has a separate **20-credit per-run budget**; the intake agent
+remains capped at ten credits. The configured detector cap is also exported to
+the harness so a proxy budget rejection can be distinguished from the CLI's
+generic HTTP 403 authentication message. Additive detector instructions encourage
+bounded reads without removing untrusted evidence or weakening threat coverage.
+After execution, `detection_diagnostics.py` reports response-level credit usage,
+the configured cap, and result-file presence. Missing accounting is reported as
+unknown, not zero. These read-only diagnostics never create a verdict or authorize
+publication; the existing strict detector conclusion and publisher gate remain
+authoritative.
+
 ## Trust boundaries and limits
 
+- Prepared JSON is attached directly to the rendered prompt by trusted code,
+  preserving the complete bounded evidence and fingerprint without agent file
+  reads. Agent shell execution is disabled, and safe outputs use the native MCP
+  interface rather than CLI wrappers.
 - Issue content, comments, code samples, links, and candidate text are untrusted.
   The model cannot search GitHub, download attachments, run sample code, or write
   directly to issues. It can only return a structured triage result.
@@ -182,15 +283,25 @@ stale handling, or the maintainer's acceptance/closure process.
   additive label writes. GitHub does not provide a transaction across these
   operations; a concurrent edit can stop label publication after the comment
   was written. A later run safely refreshes the single comment.
-- Only allowlisted routing labels, `needs-triage`, and `needs-repro` can be added,
-  at most four per run. The publisher uses additive label writes, never replacement.
-- Per-issue concurrency cancels superseded runs. Actor rate limiting allows five
-  runs per hour. Ignored label events and other people's comments use separate
+- Only allowlisted routing labels, `needs-triage`, and `needs-repro` can be added.
+  The current parent configuration permits at most five additions per run (one
+  area, its specific team, the optional parent, and the two workflow-state
+  labels). The publisher uses additive label writes, never replacement.
+- Per-issue concurrency cancels superseded runs. `on.roles: all` permits external
+  issue authors: pre-activation is not a Microsoft organization-membership gate.
+  Its repository-permission lookup only exempts `admin`, `maintain`, and `write`
+  actors from rate limiting. Other actors, including non-collaborators, may
+  trigger five runs per hour. A permission-lookup failure continues through
+  that rate-limit check instead of rejecting the reporter. Manual dispatch still
+  requires GitHub's normal workflow-dispatch permissions.
+  Ignored label events and other people's comments use separate
   concurrency groups so they cannot cancel an active intake. The triage agent
-  is bounded to five turns and ten AI credits;
-  the separate output-safety analysis has its own ten-credit budget. A
-  one-hundred-credit daily guardrail stops starting further analyses after the
-  measured threshold is reached; concurrent runs may already be in flight.
+  is bounded to twelve model invocations (including evidence/tool iterations)
+  and ten AI credits, leaving room to assess the supplied evidence and submit its result;
+  the separate output-safety analysis has its own twenty-credit budget. A
+  300-credit rolling 24-hour guardrail stops starting further automatic analyses
+  after the measured threshold is reached; concurrent runs may already be in
+  flight. Manual dispatch bypasses this daily guardrail, not the per-run limits.
   GitHub API rate limits use bounded backoff.
 - Action references and generated runtime containers are immutable pins. Only
   GitHub services are used for issue retrieval and AI analysis.
@@ -213,9 +324,11 @@ Product binaries do not need rebuilding for these automation-only changes.
 
 `find_duplicates.py` implements deterministic retrieval and ranking.
 `triage.py prepare EVENT_PATH CONTEXT_PATH` builds model input.
+`triage.py attach-context CONTEXT_PATH PROMPT_PATH` fills the rendered prompt's
+single evidence slot without a GitHub token or network access.
 `triage.py publish EVENT_PATH AGENT_OUTPUT_PATH` independently validates and
 previews unless `TRIAGE_PUBLISH` is explicitly `true`.
 
-Both commands require `GITHUB_REPOSITORY` and a job-scoped `GITHUB_TOKEN`.
+The `prepare` and `publish` commands require `GITHUB_REPOSITORY` and a job-scoped `GITHUB_TOKEN`.
 For local read-only checks, use an existing authenticated GitHub environment;
 never put a token in a fixture, command output, source file, or commit.

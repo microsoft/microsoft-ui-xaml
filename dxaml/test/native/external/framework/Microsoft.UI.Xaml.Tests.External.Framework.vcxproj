@@ -264,6 +264,7 @@
     <Page Include="customTypes\XDeferCustomPageEvents.xaml" />
     <Page Include="customTypes\XDeferCustomPageNested.xaml" />
     <Page Include="customTypes\XDeferCustomPageResourcesDT.xaml" />
+    <Page Include="customTypes\ResourceReferenceTraceDeferredTemplates.xaml" />
   </ItemGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
   <Import Project="$([MSBuild]::GetPathOfFileAbove(CustomTypesCompile.targets))" />

@@ -140,6 +140,7 @@ namespace DirectUI
         void OpenSystemMenu(const int cursorX, const int cursorY) const noexcept;
         _Check_return_ HRESULT OnNonClientRegionButtonUp(WPARAM wParam, const int cursorX, const int cursorY);
         _Check_return_ HRESULT OnClosed();
+        bool TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF backgroundColor);
 
         void OnSetFocus();
         void RegisterDesktopWindowClass();
@@ -228,7 +229,8 @@ namespace DirectUI
         bool m_hasExplicitClientHeight = false;
 
         // When the app has set Width/Height, but we haven't been able to honor them yet,
-        // we store them here.
+        // we store them here. After close, these fields also provide property-value round-tripping
+        // without attempting to resize the destroyed native window.
         std::optional<double> m_pendingClientWidthDips;
         std::optional<double> m_pendingClientHeightDips;
 

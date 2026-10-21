@@ -66,6 +66,10 @@ namespace ShapingHelpers
         // vanished (a filter removed its last row, the source was reassigned) lingers forever and
         // the store grows unbounded across changing datasets. Silent: pruning a dead key changes
         // no live key's resolved state.
+        //
+        // The live-key set must be COMPLETE -- grouping's is, because every group emits a header
+        // whether it is collapsed or not; a parent-key hierarchy passes every key in the unfiltered
+        // source, so intent hidden behind a collapse or a filter survives.
         void RetainOnly(std::unordered_set<winrt::hstring> const& liveKeys);
 
     private:

@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using System;
 using Windows.Foundation;
@@ -39,6 +40,70 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class TableViewNegativePathTests : TableViewApiTestBase
     {
+        [TestMethod]
+        [TestProperty("IsolationLevel", "Method")]
+        [TestProperty("Description", "Missing resources in the stock deferred TableView template retain the generic parse diagnostic.")]
+        public void VerifyDeferredTemplateResourceMissKeepsGenericDiagnostic()
+        {
+            Grid host = null;
+            RunOnUIThread.Execute(() =>
+            {
+                host = new Grid();
+                Content = host;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(host.IsLoaded, "Attaching to a loaded host must resolve the stock style before ApplyTemplate.");
+                var originalResources = Application.Current.Resources;
+                var resources = new ResourceDictionary();
+                resources.MergedDictionaries.Add(new XamlControlsResources());
+                resources["TabularSurfaceRowBackgroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.White);
+                resources["TabularSurfaceRowForegroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Black);
+                resources["TabularSurfaceGridLineBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Gray);
+
+                try
+                {
+                    Application.Current.Resources = resources;
+                    var tableView = new TableView { Width = 400, Height = 200 };
+                    tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                    host.Children.Add(tableView);
+                    Verify.IsNotNull(tableView.Template, "The regression must exercise the stock deferred template.");
+
+                    Exception error = null;
+                    try
+                    {
+                        tableView.ApplyTemplate();
+                    }
+                    catch (Exception exception)
+                    {
+                        error = exception;
+                    }
+
+                    Verify.IsNotNull(error, "The missing header brush must fail during stock template realization.");
+                    Verify.AreEqual(unchecked((int)0x802B000A), error.HResult, "Stock template resource misses retain the parse HRESULT.");
+                    Verify.IsTrue(error.Message.Contains("TabularSurfaceHeaderBackgroundBrush"), "The missing header brush confirms the stock deferred-template path was exercised.");
+                    Verify.IsTrue(error.Message.Contains("Cannot find a Resource with the Name/Key "), "The exception retains the generic resource-error prefix.");
+                    Verify.IsTrue(error.Message.Contains("[Line: "), "The parse diagnostic retains its location.");
+                    Verify.IsFalse(error.Message.Contains("TabularControlsResources"), "Setup guidance is separate debug output, not part of the exception.");
+                }
+                finally
+                {
+                    try
+                    {
+                        host.Children.Clear();
+                        Content = null;
+                    }
+                    finally
+                    {
+                        Application.Current.Resources = originalResources;
+                    }
+                }
+            });
+        }
+
         #region 16.1 Malformed input through public API
 
         [TestMethod]
@@ -95,19 +160,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies NaN and infinite MinWidth/MaxWidth values never resolve into a non-finite ActualWidth.")]
-        [TestProperty("data:Constraint", "{MinNaN, MaxNaN, MaxPositiveInfinity, MinNegativeInfinity}")]
+        [TestProperty("Description", "Verifies malformed MinWidth/MaxWidth values never resolve into a non-finite ActualWidth.")]
+        [TestProperty("data:Constraint", "{MinNaN, MinNegative, MaxNaN, MaxNegative, MaxNegativeInfinity, MaxPositiveInfinity, MinNegativeInfinity}")]
         public void VerifyNonFiniteWidthConstraintsDoNotCorruptActualWidth()
         {
             VerifyNonFiniteWidthConstraint(((string)TestContext.DataRow["Constraint"]).Trim());
         }
 
-        // Split out of the data-driven test above so it can be ignored on its own: an infinite MinWidth
-        // reaches layout as the column floor with no finite guard and crashes the test host, which also
-        // skips assembly cleanup for every test after it.
         [TestMethod]
         [TestProperty("Description", "Verifies an infinite MinWidth never resolves into a non-finite ActualWidth.")]
-        [TestProperty("Ignore", "True")] // Product bug: MinWidth = +Infinity crashes layout. Re-enable once the column floor is clamped to a finite value.
         public void VerifyInfiniteMinWidthDoesNotCorruptActualWidth()
         {
             VerifyNonFiniteWidthConstraint("MinPositiveInfinity");
@@ -115,9 +176,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void VerifyNonFiniteWidthConstraint(string constraint)
         {
-            Log.Comment($"Non-finite constraint under test: {constraint}.");
+            Log.Comment($"Width constraint under test: {constraint}.");
 
             const double AuthoredWidth = 200.0;
+            const double DefaultMinWidth = 20.0;
 
             TableView tableView = null;
             TableViewColumn column = null;
@@ -143,8 +205,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     case "MinNaN":
                         column.MinWidth = double.NaN;
                         break;
+                    case "MinNegative":
+                        column.MinWidth = -5.0;
+                        break;
                     case "MaxNaN":
                         column.MaxWidth = double.NaN;
+                        break;
+                    case "MaxNegative":
+                        column.MaxWidth = -5.0;
+                        break;
+                    case "MaxNegativeInfinity":
+                        column.MaxWidth = double.NegativeInfinity;
                         break;
                     case "MaxPositiveInfinity":
                         column.MaxWidth = double.PositiveInfinity;
@@ -174,11 +245,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(double.IsInfinity(actual), "ActualWidth is a resolved pixel value and can never be infinite.");
                 Verify.IsGreaterThanOrEqual(actual, 0.0, "A resolved width can never be negative.");
 
-                if (constraint == "MaxPositiveInfinity")
+                if (constraint == "MaxPositiveInfinity" || constraint == "MaxNaN")
                 {
-                    // MaxWidth defaults to infinity in the IDL, so setting it explicitly is a no-op.
+                    // MaxWidth defaults to unbounded, so an unbounded malformed value is a no-op.
                     Verify.AreEqual(AuthoredWidth, actual,
-                        "An infinite MaxWidth is the documented default and must leave the authored width alone.");
+                        "An unbounded MaxWidth must leave the authored width alone.");
+                }
+                else if (constraint == "MaxNegative" || constraint == "MaxNegativeInfinity")
+                {
+                    Verify.AreEqual(DefaultMinWidth, actual,
+                        "A negative MaxWidth is treated as a zero upper bound, then clamped up to MinWidth.");
+                }
+                else if (constraint == "MinNegative" || constraint == "MinNegativeInfinity" || constraint == "MinPositiveInfinity")
+                {
+                    Verify.AreEqual(AuthoredWidth, actual,
+                        "A malformed MinWidth is treated as zero and must leave a valid authored width alone.");
                 }
 
                 // A poisoned width propagates into Measure, so the rows are the real casualty.
@@ -192,6 +273,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             });
         }
+
+        // Do not add Width cases for NaN, infinite, or negative GridLength values: the framework
+        // asserts on them (CoreMessagingXP.dll) before TableView can normalize them.
 
         [TestMethod]
         [TestProperty("Description", "Verifies a zero-sized host neither crashes star distribution nor permanently poisons resolved widths.")]

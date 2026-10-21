@@ -65,6 +65,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"SetThemeResourceBinding with an unresolvable key throws, matching markup's parse failure.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(MarkupMissingKeyWithFormatTokensThrowsGenericError)
+                TEST_METHOD_PROPERTY(L"Description", L"Static and theme resource misses retain the generic parse error and literal format tokens in the key.")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(SetThemeResourceBindingLocalOverrideAndClear)
                 TEST_METHOD_PROPERTY(L"Description", L"A local value overrides the code theme binding. ClearValue restores the default value.")
             END_TEST_METHOD()
