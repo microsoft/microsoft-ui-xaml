@@ -2773,7 +2773,9 @@ winrt::Style TableView::CompatibleHeaderStyle(const winrt::Style& style)
     // applied, so it is outside the chain too.
     auto const targetDepth = [](const winrt::Style& level) -> int
     {
-        const std::wstring_view targetType = level.TargetType().Name;
+        // TargetType returns a TypeName by value; the view must not outlive its Name.
+        const winrt::hstring targetName = level.TargetType().Name;
+        const std::wstring_view targetType = targetName;
         if (targetType == winrt::name_of<winrt::TableViewColumnHeader>()) return 5;
         if (targetType == winrt::name_of<winrt::ContentControl>()) return 4;
         if (targetType == winrt::name_of<winrt::Control>()) return 3;

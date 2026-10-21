@@ -2645,6 +2645,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies header Styles targeting TableViewColumnHeader's framework base types are applied.")]
+        public void VerifyColumnHeaderStyleTargetingBaseTypesApplies()
+        {
+            TableView tableView = null;
+            Style tableStyle = null;
+            Style columnStyle = null;
+            SolidColorBrush tableBrush = null;
+            SolidColorBrush columnBrush = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableBrush = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                columnBrush = new SolidColorBrush(Microsoft.UI.Colors.Green);
+                // Framework types: their TargetType names come back as freshly allocated strings.
+                tableStyle = new Style(typeof(ContentControl));
+                tableStyle.Setters.Add(new Setter(Control.BackgroundProperty, tableBrush));
+                columnStyle = new Style(typeof(Control));
+                columnStyle.Setters.Add(new Setter(Control.BackgroundProperty, columnBrush));
+                tableView = CreateThemingTable();
+                tableView.ColumnHeaderStyle = tableStyle;
+                tableView.Columns[1].HeaderStyle = columnStyle;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var first = RequireColumnHeader(tableView, 0);
+                Verify.IsTrue(ReferenceEquals(tableStyle, first.Style), "A ContentControl Style must apply to the header.");
+                Verify.IsTrue(ReferenceEquals(tableBrush, first.Background), "The ContentControl Style's setter must reach the header.");
+                var second = RequireColumnHeader(tableView, 1);
+                Verify.IsTrue(ReferenceEquals(columnStyle, second.Style), "A Control Style must apply to the header.");
+                Verify.IsTrue(ReferenceEquals(columnBrush, second.Background), "The Control Style's setter must reach the header.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a disabled header keeps one glyph Foreground binding across visual state updates instead of rebinding each time.")]
         public void VerifyDisabledSortGlyphBindingIsNotRecreated()
         {
