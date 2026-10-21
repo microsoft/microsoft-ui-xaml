@@ -94,11 +94,16 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) ItemContainerGeneratorFactory:
-       public ctl::AbstractActivationFactory
+       public ctl::AggregableActivationFactory<DirectUI::ItemContainerGenerator>
+        , public ABI::Microsoft::UI::Xaml::Controls::IItemContainerGeneratorFactory
     {
+        BEGIN_INTERFACE_MAP(ItemContainerGeneratorFactory, ctl::AggregableActivationFactory<DirectUI::ItemContainerGenerator>)
+            INTERFACE_ENTRY(ItemContainerGeneratorFactory, ABI::Microsoft::UI::Xaml::Controls::IItemContainerGeneratorFactory)
+        END_INTERFACE_MAP(ItemContainerGeneratorFactory, ctl::AggregableActivationFactory<DirectUI::ItemContainerGenerator>)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IItemContainerGenerator** ppInstance);
 
         // Static properties.
 
@@ -117,6 +122,7 @@ namespace DirectUI
         // Static events.
 
     protected:
+        HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
         KnownTypeIndex GetTypeIndex() const override
         {
