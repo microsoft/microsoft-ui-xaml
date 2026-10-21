@@ -953,6 +953,177 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Regression for #11740: maximizing with an open overlay pane must leave pane, list-size and lifecycle state consistent.")]
+        public void VerifyPaneStateAfterMaximizingWithOpenOverlayPane()
+        {
+            // dismissBeforeResize models the maximize ordering from the issue: the window change light-dismisses
+            // the overlay pane (PaneClosing in Overlay) before adaptive layout switches to Expanded, and the
+            // deferred close then commits in CompactInline. The other variant is a plain resize.
+            foreach (bool dismissBeforeResize in new[] { true, false })
+            {
+                Log.Comment($"dismissBeforeResize = {dismissBeforeResize}");
+                using var paneOpened = new ManualResetEvent(false);
+                using var resized = new ManualResetEvent(false);
+                NavigationView navView = null;
+                SplitView splitView = null;
+                int navClosingCount = 0;
+                int splitClosingCount = 0;
+                int closedCount = 0;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    navView = new NavigationView
+                    {
+                        Width = 250,
+                        Height = 400,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        CompactModeThresholdWidth = 300,
+                        ExpandedModeThresholdWidth = 600,
+                        IsSettingsVisible = false
+                    };
+                    navView.MenuItems.Add(new NavigationViewItem { Content = "Home", Icon = new SymbolIcon(Symbol.Home) });
+                    navView.PaneOpened += (sender, args) => paneOpened.Set();
+                    Content = navView;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                    Verify.AreEqual(NavigationViewDisplayMode.Minimal, navView.DisplayMode);
+                    Verify.AreEqual(SplitViewDisplayMode.Overlay, splitView.DisplayMode);
+                    navView.IsPaneOpen = true;
+                });
+                Verify.IsTrue(paneOpened.WaitOne(TimeSpan.FromSeconds(5)), "The overlay pane must open before maximizing.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyPaneStateIsConsistent(navView, splitView);
+                    navView.PaneClosing += (sender, args) => navClosingCount++;
+                    navView.PaneClosed += (sender, args) => closedCount++;
+                    splitView.PaneClosing += (sender, args) => splitClosingCount++;
+
+                    void Maximize()
+                    {
+                        navView.Width = 800;
+                        navView.UpdateLayout();
+                        Verify.AreEqual(NavigationViewDisplayMode.Expanded, navView.DisplayMode);
+                        resized.Set();
+                    }
+
+                    if (dismissBeforeResize)
+                    {
+                        // Subscribed after NavigationView, so NavigationView handles PaneClosing while still in Overlay.
+                        bool maximized = false;
+                        splitView.PaneClosing += (sender, args) =>
+                        {
+                            if (!maximized)
+                            {
+                                maximized = true;
+                                Verify.AreEqual(SplitViewDisplayMode.Overlay, splitView.DisplayMode);
+                                Maximize();
+                            }
+                        };
+                        var lightDismissLayer = VisualTreeUtils.FindVisualChildByName(splitView, "LightDismissLayer");
+                        var peer = FrameworkElementAutomationPeer.CreatePeerForElement(lightDismissLayer);
+                        ((IInvokeProvider)peer.GetPattern(PatternInterface.Invoke)).Invoke();
+                    }
+                    else
+                    {
+                        Maximize();
+                    }
+                });
+                Verify.IsTrue(resized.WaitOne(TimeSpan.FromSeconds(5)), "The maximize must happen.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(NavigationViewDisplayMode.Expanded, navView.DisplayMode);
+                    Verify.AreEqual(SplitViewDisplayMode.CompactInline, splitView.DisplayMode);
+                    VerifyPaneStateIsConsistent(navView, splitView);
+                    if (dismissBeforeResize)
+                    {
+                        Verify.AreEqual(1, splitClosingCount, "Light dismiss raises PaneClosing once.");
+                        Verify.AreEqual(1, closedCount, "The committed light-dismiss close must complete.");
+                    }
+                    else
+                    {
+                        Verify.AreEqual(splitClosingCount, closedCount, "Every committed close must complete.");
+                    }
+                });
+
+                // Use the pane toggle button twice; every close must raise exactly one PaneClosing and PaneClosed.
+                for (int i = 0; i < 2; i++)
+                {
+                    bool wasOpen = false;
+                    int expectedClosing = 0;
+                    int expectedSplitClosing = 0;
+                    int expectedClosed = 0;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        wasOpen = splitView.IsPaneOpen;
+                        expectedClosing = navClosingCount + (wasOpen ? 1 : 0);
+                        expectedSplitClosing = splitClosingCount + (wasOpen ? 1 : 0);
+                        expectedClosed = closedCount + (wasOpen ? 1 : 0);
+                        var toggleButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                        ((IInvokeProvider)new ButtonAutomationPeer(toggleButton).GetPattern(PatternInterface.Invoke)).Invoke();
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(!wasOpen, splitView.IsPaneOpen, "The toggle button must flip the pane.");
+                        VerifyPaneStateIsConsistent(navView, splitView);
+                        Verify.AreEqual(expectedClosing, navClosingCount, "NavigationView.PaneClosing count");
+                        Verify.AreEqual(expectedSplitClosing, splitClosingCount, "SplitView.PaneClosing must not be suppressed by an earlier light dismiss.");
+                        Verify.AreEqual(expectedClosed, closedCount, "PaneClosed count");
+                    });
+                }
+            }
+        }
+
+        private static void VerifyPaneStateIsConsistent(NavigationView navView, SplitView splitView)
+        {
+            bool isOpen = splitView.IsPaneOpen;
+            bool isCompact = splitView.DisplayMode == SplitViewDisplayMode.CompactOverlay || splitView.DisplayMode == SplitViewDisplayMode.CompactInline;
+            bool isClosedCompact = !isOpen && isCompact;
+            Verify.AreEqual(isOpen, navView.IsPaneOpen, "NavigationView.IsPaneOpen must match SplitView.IsPaneOpen.");
+
+            string paneState = null;
+            string listSizeState = null;
+            foreach (var group in VisualStateManager.GetVisualStateGroups((FrameworkElement)VisualTreeHelper.GetChild(navView, 0)))
+            {
+                if (group.Name == "PaneStateGroup")
+                {
+                    paneState = group.CurrentState?.Name;
+                }
+                else if (group.Name == "PaneStateListSizeGroup")
+                {
+                    listSizeState = group.CurrentState?.Name;
+                }
+            }
+            string displayModeState = null;
+            foreach (var group in VisualStateManager.GetVisualStateGroups((FrameworkElement)VisualTreeHelper.GetChild(splitView, 0)))
+            {
+                if (group.Name == "DisplayModeStates")
+                {
+                    displayModeState = group.CurrentState?.Name;
+                }
+            }
+            Log.Comment($"IsPaneOpen={isOpen} SplitView.DisplayMode={splitView.DisplayMode} DisplayModeStates={displayModeState} PaneStateGroup={paneState} PaneStateListSizeGroup={listSizeState}");
+
+            Verify.AreEqual(isOpen, displayModeState != null && displayModeState.StartsWith("Open"), "SplitView visual state must match IsPaneOpen.");
+            Verify.AreEqual(isClosedCompact ? "ClosedCompact" : "NotClosedCompact", paneState);
+            Verify.AreEqual(isClosedCompact ? "ListSizeCompact" : "ListSizeFull", listSizeState, "Labels must be hidden exactly when the pane is closed compact.");
+            if (isClosedCompact)
+            {
+                var paneContent = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(navView, "PaneContentGrid");
+                Verify.AreEqual(navView.CompactPaneLength, paneContent.ActualWidth);
+            }
+        }
+
+        [TestMethod]
         public void VerifyClosedCompactVisualState()
         {
             NavigationView navView = null;
