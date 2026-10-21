@@ -1669,6 +1669,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header disabled by its HeaderStyle reports IsEnabled=false on its realized and table-owned peers and refuses Invoke.")]
+        public void VerifyHeaderDisabledByStyleIsNotEnabledOrInvokable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.CanUserSortColumns = true;
+                tableView.Columns[0].CanSort = true;
+                var disabledStyle = new Style(typeof(TableViewColumnHeader));
+                disabledStyle.Setters.Add(new Setter(Control.IsEnabledProperty, false));
+                tableView.Columns[0].HeaderStyle = disabledStyle;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                var header = GetHeaderCell(tableView, 0) as Control;
+                Verify.IsNotNull(header, "Precondition: the header cell is a Control.");
+                Verify.IsFalse(header.IsEnabled, "Precondition: the HeaderStyle disables the header.");
+
+                var peers = new (AutomationPeer Peer, string Kind)[]
+                {
+                    (FrameworkElementAutomationPeer.CreatePeerForElement(header), "realized"),
+                    (new TableViewColumnHeaderAutomationPeer(tableView, column), "table-owned"),
+                };
+                foreach (var (peer, kind) in peers)
+                {
+                    Verify.IsFalse(peer.IsEnabled(), $"The {kind} peer of a disabled header must report IsEnabled=false.");
+                    var invoke = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                    Verify.IsNotNull(invoke, $"Precondition: the {kind} peer offers Invoke for a sortable column.");
+                    VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => invoke.Invoke(),
+                        $"Invoke on the {kind} peer of a disabled header must fail.");
+                }
+
+                Verify.AreEqual(SortDirection.None, column.SortDirection, "A disabled header must not sort through UIA.");
+            });
+        }
+
+        private const int UIA_E_ELEMENTNOTENABLED = unchecked((int)0x80040200);
         private const int UIA_E_INVALIDOPERATION = unchecked((int)0x80131509);
         private const int E_INVALIDARG = unchecked((int)0x80070057);
 

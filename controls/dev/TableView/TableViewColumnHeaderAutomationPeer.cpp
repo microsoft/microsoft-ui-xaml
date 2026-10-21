@@ -220,9 +220,14 @@ bool TableViewColumnHeaderAutomationPeer::IsEnabledCore()
         return false;
     }
 
-    // A template control (for example the header ScrollViewer) can be disabled
-    // independently of the table. Its coerced state applies to this header too.
-    auto ancestor = winrt::VisualTreeHelper::GetParent(Owner());
+    // The header's own state, and that of any template control around it (for example the header
+    // ScrollViewer), can be disabled independently of the table.
+    auto const header = GetHeaderElement();
+    if (auto const headerControl = header.try_as<winrt::Control>(); headerControl && !headerControl.IsEnabled())
+    {
+        return false;
+    }
+    auto ancestor = winrt::VisualTreeHelper::GetParent(header ? header : Owner());
     while (ancestor && ancestor != table)
     {
         if (auto const control = ancestor.try_as<winrt::Control>(); control && !control.IsEnabled())
