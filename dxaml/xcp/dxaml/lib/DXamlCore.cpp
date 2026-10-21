@@ -3342,7 +3342,17 @@ void DXamlCore::QueueObjectForUnreachableCleanup(_In_ ctl::WeakReferenceSourceNo
 {
     if (m_spReleaseQueue != NULL)
     {
-        m_spReleaseQueue->QueueUnreachableCleanup(pItem);
+        const HRESULT hr = m_spReleaseQueue->QueueUnreachableCleanup(pItem);
+        if (hr == E_ABORT)
+        {
+            // Expected shutdown rejection must not originate a stowed exception.
+            DisplayDebugMessage(DebugWriter::DebugWriterType::DebugOutputOnly, ErrorHandling::LoggingLevel::Info,
+                __WFILE__, __LINE__, hr, L"QueueUnreachableCleanup: cleanup wake rejected", nullptr);
+        }
+        else
+        {
+            TRACE_HR_NORETURN(hr);
+        }
     }
 }
 
@@ -3350,7 +3360,16 @@ void DXamlCore::QueueObjectForFinalRelease(_In_ ctl::WeakReferenceSourceNoThread
 {
     if (m_spReleaseQueue != NULL)
     {
-        m_spReleaseQueue->QueueFinalRelease(pItem);
+        const HRESULT hr = m_spReleaseQueue->QueueFinalRelease(pItem);
+        if (hr == E_ABORT)
+        {
+            DisplayDebugMessage(DebugWriter::DebugWriterType::DebugOutputOnly, ErrorHandling::LoggingLevel::Info,
+                __WFILE__, __LINE__, hr, L"QueueFinalRelease: cleanup wake rejected", nullptr);
+        }
+        else
+        {
+            TRACE_HR_NORETURN(hr);
+        }
     }
 }
 
