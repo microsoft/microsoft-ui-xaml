@@ -28,7 +28,7 @@ namespace Microsoft.UI.Xaml.Tests.PGO.XboxDashboard
         [ClassInitialize]
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
-        [TestProperty("Hosting:Mode", "WPF")]  // WPF not needed in this case.
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("IsolationLevel", "Method")]
         [TestProperty("Classification", "Integration")]

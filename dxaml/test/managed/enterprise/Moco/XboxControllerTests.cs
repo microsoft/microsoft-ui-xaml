@@ -2348,7 +2348,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "WPF")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void ListBoxEngagement()
         {
@@ -2873,4 +2873,3 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
     }
 }
-

@@ -196,7 +196,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "If another element is occluding the focused element, the focus rect should be occluded as well.  Currently occlusion isn't perfect in all cases.")]
-        [TestProperty("Hosting:Mode", "WPF")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void OccludedFocusedElement()
         {
@@ -473,7 +473,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "The focused element is inside a ScrollViewer and is occluded by another element in the ScrollViewer.")]
-        [TestProperty("Hosting:Mode", "WPF")] // fails with a crash in WPF Islands
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void FocusedElementOccludedInScrollViewer()
         {
@@ -1129,7 +1129,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "WPF")] // fails with a crash in WPF islands
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void ValidateFocusRectInThirdPartyScrollingSurface()
         {
@@ -1200,7 +1200,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Validate rendering of focus rect on basic UIElements")]
-        [TestProperty("Hosting:Mode", "WPF")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
+        [TestProperty("Hosting:Mode", "WPF")]
         async public void UIElementTests()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(
