@@ -93,7 +93,7 @@ public:
     BEGIN_TEST_METHOD(HideAnimation6WUCFull)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit hide animation test - root of XAML tree")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // MockDComp crash
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -698,7 +698,7 @@ public:
     BEGIN_TEST_METHOD(GridView3WUCFull)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - GridView items play Hide on tree removal")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // Reliability issue in WPF mode.
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 

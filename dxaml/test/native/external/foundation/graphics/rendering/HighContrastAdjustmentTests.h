@@ -125,7 +125,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(VerifyHCAFontOverrideUpdatesWhenControlEnabledChanges)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies the HighContrastAdjustment Font override updates after ControlEnabled property changes.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // MockDComp brush differences
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO 36060166: Re-enable after fixing unreliability.
             END_TEST_METHOD()

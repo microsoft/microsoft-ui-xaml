@@ -47,7 +47,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Scroll with mouse-wheel while auto-scrolling the content of a vertical ListView with mouse.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Converting to WPF Mode leads to Error: Verify: IsGreaterThan(alsoScrollWithMouseWheel ? 200.0 : 1400.0, scrollViewer->VerticalOffset) - Values (200.000000l, 222.000000l)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"True")
             END_TEST_METHOD()
 

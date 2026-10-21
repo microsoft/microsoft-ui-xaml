@@ -28,7 +28,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_CLASS_PROPERTY(L"ArtifactUnderTest", L"sdk\\inc\\xamlom.idl")
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
-                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"WPF")    // WPF_HOSTING_MODE_FAILURE - creates new UWP views.
+                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
             END_TEST_CLASS()
 

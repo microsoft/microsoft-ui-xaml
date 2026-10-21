@@ -113,7 +113,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyToolTipClippedIfLargerThanWindowWithoutMouse)
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"OneCore") //The onecore version of the above test, since Mouse input helpers don't work
             TEST_METHOD_PROPERTY(L"Description", L"Verify that a ToolTip that is larger than the window is clipped before being displayed.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // Clipping issue
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyToolTipIsRespositionedOnRootVisualSizeChange)
@@ -124,7 +124,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateUIETreeForMouse)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the UI element tree of ToolTip in various visual states when opened by a mouse.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // TODO: Mouse input helper doesn't work on phone/onecore
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Popup's VerticalOffset is off by 1 pixel
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             TEST_METHOD_PROPERTY(L"Ignore", L"True") // Theme changes not propagating to open tooltip when using RequestedTheme
         END_TEST_METHOD()
@@ -281,7 +281,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidatePointerOverToolTip)
             TEST_METHOD_PROPERTY(L"Description", L"Verify Pointer can move over ToolTip.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore, OneCore, Santorini")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // ToolTip: ValidatePointerOverToolTip test doesn't work with WPF and latest changes
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // ToolTip: ValidatePlacementWithoutValidHWnd and ValidatePointerOverToolTip, uap only tests, are flaky
         END_TEST_METHOD()
 

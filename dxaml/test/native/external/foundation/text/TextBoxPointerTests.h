@@ -55,7 +55,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(CheckFiresManipulationEvents)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates TextBox can fire manipulation events")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") //not stable on WPF
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"True")
             END_TEST_METHOD()
 

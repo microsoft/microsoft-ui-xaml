@@ -43,7 +43,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(PointerRoutedAway)
                 TEST_METHOD_PROPERTY(L"Description", L"Inject a WM_POINTERROUTEDAWAY message and expect a PointerCaptureLost event.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // This test injects WM_POINTERROUTEDAWAY, which doesn't work on Islands
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Replace PointerPointStatics::GetCurrentPoint and GetIntermediatePointsTransformed
             END_TEST_METHOD()
@@ -51,7 +51,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(CanLeftMouseClick)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that InputHelper->LeftMouseClick is working on OneCore")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // [DCPP-test] WPF tests are failing with AnimationIdle timeout during test cleanup
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
             END_TEST_METHOD()
 

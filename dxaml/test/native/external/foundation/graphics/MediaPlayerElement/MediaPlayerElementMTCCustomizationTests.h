@@ -34,7 +34,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(FullWindowButtonCustomizationTest)
                 TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide and Enable/Disable the FullWindow Control")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // Hiding fullscreen button for Xaml Islands
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Port Full Screen work to WinAppSDK 1.x master
             END_TEST_METHOD()
 
@@ -66,7 +66,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(FullWindowAndZoomButtonsCustomizationTest)
                 TEST_METHOD_PROPERTY(L"Description", L"Checks that the MediaTransportControls able to Show/Hide and Enable/Disable the combinations of the FullWindow and Zoom Buttons.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // Hiding fullscreen button for Xaml Islands
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Port Full Screen work to WinAppSDK 1.x master
             END_TEST_METHOD()
 

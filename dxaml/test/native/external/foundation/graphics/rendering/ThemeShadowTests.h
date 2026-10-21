@@ -70,7 +70,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ThemeShadowBasicPopup)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Missing shadows
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Support Projected Shadows
         TEST_METHOD_PROPERTY(L"Description", L"Basic ThemeShadow usage on Popup element.")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
@@ -84,7 +84,7 @@ public:
 
     BEGIN_TEST_METHOD(ThemeShadowBasicNonPopupLTE)
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Support Projected Shadows
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Missing shadows
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Description", L"ThemeShadow usage on LayoutTransitionElement target.")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()

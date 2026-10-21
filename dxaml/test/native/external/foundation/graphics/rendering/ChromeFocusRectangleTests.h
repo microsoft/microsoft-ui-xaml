@@ -60,7 +60,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(NudgeInsideVisibleBounds)
                 TEST_METHOD_PROPERTY(L"Description", L"Focused element should be nudged inside the visible bounds of a window if it's on the edge")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Visual size mismatch
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -84,7 +84,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(FocusOnCommandBar)
                 TEST_METHOD_PROPERTY(L"Description", L"Make sure focus rect works well with command bar")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Missing comp node
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
                 TEST_METHOD_PROPERTY(L"Ignore", L"True") // Disabled due to #36781575
             END_TEST_METHOD()
@@ -113,7 +113,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(ShowFocusRectOnNewPage)
                 TEST_METHOD_PROPERTY(L"Description", L"If the last input device was from keyboard, focus rect should be visible on new pages")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Missing comp node
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"True")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
@@ -126,7 +126,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(DoNotSuppressFocusRectangleOnDesktop)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify that the same conditions that cause focus rectangles to suppress their rendering on phone do not supress them on desktop")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Leftover composition target, offset mismatch
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
                 TEST_METHOD_PROPERTY(L"Ignore", L"True")  // Investigate test instability in ChromeFocusRectangleTests
             END_TEST_METHOD()
@@ -139,7 +139,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(DoNotSuppressFocusRectangleOnDesktopBringIntoViewHandled)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify that the same conditions that cause focus rectangles to suppress their rendering on phone do not supress them on desktop when an app handles BringIntoView responsibilities")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // MockDComp crash
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO 36060166: Re-enable after fixing unreliability.
             END_TEST_METHOD()

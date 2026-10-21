@@ -36,12 +36,12 @@ public:
     BEGIN_TEST_METHOD(SetSourceAsyncBeforeEnteringTreeDecodesToRenderSize)
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Illegal to wait on a task in a Windows Runtime STA
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(UriSource)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // MockDComp surface mismatch
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
