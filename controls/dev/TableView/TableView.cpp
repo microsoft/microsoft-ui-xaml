@@ -4051,7 +4051,13 @@ bool TableView::TryResizeColumnFromAutomation(const winrt::TableViewColumn& colu
 
     try
     {
-        gripper.TryDrag(totalDelta);
+        // TryDrag drops a step under its jitter deadband, but an absolute UIA width is no jitter:
+        // overshoot once so the step back to the exact width clears it.
+        if (!gripper.TryDrag(totalDelta) && totalDelta != 0.0)
+        {
+            gripper.TryDrag(totalDelta + std::copysign(1.0, totalDelta));
+            gripper.TryDrag(totalDelta);
+        }
     }
     catch (...)
     {

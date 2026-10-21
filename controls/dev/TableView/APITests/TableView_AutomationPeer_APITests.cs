@@ -1948,6 +1948,37 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies Transform.Resize applies a width change smaller than the pointer drag's jitter threshold.")]
+        public void VerifyTransformResizeAppliesSmallWidthChange()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+                Verify.AreEqual(150.0, column.ActualWidth, "Precondition: the column starts at 150.");
+
+                // One physical pixel at 300% scale; the pointer drag treats under half a DIP as jitter.
+                transform.Resize(150.3 * tableView.XamlRoot.RasterizationScale, 0.0);
+                Verify.IsTrue(Math.Abs(column.Width.Value - 150.3) < 0.01,
+                    $"An absolute UIA width must be applied however small the change; expected 150.3, got {column.Width.Value}.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Transform.Move and Rotate fail, and Resize rejects a non-finite or negative width.")]
         public void VerifyTransformMoveRotateAndInvalidResizeFail()
         {
