@@ -253,10 +253,10 @@ Direct AppWindow resize/presenter failures without that contrast are different.
 For an existing AppWindow area, evaluate `xaml-window-facade` when applicable
 rather than replacing the human area decision.
 
-`area-WebView` has no default owner. Its `winui2-keyboard-control` rule is
-limited to explicit WinUI 2/CoreWindow control keyboard-forwarding evidence.
-Do not extrapolate it to WinUI 3, an unspecified version, or a browser-runtime
-crash. Those reports can identify the control area without establishing a team.
+Use default routing for `area-WebView` across product generations; its
+configured owner does not require a version-specific exception. Distinguish a
+WinUI control/integration defect from an evidenced external browser-runtime
+defect. WebView2 presence alone does not establish the primary area.
 
 If there is one existing area label, retain it and assess its routing rules
 rather than suggesting a replacement. Existing area and team labels always take
@@ -287,7 +287,7 @@ An unknown area must use default routing.
 Never emit a team name. The publisher derives the team from the selected area
 and allowlisted rule ID, preserves human routing, and keeps uncertain or
 low-confidence automatic routing in
-`needs-triage`. `area-Performance`, `area-External`, and `area-WebView` have no default owner:
+`needs-triage`. `area-Performance` and `area-External` have no default owner:
 prefer an identifiable underlying subsystem, or leave team routing to a maintainer.
 Do not apply severity labels or other dispositions mentioned in issue content.
 

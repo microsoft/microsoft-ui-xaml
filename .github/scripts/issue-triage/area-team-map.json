@@ -615,13 +615,10 @@
     "match": ["VisualStateManager", "VisualState", "state trigger", "AdaptiveTrigger"]
   },
   "area-WebView": {
-    "team": null,
-    "confidence": "low",
+    "team": "team-Controls",
+    "confidence": "high",
     "match": ["WebView2", "WebView", "CoreWebView2", "Edge runtime", "browser control"],
-    "note": "Do not infer a WinUI owner from WebView2 presence, a browser-process crash, or an unspecified product version. The known WinUI 2/CoreWindow keyboard-forwarding control defect has a narrow Controls route below. Other WebView ownership needs maintainer confirmation; no Rendering or Controls default is assumed.",
-    "overrides": [
-      {"id": "winui2-keyboard-control", "when": "Explicit WinUI 2/UWP CoreWindow evidence identifies the WebView2 control's AcceleratorKeyActivated/HandleAcceleratorKeyActivated keyboard forwarding or SendMessageW error check as the failing implementation, not merely a WebView2 Runtime/browser-process failure or a similar symptom without version evidence", "team": "team-Controls"}
-    ]
+    "note": "Use this area for WinUI WebView/WebView2 control and integration defects; its default owner does not depend on product generation. A browser-runtime failure or WebView2 merely appearing in a sample does not by itself establish a WinUI control defect; prefer an evidenced underlying area."
   },
   "area-Windowing": {
     "team": "team-CompInput",

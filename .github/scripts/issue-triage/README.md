@@ -111,7 +111,7 @@ changes. The workflow uses the checked-in `area-team-map.json` immediately;
 there is no separate mapping approval or activation step.
 
 The team-maintained configuration maps area labels to their default owners;
-`area-External`, `area-Performance`, and `area-WebView` deliberately have no default owner.
+`area-External` and `area-Performance` deliberately have no default owner.
 It also provides keyword guidance, ownership confidence, and
 conditional routes. Teams are derived from this configuration,
 never accepted as arbitrary model output.
@@ -171,11 +171,11 @@ The AppWindow `xaml-window-facade` rule handles the XAML facade size-propagation
 boundary when direct AppWindow sizing works; direct native-window defects retain
 their existing route. New reports may instead select `area-XamlWindow` when that
 is the supported primary area, but existing area labels are not replaced.
-WebView's `winui2-keyboard-control` rule is a narrow Controls exception for
-explicit WinUI 2/CoreWindow control keyboard-forwarding defects. Other WebView
-owners remain unresolved rather than assuming a universal Rendering or Controls
-owner. These distinctions use report evidence without adding product/app-model
-labels.
+`area-WebView` defaults to `team-Controls` across product generations, without
+a version-specific exception or inherited Rendering/Core labels. Area selection
+must still distinguish WinUI control/integration defects from evidenced external
+browser-runtime failures. These distinctions use report evidence without adding
+product/app-model labels.
 
 Maintainers can change individual mappings in `area-team-map.json` as ownership
 changes. An absent entry or a `null` default team means "do not auto-assign a

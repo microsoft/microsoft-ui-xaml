@@ -420,7 +420,7 @@ class RoutingTests(TriageFixture):
         t.validate_mapping(mapping, dict.fromkeys(set(mapping) | teams, ""))
         self.assertEqual(
             {area for area, entry in mapping.items() if entry["team"] is None},
-            {"area-External", "area-Performance", "area-WebView"},
+            {"area-External", "area-Performance"},
         )
 
 
@@ -922,6 +922,7 @@ class MappingConfigurationTests(unittest.TestCase):
             "area-Inking": "team-Controls",
             "area-CoreFramework": "team-Markup",
             "area-Tooling": "team-Markup",
+            "area-WebView": "team-Controls",
             "area-Accessibility": "team-Reach",
             "area-Islands": "team-Reach",
             "area-Windowing": "team-CompInput",
@@ -947,7 +948,6 @@ class MappingConfigurationTests(unittest.TestCase):
             "area-Materials": ("compositor-resource", "team-CompInput"),
             "area-AppWindow": ("xaml-hosting", "team-Reach"),
             "area-TitleBar": ("pointer-handling", "team-CompInput"),
-            "area-WebView": ("winui2-keyboard-control", "team-Controls"),
         }
         self.assertEqual(
             {area for area, entry in mapping.items() if entry.get("overrides")}, set(expected)
