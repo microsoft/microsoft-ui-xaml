@@ -838,7 +838,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     // An implicit clear that left the app's sort on the source is not a clear: the rows keep their
     // order and the reconcile below re-lights the column.
     bool keptSourceSort = false;
-    if (!trigger && !explicitClear && !reshaped && !m_activeSourceReleased)
+    if (!trigger && !explicitClear && !m_activeSourceReleased)
     {
         if (auto const source = ShapingSourceInternal())
         {

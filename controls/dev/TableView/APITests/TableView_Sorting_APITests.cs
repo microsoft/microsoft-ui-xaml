@@ -1437,6 +1437,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies turning CanUserSortColumns off right after the app sorts the source removes only the table's axis and reports no clear.")]
+        public void VerifyUngatingAfterAppSourceSortDoesNotReportClear()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            var sortedArgs = new List<TableViewSortedEventArgs>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateSortTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the Name column sorts.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Sorted += (s, e) => sortedArgs.Add(e);
+                // Same tick: the table's own axis is still installed when the gate closes.
+                source.Sort("Role", SortDirection.Descending);
+                tableView.CanUserSortColumns = false;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(sortedArgs.Any(e => e.Column == null && e.Direction == SortDirection.None),
+                    "Removing the table's axis while the app's sort remains must not report that sorting was cleared.");
+                var roleColumn = tableView.Columns.First(c => c.Header as string == "Role");
+                var nameColumn = tableView.Columns.First(c => c.Header as string == "Name");
+                Verify.AreEqual(SortDirection.Descending, roleColumn.SortDirection, "The app's Role sort must light its column.");
+                Verify.AreEqual(SortDirection.None, nameColumn.SortDirection, "The table's own Name sort must be gone.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a clear queued by removing the sorted column leaves the app-declared sort of the next ItemsSource alone.")]
         public void VerifyColumnRemovalClearKeepsNewItemsSourceSort()
         {
