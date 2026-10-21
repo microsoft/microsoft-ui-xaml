@@ -69,70 +69,109 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BringIntoViewVerticallyWithOptions(options, L"button10", 1500.0 /*expectedVerticalOffset*/);
     }
 
+    template<typename T>
+    static void VerifyInvalidBringIntoViewOffsets(T^ target)
+    {
+        // Access the XAML module and its resource DLL to load ERROR_INVALID_DOUBLE_VALUE
+        // for comparison with the HRESULT's error message.
+        const auto xamlModule = GetModuleHandleW(L"Microsoft.UI.Xaml.dll");
+        VERIFY_IS_NOT_NULL(xamlModule);
+
+        wchar_t modulePath[MAX_PATH];
+        const auto pathLength = GetModuleFileNameW(xamlModule, modulePath, ARRAYSIZE(modulePath));
+        VERIFY_IS_TRUE(pathLength > 0 && pathLength < ARRAYSIZE(modulePath));
+        std::wstring resourcePath(modulePath, pathLength);
+        resourcePath.resize(resourcePath.find_last_of(L'\\') + 1);
+        resourcePath.append(L"Microsoft.UI.Xaml.resources.common.dll");
+
+        wil::unique_hmodule resources(LoadLibraryExW(
+            resourcePath.c_str(), nullptr, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE));
+        VERIFY_IS_NOT_NULL(resources.get());
+
+        const wchar_t* resourceString = nullptr;
+        const auto messageLength = LoadStringW(
+            resources.get(), ERROR_INVALID_DOUBLE_VALUE, reinterpret_cast<LPWSTR>(&resourceString), 0);
+        VERIFY_IS_TRUE(messageLength > 0);
+        const std::wstring expectedMessage(resourceString, messageLength);
+
+        target->HorizontalOffset = -12.25;
+        target->VerticalOffset = 7.75;
+
+        for (bool horizontal : { true, false })
+        {
+            for (double value : {
+                std::numeric_limits<double>::quiet_NaN(),
+                std::numeric_limits<double>::infinity(),
+                -std::numeric_limits<double>::infinity() })
+            {
+                LOG_OUTPUT(L"Setting %s to %g", horizontal ? L"HorizontalOffset" : L"VerticalOffset", value);
+                bool threw = false;
+                try
+                {
+                    if (horizontal)
+                    {
+                        target->HorizontalOffset = value;
+                    }
+                    else
+                    {
+                        target->VerticalOffset = value;
+                    }
+                }
+                catch (Platform::Exception^ exception)
+                {
+                    threw = true;
+                    VERIFY_ARE_EQUAL(E_INVALIDARG, exception->HResult);
+                    VERIFY_IS_NOT_NULL(exception->Message);
+                    // C++/CX can prepend the system HRESULT description to the originated message.
+                    VERIFY_IS_TRUE(wcsstr(exception->Message->Data(), expectedMessage.c_str()) != nullptr,
+                        L"The exception should include the ERROR_INVALID_DOUBLE_VALUE resource string");
+                }
+                VERIFY_IS_TRUE(threw, L"Setting an invalid offset should throw");
+                VERIFY_ARE_EQUAL(-12.25, target->HorizontalOffset);
+                VERIFY_ARE_EQUAL(7.75, target->VerticalOffset);
+            }
+        }
+    }
+
     void UIElementIntegrationTests::BringIntoViewOptionsRejectInvalidOffsets()
     {
         RunOnUIThread([&]()
         {
-            // Access the XAML module and its resource DLL to load ERROR_INVALID_DOUBLE_VALUE
-            // for comparison with the HRESULT's error message.
-            const auto xamlModule = GetModuleHandleW(L"Microsoft.UI.Xaml.dll");
-            VERIFY_IS_NOT_NULL(xamlModule);
+            VerifyInvalidBringIntoViewOffsets(ref new BringIntoViewOptions());
+        });
+    }
 
-            wchar_t modulePath[MAX_PATH];
-            const auto pathLength = GetModuleFileNameW(xamlModule, modulePath, ARRAYSIZE(modulePath));
-            VERIFY_IS_TRUE(pathLength > 0 && pathLength < ARRAYSIZE(modulePath));
-            std::wstring resourcePath(modulePath, pathLength);
-            resourcePath.resize(resourcePath.find_last_of(L'\\') + 1);
-            resourcePath.append(L"Microsoft.UI.Xaml.resources.common.dll");
+    void UIElementIntegrationTests::BringIntoViewRequestedEventArgsRejectInvalidOffsets()
+    {
+        xaml_controls::Button^ button = nullptr;
+        xaml::BringIntoViewRequestedEventArgs^ eventArgs = nullptr;
+        auto requestedEvent = std::make_shared<Event>();
+        auto registration = CreateSafeEventRegistration(xaml::UIElement, BringIntoViewRequested);
 
-            wil::unique_hmodule resources(LoadLibraryExW(
-                resourcePath.c_str(), nullptr, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE));
-            VERIFY_IS_NOT_NULL(resources.get());
-
-            const wchar_t* resourceString = nullptr;
-            const auto messageLength = LoadStringW(
-                resources.get(), ERROR_INVALID_DOUBLE_VALUE, reinterpret_cast<LPWSTR>(&resourceString), 0);
-            VERIFY_IS_TRUE(messageLength > 0);
-            const std::wstring expectedMessage(resourceString, messageLength);
-
-            auto options = ref new BringIntoViewOptions();
-            options->HorizontalOffset = -12.25;
-            options->VerticalOffset = 7.75;
-
-            for (bool horizontal : { true, false })
+        RunOnUIThread([&]()
+        {
+            button = ref new xaml_controls::Button();
+            TestServices::WindowHelper->WindowContent = button;
+            registration.Attach(button, ref new wf::TypedEventHandler<xaml::UIElement^, xaml::BringIntoViewRequestedEventArgs^>(
+                [&](xaml::UIElement^ sender, xaml::BringIntoViewRequestedEventArgs^ args)
             {
-                for (double value : {
-                    std::numeric_limits<double>::quiet_NaN(),
-                    std::numeric_limits<double>::infinity(),
-                    -std::numeric_limits<double>::infinity() })
-                {
-                    LOG_OUTPUT(L"Setting %s to %g", horizontal ? L"HorizontalOffset" : L"VerticalOffset", value);
-                    bool threw = false;
-                    try
-                    {
-                        if (horizontal)
-                        {
-                            options->HorizontalOffset = value;
-                        }
-                        else
-                        {
-                            options->VerticalOffset = value;
-                        }
-                    }
-                    catch (Platform::Exception^ exception)
-                    {
-                        threw = true;
-                        VERIFY_ARE_EQUAL(E_INVALIDARG, exception->HResult);
-                        VERIFY_IS_NOT_NULL(exception->Message);
-                        // C++/CX can prepend the system HRESULT description to the originated message.
-                        VERIFY_IS_TRUE(wcsstr(exception->Message->Data(), expectedMessage.c_str()) != nullptr,
-                            L"The exception should include the ERROR_INVALID_DOUBLE_VALUE resource string");
-                    }
-                    VERIFY_IS_TRUE(threw, L"Setting an invalid offset should throw");
-                    VERIFY_ARE_EQUAL(-12.25, options->HorizontalOffset);
-                    VERIFY_ARE_EQUAL(7.75, options->VerticalOffset);
-                }
-            }
+                args->Handled = true;
+                eventArgs = args;
+                requestedEvent->Set();
+            }));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            button->StartBringIntoView();
+        });
+        requestedEvent->WaitForDefault();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(eventArgs);
+            VerifyInvalidBringIntoViewOffsets(eventArgs);
         });
     }
 

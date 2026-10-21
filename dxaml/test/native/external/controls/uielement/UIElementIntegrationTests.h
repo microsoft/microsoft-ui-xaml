@@ -40,6 +40,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates the HRESULT and resource error message for invalid BringIntoViewOptions offsets")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(BringIntoViewRequestedEventArgsRejectInvalidOffsets)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the HRESULT and resource error message for invalid BringIntoViewRequestedEventArgs offsets")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyBringIntoviewRequestedEventArgs)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that StartBringIntoView triggers a BringIntoViewRequested event")
         END_TEST_METHOD()
