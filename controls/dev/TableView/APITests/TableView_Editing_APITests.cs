@@ -603,6 +603,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Architect,Designer,Engineer", string.Join(",", roles), "The rows must stay sorted by Role.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sort opt-out made from a BeginningEdit handler, cancelled or not, still clears the opted-out sort.")]
+        [TestProperty("data:Change", "{CanSortCancel, CanSortContinue, CanUserSortColumnsCancel}")]
+        public void VerifySortOptOutDuringBeginningEditClearsSort()
+        {
+            var change = ((string)TestContext.DataRow["Change"]).Trim();
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            bool requested = false;
+            int clearedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Precondition: the Name column sorts.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = tableView.Columns[0];
+                tableView.Sorted += (s, e) =>
+                {
+                    if (e.Direction == SortDirection.None)
+                    {
+                        clearedCount++;
+                    }
+                };
+                tableView.BeginningEdit += (s, e) =>
+                {
+                    if (requested)
+                    {
+                        return;
+                    }
+                    requested = true;
+                    if (change == "CanUserSortColumnsCancel")
+                    {
+                        tableView.CanUserSortColumns = false;
+                    }
+                    else
+                    {
+                        name.CanSort = false;
+                    }
+                    e.Cancel = change != "CanSortContinue";
+                };
+
+                var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 1), items[0].Role);
+                Log.Comment($"SetValue: {error?.Message ?? "succeeded"}");
+                Verify.IsTrue(requested, "Precondition: BeginningEdit opted the sort out.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, $"{change}: the opted-out sort must be cleared.");
+                Verify.AreEqual(1, clearedCount, $"{change}: the clear must be reported once.");
+                var names = GetProjectedItems(tableView).Select(item => ((EditablePerson)item).Name).ToList();
+                Verify.AreEqual("Asha,Diego,Mei", string.Join(",", names), $"{change}: the rows must return to source order.");
+            });
+        }
     }
 
     // Category 10.5 of the TableView test plan: validation, teardown and reentrancy.

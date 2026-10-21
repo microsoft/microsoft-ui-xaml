@@ -3412,7 +3412,21 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
     // sorted order with no affordance to change it would strand the user.
     if (!CanUserSortColumns())
     {
-        ClearSortInternal(false);
+        // A sort cannot run while an edit is opening; replay the clear once it settles.
+        if (m_editState == EditState::Beginning)
+        {
+            QueueCoalescedEditReshape([this]()
+            {
+                if (!CanUserSortColumns())
+                {
+                    ClearSortInternal(false);
+                }
+            });
+        }
+        else
+        {
+            ClearSortInternal(false);
+        }
     }
 
     // The chevron and the click handler are stamped at header-build time.
@@ -3424,8 +3438,21 @@ void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
     // A column that just opted out must not keep an active sort applied to it.
     if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None)
     {
-        // Bypasses the CanSort gate that just closed; the public methods keep refusing.
-        SortByColumnInternal(column, winrt::SortDirection::None, false, false);
+        if (m_editState == EditState::Beginning)
+        {
+            QueueCoalescedEditReshape([this, weakColumn = winrt::make_weak(column)]()
+            {
+                if (auto const optedOut = weakColumn.get(); optedOut && !optedOut.CanSort())
+                {
+                    SortByColumnInternal(optedOut, winrt::SortDirection::None, false, false);
+                }
+            });
+        }
+        else
+        {
+            // Bypasses the CanSort gate that just closed; the public methods keep refusing.
+            SortByColumnInternal(column, winrt::SortDirection::None, false, false);
+        }
     }
 
     // The chevron and the click handler are stamped at header-build time.
