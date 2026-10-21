@@ -18,6 +18,9 @@ public:
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     hstring GetClassNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
+    winrt::Rect GetBoundingRectangleCore();
+    // No menu while a cell is editing.
+    void ShowContextMenuCore();
 
     // IGridProvider / ITableProvider expose visible logical columns.
     // Headers remain semantic cell names even when the header strip is hidden.

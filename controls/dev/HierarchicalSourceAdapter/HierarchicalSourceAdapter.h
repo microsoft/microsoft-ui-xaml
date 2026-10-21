@@ -95,6 +95,10 @@ public:
     // because an item occupies at most one row. Null if not visible.
     NodeRow const* TryGetNodeRowForItem(winrt::IInspectable const& item) const;
 
+    // True when `item` is a node of the filtered tree, whether or not its ancestors are expanded.
+    bool IndexContainsItem(winrt::IInspectable const& item) const;
+    bool HasIndex() const noexcept { return m_index != nullptr; }
+
     // Positive prefix test, so a stale or foreign key cannot become node intent.
     static bool IsNodeKey(winrt::hstring const& key);
 

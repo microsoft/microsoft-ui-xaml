@@ -1527,12 +1527,19 @@ _Check_return_ HRESULT FlyoutBase::ForwardTargetPropertiesToPresenter()
     IFC_RETURN(spPresenterAsFE.Cast<FrameworkElement>()->put_AllowFocusWhenDisabled(allowFocusWhenDisabled));
 
     IFC_RETURN(ForwardThemeToPresenter());
-    
+
     return S_OK;
 }
 
 _Check_return_ HRESULT FlyoutBase::ForwardThemeToPresenter()
 {
+    // A staged flyout may not have a presenter yet. Skip forwarding the theme in that case. Later, when the staged
+    // flyout opens, Open() will forward the theme at that time after creating the presenter.
+    if (!m_tpPresenter)
+    {
+        return S_OK;
+    }
+
     ctl::ComPtr<IFrameworkElement> spPresenterAsFE;
     IFC_RETURN(m_tpPresenter.As(&spPresenterAsFE));
 

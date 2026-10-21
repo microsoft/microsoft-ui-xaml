@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
@@ -609,6 +610,100 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a collapse does not pull focus back to its header once focus has left the table.")]
+        public void VerifyGroupFocusRestoreSkippedWhenFocusLeftTable()
+        {
+            TableView tableView = null;
+            Button button = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedTable();
+                button = new Button { Content = "Outside" };
+                var panel = new StackPanel();
+                panel.Children.Add(tableView);
+                panel.Children.Add(button);
+                LoadContent(panel);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // The collapse captures the focused header for a restore after the deferred reshape.
+                Verify.IsTrue(GetGroupHeader(tableView, 0).Focus(FocusState.Keyboard), "Precondition: the header takes keyboard focus.");
+                GetExpandCollapseProvider(tableView, 0).Collapse();
+                Verify.IsTrue(button.Focus(FocusState.Programmatic), "Precondition: the button takes focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(ReferenceEquals(button, FocusManager.GetFocusedElement(tableView.XamlRoot)),
+                    "Focus that has left the table must not be pulled back to the collapsed header.");
+                Verify.IsFalse(GetGroupInfo(tableView, 0)?.IsExpanded ?? true, "The group must still collapse.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies collapsing the group of the selected row clears selection, and neither re-expanding nor a later reshape restores it.")]
+        public void VerifyGroupCollapseDropsSelectionOfHiddenRow()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            var changes = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                source.GroupBy(o => Person(o).Role);
+
+                tableView = CreateGroupedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.SelectionChanged += (s, e) => changes++;
+                tableView.Select(GetProjectedLabels(tableView, includeCount: false).IndexOf("Asha"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha", Person(tableView.SelectedItem)?.Name, "Asha is selected.");
+                Verify.AreEqual(1, changes, "One SelectionChanged for the select.");
+                GetExpandCollapseProvider(tableView, 0).Collapse();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(tableView.SelectedItem, "Collapsing Designer hides Asha and clears selection.");
+                Verify.AreEqual(2, changes, "One SelectionChanged for the clear.");
+                tableView.ExpandAllGroups();
+            });
+
+            SettleLayout(tableView);
+
+            // A Reset-driven reshape must not resurrect the selection the collapse cleared.
+            RunOnUIThread.Execute(() => source.Sort(o => Person(o).Name, SortDirection.Ascending));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(tableView.SelectedItem, "Re-expanding and reshaping must not restore the selection.");
+                Verify.AreEqual(2, changes, "No further SelectionChanged.");
+            });
+        }
+
         #endregion
 
         #region 9.4 Group edge cases
@@ -766,6 +861,65 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
                 Verify.AreEqual("NotExpandable", GetCurrentVisualState(GetGroupHeader(tableView, 0), "ExpandabilityStates"),
                     "A group that cannot expand must not advertise an expander."));
+        }
+
+        #endregion
+
+        #region 9.6 Selection across a regroup
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a regroup that moves the selected row into a later group keeps it selected without raising SelectionChanged.")]
+        public void VerifySelectionSurvivesRegroupWhenKeyChanges()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            ShapedPerson ines = null;
+            var changes = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var people = MakeShapedPeople();
+                ines = people.First(person => person.Name == "Ines");
+                source = TableViewSource.From(people);
+                source.GroupBy(o => Person(o).Role);
+
+                tableView = CreateGroupedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(GetProjectedItems(tableView).IndexOf(ines));
+                Verify.AreSame(ines, tableView.SelectedItem, "Precondition: Ines is selected.");
+
+                // Designer is bucketed before Engineer, so the old group is refilled before the new one.
+                ines.Role = "Engineer";
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.SelectionChanged += (s, e) => changes++;
+                // GroupBy takes a delegate, so the app re-declares it after a key change.
+                source.GroupBy(o => Person(o).Role);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(
+                    new[] { "#Designer", "Asha", "#Engineer", "Diego", "Rafa", "Ines", "Owen", "#Architect", "Mei" },
+                    GetProjectedLabels(tableView, includeCount: false),
+                    "the regroup must move Ines into Engineer");
+                Verify.AreSame(ines, tableView.SelectedItem, "The moved row must stay selected.");
+                Verify.AreEqual(GetProjectedItems(tableView).IndexOf(ines), tableView.SelectedIndex,
+                    "SelectedIndex must follow the row to its new position.");
+                Verify.AreEqual(0, changes, "The selected item did not change, so no SelectionChanged may be raised.");
+            });
         }
 
         #endregion

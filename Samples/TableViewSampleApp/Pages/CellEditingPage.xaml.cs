@@ -67,7 +67,10 @@ public sealed partial class CellEditingPage : SamplePageBase
 
     private void OnBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
     {
+        FlushPendingCommit(); // snippet:skip
         _openEdit = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName); // snippet:skip
+        _isEditOpen = true; // snippet:skip
+        _editsAtBeginEdit = _editsCommitted; // snippet:skip
         SetEditButtonsEnabled(true);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Began editing {0}", _openEdit));
     }
@@ -78,9 +81,7 @@ public sealed partial class CellEditingPage : SamplePageBase
         var what = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName); // snippet:skip
         _openEdit = "(none)"; // snippet:skip
         SetEditButtonsEnabled(false);
-        SetLastAction(args.EditAction == TableViewEditAction.Commit
-            ? string.Format(CultureInfo.CurrentCulture, "Committed {0}", what)
-            : string.Format(CultureInfo.CurrentCulture, "Cancelled the edit of {0}; the model keeps its value", what));
+        AnnounceEditEnding(args.EditAction, what); // snippet:skip
     }
 
     private void SetEditButtonsEnabled(bool enabled)
@@ -147,10 +148,53 @@ public sealed partial class CellEditingPage : SamplePageBase
         };
 
         _editsCommitted++;
-        EditLog.Insert(0, string.Format(CultureInfo.CurrentCulture, "{0} · {1} = {2}", person.FullName, propertyName, value));
+        var entry = string.Format(CultureInfo.CurrentCulture, "{0} · {1} = {2}", person.FullName, propertyName, value);
+        EditLog.Insert(0, entry);
         while (EditLog.Count > 50)
         {
             EditLog.RemoveAt(EditLog.Count - 1);
+        }
+
+        // The edit log is not a live region, so the entry is announced: with the "Committed …"
+        // message when it is the write of a commit, otherwise on its own.
+        if (_pendingCommit is { } what)
+        {
+            _pendingCommit = null;
+            _isEditOpen = false;
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Committed {0}; edit log: {1}", what, entry));
+        }
+        else if (!_isEditOpen)
+        {
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Edit log: {0}", entry));
+        }
+    }
+
+    // A normal commit raises CellEditEnding before the editor's value is written, so its message
+    // waits for LogEdit. A forced commit has already written it, and a cancel writes nothing.
+    private void AnnounceEditEnding(TableViewEditAction action, string what)
+    {
+        if (action == TableViewEditAction.Commit && _editsCommitted == _editsAtBeginEdit)
+        {
+            _pendingCommit = what;
+            EnqueueIfLoaded(FlushPendingCommit);
+            return;
+        }
+
+        _isEditOpen = false;
+        var logged = EditLog.Count > 0 ? "; edit log: " + EditLog[0] : string.Empty;
+        SetLastAction(action == TableViewEditAction.Commit
+            ? string.Format(CultureInfo.CurrentCulture, "Committed {0}{1}", what, logged)
+            : string.Format(CultureInfo.CurrentCulture, "Cancelled the edit of {0}; the model keeps its value", what));
+    }
+
+    // Announces a commit that wrote nothing (the value was unchanged).
+    private void FlushPendingCommit()
+    {
+        if (_pendingCommit is { } what)
+        {
+            _pendingCommit = null;
+            _isEditOpen = false;
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Committed {0}", what));
         }
     }
 

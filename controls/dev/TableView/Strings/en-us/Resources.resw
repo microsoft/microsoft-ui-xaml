@@ -120,6 +120,10 @@
     <value>%1!s!, %2!s!</value>
     <comment>Cell name announced by assistive technology when both a column header and a cell value are available. %1!s! is the column header text; %2!s! is the cell value text.</comment>
   </data>
+  <data name="TableViewCellBlankName" xml:space="preserve">
+    <value>blank</value>
+    <comment>Value announced by assistive technology for a TableView cell that displays nothing, so an empty cell is not read as its column header. Lower case: screen readers read it inline, sometimes after the column header.</comment>
+  </data>
   <data name="TableViewBooleanTrue" xml:space="preserve">
     <value>True</value>
     <comment>Boolean true value announced by assistive technology when a TableView row or cell name is generated from a Boolean data item.</comment>

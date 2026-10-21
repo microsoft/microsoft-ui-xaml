@@ -85,27 +85,25 @@
         WhatToLookFor="With the headers hidden, Narrator still announces &quot;Due date for INC-1042&quot; and &quot;Resolved for INC-1042&quot;, because each editor carries its own name; plain text cells lose their column context. Group header bands and their chevrons stay, and Sort by due date still re-orders the rows while there is no header to click.">
 
         <controls:SamplePresenter.Example>
-            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                <!-- snippet -->
-                <tv:TableView
-                    x:Name="TicketsTable"
-                    AutomationProperties.AutomationId="HeadersVisibilityTable"
-                    AutomationProperties.Name="Support tickets"
-                    ItemsSource="{x:Bind Source}"
-                    SelectionMode="Single"
-                    IsReadOnly="True"
-                    VerticalAlignment="Stretch"
-                    MinHeight="320">
-                    <!-- IsReadOnly gates the built-in text editors only; the template editors stay editable. -->
-                    <tv:TableViewTextColumn Header="Ticket" Width="{StaticResource ColWidthId}" Binding="{Binding TicketId}" HeaderToolTip="Incident number, unique per ticket."/>
-                    <tv:TableViewTemplateColumn Header="Assignee" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource AssigneeTemplate}" SortMemberPath="Assignee" CellToolTipBinding="{Binding Assignee}" HeaderToolTip="Initials of the person who owns the ticket. Hover for the full name."/>
-                    <tv:TableViewTextColumn Header="Summary" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Summary}" CellToolTipBinding="{Binding Summary}"/>
-                    <tv:TableViewTemplateColumn Header="Priority" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource PriorityChipTemplate}" SortMemberPath="Priority" HeaderToolTip="Urgency: Sev 1 is the most urgent."/>
-                    <tv:TableViewTemplateColumn x:Name="DueColumn" Header="Due" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource DueDateTemplate}" SortMemberPath="Due" HeaderToolTip="Date the ticket breaches its service-level agreement. Editable."/>
-                    <tv:TableViewTemplateColumn Header="Resolved" Width="{StaticResource ColWidthBooleanWide}" CellTemplate="{StaticResource ResolvedTemplate}" SortMemberPath="IsResolved" HeaderToolTip="Checked once the ticket is closed. Editable."/>
-                </tv:TableView>
-                <!-- /snippet -->
-            </Border>
+            <!-- snippet -->
+            <tv:TableView
+                x:Name="TicketsTable"
+                AutomationProperties.AutomationId="HeadersVisibilityTable"
+                AutomationProperties.Name="Support tickets"
+                ItemsSource="{x:Bind Source}"
+                SelectionMode="Single"
+                IsReadOnly="True"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <!-- IsReadOnly gates the built-in text editors only; the template editors stay editable. -->
+                <tv:TableViewTextColumn Header="Ticket" Width="{StaticResource ColWidthId}" Binding="{Binding TicketId}" HeaderToolTip="Incident number, unique per ticket."/>
+                <tv:TableViewTemplateColumn Header="Assignee" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource AssigneeTemplate}" SortMemberPath="Assignee" CellToolTipBinding="{Binding Assignee}" HeaderToolTip="Initials of the person who owns the ticket. Hover for the full name."/>
+                <tv:TableViewTextColumn Header="Summary" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Summary}" CellToolTipBinding="{Binding Summary}"/>
+                <tv:TableViewTemplateColumn Header="Priority" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource PriorityChipTemplate}" SortMemberPath="Priority" HeaderToolTip="Urgency: Sev 1 is the most urgent."/>
+                <tv:TableViewTemplateColumn x:Name="DueColumn" Header="Due" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource DueDateTemplate}" SortMemberPath="Due" HeaderToolTip="Date the ticket breaches its service-level agreement. Editable."/>
+                <tv:TableViewTemplateColumn Header="Resolved" Width="{StaticResource ColWidthBooleanWide}" CellTemplate="{StaticResource ResolvedTemplate}" SortMemberPath="IsResolved" HeaderToolTip="Checked once the ticket is closed. Editable."/>
+            </tv:TableView>
+            <!-- /snippet -->
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>

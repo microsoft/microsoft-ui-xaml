@@ -274,9 +274,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies Multiply (*) on a focused tree row expands the whole subtree beneath it and keeps focus on the row.")]
-        // Known product bug: ExpandSubtree rebuilds (Reset) instead of splicing; the repeater moves focus
-        // off the cleared container and it lands on the first child (Ben), not Ada. The subtree assert passes.
-        [TestProperty("Ignore", "True")]
         public void MultiplyExpandsTreeRowSubtree()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -493,41 +490,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return tableView;
         }
 
-        // The value of one "key=value" field of HierarchyReadout, or null if the field is absent.
-        private static string ReadHierarchyField(string field)
-        {
-            string readout = ReadPageReadout(HierarchyReadout);
-            if (readout == null)
-            {
-                return null;
-            }
+        private static string ReadHierarchyField(string field) => ReadReadoutField(HierarchyReadout, field);
 
-            foreach (string part in readout.Split(';'))
-            {
-                int separator = part.IndexOf('=');
-                if (separator > 0 && part.Substring(0, separator) == field)
-                {
-                    return part.Substring(separator + 1);
-                }
-            }
-
-            return null;
-        }
-
-        // The page refreshes the readout at Low dispatcher priority; a few idle waits let it settle. Returns the last
-        // value read, so the caller asserts on what was actually observed.
-        private static string WaitForHierarchyField(string field, string expected)
-        {
-            string value = ReadHierarchyField(field);
-            for (int attempt = 0; attempt < 5 && value != expected; attempt++)
-            {
-                Wait.ForIdle();
-                value = ReadHierarchyField(field);
-            }
-
-            Log.Comment("Readout {0} = '{1}' (expected '{2}').", field, value, expected);
-            return value;
-        }
+        private static string WaitForHierarchyField(string field, string expected) => WaitForReadoutField(HierarchyReadout, field, expected);
 
         // A row peer's Name is its cell texts in visible order, so it starts with the Name column.
         private static bool IsTreeRowNamed(UIObject row, string name) =>
@@ -576,8 +541,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return focused != null && IsTreeRowNamed(focused, name);
         }
 
+        // Focus restores after a reshape can settle over a few layout passes; poll like WaitForHierarchyField.
         private static void VerifyTreeRowFocused(string tableAutomationId, string name, string message)
         {
+            for (int attempt = 0; attempt < 5 && !IsTreeRowFocused(tableAutomationId, name); attempt++)
+            {
+                Wait.ForIdle();
+            }
+
             ElementCache.Clear();
             UIObject focused = FindFocusedBodyElement(GetRowsHost(tableAutomationId));
             Log.Comment("Focused row: {0} (cell {1}); expected row '{2}' itself.",

@@ -23,11 +23,8 @@
 // from the header host and realized rows once, then resolves Pixel / Auto / Star widths into
 // TableViewColumn.ActualWidth.
 //
-// Only realized rows contribute, so Auto sizes to the widest *realized* cell. Auto is shrink-capable:
-// each measure pass re-derives the width from the currently pulled measured max (header + realized
-// rows), so a column narrows when its widest content shrinks (CGrid parity) rather than latching a
-// grow-only maximum. Because only realized rows contribute under virtualization, the Auto width still
-// reflects the widest realized cell and can change as rows scroll into / out of realization.
+// Only realized rows contribute, so Auto sizes to the widest cell realized so far. Auto is grow-only
+// within a data set, so a column never narrows as rows scroll out (ResetColumnDesiredWidths).
 //
 // Resolved widths (Pixel / Auto / Star) are snapped to device pixels when UseLayoutRounding is set,
 // using the XamlRoot rasterization scale -- again mirroring CGrid.
@@ -35,6 +32,12 @@
 
 namespace
 {
+    bool IsFixedWidthColumn(winrt::TableViewColumn const& column)
+    {
+        const double lo = NonNegativeFiniteOrZero(column.MinWidth());
+        return MaxWidthForColumn(column, lo) <= lo;
+    }
+
     double MinWidthForStarFactor(winrt::TableViewColumn const& column, double factor)
     {
         if (factor > 0.0)
@@ -153,8 +156,8 @@ void TableView::ResetColumnDesiredWidths()
             // column that was Auto, temporarily switched to Pixel/Star, then switched back must not
             // retain a stale max from a previous data set. This runs only on real data-set boundaries
             // (ItemsSource / Columns replaced / CellTemplate / Header), so it correctly clears across
-            // them while Density / Min / Max changes (which do not call this) preserve the max within a
-            // data set.
+            // them while Density / Min / Max / HeadersVisibility changes (which do not call this)
+            // preserve the max within a data set.
             if (column && winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this)
             {
                 winrt::get_self<TableViewColumn>(column)->ResetDesiredWidthInternal();
@@ -245,29 +248,32 @@ void TableView::ResolveColumnWidths()
 
         case winrt::GridUnitType::Auto:
         {
-            // Pull measured widths from the header and currently realized row panels. Preserve v1's
-            // grow-only policy by storing max(previous desired, pulled measured) on the column.
-            double pulledMeasuredMax = 0.0;
+            // Pull measured widths from the header and currently realized row panels. Rows and header
+            // are tracked separately, so toggling the headers never drops the rows' width.
+            double headerMeasured = 0.0;
             // Only consume the header host's cache when headers are actually shown: a hidden header is
             // not measured this pass, so its per-pass cache is stale (and, with the raw-identity key,
             // a freed column's address could be reused by a new column and false-match a stale entry).
             // A hidden header must not drive column width regardless.
             if (ShouldShowColumnHeaders())
             {
-                pulledMeasuredMax = std::max(pulledMeasuredMax, GetHeaderMeasuredWidthForColumn(column));
+                headerMeasured = NonNegativeFiniteOrZero(GetHeaderMeasuredWidthForColumn(column));
             }
 
+            double rowsMeasured = 0.0;
             for (auto const& row : realizedRows)
             {
                 // Ask the row for its cell's measured width instead of reaching into its panel.
-                pulledMeasuredMax = std::max(pulledMeasuredMax, winrt::get_self<TableViewRow>(row)->MeasuredWidthForColumn(column));
+                rowsMeasured = std::max(rowsMeasured, winrt::get_self<TableViewRow>(row)->MeasuredWidthForColumn(column));
             }
 
             auto columnImpl = winrt::get_self<TableViewColumn>(column);
-            // Shrink-capable Auto: size to the CURRENT measured content max rather than a monotonic
-            // grow-only max, so the column narrows when its widest content shrinks (CGrid parity).
-            const double desired = NonNegativeFiniteOrZero(pulledMeasuredMax);
-            columnImpl->SetDesiredWidthInternal(desired);
+            // Rows are grow-only within a data set (WPF / WCT DataGrid parity), so scrolling never
+            // narrows the column. Headers are never virtualized, so the current measurement is used.
+            columnImpl->SetDesiredWidthInternal(
+                std::max(columnImpl->RowsDesiredWidthInternal(), NonNegativeFiniteOrZero(rowsMeasured)),
+                headerMeasured);
+            const double desired = columnImpl->DesiredWidthInternal();
 
             const double resolved = layoutRound(
                 std::clamp(desired > 0.0 ? desired : c_widthDefault.Value, lo, hi));
@@ -501,7 +507,6 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
 
     double reservedForOthers = 0.0;
     bool dividesViewport = authoredType(column) == winrt::GridUnitType::Star;
-    bool hasParticipant = false;
 
     for (uint32_t i = 0; i < columns.Size(); ++i)
     {
@@ -521,8 +526,8 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
         const bool participates =
             i > draggedIndex &&
             other.Width().GridUnitType == winrt::GridUnitType::Star &&
-            resizeEnabled && other.CanResize();
-        hasParticipant |= participates;
+            resizeEnabled && other.CanResize() &&
+            !IsFixedWidthColumn(other);
 
         if (!participates)
         {
@@ -543,7 +548,7 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
     // Pinned in both directions: bounding only growth would let the drag hand width to a column
     // that is then not allowed to give it back. A Pixel or Auto column owns its width outright, so
     // it may still shrink -- that only makes the table narrower and needs nothing from a neighbour.
-    if (!hasParticipant && column.Width().GridUnitType == winrt::GridUnitType::Star)
+    if (IsColumnResizePinned(column))
     {
         bounds.Min = column.ActualWidth();
         bounds.Max = bounds.Min;
@@ -552,6 +557,83 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
 
     bounds.Max = std::max(0.0, viewport - reservedForOthers);
     return bounds;
+}
+
+// MinWidth meets MaxWidth, or a Star column with no later resizable Star column to trade with.
+// Shared by the drag bounds and gripper visibility so the two cannot disagree.
+bool TableView::IsColumnResizePinned(const winrt::TableViewColumn& column)
+{
+    if (!column)
+    {
+        return false;
+    }
+
+    if (IsFixedWidthColumn(column))
+    {
+        return true;
+    }
+
+    if (column.Width().GridUnitType != winrt::GridUnitType::Star)
+    {
+        return false;
+    }
+
+    auto columns = Columns();
+    uint32_t columnIndex = 0;
+    if (!columns || !columns.IndexOf(column, columnIndex))
+    {
+        return false;
+    }
+
+    if (!CanUserResizeColumns())
+    {
+        return true;
+    }
+
+    for (uint32_t i = columnIndex + 1; i < columns.Size(); ++i)
+    {
+        auto const other = columns.GetAt(i);
+        if (other &&
+            winrt::get_self<TableViewColumn>(other)->GetOwningTableView() == *this &&
+            other.Visibility() == winrt::Visibility::Visible &&
+            other.Width().GridUnitType == winrt::GridUnitType::Star &&
+            other.CanResize() &&
+            !IsFixedWidthColumn(other))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void TableView::RefreshResizeGripperAvailability()
+{
+    auto const host = m_headerHost.get();
+    if (!host)
+    {
+        return;
+    }
+
+    auto const children = host.Children();
+    const uint32_t count = children.Size();
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        auto const headerCell = children.GetAt(i).try_as<winrt::FrameworkElement>();
+        if (!headerCell)
+        {
+            continue;
+        }
+
+        auto const gripper = FindResizeGripperInCell(headerCell);
+        auto const column = headerCell.Tag().try_as<winrt::TableViewColumn>();
+        if (!gripper || !column)
+        {
+            continue;
+        }
+
+        gripper.Visibility(IsColumnResizePinned(column) ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
+    }
 }
 
 // Re-run the cell panels' measure/arrange so the header band and all rows reflect the newly resolved

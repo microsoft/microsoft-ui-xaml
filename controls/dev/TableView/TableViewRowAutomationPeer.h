@@ -20,6 +20,10 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
 
+    // IAutomationPeerOverrides. Routes through TableView so focus and stale checks apply to a row
+    // style or template ContextFlyout too; falls back to the framework when TableView shows nothing.
+    void ShowContextMenuCore();
+
     // A TableViewRow is a Control with no content of its own, so the base peer computes no name
     // and AT announces a bare "data item". Compose the visible cell texts instead.
     hstring GetNameCore();
@@ -63,7 +67,21 @@ public:
     // Raised by the owning row on expansion change so clients don't read stale state.
     void RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
 
+    // Raised by the owning row on every hierarchy restamp. Clients cache Level/PositionInSet/
+    // SizeOfSet, so a reparent or sibling insert must notify; compares against the last values
+    // this peer reported and raises only for the ones that moved.
+    void RaiseHierarchyPositionChanged();
+
 private:
+    int32_t ComputeLevel();
+    int32_t ComputePositionInSet();
+    int32_t ComputeSizeOfSet();
+
+    // Last values handed to a client through the Get*Core overrides; -1 until first read.
+    int32_t m_lastReportedLevel{ -1 };
+    int32_t m_lastReportedPositionInSet{ -1 };
+    int32_t m_lastReportedSizeOfSet{ -1 };
+
     // The owning TableView, or null once the row has been recycled out of the tree.
     winrt::TableView GetOwningTableView();
     // This row's index in the owner's ItemsSource index space, or -1 when unrealized.
@@ -75,7 +93,6 @@ private:
     int32_t GetItemOccurrenceAtIndex(winrt::TableView const& tableView, winrt::IInspectable const& item, int32_t targetIndex);
     bool IsTrackedRow(winrt::TableViewRow const& row, winrt::TableView const& tableView);
     void TrackRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
-    [[noreturn]] static void ThrowElementNotAvailable();
     // Joins the visible cells' display text in visual order.
     static std::wstring ComposeCellTexts(
         TableViewRow* rowImpl,

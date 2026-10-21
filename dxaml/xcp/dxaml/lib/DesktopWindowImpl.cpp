@@ -692,6 +692,9 @@ _Check_return_ HRESULT DesktopWindowImpl::put_WidthImpl(DOUBLE value)
     IFC_RETURN(ValidateWidthHeightValue(value));
     if (m_bIsClosed)
     {
+        // Reuse the pending value as the post-close property value. The getter already gives it
+        // precedence over the restored-size snapshot, and no native resize can be attempted.
+        m_pendingClientWidthDips = value;
         return S_OK;
     }
     return ApplyOrDeferClientSizeInDips(value, std::nullopt);
@@ -720,6 +723,9 @@ _Check_return_ HRESULT DesktopWindowImpl::put_HeightImpl(DOUBLE value)
     IFC_RETURN(ValidateWidthHeightValue(value));
     if (m_bIsClosed)
     {
+        // Reuse the pending value as the post-close property value. The getter already gives it
+        // precedence over the restored-size snapshot, and no native resize can be attempted.
+        m_pendingClientHeightDips = value;
         return S_OK;
     }
     return ApplyOrDeferClientSizeInDips(std::nullopt, value);

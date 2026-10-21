@@ -1,5 +1,17 @@
+<!-- Cells wrap rather than trim so long values stay readable under text scaling.
+     Padding matches a Compact text cell. -->
+<DataTemplate x:Key="PropertyNameTemplate" x:DataType="models:FilePropertyEntry">
+    <TextBlock Text="{x:Bind Property}" TextWrapping="Wrap" Padding="8,2,8,2" VerticalAlignment="Center"/>
+</DataTemplate>
+<DataTemplate x:Key="PropertyValueTemplate" x:DataType="models:FilePropertyEntry">
+    <TextBlock Text="{x:Bind Value}" TextWrapping="Wrap" Padding="8,2,8,2" VerticalAlignment="Center"/>
+</DataTemplate>
+
+<!-- … -->
+
 <TextBlock Text="Files" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
-<Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Width="220" VerticalAlignment="Stretch">
+<!-- MaxWidth, not Width: names wrap instead of trimming when text is scaled. -->
+<Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" MaxWidth="320" VerticalAlignment="Stretch">
     <ListView
         x:Name="FileList"
         AutomationProperties.AutomationId="FilePropertiesFileList"
@@ -8,26 +20,26 @@
         SelectionChanged="OnFileSelectionChanged">
         <ListView.ItemTemplate>
             <DataTemplate x:DataType="io:FileInfo">
-                <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Name}"/>
+                <TextBlock Text="{x:Bind Name}" TextWrapping="Wrap"/>
             </DataTemplate>
         </ListView.ItemTemplate>
     </ListView>
 </Border>
 
 <TextBlock Grid.Column="1" Text="Properties" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
-<Border Grid.Row="1" Grid.Column="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-    <tv:TableView
-        x:Name="PropTable"
-        AutomationProperties.AutomationId="FilePropertiesTable"
-        AutomationProperties.Name="File properties"
-        ItemsSource="{x:Bind Source}"
-        SelectionMode="Single"
-        IsReadOnly="True"
-        SelectionChanged="OnPropSelectionChanged"
-        VerticalAlignment="Stretch"
-        MinHeight="320">
-        <!-- Not Auto: an Auto column is measured from the realized rows only, so it changes width while you scroll. -->
-        <tv:TableViewTextColumn Header="Property" Width="{StaticResource ColWidthPropertyName}" Binding="{Binding Property}"/>
-        <tv:TableViewTextColumn Header="Value" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Value}"/>
-    </tv:TableView>
-</Border>
+<tv:TableView
+    x:Name="PropTable"
+    Grid.Row="1"
+    Grid.Column="1"
+    AutomationProperties.AutomationId="FilePropertiesTable"
+    AutomationProperties.Name="File properties"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    IsReadOnly="True"
+    SelectionChanged="OnPropSelectionChanged"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <!-- Not Auto: an Auto column is measured from the realized rows only, so it changes width while you scroll. -->
+    <tv:TableViewTemplateColumn Header="Property" Width="{StaticResource ColWidthPropertyName}" CellTemplate="{StaticResource PropertyNameTemplate}" SortMemberPath="Property"/>
+    <tv:TableViewTemplateColumn Header="Value" Width="*" MinWidth="{StaticResource ColMinWidthStar}" CellTemplate="{StaticResource PropertyValueTemplate}" SortMemberPath="Value"/>
+</tv:TableView>

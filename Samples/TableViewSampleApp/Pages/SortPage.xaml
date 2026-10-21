@@ -139,44 +139,42 @@
         Snippet="Sort"
         StretchExample="True"
         TryIt="Click the Next match header to sort by date, then open a row's Next match picker, pick a later date and watch the row move. Choose Sort next match as text in Actions and compare the order. Switch Shaping mode to Grouped and click Pts: the rows reorder within each group."
-        WhatToLookFor="Template columns sort by SortMemberPath, the DateTimeOffset, TimeSpan or bool behind the control, not by the text it renders: by date 28 Dec comes before 2 Jan, as text it comes after. An edited value does not re-position its row until the sort is applied again, which is why this page calls SortByColumn after each edit. The standings plus the date and time columns are wider than the window, so the table scrolls horizontally on purpose.">
+        WhatToLookFor="A sortable header highlights on hover and changes again while pressed, like a row; a column that cannot sort shows no hover feedback. Template columns sort by SortMemberPath, the DateTimeOffset, TimeSpan or bool behind the control, not by the text it renders: by date 28 Dec comes before 2 Jan, as text it comes after. An edited value does not re-position its row until the sort is applied again, which is why this page calls SortByColumn after each edit. The standings plus the date and time columns are wider than the window, so the table scrolls horizontally on purpose.">
 
         <controls:SamplePresenter.Example>
-            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                <!-- snippet -->
-                <tv:TableView
-                    x:Name="TeamsTable"
-                    AutomationProperties.AutomationId="SortTable"
-                    AutomationProperties.Name="League standings"
-                    ItemsSource="{x:Bind Source}"
-                    SelectionMode="Single"
-                    IsReadOnly="False"
-                    EmptyTemplate="{StaticResource SortEmptyTemplate}"
-                    Sorted="OnTableSorted"
-                    SelectionChanged="OnTeamsSelectionChanged"
-                    VerticalAlignment="Stretch"
-                    MinHeight="320">
-                    <!-- Template columns sort by SortMemberPath; a text column without one sorts by its Binding path. -->
-                    <tv:TableViewTemplateColumn x:Name="CrestColumn" Header="Crest" Width="{StaticResource ColWidthNarrow}" CellTemplate="{StaticResource CrestTemplate}" SortMemberPath="Team" HeaderToolTip="Club crest, drawn from the team's initials. Sorts by team name."/>
-                    <tv:TableViewTextColumn x:Name="GroupColumn" Header="Group" Width="{StaticResource ColWidthNarrow}" IsReadOnly="True" HeaderToolTip="Group stage group, A–H." Binding="{Binding Group}"/>
-                    <tv:TableViewTextColumn x:Name="TeamColumn" Header="Team" Width="*" MinWidth="{StaticResource ColMinWidthStar}" HeaderToolTip="Team name. Editable: press F2 or double-click a cell." Binding="{Binding Team, Mode=TwoWay}"/>
-                    <tv:TableViewTemplateColumn x:Name="CountryColumn" Header="Country" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource CountryChipTemplate}" SortMemberPath="Country" HeaderToolTip="Read-only chip. Sorts by the Country string, like a text column."/>
-                    <tv:TableViewTemplateColumn x:Name="SeededColumn" Header="Seeded" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource SeededCheckBoxTemplate}" SortMemberPath="IsSeeded" HeaderToolTip="Pot-1 seed in the draw. Editable CheckBox; sorts by the bool, unseeded first."/>
-                    <tv:TableViewTemplateColumn x:Name="NextMatchColumn" Header="Next match" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource NextMatchDateTemplate}" SortMemberPath="NextMatchDate" HeaderToolTip="Date of the next fixture. Editable; sorts by the DateTimeOffset, so 28 Dec comes before 2 Jan."/>
-                    <tv:TableViewTemplateColumn x:Name="KickoffColumn" Header="Kickoff" Width="{StaticResource ColWidthTimeCompact}" CellTemplate="{StaticResource KickoffTimeTemplate}" SortMemberPath="Kickoff" HeaderToolTip="Kickoff time, 24-hour clock. Editable; sorts by the TimeSpan."/>
-                    <tv:TableViewTextColumn x:Name="NextMatchTextColumn" Header="Next match (text)" Width="{StaticResource ColWidthDate}" Visibility="Collapsed" IsReadOnly="True" HeaderToolTip="The same date as plain text. Sorts alphabetically, so 2 Jan comes before 28 Dec." Binding="{Binding NextMatchText}"/>
-                    <tv:TableViewTextColumn x:Name="PlayedColumn" Header="P" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" CanSort="False" HeaderToolTip="Played. Not sortable: every team has played the same number of games." Binding="{Binding Played}"/>
-                    <tv:TableViewTextColumn x:Name="WinsColumn" Header="W" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" HeaderToolTip="Won" Binding="{Binding Wins}"/>
-                    <tv:TableViewTextColumn x:Name="DrawsColumn" Header="D" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" HeaderToolTip="Drawn" Binding="{Binding Draws}"/>
-                    <tv:TableViewTextColumn x:Name="LossesColumn" Header="L" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" HeaderToolTip="Lost" Binding="{Binding Losses}"/>
-                    <tv:TableViewTextColumn x:Name="GoalsForColumn" Header="GF" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Goals for" Binding="{Binding GoalsFor}"/>
-                    <tv:TableViewTextColumn x:Name="GoalsAgainstColumn" Header="GA" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Goals against" Binding="{Binding GoalsAgainst}"/>
-                    <tv:TableViewTextColumn x:Name="GoalDifferenceColumn" Header="GD" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Goal difference: goals for minus goals against. The tiebreaker after points." Binding="{Binding GoalDifference}"/>
-                    <tv:TableViewTextColumn x:Name="PointsColumn" Header="Pts" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Points: 3 per win, 1 per draw. The primary standings key." Binding="{Binding Points}"/>
-                    <tv:TableViewTemplateColumn x:Name="StandingColumn" Header="Standing" Width="{StaticResource ColWidthChip}" IsReadOnly="True" CellTemplate="{StaticResource StandingChipTemplate}" SortMemberPath="Points" HeaderToolTip="Qualification band derived from Points: Qualified (12+), Playoff (7–11), Eliminated. Sorts by Points."/>
-                </tv:TableView>
-                <!-- /snippet -->
-            </Border>
+            <!-- snippet -->
+            <tv:TableView
+                x:Name="TeamsTable"
+                AutomationProperties.AutomationId="SortTable"
+                AutomationProperties.Name="League standings"
+                ItemsSource="{x:Bind Source}"
+                SelectionMode="Single"
+                IsReadOnly="False"
+                EmptyTemplate="{StaticResource SortEmptyTemplate}"
+                Sorted="OnTableSorted"
+                SelectionChanged="OnTeamsSelectionChanged"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <!-- Template columns sort by SortMemberPath; a text column without one sorts by its Binding path. -->
+                <tv:TableViewTemplateColumn x:Name="CrestColumn" Header="Crest" Width="{StaticResource ColWidthNarrow}" CellTemplate="{StaticResource CrestTemplate}" SortMemberPath="Team" HeaderToolTip="Club crest, drawn from the team's initials. Sorts by team name."/>
+                <tv:TableViewTextColumn x:Name="GroupColumn" Header="Group" Width="{StaticResource ColWidthNarrow}" IsReadOnly="True" HeaderToolTip="Group stage group, A–H." Binding="{Binding Group}"/>
+                <tv:TableViewTextColumn x:Name="TeamColumn" Header="Team" Width="*" MinWidth="{StaticResource ColMinWidthStar}" HeaderToolTip="Team name. Editable: press F2 or double-click a cell." Binding="{Binding Team, Mode=TwoWay}"/>
+                <tv:TableViewTemplateColumn x:Name="CountryColumn" Header="Country" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource CountryChipTemplate}" SortMemberPath="Country" HeaderToolTip="Read-only chip. Sorts by the Country string, like a text column."/>
+                <tv:TableViewTemplateColumn x:Name="SeededColumn" Header="Seeded" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource SeededCheckBoxTemplate}" SortMemberPath="IsSeeded" HeaderToolTip="Pot-1 seed in the draw. Editable CheckBox; sorts by the bool, unseeded first."/>
+                <tv:TableViewTemplateColumn x:Name="NextMatchColumn" Header="Next match" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource NextMatchDateTemplate}" SortMemberPath="NextMatchDate" HeaderToolTip="Date of the next fixture. Editable; sorts by the DateTimeOffset, so 28 Dec comes before 2 Jan."/>
+                <tv:TableViewTemplateColumn x:Name="KickoffColumn" Header="Kickoff" Width="{StaticResource ColWidthTimeCompact}" CellTemplate="{StaticResource KickoffTimeTemplate}" SortMemberPath="Kickoff" HeaderToolTip="Kickoff time, 24-hour clock. Editable; sorts by the TimeSpan."/>
+                <tv:TableViewTextColumn x:Name="NextMatchTextColumn" Header="Next match (text)" Width="{StaticResource ColWidthDate}" Visibility="Collapsed" IsReadOnly="True" HeaderToolTip="The same date as plain text. Sorts alphabetically, so 2 Jan comes before 28 Dec." Binding="{Binding NextMatchText}"/>
+                <tv:TableViewTextColumn x:Name="PlayedColumn" Header="P" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" CanSort="False" HeaderToolTip="Played. Not sortable: every team has played the same number of games." Binding="{Binding Played}"/>
+                <tv:TableViewTextColumn x:Name="WinsColumn" Header="W" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" HeaderToolTip="Won" Binding="{Binding Wins}"/>
+                <tv:TableViewTextColumn x:Name="DrawsColumn" Header="D" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" HeaderToolTip="Drawn" Binding="{Binding Draws}"/>
+                <tv:TableViewTextColumn x:Name="LossesColumn" Header="L" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" HeaderToolTip="Lost" Binding="{Binding Losses}"/>
+                <tv:TableViewTextColumn x:Name="GoalsForColumn" Header="GF" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Goals for" Binding="{Binding GoalsFor}"/>
+                <tv:TableViewTextColumn x:Name="GoalsAgainstColumn" Header="GA" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Goals against" Binding="{Binding GoalsAgainst}"/>
+                <tv:TableViewTextColumn x:Name="GoalDifferenceColumn" Header="GD" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Goal difference: goals for minus goals against. The tiebreaker after points." Binding="{Binding GoalDifference}"/>
+                <tv:TableViewTextColumn x:Name="PointsColumn" Header="Pts" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Points: 3 per win, 1 per draw. The primary standings key." Binding="{Binding Points}"/>
+                <tv:TableViewTemplateColumn x:Name="StandingColumn" Header="Standing" Width="{StaticResource ColWidthChip}" IsReadOnly="True" CellTemplate="{StaticResource StandingChipTemplate}" SortMemberPath="Points" HeaderToolTip="Qualification band derived from Points: Qualified (12+), Playoff (7–11), Eliminated. Sorts by Points."/>
+            </tv:TableView>
+            <!-- /snippet -->
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
@@ -197,44 +195,60 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Button Grid.Row="0" Grid.Column="0" x:Name="SortPointsDescButton" AutomationProperties.AutomationId="SortPointsDescButton"
-                                Content="Points ↓" Click="OnSortPointsDescClick"
+                                Click="OnSortPointsDescClick"
                                 AutomationProperties.Name="Sort by points, highest first"
                                 ToolTipService.ToolTip="SortByColumn(PointsColumn, Descending): the standings order."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Points ↓" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="0" Grid.Column="1" x:Name="SortGroupAscButton" AutomationProperties.AutomationId="SortGroupAscButton"
-                                Content="Group ↑" Click="OnSortGroupAscClick"
+                                Click="OnSortGroupAscClick"
                                 AutomationProperties.Name="Sort by group, A first"
                                 ToolTipService.ToolTip="SortByColumn(GroupColumn, Ascending)."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Group ↑" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="1" Grid.Column="0" x:Name="SortGoalDifferenceDescButton" AutomationProperties.AutomationId="SortGoalDifferenceDescButton"
-                                Content="GD ↓" Click="OnSortGoalDifferenceDescClick"
-                                AutomationProperties.Name="Sort by goal difference, highest first"
+                                Click="OnSortGoalDifferenceDescClick"
+                                AutomationProperties.Name="GD: sort by goal difference, highest first"
                                 ToolTipService.ToolTip="SortByColumn(GoalDifferenceColumn, Descending)."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="GD ↓" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="1" Grid.Column="1" x:Name="SortNextMatchButton" AutomationProperties.AutomationId="SortNextMatchButton"
-                                Content="Next match ↑" Click="OnSortNextMatchClick"
+                                Click="OnSortNextMatchClick"
                                 AutomationProperties.Name="Sort by next match date, soonest first"
                                 ToolTipService.ToolTip="SortByColumn(NextMatchColumn, Ascending): a template column sorted by the DateTimeOffset."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Next match ↑" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="2" Grid.Column="0" x:Name="SortKickoffButton" AutomationProperties.AutomationId="SortKickoffButton"
-                                Content="Kickoff ↑" Click="OnSortKickoffClick"
+                                Click="OnSortKickoffClick"
                                 AutomationProperties.Name="Sort by kickoff time, earliest first"
                                 ToolTipService.ToolTip="SortByColumn(KickoffColumn, Ascending): a template column sorted by the TimeSpan."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Kickoff ↑" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="2" Grid.Column="1" x:Name="SortSeededButton" AutomationProperties.AutomationId="SortSeededFirstButton"
-                                Content="Seeded first" Click="OnSortSeededClick"
-                                AutomationProperties.Name="Sort seeded teams first"
+                                Click="OnSortSeededClick"
+                                AutomationProperties.Name="Seeded first: sort seeded teams first"
                                 ToolTipService.ToolTip="SortByColumn(SeededColumn, Descending): a CheckBox column sorted by the bool."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Seeded first" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="3" Grid.Column="0" x:Name="TogglePointsButton" AutomationProperties.AutomationId="SortTogglePointsButton"
-                                Content="Toggle Points" Click="OnTogglePointsClick"
-                                AutomationProperties.Name="Toggle the points sort direction"
+                                Click="OnTogglePointsClick"
+                                AutomationProperties.Name="Toggle Points sort direction"
                                 ToolTipService.ToolTip="ToggleSortDirection(PointsColumn): reverses the Points sort, or starts it."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Toggle Points" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                         <Button Grid.Row="3" Grid.Column="1" x:Name="ClearSortButton" AutomationProperties.AutomationId="SortClearSortButton"
-                                Content="Clear sort" Click="OnClearSortClick"
+                                Click="OnClearSortClick"
                                 ToolTipService.ToolTip="ClearSort(): the rows return to source order and Sorted fires with no column."
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                            <TextBlock Text="Clear sort" TextWrapping="Wrap" TextAlignment="Center"/>
+                        </Button>
                     </Grid>
                 </controls:RailSection>
 

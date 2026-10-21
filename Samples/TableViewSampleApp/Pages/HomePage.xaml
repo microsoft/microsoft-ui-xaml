@@ -102,7 +102,7 @@
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Column lifecycle" Tag="ColumnLifecycle" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Column lifecycle sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Headers visibility" Tag="HeadersVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Headers visibility sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Tooltips" Tag="ToolTips" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Tooltips sample."/>
-                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Grouped rows" Tag="Groups" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grouped rows sample."/>
+                                        <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Context menus" Tag="ContextMenus" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Context menus sample."/>                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Grouped rows" Tag="Groups" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grouped rows sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Hierarchy" Tag="Hierarchy" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Hierarchy page."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Grid lines visibility" Tag="GridLinesVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grid lines visibility sample."/>
                     <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Text wrap + row height" Tag="TextWrap" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Text wrap and row height sample."/>
@@ -122,7 +122,7 @@
                     Text="First-party Windows surfaces and third-party app developers that need a native WinUI 3 tabular control. Today these experiences render tables on a mix of legacy stacks (DirectUI, ComCtl) or a partial WinUI 3 migration."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
-                <Border Style="{StaticResource TableHostBorderStyle}" HorizontalAlignment="Left" MaxWidth="640" Margin="0,4,0,0">
+                <Border Style="{StaticResource CardBorderStyle}" HorizontalAlignment="Left" MaxWidth="640" Margin="0,4,0,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="220"/>
@@ -189,12 +189,11 @@
                     Text="Found a bug or have feedback on TableView? File it in the public Microsoft UI XAML repository. Include the sample page name, repro steps, and the build (the About page shows the exact commit)."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
-                <Button x:Name="ReportIssueButton"
-                    Content="Report on GitHub"
+                <HyperlinkButton x:Name="ReportIssueButton"
+                    Content="Report an issue on GitHub"
                     HorizontalAlignment="Left"
                     Click="OnReportIssueClick"
                     AutomationProperties.AutomationId="HomeReportIssueButton"
-                    AutomationProperties.Name="Report an issue on GitHub"
                     AutomationProperties.HelpText="Opens the public Microsoft UI XAML bug report template to log a TableView samples issue."
                     ToolTipService.ToolTip="Opens the public Microsoft UI XAML bug report template on GitHub."/>
                 <TextBlock x:Name="ReportIssueFallbackText"

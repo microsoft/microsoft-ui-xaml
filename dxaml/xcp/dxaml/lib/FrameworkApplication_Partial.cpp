@@ -12,7 +12,6 @@
 #include "UnhandledExceptionEventArgs.g.h"
 #include <FrameworkTheming.h>
 #include <DependencyLocator.h>
-#include <MetadataResetter.h>
 #include <process.h>
 #include <RuntimeEnabledFeatures.h>
 #include "NormalLaunchActivatedEventArgs.h"
@@ -454,17 +453,8 @@ void FrameworkApplication::ReleaseCurrent()
         // alive without Xaml, in which case Xaml should reuse the same instance should we ever get reinitialized.
         IFCFAILFAST(ctl::AsWeak(g_pApplication, &g_previousApplicationWeak));
         
-        // The metadata store may hold a reference to an IXamlMetadataProvider, which is usually the
-        // Application object (which derives from FrameworkApplication). In other words, there may be
-        // a reference cycle. We want to break that cycle when the main FrameworkView goes away.
-        g_pApplication->m_metadataRef = nullptr;
         ctl::release_interface(g_pApplication);
     }
-}
-
-std::shared_ptr<MetadataResetter> FrameworkApplication::GetMetadataReference()
-{
-    return m_metadataRef;
 }
 
 _Check_return_ HRESULT FrameworkApplicationFactory::get_CurrentImpl(_Outptr_result_maybenull_ xaml::IApplication** ppValue)
@@ -628,10 +618,6 @@ _Check_return_ HRESULT FrameworkApplication::Initialize()
     IFC_RETURN(ctl::ComObject<DirectUI::DebugSettings>::CreateInstance(&m_pDebugSettings));
     IFCEXPECT_RETURN(m_pDebugSettings);   // Should never fail
     m_pDebugSettings->UpdatePeg(true);
-
-    // Set up the metadata resetter. This object clears out the process-wide metadata when it is safe to do so (before
-    // DLLs are getting unloaded, but after we're done shutting down the visual tree).
-    m_metadataRef = std::make_shared<MetadataResetter>();
 
     // Determine which AppPolicyWindowingModel is being used. Use Application::GetAppPolicyWindowingModel() to
     // get the current Windowing model.
@@ -999,6 +985,10 @@ _Check_return_ HRESULT FrameworkApplication::ExitImpl()
 _Check_return_ HRESULT FrameworkApplication::put_RequestedThemeImpl(
     _In_ xaml::ApplicationTheme value)
 {
+    IFC_RETURN(DXamlServices::IsDXamlCoreInitialized() ? S_OK : RPC_E_WRONG_THREAD);
+    DXamlCore* dxamlCore = DXamlCore::GetCurrent();
+    IFCEXPECT_RETURN(dxamlCore);
+
     // RequestedTheme cannot be set after app.xaml has been loaded.
     if (!m_isRequestedThemeSettable)
     {
@@ -1049,7 +1039,7 @@ _Check_return_ HRESULT FrameworkApplication::put_RequestedThemeImpl(
     // Note: This is special, we bypass the CApplication::SetValue so this property never actually
     // get's set on the core object. Just an annoying nuance because our parser set's this by going
     // through CApplication::SetValue. See comment above for more info.
-    IFC_RETURN(DXamlCore::GetCurrent()->GetHandle()->GetFrameworkTheming()->SetRequestedTheme(value));
+    IFC_RETURN(dxamlCore->GetHandle()->GetFrameworkTheming()->SetRequestedTheme(value));
 
     return S_OK;
 }
@@ -1066,7 +1056,11 @@ _Check_return_ HRESULT FrameworkApplication::put_RequestedThemeImpl(
 _Check_return_ HRESULT FrameworkApplication::get_RequestedThemeImpl(
     _Out_ xaml::ApplicationTheme* pValue)
 {
-    auto theme = DXamlCore::GetCurrent()->GetHandle()->GetFrameworkTheming()->GetBaseTheme();
+    IFC_RETURN(DXamlServices::IsDXamlCoreInitialized() ? S_OK : RPC_E_WRONG_THREAD);
+    DXamlCore* dxamlCore = DXamlCore::GetCurrent();
+    IFCEXPECT_RETURN(dxamlCore);
+
+    auto theme = dxamlCore->GetHandle()->GetFrameworkTheming()->GetBaseTheme();
     *pValue = (theme == Theming::Theme::Light ? xaml::ApplicationTheme_Light : xaml::ApplicationTheme_Dark);
 
     RRETURN(S_OK);
@@ -1214,10 +1208,14 @@ _Check_return_ HRESULT FrameworkApplication::get_HighContrastAdjustmentImpl(_Out
 // Sets the FrameworkApplication::HighContrastAdjustment property value.
 _Check_return_ HRESULT FrameworkApplication::put_HighContrastAdjustmentImpl(_In_ xaml::ApplicationHighContrastAdjustment value)
 {
+    IFC_RETURN(DXamlServices::IsDXamlCoreInitialized() ? S_OK : RPC_E_WRONG_THREAD);
+    DXamlCore* dxamlCore = DXamlCore::GetCurrent();
+    IFCEXPECT_RETURN(dxamlCore);
+
     if (m_highContrastAdjustment != value)
     {
         m_highContrastAdjustment = value;
-        IFC_RETURN(DXamlCore::GetCurrent()->OnApplicationHighContrastAdjustmentChanged());
+        IFC_RETURN(dxamlCore->OnApplicationHighContrastAdjustmentChanged());
     }
 
     return S_OK;
