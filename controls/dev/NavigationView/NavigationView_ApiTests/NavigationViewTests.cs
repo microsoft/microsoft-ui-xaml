@@ -297,6 +297,123 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyAutoSuggestBoxCanBeClearedByVisualStateSetter()
+        {
+            // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/2640
+            UserControl root = null;
+            NavigationView navView = null;
+            AutoSuggestBox box = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                root = (UserControl)XamlReader.Load(@"
+                    <UserControl
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                        <Grid>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name='TestStates'>
+                                    <VisualState x:Name='WithBox' />
+                                    <VisualState x:Name='NoBox'>
+                                        <VisualState.Setters>
+                                            <Setter Target='navView.AutoSuggestBox' Value='{x:Null}' />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <controls:NavigationView x:Name='navView' PaneDisplayMode='LeftCompact' IsPaneOpen='False' Width='800' Height='600'>
+                                <controls:NavigationView.AutoSuggestBox>
+                                    <AutoSuggestBox x:Name='box' PlaceholderText='Search' />
+                                </controls:NavigationView.AutoSuggestBox>
+                            </controls:NavigationView>
+                        </Grid>
+                    </UserControl>");
+                navView = (NavigationView)root.FindName("navView");
+                box = (AutoSuggestBox)root.FindName("box");
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            Action<bool, string> verifyAutoSuggestBoxState = (bool expectBox, string message) =>
+            {
+                Log.Comment(message);
+                bool isTop = navView.PaneDisplayMode == NavigationViewPaneDisplayMode.Top;
+                var presenter = (ContentControl)VisualTreeUtils.FindVisualChildByName(navView, isTop ? "TopPaneAutoSuggestBoxPresenter" : "PaneAutoSuggestBoxPresenter");
+                var area = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(navView, isTop ? "TopPaneAutoSuggestArea" : "AutoSuggestArea");
+                var searchButton = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(navView, "PaneAutoSuggestButton");
+                var expectedVisibility = expectBox ? Visibility.Visible : Visibility.Collapsed;
+
+                Verify.AreEqual(expectBox ? box : null, navView.AutoSuggestBox, "NavigationView.AutoSuggestBox");
+                Verify.AreEqual(expectBox ? box : null, presenter.Content, "AutoSuggestBox presenter content");
+                Verify.AreEqual(expectBox, IsAncestorOf(presenter, box), "AutoSuggestBox is hosted in the presenter");
+                if (!expectBox)
+                {
+                    Verify.IsNull(VisualTreeHelper.GetParent(box), "AutoSuggestBox is removed from the visual tree");
+                }
+                Verify.AreEqual(expectedVisibility, area.Visibility, "AutoSuggestBox area visibility");
+                if (!isTop)
+                {
+                    // In closed LeftCompact the box is replaced by the search button, which lives inside the area.
+                    Verify.AreEqual(expectBox, IsVisibleUpTo(searchButton, navView), "Search button is shown only when there is an AutoSuggestBox");
+                }
+            };
+
+            RunOnUIThread.Execute(() =>
+            {
+                verifyAutoSuggestBoxState(true, "Initial state: AutoSuggestBox is set");
+                Verify.IsTrue(VisualStateManager.GoToState(root, "NoBox", false));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content.UpdateLayout();
+                verifyAutoSuggestBoxState(false, "After going to NoBox: the {x:Null} setter clears AutoSuggestBox");
+
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+                Content.UpdateLayout();
+                verifyAutoSuggestBoxState(false, "Top mode while in NoBox: AutoSuggestBox stays cleared");
+
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                Content.UpdateLayout();
+                Verify.IsTrue(VisualStateManager.GoToState(root, "WithBox", false));
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content.UpdateLayout();
+                verifyAutoSuggestBoxState(true, "After going back to WithBox: AutoSuggestBox is restored");
+            });
+        }
+
+        private static bool IsAncestorOf(DependencyObject ancestor, DependencyObject element)
+        {
+            for (var current = VisualTreeHelper.GetParent(element); current != null; current = VisualTreeHelper.GetParent(current))
+            {
+                if (current == ancestor)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static bool IsVisibleUpTo(UIElement element, UIElement root)
+        {
+            for (DependencyObject current = element; current != null && current != root; current = VisualTreeHelper.GetParent(current))
+            {
+                if (current is UIElement uiElement && uiElement.Visibility != Visibility.Visible)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        [TestMethod]
         public void VerifyPaneDisplayModeAndDisplayModeMapping()
         {
             var navView = SetupNavigationView();
