@@ -8,6 +8,11 @@
         <StackPanel Orientation="Horizontal" Spacing="12">
             <CheckBox x:Name="HandleRelease" Content="Handle release and release capture" IsChecked="True"/>
             <CheckBox x:Name="CancelDrag" Content="Cancel drag start" IsChecked="True"/>
+            <CheckBox x:Name="Draggable" Content="CanDrag" IsChecked="True" Click="Draggable_Click"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <CheckBox x:Name="DisableOnCaptureLost" Content="Disable drag on capture loss"/>
+            <CheckBox x:Name="ReenableOnCaptureLost" Content="Reenable drag in the same callback"/>
         </StackPanel>
         <Border x:Name="DragSource" CanDrag="True" Background="LightBlue" Height="80">
             <Grid>
@@ -41,6 +46,7 @@
                 <TextBlock x:Name="MousePointerId" Text="0"/>
                 <TextBlock x:Name="MouseCaptureCount" Text="0"/>
                 <TextBlock x:Name="MouseCaptureLostCount" Text="0"/>
+                <TextBlock x:Name="CaptureLossActionCount" Text="0"/>
             </StackPanel>
             <StackPanel>
                 <TextBlock x:Name="DroppedText" Text="None"/>

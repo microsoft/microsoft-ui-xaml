@@ -21,6 +21,7 @@ namespace MUXControlsTestApp
         private int childTouchReleaseCount;
         private int childTouchPressCount;
         private int mouseCaptureLostCount;
+        private int captureLossActionCount;
 
         public AutomaticDragPage()
         {
@@ -38,6 +39,17 @@ namespace MUXControlsTestApp
                 if (args.Pointer.PointerDeviceType == PointerDeviceType.Mouse)
                 {
                     MouseCaptureLostCount.Text = (++mouseCaptureLostCount).ToString();
+                    if (DisableOnCaptureLost.IsChecked == true)
+                    {
+                        CaptureLossActionCount.Text = (++captureLossActionCount).ToString();
+                        DragSource.CanDrag = false;
+                        Draggable.IsChecked = false;
+                        if (ReenableOnCaptureLost.IsChecked == true)
+                        {
+                            DragSource.CanDrag = true;
+                            Draggable.IsChecked = true;
+                        }
+                    }
                 }
             }), true);
             TouchChild.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
@@ -99,6 +111,11 @@ namespace MUXControlsTestApp
                 ChildTouchPointerId.Text = args.Pointer.PointerId.ToString();
                 args.Handled = true;
             }
+        }
+
+        private void Draggable_Click(object sender, RoutedEventArgs args)
+        {
+            DragSource.CanDrag = Draggable.IsChecked == true;
         }
 
         private void DropTarget_DragOver(object sender, DragEventArgs args)

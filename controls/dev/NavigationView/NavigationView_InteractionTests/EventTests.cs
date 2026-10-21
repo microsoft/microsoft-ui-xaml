@@ -310,6 +310,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void NavigationViewItemPenRetemplateDuringPressDoesNotDrag()
+        {
+            using var inputController = InputController.Activate(PointerInputType.Pen);
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
+            {
+                new CheckBox(FindElement.ById("RetemplateOnPress")).Check();
+                Wait.ForIdle();
+
+                // The retemplate ends the item's press and releases its capture. Pen capture
+                // release may not raise PointerCaptureLost, so moving must not start a drag.
+                var bounds = FindElement.ById("DragItem").BoundingRectangle;
+                int y = (int)(bounds.Top + bounds.Height / 2);
+                PointerInput.Move(new System.Drawing.Point((int)(bounds.Left + bounds.Width * 0.2), y));
+                PointerInput.Press(PointerButtons.Primary);
+                try
+                {
+                    Wait.ForIdle();
+                    Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("RetemplateCount")).GetText());
+                    foreach (double fraction in new[] { 0.4, 0.6, 0.8 })
+                    {
+                        PointerInput.Move(new System.Drawing.Point((int)(bounds.Left + bounds.Width * fraction), y));
+                        Wait.ForIdle();
+                    }
+                    Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
+                }
+                finally
+                {
+                    PointerInput.Release(PointerButtons.Primary);
+                }
+
+                Wait.ForIdle();
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                VerifyNavigationViewDragStateReset();
+
+                new CheckBox(FindElement.ById("RetemplateOnPress")).Uncheck();
+                Wait.ForIdle();
+                InputHelper.MouseDragToTarget(FindElement.ById("DragItem"), FindElement.ById("DropTarget"));
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("DragCount")).GetText());
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                VerifyNavigationViewDragStateReset();
+            }
+        }
+
+        [TestMethod]
         public void NavigationViewItemMouseDrop()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))

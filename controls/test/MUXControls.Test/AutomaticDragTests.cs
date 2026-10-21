@@ -185,6 +185,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void MouseCaptureLostHandlerCanDisableDrag()
+        {
+            using var inputController = InputController.Activate(PointerInputType.Mouse);
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            var source = FindElement.ById("DragHandle");
+            var target = FindElement.ById("DropHandle");
+
+            // Releasing capture at drag start raises PointerCaptureLost synchronously.
+            // Clearing CanDrag there removes the helper and must cancel the drag.
+            new CheckBox(FindElement.ById("DisableOnCaptureLost")).Check();
+            Wait.ForIdle();
+            InputHelper.MouseDragToTarget(source, target);
+            Verify.AreEqual("1", ReadText("CaptureLossActionCount"));
+            Verify.AreEqual("0", ReadText("DragCount"));
+            VerifyCaptureReleased();
+
+            // Restoring CanDrag in the same callback keeps the drag.
+            new CheckBox(FindElement.ById("ReenableOnCaptureLost")).Check();
+            new CheckBox(FindElement.ById("Draggable")).Check();
+            Wait.ForIdle();
+            InputHelper.MouseDragToTarget(source, target);
+            Verify.AreEqual("2", ReadText("CaptureLossActionCount"));
+            Verify.AreEqual("1", ReadText("DragCount"));
+            VerifyCaptureReleased();
+        }
+
         private static string ReadText(string id)
         {
             return new TextBlock(FindElement.ById(id)).GetText();
