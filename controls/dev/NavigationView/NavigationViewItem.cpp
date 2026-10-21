@@ -203,7 +203,7 @@ void NavigationViewItem::UpdateRepeaterItemsSource()
 
 void NavigationViewItem::OnItemsSourceViewChanged(const winrt::IInspectable& /*sender*/, const winrt::NotifyCollectionChangedEventArgs& /*args*/)
 {
-    UpdateVisualStateForChevron();
+    OnChildrenChanged(true /*isCollectionChange*/);
 }
  
 winrt::UIElement NavigationViewItem::GetSelectionIndicator() const
@@ -360,6 +360,7 @@ void NavigationViewItem::OnMenuItemsVectorChanged(const winrt::Collections::IObs
 {
     LoadElementsForDisplayingChildren();
     UpdateRepeaterItemsSource();
+    OnChildrenChanged(true /*isCollectionChange*/);
 }
 
 void NavigationViewItem::OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -379,20 +380,21 @@ void NavigationViewItem::OnMenuItemsPropertyChanged(const winrt::DependencyPrope
     }
     
     UpdateRepeaterItemsSource();
-    UpdateVisualStateForChevron();
+    OnChildrenChanged(false /*isCollectionChange*/);
 }
 
 void NavigationViewItem::OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     LoadElementsForDisplayingChildren();
     UpdateRepeaterItemsSource();
-    UpdateVisualStateForChevron();
+    OnChildrenChanged(false /*isCollectionChange*/);
 }
 
 void NavigationViewItem::OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     LoadElementsForDisplayingChildren();
-    UpdateVisualStateForChevron();
+    UpdateRepeaterItemsSource();
+    OnChildrenChanged(false /*isCollectionChange*/);
 }
 
 void NavigationViewItem::ShowSelectionIndicator(bool visible)
@@ -709,6 +711,26 @@ void NavigationViewItem::UpdateVisualStateForChevron()
         else if (chevronState == ChevronStateValue::ChevronVisibleClosed)
         {
             winrt::VisualStateManager::GoToState(presenter, c_chevronVisibleClosed, true);
+        }
+    }
+}
+
+void NavigationViewItem::OnChildrenChanged(bool isCollectionChange)
+{
+    UpdateVisualStateForChevron();
+
+    if (m_appliedTemplate && !IsOnLeftNav())
+    {
+        if (auto navView = GetNavigationView())
+        {
+            const auto navViewImpl = winrt::get_self<NavigationView>(navView);
+            // Ignore property changes caused by recycling a data-templated container.
+            if (isCollectionChange || IsInNavigationViewOwnedRepeater() ||
+                navViewImpl->GetTopDataProvider().IndexOf(*this) != -1)
+            {
+                // Overflow items are not measured by UpdateTopNavigationWidthCache.
+                navViewImpl->TopNavigationViewItemContentChanged(true /*forceInvalidateWidthCache*/);
+            }
         }
     }
 }
