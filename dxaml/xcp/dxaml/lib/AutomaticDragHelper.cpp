@@ -54,6 +54,35 @@ AutomaticDragHelper::StopCheckingForMouseDrag(
 }
 
 
+_Check_return_ HRESULT
+AutomaticDragHelper::OwnerHasPointerCapture(
+    _In_ xaml_input::IPointer* pPointer,
+    _Out_ bool* hasCapture)
+{
+    *hasCapture = false;
+
+    UINT pointerId = 0;
+    IFC_RETURN(pPointer->get_PointerId(&pointerId));
+
+    ctl::ComPtr<wfc::IVectorView<xaml_input::Pointer*>> spCaptures;
+    IFC_RETURN(m_pOwnerNoRef->get_PointerCaptures(&spCaptures));
+    if (spCaptures)
+    {
+        UINT count = 0;
+        IFC_RETURN(spCaptures->get_Size(&count));
+        for (UINT i = 0; i < count && !*hasCapture; ++i)
+        {
+            ctl::ComPtr<xaml_input::IPointer> spCapture;
+            UINT capturedId = 0;
+            IFC_RETURN(spCaptures->GetAt(i, &spCapture));
+            IFC_RETURN(spCapture->get_PointerId(&capturedId));
+            *hasCapture = (capturedId == pointerId);
+        }
+    }
+
+    return S_OK;
+}
+
 // Return true if we're tracking the mouse and newMousePosition is outside the drag
 // rectangle centered at m_lastMouseLeftButtonDownPosition (see IsOutsideDragRectangle).
 bool AutomaticDragHelper::ShouldStartMouseDrag(
@@ -211,6 +240,19 @@ AutomaticDragHelper::HandlePointerPressedEventArgs(
         IFCPTR_RETURN(spPointerProperties);
         IFC_RETURN(spPointerProperties->get_IsLeftButtonPressed(&isLeftButtonPressed));
 
+        if (m_isLeftButtonPressed && isLeftButtonPressed)
+        {
+            UINT pointerId = 0;
+            IFC_RETURN(spPointer->get_PointerId(&pointerId));
+            if (pointerId == m_mouseDragPointerId)
+            {
+                // The tracked pointer is pressing again, so its previous release was missed.
+                // Its capture is already gone; track this press instead.
+                m_isLeftButtonPressed = false;
+                m_isCheckingForMouseDrag = false;
+            }
+        }
+
         // If the left mouse button was the one pressed...
         if (!m_isLeftButtonPressed && isLeftButtonPressed)
         {
@@ -279,13 +321,27 @@ AutomaticDragHelper::HandlePointerMovedEventArgs(
         {
             ctl::ComPtr<wf::IAsyncOperation<wadt::DataPackageOperation>> spAsyncOperation;
 
+            // Another handler may have released the capture taken at press. Releasing pen
+            // capture does not always raise PointerCaptureLost, so check it here.
+            bool ownerHasCapture = false;
+            IFC_RETURN(OwnerHasPointerCapture(spPointer.Get(), &ownerHasCapture));
+
+            // Releasing capture below can raise PointerCaptureLost synchronously, and an app
+            // handler that clears CanDrag deletes this helper. Do not use members after it.
+            ctl::ComPtr<UIElement> owner(m_pOwnerNoRef);
+
             // Releasing pen capture may not raise PointerCaptureLost, and the
             // release after a drag may occur elsewhere. End tracking explicitly.
             m_isLeftButtonPressed = false;
             IFC_RETURN(UnregisterEvents());
             IFC_RETURN(StopCheckingForMouseDrag(spPointer.Get()));
 
-            IFC_RETURN(m_pOwnerNoRef->StartDragAsync(spPointerPoint.Get(), &spAsyncOperation));
+            BOOLEAN canDrag = FALSE;
+            IFC_RETURN(owner->get_CanDrag(&canDrag));
+            if (ownerHasCapture && canDrag)
+            {
+                IFC_RETURN(owner->StartDragAsync(spPointerPoint.Get(), &spAsyncOperation));
+            }
         }
     }
 
