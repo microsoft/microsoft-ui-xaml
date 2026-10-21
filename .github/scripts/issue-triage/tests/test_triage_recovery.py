@@ -24,6 +24,72 @@ class AssessmentRecoveryTests(unittest.TestCase):
             output["items"][0].pop("missing_information_kind")
         return t.validate(output, evidence), evidence
 
+    def test_webview_keyboard_control_route_does_not_inherit_rendering_or_core(self):
+        self.client.issue.update(
+            title="WinUI 2 WebView2 crashes on Tab in CoreWindow",
+            body="WinUI 2.8 UWP: HandleAcceleratorKeyActivated throws after "
+                 "treating SendMessageW(WM_KEYDOWN) returning zero as failure.",
+        )
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, area="area-WebView", routing_rule="winui2-keyboard-control",
+            routing_reason="The report identifies the WinUI 2/CoreWindow control's keyboard-forwarding error check.",
+        ), evidence)
+        plan = t.publish(self.client, result, evidence, self.mapping, write=False)
+        self.assertEqual(plan["add_labels"], ["area-WebView", "team-Controls"])
+        self.assertNotIn("team-Rendering", plan["comment"])
+        self.assertNotIn("team-Core", plan["comment"])
+        self.assertEqual(self.client.writes, [])
+
+    def test_webview_without_an_evidenced_exception_does_not_guess_a_team(self):
+        self.client.issue.update(
+            title="WebView2 browser process exits",
+            body="The browser runtime exits; product version and control failure site are unknown.",
+        )
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, area="area-WebView",
+            routing_reason="WebView2 is involved, but the report does not identify an owning WinUI implementation.",
+        ), evidence)
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["area-WebView"])
+        self.assertIn("No automatic team assignment", t.render(result, evidence, self.mapping))
+
+    def test_xaml_facade_exception_preserves_existing_appwindow_area_and_routes_core(self):
+        self.client.issue.update(
+            title="Window Width/Height are not reflected before activation",
+            body="XAML Window.Width/Height have not propagated to AppWindow.Size before Activate; "
+                 "using direct AppWindow.Resize works.",
+        )
+        self.client.issue["labels"].append({"name": "area-AppWindow"})
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, area="area-AppWindow", routing_rule="xaml-window-facade",
+            routing_reason="XAML dimensions have not propagated, while the direct AppWindow sizing operation works.",
+        ), evidence)
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["team-Core"])
+        self.assertNotIn("team-CompInput", t.render(result, evidence, self.mapping))
+
+    def test_direct_appwindow_failure_keeps_its_native_owner(self):
+        result, evidence = self.validate(
+            area="area-AppWindow",
+            routing_reason="Direct AppWindow.Resize fails without any XAML Window size properties.",
+        )
+        self.assertEqual(
+            t.planned_labels(result, evidence, self.mapping),
+            ["area-AppWindow", "team-CompInput"],
+        )
+
+    def test_existing_human_owner_is_not_reassigned_by_a_new_exception(self):
+        self.evidence["existing_labels"] += ["area-AppWindow", "team-CompInput"]
+        result, evidence = self.validate(
+            area="area-AppWindow", routing_rule="xaml-window-facade",
+            routing_reason="XAML size propagation is implicated, but existing human routing is authoritative.",
+        )
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), [])
+        body = t.render(result, evidence, self.mapping)
+        self.assertIn("`team-CompInput`", body)
+        self.assertNotIn("`team-Core`", body)
+
     def test_all_observed_rejection_shapes_are_recoverable(self):
         cases = [
             (708, "OTHER", dict(issue_kind="OTHER", reproduction="SUFFICIENT",
