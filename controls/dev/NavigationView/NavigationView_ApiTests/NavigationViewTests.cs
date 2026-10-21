@@ -1267,8 +1267,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyBackButtonHitTargetDoesNotShiftContent()
         {
-            // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/5306: the back button's
-            // larger hit target must not change the Width that NavigationView adds to ContentLeftPadding.
+            // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/5306: the back button's hit target
+            // must start at the NavigationView's top-left corner in every pane mode, and its larger size must not change
+            // the Width that NavigationView adds to ContentLeftPadding.
             RunOnUIThread.Execute(() =>
             {
                 var navView = new NavigationView()
@@ -1288,9 +1289,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(40.0, backButton.Width, "Back button Width");
                 Verify.AreEqual(48.0, backButton.ActualWidth, "Back button hit target width");
                 Verify.AreEqual(44.0, backButton.ActualHeight, "Back button hit target height");
+                VerifyBackButtonStartsAtCorner(navView, backButton);
                 // PaneToggleButtonWidth (40) + back button Width (40).
                 Verify.AreEqual(80.0, contentLeftPadding.Width, "ContentLeftPadding Width");
+
+                foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.Top })
+                {
+                    Log.Comment("PaneDisplayMode: " + paneDisplayMode);
+                    navView.PaneDisplayMode = paneDisplayMode;
+                    Content.UpdateLayout();
+                    Verify.AreEqual(48.0, backButton.ActualWidth, "Back button hit target width");
+                    Verify.AreEqual(44.0, backButton.ActualHeight, "Back button hit target height");
+                    VerifyBackButtonStartsAtCorner(navView, backButton);
+                }
+
+                Log.Comment("Changing CompactPaneLength at runtime resizes the hit target with the button");
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                navView.CompactPaneLength = 64;
+                Content.UpdateLayout();
+                Verify.AreEqual(56.0, backButton.Width, "Back button Width");
+                Verify.AreEqual(64.0, backButton.ActualWidth, "Back button hit target width");
+                VerifyBackButtonStartsAtCorner(navView, backButton);
             });
+        }
+
+        private void VerifyBackButtonStartsAtCorner(NavigationView navView, Button backButton)
+        {
+            var origin = backButton.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0));
+            Verify.AreEqual(0.0, origin.X, "Back button hit target X");
+            Verify.AreEqual(0.0, origin.Y, "Back button hit target Y");
         }
 
         private void VerifyHeaderContentMargin(NavigationViewPaneDisplayMode paneDisplayMode, string verificationFileNamePrefix)
