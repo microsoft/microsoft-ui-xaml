@@ -4,6 +4,8 @@
 #include "precomp.h"
 #include "Activators.g.h"
 #include "BringIntoViewRequestedEventArgs.h"
+#include "ErrorHelper.h"
+#include <xcperrorresource.h>
 
 _Check_return_ HRESULT CBringIntoViewRequestedEventArgs::get_TargetElement(_Outptr_result_maybenull_ CUIElement** ppValue)
 {
@@ -106,7 +108,7 @@ _Check_return_ HRESULT CBringIntoViewRequestedEventArgs::put_HorizontalOffset(DO
 {
     if (DirectUI::DoubleUtil::IsNaN(value) || DirectUI::DoubleUtil::IsInfinity(value))
     {
-        IFC_RETURN(E_INVALIDARG);
+        IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_INVALIDARG, ERROR_INVALID_DOUBLE_VALUE));
     }
 
     m_horizontalOffset = value;
@@ -123,7 +125,7 @@ _Check_return_ HRESULT CBringIntoViewRequestedEventArgs::put_VerticalOffset(DOUB
 {
     if (DirectUI::DoubleUtil::IsNaN(value) || DirectUI::DoubleUtil::IsInfinity(value))
     {
-        IFC_RETURN(E_INVALIDARG);
+        IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_INVALIDARG, ERROR_INVALID_DOUBLE_VALUE));
     }
 
     m_verticalOffset = value;
