@@ -1285,6 +1285,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var rootGrid = VisualTreeHelper.GetChild(navView, 0) as Grid;
                 var backButton = rootGrid.FindName("NavigationViewBackButton") as Button;
                 var contentLeftPadding = rootGrid.FindName("ContentLeftPadding") as FrameworkElement;
+                var paneToggleButton = rootGrid.FindName("TogglePaneButton") as Button;
 
                 Verify.AreEqual(40.0, backButton.Width, "Back button Width");
                 Verify.AreEqual(48.0, backButton.ActualWidth, "Back button hit target width");
@@ -1292,6 +1293,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyBackButtonStartsAtCorner(navView, backButton);
                 // PaneToggleButtonWidth (40) + back button Width (40).
                 Verify.AreEqual(80.0, contentLeftPadding.Width, "ContentLeftPadding Width");
+                VerifyElementOffset(navView, paneToggleButton, 40.0, 4.0, "Pane toggle button");
 
                 foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.Top })
                 {
@@ -1301,7 +1303,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(48.0, backButton.ActualWidth, "Back button hit target width");
                     Verify.AreEqual(44.0, backButton.ActualHeight, "Back button hit target height");
                     VerifyBackButtonStartsAtCorner(navView, backButton);
+                    if (paneDisplayMode != NavigationViewPaneDisplayMode.Top)
+                    {
+                        VerifyElementOffset(navView, paneToggleButton, 0.0, 44.0, "Pane toggle button");
+                    }
                 }
+
+                Log.Comment("RightToLeft: the hit target reaches the mirrored (top-right) corner");
+                navView.FlowDirection = FlowDirection.RightToLeft;
+                foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.LeftMinimal, NavigationViewPaneDisplayMode.Left })
+                {
+                    Log.Comment("PaneDisplayMode: " + paneDisplayMode);
+                    navView.PaneDisplayMode = paneDisplayMode;
+                    Content.UpdateLayout();
+                    Verify.AreEqual(48.0, backButton.ActualWidth, "Back button hit target width");
+                    VerifyBackButtonStartsAtCorner(navView, backButton);
+                }
+                navView.FlowDirection = FlowDirection.LeftToRight;
 
                 Log.Comment("Changing CompactPaneLength at runtime resizes the hit target with the button");
                 navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
@@ -1315,9 +1333,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void VerifyBackButtonStartsAtCorner(NavigationView navView, Button backButton)
         {
-            var origin = backButton.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0));
-            Verify.AreEqual(0.0, origin.X, "Back button hit target X");
-            Verify.AreEqual(0.0, origin.Y, "Back button hit target Y");
+            VerifyElementOffset(navView, backButton, 0.0, 0.0, "Back button hit target");
+        }
+
+        private void VerifyElementOffset(NavigationView navView, FrameworkElement element, double expectedX, double expectedY, string name)
+        {
+            var origin = element.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0));
+            Verify.AreEqual(expectedX, origin.X, name + " X");
+            Verify.AreEqual(expectedY, origin.Y, name + " Y");
         }
 
         private void VerifyHeaderContentMargin(NavigationViewPaneDisplayMode paneDisplayMode, string verificationFileNamePrefix)
