@@ -2152,9 +2152,8 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
 
     if (bodyItem)
     {
-        // A group toggle's rescued focus may sit on a cached row; revealing it would jump the body.
+        // A group toggle's rescued focus may sit on a cached row or header; revealing it would jump the body.
         if (m_pendingGroupFocusLayoutToken.value &&
-            bodyItem.try_as<winrt::TableViewRow>() &&
             IsBodyFocusInContainer(bodyItem))
         {
             args.Handled(true);
