@@ -229,6 +229,8 @@ void TableViewRow::OnIsEnabledChanged(
 
 void TableViewRow::OnApplyTemplate()
 {
+    m_cellsHostContextRequestedRevoker.revoke();
+    m_templateRootContextRequestedRevoker.revoke();
     __super::OnApplyTemplate();
 
     ResetCellAutomationNames();
@@ -275,6 +277,30 @@ void TableViewRow::OnApplyTemplate()
         winrt::get_self<TableViewCellsPanel>(cellsPanel)->SetOwningRowInternal(*this);
     }
 
+    // Every body request is handled below the row, so the framework never shows a row style or
+    // template ContextFlyout on its own and skips the focus and current-cell handling. Cell
+    // requests are caught at the cells host; padding and chevron requests at the template root.
+    if (host)
+    {
+        m_cellsHostContextRequestedRevoker = host.ContextRequested(winrt::auto_revoke,
+            [weakThis = get_weak()](auto&&, winrt::ContextRequestedEventArgs const& args)
+            {
+                if (auto self = weakThis.get())
+                {
+                    self->OnCellsHostContextRequested(args);
+                }
+            });
+    }
+
+    m_templateRootContextRequestedRevoker = TableViewDetails::HookTemplateRootContextRequested(*this,
+        [weakThis = get_weak()](auto&&, winrt::ContextRequestedEventArgs const& args)
+        {
+            if (auto self = weakThis.get())
+            {
+                self->OnTemplateRootContextRequested(args);
+            }
+        });
+
     RebuildCells();
 
     ApplyHierarchyAffordance();
@@ -299,6 +325,54 @@ winrt::TableView TableViewRow::GetOwningTableView()
 {
     // Keep the owner weak; callers acquire a strong ref only for synchronous work.
     return m_owningTableView.get();
+}
+
+// Row-side half of TableView::IsContextMenuTargetCurrent, the only caller: it has already checked
+// the target kind, row, anchor load state, column, and owning table.
+bool TableViewRow::IsContextMenuTargetCurrent(
+    TableViewDetails::ContextMenuTarget const& target) const
+{
+    if (!target.Row.IsLoaded() || !target.ScopeRoot || target.ScopeRoot != m_cellsHost.get())
+    {
+        return false;
+    }
+
+    auto const owner = m_owningTableView.get();
+    if (!owner)
+    {
+        return false;
+    }
+
+    auto* ownerImpl = winrt::get_self<TableView>(owner);
+    if (!TableView::SameInspectableIdentity(
+            ownerImpl->UnwrapEditingDataItem(target.Row.DataContext()),
+            target.Item))
+    {
+        return false;
+    }
+
+    auto const repeater = ownerImpl->GetRowsRepeaterInternal();
+    if (!repeater)
+    {
+        return false;
+    }
+
+    auto const index = repeater.GetElementIndex(target.Row);
+    auto const view = repeater.ItemsSourceView();
+    if (!view || index < 0 || index >= view.Count() ||
+        !TableView::SameInspectableIdentity(
+            ownerImpl->UnwrapEditingDataItem(view.GetAt(index)),
+            target.Item))
+    {
+        return false;
+    }
+
+    if (!target.Column)
+    {
+        return target.Anchor == target.Row;
+    }
+
+    return TableViewDetails::IsLiveCellAnchor(target.Anchor, target.ScopeRoot, target.Column);
 }
 
 winrt::TableViewColumn TableViewRow::GetCellOwningColumn(const winrt::UIElement& cellElement) const
@@ -2764,6 +2838,119 @@ void TableViewRow::ResetPressState()
     m_lastPressPosition = {};
     m_lastPressColumn.set(nullptr);
     m_lastPressItem.set(nullptr);
+}
+
+void TableViewRow::ProcessContextRequest(
+    TableViewDetails::ContextMenuTarget const& target,
+    winrt::ContextRequestedEventArgs const& args)
+{
+    auto const owner = GetOwningTableView();
+    if (!owner)
+    {
+        return;
+    }
+
+    if (winrt::get_self<TableView>(owner)->ProcessContextMenuRequest(target, args))
+    {
+        args.Handled(true);
+    }
+}
+
+// Cell requests (pointer, keyboard, cell peer). Requests on the host's empty area carry no column
+// and go on to the template root as row requests.
+void TableViewRow::OnCellsHostContextRequested(winrt::ContextRequestedEventArgs const& args)
+{
+    if (args.Handled())
+    {
+        return;
+    }
+
+    if (auto const target = ResolveContextMenuTarget(args); target && target->Column)
+    {
+        ProcessContextRequest(*target, args);
+    }
+}
+
+// Row requests from anywhere under the template root but outside a cell: padding, the chevron,
+// the cells host's empty area. A ContextFlyout on the template root itself is shown by the
+// framework before this handler runs.
+void TableViewRow::OnTemplateRootContextRequested(winrt::ContextRequestedEventArgs const& args)
+{
+    if (args.Handled())
+    {
+        return;
+    }
+
+    // A cell request the cells host left Unhandled (nothing to show) keeps bubbling.
+    if (auto const target = ResolveContextMenuTarget(args); target && !target->Column)
+    {
+        ProcessContextRequest(*target, args);
+    }
+}
+
+bool TableViewRow::ShowContextMenuFromPeer()
+{
+    auto const owner = GetOwningTableView();
+    auto const target = MakeRowContextMenuTarget();
+    if (!owner || !target)
+    {
+        return false;
+    }
+
+    return winrt::get_self<TableView>(owner)->ProcessContextMenuRequest(*target, nullptr);
+}
+
+std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::MakeRowContextMenuTarget()
+{
+    auto const owner = GetOwningTableView();
+    auto const host = m_cellsHost.get();
+    if (!owner || !host)
+    {
+        return std::nullopt;
+    }
+
+    TableViewDetails::ContextMenuTarget target;
+    target.Row = *this;
+    target.Item = winrt::get_self<TableView>(owner)->UnwrapEditingDataItem(DataContext());
+    target.Anchor = *this;
+    target.ScopeRoot = host;
+    return target;
+}
+
+std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextMenuTarget(
+    winrt::ContextRequestedEventArgs const& args)
+{
+    auto target = MakeRowContextMenuTarget();
+    if (!target)
+    {
+        return std::nullopt;
+    }
+
+    winrt::TableViewRow const self = *this;
+    auto const source = args.OriginalSource().try_as<winrt::DependencyObject>();
+    if (!TableViewDetails::IsOwnRequestSource(source, self))
+    {
+        return std::nullopt;
+    }
+
+    // The column comes from the cell wrapper the request started in, never from a Tag on the
+    // cell's content and never from where the pointer is: the chevron overlays the first cell but
+    // belongs to the row.
+    auto const cell = FindOwnCellInternal(source, false /* requireExact */);
+    auto column = cell ? GetCellOwningColumn(cell) : nullptr;
+    if (column && !winrt::get_self<TableView>(GetOwningTableView())->IsContextMenuColumn(column))
+    {
+        column = nullptr;
+    }
+
+    auto const anchor = column ? TableViewCellsPanel::CellForColumn(target->ScopeRoot, column) : nullptr;
+    if (anchor)
+    {
+        target->Column = column;
+        target->Anchor = anchor;
+    }
+
+    return target;
 }
 
 // Pointer entry point for editing, and the only place a pointer establishes the current cell.
