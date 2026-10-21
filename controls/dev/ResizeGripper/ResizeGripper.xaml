@@ -17,11 +17,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="privatecontrols:ResizeGripper">
-                    <!-- The resize cursor is the hover affordance, so the separator only marks the edge
-                         while dragging. Restyled through ResizeGripperSeparatorBrush and
-                         ResizeGripperSeparatorThickness. -->
-                    <!-- The Transparent Background makes the whole gripper a pointer target. Non-Pressed
-                         states clear the brush, so leaving them restores the templated BorderBrush. -->
+                    <!-- The Transparent Background makes the whole gripper a pointer target. Hidden states clear
+                         the brush, so leaving them restores the templated BorderBrush. -->
                     <Border x:Name="Separator"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"

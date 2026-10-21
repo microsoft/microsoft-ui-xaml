@@ -65,8 +65,6 @@ namespace
                right.as<winrt::Windows::Foundation::IUnknown>();
     }
 
-    // Stops at the TableView: past it, the nearest ScrollViewer belongs to the app, and latching it
-    // would sync and pin against a scroller the control does not own.
     winrt::ScrollViewer FindScrollViewerAncestor(winrt::DependencyObject const& start, winrt::DependencyObject const& boundary)
     {
         winrt::DependencyObject node = start;
@@ -538,7 +536,7 @@ winrt::Brush TableView::GetGridLineBrush()
         if (!brush && !m_reportedMissingGridLineBrush)
         {
             m_reportedMissingGridLineBrush = true;
-            TVDiag::DbgLogF(L"TableView: TabularSurfaceGridLineBrush not found - merge TabularControlsResources; grid lines are not drawn.");
+            TVDiag::DbgLogF(L"[TableView] TabularSurfaceGridLineBrush not found - merge TabularControlsResources; grid lines are not drawn.");
         }
     }
 

@@ -43,12 +43,25 @@ ResizeGripper::ResizeGripper()
 // arrive to complete the drag and IsDragging would stay true for the rest of this instance's life.
 void ResizeGripper::OnUnloaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
+    // A re-parent raises Loaded before the stale Unloaded.
+    if (IsLoaded())
+    {
+        return;
+    }
+
     m_isPointerOver = false;
     EndDrag(true /* canceled */);
+    // A press that never became a manipulation has no drag to end but still holds the capture.
+    ReleaseCapturedPointer();
 }
 
 void ResizeGripper::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
 {
+    if (!IsEnabled())
+    {
+        EndDrag(true /* canceled */);
+        ReleaseCapturedPointer();
+    }
     UpdateVisualState();
     UpdateResizeCursor();
 }
@@ -209,13 +222,63 @@ void ResizeGripper::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 
     if (IsEnabled())
     {
-        // Keeps the resize cursor while the pointer outruns the edge. Mouse only: touch capture
-        // would stop an ancestor ScrollViewer panning the cross axis.
-        if (args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Mouse)
+        // Mouse only: touch capture would stop an ancestor ScrollViewer panning the cross axis.
+        auto const pointer = args.Pointer();
+        if (pointer.PointerDeviceType() == winrt::PointerDeviceType::Mouse && CapturePointer(pointer))
         {
-            CapturePointer(args.Pointer());
+            m_capturedPointer = pointer;
+            m_capturedPointerId = pointer.PointerId();
+            m_isCapturedPointerReleased = false;
         }
         args.Handled(true);
+    }
+}
+
+void ResizeGripper::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
+{
+    __super::OnPointerReleased(args);
+
+    if (m_capturedPointer && args.Pointer().PointerId() == m_capturedPointerId)
+    {
+        m_isCapturedPointerReleased = true;
+    }
+}
+
+// The release that completes a drag also drops the capture; only a capture lost before it cancels.
+void ResizeGripper::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args)
+{
+    __super::OnPointerCaptureLost(args);
+
+    if (m_capturedPointer && args.Pointer().PointerId() == m_capturedPointerId)
+    {
+        const bool released = m_isCapturedPointerReleased;
+        m_capturedPointer = nullptr;
+        m_isCapturedPointerReleased = false;
+        if (!released)
+        {
+            EndDrag(true /* canceled */);
+        }
+    }
+    UpdateVisualState();
+}
+
+// Best effort: clears our state first, so the PointerCaptureLost this raises is ignored, and skips
+// the release once the gripper has no visual tree to release it from.
+void ResizeGripper::ReleaseCapturedPointer() noexcept
+{
+    auto const pointer = std::exchange(m_capturedPointer, nullptr);
+    m_isCapturedPointerReleased = false;
+
+    // Runs from EndDrag's scope guard, whose destructor is noexcept: nothing may escape.
+    try
+    {
+        if (pointer && XamlRoot())
+        {
+            ReleasePointerCapture(pointer);
+        }
+    }
+    catch (...)
+    {
     }
 }
 
@@ -280,6 +343,7 @@ void ResizeGripper::EndDrag(bool canceled)
     // Clear the flag before raising: a throwing handler would otherwise leave IsDragging stuck
     // true, wedging every later BeginDrag.
     SetValue(s_IsDraggingProperty, box_value(false));
+    auto const releaseCapture = gsl::finally([this]() noexcept { ReleaseCapturedPointer(); });
     UpdateVisualState();
 
     auto eventArgs = winrt::make<::ResizeGripperDragCompletedEventArgs>(totalDelta, canceled);
