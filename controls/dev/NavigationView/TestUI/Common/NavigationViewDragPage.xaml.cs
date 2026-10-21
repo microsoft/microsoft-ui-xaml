@@ -57,6 +57,8 @@ namespace MUXControlsTestApp
                         .SelectMany(element => VisualStateManager.GetVisualStateGroups(element))
                         .Any(group => group.CurrentState != null && group.CurrentState.Name.Contains("PointerOver"))
                         .ToString();
+                    var anchor = args.GetPosition((UIElement)sender);
+                    DragStartAnchor.Text = string.Format(CultureInfo.InvariantCulture, "{0},{1}", anchor.X, anchor.Y);
                     DragCount.Text = (++dragCount).ToString();
                     DragSource.Text = ((FrameworkElement)sender).Name;
                     args.Data.SetText(DragSource.Text);

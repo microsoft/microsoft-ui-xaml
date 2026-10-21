@@ -270,12 +270,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                         Wait.ForIdle();
                     }
 
+                    new Button(FindElement.ById("Snapshot")).Invoke();
+                    Wait.ForIdle();
+                    double scale = double.Parse(new TextBlock(FindElement.ById("ItemRasterizationScale")).GetText(), CultureInfo.InvariantCulture);
+                    double width = double.Parse(new TextBlock(FindElement.ById("ItemWidth")).GetText(), CultureInfo.InvariantCulture);
                     var bounds = FindElement.ById("DragItem").BoundingRectangle;
-                    // Start near the right edge so physical and logical bounds differ at higher DPI.
-                    var start = new System.Drawing.Point(
-                        (int)(bounds.Left + bounds.Width * 0.8), (int)(bounds.Top + bounds.Height / 2));
-                    var end = new System.Drawing.Point(
-                        (int)(bounds.Left + bounds.Width * 0.95), start.Y);
+                    double right = bounds.Left + bounds.Width / 2 + width * scale / 2;
+                    // Start 5 DIPs from the right edge and drag vertically, so the drag anchor stays
+                    // inside the item in DIPs but is outside it when read as physical pixels at any
+                    // non-100% scale.
+                    var start = new System.Drawing.Point((int)(right - 5 * scale), (int)(bounds.Top + bounds.Height / 2));
+                    var end = new System.Drawing.Point(start.X, (int)(start.Y + 14 * scale));
                     PointerInput.Move(start);
                     PointerInput.ClickDrag(end, PointerButtons.Primary, 2000);
                     Wait.ForIdle();
@@ -285,6 +290,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     Verify.AreEqual("True", new TextBlock(FindElement.ById("DragStartPointerOver")).GetText());
                     Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
                     VerifyNavigationViewDragStateReset();
+
+                    string anchor = new TextBlock(FindElement.ById("DragStartAnchor")).GetText();
+                    double anchorX = double.Parse(anchor.Split(',')[0], CultureInfo.InvariantCulture);
+                    Log.Comment($"Top={topMode} RasterizationScale={scale} ItemWidth={width} DragStartAnchor={anchor}");
+                    if (scale > 1)
+                    {
+                        // Precondition: without the physical-to-logical conversion the anchor would be
+                        // treated as outside the item, so DragStartPointerOver=True proves the conversion.
+                        Verify.IsTrue(anchorX > width, "The drag anchor must be outside the item's logical width when read unconverted.");
+                    }
+                    else
+                    {
+                        Log.Warning("RasterizationScale is 1; the physical-to-logical anchor conversion is not exercised by this run.");
+                    }
                 }
             }
         }
