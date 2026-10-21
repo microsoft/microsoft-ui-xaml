@@ -65,7 +65,6 @@
 
 #ifdef XAMLPROFILER_ENABLED
 #include <XcpAllocation.h>
-#include <TextElement.h>
 #endif
 
 using namespace DirectUI;
@@ -129,15 +128,6 @@ XamlElementTracing::Identity XamlElementTracing::GetIdentity(
     {
         identity.objectPointer = reinterpret_cast<uint64_t>(object);
         auto owner = do_pointer_cast<CUIElement>(relatedUIElement);
-        if (owner == nullptr)
-        {
-            if (auto textElement = do_pointer_cast<CTextElement>(object))
-            {
-                // This is the containing text host, not necessarily an overflow renderer.
-                // Avoid creating text pointers (and their failure paths) just for tracing.
-                owner = textElement->GetContainingFrameworkElement();
-            }
-        }
         identity.uiElement = reinterpret_cast<uint64_t>(owner);
     }
     return identity;
@@ -13406,7 +13396,7 @@ CUIElement::BoundsTestEntry(
     HitTestParams myParams(hitTestParams);
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::HitTestStart(this);
+    XamlElementTracing::HitTestBegin(this);
 #else
     TraceHitTestBegin();
 #endif
@@ -13420,7 +13410,7 @@ CUIElement::BoundsTestEntry(
     IFC_RETURN(BoundsTestInternal(target, pCallback, &hitTestParams, canHitDisabledElements, canHitInvisibleElements, nullptr /* pResult */));
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::HitTestStop(this);
+    XamlElementTracing::HitTestEnd(this);
 #else
     TraceHitTestEnd();
 #endif

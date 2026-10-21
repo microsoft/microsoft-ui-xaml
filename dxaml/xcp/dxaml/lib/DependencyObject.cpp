@@ -284,7 +284,7 @@ public:
     IFACEMETHODIMP GetCountOfDescendantUIElements(_Out_ UINT64* count) override
     {
 #ifdef XAMLPROFILER_ENABLED
-        XamlElementTracing::GetElementCountStart(m_owner->GetHandle());
+        XamlElementTracing::GetElementCountBegin(m_owner->GetHandle());
 #else
         TraceGetElementCountBegin();
 #endif
@@ -297,7 +297,7 @@ public:
         *count = DXamlServices::GetDXamlCore()->GetRTWElementCount();
 
 #ifdef XAMLPROFILER_ENABLED
-        XamlElementTracing::GetElementCountStop(m_owner->GetHandle());
+        XamlElementTracing::GetElementCountEnd(m_owner->GetHandle());
 #else
         TraceGetElementCountEnd();
 #endif

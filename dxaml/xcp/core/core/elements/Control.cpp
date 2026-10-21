@@ -1110,59 +1110,42 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
 
     IFCPTR(ppStyle);
 
-#ifndef XAMLPROFILER_ENABLED
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::GetBuiltInStyleBegin(this);
+#else
     TraceGetBuiltInStyleBegin();
 #endif
+
+    // If the CLR is initialized, then get the builtin style from the managed side.
+    // else, retrieve the native builtin style.
+
+    // If there's no managed peer, create one. This is necessary for retrieval of
+    // built-in styles
+    IFC(EnsurePeer());
+
+    IFC(FxCallbacks::Control_GetBuiltInStyle(this, &pStyle));
+
+#ifdef XAMLPROFILER_ENABLED
+    if (XamlElementTracing::IsEnabled())
+#else
+    if (EventEnabledGetBuiltInStyleEnd())
+#endif
     {
-#ifdef XAMLPROFILER_ENABLED
-        // Balance the profiler activity on every exit, including the IFC error paths below that the
-        // retail End (which only runs after the style is resolved) intentionally does not cover. The
-        // resolved style name is captured after retrieval and read back here on the Stop edge; pStyle
-        // is cleared before Cleanup, so it cannot be read from the lambda directly.
-        xstring_ptr profilerStyleName;
-        XamlElementTracing::GetBuiltInStyleStart(this);
-        auto profilerGuard = wil::scope_exit([this, &profilerStyleName]()
+        xstring_ptr strStyle;
+        if (pStyle)
         {
-            XamlElementTracing::GetBuiltInStyleStop(this,
-                profilerStyleName.IsNull() ? L"None" : profilerStyleName.GetBuffer());
-        });
-#endif
-
-        // If the CLR is initialized, then get the builtin style from the managed side.
-        // else, retrieve the native builtin style.
-
-        // If there's no managed peer, create one. This is necessary for retrieval of
-        // built-in styles
-        IFC(EnsurePeer());
-
-        IFC(FxCallbacks::Control_GetBuiltInStyle(this, &pStyle));
+            IFC(pStyle->GetTargetTypeName(&strStyle));
+        }
 
 #ifdef XAMLPROFILER_ENABLED
-        if (pStyle && XamlElementTracing::IsEnabled())
-        {
-            IGNOREHR(pStyle->GetTargetTypeName(&profilerStyleName));
-        }
+        XamlElementTracing::GetBuiltInStyleEnd(this, pStyle ? strStyle.GetBuffer() : L"None");
+#else
+        TraceGetBuiltInStyleEnd(pStyle ? strStyle.GetBuffer() : L"None");
 #endif
-
-#ifndef XAMLPROFILER_ENABLED
-        if (EventEnabledGetBuiltInStyleEnd())
-        {
-            if (pStyle)
-            {
-                xstring_ptr strStyle;
-                IFC(pStyle->GetTargetTypeName(&strStyle));
-                TraceGetBuiltInStyleEnd(strStyle.GetBuffer());
-            }
-            else
-            {
-                TraceGetBuiltInStyleEnd(L"None");
-            }
-        }
-#endif
-
-        *ppStyle = pStyle;
-        pStyle = NULL;
     }
+
+    *ppStyle = pStyle;
+    pStyle = NULL;
 
 Cleanup:
 

@@ -144,7 +144,9 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GetRootOfItemTemplateAsContain
 _Check_return_ HRESULT ModernCollectionBasePanel::GenerateContainerAtIndexImpl(_In_ INT indexInItemCollection, _Outptr_ xaml::IUIElement** ppReturnValue ) noexcept
 {
     HRESULT hr = S_OK;
-#ifndef XAMLPROFILER_ENABLED
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::GenerateMCContainerBegin(indexInItemCollection);
+#else
     TraceGenerateMCContainerBegin(indexInItemCollection);
 #endif
 
@@ -392,14 +394,14 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GenerateContainerAtIndexImpl(_
     // Set a flag so that this case can be properly detected.
     static_cast<CUIElement*>(spContainer.Cast<UIElement>()->GetHandle())->SetIsItemContainer(true);
 
-#ifdef XAMLPROFILER_ENABLED
-    if (spContainer)
-        XamlElementTracing::GenerateMCContainer(spContainer.Cast<UIElement>()->GetHandle(), indexInItemCollection);
-#endif
     IFC(spContainer.MoveTo(ppReturnValue));
 
 Cleanup:
-#ifndef XAMLPROFILER_ENABLED
+#ifdef XAMLPROFILER_ENABLED
+    // MoveTo clears spContainer on success; the caller then owns the returned container.
+    auto container = spContainer ? spContainer.Get() : *ppReturnValue;
+    XamlElementTracing::GenerateMCContainerEnd(container ? static_cast<UIElement*>(container)->GetHandle() : nullptr);
+#else
     TraceGenerateMCContainerEnd();
 #endif
     RRETURN(hr);

@@ -830,10 +830,7 @@ Frame::RaiseNavigated(
 #ifndef XAMLPROFILER_ENABLED
     TraceFrameNavigatedInfo(WindowsGetStringRawBuffer(descriptor, NULL), static_cast<const unsigned char>(navigationMode));
 #else
-    if (XamlElementTracing::IsEnabled())
-    {
-        XamlElementTracing::FrameNavigated(GetHandle(), WindowsGetStringRawBuffer(descriptor, NULL), static_cast<uint8_t>(navigationMode));
-    }
+    XamlElementTracing::FrameNavigated(GetHandle(), WindowsGetStringRawBuffer(descriptor, NULL), static_cast<uint8_t>(navigationMode));
 #endif
 
 Cleanup:
@@ -868,10 +865,7 @@ Frame::RaiseNavigating(
 #ifndef XAMLPROFILER_ENABLED
     TraceFrameNavigatingInfo(WindowsGetStringRawBuffer(descriptor, NULL), static_cast<const unsigned char>(navigationMode));
 #else
-    if (XamlElementTracing::IsEnabled())
-    {
-        XamlElementTracing::FrameNavigating(GetHandle(), WindowsGetStringRawBuffer(descriptor, NULL), static_cast<uint8_t>(navigationMode));
-    }
+    XamlElementTracing::FrameNavigating(GetHandle(), WindowsGetStringRawBuffer(descriptor, NULL), static_cast<uint8_t>(navigationMode));
 #endif
 
 Cleanup:

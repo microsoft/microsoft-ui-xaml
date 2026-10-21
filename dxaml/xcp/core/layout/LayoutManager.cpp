@@ -249,7 +249,7 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
     m_isInUpdateLayout = TRUE;
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::LayoutStart(pRoot);
+    XamlElementTracing::LayoutBegin(pRoot);
 #else
     TraceLayoutBegin();
 #endif
@@ -294,14 +294,14 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             }
 
 #ifdef XAMLPROFILER_ENABLED
-            XamlElementTracing::MeasureStart(pRoot);
+            XamlElementTracing::MeasureBegin(pRoot);
 #else
             TraceMeasureBegin();
 #endif
             auto scopeGuard = wil::scope_exit([&]
             {
 #ifdef XAMLPROFILER_ENABLED
-                XamlElementTracing::MeasureStop(pRoot);
+                XamlElementTracing::MeasureEnd(pRoot);
 #else
                 TraceMeasureEnd();
 #endif
@@ -334,14 +334,14 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
         else if (pRoot->GetRequiresArrange())
         {
 #ifdef XAMLPROFILER_ENABLED
-            XamlElementTracing::ArrangeStart(pRoot);
+            XamlElementTracing::ArrangeBegin(pRoot);
 #else
             TraceArrangeBegin();
 #endif
             auto scopeGuard = wil::scope_exit([&]
             {
 #ifdef XAMLPROFILER_ENABLED
-                XamlElementTracing::ArrangeStop(pRoot);
+                XamlElementTracing::ArrangeEnd(pRoot);
 #else
                 TraceArrangeEnd();
 #endif
@@ -412,14 +412,14 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             if (!m_sizeChangedQueue.empty())
             {
 #ifdef XAMLPROFILER_ENABLED
-                XamlElementTracing::FireSizeChangedStart(pRoot);
+                XamlElementTracing::FireSizeChangedBegin(pRoot);
 #else
                 TraceFireSizeChangedBegin();
 #endif
                 auto scopeGuard = wil::scope_exit([&]
                 {
 #ifdef XAMLPROFILER_ENABLED
-                    XamlElementTracing::FireSizeChangedStop(pRoot);
+                    XamlElementTracing::FireSizeChangedEnd(pRoot);
 #else
                     TraceFireSizeChangedEnd();
 #endif
@@ -449,14 +449,14 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             if (m_nLayoutUpdatedSubscriberCounter != 0)
             {
 #ifdef XAMLPROFILER_ENABLED
-                XamlElementTracing::FireLayoutUpdatedStart(pRoot);
+                XamlElementTracing::FireLayoutUpdatedBegin(pRoot);
 #else
                 TraceFireLayoutUpdatedBegin();
 #endif
                 auto scopeGuard = wil::scope_exit([&]
                 {
 #ifdef XAMLPROFILER_ENABLED
-                    XamlElementTracing::FireLayoutUpdatedStop(pRoot);
+                    XamlElementTracing::FireLayoutUpdatedEnd(pRoot);
 #else
                     TraceFireLayoutUpdatedEnd();
 #endif
@@ -522,7 +522,7 @@ Cleanup:
     m_isInUpdateLayout = FALSE;
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::LayoutStop(pRoot);
+    XamlElementTracing::LayoutEnd(pRoot);
 #else
     TraceLayoutEnd();
 #endif
@@ -657,7 +657,7 @@ void CLayoutManager::RaiseSizeChangedEvents()
         for (auto& item : tmp.m_vector)
         {
 #ifdef XAMLPROFILER_ENABLED
-            XamlElementTracing::IndividualSizeChangedStart(item.m_pElement);
+            XamlElementTracing::IndividualSizeChangedBegin(item.m_pElement);
 #else
             TraceIndividualSizeChangedBegin();
 #endif
@@ -674,7 +674,7 @@ void CLayoutManager::RaiseSizeChangedEvents()
             }
 
 #ifdef XAMLPROFILER_ENABLED
-            XamlElementTracing::IndividualSizeChangedStop(item.m_pElement);
+            XamlElementTracing::IndividualSizeChangedEnd(item.m_pElement);
 #else
             TraceIndividualSizeChangedEnd(UINT64(item.m_pElement));
 #endif

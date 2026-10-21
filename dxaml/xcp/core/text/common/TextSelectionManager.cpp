@@ -3023,11 +3023,7 @@ _Check_return_ HRESULT TextSelectionManager::ChangeSelection(
     _In_ GripperSide gripperSide,
     uint32_t newPosition)
 {
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::ChangeSelectionStart(m_pOwnerUIElement);
-#else
     TraceChangeSelectionBegin();
-#endif
     ASSERT(gripperSide != GripperSide::Undefined);
     HRESULT hr = S_OK;
     SelectionRange<uint32_t> newRange = currentRange;
@@ -3061,11 +3057,7 @@ _Check_return_ HRESULT TextSelectionManager::ChangeSelection(
     }
 
 Cleanup:
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::ChangeSelectionStop(m_pOwnerUIElement);
-#else
     TraceChangeSelectionEnd();
-#endif
     return hr;
 }
 
@@ -3084,11 +3076,7 @@ _Check_return_ HRESULT TextSelectionManager::ExtendSelectionRange(
     _In_ const SelectionRange<uint32_t>& currentRange,
     _Out_ SelectionRange<uint32_t>* newRange)
 {
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::ExtendSelectionRangeStart(m_pOwnerUIElement);
-#else
     TraceExtendSelectionRangeBegin();
-#endif
     HRESULT hr = S_OK;
     *newRange = currentRange;
     if (gripperSide == GripperSide::Left)
@@ -3121,11 +3109,7 @@ _Check_return_ HRESULT TextSelectionManager::ExtendSelectionRange(
     }
 
 Cleanup:
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::ExtendSelectionRangeStop(m_pOwnerUIElement);
-#else
     TraceExtendSelectionRangeEnd();
-#endif
     return hr;
 }
 

@@ -5,13 +5,10 @@
 
 #include <TraceLoggingInterop.h>
 
-// XamlProfiler tree-tracking instrumentation is compiled into chk/Debug builds only
-// (XAMLPROFILER_ENABLED is defined alongside DBG when Configuration==Debug; see
-// Xaml.Cpp.Targets / LibraryCompile.props). In retail/fre builds this entire header is
-// empty, and the matching WucVisualTreeProfiler.cpp is excluded from the build, so the
-// profiler adds zero code/size to shipping binaries. Every consumer #includes this header
-// (and its call sites) inside its own #ifdef XAMLPROFILER_ENABLED, matching the
-// SwipeTestHooks convention.
+// XamlProfiler instrumentation is compiled when XAMLPROFILER_ENABLED is
+// defined by the build's XamlProfilerEnabled setting. This can include
+// fre/Release builds. Call sites are compile-time guarded, and event
+// emission is controlled by runtime ETW enablement.
 #ifdef XAMLPROFILER_ENABLED
 
 #include "XamlTelemetry.h"
@@ -363,17 +360,16 @@ public:
     // Element-Scoped Activity Events
     //
     // Each of these mirrors a retail Microsoft-Windows-XAML operation (layout,
-    // transition, focus, selection, virtualization, ...) that previously emitted
+    // transition, focus, virtualization, ...) that previously emitted
     // no element identity, so an out-of-process consumer could only attribute it
     // to an element by scope-nesting inference. Core pointers are classified at
     // runtime, including objects reached through a projection's GetHandle():
     //   * UI element, including controls: ElementId.
     //   * Other dependency object: objectpointer, plus ElementId only when a
-    //     containing text control or an explicitly supplied UI owner is known.
+    //     UI owner is explicitly supplied.
     // A null subject produces objectpointer=0, without an ElementId field.
-    // ElementId uses the Visual tree's CUIElement identity. An associated text
-    // host is not necessarily the particular overflow element rendering a run.
-    // No owner is inferred for arbitrary or shared dependency objects.
+    // ElementId uses the Visual tree's CUIElement identity.
+    // No owner is inferred from the dependency object.
     //
     // Routing model (see XAMLPROFILER_ENABLED): the manifest and TraceLogging forms are mutually
     // exclusive at each call site. A retail (shipping) build never defines XAMLPROFILER_ENABLED
@@ -386,24 +382,22 @@ public:
     // each activity below reuses the retail operation's name as its event name and preserves the
     // Begin/End timing while adding typed identities.
     //
-    // Exceptions (stay additive): a few sites keep the pre-existing retail Begin/End AND also emit
-    // the profiler marker, because the retail marker is not a same-location duplicate — its
-    // Begin/End brackets a whole pass/loop while the profiler marker is a per-iteration point event
-    // at a different line (RealizeTransition, GenerateMCContainer). Gating the pre-existing retail
-    // bracket there would change retail behavior, so it is left intact.
+    // Exception (stays additive): RealizeTransition keeps the pre-existing retail Begin/End
+    // around the whole pass and adds per-element profiler markers inside the loop. The markers
+    // are not same-location duplicates, so the pre-existing bracket is left intact.
     //
     // Payload parity: where the retail marker carried extra payload (style name, focus
-    // direction, gripper coordinates, virtualization state, container index), the profiler
+    // direction, virtualization state, container index), the profiler
     // copy carries the same payload PLUS typed identities, so a profiler build — which emits in place
     // of the retail marker — loses no information the retail provider would have supplied.
     //
     // Two shapes are used:
-    //   * Activity events  (DEFINE_ELEMENT_ACTIVITY): a Start/Stop pair mirroring the
-    //     retail Begin/End so per-operation duration is preserved. Both edges carry
-    //     their subject's identity, so each Start and Stop row stands on its own. The only
-    //     exception is GenerateContainerStart, whose container does not exist until the
-    //     operation ends. An operation whose retail marker carried extra payload adds a
-    //     matching overload on the edge that carried it (e.g. GetBuiltInStyleStop with the
+    //   * Activity events  (DEFINE_ELEMENT_ACTIVITY): a Begin/End pair mirroring the
+    //     retail timing so per-operation duration is preserved. Both edges carry
+    //     their subject's identity, so each Begin and End row stands on its own. The exceptions
+    //     are GenerateContainerBegin and GenerateMCContainerBegin, whose containers are not yet
+    //     available. An operation whose retail marker carried extra payload adds a
+    //     matching overload on the edge that carried it (e.g. GetBuiltInStyleEnd with the
     //     style name).
     //   * Point events: a single marker for
     //     operations whose retail form is win:Info, or whose element identity is
@@ -440,18 +434,18 @@ public:
         } \
     } while (false)
 
-    // Emits a Start/Stop activity pair on this provider under one ETW task (== OpName),
+    // Emits a Begin/End activity pair using ETW Start/Stop opcodes under one task (== OpName),
     // so the consumer pairs them into a duration exactly like the retail Begin/End.
-    // Stop always takes a subject; the parameterless Start exists only for
+    // End always takes a subject; the parameterless Begin exists only for
     // GenerateContainer (see above).
 #define DEFINE_ELEMENT_ACTIVITY(OpName) \
-    static void OpName##Start(CDependencyObject* object, CDependencyObject* relatedUIElement = nullptr) \
+    static void OpName##Begin(CDependencyObject* object, CDependencyObject* relatedUIElement = nullptr) \
     { \
         TRACE_ELEMENT_EVENT(#OpName, object, relatedUIElement, \
             TraceLoggingOpcode(WINEVENT_OPCODE_START), \
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE)); \
     } \
-    static void OpName##Stop(CDependencyObject* object, CDependencyObject* relatedUIElement = nullptr) \
+    static void OpName##End(CDependencyObject* object, CDependencyObject* relatedUIElement = nullptr) \
     { \
         TRACE_ELEMENT_EVENT(#OpName, object, relatedUIElement, \
             TraceLoggingOpcode(WINEVENT_OPCODE_STOP), \
@@ -483,12 +477,12 @@ public:
     DEFINE_ELEMENT_ACTIVITY(ProcessLayoutForTransition);
 
     // Focus (CFocusManager): the subject can be a UI element or a non-UI Hyperlink.
-    // UpdateFocus Start carries the requested target and Stop carries pNewFocus; they can
-    // differ after redirection. Stop also runs on cancellation/error, not just successful focus.
+    // UpdateFocus Begin carries the requested target and End carries pNewFocus; they can
+    // differ after redirection. End also runs on cancellation/error, not just successful focus.
     DEFINE_ELEMENT_ACTIVITY(UpdateFocus);
     DEFINE_ELEMENT_ACTIVITY(XYFocusEntered);
-    // XYFocusEntered adds the retail Begin's focus-direction string on the Start edge.
-    static void XYFocusEnteredStart(CDependencyObject* object, PCWSTR Direction)
+    // XYFocusEntered adds the retail Begin's focus-direction string on the Begin edge.
+    static void XYFocusEnteredBegin(CDependencyObject* object, PCWSTR Direction)
     {
         TRACE_ELEMENT_EVENT("XYFocusEntered", object, nullptr,
             TraceLoggingOpcode(WINEVENT_OPCODE_START),
@@ -496,81 +490,30 @@ public:
             TraceLoggingValue(Direction, "Direction"));
     }
 
-    // Text selection (TextSelectionManager): the subject is the owning text control.
-    DEFINE_ELEMENT_ACTIVITY(ChangeSelection);
-    DEFINE_ELEMENT_ACTIVITY(ExtendSelectionRange);
-
-    // Touch-selection grippers (CTextSelectionGripper): the subject is the gripper element.
-    // IsStartGripper/X/Y mirror the retail *Info markers (the gripper's start-vs-end role and its
-    // center world coordinate) so a profiler-only session keeps the gripper's placement.
-    static void TouchSelectionGripperShowBegin(CDependencyObject* object, bool IsStartGripper, int32_t X, int32_t Y)
-    {
-        TRACE_ELEMENT_EVENT("TouchSelectionGripperShowBegin", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(IsStartGripper, "IsStartGripper"),
-            TraceLoggingValue(X, "X"),
-            TraceLoggingValue(Y, "Y"));
-    }
-
-    static void TouchSelectionGripperShowEnd(CDependencyObject* object, bool IsStartGripper, int32_t X, int32_t Y)
-    {
-        TRACE_ELEMENT_EVENT("TouchSelectionGripperShowEnd", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(IsStartGripper, "IsStartGripper"),
-            TraceLoggingValue(X, "X"),
-            TraceLoggingValue(Y, "Y"));
-    }
-
-    static void TouchSelectionGripperHideBegin(CDependencyObject* object, bool IsStartGripper, int32_t X, int32_t Y)
-    {
-        TRACE_ELEMENT_EVENT("TouchSelectionGripperHideBegin", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(IsStartGripper, "IsStartGripper"),
-            TraceLoggingValue(X, "X"),
-            TraceLoggingValue(Y, "Y"));
-    }
-
-    static void TouchSelectionGripperHideEnd(CDependencyObject* object, bool IsStartGripper, int32_t X, int32_t Y)
-    {
-        TRACE_ELEMENT_EVENT("TouchSelectionGripperHideEnd", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(IsStartGripper, "IsStartGripper"),
-            TraceLoggingValue(X, "X"),
-            TraceLoggingValue(Y, "Y"));
-    }
-
-    static void TouchSelectionGripperReposition(CDependencyObject* object, bool IsStartGripper, int32_t X, int32_t Y)
-    {
-        TRACE_ELEMENT_EVENT("TouchSelectionGripperReposition", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(IsStartGripper, "IsStartGripper"),
-            TraceLoggingValue(X, "X"),
-            TraceLoggingValue(Y, "Y"));
-    }
-
     // Items virtualization (dxaml projection layer): the subject is the container/panel.
-    // GenerateContainer carries an identity on its Stop: the container is only realized near the
-    // end of the generate call (inverted Start/Stop pair; CopyTo keeps it live through Cleanup).
+    // GenerateContainer carries an identity on its End: the container is only realized near the
+    // end of the generate call (inverted Begin/End pair; CopyTo keeps it live through Cleanup).
     DEFINE_ELEMENT_ACTIVITY(GenerateContainer);
-    static void GenerateContainerStart()
+    static void GenerateContainerBegin()
     {
         TraceLoggingWrite(TraceLoggingType::Provider(), "GenerateContainer",
             TraceLoggingOpcode(WINEVENT_OPCODE_START),
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     }
     DEFINE_ELEMENT_ACTIVITY(GenerateItems);
-    // GenerateMCContainer is a point event: its container is moved out (MoveTo) before Cleanup,
-    // so it emits a single marker at realization instead of an inverted Start/Stop pair. Index is
-    // the retail Begin's item-collection index.
-    static void GenerateMCContainer(CDependencyObject* object, int32_t Index)
+    // GenerateMCContainer carries the retail item-collection index on Begin and the container
+    // identity on End, once the container is available.
+    DEFINE_ELEMENT_ACTIVITY(GenerateMCContainer);
+    static void GenerateMCContainerBegin(int32_t Index)
     {
-        TRACE_ELEMENT_EVENT("GenerateMCContainer", object, nullptr,
+        TraceLoggingWrite(TraceLoggingType::Provider(), "GenerateMCContainer",
+            TraceLoggingOpcode(WINEVENT_OPCODE_START),
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
             TraceLoggingValue(Index, "Index"));
     }
     DEFINE_ELEMENT_ACTIVITY(PlaceElement);
-    // PlaceElement adds the retail Begin's data index on the Start edge.
-    static void PlaceElementStart(CDependencyObject* object, int32_t DataIndex)
+    // PlaceElement adds the retail Begin's data index on the Begin edge.
+    static void PlaceElementBegin(CDependencyObject* object, int32_t DataIndex)
     {
         TRACE_ELEMENT_EVENT("PlaceElement", object, nullptr,
             TraceLoggingOpcode(WINEVENT_OPCODE_START),
@@ -601,8 +544,8 @@ public:
 
     // Control template/style operations (CControl): the subject is the control, not the style.
     DEFINE_ELEMENT_ACTIVITY(GetBuiltInStyle);
-    // GetBuiltInStyle adds the retail End's resolved style target-type name on the Stop edge.
-    static void GetBuiltInStyleStop(CDependencyObject* object, PCWSTR StyleName)
+    // GetBuiltInStyle adds the retail End's resolved style target-type name on the End edge.
+    static void GetBuiltInStyleEnd(CDependencyObject* object, PCWSTR StyleName)
     {
         TRACE_ELEMENT_EVENT("GetBuiltInStyle", object, nullptr,
             TraceLoggingOpcode(WINEVENT_OPCODE_STOP),
@@ -690,8 +633,8 @@ public:
     // Container-content-changing setup (ListViewBase_Partial_ContainerPhase.cpp): the subject is
     // the container being set up.
     DEFINE_ELEMENT_ACTIVITY(SetupCCC);
-    // SetupCCC adds the retail Begin's item index on the Start edge.
-    static void SetupCCCStart(CDependencyObject* object, int32_t ItemIndex, CDependencyObject* relatedUIElement = nullptr)
+    // SetupCCC adds the retail Begin's item index on the Begin edge.
+    static void SetupCCCBegin(CDependencyObject* object, int32_t ItemIndex, CDependencyObject* relatedUIElement = nullptr)
     {
         TRACE_ELEMENT_EVENT("SetupCCC", object, relatedUIElement,
             TraceLoggingOpcode(WINEVENT_OPCODE_START),

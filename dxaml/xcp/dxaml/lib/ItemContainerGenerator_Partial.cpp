@@ -1351,7 +1351,7 @@ ItemContainerGenerator::Generator::GenerateNext(
     _Outptr_ xaml::IDependencyObject** returnValue)
 {
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::GenerateContainerStart();
+    XamlElementTracing::GenerateContainerBegin();
 #else
     TraceGenerateContainerBegin();
 #endif
@@ -1496,7 +1496,7 @@ Cleanup:
         {
             hostElement = spHost.AsOrNull<xaml::IUIElement>();
         }
-        XamlElementTracing::GenerateContainerStop(coreContainer, hostElement ? hostElement.Cast<UIElement>()->GetHandle() : nullptr);
+        XamlElementTracing::GenerateContainerEnd(coreContainer, hostElement ? hostElement.Cast<UIElement>()->GetHandle() : nullptr);
     }
 #else
     TraceGenerateContainerEnd();

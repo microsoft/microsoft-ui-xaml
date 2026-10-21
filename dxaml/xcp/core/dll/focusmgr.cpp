@@ -1849,7 +1849,7 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
     GUID correlationId = m_asyncOperation != nullptr ? m_asyncOperation->GetCorrelationId() : movement.GetCorrelationId();
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::UpdateFocusStart(movement.GetTarget());
+    XamlElementTracing::UpdateFocusBegin(movement.GetTarget());
 #else
     TraceUpdateFocusBegin();
 #endif
@@ -2150,10 +2150,10 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
 
 Cleanup:
 #ifdef XAMLPROFILER_ENABLED
-    // Carry the element identity on both edges: Start records the requested target
-    // (movement.GetTarget()) and Stop records pNewFocus, matching the attribution the retail
+    // Carry the element identity on both edges: Begin records the requested target
+    // (movement.GetTarget()) and End records pNewFocus, matching the attribution the retail
     // UpdateFocusEnd event records after synchronous GettingFocus/LosingFocus handlers run.
-    XamlElementTracing::UpdateFocusStop(pNewFocus);
+    XamlElementTracing::UpdateFocusEnd(pNewFocus);
 #else
     TraceUpdateFocusEnd((UINT64)pNewFocus);
 #endif
@@ -2636,15 +2636,15 @@ CDependencyObject* CFocusManager::FindNextFocus(
     auto currentFocusedElementOrComponent = (component == nullptr) ? m_pFocusedElement : component;
 
 #ifdef XAMLPROFILER_ENABLED
-    // Emit the profiler Start after currentFocusedElementOrComponent is resolved so the payload
+    // Emit the profiler Begin after currentFocusedElementOrComponent is resolved so the payload
     // identifies the element actually used for navigation: when focus enters from a hosted component
     // (e.g. WebView) this is the component, not m_pFocusedElement. The scope_exit also balances the
     // activity across the early ProcessTabStopInternal failure returns below, which the retail End
     // (emitted only on the normal exit) intentionally does not cover.
-    XamlElementTracing::XYFocusEnteredStart(currentFocusedElementOrComponent, xyFocusDirectionName);
+    XamlElementTracing::XYFocusEnteredBegin(currentFocusedElementOrComponent, xyFocusDirectionName);
     auto xyFocusProfilerGuard = wil::scope_exit([currentFocusedElementOrComponent]()
     {
-        XamlElementTracing::XYFocusEnteredStop(currentFocusedElementOrComponent);
+        XamlElementTracing::XYFocusEnteredEnd(currentFocusedElementOrComponent);
     });
 #endif
 
