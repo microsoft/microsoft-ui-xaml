@@ -214,6 +214,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private static void VerifyScrollerlessFocusRevealed(string expectedId, double offsetBefore, string context)
         {
+            WaitForReadoutField(VirtualizationFacts.ScrollerlessReadout, VirtualizationFacts.FocusedField, expectedId);
             WaitForReadoutField(VirtualizationFacts.ScrollerlessReadout, VirtualizationFacts.InViewField, "True");
             string readout = ReadPageReadout(VirtualizationFacts.ScrollerlessReadout);
             Log.Comment("Readout {0}: '{1}'.", context, readout);
