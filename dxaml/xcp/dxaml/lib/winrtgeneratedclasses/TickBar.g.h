@@ -77,15 +77,18 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) TickBarFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::Primitives::ITickBarFactory
         , public ABI::Microsoft::UI::Xaml::Controls::Primitives::ITickBarStatics
     {
-        BEGIN_INTERFACE_MAP(TickBarFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(TickBarFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(TickBarFactory, ABI::Microsoft::UI::Xaml::Controls::Primitives::ITickBarFactory)
             INTERFACE_ENTRY(TickBarFactory, ABI::Microsoft::UI::Xaml::Controls::Primitives::ITickBarStatics)
-        END_INTERFACE_MAP(TickBarFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(TickBarFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ITickBar** ppInstance);
 
         // Static properties.
 
