@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
@@ -1910,6 +1911,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 transform.Resize(180.0 * scale, 0.0);
                 Verify.IsTrue(Math.Abs(column.Width.Value - 180.0) < 0.01,
                     $"Resize must convert physical pixels to DIPs; expected 180, got {column.Width.Value}.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Transform.Resize converts physical pixels through a scale applied above the table, not only the display scale.")]
+        public void VerifyTransformResizeAccountsForAncestorScale()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                var scaledHost = new Grid { RenderTransform = new ScaleTransform { ScaleX = 2.0, ScaleY = 2.0 } };
+                scaledHost.Children.Add(tableView);
+                LoadContent(scaledHost);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+
+                // On screen each DIP of the column spans this many physical pixels.
+                var pixelsPerDip = tableView.XamlRoot.RasterizationScale * 2.0;
+                transform.Resize(170.0 * pixelsPerDip, 0.0);
+                Verify.IsTrue(Math.Abs(column.Width.Value - 170.0) < 0.01,
+                    $"Resize must convert physical pixels through the ancestor scale; expected 170, got {column.Width.Value}.");
             });
         }
 

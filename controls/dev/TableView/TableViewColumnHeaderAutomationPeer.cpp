@@ -310,10 +310,24 @@ void TableViewColumnHeaderAutomationPeer::Resize(double width, double)
         throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
     }
 
-    // UIA sizes are physical pixels, like BoundingRectangle; column widths are DIPs.
+    // UIA sizes are physical pixels, like BoundingRectangle; column widths are DIPs in the table's
+    // own frame, below any scale applied above it.
     if (auto const xamlRoot = owner.XamlRoot())
     {
-        if (const double scale = xamlRoot.RasterizationScale(); scale > 0.0)
+        double scale = xamlRoot.RasterizationScale();
+        try
+        {
+            const auto unit = owner.TransformToVisual(nullptr).TransformBounds({ 0.0f, 0.0f, 1.0f, 0.0f });
+            if (unit.Width > 0.0f)
+            {
+                scale *= unit.Width;
+            }
+        }
+        catch (...)
+        {
+            // Not in the live tree; the display scale alone is the best answer.
+        }
+        if (scale > 0.0)
         {
             width /= scale;
         }
