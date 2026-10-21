@@ -173,7 +173,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies keyboard navigation in a template without its own ScrollViewer reveals the focused row in the app's ScrollViewer.")]
+        public void KeyboardNavigationRevealsRowInAppScrollerWithoutBodyScroller()
+        {
+            using (var setup = new TestSetupHelper(new[] { PageName, VirtualizationFacts.NavigateButton }))
+            {
+                var show = FindElement.ById<Button>(VirtualizationFacts.ShowScrollerlessTableButton);
+                if (show == null) { Verify.Fail(VirtualizationFacts.ShowScrollerlessTableButton + " was not found."); return; }
+                show.InvokeAndWait();
+                Wait.ForIdle();
+
+                Verify.AreEqual("0", WaitForReadoutField(VirtualizationFacts.ScrollerlessReadout, VirtualizationFacts.FocusedField, "0"),
+                    "Precondition: row 0 has keyboard focus.");
+                Verify.AreEqual("0", ReadReadoutField(VirtualizationFacts.ScrollerlessReadout, VirtualizationFacts.OffsetField),
+                    "Precondition: the app scroller starts at the top.");
+
+                const int downPresses = 15;
+                Log.Comment("Press Down {0} times.", downPresses);
+                KeyboardHelper.PressKey(Key.Down, ModifierKey.None, downPresses);
+                Wait.ForIdle();
+                VerifyScrollerlessFocusRevealed(downPresses.ToString(), 0.0, "after Down");
+
+                double offsetAfterDown = ReadScrollerlessOffset();
+                Log.Comment("Press End.");
+                KeyboardHelper.PressKey(Key.End);
+                Wait.ForIdle();
+                VerifyScrollerlessFocusRevealed((VirtualizationFacts.ScrollerlessItemCount - 1).ToString(), offsetAfterDown, "after End");
+            }
+        }
+
         #region Helpers
+
+        private static double ReadScrollerlessOffset()
+        {
+            double offset;
+            return double.TryParse(ReadReadoutField(VirtualizationFacts.ScrollerlessReadout, VirtualizationFacts.OffsetField),
+                System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out offset) ? offset : double.NaN;
+        }
+
+        private static void VerifyScrollerlessFocusRevealed(string expectedId, double offsetBefore, string context)
+        {
+            WaitForReadoutField(VirtualizationFacts.ScrollerlessReadout, VirtualizationFacts.InViewField, "True");
+            string readout = ReadPageReadout(VirtualizationFacts.ScrollerlessReadout);
+            Log.Comment("Readout {0}: '{1}'.", context, readout);
+            Verify.AreEqual(expectedId, Field(readout, VirtualizationFacts.FocusedField), "Focus must move to the target row (" + context + ").");
+            Verify.IsTrue(ReadScrollerlessOffset() > offsetBefore + 0.5, "The app scroller must scroll to the focused row (" + context + ").");
+            Verify.AreEqual("True", Field(readout, VirtualizationFacts.InViewField), "The focused row must be inside the app scroller's viewport (" + context + ").");
+        }
 
         private static readonly int NameCellRelativeX = VirtualizationFacts.ColumnCentreX(VirtualizationFacts.NameColumn);
 

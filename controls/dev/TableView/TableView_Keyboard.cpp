@@ -1772,9 +1772,14 @@ bool TableView::IsRowElementInViewport(winrt::UIElement const& element) const
 {
     auto const frameworkElement = element.try_as<winrt::FrameworkElement>();
     auto const scroller = m_bodyScroller.get();
-    if (!frameworkElement || !scroller)
+    if (!frameworkElement)
     {
         return false;
+    }
+    if (!scroller)
+    {
+        // No body scroller: let focus's own bring-into-view reach the app's scroller.
+        return true;
     }
 
     const double viewportHeight = scroller.ViewportHeight();

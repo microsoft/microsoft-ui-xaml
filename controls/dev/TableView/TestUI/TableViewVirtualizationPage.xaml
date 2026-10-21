@@ -9,6 +9,26 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <local:TestPage.Resources>
+        <!-- No PART_BodyScroller or PART_HeaderScroller: the app's ScrollViewer is the only scroller. -->
+        <ControlTemplate x:Key="ScrollerlessTableTemplate" TargetType="controls:TableView">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Border x:Name="PART_HeaderRow">
+                    <controls:TableViewCellsPanel x:Name="PART_HeaderHost" HorizontalAlignment="Left" />
+                </Border>
+                <ItemsRepeater x:Name="PART_RowsRepeater" Grid.Row="1">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Orientation="Vertical" />
+                    </ItemsRepeater.Layout>
+                </ItemsRepeater>
+            </Grid>
+        </ControlTemplate>
+    </local:TestPage.Resources>
+
     <!-- Stays inside the 1024px lab frame; the button below is invoked through UIA only. -->
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RowSpacing="8" Padding="8">
         <Grid.RowDefinitions>
@@ -26,6 +46,12 @@
                     IsTabStop="False"
                     AllowFocusOnInteraction="False"
                     Click="OnRemoveFirstItemClick" />
+            <Button Content="Show Scrollerless Table (focus-neutral)"
+                    AutomationProperties.Name="ShowScrollerlessTableButton"
+                    AutomationProperties.AutomationId="ShowScrollerlessTableButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnShowScrollerlessTableClick" />
         </StackPanel>
 
         <!-- Format documented on TableViewVirtualizationPageFacts.Readout. -->
@@ -55,5 +81,34 @@
             <controls:TableViewTextColumn Header="Quantity" Width="120" Binding="{Binding Quantity}" />
             <controls:TableViewTextColumn Header="Code" Width="160" IsReadOnly="True" Binding="{Binding Code}" />
         </controls:TableView>
+
+        <!-- Collapsed until ShowScrollerlessTableButton; beside LargeEditableTable, inside the lab frame. -->
+        <StackPanel x:Name="ScrollerlessHost"
+                    Grid.Row="2"
+                    Margin="536,0,0,0"
+                    Width="360"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Spacing="4"
+                    Visibility="Collapsed">
+            <ScrollViewer x:Name="ScrollerlessAppScroller" Height="300">
+                <controls:TableView x:Name="ScrollerlessTable"
+                                    AutomationProperties.Name="ScrollerlessTable"
+                                    AutomationProperties.AutomationId="ScrollerlessTable"
+                                    Template="{StaticResource ScrollerlessTableTemplate}"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="Name" Width="160" Binding="{Binding Name}" />
+                    <controls:TableViewTextColumn Header="Code" Width="160" Binding="{Binding Code}" />
+                </controls:TableView>
+            </ScrollViewer>
+            <!-- Format documented on TableViewVirtualizationPageFacts.ScrollerlessReadout. -->
+            <TextBox x:Name="ScrollerlessReadout"
+                     AutomationProperties.Name="ScrollerlessReadout"
+                     AutomationProperties.AutomationId="ScrollerlessReadout"
+                     TextWrapping="Wrap"
+                     IsReadOnly="True"
+                     IsTabStop="False"
+                     Text="" />
+        </StackPanel>
     </Grid>
 </local:TestPage>
