@@ -175,10 +175,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     var bounds = source.BoundingRectangle;
                     for (int attempt = 1; attempt <= 3; ++attempt)
                     {
-                        PointerInput.Move(new System.Drawing.Point(
-                            (int)(bounds.Left + bounds.Width / 2), (int)(bounds.Top + bounds.Height / 2)));
-                        PointerInput.Press(PointerButtons.Primary);
-                        PointerInput.Release(PointerButtons.Primary);
+                        var center = new System.Drawing.Point(
+                            (int)(bounds.Left + bounds.Width / 2), (int)(bounds.Top + bounds.Height / 2));
+                        PointerInput.Move(center);
+                        // Pen injection supports whole gestures but not separate press/release.
+                        PointerInput.ClickDrag(center, PointerButtons.Primary, 100);
                         Wait.ForIdle();
                         Verify.AreEqual(inputType.ToString(), new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
                         Verify.AreEqual(attempt.ToString(), new TextBlock(FindElement.ById("InvocationCount")).GetText());
@@ -235,21 +236,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 Wait.ForIdle();
                 Verify.AreEqual("True", new TextBlock(FindElement.ById("ItemPointerOver")).GetText());
 
-                PointerInput.Press(PointerButtons.Primary);
-                try
-                {
-                    Wait.ForIdle();
-                    Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
-                    PointerInput.Move(end);
-                    Wait.ForIdle();
-                    Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
-                }
-                finally
-                {
-                    PointerInput.Release(PointerButtons.Primary);
-                }
-
+                // Pen injection supports whole gestures but not separate press/release.
+                PointerInput.ClickDrag(end, PointerButtons.Primary, 500);
                 Wait.ForIdle();
+                Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
                 VerifyNavigationViewDragStateReset();
                 Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
                 Verify.AreEqual("False", new TextBlock(FindElement.ById("ItemPointerOver")).GetText());
@@ -339,28 +330,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
 
                 // The retemplate ends the item's press and releases its capture. Pen capture
                 // release may not raise PointerCaptureLost, so moving must not start a drag.
+                // Pen injection supports whole gestures but not separate press/release.
                 var bounds = FindElement.ById("DragItem").BoundingRectangle;
                 int y = (int)(bounds.Top + bounds.Height / 2);
                 PointerInput.Move(new System.Drawing.Point((int)(bounds.Left + bounds.Width * 0.2), y));
-                PointerInput.Press(PointerButtons.Primary);
-                try
-                {
-                    Wait.ForIdle();
-                    Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
-                    Verify.AreEqual("1", new TextBlock(FindElement.ById("RetemplateCount")).GetText());
-                    foreach (double fraction in new[] { 0.4, 0.6, 0.8 })
-                    {
-                        PointerInput.Move(new System.Drawing.Point((int)(bounds.Left + bounds.Width * fraction), y));
-                        Wait.ForIdle();
-                    }
-                    Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
-                }
-                finally
-                {
-                    PointerInput.Release(PointerButtons.Primary);
-                }
-
+                PointerInput.ClickDrag(new System.Drawing.Point((int)(bounds.Left + bounds.Width * 0.8), y), PointerButtons.Primary, 2000);
                 Wait.ForIdle();
+                Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("RetemplateCount")).GetText());
                 Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
                 Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
                 VerifyNavigationViewDragStateReset();

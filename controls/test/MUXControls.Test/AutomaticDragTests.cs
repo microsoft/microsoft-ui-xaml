@@ -52,10 +52,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             for (int attempt = 1; attempt <= 3; ++attempt)
             {
-                PointerInput.Move(new System.Drawing.Point(
-                    (int)(bounds.Left + bounds.Width / 2), (int)(bounds.Top + bounds.Height / 2)));
-                PointerInput.Press(PointerButtons.Primary);
-                PointerInput.Release(PointerButtons.Primary);
+                var center = new System.Drawing.Point(
+                    (int)(bounds.Left + bounds.Width / 2), (int)(bounds.Top + bounds.Height / 2));
+                PointerInput.Move(center);
+                // Pen injection supports whole gestures but not separate press/release.
+                PointerInput.ClickDrag(center, PointerButtons.Primary, 100);
                 Wait.ForIdle();
                 Verify.AreEqual(inputType.ToString(), ReadText("LastPointerDevice"));
                 Verify.AreEqual(attempt.ToString(), ReadText("ReleaseCount"));
@@ -102,24 +103,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 using (InputController.Activate(PointerInputType.SingleTouch))
                 {
-                    var touch = PointerInput.Current;
-                    touch.Move(FindElement.ById("TouchHandle").GetClickablePoint());
-                    touch.Press(PointerButtons.Primary);
-                    try
-                    {
-                        Wait.ForIdle();
-                        Verify.AreEqual("1", ReadText("ChildTouchPressCount"));
-                        Verify.AreNotEqual(mousePointerId, ReadText("ChildTouchPointerId"));
-                    }
-                    finally
-                    {
-                        touch.Release(PointerButtons.Primary);
-                    }
-                    Wait.ForIdle();
+                    // Touch injection supports whole gestures but not separate press/release.
+                    InputHelper.Tap(FindElement.ById("TouchHandle"));
                 }
 
                 new Button(FindElement.ById("Snapshot")).Invoke();
                 Wait.ForIdle();
+                Verify.AreEqual("1", ReadText("ChildTouchPressCount"));
+                Verify.AreNotEqual(mousePointerId, ReadText("ChildTouchPointerId"));
                 Verify.AreEqual("1", ReadText("ChildTouchReleaseCount"));
                 Verify.AreEqual("1", ReadText("MouseCaptureCount"));
                 Verify.AreEqual("0", ReadText("MouseCaptureLostCount"));
