@@ -409,17 +409,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // Each pair sets header and body differently, so either following the other fails.
         [TestMethod]
-        public void VerifyHeaderAndBodyGridLinesAreIndependent()
+        public void VerifyHeaderGridLinesShowWhateverTheBodyGridLines()
         {
             var separatorColor = Color.FromArgb(0xFF, 0x12, 0x9E, 0x5A);
             var cases = new[]
             {
-                (Header: TableViewGridLinesVisibility.All, Body: TableViewGridLinesVisibility.None),
-                (Header: TableViewGridLinesVisibility.None, Body: TableViewGridLinesVisibility.All),
-                (Header: TableViewGridLinesVisibility.Horizontal, Body: TableViewGridLinesVisibility.Vertical),
-                (Header: TableViewGridLinesVisibility.Vertical, Body: TableViewGridLinesVisibility.Horizontal),
+                TableViewGridLinesVisibility.None,
+                TableViewGridLinesVisibility.Horizontal,
+                TableViewGridLinesVisibility.Vertical,
+                TableViewGridLinesVisibility.All,
             };
 
             TableView tableView = null;
@@ -429,8 +428,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 SetApplicationResource("TabularSurfaceHeaderSeparatorBrush", new SolidColorBrush(separatorColor));
 
                 tableView = CreateThemingTable();
-                Verify.AreEqual(TableViewGridLinesVisibility.All, tableView.HeaderGridLinesVisibility,
-                    "HeaderGridLinesVisibility defaults to All.");
                 LoadContent(tableView);
             });
 
@@ -438,14 +435,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             try
             {
-                foreach (var testCase in cases)
+                foreach (var body in cases)
                 {
-                    var current = testCase;
-
                     RunOnUIThread.Execute(() =>
                     {
-                        tableView.HeaderGridLinesVisibility = current.Header;
-                        tableView.GridLinesVisibility = current.Body;
+                        tableView.GridLinesVisibility = body;
                         Content.UpdateLayout();
                     });
 
@@ -453,11 +447,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     RunOnUIThread.Execute(() =>
                     {
-                        var context = $"header {current.Header}, body {current.Body}";
-                        bool headerVertical = current.Header == TableViewGridLinesVisibility.All || current.Header == TableViewGridLinesVisibility.Vertical;
-                        bool headerHorizontal = current.Header == TableViewGridLinesVisibility.All || current.Header == TableViewGridLinesVisibility.Horizontal;
-                        bool bodyVertical = current.Body == TableViewGridLinesVisibility.All || current.Body == TableViewGridLinesVisibility.Vertical;
-                        bool bodyHorizontal = current.Body == TableViewGridLinesVisibility.All || current.Body == TableViewGridLinesVisibility.Horizontal;
+                        var context = $"body {body}";
+                        bool bodyVertical = body == TableViewGridLinesVisibility.All || body == TableViewGridLinesVisibility.Vertical;
+                        bool bodyHorizontal = body == TableViewGridLinesVisibility.All || body == TableViewGridLinesVisibility.Horizontal;
 
                         var separator = GetHeaderCell(tableView, 0).FindVisualChildByName("PART_GridLine") as Border;
                         if (separator == null)
@@ -466,8 +458,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             return;
                         }
 
-                        Verify.AreEqual(headerVertical ? Visibility.Visible : Visibility.Collapsed, separator.Visibility,
-                            $"The non-terminal header separator must follow HeaderGridLinesVisibility ({context}).");
+                        Verify.AreEqual(Visibility.Visible, separator.Visibility,
+                            $"The non-terminal header separator is always shown ({context}).");
                         Verify.AreEqual(VerticalAlignment.Stretch, separator.VerticalAlignment, "Header separators are full height.");
                         Verify.AreEqual(separatorColor, (separator.Background as SolidColorBrush)?.Color ?? default,
                             "Header separators paint TabularSurfaceHeaderSeparatorBrush.");
@@ -476,8 +468,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         Verify.IsNotNull(headerRow, "The template must contain PART_HeaderRow.");
                         if (headerRow != null)
                         {
-                            Verify.AreEqual(headerHorizontal, headerRow.BorderThickness.Bottom > 0.0,
-                                $"The header bottom rule must follow HeaderGridLinesVisibility ({context}).");
+                            Verify.IsTrue(headerRow.BorderThickness.Bottom > 0.0, $"The header bottom rule is always shown ({context}).");
+                            Verify.AreEqual(separatorColor, (headerRow.BorderBrush as SolidColorBrush)?.Color ?? default,
+                                "The header bottom rule paints TabularSurfaceHeaderSeparatorBrush.");
                         }
 
                         var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
@@ -499,6 +492,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceHeaderSeparatorBrush"));
             }
         }
+
+        [TestMethod]
+        public void VerifyTransparentHeaderSeparatorBrushHidesHeaderLines()
+        {
+            var transparent = Color.FromArgb(0x00, 0xFF, 0xFF, 0xFF);
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TabularSurfaceHeaderSeparatorBrush", new SolidColorBrush(transparent));
+
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var separator = GetHeaderCell(tableView, 0).FindVisualChildByName("PART_GridLine") as Border;
+                    Verify.IsNotNull(separator, "Every header cell must contain its separator.");
+                    Verify.AreEqual(transparent, (separator?.Background as SolidColorBrush)?.Color ?? default,
+                        "Overriding TabularSurfaceHeaderSeparatorBrush with Transparent must hide the header separators.");
+
+                    var headerRow = tableView.FindVisualChildByName("PART_HeaderRow") as Border;
+                    Verify.IsNotNull(headerRow, "The template must contain PART_HeaderRow.");
+                    Verify.AreEqual(transparent, (headerRow?.BorderBrush as SolidColorBrush)?.Color ?? default,
+                        "Overriding TabularSurfaceHeaderSeparatorBrush with Transparent must hide the header bottom rule.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceHeaderSeparatorBrush"));
+            }
+        }
+
         [TestMethod]
         public void VerifyGridLineBrushAppOverrideWinsInsideElementTheme()
         {

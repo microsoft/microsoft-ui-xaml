@@ -176,7 +176,6 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"EmptyTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.EmptyTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"GridLinesVisibility", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility", statics.GridLinesVisibilityProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"GroupHeaderTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.GroupHeaderTemplateProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"HeaderGridLinesVisibility", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility", statics.HeaderGridLinesVisibilityProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeadersVisibility", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility", statics.HeadersVisibilityProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"IsReadOnly", L"Boolean", statics.IsReadOnlyProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ItemsSource", L"Object", statics.ItemsSourceProperty(), false /* isContent */);

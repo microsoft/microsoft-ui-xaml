@@ -218,7 +218,6 @@ public:
     void OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeadersVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnHeaderGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnAlternatingRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnEmptyTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);

@@ -381,17 +381,9 @@ namespace
         return query.GlobalValue();
     }
 
-    constexpr winrt::Thickness s_zeroThickness{ 0, 0, 0, 0 };
-
     bool WantsHorizontalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
     {
         return visibility == winrt::TableViewGridLinesVisibility::Horizontal ||
-            visibility == winrt::TableViewGridLinesVisibility::All;
-    }
-
-    bool WantsVerticalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
-    {
-        return visibility == winrt::TableViewGridLinesVisibility::Vertical ||
             visibility == winrt::TableViewGridLinesVisibility::All;
     }
 
@@ -1313,17 +1305,6 @@ void TableView::OnGridLinesVisibilityPropertyChanged(const winrt::DependencyProp
     QueueTerminalGridLineRefresh();
 }
 
-void TableView::OnHeaderGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    if (args.OldValue() == args.NewValue())
-    {
-        return;
-    }
-
-    ApplyGridLinesToHeader();
-    QueueTerminalGridLineRefresh();
-}
-
 void TableView::OnRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (args.OldValue() == args.NewValue())
@@ -1345,32 +1326,15 @@ void TableView::OnAlternatingRowBackgroundPropertyChanged(const winrt::Dependenc
     RefreshRowBackgroundsOnRealizedRows();
 }
 
+// Header lines are always drawn; only the last separator yields to the outer border.
 void TableView::ApplyGridLinesToHeader()
 {
-    const auto visibility = HeaderGridLinesVisibility();
-
-    if (auto headerFE = m_headerRow.get())
-    {
-        if (auto headerBorder = headerFE.try_as<winrt::Border>())
-        {
-            if (WantsHorizontalLines(visibility))
-            {
-                headerBorder.ClearValue(winrt::Border::BorderThicknessProperty());
-            }
-            else
-            {
-                headerBorder.BorderThickness(s_zeroThickness);
-            }
-        }
-    }
-
     auto host = m_headerHost.get();
     if (!host)
     {
         return;
     }
 
-    const bool wantVertical = WantsVerticalLines(visibility);
     const auto headerCells = host.Children();
     const uint32_t headerCellCount = headerCells.Size();
     uint32_t lastVisibleHeaderCell = headerCellCount;
@@ -1396,7 +1360,7 @@ void TableView::ApplyGridLinesToHeader()
             if (auto const gridLine = winrt::get_self<TableViewColumnHeader>(header)->GetGridLineInternal())
             {
                 gridLine.Visibility(
-                    wantVertical && !(m_suppressTrailingGridLine && i == lastVisibleHeaderCell)
+                    !(m_suppressTrailingGridLine && i == lastVisibleHeaderCell)
                         ? winrt::Visibility::Visible
                         : winrt::Visibility::Collapsed);
             }
@@ -1480,11 +1444,6 @@ void TableView::QueueTerminalGridLineRefresh(bool isGeometryRetry)
 
 std::optional<bool> TableView::ShouldSuppressTrailingGridLine()
 {
-    if (!WantsVerticalLines(GridLinesVisibility()) && !WantsVerticalLines(HeaderGridLinesVisibility()))
-    {
-        return false;
-    }
-
     const auto border = BorderThickness();
     // Both edges are read in the panel's logical coordinate space, which XAML mirrors wholesale
     // under RTL, so the logical trailing edge meets BorderThickness.Right in either direction.

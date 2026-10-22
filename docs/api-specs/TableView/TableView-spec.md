@@ -143,14 +143,13 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
-`GridLinesVisibility` controls the body gridlines and `HeaderGridLinesVisibility` independently controls the column-header lines (the separators between header cells and the rule under the header). `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
+`GridLinesVisibility` controls the body gridlines. The column-header lines (the separators between header cells and the rule under the header) are always drawn, whatever `GridLinesVisibility` is; both paint `TabularSurfaceHeaderSeparatorBrush`, so an app hides them by overriding that resource with `Transparent`. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
 
 ```xaml
 <tabular:TableView
     ItemsSource="{x:Bind People}"
     HeadersVisibility="Column"
     GridLinesVisibility="Horizontal"
-    HeaderGridLinesVisibility="All"
     Density="Compact"
     RowBackground="{ThemeResource CardBackgroundFillColorDefaultBrush}"
     AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}">
@@ -167,7 +166,6 @@ using Microsoft.UI.Xaml.Controls.Tabular;
 
 PeopleTable.HeadersVisibility = TableViewHeadersVisibility.Column;
 PeopleTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
-PeopleTable.HeaderGridLinesVisibility = TableViewGridLinesVisibility.All;
 PeopleTable.Density = TableViewDensity.Compact;
 ```
 
@@ -475,7 +473,6 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 | `Columns` | `IVector<TableViewColumn>` | Empty vector | Developer-defined column collection. This is the content property. |
 | `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls column-header visibility. |
 | `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls the body's horizontal (row) and vertical (column) gridlines. |
-| `HeaderGridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls the column-header lines independently of `GridLinesVisibility`: `Vertical` draws the full-height separators between header cells, `Horizontal` the rule under the header. |
 | `Density` | `TableViewDensity` | `Standard` | Controls row/cell spacing. |
 | `RowBackground` | `Brush` | `null` | Background brush for rows. |
 | `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
@@ -655,7 +652,7 @@ Template parts. All are optional; a missing part disables only its feature:
 | Part | Type | Purpose |
 |---|---|---|
 | `PART_ContentPresenter` | `ContentPresenter` | Content region. On a sortable column the control adds the sort glyph's width to its right `Margin`, so text trims before the glyph. |
-| `PART_GridLine` | `Border` | Vertical separator. Its `Visibility` follows `HeaderGridLinesVisibility`; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
+| `PART_GridLine` | `Border` | Vertical separator. Always shown, except the last column's where it would double the outer border; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
 | `PART_SortIndicatorHost` | `Border` | Hosts the sort glyph on a sortable column. Under a High Contrast highlight state the glyph takes `PART_ContentPresenter`'s `Foreground`. |
 | `PART_ResizeGripperHost` | `Border` | Hosts the resize gripper on a resizable column. Without it the column cannot be resized from the header, by pointer, keyboard or UI Automation. |
 
@@ -879,7 +876,7 @@ Flags enum mirroring the `None`/`Column` slots of WPF `DataGridHeadersVisibility
 
 ### TableViewGridLinesVisibility
 
-Mirrors WPF `DataGridGridLinesVisibility` values exactly. Used by both `GridLinesVisibility` (body) and `HeaderGridLinesVisibility` (column header).
+Mirrors WPF `DataGridGridLinesVisibility` values exactly. Used by `GridLinesVisibility`.
 
 | Value | Numeric value | Description |
 |---|---:|---|
@@ -1194,7 +1191,6 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn> Columns { get; };
         Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility HeadersVisibility;
         Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility GridLinesVisibility;
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility HeaderGridLinesVisibility;
         Microsoft.UI.Xaml.Media.Brush RowBackground;
         Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground;
         Microsoft.UI.Xaml.DataTemplate EmptyTemplate;
@@ -1234,7 +1230,6 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty HeaderGridLinesVisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty RowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };
