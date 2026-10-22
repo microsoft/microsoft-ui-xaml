@@ -1211,6 +1211,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyHighContrastHoveredAndPressedHeadersSuppressBackplate()
+        {
+            foreach (var state in new[] { "HighContrastPointerOver", "HighContrastPressed" })
+            {
+                TableView tableView = null;
+                TableViewColumnHeader header = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateThemingTable();
+                    LoadContent(tableView);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    header = RequireColumnHeader(tableView, 0);
+                    Verify.IsTrue(VisualStateManager.GoToState(header, state, false), $"The header template must define the {state} state.");
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var presenter = header?.FindVisualChildByName("PART_ContentPresenter") as UIElement;
+                    if (presenter == null)
+                    {
+                        Verify.Fail("The header template must contain PART_ContentPresenter.");
+                        return;
+                    }
+
+                    Verify.AreEqual(ElementHighContrastAdjustment.None, presenter.HighContrastAdjustment,
+                        $"The {state} state must turn off the High Contrast text backplate on the header content.");
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyDefaultGroupHeaderCountInheritsForegroundThatFollowsStates()
         {
             TableView tableView = null;
