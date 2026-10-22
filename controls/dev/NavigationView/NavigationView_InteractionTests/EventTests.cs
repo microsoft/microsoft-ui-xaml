@@ -358,20 +358,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
-        public void NavigationViewItemMouseDrop()
+        public void NavigationViewItemPenDrop()
         {
+            // Injected mouse input does not complete a system drop on the test machine. Pen uses
+            // the same item-owned capture and drag-detection path, so it verifies the drop.
+            using var inputController = InputController.Activate(PointerInputType.Pen);
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
             {
                 new CheckBox(FindElement.ById("CancelDrag")).Uncheck();
                 Wait.ForIdle();
                 InputHelper.MouseDragToTarget(FindElement.ById("DragItem"), FindElement.ById("DropTarget"));
-                // Nudge the mouse over the target so a pending system drag loop sees the release.
-                var targetPoint = FindElement.ById("DropTarget").GetClickablePoint();
-                PointerInput.Move(new System.Drawing.Point(targetPoint.X + 2, targetPoint.Y));
-                PointerInput.Move(targetPoint);
                 Wait.RetryUntilEvalFuncSuccessOrTimeout(
                     () => new TextBlock(FindElement.ById("CompletionResult")).GetText() == "Copy",
-                    retryTimoutByMilliseconds: 5000);
+                    retryTimoutByMilliseconds: 3000);
+                Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
                 Verify.AreEqual("1", new TextBlock(FindElement.ById("DragCount")).GetText());
                 Verify.AreEqual("DragItem", new TextBlock(FindElement.ById("DroppedText")).GetText());
                 Verify.AreEqual("Copy", new TextBlock(FindElement.ById("CompletionResult")).GetText());

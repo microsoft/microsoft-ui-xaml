@@ -484,7 +484,9 @@ AutomaticDragHelper::HandleHoldingEventArgs(
 _Check_return_ HRESULT
 AutomaticDragHelper::HandleDirectManipulationDraggingStarted()
 {
-    ASSERT(m_spPointerPoint && m_spPointer);
+    // Pen presses are tracked by the mouse/pen path, which does not record the touch pointer.
+    // A pen can still start a cross-slide drag, so only touch holds require the pointer.
+    ASSERT(!m_isHoldingCompleted || (m_spPointerPoint && m_spPointer));
 
     // Release cross-slide viewport now
     IFC_RETURN(m_pOwnerNoRef->DirectManipulationCrossSlideContainerCompleted());
