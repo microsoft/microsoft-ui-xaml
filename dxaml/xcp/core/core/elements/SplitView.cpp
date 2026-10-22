@@ -19,19 +19,21 @@ using namespace Focus;
 class CSplitViewPaneClosingExecutor : public CXcpObjectBase<IPALExecuteOnUIThread>
 {
 public:
-    CSplitViewPaneClosingExecutor(_In_ CSplitView *pSplitView, _In_ CSplitViewPaneClosingEventArgs *pPaneClosingEventArgs)
+    CSplitViewPaneClosingExecutor(_In_ CSplitView *pSplitView, _In_ CSplitViewPaneClosingEventArgs *pPaneClosingEventArgs, uint64_t lightDismissId)
         : m_spSplitView(pSplitView)
         , m_spPaneClosingEventArgs(pPaneClosingEventArgs)
+        , m_lightDismissId(lightDismissId)
     {}
 
     _Check_return_ HRESULT Execute() override
     {
-        return m_spSplitView->ExecuteLightDismiss(m_spPaneClosingEventArgs->m_cancel);
+        return m_spSplitView->ExecuteLightDismiss(m_lightDismissId, m_spPaneClosingEventArgs->m_cancel);
     }
 
 private:
     xref_ptr<CSplitView> m_spSplitView;
     xref_ptr<CSplitViewPaneClosingEventArgs> m_spPaneClosingEventArgs;
+    uint64_t m_lightDismissId;
 
 }; // class SplitViewClosingExecutor;
 
@@ -175,7 +177,7 @@ bool CSplitView::IsLightDismissible()
 
 bool CSplitView::CanLightDismiss()
 {
-    return m_isPaneOpen && !m_isLightDismissPending && IsLightDismissible();
+    return m_isPaneOpen && m_pendingLightDismissId == 0 && IsLightDismissible();
 }
 
 double CSplitView::GetOpenPaneLength()
@@ -210,6 +212,10 @@ CSplitView::TryCloseLightDismissiblePane()
     xref_ptr<CSplitViewPaneClosingEventArgs> spArgs;
     spArgs.init(new CSplitViewPaneClosingEventArgs);
 
+    // Flag that we're attempting to close so that we don't queue up multiple of these messages.
+    const auto lightDismissId = ++m_nextLightDismissId;
+    m_pendingLightDismissId = lightDismissId;
+
     // Raise the closing event to give the app a chance to cancel.
     CEventManager *pEventManager = core->GetEventManager();
     if (pEventManager != nullptr)
@@ -226,22 +232,33 @@ CSplitView::TryCloseLightDismissiblePane()
     // Queue up a deferred UI thread executor that will actually close the pane
     // based on whether it was canceled or not.
     xref_ptr<CSplitViewPaneClosingExecutor> spSplitViewExecutor;
-    spSplitViewExecutor.init(new CSplitViewPaneClosingExecutor(this, spArgs.get()));
-    IFC_RETURN(core->ExecuteOnUIThread(spSplitViewExecutor, ReentrancyBehavior::CrashOnReentrancy));
-
-    // Flag that we're attempting to close so that we don't queue up multiple of these messages.
-    m_isLightDismissPending = true;
+    spSplitViewExecutor.init(new CSplitViewPaneClosingExecutor(this, spArgs.get(), lightDismissId));
+    const HRESULT result = core->ExecuteOnUIThread(spSplitViewExecutor, ReentrancyBehavior::CrashOnReentrancy);
+    if (FAILED(result) && m_pendingLightDismissId == lightDismissId)
+    {
+        m_pendingLightDismissId = 0;
+    }
+    IFC_RETURN(result);
 
     return S_OK;
 }
 
-_Check_return_ HRESULT CSplitView::ExecuteLightDismiss(bool isCanceled)
+_Check_return_ HRESULT CSplitView::ExecuteLightDismiss(uint64_t lightDismissId, bool isCanceled)
 {
+    // A reopen after this dismiss was requested supersedes it.
+    if (m_pendingLightDismissId != lightDismissId)
+    {
+        return S_OK;
+    }
+
     // Keep the executor guard until SetValue returns, but suppress only this
     // operation's closing notification, not closes from reentrant app callbacks.
-    auto completeLightDismiss = wil::scope_exit([this]()
+    auto completeLightDismiss = wil::scope_exit([this, lightDismissId]()
     {
-        m_isLightDismissPending = false;
+        if (m_pendingLightDismissId == lightDismissId)
+        {
+            m_pendingLightDismissId = 0;
+        }
         m_isLightDismissClose = false;
     });
 
@@ -259,6 +276,11 @@ _Check_return_ HRESULT CSplitView::ExecuteLightDismiss(bool isCanceled)
 bool CSplitView::ConsumeLightDismissClose()
 {
     return std::exchange(m_isLightDismissClose, false);
+}
+
+void CSplitView::SupersedeLightDismiss()
+{
+    m_pendingLightDismissId = 0;
 }
 
 CDependencyObject*

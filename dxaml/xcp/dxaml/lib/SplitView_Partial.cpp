@@ -532,6 +532,13 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
     const bool isLightDismissClose = !isOpen && splitViewCore->ConsumeLightDismissClose();
     const auto requestId = ++m_nextPaneRequestId;
 
+    if (isOpen)
+    {
+        // Reopening supersedes a pending light dismiss, so its executor must not close
+        // this pane and a new outside click can start another dismiss.
+        splitViewCore->SupersedeLightDismiss();
+    }
+
     IFC_RETURN(RegisterForDisplayModeStatesChangedEvent());
 
     if (m_tpDisplayModeStates && m_tpDisplayModeStates.Cast<VisualStateGroup>()->GetHandle()->IsActive())
@@ -580,7 +587,18 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
 
         // Call into the core object to set focus to the pane on opening.
         IFC_RETURN(splitViewCore->OnPaneOpening());
+    }
+    else
+    {
+        // Call into the core object to raise the PaneClosing event, which is raised asynchronously.
+        // This will also restore focus to whichever element had focus when the pane opened.
+        IFC_RETURN(splitViewCore->OnPaneClosing(isLightDismissClose));
+    }
 
+    // Synchronous visual-state or app callbacks may have reversed this request,
+    // so reconcile with the pane's actual state.
+    if (splitViewCore->m_isPaneOpen)
+    {
         if (DXamlCore::GetCurrent()->GetHandle()->BackButtonSupported())
         {
             IFC_RETURN(BackButtonIntegration_RegisterListener(this));
@@ -589,10 +607,6 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
     }
     else
     {
-        // Call into the core object to raise the PaneClosing event, which is raised asynchronously.
-        // This will also restore focus to whichever element had focus when the pane opened.
-        IFC_RETURN(splitViewCore->OnPaneClosing(isLightDismissClose));
-
         IFC_RETURN(BackButtonIntegration_UnregisterListener(this));
         IFC_RETURN(TeardownOuterDismissLayer());
     }

@@ -52,8 +52,9 @@ public:
     _Check_return_ HRESULT OnPaneClosing(bool isLightDismissClose);
     _Check_return_ HRESULT OnPaneOpenedOrClosed(bool isPaneOpen);
 
-    _Check_return_ HRESULT ExecuteLightDismiss(bool isCanceled);
+    _Check_return_ HRESULT ExecuteLightDismiss(uint64_t lightDismissId, bool isCanceled);
     bool ConsumeLightDismissClose();
+    void SupersedeLightDismiss();
 
     CDependencyObject* ProcessTabStop(
         _In_ bool isForward,
@@ -93,7 +94,8 @@ private:
     xref::weakref_ptr<CDependencyObject> m_spPrevFocusedElementWeakRef;
     DirectUI::FocusState m_prevFocusState{ DirectUI::FocusState::Unfocused };
 
-    bool m_isLightDismissPending{ false };
+    uint64_t m_nextLightDismissId{ 0 };
+    uint64_t m_pendingLightDismissId{ 0 };
     bool m_isLightDismissClose{ false };
     double m_paneMeasuredLength{ 0.0 };
 
