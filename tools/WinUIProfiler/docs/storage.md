@@ -27,6 +27,10 @@ supported, incompatible, corrupt and future databases. Schema 0 is not a
 previous profiler format; it is rejected. Future schema versions are explicitly
 unsupported. No destructive recovery, migration-on-read or old-format import
 is provided.
+All logically related open-time checks execute in **one deferred read
+transaction**, including the checkpoint and source-history comparison. A WAL
+writer committing between those statements cannot create a false corruption
+diagnosis. The validation snapshot ends before writable WAL/quota configuration.
 
 `SessionStatus.Recording` remains persisted until a supplied terminal status
 commits. `UnfinishedRecording` reports that fact on reopening; reopening is
@@ -116,6 +120,13 @@ including page zero. Every state anti-join excludes revisions beyond that
 checkpoint. Later commits/tombstones cannot rewrite old pages. Paging order
 is QPC, source ordinal, then stable typed row key; tree entries carry explicit
 order/parent fields but are not promised in traversal order.
+For point-effective state, dominance is **QPC then source ordinal**, restricted
+to evidence at or before the requested point. Late arrivals with older
+effective timestamps cannot suppress a later-time state or tombstone. Equal
+QPC ties use the larger ordinal. Recursive root closure applies the same
+dominance rule. Non-point revision datasets (for example frame attempts and
+snapshot metadata) still use the latest source-ordinal revision: the start
+of a frame/capture interval is not its correction/arrival revision order.
 
 P01's `PageRequest`/`PageInfo` expose offsets, not a token property. P02's
 `Continuation(request, page, context)` and `Resume(request, token)` bridge that
@@ -133,6 +144,8 @@ attempt/submission/change projections, object history, XAML/composition
 topology/properties, correlations, resource states and snapshot metadata.
 No ETW event pairing, property/lifetime inference or capture processing occurs.
 Range intervals are half-open, except zero-duration point observations.
+Point frame queries include an interval's start/interior, not its exclusive
+end; an actual zero-duration frame remains selectable at its own point.
 Topology queries apply latest explicit revisions at the requested QPC;
 optional root selection uses a database recursive descendant closure with
 deduplication. Correlations require their supplied validity to include the
@@ -144,6 +157,12 @@ an allocation total or an inferred lifetime integration.
 If a dataset/selected metric/object has never been observed at that boundary,
 an empty page explicitly reports **Unavailable** coverage and a reason.
 A filtered interval with no rows is distinct from an unobserved dataset.
+Root selection requires explicit evidence for that root, in the selected
+dataset, at/before the requested QPC and within the retained checkpoint.
+An unrelated observed root or a future root observation does not establish
+coverage for an unknown selection. Previously observed roots can still yield
+genuinely observed empty pages after explicit removal; emptiness alone does
+not imply unavailable coverage.
 Supplied estimated/missing values and per-entry quality are preserved;
 checkpoint quality is supplied by the future processing owner and is not
 inferred from a successful SQLite write.
@@ -154,9 +173,18 @@ belong to later snapshot deliverables; storing attributes/edges alone is not
 permission to fabricate deltas or proven root paths.
 
 Cancellation is checked before validation/work, before/through writes, and
-through materialization. The SQLite provider's command cancellation hook is
-registered during row reads. Native synchronous SQLite work/lock waits are
-not promised hard real-time preemption; this is not an asynchronous worker.
+through materialization. Read execution installs the pinned SQLitePCLRaw
+native progress handler (every 64 VM instructions) and a token-triggered
+`sqlite3_interrupt` on its dedicated connection. Both availability and result
+SQL, including work before the first row, are covered. The persistent progress
+check closes the idle-interrupt race between a managed check and the next
+native step. Token-attributable `SQLITE_INTERRUPT` maps to
+`OperationCanceledException` with its native inner exception/token; unrelated
+SQLite errors retain their meaning. The registration is drained and progress
+handler removed before the caller disposes the connection. Read transactions
+and statements unwind normally, and cancelled reads do not fault recording.
+This does not use the provider's no-op `SqliteCommand.Cancel`. Hard real-time
+native/lock-wait latency is not promised; this is not an asynchronous worker.
 `GetSession` has no historical boundary parameter in P01 and returns the
 latest session status, including a known persistence failure.
 
@@ -205,3 +233,10 @@ Tests use real file-backed SQLite databases beneath ignored `TestResults`
 and remove their own database/WAL/SHM/lease/failure siblings. Controlled SQL
 triggers are test-only fault seams. No capture, processor, UI, CLI, OS collector
 or other profiler is a dependency of this foundation.
+`P02ReviewRegressionTests` additionally coordinates an actual WAL commit
+between validation phases with a native trace callback, exercises late-time
+tree/resource/tombstone dominance and root coverage for both tree APIs, and
+cancels running recursive native SQL using barriers (without a timing SLA).
+Separate trace-coordinated tests cancel availability/result steps; a pre-step
+case verifies idle interrupts cannot lose cancellation. Tests verify native
+error 9, preserved recording/history and subsequent usable reads/connections.

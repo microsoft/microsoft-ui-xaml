@@ -12,12 +12,21 @@ public sealed class ProfilerQueryService : IProfilerQueryService
 {
     public const int MaximumMaterializedBytes = 16 * 1024 * 1024;
     private readonly SessionStore store;
-    internal ProfilerQueryService(SessionStore store) => this.store = store;
+    private readonly Func<SqliteConnection> openReader;
+    internal ProfilerQueryService(SessionStore store, Func<SqliteConnection>? openReader = null)
+    {
+        this.store = store;
+        this.openReader = openReader ?? store.OpenReader;
+    }
 
     public ValueTask<QueryResult<SessionInfo>> GetSession(GetSessionRequest request, CancellationToken cancellationToken)
     {
         Validate(request, cancellationToken);
-        using var db = store.OpenReader();
+        using var db = openReader();
+        return new(SqliteReadExecution.Run(db, cancellationToken, () => ReadSession(db)));
+    }
+    private QueryResult<SessionInfo> ReadSession(SqliteConnection db)
+    {
         var checkpoint = ReadCheckpoint(db, null);
         var info = checkpoint.Info;
         var quality = checkpoint.Quality;
@@ -33,7 +42,7 @@ public sealed class ProfilerQueryService : IProfilerQueryService
             info = info with { Status = SessionStatus.Failed, StopReason = failure.Reason };
             quality = new(MeasurementKind.Unavailable, CoverageState.Partial, failure.Reason);
         }
-        return new(new QueryResult<SessionInfo>(new(store.Scope, checkpoint.Watermark, quality), info));
+        return new(new(store.Scope, checkpoint.Watermark, quality), info);
     }
     public ValueTask<QueryPage<MetricSample>> GetMetrics(GetMetricsRequest request, CancellationToken cancellationToken) =>
         Page<MetricSample>(request, "Metric", cancellationToken);
@@ -67,8 +76,12 @@ public sealed class ProfilerQueryService : IProfilerQueryService
     private ValueTask<QueryPage<T>> Page<T>(object request, string dataset, CancellationToken cancellationToken) where T : IQueryValue
     {
         Validate(request, cancellationToken);
+        using var db = openReader();
+        return new(SqliteReadExecution.Run(db, cancellationToken, () => ReadPage<T>(db, request, dataset, cancellationToken)));
+    }
+    private QueryPage<T> ReadPage<T>(SqliteConnection db, object request, string dataset, CancellationToken cancellationToken) where T : IQueryValue
+    {
         var page = RequestPage(request);
-        using var db = store.OpenReader();
         using var transaction = db.BeginTransaction(deferred: true);
         var checkpoint = ReadCheckpoint(db, page.AtWatermark, transaction);
         var parameters = new List<(string Name, object? Value)>
@@ -87,7 +100,7 @@ public sealed class ProfilerQueryService : IProfilerQueryService
         void Range(TimeRange range, bool overlap = false)
         {
             if (range.StartQpc == range.EndQpc)
-                Add(overlap ? "r.TimestampQpc<=$start AND r.EndQpc>=$start" : "r.TimestampQpc=$start", "$start", range.StartQpc);
+                Add(overlap ? "r.TimestampQpc<=$start AND (r.EndQpc>$start OR r.TimestampQpc=r.EndQpc AND r.TimestampQpc=$start)" : "r.TimestampQpc=$start", "$start", range.StartQpc);
             else
             {
                 Add(overlap ? "(r.EndQpc>$start OR r.TimestampQpc=r.EndQpc AND r.TimestampQpc>=$start)" : "r.TimestampQpc>=$start", "$start", range.StartQpc);
@@ -123,18 +136,21 @@ public sealed class ProfilerQueryService : IProfilerQueryService
         if (at is { } qpc)
         {
             if (qpc > checkpoint.Watermark.TimestampQpc) throw new ArgumentException("Point-in-time query extends beyond the committed timestamp.");
-            Add("r.TimestampQpc<=$at", "$at", qpc);
+            Add("r.TimestampQpc<=$at", "$at", qpc, true);
         }
-        var latest = """
+        var dominance = at is null ? "newer.SourceOrdinal>r.SourceOrdinal" :
+            "(newer.TimestampQpc>r.TimestampQpc OR newer.TimestampQpc=r.TimestampQpc AND newer.SourceOrdinal>r.SourceOrdinal)";
+        var latest = $"""
             r.CommitOrdinal<=$boundary AND r.Dataset=$dataset AND r.Deleted=0
             AND NOT EXISTS(SELECT 1 FROM ProjectionRows newer
                 WHERE newer.Dataset=r.Dataset AND newer.RowKey=r.RowKey
-                AND newer.CommitOrdinal<= $boundary AND newer.SourceOrdinal>r.SourceOrdinal
+                AND newer.CommitOrdinal<= $boundary AND {dominance}
             """;
         latest += at is null ? ")" : " AND newer.TimestampQpc<=$at)";
         if (root is { } selected)
         {
             parameters.Add(("$root", ObjectId(selected)));
+            availability.Add("r.ObjectKey=$root");
             filters.Add($"""
                 r.ObjectKey IN (
                     WITH RECURSIVE descendants(k) AS (
@@ -155,7 +171,6 @@ public sealed class ProfilerQueryService : IProfilerQueryService
             {(filters.Count == 0 ? "" : " AND " + string.Join(" AND ", filters))}
             ORDER BY r.TimestampQpc,r.SourceOrdinal,r.RowKey LIMIT $limit OFFSET $offset
             """, transaction, parameters.ToArray());
-        using var registration = cancellationToken.Register(command.Cancel);
         using var rows = command.ExecuteReader();
         var items = new List<T>(page.Limit);
         var hasMore = false;
@@ -172,7 +187,7 @@ public sealed class ProfilerQueryService : IProfilerQueryService
             items.Add(Json<T>(rows.GetString(0)));
         }
         cancellationToken.ThrowIfCancellationRequested();
-        return new(new QueryPage<T>(context, items, new(page.Limit, page.Offset, hasMore ? page.Offset + page.Limit : null, hasMore)));
+        return new(context, items, new(page.Limit, page.Offset, hasMore ? page.Offset + page.Limit : null, hasMore));
     }
 
     private void Validate(object request, CancellationToken cancellationToken)

@@ -152,28 +152,29 @@ public sealed class SessionStore : IDisposable
         }
         catch { db.Dispose(); throw; }
     }
-    private static void ValidateDatabase(SqliteConnection db)
+    internal static void ValidateDatabase(SqliteConnection db)
     {
         try
         {
-            using var version = Command(db, "PRAGMA user_version");
+            using var transaction = db.BeginTransaction(deferred: true);
+            using var version = Command(db, "PRAGMA user_version", transaction);
             var schemaVersion = Convert.ToInt32(version.ExecuteScalar());
             if (schemaVersion > 1) throw new NotSupportedException($"Future session schema {schemaVersion}.");
             if (schemaVersion != 1) throw new InvalidDataException($"Unsupported session schema {schemaVersion}.");
-            using var app = Command(db, "PRAGMA application_id");
+            using var app = Command(db, "PRAGMA application_id", transaction);
             if (Convert.ToInt32(app.ExecuteScalar()) != ApplicationId) throw new InvalidDataException("Not a WinUI profiler session.");
-            using var integrity = Command(db, "PRAGMA quick_check");
+            using var integrity = Command(db, "PRAGMA quick_check", transaction);
             if (!Equals(integrity.ExecuteScalar(), "ok")) throw new InvalidDataException("SQLite integrity check failed.");
-            using var hash = Command(db, "SELECT SchemaHash FROM Sessions");
-            if (!Equals(hash.ExecuteScalar(), SchemaHash(db, null))) throw new InvalidDataException("Session schema was modified or is incomplete.");
-            using var foreignKeys = Command(db, "PRAGMA foreign_key_check");
+            using var hash = Command(db, "SELECT SchemaHash FROM Sessions", transaction);
+            if (!Equals(hash.ExecuteScalar(), SchemaHash(db, transaction))) throw new InvalidDataException("Session schema was modified or is incomplete.");
+            using var foreignKeys = Command(db, "PRAGMA foreign_key_check", transaction);
             using var violations = foreignKeys.ExecuteReader();
             if (violations.Read()) throw new InvalidDataException("Session foreign-key state is corrupt.");
-            var checkpoint = ReadCheckpoint(db, null);
+            var checkpoint = ReadCheckpoint(db, null, transaction);
             using var identity = Command(db, """
                 SELECT s.SessionId,s.ScopeJson,p.InstanceId,p.ProcessId,p.CreationFileTime
                 FROM Sessions s JOIN ProcessInstances p ON p.SessionId=s.SessionId
-                """);
+                """, transaction);
             using (var row = identity.ExecuteReader())
             {
                 if (!row.Read()) throw new InvalidDataException("Missing session/process identity.");
@@ -186,7 +187,7 @@ public sealed class SessionStore : IDisposable
             }
             using var boundary = Command(db, """
                 SELECT count(*),coalesce(max(Ordinal),0),coalesce(max(TimestampQpc),0) FROM SourceEvents
-                """);
+                """, transaction);
             using (var row = boundary.ExecuteReader())
             {
                 row.Read();
