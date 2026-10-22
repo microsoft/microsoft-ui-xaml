@@ -7,6 +7,7 @@
 #include "d3d11_4.h"
 #include "MockDXGI.h"
 #include "MockComObjectBase.h"
+#include <map>
 
 struct IGraphicsUnknown;
 
@@ -100,6 +101,12 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
         {
             if (iid == __uuidof(IDXGIFactory)) return static_cast<IDXGIFactory*>(this);
             if (iid == __uuidof(IDXGIFactory1)) return static_cast<IDXGIFactory1*>(this);
+            if (iid == __uuidof(IDXGIFactory2)) return static_cast<IDXGIFactory2*>(this);
+            if (iid == __uuidof(IDXGIFactory3)) return static_cast<IDXGIFactory3*>(this);
+            if (iid == __uuidof(IDXGIFactory4)) return static_cast<IDXGIFactory4*>(this);
+            if (iid == __uuidof(IDXGIFactory5)) return static_cast<IDXGIFactory5*>(this);
+            if (iid == __uuidof(IDXGIFactory6)) return static_cast<IDXGIFactory6*>(this);
+            if (iid == __uuidof(IDXGIFactory7) && m_supportsAdaptersChangedEvent) return static_cast<IDXGIFactory7*>(this);
             return __super::CastTo(iid);
         }
 
@@ -107,6 +114,25 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
         void InvalidateFactory()
         {
             m_isCurrent = false;
+            for (const auto& registration : m_adaptersChangedEvents)
+            {
+                VERIFY_IS_TRUE(!!SetEvent(registration.second));
+            }
+        }
+
+        void SetSupportsAdaptersChangedEvent(bool supported) override
+        {
+            m_supportsAdaptersChangedEvent = supported;
+        }
+
+        void SetAdaptersChangedRegistrationResult(HRESULT result) override
+        {
+            m_adaptersChangedRegistrationResult = result;
+        }
+
+        size_t GetAdaptersChangedRegistrationCount() override
+        {
+            return m_adaptersChangedEvents.size();
         }
 
         LUID AddAdapter(MockDXGIAdapterType type)
@@ -191,9 +217,49 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
             return m_isCurrent;
         }
 
+        BOOL STDMETHODCALLTYPE IsWindowedStereoEnabled() override { return FALSE; }
+        HRESULT STDMETHODCALLTYPE CreateSwapChainForHwnd(IUnknown*, HWND, const DXGI_SWAP_CHAIN_DESC1*,
+            const DXGI_SWAP_CHAIN_FULLSCREEN_DESC*, IDXGIOutput*, IDXGISwapChain1**) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE CreateSwapChainForCoreWindow(IUnknown*, IUnknown*, const DXGI_SWAP_CHAIN_DESC1*,
+            IDXGIOutput*, IDXGISwapChain1**) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE GetSharedResourceAdapterLuid(HANDLE, LUID*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE RegisterStereoStatusWindow(HWND, UINT, DWORD*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE RegisterStereoStatusEvent(HANDLE, DWORD*) override { return E_NOTIMPL; }
+        void STDMETHODCALLTYPE UnregisterStereoStatus(DWORD) override {}
+        HRESULT STDMETHODCALLTYPE RegisterOcclusionStatusWindow(HWND, UINT, DWORD*) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE RegisterOcclusionStatusEvent(HANDLE, DWORD*) override { return E_NOTIMPL; }
+        void STDMETHODCALLTYPE UnregisterOcclusionStatus(DWORD) override {}
+        HRESULT STDMETHODCALLTYPE CreateSwapChainForComposition(IUnknown*, const DXGI_SWAP_CHAIN_DESC1*,
+            IDXGIOutput*, IDXGISwapChain1**) override { return E_NOTIMPL; }
+        UINT STDMETHODCALLTYPE GetCreationFlags() override { return 0; }
+        HRESULT STDMETHODCALLTYPE EnumAdapterByLuid(LUID, REFIID, void**) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE EnumWarpAdapter(REFIID, void**) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE CheckFeatureSupport(DXGI_FEATURE, void*, UINT) override { return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE EnumAdapterByGpuPreference(UINT, DXGI_GPU_PREFERENCE, REFIID, void**) override { return E_NOTIMPL; }
+
+        HRESULT STDMETHODCALLTYPE RegisterAdaptersChangedEvent(HANDLE event, DWORD* cookie) override
+        {
+            if (FAILED(m_adaptersChangedRegistrationResult))
+            {
+                return m_adaptersChangedRegistrationResult;
+            }
+            *cookie = m_nextAdaptersChangedCookie++;
+            m_adaptersChangedEvents.emplace(*cookie, event);
+            return S_OK;
+        }
+
+        HRESULT STDMETHODCALLTYPE UnregisterAdaptersChangedEvent(DWORD cookie) override
+        {
+            return m_adaptersChangedEvents.erase(cookie) == 1 ? S_OK : E_INVALIDARG;
+        }
+
     private:
         AdapterList m_adapters;
         BOOL m_isCurrent;
+        bool m_supportsAdaptersChangedEvent = true;
+        HRESULT m_adaptersChangedRegistrationResult = S_OK;
+        DWORD m_nextAdaptersChangedCookie = 0;
+        std::map<DWORD, HANDLE> m_adaptersChangedEvents;
     };
 
     HRESULT CreateMockDXGIFactory(_Out_ IMockDXGIFactory ** factory)
