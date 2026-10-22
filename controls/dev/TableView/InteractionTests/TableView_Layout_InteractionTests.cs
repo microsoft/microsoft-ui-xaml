@@ -258,6 +258,105 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies losing the gripper's pointer capture mid-drag cancels the resize and leaves the gripper usable.")]
+        public void PointerResizeCaptureLostMidDragCancelsResize()
+        {
+            HoldResizeThroughDelayedTeardown(DelayedGripperCaptureLossButton, pressOnly: false, reloadWaitMs: 0,
+                "Losing capture mid-drag");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies disabling the table while the gripper holds the pointer cancels the resize and leaves the gripper usable once re-enabled.")]
+        public void PointerResizeDisabledWhileCapturedCancelsResize()
+        {
+            HoldResizeThroughDelayedTeardown(DelayedDisableButton, pressOnly: false, reloadWaitMs: 1500,
+                "Disabling while captured");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies unloading the table while a gripper press holds capture, before any drag starts, leaves the gripper usable after reload.")]
+        public void PointerPressOnGripperThenUnloadLeavesNoWedgedState()
+        {
+            HoldResizeThroughDelayedTeardown(DelayedUnloadButton, pressOnly: true, reloadWaitMs: 2000,
+                "Unloading after a press");
+        }
+
+        // Holds a pointer press (and optionally a drag) on the Name gripper, invokes a page button that
+        // tears the gesture down 1.5s later, releases after that point, then checks the width did not
+        // keep the abandoned drag and that a normal resize still works.
+        private static void HoldResizeThroughDelayedTeardown(string teardownButtonId, bool pressOnly, int reloadWaitMs, string scenario)
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject nameHeader = FindColumnHeader(FindElement.ById(BasicTable), "Name");
+                if (nameHeader == null)
+                {
+                    Verify.Fail("The 'Name' column header peer was not found on the header host.");
+                    return;
+                }
+
+                var teardown = FindElement.ById<Button>(teardownButtonId);
+                if (teardown == null)
+                {
+                    Verify.Fail(teardownButtonId + " was not found on the test page.");
+                    return;
+                }
+
+                double widthBefore = nameHeader.BoundingRectangle.Width;
+                var bounds = nameHeader.BoundingRectangle;
+                int grabOffsetX = (bounds.Width / 2) - 1;
+                int startX = bounds.Left + bounds.Width - 1;
+                int y = bounds.Top + (bounds.Height / 2);
+
+                InputHelper.LeftMouseButtonDown(nameHeader, grabOffsetX, 0);
+                try
+                {
+                    if (!pressOnly)
+                    {
+                        InputHelper.MoveMouse(new Point(startX + 40, y));
+                    }
+                    // UIA, not a click: the pointer stays pressed on the gripper.
+                    teardown.Invoke();
+                    Wait.ForMilliseconds(2200);
+                    if (!pressOnly)
+                    {
+                        InputHelper.MoveMouse(new Point(startX + 80, y));
+                    }
+                }
+                finally
+                {
+                    InputHelper.LeftMouseButtonUp();
+                    Wait.ForIdle();
+                }
+
+                if (reloadWaitMs > 0)
+                {
+                    Wait.ForMilliseconds((uint)reloadWaitMs);
+                    Wait.ForIdle();
+                }
+
+                UIObject header = FindColumnHeader(FindElement.ById(BasicTable), "Name");
+                if (header == null)
+                {
+                    Verify.Fail("The 'Name' column header peer was not found after the teardown.");
+                    return;
+                }
+
+                double widthAfterTeardown = header.BoundingRectangle.Width;
+                Log.Comment("{0}: Name width before={1}, after the release={2}.", scenario, widthBefore, widthAfterTeardown);
+                Verify.IsLessThanOrEqual(Math.Abs(widthAfterTeardown - widthBefore), 8.0,
+                    scenario + " must cancel the resize: the abandoned drag must not keep its width.");
+
+                DragColumnBoundary(header, 80, cancelWithEscape: false);
+                Wait.ForIdle();
+                double widthAfterResize = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("{0}: Name width after a normal resize={1}.", scenario, widthAfterResize);
+                Verify.IsGreaterThan(widthAfterResize, widthAfterTeardown + 20.0,
+                    scenario + " must leave the gripper usable: a later resize must widen the column.");
+            }
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         private struct CURSORINFO
         {

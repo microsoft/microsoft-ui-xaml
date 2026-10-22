@@ -889,6 +889,61 @@ namespace MUXControlsTestApp
             unloadTimer.Start();
         }
 
+        private static void RunAfterDelay(Action action)
+        {
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
+            timer.Tick += (s, args) =>
+            {
+                timer.Stop();
+                action();
+            };
+            timer.Start();
+        }
+
+        private void OnDelayedGripperCaptureLossClick(object sender, RoutedEventArgs e)
+        {
+            RunAfterDelay(() =>
+            {
+                foreach (var gripper in FindDescendants<Microsoft.UI.Private.Controls.ResizeGripper>(BasicTableView))
+                {
+                    gripper.ReleasePointerCaptures();
+                }
+                StatusTextBlock.Text = "Gripper capture released";
+            });
+        }
+
+        private void OnDelayedDisableClick(object sender, RoutedEventArgs e)
+        {
+            RunAfterDelay(() =>
+            {
+                BasicTableView.IsEnabled = false;
+                StatusTextBlock.Text = "Disabled";
+                RunAfterDelay(() =>
+                {
+                    BasicTableView.IsEnabled = true;
+                    StatusTextBlock.Text = "Enabled";
+                });
+            });
+        }
+
+        private static IEnumerable<T> FindDescendants<T>(DependencyObject root) where T : DependencyObject
+        {
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child is T typed)
+                {
+                    yield return typed;
+                }
+
+                foreach (var nested in FindDescendants<T>(child))
+                {
+                    yield return nested;
+                }
+            }
+        }
+
         private void OnIsReadOnlyToggled(object sender, RoutedEventArgs e)
         {
             BasicTableView.IsReadOnly = ((CheckBox)sender).IsChecked == true;

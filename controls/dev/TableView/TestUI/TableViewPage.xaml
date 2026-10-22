@@ -103,6 +103,20 @@
                     IsTabStop="False"
                     AllowFocusOnInteraction="False"
                     Click="OnDisableFocusedRowClick" />
+            <!-- Mid-gesture teardown triggers for the resize capture tests (UIA Invoke only): each acts 1.5s
+                 after the click, while the test holds a pointer drag open. -->
+            <Button Content="Delayed Gripper Capture Loss"
+                    AutomationProperties.Name="DelayedGripperCaptureLossButton"
+                    AutomationProperties.AutomationId="DelayedGripperCaptureLossButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnDelayedGripperCaptureLossClick" />
+            <Button Content="Delayed Disable"
+                    AutomationProperties.Name="DelayedDisableButton"
+                    AutomationProperties.AutomationId="DelayedDisableButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnDelayedDisableClick" />
             <Button x:Name="navigateToTouch"
                     Content="Touch Page"
                     AutomationProperties.Name="navigateToTouch"
