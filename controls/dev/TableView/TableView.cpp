@@ -3126,6 +3126,10 @@ void TableView::RebuildHeadersCore()
 
             auto const columnHeaderStyle = CompatibleHeaderStyle(column.HeaderStyle());
             auto const headerStyle = columnHeaderStyle ? columnHeaderStyle : tableHeaderStyle;
+            // Read the Setters before applying the Style seals it: reading a sealed BasedOn Style's
+            // never-accessed Setters reseals it and re-merges its BasedOn setters.
+            const bool styleSetsMinHeight = StyleSetsProperty(headerStyle, winrt::FrameworkElement::MinHeightProperty());
+            const bool styleSetsPadding = StyleSetsProperty(headerStyle, winrt::Control::PaddingProperty());
             if (headerStyle)
             {
                 header.Style(headerStyle);
@@ -3140,11 +3144,11 @@ void TableView::RebuildHeadersCore()
                 winrt::AutomationProperties::SetName(header, headerText);
             }
             winrt::AutomationProperties::SetAccessibilityView(header, winrt::AccessibilityView::Content);
-            if (!StyleSetsProperty(headerStyle, winrt::FrameworkElement::MinHeightProperty()))
+            if (!styleSetsMinHeight)
             {
                 header.MinHeight(cachedRowMinHeight);
             }
-            if (!StyleSetsProperty(headerStyle, winrt::Control::PaddingProperty()))
+            if (!styleSetsPadding)
             {
                 header.Padding(cachedHeaderCellPadding);
             }

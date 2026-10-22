@@ -1918,6 +1918,58 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies header Styles that only inherit setters through BasedOn a ContentControl or Control Style apply, and their BasedOn Padding beats the density padding.")]
+        public void VerifyBasedOnOnlyColumnHeaderStyleApplies()
+        {
+            TableView tableView = null;
+            SolidColorBrush tableBrush = null;
+            SolidColorBrush columnBrush = null;
+            var stylePadding = new Thickness(20, 1, 20, 1);
+            bool loaded = false;
+
+            // Before the fix a checked build stopped on a framework assert while loading; fail instead of stalling.
+            using var watchdog = new global::System.Threading.Timer(_ =>
+            {
+                if (!global::System.Threading.Volatile.Read(ref loaded))
+                {
+                    Environment.FailFast("VerifyBasedOnOnlyColumnHeaderStyleApplies: the TableView did not load within 60 seconds.");
+                }
+            }, null, TimeSpan.FromSeconds(60), global::System.Threading.Timeout.InfiniteTimeSpan);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableBrush = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                columnBrush = new SolidColorBrush(Microsoft.UI.Colors.Green);
+                var tableBase = new Style(typeof(ContentControl));
+                tableBase.Setters.Add(new Setter(Control.BackgroundProperty, tableBrush));
+                tableBase.Setters.Add(new Setter(Control.PaddingProperty, stylePadding));
+                var columnBase = new Style(typeof(Control));
+                columnBase.Setters.Add(new Setter(Control.BackgroundProperty, columnBrush));
+
+                tableView = CreateThemingTable();
+                tableView.ColumnHeaderStyle = new Style(typeof(TableViewColumnHeader)) { BasedOn = tableBase };
+                tableView.Columns[1].HeaderStyle = new Style(typeof(TableViewColumnHeader)) { BasedOn = columnBase };
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+            global::System.Threading.Volatile.Write(ref loaded, true);
+
+            RunOnUIThread.Execute(() => tableView.Density = TableViewDensity.Compact);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var first = RequireColumnHeader(tableView, 0);
+                Verify.IsTrue(ReferenceEquals(tableBrush, first.Background), "A BasedOn Background setter must reach the header.");
+                Verify.AreEqual(stylePadding, first.Padding, "A BasedOn Padding must win over the density padding.");
+
+                var second = RequireColumnHeader(tableView, 1);
+                Verify.IsTrue(ReferenceEquals(columnBrush, second.Background), "TableViewColumn.HeaderStyle's BasedOn Background must win over ColumnHeaderStyle.");
+                Verify.AreEqual(30.0, second.MinHeight, "Without a style MinHeight the header follows the Compact row height.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a UIElement column Header moves to the new header when the header band is rebuilt.")]
         public void VerifyUIElementHeaderSurvivesHeaderRebuild()
         {
