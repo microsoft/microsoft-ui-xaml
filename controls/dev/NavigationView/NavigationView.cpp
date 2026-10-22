@@ -4147,6 +4147,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         property == s_ExpandedModeThresholdWidthProperty)
     {
         UpdateAdaptiveLayout(ActualWidth());
+        UpdateBackAndCloseButtonsVisibility();
     }
     else if (property == s_AlwaysShowHeaderProperty || property == s_HeaderProperty)
     {
@@ -4214,6 +4215,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         UpdatePaneVisibility();
         UpdateVisualState();
         UpdatePaneButtonsWidths();
+        UpdateBackAndCloseButtonsVisibility();
     }
     else if (property == s_IsPaneVisibleProperty)
     {
@@ -4702,6 +4704,13 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
                 leftPaddingForBackOrCloseButton += paneHeaderPaddingForCloseButton;
             }
         }
+    }
+
+    if (useLeftPaddingForBackOrCloseButton && leftPaddingForBackOrCloseButton == 0.0)
+    {
+        // NavigationViewMinimalHeaderMargin has a negative left value that pulls the header back into the
+        // first button slot. Keep that slot reserved when no buttons are shown, so the header isn't clipped.
+        leftPaddingForBackOrCloseButton = GetPaneToggleButtonWidth();
     }
 
     if (auto contentLeftPadding = m_contentLeftPadding.get())
