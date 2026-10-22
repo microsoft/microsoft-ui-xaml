@@ -7,6 +7,7 @@
 #include "common.h"
 
 #include "TableViewSource2.g.h"
+#include "Source/SourceRecord.h"
 
 // Scaffold for the shaping redesign. Exposes the same fluent verb surface as TableViewSource;
 // From() constructs a working instance, and every shaping verb throws hresult_not_implemented
@@ -35,9 +36,20 @@ public:
     winrt::TableViewSource2 ClearSort();
     winrt::TableViewSource2 ClearHierarchy();
 
+    void Refresh();
+
+    // Forwards to SourceTable, which owns the flag and the per-item subscriptions.
+    bool IsLiveShaping() const;
+    void IsLiveShaping(bool value);
+
 private:
     [[noreturn]] static void ThrowNotImplemented(wchar_t const* verb);
 
     // The app's source collection, kept for the engine that will consume it.
     tracker_ref<winrt::IInspectable> m_items{ this };
+
+    // One record per source position, plus raw-pointer, address, and identity lookups. Consumers may
+    // share it past this object's lifetime; ~TableViewSource2() calls Clear(), which detaches it
+    // (destroys every tracker_ref bound to this) so a lingering table is empty and owner-free.
+    std::shared_ptr<SourceTable> m_sourceTable;
 };

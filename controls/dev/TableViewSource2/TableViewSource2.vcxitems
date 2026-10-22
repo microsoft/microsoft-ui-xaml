@@ -21,6 +21,8 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\CollectionAccessor2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Source\SourceRecord.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource2.h" />
   </ItemGroup>
   <ItemGroup>

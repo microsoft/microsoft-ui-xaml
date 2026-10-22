@@ -57,6 +57,15 @@ runtimeclass TableViewSource2
 
     // Removes the hierarchy declared by ParentBy or ChildrenBy.
     TableViewSource2 ClearHierarchy();
+
+    // Re-reads the source and rebuilds the projection. Needed for sources that do not raise
+    // change notifications.
+    void Refresh();
+
+    // When true, a PropertyChanged on an item re-applies the active filter, sort, group and
+    // hierarchy to it. Defaults to false: property edits leave rows in place until the next
+    // collection change, verb or Refresh.
+    Boolean IsLiveShaping{ get; set; };
 }
 
 }
