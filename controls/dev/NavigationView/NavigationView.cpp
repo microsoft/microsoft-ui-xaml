@@ -1423,10 +1423,18 @@ void NavigationView::UpdateOpenPaneLength(double width)
 {
     if (!IsTopNavigationView() && m_rootSplitView)
     {
-        m_OpenPaneLength = std::max(0.0, std::min(width, OpenPaneLength()));
+        const auto newOpenPaneLength = std::max(0.0, std::min(width, OpenPaneLength()));
+        const bool openPaneLengthChanged = m_OpenPaneLength != newOpenPaneLength;
+        m_OpenPaneLength = newOpenPaneLength;
 
         const auto templateSettings = GetTemplateSettings();
         templateSettings->OpenPaneLength(m_OpenPaneLength);
+
+        // With a PaneTitle, UpdatePaneToggleSize stretches TogglePaneButton to m_OpenPaneLength.
+        if (openPaneLengthChanged)
+        {
+            UpdatePaneToggleSize();
+        }
     }
 }
 
@@ -1822,8 +1830,17 @@ void NavigationView::UpdatePaneButtonsWidths()
         return CompactPaneLength();
     }();
 
+    const bool paneToggleButtonWidthChanged = templateSettings->PaneToggleButtonWidth() != newButtonWidths;
+
     templateSettings->PaneToggleButtonWidth(newButtonWidths);
     templateSettings->SmallerPaneToggleButtonWidth(std::max(0.0, newButtonWidths - 8));
+
+    // UpdatePaneToggleSize copies PaneToggleButtonWidth into TogglePaneButton.Width. It can run before this
+    // template setting is first initialized (still 0), so re-apply it when the width changes.
+    if (paneToggleButtonWidthChanged)
+    {
+        UpdatePaneToggleSize();
+    }
 }
 
 void NavigationView::OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
@@ -4638,7 +4655,8 @@ void NavigationView::UpdatePaneToggleSize()
 
             if (auto toggleButton = m_paneToggleButton.get())
             {
-                toggleButton.Width(togglePaneButtonWidth);
+                // OpenPaneLength can be smaller than the back/close button, and Width rejects negative values.
+                toggleButton.Width(std::max(0.0, togglePaneButtonWidth));
             }
         }
     }
