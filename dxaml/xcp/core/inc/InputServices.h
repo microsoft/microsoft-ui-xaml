@@ -143,7 +143,6 @@ class CPointerState
 
         void Reset()
         {
-            m_pointerPressedEventArgs.reset();
             IGNOREHR(SetEnterDO(nullptr));
             IGNOREHR(SetCaptureDO(nullptr));
             IGNOREHR(SetCapturePointer(nullptr));
@@ -266,7 +265,6 @@ class CPointerState
         }
 
     public:
-        xref_ptr<CPointerEventArgs> m_pointerPressedEventArgs;
         CDependencyObject*      m_pPointerEnterDO;
         CDependencyObject*      m_pPointerCaptureDO;
         CPointer*               m_pPointer;

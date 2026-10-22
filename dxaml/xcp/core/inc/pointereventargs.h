@@ -6,8 +6,6 @@
 #include "Pointer.h"
 #include "PointerCollection.h"
 #include "InputPointEventArgs.h"
-#include <vector>
-#include <weakref_ptr.h>
 
 class CPointerEventArgs : public CInputPointEventArgs
 {
@@ -56,10 +54,6 @@ public:
     DirectUI::GestureModes          m_uiGestureFollowing = DirectUI::GestureModes::None;
     bool                            m_bFiredDelayedPointerUp = false;
     bool                            m_isGenerated = false;
-
-    // The release owns its matching press even when input reenters with the same pointer ID.
-    xref_ptr<CPointerEventArgs> m_pointerPressedEventArgs;
-    std::vector<xref::weakref_ptr<CDependencyObject>> m_scrollViewersWithPointerPressed;
 
     // Note: Most Pointer events are synchronous, which could safely use NoRef versions of
     //       these PointerPoint/PointerEventArgs variables. But the PointerExited event

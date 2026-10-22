@@ -14,7 +14,6 @@
 #include "DiscreteObjectKeyFrame.g.h"
 #include "ScrollViewerAutomationPeer.g.h"
 #include "PointerRoutedEventArgs.g.h"
-#include "PointerEventArgs.h"
 #include "CarouselPanel.g.h"
 #include "ItemsPresenter.g.h"
 #include "ScrollViewerViewChangingEventArgs.g.h"
@@ -180,6 +179,8 @@ ScrollViewer::ScrollViewer()
     , m_areViewportConfigurationsInvalid(FALSE)
     , m_isCanManipulateElementsInvalid(FALSE)
     , m_isScrollBarIgnoringUserInputInvalid(FALSE)
+    , m_isPointerLeftButtonPressed(FALSE)
+    , m_pointerPressedCount(0)
     , m_shouldFocusOnRightTapUnhandled(FALSE)
     , m_showingMouseIndicators(FALSE)
     , m_preferMouseIndicators(FALSE)
@@ -308,6 +309,8 @@ _Check_return_ HRESULT ScrollViewer::Initialize()
     ctl::ComPtr<wf::ITypedEventHandler<xaml::UIElement*, xaml::BringIntoViewRequestedEventArgs*>> spBringIntoViewRequestedEventHandler;
     ctl::ComPtr<xaml::IRoutedEventHandler> spLoadedEventHandler;
     ctl::ComPtr<xaml::IRoutedEventHandler> spUnloadedEventHandler;
+    ctl::ComPtr<xaml_input::IPointerEventHandler> spPointerPressedEventHandler;
+    ctl::ComPtr<xaml_input::IPointerEventHandler> spPointerReleasedEventHandler;
     EventRegistrationToken token1;
     EventRegistrationToken token2;
 
@@ -337,6 +340,28 @@ _Check_return_ HRESULT ScrollViewer::Initialize()
         IInspectable,
         xaml::IRoutedEventArgs >(this, &ScrollViewer::OnUnloaded, true /* subscribingToSelf */));
     IFC_RETURN(add_Unloaded(spUnloadedEventHandler.Get(), &token2));
+
+    spPointerPressedEventHandler.Attach(
+        new ClassMemberEventHandler<
+        ScrollViewer,
+        xaml_controls::IScrollViewer,
+        xaml_input::IPointerEventHandler,
+        IInspectable,
+        xaml_input::IPointerRoutedEventArgs>(this, &ScrollViewer::OnPointerPressedHandledEventsToo, true /* subscribingToSelf */));
+    PointerPressedEventSourceType* pointerPressedEventSource = nullptr;
+    IFC_RETURN(GetPointerPressedEventSourceNoRef(&pointerPressedEventSource));
+    IFC_RETURN(pointerPressedEventSource->AddHandler(spPointerPressedEventHandler.Get(), true /* handledEventsToo */));
+
+    spPointerReleasedEventHandler.Attach(
+        new ClassMemberEventHandler<
+        ScrollViewer,
+        xaml_controls::IScrollViewer,
+        xaml_input::IPointerEventHandler,
+        IInspectable,
+        xaml_input::IPointerRoutedEventArgs>(this, &ScrollViewer::OnPointerReleasedHandledEventsToo, true /* subscribingToSelf */));
+    PointerReleasedEventSourceType* pointerReleasedEventSource = nullptr;
+    IFC_RETURN(GetPointerReleasedEventSourceNoRef(&pointerReleasedEventSource));
+    IFC_RETURN(pointerReleasedEventSource->AddHandler(spPointerReleasedEventHandler.Get(), true /* handledEventsToo */));
 
     if (!IsRootScrollViewer())
     {
@@ -2470,8 +2495,6 @@ IFACEMETHODIMP ScrollViewer::OnPointerPressed(
     ctl::ComPtr<ixp::IPointerPoint> spPointerPoint;
     ctl::ComPtr<ixp::IPointerPointProperties> spPointerProperties;
     BOOLEAN handled = false;
-    BOOLEAN isLeftButtonPressed = FALSE;
-    xref_ptr<CPointerEventArgs> coreArgs;
 
     IFC(ScrollViewerGenerated::OnPointerPressed(pArgs));
     IFC(pArgs->get_Handled(&handled));
@@ -2491,12 +2514,7 @@ IFACEMETHODIMP ScrollViewer::OnPointerPressed(
     IFCPTR(spPointerPoint);
     IFC(spPointerPoint->get_Properties(&spPointerProperties));
     IFCPTR(spPointerProperties);
-    IFC(spPointerProperties->get_IsLeftButtonPressed(&isLeftButtonPressed));
-    if (isLeftButtonPressed)
-    {
-        coreArgs.attach(static_cast<CPointerEventArgs*>(static_cast<PointerRoutedEventArgs*>(pArgs)->GetCorePeer()));
-        coreArgs->m_scrollViewersWithPointerPressed.push_back(xref::get_weakref(GetHandle()));
-    }
+    IFC(spPointerProperties->get_IsLeftButtonPressed(&m_isPointerLeftButtonPressed));
 
     // Don't handle PointerPressed event to raise up
 
@@ -2512,7 +2530,6 @@ IFACEMETHODIMP ScrollViewer::OnPointerReleased(
     BOOLEAN handled = FALSE;
     BOOLEAN focused = FALSE;
     bool isFocusedOnLightDismissPopupOfFlyout = false;
-    xref_ptr<CPointerEventArgs> coreArgs;
 
     IFC(ScrollViewerGenerated::OnPointerReleased(pArgs));
     IFC(pArgs->get_Handled(&handled));
@@ -2521,19 +2538,12 @@ IFACEMETHODIMP ScrollViewer::OnPointerReleased(
         goto Cleanup;
     }
 
-    coreArgs.attach(static_cast<CPointerEventArgs*>(static_cast<PointerRoutedEventArgs*>(pArgs)->GetCorePeer()));
-    if (auto pressedArgs = coreArgs->m_pointerPressedEventArgs)
+    if (m_isPointerLeftButtonPressed)
     {
-        auto& scrollViewers = pressedArgs->m_scrollViewersWithPointerPressed;
-        const auto entry = std::find_if(scrollViewers.begin(), scrollViewers.end(),
-            [this](const auto& scrollViewer) { return scrollViewer.lock().get() == GetHandle(); });
-        if (entry == scrollViewers.end())
-        {
-            goto Cleanup;
-        }
-        scrollViewers.erase(entry);
-
         GestureModes gestureFollowing = GestureModes::None;
+
+        // Reset the pointer left button pressed state
+        m_isPointerLeftButtonPressed = FALSE;
 
         IFC(static_cast<PointerRoutedEventArgs*>(pArgs)->get_GestureFollowing(&gestureFollowing));
 
@@ -2596,6 +2606,30 @@ IFACEMETHODIMP ScrollViewer::OnPointerReleased(
 
 Cleanup:
     RRETURN(hr);
+}
+
+_Check_return_ HRESULT ScrollViewer::OnPointerPressedHandledEventsToo(
+    _In_ IInspectable*,
+    _In_ xaml_input::IPointerRoutedEventArgs*)
+{
+    ++m_pointerPressedCount;
+    return S_OK;
+}
+
+_Check_return_ HRESULT ScrollViewer::OnPointerReleasedHandledEventsToo(
+    _In_ IInspectable*,
+    _In_ xaml_input::IPointerRoutedEventArgs*)
+{
+    if (m_pointerPressedCount > 0)
+    {
+        --m_pointerPressedCount;
+    }
+    // A handled release skips OnPointerReleased, but must not leave stale focus state.
+    if (m_pointerPressedCount == 0)
+    {
+        m_isPointerLeftButtonPressed = FALSE;
+    }
+    return S_OK;
 }
 
 // RightTappedUnhandled event handler.
@@ -15078,6 +15112,8 @@ _In_ IInspectable* pSender,
 _In_ xaml::IRoutedEventArgs* pArgs)
 {
     m_isLoaded = FALSE;
+    m_isPointerLeftButtonPressed = FALSE;
+    m_pointerPressedCount = 0;
 
     m_showingMouseIndicators = FALSE;
     m_keepIndicatorsShowing = FALSE;

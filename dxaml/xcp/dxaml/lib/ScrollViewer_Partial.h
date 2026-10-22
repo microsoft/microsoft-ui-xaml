@@ -383,6 +383,10 @@ namespace DirectUI
         // once the ongoing manipulation completes.
         BOOLEAN m_isScrollBarIgnoringUserInputInvalid;
 
+        // Whether the pointer left button pressed or not.
+        BOOLEAN m_isPointerLeftButtonPressed;
+        UINT32 m_pointerPressedCount;
+
         // In OnPointerReleased, we want to call Focus and Handle the event.
         // If a right-tap is pending on PointerReleased, we must defer these actions
         // to RightTappedUnhandled so context menus function properly.
@@ -887,6 +891,14 @@ namespace DirectUI
         // PointerReleased event handler.
         IFACEMETHOD(OnPointerReleased)(
             _In_ xaml_input::IPointerRoutedEventArgs* pArgs) override;
+
+        _Check_return_ HRESULT OnPointerPressedHandledEventsToo(
+            _In_ IInspectable* sender,
+            _In_ xaml_input::IPointerRoutedEventArgs* args);
+
+        _Check_return_ HRESULT OnPointerReleasedHandledEventsToo(
+            _In_ IInspectable* sender,
+            _In_ xaml_input::IPointerRoutedEventArgs* args);
 
         // RightTappedUnhandled event handler.
         // Private event.
