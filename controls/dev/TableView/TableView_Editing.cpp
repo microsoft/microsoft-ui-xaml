@@ -1149,6 +1149,14 @@ void TableView::QueueCoalescedEditReshape(std::function<void()> operation)
     }
 }
 
+void TableView::QueueReshapeAfterEditCloses(std::function<void()> operation)
+{
+    if (operation)
+    {
+        m_reshapesAfterEditCloses.push_back(std::move(operation));
+    }
+}
+
 void TableView::ClearCoalescedEditReshape()
 {
     m_pendingEditReshapes.clear();
@@ -1173,6 +1181,13 @@ void TableView::DrainCoalescedEditReshape()
     if (m_suppressEditVisualRestore)
     {
         return;
+    }
+
+    if (!IsEditing() && !m_reshapesAfterEditCloses.empty())
+    {
+        m_pendingEditReshapes.insert(m_pendingEditReshapes.begin(),
+            std::make_move_iterator(m_reshapesAfterEditCloses.begin()), std::make_move_iterator(m_reshapesAfterEditCloses.end()));
+        m_reshapesAfterEditCloses.clear();
     }
 
     if (m_isApplyingCoalescedEditReshape || m_pendingEditReshapes.empty())

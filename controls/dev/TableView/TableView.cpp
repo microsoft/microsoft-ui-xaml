@@ -3423,10 +3423,10 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
     // sorted order with no affordance to change it would strand the user.
     if (!CanUserSortColumns())
     {
-        // A sort cannot run while an edit is opening; replay the clear once it settles.
+        // A sort cannot run while an edit is opening, and must not close it once open; clear once no edit is open.
         if (m_editState == EditState::Beginning)
         {
-            QueueCoalescedEditReshape([this]()
+            QueueReshapeAfterEditCloses([this]()
             {
                 if (!CanUserSortColumns())
                 {
@@ -3451,7 +3451,7 @@ void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
     {
         if (m_editState == EditState::Beginning)
         {
-            QueueCoalescedEditReshape([this, weakColumn = winrt::make_weak(column)]()
+            QueueReshapeAfterEditCloses([this, weakColumn = winrt::make_weak(column)]()
             {
                 if (auto const optedOut = weakColumn.get(); optedOut && !optedOut.CanSort())
                 {

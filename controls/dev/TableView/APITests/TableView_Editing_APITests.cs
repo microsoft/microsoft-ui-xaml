@@ -658,9 +658,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     e.Cancel = change != "CanSortContinue";
                 };
 
-                var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 1), items[0].Role);
+                var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 1), "Pilot");
                 Log.Comment($"SetValue: {error?.Message ?? "succeeded"}");
                 Verify.IsTrue(requested, "Precondition: BeginningEdit opted the sort out.");
+                if (change == "CanSortContinue")
+                {
+                    Verify.IsNull(error, "An edit BeginningEdit let continue must accept the value.");
+                    Verify.AreEqual("Pilot", items[0].Role, "The value must be committed.");
+                    Verify.IsFalse(tableView.IsEditing, "The committed edit must be closed.");
+                }
             });
             IdleSynchronizer.Wait();
 
@@ -670,6 +676,79 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(1, clearedCount, $"{change}: the clear must be reported once.");
                 var names = GetProjectedItems(tableView).Select(item => ((EditablePerson)item).Name).ToList();
                 Verify.AreEqual("Asha,Diego,Mei", string.Join(",", names), $"{change}: the rows must return to source order.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sort opt-out made from a BeginningEdit handler that lets the edit open keeps the edit open, and clears the sort when the edit closes.")]
+        public void VerifySortOptOutDuringBeginningEditKeepsTheEditOpen()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            bool requested = false;
+            bool vetoClose = true;
+            int clearedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Precondition: the Name column sorts.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = tableView.Columns[0];
+                tableView.Sorted += (s, e) =>
+                {
+                    if (e.Direction == SortDirection.None)
+                    {
+                        clearedCount++;
+                    }
+                };
+                tableView.BeginningEdit += (s, e) =>
+                {
+                    if (!requested)
+                    {
+                        requested = true;
+                        name.CanSort = false;
+                    }
+                };
+                // Holds the edit open after SetValue so its state can be observed.
+                tableView.CellEditEnding += (s, e) => e.Cancel = vetoClose;
+
+                var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 1), "Pilot");
+                Log.Comment($"SetValue: {error?.Message ?? "succeeded"}");
+                Verify.IsTrue(requested, "Precondition: BeginningEdit opted the sort out.");
+                Verify.IsNotNull(error, "Precondition: the vetoed commit is reported.");
+                Verify.AreEqual(unchecked((int)0x80004005), error.HResult, "The edit must open and only the vetoed commit fail.");
+                Verify.IsTrue(tableView.IsEditing, "The opened edit must stay open.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsEditing, "The deferred sort clear must not close the open edit.");
+                Verify.AreEqual(0, clearedCount, "The sort clear waits for the edit to close.");
+
+                vetoClose = false;
+                Verify.IsTrue(tableView.CommitEdit(), "The edit commits.");
+                Verify.AreEqual("Pilot", items[0].Role, "The value must be committed.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The opted-out sort must be cleared once the edit closes.");
+                Verify.AreEqual(1, clearedCount, "The clear must be reported once.");
             });
         }
     }

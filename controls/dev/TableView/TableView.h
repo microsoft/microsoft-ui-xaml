@@ -497,6 +497,8 @@ public:
     // Defer a source-reshaping operation until the open edit closes. Opaque action, so editing
     // needs no compile-time knowledge of sorting, grouping or expansion.
     void QueueCoalescedEditReshape(std::function<void()> operation);
+    // Unlike the queue above, survives a vetoed close and replays only once no edit is open.
+    void QueueReshapeAfterEditCloses(std::function<void()> operation);
     void ClearCoalescedEditReshape();
     void DrainCoalescedEditReshape();
 
@@ -785,6 +787,7 @@ private:
     // Pending source-reshaping operations. A deque, not a vector: the drain pops from the front so
     // replay order matches arrival order.
     std::deque<std::function<void()>> m_pendingEditReshapes;
+    std::deque<std::function<void()>> m_reshapesAfterEditCloses;
 
     // Keyboard/focus position. Deliberately NOT redefined while an edit is open, so a value read
     // inside an EditEnding handler stays valid once the edit closes.
