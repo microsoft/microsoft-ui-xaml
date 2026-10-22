@@ -97,11 +97,11 @@ with the switch off and on (`dumpbin /headers` virtual sizes, in bytes):
 | Section | Off | On | Delta |
 |---|---:|---:|---:|
 | `.text` | 10,183,372 | 10,201,852 | +18,480 |
-| `.rdata` | 3,124,994 | 3,129,890 | +4,896 |
-| `.data` | 61,808 | 61,872 | +64 |
+| `.rdata` | 3,124,994 | 3,129,762 | +4,768 |
+| `.data` | 61,808 | 61,856 | +48 |
 | `.pdata` | 348,264 | 348,840 | +576 |
-| `.reloc` | 503,116 | 503,144 | +28 |
-| File | 14,375,424 | 14,399,488 | +24,064 (+0.17%) |
+| `.reloc` | 503,116 | 503,140 | +24 |
+| File | 14,375,424 | 14,398,976 | +23,552 (+0.16%) |
 
 - **No session, a session below verbose level, or a session without a site's
   keyword:** the site's inline `TraceLoggingProviderEnabled` check fails and nothing
@@ -116,7 +116,7 @@ with the switch off and on (`dumpbin /headers` virtual sizes, in bytes):
 
 1. After `init.cmd amd64fre`, build with the switch off:
    `msbuild dxaml\xcp\dxaml\dllsrv\winrt\native\Microsoft.ui.xaml.vcxproj /p:Configuration=Release /p:Platform=x64 /p:XamlProfilerEnabled=false`
-   - The build succeeds and `Microsoft.ui.xaml.dll` is about 24 KB (x64) smaller
+   - The build succeeds and `Microsoft.ui.xaml.dll` is about 23 KB (x64) smaller
      than the default build — physical proof the code was excluded.
    - If it fails with the `#error` from `XamlProfilerTracing.cpp` or
      `WucVisualTreeProfiler.cpp`, a `ClCompile` condition is out of sync with the
