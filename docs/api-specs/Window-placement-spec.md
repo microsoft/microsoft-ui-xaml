@@ -508,19 +508,16 @@ WinUI chooses placement in this order:
   `Window.Width` and `Window.Height` properties to the window size.
 - **OS defaults:** WinUI keeps the window's existing or OS defaults.
 
-The window stays hidden, and WinUI does not request activation, even if the call fails.
 
 See [Window.Activate](#44-windowactivate) and [Window.Show](#45-windowshow) for how WinUI
 automatically applies initial placement before showing the window.
 
+See [section 2.2](#22-how-winui-applies-window-placement-data-to-a-new-window) for scenarios.
+
 **Additional behavior and errors**
 
-- If the window already uses a full-screen or compact-overlay presenter, WinUI keeps it,
-  leaves the windowed bounds and state unchanged, and returns `false`.
-- WinUI still returns `true` when it successfully applies the selected placement after
-  adjusting it for the current display configuration. See
-  [section 2.2](#22-how-winui-applies-window-placement-data-to-a-new-window) for scenarios.
-- WinUI reports an error before applying placement if your app calls from the wrong thread,
+
+  - WinUI reports an error before applying placement if your app calls from the wrong thread,
   the window is closed, or the options are null or contain invalid values.
 - WinUI reports `E_ILLEGAL_METHOD_CALL` if the window has already been shown or another
   `ApplyInitialPlacement` call is in progress.
@@ -553,7 +550,7 @@ public void Show(bool activateWindow);
 | `true` | Show the window and request activation. |
 
 Before showing the window for the first time, `Show` calls
-[`ApplyInitialPlacement()`](#43-windowApplyInitialPlacement) unless an earlier call
+[`ApplyInitialPlacement()`](#43-windowapplyinitialplacement) unless an earlier call
 to `ApplyInitialPlacement` completed without error. If the call to `ApplyInitialPlacement`
 does result in an error, `Show` propagates the error without
 showing the window or requesting activation. In this case, a later `Show` or `Activate` retries.
@@ -619,7 +616,7 @@ runtimeclass WindowInitialPlacementOptions
 
 | Property | Default | Meaning |
 | --- | --- | --- |
-| `CustomPlacement` | `null` | Supply the placement to apply. With `null`, WinUI selects placement using the rules in [ApplyInitialPlacement](#43-windowApplyInitialPlacement). |
+| `CustomPlacement` | `null` | Supply the placement to apply. With `null`, WinUI selects placement using the rules in [ApplyInitialPlacement](#43-windowapplyinitialplacement). |
 | `Reason` | `Default` | Choose default, launch, or restart behavior. See [WindowPlacementReason](#411-windowplacementreason). |
 | `AllowCascading` | `true` | Set to `false` to skip cascading from an open, visible window with the same `PlacementId`. WinUI never cascades custom placement or placement with `Reason = ApplicationRestart`. |
 
