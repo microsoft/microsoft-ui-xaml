@@ -1124,6 +1124,201 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Reopening the pane while a light dismiss is pending supersedes it: the old executor must not close the reopened pane, and a newer dismiss can be canceled.")]
+        public void VerifyReopeningSupersedesPendingLightDismiss()
+        {
+            var (navView, splitView) = CreateNavigationViewWithOpenOverlayPane();
+            using var canceled = new ManualResetEvent(false);
+            int closingCount = 0;
+            bool reopened = false;
+            RunOnUIThread.Execute(() =>
+            {
+                splitView.PaneOpening += (sender, args) =>
+                {
+                    if (!reopened)
+                    {
+                        reopened = true;
+                        InvokeLightDismissLayer(splitView);
+                    }
+                };
+                splitView.PaneClosing += (sender, args) =>
+                {
+                    if (++closingCount == 1)
+                    {
+                        splitView.IsPaneOpen = false;
+                        splitView.IsPaneOpen = true;
+                    }
+                    else
+                    {
+                        args.Cancel = true;
+                        canceled.Set();
+                    }
+                };
+                InvokeLightDismissLayer(splitView);
+            });
+            Verify.IsTrue(canceled.WaitOne(TimeSpan.FromSeconds(5)), "The dismiss started by the reopened pane must raise PaneClosing.");
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(reopened);
+                Verify.IsTrue(navView.IsPaneOpen, "The superseded executor must not close the reopened pane.");
+                Verify.AreEqual(3, closingCount, "The original dismiss, the manual close and the canceled new dismiss each notify once.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A canceled light dismiss must not reset a newer dismiss started by a reentrant reopen.")]
+        public void VerifyCanceledLightDismissDoesNotBlockNewerDismiss()
+        {
+            var (navView, splitView) = CreateNavigationViewWithOpenOverlayPane();
+            using var closed = new ManualResetEvent(false);
+            var closingPaneStates = new List<bool>();
+            bool reopened = false;
+            RunOnUIThread.Execute(() =>
+            {
+                splitView.PaneOpening += (sender, args) =>
+                {
+                    if (!reopened)
+                    {
+                        reopened = true;
+                        InvokeLightDismissLayer(splitView);
+                    }
+                };
+                splitView.PaneClosing += (sender, args) =>
+                {
+                    closingPaneStates.Add(splitView.IsPaneOpen);
+                    if (closingPaneStates.Count == 1)
+                    {
+                        args.Cancel = true;
+                        splitView.IsPaneOpen = false;
+                        splitView.IsPaneOpen = true;
+                    }
+                };
+                splitView.PaneClosed += (sender, args) =>
+                {
+                    if (!splitView.IsPaneOpen)
+                    {
+                        closed.Set();
+                    }
+                };
+                InvokeLightDismissLayer(splitView);
+            });
+            Verify.IsTrue(closed.WaitOne(TimeSpan.FromSeconds(5)), "The newer dismiss must close the reopened pane.");
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(reopened);
+                Verify.IsFalse(navView.IsPaneOpen);
+                Verify.AreEqual("True, True, True", string.Join(", ", closingPaneStates),
+                    "The canceled dismiss, the manual close and the newer dismiss each notify once.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A synchronous reopen during a light-dismiss close must keep the reopened pane's outside-dismiss popup and not notify twice.")]
+        public void VerifySynchronousReopenDuringLightDismissKeepsDismissLayer()
+        {
+            var (navView, splitView) = CreateNavigationViewWithOpenOverlayPane();
+            using var reopenedEvent = new ManualResetEvent(false);
+            int closingCount = 0;
+            int popupCount = 0;
+            bool reentered = false;
+            RunOnUIThread.Execute(() =>
+            {
+                var templateRoot = (FrameworkElement)VisualTreeHelper.GetChild(splitView, 0);
+                VisualStateGroup displayModeStates = null;
+                foreach (var group in VisualStateManager.GetVisualStateGroups(templateRoot))
+                {
+                    if (group.Name == "DisplayModeStates")
+                    {
+                        displayModeStates = group;
+                    }
+                }
+                popupCount = VisualTreeHelper.GetOpenPopupsForXamlRoot(splitView.XamlRoot).Count;
+                Verify.IsTrue(popupCount > 0, "The open overlay pane needs an outside-dismiss popup.");
+                VisualStateManager.SetCustomVisualStateManager(templateRoot, new SynchronousPaneStateManager());
+                displayModeStates.CurrentStateChanged += (sender, args) =>
+                {
+                    if (!reentered && args.NewState.Name == "Closed")
+                    {
+                        reentered = true;
+                        splitView.IsPaneOpen = true;
+                    }
+                };
+                splitView.PaneClosing += (sender, args) => closingCount++;
+                splitView.PaneOpened += (sender, args) => reopenedEvent.Set();
+                InvokeLightDismissLayer(splitView);
+            });
+            Verify.IsTrue(reopenedEvent.WaitOne(TimeSpan.FromSeconds(5)), "The synchronous state callback must reopen the pane.");
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(reentered);
+                Verify.IsTrue(navView.IsPaneOpen);
+                Verify.AreEqual(1, closingCount, "The light-dismiss close must notify only once.");
+                Verify.AreEqual(popupCount, VisualTreeHelper.GetOpenPopupsForXamlRoot(navView.XamlRoot).Count,
+                    "Unwinding the close must not tear down the reopened pane's outside-dismiss popup.");
+            });
+        }
+
+        private (NavigationView, SplitView) CreateNavigationViewWithOpenOverlayPane()
+        {
+            NavigationView navView = null;
+            SplitView splitView = null;
+            using var paneOpened = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Auto,
+                    CompactModeThresholdWidth = 400,
+                    ExpandedModeThresholdWidth = 600,
+                    Width = 300,
+                    Height = 400
+                };
+                navView.MenuItems.Add(new NavigationViewItem { Content = "Home", Icon = new SymbolIcon(Symbol.Home) });
+                Content = navView;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(NavigationViewDisplayMode.Minimal, navView.DisplayMode);
+                splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                navView.PaneOpened += OnPaneOpened;
+                navView.IsPaneOpen = true;
+            });
+            Verify.IsTrue(paneOpened.WaitOne(TimeSpan.FromSeconds(5)), "The pane must open before the test begins.");
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => navView.PaneOpened -= OnPaneOpened);
+            return (navView, splitView);
+
+            void OnPaneOpened(NavigationView sender, object args) => paneOpened.Set();
+        }
+
+        private static void InvokeLightDismissLayer(SplitView splitView)
+        {
+            var lightDismissLayer = VisualTreeUtils.FindVisualChildByName(splitView, "LightDismissLayer");
+            Verify.IsNotNull(lightDismissLayer);
+            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(lightDismissLayer);
+            ((IInvokeProvider)peer.GetPattern(PatternInterface.Invoke)).Invoke();
+        }
+
+        private sealed class SynchronousPaneStateManager : VisualStateManager
+        {
+            protected override bool GoToStateCore(Control control, FrameworkElement templateRoot, string stateName,
+                VisualStateGroup group, VisualState state, bool useTransitions)
+            {
+                if (group?.Name == "DisplayModeStates" && state != null)
+                {
+                    RaiseCurrentStateChanged(group, group.CurrentState, state, control);
+                    return true;
+                }
+                return base.GoToStateCore(control, templateRoot, stateName, group, state, useTransitions);
+            }
+        }
+
+        [TestMethod]
         public void VerifyClosedCompactVisualState()
         {
             NavigationView navView = null;
