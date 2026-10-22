@@ -477,9 +477,10 @@
         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
             <TextBlock Text="{Binding KeyText, Mode=OneWay}"
                        Style="{StaticResource TableViewGroupHeaderKeyTextStyle}" />
-            <!-- Foreground is bound in code to the header template's ItemCountForegroundSource. -->
+            <!-- Inherits Foreground so it follows the header's states and an app's Foreground. -->
             <TextBlock x:Name="TableViewGroupHeaderItemCountText"
                        Text="{Binding ItemCountText, Mode=OneWay}"
+                       Opacity="{ThemeResource TabularSurfaceGroupHeaderCountOpacity}"
                        VerticalAlignment="Center" />
         </StackPanel>
     </DataTemplate>
@@ -511,7 +512,6 @@
                                         <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceRowBackgroundPointerOverBrush}" />
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
                                         <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
-                                        <Setter Target="ItemCountForegroundSource.Foreground" Value="{ThemeResource TabularSurfaceGroupHeaderCountForegroundPointerOverBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
                                         <Setter Target="PART_ExpanderIcon.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
@@ -521,7 +521,6 @@
                                         <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceRowBackgroundPressedBrush}" />
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
                                         <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
-                                        <Setter Target="ItemCountForegroundSource.Foreground" Value="{ThemeResource TabularSurfaceGroupHeaderCountForegroundPressedBrush}" />
                                         <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
                                         <Setter Target="PART_ExpanderIcon.HighContrastAdjustment" Value="None" />
                                     </VisualState.Setters>
@@ -530,7 +529,6 @@
                                     <VisualState.Setters>
                                         <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
                                         <Setter Target="PART_ExpanderIcon.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
-                                        <Setter Target="ItemCountForegroundSource.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -594,11 +592,6 @@
                                               Foreground="{TemplateBinding Foreground}"
                                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-
-                            <!-- Internal, not a template part: never rendered; CommonStates set the item-count brush here. -->
-                            <TextBlock x:Name="ItemCountForegroundSource"
-                                       Visibility="Collapsed"
-                                       Foreground="{ThemeResource TabularSurfaceGroupHeaderCountForegroundBrush}" />
                         </Grid>
                         </Border>
                         <Border x:Name="PART_GridLineBorder"

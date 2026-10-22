@@ -41,7 +41,6 @@ public:
 
     // A freshly assigned projection must pick up current expansion immediately.
     void OnContentChanged(winrt::IInspectable const& oldContent, winrt::IInspectable const& newContent);
-    void OnContentTemplateChanged(winrt::DataTemplate const& oldContentTemplate, winrt::DataTemplate const& newContentTemplate);
 
     // Use the Control virtual signatures; event-handler overloads break the ABI shim.
     void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);
@@ -102,8 +101,6 @@ public:
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateTerminalBottomGridLineSuppression();
-    void ArmItemCountForegroundBinding();
-    bool BindItemCountForeground();
 
     winrt::hstring GetGroupIdentity();
 
@@ -114,10 +111,6 @@ private:
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
-    tracker_ref<winrt::ContentPresenter> m_contentPresenter{ this };
-    tracker_ref<winrt::TextBlock> m_itemCountForeground{ this };
-    winrt::FrameworkElement::LayoutUpdated_revoker m_contentLayoutUpdatedRevoker{};
-    winrt::weak_ref<winrt::DependencyObject> m_boundContentRoot{ nullptr };
     tracker_ref<winrt::IInspectable> m_groupEntry{ this };
 
     bool m_isPointerOver{ false };

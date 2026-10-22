@@ -10,9 +10,6 @@
 #include "TableViewGroupHeaderAutomationPeer.h"
 
 static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
-static constexpr std::wstring_view s_ContentPresenterPartName{ L"PART_ContentPresenter"sv };
-static constexpr std::wstring_view s_ItemCountForegroundSourceName{ L"ItemCountForegroundSource"sv };
-static constexpr std::wstring_view s_ItemCountTextName{ L"TableViewGroupHeaderItemCountText"sv };
 
 TableViewGroupHeader::TableViewGroupHeader()
 {
@@ -69,70 +66,6 @@ winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSi
     return { width, desired.Height };
 }
 
-// CommonStates setters can't reach into the DataTemplate, so the count text binds to an internal
-// template element. The content root exists only after the presenter's first layout.
-void TableViewGroupHeader::ArmItemCountForegroundBinding()
-{
-    m_contentLayoutUpdatedRevoker.revoke();
-    auto const presenter = m_contentPresenter.get();
-    if (!presenter || !m_itemCountForeground.get())
-    {
-        return;
-    }
-
-    m_contentLayoutUpdatedRevoker = presenter.LayoutUpdated(
-        winrt::auto_revoke,
-        [weakThis = get_weak()](auto const&, auto const&)
-        {
-            if (auto strongThis = weakThis.get())
-            {
-                if (strongThis->BindItemCountForeground())
-                {
-                    strongThis->m_contentLayoutUpdatedRevoker.revoke();
-                }
-            }
-        });
-}
-
-bool TableViewGroupHeader::BindItemCountForeground()
-{
-    auto const presenter = m_contentPresenter.get();
-    auto const source = m_itemCountForeground.get();
-    if (!presenter || !source)
-    {
-        return true;
-    }
-    if (winrt::VisualTreeHelper::GetChildrenCount(presenter) == 0)
-    {
-        return false;
-    }
-
-    auto const root = winrt::VisualTreeHelper::GetChild(presenter, 0);
-    if (root == m_boundContentRoot.get())
-    {
-        return true;
-    }
-    m_boundContentRoot = winrt::make_weak(root);
-
-    if (auto const rootElement = root.try_as<winrt::FrameworkElement>())
-    {
-        if (auto const countText = rootElement.FindName(s_ItemCountTextName).try_as<winrt::TextBlock>())
-        {
-            winrt::Binding binding;
-            binding.Source(source);
-            binding.Path(winrt::PropertyPath(L"Foreground"));
-            countText.SetBinding(winrt::TextBlock::ForegroundProperty(), binding);
-        }
-    }
-    return true;
-}
-
-void TableViewGroupHeader::OnContentTemplateChanged(winrt::DataTemplate const& oldContentTemplate, winrt::DataTemplate const& newContentTemplate)
-{
-    __super::OnContentTemplateChanged(oldContentTemplate, newContentTemplate);
-    ArmItemCountForegroundBinding();
-}
-
 void TableViewGroupHeader::SetOwningTableViewInternal(winrt::TableView const& owner)
 {
     // Weak: the TableView owns this container through the repeater, so a strong ref here would
@@ -152,10 +85,6 @@ void TableViewGroupHeader::OnApplyTemplate()
     m_isEnabledChangedRevoker.revoke();
     m_templateRootContextRequestedRevoker.revoke();
     m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
-    m_contentPresenter.set(GetTemplateChild(hstring{ s_ContentPresenterPartName }).try_as<winrt::ContentPresenter>());
-    m_itemCountForeground.set(GetTemplateChild(hstring{ s_ItemCountForegroundSourceName }).try_as<winrt::TextBlock>());
-    m_boundContentRoot = nullptr;
-    ArmItemCountForegroundBinding();
 
     // A group header's ContextFlyout (set through a TableViewGroupHeader Style) stays closed while
     // a cell is editing.

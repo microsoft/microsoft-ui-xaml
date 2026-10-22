@@ -631,8 +631,6 @@ Template parts. Code looks up `PART_ContentPresenter` and `PART_GridLineBorder`,
 | `PART_ExpanderIcon` | `FontIcon` | Glyph driven by `ExpansionStates`, not by code; hidden by `NotExpandable`; recoloured by `CommonStates`. |
 | `PART_GridLineBorder` | `Border` | Optional. Renders the border chrome; on the last row the control clears its bottom edge so it does not double the table's own border. |
 
-The default template also holds a hidden, internal `ItemCountForegroundSource` element that the `CommonStates` recolor so the default content template's item count follows `PointerOver`, `Pressed` and `Disabled`. It is not part of the template contract: a replacement template without it leaves the count in the content's inherited foreground.
-
 Visual states: `CommonStates` (`Normal`/`PointerOver`/`Pressed`/`Disabled`), `ExpansionStates` (`Expanded`/`Collapsed`), `ExpandabilityStates` (`Expandable`/`NotExpandable`).
 
 The **whole band** is the toggle target, matching `ListView` and `TreeView`, rather than a nested button inside it — one interactive element, one automation story.

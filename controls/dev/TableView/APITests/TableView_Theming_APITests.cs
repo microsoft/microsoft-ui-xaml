@@ -1211,10 +1211,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyDefaultGroupHeaderCountUsesSecondaryBrushThatFollowsStates()
+        public void VerifyDefaultGroupHeaderCountInheritsForegroundThatFollowsStates()
         {
-            var rest = Color.FromArgb(0xFF, 0x10, 0x80, 0x40);
-            var pointerOver = Color.FromArgb(0xFF, 0x80, 0x10, 0x40);
             TableView tableView = null;
             TableViewGroupHeader groupHeader = null;
             TextBlock count = null;
@@ -1222,14 +1220,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 EnsureTabularControlsResources();
-                SetApplicationResource("TabularSurfaceGroupHeaderCountForegroundBrush", new SolidColorBrush(rest));
-                SetApplicationResource("TabularSurfaceGroupHeaderCountForegroundPointerOverBrush", new SolidColorBrush(pointerOver));
+                SetApplicationResource("TabularSurfaceGroupHeaderCountOpacity", 0.5);
 
                 tableView = CreateGroupedThemingTable();
                 LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
+
+            Color PresenterColor() =>
+                ((groupHeader.FindVisualChildByName("PART_ContentPresenter") as ContentPresenter)?.Foreground as SolidColorBrush)?.Color ?? default;
+            Color CountColor() => (count.Foreground as SolidColorBrush)?.Color ?? default;
 
             try
             {
@@ -1243,9 +1244,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         return;
                     }
 
-                    Verify.AreEqual(1.0, count.Opacity, "The count must not be dimmed with Opacity.");
-                    Verify.AreEqual(rest, (count.Foreground as SolidColorBrush)?.Color ?? default,
-                        "At rest the count must use TabularSurfaceGroupHeaderCountForegroundBrush.");
+                    Verify.AreEqual(DependencyProperty.UnsetValue, count.ReadLocalValue(TextBlock.ForegroundProperty),
+                        "The count must inherit Foreground rather than hold its own brush.");
+                    Verify.AreEqual(0.5, count.Opacity, "The count must be dimmed with TabularSurfaceGroupHeaderCountOpacity.");
+                    Verify.AreEqual(PresenterColor(), CountColor(), "At rest the count must use the header's Foreground.");
 
                     var contentPresenter = groupHeader.FindVisualChildByName("PART_ContentPresenter") as ContentPresenter;
                     var key = contentPresenter == null ? null :
@@ -1264,8 +1266,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Verify.AreEqual(pointerOver, (count.Foreground as SolidColorBrush)?.Color ?? default,
-                        "PointerOver must retarget the count brush.");
+                    Verify.AreEqual(PresenterColor(), CountColor(), "PointerOver must recolor the count with the key text.");
                     Verify.IsTrue(VisualStateManager.GoToState(groupHeader, "Disabled", false), "Disabled must exist.");
                 });
 
@@ -1273,26 +1274,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    var presenter = groupHeader.FindVisualChildByName("PART_ContentPresenter") as ContentPresenter;
-                    Verify.AreEqual((presenter?.Foreground as SolidColorBrush)?.Color ?? default,
-                        (count.Foreground as SolidColorBrush)?.Color ?? rest,
-                        "Disabled must give the count the same disabled brush as the key text.");
+                    Verify.AreEqual(PresenterColor(), CountColor(), "Disabled must give the count the same disabled brush as the key text.");
                     Verify.IsTrue(VisualStateManager.GoToState(groupHeader, "Normal", false), "Normal must exist.");
                 });
 
                 IdleSynchronizer.Wait();
 
-                RunOnUIThread.Execute(() => Verify.AreEqual(rest, (count.Foreground as SolidColorBrush)?.Color ?? default,
-                    "Returning to Normal must restore the rest count brush."));
+                RunOnUIThread.Execute(() => Verify.AreEqual(PresenterColor(), CountColor(),
+                    "Returning to Normal must restore the rest brush."));
             }
             finally
             {
-                RunOnUIThread.Execute(() =>
-                {
-                    ClearApplicationResource("TabularSurfaceGroupHeaderCountForegroundBrush");
-                    ClearApplicationResource("TabularSurfaceGroupHeaderCountForegroundPointerOverBrush");
-                });
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceGroupHeaderCountOpacity"));
             }
+        }
+
+        [TestMethod]
+        public void VerifyGroupHeaderCountFollowsAppForegroundStyle()
+        {
+            var white = Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF);
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                tableView = CreateGroupedThemingTable();
+                tableView.RequestedTheme = ElementTheme.Light;
+                var style = new Style(typeof(TableViewGroupHeader));
+                style.Setters.Add(new Setter(Control.BackgroundProperty, new SolidColorBrush(Color.FromArgb(0xFF, 0x00, 0x5F, 0xB8))));
+                style.Setters.Add(new Setter(Control.ForegroundProperty, new SolidColorBrush(white)));
+                tableView.Resources[typeof(TableViewGroupHeader)] = style;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var groupHeader = FindVisualChildrenByType<TableViewGroupHeader>(tableView).FirstOrDefault();
+                var count = groupHeader?.FindVisualChildByName("TableViewGroupHeaderItemCountText") as TextBlock;
+                if (count == null)
+                {
+                    Verify.Fail("The default group header content must contain the item-count TextBlock.");
+                    return;
+                }
+
+                Verify.AreEqual(white, (count.Foreground as SolidColorBrush)?.Color ?? default,
+                    "An app's header Foreground must reach the count so it stays readable on the app's Background.");
+            });
         }
 
         #endregion
