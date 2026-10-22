@@ -145,6 +145,8 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `GridLinesVisibility` controls the body gridlines. The column-header lines (the separators between header cells and the rule under the header) are always drawn, whatever `GridLinesVisibility` is; both paint `TabularSurfaceHeaderSeparatorBrush`, so an app hides them by overriding that resource with `Transparent`. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
 
+> **Migrating from earlier previews:** `HeaderGridLinesVisibility` was removed. `GridLinesVisibility` affects only the body lines; to hide the header separators and the rule under the header, override `TabularSurfaceHeaderSeparatorBrush` with `Transparent`.
+
 ```xaml
 <tabular:TableView
     ItemsSource="{x:Bind People}"
@@ -182,6 +184,10 @@ overrides no longer flow through the removed default-style brush fallbacks.
 Override `TabularSurfaceSelectionIndicatorDisabledBrush` and `TabularSurfaceRowForegroundDisabledBrush`
 independently to customize the disabled-selected indicator and disabled row text.
 By default, the disabled-selected indicator uses disabled-text colors rather than the accent color.
+
+The default group header's item count inherits the header `Foreground` and is dimmed by
+`TabularSurfaceGroupHeaderCountOpacity` (1.0 in High Contrast). A disabled header shows the count
+at full opacity, since the disabled brush already dims it.
 
 ### Frozen (pinned) leading columns
 
