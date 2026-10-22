@@ -79,11 +79,14 @@ winrt::WindowVisualState TeachingTipAutomationPeer::VisualState()
 
 void TeachingTipAutomationPeer::Close()
 {
-    auto const teachingTip = winrt::get_self<TeachingTip>(GetTeachingTip());
-    // Writing IsOpen on an already closed tip would replace an app's IsOpen binding with a local value.
-    if (teachingTip->IsOpen())
+    // Hold a strong reference across both calls; the peer only references its owner weakly.
+    if (auto const teachingTip = GetTeachingTip())
     {
-        teachingTip->IsOpen(false);
+        // Writing IsOpen on an already closed tip would replace an app's IsOpen binding with a local value.
+        if (teachingTip.IsOpen())
+        {
+            teachingTip.IsOpen(false);
+        }
     }
 }
 
