@@ -43,6 +43,7 @@
   <!-- We need to add our sdk to the end of the AdditionalIncludes-->
   <ItemDefinitionGroup>
     <ClCompile>
+      <PreprocessorDefinitions>WINUI_PROFILER_ENABLED=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
         $(WinUIDetailsIncludePath)\abi;
         $(XamlPublicHeadersPath);
@@ -320,4 +321,9 @@
     <Error Condition="!Exists('$(SdkCppArchitectureNeutralTargetsFile)')" Text="$([System.String]::Format('$(ErrorText)', '$(SdkCppArchitectureNeutralTargetsFile)'))" />
   </Target>
   <Import Project="$(SdkCppArchitectureNeutralTargetsFile)" Condition="Exists('$(SdkCppArchitectureNeutralTargetsFile)')" />
+  <Target Name="ValidateWinUIProfilerFoundation" BeforeTargets="PrepareForBuild"
+          Condition="'$(ConfigurationType)'=='StaticLibrary' or '$(ConfigurationType)'=='DynamicLibrary'">
+    <Error Condition="'$(WinUIProfilerFoundationEnabled)'!='true'"
+           Text="The WinUI profiler foundation is required in both fre and chk." />
+  </Target>
 </Project>

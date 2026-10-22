@@ -17,6 +17,7 @@
 #include "XcpAllocation.h"
 #include <fwd/Microsoft.UI.Xaml.h>
 #include <fwd/Microsoft.UI.Xaml.hosting.h>
+#include "WinUIProfilerProtocol.h"
 
 class xstring_ptr;
 
@@ -48,6 +49,7 @@ class
         // should always be the most derived, but will still be able to QI for the other classes in the list.
         wrl::ChainInterfaces<IVisualTreeService3, IVisualTreeService2, IVisualTreeService>,
         IXamlDiagnosticsTestHooks,
+        WinUIProfiler::IWinUIProfilerRuntimeDiagnostics,
         wrl::FtmBase>
 {
 
@@ -55,6 +57,11 @@ private:
     static LPCWSTR _emptyString;
 
 public:
+    IFACEMETHOD(GetProfilerProtocolInfo)(uint32_t version, uint32_t size, WinUIProfiler::ProtocolInfo* info) override;
+    IFACEMETHOD(GetProfilerSequenceCut)(uint32_t version, uint16_t eventId, uint32_t size, WinUIProfiler::SequenceCut* cut) override;
+    IFACEMETHOD(GetProfilerDispatcher)(uint32_t version, uint32_t threadId, IInspectable** dispatcher) override;
+    IFACEMETHOD(RequestProfilerCapture)(uint32_t version, uint32_t kind, GUID captureId) override;
+
     static HRESULT Create(_COM_Outptr_ IXamlDiagnostics** instance);
 
     XamlDiagnostics();

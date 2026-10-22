@@ -7,6 +7,62 @@ Paths are repository-relative; symbol names are more stable than line numbers.
 Runtime provider/header work belongs to P04–P06; transport/injection to P08.
 Existing telemetry is not the required schema and is not a dependency.
 
+## P04 foundation status and overlapping telemetry decisions
+
+P04 adds the fixed new runtime provider and typed, guarded writers for catalog
+IDs 1–12, 15 and 16 in optimized and checked native builds. The concrete
+TDH-visible layouts and private diagnostics ABI are in event-contract.md.
+**No lifecycle, property, membership, frame, device, resource or allocator
+sites in the inventory below are hooked yet.** The supported-event bitmask
+describes writers, not observational coverage; runtime capability arrays are
+empty. Capture IDs 13/14, typed capture arrays/traversal, weak identity maps,
+the TAP/pipe, collector and listener receipt/absence acquisition are later work.
+Requesting a capture returns E_NOTIMPL, not an empty successful artifact.
+
+The private interface reuses the generic XamlDiagnostics WRL ClassicCom
+connection and DiagnosticsInterop thread-to-dispatcher lookup. It does not
+instantiate diagnostics on disabled telemetry paths, convert arbitrary
+IInspectable property values, add public exports or change app dispatching.
+Object IDs are explicit epoch-qualified monotonically assigned lifetimes,
+not addresses; future owning hooks must supply actual lifetime boundaries.
+
+Requirement-driven overlap decisions (not reuse of any profiler schema):
+
+| Existing observation family | Decision for the new profiler | Existing framework behavior |
+|---|---|---|
+| Generic initialization/layout/render timing and performance markers | **Retain** for their existing diagnostics consumers; **replace** as this profiler's input with new Boundary/Frame definitions | Unchanged; no renaming, forwarding or dependency on their schemas |
+| Diagnostic visual-tree mutation/root notifications and property inspection | **Retain** the diagnostics transport/service; **modify** only its private COM interface list/forwarding; **replace** profiling observations with epoch/lifetime/scoped typed records at later authoritative hooks | Existing notifications, property getters and dispatching are not intercepted or repurposed |
+| Existing object/type/peer/tree/composition diagnostic telemetry | **Replace** as input for the new profiler; new typed object/domain/cause/classification contracts are independent | **Retain** for unrelated consumers; no dependency or source-schema adaptation |
+| Existing device/resource and allocator/debug tracking | **Replace** as input for this profiler with explicit device/backing/allocator epoch records | **Retain** existing consumers; do not turn on TRACE_ALLOC, inspect debug headers, globally query HeapSize or trace AddRefs |
+| Existing profiler-specific protocols, helpers and event layouts | **Retire** from this new design's dependency/reference set, not delete another tool's code | Excluded from implementation/design references; no source compatibility claim |
+
+No overlapping existing event is claimed to satisfy the new contract, and no
+existing telemetry is removed or globally enabled by this foundation.
+The table is a migration/ownership decision, not a claim that the new runtime
+hooks or final telemetry rollout have already happened.
+
+The focused native tests compile the actual producer source without a
+framework PCH/debug allocator, start uniquely named owned ETW sessions,
+write typed events and decode their real ETLs with TDH. They test per-ID
+reservation/contiguous settlement, multiple listeners, fresh epochs, disabled
+lazy factories, reentrancy and failed writes. An isolated executable using the
+same test/producer translation units avoids the external framework module's
+packaged-WPF/elevated fixture prerequisites. Compilation/discovery of the
+framework DLL is not execution of that fixture or of app lifecycle hooks.
+No all-process runtime instrumentation or measured fre overhead is established
+by structural/build validation; P17 remains the acceptance gate.
+
+Run the isolated x64 optimized harness from the repository root:
+
+```powershell
+.\initrun.ps1 -Flavor amd64fre msb /q dxaml\test\native\external\framework\profiler\ProfilerInstrumentationHarness.vcxproj /p:Configuration=Release /p:Platform=x64 /p:UseXamlCompiler=false /p:PGOBuildMode=Off
+.\BuildOutput\ProfilerHarness\x64\Release\ProfilerInstrumentationHarness.exe
+```
+
+Use amd64chk/Debug for checked x64 execution, or arm64fre/Release/ARM64
+and arm64chk/Debug/ARM64 for cross-compilation. Building an ARM64 executable
+on an x64 host is not executing its tests.
+
 ## Product requirement matrix
 
 | Requirement | Required observations/contracts | Initial actual hook / producer boundary | Consumer/query and coverage limits |
@@ -36,17 +92,17 @@ until the object's final runtime type is available.
 |---|---|---|
 | Core object birth | `components\DependencyObject\dependencyobject.cpp` `CDependencyObject::CDependencyObject` (line 51) | Assign explicit lifetime ID from the new producer epoch; guard all work before payload/type queries. Constructor address is optional metadata, not ID. Emit final type via TypeResolved when known |
 | Core object final destruction | `core\core\elements\depends.cpp` `CDependencyObject::~CDependencyObject` (line 36) | End authoritative core lifetime once; not merely detachment or peer release |
-| Core/peer and type association | `dxaml\lib\DependencyObject.cpp`; `components\DependencyObject\dependencyobject.cpp`; existing diagnostics boundary `components\xamlDiagnostics\LiveVisualTree.cpp` | Further P04 bridge/peer creation investigation must identify exact post-construction association hooks; do not infer peer identity from core pointers or promise constructor-time final type |
+| Core/peer and type association | `dxaml\lib\DependencyObject.cpp`; `components\DependencyObject\dependencyobject.cpp`; existing diagnostics boundary `components\xamlDiagnostics\LiveVisualTree.cpp` | The later lifecycle-hook task must identify exact post-construction association hooks; do not infer peer identity from core pointers or promise constructor-time final type |
 | Connected UIElement/root membership | `core\core\elements\uielement.cpp` `CUIElement::EnterImpl` (1299), `LeaveImpl` (1740); `core\dll\VisualTree.cpp` | Root/dispatcher-scoped connection edges and connected UIElement counts; a leave is not destruction |
 | Ordered children | `components\Collection\UIElementCollection.cpp` append/insert/remove/clear operations | Emit old/new order/membership at successful mutations, not from an unordered walk |
-| Content/template/popup relationship kinds | `core\core\elements\ContentControl.cpp` content mutation; `Control.cpp` template application; `Popup.cpp` popup transitions; `components\elements\Popup.cpp` | P04 bridge must instrument successful relationship changes with explicit root/dispatcher; include popup roots, content and template kinds; static visual-children-only traversal is incomplete |
+| Content/template/popup relationship kinds | `core\core\elements\ContentControl.cpp` content mutation; `Control.cpp` template application; `Popup.cpp` popup transitions; `components\elements\Popup.cpp` | Later lifecycle hooks must instrument successful relationship changes with explicit root/dispatcher; include popup roots, content and template kinds; static visual-children-only traversal is incomplete |
 | Initialization and render attempt | `core\dll\xcpcore.cpp` `CCoreServices::Initialize` (3657), `Tick` (4336), `SubmitPrimitiveCompositionCommands` (7179) | Initialization/attempt boundaries, not frame-submission counters; process creation belongs to OS collector, not Initialize |
 | Measure/arrange boundaries | `core\layout\LayoutManager.cpp` `CLayoutManager::EnterMeasure` (166), `ExitMeasure` (180), `EnterArrange` (189), `ExitArrange` (203), `UpdateLayout` | Pair operation IDs in authoritative epoch/thread; preserve failure and incomplete intervals |
 | Qualifying primary commit | `core\dll\xcpcore.cpp` primary `CommitMainDevice` call around 7265; `components\comptree\DCompTreeHost.cpp` `CommitMainDevice` (1130) actual `m_spMainDevice->Commit()` | Must carry primary XAML-attempt intent into the actual commit hook; emit Submitted immediately after successful actual commit. Null main device returns S_OK with no commit. Fallible PostCommit/layout work and optional debug-counter commit around 7315 are separate observations |
 | Standalone commits | `components\comptree\DCompTreeHost.cpp` `RequestMainDCompDeviceCommit`, `CommitMainDevice`; nonprimary callers | Record commit diagnostics without SubmittedFrameId; do not infer primary status from being inside a tick |
 | CompNode/canonical IVisual identity/topology | `components\comptree\HWCompNodeWinRT.cpp` `HWCompTreeNodeWinRT` constructor/Create, `EnsureVisual` (310), `CreateWUCSpineVisual` (376), `InsertWUCSpineVisual` (419), `GetWUCVisual`; `DCompTreeHost.cpp` `CreateContainerVisual` (1241), `SetRootForCorrectContext` | Track CompNodes separately from canonical IVisual COM identity; aliases/hand-off/spine/content visuals can correlate many-to-many. External visual mutations require explicit capability limits or additional observation hooks |
 | Typed visual state and XAML/visual/resource correlations | `components\comptree\HWCompNodeWinRT.cpp` visual/property writes; `core\hw\VisualContentRenderer.cpp` `RenderPrimitive`, `GetCompositionBrush` | Record known typed property deltas and observed resource assignment; no claim to full external compositor state or animation evaluation |
-| XAML property and causal change representation | `core\core\elements\depends.cpp` `CDependencyObject::NotifyPropertyChanged` (2793), `OnPropertyChanged` (1474); investigate authoritative setter/notification coverage in P04 | Actual notification candidate accepts property-change parameters and has fallible callbacks; it is not proof of all successful mutations or a source dependency on existing telemetry. New XamlPropertyChanged retains property key, previous/current values and explicit/unknown/outside-attempt cause. Carry qualified attempts through layout/tree/visual/resource/allocation observations; proximity or ActivityId is not proof |
+| XAML property and causal change representation | `core\core\elements\depends.cpp` `CDependencyObject::NotifyPropertyChanged` (2793), `OnPropertyChanged` (1474); investigate authoritative setter/notification coverage in the later lifecycle-hook task | Actual notification candidate accepts property-change parameters and has fallible callbacks; it is not proof of all successful mutations or a source dependency on existing telemetry. New XamlPropertyChanged retains property key, previous/current values and explicit/unknown/outside-attempt cause. Carry qualified attempts through layout/tree/visual/resource/allocation observations; proximity or ActivityId is not proof |
 | Device birth/loss/epochs | `plat\win\desktop\D3D11DeviceInstance.cpp` `CD3D11DeviceInstance::EnsureResources` (165), `ReleaseResourcesOnDeviceLost` (313); `d3d11device.cpp` `CD3D11Device::Create`, `EnsureResources`, `ReleaseScratchResources` | Separate device epochs and ownership scopes; device loss must invalidate incomplete resource/backing state |
 | Surface resource/backing/rebind/resize | `plat\win\desktop\DCompSurface.cpp` Create overloads (33/75/110), InitializeSurface (142/226), ReleaseLegacyDCompResources (352), Lock/Unlock/QueueUpdate; `d3d11device.cpp` graphics resource API boundaries | Distinguish logical resource IDs and unique backing allocations; report measured API allocation sizes only where authoritative; dimensions are estimates, not residency |
 | D2D creation/share | `plat\win\desktop\D2DAcceleratedRT.cpp` `CD2DRenderTarget<T>::CreateBitmap` (183), CreateSolidColorBrush (247), CreateBitmapBrush (286+), CreateSharedBitmapBrush (408) | Observe backing sharing and scoped ownership/release; WinUI relinquishing a COM reference does not prove final external destruction |
@@ -84,9 +140,10 @@ until the object's final runtime type is available.
   the committed view. End alone is insufficient.
 * Finalizing absence still requires genuinely settled/closed source
   reconciliation. Another listener's selection does not alter continuity;
-  own-domain filter/enable changes remain Unproven. Native counters, receipt
-  acquisition, terminal transport guarantees, source verification and
-  projections remain downstream; P01 tests contracts and the pure helper only.
+  own-domain filter/enable changes remain Unproven. P04 supplies native
+  reservation counters and contiguous settled cuts only. Receipt acquisition,
+  terminal transport guarantees, source verification and projections remain
+  downstream; P01 tests contracts and the pure helper only.
 * Completed scope intervals inside unfinished artifact-free snapshots must
   still fit the committed query watermark; no invented overall end/artifact
   is needed to enforce that publication boundary.

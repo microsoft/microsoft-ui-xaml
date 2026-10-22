@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "XamlDiagnostics.h"
+#include "WinUIProfilerRuntimeBridge.h"
 #include <stack>
 #include "wil\resource.h"
 #include "HandleMap.h"
@@ -83,6 +84,32 @@ XamlDiagnostics::RuntimeClassInitialize()
 {
     IFC_RETURN(m_spDiagInterop->GetDispatcherQueue(&m_spDispatcher));
     return S_OK;
+}
+
+HRESULT XamlDiagnostics::GetProfilerProtocolInfo(uint32_t version, uint32_t size, WinUIProfiler::ProtocolInfo* info)
+{
+    return WinUIProfiler::GetProtocolInfo(version, size, info);
+}
+
+HRESULT XamlDiagnostics::GetProfilerSequenceCut(uint32_t version, uint16_t eventId, uint32_t size, WinUIProfiler::SequenceCut* cut)
+{
+    return WinUIProfiler::GetSequenceCut(version, eventId, size, cut);
+}
+
+HRESULT XamlDiagnostics::GetProfilerDispatcher(uint32_t version, uint32_t threadId, IInspectable** dispatcher)
+{
+    if (!dispatcher) return E_POINTER;
+    *dispatcher = nullptr;
+    if (version != WinUIProfiler::ProtocolVersion) return HRESULT_FROM_WIN32(ERROR_REVISION_MISMATCH);
+    if (threadId == 0) return E_INVALIDARG;
+    WinUIProfiler::InstrumentationScope scope;
+    auto queue = m_spDiagInterop->GetDispatcherQueueForThreadId(threadId);
+    return queue ? queue.CopyTo(dispatcher) : HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
+}
+
+HRESULT XamlDiagnostics::RequestProfilerCapture(uint32_t version, uint32_t kind, GUID captureId)
+{
+    return WinUIProfiler::RequestCapture(version, kind, captureId);
 }
 
 // Intializes the VS tap and sets site, if possible.

@@ -67,6 +67,191 @@ capture chunks to a conservative 48 KiB wire payload maximum. A canonical
 normalized payload may be larger due to expansion; the 1 MiB ingestion limit
 does not authorize 1 MiB ETW writes.
 
+## P04 native runtime wire mapping
+
+The fre/chk foundation is `WinUIProfilerProtocol.h`,
+`WinUIProfilerTracing.h` and `WinUIProfilerRuntimeBridge.cpp`. It registers
+the fixed runtime provider above using SDK TraceLogging, **not** a manifest
+event-ID namespace. Select by provider GUID, exact event name,
+`SemanticEventId:u16` and `EventSchemaVersion:u8`; the latter is 1.
+Do not select a schema by TraceLogging's numeric `EVENT_DESCRIPTOR.Id` or
+descriptor version. Level and keyword must also match the catalog.
+
+Every implemented event starts, in this order, with:
+
+```
+SemanticEventId:u16, EventSchemaVersion:u8, ProducerEpoch:GUID,
+SourceSequence:u64,
+TargetProcess:{
+  ProcessId:u32, HasCreationTimeFileTime:bool8,
+  CreationTimeFileTime:i64, InstanceId:GUID
+}
+```
+
+`TargetProcess` is the actual runtime process; its creation time comes from
+`GetProcessTimes`, not attach time. A false presence bit maps to null, not
+zero. Source PID/TID/QPC come from the ETW header; source PID must equal
+target PID for this runtime provider. The adapter supplies session ID,
+ingest ordinal and selected-session QPC conversion. The process instance GUID
+is stable for the loaded producer; all-listener disable/re-enable changes
+producer epoch, not process creation identity. ETW GUID fields use the SDK's
+native GUID representation; the TAP RFC-4122 byte rule is not an instruction
+to reinterpret ETW GUID bytes.
+
+Controllers selecting raw QPC timestamps use Wnode.ClientContext=1. ETL readers
+must request PROCESS_TRACE_MODE_RAW_TIMESTAMP when interpreting the header as
+raw QPC; default ProcessTrace conversion is system time, not QPC. Adapters must
+validate the recorded clock and apply the same checked session-origin/frequency
+conversion to header timestamps and payload QPC intervals.
+
+Wire type aliases below describe **TDH-visible nested structs**, not raw C++
+struct dumps. Field order is significant. All integers have explicit widths;
+`bool8` is TraceLoggingBoolean (u8 with Boolean output type).
+
+```
+Optional<T> = { Present:bool8, Value:T }
+NullableText = { Present:bool8, Value:utf8z }
+Quality = { Kind:u8, Coverage:u8, Reason:NullableText }
+Classification = { Kind:u8, Evidence:u8, Source:utf8z }
+Object = { Domain:u8, ProducerEpoch:GUID, RuntimeObjectId:u64 }
+Attempt = { ProducerEpoch:GUID, AttemptId:u64, RootId:GUID, DispatcherId:u64 }
+Cause = { Kind:u8, Attempt:Optional<Attempt>, Reason:NullableText }
+Value = { Kind:u8, Unit:u8, Integer:i64, Number:f64, Boolean:bool8,
+          Text:utf8z, Quality:Quality }
+```
+
+Object process identity is inherited from `TargetProcess` for **each**
+Object occurrence; this runtime schema cannot express cross-process objects.
+All object and explicit-attempt epochs must equal the common epoch.
+Optional false storage is ignored; it is never a valid zero identity.
+For Value, only the arm selected by Kind is normalized; the other arms
+become null. Missing selects no arm. Enum codes are the zero-based declaration
+order of the named P01 C# enums (not strings, flags, guessed type names or
+Windows ABI enums). The adapter maps them to the canonical string enums and
+rejects unknown codes. Classification means XamlTypeClassification except
+Resource.Classification, which uses ResourceClassification's enum tables.
+
+After the common prefix, these are the concrete schema-1 payloads:
+
+| Name / semantic ID | TDH fields, in order |
+|---|---|
+| RuntimeCapabilities / 1 | Epoch:GUID, Build:utf8z, Architecture:u32, QpcFrequency:i64, CapabilityCount:u32 |
+| ObjectLifetime / 2 | Object:Object, Operation:u8, TypeId:Optional<u64>, Address:Optional<u64>, Quality:Quality, Classification:Optional<Classification>, Cause:Cause |
+| TypeResolved / 3 | TypeId:u64, Name:utf8z, Classification:Optional<Classification> |
+| CorePeerAssociation / 4 | Core:Object, Peer:Object, Linked:bool8, Cause:Cause |
+| TreeEdge / 5 | Parent:Optional<Object>, Child:Object, Relationship:u8, Order:i32, RootId:GUID, DispatcherId:u64, Connected:bool8, Cause:Cause, Membership:u8 |
+| VisualDelta / 6 | Visual:Object, Property:u8, Value:Value, Cause:Cause |
+| Correlation / 7 | From:Object, To:Object, Kind:u8, Linked:bool8, Cause:Cause |
+| Boundary / 8 | Kind:u8, Phase:u8, OperationId:u64, HResult:Optional<i32>, Cause:Cause |
+| Frame / 9 | Attempt:Optional<Attempt>, SubmittedFrameId:Optional<u64>, Outcome:u8, HResult:Optional<i32> |
+| Device / 10 | DeviceEpoch:GUID, Operation:u8, Api:utf8z, Quality:Quality |
+| Resource / 11 | Resource:Object, Operation:u8, DeviceEpoch:GUID, BackingAllocationId:Optional<GUID>, AllocationBytes:Optional<u64>, SizeProvenance:u8, Owner:Optional<Object>, WidthPixels:Optional<u32>, HeightPixels:Optional<u32>, Quality:Quality, Classification:Classification, Cause:Cause |
+| Allocation / 12 | AllocationId:u64, Operation:u8, PreviousAllocationId:Optional<u64>, RequestedBytes:u64, ActualBytes:Optional<u64>, AllocatorEpoch:GUID, BaselineCaptureId:Optional<GUID>, Quality:Quality, Cause:Cause |
+| Loss / 15 | Interval:{StartQpc:i64, EndQpc:i64}, LostEvents:Optional<u64>, Reason:utf8z, HasDomains:bool8 |
+| XamlPropertyChanged / 16 | Object:Object, Property:{PropertyId:u64, DeclaringType:utf8z, Name:utf8z}, Previous:Value, Current:Value, Cause:Cause |
+
+RuntimeCapabilities.Epoch must equal the prefix epoch; its normalized Process
+is TargetProcess. TypeResolved/Loss's payload ProducerEpoch is the prefix
+epoch. Build is `WinUI-<WINUI_BUILD_VERSION>` (0 in the isolated harness).
+Architecture codes are X64=0, Arm64=1. This foundation's CapabilityCount
+is **always zero**, mapping to an empty capability list: typed writer
+availability does not establish actual lifecycle/frame/resource coverage.
+HasDomains is **always false**, mapping to null (unlocalized loss), not an
+empty authoritative vector. Reject other values in these schema-1 layouts;
+adding capability entries/localized loss requires a supported new native
+event version with a concrete typed layout and matching catalog/adapter
+version support. The canonical record's fields may stay the same, but its
+identity/sequence domain must preserve the actual supported event version;
+never coerce a new wire version into an old continuity domain.
+
+CaptureBoundary/13 and CaptureChunk/14 remain reserved catalog definitions:
+P04 does not emit them, define their native array layout, implement traversal,
+or acknowledge captures as successful. Their wire encoders and algorithms
+belong to the later capture task; adapters must reject unknown layouts, not
+guess from normalized JSON. No collector provider is implemented by P04.
+
+Native text is validated UTF-8, at most 1,024 bytes excluding its terminating
+zero per field. Factories run only after definition/keyword enablement and
+reentrancy guards. The synchronous writer borrows text only for that call.
+The final EventWriteTransfer wrapper sums all descriptor sizes (including
+metadata) and refuses writes over 48 KiB. This transport budget is independent
+of the 1 MiB owned normalized payload limit. No JSON payload is sent over ETW.
+Native validation is an early guard, not a replacement for full P01
+normalization/context validation at the adapter trust boundary.
+
+### Private diagnostics ABI and producer settlement
+
+`IWinUIProfilerRuntimeDiagnostics` IID
+`289e7441-674b-45fa-a276-b9f59b7ec233` is added to the existing framework
+WRL ClassicCom diagnostics class. It is private, version 1, not a new DLL
+export or public WinRT API. The header is authoritative for fixed-width,
+8-byte-aligned structures (ProcessIdentity 32 bytes, ProtocolInfo 80,
+SequenceCut 96) on x64 and ARM64.
+
+* GetProfilerProtocolInfo validates exact ABI size/version and returns actual
+  process/epoch/frequency, architecture, a bit-per-semantic-ID writer mask
+  (bit N describes ID N), and zero runtime capabilities. With Capabilities
+  enabled, this handshake also publishes the native capabilities event without
+  needing any later lifecycle/frame hooks.
+* GetProfilerSequenceCut validates the selected implemented definition and
+  returns a fresh immutable cut GUID with its epoch/target/event/version and
+  **both** reserved and contiguous settled prefixes. The provider is implicit
+  in this runtime-only interface. No listener/session evidence is returned.
+* GetProfilerDispatcher uses the existing diagnostics interop's thread-to-queue
+  lookup; zero thread ID is invalid, an unknown queue returns ERROR_NOT_FOUND.
+  It does not enumerate objects, call application getters, convert boxed
+  values into newly created core objects, or claim cross-dispatcher atomicity.
+* RequestProfilerCapture returns E_NOTIMPL for version 1. Every entry rejects
+  incompatible protocol versions with ERROR_REVISION_MISMATCH; buffer methods
+  reject null pointers/wrong sizes without writing undersized buffers.
+
+Provider registration only registers/unregisters ETW. Enable callbacks update
+aggregate enabled state and a notification serial under a lock, without
+COM, traversal, allocation or dispatcher calls. Process/GUID initialization
+occurs outside loader-lock callbacks. The last-listener disable followed by
+the first enable starts a fresh epoch lazily, after in-flight writes settle.
+Changing another listener, keyword or level while any listener remains does
+not reset IDs/counters. Every new epoch requires a capabilities announcement:
+enable Capabilities during the initial handshake (and on re-enable) before
+using the other independently selectable families. Until an announcement is
+written, helpers return E_PENDING rather than use an unannounced epoch.
+This is not proof any particular listener received the announcement.
+
+SDK aggregate keyword/level checks (including EventEnabled) can combine one
+listener's Informational level with another listener's Frames keyword even
+when neither enables Informational Frames. After the cheap SDK guard, the
+foundation lazily caches the actual current process's individual OS session
+selections from EnumerateTraceGuidsEx/TraceGuidQueryInfo. This happens only on
+an enabled path after a notification, **not** in the enable callback. The
+query uses a bounded 64 KiB scratch buffer outside the hot cached guard;
+query failure/overflow stops the producer with a private-bridge HRESULT,
+not guessed eligibility. Reentrant query work is suppressed. This cache is
+only current definition-level writer eligibility, not persisted listener
+continuity, payload/root-filter accounting, decoded receipt or absence proof.
+The tests exercise the actual two-listener level/keyword false-positive case.
+
+There are no new per-object fields, permanent listeners, allocation maps,
+AddRef tracing or HeapSize calls. NewObjectIdentity only allocates monotonic
+epoch-qualified IDs while an object-related family is enabled; callers in
+later hook tasks must retire their weak mappings with the epoch and establish
+a new baseline, not preserve pointer-only IDs. The foundation has no maps.
+
+Each definition has its own 256-slot, allocation-free concurrent reservation
+window. A reservation is made immediately before the write attempt and
+settled on its terminal return, including failed/skipped writes. Completing
+7 before 5/6 cannot advance a settled prefix past 4. Snapshots hold the
+domain lock and cut GUIDs identify immutable returned facts. Window exhaustion,
+ID overflow and sequence overflow return explicit failure; pre-reservation
+exhaustion stops the producer rather than silently omit unsequenced work.
+Counters never wrap. Another listener's changes cannot reinterpret a cut.
+
+None of this establishes listener eligibility, positive decoded/processed
+receipt, ETW transport finalization, sealed-source enumeration or absence.
+Neither S_OK from a native write nor a settled cut is consumer proof.
+The receipt/finalized-absence contracts below remain binding on future
+capture/adapters. Foundation tests use synthetic native calls, not actual
+framework lifecycle/render/resource hooks; P17 overhead remains unmeasured.
+
 ## Reusable value and quality schemas
 
 `DataQuality` = `Kind:Measured|Estimated|Unavailable`,
@@ -269,7 +454,8 @@ definition determines keyword/level; domain counters do not interleave event
 definitions or target instances. Runtime source PID equals target PID;
 collector source PID remains independent.
 
-Native implementation is later, but must implement these semantics:
+P04 implements the producer reservation/settlement foundation below. Listener
+continuity, capture vectors and transport reconciliation remain later work:
 
 * Each domain starts at one in a fresh producer epoch. While at least one
   listener enables that entire definition/target domain, reserve/increment

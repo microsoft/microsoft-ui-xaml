@@ -9,9 +9,13 @@
   <Import Project="$(XamlSourcePath)\test\common.props" />
   <Import Project="$(NativeExternalTestPath)\common.props" />
   <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>tdh.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
     <ClCompile>
       <AdditionalIncludeDirectories>
         %(AdditionalIncludeDirectories);
+        $(XcpPath)\components\base\inc;
         $(MSBuildThisFileDirectory)\activation\abi_tests;
         $(MSBuildThisFileDirectory)\activation\tests;
         $(MSBuildThisFileDirectory)\settings;
@@ -54,6 +58,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="profiler\ProfilerInstrumentationTests.h" />
     <ClInclude Include="activation\abi_tests\ActivationABITests.h" />
     <ClInclude Include="settings\XamlOptionalChangesTests.h" />
     <ClInclude Include="activation\tests\ActivationIntegrationTests.h" />
@@ -268,4 +273,13 @@
   </ItemGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
   <Import Project="$([MSBuild]::GetPathOfFileAbove(CustomTypesCompile.targets))" />
+  <Target Name="CompileProfilerFoundationWithoutPch" AfterTargets="PreCompClCompileOptions">
+    <ItemGroup>
+      <ClCompile Include="profiler\ProfilerInstrumentationTests.cpp;$(XcpPath)\dxaml\lib\WinUIProfilerRuntimeBridge.cpp">
+        <PrecompiledHeader>NotUsing</PrecompiledHeader>
+        <PrecompiledHeaderFile />
+        <PrecompiledHeaderOutputFile />
+      </ClCompile>
+    </ItemGroup>
+  </Target>
 </Project>
