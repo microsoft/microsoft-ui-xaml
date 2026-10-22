@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <EmbeddedResource Include="Storage\Migrations\001_Initial.sql" />
     <ProjectReference Include="..\WinUIProfiler.Contracts\WinUIProfiler.Contracts.csproj" />
   </ItemGroup>
 </Project>

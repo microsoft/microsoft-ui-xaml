@@ -1,11 +1,12 @@
-# WinUI Profiler foundation (P01)
+# WinUI Profiler foundation (P01–P02)
 
 ## Scope and build
 
 This is a new, independent profiler. P01 contains portable `net10.0` contracts,
-bounded event/protocol codecs, validation, and deterministic synthetic tests only.
+bounded event/protocol codecs, validation, and deterministic synthetic tests.
+P02 adds transactional SQLite persistence and bounded, read-only typed queries.
 There is no UI, dispatcher, target injection, transport, collector, processing
-worker, database, CLI implementation or production runtime instrumentation here.
+worker, CLI implementation or production runtime instrumentation here.
 No other profiler is a source, project, package, binary or design dependency.
 
 From `tools\WinUIProfiler`:
@@ -35,8 +36,11 @@ Public metadata:
 [adapter](https://www.nuget.org/packages/xunit.runner.visualstudio/3.1.4).
 The adapter supports .NET 8+ and xUnit v2. Package restore, compilation and
 execution check compatibility with .NET 10. Committed lock files pin
-transitives and content hashes. Contracts and engine have **no NuGet package
-dependencies**; JSON and binary primitives come from the platform BCL.
+transitives and content hashes. Contracts have **no NuGet package dependencies**; JSON and binary primitives
+come from the platform BCL. The engine directly pins `Microsoft.Data.Sqlite`
+**10.0.13**; its engine/test lock files retain the SQLitePCLRaw **2.1.13**
+native bundle and transitives. See [storage](storage.md) for the P02 lifecycle,
+schema, transaction, temporal query, failure and continuation contracts.
 
 ## Planned product boundaries, not implementations
 
@@ -55,9 +59,11 @@ dependencies**; JSON and binary primitives come from the platform BCL.
 * A dedicated bounded processing thread will exclusively own object history,
   frame changes, XAML/composition topology, many-to-many correlations and
   resource/backing projections. UI code will not mutate these states.
-* A single SQLite writer will use WAL, temporal rows and atomic committed
+* A single SQLite writer uses WAL, temporal rows and atomic committed
   watermarks. Queries will see only committed state, never half a baseline.
-  P02 implements storage; there is no fake store or successful query service.
+  P02 persists explicit changes supplied by future processors; it does not
+  manufacture projections from source timestamps or report successful
+  unsupported operations.
 * A native C++/WinRT TAP will be injected through `IXamlDiagnostics`. ETW is
   the observation channel; an authenticated named pipe carries bounded target
   commands into a new private runtime bridge. P08 owns transport/injection.
@@ -276,8 +282,10 @@ visibly rather than truncate required evidence. Composition results expose
 typed observed properties alongside scoped topology.
 
 Object queries validate the full process instance and domain. Retention depth
-is 1–256. Query validation cannot verify stored snapshot membership before P02:
-the future store must perform that check under the same committed view.
+is 1–256. P02 validates persisted snapshot metadata and snapshot-fact membership.
+Comparison compatibility and snapshot-scoped graph traversal remain later
+deliverables and explicitly throw `NotSupportedException`, rather than
+returning invented deltas or empty proven paths.
 Cancellation throws `OperationCanceledException`; malformed input throws
 argument/JSON errors; unsupported schema/type versions throw
 `NotSupportedException`. No broad catch or success fallback is used.
