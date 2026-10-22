@@ -3801,6 +3801,39 @@ void TableView::OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequest
     }
 }
 
+bool TableView::ApplyColumnResizeDrag(TableView* owner, const winrt::TableViewColumn& col, ColumnResizeDragState& state, double totalDelta)
+{
+    double lo = NonNegativeFiniteOrZero(col.MinWidth());
+    double hi = MaxWidthForColumn(col, lo);
+
+    // The upper bound never falls below the width the drag started from, so a table that
+    // already overflows can still shrink.
+    lo = std::max(lo, state.bounds.Min);
+    hi = std::max(lo, std::min(hi, std::max(state.startValue, state.bounds.Max)));
+
+    const double next = std::clamp(state.startValue + totalDelta, lo, hi);
+
+    // Pinned at a bound the pointer keeps moving but the width does not. Writing anyway would
+    // re-run measure, and on a Star column it would also latch the width to pixels.
+    auto const current = col.Width();
+    const double currentValue =
+        current.GridUnitType == winrt::GridUnitType::Pixel ? current.Value : col.ActualWidth();
+    if (std::abs(currentValue - next) < 0.0001)
+    {
+        return false;
+    }
+
+    auto const columnImpl = winrt::get_self<TableViewColumn>(col);
+    if (!state.didWrite && owner)
+    {
+        owner->FreezeColumnsBeforeResize(col, state.frozen);
+    }
+    auto const resizeScope = columnImpl->BeginUserResizeScope();
+    col.Width(winrt::GridLengthHelper::FromPixels(next));
+    state.didWrite = true;
+    return true;
+}
+
 winrt::ResizeGripper TableView::CreateResizeGripper(
     const winrt::FrameworkElement& headerCell,
     const winrt::TableViewColumn& column,
@@ -3888,37 +3921,7 @@ winrt::ResizeGripper TableView::CreateResizeGripper(
         }
 
         state->didDelta = true;
-        double lo = NonNegativeFiniteOrZero(col.MinWidth());
-        double hi = MaxWidthForColumn(col, lo);
-
-        // The upper bound never falls below the width the drag started from, so a table that
-        // already overflows can still shrink.
-        lo = std::max(lo, state->bounds.Min);
-        hi = std::max(lo, std::min(hi, std::max(state->startValue, state->bounds.Max)));
-
-        const double next = std::clamp(state->startValue + vargs.TotalDelta(), lo, hi);
-
-        // Pinned at a bound the pointer keeps moving but the width does not. Writing anyway would
-        // re-run measure, and on a Star column it would also latch the width to pixels.
-        auto const current = col.Width();
-        const double currentValue =
-            current.GridUnitType == winrt::GridUnitType::Pixel ? current.Value : col.ActualWidth();
-        if (std::abs(currentValue - next) < 0.0001)
-        {
-            return;
-        }
-
-        auto const columnImpl = winrt::get_self<TableViewColumn>(col);
-        if (!state->didWrite)
-        {
-            if (auto const strongThis = weakThis.get())
-            {
-                strongThis->FreezeColumnsBeforeResize(col, state->frozen);
-            }
-        }
-        auto const resizeScope = columnImpl->BeginUserResizeScope();
-        col.Width(winrt::GridLengthHelper::FromPixels(next));
-        state->didWrite = true;
+        ApplyColumnResizeDrag(weakThis.get().get(), col, *state, vargs.TotalDelta());
     });
 
     // Canceled means the gesture was torn down rather than released (Escape, palm rejection, the
@@ -4053,6 +4056,12 @@ bool TableView::TryResizeColumnFromAutomation(const winrt::TableViewColumn& colu
     // DragStarted anchors the gesture at ActualWidth, so the offset is taken from the same value.
     const double totalDelta = width - column.ActualWidth();
 
+    // Rounding noise from the pixel conversion; writing it would pin an Auto or Star column.
+    if (std::abs(totalDelta) < 1e-3)
+    {
+        return true;
+    }
+
     gripper.BeginDrag();
     // DragStarted ends the gesture at once while another column's drag is in flight.
     if (!gripper.IsDragging())
@@ -4060,14 +4069,19 @@ bool TableView::TryResizeColumnFromAutomation(const winrt::TableViewColumn& colu
         return false;
     }
 
+    bool applied = true;
     try
     {
         // TryDrag drops a step under its jitter deadband, but an absolute UIA width is no jitter:
-        // overshoot once so the step back to the exact width clears it.
-        if (!gripper.TryDrag(totalDelta) && totalDelta != 0.0)
+        // apply it as DragDelta would, announcing only if it wrote.
+        if (!gripper.TryDrag(totalDelta))
         {
-            gripper.TryDrag(totalDelta + std::copysign(1.0, totalDelta));
-            gripper.TryDrag(totalDelta);
+            auto const state = m_activeColumnResizeDrag;
+            applied = state && state->gripper.get() == gripper;
+            if (applied)
+            {
+                state->didDelta = ApplyColumnResizeDrag(this, column, *state, totalDelta);
+            }
         }
     }
     catch (...)
@@ -4076,8 +4090,8 @@ bool TableView::TryResizeColumnFromAutomation(const winrt::TableViewColumn& colu
         throw;
     }
 
-    gripper.EndDrag(false /* canceled */);
-    return true;
+    gripper.EndDrag(!applied /* canceled */);
+    return applied;
 }
 
 winrt::ResizeGripper TableView::FindResizeGripperInCell(const winrt::FrameworkElement& headerCell) const

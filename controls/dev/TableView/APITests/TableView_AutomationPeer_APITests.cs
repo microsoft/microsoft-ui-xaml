@@ -1979,6 +1979,71 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a Transform.Resize below the drag jitter threshold writes Width at most once, lands exactly next to a bound, and leaves an Auto column Auto when it asks for its current width.")]
+        [TestProperty("data:Case", "{NearMin, NearMax, AtMin, AutoNoop}")]
+        public void VerifyTransformResizeSmallWidthChangeWritesOnce()
+        {
+            var testCase = ((string)TestContext.DataRow["Case"]).Trim();
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", testCase == "AutoNoop" ? GridLength.Auto : new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                var first = tableView.Columns[0];
+                switch (testCase)
+                {
+                    case "NearMin": first.MinWidth = 100.0; first.Width = new GridLength(100.4, GridUnitType.Pixel); break;
+                    case "NearMax": first.MaxWidth = 200.0; first.Width = new GridLength(199.6, GridUnitType.Pixel); break;
+                    case "AtMin": first.MinWidth = 100.0; first.Width = new GridLength(100.0, GridUnitType.Pixel); break;
+                }
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+
+                double target = column.ActualWidth + 0.0001;
+                double expected = column.ActualWidth;
+                switch (testCase)
+                {
+                    case "NearMin": target = expected = 100.1; break;
+                    case "NearMax": target = expected = 199.9; break;
+                    case "AtMin": target = 99.7; expected = 100.0; break;
+                }
+                int expectedWrites = testCase == "NearMin" || testCase == "NearMax" ? 1 : 0;
+
+                int widthWrites = 0;
+                var widths = new List<string>();
+                column.RegisterPropertyChangedCallback(TableViewColumn.WidthProperty, (s, dp) =>
+                {
+                    widthWrites++;
+                    widths.Add(column.Width.ToString());
+                });
+
+                transform.Resize(target * tableView.XamlRoot.RasterizationScale, 0.0);
+                Log.Comment($"{testCase}: Width writes [{string.Join(", ", widths)}], final {column.Width}.");
+
+                Verify.AreEqual(expectedWrites, widthWrites, $"{testCase}: Width must be written {expectedWrites} time(s).");
+                if (testCase == "AutoNoop")
+                {
+                    Verify.AreEqual(GridUnitType.Auto, column.Width.GridUnitType, "A request for the current width must leave an Auto column Auto.");
+                }
+                else
+                {
+                    Verify.IsTrue(Math.Abs(column.Width.Value - expected) < 0.01, $"{testCase}: expected {expected}, got {column.Width.Value}.");
+                }
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies Transform.Move and Rotate fail, and Resize rejects a non-finite or negative width.")]
         public void VerifyTransformMoveRotateAndInvalidResizeFail()
         {
