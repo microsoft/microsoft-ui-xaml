@@ -58,6 +58,7 @@ public sealed class SessionStore : IDisposable
                 ?? throw new InvalidOperationException("Initial schema resource is missing.");
             using var reader = new StreamReader(stream);
             Execute(db, reader.ReadToEnd(), transaction);
+            UpgradeIngestionSchema(db, transaction);
             Execute(db, "INSERT INTO Sessions VALUES($id,$scope,$key,$hash)", transaction,
                 ("$id", scope.SessionId.ToString("N")), ("$scope", Encode(scope)), ("$key", RandomNumberGenerator.GetBytes(32)), ("$hash", SchemaHash(db, transaction)));
             Execute(db, "INSERT INTO ProcessInstances VALUES($instance,$session,$pid,$creation)", transaction,
@@ -79,6 +80,13 @@ public sealed class SessionStore : IDisposable
         try
         {
             db = Connect(path, false); ValidateDatabase(db); ConfigureWriter(db, pages);
+            if (SchemaVersion(db) == 1)
+            {
+                using var transaction = db.BeginTransaction();
+                UpgradeIngestionSchema(db, transaction);
+                Execute(db, "UPDATE Sessions SET SchemaHash=$hash", transaction, ("$hash", SchemaHash(db, transaction)));
+                transaction.Commit();
+            }
             return new(path, db, lease);
         }
         catch { db?.Dispose(); lease.Dispose(); throw; }
@@ -109,7 +117,35 @@ public sealed class SessionStore : IDisposable
     }
     public bool UnfinishedRecording
     {
-        get { using var db = OpenReader(); return ReadCheckpoint(db, null).Info.Status == SessionStatus.Recording; }
+        get { using var db = OpenReader(); return ReadCheckpoint(db, null).Info.Status == SessionStatus.Recording && ReadTerminal(db) is null && ReadFailure() is null; }
+    }
+    public IReadOnlyList<HealthCount> ReadIngestionDiagnostics()
+    {
+        using var db = OpenReader();
+        if (SchemaVersion(db) < 2) return [];
+        using var command = Command(db, "SELECT Issue,Count,PayloadVersion,SampleJson,length(CAST(SampleJson AS BLOB)) FROM IngestionDiagnostics ORDER BY Issue LIMIT 14");
+        using var rows = command.ExecuteReader();
+        var result = new List<HealthCount>();
+        while (rows.Read())
+        {
+            if (rows.GetInt32(2) != 1 || rows.GetInt64(4) > 16384) throw new InvalidDataException("Invalid diagnostic record.");
+            result.Add(new((IngestionIssue)rows.GetInt32(0), rows.GetInt64(1), Json<IngestionDiagnostic>(rows.GetString(3))));
+        }
+        return new HealthSnapshot(result).Issues;
+    }
+    public IReadOnlyList<DiagnosticSample> ReadDiagnosticSamples()
+    {
+        using var db = OpenReader();
+        if (SchemaVersion(db) < 2) return [];
+        using var command = Command(db, "SELECT SampleKey,Count,PayloadVersion,SampleJson,length(CAST(SampleJson AS BLOB)) FROM IngestionDiagnosticSamples ORDER BY SampleKey LIMIT 129");
+        using var rows = command.ExecuteReader();
+        var result = new List<DiagnosticSample>();
+        while (rows.Read())
+        {
+            if (rows.GetInt32(2) != 1 || rows.GetInt64(4) > 16384) throw new InvalidDataException("Invalid diagnostic sample.");
+            result.Add(new(rows.GetString(0), rows.GetInt64(1), Json<IngestionDiagnostic>(rows.GetString(3))));
+        }
+        return new HealthSnapshot([], result).Samples;
     }
     internal SqliteConnection OpenReader()
     {
@@ -159,8 +195,8 @@ public sealed class SessionStore : IDisposable
             using var transaction = db.BeginTransaction(deferred: true);
             using var version = Command(db, "PRAGMA user_version", transaction);
             var schemaVersion = Convert.ToInt32(version.ExecuteScalar());
-            if (schemaVersion > 1) throw new NotSupportedException($"Future session schema {schemaVersion}.");
-            if (schemaVersion != 1) throw new InvalidDataException($"Unsupported session schema {schemaVersion}.");
+            if (schemaVersion > 2) throw new NotSupportedException($"Future session schema {schemaVersion}.");
+            if (schemaVersion is not (1 or 2)) throw new InvalidDataException($"Unsupported session schema {schemaVersion}.");
             using var app = Command(db, "PRAGMA application_id", transaction);
             if (Convert.ToInt32(app.ExecuteScalar()) != ApplicationId) throw new InvalidDataException("Not a WinUI profiler session.");
             using var integrity = Command(db, "PRAGMA quick_check", transaction);
@@ -171,6 +207,8 @@ public sealed class SessionStore : IDisposable
             using var violations = foreignKeys.ExecuteReader();
             if (violations.Read()) throw new InvalidDataException("Session foreign-key state is corrupt.");
             var checkpoint = ReadCheckpoint(db, null, transaction);
+            if (schemaVersion >= 2 && ReadTerminal(db, transaction) is { } terminal && terminal.Watermark != checkpoint.Watermark)
+                throw new InvalidDataException("Terminal health does not match the durable source boundary.");
             using var identity = Command(db, """
                 SELECT s.SessionId,s.ScopeJson,p.InstanceId,p.ProcessId,p.CreationFileTime
                 FROM Sessions s JOIN ProcessInstances p ON p.SessionId=s.SessionId
@@ -184,6 +222,12 @@ public sealed class SessionStore : IDisposable
                     row.Read())
                     throw new InvalidDataException("Session/process metadata is inconsistent.");
                 _ = QueryResultValidation.Freeze(checkpoint.Info, new(scope, checkpoint.Watermark, checkpoint.Quality));
+                if (schemaVersion >= 2 && ReadTerminal(db, transaction) is { } finalTerminal)
+                {
+                    _ = QueryResultValidation.Freeze(finalTerminal.Info, new(scope, finalTerminal.Watermark, finalTerminal.Quality));
+                    if (finalTerminal.Info.Mode != checkpoint.Info.Mode || finalTerminal.Info.QpcFrequency != checkpoint.Info.QpcFrequency)
+                        throw new InvalidDataException("Terminal metadata cannot change the session clock or mode.");
+                }
             }
             using var boundary = Command(db, """
                 SELECT count(*),coalesce(max(Ordinal),0),coalesce(max(TimestampQpc),0) FROM SourceEvents
@@ -206,6 +250,30 @@ public sealed class SessionStore : IDisposable
         var text = new StringBuilder();
         while (rows.Read()) text.Append(rows.GetString(0)).Append('|').Append(rows.GetString(1)).Append('|').Append(rows.IsDBNull(2) ? "" : rows.GetString(2)).Append('\n');
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text.ToString())));
+    }
+    internal static int SchemaVersion(SqliteConnection db, SqliteTransaction? transaction = null)
+    {
+        using var command = Command(db, "PRAGMA user_version", transaction);
+        return Convert.ToInt32(command.ExecuteScalar());
+    }
+    private static void UpgradeIngestionSchema(SqliteConnection db, SqliteTransaction transaction)
+    {
+        using var stream = typeof(SessionStore).Assembly.GetManifestResourceStream("WinUIProfiler.Engine.Storage.Migrations.002_Ingestion.sql")
+            ?? throw new InvalidOperationException("Ingestion migration resource is missing.");
+        using var reader = new StreamReader(stream);
+        Execute(db, reader.ReadToEnd(), transaction);
+    }
+    internal static Checkpoint? ReadTerminal(SqliteConnection db, SqliteTransaction? transaction = null)
+    {
+        if (SchemaVersion(db, transaction) < 2) return null;
+        using var command = Command(db, "SELECT CommittedOrdinal,TimestampQpc,PayloadVersion,InfoJson,QualityJson,length(CAST(InfoJson AS BLOB)),length(CAST(QualityJson AS BLOB)) FROM SessionTerminal", transaction);
+        using var row = command.ExecuteReader();
+        if (!row.Read()) return null;
+        if (row.GetInt32(2) != 1 || row.GetInt64(5) > ContractVersions.MaximumPayloadBytes || row.GetInt64(6) > ContractVersions.MaximumPayloadBytes)
+            throw new InvalidDataException("Invalid terminal health payload.");
+        var result = new Checkpoint(new(row.GetInt64(0), row.GetInt64(1)), Json<SessionInfo>(row.GetString(3)), Json<DataQuality>(row.GetString(4)));
+        if (result.Info.Status == SessionStatus.Recording || row.Read()) throw new InvalidDataException("Invalid terminal state.");
+        return result;
     }
     internal static Checkpoint ReadCheckpoint(SqliteConnection db, CommittedWatermark? at, SqliteTransaction? transaction = null)
     {
@@ -250,7 +318,8 @@ public sealed class SessionStore : IDisposable
     internal Exception? RecordFailure(CommittedWatermark watermark, Exception error)
     {
         var record = new FailureRecord(Scope.SessionId, watermark, (error as SqliteException)?.SqliteErrorCode,
-            "Persistence failed; recording is incomplete. " + error.GetType().Name);
+            (error is SqliteException { SqliteErrorCode: 13 } ? "Storage limit/disk full (SQLITE_FULL); recording is incomplete. " :
+                "Persistence failed; recording is incomplete. ") + error.GetType().Name);
         Volatile.Write(ref failureRecord, record);
         Failed = true;
         try
@@ -295,7 +364,8 @@ public sealed class SessionStore : IDisposable
 public sealed record ProjectionChange(long SourceOrdinal, IQueryValue Value, bool Deleted = false);
 public sealed record SessionBatch(IReadOnlyList<NormalizedEvent> Sources, IReadOnlyList<ProjectionChange> Changes,
     SessionInfo Info, DataQuality Quality, IReadOnlyList<SnapshotAttributeChange>? SnapshotAttributes = null,
-    IReadOnlyList<RetentionEdgeChange>? RetentionEdges = null);
+    IReadOnlyList<RetentionEdgeChange>? RetentionEdges = null, IReadOnlyList<SourceProvenanceChange>? Provenance = null);
+public sealed record SourceProvenanceChange(long SourceOrdinal, Ingestion.SourceProvenance Value);
 public sealed record SnapshotAttributeChange(long SourceOrdinal, Guid SnapshotId, SnapshotComparisonKey Key, TypedValue Value);
 public sealed record RetentionEdgeChange(long SourceOrdinal, Guid SnapshotId, OwnershipEdge Edge);
 public sealed record SessionStoreOptions(int MaximumDatabasePages = 1_073_741_823);

@@ -1,15 +1,25 @@
-# WinUI Profiler foundation (P01–P02)
+# WinUI Profiler foundation (P01–P04)
 
 ## Scope and build
 
 This is a new, independent profiler. P01 contains portable `net10.0` contracts,
 bounded event/protocol codecs, validation, and deterministic synthetic tests.
 P02 adds transactional SQLite persistence and bounded, read-only typed queries.
-There is no UI, dispatcher, target injection, transport, collector, processing
-worker, CLI implementation or production runtime instrumentation here.
+P03 adds real live/offline ETW ingestion, typed native decoding, bounded
+dedicated processing/writer threads and durable diagnostic/stop control.
+P04 supplies the native typed writers/private protocol foundation.
+There is no UI, target injection/control transport, metric collector,
+CLI implementation or framework observation hooks here. Automatic runtime
+capabilities remain empty and capture is unsupported. See [ingestion](ingestion.md).
 No other profiler is a source, project, package, binary or design dependency.
 
-From `tools\WinUIProfiler`:
+The complete suite includes Windows ETW integration tests, which require
+permission to create/enable the uniquely owned sessions and an x64 Release
+native fixture harness. Build that prerequisite from the repository root
+using the command in [ingestion verification](ingestion.md#verification-and-intentionally-absent-work);
+permission or missing-harness failures are not silently skipped.
+
+Then, from `tools\WinUIProfiler`:
 
 ```powershell
 dotnet restore WinUIProfiler.sln --locked-mode
@@ -41,6 +51,8 @@ come from the platform BCL. The engine directly pins `Microsoft.Data.Sqlite`
 **10.0.13**; its engine/test lock files retain the SQLitePCLRaw **2.1.13**
 native bundle and transitives. See [storage](storage.md) for the P02 lifecycle,
 schema, transaction, temporal query, failure and continuation contracts.
+P03 pins `Microsoft.Diagnostics.Tracing.TraceEvent` **3.2.8** in this same
+independent manifest and both engine/test lock files.
 
 ## Planned product boundaries, not implementations
 

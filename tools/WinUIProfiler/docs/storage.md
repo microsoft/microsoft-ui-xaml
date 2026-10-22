@@ -1,5 +1,22 @@
 # Durable storage and read-only queries (P02)
 
+P03's additive schema **2** (`002_Ingestion.sql`) adds source provenance,
+bounded diagnostic samples/aggregates and a separate terminal control record.
+Explicit creation runs both migrations. Read-only opening accepts schema 1
+without migrating it; explicit writable opening validates schema 1 before
+transactionally adding schema 2 and updating the schema hash. No prior source
+or projection row is rewritten.
+
+`SessionWriter.CommitHealth` persists health even when no source event exists.
+Its terminal record references the last actual checkpoint rather than inserting
+a fake event or changing the historical checkpoint. `GetSession` overlays that
+terminal metadata (and, on persistence failure, the preallocated failure
+sidecar); watermark-bound projection reads retain their original source
+checkpoint. `ReadIngestionDiagnostics` returns at most 13 aggregate categories;
+`ReadDiagnosticSamples` returns at most 128 schema representatives, each with
+bounded metadata and 256 raw payload bytes. See [ingestion](ingestion.md) for
+the processing ownership, bounds, shutdown protocol and exact limitations.
+
 ## Lifecycle and ownership
 
 `SessionStore.Create(path, scope, info, quality, options)` creates a **new**
@@ -20,7 +37,7 @@ query connections do not take the writer lease. They use normal SQLite
 snapshot isolation, not shared-cache/read-uncommitted connections.
 
 The embedded `Storage\Migrations\001_Initial.sql` runs transactionally only
-during explicit creation. `application_id`, `user_version=1`, a canonical
+during explicit creation. `application_id`, the versioned schema, a canonical
 table/index schema hash, SQLite integrity/foreign-key checks, process metadata,
 checkpoint payload version/status and durable source count/maxima distinguish
 supported, incompatible, corrupt and future databases. Schema 0 is not a

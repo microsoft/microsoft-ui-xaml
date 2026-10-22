@@ -23,7 +23,7 @@ public sealed partial class SessionWriter
             if (store.Failed) throw new InvalidOperationException("A failed recording cannot resume.");
             var db = store.WriterConnection!;
             var previous = ReadCheckpoint(db, null);
-            if (previous.Info.Status != SessionStatus.Recording) throw new InvalidOperationException("The recording is already terminal.");
+            if (previous.Info.Status != SessionStatus.Recording || ReadTerminal(db) is not null) throw new InvalidOperationException("The recording is already terminal.");
             ArgumentNullException.ThrowIfNull(batch.Sources); ArgumentNullException.ThrowIfNull(batch.Changes);
             ArgumentNullException.ThrowIfNull(batch.Quality);
             if (batch.Sources.Count is < 1 or > MaximumBatchRecords || batch.Changes.Count > MaximumBatchRecords)
@@ -47,6 +47,7 @@ public sealed partial class SessionWriter
             var context = new ResultContext(store.Scope, boundary, batch.Quality);
             var info = QueryResultValidation.Freeze(batch.Info, context);
             _ = EncodeBounded(info); _ = EncodeBounded(batch.Quality);
+            bytes += Encoding.UTF8.GetByteCount(EncodeBounded(info)) + Encoding.UTF8.GetByteCount(EncodeBounded(batch.Quality));
             if (info.Mode != previous.Info.Mode || info.QpcFrequency != previous.Info.QpcFrequency)
                 throw new ArgumentException("Session mode and QPC frequency cannot change.");
             var changes = batch.Changes.Select(change =>
@@ -62,6 +63,16 @@ public sealed partial class SessionWriter
             if (changes.Select(row => (row.Dataset, row.Key, row.Source)).Distinct().Count() != changes.Length)
                 throw new ArgumentException("A source may contain only one revision per projection key.");
             var facts = SnapshotFacts(batch, changes, sourceMap, db, previous.Watermark);
+            var provenance = batch.Provenance?.ToArray() ?? [];
+            if (provenance.Length > MaximumBatchRecords || provenance.Select(p => p.SourceOrdinal).Distinct().Count() != provenance.Length)
+                throw new ArgumentException("Provenance must be bounded and unique per source.");
+            foreach (var p in provenance)
+            {
+                p.Value.OriginalTarget.Validate(); Require.Nonnegative(p.Value.OriginalTimestampQpc);
+                if (!sourceMap.TryGetValue(p.SourceOrdinal, out var source) || p.Value.OriginalTarget.ProcessId != source.Envelope.Process.ProcessId)
+                    throw new ArgumentException("Provenance needs a source and its actual target PID.");
+                bytes += 64;
+            }
             bytes += facts.Sum(fact => (long)Encoding.UTF8.GetByteCount(fact.Payload));
             if (bytes > MaximumBatchBytes) throw new ArgumentException("Batch byte bound exceeded.");
             cancellationToken.ThrowIfCancellationRequested();
@@ -74,6 +85,11 @@ public sealed partial class SessionWriter
                     cancellationToken.ThrowIfCancellationRequested();
                     InsertSource(db, transaction, boundary, source);
                 }
+                foreach (var p in provenance)
+                    Execute(db, "INSERT INTO SourceProvenance VALUES($source,$pid,$creation,$instance,$qpc)", transaction,
+                        ("$source", p.SourceOrdinal), ("$pid", (long)p.Value.OriginalTarget.ProcessId),
+                        ("$creation", p.Value.OriginalTarget.CreationTimeFileTime), ("$instance", p.Value.OriginalTarget.InstanceId.ToString("N")),
+                        ("$qpc", p.Value.OriginalTimestampQpc));
                 foreach (var row in changes)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -98,7 +114,7 @@ public sealed partial class SessionWriter
         }
     }
 
-    private static IQueryValue Freeze(IQueryValue value, ResultContext context) => value switch
+    internal static IQueryValue Freeze(IQueryValue value, ResultContext context) => value switch
     {
         MetricSample row => QueryResultValidation.Freeze(row, context),
         StartupEntry row => QueryResultValidation.Freeze(row, context),

@@ -19,6 +19,9 @@ using namespace WinUIProfiler;
 
 namespace
 {
+#ifdef WINUI_PROFILER_STANDALONE
+    const wchar_t* fixtureDirectory = nullptr;
+#endif
     void Check(bool condition, const char* name)
     {
         if (!condition)
@@ -114,6 +117,10 @@ namespace
             wchar_t relative[256];
             swprintf_s(relative, L"BuildOutput\\ProfilerHarness\\%s.etl", m_name);
             Check(GetFullPathNameW(relative, MAX_PATH, m_properties.File, nullptr) != 0, "local ETL path");
+#ifdef WINUI_PROFILER_STANDALONE
+            if (fixtureDirectory)
+                Check(swprintf_s(m_properties.File, L"%ls\\%ls.etl", fixtureDirectory, m_name) > 0, "bounded fixture ETL path");
+#endif
             const ULONG result = StartTraceW(&m_handle, m_name, &m_properties.Properties);
             if (result) std::printf("StartTrace(%ls) failed: %lu\n", m_name, result);
             Check(result == ERROR_SUCCESS, "start isolated ETW session");
@@ -121,7 +128,10 @@ namespace
         ~Session()
         {
             if (m_handle) ControlTraceW(m_handle, m_name, &m_properties.Properties, EVENT_TRACE_CONTROL_STOP);
-            DeleteFileW(m_properties.File);
+#ifdef WINUI_PROFILER_STANDALONE
+            if (!fixtureDirectory)
+#endif
+                DeleteFileW(m_properties.File);
         }
         void Enable(uint64_t keywords, UCHAR level = 4, uint64_t matchAll = 0)
         {
@@ -147,7 +157,11 @@ namespace
             const ULONG result = ProcessTrace(&reader, 1, nullptr, nullptr);
             CloseTrace(reader);
             Check(result == ERROR_SUCCESS, "enumerate actual ETL");
-            Check(DeleteFileW(m_properties.File) != FALSE, "remove owned ETL");
+#ifdef WINUI_PROFILER_STANDALONE
+            if (fixtureDirectory) std::printf("FIXTURE: %ls\n", m_properties.File);
+            else
+#endif
+                Check(DeleteFileW(m_properties.File) != FALSE, "remove owned ETL");
         }
     private:
         struct SessionProperties { EVENT_TRACE_PROPERTIES Properties{}; wchar_t Name[128]{}; wchar_t File[MAX_PATH]{}; } m_properties;
@@ -939,10 +953,39 @@ namespace
 }
 
 #ifdef WINUI_PROFILER_STANDALONE
-int main()
+int main(int argc, char** argv)
 {
     try
     {
+        if ((argc == 3 || (argc == 4 && strcmp(argv[3], "--await-input") == 0)) &&
+            (strcmp(argv[1], "--emit-fixtures") == 0 || strcmp(argv[1], "--emit-budget") == 0))
+        {
+            wchar_t directory[MAX_PATH]{};
+            Check(MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, argv[2], -1, directory, MAX_PATH) > 0, "fixture directory UTF-8");
+            fixtureDirectory = directory;
+            if (strcmp(argv[1], "--emit-budget") == 0)
+            {
+                Check(argc == 3, "budget fixtures do not wait for input");
+                WireBudgetTest();
+                fixtureDirectory = nullptr;
+                return 0;
+            }
+            if (argc == 4)
+            {
+                std::puts("READY: scalar"); std::fflush(stdout);
+                Check(std::getchar() != EOF, "fixture scalar permission");
+            }
+            SchemaTest();
+            if (argc == 4)
+            {
+                std::puts("READY: arrays"); std::fflush(stdout);
+                Check(std::getchar() != EOF, "fixture arrays permission");
+            }
+            ArraySchemaTest();
+            fixtureDirectory = nullptr;
+            return 0;
+        }
+        Check(argc == 1, "unknown harness arguments");
         ProtocolTest();
         SequenceTest();
         QualityCrossProductTest();

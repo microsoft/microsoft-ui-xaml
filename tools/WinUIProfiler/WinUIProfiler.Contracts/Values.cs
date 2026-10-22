@@ -38,7 +38,7 @@ public static class ValueRules
 
 public enum HostArchitecture { X64, Arm64 }
 public enum SessionMode { LiveLaunch, LiveAttach, Offline }
-public enum SessionStatus { Recording, Completed, StoppedAtLimit, Failed }
+public enum SessionStatus { Recording, Completed, StoppedAtLimit, Failed, Stopped }
 public enum Capability { ObjectLifetimes, XamlTopology, CompositionTopology, ResourceBacking, TracedAllocator, LightweightSnapshot, OwnershipGraph, NativeHeap, ManagedHeap, Cpu, Gpu, ProcessMemory }
 public sealed record CapabilityInfo(Capability Capability, int Version, DataQuality Quality);
 public sealed record ProducerInfo(Guid ProviderId, Guid Epoch, int SchemaVersion, string Build, HostArchitecture Architecture, IReadOnlyList<CapabilityInfo> Capabilities);

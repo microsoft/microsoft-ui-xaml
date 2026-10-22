@@ -27,7 +27,7 @@ public sealed class ProfilerQueryService : IProfilerQueryService
     }
     private QueryResult<SessionInfo> ReadSession(SqliteConnection db)
     {
-        var checkpoint = ReadCheckpoint(db, null);
+        var checkpoint = ReadTerminal(db) ?? ReadCheckpoint(db, null);
         var info = checkpoint.Info;
         var quality = checkpoint.Quality;
         var failure = store.ReadFailure();

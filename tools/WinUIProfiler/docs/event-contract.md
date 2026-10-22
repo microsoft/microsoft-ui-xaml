@@ -69,6 +69,11 @@ does not authorize 1 MiB ETW writes.
 
 ## P04 native runtime wire mapping
 
+P03 consumes these exact layouts; its additional, explicitly supported platform
+ProcessStart v4 mapping, canonical identity binding, clock conversion and
+unsupported-schema diagnostic policy are documented in [ingestion](ingestion.md).
+No native collector schema is defined by the runtime layouts below.
+
 The fre/chk foundation is `WinUIProfilerProtocol.h`,
 `WinUIProfilerTracing.h` and `WinUIProfilerRuntimeBridge.cpp`. It registers
 the fixed runtime provider above using SDK TraceLogging, **not** a manifest

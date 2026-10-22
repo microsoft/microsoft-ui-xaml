@@ -48,6 +48,7 @@ public static class EventCatalog
 {
     public static readonly Guid RuntimeProviderId = Guid.Parse("43a73524-bc37-4f6e-9ba8-84b5346f61c2");
     public static readonly Guid CollectorProviderId = Guid.Parse("b58fa3ac-f7e8-4a24-88cd-478ab589de21");
+    public static readonly Guid KernelProcessProviderId = Guid.Parse("22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716");
     public const string RuntimeProviderName = "WinUIProfiler-Runtime";
     public const string CollectorProviderName = "WinUIProfiler-Collector";
     public const byte Version = 1;
@@ -73,9 +74,14 @@ public static class EventCatalog
         Define<MetricPayload>(CollectorProviderId, 2, "Metric", EventKeyword.Metrics),
         Define<LossPayload>(CollectorProviderId, 3, "Loss", EventKeyword.Capabilities, 3)
     });
+    public static IReadOnlyList<EventDefinition> Platform { get; } = Array.AsReadOnly(new[]
+    {
+        new EventDefinition(new(KernelProcessProviderId, "ProcessStart/Start", 1, 4, 0x8000000000000010), 4,
+            (EventKeyword)0x8000000000000010, typeof(ProcessPayload))
+    });
     private static EventDefinition Define<T>(Guid provider, ushort id, string name, EventKeyword keyword, byte level = 4) where T : IEventPayload =>
         new(new(provider, name, id, Version, (ulong)keyword), level, keyword, typeof(T));
     public static EventDefinition Get(Guid providerId, ushort eventId) =>
-        All.SingleOrDefault(d => d.Identity.ProviderId == providerId && d.Identity.EventId == eventId)
+        All.Concat(Platform).SingleOrDefault(d => d.Identity.ProviderId == providerId && d.Identity.EventId == eventId)
         ?? throw new NotSupportedException("Unknown producer/event identity.");
 }

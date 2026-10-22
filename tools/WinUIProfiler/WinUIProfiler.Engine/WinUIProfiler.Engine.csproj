@@ -2,7 +2,9 @@
   <ItemGroup>
     <InternalsVisibleTo Include="WinUIProfiler.Engine.Tests" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" />
     <EmbeddedResource Include="Storage\Migrations\001_Initial.sql" />
+    <EmbeddedResource Include="Storage\Migrations\002_Ingestion.sql" />
     <ProjectReference Include="..\WinUIProfiler.Contracts\WinUIProfiler.Contracts.csproj" />
   </ItemGroup>
 </Project>

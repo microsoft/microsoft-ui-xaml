@@ -53,7 +53,7 @@ public static class QueryResultValidation
     {
         Require.Enum(row.Mode); Require.Enum(row.Status); Require.Positive(row.QpcFrequency);
         if (row.ProcessCreationQpc is { } creation) Timestamp(creation, context);
-        if (row.Status is SessionStatus.Failed or SessionStatus.StoppedAtLimit) Require.Text(row.StopReason);
+        if (row.Status is SessionStatus.Failed or SessionStatus.StoppedAtLimit or SessionStatus.Stopped) Require.Text(row.StopReason);
         Require.NotNull(row.Producers);
         if (row.Producers.Count > 4096) throw new ArgumentException("Producer metadata exceeds its bound.");
         var producers = row.Producers.Select(producer =>
