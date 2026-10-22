@@ -16,6 +16,7 @@
     <StackPanel Spacing="8">
         <Button x:Name="DialogBeforeNavigation" Content="Before navigation"/>
         <muxcontrols:NavigationView x:Name="navigationView"
+                        AutomationProperties.AutomationId="DialogNavigationView"
                         PaneDisplayMode="LeftCompact"
                         IsBackButtonVisible="Collapsed"
                         Height="300">

@@ -92,7 +92,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                             new CheckBox(FindElement.ById("CancelDialogPaneClosing")).Check();
                         }
                         new Button(FindElement.ById("ResetDialogFocusCounts")).Invoke();
-                        var toggle = new Button(FindElement.ById("DialogPaneToggle"));
+                        var toggle = new Button(FindDialogNavigationElement("TogglePaneButton"));
                         FocusHelper.SetFocus(toggle);
                         KeyboardHelper.PressKey(Key.Space);
                         Wait.ForIdle();
@@ -134,14 +134,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     {
                         var paneOpen = new CheckBox(FindElement.ById("DialogPaneOpen"));
                         paneOpen.Uncheck();
-                        FocusHelper.SetFocus(new Button(FindElement.ById("DialogPaneToggle")));
+                        FocusHelper.SetFocus(new Button(FindDialogNavigationElement("TogglePaneButton")));
                         KeyboardHelper.PressKey(Key.Space);
                         Wait.ForIdle();
                         Verify.AreEqual(ToggleState.On, paneOpen.ToggleState);
                         if (reverse) { KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1); }
                         else { KeyboardHelper.PressKey(Key.Tab); }
                         Wait.ForIdle();
-                        Verify.IsTrue(FindElement.ById(reverse ? "DialogSettings" : "DialogHome").HasKeyboardFocus);
+                        Verify.IsTrue(FindDialogNavigationElement(reverse ? "SettingsItem" : "DialogHome").HasKeyboardFocus);
                         Verify.AreEqual(ToggleState.On, paneOpen.ToggleState);
                     }
                     finally
@@ -168,21 +168,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                         {
                             var paneOpen = new CheckBox(FindElement.ById("DialogPaneOpen"));
                             paneOpen.Uncheck();
-                            FocusHelper.SetFocus(new Button(FindElement.ById("DialogPaneToggle")));
+                            FocusHelper.SetFocus(new Button(FindDialogNavigationElement("TogglePaneButton")));
                             KeyboardHelper.PressKey(Key.Space);
                             Wait.ForIdle();
                             if (nested)
                             {
-                                FocusHelper.SetFocus(FindElement.ById("DialogParent"));
-                                KeyboardHelper.PressKey(Key.Right);
+                                FocusHelper.SetFocus(FindDialogNavigationElement("DialogParent"));
+                                KeyboardHelper.PressKey(Key.Enter);
                                 Wait.ForIdle();
+                                Verify.AreEqual(ToggleState.On, paneOpen.ToggleState, "Invoking a parent expands it without closing the pane.");
                             }
-                            var item = FindElement.ById(nested ? "DialogLeaf" : "DialogAction");
+                            var item = FindDialogNavigationElement(nested ? "DialogLeaf" : "DialogAction");
+                            Verify.IsNotNull(item, "The invoked leaf must be realized before setting focus.");
                             FocusHelper.SetFocus(item);
                             KeyboardHelper.PressKey(key);
                             Wait.ForIdle();
                             Verify.AreEqual(ToggleState.Off, paneOpen.ToggleState);
-                            Verify.IsTrue(FindElement.ById(nested ? "DialogPaneToggle" : "DialogAction").HasKeyboardFocus);
+                            Verify.IsTrue(FindDialogNavigationElement(nested ? "TogglePaneButton" : "DialogAction").HasKeyboardFocus);
                         }
                         finally
                         {
@@ -192,6 +194,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     }
                 }
             }
+        }
+
+        private static UIObject FindDialogNavigationElement(string automationId)
+        {
+            return FindElement.ById("DialogNavigationView").Descendants.Find(UICondition.CreateFromId(automationId));
         }
 
         [TestMethod]
