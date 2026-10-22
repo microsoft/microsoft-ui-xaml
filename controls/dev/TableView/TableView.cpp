@@ -3046,6 +3046,32 @@ void TableView::RebuildHeadersCore()
     // Any focus move during the rebuild other than XAML's rescue off the removed cell belongs to
     // the app or user, and the restore below must not pull focus back from it.
     bool headerFocusMovedAway = false;
+
+    // Focus inside a header's content would leave with it, and an app moving focus as that content
+    // is released could not be told from XAML's rescue. Park it on the header first; an app that
+    // sends that move out of the header band has moved focus itself.
+    if (focusedHeaderColumn)
+    {
+        if (auto const focused = winrt::FocusManager::GetFocusedElement(XamlRoot()).try_as<winrt::DependencyObject>())
+        {
+            winrt::DependencyObject headerCell = focused;
+            for (auto parent = winrt::VisualTreeHelper::GetParent(headerCell); parent && parent != host;
+                parent = winrt::VisualTreeHelper::GetParent(parent))
+            {
+                headerCell = parent;
+            }
+            if (headerCell != focused && winrt::VisualTreeHelper::GetParent(headerCell) == host)
+            {
+                if (auto const control = headerCell.try_as<winrt::Control>())
+                {
+                    control.Focus(winrt::FocusState::Programmatic);
+                    winrt::FocusState ignored{};
+                    headerFocusMovedAway = !GetFocusedHeaderColumn(host, ignored);
+                }
+            }
+        }
+    }
+
     // XAML rescues focus only while the focused element is being removed.
     bool removingFocused = false;
     winrt::DependencyObject focusedAtTeardown{ nullptr };
