@@ -228,6 +228,7 @@ public static class QueryResultValidation
             throw new ArgumentException("Snapshot attempt does not belong to this committed session/process.");
         Timestamp(row.Extent.StartedQpc, context);
         if (row.Extent.EndedQpc is { } end) Timestamp(end, context);
+        foreach (var boundary in row.Extent.Boundaries) Range(boundary.Interval, context);
         return row;
     }
 

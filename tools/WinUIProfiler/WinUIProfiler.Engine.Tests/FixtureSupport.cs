@@ -124,9 +124,14 @@ internal sealed class SyntheticEventBuilder
         b.Add(new FramePayload(attempt, null, FrameOutcome.AttemptCompleted, 0));
         var before = new Dictionary<(Guid Provider, ushort Event), ulong>(b.sequences);
         SequenceDomainRange[] Ranges(bool end) => EventCatalog.All.Where(d => d.Identity.ProviderId == EventCatalog.RuntimeProviderId)
-            .Select(d => new SequenceDomainRange(new(new(d.Identity.ProviderId, 42, CoreTests.Epoch), CoreTests.Process,
-                d.Identity.EventId, d.Identity.Version), before.GetValueOrDefault((d.Identity.ProviderId, d.Identity.EventId)),
-                end ? b.sequences.GetValueOrDefault((d.Identity.ProviderId, d.Identity.EventId)) : null, DataQuality.Complete)).ToArray();
+            .Select(d =>
+            {
+                var domain = new SequenceDomainKey(new(d.Identity.ProviderId, 42, CoreTests.Epoch), CoreTests.Process, d.Identity.EventId, d.Identity.Version);
+                var through = b.sequences.GetValueOrDefault((d.Identity.ProviderId, d.Identity.EventId));
+                var cut = end ? new ProducerSequenceCut(Guid.Parse($"a0000000-0000-0000-0000-{d.Identity.EventId:x12}"), domain, through, through) : null;
+                return new SequenceDomainRange(domain, before.GetValueOrDefault((d.Identity.ProviderId, d.Identity.EventId)),
+                    end ? through : null, DataQuality.Complete, cut);
+            }).ToArray();
         b.Add(new CaptureBoundaryPayload(capture, CaptureKind.Baseline, CapturePhase.Begin, rootId, 1, Ranges(false), null, DataQuality.Complete));
         b.Add(new CaptureChunkPayload(capture, 0, rootId, 1,
             keys.Select(key => new SnapshotObject(key, TypeFor(key).Name, null, new(ValueKind.Integer, ValueUnit.Bytes, 64, null, null, null, estimate), TypeFor(key).Classification)).ToArray(),

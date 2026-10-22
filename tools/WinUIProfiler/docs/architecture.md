@@ -97,9 +97,20 @@ when genuinely unavailable and are not the committed watermark or a
 cross-domain causal clock. Merge/query order uses QPC then ingest ordinal.
 Per-listener domain coverage and continuity IDs distinguish filtering from
 real missing observations; another listener changing its selection does not
-reset existing continuity. See the event contract for advancement, interval
-and capture-vector rules. `SequenceContinuity.Assess` is a stateless P01
-contract helper, not a collector or processing worker.
+reset existing continuity. Enable continuity or increasing QPC does not prove
+that lower reserved emissions or deliveries have finished. Producer cuts
+separate largest reserved sequence from the contiguous settled-emission
+prefix. Definitive assessment requires a complete observed sequence window,
+an adequate settled cut and a source finalized after that cut, with verified
+listener/continuity binding, enabled sequence bounds, sealed artifact identity,
+exhaustive byte enumeration and completed decode ordinals. Without these
+quantitative obligations assessment remains Unproven; ordinary live ETW,
+capture End, timeout or FlushTrace alone cannot supply closure. Arrivals
+4,7,5,6 are not loss; only a genuinely closed window still missing 5/6 proves
+two missing observations. See the event contract for the exact acquisition
+guarantee, counter, interval and capture-vector rules.
+`SequenceContinuity.Assess` is a stateless P01 contract helper, not a
+collector, artifact verifier or processing worker.
 
 Measurement (`Measured`, `Estimated`, `Unavailable`) and coverage
 (`Complete`, `Partial`, `Unavailable`) are independent. Non-measured or
@@ -198,7 +209,9 @@ consistency and per-process/root/dispatcher/heap boundaries. Scope intervals
 must fit the extent. Non-atomic bridge traversal, process snapshots, managed
 runtime snapshots and polling are not interchangeable atomic instants;
 atomic claims require evidence, and bridge/polling cannot claim
-process-wide atomicity. Boundary collections are frozen with the metadata.
+process-wide atomicity. Boundary collections are frozen with the metadata. Every scope interval is
+also checked against the committed query watermark, even when the overall
+extent is unfinished and artifact-free.
 Baseline capture chunks carry typed objects, topology,
 associations, visual properties, correlations, resource/backing state, allocator
 state and proven/uncertain ownership. Per-root/dispatcher boundaries are
@@ -299,7 +312,8 @@ visual changes, correlations, device/resource/backing, allocator, baseline
 chunks, boundaries, a real submitted-frame observation, independent attempt
 completion, explicitly causal XAML property/layout observations, authoritative
 UIElement versus logical-only DependencyObject evidence, capture sequence
-vectors, CPU/unavailable-GPU/private-working-set/private-commit samples,
+vectors with explicit settled producer cuts (not listener closure),
+CPU/unavailable-GPU/private-working-set/private-commit samples,
 typed GPU per-engine/overall samples and all four GPU memory distinctions,
 detach/release/destruction and process exit. One submitted frame deliberately
 does not claim completion of the ten-frame startup requirement.

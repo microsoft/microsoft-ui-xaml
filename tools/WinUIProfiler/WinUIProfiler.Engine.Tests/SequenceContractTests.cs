@@ -11,12 +11,21 @@ public sealed class SequenceContractTests
     private static SequenceDomainKey Domain(ushort eventId = 2) => new(new(EventCatalog.RuntimeProviderId, 42, CoreTests.Epoch), CoreTests.Process, eventId, 1);
     private static ListenerDomainInterval Interval(SequenceDomainKey? domain = null) => new(ListenerA, Continuity, domain ?? Domain(), new(0, 1000), DataQuality.Complete);
     private static SequenceCheckpoint Check(ulong sequence, Guid? continuity = null, ushort eventId = 2, Guid? listener = null) =>
-        new(listener ?? ListenerA, continuity ?? Continuity, Domain(eventId), sequence, (long)sequence * 10);
+        new(listener ?? ListenerA, continuity ?? Continuity, Domain(eventId), sequence, (long)sequence * 10, (long)sequence);
+    private static SequenceGapAssessment AssessClosed(SequenceCheckpoint previous, SequenceCheckpoint current, ListenerDomainInterval interval)
+    {
+        var cut = new ProducerSequenceCut(CoreTests.Session, interval.Domain, current.Sequence, current.Sequence);
+        var delivery = SequenceClosureTests.Closed with
+        {
+            ListenerId = interval.ListenerId, ContinuityId = interval.ContinuityId, FinalizedAfterCutId = cut.CutId
+        };
+        return SequenceContinuity.Assess(new(previous.Sequence, current.Sequence, [previous, current]), interval, cut, delivery);
+    }
 
     [Fact]
     public void R8_Selective_keywords_do_not_create_gaps_in_another_delivery_domain()
     {
-        var assessment = SequenceContinuity.Assess(Check(1), Check(2), Interval());
+        var assessment = AssessClosed(Check(1), Check(2), Interval());
         Assert.Equal(SequenceContinuityState.Contiguous, assessment.State);
         Assert.Equal(0UL, assessment.MissingObservations);
         Assert.Throws<ArgumentException>(() => SequenceContinuity.Assess(Check(1), Check(50, eventId: 9), Interval()));
@@ -27,7 +36,7 @@ public sealed class SequenceContractTests
     {
         var listenerB = new ListenerDomainInterval(ListenerB, CoreTests.Session, Domain(9), new(0, 1000), DataQuality.Complete);
         Assert.NotEqual(Interval().ListenerId, listenerB.ListenerId);
-        Assert.Equal(SequenceContinuityState.Contiguous, SequenceContinuity.Assess(Check(4), Check(5), Interval()).State);
+        Assert.Equal(SequenceContinuityState.Contiguous, AssessClosed(Check(4), Check(5), Interval()).State);
         Assert.Throws<ArgumentException>(() => SequenceContinuity.Assess(Check(4), Check(5, listener: ListenerB), Interval()));
     }
 
@@ -37,20 +46,20 @@ public sealed class SequenceContractTests
         var next = CoreTests.Session;
         var current = Check(20, next);
         var interval = Interval() with { ContinuityId = next };
-        var result = SequenceContinuity.Assess(Check(4), current, interval);
+        var result = AssessClosed(Check(4), current, interval);
         Assert.Equal(SequenceContinuityState.Unproven, result.State);
         Assert.Null(result.MissingObservations);
         Assert.NotNull(result.Reason);
-        Assert.Equal(SequenceContinuityState.Contiguous, SequenceContinuity.Assess(Check(4, eventId: 9), Check(5, eventId: 9), Interval(Domain(9))).State);
+        Assert.Equal(SequenceContinuityState.Contiguous, AssessClosed(Check(4, eventId: 9), Check(5, eventId: 9), Interval(Domain(9))).State);
     }
 
     [Fact]
     public void R8_Real_missing_observations_are_detected_within_continuously_enabled_domain()
     {
-        var result = SequenceContinuity.Assess(Check(4), Check(7), Interval());
+        var result = AssessClosed(Check(4), Check(7), Interval());
         Assert.Equal(SequenceContinuityState.GapDetected, result.State);
         Assert.Equal(2UL, result.MissingObservations);
-        var unknown = SequenceContinuity.Assess(Check(4), Check(7), Interval() with
+        var unknown = AssessClosed(Check(4), Check(7), Interval() with
         {
             Quality = new(MeasurementKind.Measured, CoverageState.Partial, "enable interval not observed")
         });
@@ -62,8 +71,8 @@ public sealed class SequenceContractTests
     {
         var ranges = new[]
         {
-            new SequenceDomainRange(Domain(2), 0, 3, DataQuality.Complete),
-            new SequenceDomainRange(Domain(5), 1, 4, DataQuality.Complete)
+            new SequenceDomainRange(Domain(2), 0, 3, DataQuality.Complete, new(CoreTests.Session, Domain(2), 3, 3)),
+            new SequenceDomainRange(Domain(5), 1, 4, DataQuality.Complete, new(CoreTests.Epoch, Domain(5), 4, 4))
         };
         var payload = new CaptureBoundaryPayload(CoreTests.Session, CaptureKind.Baseline, CapturePhase.End, CoreTests.Session, 1,
             ranges, 1, DataQuality.Complete);

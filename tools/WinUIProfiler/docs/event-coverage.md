@@ -22,7 +22,7 @@ Existing telemetry is not the required schema and is not a dependency.
 | 9. ETW plus authenticated named pipe, diagnostics-injected TAP/private bridge | Length-prefixed TAP protocol version/type/request ID/bounded typed body, capabilities/capture IDs/nonce | Future IXamlDiagnostics injection + private runtime bridge; framework diagnostics boundary above | Target controller later; no arbitrary remote commands, nonce alone is not auth |
 | 10. One bounded processing owner for histories/trees/correlations/resources | Chronological typed lifetime/type/property/membership/visual/resource/correlation/allocation/boundary observations; explicit epoch/root/dispatcher attempt causes versus temporal overlap; unique backing IDs | All producers below; future dedicated processing thread | GetObjectHistory/GetFrames/scoped trees/GetCorrelations/GetResourceUsage; composition properties survive query representation; no fake processor in P01 |
 | 11. SQLite WAL/single writer/temporal state/watermarks/typed cancellable paged API + CLI | CommittedWatermark, ResultContext, PageRequest/PageInfo, mandatory typed result validation and nested freezing, twelve operations, explicit CancellationToken | Future store writer after normalized ingestion; no runtime hook needed | P02 storage; deterministic committed pages reject invalid/foreign rows and caller mutation; no SQL/chat/MCP or fake success API |
-| 12. Honest quality/capability versions/loss/epochs/identity/history/resource stops | DataQuality axes, Missing TypedValue, optional domain-localized Loss, filtering-homogeneous SequenceDomainKey, listener-local continuity, capture vectors/chunk counts, SessionStatus/StopReason | Runtime/collector Loss + capabilities; future native per-definition/target counters; allocator baseline; queue/store limits | Selective/concurrent listeners do not cause false gaps; continuously enabled domain 4→7 proves two missing observations; unknown/changed delivery remains Unproven; preserve committed history and stop visibly |
+| 12. Honest quality/capability versions/loss/epochs/identity/history/resource stops | DataQuality axes, Missing TypedValue, domain-localized Loss, delivery-homogeneous sequences, settled producer cuts, listener eligibility spans, sealed-source enumeration/decode closure, capture vectors/chunks, SessionStatus/StopReason | Runtime/collector Loss + capabilities; future per-domain reservation/completion counters and coordinated source finalization; allocator baseline; queue/store limits | 4,7,5,6 arrivals remain provisional, not loss; only a genuinely closed settled window still missing 5/6 proves two missing observations; filtering/unknown closure remains Unproven; preserve committed history and stop visibly |
 | 13. Local artifacts and measured off-path cost | Relative local snapshot path/hash; provider/keyword tests before payload work | Every proposed producer; especially constructor/destructor, allocator, render loop, graph rundown | Artifact owner/capture UI later; fre x64/ARM64 provider-off and enabled-keyword overhead is unmeasured in P01 and remains an acceptance gate |
 
 ## Inspected initial runtime hook sites
@@ -76,11 +76,17 @@ until the object's final runtime type is available.
 * Resource kind and UIElement classification require authoritative creation-API,
   runtime-type or bridge evidence, not names. Missing evidence remains unknown.
   Description-derived bytes are Estimated independent of coverage.
-* Domain-level producer-gap detection requires documented continuously enabled
-  listener delivery. Another listener's selection does not alter that proof;
-  own-domain disable/filter changes produce unproven intervals, not invented
-  losses. Runtime counters, filtering integration and query projections remain
-  downstream work; P01 tests only their contracts and the pure gap helper.
+* Domain-level producer-gap detection requires both measured continuous
+  listener eligibility and genuinely settled/closed source reconciliation.
+  Reservation is not completion; End is not delivery/reordering closure.
+  Another listener's selection does not alter existing continuity; own-domain
+  disable/filter changes or inadequate settled/closed evidence remain
+  Unproven. Native counters, terminal transport guarantees, sealed-source
+  provenance verification and projections remain downstream work; P01 tests
+  only their explicit contracts and the pure window-assessment helper.
+* Completed scope intervals inside unfinished artifact-free snapshots must
+  still fit the committed query watermark; no invented overall end/artifact
+  is needed to enforce that publication boundary.
 * Before production rollout: measure provider-off and keyword-on overhead in
   fre x64/ARM64, prove no payload work while disabled, exercise loss/reuse,
   queue/store limits and replay equivalence, compare OS samples against the

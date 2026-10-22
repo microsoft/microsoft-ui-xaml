@@ -286,13 +286,11 @@ Native implementation is later, but must implement these semantics:
   filtering breaks its proven segment. Changing a different domain does not.
   Only whole-domain, continuously enabled delivery supports complete
   continuity unless additional filtering is explicitly accounted for.
-* `SequenceContinuity.Assess` compares checkpoints only for the same listener
-  and domain. Same measured/complete segment with sequence 4 then 7 proves two
-  missing observations; 4 then 5 is contiguous. Changed segment, partial
-  coverage, absent predecessor, late/out-of-order source observations or
-  observations outside the interval are Unproven with no invented lost count.
-  Different domain/listener checkpoints cannot be compared. A source epoch
-  change creates a different domain, not an inferred loss count.
+* Enable/filter continuity is necessary but **not delivery closure**. Reservation
+  5 or 6 can still be in flight when 7 arrives, even with increasing QPC.
+  Arrival-pair assessment is always Unproven; it cannot retract an earlier
+  definitive loss claim when a delayed event arrives. A source epoch change
+  creates a different domain, not an inferred loss count.
 * Timestamp/ingest-ordinal merge order and explicit causal attempt identity
   are separate from loss sequences. Concurrent listeners selecting Frames
   versus Objects see independent counters, not false gaps from filtered IDs.
@@ -303,12 +301,104 @@ Native implementation is later, but must implement these semantics:
   counter immediately before End emission (including any earlier capture
   events in their own domains). Zero means no emissions yet, null means
   unknown. Begin may have null Through; a complete End requires both.
+  These are reservation checkpoints, not settled cuts. Entries also carry
+  nullable `SettledCut`, defined below. A complete producer End range requires
+  a settled prefix covering Through; outstanding reservations require partial
+  coverage, not a fabricated settled watermark. Even a fully settled End is
+  not listener delivery/reordering closure.
   Entries are unique, bounded to 256, and source/target-bound by Normalize.
   A complete capture needs a nonempty vector; the future processor must also
   verify that the vector covers every relevant capability/domain.
 * Loss optionally identifies affected domains; null means unlocalized loss.
   ETW loss, decoder loss and capture chunk counts remain independent evidence.
   No unconditional provider-wide-gap rule is valid under keyword filtering.
+
+### Settled emission and closed delivery/reordering
+
+`ProducerSequenceCut(CutId, Domain, ReservedThrough, SettledThrough)` is an
+authoritative immutable producer acknowledgement. ReservedThrough is the
+largest reservation at that cut. SettledThrough is the largest **contiguous
+prefix** for which every emission attempt has returned a terminal result,
+including failed writes; it cannot exceed ReservedThrough. Completion of 7
+alone does not settle delayed reservations 5/6. Zero is the empty prefix.
+CutId identifies those exact acknowledged facts, not just a sampled counter.
+The cut does not imply event arrival, decoding, or causal mutation order.
+
+`SequenceDeliveryClosure` carries listener/continuity IDs,
+FinalizedAfterCutId, a local immutable SealedSource artifact path/SHA256,
+FinalByteLength, EnumeratedByteLength, nullable FinalIngestOrdinal,
+DecodedThroughOrdinal, and EnabledAfterSequence/EnabledThroughSequence.
+It describes a concrete finite-source reconciliation, not a boolean
+"flushed" flag. Its acquisition contract is:
+
+1. While the listener's delivery-homogeneous domain remains continuously
+   enabled with unchanged filters, establish an authoritative lower reservation
+   bound and obtain a producer settled-prefix acknowledgement covering the
+   desired upper reservation bound. The enabled sequence span is exclusive
+   at its lower bound and inclusive at its upper bound. It certifies delivery
+   eligibility for **every attempt** in that span, not merely the QPCs of
+   observations that happened to arrive. Other listeners cannot change it.
+2. Only **after** that settled-cut acknowledgement, finalize the finite
+   capture transport using a verified terminal-completion guarantee: every
+   previously accepted write through the cut has been materialized in that
+   source or permanently lost to this finalized capture, with none still
+   pending outside it. A local manifest must bind the acknowledged cut's exact
+   contents/ID, listener/continuity and finalized source length/digest.
+   Captures of other domains or targets do not establish this binding.
+   P01 does not implement or assert an ETW API guarantee. If an adapter cannot
+   substantiate this guarantee, it cannot supply authoritative closure.
+3. Verify that source's seal/length/digest, enumerate all bytes to its known
+   end and assign the final ingest ordinal. FinalIngestOrdinal is null until
+   known; DecodedThroughOrdinal is the contiguous **completed** decode prefix,
+   not the largest record seen. Wait for every assigned record through the
+   final ordinal to be normalized or explicitly accounted as a decoder loss.
+   No queued decode/reordering work may remain below that prefix.
+4. Supply **all** observed checkpoints for the selected listener/domain/
+   continuity and assessed sequence window, independent of arrival order.
+   The helper cannot read/verify an artifact or discover withheld observations:
+   upstream capture/replay owners must establish these provenance and
+   exhaustive-enumeration obligations before claiming the evidence.
+
+No timestamp, timeout, capture End event, maximum sequence received,
+`FlushTrace` return, or EOF of a still-growing/unbound file alone satisfies
+these steps. In particular, sealing a file before lower producer reservations
+settle cannot turn the missing writes into a valid closed cut. The supported
+proof is finite-source finalization **after** settled emissions, followed by
+exhaustive enumeration and completed decoding; an ordinary live ETW callback
+does not provide it. Future native/collector work must implement/validate the
+guarantees or continue reporting Unproven. There is no native sequencer,
+drain, worker, archive verifier or transport implementation in P01.
+
+The window overload of `SequenceContinuity.Assess` accepts
+`SequenceObservationWindow(AfterSequence, ThroughSequence, Observations)`,
+the listener interval and optional cut/closure evidence. The assessed span
+is `(AfterSequence, ThroughSequence]`; an observed lower anchor is optional.
+Checkpoints include QPC and positive session IngestOrdinal. Windows contain
+at most 8192 checkpoints and can partition a large capture using the same
+finalized proof; they must not silently truncate observations. Repeated
+delivery of a sequence is counted once, not as a replacement for a missing ID.
+
+The helper validates domain/listener/cut binding, counters, artifact syntax,
+byte/ordinal bounds and enabled sequence coverage. Incomplete settlement,
+enumeration, decoding, filtering or continuity yields Unproven with no missing
+count. Only after closure does it compare the expected sequence span with
+the complete distinct observed set:
+
+* Arrival 4,7,5,6 remains provisional until closed, then is Contiguous with
+  zero missing observations, regardless of arrival/QPC ordering.
+* A genuinely closed window `(4,7]` containing only 7 has two missing
+  observations. A missing tail is detectable even if no higher event arrived.
+* Reservations beyond the assessed settled prefix can remain outstanding;
+  they cannot justify extending that window's completeness.
+
+Listener interval quality describes measured enable/filter eligibility,
+not a promise of loss-free transport. Proven producer gaps remain independent
+of ETW/decoder loss reports. Baseline completeness additionally requires all
+relevant domain vectors to be reconciled against adequate settled prefixes
+and listener closures, matching chunks, source epochs and actual snapshot
+scope/consistency evidence. End receipt or a complete producer range alone
+never publishes a complete listener capture. Preserve provisional history
+until reconciliation or explicit failure/loss is finalized.
 
 ## Collector events
 
@@ -368,6 +458,10 @@ object, type, root, resource kind), with exactly the applicable qualifier.
 Compatible values use attribute units; signed deltas remain valid. Missing or
 incompatible attributes preserve their available values and explicit Missing
 delta, not zero. Counts retain integer discriminators.
+
+Every snapshot scope interval is checked against the committed result QPC,
+including completed scopes inside an artifact-free Capturing attempt with
+no overall end. An unfinished extent cannot publish future scope evidence.
 
 All typed `QueryPage`/`QueryResult` constructors validate supported row
 identities, units/discriminators/enums/timestamps/ordinals/source/provenance

@@ -119,6 +119,14 @@ internal static class EventValidation
                     if (range.BeforeSequence > range.ThroughSequence ||
                         range.Quality.Coverage == CoverageState.Complete && (range.BeforeSequence is null || p.Phase == CapturePhase.End && range.ThroughSequence is null))
                         throw new ArgumentException("Capture sequence vector cannot claim complete missing/inverted checkpoints.");
+                    if (range.SettledCut is { } cut)
+                    {
+                        cut.Validate();
+                        if (cut.Domain != range.Domain) throw new ArgumentException("Capture settled cut belongs to a different delivery domain.");
+                    }
+                    if (p.Phase == CapturePhase.End && range.Quality.Coverage == CoverageState.Complete &&
+                        (range.SettledCut is null || range.SettledCut.SettledThrough < range.ThroughSequence))
+                        throw new ArgumentException("Complete producer capture coverage requires a settled cut covering every reservation through End's checkpoint.");
                 }
                 if (p.Quality.Coverage == CoverageState.Complete && p.Domains.Count == 0) throw new ArgumentException("Complete capture requires explicit relevant sequence domains.");
                 if (p.DispatcherId is 0 || p.Phase == CapturePhase.End && p.ChunkCount is null)
