@@ -1482,6 +1482,59 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies filter changes under an app sort no column describes raise no Sorted.")]
+        [TestProperty("data:Sort", "{KeySelector, UnmatchedPath}")]
+        public void VerifyFilterUnderUnmatchedAppSortRaisesNoSorted()
+        {
+            var sort = ((string)TestContext.DataRow["Sort"]).Trim();
+            TableView tableView = null;
+            TableViewSource source = null;
+            int sortedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateSortTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                if (sort == "KeySelector")
+                {
+                    source.Sort(item => ((ShapedPerson)item).Name, SortDirection.Ascending);
+                }
+                else
+                {
+                    source.Sort("DepartmentName", SortDirection.Ascending);
+                }
+            });
+
+            SettleLayout(tableView);
+
+            for (int i = 0; i < 3; i++)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    if (i == 0)
+                    {
+                        tableView.Sorted += (s, e) => sortedCount++;
+                    }
+                    source.Filter(_ => true);
+                });
+                SettleLayout(tableView);
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, sortedCount, $"{sort}: a filter change must not report a sort change.");
+                Verify.IsTrue(tableView.Columns.All(c => c.SortDirection == SortDirection.None), $"{sort}: no column describes the app's sort.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a clear queued by removing the sorted column leaves the app-declared sort of the next ItemsSource alone.")]
         public void VerifyColumnRemovalClearKeepsNewItemsSourceSort()
         {

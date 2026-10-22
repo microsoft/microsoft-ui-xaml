@@ -1002,13 +1002,6 @@ void TableView::ReconcileSortStateWithSource()
         return;
     }
 
-    if (primaryForeignAxis == nullptr && ownToken.empty() && m_sortedColumns.empty())
-    {
-        // Nothing sorted anywhere and no chevron lit. Reached on every shaping notification -
-        // a filter or group change also lands here - so it must not raise a spurious Sorted.
-        return;
-    }
-
     if (primaryForeignAxis != nullptr && ownAxisPresent)
     {
         // The app declared a sort while ours was installed. Last writer wins, so ours goes: left
@@ -1043,6 +1036,13 @@ void TableView::ReconcileSortStateWithSource()
     auto const foreignDirection = primaryForeignAxis != nullptr
         ? primaryForeignAxis->Direction
         : winrt::SortDirection::None;
+
+    // No axis of ours, nothing a column can describe and no chevron lit. Reached on every shaping
+    // notification - a filter or group change also lands here - so it must not raise a spurious Sorted.
+    if (ownToken.empty() && !matchedColumn && m_sortedColumns.empty())
+    {
+        return;
+    }
 
     // Already reconciled to exactly this state. Reached whenever an unrelated shaping change - a
     // filter or a group - renotifies while an app-owned sort is standing; re-raising Sorted for it
