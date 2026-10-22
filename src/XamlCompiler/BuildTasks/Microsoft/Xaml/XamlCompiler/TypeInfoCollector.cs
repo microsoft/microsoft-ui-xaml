@@ -373,8 +373,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             DirectUIXamlType declaringType = (DirectUIXamlType)member.DeclaringType;
             if (declaringType.IsCodeGenType)
             {
-                InternalTypeEntry declaringTypeEntry = _schemaInfo.AddType(declaringType);
-                _schemaInfo.AddMember(declaringTypeEntry, member);
+                _schemaInfo.AddMember(member);
             }
 
             DirectUIXamlMember duiMember = (DirectUIXamlMember)member;
