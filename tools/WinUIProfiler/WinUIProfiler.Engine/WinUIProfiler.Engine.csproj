@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\WinUIProfiler.Contracts\WinUIProfiler.Contracts.csproj" />
+  </ItemGroup>
+</Project>
