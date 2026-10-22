@@ -614,6 +614,7 @@ namespace Controls {
     interface IListBoxStatics2;
     interface IListPickerFlyout;
     interface IListPickerFlyoutPresenter;
+    interface IListPickerFlyoutPresenterFactory;
     interface IListPickerFlyoutStatics;
     interface IListView;
     interface IListViewBase;

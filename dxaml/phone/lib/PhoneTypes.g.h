@@ -828,7 +828,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
     };
     class ListPickerFlyoutPresenterFactory
         :
-        public wrl::AgileActivationFactory<>
+        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::IListPickerFlyoutPresenterFactory>
     {
 
     friend class ListPickerFlyoutPresenterGenerated;
@@ -838,6 +838,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
          _Check_return_ HRESULT RuntimeClassInitialize();
          static _Check_return_ HRESULT EnsureProperties();
          static void ClearProperties();
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IListPickerFlyoutPresenter** ppInstance);
 
         // Properties.
 
@@ -861,6 +862,9 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         : public ListPickerFlyoutPresenterRuntimeClass
     {
         friend class ABI::Microsoft::UI::Xaml::Controls::ListPickerFlyoutPresenter;
+        friend class pctl::AggregableComObject< 
+            ABI::Microsoft::UI::Xaml::Controls::ListPickerFlyoutPresenter,
+            ABI::Microsoft::UI::Xaml::Controls::IListPickerFlyoutPresenter>;
         WuxpInspectableClass(RuntimeClass_Microsoft_UI_Xaml_Controls_ListPickerFlyoutPresenter, TrustLevel::BaseTrust);
 
     public:
@@ -983,8 +987,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Customized properties.
 
-        // Initialization methods
-        virtual _Check_return_ HRESULT InitializeImpl();
+        // Initialization methods required by AggregableComObject to make this an aggregable class.
+        virtual _Check_return_ HRESULT InitializeImpl(_In_opt_ IInspectable* pOuter = nullptr);
 
         // Event Sources
     };
