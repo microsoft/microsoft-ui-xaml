@@ -835,8 +835,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         ApplySelection(FindEntryIndexForDataItem(preservedSelection));
     }
 
-    // An implicit clear that left the app's sort on the source is not a clear: the rows keep their
-    // order and the reconcile below re-lights the column.
+    // The app's sort remains on the source, so an implicit clear is not reported as a clear.
     bool keptSourceSort = false;
     if (!trigger && !explicitClear && !m_activeSourceReleased)
     {
