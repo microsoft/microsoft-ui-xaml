@@ -347,9 +347,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(expectBox ? box : null, navView.AutoSuggestBox, "NavigationView.AutoSuggestBox");
                 Verify.AreEqual(expectBox ? box : null, presenter.Content, "AutoSuggestBox presenter content");
-                Verify.AreEqual(expectBox, IsAncestorOf(presenter, box), "AutoSuggestBox is hosted in the presenter");
-                if (!expectBox)
+                if (expectBox)
                 {
+                    // The ClosedCompact state collapses the presenter, so it only (re)hosts its content once it's visible and measured.
+                    if (presenter.Visibility == Visibility.Visible)
+                    {
+                        Verify.IsTrue(IsAncestorOf(presenter, box), "AutoSuggestBox is hosted in the presenter");
+                    }
+                }
+                else
+                {
+                    Verify.IsFalse(IsAncestorOf(presenter, box), "AutoSuggestBox is not hosted in the presenter");
                     Verify.IsNull(VisualTreeHelper.GetParent(box), "AutoSuggestBox is removed from the visual tree");
                 }
                 Verify.AreEqual(expectedVisibility, area.Visibility, "AutoSuggestBox area visibility");
@@ -386,6 +394,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Content.UpdateLayout();
                 verifyAutoSuggestBoxState(true, "After going back to WithBox: AutoSuggestBox is restored");
+
+                navView.IsPaneOpen = true;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content.UpdateLayout();
+                var presenter = (ContentControl)VisualTreeUtils.FindVisualChildByName(navView, "PaneAutoSuggestBoxPresenter");
+                Verify.AreEqual(Visibility.Visible, presenter.Visibility, "Open pane shows the AutoSuggestBox presenter");
+                Verify.IsTrue(IsAncestorOf(presenter, box), "Open pane hosts the restored AutoSuggestBox in the presenter");
             });
         }
 
