@@ -30,7 +30,7 @@ namespace Microsoft.UI.Xaml
         internal event Windows.Foundation.TypedEventHandler<FrameworkElement, Windows.Foundation.Object> HighContrastChanged;
 
         [CodeGen(CodeGenLevel.IdlAndStub)]
-        protected void InvalidateViewport()
+        public void InvalidateViewport()
         {
         }
     }
