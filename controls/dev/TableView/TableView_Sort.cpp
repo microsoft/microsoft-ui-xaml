@@ -492,9 +492,8 @@ bool TableView::RaiseSortingAndCheckCanceled(
     }
 
     auto args = winrt::make_self<TableViewSortingEventArgs>(trigger, direction);
-    AppEscapeScope escapes{ *this };
     try { m_sortingEventSource(*this, *args); }
-    catch (...) { NoteAppEscape(TableViewTip::AppFaultKind::Callback, winrt::to_hresult()); throw; }
+    catch (...) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback); }
 
     return args->Cancel();
 }
@@ -542,6 +541,9 @@ bool TableView::SyncTableViewSourceSort(
     {
         return false;
     }
+
+    // Comparer faults contained before this sort (a live re-sort) are not its own.
+    if (auto const& rankAdapter = m_tableViewSourceSort.CustomSortState) { rankAdapter->TakeSwallowedFaults(); }
 
     winrt::TableViewKeySelector keySelector{ nullptr };
     winrt::hstring sortAxisToken;
@@ -600,9 +602,13 @@ bool TableView::SyncTableViewSourceSort(
         {
             // Projected dispatch - see the note in HasResolvedSortMemberPath.
             winrt::hstring sortMemberPath;
-            AppEscapeScope escapes{ *this };
             try { sortMemberPath = trigger.GetSortMemberPathCore(); }
-            catch (...) { NoteAppEscape(TableViewTip::AppFaultKind::Callback, winrt::to_hresult()); throw; }
+            catch (...)
+            {
+                // An app-derived column's override is the app's code; TableView's own columns are TableView's.
+                if (TableViewDetails::IsAppDerivedColumn(trigger)) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback); }
+                throw;
+            }
             if (sortMemberPath.empty())
             {
                 return false;
@@ -674,6 +680,17 @@ bool TableView::SyncTableViewSourceSort(
     // its rewritten projection into the repeater.
     RefreshRowsPipeline();
     UpdateEmptyState();
+
+    // A custom comparer that threw was contained as "equal": the sort stands, and the fault is the app's.
+    if (auto const& rankAdapter = m_tableViewSourceSort.CustomSortState)
+    {
+        if (auto const contained = rankAdapter->TakeSwallowedFaults(); contained.count)
+        {
+            TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::Sort, TableViewTip::Stage::Sort,
+                true, TableViewTip::Attribution::Application, contained.firstError, TableViewTip::AppFaultKind::Callback,
+                contained.count);
+        }
+    }
     return true;
 }
 
@@ -755,10 +772,9 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     const auto invalidatedSort = !measureTip && m_tip.operation == TableViewTip::Operation::Sort
         ? m_tip.operationGeneration : 0;
     auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::Sort, measureTip);
-    ShapingHelpers::ClearCallerFault();
     m_controlSortPublishedGeneration = 0;
     bool completed = false;
-    std::optional<HRESULT> failure;
+    std::optional<TableViewTip::Fault> failure;
     auto tipCompletion = wil::scope_exit([this, tipGeneration, measureTip, &completed, &failure]() noexcept
     {
         if (measureTip && !completed)
@@ -806,15 +822,13 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         {
             const auto appliedDirection = trigger ? trigger.SortDirection() : winrt::SortDirection::None;
             auto args = winrt::make_self<TableViewSortedEventArgs>(trigger, appliedDirection);
-            AppEscapeScope escapes{ *this };
             try
             {
                 m_sortedEventSource(*this, *args);
             }
             catch (...)
             {
-                NoteAppEscape(TableViewTip::AppFaultKind::Callback, winrt::to_hresult());
-                throw;
+                TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback);
             }
         }
 
@@ -860,9 +874,8 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     }
     catch (...)
     {
-        failure = winrt::to_hresult();
-        // Reading the collection, or its contract, failed: that is the app's.
-        if (ShapingHelpers::TakeCallerFault(*failure)) { NoteAppEscape(TableViewTip::AppFaultKind::Data, failure); }
+        // App code's exceptions (the collection, its contract, a sort callout) carry their kind.
+        failure = TableViewTip::CurrentFault();
         throw;
     }
 

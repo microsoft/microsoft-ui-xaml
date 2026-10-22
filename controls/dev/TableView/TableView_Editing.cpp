@@ -125,6 +125,13 @@ namespace
             hr);
     }
 
+    // Retail-visible like a consumer handler's throw, but an editing hook is TableView's own column code.
+    void LogColumnHookThrow(wchar_t const* hookName)
+    {
+        const auto hr = static_cast<unsigned int>(winrt::to_hresult());
+        TVDiag::LogRetailF(L"[TableView] Column %ls threw (HRESULT 0x%08X).", hookName, hr);
+    }
+
     // A cancel that cannot restore the pre-edit value is a silent data-integrity failure from the
     // user's point of view: they pressed Esc and their edit stayed. Report it.
     void LogRevertUnavailable(wchar_t const* reason)
@@ -296,7 +303,6 @@ bool TableView::RaiseBeginningEdit(winrt::IInspectable const& item, winrt::Table
         return true;
     }
     auto args = winrt::make_self<TableViewBeginningEditEventArgs>(item, column);
-    AppEscapeScope escapes{ *this };
     try
     {
         m_beginningEditEventSource(*this, *args);
@@ -331,7 +337,6 @@ TableView::EditEndingResult TableView::RaiseEditEnding(
                 TableViewTip::Operation::CommitEdit : TableViewTip::Operation::CancelEdit,
             tip = m_insideLayoutPass ? nullptr : tip]()
         {
-            AppEscapeScope escapes{ *self };
             try
             {
                 self->m_cellEditEndingEventSource(*self, *cellArgs);
@@ -597,7 +602,6 @@ void TableView::EndEditVisual(winrt::TableViewEditAction action, ActionTip* tip)
         {
             std::optional<HRESULT> displayFailure;
             bool applicationFault = false;
-            AppEscapeScope escapes{ *this };
             winrt::get_self<TableViewRow>(row)->EndCellEdit(action, tip ? &displayFailure : nullptr, &applicationFault);
             if (displayFailure && tip)
             {
@@ -707,7 +711,6 @@ bool TableView::HasBlockingValidationErrors(
                 TableViewTip::AppFaultKind::Validation, error);
         }
     };
-    AppEscapeScope escapes{ *this };
 
     if (!editingPath.empty())
     {
@@ -759,10 +762,10 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
         // again here would invoke the app's setters twice for one commit.
         const bool alreadyTransferred = !honorCancel;
         bool wrote = alreadyTransferred;
+        bool ownWriteFailed = false;
 
         if (!wrote && column && editingElement)
         {
-            AppEscapeScope escapes{ *this };
             try
             {
                 wrote = winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement);
@@ -770,8 +773,12 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
             }
             catch (...)
             {
-                if (tip) { tip->ApplicationFault(TableViewTip::AppFaultKind::Write, winrt::to_hresult()); }
-                LogConsumerHandlerThrow(L"CommitCellEdit");
+                // The editing hooks are TableView's code for every column; a value the app rejected returns false
+                // instead of throwing.
+                auto const error = winrt::to_hresult();
+                ownWriteFailed = true;
+                if (tip) { tip->Fail(error); }
+                LogColumnHookThrow(L"CommitCellEdit");
                 wrote = false;
             }
         }
@@ -780,8 +787,8 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
         {
             if (tip)
             {
-                if (column && editingElement) { tip->ApplicationFault(TableViewTip::AppFaultKind::Write); }
-                else { tip->Ignore(TableViewTip::IgnoreReason::Stale); }
+                if (!column || !editingElement) { tip->Ignore(TableViewTip::IgnoreReason::Stale); }
+                else if (!ownWriteFailed) { tip->ApplicationFault(TableViewTip::AppFaultKind::Write); }
             }
             // Nothing reached the item - a setter threw, or no writable binding could be resolved.
             // Reporting success here is silent data loss, so the edit stays open instead.
@@ -809,19 +816,14 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
                 // value to push the pre-edit value back to the source. Without this second write
                 // the item keeps the value the control just rejected, and the user's typed text is
                 // replaced in the editor as well: invalid data on the item, nothing on screen.
-                AppEscapeScope escapes{ *this };
-                try
+                winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, m_editUneditedValue.get());
+                if (!winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement))
                 {
-                    winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, m_editUneditedValue.get());
-                    if (!winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement))
-                    {
-                        // The rejection stands either way; the app's failed write is reported with it.
-                        if (tip) { tip->RecoveredAppFault(TableViewTip::AppFaultKind::Write); }
-                        TVDiag::LogRetailF(
-                            L"[TableView] A rejected value could not be rolled back; the item still holds it.");
-                    }
+                    // The rejection stands either way; the app's failed write is reported with it.
+                    if (tip) { tip->RecoveredAppFault(TableViewTip::AppFaultKind::Write); }
+                    TVDiag::LogRetailF(
+                        L"[TableView] A rejected value could not be rolled back; the item still holds it.");
                 }
-                catch (...) { NoteAppEscape(TableViewTip::AppFaultKind::Write, winrt::to_hresult()); throw; }
                 m_editSourceWritten = false;
             }
             return false;
@@ -923,7 +925,7 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
                             }
                             catch (...)
                             {
-                                LogConsumerHandlerThrow(L"CancelCellEdit");
+                                LogColumnHookThrow(L"CancelCellEdit");
                             }
                             try { editingElement.ClearValue(winrt::FrameworkElement::DataContextProperty()); }
                             catch (...) {}
@@ -939,29 +941,24 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
                 }
                 else
                 {
-                    // The cancel closes the edit whatever the rollback does; a failed write is reported as the app's.
-                    auto const recoverRollbackFault = [this, tip](std::optional<HRESULT> error) noexcept
-                    {
-                        if (tip) { tip->RecoveredAppFault(TableViewTip::AppFaultKind::Write, error); }
-                        else
-                        {
-                            NoteRecoveredAppFault(TableViewTip::Operation::CancelEdit, TableViewTip::Stage::Editing,
-                                TableViewTip::AppFaultKind::Write, error);
-                        }
-                    };
-                    AppEscapeScope escapes{ *this };
+                    // The cancel closes the edit whatever the rollback does. A write that did not land is the app's.
                     try
                     {
                         winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, m_editUneditedValue.get());
                         if (!winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement))
                         {
-                            recoverRollbackFault({});
+                            if (tip) { tip->RecoveredAppFault(TableViewTip::AppFaultKind::Write); }
+                            else
+                            {
+                                NoteRecoveredAppFault(TableViewTip::Operation::CancelEdit, TableViewTip::Stage::Editing,
+                                    TableViewTip::AppFaultKind::Write, {});
+                            }
                         }
                     }
                     catch (...)
                     {
-                        recoverRollbackFault(winrt::to_hresult());
-                        LogConsumerHandlerThrow(L"CancelCellEdit");
+                        NoteColumnFault(tip, TableViewTip::Operation::CancelEdit, winrt::to_hresult());
+                        LogColumnHookThrow(L"CancelCellEdit");
                     }
                 }
 
@@ -1073,7 +1070,7 @@ bool TableView::EndCurrentEdit(EditingUnit unit, winrt::TableViewEditAction acti
     }
     catch (...)
     {
-        tip.Escaping(winrt::to_hresult());
+        tip.Escaping(TableViewTip::CurrentFault());
         throw;
     }
 }
@@ -1113,8 +1110,7 @@ bool TableView::TerminateEditForReset(bool force, bool sourceReplaced)
         {
             if (auto const editingElement = CurrentEditingElement())
             {
-                // The forced close carries on whatever the write does; a failed write is reported as the app's.
-                AppEscapeScope escapes{ *this };
+                // The forced close carries on whatever the write does; a write that did not land is the app's.
                 try
                 {
                     wrote = winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement);
@@ -1127,9 +1123,8 @@ bool TableView::TerminateEditForReset(bool force, bool sourceReplaced)
                 }
                 catch (...)
                 {
-                    NoteRecoveredAppFault(TableViewTip::Operation::CommitEdit, TableViewTip::Stage::Editing,
-                        TableViewTip::AppFaultKind::Write, winrt::to_hresult());
-                    LogConsumerHandlerThrow(L"CommitCellEdit");
+                    NoteColumnFault(nullptr, TableViewTip::Operation::CommitEdit, winrt::to_hresult());
+                    LogColumnHookThrow(L"CommitCellEdit");
                 }
             }
         }
@@ -1318,15 +1313,16 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         {
             if (auto const editingElement = winrt::get_self<TableViewRow>(row)->GetEditingElement())
             {
-                AppEscapeScope escapes{ *this };
                 try
                 {
                     m_editUneditedValue.set(winrt::get_self<TableViewColumn>(column)->PrepareCellForEdit(editingElement, nullptr));
                 }
                 catch (...)
                 {
-                    tip.RecoveredAppFault(TableViewTip::AppFaultKind::Factory, winrt::to_hresult());
-                    LogConsumerHandlerThrow(L"PrepareCellForEdit");
+                    // The editing template's content is the app's; the hook itself is TableView's.
+                    NoteColumnFault(&tip, TableViewTip::Operation::BeginEdit, winrt::to_hresult(),
+                        TableViewDetails::IsAppEditor(column) ? std::optional{ TableViewTip::AppFaultKind::Factory } : std::nullopt);
+                    LogColumnHookThrow(L"PrepareCellForEdit");
                 }
             }
         }
@@ -1362,7 +1358,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
     }
     catch (...)
     {
-        tip.Escaping(winrt::to_hresult());
+        tip.Escaping(TableViewTip::CurrentFault());
         throw;
     }
 }

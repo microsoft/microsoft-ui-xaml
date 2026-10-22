@@ -79,6 +79,30 @@ namespace TableViewDetails
     {
         return TryGetColumnHeaderText(column).value_or(winrt::hstring{});
     }
+
+    // Whether the app derived the column's class, so the column runs the app's overrides; TableView's own column
+    // classes run only TableView's code. The class name is compared, never reported. One that cannot be read is
+    // treated as the app's.
+    inline bool IsAppDerivedColumn(const winrt::TableViewColumn& column) noexcept
+    {
+        try
+        {
+            auto const className = winrt::get_class_name(column);
+            std::wstring_view const name{ className };
+            return name != winrt::name_of<winrt::TableViewTextColumn>() &&
+                name != winrt::name_of<winrt::TableViewTemplateColumn>() && name != winrt::name_of<winrt::TableViewColumn>();
+        }
+        catch (...) { return true; }
+    }
+
+    // Whether app code primes the column's editor: the content of its CellEditingTemplate, which PrepareCellForEdit
+    // realizes (the editing factory only creates the presenter). The editing hooks are TableView's code for every
+    // column, derived or not (TableView.idl keeps them internal).
+    inline bool IsAppEditor(const winrt::TableViewColumn& column) noexcept
+    {
+        try { return column.CellEditingTemplate() != nullptr; }
+        catch (...) { return true; }
+    }
 }
 
 struct ColumnResizeBounds
@@ -637,6 +661,10 @@ private:
     void OnSelectionModelSelectionChanged(
         const winrt::SelectionModel& sender,
         const winrt::SelectionModelSelectionChangedEventArgs& args);
+    // Calls into SelectionModel, which raises SelectionChanged back into OnSelectionModelSelectionChanged; an app
+    // fault that left that handler gets its tag back here.
+    template <typename Call>
+    void CallSelectionModel(Call&& call);
 
     // Index of `item` in the ItemsSource, by identity; -1 when absent or the source is not set.
     // Still needed because SelectionModel indexes but does not look items up.
@@ -688,6 +716,9 @@ private:
 
     winrt::SelectionModel m_selectionModel{ nullptr };
     winrt::SelectionModel::SelectionChanged_revoker m_selectionModelChangedRevoker{};
+    // The app fault that left OnSelectionModelSelectionChanged during the CallSelectionModel in progress (depth).
+    TableViewTip::AppFaultHop m_selectionModelAppFault;
+    uint32_t m_selectionModelCallDepth{};
 
     // Last index published to the rows, so a change knows which container to unstamp and which to
     // raise the UIA "removed from selection" event on.
@@ -840,20 +871,21 @@ private:
 
 private:
     // A synchronous action owns its own operation state (and TiP test, when the operation has one) and shares the
-    // control's session counters and error mask.
+    // control's session counters and error mask. withTest false tracks it for TableView_Error without a TiP test.
     class ActionTip
     {
     public:
-        ActionTip(TableView& owner, TableViewTip::Operation operation, TableViewTip::Stage stage, bool admitted = true) noexcept;
+        ActionTip(TableView& owner, TableViewTip::Operation operation, TableViewTip::Stage stage, bool admitted = true,
+            bool withTest = true) noexcept;
         ~ActionTip();
         ActionTip(ActionTip const&) = delete;
         ActionTip& operator=(ActionTip const&) = delete;
         void Complete() noexcept { m_completed = true; }
         void Ignore(TableViewTip::IgnoreReason reason) noexcept { m_completed = false; m_ignoreReason = reason; }
         void Fail(std::optional<HRESULT> error) noexcept;
-        // The owner records the HRESULT of an exception leaving the action, so the app is blamed only when that
-        // HRESULT is the one its code rethrew.
-        void Escaping(HRESULT error) noexcept { m_escapingError = error; }
+        // In a catch, before rethrowing: the exception leaving the action, so the app is blamed only when app code
+        // threw it.
+        void Escaping(TableViewTip::Fault fault) noexcept { m_escaping = fault; }
         // App code stopped the operation: its write did not land.
         void ApplicationFault(TableViewTip::AppFaultKind kind, std::optional<HRESULT> error = {}) noexcept;
         // App code failed (threw, or its write did not land) and TableView carried on: reported, and the
@@ -871,49 +903,35 @@ private:
         uint64_t m_generation{};
         uint64_t m_controlGenerationAtAdmission{};
         uint64_t m_lifetimeGeneration{};
-        uint64_t m_appEscapesAtStart{};
         int m_exceptions{};
         bool m_completed{};
         bool m_failed{};
         TableViewTip::IgnoreReason m_ignoreReason{ TableViewTip::IgnoreReason::Stale };
         std::optional<HRESULT> m_failError;
-        std::optional<HRESULT> m_escapingError;
+        std::optional<TableViewTip::Fault> m_escaping;
         TableViewTip::AppFaultKind m_appFaultKind{};
         std::optional<HRESULT> m_appFaultError;
         TableViewTip::AppFaultKind m_recoveredKind{};
         std::optional<HRESULT> m_recoveredError;
     };
 
-    // Wraps a call into app code. An app escape noted inside it is retired unless an exception leaves the
-    // scope: the app or TableView swallowed that exception, so it cannot blame a later failure on the app.
-    class AppEscapeScope
-    {
-    public:
-        explicit AppEscapeScope(TableView& owner) noexcept;
-        ~AppEscapeScope();
-        AppEscapeScope(AppEscapeScope const&) = delete;
-        AppEscapeScope& operator=(AppEscapeScope const&) = delete;
-
-    private:
-        TableView& m_owner;
-        uint64_t m_escapes;
-        TableViewTip::AppFaultKind m_kind;
-        std::optional<HRESULT> m_error;
-        int m_exceptions;
-    };
-
     void AttachSourceTip(winrt::TableViewSource const& source);
+    // Whether a synchronous action is tracked: only while a loaded session is active and the rows are not drained.
+    bool TracksTipActions() const noexcept { return m_telemetrySession.active && !m_rowsSourceDrained; }
     uint64_t BeginTipOperation(TableViewTip::Operation operation, bool admitted = true) noexcept;
     void EndTipOperation() noexcept;
     void SupersedeTipOperation() noexcept;
-    // In a catch, right before rethrowing an exception from app code.
-    void NoteAppEscape(TableViewTip::AppFaultKind kind, std::optional<HRESULT> error) noexcept;
     // App code failed (threw, or its write did not land) and TableView carried on without rethrowing.
     void NoteRecoveredAppFault(TableViewTip::Operation operation, TableViewTip::Stage stage,
         TableViewTip::AppFaultKind kind, std::optional<HRESULT> error) noexcept;
-    bool AppEscapedSince(uint64_t escapes, HRESULT escaping) const noexcept;
+    // A column's editing hook threw and TableView carried on. The hooks are TableView's code, so this fails the action
+    // (or, without one, is reported as TableView's recovered failure), unless app code it ran threw (appFault): then it
+    // is recovered as the app's.
+    void NoteColumnFault(ActionTip* tip, TableViewTip::Operation operation, HRESULT error,
+        std::optional<TableViewTip::AppFaultKind> appFault = std::nullopt) noexcept;
     ActionTip* CalloutAction() const noexcept;
-    void FailTipOperation(uint64_t generation, TableViewTip::Stage stage, std::optional<HRESULT> error) noexcept;
+    // An app fault ignores the operation; any other failure fails it.
+    void FailTipOperation(uint64_t generation, TableViewTip::Stage stage, std::optional<TableViewTip::Fault> fault) noexcept;
     void CompleteTipOperation(uint64_t generation) noexcept;
     void IgnoreTip(TableViewTip::IgnoreReason reason) noexcept;
     TableViewTip::MetricsInputs TipMetricsInputs() noexcept;
@@ -926,9 +944,16 @@ private:
     // an empty view. Before Initialize has its verdict, a source swap is part of it rather than a ReplaceSource
     // operation.
     void NoteTipInitializationSource() noexcept;
-    void FailTipInitializationAttach(uint64_t escapesAtStart, HRESULT error) noexcept;
+    // Setup (Stage::Template) or the source attach (Stage::Source) threw: Initialize's failure, or ignored when app
+    // code threw, whether or not the test was running yet.
+    void FailTipInitialization(TableViewTip::Stage stage, TableViewTip::Fault fault) noexcept;
     void ArmTipInitializationLayout() noexcept;
     void RevokeTipInitializationLayout() noexcept;
+    // At unload: closes a waiting Initialize as UnloadedBeforeRender when the table had rows to lay out and a viewport,
+    // yet laid none out.
+    void IgnoreTipInitializationUnloadedBeforeRender() noexcept;
+    // Whether the rows had room: the body scroller's viewport, or the rows repeater's size when no scroller hosts it.
+    bool HasRowsViewport();
     // TableView_Instance's two sample points, Loaded and Unloaded (TableView_Telemetry.cpp).
     void SampleInstanceTelemetry() noexcept;
 
@@ -940,13 +965,6 @@ private:
     TableViewTip::IgnoreReason m_tipCancellationReason{ TableViewTip::IgnoreReason::Cancelled };
     uint32_t m_tipMutationDepth{};
     uint32_t m_tipSourceMutationDepth{};
-    // App code that rethrows bumps this, and an AppEscapeScope retires it again once nothing propagates;
-    // an exception leaving an operation is the app's when it moved while the operation ran (AppEscapedSince).
-    uint64_t m_tipAppEscapes{};
-    TableViewTip::AppFaultKind m_tipAppEscapeKind{};
-    std::optional<HRESULT> m_tipAppEscapeError;
-    uint64_t m_tipAppEscapesAtOperationStart{};
-    uint64_t m_tipAppEscapesAtSetupStart{};
     winrt::event_token m_tipInitializationLayoutToken{};
     bool m_templateApplied{};
     // The applied template lacks PART_RowsRepeater, PART_HeaderRow or PART_HeaderHost (TableView_Instance).

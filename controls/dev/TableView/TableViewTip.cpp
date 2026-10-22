@@ -3,11 +3,52 @@
 
 #include "pch.h"
 #include "TableViewTip.h"
+#include "ShapingHelpers.h"
 
 #include <limits>
 
 namespace TableViewTip
 {
+    static_assert(static_cast<uint32_t>(AppFaultKind::Data) == ShapingHelpers::c_callerDataFault,
+        "Shaping tags the app's collection and contract failures as AppFaultKind::Data.");
+
+    Fault CurrentFault() noexcept
+    {
+        auto const appFault = static_cast<AppFaultKind>(ShapingHelpers::CurrentCallerErrorKind());
+        return { winrt::to_hresult(), appFault };
+    }
+
+    void RethrowAppFault(AppFaultKind kind)
+    {
+        ShapingHelpers::RethrowAsCallerError(static_cast<uint32_t>(kind));
+    }
+
+    namespace
+    {
+        // In a catch: the error object WinRT carries with the exception across ABI calls, or null.
+        winrt::com_ptr<::IUnknown> CurrentErrorObject() noexcept
+        {
+            try { throw; }
+            catch (winrt::hresult_error const& error) { return error.try_as<::IUnknown>(); }
+            catch (...) { return nullptr; }
+        }
+    }
+
+    AppFaultHop CurrentAppFaultHop() noexcept
+    {
+        auto const kind = static_cast<AppFaultKind>(ShapingHelpers::CurrentCallerErrorKind());
+        if (kind == AppFaultKind::None) { return {}; }
+        return { CurrentErrorObject(), kind };
+    }
+
+    void RestoreAppFault(AppFaultHop const& hop)
+    {
+        if (hop.kind != AppFaultKind::None && hop.error && CurrentErrorObject() == hop.error)
+        {
+            RethrowAppFault(hop.kind);
+        }
+    }
+
     namespace
     {
         constexpr const char* GetIgnoreName(IgnoreReason reason) noexcept
@@ -24,6 +65,7 @@ namespace TableViewTip
             case IgnoreReason::DeferredOrUnproven: return "deferred_or_unproven";
             case IgnoreReason::ApplicationFault: return "application_fault";
             case IgnoreReason::AppTemplateIncomplete: return "app_template_incomplete";
+            case IgnoreReason::UnloadedBeforeRender: return "unloaded_before_render";
             default:
                 OutputDebugStringW(L"TableView TiP: invalid ignore reason.\n");
                 return nullptr;
@@ -102,7 +144,9 @@ namespace TableViewTip
         {
             auto data = test.data();
             data->rightToLeft = metrics.rightToLeft;
-            data->largeData = metrics.largeData;
+            data->largeData = metrics.sourceRows >= c_largeDataRows;
+            data->sourceRowsBucket = Log2Bucket(metrics.sourceRows);
+            data->dataRowsBucket = Log2Bucket(metrics.dataRows);
         }
 
         // Reports under the operation's own measure and name, set on a fresh handle before it starts.
@@ -180,7 +224,7 @@ namespace TableViewTip
         if (StopInitialization(state)) { CloseIgnored(state.initializationTest, reason, name, error, kind); }
     }
 
-    uint64_t BeginOperation(OperationState& state, Operation operation, MetricsInputs metrics) noexcept
+    uint64_t BeginOperation(OperationState& state, Operation operation, MetricsInputs metrics, bool withTest) noexcept
     {
         if (static_cast<uint32_t>(operation) >= static_cast<uint32_t>(Operation::Max))
         {
@@ -194,7 +238,7 @@ namespace TableViewTip
         state.operationHandled = false;
         state.operation = operation;
         state.operationSessionGeneration = state.session.active ? state.session.generation : 0;
-        state.operationTipPending = StartOperationTest(state.operationTest, operation, metrics);
+        state.operationTipPending = withTest && StartOperationTest(state.operationTest, operation, metrics);
         // Tracked with or without a TiP test, so a failure still gets its diagnostic.
         state.operationPending = true;
         return generation;

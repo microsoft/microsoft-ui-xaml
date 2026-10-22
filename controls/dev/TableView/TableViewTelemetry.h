@@ -45,8 +45,10 @@ namespace TableViewTelemetry
         uint32_t enabledFeatures{};
         uint32_t columnKinds{};
         uint32_t sourceKinds{};
-        // TableViewSource::DataRowCount, and the containers the rows repeater has created. It creates one only when
-        // none is free, so this is the most rows realized at once, plus the most group headers (they pool separately).
+        // TableViewSource's rows before and after the filter, and the containers the rows repeater has created. It
+        // creates one only when none is free, so this is the most rows realized at once, plus the most group headers
+        // (they pool separately).
+        uint32_t sourceRows{};
         uint32_t dataRows{};
         uint32_t peakRealizedRows{};
         bool rightToLeft{};
@@ -95,8 +97,10 @@ namespace TableViewTelemetry
         }
     }
 
-    // startedIn is the operation's session generation, or 0 when the report is not tied to one.
+    // startedIn is the operation's session generation, or 0 when the report is not tied to one. faultCount is how many
+    // faults the report stands for: more than one only for contained app delegate faults (TableViewTip::ContainedFaults).
     void ReportError(Session& session, uint64_t startedIn, TableViewTip::Operation operation, TableViewTip::Stage stage,
         bool recoverable, TableViewTip::Attribution attribution = TableViewTip::Attribution::Unknown,
-        std::optional<HRESULT> error = {}, TableViewTip::AppFaultKind kind = TableViewTip::AppFaultKind::None) noexcept;
+        std::optional<HRESULT> error = {}, TableViewTip::AppFaultKind kind = TableViewTip::AppFaultKind::None,
+        uint32_t faultCount = 1) noexcept;
 }

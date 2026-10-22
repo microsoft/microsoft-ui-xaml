@@ -9,6 +9,8 @@
 #include <climits>
 #include <cmath>
 #include <cstring>
+#include <limits>
+#include <new>
 #include <numeric>
 #include <unordered_map>
 #include <unordered_set>
@@ -651,28 +653,33 @@ namespace ShapingHelpers
         return keyA < keyB ? -1 : (keyA > keyB ? 1 : 0);
     }
 
-    namespace
+    [[noreturn]] void RethrowAsCallerError(uint32_t kind)
     {
-        thread_local bool t_callerFault{};
-        thread_local HRESULT t_callerFaultError{};
+        try { throw; }
+        catch (CallerError const&) { throw; }
+        catch (CallerOutOfMemory const&) { throw; }
+        catch (winrt::hresult_error const& error) { throw CallerError(error, kind); }
+        catch (std::bad_alloc const&) { throw CallerOutOfMemory(kind); }
     }
 
-    void NoteCallerFault(HRESULT error) noexcept
+    uint32_t CurrentCallerErrorKind() noexcept
     {
-        t_callerFault = true;
-        t_callerFaultError = error;
+        try { throw; }
+        catch (CallerError const& error) { return error.Kind(); }
+        catch (CallerOutOfMemory const& error) { return error.Kind(); }
+        catch (...) { return 0; }
     }
 
-    bool TakeCallerFault(HRESULT escaping) noexcept
+    void SwallowedFaults::Note() noexcept
     {
-        auto const taken = t_callerFault && t_callerFaultError == escaping;
-        t_callerFault = false;
-        return taken;
-    }
-
-    void ClearCallerFault() noexcept
-    {
-        t_callerFault = false;
+        if (count == 0)
+        {
+            try { throw; }
+            catch (winrt::hresult_error const& error) { firstError = error.code(); }
+            catch (std::bad_alloc const&) { firstError = E_OUTOFMEMORY; }
+            catch (...) { firstError = E_FAIL; }
+        }
+        if (count != (std::numeric_limits<uint32_t>::max)()) { ++count; }
     }
 
     std::vector<winrt::IInspectable> EnumerateInspectableItems(
@@ -750,7 +757,7 @@ namespace ShapingHelpers
     catch (...)
     {
         // Only the collection runs here, so any failure, out-of-memory included, is its own.
-        if (m_callerOwned) { NoteCallerFault(winrt::to_hresult()); }
+        if (m_callerOwned) { RethrowAsCallerError(c_callerDataFault); }
         throw;
     }
 
@@ -769,7 +776,7 @@ namespace ShapingHelpers
     }
     catch (...)
     {
-        if (m_callerOwned) { NoteCallerFault(winrt::to_hresult()); }
+        if (m_callerOwned) { RethrowAsCallerError(c_callerDataFault); }
         throw;
     }
 
@@ -860,14 +867,15 @@ namespace ShapingHelpers
     catch (...)
     {
         // This also grows its own vector, so an out-of-memory here may be shaping's. A caller's indexed read that
-        // ran out of memory was already noted by Count or GetAtUnchecked.
-        if (auto const error = winrt::to_hresult(); m_callerOwned && error != E_OUTOFMEMORY) { NoteCallerFault(error); }
+        // ran out of memory is tagged already (Count, GetAtUnchecked).
+        if (m_callerOwned && winrt::to_hresult() != E_OUTOFMEMORY) { RethrowAsCallerError(c_callerDataFault); }
         throw;
     }
 
     void ApplyPredicateFilter(
         std::vector<winrt::IInspectable>& items,
-        std::function<bool(winrt::IInspectable const& item)> const& predicate)
+        std::function<bool(winrt::IInspectable const& item)> const& predicate,
+        SwallowedFaults* contained)
     {
         if (!predicate)
         {
@@ -885,6 +893,7 @@ namespace ShapingHelpers
             }
             catch (...)
             {
+                if (contained) { contained->Note(); }
                 keep = false;
             }
 
@@ -1063,6 +1072,7 @@ namespace ShapingHelpers
         }
         catch (...)
         {
+            m_swallowedFaults.Note();
             return 0;
         }
     }

@@ -103,6 +103,11 @@ public:
     {
         return m_index && m_index->Structure ? static_cast<uint32_t>(m_index->Structure->Rows.size()) : 0;
     }
+    // The nodes the filter keeps, whether or not their ancestors are expanded; 0 with no index.
+    uint32_t KeptNodeCount() const noexcept
+    {
+        return m_index ? static_cast<uint32_t>(m_index->KeptNodeCount) : 0;
+    }
 
     // Positive prefix test, so a stale or foreign key cannot become node intent.
     static bool IsNodeKey(winrt::hstring const& key);

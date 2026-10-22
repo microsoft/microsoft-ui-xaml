@@ -9,7 +9,7 @@
     <TestInProductionPackageVersion>$([System.Text.RegularExpressions.Regex]::Match('$(TableViewTIPPackagesConfigContents)', 'Microsoft.Windows.TestInProduction.*?version="(.*?)"').Groups[1].Value)</TestInProductionPackageVersion>
     <TestInProductionPkgDirectory>$(NugetPackageDirectory)\Microsoft.Windows.TestInProduction.$(TestInProductionPackageVersion)</TestInProductionPkgDirectory>
     <TestInProductionTargetsFile>$(TestInProductionPkgDirectory)\build\native\Microsoft.Windows.TestInProduction.targets</TestInProductionTargetsFile>
-    <!-- Kept for the internal-build warning, which fires after the stub has replaced the selection below. -->
+    <!-- Kept for the internal pipeline build error, which fires after the stub has replaced the selection below. -->
     <TableViewTIPProductionVersion>$(TestInProductionPackageVersion)</TableViewTIPProductionVersion>
     <TableViewTIPProductionTargetsFile>$(TestInProductionTargetsFile)</TableViewTIPProductionTargetsFile>
     <TestInProductionIsReal>false</TestInProductionIsReal>

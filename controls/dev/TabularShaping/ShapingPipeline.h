@@ -93,8 +93,8 @@ namespace ShapingHelpers
         void ClearFilter() noexcept;
         void ClearFilter(winrt::hstring const& axisToken);
         bool HasFilter() const noexcept { return !m_filters.empty(); }
-        // A predicate that throws excludes the item (fail-safe). Returns true when no filter is
-        // set, so callers can gate unconditionally.
+        // A predicate that throws excludes the item (fail-safe) and is counted (TakeSwallowedFaults). Returns true
+        // when no filter is set, so callers can gate unconditionally.
         bool PassesFilter(winrt::IInspectable const& item) const;
         void ApplyFilter(std::vector<winrt::IInspectable>& rows) const;
 
@@ -152,6 +152,13 @@ namespace ShapingHelpers
         // by the stable sort's source-order tiebreak rather than by any key.
         int CompareItemToRow(winrt::IInspectable const& item, winrt::IInspectable const& row) const;
 
+        // The predicates and key selectors that threw since the last take (a throwing key sorts as null); resets
+        // the tally.
+        SwallowedFaults TakeSwallowedFaults() noexcept { return std::exchange(m_swallowedFaults, {}); }
+        // Where the engine counts the key selectors and predicates it contains outside the pipeline (a group key, an
+        // in-place re-sort).
+        SwallowedFaults& SwallowedFaultsTally() noexcept { return m_swallowedFaults; }
+
         // -- verb ordering --------------------------------------------------------------------
         int32_t NextVerbOrder() noexcept { return m_nextVerbOrder++; }
         // Places the group verb at the end of the current verb sequence and returns its order.
@@ -188,10 +195,10 @@ namespace ShapingHelpers
 
         // Compares an item's precomputed axis keys against a row whose keys are evaluated on the
         // fly. Lets the binary search hoist axis filtering and item-key evaluation out of the loop.
-        static int CompareKeysToRow(
+        int CompareKeysToRow(
             std::vector<SortAxis> const& axes,
             std::vector<winrt::IInspectable> const& itemKeys,
-            winrt::IInspectable const& row);
+            winrt::IInspectable const& row) const;
 
         // Declaration-ordered filter axes, all conjunctive.
         std::vector<FilterAxis> m_filters;
@@ -207,5 +214,6 @@ namespace ShapingHelpers
         // caller has no projection yet and must do the full reshape regardless).
         bool m_hasCommittedSpec{ false };
         uint32_t m_nextDescriptionId{ 0 };
+        mutable SwallowedFaults m_swallowedFaults;
     };
 }

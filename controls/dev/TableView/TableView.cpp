@@ -11,7 +11,6 @@
 #include "TableViewToolTipHelpers.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewSource.h"
-#include "ShapingHelpers.h"
 #include "TableViewRowTemplateSelector.h"
 #include "TableViewGroupHeader.h"
 #include "SortIndicator.h"
@@ -824,7 +823,6 @@ try
     m_templateIncomplete = false;
     // The template is expanded before this runs, so with a source attached Initialize's inputs are ready.
     if (m_activeSource.get()) { StartTipInitialization(); }
-    m_tipAppEscapesAtSetupStart = m_tipAppEscapes;
     __super::OnApplyTemplate();
     InvalidateTableViewResourceCache(this);
     CancelHeaderFocusRestore();
@@ -1124,20 +1122,9 @@ try
 }
 catch (...)
 {
-    // The control, row and cell templates are expanded outside this method; an exception app code
-    // rethrew while setup ran is the app's, and any other throw fails Initialize unless it has its verdict.
-    auto const error = winrt::to_hresult();
-    StartTipInitialization();
-    if (AppEscapedSince(m_tipAppEscapesAtSetupStart, error))
-    {
-        TableViewTip::IgnoreInitialization(m_tip, TableViewTip::IgnoreReason::ApplicationFault, m_tipAppEscapeError, m_tipAppEscapeKind);
-        TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::Setup, TableViewTip::Stage::Template,
-            false, TableViewTip::Attribution::Application, m_tipAppEscapeError, m_tipAppEscapeKind);
-    }
-    else
-    {
-        TableViewTip::FailInitialization(m_tip, TableViewTip::Stage::Template, error);
-    }
+    // The control, row and cell templates are expanded outside this method; an exception from app code is the
+    // app's, and any other throw fails Initialize unless it has its verdict.
+    FailTipInitialization(TableViewTip::Stage::Template, TableViewTip::CurrentFault());
     throw;
 }
 
@@ -1208,6 +1195,16 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
     }
 }
 
+bool TableView::HasRowsViewport()
+{
+    // The scroller is resolved when the rows repeater loads, which a repeater in a collapsed body never does.
+    auto scroller = m_bodyScroller.get();
+    auto const repeater = m_rowsRepeater.get();
+    if (!scroller && repeater) { scroller = FindScrollViewerAncestor(repeater, *this); }
+    return scroller ? scroller.ViewportWidth() > 0 && scroller.ViewportHeight() > 0 :
+        repeater && repeater.ActualWidth() > 0 && repeater.ActualHeight() > 0;
+}
+
 void TableView::OnBodyScrollerViewChanged(
     const winrt::IInspectable& /*sender*/,
     const winrt::ScrollViewerViewChangedEventArgs& /*args*/)
@@ -1276,17 +1273,15 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
 
     // Until Initialize has its verdict, attaching a source is part of initialization rather than a tracked swap.
     auto const initializing = !m_tip.initializationDone;
-    auto const escapesAtStart = m_tipAppEscapes;
     auto const tipGeneration = BeginTipOperation(TableViewTip::Operation::ReplaceSource, !initializing);
-    ShapingHelpers::ClearCallerFault();
     bool completed = false;
-    std::optional<HRESULT> failure;
-    auto tipCompletion = wil::scope_exit([this, tipGeneration, initializing, escapesAtStart, &completed, &failure]() noexcept
+    std::optional<TableViewTip::Fault> failure;
+    auto tipCompletion = wil::scope_exit([this, tipGeneration, initializing, &completed, &failure]() noexcept
     {
         if (initializing)
         {
             if (completed) { NoteTipInitializationSource(); }
-            else { FailTipInitializationAttach(escapesAtStart, failure.value_or(E_FAIL)); }
+            else { FailTipInitialization(TableViewTip::Stage::Source, failure.value_or(TableViewTip::Fault{})); }
         }
         else if (!completed)
         {
@@ -1338,9 +1333,8 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     }
     catch (...)
     {
-        failure = winrt::to_hresult();
-        // Reading the new collection, or its contract, failed: that is the app's.
-        if (ShapingHelpers::TakeCallerFault(*failure)) { NoteAppEscape(TableViewTip::AppFaultKind::Data, failure); }
+        // App code's exceptions (the new collection, its contract, a callout) carry their kind.
+        failure = TableViewTip::CurrentFault();
         throw;
     }
     completed = true;
@@ -3480,6 +3474,7 @@ void TableView::OnTableViewUnloaded()
     }
 
     m_headerSortSpaceArmedColumn = nullptr;
+    IgnoreTipInitializationUnloadedBeforeRender();
     IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
     SampleInstanceTelemetry();
     TableViewTelemetry::EndSession(m_telemetrySession);

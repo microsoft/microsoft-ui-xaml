@@ -100,7 +100,7 @@ namespace TableViewTip
     // or at once for an empty view.
     TIP_declare_test(TableViewInitializationTest, 64477764)
     {
-        TIP_set_data_version(8);
+        TIP_set_data_version(1);
         TIP_set_metrics_enabled();
         using reason = TableViewTipReason;
 
@@ -110,9 +110,11 @@ namespace TableViewTip
         HRESULT diagnosticHResult{};
         bool diagnosticHResultAvailable{};
         AppFaultKind appFaultKind{};
-        // The metrics bucket's inputs (MetricsBucket).
+        // The metrics bucket's inputs (MetricsBucket), and the rows before and after the filter (Log2Bucket).
         bool rightToLeft{};
         bool largeData{};
+        uint8_t sourceRowsBucket{};
+        uint8_t dataRowsBucket{};
 
         TIP_require_all_flags_clear(reason::template_setup_failed, reason::source_attach_failed);
 
@@ -133,7 +135,8 @@ namespace TableViewTip
         template<class Archive>
         unsigned char serialize_metrics(Archive& archive)
         {
-            archive(TIP_value(dimensions), TIP_value(rightToLeft), TIP_value(largeData));
+            archive(TIP_value(dimensions), TIP_value(rightToLeft), TIP_value(largeData), TIP_value(sourceRowsBucket),
+                TIP_value(dataRowsBucket));
             return MetricsBucket(rightToLeft, largeData);
         }
     };
@@ -143,7 +146,7 @@ namespace TableViewTip
     // declaration, so a change to these tests' data leaves its data version alone.
     TIP_declare_test(TableViewOperationTest, OperationMeasure::Sort)
     {
-        TIP_set_data_version(6);
+        TIP_set_data_version(1);
         TIP_set_metrics_enabled();
         using reason = TableViewTipReason;
 
@@ -153,9 +156,11 @@ namespace TableViewTip
         HRESULT diagnosticHResult{};
         bool diagnosticHResultAvailable{};
         AppFaultKind appFaultKind{};
-        // The metrics bucket's inputs (MetricsBucket).
+        // The metrics bucket's inputs (MetricsBucket), and the rows before and after the filter (Log2Bucket).
         bool rightToLeft{};
         bool largeData{};
+        uint8_t sourceRowsBucket{};
+        uint8_t dataRowsBucket{};
 
         TIP_require_all_flags_clear(reason::sort_failed, reason::edit_begin_failed, reason::edit_commit_failed,
             reason::filter_failed, reason::group_expansion_failed, reason::hierarchy_expansion_failed);
@@ -177,7 +182,8 @@ namespace TableViewTip
         template<class Archive>
         unsigned char serialize_metrics(Archive& archive)
         {
-            archive(TIP_value(dimensions), TIP_value(rightToLeft), TIP_value(largeData));
+            archive(TIP_value(dimensions), TIP_value(rightToLeft), TIP_value(largeData), TIP_value(sourceRowsBucket),
+                TIP_value(dataRowsBucket));
             return MetricsBucket(rightToLeft, largeData);
         }
     };

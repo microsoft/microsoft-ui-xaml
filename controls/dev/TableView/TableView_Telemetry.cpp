@@ -8,19 +8,12 @@
 
 namespace
 {
-    // The class name is compared, never reported.
     uint32_t ColumnKindOf(winrt::TableViewColumn const& column)
     {
         uint32_t kinds{};
         if (column.try_as<winrt::TableViewTemplateColumn>()) { kinds |= TableViewTelemetry::ColumnKind::Template; }
         else if (column.try_as<winrt::TableViewTextColumn>()) { kinds |= TableViewTelemetry::ColumnKind::Text; }
-        auto const className = winrt::get_class_name(column);
-        std::wstring_view const name{ className };
-        if (name != winrt::name_of<winrt::TableViewTextColumn>() && name != winrt::name_of<winrt::TableViewTemplateColumn>() &&
-            name != winrt::name_of<winrt::TableViewColumn>())
-        {
-            kinds |= TableViewTelemetry::ColumnKind::AppDerived;
-        }
+        if (TableViewDetails::IsAppDerivedColumn(column)) { kinds |= TableViewTelemetry::ColumnKind::AppDerived; }
         return kinds;
     }
 }
@@ -57,6 +50,7 @@ void TableView::SampleInstanceTelemetry() noexcept
             if (sourceImpl->HasGroupBy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Grouping; }
             if (sourceImpl->HasParentBy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Hierarchy; }
             if (sourceImpl->IsLiveShaping()) { sample.enabledFeatures |= TableViewTelemetry::Feature::LiveShaping; }
+            sample.sourceRows = sourceImpl->SourceRowCount();
             sample.dataRows = sourceImpl->DataRowCount();
             if (sample.dataRows == 0)
             {

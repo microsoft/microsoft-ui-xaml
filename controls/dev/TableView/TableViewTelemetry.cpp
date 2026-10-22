@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <atomic>
-#include <bit>
 #include <limits>
 
 extern const char* gFileVersion;
@@ -16,8 +15,8 @@ namespace TableViewTelemetry
 {
     namespace
     {
-        constexpr uint32_t schemaVersion = 8;
-        constexpr uint32_t c_instanceVersion = 2;
+        constexpr uint32_t schemaVersion = 1;
+        constexpr uint32_t c_instanceVersion = 1;
         // A table that is reloaded or recreated writes one TableView_Instance per load; this bounds a process.
         constexpr uint32_t c_maxInstanceEvents = 64;
         constexpr ULONGLONG measuresKeyword = MICROSOFT_KEYWORD_MEASURES | KEYWORD_TABLEVIEW;
@@ -46,12 +45,6 @@ namespace TableViewTelemetry
 
         // TableView_Instance events this process has written, against c_maxInstanceEvents.
         std::atomic<uint32_t> s_instancesWritten{};
-
-        // 0 for none; otherwise k for a count in [2^(k-1), 2^k).
-        constexpr uint8_t Log2Bucket(uint32_t count) noexcept
-        {
-            return static_cast<uint8_t>(std::bit_width(count));
-        }
 
         // The diagnostic dedupe mask has a bit per attribution and recoverability in each diagnostic slot.
         constexpr uint32_t c_attributions = static_cast<uint32_t>(TableViewTip::Attribution::Max);
@@ -145,8 +138,9 @@ namespace TableViewTelemetry
             // Whatever the samples saw, a feature that was used was enabled.
             TraceLoggingUInt32(sampled.enabledFeatures | session.usedFeatures, "EnabledFeatures"),
             TraceLoggingUInt32(session.usedFeatures, "UsedFeatures"),
-            TraceLoggingUInt8(Log2Bucket(sampled.dataRows), "DataRowsBucket"),
-            TraceLoggingUInt8(Log2Bucket(sampled.peakRealizedRows), "PeakRealizedRowsBucket"),
+            TraceLoggingUInt8(TableViewTip::Log2Bucket(sampled.sourceRows), "SourceRowsBucket"),
+            TraceLoggingUInt8(TableViewTip::Log2Bucket(sampled.dataRows), "DataRowsBucket"),
+            TraceLoggingUInt8(TableViewTip::Log2Bucket(sampled.peakRealizedRows), "PeakRealizedRowsBucket"),
             TraceLoggingUInt32(sampled.columnKinds, "ColumnKinds"),
             TraceLoggingUInt32(sampled.sourceKinds, "SourceKinds"),
             TraceLoggingBoolean(sampled.rightToLeft, "IsRightToLeft"),
@@ -162,6 +156,7 @@ namespace TableViewTelemetry
         sampled.enabledFeatures |= sample.enabledFeatures;
         sampled.columnKinds |= sample.columnKinds;
         sampled.sourceKinds |= sample.sourceKinds;
+        sampled.sourceRows = (std::max)(sampled.sourceRows, sample.sourceRows);
         sampled.dataRows = (std::max)(sampled.dataRows, sample.dataRows);
         sampled.peakRealizedRows = (std::max)(sampled.peakRealizedRows, sample.peakRealizedRows);
         sampled.rightToLeft = sampled.rightToLeft || sample.rightToLeft;
@@ -175,7 +170,8 @@ namespace TableViewTelemetry
     }
 
     void ReportError(Session& session, uint64_t startedIn, TableViewTip::Operation operation, TableViewTip::Stage stage,
-        bool recoverable, TableViewTip::Attribution attribution, std::optional<HRESULT> error, TableViewTip::AppFaultKind kind) noexcept
+        bool recoverable, TableViewTip::Attribution attribution, std::optional<HRESULT> error, TableViewTip::AppFaultKind kind,
+        uint32_t faultCount) noexcept
     {
         auto const slot = DiagnosticSlot(operation);
         if (!slot || static_cast<uint32_t>(attribution) >= c_attributions)
@@ -199,6 +195,7 @@ namespace TableViewTelemetry
             TraceLoggingHResult(error.value_or(S_OK), "HResult"),
             TraceLoggingBoolean(error.has_value(), "HResultAvailable"),
             TraceLoggingUInt32(static_cast<uint32_t>(kind), "AppFaultKind"),
+            TraceLoggingUInt32(faultCount, "FaultCount"),
             TraceLoggingBoolean(recoverable, "IsRecoverable"),
             TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance));
     }

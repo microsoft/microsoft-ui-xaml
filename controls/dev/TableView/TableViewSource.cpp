@@ -24,8 +24,6 @@ struct TableViewSource::ShapingTip
         source(source), kind(kind), handlers(source.m_shapingTipHandlers),
         previous(std::exchange(source.m_shapingTip, this)), ownerGeneration(source.m_ownerGeneration)
     {
-        // A note an earlier, swallowed failure left behind must not attribute this verb's failure.
-        ShapingHelpers::ClearCallerFault();
         observation.unproven = previous || source.m_notificationDepth;
         if (previous) { previous->observation.unproven = true; }
         if (handlers)
@@ -42,7 +40,7 @@ struct TableViewSource::ShapingTip
             auto const stale = ownerGeneration != source.m_ownerGeneration;
             handlers->complete(kind, generation, !stale && observation.Failed(),
                 stale ? std::optional{ TableViewTip::IgnoreReason::Stale } : observation.Ignored(),
-                observation.error, observation.appFaultKind);
+                observation.error, observation.appFaultKind, observation.contained);
         }
     }
 
@@ -52,20 +50,22 @@ struct TableViewSource::ShapingTip
     template<class Callback>
     void Apply(Callback&& callback)
     {
+        // Delegate faults contained before this verb (live shaping, a source change) are not its own.
+        source.m_engine->TakeSwallowedFaults();
         try
         {
             std::forward<Callback>(callback)();
             observation.completed = true;
+            auto const contained = source.m_engine->TakeSwallowedFaults();
+            observation.contained = { contained.count, contained.firstError };
         }
         catch (...)
         {
-            auto const error = winrt::to_hresult();
-            if (!observation.error) { observation.error = error; }
-            // The caller's collection or contract failed; TableView's own invalid arguments stay its own.
-            if (observation.appFaultKind == TableViewTip::AppFaultKind::None && ShapingHelpers::TakeCallerFault(error))
-            {
-                observation.appFaultKind = TableViewTip::AppFaultKind::Data;
-            }
+            // The app's collection, its broken contract, or a callout arrive tagged as the app's; TableView's own
+            // invalid arguments stay its own.
+            auto const fault = TableViewTip::CurrentFault();
+            if (!observation.error) { observation.error = fault.error; }
+            if (observation.appFaultKind == TableViewTip::AppFaultKind::None) { observation.appFaultKind = fault.appFault; }
             throw;
         }
     }
@@ -334,12 +334,17 @@ bool TableViewSource::HasParentBy() const
     return m_engine->HasParentBy();
 }
 
+uint32_t TableViewSource::SourceRowCount() const
+{
+    return m_engine->SourceRowCount();
+}
+
 uint32_t TableViewSource::DataRowCount() const
 {
-    // Rows() is only a snapshot of a tree's visible rows; the published index holds every node.
+    // Rows() is only a snapshot of a tree's visible rows; the published index holds every node the filter keeps.
     if (auto const adapter = m_engine->HierarchicalAdapter(); adapter && adapter->HasIndex())
     {
-        return adapter->NodeCount();
+        return adapter->KeptNodeCount();
     }
     // Rows() is the shaped data without headers and ignores group expansion.
     auto const rows = m_engine->Rows();

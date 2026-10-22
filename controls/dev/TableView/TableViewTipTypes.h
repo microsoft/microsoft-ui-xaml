@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <bit>
 #include <cstdint>
 
 // TiP and telemetry vocabulary without the TiP library, for headers that only need the names.
@@ -21,10 +22,21 @@ namespace TableViewTip
         Cancelled = 100, Vetoed = 101, ValidationRejected = 102, Superseded = 103,
         Unloaded = 104, Retemplated = 105, Stale = 106,
         DeferredOrUnproven = 107, ApplicationFault = 108, AppTemplateIncomplete = 109,
+        // Unloaded while Initialize waited on a table that had rows and a viewport: a realization fault, or a
+        // navigation faster than the first layout.
+        UnloadedBeforeRender = 110,
         // One past the last reason: add reasons above it. TableViewTip.cpp checks that each one has a name.
         Max
     };
     enum class AppFaultKind : uint32_t { None = 0, Callback = 1, Validation = 3, Write = 4, Factory = 5, Data = 6 };
+    // App delegates that threw during a verb and were contained by design (a filter predicate excludes its row, a sort
+    // or group key selector yields a null key, a comparer orders the pair as equal): how many, and the first one's
+    // HRESULT. TableView reports them as a recovered app fault; the verb's outcome stands.
+    struct ContainedFaults
+    {
+        uint32_t count{};
+        HRESULT firstError{ S_OK };
+    };
     // Where a fault happened and whose it was; recorded on the TableView_Error diagnostic.
     enum class Stage : uint32_t
     {
@@ -61,15 +73,22 @@ namespace TableViewTip
     }
 
     // Every TiP test's metrics bucket, from inputs read when the test starts: 0 LTR-small, 1 LTR-large, 2 RTL-small,
-    // 3 RTL-large, where large is at least c_largeDataRows data rows.
+    // 3 RTL-large, where large is a source of at least c_largeDataRows rows before the filter. Each result also
+    // reports the rows before and after the filter.
     struct MetricsInputs
     {
         bool rightToLeft{};
-        bool largeData{};
+        uint32_t sourceRows{};
+        uint32_t dataRows{};
     };
     constexpr uint32_t c_largeDataRows = 1000;
     constexpr unsigned char MetricsBucket(bool rightToLeft, bool largeData) noexcept
     {
         return static_cast<unsigned char>((rightToLeft ? 2 : 0) + (largeData ? 1 : 0));
+    }
+    // 0 for none; otherwise k for a count in [2^(k-1), 2^k). TiP results and TableView_Instance report row counts so.
+    constexpr uint8_t Log2Bucket(uint32_t count) noexcept
+    {
+        return static_cast<uint8_t>(std::bit_width(count));
     }
 }

@@ -143,6 +143,8 @@ public:
     bool HasActiveSort() const;
     // Whether a clear verb has anything to clear, so an owner can tell a no-op clear from a real one.
     bool HasFilter() const noexcept { return m_pipeline.HasFilter(); }
+    // The app predicates and key selectors that threw since the last take; resets the tally.
+    ShapingHelpers::SwallowedFaults TakeSwallowedFaults() noexcept { return m_pipeline.TakeSwallowedFaults(); }
     bool HasGroup() const noexcept { return static_cast<bool>(m_groupSelector); }
     bool HasParentBy() const noexcept { return static_cast<bool>(m_parentKeySelector); }
     bool HasSortAxis(winrt::hstring const& axisToken) const noexcept { return m_pipeline.HasSortAxis(axisToken); }
@@ -165,6 +167,10 @@ public:
     // ItemsSourceView instead, but this vector is still maintained as the flat shaped projection
     // (group order, headers excluded) so Rows() stays coherent regardless of grouping.
     winrt::IObservableVector<winrt::IInspectable> Rows() const noexcept { return m_rows; }
+    // The source's rows before the filter (every node for a tree), without reading the source: a filtered
+    // projection rebuilds on every source change, so the count its last Refresh read is current, and without a
+    // filter Rows() holds every source row.
+    uint32_t SourceRowCount() const;
     std::shared_ptr<GroupedSourceAdapter> GroupedAdapter() const noexcept { return m_groupedAdapter; }
     std::shared_ptr<HierarchicalSourceAdapter> HierarchicalAdapter() const noexcept { return m_hierarchicalAdapter; }
     // The selector every identity consumer must use. Derives identity from each item's object
@@ -258,6 +264,8 @@ private:
     uint64_t m_sourceChangeStamp{ 0 };
     // Stamp captured when the current Refresh materialized the source.
     uint64_t m_refreshSourceStamp{ 0 };
+    // The rows the last Refresh materialized, before the filter (SourceRowCount).
+    uint32_t m_refreshSourceRowCount{ 0 };
     // Stamp whose rows the last successful shaped Refresh validated; never a real stamp until then.
     uint64_t m_validatedSourceStamp{ ~uint64_t{ 0 } };
 

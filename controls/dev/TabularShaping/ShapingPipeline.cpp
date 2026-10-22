@@ -154,6 +154,7 @@ namespace ShapingHelpers
             }
             catch (...)
             {
+                m_swallowedFaults.Note();
                 return false;
             }
         }
@@ -169,21 +170,9 @@ namespace ShapingHelpers
         }
 
         // One pass over the rows regardless of axis count: the axes are conjunctive, so they
-        // compose into a single predicate rather than into N successive erase passes.
-        ApplyPredicateFilter(
-            rows,
-            [this](winrt::IInspectable const& item)
-            {
-                for (auto const& axis : m_filters)
-                {
-                    if (!axis.Predicate(item))
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            });
+        // compose into a single predicate rather than into N successive erase passes. PassesFilter
+        // also counts a predicate that throws.
+        ApplyPredicateFilter(rows, [this](winrt::IInspectable const& item) { return PassesFilter(item); });
     }
 
     void ShapingPipeline::SetSort(
@@ -356,7 +345,7 @@ namespace ShapingHelpers
         StableSortByKeys(
             rows,
             active.size(),
-            [&active](winrt::IInspectable const& item, size_t axisIndex) -> winrt::IInspectable
+            [this, &active](winrt::IInspectable const& item, size_t axisIndex) -> winrt::IInspectable
             {
                 try
                 {
@@ -364,6 +353,7 @@ namespace ShapingHelpers
                 }
                 catch (...)
                 {
+                    m_swallowedFaults.Note();
                     return nullptr;
                 }
             },
@@ -376,13 +366,13 @@ namespace ShapingHelpers
     int ShapingPipeline::CompareKeysToRow(
         std::vector<SortAxis> const& axes,
         std::vector<winrt::IInspectable> const& itemKeys,
-        winrt::IInspectable const& row)
+        winrt::IInspectable const& row) const
     {
         for (size_t i = 0; i < axes.size(); ++i)
         {
             auto const& axis = axes[i];
             winrt::IInspectable rowKey{ nullptr };
-            try { rowKey = axis.Key(row); } catch (...) { rowKey = nullptr; }
+            try { rowKey = axis.Key(row); } catch (...) { m_swallowedFaults.Note(); rowKey = nullptr; }
             const int cmp = ValueComparer::Compare(itemKeys[i], rowKey);
             if (cmp != 0)
             {
@@ -400,7 +390,7 @@ namespace ShapingHelpers
         for (auto const& axis : active)
         {
             winrt::IInspectable key{ nullptr };
-            try { key = axis.Key(item); } catch (...) { key = nullptr; }
+            try { key = axis.Key(item); } catch (...) { m_swallowedFaults.Note(); key = nullptr; }
             itemKeys.push_back(key);
         }
 
@@ -421,7 +411,7 @@ namespace ShapingHelpers
         for (auto const& axis : active)
         {
             winrt::IInspectable key{ nullptr };
-            try { key = axis.Key(item); } catch (...) { key = nullptr; }
+            try { key = axis.Key(item); } catch (...) { m_swallowedFaults.Note(); key = nullptr; }
             itemKeys.push_back(key);
         }
 

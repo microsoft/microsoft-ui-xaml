@@ -100,8 +100,9 @@ public:
     bool HasFilter() const;
     bool HasGroupBy() const;
     bool HasParentBy() const;
-    // Data rows, without group headers and whatever is expanded: the rows that pass the filter, or for a tree
-    // every node before filtering. Reads no app code.
+    // Rows before the filter (every node for a tree), and data rows after it, without group headers and whatever is
+    // expanded. Neither reads app code.
+    uint32_t SourceRowCount() const;
     uint32_t DataRowCount() const;
     // True when `item` (by object identity) is in the shaped, filtered rows, regardless of group or
     // node expansion. Header rows never match.
@@ -132,7 +133,8 @@ public:
     // unchanged and only the order moved.
     void SetShapingChangedHandler(std::function<void(bool)> handler) { m_shapingChanged = std::move(handler); }
     using ShapingTipCompleted = std::function<void(TableViewTip::Operation, uint64_t, bool failed,
-        std::optional<TableViewTip::IgnoreReason>, std::optional<HRESULT>, TableViewTip::AppFaultKind)>;
+        std::optional<TableViewTip::IgnoreReason>, std::optional<HRESULT>, TableViewTip::AppFaultKind,
+        TableViewTip::ContainedFaults)>;
     void SetShapingTipHandlers(
         winrt::IInspectable const& owner,
         std::function<uint64_t(TableViewTip::Operation, bool)> begin,

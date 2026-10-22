@@ -2659,8 +2659,13 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<
             catch (...)
             {
                 if (displayFailure) { *displayFailure = winrt::to_hresult(); }
-                // The factory threw, or returned an element that already has a parent: both are the app's.
-                if (applicationFault) { *applicationFault = !factoryReturned || HasForeignParent(refreshed, cellWrapper); }
+                // An app-derived column's factory threw, or returned an element that already has a parent: both
+                // are the app's. TableView's own columns build a new element.
+                if (applicationFault)
+                {
+                    *applicationFault = TableViewDetails::IsAppDerivedColumn(column) &&
+                        (!factoryReturned || HasForeignParent(refreshed, cellWrapper));
+                }
                 // A column that throws while regenerating must not strand the row in edit mode;
                 // fall back to the parked element, which is stale but present.
                 displayElement = m_editingDisplayElement.get();
