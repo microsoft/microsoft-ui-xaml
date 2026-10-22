@@ -135,7 +135,7 @@ After the common prefix, these are the concrete schema-1 payloads:
 
 | Name / semantic ID | TDH fields, in order |
 |---|---|
-| RuntimeCapabilities / 1 | Epoch:GUID, Build:utf8z, Architecture:u32, QpcFrequency:i64, CapabilityCount:u32 |
+| RuntimeCapabilities / 1 | Epoch:GUID, Build:utf8z, Architecture:u32, QpcFrequency:i64, CapabilityCount:u32, Capabilities:CapabilityEntry[] |
 | ObjectLifetime / 2 | Object:Object, Operation:u8, TypeId:Optional<u64>, Address:Optional<u64>, Quality:Quality, Classification:Optional<Classification>, Cause:Cause |
 | TypeResolved / 3 | TypeId:u64, Name:utf8z, Classification:Optional<Classification> |
 | CorePeerAssociation / 4 | Core:Object, Peer:Object, Linked:bool8, Cause:Cause |
@@ -147,34 +147,109 @@ After the common prefix, these are the concrete schema-1 payloads:
 | Device / 10 | DeviceEpoch:GUID, Operation:u8, Api:utf8z, Quality:Quality |
 | Resource / 11 | Resource:Object, Operation:u8, DeviceEpoch:GUID, BackingAllocationId:Optional<GUID>, AllocationBytes:Optional<u64>, SizeProvenance:u8, Owner:Optional<Object>, WidthPixels:Optional<u32>, HeightPixels:Optional<u32>, Quality:Quality, Classification:Classification, Cause:Cause |
 | Allocation / 12 | AllocationId:u64, Operation:u8, PreviousAllocationId:Optional<u64>, RequestedBytes:u64, ActualBytes:Optional<u64>, AllocatorEpoch:GUID, BaselineCaptureId:Optional<GUID>, Quality:Quality, Cause:Cause |
-| Loss / 15 | Interval:{StartQpc:i64, EndQpc:i64}, LostEvents:Optional<u64>, Reason:utf8z, HasDomains:bool8 |
+| CaptureBoundary / 13 | CaptureId:GUID, Kind:u8, Phase:u8, RootId:Optional<GUID>, DispatcherId:Optional<u64>, Domains:DomainRange[], ChunkCount:Optional<u32>, Quality:Quality |
+| CaptureChunk / 14 | CaptureId:GUID, ChunkIndex:u32, RootId:GUID, DispatcherId:u64, nine typed state arrays followed by five typed shared tables, below |
+| Loss / 15 | Interval:{StartQpc:i64, EndQpc:i64}, LostEvents:Optional<u64>, Reason:utf8z, HasDomains:bool8, Domains:DomainReference[] |
 | XamlPropertyChanged / 16 | Object:Object, Property:{PropertyId:u64, DeclaringType:utf8z, Name:utf8z}, Previous:Value, Current:Value, Cause:Cause |
 
 RuntimeCapabilities.Epoch must equal the prefix epoch; its normalized Process
 is TargetProcess. TypeResolved/Loss's payload ProducerEpoch is the prefix
 epoch. Build is `WinUI-<WINUI_BUILD_VERSION>` (0 in the isolated harness).
-Architecture codes are X64=0, Arm64=1. This foundation's CapabilityCount
-is **always zero**, mapping to an empty capability list: typed writer
-availability does not establish actual lifecycle/frame/resource coverage.
-HasDomains is **always false**, mapping to null (unlocalized loss), not an
-empty authoritative vector. Reject other values in these schema-1 layouts;
-adding capability entries/localized loss requires a supported new native
-event version with a concrete typed layout and matching catalog/adapter
-version support. The canonical record's fields may stay the same, but its
-identity/sequence domain must preserve the actual supported event version;
-never coerce a new wire version into an old continuity domain.
+Architecture codes are X64=0, Arm64=1. The ordinary handshake/opportunistic
+announcement currently emits zero capabilities: writer availability does not
+establish actual lifecycle/frame/resource coverage. The schema-1 encoder also
+supports bounded nonempty capability entries. CapabilityCount must equal the
+array length. Localized loss uses HasDomains=true with a typed domain array;
+false means null, with canonical empty backing storage, not an authoritative
+empty affected-domain list. True with a zero-length array means an explicit
+empty list. These are complete **version-1** encodings, not future versions.
 
-CaptureBoundary/13 and CaptureChunk/14 remain reserved catalog definitions:
-P04 does not emit them, define their native array layout, implement traversal,
-or acknowledge captures as successful. Their wire encoders and algorithms
-belong to the later capture task; adapters must reject unknown layouts, not
-guess from normalized JSON. No collector provider is implemented by P04.
+### Typed runtime vectors and capture state (native schema 1)
+
+Arrays are tightly packed TraceLogging variable-count struct arrays: a
+little-endian u16 element count followed by typed elements, **without native
+padding or pointers**. TDH exposes each element's named primitive/struct
+metadata even for empty arrays. Bounds: capabilities 128 unique entries;
+loss/capture domain vectors 256 (capture domains unique); objects and each
+other state array 4,096 except ownership 8,192. All still share the stricter
+48 KiB total ETW transport budget; a caller must partition oversized state
+in its later capture algorithm, not silently truncate it.
+
+```
+CapabilityEntry = { Capability:u8, Version:i32, Quality:Quality }
+DomainReference = { EventId:u16, EventVersion:u8 }
+CutValue = { CutId:GUID, ReservedThrough:u64, SettledThrough:u64 }
+DomainRange = { Domain:DomainReference, BeforeSequence:Optional<u64>,
+                ThroughSequence:Optional<u64>, Quality:Quality,
+                SettledCut:Optional<CutValue> }
+```
+
+Every domain inherits ProviderId=RuntimeProviderId, ProducerProcessId=
+TargetProcess.ProcessId, ProducerEpoch=the common epoch, and Target=
+TargetProcess. CutValue inherits its enclosing range's full domain; it is
+not an unqualified maximum or consumer receipt. EventId must be in the
+runtime catalog and EventVersion must be 1. Preserve all P01 range rules:
+ordered optional checkpoints; settled <= reserved; complete ranges have a
+before checkpoint, and at End a through checkpoint plus a cut settling it.
+Complete boundaries have nonempty domain vectors; End has a chunk count.
+This encodes producer evidence only, not listener continuity/delivery closure.
+
+CaptureChunk's full nested P01 state, naively repeated, exceeds TDH's property
+limit. Its **typed** representation uses 1-based shared-table row indices.
+Zero denotes null **only** for ParentIndex, OwnerIndex and the nullable XAML
+ClassificationIndex; it is never an object/lifetime ID. All other references
+must be nonzero and within the named table. Resolve references after reading
+all tables; reject unknown enum codes, invalid references/optional backing
+values and invalid resulting P01 observations. Duplicate table rows are
+legal; they do not create distinct semantic objects.
+
+In exact order after the chunk header:
+
+| Array | Typed element fields, in order |
+|---|---|
+| Objects | KeyIndex:u32, HasTypeName:bool8, TypeName:utf8z, HasAddress:bool8, Address:u64, SizeIndex:u32, ClassificationIndex:u32 |
+| Ownership | FromIndex:u32, ToIndex:u32, Relationship:utf8z, Evidence:u8, QualityIndex:u32 |
+| Tree | ParentIndex:u32, ChildIndex:u32, Relationship:u8, Order:i32, Connected:bool8, CauseIndex:u32, Membership:u8 |
+| Correlations | FromIndex:u32, ToIndex:u32, Kind:u8, Linked:bool8, CauseIndex:u32 |
+| Resources | ResourceIndex:u32, Operation:u8, DeviceEpoch:GUID, HasBackingAllocationId:bool8, BackingAllocationId:GUID, HasAllocationBytes:bool8, AllocationBytes:u64, SizeProvenance:u8, OwnerIndex:u32, HasWidthPixels:bool8, WidthPixels:u32, HasHeightPixels:bool8, HeightPixels:u32, QualityIndex:u32, ClassificationIndex:u32, CauseIndex:u32 |
+| Visuals | VisualIndex:u32, Property:u8, ValueIndex:u32, CauseIndex:u32 |
+| Associations | CoreIndex:u32, PeerIndex:u32, Linked:bool8, CauseIndex:u32 |
+| Types | TypeId:u64, Name:utf8z, ClassificationIndex:u32 |
+| Allocations | AllocationId:u64, Operation:u8, HasPreviousAllocationId:bool8, PreviousAllocationId:u64, RequestedBytes:u64, HasActualBytes:bool8, ActualBytes:u64, AllocatorEpoch:GUID, HasBaselineCaptureId:bool8, BaselineCaptureId:GUID, QualityIndex:u32, CauseIndex:u32 |
+| Keys | Domain:u8, RuntimeObjectId:u64 |
+| Values | Kind:u8, Unit:u8, Integer:i64, Number:f64, Boolean:bool8, Text:utf8z, QualityIndex:u32 |
+| Classifications | Kind:u8, Evidence:u8, Source:utf8z |
+| Causes | Kind:u8, HasAttempt:bool8, AttemptId:u64, RootId:GUID, DispatcherId:u64, HasReason:bool8, Reason:utf8z |
+| Qualities | Kind:u8, Coverage:u8, HasReason:bool8, Reason:utf8z |
+
+References named Key/Object/Parent/Child/From/To/Resource/Owner/Visual/Core/Peer
+index Keys. SizeIndex/ValueIndex index Values; other table names are explicit
+in the reference name. Keys inherit the common target and epoch. Tree entries
+inherit the chunk's root and dispatcher; the native encoder verifies those
+equalities before omitting repeated fields. Types inherit the common epoch.
+Causes with HasAttempt inherit the common producer epoch but preserve their
+own AttemptId/root/dispatcher. The Classification table is interpreted as
+XamlTypeClassification for Objects/Types and ResourceClassification for
+Resources. Restore Has* nullable fields and reasons, setting absent values
+to null; inactive backing values are canonical defaults. Restore only the
+selected Values arm, setting all other normalized arms to null.
+
+Each shared table has at most 4,096 rows and is scoped to this one event.
+There is no persistent identity/capture registry or pointer identity. This
+layout has **127 TDH properties including all fourteen array count fields**,
+within TDH's 128-property limit, while preserving every P01 state field.
+Native validation covers shape, units/quality, source epochs, nested topology
+scope and bounded pointers/counts before encoding. Actual capture requests
+still return E_NOTIMPL: schema writers do not traverse, capture, reconcile or
+advertise any observational capability. No collector provider is implemented.
 
 Native text is validated UTF-8, at most 1,024 bytes excluding its terminating
 zero per field. Factories run only after definition/keyword enablement and
 reentrancy guards. The synchronous writer borrows text only for that call.
-The final EventWriteTransfer wrapper sums all descriptor sizes (including
-metadata) and refuses writes over 48 KiB. This transport budget is independent
+The bounded encoder follows the public SDK's TraceLogging format and calls
+EventWriteTransfer with typed provider/event metadata and explicitly packed
+primitive fields. It refuses payload + metadata over 48 KiB, including when
+the payload alone would fit. This transport budget is independent
 of the 1 MiB owned normalized payload limit. No JSON payload is sent over ETW.
 Native validation is an early guard, not a replacement for full P01
 normalization/context validation at the adapter trust boundary.
@@ -205,21 +280,25 @@ SequenceCut 96) on x64 and ARM64.
   incompatible protocol versions with ERROR_REVISION_MISMATCH; buffer methods
   reject null pointers/wrong sizes without writing undersized buffers.
 
-Provider registration only registers/unregisters ETW. Enable callbacks update
+Provider registration registers/unregisters ETW and sets static provider traits.
+Enable callbacks update
 aggregate enabled state and a notification serial under a lock, without
 COM, traversal, allocation or dispatcher calls. Process/GUID initialization
 occurs outside loader-lock callbacks. The last-listener disable followed by
 the first enable starts a fresh epoch lazily, after in-flight writes settle.
 Changing another listener, keyword or level while any listener remains does
-not reset IDs/counters. Every new epoch requires a capabilities announcement:
-enable Capabilities during the initial handshake (and on re-enable) before
-using the other independently selectable families. Until an announcement is
-written, helpers return E_PENDING rather than use an unannounced epoch.
-This is not proof any particular listener received the announcement.
+not reset IDs/counters. A valid producer epoch is established independently
+of capabilities publication. Each definition's own keyword/level suffices,
+including fresh Frames-only and Warning-only Loss listeners. Capabilities
+publication is opportunistic when its informational definition is enabled;
+neither its enablement nor successful publication gates another definition.
+Consumers needing additional build/capability information must acquire that
+explicitly; a handshake/publication is not proof any listener received it.
 
 SDK aggregate keyword/level checks (including EventEnabled) can combine one
 listener's Informational level with another listener's Frames keyword even
-when neither enables Informational Frames. After the cheap SDK guard, the
+when neither enables Informational Frames. After the cheap aggregate callback
+mask guard, the
 foundation lazily caches the actual current process's individual OS session
 selections from EnumerateTraceGuidsEx/TraceGuidQueryInfo. This happens only on
 an enabled path after a notification, **not** in the enable callback. The
@@ -235,6 +314,11 @@ AddRef tracing or HeapSize calls. NewObjectIdentity only allocates monotonic
 epoch-qualified IDs while an object-related family is enabled; callers in
 later hook tasks must retire their weak mappings with the epoch and establish
 a new baseline, not preserve pointer-only IDs. The foundation has no maps.
+CaptureChunk-only enablement also permits IDs for its baseline state.
+Enabled writes use bounded, call-local heap scratch (8 KiB metadata plus
+48 KiB data, and five 4,096-pointer tables for a capture chunk), released on
+every return. There are no allocations on a disabled writer/factory path;
+these structural facts are not P17 measured overhead acceptance.
 
 Each definition has its own 256-slot, allocation-free concurrent reservation
 window. A reservation is made immediately before the write attempt and
@@ -262,7 +346,10 @@ nonblank reason.
 `TypedValue` = `Kind:Integer|Number|Boolean|Text|Missing`, `Unit`,
 `Integer:i64?`, `Number:finite f64?`, `Boolean:bool?`, `Text:string?`,
 `Quality:DataQuality`. Exactly one matching value is present, or none for
-Missing with unavailable quality. Units: Count, Bytes, Percent, QpcTicks,
+Missing with unavailable **measurement kind**, a required reason, and
+independently Complete/Partial/Unavailable coverage. Every present kind
+rejects Unavailable measurement quality; Estimated is permitted with a
+reason. Units: Count, Bytes, Percent, QpcTicks,
 Pixels, Boolean, Scalar, String. Numeric fields cannot masquerade as
 Boolean/String units. Signed byte deltas are permitted in snapshot comparisons.
 Metric samples themselves must be nonnegative; percentages are 0–100.

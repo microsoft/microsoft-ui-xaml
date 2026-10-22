@@ -10,13 +10,15 @@ Existing telemetry is not the required schema and is not a dependency.
 ## P04 foundation status and overlapping telemetry decisions
 
 P04 adds the fixed new runtime provider and typed, guarded writers for catalog
-IDs 1–12, 15 and 16 in optimized and checked native builds. The concrete
+IDs 1–16 in optimized and checked native builds, including complete schema-1
+capability/domain vectors and all nine capture state arrays. The concrete
 TDH-visible layouts and private diagnostics ABI are in event-contract.md.
 **No lifecycle, property, membership, frame, device, resource or allocator
 sites in the inventory below are hooked yet.** The supported-event bitmask
 describes writers, not observational coverage; runtime capability arrays are
-empty. Capture IDs 13/14, typed capture arrays/traversal, weak identity maps,
-the TAP/pipe, collector and listener receipt/absence acquisition are later work.
+empty. Capture traversal/reconciliation, weak identity maps, the TAP/pipe,
+collector and listener receipt/absence acquisition are later work; the native
+capture **schemas/writers**, not those algorithms, are implemented here.
 Requesting a capture returns E_NOTIMPL, not an empty successful artifact.
 
 The private interface reuses the generic XamlDiagnostics WRL ClassicCom
@@ -44,7 +46,9 @@ hooks or final telemetry rollout have already happened.
 The focused native tests compile the actual producer source without a
 framework PCH/debug allocator, start uniquely named owned ETW sessions,
 write typed events and decode their real ETLs with TDH. They test per-ID
-reservation/contiguous settlement, multiple listeners, fresh epochs, disabled
+reservation/contiguous settlement, multiple listeners, independently selected
+fresh Frames-only/Warning-only Loss epochs, typed-value quality/discriminator
+parity, nonempty typed arrays, actual near-limit transport budgets, disabled
 lazy factories, reentrancy and failed writes. An isolated executable using the
 same test/producer translation units avoids the external framework module's
 packaged-WPF/elevated fixture prerequisites. Compilation/discovery of the

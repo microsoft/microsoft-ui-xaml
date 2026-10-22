@@ -3,68 +3,11 @@
 #include "WinUIProfilerTracing.h"
 #include <evntprov.h>
 #include <evntrace.h>
-namespace
-{
-    thread_local ULONG s_lastWriteResult = ERROR_CANCELLED;
-    ULONG WINAPI ProfilerEventWriteTransfer(REGHANDLE handle, PCEVENT_DESCRIPTOR descriptor,
-        LPCGUID activity, LPCGUID related, ULONG count, PEVENT_DATA_DESCRIPTOR data) noexcept
-    {
-        uint64_t wireBytes = 0;
-        for (ULONG i = 0; i < count; ++i) wireBytes += data[i].Size;
-        if (wireBytes > WinUIProfiler::MaximumWireBytes)
-        {
-            s_lastWriteResult = ERROR_BUFFER_OVERFLOW;
-            return s_lastWriteResult;
-        }
-        s_lastWriteResult = EventWriteTransfer(handle, descriptor, activity, related, count, data);
-        return s_lastWriteResult;
-    }
-}
-// The SDK's supported write customization retains the real terminal ETW result;
-// TraceLoggingWrite itself is a statement and discards that result.
-#define TLG_EVENT_WRITE_TRANSFER ProfilerEventWriteTransfer
-#include <TraceLoggingProvider.h>
+#include "WinUIProfilerEventEncoder.h"
 #include <new>
 #include <cmath>
 #include <cstring>
-
-TRACELOGGING_DEFINE_PROVIDER(
-    s_winUIProfilerProvider, "WinUIProfiler-Runtime",
-    (0x43a73524, 0xbc37, 0x4f6e, 0x9b, 0xa8, 0x84, 0xb5, 0x34, 0x6f, 0x61, 0xc2));
-
-#define WP_OPTIONAL(type, name, value) \
-    TraceLoggingStruct(2, name), TraceLoggingBoolean((value).Present, "Present"), \
-    type(((value).Present ? (value).Value : decltype((value).Value){}), "Value")
-#define WP_PROCESS(value) \
-    TraceLoggingStruct(4, "TargetProcess"), TraceLoggingUInt32((value).ProcessId, "ProcessId"), \
-    TraceLoggingBoolean((value).HasCreationTime != 0, "HasCreationTimeFileTime"), \
-    TraceLoggingInt64((value).CreationTimeFileTime, "CreationTimeFileTime"), TraceLoggingGuid((value).InstanceId, "InstanceId")
-#define WP_COMMON(value, id) \
-    TraceLoggingUInt16(static_cast<uint16_t>(id), "SemanticEventId"), TraceLoggingUInt8(1, "EventSchemaVersion"), \
-    TraceLoggingGuid((value).Info.ProducerEpoch, "ProducerEpoch"), TraceLoggingUInt64((value).SourceSequence, "SourceSequence"), \
-    WP_PROCESS((value).Info.Process)
-#define WP_STRING(name, value) \
-    TraceLoggingStruct(2, name), TraceLoggingBoolean((value) != nullptr, "Present"), TraceLoggingUtf8String((value) ? (value) : "", "Value")
-#define WP_QUALITY(value, name) \
-    TraceLoggingStruct(3, name), TraceLoggingUInt8((value).Kind, "Kind"), TraceLoggingUInt8((value).Coverage, "Coverage"), WP_STRING("Reason", (value).Reason)
-#define WP_CLASS(value, name) \
-    TraceLoggingStruct(3, name), TraceLoggingUInt8((value).Kind, "Kind"), TraceLoggingUInt8((value).Evidence, "Evidence"), TraceLoggingUtf8String((value).Source, "Source")
-#define WP_OBJECT(value, name) \
-    TraceLoggingStruct(3, name), TraceLoggingUInt8(static_cast<uint8_t>((value).IdentityDomain), "Domain"), \
-    TraceLoggingGuid((value).Epoch, "ProducerEpoch"), TraceLoggingUInt64((value).Id, "RuntimeObjectId")
-#define WP_ATTEMPT(value, name) \
-    TraceLoggingStruct(4, name), TraceLoggingGuid((value).Epoch, "ProducerEpoch"), TraceLoggingUInt64((value).Id, "AttemptId"), \
-    TraceLoggingGuid((value).RootId, "RootId"), TraceLoggingUInt64((value).DispatcherId, "DispatcherId")
-#define WP_CAUSE(value) \
-    TraceLoggingStruct(3, "Cause"), TraceLoggingUInt8((value).Kind, "Kind"), WP_OPTIONAL(WP_ATTEMPT, "Attempt", (value).Reference), WP_STRING("Reason", (value).Reason)
-#define WP_VALUE(value, name) \
-    TraceLoggingStruct(7, name), TraceLoggingUInt8((value).Kind, "Kind"), TraceLoggingUInt8((value).Unit, "Unit"), \
-    TraceLoggingInt64((value).Integer, "Integer"), TraceLoggingFloat64((value).Number, "Number"), \
-    TraceLoggingBoolean((value).Boolean, "Boolean"), TraceLoggingUtf8String((value).Text ? (value).Text : "", "Text"), WP_QUALITY((value).DataQuality, "Quality")
-#define WP_WRITE(name, keyword, ...) \
-    s_lastWriteResult = ERROR_CANCELLED; \
-    TraceLoggingWrite(s_winUIProfilerProvider, #name, TraceLoggingLevel(4), TraceLoggingKeyword(keyword), WP_COMMON(emission, Event::name), __VA_ARGS__); \
-    return HRESULT_FROM_WIN32(s_lastWriteResult)
+#include <type_traits>
 
 namespace WinUIProfiler
 {
@@ -80,18 +23,22 @@ namespace WinUIProfiler
         volatile LONG64 s_enableGeneration = 0;
         volatile LONG64 s_capabilitiesSerial = 0;
         int64_t s_publishedSerial = -1;
-        bool s_epochAnnounced = false;
         thread_local bool s_insideInstrumentation = false;
         thread_local bool s_resolvingEligibility = false;
         SRWLOCK s_eligibilityLock = SRWLOCK_INIT;
         volatile LONG64 s_cachedEligibilitySerial = -1;
         volatile LONG64 s_enabledDefinitions = 0;
+        volatile LONG64 s_fastDefinitions = 0;
 
         SRWLOCK s_listenerLock = SRWLOCK_INIT;
         bool s_anyListener = false;
         volatile LONG s_providerFault = 0;
+        REGHANDLE s_providerHandle = 0;
+        constexpr char ProviderName[] = "WinUIProfiler-Runtime";
+        BYTE s_providerTraits[sizeof(ProviderName) + 2]{};
+        uint64_t EventKeyword(Event event) noexcept;
 
-        void NTAPI OnEnable(LPCGUID, ULONG control, UCHAR, ULONGLONG, ULONGLONG,
+        void NTAPI OnEnable(LPCGUID, ULONG control, UCHAR level, ULONGLONG keywords, ULONGLONG,
             PEVENT_FILTER_DESCRIPTOR, PVOID) noexcept
         {
             // Notification only: no COM, GUID creation, allocation or dispatcher work.
@@ -105,10 +52,19 @@ namespace WinUIProfiler
                     s_anyListener = true;
                     InterlockedIncrement64(&s_enableGeneration);
                 }
+                uint64_t mask = 0;
+                for (uint16_t id = 1; id <= 16; ++id)
+                {
+                    const auto definition = static_cast<Event>(id);
+                    if ((keywords & EventKeyword(definition)) && (level == 0 || level >= (definition == Event::Loss ? 3 : 4)))
+                        mask |= uint64_t{1} << id;
+                }
+                InterlockedExchange64(&s_fastDefinitions, static_cast<LONG64>(mask));
             }
             else if (control == EVENT_CONTROL_CODE_DISABLE_PROVIDER)
             {
                 s_anyListener = false;
+                InterlockedExchange64(&s_fastDefinitions, 0);
             }
             InterlockedIncrement64(&s_capabilitiesSerial);
             ReleaseSRWLockExclusive(&s_listenerLock);
@@ -118,10 +74,15 @@ namespace WinUIProfiler
         {
             Registration() noexcept
             {
-                const ULONG result = TraceLoggingRegisterEx(s_winUIProfilerProvider, OnEnable, nullptr);
+                s_providerTraits[0] = static_cast<BYTE>(sizeof(s_providerTraits));
+                s_providerTraits[1] = static_cast<BYTE>(sizeof(s_providerTraits) >> 8);
+                memcpy(s_providerTraits + 2, ProviderName, sizeof(ProviderName));
+                ULONG result = EventRegister(&RuntimeProviderId, OnEnable, nullptr, &s_providerHandle);
+                if (result == ERROR_SUCCESS)
+                    result = EventSetInformation(s_providerHandle, EventProviderSetTraits, s_providerTraits, sizeof(s_providerTraits));
                 if (result != ERROR_SUCCESS) InterlockedExchange(&s_providerFault, result);
             }
-            ~Registration() { TraceLoggingUnregister(s_winUIProfilerProvider); }
+            ~Registration() { if (s_providerHandle) EventUnregister(s_providerHandle); }
         } s_registration;
 
         uint64_t EventKeyword(Event event) noexcept
@@ -135,6 +96,7 @@ namespace WinUIProfiler
             case Event::Boundary: case Event::Frame: return 16;
             case Event::Device: case Event::Resource: return 32;
             case Event::Allocation: return 64;
+            case Event::CaptureBoundary: case Event::CaptureChunk: return 128;
             default: return 0;
             }
 
@@ -226,7 +188,7 @@ namespace WinUIProfiler
         {
             s_info.Size = sizeof(s_info);
             s_info.Version = ProtocolVersion;
-            s_info.SupportedEvents = 0x19ffe; // IDs 1..12, 15, 16. No capture implementation.
+            s_info.SupportedEvents = 0x1fffe; // All schema writers; not observational/capture capabilities.
             s_info.Process.ProcessId = GetCurrentProcessId();
             FILETIME creation{}, exit{}, kernel{}, user{};
             if (GetProcessTimes(GetCurrentProcess(), &creation, &exit, &kernel, &user))
@@ -266,7 +228,6 @@ namespace WinUIProfiler
                     s_info.ProducerEpoch = epoch;
                     s_epochGeneration = generation;
                     s_objectId = 0;
-                    s_epochAnnounced = false;
                     s_publishedSerial = -1;
                     // Exclusive state lock excludes every outstanding emission.
                     for (auto& domain : s_domains)
@@ -280,6 +241,48 @@ namespace WinUIProfiler
             return result;
         }
 
+        template<typename Payload>
+        HRESULT WriteNative(const Emission& emission, const Payload& payload, Event definition) noexcept
+        {
+            if (emission.Definition != definition) return E_INVALIDARG;
+            if (!IsEnabled(definition)) return HRESULT_FROM_WIN32(ERROR_CANCELLED);
+            const HRESULT valid = Validate(payload);
+            if (FAILED(valid)) return valid;
+            static constexpr const char* names[] = {"", "RuntimeCapabilities", "ObjectLifetime", "TypeResolved",
+                "CorePeerAssociation", "TreeEdge", "VisualDelta", "Correlation", "Boundary", "Frame", "Device",
+                "Resource", "Allocation", "CaptureBoundary", "CaptureChunk", "Loss", "XamlPropertyChanged"};
+            Wire::Encoder encoder(names[static_cast<uint16_t>(definition)]);
+            encoder.U16("SemanticEventId", static_cast<uint16_t>(definition));
+            encoder.U8("EventSchemaVersion", EventVersion);
+            encoder.Guid("ProducerEpoch", emission.Info.ProducerEpoch);
+            encoder.U64("SourceSequence", emission.SourceSequence);
+            encoder.Struct("TargetProcess", 4);
+            encoder.U32("ProcessId", emission.Info.Process.ProcessId);
+            encoder.Bool("HasCreationTimeFileTime", emission.Info.Process.HasCreationTime != 0);
+            encoder.I64("CreationTimeFileTime", emission.Info.Process.CreationTimeFileTime);
+            encoder.Guid("InstanceId", emission.Info.Process.InstanceId);
+            if constexpr (std::is_same_v<Payload, RuntimeCapabilities>)
+            {
+#ifndef WINUI_BUILD_VERSION
+#define WINUI_BUILD_VERSION 0
+#endif
+#define WP_STRINGIFY_INNER(value) #value
+#define WP_STRINGIFY(value) WP_STRINGIFY_INNER(value)
+                encoder.Guid("Epoch", emission.Info.ProducerEpoch);
+                encoder.Text("Build", "WinUI-" WP_STRINGIFY(WINUI_BUILD_VERSION));
+                encoder.U32("Architecture", emission.Info.Architecture);
+                encoder.I64("QpcFrequency", emission.Info.QpcFrequency);
+            }
+            if constexpr (std::is_same_v<Payload, CaptureChunk>)
+            {
+                const HRESULT encoded = Wire::EncodeCapture(encoder, payload);
+                if (FAILED(encoded)) return encoded;
+            }
+            else Wire::Encode(encoder, payload);
+            return encoder.Send(s_providerHandle, s_providerTraits, sizeof(s_providerTraits),
+                EventKeyword(definition), definition == Event::Loss ? 3 : 4);
+        }
+
         HRESULT PublishCapabilities() noexcept
         {
             AcquireSRWLockExclusive(&s_stateLock);
@@ -289,33 +292,19 @@ namespace WinUIProfiler
             {
                 Emission emission;
                 emission.Info = s_info;
+                emission.Definition = Event::RuntimeCapabilities;
                 emission.Sequence = &s_domains[1];
                 result = emission.Sequence->Reserve(&emission.SourceSequence);
                 if (SUCCEEDED(result))
                 {
-#ifndef WINUI_BUILD_VERSION
-#define WINUI_BUILD_VERSION 0
-#endif
-#define WP_STRINGIFY_INNER(value) #value
-#define WP_STRINGIFY(value) WP_STRINGIFY_INNER(value)
-                    s_lastWriteResult = ERROR_CANCELLED;
-                    TraceLoggingWrite(s_winUIProfilerProvider, "RuntimeCapabilities",
-                        TraceLoggingLevel(4), TraceLoggingKeyword(1), WP_COMMON(emission, Event::RuntimeCapabilities),
-                        TraceLoggingGuid(s_info.ProducerEpoch, "Epoch"),
-                        TraceLoggingUtf8String("WinUI-" WP_STRINGIFY(WINUI_BUILD_VERSION), "Build"),
-                        TraceLoggingUInt32(s_info.Architecture, "Architecture"),
-                        TraceLoggingInt64(s_info.QpcFrequency, "QpcFrequency"),
-                        TraceLoggingUInt32(0, "CapabilityCount"));
-                    result = HRESULT_FROM_WIN32(s_lastWriteResult);
+                    result = WriteNative(emission, RuntimeCapabilities{}, Event::RuntimeCapabilities);
                     emission.Sequence->Settle(emission.SourceSequence);
                     if (SUCCEEDED(result))
                     {
                         s_publishedSerial = serial;
-                        s_epochAnnounced = true;
                     }
                 }
             }
-            if (SUCCEEDED(result) && !s_epochAnnounced) result = E_PENDING;
             ReleaseSRWLockExclusive(&s_stateLock);
             return result;
         }
@@ -413,8 +402,8 @@ namespace WinUIProfiler
     bool IsEnabled(Event event) noexcept
     {
         const uint64_t keyword = EventKeyword(event);
-        const UCHAR level = event == Event::Loss ? 3 : 4;
-        if (keyword == 0 || !TraceLoggingProviderEnabled(s_winUIProfilerProvider, level, keyword)) return false;
+        if (keyword == 0 || (static_cast<uint64_t>(InterlockedCompareExchange64(&s_fastDefinitions, 0, 0)) &
+            (uint64_t{1} << static_cast<uint16_t>(event))) == 0) return false;
         return DefinitionEnabled(event);
     }
     bool EnterInstrumentation() noexcept
@@ -430,8 +419,8 @@ namespace WinUIProfiler
         InstrumentationScope scope;
         HRESULT result = EnsureEpoch();
         if (FAILED(result)) return result;
-        result = PublishCapabilities();
-        if (FAILED(result)) return result;
+        // Publication is opportunistic, not another definition's enable gate.
+        (void)PublishCapabilities();
         AcquireSRWLockShared(&s_stateLock);
         if (s_epochGeneration != InterlockedCompareExchange64(&s_enableGeneration, 0, 0))
         {
@@ -470,7 +459,7 @@ namespace WinUIProfiler
         if (static_cast<uint8_t>(domain) > 4) return E_INVALIDARG;
         InstrumentationScope scope;
         if (!IsEnabled(Event::ObjectLifetime) && !IsEnabled(Event::TreeEdge) && !IsEnabled(Event::VisualDelta) &&
-            !IsEnabled(Event::Resource)) return S_FALSE;
+            !IsEnabled(Event::Resource) && !IsEnabled(Event::CaptureChunk)) return S_FALSE;
         HRESULT result = EnsureEpoch();
         if (FAILED(result)) return result;
         AcquireSRWLockExclusive(&s_stateLock);
@@ -536,19 +525,50 @@ namespace WinUIProfiler
         bool Valid(const Value& value) noexcept
         {
             if (value.Kind > 4 || value.Unit > 7 || !Valid(value.DataQuality) || !String(value.Text)) return false;
+            if (value.Kind != 4 && value.DataQuality.Kind == 2) return false;
             switch (value.Kind)
             {
             case 0: return value.Unit != 5 && value.Unit != 7;
             case 1: return value.Unit != 5 && value.Unit != 7 && std::isfinite(value.Number);
             case 2: return value.Unit == 5;
             case 3: return value.Unit == 7 && value.Text != nullptr;
-            default: return value.DataQuality.Kind == 2 && value.DataQuality.Coverage == 2;
+            default: return value.DataQuality.Kind == 2;
             }
         }
         bool InEpoch(const ObjectIdentity& object, const Emission& emission) noexcept { return object.Epoch == emission.Info.ProducerEpoch; }
         bool InEpoch(const Cause& cause, const Emission& emission) noexcept
         {
             return !cause.Reference.Present || cause.Reference.Value.Epoch == emission.Info.ProducerEpoch;
+        }
+        bool ValidClassification(Domain domain, const Optional<Classification>& classification) noexcept
+        {
+            return !classification.Present || (Valid(classification.Value) &&
+                (domain != Domain::XamlCore || classification.Value.Kind != 3) &&
+                (domain == Domain::XamlCore || domain == Domain::XamlPeer ||
+                    (classification.Value.Kind != 1 && classification.Value.Kind != 2)));
+        }
+        bool Valid(const DomainReference& domain) noexcept
+        {
+            return domain.EventId >= 1 && domain.EventId <= 16 && domain.Version == EventVersion;
+        }
+        template<typename T, typename Predicate>
+        bool ValidArray(const Array<T>& values, uint32_t maximum, Predicate valid) noexcept
+        {
+            if (values.Count > maximum || (values.Count && !values.Items)) return false;
+            for (uint32_t i = 0; i < values.Count; ++i) if (!valid(values.Items[i])) return false;
+            return true;
+        }
+        bool Valid(const SnapshotObject& value) noexcept
+        {
+            return Valid(value.Key) && String(value.TypeName) && (!value.Address.Present || value.Address.Value != 0) &&
+                Valid(value.Size) && value.Size.Unit == 1 && (value.Size.Kind <= 1 || value.Size.Kind == 4) &&
+                (value.Size.Kind != 0 || value.Size.Integer >= 0) && (value.Size.Kind != 1 || value.Size.Number >= 0) &&
+                ValidClassification(value.Key.IdentityDomain, value.TypeClassification);
+        }
+        bool Valid(const OwnershipEdge& value) noexcept
+        {
+            return Valid(value.From) && Valid(value.To) && String(value.Relationship, true) &&
+                value.Evidence <= 1 && Valid(value.DataQuality);
         }
         HRESULT Result(bool valid) noexcept { return valid ? S_OK : E_INVALIDARG; }
     }
@@ -567,25 +587,18 @@ namespace WinUIProfiler
     HRESULT Write(const Emission& emission, const Frame& payload) noexcept
     {
         if (payload.Reference.Present && payload.Reference.Value.Epoch != emission.Info.ProducerEpoch) return E_INVALIDARG;
-        WP_WRITE(Frame, 16, WP_OPTIONAL(WP_ATTEMPT, "Attempt", payload.Reference),
-            WP_OPTIONAL(TraceLoggingUInt64, "SubmittedFrameId", payload.SubmittedFrameId),
-            TraceLoggingUInt8(payload.Outcome, "Outcome"), WP_OPTIONAL(TraceLoggingInt32, "HResult", payload.HResult));
+        return WriteNative(emission, payload, Event::Frame);
     }
     HRESULT Validate(const ObjectLifetime& p) noexcept
     {
         return Result(Valid(p.Object) && p.Operation <= 2 && (!p.TypeId.Present || p.TypeId.Value != 0) &&
             (!p.Address.Present || p.Address.Value != 0) && Valid(p.DataQuality) &&
-            (!p.TypeClassification.Present || (Valid(p.TypeClassification.Value) &&
-                (p.Object.IdentityDomain != Domain::XamlCore || p.TypeClassification.Value.Kind != 3) &&
-                (p.Object.IdentityDomain == Domain::XamlCore || p.Object.IdentityDomain == Domain::XamlPeer ||
-                    (p.TypeClassification.Value.Kind != 1 && p.TypeClassification.Value.Kind != 2)))) && Valid(p.ChangeCause));
+            ValidClassification(p.Object.IdentityDomain, p.TypeClassification) && Valid(p.ChangeCause));
     }
     HRESULT Write(const Emission& emission, const ObjectLifetime& p) noexcept
     {
         if (!InEpoch(p.Object, emission) || !InEpoch(p.ChangeCause, emission)) return E_INVALIDARG;
-        WP_WRITE(ObjectLifetime, 2, WP_OBJECT(p.Object, "Object"), TraceLoggingUInt8(p.Operation, "Operation"),
-            WP_OPTIONAL(TraceLoggingUInt64, "TypeId", p.TypeId), WP_OPTIONAL(TraceLoggingUInt64, "Address", p.Address),
-            WP_QUALITY(p.DataQuality, "Quality"), WP_OPTIONAL(WP_CLASS, "Classification", p.TypeClassification), WP_CAUSE(p.ChangeCause));
+        return WriteNative(emission, p, Event::ObjectLifetime);
     }
     HRESULT Validate(const TypeResolved& p) noexcept
     {
@@ -593,8 +606,7 @@ namespace WinUIProfiler
     }
     HRESULT Write(const Emission& emission, const TypeResolved& p) noexcept
     {
-        WP_WRITE(TypeResolved, 2, TraceLoggingUInt64(p.TypeId, "TypeId"), TraceLoggingUtf8String(p.Name, "Name"),
-            WP_OPTIONAL(WP_CLASS, "Classification", p.TypeClassification));
+        return WriteNative(emission, p, Event::TypeResolved);
     }
     HRESULT Validate(const CorePeerAssociation& p) noexcept
     {
@@ -604,8 +616,7 @@ namespace WinUIProfiler
     HRESULT Write(const Emission& emission, const CorePeerAssociation& p) noexcept
     {
         if (!InEpoch(p.Core, emission) || !InEpoch(p.Peer, emission) || !InEpoch(p.ChangeCause, emission)) return E_INVALIDARG;
-        WP_WRITE(CorePeerAssociation, 2, WP_OBJECT(p.Core, "Core"), WP_OBJECT(p.Peer, "Peer"),
-            TraceLoggingBoolean(p.Linked, "Linked"), WP_CAUSE(p.ChangeCause));
+        return WriteNative(emission, p, Event::CorePeerAssociation);
     }
     HRESULT Validate(const TreeEdge& p) noexcept
     {
@@ -620,10 +631,7 @@ namespace WinUIProfiler
     HRESULT Write(const Emission& emission, const TreeEdge& p) noexcept
     {
         if (!InEpoch(p.Child, emission) || (p.Parent.Present && !InEpoch(p.Parent.Value, emission)) || !InEpoch(p.ChangeCause, emission)) return E_INVALIDARG;
-        WP_WRITE(TreeEdge, 4, WP_OPTIONAL(WP_OBJECT, "Parent", p.Parent), WP_OBJECT(p.Child, "Child"),
-            TraceLoggingUInt8(p.Relationship, "Relationship"), TraceLoggingInt32(p.Order, "Order"), TraceLoggingGuid(p.RootId, "RootId"),
-            TraceLoggingUInt64(p.DispatcherId, "DispatcherId"), TraceLoggingBoolean(p.Connected, "Connected"),
-            WP_CAUSE(p.ChangeCause), TraceLoggingUInt8(p.Membership, "Membership"));
+        return WriteNative(emission, p, Event::TreeEdge);
     }
     HRESULT Validate(const VisualDelta& p) noexcept
     {
@@ -639,8 +647,7 @@ namespace WinUIProfiler
     HRESULT Write(const Emission& emission, const VisualDelta& p) noexcept
     {
         if (!InEpoch(p.Visual, emission) || !InEpoch(p.ChangeCause, emission)) return E_INVALIDARG;
-        WP_WRITE(VisualDelta, 8, WP_OBJECT(p.Visual, "Visual"), TraceLoggingUInt8(p.Property, "Property"),
-            WP_VALUE(p.PropertyValue, "Value"), WP_CAUSE(p.ChangeCause));
+        return WriteNative(emission, p, Event::VisualDelta);
     }
     HRESULT Validate(const Correlation& p) noexcept
     {
@@ -652,8 +659,7 @@ namespace WinUIProfiler
     HRESULT Write(const Emission& emission, const Correlation& p) noexcept
     {
         if (!InEpoch(p.From, emission) || !InEpoch(p.To, emission) || !InEpoch(p.ChangeCause, emission)) return E_INVALIDARG;
-        WP_WRITE(Correlation, 8, WP_OBJECT(p.From, "From"), WP_OBJECT(p.To, "To"), TraceLoggingUInt8(p.Kind, "Kind"),
-            TraceLoggingBoolean(p.Linked, "Linked"), WP_CAUSE(p.ChangeCause));
+        return WriteNative(emission, p, Event::Correlation);
     }
     HRESULT Validate(const Boundary& p) noexcept
     {
@@ -662,8 +668,7 @@ namespace WinUIProfiler
     HRESULT Write(const Emission& emission, const Boundary& p) noexcept
     {
         if (!InEpoch(p.ChangeCause, emission)) return E_INVALIDARG;
-        WP_WRITE(Boundary, 16, TraceLoggingUInt8(p.Kind, "Kind"), TraceLoggingUInt8(p.Phase, "Phase"),
-            TraceLoggingUInt64(p.OperationId, "OperationId"), WP_OPTIONAL(TraceLoggingInt32, "HResult", p.HResult), WP_CAUSE(p.ChangeCause));
+        return WriteNative(emission, p, Event::Boundary);
     }
     HRESULT Validate(const Device& p) noexcept
     {
@@ -671,8 +676,7 @@ namespace WinUIProfiler
     }
     HRESULT Write(const Emission& emission, const Device& p) noexcept
     {
-        WP_WRITE(Device, 32, TraceLoggingGuid(p.DeviceEpoch, "DeviceEpoch"), TraceLoggingUInt8(p.Operation, "Operation"),
-            TraceLoggingUtf8String(p.Api, "Api"), WP_QUALITY(p.DataQuality, "Quality"));
+        return WriteNative(emission, p, Event::Device);
     }
     HRESULT Validate(const Resource& p) noexcept
     {
@@ -686,11 +690,7 @@ namespace WinUIProfiler
     HRESULT Write(const Emission& emission, const Resource& p) noexcept
     {
         if (!InEpoch(p.Object, emission) || (p.Owner.Present && !InEpoch(p.Owner.Value, emission)) || !InEpoch(p.ChangeCause, emission)) return E_INVALIDARG;
-        WP_WRITE(Resource, 32, WP_OBJECT(p.Object, "Resource"), TraceLoggingUInt8(p.Operation, "Operation"), TraceLoggingGuid(p.DeviceEpoch, "DeviceEpoch"),
-            WP_OPTIONAL(TraceLoggingGuid, "BackingAllocationId", p.BackingAllocationId), WP_OPTIONAL(TraceLoggingUInt64, "AllocationBytes", p.AllocationBytes),
-            TraceLoggingUInt8(p.SizeProvenance, "SizeProvenance"), WP_OPTIONAL(WP_OBJECT, "Owner", p.Owner),
-            WP_OPTIONAL(TraceLoggingUInt32, "WidthPixels", p.WidthPixels), WP_OPTIONAL(TraceLoggingUInt32, "HeightPixels", p.HeightPixels),
-            WP_QUALITY(p.DataQuality, "Quality"), WP_CLASS(p.ResourceClassification, "Classification"), WP_CAUSE(p.ChangeCause));
+        return WriteNative(emission, p, Event::Resource);
     }
     HRESULT Validate(const Allocation& p) noexcept
     {
@@ -703,22 +703,16 @@ namespace WinUIProfiler
     HRESULT Write(const Emission& emission, const Allocation& p) noexcept
     {
         if (!InEpoch(p.ChangeCause, emission)) return E_INVALIDARG;
-        WP_WRITE(Allocation, 64, TraceLoggingUInt64(p.AllocationId, "AllocationId"), TraceLoggingUInt8(p.Operation, "Operation"),
-            WP_OPTIONAL(TraceLoggingUInt64, "PreviousAllocationId", p.PreviousAllocationId), TraceLoggingUInt64(p.RequestedBytes, "RequestedBytes"),
-            WP_OPTIONAL(TraceLoggingUInt64, "ActualBytes", p.ActualBytes), TraceLoggingGuid(p.AllocatorEpoch, "AllocatorEpoch"),
-            WP_OPTIONAL(TraceLoggingGuid, "BaselineCaptureId", p.BaselineCaptureId), WP_QUALITY(p.DataQuality, "Quality"), WP_CAUSE(p.ChangeCause));
+        return WriteNative(emission, p, Event::Allocation);
     }
     HRESULT Validate(const Loss& p) noexcept
     {
-        return Result(p.StartQpc >= 0 && p.EndQpc >= p.StartQpc && (!p.LostEvents.Present || p.LostEvents.Value != 0) && String(p.Reason, true));
+        return Result(p.StartQpc >= 0 && p.EndQpc >= p.StartQpc && (!p.LostEvents.Present || p.LostEvents.Value != 0) &&
+            String(p.Reason, true) && (!p.HasDomains || ValidArray(p.Domains, 256, [](const DomainReference& value) noexcept { return Valid(value); })));
     }
     HRESULT Write(const Emission& emission, const Loss& p) noexcept
     {
-        s_lastWriteResult = ERROR_CANCELLED;
-        TraceLoggingWrite(s_winUIProfilerProvider, "Loss", TraceLoggingLevel(3), TraceLoggingKeyword(1), WP_COMMON(emission, Event::Loss),
-            TraceLoggingStruct(2, "Interval"), TraceLoggingInt64(p.StartQpc, "StartQpc"), TraceLoggingInt64(p.EndQpc, "EndQpc"),
-            WP_OPTIONAL(TraceLoggingUInt64, "LostEvents", p.LostEvents), TraceLoggingUtf8String(p.Reason, "Reason"), TraceLoggingBoolean(false, "HasDomains"));
-        return HRESULT_FROM_WIN32(s_lastWriteResult);
+        return WriteNative(emission, p, Event::Loss);
     }
     HRESULT Validate(const XamlPropertyChanged& p) noexcept
     {
@@ -726,11 +720,86 @@ namespace WinUIProfiler
             String(p.DeclaringType, true) && String(p.Name, true) && Valid(p.Previous) && Valid(p.Current) &&
             p.Previous.Unit == p.Current.Unit && Valid(p.ChangeCause));
     }
+    HRESULT Validate(const RuntimeCapabilities& p) noexcept
+    {
+        uint32_t seen = 0;
+        return Result(ValidArray(p.Capabilities, 128, [&](const CapabilityEntry& item) noexcept
+        {
+            if (item.Capability > 11 || item.Version < 1 || !Valid(item.DataQuality)) return false;
+            const uint32_t bit = uint32_t{1} << item.Capability;
+            if (seen & bit) return false;
+            seen |= bit;
+            return true;
+        }));
+    }
+    HRESULT Write(const Emission& emission, const RuntimeCapabilities& p) noexcept
+    {
+        return WriteNative(emission, p, Event::RuntimeCapabilities);
+    }
+    HRESULT Validate(const CaptureBoundary& p) noexcept
+    {
+        if (p.CaptureId == GUID_NULL || p.Kind > 2 || p.Phase > 1 ||
+            (p.RootId.Present && p.RootId.Value == GUID_NULL) || (p.DispatcherId.Present && p.DispatcherId.Value == 0) ||
+            (p.Phase == 1 && !p.ChunkCount.Present) || !Valid(p.DataQuality) ||
+            (p.DataQuality.Coverage == 0 && p.Domains.Count == 0)) return E_INVALIDARG;
+        uint32_t seen = 0;
+        return Result(ValidArray(p.Domains, 256, [&](const DomainRange& item) noexcept
+        {
+            if (!Valid(item.Domain) || !Valid(item.DataQuality)) return false;
+            const uint32_t bit = uint32_t{1} << item.Domain.EventId;
+            if (seen & bit) return false;
+            seen |= bit;
+            if (item.BeforeSequence.Present && item.ThroughSequence.Present && item.BeforeSequence.Value > item.ThroughSequence.Value)
+                return false;
+            if (item.Cut.Present && (item.Cut.Value.CutId == GUID_NULL || item.Cut.Value.SettledThrough > item.Cut.Value.ReservedThrough))
+                return false;
+            if (item.DataQuality.Coverage == 0)
+            {
+                if (!item.BeforeSequence.Present) return false;
+                if (p.Phase == 1 && (!item.ThroughSequence.Present || !item.Cut.Present ||
+                    item.Cut.Value.SettledThrough < item.ThroughSequence.Value)) return false;
+            }
+            return true;
+        }));
+    }
+    HRESULT Write(const Emission& emission, const CaptureBoundary& p) noexcept
+    {
+        return WriteNative(emission, p, Event::CaptureBoundary);
+    }
+    HRESULT Validate(const CaptureChunk& p) noexcept
+    {
+        if (p.CaptureId == GUID_NULL || p.RootId == GUID_NULL || p.DispatcherId == 0) return E_INVALIDARG;
+        const auto payload = [](const auto& item) noexcept { return SUCCEEDED(Validate(item)); };
+        return Result(ValidArray(p.Objects, 4096, [](const SnapshotObject& item) noexcept { return Valid(item); }) &&
+            ValidArray(p.Ownership, 8192, [](const OwnershipEdge& item) noexcept { return Valid(item); }) &&
+            ValidArray(p.Tree, 4096, [&](const TreeEdge& item) noexcept
+                { return SUCCEEDED(Validate(item)) && item.RootId == p.RootId && item.DispatcherId == p.DispatcherId; }) &&
+            ValidArray(p.Correlations, 4096, payload) && ValidArray(p.Resources, 4096, payload) &&
+            ValidArray(p.Visuals, 4096, payload) && ValidArray(p.Associations, 4096, payload) &&
+            ValidArray(p.Types, 4096, payload) && ValidArray(p.Allocations, 4096, payload));
+    }
+    HRESULT Write(const Emission& emission, const CaptureChunk& p) noexcept
+    {
+        if (FAILED(Validate(p))) return E_INVALIDARG;
+        const auto cause = [&](const Cause& value) noexcept { return InEpoch(value, emission); };
+        const auto object = [&](const ObjectIdentity& value) noexcept { return InEpoch(value, emission); };
+        if (!ValidArray(p.Objects, 4096, [&](const SnapshotObject& item) noexcept { return object(item.Key); }) ||
+            !ValidArray(p.Ownership, 8192, [&](const OwnershipEdge& item) noexcept { return object(item.From) && object(item.To); }) ||
+            !ValidArray(p.Tree, 4096, [&](const TreeEdge& item) noexcept
+                { return object(item.Child) && (!item.Parent.Present || object(item.Parent.Value)) && cause(item.ChangeCause); }) ||
+            !ValidArray(p.Correlations, 4096, [&](const Correlation& item) noexcept
+                { return object(item.From) && object(item.To) && cause(item.ChangeCause); }) ||
+            !ValidArray(p.Resources, 4096, [&](const Resource& item) noexcept
+                { return object(item.Object) && (!item.Owner.Present || object(item.Owner.Value)) && cause(item.ChangeCause); }) ||
+            !ValidArray(p.Visuals, 4096, [&](const VisualDelta& item) noexcept { return object(item.Visual) && cause(item.ChangeCause); }) ||
+            !ValidArray(p.Associations, 4096, [&](const CorePeerAssociation& item) noexcept
+                { return object(item.Core) && object(item.Peer) && cause(item.ChangeCause); }) ||
+            !ValidArray(p.Allocations, 4096, [&](const Allocation& item) noexcept { return cause(item.ChangeCause); })) return E_INVALIDARG;
+        return WriteNative(emission, p, Event::CaptureChunk);
+    }
     HRESULT Write(const Emission& emission, const XamlPropertyChanged& p) noexcept
     {
         if (!InEpoch(p.Object, emission) || !InEpoch(p.ChangeCause, emission)) return E_INVALIDARG;
-        WP_WRITE(XamlPropertyChanged, 2, WP_OBJECT(p.Object, "Object"), TraceLoggingStruct(3, "Property"),
-            TraceLoggingUInt64(p.PropertyId, "PropertyId"), TraceLoggingUtf8String(p.DeclaringType, "DeclaringType"), TraceLoggingUtf8String(p.Name, "Name"),
-            WP_VALUE(p.Previous, "Previous"), WP_VALUE(p.Current, "Current"), WP_CAUSE(p.ChangeCause));
+        return WriteNative(emission, p, Event::XamlPropertyChanged);
     }
 }

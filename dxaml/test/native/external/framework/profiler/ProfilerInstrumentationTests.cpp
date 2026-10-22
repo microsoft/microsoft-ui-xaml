@@ -155,6 +155,87 @@ namespace
         wchar_t m_name[128]{};
     };
 
+    void QualityCrossProductTest()
+    {
+        XamlPropertyChanged property;
+        property.Object = {Domain::XamlCore, RuntimeProviderId, 1};
+        property.PropertyId = 1;
+        property.DeclaringType = "Element";
+        property.Name = "Test";
+        for (uint8_t kind = 0; kind < 4; ++kind)
+        {
+            Value present;
+            present.Kind = kind;
+            present.Unit = kind == 2 ? 5 : kind == 3 ? 7 : 0;
+            present.Text = kind == 3 ? "value" : nullptr;
+            property.Previous = present;
+            property.Current = present;
+            Check(Validate(property) == E_INVALIDARG, "each present kind rejects unavailable measurement quality");
+        }
+        for (uint8_t coverage = 0; coverage < 3; ++coverage)
+        {
+            property.Previous = {};
+            property.Current = {};
+            property.Previous.DataQuality = {2, coverage, "unavailable measurement"};
+            property.Current.DataQuality = property.Previous.DataQuality;
+            Check(Validate(property) == S_OK, "missing measurement preserves independent Complete/Partial/Unavailable coverage");
+            property.Current.DataQuality.Reason = nullptr;
+            Check(Validate(property) == E_INVALIDARG, "missing measurement still requires a reason");
+        }
+        std::puts("PASS: typed-value quality/discriminator cross-product");
+    }
+
+    struct IndependentDecoded { uint16_t EventId; GUID Epoch; uint32_t Count = 0; bool Failed = false; };
+    void WINAPI OnIndependentEvent(EVENT_RECORD* record)
+    {
+        if (record->EventHeader.ProviderId != RuntimeProviderId) return;
+        auto& state = *static_cast<IndependentDecoded*>(record->UserContext);
+        PROPERTY_DATA_DESCRIPTOR field{};
+        field.ArrayIndex = ULONG_MAX;
+        field.PropertyName = reinterpret_cast<ULONGLONG>(L"SemanticEventId");
+        uint16_t eventId = 0;
+        ULONG result = TdhGetProperty(record, 0, nullptr, 1, &field, sizeof(eventId), reinterpret_cast<BYTE*>(&eventId));
+        field.PropertyName = reinterpret_cast<ULONGLONG>(L"ProducerEpoch");
+        GUID epoch{};
+        result |= TdhGetProperty(record, 0, nullptr, 1, &field, sizeof(epoch), reinterpret_cast<BYTE*>(&epoch));
+        if (result != ERROR_SUCCESS || eventId != state.EventId || epoch != state.Epoch ||
+            record->EventHeader.ProcessId != GetCurrentProcessId() ||
+            record->EventHeader.EventDescriptor.Level != (eventId == 15 ? 3 : 4)) state.Failed = true;
+        ++state.Count;
+    }
+
+    void IndependentEpochTest()
+    {
+        {
+            Session frames;
+            frames.Enable(16);
+            Check(IsEnabled(Event::Frame), "Frames-only listener enables its definition");
+            Check(!IsEnabled(Event::RuntimeCapabilities), "Frames-only test has no capabilities prerequisite");
+            Check(Trace<Event::Frame>([]() noexcept { Frame value; value.Outcome = 3; return value; }) == S_OK,
+                "fresh Frames-only epoch writes without a capabilities publication gate");
+            SequenceCut cut;
+            Check(GetSequenceCut(1, 9, sizeof(cut), &cut) == S_OK && cut.ReservedThrough == 1 &&
+                cut.SettledThrough == 1, "Frames-only reservation settles in its own epoch");
+            IndependentDecoded decoded{9, cut.ProducerEpoch};
+            frames.Read(OnIndependentEvent, &decoded);
+            Check(!decoded.Failed && decoded.Count == 1, "TDH actually receives the fresh Frames-only record");
+        }
+        {
+            Session loss;
+            loss.Enable(1, 3);
+            Check(IsEnabled(Event::Loss) && !IsEnabled(Event::RuntimeCapabilities), "Warning-only listener selects Loss, not informational capabilities");
+            Check(Trace<Event::Loss>([]() noexcept { Loss value; value.Reason = "test loss"; return value; }) == S_OK,
+                "fresh Warning-only Loss epoch writes independently");
+            SequenceCut cut;
+            Check(GetSequenceCut(1, 15, sizeof(cut), &cut) == S_OK && cut.ReservedThrough == 1 &&
+                cut.SettledThrough == 1, "Warning-only Loss reservation settles independently");
+            IndependentDecoded decoded{15, cut.ProducerEpoch};
+            loss.Read(OnIndependentEvent, &decoded);
+            Check(!decoded.Failed && decoded.Count == 1, "TDH actually receives the Warning-only Loss record without informational enablement");
+        }
+        std::puts("PASS: independently enabled fresh Frames-only and Warning-only Loss epochs");
+    }
+
     void EnabledTest()
     {
         int expensive = 0;
@@ -169,20 +250,26 @@ namespace
     }
 
     template<typename T>
-    T Field(EVENT_RECORD* record, std::initializer_list<const wchar_t*> path)
+    T Field(EVENT_RECORD* record, std::initializer_list<const wchar_t*> path, ULONG arrayIndex = ULONG_MAX)
     {
         std::vector<PROPERTY_DATA_DESCRIPTOR> descriptors;
         for (const wchar_t* name : path)
         {
             PROPERTY_DATA_DESCRIPTOR descriptor{};
             descriptor.PropertyName = reinterpret_cast<ULONGLONG>(name);
-            descriptor.ArrayIndex = ULONG_MAX;
+            descriptor.ArrayIndex = descriptors.empty() ? arrayIndex : ULONG_MAX;
             descriptors.push_back(descriptor);
         }
         T value{};
         ULONG size = 0;
-        Check(TdhGetPropertySize(record, 0, nullptr, static_cast<ULONG>(descriptors.size()), descriptors.data(), &size) == ERROR_SUCCESS,
-            "TDH typed property exists");
+        const ULONG status = TdhGetPropertySize(record, 0, nullptr, static_cast<ULONG>(descriptors.size()), descriptors.data(), &size);
+        if (status != ERROR_SUCCESS)
+        {
+            std::printf("TDH property status=%lu arrayIndex=%lu path:", status, arrayIndex);
+            for (const wchar_t* name : path) std::printf(" %ls", name);
+            std::puts("");
+        }
+        Check(status == ERROR_SUCCESS, "TDH typed property exists");
         Check(size == sizeof(T), "TDH fixed-width property type");
         Check(TdhGetProperty(record, 0, nullptr, static_cast<ULONG>(descriptors.size()), descriptors.data(),
             sizeof(value), reinterpret_cast<BYTE*>(&value)) == ERROR_SUCCESS, "TDH actual property value");
@@ -392,6 +479,304 @@ namespace
         std::puts("PASS: actual typed native ETW schema");
     }
 
+    void WINAPI OnArrayEvent(EVENT_RECORD* record)
+    {
+        if (record->EventHeader.ProviderId != RuntimeProviderId) return;
+        auto& decoded = *static_cast<Decoded*>(record->UserContext);
+        try
+        {
+            const auto id = Field<uint16_t>(record, {L"SemanticEventId"});
+            Check(id == 1 || id == 13 || id == 14 || id == 15, "array schema event identity");
+            ++decoded.Counts[id];
+            ULONG bytes = 0;
+            Check(TdhGetEventInformation(record, 0, nullptr, nullptr, &bytes) == ERROR_INSUFFICIENT_BUFFER, "array metadata size");
+            std::vector<BYTE> metadata(bytes);
+            auto info = reinterpret_cast<TRACE_EVENT_INFO*>(metadata.data());
+            Check(TdhGetEventInformation(record, 0, nullptr, info, &bytes) == ERROR_SUCCESS, "actual typed array TDH metadata");
+            Check(Field<uint8_t>(record, {L"EventSchemaVersion"}) == 1, "complete arrays remain fixed schema one");
+            if (id == 1)
+            {
+                WireType(info, metadata.data(), {L"Capabilities", L"Version"}, TDH_INTYPE_INT32);
+                const auto count = Field<uint32_t>(record, {L"CapabilityCount"});
+                Check(count == 0 || count == 2, "honest empty automatic advertisement or explicit unavailable schema fixture");
+                if (count)
+                {
+                    Check(Field<uint8_t>(record, {L"Capabilities", L"Capability"}, 1) == 11, "nonempty capability array second element");
+                    Check(Field<uint8_t>(record, {L"Capabilities", L"Quality", L"Kind"}, 1) == 2, "schema fixture does not advertise actual supported observations");
+                }
+            }
+            else if (id == 15)
+            {
+                Check(Field<uint8_t>(record, {L"HasDomains"}) == 1, "localized loss has explicit presence");
+                WireType(info, metadata.data(), {L"Domains", L"EventId"}, TDH_INTYPE_UINT16);
+                Check(Field<uint16_t>(record, {L"Domains", L"EventId"}, 1) == 15, "localized second delivery domain");
+                Check(Field<uint8_t>(record, {L"Domains", L"EventVersion"}, 1) == 1, "localized domain preserves catalog version");
+            }
+            else if (id == 13)
+            {
+                Check(record->EventHeader.EventDescriptor.Keyword == 128, "capture keyword");
+                WireType(info, metadata.data(), {L"Domains", L"SettledCut", L"Value", L"SettledThrough"}, TDH_INTYPE_UINT64);
+                Check(Field<uint16_t>(record, {L"Domains", L"Domain", L"EventId"}, 1) == 15, "capture domain vector second element");
+                Check(Field<uint8_t>(record, {L"Domains", L"SettledCut", L"Present"}, 1) == 1, "capture domain has typed optional cut");
+                Check(Field<uint32_t>(record, {L"ChunkCount", L"Value"}) == 1, "field after variable vector decodes");
+            }
+            else
+            {
+                Check(record->EventHeader.EventDescriptor.Keyword == 128, "chunk keyword");
+                Check(info->PropertyCount == 127, "full capture schema includes array counts within TDH's 128-property limit");
+                WireType(info, metadata.data(), {L"Values", L"Number"}, TDH_INTYPE_DOUBLE);
+                WireType(info, metadata.data(), {L"Objects", L"TypeName"}, TDH_INTYPE_ANSISTRING, TDH_OUTTYPE_UTF8);
+                Check(Field<uint32_t>(record, {L"Objects", L"KeyIndex"}, 1) == 2 &&
+                    Field<uint64_t>(record, {L"Keys", L"RuntimeObjectId"}, 1) == 2, "typed object table preserves second variable-width element");
+                Check(Field<uint32_t>(record, {L"Objects", L"SizeIndex"}, 1) == 2 &&
+                    Field<int64_t>(record, {L"Values", L"Integer"}, 1) == 80, "typed referenced object byte size");
+                const auto missingQuality = Field<uint32_t>(record, {L"Values", L"QualityIndex"}, 0);
+                Check(missingQuality != 0 && Field<uint8_t>(record, {L"Qualities", L"Kind"}, missingQuality - 1) == 2 &&
+                    Field<uint8_t>(record, {L"Qualities", L"Coverage"}, missingQuality - 1) == 0,
+                    "typed capture preserves Missing measurement with independent Complete coverage");
+                const auto xamlClass = Field<uint32_t>(record, {L"Objects", L"ClassificationIndex"}, 0);
+                Check(xamlClass != 0 && Field<uint8_t>(record, {L"Classifications", L"Kind"}, xamlClass - 1) == 2 &&
+                    Field<uint8_t>(record, {L"Classifications", L"Evidence"}, xamlClass - 1) == 2 &&
+                    Field<uint8_t>(record, {L"Objects", L"HasAddress"}, 0) == 1 &&
+                    Field<uint64_t>(record, {L"Objects", L"Address"}, 0) == 0x1234,
+                    "typed capture retains optional address and referenced XAML classification evidence");
+                Check(Field<uint8_t>(record, {L"Ownership", L"Evidence"}, 0) == 1, "typed ownership evidence array");
+                Check(Field<uint64_t>(record, {L"DispatcherId"}) == 7 &&
+                    Field<uint32_t>(record, {L"Tree", L"ChildIndex"}, 0) != 0, "typed topology inherits validated chunk scope");
+                const auto node = Field<uint32_t>(record, {L"Correlations", L"ToIndex"}, 0);
+                Check(Field<uint8_t>(record, {L"Keys", L"Domain"}, node - 1) == 2, "typed referenced correlation");
+                const auto resourceClass = Field<uint32_t>(record, {L"Resources", L"ClassificationIndex"}, 0);
+                Check(resourceClass != 0 && Field<uint8_t>(record, {L"Classifications", L"Kind"}, resourceClass - 1) == 1 &&
+                    Field<uint8_t>(record, {L"Classifications", L"Evidence"}, resourceClass - 1) == 1 &&
+                    Field<uint32_t>(record, {L"Resources", L"WidthPixels"}, 0) == 64 &&
+                    Field<uint32_t>(record, {L"Resources", L"HeightPixels"}, 0) == 32 &&
+                    Field<uint8_t>(record, {L"Resources", L"HasAllocationBytes"}, 0) == 1 &&
+                    Field<uint64_t>(record, {L"Resources", L"AllocationBytes"}, 0) == 4096,
+                    "typed resource array retains sizes, optional backing and contextual classification evidence");
+                const auto pixels = Field<uint32_t>(record, {L"Visuals", L"ValueIndex"}, 0);
+                Check(Field<double>(record, {L"Values", L"Number"}, pixels - 1) == 3.5, "typed referenced visual value");
+                const auto visualCause = Field<uint32_t>(record, {L"Visuals", L"CauseIndex"}, 0);
+                Check(visualCause != 0 && Field<uint8_t>(record, {L"Causes", L"Kind"}, visualCause - 1) == 2 &&
+                    Field<uint8_t>(record, {L"Causes", L"HasAttempt"}, visualCause - 1) == 1 &&
+                    Field<uint64_t>(record, {L"Causes", L"AttemptId"}, visualCause - 1) == 9 &&
+                    Field<uint64_t>(record, {L"Causes", L"DispatcherId"}, visualCause - 1) == 7,
+                    "typed shared cause retains explicit epoch-qualified attempt semantics");
+                const auto peer = Field<uint32_t>(record, {L"Associations", L"PeerIndex"}, 0);
+                Check(Field<uint8_t>(record, {L"Keys", L"Domain"}, peer - 1) == 1, "typed referenced association");
+                Check(Field<uint64_t>(record, {L"Types", L"TypeId"}, 0) == 42, "typed type array");
+                Check(Field<uint64_t>(record, {L"Allocations", L"RequestedBytes"}, 0) == 64, "typed allocation array after all preceding arrays");
+            }
+        }
+        catch (...) { decoded.Failed = true; }
+    }
+
+    void ArraySchemaTest()
+    {
+        Session session;
+        session.Enable(129);
+        ProtocolInfo info;
+        Check(GetProtocolInfo(1, sizeof(info), &info) == S_OK, "array schema handshake");
+        CapabilityEntry capabilities[] = {{0, 1, {2, 2, "synthetic schema fixture, unavailable"}},
+            {11, 2, {2, 1, "synthetic schema fixture, unavailable"}}};
+        RuntimeCapabilities advertisement{{capabilities, 2}};
+        Check(Trace<Event::RuntimeCapabilities>([&]() noexcept { return advertisement; }) == S_OK,
+            "schema-one nonempty typed capability array writer");
+        DomainReference domains[] = {{9, 1}, {15, 1}};
+        Loss loss;
+        loss.Reason = "synthetic localized loss";
+        loss.HasDomains = true;
+        loss.Domains = {domains, 2};
+        Check(Trace<Event::Loss>([&]() noexcept { return loss; }) == S_OK, "schema-one localized loss array writer");
+        DomainRange ranges[2];
+        for (uint32_t i = 0; i < 2; ++i)
+        {
+            SequenceCut cut;
+            Check(GetSequenceCut(1, domains[i].EventId, sizeof(cut), &cut) == S_OK, "actual cut for schema vector");
+            ranges[i].Domain = domains[i];
+            ranges[i].BeforeSequence = {true, 0};
+            ranges[i].ThroughSequence = {true, cut.SettledThrough};
+            ranges[i].Cut = {true, {cut.CutId, cut.ReservedThrough, cut.SettledThrough}};
+        }
+        CaptureBoundary boundary;
+        boundary.CaptureId = info.Process.InstanceId;
+        boundary.Phase = 1;
+        boundary.Domains = {ranges, 2};
+        boundary.ChunkCount = {true, 1};
+        Check(Trace<Event::CaptureBoundary>([&]() noexcept { return boundary; }) == S_OK, "schema-one typed capture boundary vector writer");
+        ObjectIdentity core{Domain::XamlCore, info.ProducerEpoch, 1}, peer{Domain::XamlPeer, info.ProducerEpoch, 2},
+            node{Domain::CompNode, info.ProducerEpoch, 3}, visual{Domain::CompositionVisual, info.ProducerEpoch, 4},
+            resource{Domain::Resource, info.ProducerEpoch, 5};
+        SnapshotObject objects[2];
+        objects[0].Key = core;
+        objects[0].TypeName = "first";
+        objects[0].Address = {true, 0x1234};
+        objects[0].TypeClassification = {true, {2, 2, "fixture runtime bridge"}};
+        objects[0].Size.DataQuality = {2, 0, "missing measurement with complete observation coverage"};
+        objects[1].Key = peer;
+        objects[1].TypeName = "second variable-width \xc2\xb5 name";
+        objects[1].Size = {0, 1, 80, 0, false, nullptr, {}};
+        OwnershipEdge ownership{core, peer, "synthetic uncertain retention", 1, {0, 1, "schema fixture"}};
+        TreeEdge tree;
+        tree.Child = core; tree.RootId = info.Process.InstanceId; tree.DispatcherId = 7;
+        Correlation correlation{core, node, 1, true, {}};
+        Resource nativeResource;
+        nativeResource.Object = resource; nativeResource.DeviceEpoch = info.Process.InstanceId;
+        nativeResource.WidthPixels = {true, 64};
+        nativeResource.HeightPixels = {true, 32};
+        nativeResource.BackingAllocationId = {true, info.Process.InstanceId};
+        nativeResource.AllocationBytes = {true, 4096}; nativeResource.SizeProvenance = 0;
+        nativeResource.Owner = {true, core}; nativeResource.ResourceClassification = {1, 1, "fixture creation API"};
+        Value pixels{1, 4, 0, 3.5, false, nullptr, {}};
+        VisualDelta delta{visual, 0, pixels, {}};
+        delta.ChangeCause = {2, {true, {info.ProducerEpoch, 9, tree.RootId, 7}}, nullptr};
+        CorePeerAssociation association{core, peer, true, {}};
+        TypeResolved type{42, "Button", {}};
+        Allocation allocation;
+        allocation.AllocationId = 1; allocation.AllocatorEpoch = info.Process.InstanceId; allocation.RequestedBytes = 64;
+        CaptureChunk chunk;
+        chunk.CaptureId = boundary.CaptureId; chunk.RootId = tree.RootId; chunk.DispatcherId = 7;
+        chunk.Objects = {objects, 2}; chunk.Ownership = {&ownership, 1}; chunk.Tree = {&tree, 1};
+        chunk.Correlations = {&correlation, 1}; chunk.Resources = {&nativeResource, 1}; chunk.Visuals = {&delta, 1};
+        chunk.Associations = {&association, 1}; chunk.Types = {&type, 1}; chunk.Allocations = {&allocation, 1};
+        Check(Trace<Event::CaptureChunk>([&]() noexcept { return chunk; }) == S_OK, "schema-one full typed capture state arrays writer");
+        Decoded decoded;
+        session.Read(OnArrayEvent, &decoded);
+        Check(!decoded.Failed && decoded.Counts[13] == 1 && decoded.Counts[14] == 1 && decoded.Counts[15] == 1,
+            "TDH decodes nonempty capability/loss/boundary and every capture state array");
+        Check(info.SupportedEvents == 0x1fffe, "schema foundation supports all sixteen catalog writers");
+        Check(RequestCapture(1, 0, boundary.CaptureId) == E_NOTIMPL && info.CapabilityCount == 0, "schema completion does not implement capture algorithms or advertise coverage");
+        std::puts("PASS: full schema-one typed arrays and capture wire conformance");
+    }
+
+    void ArrayValidationTest()
+    {
+        CapabilityEntry entries[] = {{0, 1, {}}, {0, 1, {}}};
+        RuntimeCapabilities capabilities{{entries, 2}};
+        Check(Validate(capabilities) == E_INVALIDARG, "capability array rejects duplicate capabilities");
+        capabilities.Capabilities = {nullptr, 1};
+        Check(Validate(capabilities) == E_INVALIDARG, "nonempty capability array requires storage");
+        capabilities.Capabilities = {entries, 129};
+        Check(Validate(capabilities) == E_INVALIDARG, "capability count is bounded before access");
+        capabilities.Capabilities = {entries, 1};
+        entries[0].Version = 0;
+        Check(Validate(capabilities) == E_INVALIDARG, "capability version is positive");
+        DomainReference domain{9, 2};
+        Loss loss; loss.Reason = "localized"; loss.HasDomains = true; loss.Domains = {&domain, 1};
+        Check(Validate(loss) == E_INVALIDARG, "localized domain rejects unsupported catalog versions");
+        domain.Version = 1; domain.EventId = 17;
+        Check(Validate(loss) == E_INVALIDARG, "localized domain rejects unknown definitions");
+        loss.Domains = {nullptr, 1};
+        Check(Validate(loss) == E_INVALIDARG, "localized loss validates nonempty storage");
+        loss.Domains = {&domain, 257};
+        Check(Validate(loss) == E_INVALIDARG, "localized loss count is bounded");
+        loss.HasDomains = false;
+        Check(Validate(loss) == S_OK, "absent loss domains ignore inactive backing storage");
+        DomainRange range;
+        range.Domain = {14, 1}; range.BeforeSequence = {true, 1}; range.ThroughSequence = {true, 2};
+        range.Cut = {true, {RuntimeProviderId, 2, 2}};
+        CaptureBoundary boundary;
+        boundary.CaptureId = RuntimeProviderId; boundary.Phase = 1;
+        boundary.ChunkCount = {true, 0}; boundary.Domains = {&range, 1};
+        Check(Validate(boundary) == S_OK, "complete End has a typed settled vector");
+        range.Cut.Value.SettledThrough = 1;
+        Check(Validate(boundary) == E_INVALIDARG, "complete End cannot outrun settlement");
+        range.Cut.Value.SettledThrough = 3;
+        Check(Validate(boundary) == E_INVALIDARG, "settlement cannot exceed reservations");
+        range.Cut.Value.SettledThrough = 2; range.BeforeSequence.Present = false;
+        Check(Validate(boundary) == E_INVALIDARG, "complete vector requires its before checkpoint");
+        range.BeforeSequence.Present = true; boundary.ChunkCount.Present = false;
+        Check(Validate(boundary) == E_INVALIDARG, "End requires an explicit chunk count");
+        boundary.ChunkCount.Present = true;
+        DomainRange duplicated[] = {range, range}; boundary.Domains = {duplicated, 2};
+        Check(Validate(boundary) == E_INVALIDARG, "capture vectors reject repeated delivery domains");
+        CaptureChunk chunk;
+        chunk.CaptureId = RuntimeProviderId; chunk.RootId = RuntimeProviderId; chunk.DispatcherId = 1;
+        Check(Validate(chunk) == S_OK, "empty full-state arrays are explicit valid schema values");
+#define CHECK_ARRAY_BOUND(member, type, maximum) \
+        { type item{}; auto invalid = chunk; invalid.member = {&item, maximum + 1}; \
+          Check(Validate(invalid) == E_INVALIDARG, #member " count bounded before access"); \
+          invalid.member = {nullptr, 1}; Check(Validate(invalid) == E_INVALIDARG, #member " nonempty storage required"); }
+        CHECK_ARRAY_BOUND(Objects, SnapshotObject, 4096)
+        CHECK_ARRAY_BOUND(Ownership, OwnershipEdge, 8192)
+        CHECK_ARRAY_BOUND(Tree, TreeEdge, 4096)
+        CHECK_ARRAY_BOUND(Correlations, Correlation, 4096)
+        CHECK_ARRAY_BOUND(Resources, Resource, 4096)
+        CHECK_ARRAY_BOUND(Visuals, VisualDelta, 4096)
+        CHECK_ARRAY_BOUND(Associations, CorePeerAssociation, 4096)
+        CHECK_ARRAY_BOUND(Types, TypeResolved, 4096)
+        CHECK_ARRAY_BOUND(Allocations, Allocation, 4096)
+#undef CHECK_ARRAY_BOUND
+        TreeEdge edge; edge.Child = {Domain::XamlCore, RuntimeProviderId, 1};
+        edge.RootId = RuntimeProviderId; edge.DispatcherId = 2; chunk.Tree = {&edge, 1};
+        Check(Validate(chunk) == E_INVALIDARG, "nested topology cannot escape its chunk dispatcher");
+        std::puts("PASS: bounded arrays, optionals, catalog domains and capture settlement validation");
+    }
+
+    struct BudgetExpected { uint32_t Objects; uint64_t Sequence; };
+    struct BudgetDecoded { bool Failed = false; uint32_t Count = 0; uint32_t LargestWire = 0; uint32_t LastData = 0; uint32_t DataStep = 0; std::vector<BudgetExpected> Expected; };
+    void WINAPI OnBudgetEvent(EVENT_RECORD* record)
+    {
+        if (record->EventHeader.ProviderId != RuntimeProviderId) return;
+        auto& state = *static_cast<BudgetDecoded*>(record->UserContext);
+        try
+        {
+            Check(state.Count < state.Expected.size(), "only budget-accepted native writes appear");
+            const auto expected = state.Expected[state.Count++];
+            Check(Field<uint16_t>(record, {L"SemanticEventId"}) == 14 &&
+                Field<uint64_t>(record, {L"SourceSequence"}) == expected.Sequence, "budget writes retain actual reservations");
+            Check(Field<uint64_t>(record, {L"Keys", L"RuntimeObjectId"}, expected.Objects - 1) == 1, "TDH decodes large nonempty typed table");
+            uint32_t wireBytes = record->UserDataLength;
+            for (USHORT i = 0; i < record->ExtendedDataCount; ++i)
+            {
+                const auto& extension = record->ExtendedData[i];
+                if (extension.ExtType == EVENT_HEADER_EXT_TYPE_EVENT_SCHEMA_TL || extension.ExtType == EVENT_HEADER_EXT_TYPE_PROV_TRAITS)
+                    wireBytes += extension.DataSize;
+            }
+            Check(wireBytes <= MaximumWireBytes, "real payload plus typed metadata fits the wire budget");
+            state.LargestWire = wireBytes;
+            if (state.LastData) state.DataStep = record->UserDataLength - state.LastData;
+            state.LastData = record->UserDataLength;
+        }
+        catch (...) { state.Failed = true; }
+    }
+
+    void WireBudgetTest()
+    {
+        Session session; session.Enable(128);
+        ProtocolInfo info; Check(GetProtocolInfo(1, sizeof(info), &info) == S_OK, "capture-only epoch handshake");
+        ObjectIdentity baseline;
+        Check(NewObjectIdentity(Domain::XamlCore, &baseline) == S_OK && baseline.Epoch == info.ProducerEpoch,
+            "capture-only schema uses enabled epoch-qualified object identities");
+        char name[1025]; memset(name, 'x', sizeof(name) - 1); name[sizeof(name) - 1] = 0;
+        std::vector<SnapshotObject> objects(48);
+        for (auto& item : objects) { item.Key = {Domain::XamlCore, info.ProducerEpoch, 1}; item.TypeName = name; }
+        CaptureChunk chunk;
+        chunk.CaptureId = info.Process.InstanceId; chunk.RootId = info.Process.InstanceId; chunk.DispatcherId = 1;
+        chunk.Objects = {objects.data(), 1};
+        objects[0].Key.Epoch = RuntimeProviderId;
+        Check(Trace<Event::CaptureChunk>([&]() noexcept { return chunk; }) == E_INVALIDARG, "nested identities reject a foreign producer epoch");
+        objects[0].Key.Epoch = info.ProducerEpoch;
+        BudgetDecoded decoded;
+        uint32_t rejected = 0;
+        for (uint32_t count = 35; count <= 48; ++count)
+        {
+            chunk.Objects.Count = count;
+            const HRESULT result = Trace<Event::CaptureChunk>([&]() noexcept { return chunk; });
+            SequenceCut cut;
+            Check(GetSequenceCut(1, 14, sizeof(cut), &cut) == S_OK && cut.ReservedThrough == cut.SettledThrough,
+                "oversized and accepted native writes both settle terminal attempts");
+            if (result == S_OK) decoded.Expected.push_back({count, cut.ReservedThrough});
+            else { Check(result == HRESULT_FROM_WIN32(ERROR_BUFFER_OVERFLOW), "oversized wire has an explicit bounded failure"); ++rejected; }
+        }
+        Check(!decoded.Expected.empty() && rejected != 0, "exercise accepted near-limit and rejected oversized native arrays");
+        session.Read(OnBudgetEvent, &decoded);
+        Check(!decoded.Failed && decoded.Count == decoded.Expected.size() && decoded.LargestWire > 45 * 1024,
+            "actual TDH coverage of near-budget arrays without oversized writes");
+        Check(decoded.LastData + decoded.DataStep <= MaximumWireBytes && decoded.LargestWire + decoded.DataStep > MaximumWireBytes,
+            "metadata contributes to rejection even when the next payload alone fits");
+        std::puts("PASS: actual ETW typed-array wire budget and failed-attempt settlement");
+    }
+
     void TransitionTest()
     {
         auto frame = []() noexcept { Frame value; value.Outcome = 3; return value; };
@@ -439,7 +824,8 @@ namespace
         Check(GetSequenceCut(1, 9, sizeof(fresh), &fresh) == S_OK && fresh.ProducerEpoch != before.ProducerEpoch &&
             fresh.ReservedThrough == 1 && fresh.SettledThrough == 1, "all-listener disable/re-enable starts a fresh baseline epoch");
         Check(GetSequenceCut(2, 9, sizeof(fresh), &fresh) == HRESULT_FROM_WIN32(ERROR_REVISION_MISMATCH), "cut rejects incompatible version");
-        Check(GetSequenceCut(1, 13, sizeof(fresh), &fresh) == E_INVALIDARG && !IsEnabled(Event::CaptureChunk), "no fabricated capture producer");
+        Check(GetSequenceCut(1, 13, sizeof(fresh), &fresh) == S_OK && !IsEnabled(Event::CaptureChunk),
+            "capture has a schema domain but is not enabled or implemented as an algorithm");
         std::puts("PASS: actual multi-listener enable transitions, immutable cuts, reentrancy, failed writes");
     }
 
@@ -559,8 +945,13 @@ int main()
     {
         ProtocolTest();
         SequenceTest();
+        QualityCrossProductTest();
+        IndependentEpochTest();
         EnabledTest();
         SchemaTest();
+        ArraySchemaTest();
+        ArrayValidationTest();
+        WireBudgetTest();
         TransitionTest();
         LevelFilterTest();
         HandshakeSchemaTest();
@@ -574,8 +965,13 @@ void ProfilerInstrumentationTests::ProtocolAndSequence()
 {
     ProtocolTest();
     SequenceTest();
+    QualityCrossProductTest();
+    IndependentEpochTest();
     EnabledTest();
     SchemaTest();
+    ArraySchemaTest();
+    ArrayValidationTest();
+    WireBudgetTest();
     TransitionTest();
     LevelFilterTest();
     HandshakeSchemaTest();

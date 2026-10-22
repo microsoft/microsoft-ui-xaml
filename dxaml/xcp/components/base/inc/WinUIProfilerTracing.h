@@ -10,6 +10,7 @@
 namespace WinUIProfiler
 {
     template<typename T> struct Optional { bool Present = false; T Value{}; };
+    template<typename T> struct Array { const T* Items = nullptr; uint32_t Count = 0; };
     struct Quality { uint8_t Kind = 0; uint8_t Coverage = 0; const char* Reason = nullptr; };
     struct Classification { uint8_t Kind = 0; uint8_t Evidence = 0; const char* Source = "not observed"; };
     struct ObjectIdentity { Domain IdentityDomain = Domain::XamlCore; GUID Epoch{}; uint64_t Id = 0; };
@@ -80,9 +81,69 @@ namespace WinUIProfiler
         Quality DataQuality;
         Cause ChangeCause;
     };
-    // Null domains means explicitly unlocalized producer loss. Localized vectors
-    // and typed capture arrays are reserved for the future capture implementation.
-    struct Loss { int64_t StartQpc = 0; int64_t EndQpc = 0; Optional<uint64_t> LostEvents; const char* Reason = nullptr; };
+    struct CapabilityEntry { uint8_t Capability = 0; int32_t Version = 1; Quality DataQuality; };
+    struct RuntimeCapabilities { Array<CapabilityEntry> Capabilities; };
+    // Runtime vector domains inherit the common provider/process/epoch.
+    struct DomainReference { uint16_t EventId = 0; uint8_t Version = EventVersion; };
+    struct SettledCut { GUID CutId{}; uint64_t ReservedThrough = 0; uint64_t SettledThrough = 0; };
+    struct DomainRange
+    {
+        DomainReference Domain;
+        Optional<uint64_t> BeforeSequence, ThroughSequence;
+        Quality DataQuality;
+        Optional<SettledCut> Cut;
+    };
+    struct CaptureBoundary
+    {
+        GUID CaptureId{};
+        uint8_t Kind = 0;
+        uint8_t Phase = 0;
+        Optional<GUID> RootId;
+        Optional<uint64_t> DispatcherId;
+        Array<DomainRange> Domains;
+        Optional<uint32_t> ChunkCount;
+        Quality DataQuality;
+    };
+    struct SnapshotObject
+    {
+        ObjectIdentity Key;
+        const char* TypeName = nullptr;
+        Optional<uint64_t> Address;
+        Value Size{4, 1, 0, 0, false, nullptr, {2, 2, "not observed"}};
+        Optional<Classification> TypeClassification;
+    };
+    struct OwnershipEdge
+    {
+        ObjectIdentity From, To;
+        const char* Relationship = nullptr;
+        uint8_t Evidence = 0;
+        Quality DataQuality;
+    };
+    struct CaptureChunk
+    {
+        GUID CaptureId{};
+        uint32_t ChunkIndex = 0;
+        GUID RootId{};
+        uint64_t DispatcherId = 0;
+        Array<SnapshotObject> Objects;
+        Array<OwnershipEdge> Ownership;
+        Array<TreeEdge> Tree;
+        Array<Correlation> Correlations;
+        Array<Resource> Resources;
+        Array<VisualDelta> Visuals;
+        Array<CorePeerAssociation> Associations;
+        Array<TypeResolved> Types;
+        Array<Allocation> Allocations;
+    };
+    struct Loss
+    {
+        int64_t StartQpc = 0;
+        int64_t EndQpc = 0;
+        Optional<uint64_t> LostEvents;
+        const char* Reason = nullptr;
+        bool HasDomains = false;
+        Array<DomainReference> Domains;
+    };
     struct XamlPropertyChanged
     {
         ObjectIdentity Object;
@@ -111,6 +172,7 @@ namespace WinUIProfiler
     template<> struct EventTraits<Event::name> { using Payload = name; }; \
     HRESULT Write(const Emission& emission, const name& payload) noexcept; \
     HRESULT Validate(const name& payload) noexcept;
+    WINUI_PROFILER_EVENT(RuntimeCapabilities)
     WINUI_PROFILER_EVENT(ObjectLifetime)
     WINUI_PROFILER_EVENT(TypeResolved)
     WINUI_PROFILER_EVENT(CorePeerAssociation)
@@ -122,6 +184,8 @@ namespace WinUIProfiler
     WINUI_PROFILER_EVENT(Device)
     WINUI_PROFILER_EVENT(Resource)
     WINUI_PROFILER_EVENT(Allocation)
+    WINUI_PROFILER_EVENT(CaptureBoundary)
+    WINUI_PROFILER_EVENT(CaptureChunk)
     WINUI_PROFILER_EVENT(Loss)
     WINUI_PROFILER_EVENT(XamlPropertyChanged)
 #undef WINUI_PROFILER_EVENT
