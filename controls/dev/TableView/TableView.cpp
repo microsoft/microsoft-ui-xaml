@@ -3445,6 +3445,10 @@ void TableView::OnColumnHeaderStylePropertyChanged(const winrt::DependencyProper
 
 void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
+    // The chevron and the click handler are stamped at header-build time. Queued first so it still
+    // runs when a Sorting or Sorted handler throws.
+    QueueRebuildHeaders();
+
     // The gate turning off must also drop any sort it was responsible for; leaving the rows in a
     // sorted order with no affordance to change it would strand the user.
     if (!CanUserSortColumns())
@@ -3465,13 +3469,14 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
             ClearSortInternal(false);
         }
     }
-
-    // The chevron and the click handler are stamped at header-build time.
-    QueueRebuildHeaders();
 }
 
 void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
 {
+    // The chevron and the click handler are stamped at header-build time. Queued first so it still
+    // runs when a Sorting or Sorted handler throws.
+    QueueRebuildHeaders();
+
     // A column that just opted out must not keep an active sort applied to it.
     if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None)
     {
@@ -3491,9 +3496,6 @@ void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
             SortByColumnInternal(column, winrt::SortDirection::None, false, false);
         }
     }
-
-    // The chevron and the click handler are stamped at header-build time.
-    QueueRebuildHeaders();
 }
 
 double TableView::GetHeaderMeasuredWidthForColumn(const winrt::TableViewColumn& column) const{

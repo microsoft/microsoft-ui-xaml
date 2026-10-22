@@ -1579,6 +1579,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a sort opt-out rebuilds the headers even when a Sorted handler throws.")]
+        [TestProperty("data:OptOut", "{CanSort, CanUserSortColumns}")]
+        public void VerifySortOptOutRebuildsHeadersWhenSortedHandlerThrows()
+        {
+            var optOut = ((string)TestContext.DataRow["OptOut"]).Trim();
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Precondition: the column sorts.");
+                tableView.Sorted += (s, e) => throw new InvalidOperationException("Sorted handler fault");
+                try
+                {
+                    if (optOut == "CanSort")
+                    {
+                        tableView.Columns[0].CanSort = false;
+                    }
+                    else
+                    {
+                        tableView.CanUserSortColumns = false;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.Comment($"{optOut}: the handler fault surfaced: {e.Message}");
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var indicator = FindSortIndicator(tableView, 0);
+                Verify.IsTrue(indicator == null || indicator.Visibility == Visibility.Collapsed,
+                    $"{optOut}: the header must drop its sort affordance even though a Sorted handler threw.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a clear queued by removing the sorted column leaves the app-declared sort of the next ItemsSource alone.")]
         public void VerifyColumnRemovalClearKeepsNewItemsSourceSort()
         {
