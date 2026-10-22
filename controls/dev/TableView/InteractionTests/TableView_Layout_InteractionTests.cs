@@ -304,7 +304,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // The cursor is updated asynchronously after the pointer moves, so poll until several
         // consecutive samples agree rather than accepting a single transient match. Returns false,
-        // with a warning, when the cursor is not showing: there is no cursor to verify.
+        // reporting the test Skipped, when the cursor is not showing: there is no cursor to verify.
         private static bool VerifyCursorBecomes(IntPtr expected, string message, int requiredMatches = 3)
         {
             var samples = new List<string>();
@@ -329,7 +329,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             if (matches < requiredMatches && !cursor.HasValue)
             {
-                Log.Warning(string.Format("{0} Skipped: the system cursor is not showing; sampled [{1}].", message, string.Join(", ", samples)));
+                Log.Result(TestResult.Skipped, string.Format("{0} The system cursor is not showing; sampled [{1}].", message, string.Join(", ", samples)));
                 return false;
             }
 
