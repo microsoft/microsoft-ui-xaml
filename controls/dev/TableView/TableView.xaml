@@ -476,7 +476,7 @@
     </Style>
 
     <DataTemplate x:Key="TableViewDefaultGroupHeaderContentTemplate">
-        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <StackPanel x:Name="TableViewDefaultGroupHeaderContentRoot" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
             <TextBlock Text="{Binding KeyText, Mode=OneWay}"
                        Style="{StaticResource TableViewGroupHeaderKeyTextStyle}" />
             <!-- Inherits Foreground so it follows the header's states and an app's Foreground. -->

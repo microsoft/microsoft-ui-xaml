@@ -1426,6 +1426,76 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyDisabledGroupHeaderCountFollowsContentTemplateChanges()
+        {
+            TableView tableView = null;
+            DataTemplate customTemplate = null;
+            const string CustomTemplateXaml =
+                @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation""
+                                xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml"">
+                      <StackPanel Orientation=""Horizontal"">
+                          <TextBlock Text=""{Binding KeyText}"" />
+                          <TextBlock x:Name=""TableViewGroupHeaderItemCountText"" Text=""{Binding ItemCountText}"" Opacity=""0.25"" />
+                      </StackPanel>
+                  </DataTemplate>";
+
+            List<TextBlock> Counts() => FindVisualChildrenByType<TableViewGroupHeader>(tableView)
+                .Select(header => header.FindVisualChildByName("TableViewGroupHeaderItemCountText") as TextBlock)
+                .ToList();
+
+            void VerifyCounts(double expected, string message)
+            {
+                var counts = Counts();
+                Verify.IsGreaterThan(counts.Count, 0, "Precondition: group headers are realized.");
+                foreach (var count in counts)
+                {
+                    if (count == null)
+                    {
+                        Verify.Fail("Every group header must contain the item-count TextBlock.");
+                        return;
+                    }
+                    Verify.AreEqual(expected, count.Opacity, message);
+                }
+            }
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    EnsureTabularControlsResources();
+                    SetApplicationResource("TabularSurfaceGroupHeaderCountOpacity", 0.5);
+                    customTemplate = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(CustomTemplateXaml);
+
+                    tableView = CreateGroupedThemingTable();
+                    tableView.IsEnabled = false;
+                    LoadContent(tableView);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyCounts(1.0, "Precondition: a disabled default count is not dimmed twice.");
+                    tableView.GroupHeaderTemplate = customTemplate;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyCounts(0.25, "An app template's same-named TextBlock must keep its own Opacity.");
+                    tableView.GroupHeaderTemplate = null;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() => VerifyCounts(1.0,
+                    "A default count realized again while disabled must not be dimmed twice."));
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceGroupHeaderCountOpacity"));
+            }
+        }
+
+        [TestMethod]
         public void VerifyGroupHeaderCountFollowsAppForegroundStyle()
         {
             var white = Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF);
