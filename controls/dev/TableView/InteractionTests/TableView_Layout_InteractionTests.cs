@@ -262,30 +262,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies losing the gripper's pointer capture mid-drag cancels the resize and leaves the gripper usable.")]
         public void PointerResizeCaptureLostMidDragCancelsResize()
         {
-            HoldResizeThroughDelayedTeardown(DelayedGripperCaptureLossButton, pressOnly: false, reloadWaitMs: 0,
-                "Losing capture mid-drag");
+            HoldResizeThroughDelayedTeardown(DelayedGripperCaptureLossButton, pressOnly: false,
+                "Gripper capture released", null, "Losing capture mid-drag");
         }
 
         [TestMethod]
         [TestProperty("Description", "Verifies disabling the table while the gripper holds the pointer cancels the resize and leaves the gripper usable once re-enabled.")]
         public void PointerResizeDisabledWhileCapturedCancelsResize()
         {
-            HoldResizeThroughDelayedTeardown(DelayedDisableButton, pressOnly: false, reloadWaitMs: 1500,
-                "Disabling while captured");
+            HoldResizeThroughDelayedTeardown(DelayedDisableButton, pressOnly: false,
+                "Disabled", "Enabled", "Disabling while captured");
         }
 
         [TestMethod]
         [TestProperty("Description", "Verifies unloading the table while a gripper press holds capture, before any drag starts, leaves the gripper usable after reload.")]
         public void PointerPressOnGripperThenUnloadLeavesNoWedgedState()
         {
-            HoldResizeThroughDelayedTeardown(DelayedUnloadButton, pressOnly: true, reloadWaitMs: 2000,
-                "Unloading after a press");
+            HoldResizeThroughDelayedTeardown(DelayedUnloadButton, pressOnly: true,
+                "Unloaded", "Reloaded", "Unloading after a press");
         }
 
         // Holds a pointer press (and optionally a drag) on the Name gripper, invokes a page button that
         // tears the gesture down 1.5s later, releases after that point, then checks the width did not
         // keep the abandoned drag and that a normal resize still works.
-        private static void HoldResizeThroughDelayedTeardown(string teardownButtonId, bool pressOnly, int reloadWaitMs, string scenario)
+        private static void HoldResizeThroughDelayedTeardown(string teardownButtonId, bool pressOnly, string teardownStatus, string restoredStatus, string scenario)
         {
             using (var setup = new TestSetupHelper(PageName))
             {
@@ -318,7 +318,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     }
                     // UIA, not a click: the pointer stays pressed on the gripper.
                     teardown.Invoke();
-                    Wait.ForMilliseconds(2200);
+                    if (!WaitForStatusText(teardownStatus))
+                    {
+                        Verify.Fail("The page did not report '" + teardownStatus + "' while the pointer was held.");
+                        return;
+                    }
+                    Wait.ForIdle();
                     if (!pressOnly)
                     {
                         InputHelper.MoveMouse(new Point(startX + 80, y));
@@ -330,9 +335,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Wait.ForIdle();
                 }
 
-                if (reloadWaitMs > 0)
+                if (restoredStatus != null)
                 {
-                    Wait.ForMilliseconds((uint)reloadWaitMs);
+                    if (!WaitForStatusText(restoredStatus))
+                    {
+                        Verify.Fail("The page did not report '" + restoredStatus + "' after the teardown.");
+                        return;
+                    }
                     Wait.ForIdle();
                 }
 

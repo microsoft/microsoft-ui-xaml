@@ -870,23 +870,16 @@ namespace MUXControlsTestApp
         // direct click cannot do while the control holds pointer capture.
         private void OnDelayedUnloadClick(object sender, RoutedEventArgs e)
         {
-            var unloadTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
-            unloadTimer.Tick += (s, args) =>
+            RunAfterDelay(() =>
             {
-                unloadTimer.Stop();
                 BasicTableHost.Children.Remove(BasicTableView);
                 StatusTextBlock.Text = "Unloaded";
-
-                var reloadTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
-                reloadTimer.Tick += (s2, args2) =>
+                RunAfterDelay(() =>
                 {
-                    reloadTimer.Stop();
                     BasicTableHost.Children.Add(BasicTableView);
                     StatusTextBlock.Text = "Reloaded";
-                };
-                reloadTimer.Start();
-            };
-            unloadTimer.Start();
+                });
+            });
         }
 
         private static void RunAfterDelay(Action action)
