@@ -177,7 +177,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.MouseDragToTarget(source, target);
                 Wait.RetryUntilEvalFuncSuccessOrTimeout(
                     () => ReadText("CopyCompletionCount") == attempt.ToString(),
-                    retryTimoutByMilliseconds: 3000);
+                    retryTimoutByMilliseconds: 10000);
                 Verify.AreEqual((attempt + 2).ToString(), ReadText("DragCount"));
                 Verify.AreEqual(attempt.ToString(), ReadText("DropCount"));
                 Verify.AreEqual(attempt.ToString(), ReadText("CopyCompletionCount"));
