@@ -412,6 +412,16 @@ bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
         return false;
     }
 
+    // The lit column describes the app's sort, not one this table installed: nothing to clear.
+    if (!explicitClear && !m_activeSourceReleased && m_tableViewSourceSort.AxisToken.empty())
+    {
+        if (auto const source = ShapingSourceInternal();
+            source && !winrt::get_self<::TableViewSource>(source)->ActiveSortAxisInfos().empty())
+        {
+            return false;
+        }
+    }
+
     if (!TryTerminateEditForControlInitiatedReshape())
     {
         if (m_editState == EditState::Ending && !m_isApplyingCoalescedEditReshape)

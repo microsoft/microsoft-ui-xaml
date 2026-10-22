@@ -1535,6 +1535,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies turning CanUserSortColumns off leaves a column the app's source sort lit untouched and raises no sort events.")]
+        public void VerifyUngatingKeepsAppLitColumnWithoutEvents()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            int sortingCount = 0;
+            int sortedCount = 0;
+            int directionChanges = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateSortTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Ascending));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "Precondition: the source sort lights the Name column.");
+                tableView.Sorting += (s, e) => sortingCount++;
+                tableView.Sorted += (s, e) => sortedCount++;
+                tableView.Columns[0].RegisterPropertyChangedCallback(TableViewColumn.SortDirectionProperty, (s, dp) => directionChanges++);
+                tableView.CanUserSortColumns = false;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, sortingCount, "The table installed no sort, so there is nothing to clear and no Sorting.");
+                Verify.AreEqual(0, sortedCount, "No Sorted may be raised.");
+                Verify.AreEqual(0, directionChanges, "The column's SortDirection must not flip.");
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The column keeps describing the app's sort.");
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "the app's sort stays on the source");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a clear queued by removing the sorted column leaves the app-declared sort of the next ItemsSource alone.")]
         public void VerifyColumnRemovalClearKeepsNewItemsSourceSort()
         {
