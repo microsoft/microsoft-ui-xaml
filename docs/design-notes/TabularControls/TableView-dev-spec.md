@@ -297,7 +297,9 @@ Setting `CanSort=False` on the sorted column clears its sort through an internal
 that gate, raising `Sorting`/`Sorted` exactly as `SortByColumn(column, None)` does. A `Sorting`
 handler can cancel that clear, and it is skipped while the source is refused; the column then keeps
 its sort, and `SortByColumn(column, None)` (allowed on a column still holding a sort, whatever its
-`CanSort`) or `ClearSort` removes it.
+`CanSort`) or `ClearSort` removes it. A column lit only by the app's `TableViewSource` sort, with
+no sort installed by the table, keeps that state and raises no events, as when
+`CanUserSortColumns` turns off.
 
 Without this, the earlier-declared axis would silently outrank the later one while the chevron
 advertised the loser. WPF splits the same way: `SortDescriptions` carry a property name, which is

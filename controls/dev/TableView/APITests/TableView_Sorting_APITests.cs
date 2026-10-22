@@ -1321,7 +1321,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies clearing a column lit by an app-declared TableViewSource sort removes that sort.")]
-        [TestProperty("data:Clear", "{SortByColumnNone, CanSortFalse, HeaderInvoke}")]
+        [TestProperty("data:Clear", "{SortByColumnNone, HeaderInvoke}")]
         public void VerifyClearingColumnLitBySourceSortRemovesSourceSort()
         {
             var clear = ((string)TestContext.DataRow["Clear"]).Trim();
@@ -1353,9 +1353,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     case "SortByColumnNone":
                         tableView.SortByColumn(tableView.Columns[0], SortDirection.None);
-                        break;
-                    case "CanSortFalse":
-                        tableView.Columns[0].CanSort = false;
                         break;
                     default:
                         var provider = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0])
@@ -1535,9 +1532,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies turning CanUserSortColumns off leaves a column the app's source sort lit untouched and raises no sort events.")]
+        [TestProperty("Description", "Verifies turning sorting off for the table or the column leaves a column the app's source sort lit untouched and raises no sort events.")]
+        [TestProperty("data:Change", "{CanUserSortColumnsFalse, CanSortFalse}")]
         public void VerifyUngatingKeepsAppLitColumnWithoutEvents()
         {
+            var change = ((string)TestContext.DataRow["Change"]).Trim();
             TableView tableView = null;
             TableViewSource source = null;
             int sortingCount = 0;
@@ -1563,7 +1562,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.Sorting += (s, e) => sortingCount++;
                 tableView.Sorted += (s, e) => sortedCount++;
                 tableView.Columns[0].RegisterPropertyChangedCallback(TableViewColumn.SortDirectionProperty, (s, dp) => directionChanges++);
-                tableView.CanUserSortColumns = false;
+                if (change == "CanSortFalse")
+                {
+                    tableView.Columns[0].CanSort = false;
+                }
+                else
+                {
+                    tableView.CanUserSortColumns = false;
+                }
             });
 
             SettleLayout(tableView);

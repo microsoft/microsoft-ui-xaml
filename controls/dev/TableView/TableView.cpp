@@ -3437,14 +3437,15 @@ void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
     // runs when a Sorting or Sorted handler throws.
     QueueRebuildHeaders();
 
-    // A column that just opted out must not keep an active sort applied to it.
-    if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None)
+    // A column that just opted out must not keep an active sort applied to it. One lit only by the
+    // app's source sort keeps it: the app owns that axis.
+    if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None && !IsSortLitOnlyByApp())
     {
         if (m_editState == EditState::Beginning)
         {
             QueueReshapeAfterEditCloses([this, weakColumn = winrt::make_weak(column)]()
             {
-                if (auto const optedOut = weakColumn.get(); optedOut && !optedOut.CanSort())
+                if (auto const optedOut = weakColumn.get(); optedOut && !optedOut.CanSort() && !IsSortLitOnlyByApp())
                 {
                     SortByColumnInternal(optedOut, winrt::SortDirection::None, false, false);
                 }

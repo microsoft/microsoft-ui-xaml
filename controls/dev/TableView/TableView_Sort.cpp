@@ -405,6 +405,16 @@ bool TableView::ClearSort()
     return ClearSortInternal(true, true);
 }
 
+bool TableView::IsSortLitOnlyByApp() const
+{
+    if (m_activeSourceReleased || !m_tableViewSourceSort.AxisToken.empty())
+    {
+        return false;
+    }
+    auto const source = ShapingSourceInternal();
+    return source && !winrt::get_self<::TableViewSource>(source)->ActiveSortAxisInfos().empty();
+}
+
 bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
 {
     if (m_sortedColumns.empty())
@@ -412,14 +422,9 @@ bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
         return false;
     }
 
-    // The lit column describes the app's sort, not one this table installed: nothing to clear.
-    if (!explicitClear && !m_activeSourceReleased && m_tableViewSourceSort.AxisToken.empty())
+    if (!explicitClear && IsSortLitOnlyByApp())
     {
-        if (auto const source = ShapingSourceInternal();
-            source && !winrt::get_self<::TableViewSource>(source)->ActiveSortAxisInfos().empty())
-        {
-            return false;
-        }
+        return false;
     }
 
     if (!TryTerminateEditForControlInitiatedReshape())
