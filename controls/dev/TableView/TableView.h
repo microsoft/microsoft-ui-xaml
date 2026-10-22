@@ -1250,6 +1250,7 @@ private:
     bool m_suppressTrailingGridLine{ false };
     bool m_suppressBottomGridLine{ false };
     bool m_terminalGridLineGeometryRetryAvailable{ true };
+    bool m_reportedMissingGridLineBrush{ false };
     int32_t m_terminalGridLineColumnIndex{ -1 };
     double m_terminalGridLineHorizontalOffset{ std::numeric_limits<double>::quiet_NaN() };
     double m_terminalGridLineVerticalOffset{ std::numeric_limits<double>::quiet_NaN() };

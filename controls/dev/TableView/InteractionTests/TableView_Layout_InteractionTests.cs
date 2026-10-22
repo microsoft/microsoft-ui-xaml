@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Common;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
@@ -253,6 +255,245 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     widthAfter,
                     widthBefore + 20.0,
                     "A resize after a mid-drag unload/reload must still widen the column - i.e. no capture wedged the gripper (dev-spec:129).");
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct CURSORINFO
+        {
+            public int cbSize;
+            public int flags;
+            public IntPtr hCursor;
+            public int ptX;
+            public int ptY;
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool GetCursorInfo(ref CURSORINFO pci);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr LoadCursor(IntPtr hInstance, IntPtr lpCursorName);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetAncestor(IntPtr hWnd, uint gaFlags);
+
+        [DllImport("user32.dll")]
+        private static extern uint GetDpiForWindow(IntPtr hWnd);
+
+        private const uint GA_ROOT = 2;
+        private const int CURSOR_SHOWING = 0x1;
+        private static readonly IntPtr IDC_ARROW = new IntPtr(32512);
+        private static readonly IntPtr IDC_SIZEWE = new IntPtr(32644);
+
+        // Age has no HeaderToolTip, whose popup could open under the pointer and own the cursor.
+        private const string CursorTestColumn = "Age";
+
+        // Null while the system cursor is hidden or suppressed (e.g. the session has no mouse).
+        private static IntPtr? ReadCursor()
+        {
+            var info = new CURSORINFO { cbSize = Marshal.SizeOf<CURSORINFO>() };
+            Verify.IsTrue(GetCursorInfo(ref info), "GetCursorInfo must succeed.");
+            return (info.flags & CURSOR_SHOWING) != 0 ? info.hCursor : (IntPtr?)null;
+        }
+
+        // The cursor is updated asynchronously after the pointer moves, so poll until several
+        // consecutive samples agree rather than accepting a single transient match. Returns false,
+        // with a warning, when the cursor is not showing: there is no cursor to verify.
+        private static bool VerifyCursorBecomes(IntPtr expected, string message, int requiredMatches = 3)
+        {
+            var samples = new List<string>();
+            var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
+            IntPtr? cursor;
+            int matches = 0;
+            while (true)
+            {
+                cursor = ReadCursor();
+                var sample = cursor.HasValue ? string.Format("0x{0:X}", cursor.Value.ToInt64()) : "hidden";
+                if (samples.Count == 0 || samples[samples.Count - 1] != sample)
+                {
+                    samples.Add(sample);
+                }
+                matches = cursor == expected ? matches + 1 : 0;
+                if (matches >= requiredMatches || DateTime.UtcNow >= deadline)
+                {
+                    break;
+                }
+                Wait.ForMilliseconds(50);
+            }
+
+            if (matches < requiredMatches && !cursor.HasValue)
+            {
+                Log.Warning(string.Format("{0} Skipped: the system cursor is not showing; sampled [{1}].", message, string.Join(", ", samples)));
+                return false;
+            }
+
+            Verify.IsTrue(matches >= requiredMatches,
+                string.Format("{0} Expected 0x{1:X} for {2} consecutive samples; sampled [{3}].",
+                    message, expected.ToInt64(), requiredMatches, string.Join(", ", samples)));
+            return true;
+        }
+
+        private static double GetAppWindowScale()
+        {
+            uint dpi = GetDpiForWindow(GetAncestor(TestEnvironment.Application.CoreWindow.NativeWindowHandle, GA_ROOT));
+            return dpi == 0 ? 1.0 : dpi / 96.0;
+        }
+
+        private static void EnsureAppWindowForeground()
+        {
+            IntPtr window = GetAncestor(TestEnvironment.Application.CoreWindow.NativeWindowHandle, GA_ROOT);
+            var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
+            while (GetForegroundWindow() != window && DateTime.UtcNow < deadline)
+            {
+                SetForegroundWindow(window);
+                Wait.ForMilliseconds(100);
+            }
+            Verify.AreEqual(window, GetForegroundWindow(), "The test app window must be in the foreground.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the system cursor is the west-east size cursor while the mouse rests, moves or drags on a column gripper.")]
+        public void PointerOverGripperShowsResizeCursor()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                if (tableView == null)
+                {
+                    Verify.Fail("BasicTableView was not found on the test page.");
+                    return;
+                }
+
+                UIObject header = FindColumnHeader(tableView, CursorTestColumn);
+                if (header == null)
+                {
+                    Verify.Fail(string.Format("The '{0}' column header peer was not found on the header host.", CursorTestColumn));
+                    return;
+                }
+
+                EnsureAppWindowForeground();
+                IntPtr sizeWE = LoadCursor(IntPtr.Zero, IDC_SIZEWE);
+                IntPtr arrow = LoadCursor(IntPtr.Zero, IDC_ARROW);
+
+                var bounds = header.BoundingRectangle;
+                // The 8-DIP gripper is right-aligned in the header cell; aim at its centre.
+                int gripperX = bounds.Left + bounds.Width - (int)Math.Round(4.0 * GetAppWindowScale());
+                int edgeX = bounds.Left + bounds.Width - 1;
+                int y = bounds.Top + (bounds.Height / 2);
+                var centre = new Point(bounds.Left + (bounds.Width / 2), y);
+
+                InputHelper.MoveMouse(centre);
+                Wait.ForIdle();
+                if (!VerifyCursorBecomes(arrow, "Away from the gripper the cursor must be the arrow."))
+                {
+                    return;
+                }
+
+                foreach (int x in new[] { gripperX, gripperX - 1, gripperX + 1, gripperX, gripperX - 1 })
+                {
+                    InputHelper.MoveMouse(new Point(x, y));
+                    Wait.ForIdle();
+                    if (!VerifyCursorBecomes(sizeWE, string.Format("Over the gripper at x={0} the cursor must be and stay the west-east size cursor.", x), requiredMatches: 5))
+                    {
+                        return;
+                    }
+                }
+
+                // The gripper travels with the edge, so the pointer stays over it.
+                InputHelper.LeftMouseButtonDown(header, gripperX - centre.X, 0);
+                try
+                {
+                    InputHelper.MoveMouse(new Point(edgeX + 20, y));
+                    InputHelper.MoveMouse(new Point(edgeX + 40, y));
+                    Wait.ForIdle();
+                    if (!VerifyCursorBecomes(sizeWE, "The west-east size cursor must hold during the drag."))
+                    {
+                        return;
+                    }
+                }
+                finally
+                {
+                    InputHelper.LeftMouseButtonUp();
+                    Wait.ForIdle();
+                }
+
+                InputHelper.MoveMouse(new Point(FindColumnHeader(FindElement.ById(BasicTable), CursorTestColumn).BoundingRectangle.Left + 10, y));
+                Wait.ForIdle();
+                VerifyCursorBecomes(arrow, "Leaving the gripper must restore the arrow.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Escape during a pointer resize releases the gripper's mouse capture, so the pointer stops showing the resize cursor away from the gripper.")]
+        public void PointerResizeEscapeReleasesCapture()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                if (tableView == null)
+                {
+                    Verify.Fail("BasicTableView was not found on the test page.");
+                    return;
+                }
+
+                UIObject header = FindColumnHeader(tableView, CursorTestColumn);
+                if (header == null)
+                {
+                    Verify.Fail(string.Format("The '{0}' column header peer was not found on the header host.", CursorTestColumn));
+                    return;
+                }
+
+                EnsureAppWindowForeground();
+                IntPtr sizeWE = LoadCursor(IntPtr.Zero, IDC_SIZEWE);
+                IntPtr arrow = LoadCursor(IntPtr.Zero, IDC_ARROW);
+
+                var bounds = header.BoundingRectangle;
+                int gripperOffset = (bounds.Width / 2) - (int)Math.Round(4.0 * GetAppWindowScale());
+                int edgeX = bounds.Left + bounds.Width - 1;
+                int y = bounds.Top + (bounds.Height / 2);
+                var table = tableView.BoundingRectangle;
+                // Over the body, well away from the gripper.
+                var awayY = Math.Min(bounds.Bottom + (3 * bounds.Height), table.Bottom - 10);
+
+                InputHelper.LeftMouseButtonDown(header, gripperOffset, 0);
+                try
+                {
+                    InputHelper.MoveMouse(new Point(edgeX + 20, y));
+                    InputHelper.MoveMouse(new Point(edgeX + 40, awayY));
+                    Wait.ForIdle();
+                    if (!VerifyCursorBecomes(sizeWE, "Precondition: the captured drag must hold the resize cursor away from the gripper."))
+                    {
+                        return;
+                    }
+
+                    KeyboardHelper.PressKey(Key.Escape);
+                    Wait.ForIdle();
+                    InputHelper.MoveMouse(new Point(edgeX + 30, awayY));
+                    Wait.ForIdle();
+                    if (!VerifyCursorBecomes(arrow, "After Escape the gripper must release capture, so the body's arrow cursor returns before the button is released."))
+                    {
+                        return;
+                    }
+                }
+                finally
+                {
+                    InputHelper.LeftMouseButtonUp();
+                    Wait.ForIdle();
+                }
+
+                UIObject resized = FindColumnHeader(FindElement.ById(BasicTable), CursorTestColumn);
+                double widthBefore = resized.BoundingRectangle.Width;
+                DragColumnBoundary(resized, 80, cancelWithEscape: false);
+                Wait.ForIdle();
+                double widthAfter = FindColumnHeader(FindElement.ById(BasicTable), CursorTestColumn).BoundingRectangle.Width;
+                Log.Comment("After the canceled drag: {0} width before={1}, after a normal resize={2}.", CursorTestColumn, widthBefore, widthAfter);
+                Verify.IsGreaterThan(widthAfter, widthBefore + 20.0, "A resize after an Escape-canceled drag must still widen the column.");
             }
         }
 
