@@ -154,6 +154,208 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VERIFY_IS_TRUE(nodes.back().get_NodeType() == xntEndObject);
     }
 
+    void XamlTextParserUnitTests::EncodeNamedObjectBeforeConditionalProperty()
+    {
+        ParserUtilities parserUtils;
+        std::shared_ptr<ParserErrorReporter> errorReporter;
+        auto schema = parserUtils.GetSchemaContext(errorReporter);
+        DECLARE_CONST_STRING_IN_TEST_CODE(c_strXamlBuffer,
+            L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+            L" xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'"
+            L" xmlns:bogus_contract='http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(83589481-75C4-465C-AB94-3182F13778BF,1)'>"
+            L"<TextBlock xml:lang='en-US' bogus_contract:Text='ignored'/>"
+            L"<TextBlock bogus_contract:Name='cardinal' x:Name='chop' xml:lang='en-US'/>"
+            L"</StackPanel>");
+        std::shared_ptr<XamlTextReader> reader;
+        VERIFY_SUCCEEDED(XamlTextReader::Create(
+            schema,
+            XamlTextReaderSettings(false, true, false),
+            c_strXamlBuffer.GetCount() * sizeof(WCHAR),
+            reinterpret_cast<XUINT8*>(const_cast<WCHAR*>(c_strXamlBuffer.GetBuffer())),
+            reader));
+
+        ObjectWriterSettings settings;
+        settings.set_EnableEncoding(true);
+        std::shared_ptr<ObjectWriter> writer;
+        VERIFY_SUCCEEDED(ObjectWriter::Create(schema, settings, writer));
+        HRESULT hr;
+        while ((hr = reader->Read()) == S_OK)
+        {
+            VERIFY_SUCCEEDED(writer->WriteNode(reader->CurrentNode()));
+        }
+        VERIFY_ARE_EQUAL(S_FALSE, hr);
+
+        auto nodeList = writer->GetNodeList();
+        VERIFY_SUCCEEDED(nodeList->Optimize());
+
+        unsigned int conditionalDepth = 0;
+        bool unconditionalNameRegistered = false;
+        bool conditionalNameRegistered = false;
+        bool textBlockInitialized = false;
+        unsigned int languageValuesRecorded = 0;
+        for (const auto& node : nodeList->GetNodeList())
+        {
+            if (node.GetNodeType() == ObjectWriterNodeType::BeginConditionalScope)
+            {
+                ++conditionalDepth;
+            }
+            else if (node.GetNodeType() == ObjectWriterNodeType::EndConditionalScope)
+            {
+                VERIFY_IS_TRUE(conditionalDepth > 0);
+                --conditionalDepth;
+            }
+            else if (node.GetNodeType() == ObjectWriterNodeType::CreateTypeBeginInit ||
+                node.GetNodeType() == ObjectWriterNodeType::PushScopeCreateTypeBeginInit ||
+                node.GetNodeType() == ObjectWriterNodeType::CreateType ||
+                node.GetNodeType() == ObjectWriterNodeType::PushScopeCreateType)
+            {
+                if (node.GetXamlType()->get_TypeToken() == XamlTypeToken(tpkNative, KnownTypeIndex::TextBlock))
+                {
+                    textBlockInitialized = node.GetNodeType() == ObjectWriterNodeType::CreateTypeBeginInit ||
+                        node.GetNodeType() == ObjectWriterNodeType::PushScopeCreateTypeBeginInit;
+                }
+            }
+            else if ((node.GetNodeType() == ObjectWriterNodeType::SetValue ||
+                node.GetNodeType() == ObjectWriterNodeType::SetValueConstant) &&
+                node.GetXamlProperty()->get_PropertyToken() == XamlPropertyToken(tpkNative, KnownPropertyIndex::FrameworkElement_Language))
+            {
+                VERIFY_IS_TRUE(node.GetNodeType() == ObjectWriterNodeType::SetValueConstant);
+                VERIFY_IS_TRUE(node.GetValue()->GetValue().GetType() == valueString);
+                VERIFY_IS_TRUE(node.GetValue()->GetValue().AsString().Equals(XSTRING_PTR_EPHEMERAL(L"en-US")));
+                VERIFY_ARE_EQUAL(0u, conditionalDepth);
+                VERIFY_IS_TRUE(textBlockInitialized);
+                ++languageValuesRecorded;
+            }
+            else if (node.GetNodeType() == ObjectWriterNodeType::SetName)
+            {
+                const auto& name = node.GetValue()->GetValue().AsString();
+                if (name.Equals(XSTRING_PTR_EPHEMERAL(L"chop")))
+                {
+                    VERIFY_ARE_EQUAL(0u, conditionalDepth);
+                    unconditionalNameRegistered = true;
+                }
+                else if (name.Equals(XSTRING_PTR_EPHEMERAL(L"cardinal")))
+                {
+                    VERIFY_ARE_EQUAL(1u, conditionalDepth);
+                    conditionalNameRegistered = true;
+                }
+            }
+        }
+        VERIFY_ARE_EQUAL(0u, conditionalDepth);
+        VERIFY_IS_TRUE(unconditionalNameRegistered);
+        VERIFY_IS_TRUE(conditionalNameRegistered);
+        VERIFY_ARE_EQUAL(2u, languageValuesRecorded);
+    }
+
+    void XamlTextParserUnitTests::EncodeDeferredTextBlockLanguage()
+    {
+        ParserUtilities parserUtils;
+        std::shared_ptr<ParserErrorReporter> errorReporter;
+        auto schema = parserUtils.GetSchemaContext(errorReporter);
+        DECLARE_CONST_STRING_IN_TEST_CODE(c_strXamlBuffer,
+            L"<TextBlock xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xml:lang='en-US'/>");
+        std::shared_ptr<XamlTextReader> reader;
+        VERIFY_SUCCEEDED(XamlTextReader::Create(
+            schema,
+            XamlTextReaderSettings(false, true, false),
+            c_strXamlBuffer.GetCount() * sizeof(WCHAR),
+            reinterpret_cast<XUINT8*>(const_cast<WCHAR*>(c_strXamlBuffer.GetBuffer())),
+            reader));
+        ObjectWriterSettings settings;
+        settings.set_EnableEncoding(true);
+        std::shared_ptr<ObjectWriter> writer;
+        VERIFY_SUCCEEDED(ObjectWriter::Create(schema, settings, writer));
+        HRESULT hr;
+        while ((hr = reader->Read()) == S_OK)
+        {
+            if (reader->CurrentNode().get_NodeType() == xntEndObject)
+            {
+                for (const auto& node : writer->GetNodeList()->GetNodeList())
+                {
+                    VERIFY_IS_TRUE(node.GetNodeType() != ObjectWriterNodeType::CreateType &&
+                        node.GetNodeType() != ObjectWriterNodeType::CreateTypeWithInitialValue);
+                }
+            }
+            VERIFY_SUCCEEDED(writer->WriteNode(reader->CurrentNode()));
+        }
+        VERIFY_ARE_EQUAL(S_FALSE, hr);
+        auto nodeList = writer->GetNodeList();
+        VERIFY_SUCCEEDED(nodeList->Optimize());
+
+        unsigned int initializations = 0;
+        bool languageAssigned = false;
+        for (const auto& node : nodeList->GetNodeList())
+        {
+            if (node.GetNodeType() == ObjectWriterNodeType::CreateTypeBeginInit ||
+                node.GetNodeType() == ObjectWriterNodeType::PushScopeCreateTypeBeginInit)
+            {
+                VERIFY_IS_TRUE(node.GetXamlType()->get_TypeToken() == XamlTypeToken(tpkNative, KnownTypeIndex::TextBlock));
+                ++initializations;
+            }
+            else if ((node.GetNodeType() == ObjectWriterNodeType::SetValue ||
+                node.GetNodeType() == ObjectWriterNodeType::SetValueConstant) &&
+                node.GetXamlProperty()->get_PropertyToken() == XamlPropertyToken(tpkNative, KnownPropertyIndex::FrameworkElement_Language))
+            {
+                VERIFY_ARE_EQUAL(1u, initializations);
+                VERIFY_IS_TRUE(node.GetNodeType() == ObjectWriterNodeType::SetValueConstant);
+                VERIFY_IS_TRUE(node.GetValue()->GetValue().GetType() == valueString);
+                VERIFY_IS_TRUE(node.GetValue()->GetValue().AsString().Equals(XSTRING_PTR_EPHEMERAL(L"en-US")));
+                languageAssigned = true;
+            }
+        }
+        VERIFY_ARE_EQUAL(1u, initializations);
+        VERIFY_IS_TRUE(languageAssigned);
+    }
+
+    void XamlTextParserUnitTests::EncodeSavedDirectivesOnContainer()
+    {
+        ParserUtilities parserUtils;
+        std::shared_ptr<ParserErrorReporter> errorReporter;
+        auto schema = parserUtils.GetSchemaContext(errorReporter);
+        const WCHAR* fragments[] =
+        {
+            L"<Border xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xml:lang='en-US'><Border.Child><TextBlock/></Border.Child></Border>",
+            L"<Border xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='container'><Border.Child><TextBlock/></Border.Child></Border>",
+            L"<Border xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='container' xml:lang='en-US'><Border.Child><TextBlock/></Border.Child></Border>"
+        };
+
+        for (const WCHAR* fragment : fragments)
+        {
+            xstring_ptr markup;
+            VERIFY_SUCCEEDED(xstring_ptr::CloneBuffer(fragment, static_cast<XUINT32>(wcslen(fragment)), &markup));
+            std::shared_ptr<XamlTextReader> reader;
+            VERIFY_SUCCEEDED(XamlTextReader::Create(
+                schema,
+                XamlTextReaderSettings(false, true, false),
+                markup.GetCount() * sizeof(WCHAR),
+                reinterpret_cast<XUINT8*>(const_cast<WCHAR*>(markup.GetBuffer())),
+                reader));
+            ObjectWriterSettings settings;
+            settings.set_EnableEncoding(true);
+            std::shared_ptr<ObjectWriter> writer;
+            VERIFY_SUCCEEDED(ObjectWriter::Create(schema, settings, writer));
+            HRESULT hr;
+            while ((hr = reader->Read()) == S_OK)
+            {
+                VERIFY_SUCCEEDED(writer->WriteNode(reader->CurrentNode()));
+            }
+            VERIFY_ARE_EQUAL(S_FALSE, hr);
+
+            auto nodeList = writer->GetNodeList();
+            unsigned int childAssignments = 0;
+            for (const auto& node : nodeList->GetNodeList())
+            {
+                if (node.GetNodeType() == ObjectWriterNodeType::SetValue &&
+                    node.GetXamlProperty()->get_PropertyToken() == XamlPropertyToken(tpkNative, KnownPropertyIndex::Border_Child))
+                {
+                    ++childAssignments;
+                }
+            }
+            VERIFY_ARE_EQUAL(1u, childAssignments);
+            VERIFY_SUCCEEDED(nodeList->Optimize());
+        }
+    }
+
     void XamlTextParserUnitTests::EncodeNamedStringConnectsInitializedValue()
     {
         // Exercise the textual connection IDs produced by the XAML reader.
@@ -166,7 +368,20 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VerifyStringConnection(true);
     }
 
-    void XamlTextParserUnitTests::VerifyStringConnection(bool numericConnection)
+    void XamlTextParserUnitTests::EncodeNamedStringBeforeConditionalProperty()
+    {
+        for (bool numericConnection : { false, true })
+        {
+            VerifyStringConnection(numericConnection, true);
+        }
+    }
+
+    void XamlTextParserUnitTests::EncodeConditionalNamedStringBeforeConditionalProperty()
+    {
+        VerifyStringConnection(false, true, true);
+    }
+
+    void XamlTextParserUnitTests::VerifyStringConnection(bool numericConnection, bool conditionalMember, bool conditionalObject)
     {
         // Connection callbacks and name registration must observe one fully initialized string.
         ParserUtilities parserUtils;
@@ -184,6 +399,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VERIFY_SUCCEEDED(schema->get_X_NameProperty(nameProperty));
         VERIFY_SUCCEEDED(schema->get_InitializationProperty(initializationProperty));
 
+        std::shared_ptr<::Parser::XamlPredicateAndArgs> predicate;
+        std::shared_ptr<UnknownProperty> conditionalProperty;
+        std::shared_ptr<XamlType> containerType;
+        std::shared_ptr<XamlProperty> contentProperty;
+        if (conditionalMember || conditionalObject)
+        {
+            std::shared_ptr<XamlType> predicateType;
+            VERIFY_SUCCEEDED(schema->GetXamlType(XamlTypeToken(tpkNative, KnownTypeIndex::IsApiContractPresent), predicateType));
+            DECLARE_CONST_STRING_IN_TEST_CODE(c_strArguments, L"Windows.Foundation.UniversalApiContract,999");
+            predicate = std::make_shared<::Parser::XamlPredicateAndArgs>(predicateType, c_strArguments);
+            DECLARE_CONST_STRING_IN_TEST_CODE(c_strFutureProperty, L"FutureProperty");
+            VERIFY_SUCCEEDED(UnknownProperty::Create(schema, c_strFutureProperty, stringType, xamlNamespace, FALSE, conditionalProperty));
+        }
+        if (conditionalObject)
+        {
+            VERIFY_SUCCEEDED(schema->GetXamlType(XamlTypeToken(tpkNative, KnownTypeIndex::ContentControl), containerType));
+            VERIFY_SUCCEEDED(schema->GetXamlProperty(XamlPropertyToken(tpkNative, KnownPropertyIndex::ContentControl_Content), contentProperty));
+        }
+
         for (bool empty : { false, true })
         {
             ObjectWriterSettings settings;
@@ -192,6 +426,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_SUCCEEDED(ObjectWriter::Create(schema, settings, writer));
             DECLARE_CONST_STRING_IN_TEST_CODE(c_strPrefix, L"x");
             VERIFY_SUCCEEDED(writer->WriteNamespace(c_strPrefix, xamlNamespace));
+            if (conditionalObject)
+            {
+                VERIFY_SUCCEEDED(writer->WriteObject(containerType, false));
+                VERIFY_SUCCEEDED(writer->WriteMember(contentProperty));
+                VERIFY_SUCCEEDED(writer->WriteConditionalScope(predicate));
+            }
             VERIFY_SUCCEEDED(writer->WriteObject(stringType, false));
             // Model the reader's text-valued directives separately from preconverted IDs.
             auto writeProperty = [&](const std::shared_ptr<XamlProperty>& property, const xstring_ptr_view& text)
@@ -223,43 +463,99 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             {
                 writeProperty(initializationProperty, XSTRING_PTR_EPHEMERAL(L"stringValue"));
             }
+            if (conditionalMember)
+            {
+                VERIFY_SUCCEEDED(writer->WriteConditionalScope(predicate));
+                writeProperty(conditionalProperty, XSTRING_PTR_EPHEMERAL(L"ignored"));
+                VERIFY_SUCCEEDED(writer->WriteEndConditionalScope());
+            }
             VERIFY_SUCCEEDED(writer->WriteEndObject());
+            if (conditionalObject)
+            {
+                VERIFY_SUCCEEDED(writer->WriteEndConditionalScope());
+                VERIFY_SUCCEEDED(writer->WriteEndMember());
+                VERIFY_SUCCEEDED(writer->WriteEndObject());
+            }
 
             // Check construction order before the optimizer combines the creation nodes.
             auto nodeList = writer->GetNodeList();
             unsigned int creations = 0;
+            const unsigned int objectConditionalDepth = conditionalObject ? 1u : 0u;
+            unsigned int conditionalDepth = 0;
+            bool initialized = false;
             bool connected = false;
             for (const auto& node : nodeList->GetNodeList())
             {
-                if (node.GetNodeType() == ObjectWriterNodeType::CreateType ||
+                if (node.GetNodeType() == ObjectWriterNodeType::BeginConditionalScope)
+                {
+                    ++conditionalDepth;
+                }
+                else if (node.GetNodeType() == ObjectWriterNodeType::EndConditionalScope)
+                {
+                    VERIFY_IS_TRUE(conditionalDepth > 0);
+                    --conditionalDepth;
+                }
+                else if (node.GetNodeType() == ObjectWriterNodeType::CreateType ||
                     node.GetNodeType() == ObjectWriterNodeType::CreateTypeWithInitialValue)
                 {
+                    if (node.GetXamlType()->get_TypeToken() != stringType->get_TypeToken())
+                    {
+                        continue;
+                    }
+                    VERIFY_ARE_EQUAL(objectConditionalDepth, conditionalDepth);
                     VERIFY_IS_TRUE(empty ? node.GetNodeType() == ObjectWriterNodeType::CreateType :
                         node.GetNodeType() == ObjectWriterNodeType::CreateTypeWithInitialValue);
                     ++creations;
                     VERIFY_IS_FALSE(connected);
                 }
+                else if (node.GetNodeType() == ObjectWriterNodeType::BeginInit && creations > 0)
+                {
+                    VERIFY_ARE_EQUAL(objectConditionalDepth, conditionalDepth);
+                    initialized = true;
+                }
+                else if (node.GetNodeType() == ObjectWriterNodeType::SetName)
+                {
+                    VERIFY_ARE_EQUAL(objectConditionalDepth, conditionalDepth);
+                    VERIFY_ARE_EQUAL(!empty, initialized);
+                }
                 else if (node.GetNodeType() == ObjectWriterNodeType::SetConnectionId)
                 {
+                    VERIFY_ARE_EQUAL(objectConditionalDepth, conditionalDepth);
                     VERIFY_ARE_EQUAL(1u, creations);
+                    VERIFY_IS_TRUE(initialized);
                     connected = true;
                 }
             }
+            VERIFY_ARE_EQUAL(0u, conditionalDepth);
             VERIFY_ARE_EQUAL(1u, creations);
             VERIFY_IS_TRUE(connected);
             VERIFY_SUCCEEDED(nodeList->Optimize());
 
-            bool initialized = false;
+            initialized = false;
             bool named = false;
             connected = false;
             // Optimization must preserve initialization, connection IDs, and names.
             for (const auto& node : nodeList->GetNodeList())
             {
-                if (node.GetNodeType() == ObjectWriterNodeType::CreateTypeWithConstantBeginInit ||
+                if (node.GetNodeType() == ObjectWriterNodeType::BeginConditionalScope)
+                {
+                    ++conditionalDepth;
+                }
+                else if (node.GetNodeType() == ObjectWriterNodeType::EndConditionalScope)
+                {
+                    VERIFY_IS_TRUE(conditionalDepth > 0);
+                    --conditionalDepth;
+                }
+                else if (node.GetNodeType() == ObjectWriterNodeType::CreateTypeWithConstantBeginInit ||
                     node.GetNodeType() == ObjectWriterNodeType::PushScopeCreateTypeWithConstantBeginInit ||
                     node.GetNodeType() == ObjectWriterNodeType::CreateTypeWithTypeConvertedConstantBeginInit ||
                     node.GetNodeType() == ObjectWriterNodeType::PushScopeCreateTypeWithTypeConvertedConstantBeginInit)
                 {
+                    if (node.GetXamlType()->get_TypeToken() != stringType->get_TypeToken())
+                    {
+                        continue;
+                    }
+                    VERIFY_ARE_EQUAL(objectConditionalDepth, conditionalDepth);
                     VERIFY_IS_FALSE(empty);
                     VERIFY_IS_TRUE(node.GetXamlType()->get_TypeToken() == stringType->get_TypeToken());
                     const auto& value = node.GetValue()->GetValue().AsString();
@@ -270,22 +566,30 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 else if (node.GetNodeType() == ObjectWriterNodeType::CreateTypeBeginInit ||
                     node.GetNodeType() == ObjectWriterNodeType::PushScopeCreateTypeBeginInit)
                 {
+                    if (node.GetXamlType()->get_TypeToken() != stringType->get_TypeToken())
+                    {
+                        continue;
+                    }
+                    VERIFY_ARE_EQUAL(objectConditionalDepth, conditionalDepth);
                     VERIFY_IS_TRUE(empty);
                     initialized = true;
                 }
                 else if (node.GetNodeType() == ObjectWriterNodeType::SetConnectionId)
                 {
+                    VERIFY_ARE_EQUAL(objectConditionalDepth, conditionalDepth);
                     VERIFY_IS_TRUE(initialized);
                     VERIFY_ARE_EQUAL(2, node.GetValue()->GetValue().AsSigned());
                     connected = true;
                 }
                 else if (node.GetNodeType() == ObjectWriterNodeType::SetName)
                 {
+                    VERIFY_ARE_EQUAL(objectConditionalDepth, conditionalDepth);
                     VERIFY_IS_TRUE(initialized);
                     VERIFY_IS_TRUE(node.GetValue()->GetValue().AsString().Equals(XSTRING_PTR_EPHEMERAL(L"named")));
                     named = true;
                 }
             }
+            VERIFY_ARE_EQUAL(0u, conditionalDepth);
             VERIFY_IS_TRUE(initialized);
             VERIFY_IS_TRUE(connected);
             VERIFY_IS_TRUE(named);

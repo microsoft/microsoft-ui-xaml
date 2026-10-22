@@ -15,6 +15,7 @@
 #include "XamlPredicateService.h"
 #include <ObjectWriterContext.h>
 #include "ObjectWriterNode.h"
+#include "ObjectWriterNodeList.h"
 #include "ObjectWriterRuntime.h"
 #include "ObjectWriterRuntimeEncoder.h"
 #include "ObjectWriterErrorService.h"
@@ -22,6 +23,7 @@
 #include <CollectionInitializationStringParser.h>
 #include <xstring_ptr.h>
 
+#include <algorithm>
 #include <functional>
 
 using namespace DirectUI;
@@ -151,6 +153,8 @@ _Check_return_ HRESULT ObjectWriter::WriteObject(
     _In_ const std::shared_ptr<XamlType>& spXamlType,
     _In_ bool fromMember)
 {
+    // This condition belongs to the object, not one of its members.
+    m_pendingConditionalScopeIndex.reset();
     bool actionDeferred = false;
 
     if (IsSkippingForConditionalScope())
@@ -501,6 +505,11 @@ _Check_return_ HRESULT ObjectWriter::WriteEndObjectCore()
 _Check_return_ HRESULT
 ObjectWriter::WriteMember(_In_ const std::shared_ptr<XamlProperty>& spProperty)
 {
+    auto clearPendingConditionalScope = wil::scope_exit([this]
+    {
+        m_pendingConditionalScopeIndex.reset();
+    });
+
     if (IsSkippingForConditionalScope())
     {
         return S_OK;
@@ -994,6 +1003,7 @@ ObjectWriter::TypeConvertStringAndAddToCollectionOnCurrentInstance(
         m_spContext->Current().get_Type(),
         m_spContext->Current().get_Instance()));
     IFC_RETURN(Logic_ApplyCurrentSavedDirectives());
+    IFC_RETURN(Logic_ApplyCurrentSavedConnectionId());
     IFC_RETURN(m_spRuntime->EndInit(
         GetLineInfo(),
         m_spContext->Current().get_Type(),
@@ -1055,6 +1065,10 @@ ObjectWriter::WriteConditionalScope(_In_ const std::shared_ptr<Parser::XamlPredi
                 }
 
                 THROW_IF_FAILED(m_spRuntime->BeginConditionalScope(GetLineInfo(), xamlPredicateAndArgs));
+                if (m_bIsEncoding)
+                {
+                    m_pendingConditionalScopeIndex = GetNodeList()->GetNodeList().size() - 1;
+                }
             }
             CATCH_RETURN();
         }
@@ -1066,6 +1080,7 @@ ObjectWriter::WriteConditionalScope(_In_ const std::shared_ptr<Parser::XamlPredi
 _Check_return_ HRESULT
 ObjectWriter::WriteEndConditionalScope()
 {
+    m_pendingConditionalScopeIndex.reset();
     if (!ShouldSkipForResourceReplacement())
     {
         bool actionDeferred = false;
@@ -1347,6 +1362,8 @@ _Check_return_ HRESULT ObjectWriter::Logic_CreateWithCtor()
 {
     bool bIsDictionary = false;
     bool bIsCollection = false;
+    const size_t initializationStart = m_pendingConditionalScopeIndex ?
+        GetNodeList()->GetNodeList().size() : 0;
     std::shared_ptr<XamlQualifiedObject> qoInst;
 
     // If the depth is greater than one then this is not the root, so we should get the line info
@@ -1367,6 +1384,8 @@ _Check_return_ HRESULT ObjectWriter::Logic_CreateWithCtor()
         // (Consider factoring this from BinaryFormatObjectWriter and ObjectWriter into ObjectWriterRuntime.)
         m_spContext->get_RootNamescope()->EnsureNamescopeOwner(qoInst->GetDependencyObject());
     }
+
+    IFC_RETURN(Logic_ApplyCurrentSavedDirectives());
 
     if (!(m_spContext->Current().get_Type()->IsUnknown()))
     {
@@ -1391,8 +1410,21 @@ _Check_return_ HRESULT ObjectWriter::Logic_CreateWithCtor()
         m_spContext->Current().get_Type(),
         m_spContext->Current().get_Instance()));
 
-    // Saved name and language assignments require BeginInit's parsing state.
-    IFC_RETURN(Logic_ApplyCurrentSavedDirectives());
+    IFC_RETURN(Logic_ApplyCurrentSavedConnectionId());
+
+    if (m_pendingConditionalScopeIndex)
+    {
+        // A conditional property may trigger deferred object construction after its
+        // BeginConditionalScope has already been recorded. Change the recorded order
+        // from [condition start][object setup] to [object setup][condition start],
+        // preserving each group's order. This prevents a false property condition
+        // from skipping creation, saved directives, initialization, and connection callbacks.
+        auto& nodes = GetNodeList()->GetNodeList();
+        ASSERT(*m_pendingConditionalScopeIndex < initializationStart);
+        ASSERT(nodes[*m_pendingConditionalScopeIndex].GetNodeType() == ObjectWriterNodeType::BeginConditionalScope);
+        std::rotate(nodes.begin() + *m_pendingConditionalScopeIndex, nodes.begin() + initializationStart, nodes.end());
+        m_pendingConditionalScopeIndex.reset();
+    }
 
     return S_OK;
 }
@@ -1431,37 +1463,9 @@ _Check_return_ HRESULT ObjectWriter::Logic_ApplyCurrentSavedDirectives()
         {
             auto entry = *iterSavedDirectives;
 
-            // Connect deferred strings only after their initialized instance exists.
             if (entry.first->get_DirectiveKind() == xdConnectionId)
             {
-                auto connectionId = entry.second;
-                if (m_bIsEncoding)
-                {
-                    IFC_RETURN(m_spRuntime->PushConstant(GetLineInfo(), entry.second));
-                    // The connection ID may still be text at this point in which case it needs 
-                    // to be converted to a signed int so it can be consumed later by the 
-                    // SetConnectionId node.
-                    if (entry.second->GetValue().GetType() != valueSigned)
-                    {
-                        std::shared_ptr<XamlType> connectionType;
-                        std::shared_ptr<XamlTextSyntax> connectionSyntax;
-                        IFC_RETURN(entry.first->get_Type(connectionType));
-                        IFC_RETURN(entry.first->get_TextSyntax(connectionSyntax));
-                        IFC_RETURN(m_spRuntime->TypeConvertValue(
-                            GetLineInfo(),
-                            m_spContext->get_TextSyntaxContext(),
-                            connectionType,
-                            connectionSyntax,
-                            entry.second,
-                            true,
-                            connectionId));
-                    }
-                }
-                IFC_RETURN(m_spRuntime->SetConnectionId(
-                    GetLineInfo(),
-                    m_spContext->get_RootInstance(),
-                    connectionId,
-                    m_spContext->Current().get_Instance()));
+                // x:ConnectionId is handled separately by Logic_ApplyCurrentSavedConnectionId
                 continue;
             }
 
@@ -1476,6 +1480,16 @@ _Check_return_ HRESULT ObjectWriter::Logic_ApplyCurrentSavedDirectives()
                         spRemappedProperty))
                 {
                     IFC_RETURN(Logic_DuplicatePropertyCheck(spRemappedProperty));
+                    if (m_bIsEncoding)
+                    {
+                        const auto previousValue = m_spContext->Current().get_Value();
+                        auto restoreValue = wil::scope_exit([this, previousValue]
+                        {
+                            m_spContext->Current().set_Value(previousValue);
+                        });
+                        // Replaying a saved directive must also record its value.
+                        IFC_RETURN(m_spRuntime->PushConstant(GetLineInfo(), entry.second));
+                    }
                     IFC_RETURN(m_spRuntime->SetValue(
                         GetLineInfo(),
                         m_spContext->Current().get_Type(),
@@ -1490,6 +1504,53 @@ _Check_return_ HRESULT ObjectWriter::Logic_ApplyCurrentSavedDirectives()
             {
                 IFC_RETURN(Logic_RegisterName_OnCurrent(entry.second));
             }
+        }
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT ObjectWriter::Logic_ApplyCurrentSavedConnectionId()
+{
+    if (m_spContext->Current().exists_Directives())
+    {
+        for (const auto& entry : *m_spContext->Current().get_Directives())
+        {
+            if (entry.first->get_DirectiveKind() != xdConnectionId)
+            {
+                continue;
+            }
+
+            auto connectionId = entry.second;
+            if (m_bIsEncoding)
+            {
+                const auto previousValue = m_spContext->Current().get_Value();
+                auto restoreValue = wil::scope_exit([this, previousValue]
+                {
+                    m_spContext->Current().set_Value(previousValue);
+                });
+                IFC_RETURN(m_spRuntime->PushConstant(GetLineInfo(), entry.second));
+                if (entry.second->GetValue().GetType() != valueSigned)
+                {
+                    std::shared_ptr<XamlType> connectionType;
+                    std::shared_ptr<XamlTextSyntax> connectionSyntax;
+                    IFC_RETURN(entry.first->get_Type(connectionType));
+                    IFC_RETURN(entry.first->get_TextSyntax(connectionSyntax));
+                    IFC_RETURN(m_spRuntime->TypeConvertValue(
+                        GetLineInfo(),
+                        m_spContext->get_TextSyntaxContext(),
+                        connectionType,
+                        connectionSyntax,
+                        entry.second,
+                        true,
+                        connectionId));
+                }
+            }
+            IFC_RETURN(m_spRuntime->SetConnectionId(
+                GetLineInfo(),
+                m_spContext->get_RootInstance(),
+                connectionId,
+                m_spContext->Current().get_Instance()));
         }
     }
 
@@ -1876,6 +1937,7 @@ _Check_return_ HRESULT ObjectWriter::Logic_CreateFromInitializationValue()
             m_spContext->Current().get_Type(),
             m_spContext->Current().get_Instance()));
         IFC_RETURN(Logic_ApplyCurrentSavedDirectives());
+        IFC_RETURN(Logic_ApplyCurrentSavedConnectionId());
         IFC_RETURN(m_spRuntime->EndInit(
             GetLineInfo(),
             m_spContext->Current().get_Type(),
