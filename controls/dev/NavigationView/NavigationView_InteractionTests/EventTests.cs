@@ -261,7 +261,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 checkBox.Check();
                 Wait.ForIdle();
 
-                foreach (var paneDisplayMode in new[] { "Left", "LeftCompact", "Top", "LeftMinimal" })
+                foreach (var paneDisplayMode in new[] { "Left", "LeftCompact", "LeftMinimal", "Top" })
                 {
                     Log.Comment("PaneDisplayMode: " + paneDisplayMode);
                     var paneDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
