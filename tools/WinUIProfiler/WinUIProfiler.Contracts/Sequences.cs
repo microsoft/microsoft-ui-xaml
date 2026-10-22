@@ -27,6 +27,9 @@ public sealed record ProducerSequenceCut(Guid CutId, SequenceDomainKey Domain, u
 public sealed record SequenceDeliveryClosure(Guid ListenerId, Guid ContinuityId, Guid FinalizedAfterCutId,
     SnapshotArtifact SealedSource, long FinalByteLength, long EnumeratedByteLength, long? FinalIngestOrdinal, long DecodedThroughOrdinal,
     ulong EnabledAfterSequence, ulong EnabledThroughSequence);
+// The contiguous completed decode/processing prefix is independent of source finalization.
+public sealed record SequenceReceiptEvidence(Guid ListenerId, Guid ContinuityId, Guid SettledCutId,
+    ulong EnabledAfterSequence, ulong EnabledThroughSequence, long ProcessedThroughOrdinal);
 public sealed record SequenceObservationWindow(ulong AfterSequence, ulong ThroughSequence, IReadOnlyList<SequenceCheckpoint> Observations);
 public sealed record SequenceDomainRange(SequenceDomainKey Domain, ulong? BeforeSequence, ulong? ThroughSequence, DataQuality Quality, ProducerSequenceCut? SettledCut = null);
 public sealed record ListenerDomainInterval(Guid ListenerId, Guid ContinuityId, SequenceDomainKey Domain, TimeRange Interval, DataQuality Quality);

@@ -100,15 +100,23 @@ real missing observations; another listener changing its selection does not
 reset existing continuity. Enable continuity or increasing QPC does not prove
 that lower reserved emissions or deliveries have finished. Producer cuts
 separate largest reserved sequence from the contiguous settled-emission
-prefix. Definitive assessment requires a complete observed sequence window,
-an adequate settled cut and a source finalized after that cut, with verified
-listener/continuity binding, enabled sequence bounds, sealed artifact identity,
-exhaustive byte enumeration and completed decode ordinals. Without these
-quantitative obligations assessment remains Unproven; ordinary live ETW,
-capture End, timeout or FlushTrace alone cannot supply closure. Arrivals
-4,7,5,6 are not loss; only a genuinely closed window still missing 5/6 proves
-two missing observations. See the event contract for the exact acquisition
-guarantee, counter, interval and capture-vector rules.
+prefix. Positive receipt and finalized absence have different requirements.
+A covering cut plus all distinct expected IDs with bound live eligibility and
+completed relevant processing proves that bounded span received, including
+reordered 4,7,5,6, without stopping recording or sealing an artifact.
+`SequenceReceiptEvidence` carries listener/continuity/cut binding, enabled
+sequence bounds and a contiguous processed ordinal independently of closure.
+Pending IDs/processing remain Unproven, not an invented missing count.
+Honest empty spans need no fake observations or archive. To finalize absent
+IDs requires the stronger source-finalized-after-cut, exhaustive enumeration
+and completed decode proof; ordinary live ETW, capture End, timeout or
+FlushTrace alone cannot supply it. Only a genuinely closed window still
+missing 5/6 proves two missing observations. A live baseline can reconcile
+once all required settled spans have positive completed receipt and matching
+validated/processed chunks, boundaries, epochs, coverage and actual
+scope/consistency evidence share the committed view. No End-only publication,
+ignored decoder loss or cross-dispatcher atomicity is implied. See the event
+contract for the exact receipt/absence and capture-vector rules.
 `SequenceContinuity.Assess` is a stateless P01 contract helper, not a
 collector, artifact verifier or processing worker.
 

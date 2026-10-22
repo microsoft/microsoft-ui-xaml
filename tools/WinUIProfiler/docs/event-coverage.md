@@ -22,7 +22,7 @@ Existing telemetry is not the required schema and is not a dependency.
 | 9. ETW plus authenticated named pipe, diagnostics-injected TAP/private bridge | Length-prefixed TAP protocol version/type/request ID/bounded typed body, capabilities/capture IDs/nonce | Future IXamlDiagnostics injection + private runtime bridge; framework diagnostics boundary above | Target controller later; no arbitrary remote commands, nonce alone is not auth |
 | 10. One bounded processing owner for histories/trees/correlations/resources | Chronological typed lifetime/type/property/membership/visual/resource/correlation/allocation/boundary observations; explicit epoch/root/dispatcher attempt causes versus temporal overlap; unique backing IDs | All producers below; future dedicated processing thread | GetObjectHistory/GetFrames/scoped trees/GetCorrelations/GetResourceUsage; composition properties survive query representation; no fake processor in P01 |
 | 11. SQLite WAL/single writer/temporal state/watermarks/typed cancellable paged API + CLI | CommittedWatermark, ResultContext, PageRequest/PageInfo, mandatory typed result validation and nested freezing, twelve operations, explicit CancellationToken | Future store writer after normalized ingestion; no runtime hook needed | P02 storage; deterministic committed pages reject invalid/foreign rows and caller mutation; no SQL/chat/MCP or fake success API |
-| 12. Honest quality/capability versions/loss/epochs/identity/history/resource stops | DataQuality axes, Missing TypedValue, domain-localized Loss, delivery-homogeneous sequences, settled producer cuts, listener eligibility spans, sealed-source enumeration/decode closure, capture vectors/chunks, SessionStatus/StopReason | Runtime/collector Loss + capabilities; future per-domain reservation/completion counters and coordinated source finalization; allocator baseline; queue/store limits | 4,7,5,6 arrivals remain provisional, not loss; only a genuinely closed settled window still missing 5/6 proves two missing observations; filtering/unknown closure remains Unproven; preserve committed history and stop visibly |
+| 12. Honest quality/capability versions/loss/epochs/identity/history/resource stops | DataQuality axes, Missing TypedValue, domain-localized Loss, delivery-homogeneous sequences, settled cuts, independent live receipt/processed progress, listener eligibility spans, sealed-source absence proof, capture vectors/chunks, SessionStatus/StopReason | Runtime/collector Loss + capabilities; future per-domain reservation/completion and live receipt; coordinated source finalization for negative proof; allocator baseline; queue/store limits | All distinct settled IDs with completed receipt, including 4,7,5,6, prove positive live coverage without a sealed source; pending IDs remain Unproven; only genuinely closed absence proves loss; preserve committed history and stop visibly |
 | 13. Local artifacts and measured off-path cost | Relative local snapshot path/hash; provider/keyword tests before payload work | Every proposed producer; especially constructor/destructor, allocator, render loop, graph rundown | Artifact owner/capture UI later; fre x64/ARM64 provider-off and enabled-keyword overhead is unmeasured in P01 and remains an acceptance gate |
 
 ## Inspected initial runtime hook sites
@@ -76,14 +76,17 @@ until the object's final runtime type is available.
 * Resource kind and UIElement classification require authoritative creation-API,
   runtime-type or bridge evidence, not names. Missing evidence remains unknown.
   Description-derived bytes are Estimated independent of coverage.
-* Domain-level producer-gap detection requires both measured continuous
-  listener eligibility and genuinely settled/closed source reconciliation.
-  Reservation is not completion; End is not delivery/reordering closure.
-  Another listener's selection does not alter existing continuity; own-domain
-  disable/filter changes or inadequate settled/closed evidence remain
-  Unproven. Native counters, terminal transport guarantees, sealed-source
-  provenance verification and projections remain downstream work; P01 tests
-  only their explicit contracts and the pure window-assessment helper.
+* Positive settled-prefix receipt uses measured listener eligibility and
+  completed relevant decoding/processing, independently of an archive.
+  Every expected distinct ID must be present; pending IDs or processing are
+  Unproven. Live baselines additionally require all validated/processed
+  chunks/boundaries, epochs, capabilities and actual scope/consistency under
+  the committed view. End alone is insufficient.
+* Finalizing absence still requires genuinely settled/closed source
+  reconciliation. Another listener's selection does not alter continuity;
+  own-domain filter/enable changes remain Unproven. Native counters, receipt
+  acquisition, terminal transport guarantees, source verification and
+  projections remain downstream; P01 tests contracts and the pure helper only.
 * Completed scope intervals inside unfinished artifact-free snapshots must
   still fit the committed query watermark; no invented overall end/artifact
   is needed to enforce that publication boundary.

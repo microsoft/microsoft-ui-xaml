@@ -313,7 +313,7 @@ Native implementation is later, but must implement these semantics:
   ETW loss, decoder loss and capture chunk counts remain independent evidence.
   No unconditional provider-wide-gap rule is valid under keyword filtering.
 
-### Settled emission and closed delivery/reordering
+### Settled emission, positive live receipt and finalized absence
 
 `ProducerSequenceCut(CutId, Domain, ReservedThrough, SettledThrough)` is an
 authoritative immutable producer acknowledgement. ReservedThrough is the
@@ -323,6 +323,39 @@ including failed writes; it cannot exceed ReservedThrough. Completion of 7
 alone does not settle delayed reservations 5/6. Zero is the empty prefix.
 CutId identifies those exact acknowledged facts, not just a sampled counter.
 The cut does not imply event arrival, decoding, or causal mutation order.
+
+`SequenceReceiptEvidence(ListenerId, ContinuityId, SettledCutId,
+EnabledAfterSequence, EnabledThroughSequence, ProcessedThroughOrdinal)` is
+independent of any sealed source. It binds the same domain-qualified cut and
+listener segment to measured eligibility for every attempt in the enabled
+exclusive/inclusive sequence span. ProcessedThroughOrdinal is the contiguous
+session prefix that has completed relevant normalization/decoding and consuming
+processing, not the largest callback or assigned ordinal. Zero honestly means
+no completed records. A checkpoint counted as positive receipt must be a
+successfully normalized observation whose relevant work has completed by that
+ordinal; an explicitly accounted decoder loss is not a successful checkpoint.
+Capture/replay owners must establish those facts, not manufacture them from
+counter maxima or raw callbacks.
+
+For `(AfterSequence, ThroughSequence]`, a covering settled cut plus **every
+distinct expected ID** with completed receipt proves Contiguous with zero
+missing observations while recording continues. It needs no file, final
+enumeration, transport stop or proof that no further event can arrive.
+Domain/listener/continuity, quality, QPC bounds, enabled sequence coverage and
+cut binding are still validated. Duplicate delivery cannot replace a missing
+ID; a later duplicate with pending work does not invalidate an already
+processed instance. Reservations above the assessed settled prefix do not
+block it.
+
+An honestly empty expected span needs no observation, invented processed
+ordinal or archive. It still requires the covering cut, measured eligibility
+and bound receipt metadata. A zero-duration eligibility interval is sufficient
+only for an empty span with no checkpoints and exactly matching empty enabled
+sequence bounds. This proves no nonempty interval and does not fill unavailable
+data with zero or reconstruct unobserved history.
+An incomplete live set or pending relevant processing stays Unproven with no
+fabricated lost count, until receipt completes or the stronger absence proof
+below is available.
 
 `SequenceDeliveryClosure` carries listener/continuity IDs,
 FinalizedAfterCutId, a local immutable SealedSource artifact path/SHA256,
@@ -363,29 +396,34 @@ No timestamp, timeout, capture End event, maximum sequence received,
 `FlushTrace` return, or EOF of a still-growing/unbound file alone satisfies
 these steps. In particular, sealing a file before lower producer reservations
 settle cannot turn the missing writes into a valid closed cut. The supported
-proof is finite-source finalization **after** settled emissions, followed by
-exhaustive enumeration and completed decoding; an ordinary live ETW callback
+**absence** proof is finite-source finalization **after** settled emissions,
+followed by exhaustive enumeration and completed decoding; an ordinary live ETW callback
 does not provide it. Future native/collector work must implement/validate the
-guarantees or continue reporting Unproven. There is no native sequencer,
-drain, worker, archive verifier or transport implementation in P01.
+guarantees or leave absent IDs Unproven. This stronger negative proof is not
+required for a positively received settled live prefix. There is no native
+sequencer, drain, worker, archive verifier or transport implementation in P01.
 
 The window overload of `SequenceContinuity.Assess` accepts
 `SequenceObservationWindow(AfterSequence, ThroughSequence, Observations)`,
-the listener interval and optional cut/closure evidence. The assessed span
-is `(AfterSequence, ThroughSequence]`; an observed lower anchor is optional.
+the listener interval and optional cut, closure and independent receipt
+evidence. The assessed span is `(AfterSequence, ThroughSequence]`; an observed
+lower anchor is optional.
 Checkpoints include QPC and positive session IngestOrdinal. Windows contain
 at most 8192 checkpoints and can partition a large capture using the same
-finalized proof; they must not silently truncate observations. Repeated
-delivery of a sequence is counted once, not as a replacement for a missing ID.
+adequate receipt or finalized proof; they must not silently truncate observations.
+Repeated delivery is counted once, not as a replacement for a missing ID.
 
-The helper validates domain/listener/cut binding, counters, artifact syntax,
-byte/ordinal bounds and enabled sequence coverage. Incomplete settlement,
-enumeration, decoding, filtering or continuity yields Unproven with no missing
-count. Only after closure does it compare the expected sequence span with
-the complete distinct observed set:
+The helper validates domain/listener/cut binding, counters, processing progress
+and enabled sequence coverage; supplied closure metadata also has its artifact
+syntax and byte/ordinal bounds checked. Positive live receipt uses the distinct
+processed set. Finalized absence uses the exhaustive closed-source set.
+Incomplete settlement, filtering or continuity remains Unproven. Missing IDs
+or incomplete relevant live processing remain Unproven without adequate
+terminal evidence, rather than acquiring a premature loss count:
 
-* Arrival 4,7,5,6 remains provisional until closed, then is Contiguous with
-  zero missing observations, regardless of arrival/QPC ordering.
+* Arrival 4,7,5,6 is Contiguous as soon as the settled span and completed
+  receipt are proven, regardless of arrival/QPC ordering and without a sealed
+  source. Until then it is provisional, never premature permanent loss.
 * A genuinely closed window `(4,7]` containing only 7 has two missing
   observations. A missing tail is detectable even if no higher event arrived.
 * Reservations beyond the assessed settled prefix can remain outstanding;
@@ -393,12 +431,17 @@ the complete distinct observed set:
 
 Listener interval quality describes measured enable/filter eligibility,
 not a promise of loss-free transport. Proven producer gaps remain independent
-of ETW/decoder loss reports. Baseline completeness additionally requires all
-relevant domain vectors to be reconciled against adequate settled prefixes
-and listener closures, matching chunks, source epochs and actual snapshot
-scope/consistency evidence. End receipt or a complete producer range alone
-never publishes a complete listener capture. Preserve provisional history
-until reconciliation or explicit failure/loss is finalized.
+of ETW/decoder loss reports. A live baseline can complete while capture
+continues once all required settled domain spans have positive completed
+receipt, required Begin/End and chunks are validated/processed with matching
+IDs/counts/epochs/coverage, and actual scope/consistency evidence is reconciled
+under the same committed view. This requires neither a sealed artifact nor
+terminal delivery closure when no expected ID is absent. Closure can finalize
+genuine gaps for a partial/failed capture, but cannot make lost state complete.
+Neither End alone, a maximum received ID nor a complete producer range proves
+a baseline. Do not ignore decoder loss, unavailable capabilities, mismatched
+chunks or non-atomic root/dispatcher scope. Preserve provisional history until
+positive reconciliation or explicit failure/loss is finalized.
 
 ## Collector events
 
