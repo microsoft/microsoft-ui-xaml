@@ -83,7 +83,22 @@ void TableViewGroupHeader::OnApplyTemplate()
     __super::OnApplyTemplate();
 
     m_isEnabledChangedRevoker.revoke();
+    m_templateRootContextRequestedRevoker.revoke();
     m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
+
+    // A group header's ContextFlyout (set through a TableViewGroupHeader Style) stays closed while
+    // a cell is editing.
+    m_templateRootContextRequestedRevoker = TableViewDetails::HookTemplateRootContextRequested(*this,
+        [weakThis = get_weak()](auto&&, winrt::ContextRequestedEventArgs const& args)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                if (auto const owner = strongThis->GetOwningTableView())
+                {
+                    winrt::get_self<TableView>(owner)->SuppressContextRequestWhileEditing(args);
+                }
+            }
+        });
 
     // Keep CommonStates in sync with IsEnabled so Disabled activates when a consumer toggles it
     // at runtime, not only when it happens to be false at template time.

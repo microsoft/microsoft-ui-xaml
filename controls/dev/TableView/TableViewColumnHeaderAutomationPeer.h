@@ -44,6 +44,9 @@ public:
     winrt::Windows::Foundation::Rect GetBoundingRectangleCore();
     winrt::Windows::Foundation::Point GetClickablePointCore();
     bool IsOffscreenCore();
+    // A TableView-owned peer has no element of its own: forward to the realized header, or do
+    // nothing, rather than raise the request on the TableView and open its menu.
+    void ShowContextMenuCore();
 
     bool IsTableViewOwned();
 
