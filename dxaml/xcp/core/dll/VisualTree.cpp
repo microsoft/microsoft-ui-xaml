@@ -14,6 +14,7 @@
 #include "XamlIslandRoot.h"
 #include <XamlIslandRootScale.h>
 #include <XamlOneCoreTransforms.h>
+#include <RuntimeEnabledFeatures.h>
 
 // Marked noinline so we can easily breakpoint
 // When we hit this warning, it represents code that will not work correctly in DesktopWindowXamlSource or AppWindows
@@ -1841,6 +1842,16 @@ _Check_return_ HRESULT VisualTree::AttachElement(_In_ CDependencyObject* element
     element->SetVisualTree(this);
 
     return S_OK;
+}
+
+bool VisualTree::ShouldConstrainPopupsToWorkArea() const
+{
+    if (RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableWorkAreaPopupConstraint))
+    {
+        return false;
+    }
+
+    return m_shouldConstrainPopupsToWorkArea;
 }
 
 xref::details::control_block* VisualTree::EnsureControlBlock()
