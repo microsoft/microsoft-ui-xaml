@@ -63,7 +63,7 @@ public sealed class BoundaryTests
     public void Only_successful_submissions_have_nonzero_frame_ids(ulong submitted, FrameOutcome outcome)
     {
         Assert.Throws<ArgumentException>(() => EventCodec.Capture(Envelope(
-            new FramePayload(1, submitted, outcome, 1, CoreTests.Session, null))));
+            new FramePayload(new(CoreTests.Epoch, 1, CoreTests.Session, 1), submitted, outcome, null))));
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class BoundaryTests
     {
         var quality = new DataQuality(MeasurementKind.Estimated, CoverageState.Partial, "sample interval has loss");
         var sample = new MetricPayload(MetricKind.CpuUtilization,
-            new(ValueKind.Number, ValueUnit.Percent, null, 3.5, null, null, quality), new(0, 100), "OS process time", "1", null, null);
+            new(ValueKind.Number, ValueUnit.Percent, null, 3.5, null, null, quality), new(0, 100), "OS process time", "1", null);
         var e = EventCodec.Decode(EventCodec.Encode(Envelope(sample, EventCatalog.CollectorProviderId)));
         Assert.Equal(99u, e.ProducerProcessId);
         Assert.Equal(42u, e.Process.ProcessId);

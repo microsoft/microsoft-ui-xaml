@@ -29,8 +29,9 @@ public sealed class IntegrityTests
     }
 
     private static SnapshotMetadata Snapshot(string path, string? hash = null, SnapshotKind kind = SnapshotKind.Lightweight) =>
-        new(CoreTests.Epoch, CoreTests.Session, CoreTests.Process, kind, 100, 20, CoreTests.Epoch,
-            SnapshotState.Complete, DataQuality.Complete, path, hash ?? new string('a', 64), 1, "synthetic/1", 1_000_000);
+        new(CoreTests.Epoch, CoreTests.Session, CoreTests.Process, kind,
+            new(90, 100, CaptureMechanism.Synthetic, CaptureConsistency.NonAtomic, []), 20, CoreTests.Epoch,
+            SnapshotState.Complete, DataQuality.Complete, new(path, hash ?? new string('a', 64)), null, 1, "synthetic/1", 1_000_000);
 
     [Fact]
     public void Query_result_pages_reject_inconsistent_bounds_and_copy_mutable_items()
@@ -39,11 +40,13 @@ public sealed class IntegrityTests
         var context = new ResultContext(scope, new(1, 100), DataQuality.Complete);
         Assert.ThrowsAny<ArgumentException>(() => new PageInfo(0, 0, null, false));
         Assert.ThrowsAny<ArgumentException>(() => new PageInfo(1, 0, null, true));
-        Assert.ThrowsAny<ArgumentException>(() => new QueryPage<int>(context, [1, 2], new(1, 0, null, false)));
-        var source = new List<int> { 1 };
-        var result = new QueryPage<int>(context, source, new(1, 0, 1, true));
-        source[0] = 2;
-        Assert.Equal(1, result.Items[0]);
+        var row = new MetricSample(10, MetricKind.ProcessPrivateCommit,
+            new(ValueKind.Integer, ValueUnit.Bytes, 1, null, null, null, DataQuality.Complete), new(0, 10), "OS", "1");
+        Assert.ThrowsAny<ArgumentException>(() => new QueryPage<MetricSample>(context, [row, row], new(1, 0, null, false)));
+        var source = new List<MetricSample> { row };
+        var result = new QueryPage<MetricSample>(context, source, new(1, 0, 1, true));
+        source[0] = row with { Source = "changed" };
+        Assert.Equal("OS", result.Items[0].Source);
     }
 
     [Fact]
@@ -80,10 +83,11 @@ public sealed class IntegrityTests
     [Fact]
     public void Submission_and_later_failed_attempt_are_independent_observations()
     {
-        var submitted = new FramePayload(1, 1, FrameOutcome.Submitted, 1, CoreTests.Session, 0);
-        var failedAfterCommit = new FramePayload(1, null, FrameOutcome.Failed, 1, CoreTests.Session, unchecked((int)0x80004005));
+        var attempt = new AttemptReference(CoreTests.Epoch, 1, CoreTests.Session, 1);
+        var submitted = new FramePayload(attempt, 1, FrameOutcome.Submitted, 0);
+        var failedAfterCommit = new FramePayload(attempt, null, FrameOutcome.Failed, unchecked((int)0x80004005));
         Assert.Equal(1UL, EventCodec.ReadPayload<FramePayload>(EventCodec.Capture(BoundaryTests.Envelope(submitted))).SubmittedFrameId);
         Assert.Equal(FrameOutcome.Failed, EventCodec.ReadPayload<FramePayload>(EventCodec.Capture(BoundaryTests.Envelope(failedAfterCommit))).Outcome);
-        EventCodec.Capture(BoundaryTests.Envelope(new FramePayload(0, null, FrameOutcome.StandaloneCommit, 1, CoreTests.Session, 0)));
+        EventCodec.Capture(BoundaryTests.Envelope(new FramePayload(null, null, FrameOutcome.StandaloneCommit, 0)));
     }
 }

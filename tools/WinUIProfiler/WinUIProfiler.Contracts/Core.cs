@@ -105,4 +105,7 @@ public readonly record struct ProducerStreamKey(Guid ProviderId, uint ProducerPr
     public Guid ProducerEpoch { get; } = Require.Id(ProducerEpoch);
     public void Validate() { Require.Id(ProviderId); Require.Positive(ProducerProcessId); Require.Id(ProducerEpoch); }
 }
-public sealed record NormalizedEvent(ProducerStreamKey Stream, EventEnvelope Envelope);
+public sealed record NormalizedEvent(ProducerStreamKey Stream, EventEnvelope Envelope)
+{
+    public SequenceDomainKey SequenceDomain => new(Stream, Envelope.Process, Envelope.Identity.EventId, Envelope.Identity.Version);
+}

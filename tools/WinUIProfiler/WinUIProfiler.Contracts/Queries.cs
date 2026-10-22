@@ -40,12 +40,13 @@ public sealed record ResultContext(SessionScope Scope, CommittedWatermark Waterm
     public DataQuality Quality { get; } = Require.NotNull(Quality);
     private static SessionScope ValidateScope(SessionScope scope) { scope.Validate(); return scope; }
 }
-public sealed record QueryResult<T>(ResultContext Context, T Value)
+public interface IQueryValue;
+public sealed record QueryResult<T>(ResultContext Context, T Value) where T : IQueryValue
 {
     public ResultContext Context { get; } = Require.NotNull(Context);
-    public T Value { get; } = Value is not null ? Value : throw new ArgumentNullException(nameof(Value));
+    public T Value { get; } = QueryResultValidation.Freeze(Value, Context);
 }
-public sealed record QueryPage<T>
+public sealed record QueryPage<T> where T : IQueryValue
 {
     public ResultContext Context { get; }
     public IReadOnlyList<T> Items { get; }
@@ -56,7 +57,7 @@ public sealed record QueryPage<T>
         Context = Require.NotNull(context); Page = Require.NotNull(page); Require.NotNull(items);
         if (items.Count > page.Limit || page.HasMore && items.Count != page.Limit || items.Any(item => item is null))
             throw new ArgumentException("Page item count does not match paging bounds.");
-        Items = Array.AsReadOnly(items.ToArray());
+        Items = Array.AsReadOnly(items.Select(item => QueryResultValidation.Freeze(item, context)).ToArray());
     }
 }
 public sealed record GetSessionRequest(SessionScope Scope);
@@ -72,16 +73,17 @@ public sealed record GetSnapshotsRequest(SessionScope Scope, PageRequest Page, S
 public sealed record CompareSnapshotsRequest(SessionScope Scope, Guid BaselineId, IReadOnlyList<Guid> SnapshotIds, PageRequest Page);
 public sealed record GetRetentionPathsRequest(SessionScope Scope, Guid SnapshotId, ObjectKey Object, int MaximumDepth, PageRequest Page);
 
-public sealed record SessionInfo(SessionMode Mode, SessionStatus Status, long QpcFrequency, long? ProcessCreationQpc, IReadOnlyList<ProducerInfo> Producers, string? StopReason);
-public sealed record MetricSample(long TimestampQpc, MetricKind Metric, TypedValue Value, TimeRange Interval, string Source, string SourceVersion);
-public sealed record StartupEntry(string Phase, TimeRange Range, ulong? SubmittedFrameId, DataQuality Quality);
+public sealed record SessionInfo(SessionMode Mode, SessionStatus Status, long QpcFrequency, long? ProcessCreationQpc, IReadOnlyList<ProducerInfo> Producers, string? StopReason, IReadOnlyList<ListenerDomainInterval>? ListenerIntervals = null) : IQueryValue;
+public sealed record MetricSample(long TimestampQpc, MetricKind Metric, TypedValue Value, TimeRange Interval, string Source, string SourceVersion, GpuSampleIdentity? Gpu = null) : IQueryValue;
+public sealed record StartupEntry(string Phase, TimeRange Range, ulong? SubmittedFrameId, DataQuality Quality) : IQueryValue;
 public enum FrameAttemptStatus { InProgress, Completed, Failed }
 public sealed record FrameSubmission(ulong SubmittedFrameId, long SubmittedQpc, Guid ProducerEpoch);
-public sealed record FrameInfo(ulong AttemptId, TimeRange Range, FrameAttemptStatus AttemptStatus, FrameSubmission? Submission, Guid RootId, ulong DispatcherId, int? HResult);
-public sealed record ObjectHistoryEntry(ObjectKey Object, long TimestampQpc, LifetimeOperation Operation, string? TypeName, ulong? Address, DataQuality Quality);
-public sealed record TreeEntry(ObjectKey Object, ObjectKey? Parent, RelationshipKind Relationship, int Order, bool Connected, string? TypeName, DataQuality Quality);
-public sealed record CorrelationEntry(ObjectKey From, ObjectKey To, CorrelationKind Kind, TimeRange Validity, DataQuality Quality);
-public sealed record ResourceUsageEntry(ObjectKey Resource, ObjectKey? Owner, Guid? BackingAllocationId, Guid DeviceEpoch, TypedValue Size, SizeProvenance Provenance, DataQuality Quality);
+public sealed record FrameInfo(AttemptReference Attempt, TimeRange Range, FrameAttemptStatus AttemptStatus, FrameSubmission? Submission, int? HResult, IReadOnlyList<FrameChange> Changes) : IQueryValue;
+public sealed record ObjectHistoryEntry(ObjectKey Object, long TimestampQpc, long IngestOrdinal, ObjectObservation Observation, ChangeCause Cause, DataQuality Quality) : IQueryValue;
+public sealed record TreeEntry(ObjectKey Object, ObjectKey? Parent, RelationshipKind Relationship, int Order, bool Connected, Guid RootId, ulong DispatcherId, string? TypeName, DataQuality Quality, TreeMembershipKind Membership, XamlTypeClassification Classification) : IQueryValue;
+public sealed record CompositionTreeEntry(TreeEntry Topology, IReadOnlyList<ObservedVisualProperty> Properties) : IQueryValue;
+public sealed record CorrelationEntry(ObjectKey From, ObjectKey To, CorrelationKind Kind, TimeRange Validity, DataQuality Quality) : IQueryValue;
+public sealed record ResourceUsageEntry(ObjectKey Resource, ObjectKey? Owner, Guid? BackingAllocationId, Guid DeviceEpoch, TypedValue Size, SizeProvenance Provenance, ResourceClassification Classification, DataQuality Quality) : IQueryValue;
 
 public interface IProfilerQueryService
 {
@@ -91,7 +93,7 @@ public interface IProfilerQueryService
     ValueTask<QueryPage<FrameInfo>> GetFrames(GetFramesRequest request, CancellationToken cancellationToken);
     ValueTask<QueryPage<ObjectHistoryEntry>> GetObjectHistory(GetObjectHistoryRequest request, CancellationToken cancellationToken);
     ValueTask<QueryPage<TreeEntry>> GetXamlTree(GetXamlTreeRequest request, CancellationToken cancellationToken);
-    ValueTask<QueryPage<TreeEntry>> GetCompositionTree(GetCompositionTreeRequest request, CancellationToken cancellationToken);
+    ValueTask<QueryPage<CompositionTreeEntry>> GetCompositionTree(GetCompositionTreeRequest request, CancellationToken cancellationToken);
     ValueTask<QueryPage<CorrelationEntry>> GetCorrelations(GetCorrelationsRequest request, CancellationToken cancellationToken);
     ValueTask<QueryPage<ResourceUsageEntry>> GetResourceUsage(GetResourceUsageRequest request, CancellationToken cancellationToken);
     ValueTask<QueryPage<SnapshotMetadata>> GetSnapshots(GetSnapshotsRequest request, CancellationToken cancellationToken);

@@ -14,33 +14,33 @@ public enum SizeProvenance { ActualAllocation, ApiDescriptionEstimate, Unknown }
 public enum AllocationOperation { Allocate, Free, Reallocate }
 public enum CaptureKind { Baseline, LightweightSnapshot, OwnershipGraph }
 public enum CapturePhase { Begin, End }
-public enum MetricKind { CpuUtilization, GpuUtilization, ProcessPrivateWorkingSet, ProcessPrivateCommit, ProcessWorkingSet, XamlBytes, ConnectedXamlElements, CanonicalCompositionVisuals }
+public enum MetricKind { CpuUtilization, GpuUtilization, ProcessPrivateWorkingSet, ProcessPrivateCommit, ProcessWorkingSet, XamlBytes, ConnectedXamlElements, CanonicalCompositionVisuals, GpuDedicatedCommittedBytes, GpuSharedCommittedBytes, GpuDedicatedResidentBytes, GpuSharedResidentBytes }
 public enum DeviceOperation { Create, Lost, Destroy }
 public enum ProcessOperation { Start, Exit, Attach }
 
 public interface IEventPayload;
 public sealed record RuntimeCapabilitiesPayload(Guid Epoch, string Build, HostArchitecture Architecture, ProcessInstanceKey Process, long QpcFrequency, IReadOnlyList<CapabilityInfo> Capabilities) : IEventPayload;
 public sealed record ProcessPayload(ProcessOperation Operation, long? CreationQpc, DataQuality Quality) : IEventPayload;
-public sealed record ObjectLifetimePayload(ObjectKey Object, LifetimeOperation Operation, ulong? TypeId, ulong? Address, DataQuality Quality) : IEventPayload;
-public sealed record TypeResolvedPayload(Guid ProducerEpoch, ulong TypeId, string Name) : IEventPayload;
-public sealed record AssociationPayload(ObjectKey Core, ObjectKey Peer, bool Linked) : IEventPayload;
-public sealed record TreeEdgePayload(ObjectKey? Parent, ObjectKey Child, RelationshipKind Relationship, int Order, Guid RootId, ulong DispatcherId, bool Connected) : IEventPayload;
-public sealed record VisualDeltaPayload(ObjectKey Visual, VisualProperty Property, TypedValue Value) : IEventPayload;
-public sealed record CorrelationPayload(ObjectKey From, ObjectKey To, CorrelationKind Kind, bool Linked) : IEventPayload;
-public sealed record BoundaryPayload(BoundaryKind Kind, BoundaryPhase Phase, ulong OperationId, int? HResult) : IEventPayload;
-public sealed record FramePayload(ulong AttemptId, ulong? SubmittedFrameId, FrameOutcome Outcome, ulong DispatcherId, Guid RootId, int? HResult) : IEventPayload;
+public sealed record ObjectLifetimePayload(ObjectKey Object, LifetimeOperation Operation, ulong? TypeId, ulong? Address, DataQuality Quality, XamlTypeClassification? Classification = null, ChangeCause? Cause = null) : IEventPayload;
+public sealed record TypeResolvedPayload(Guid ProducerEpoch, ulong TypeId, string Name, XamlTypeClassification? Classification = null) : IEventPayload;
+public sealed record AssociationPayload(ObjectKey Core, ObjectKey Peer, bool Linked, ChangeCause? Cause = null) : IEventPayload;
+public sealed record TreeEdgePayload(ObjectKey? Parent, ObjectKey Child, RelationshipKind Relationship, int Order, Guid RootId, ulong DispatcherId, bool Connected, ChangeCause? Cause = null, TreeMembershipKind Membership = TreeMembershipKind.Unknown) : IEventPayload;
+public sealed record VisualDeltaPayload(ObjectKey Visual, VisualProperty Property, TypedValue Value, ChangeCause? Cause = null) : IEventPayload;
+public sealed record CorrelationPayload(ObjectKey From, ObjectKey To, CorrelationKind Kind, bool Linked, ChangeCause? Cause = null) : IEventPayload;
+public sealed record BoundaryPayload(BoundaryKind Kind, BoundaryPhase Phase, ulong OperationId, int? HResult, ChangeCause? Cause = null) : IEventPayload;
+public sealed record FramePayload(AttemptReference? Attempt, ulong? SubmittedFrameId, FrameOutcome Outcome, int? HResult) : IEventPayload;
 public sealed record DevicePayload(Guid DeviceEpoch, DeviceOperation Operation, string Api, DataQuality Quality) : IEventPayload;
-public sealed record ResourcePayload(ObjectKey Resource, ResourceOperation Operation, Guid DeviceEpoch, Guid? BackingAllocationId, ulong? AllocationBytes, SizeProvenance SizeProvenance, ObjectKey? Owner, uint? WidthPixels, uint? HeightPixels, DataQuality Quality) : IEventPayload;
-public sealed record AllocationPayload(ulong AllocationId, AllocationOperation Operation, ulong? PreviousAllocationId, ulong RequestedBytes, ulong? ActualBytes, Guid AllocatorEpoch, Guid? BaselineCaptureId, DataQuality Quality) : IEventPayload;
-public sealed record CaptureBoundaryPayload(Guid CaptureId, CaptureKind Kind, CapturePhase Phase, Guid? RootId, ulong? DispatcherId, ulong? FirstSequence, ulong? LastSequence, uint? ChunkCount, DataQuality Quality) : IEventPayload;
+public sealed record ResourcePayload(ObjectKey Resource, ResourceOperation Operation, Guid DeviceEpoch, Guid? BackingAllocationId, ulong? AllocationBytes, SizeProvenance SizeProvenance, ObjectKey? Owner, uint? WidthPixels, uint? HeightPixels, DataQuality Quality, ResourceClassification Classification, ChangeCause? Cause = null) : IEventPayload;
+public sealed record AllocationPayload(ulong AllocationId, AllocationOperation Operation, ulong? PreviousAllocationId, ulong RequestedBytes, ulong? ActualBytes, Guid AllocatorEpoch, Guid? BaselineCaptureId, DataQuality Quality, ChangeCause? Cause = null) : IEventPayload;
+public sealed record CaptureBoundaryPayload(Guid CaptureId, CaptureKind Kind, CapturePhase Phase, Guid? RootId, ulong? DispatcherId, IReadOnlyList<SequenceDomainRange> Domains, uint? ChunkCount, DataQuality Quality) : IEventPayload;
 public sealed record CaptureChunkPayload(Guid CaptureId, uint ChunkIndex, Guid RootId, ulong DispatcherId,
     IReadOnlyList<SnapshotObject> Objects, IReadOnlyList<OwnershipEdge> Ownership,
     IReadOnlyList<TreeEdgePayload> Tree, IReadOnlyList<CorrelationPayload> Correlations,
     IReadOnlyList<ResourcePayload> Resources, IReadOnlyList<VisualDeltaPayload> Visuals,
     IReadOnlyList<AssociationPayload> Associations, IReadOnlyList<TypeResolvedPayload> Types,
     IReadOnlyList<AllocationPayload> Allocations) : IEventPayload;
-public sealed record LossPayload(Guid ProducerEpoch, TimeRange Interval, ulong? LostEvents, string Reason) : IEventPayload;
-public sealed record MetricPayload(MetricKind Metric, TypedValue Value, TimeRange Interval, string Source, string SourceVersion, string? AdapterLuid, string? Engine) : IEventPayload;
+public sealed record LossPayload(Guid ProducerEpoch, TimeRange Interval, ulong? LostEvents, string Reason, IReadOnlyList<SequenceDomainKey>? Domains = null) : IEventPayload;
+public sealed record MetricPayload(MetricKind Metric, TypedValue Value, TimeRange Interval, string Source, string SourceVersion, GpuSampleIdentity? Gpu) : IEventPayload;
 
 public sealed record EventDefinition(EventIdentity Identity, byte Level, EventKeyword Keyword, Type PayloadType);
 
@@ -68,6 +68,7 @@ public static class EventCatalog
         Define<CaptureBoundaryPayload>(RuntimeProviderId, 13, "CaptureBoundary", EventKeyword.Capture),
         Define<CaptureChunkPayload>(RuntimeProviderId, 14, "CaptureChunk", EventKeyword.Capture),
         Define<LossPayload>(RuntimeProviderId, 15, "Loss", EventKeyword.Capabilities, 3),
+        Define<XamlPropertyChangedPayload>(RuntimeProviderId, 16, "XamlPropertyChanged", EventKeyword.Objects),
         Define<ProcessPayload>(CollectorProviderId, 1, "Process", EventKeyword.Capabilities),
         Define<MetricPayload>(CollectorProviderId, 2, "Metric", EventKeyword.Metrics),
         Define<LossPayload>(CollectorProviderId, 3, "Loss", EventKeyword.Capabilities, 3)

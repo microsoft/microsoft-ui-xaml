@@ -47,8 +47,8 @@ public sealed class MalformedDataTests
     public void Completed_attempt_cannot_hide_a_failure_and_submission_requires_known_success()
     {
         Assert.Throws<ArgumentException>(() => EventCodec.Capture(BoundaryTests.Envelope(
-            new FramePayload(1, null, FrameOutcome.AttemptCompleted, 1, CoreTests.Session, -1))));
+            new FramePayload(new(CoreTests.Epoch, 1, CoreTests.Session, 1), null, FrameOutcome.AttemptCompleted, -1))));
         Assert.Throws<ArgumentException>(() => EventCodec.Capture(BoundaryTests.Envelope(
-            new FramePayload(1, 1, FrameOutcome.Submitted, 1, CoreTests.Session, null))));
+            new FramePayload(new(CoreTests.Epoch, 1, CoreTests.Session, 1), 1, FrameOutcome.Submitted, null))));
     }
 }

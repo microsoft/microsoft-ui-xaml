@@ -14,7 +14,7 @@ public static class EventCodec
             throw new ArgumentException("The envelope does not belong to the authoritative producer stream.");
         var definition = EventCatalog.Get(captured.Identity.ProviderId, captured.Identity.EventId);
         var body = (IEventPayload)JsonSerializer.Deserialize(captured.OwnedPayload.Span, definition.PayloadType, WireJson.Options)!;
-        EventValidation.Validate(body, captured.Process, stream.ProducerEpoch);
+        EventValidation.Validate(body, captured.Process, stream);
         return new(stream, captured);
     }
 

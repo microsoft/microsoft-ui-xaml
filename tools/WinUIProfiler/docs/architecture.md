@@ -91,8 +91,15 @@ merge uncertain object/process lifetimes.
 QPC intervals are half-open `[StartQpc, EndQpc)`; zero duration represents a
 point. Ingest ordinals start at one, are session-wide and deterministic even
 when source timestamps tie or arrive late. Source sequences start at one
-within a producer stream and may be null when genuinely unavailable. They
-are not the committed watermark.
+within a delivery-homogeneous `SequenceDomainKey`: producer stream + target
+process instance + event ID/version (fixed keyword/level). They may be null
+when genuinely unavailable and are not the committed watermark or a
+cross-domain causal clock. Merge/query order uses QPC then ingest ordinal.
+Per-listener domain coverage and continuity IDs distinguish filtering from
+real missing observations; another listener changing its selection does not
+reset existing continuity. See the event contract for advancement, interval
+and capture-vector rules. `SequenceContinuity.Assess` is a stateless P01
+contract helper, not a collector or processing worker.
 
 Measurement (`Measured`, `Estimated`, `Unavailable`) and coverage
 (`Complete`, `Partial`, `Unavailable`) are independent. Non-measured or
@@ -131,6 +138,29 @@ history, preserve partial coverage rather than resetting a ten-frame counter.
 successful submission. P01 only defines/validates these observations; it does
 not infer or implement rendering behavior.
 
+Every non-standalone attempt uses `AttemptReference(ProducerEpoch, AttemptId,
+RootId, DispatcherId)`. Typed history/frame observations distinguish lifetime,
+type resolution, XAML property previous/current values, membership/order,
+visual properties, resource state, correlations, allocation and layout
+boundaries. History is not encoded as fake birth/destruction operations.
+`ChangeCause` distinguishes unknown (with reason), known outside-attempt and
+an explicit attempt. An omitted optional event cause means unknown, never
+known outside. `FrameChange.Relation` separates proven causal changes from
+temporal overlap; a timestamp or ActivityId alone is not causal evidence.
+Frame changes retain QPC/ordinal and are chronological by that pair; causal
+rows must match the exact attempt, including epoch/root/dispatcher.
+
+Tree observations/results preserve root and dispatcher plus independent
+logical, visual, composition or unknown membership. Authoritative runtime
+type/bridge evidence distinguishes UIElement from other DependencyObjects;
+an optional type display name is never classification evidence. The default
+connected-element projection will count distinct XamlCore UIElement
+identities with proven visual connection, not every connected
+DependencyObject, logical-only relationship, peer or live object. Unknown
+classification/membership means incomplete count evidence, not a guessed
+zero. Canonical composition IVisuals remain a separate identity-domain count.
+P01 supplies contracts/tests, not either counting processor.
+
 ## Memory and snapshots
 
 OS process metrics use the underlying Task Manager OS collectors/semantics,
@@ -139,7 +169,14 @@ for GPU, and OS working-set/private-usage queries for memory. CPU is normalized
 by elapsed interval and logical processor count; GPU uses the OS per-process
 engine accounting policy, not a sum of arbitrarily overlapping engine
 percentages. Source, version, interval, adapter/engine and capability are
-explicit. Unsupported collectors return unavailable, never a successful zero.
+explicit. GPU identity is a typed physical-adapter LUID plus physical-adapter
+index, and engine ID/class; it is not parsed from a display string.
+Per-engine utilization is distinct from overall busiest-engine utilization;
+do not sum concurrent engine percentages. GPU dedicated/shared commitment
+and dedicated/shared residency are four separate byte metrics, scoped to a
+physical adapter. An unknown winning adapter requires partial coverage;
+unsupported metrics remain Missing/Unavailable and may lack GPU identity.
+Unsupported collectors return unavailable, never a successful zero.
 
 Private commit, total working set and private working set are different
 metrics. Scoped XAML allocation size is not any of those. Resource creation
@@ -147,13 +184,32 @@ descriptions are estimates unless allocation bytes are actually measured.
 WinUI hooks cannot supply all-process GPU resource ownership.
 
 Lightweight XAML/resource snapshots and full native/managed heap snapshots are
-separate artifacts/capabilities. Immutable metadata includes selected process,
-capture QPC, source/schema versions, QPC frequency, epoch, committed ordinal,
-quality, relative local artifact path and SHA-256. Partial/failed captures are
-not silently promoted. Baseline capture chunks carry typed objects, topology,
+separate artifacts/capabilities. Immutable `SnapshotMetadata` represents an
+attempt: selected process, capture extent, nullable source version/epoch until
+known, schema version, QPC frequency, committed ordinal, state, quality and
+status reason. Pending/capturing attempts have no completed extent or sealed
+artifact. Failed/cancelled attempts require a reason and need no artifact.
+Only a materialized Complete/Partial snapshot requires a validated local
+relative path/SHA-256, known end, epoch and source version. No placeholder
+path/hash or successful empty capture substitutes for failure.
+
+`CaptureExtent` records actual start/nullable end, mechanism, explicit
+consistency and per-process/root/dispatcher/heap boundaries. Scope intervals
+must fit the extent. Non-atomic bridge traversal, process snapshots, managed
+runtime snapshots and polling are not interchangeable atomic instants;
+atomic claims require evidence, and bridge/polling cannot claim
+process-wide atomicity. Boundary collections are frozen with the metadata.
+Baseline capture chunks carry typed objects, topology,
 associations, visual properties, correlations, resource/backing state, allocator
 state and proven/uncertain ownership. Per-root/dispatcher boundaries are
 explicit; no cross-dispatcher atomicity is implied.
+
+Snapshot object sizes are nonnegative numeric Bytes or explicit
+Missing/Unavailable. Resource observations/results retain authoritative
+`ResourceClassification` (kind, creation-API/runtime evidence, source);
+unknown kind is explicit and never inferred from an optional type name.
+API-description sizes are Estimated whether coverage is Complete or Partial;
+only authoritative allocation measurements may claim Measured provenance.
 
 Snapshot comparisons select one distinct baseline and 1–64 distinct later
 captures. The future service must reject cross-session/process/kind comparisons
@@ -162,6 +218,14 @@ Detached means disconnected, not destroyed. WinUI ownership release and
 resource close do not prove an external COM object's final destruction.
 Ownership paths expose `Proven` versus `UncertainNativeRetention`; arbitrary
 native memory does not prove ownership or roots.
+
+Each comparison row has a typed key: attribute (object/connected-element/
+canonical-visual count, allocated/requested/actual bytes) and session/object/
+type/root/resource-kind grouping with the corresponding qualifier. Aggregate
+rows with null Object therefore remain distinguishable. Compatible values
+retain the attribute's units; counts are integers and signed deltas are
+valid. MissingBaseline, MissingCurrent and Incompatible preserve their
+available raw values and an explicit reason; their delta is Missing, not zero.
 
 ## Read-only query boundary
 
@@ -178,7 +242,17 @@ committed watermark. Services must freeze that view (same query/filter/order),
 reject unavailable/expired watermarks, order deterministically by stable
 identities/timestamp/ordinal, and check cancellation during reads.
 `PageInfo` has no total-count promise; `HasMore` requires an exact next offset.
-Page results copy their input collection to prevent caller mutation.
+`QueryPage<T>` and `QueryResult<T>` require a supported typed query value and
+invoke mandatory typed validation/freezing on construction, including JSON
+deserialization. They validate timestamps/ordinals against the committed view,
+process/domain membership, source/version, enums, units, discriminators,
+provenance, causal references and compatibility. They copy nested retention
+edges, frame changes, composition properties, producer/capability arrays and
+saved per-listener domain intervals, not just the outer page. No reflection
+or generic object-graph walker is used. Session metadata bounds are 4096
+producer records and 8192 listener-coverage intervals; callers must fail
+visibly rather than truncate required evidence. Composition results expose
+typed observed properties alongside scoped topology.
 
 Object queries validate the full process instance and domain. Retention depth
 is 1–256. Query validation cannot verify stored snapshot membership before P02:
@@ -217,12 +291,15 @@ acceptance gates, not performance claims from portable P01 tests.
 
 `FakeClock` is an explicit-advance test clock with checked arithmetic.
 `SyntheticEventBuilder` constructs a deterministic session with independently
-sequenced runtime and collector streams. `TestData\minimal-session.json` is a
+sequenced runtime/collector delivery domains. `TestData\minimal-session.json` is a
 versioned canonical-envelope fixture (payload bytes are base64 as in the codec)
 and is checked byte-for-byte against the builder after decoding/re-encoding.
 It covers lifecycle, type/core-peer identity, XAML/composition roots/topology,
 visual changes, correlations, device/resource/backing, allocator, baseline
 chunks, boundaries, a real submitted-frame observation, independent attempt
-completion, CPU/unavailable-GPU/private-working-set/private-commit samples,
+completion, explicitly causal XAML property/layout observations, authoritative
+UIElement versus logical-only DependencyObject evidence, capture sequence
+vectors, CPU/unavailable-GPU/private-working-set/private-commit samples,
+typed GPU per-engine/overall samples and all four GPU memory distinctions,
 detach/release/destruction and process exit. One submitted frame deliberately
 does not claim completion of the ten-frame startup requirement.
