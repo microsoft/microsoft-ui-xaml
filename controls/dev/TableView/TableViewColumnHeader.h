@@ -30,7 +30,6 @@ public:
 
     void SetOwnerInternal(winrt::TableView const& table, winrt::TableViewColumn const& column);
     winrt::TableView GetOwningTableView() const { return m_table.get(); }
-    winrt::TableViewColumn GetColumnInternal() const { return m_column.get(); }
     winrt::TableViewColumn Column() const { return m_column.get(); }
 
     void SetSortableInternal(bool sortable, double indicatorReserve);
@@ -42,7 +41,6 @@ public:
 
     winrt::ContentPresenter GetContentPresenterInternal() const { return m_contentPresenter.get(); }
     winrt::Border GetGridLineInternal() const { return m_gridLine.get(); }
-    winrt::SortIndicator GetSortIndicatorInternal() const { return m_sortIndicator.get(); }
 
     // True while Content is the TextBlock the TableView made for a string Header.
     void SetOwnsContentInternal(bool ownsContent) { m_ownsContent = ownsContent; }
