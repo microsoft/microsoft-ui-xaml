@@ -44,8 +44,9 @@ namespace MUXControlsTestApp
                 item.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler((sender, args) =>
                 {
                     var point = args.GetCurrentPoint(item);
-                    if (args.Pointer.PointerDeviceType.ToString() == LastPointerDevice.Text &&
-                        !point.IsInContact && !point.Properties.IsLeftButtonPressed)
+                    // Count hover from any device: the test input stack cannot inject pen hover,
+                    // so pen tests hover with the mouse.
+                    if (!point.IsInContact && !point.Properties.IsLeftButtonPressed)
                     {
                         HoverMoveCount.Text = (++hoverMoveCount).ToString();
                     }

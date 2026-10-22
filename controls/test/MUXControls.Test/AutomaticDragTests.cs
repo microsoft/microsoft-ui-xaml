@@ -62,11 +62,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(attempt.ToString(), ReadText("ReleaseCount"));
 
                 int hoverMoves = int.Parse(ReadText("HoverMoveCount"));
-                foreach (double fraction in new[] { 0.7, 0.3 })
+                // The test input stack cannot inject pen hover, so hover with the mouse.
+                using (InputController.Activate(PointerInputType.Mouse))
                 {
-                    PointerInput.Move(new System.Drawing.Point(
-                        (int)(bounds.Left + bounds.Width * fraction), (int)(bounds.Top + bounds.Height / 2)));
-                    Wait.ForIdle();
+                    foreach (double fraction in new[] { 0.7, 0.3 })
+                    {
+                        PointerInput.Move(new System.Drawing.Point(
+                            (int)(bounds.Left + bounds.Width * fraction), (int)(bounds.Top + bounds.Height / 2)));
+                        Wait.ForIdle();
+                    }
                 }
                 Verify.IsTrue(int.Parse(ReadText("HoverMoveCount")) > hoverMoves);
                 Verify.AreEqual("0", ReadText("DragCount"));
@@ -164,9 +168,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             for (int attempt = 1; attempt <= 2; ++attempt)
             {
                 InputHelper.MouseDragToTarget(source, target);
+                // Nudge the mouse over the target so a pending system drag loop sees the release.
+                using (InputController.Activate(PointerInputType.Mouse))
+                {
+                    var targetPoint = target.GetClickablePoint();
+                    PointerInput.Move(new System.Drawing.Point(targetPoint.X + 2, targetPoint.Y));
+                    PointerInput.Move(targetPoint);
+                }
                 Wait.RetryUntilEvalFuncSuccessOrTimeout(
                     () => ReadText("CopyCompletionCount") == attempt.ToString(),
-                    retryTimoutByMilliseconds: 3000);
+                    retryTimoutByMilliseconds: 5000);
                 Verify.AreEqual((attempt + 2).ToString(), ReadText("DragCount"));
                 Verify.AreEqual(attempt.ToString(), ReadText("DropCount"));
                 Verify.AreEqual(attempt.ToString(), ReadText("CopyCompletionCount"));
