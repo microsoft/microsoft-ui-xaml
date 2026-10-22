@@ -37,6 +37,18 @@ winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
 
 winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSize)
 {
+    auto const desired = MeasureBand(availableSize);
+
+    // The base measure realizes the content template, so a header created disabled is handled here.
+    if (!IsEnabled() && !m_undimmedCount.get())
+    {
+        UpdateDefaultCountOpacity();
+    }
+    return desired;
+}
+
+winrt::Size TableViewGroupHeader::MeasureBand(winrt::Size const& availableSize)
+{
     // Same sum TableViewCellsPanel uses for a row, evaluated at the same point in the layout
     // pass, so the band and the rows can never disagree.
     double columnsTotal = 0.0;
@@ -109,11 +121,35 @@ void TableViewGroupHeader::OnApplyTemplate()
             if (auto strongThis = weakThis.get())
             {
                 strongThis->UpdateVisualStates(true /* useTransitions */);
+                strongThis->UpdateDefaultCountOpacity();
             }
         });
 
     UpdateVisualStates(false /* useTransitions */);
     UpdateTerminalBottomGridLineSuppression();
+}
+
+void TableViewGroupHeader::UpdateDefaultCountOpacity()
+{
+    // The disabled brush already dims the default count; its Style opacity would dim it twice.
+    if (IsEnabled())
+    {
+        if (auto const count = m_undimmedCount.get())
+        {
+            count.ClearValue(winrt::UIElement::OpacityProperty());
+            m_undimmedCount.set(nullptr);
+        }
+        return;
+    }
+
+    if (auto const root = ContentTemplateRoot().try_as<winrt::FrameworkElement>())
+    {
+        if (auto const count = root.FindName(L"TableViewGroupHeaderItemCountText").try_as<winrt::TextBlock>())
+        {
+            count.Opacity(1.0);
+            m_undimmedCount.set(count);
+        }
+    }
 }
 
 void TableViewGroupHeader::SetTerminalBottomGridLineSuppression(bool suppress)

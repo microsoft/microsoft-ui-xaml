@@ -100,6 +100,8 @@ public:
 
 private:
     void UpdateVisualStates(bool useTransitions);
+    void UpdateDefaultCountOpacity();
+    winrt::Size MeasureBand(winrt::Size const& availableSize);
     void UpdateTerminalBottomGridLineSuppression();
 
     winrt::hstring GetGroupIdentity();
@@ -111,6 +113,7 @@ private:
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
+    tracker_ref<winrt::TextBlock> m_undimmedCount{ this };
     tracker_ref<winrt::IInspectable> m_groupEntry{ this };
 
     bool m_isPointerOver{ false };

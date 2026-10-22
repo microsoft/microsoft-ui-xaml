@@ -473,6 +473,12 @@
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
+    <!-- Opacity is a Style setter, not a local value, so TableViewGroupHeader can override it while disabled and clear it back. -->
+    <Style x:Key="TableViewGroupHeaderCountTextStyle" TargetType="TextBlock">
+        <Setter Property="Opacity" Value="{ThemeResource TabularSurfaceGroupHeaderCountOpacity}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
     <DataTemplate x:Key="TableViewDefaultGroupHeaderContentTemplate">
         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
             <TextBlock Text="{Binding KeyText, Mode=OneWay}"
@@ -480,8 +486,7 @@
             <!-- Inherits Foreground so it follows the header's states and an app's Foreground. -->
             <TextBlock x:Name="TableViewGroupHeaderItemCountText"
                        Text="{Binding ItemCountText, Mode=OneWay}"
-                       Opacity="{ThemeResource TabularSurfaceGroupHeaderCountOpacity}"
-                       VerticalAlignment="Center" />
+                       Style="{StaticResource TableViewGroupHeaderCountTextStyle}" />
         </StackPanel>
     </DataTemplate>
 

@@ -1361,6 +1361,71 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyDisabledGroupHeaderCountIsNotDimmedTwice()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TabularSurfaceGroupHeaderCountOpacity", 0.5);
+
+                tableView = CreateGroupedThemingTable();
+                tableView.IsEnabled = false;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            TableViewGroupHeader header = null;
+            TextBlock Count() => header?.FindVisualChildByName("TableViewGroupHeaderItemCountText") as TextBlock;
+
+            // IsEnabledChanged is raised asynchronously; the header's own handler was attached first.
+            using (var enabledChanged = new global::System.Threading.AutoResetEvent(false))
+            {
+                try
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        header = FindVisualChildrenByType<TableViewGroupHeader>(tableView).FirstOrDefault();
+                        var count = Count();
+                        if (count == null)
+                        {
+                            Verify.Fail("The default group header content must contain the item-count TextBlock.");
+                            return;
+                        }
+
+                        Verify.AreEqual(1.0, count.Opacity, "A header loaded disabled must not dim its count on top of the disabled brush.");
+                        header.IsEnabledChanged += (s, e) =>
+                        {
+                            try { enabledChanged.Set(); } catch (ObjectDisposedException) { }
+                        };
+                        tableView.IsEnabled = true;
+                    });
+
+                    Verify.IsTrue(enabledChanged.WaitOne(TimeSpan.FromSeconds(5)), "IsEnabledChanged must be raised.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(0.5, Count().Opacity, "Enabling must restore TabularSurfaceGroupHeaderCountOpacity.");
+                        tableView.IsEnabled = false;
+                    });
+
+                    Verify.IsTrue(enabledChanged.WaitOne(TimeSpan.FromSeconds(5)), "IsEnabledChanged must be raised.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() => Verify.AreEqual(1.0, Count().Opacity,
+                        "Disabling must not dim the count on top of the disabled brush."));
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceGroupHeaderCountOpacity"));
+                }
+            }
+        }
+
+        [TestMethod]
         public void VerifyGroupHeaderCountFollowsAppForegroundStyle()
         {
             var white = Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF);
