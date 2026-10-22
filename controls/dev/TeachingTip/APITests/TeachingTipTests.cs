@@ -2807,6 +2807,190 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyBindingSurvivesAndTipReopens(tip, toggle, "after a Closing handler cleared the source of a tip that did not fit");
         }
 
+        // Scenario (issue #8095 review): an OPEN tip outside a NavigationView targets a ToggleButton inside a NavigationViewItem,
+        //           with Target and IsOpen bound by ElementName to that button. PaneDisplayMode is then switched
+        //           (Top, Left, LeftCompact, Left), so NavigationView re-hosts its menu items and the target is unloaded and
+        //           loaded again.
+        // Expected: the tip stays open next to its target with its IsOpen binding intact, and unchecking the button closes it.
+        // A failure means: a transient unload of the target closed the open tip and replaced the app's IsOpen binding.
+        [TestMethod]
+        public void OpenBoundTipStaysOpenWhenNavigationViewRehostsTarget()
+        {
+            TeachingTip tip = null;
+            NavigationView navView = null;
+            Microsoft.UI.Xaml.Controls.Primitives.ToggleButton target = null;
+            var events = new List<string>();
+            RunOnUIThread.Execute(() =>
+            {
+                var root = (StackPanel)XamlReader.Load(@"
+                    <StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                        <controls:NavigationView x:Name='NavView' PaneDisplayMode='Left' IsSettingsVisible='False'>
+                            <controls:NavigationView.MenuItems>
+                                <controls:NavigationViewItem Width='200'>
+                                    <StackPanel>
+                                        <ToggleButton x:Name='InsideTarget' Content='Inside' Margin='10'/>
+                                    </StackPanel>
+                                </controls:NavigationViewItem>
+                            </controls:NavigationView.MenuItems>
+                        </controls:NavigationView>
+                        <controls:TeachingTip x:Name='Tip' Title='Inside' Subtitle='Subtitle' PreferredPlacement='BottomRight'
+                            Target='{Binding ElementName=InsideTarget}'
+                            IsOpen='{Binding ElementName=InsideTarget, Path=IsChecked}'/>
+                    </StackPanel>");
+                navView = (NavigationView)root.FindName("NavView");
+                target = (Microsoft.UI.Xaml.Controls.Primitives.ToggleButton)root.FindName("InsideTarget");
+                tip = (TeachingTip)root.FindName("Tip");
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            SetBoundSourceAndWait(tip, target, true);
+            RunOnUIThread.Execute(() => LogTargetLoadedAndUnloaded(target, tip, events));
+
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Top, NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.Left })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    events.Add($"PaneDisplayMode = {mode}");
+                    navView.PaneDisplayMode = mode;
+                    navView.IsPaneOpen = true;
+                    Content.UpdateLayout();
+                });
+                bool stayedOpen = WaitForTipState(tip, isOpen: true);
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment(string.Join(Environment.NewLine, events));
+                    events.Clear();
+                    Verify.IsTrue(stayedOpen, $"The open tip should stay open when NavigationView re-hosts its target ({mode})");
+                    Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), $"IsOpen binding should survive the target being re-hosted ({mode})");
+                    Verify.IsTrue(target.IsLoaded, "Target should be loaded");
+                    VerifyTipIsNextToTarget(tip, target, mode.ToString());
+                });
+            }
+
+            SetBoundSourceAndWait(tip, target, false);
+        }
+
+        // Scenario (issue #8095 review): an OPEN tip has Target and IsOpen bound by ElementName to a ToggleButton. In one
+        //           UI-thread step the button is moved to another panel; later the open tip itself is moved to another panel.
+        // Expected: both moves leave the tip open with its IsOpen binding intact, and unchecking the button closes it.
+        // A failure means: an element that left the tree and came straight back made the tip close and drop its binding.
+        [TestMethod]
+        public void OpenBoundTipStaysOpenWhenTargetOrTipIsReparented()
+        {
+            var (tip, target, root) = CreateBoundTargetedTip();
+            var events = new List<string>();
+            SetBoundSourceAndWait(tip, target, true);
+            RunOnUIThread.Execute(() => LogTargetLoadedAndUnloaded(target, tip, events));
+
+            RunOnUIThread.Execute(() =>
+            {
+                events.Add("Moving the target");
+                ((StackPanel)root.FindName("TargetHostA")).Children.Remove(target);
+                ((StackPanel)root.FindName("TargetHostB")).Children.Add(target);
+            });
+            bool stayedOpen = WaitForTipState(tip, isOpen: true);
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment(string.Join(Environment.NewLine, events));
+                Verify.IsTrue(stayedOpen, "The open tip should stay open when its target is moved to another panel");
+                Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), "IsOpen binding should survive the target being moved");
+                VerifyTipIsNextToTarget(tip, target, "after the target moved");
+
+                ((StackPanel)root.FindName("TipHostA")).Children.Remove(tip);
+                ((StackPanel)root.FindName("TipHostB")).Children.Add(tip);
+            });
+            stayedOpen = WaitForTipState(tip, isOpen: true);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(stayedOpen, "The open tip should stay open when it is moved to another panel");
+                Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), "IsOpen binding should survive the tip being moved");
+            });
+
+            SetBoundSourceAndWait(tip, target, false);
+        }
+
+        // Scenario (issue #8095 review): an OPEN tip has Target and IsOpen bound by ElementName to a ToggleButton, and the
+        //           button is removed from the tree for good.
+        // Expected: the tip closes (the #1327 behavior: an open tip must not stay up for a target that is gone).
+        // A failure means: deferring the close for a transient unload kept a tip open for a target that really left.
+        [TestMethod]
+        public void OpenBoundTipClosesWhenTargetIsRemoved()
+        {
+            var (tip, target, root) = CreateBoundTargetedTip();
+            var closed = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() => tip.Closed += (s, e) => closed.Set());
+            SetBoundSourceAndWait(tip, target, true);
+
+            RunOnUIThread.Execute(() => ((StackPanel)root.FindName("TargetHostA")).Children.Remove(target));
+            Verify.IsTrue(closed.WaitOne(DefaultWaitTimeInMS), "Closed should be raised when the target is removed");
+            Verify.IsTrue(WaitForTipState(tip, isOpen: false), "The tip should close when its target is removed");
+        }
+
+        private (TeachingTip, Microsoft.UI.Xaml.Controls.Primitives.ToggleButton, StackPanel) CreateBoundTargetedTip()
+        {
+            TeachingTip tip = null;
+            Microsoft.UI.Xaml.Controls.Primitives.ToggleButton target = null;
+            StackPanel root = null;
+            RunOnUIThread.Execute(() =>
+            {
+                root = (StackPanel)XamlReader.Load(@"
+                    <StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                        <StackPanel x:Name='TargetHostA'>
+                            <ToggleButton x:Name='Target' Content='Target' Margin='10'/>
+                        </StackPanel>
+                        <StackPanel x:Name='TargetHostB' Margin='0,40,0,0'/>
+                        <StackPanel x:Name='TipHostA'>
+                            <controls:TeachingTip x:Name='Tip' Title='Title' Subtitle='Subtitle' PreferredPlacement='BottomRight'
+                                Target='{Binding ElementName=Target}'
+                                IsOpen='{Binding ElementName=Target, Path=IsChecked}'/>
+                        </StackPanel>
+                        <StackPanel x:Name='TipHostB'/>
+                    </StackPanel>");
+                target = (Microsoft.UI.Xaml.Controls.Primitives.ToggleButton)root.FindName("Target");
+                tip = (TeachingTip)root.FindName("Tip");
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            return (tip, target, root);
+        }
+
+        // Logs the target's Loaded/Unloaded order and its IsLoaded state at the event, at the next Low-priority dispatcher
+        // item and at the next CompositionTarget.Rendering after Unloaded.
+        private static void LogTargetLoadedAndUnloaded(FrameworkElement target, TeachingTip tip, List<string> events)
+        {
+            target.Loaded += (s, e) => events.Add($"Target Loaded: IsLoaded={target.IsLoaded} tip.IsOpen={tip.IsOpen}");
+            target.Unloaded += (s, e) =>
+            {
+                events.Add($"Target Unloaded: IsLoaded={target.IsLoaded} tip.IsOpen={tip.IsOpen}");
+                target.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+                    () => events.Add($"  Low-priority item after Unloaded: IsLoaded={target.IsLoaded}"));
+                EventHandler<object> onRendering = null;
+                onRendering = (s2, e2) =>
+                {
+                    CompositionTarget.Rendering -= onRendering;
+                    events.Add($"  Rendering after Unloaded: IsLoaded={target.IsLoaded}");
+                };
+                CompositionTarget.Rendering += onRendering;
+            };
+        }
+
+        private static void VerifyTipIsNextToTarget(TeachingTip tip, FrameworkElement target, string what)
+        {
+            Rect targetBounds = GetBoundsInRoot(target);
+            Rect tipRect = GetTipRect(tip);
+            // The tail points at the target, so the tip must touch the target's bounding box (allowing for the tail).
+            const double tolerance = 20;
+            Verify.IsTrue(tipRect.Right >= targetBounds.Left - tolerance && tipRect.Left <= targetBounds.Right + tolerance &&
+                tipRect.Bottom >= targetBounds.Top - tolerance && tipRect.Top <= targetBounds.Bottom + tolerance,
+                $"TeachingTip should be positioned next to its target ({what}): tip={tipRect} target={targetBounds}");
+        }
+
         private (TeachingTip, Microsoft.UI.Xaml.Controls.Primitives.ToggleButton) CreateBoundTip(Action<TeachingTip> configure)
         {
             TeachingTip tip = null;
