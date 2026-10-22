@@ -95,11 +95,13 @@ package's `AppxManifest.xml`. If the name can't be resolved, the session isn't
 scoped. A target that is already running (PID passed to the constructor) is scoped
 with `ProcessIDFilter` instead.
 
-Once the launched target's process is found, `MainWindow` checks that it runs the
+After the launch, `MainWindow` checks that the target's process runs the
 executable the session was scoped to. If it doesn't (for example, a packaged app
-started through a launcher such as `PsfLauncher64.exe`), or no process was found,
-`RescopeToProcess` re-enables the provider for that PID, or for all processes, and
-the status bar warns that the target's startup events were missed.
+started through a launcher such as `PsfLauncher64.exe`), `RescopeToProcess`
+re-enables the provider for that PID, and the status bar warns that the target's
+startup events were missed. If no process was found (package mode only),
+`RescopeToProcess` re-enables the provider for all processes, and the status bar
+says it is listening to all processes.
 
 **The recycled-buffer hazard (critical).** The `TraceEvent` instance and its
 payload buffer are **reused** by the parser and become invalid the moment the
