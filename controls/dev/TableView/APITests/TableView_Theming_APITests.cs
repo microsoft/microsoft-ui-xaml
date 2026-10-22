@@ -2092,7 +2092,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var stylePadding = new Thickness(20, 1, 20, 1);
             bool loaded = false;
 
-            // Before the fix a checked build stopped on a framework assert while loading; fail instead of stalling.
+            // A checked build can stop on a framework assert while loading; fail instead of stalling.
             using var watchdog = new global::System.Threading.Timer(_ =>
             {
                 if (!global::System.Threading.Volatile.Read(ref loaded))
@@ -2242,7 +2242,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 source.Columns.RemoveAt(0);
                 target = new TableView();
                 target.Columns.Add(column);
-                // Templating the target now rebuilds its headers before the source's queued rebuild runs.
+                // Templating the target rebuilds its headers before the source's queued rebuild runs.
                 host.Children.Add(target);
                 host.UpdateLayout();
             });

@@ -282,9 +282,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 "Unloaded", "Reloaded", "Unloading after a press");
         }
 
-        // Holds a pointer press (and optionally a drag) on the Name gripper, invokes a page button that
-        // tears the gesture down 1.5s later, releases after that point, then checks the width did not
-        // keep the abandoned drag and that a normal resize still works.
         private static void HoldResizeThroughDelayedTeardown(string teardownButtonId, bool pressOnly, string teardownStatus, string restoredStatus, string scenario)
         {
             using (var setup = new TestSetupHelper(PageName))

@@ -421,7 +421,6 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
 [webhosthidden]
 runtimeclass TableViewColumnHeader : Microsoft.UI.Xaml.Controls.ContentControl
 {
-    // The column this header represents.
     TableViewColumn Column { get; };
 }
 
