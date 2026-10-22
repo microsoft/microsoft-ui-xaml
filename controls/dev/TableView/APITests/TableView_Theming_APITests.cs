@@ -2277,6 +2277,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies replacing the Columns vector while a header holds keyboard focus keeps focus on a header of the table.")]
+        public void VerifyHeaderFocusStaysInHeaderBandWhenColumnsVectorReplaced()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateThemingTable();
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(RequireColumnHeader(tableView, 1).Focus(FocusState.Keyboard), "Precondition: the second header takes focus."));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // A vector no table is subscribed to, holding columns no table owns.
+                var donor = new TableView();
+                var replacement = donor.GetValue(TableView.ColumnsProperty);
+                donor.SetValue(TableView.ColumnsProperty, new TableView().GetValue(TableView.ColumnsProperty));
+                var columns = (IList<TableViewColumn>)replacement;
+                columns.Add(MakeTextColumn("Name"));
+                columns.Add(MakeTextColumn("Role"));
+
+                tableView.SetValue(TableView.ColumnsProperty, replacement);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused after the replacement: {focused}");
+                var header = FindVisualChildrenByType<TableViewColumnHeader>(tableView).FirstOrDefault(h => focused != null && IsUnder(focused, h));
+                Verify.IsNotNull(header, "Focus must stay on a header of the table.");
+                Verify.AreEqual(FocusState.Keyboard, (focused as UIElement)?.FocusState ?? FocusState.Unfocused, "Focus keeps its keyboard state.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies focus in the header of a column that is moved or re-added with no other header to hold focus returns to that column's header.")]
         [TestProperty("data:Change", "{MoveOnlyColumn, ClearAndReAddLast}")]
         public void VerifyHeaderFocusReturnsWhenNoOtherHeaderCanHoldIt()

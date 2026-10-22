@@ -3013,7 +3013,7 @@ void TableView::RebuildHeadersCore()
     m_headerSortSpaceArmedColumn = nullptr;
     auto const removedFocusColumn = m_headerFocusRemovedColumn.get();
     auto const fallbackFocusColumn = m_headerFocusFallbackColumn.get();
-    auto const removedFocusState = m_headerFocusRemovedState;
+    auto removedFocusState = m_headerFocusRemovedState;
     m_headerFocusRemovedColumn = nullptr;
     m_headerFocusFallbackColumn = nullptr;
     auto host = m_headerHost.get();
@@ -3041,6 +3041,13 @@ void TableView::RebuildHeadersCore()
             focusedHeaderColumn = nullptr;
             focusBody = true;
         }
+    }
+    // Replacing the Columns vector skips MoveHeaderFocusOffRemovedColumn.
+    if (focusedHeaderColumn && winrt::get_self<TableViewColumn>(focusedHeaderColumn)->GetOwningTableView() != *this)
+    {
+        removedFocusState = focusedHeaderState;
+        focusedHeaderColumn = nullptr;
+        focusBody = true;
     }
 
     // Any focus move during the rebuild other than XAML's rescue off the removed cell belongs to
