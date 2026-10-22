@@ -532,12 +532,6 @@ winrt::Brush TableView::GetGridLineBrush()
     if (!brush)
     {
         brush = CreateGridLineFallbackBrush(*this, highContrast);
-        // Outside High Contrast a miss draws no grid lines; say so once per instance.
-        if (!brush && !m_reportedMissingGridLineBrush)
-        {
-            m_reportedMissingGridLineBrush = true;
-            TVDiag::DbgLogF(L"[TableView] TabularSurfaceGridLineBrush not found - merge TabularControlsResources; grid lines are not drawn.");
-        }
     }
 
     cache.gridLine.hasBrush = true;
