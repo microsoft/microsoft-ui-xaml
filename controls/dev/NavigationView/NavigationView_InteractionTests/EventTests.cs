@@ -288,10 +288,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                         double scale = backBounds.Height / 44.0;
                         var toggleBounds = new Button(FindElement.ById("TogglePaneButton")).BoundingRectangle;
                         Log.Comment($"Verify the pane toggle button has not moved: {toggleBounds}");
+                        // UIA reports the toggle's inner 36-epx-high visual, which sits inside its 4,2 padding.
                         // LeftMinimal: beside the back button (left margin c_backButtonWidth, holder grid top margin 4).
                         // Other modes: below the back button (top margin c_backButtonHeight + holder grid top margin 4).
-                        double expectedX = paneDisplayMode == "LeftMinimal" ? 40 : 0;
-                        double expectedY = paneDisplayMode == "LeftMinimal" ? 4 : 44;
+                        double expectedX = paneDisplayMode == "LeftMinimal" ? 44 : 4;
+                        double expectedY = paneDisplayMode == "LeftMinimal" ? 6 : 46;
                         Verify.IsLessThanOrEqual(Math.Abs(toggleBounds.X - navViewBounds.X - expectedX * scale), 2.0);
                         Verify.IsLessThanOrEqual(Math.Abs(toggleBounds.Y - navViewBounds.Y - expectedY * scale), 2.0);
                     }
