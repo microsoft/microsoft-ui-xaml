@@ -112,7 +112,7 @@ the source publishes, so the same engine serves an app that never touches `Table
 - Column virtualization intentionally omitted (typical ~5–50 columns).
 
 ### Styling & theming
-- Light / Dark / High Contrast theme tokens + inline fallbacks (`#29FFFFFF` dark gridline). — **PR2** (full self-themed Theme-XBF emission deferred)
+- Light / Dark / High Contrast theme tokens + inline fallbacks (`DividerStrokeColorDefault` gridlines). — **PR2** (full self-themed Theme-XBF emission deferred)
 - Cell-level styling: custom cells via `TableViewTemplateColumn` + built-in text-cell defaults (left, vertically centered). A public per-column alignment/weight API — **deferred (PR3+)**.
 
 ### Tooltips
