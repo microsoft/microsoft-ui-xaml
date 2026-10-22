@@ -207,6 +207,10 @@ bool TableView::CanApplySortTo(winrt::SortDirection direction) const
         return true;
     }
     auto const source = ShapingSourceInternal();
+    if (source && m_activeSourceReleased && winrt::get_self<::TableViewSource>(source)->IsOwnedByOther(*this))
+    {
+        return false;
+    }
     return !source || winrt::get_self<::TableViewSource>(source)->CanApplySort();
 }
 

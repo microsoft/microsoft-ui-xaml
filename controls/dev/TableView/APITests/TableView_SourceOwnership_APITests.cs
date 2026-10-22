@@ -235,6 +235,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             TableView second = null;
             TableViewSource shared = null;
             StackPanel host = null;
+            int sortingCount = 0;
+            int sortedCount = 0;
 
             RunOnUIThread.Execute(() =>
             {
@@ -263,7 +265,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(second, person => person.Name),
                     "precondition: the new owner shows the source sort");
-                first.SortByColumn(first.Columns[0], SortDirection.Ascending);
+                first.Sorting += (s, e) => sortingCount++;
+                first.Sorted += (s, e) => sortedCount++;
+                Verify.IsFalse(first.SortByColumn(first.Columns[0], SortDirection.Ascending),
+                    "A sort the shared source cannot take must report failure.");
             });
 
             SettleLayout(second);
@@ -273,6 +278,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(second, person => person.Name),
                     "a table that released the shared source must not re-sort the rows its new owner shows");
                 Verify.AreEqual(SortDirection.Descending, second.Columns[0].SortDirection, "The new owner keeps its indicator.");
+                Verify.AreEqual(0, sortingCount, "A refused sort must not raise Sorting.");
+                Verify.AreEqual(0, sortedCount, "A refused sort must not raise Sorted.");
+                Verify.AreEqual(SortDirection.Descending, first.Columns[0].SortDirection, "A refused sort leaves the column state unchanged.");
             });
         }
     }
