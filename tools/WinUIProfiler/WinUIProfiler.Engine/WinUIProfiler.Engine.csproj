@@ -5,6 +5,7 @@
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" />
     <EmbeddedResource Include="Storage\Migrations\001_Initial.sql" />
     <EmbeddedResource Include="Storage\Migrations\002_Ingestion.sql" />
+    <EmbeddedResource Include="Storage\Migrations\003_SourceClocks.sql" />
     <ProjectReference Include="..\WinUIProfiler.Contracts\WinUIProfiler.Contracts.csproj" />
   </ItemGroup>
 </Project>

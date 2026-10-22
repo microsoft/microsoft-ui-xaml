@@ -7,7 +7,8 @@ namespace WinUIProfiler.Engine.Storage;
 public sealed partial class SessionWriter
 {
     // No fabricated source ordinal: diagnostic aggregates and terminal metadata bind to the existing durable checkpoint.
-    public CommittedWatermark CommitHealth(HealthSnapshot health, SessionInfo? terminal = null, DataQuality? quality = null)
+    public CommittedWatermark CommitHealth(HealthSnapshot health, SessionInfo? terminal = null, DataQuality? quality = null,
+        IReadOnlyList<Ingestion.SourceClockMetadata>? clocks = null)
     {
         ArgumentNullException.ThrowIfNull(health);
         lock (store.Gate)
@@ -28,6 +29,7 @@ public sealed partial class SessionWriter
             try
             {
                 using var transaction = db.BeginTransaction();
+                PersistClocks(db, transaction, clocks ?? [], prior.Info.QpcFrequency, prior.Watermark.IngestOrdinal);
                 foreach (var issue in health.Issues)
                 {
                     var json = Encode(issue.First);

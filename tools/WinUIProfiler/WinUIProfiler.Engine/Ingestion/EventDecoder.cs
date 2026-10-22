@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using WinUIProfiler.Contracts;
 
 namespace WinUIProfiler.Engine.Ingestion;
@@ -9,14 +10,17 @@ public sealed class EventDecoder
     private ProcessInstanceKey process;
     private ProducerStreamKey stream;
     private Guid epoch;
+    public SourceClockMetadata SourceClock { get; }
     public EventDecoder(SessionScope scope, QpcMapping clock)
     {
         scope.Validate(); this.scope = scope; this.clock = clock;
         _ = clock.Convert(clock.OriginQpc);
+        SourceClock = new(Guid.NewGuid(), 1, clock);
     }
 
     public DecodedEvent? Decode(NativeRecord record)
     {
+        if (IsProvablyForeignRuntime(record)) return null;
         if (record.ProviderId == EventCatalog.KernelProcessProviderId) return KernelProcessStart(record);
         // There is no published collector native schema yet. Do not reinterpret runtime bytes as collector bytes.
         if (record.ProviderId != EventCatalog.RuntimeProviderId)
@@ -66,7 +70,37 @@ public sealed class EventDecoder
         };
         var envelope = new EventEnvelope(scope.SessionId, process, record.ProducerProcessId, record.ThreadId,
             clock.Convert(record.TimestampQpc), 1, sequence, record.ActivityId, definition.Identity, EventCodec.EncodePayload(payload, process));
-        return new(EventCodec.Normalize(envelope, stream), new(original, record.TimestampQpc));
+        return new(EventCodec.Normalize(envelope, stream), new(original, record.TimestampQpc, SourceClock));
+    }
+
+    internal bool IsProvablyForeignRuntime(Guid provider, uint producerPid, ReadOnlySpan<byte> prefix)
+    {
+        if (provider != EventCatalog.RuntimeProviderId) return false;
+        if (producerPid != scope.Process.ProcessId) return producerPid != 0;
+        // Schema-1 common prefix is independent of the semantic body/name.
+        if (prefix.Length < 56 || prefix[2] != 1 || prefix[31] != 1 ||
+            BinaryPrimitives.ReadUInt16LittleEndian(prefix) == 0 ||
+            new Guid(prefix.Slice(3, 16)) == Guid.Empty ||
+            BinaryPrimitives.ReadUInt64LittleEndian(prefix[19..]) == 0 ||
+            BinaryPrimitives.ReadUInt32LittleEndian(prefix[27..]) != producerPid ||
+            new Guid(prefix.Slice(40, 16)) == Guid.Empty) return false;
+        var creation = BinaryPrimitives.ReadInt64LittleEndian(prefix[32..]);
+        return creation > 0 && scope.Process.CreationTimeFileTime is { } selected && creation != selected;
+    }
+    private bool IsProvablyForeignRuntime(NativeRecord record)
+    {
+        if (IsProvablyForeignRuntime(record.ProviderId, record.ProducerProcessId, [])) return true;
+        if (record.ProviderId != EventCatalog.RuntimeProviderId) return false;
+        try
+        {
+            var prefix = new NativeFields(record.Fields);
+            if (prefix.U8("EventSchemaVersion") != 1 || prefix.U16("SemanticEventId") == 0 ||
+                prefix.Guid("ProducerEpoch") == Guid.Empty || prefix.U64("SourceSequence") == 0) return false;
+            var original = record.ReadRuntimeTarget(); original.Validate();
+            return original.ProcessId == record.ProducerProcessId && original.CreationTimeFileTime is { } created &&
+                scope.Process.CreationTimeFileTime is { } selected && created != selected;
+        }
+        catch (Exception error) when (error is ArgumentException or InvalidDataException or OverflowException) { return false; }
     }
 
     private DecodedEvent? KernelProcessStart(NativeRecord record)
@@ -89,7 +123,7 @@ public sealed class EventDecoder
             1, null, record.ActivityId, definition.Identity, EventCodec.EncodePayload(payload, scope.Process));
         // A trace-local namespace, not an invented producer epoch/sequence or native settlement claim.
         return new(EventCodec.Normalize(envelope, new(record.ProviderId, record.ProducerProcessId, scope.SessionId)),
-            new(scope.Process, record.TimestampQpc));
+            new(scope.Process, record.TimestampQpc, SourceClock));
     }
 
     private RuntimeCapabilitiesPayload Capabilities(NativeFields f)

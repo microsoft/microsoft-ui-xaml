@@ -36,8 +36,9 @@ public sealed class OfflineEtlSource(string path, SessionScope scope, long sessi
             {
                 using var lease = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
                 var metadata = ReadMetadata(path);
-                using var source = new ETWTraceEventSource(path);
                 var decoder = new EventDecoder(scope, new(metadata.QpcFrequency, sessionFrequency));
+                worker.RegisterSourceClock(decoder.SourceClock);
+                using var source = new ETWTraceEventSource(path);
                 var loss = new EtwLossTracker(worker);
                 loss.Update(metadata.EventsLost, metadata.BuffersLost);
                 EtwAcquisition.Subscribe(source, decoder, worker);

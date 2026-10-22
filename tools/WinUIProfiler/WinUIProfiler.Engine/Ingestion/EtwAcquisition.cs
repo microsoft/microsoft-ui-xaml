@@ -27,11 +27,19 @@ internal static class EtwAcquisition
 {
     internal static void Subscribe(ETWTraceEventSource source, EventDecoder decoder, ProcessingWorker worker)
     {
+        bool IsForeign(TraceEvent data)
+        {
+            var pid = data.ProcessID > 0 ? (uint)data.ProcessID : 0;
+            return decoder.IsProvablyForeignRuntime(data.ProviderGuid, pid, []) ||
+                data.ProviderGuid == EventCatalog.RuntimeProviderId &&
+                decoder.IsProvablyForeignRuntime(data.ProviderGuid, pid, data.EventData());
+        }
         void Receive(TraceEvent data)
         {
             if (worker.StopRequested.IsCancellationRequested) return;
             try
             {
+                if (IsForeign(data)) return;
                 var native = NativeRecord.Capture(data);
                 if (decoder.Decode(native) is { } decoded)
                 {
@@ -54,6 +62,7 @@ internal static class EtwAcquisition
         source.UnhandledEvents += data =>
         {
             if (worker.StopRequested.IsCancellationRequested) return;
+            if (IsForeign(data)) return;
             var bytes = data.EventData();
             worker.Report(new(IngestionIssue.UnknownSchema, $"Unsupported ETW event: descriptor {(int)data.ID}, version {data.Version}, level {(int)data.Level}, keywords {(ulong)data.Keywords:X16}.",
                 data.ProviderGuid, data.EventName[..Math.Min(data.EventName.Length, 1024)], data.ProcessID > 0 ? (uint)data.ProcessID : null,

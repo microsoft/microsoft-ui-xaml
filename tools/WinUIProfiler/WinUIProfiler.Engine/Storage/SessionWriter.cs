@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using Microsoft.Data.Sqlite;
 using WinUIProfiler.Contracts;
+using WinUIProfiler.Engine.Processing;
 using static WinUIProfiler.Engine.Storage.SessionStore;
 
 namespace WinUIProfiler.Engine.Storage;
@@ -33,7 +34,7 @@ public sealed partial class SessionWriter
             long ordinal = previous.Watermark.IngestOrdinal;
             long timestamp = previous.Watermark.TimestampQpc;
             var sourceMap = new Dictionary<long, NormalizedEvent>();
-            long bytes = 0;
+            long bytes = BatchAccounting.HeaderBytes;
             foreach (var source in sources)
             {
                 var e = source.Envelope;
@@ -57,7 +58,7 @@ public sealed partial class SessionWriter
                     throw new ArgumentException("Every projection change needs a source in this transaction.");
                 var value = Freeze(change.Value, context);
                 var row = ProjectionRow.Create(change.SourceOrdinal, source.Envelope.TimestampQpc, value, change.Deleted);
-                bytes += Encoding.UTF8.GetByteCount(row.Payload);
+                bytes += Encoding.UTF8.GetByteCount(row.Payload) + BatchAccounting.ChangeHeaderBytes;
                 return row;
             }).ToArray();
             if (changes.Select(row => (row.Dataset, row.Key, row.Source)).Distinct().Count() != changes.Length)
@@ -71,7 +72,10 @@ public sealed partial class SessionWriter
                 p.Value.OriginalTarget.Validate(); Require.Nonnegative(p.Value.OriginalTimestampQpc);
                 if (!sourceMap.TryGetValue(p.SourceOrdinal, out var source) || p.Value.OriginalTarget.ProcessId != source.Envelope.Process.ProcessId)
                     throw new ArgumentException("Provenance needs a source and its actual target PID.");
-                bytes += 64;
+                if (p.Value.Clock is { } clock &&
+                    (clock.Mapping.SessionFrequency != info.QpcFrequency || clock.Mapping.Convert(p.Value.OriginalTimestampQpc) != source.Envelope.TimestampQpc))
+                    throw new ArgumentException("Provenance clock mapping does not match its normalized source.");
+                bytes += BatchAccounting.JsonBytes(p.Value, 4096);
             }
             bytes += facts.Sum(fact => (long)Encoding.UTF8.GetByteCount(fact.Payload));
             if (bytes > MaximumBatchBytes) throw new ArgumentException("Batch byte bound exceeded.");
@@ -80,16 +84,18 @@ public sealed partial class SessionWriter
             {
                 using var transaction = db.BeginTransaction();
                 InsertCheckpoint(db, transaction, boundary, info, batch.Quality);
+                PersistClocks(db, transaction, provenance.Select(p => p.Value.Clock).OfType<Ingestion.SourceClockMetadata>().Distinct().ToArray(),
+                    info.QpcFrequency, boundary.IngestOrdinal);
                 foreach (var source in sources)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     InsertSource(db, transaction, boundary, source);
                 }
                 foreach (var p in provenance)
-                    Execute(db, "INSERT INTO SourceProvenance VALUES($source,$pid,$creation,$instance,$qpc)", transaction,
+                    Execute(db, "INSERT INTO SourceProvenance VALUES($source,$pid,$creation,$instance,$qpc,$clock)", transaction,
                         ("$source", p.SourceOrdinal), ("$pid", (long)p.Value.OriginalTarget.ProcessId),
                         ("$creation", p.Value.OriginalTarget.CreationTimeFileTime), ("$instance", p.Value.OriginalTarget.InstanceId.ToString("N")),
-                        ("$qpc", p.Value.OriginalTimestampQpc));
+                        ("$qpc", p.Value.OriginalTimestampQpc), ("$clock", p.Value.Clock?.SourceId.ToString("N")));
                 foreach (var row in changes)
                 {
                     cancellationToken.ThrowIfCancellationRequested();

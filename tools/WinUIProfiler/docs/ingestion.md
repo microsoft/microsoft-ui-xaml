@@ -36,6 +36,14 @@ The approved schema's typed metadata plus data budget is 48 KiB; normalized
 payloads independently retain their 1 MiB bound. This is a decoder, not a
 managed copy of the native producer or an EventSource fixture.
 
+Admission precedes full body capture/validation. The runtime provider's
+emitter-equals-target rule excludes a provably foreign header PID even for an
+unknown or truncated body. For the same PID, a supported schema-1 common prefix
+with valid actual creation evidence can exclude a different process instance
+before body validation. Unsupported/unattributable prefixes remain diagnosable.
+These rules apply **only** to the runtime provider, never to collector/kernel
+header PIDs whose payload target can legitimately differ.
+
 The explicit additional platform schema is
 `Microsoft-Windows-Kernel-Process`, GUID
 `22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716`, ProcessStart/Start, ID 1, **version 4**,
@@ -66,6 +74,14 @@ Actual PID + creation FILETIME binds a native producer's process GUID into the
 selected canonical process instance. Those GUIDs need not equal each other.
 `SourceProvenance` transactionally retains the original process identity and
 raw timestamp separately from the canonical target and emitting header PID/TID.
+It also references immutable `SourceClockMetadata`: acquisition ID, recorded
+clock type, source frequency, source origin and normalized session frequency.
+All actual decoded records carry that mapping; registration is bounded to
+16 acquisitions per worker/store. Clock registration is persisted even if a
+metadata-known import accepts no observations. Close/reopen needs neither an ETL
+nor a current-machine frequency query to interpret original raw timestamps.
+Schema-1/2 histories and explicitly mapping-unavailable typed input retain
+unknown/null mapping; migration never invents it.
 If creation evidence is absent, it stays null; only the explicitly selected
 trace-local instance matches, not another instance sharing its PID. Offline
 ingestion never polls a current process to repair old identity/coverage gaps.
@@ -112,6 +128,29 @@ There can additionally be one owner/in-flight batch and one writer/in-flight
 batch; limits are not a claim about total CLR object overhead or ETW buffer
 memory. Source/envelope bytes, provenance, changes and batch metadata are
 accounted, with independent payload/metadata bounds. No history is evicted.
+The logical encoding budget includes the complete encoded envelope/provenance
+(including clock mapping), encoded info/quality, a 32-byte batch header and
+16 bytes per change for source/deletion/type bookkeeping. An initial source
+must fit **with metadata/provenance** before any event processor is invoked.
+Subsequent input that does not fit is carried into the next batch, not dropped.
+
+`IEventProcessor.Process` returns an incremental `IEnumerable<ProjectionChange>`.
+Implementations must yield one bounded candidate at a time, not eagerly build
+an output list. `ProcessingContext.OutputBudget` exposes the shared remaining
+bytes/records across all five processors. Each candidate is counted through a
+capped, non-retaining serialization stream before freezing; one output record
+is capped at 64 KiB. A failure disposes that enumeration without requesting more
+outputs or invoking remaining processors. Serializer transient buffers and the
+candidate object itself are CLR overhead, not an allocator-level byte guarantee.
+One input lookahead and one bounded output candidate are additional transient
+work, not unbounded retained output collections.
+
+If input, metadata or output cannot fit, the entire uncommitted source batch is
+marked incomplete and acquisition stops at the preceding queued/durable source
+boundary; earlier queued batches still drain. Zero remaining output allowance
+conservatively stops rather than invoking more projection code to guess whether
+it would yield nothing. A full input-only batch with no processors can commit
+at the exact byte boundary.
 The owner may wait up to five seconds for persistence capacity; the ETW callback
 never waits for the writer. A configured bound/deadline breach stops acquisition
 and marks an explicitly incomplete tail. Producer metadata retains at most 128
@@ -141,6 +180,14 @@ with repeat counts. The next distinct schema stops acquisition instead of
 evicting earlier evidence; its first overflow sample remains in the reserved
 DiagnosticLimit category. These records do not depend on normal queue space
 and never masquerade as target observations.
+
+Accepted stream/provider/PID/epoch tracking is independently bounded to 128.
+Metadata is matched to each accepted epoch, not checked globally. An announced
+epoch does not hide a different unannounced epoch. Each unmatched epoch reports
+MissingMetadata with its provider/header PID and epoch identity and a bounded
+representative in the same 128-entry diagnostic pool. Missing metadata alone
+remains partial coverage, not unknown schema or a pre-enablement admission gate.
+Tracking/diagnostic capacity exhaustion stops rather than evicts evidence.
 
 Stop seals admission and requests source cancellation asynchronously. Accepted
 ingress and available bounded persistence batches drain; an acquisition lease
@@ -179,6 +226,9 @@ through real ETW readers, the decoder, both worker threads and SQLite, compare
 semantic records/query metadata across imports, exercise two live sessions and
 continue receiving after the first stops. Native schema samples are explicitly
 fixtures, not observed framework object/graphics lifetimes.
+Native-emitting test classes share an xUnit collection so separate conformance
+fixtures do not pollute one another's globally enabled provider sessions; the
+two-live-session test still explicitly exercises concurrent independent sources.
 
 Automatic runtime capability arrays remain empty and capture remains
 `E_NOTIMPL`. There are no framework hooks, app-baseline completeness claims,

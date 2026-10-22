@@ -138,5 +138,15 @@ public sealed record QpcMapping(long SourceFrequency, long SessionFrequency, lon
     }
 }
 
-public sealed record SourceProvenance(ProcessInstanceKey OriginalTarget, long OriginalTimestampQpc);
+public sealed record SourceClockMetadata(Guid SourceId, int ClockType, QpcMapping Mapping)
+{
+    public const int MaximumSources = 16;
+    public void Validate()
+    {
+        Require.Id(SourceId); ArgumentNullException.ThrowIfNull(Mapping);
+        if (ClockType != 1) throw new NotSupportedException("Only recorded raw-QPC clock mappings are supported.");
+        _ = Mapping.Convert(Mapping.OriginQpc);
+    }
+}
+public sealed record SourceProvenance(ProcessInstanceKey OriginalTarget, long OriginalTimestampQpc, SourceClockMetadata? Clock = null);
 public sealed record DecodedEvent(NormalizedEvent Event, SourceProvenance Provenance);

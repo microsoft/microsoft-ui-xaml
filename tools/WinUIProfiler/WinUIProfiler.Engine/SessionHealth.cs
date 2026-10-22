@@ -77,7 +77,8 @@ public sealed class SessionHealth
             var index = (int)diagnostic.Issue;
             var prior = slots[index];
             slots[index] = new(diagnostic.Issue, checked((prior?.Count ?? 0) + count), prior?.First ?? diagnostic);
-            if (diagnostic.Issue is not (IngestionIssue.UnknownSchema or IngestionIssue.DecodeFailure)) return true;
+            if (diagnostic.Issue is not (IngestionIssue.UnknownSchema or IngestionIssue.DecodeFailure) &&
+                !(diagnostic.Issue == IngestionIssue.MissingMetadata && diagnostic.ProviderId is not null && diagnostic.EventName is not null)) return true;
             if (samples.TryGetValue(key, out var existing))
                 samples[key] = existing with { Count = checked(existing.Count + count) };
             else if (samples.Count < MaximumDiagnosticSamples) samples.Add(key, new(key, count, diagnostic));

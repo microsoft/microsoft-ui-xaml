@@ -47,6 +47,7 @@ public sealed class LiveEtwSource : IAsyncDisposable
             var source = session.Source;
             var loss = new EtwLossTracker(worker);
             var decoder = new EventDecoder(scope, new(Stopwatch.Frequency, sessionFrequency));
+            worker.RegisterSourceClock(decoder.SourceClock);
             EtwAcquisition.Subscribe(source, decoder, worker);
             session.EnableProvider(EventCatalog.RuntimeProviderId, TraceEventLevel.Informational, 0xff);
             session.EnableProvider(EventCatalog.CollectorProviderId, TraceEventLevel.Informational, 0x101);

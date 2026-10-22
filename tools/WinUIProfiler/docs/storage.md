@@ -2,10 +2,24 @@
 
 P03's additive schema **2** (`002_Ingestion.sql`) adds source provenance,
 bounded diagnostic samples/aggregates and a separate terminal control record.
-Explicit creation runs both migrations. Read-only opening accepts schema 1
-without migrating it; explicit writable opening validates schema 1 before
-transactionally adding schema 2 and updating the schema hash. No prior source
+Explicit creation runs ordered migrations. Legacy schemas remain readable
+without migration; explicit writable opening validates the prior schema before
+transactionally upgrading it and updating the schema hash. No prior source
 or projection row is rewritten.
+
+The P03 review correction adds schema **3** (`003_SourceClocks.sql`), an
+immutable bounded SourceClocks table and a nullable source-clock foreign key
+on SourceProvenance. Each clock records its original frequency/type/origin,
+normalized session frequency and first committed boundary. Source/provenance
+and mapping association commit atomically; metadata-known empty imports commit
+clock metadata at checkpoint zero through the control path. Source clocks
+cannot be replaced under the same acquisition ID.
+
+Read-only opening accepts schemas 1, 2 and 3 without migration. Explicit writable
+opening transactionally upgrades 1 to 2 to 3, or 2 to 3, and updates the schema
+hash. Existing provenance clock references stay null; no old mapping is inferred
+from normalized timestamps or the present machine. `ReadSourceClocks` and
+`ReadSourceProvenance` expose bounded persisted original evidence after reopen.
 
 `SessionWriter.CommitHealth` persists health even when no source event exists.
 Its terminal record references the last actual checkpoint rather than inserting
@@ -13,7 +27,7 @@ a fake event or changing the historical checkpoint. `GetSession` overlays that
 terminal metadata (and, on persistence failure, the preallocated failure
 sidecar); watermark-bound projection reads retain their original source
 checkpoint. `ReadIngestionDiagnostics` returns at most 13 aggregate categories;
-`ReadDiagnosticSamples` returns at most 128 schema representatives, each with
+`ReadDiagnosticSamples` returns at most 128 schema/accepted-epoch metadata representatives, each with
 bounded metadata and 256 raw payload bytes. See [ingestion](ingestion.md) for
 the processing ownership, bounds, shutdown protocol and exact limitations.
 

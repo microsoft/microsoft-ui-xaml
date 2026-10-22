@@ -1,5 +1,3 @@
-using System.Text;
-using System.Text.Json;
 using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Storage;
@@ -20,10 +18,11 @@ public sealed record ProcessingOptions(int IngressItems = 4096, long IngressByte
             throw new ArgumentOutOfRangeException(nameof(ProcessingOptions));
     }
 }
-public sealed record ProcessingContext(SessionScope Scope, CommittedWatermark BatchBoundary, DataQuality Quality);
+public sealed record ProcessingContext(SessionScope Scope, CommittedWatermark BatchBoundary, DataQuality Quality, ProjectionBudget OutputBudget);
 public interface IEventProcessor
 {
-    IReadOnlyList<ProjectionChange> Process(IReadOnlyList<NormalizedEvent> events, ProcessingContext context);
+    // Yield one candidate at a time; the owner can dispose enumeration without requesting the rest.
+    IEnumerable<ProjectionChange> Process(IReadOnlyList<NormalizedEvent> events, ProcessingContext context);
     void Invalidate(HealthSnapshot health);
 }
 public sealed record ProcessingResult(SessionStatus Status, string? StopReason, CommittedWatermark DurableBoundary,
@@ -31,6 +30,7 @@ public sealed record ProcessingResult(SessionStatus Status, string? StopReason, 
 
 public sealed class ProcessingWorker : IAsyncDisposable
 {
+    public const int MaximumAcceptedStreams = 128;
     private readonly SessionStore store;
     private SessionInfo info;
     private readonly ProcessingOptions options;
@@ -38,6 +38,8 @@ public sealed class ProcessingWorker : IAsyncDisposable
     private readonly BoundedQueue<DecodedEvent> ingress;
     private readonly BoundedQueue<SessionBatch> persistence;
     private readonly SessionHealth health = new();
+    private readonly Dictionary<Guid, SourceClockMetadata> sourceClocks = [];
+    private readonly Dictionary<ProducerStreamKey, bool> acceptedStreams = [];
     private readonly CancellationTokenSource stop = new();
     private readonly TaskCompletionSource<ProcessingResult> completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource processingDrained = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -88,17 +90,51 @@ public sealed class ProcessingWorker : IAsyncDisposable
         source.Provenance.OriginalTarget.Validate(); Require.Nonnegative(source.Provenance.OriginalTimestampQpc);
         if (source.Provenance.OriginalTarget.ProcessId != store.Scope.Process.ProcessId)
             throw new ArgumentException("Source provenance belongs to another target PID.");
+        if (source.Provenance.Clock is { } clock &&
+            (clock.Mapping.SessionFrequency != info.QpcFrequency || clock.Mapping.Convert(source.Provenance.OriginalTimestampQpc) != normalized.Envelope.TimestampQpc))
+            throw new ArgumentException("Source timestamp and its original clock mapping disagree.");
         var captured = new DecodedEvent(normalized, source.Provenance);
-        var bytes = checked(EventCodec.Encode(normalized.Envelope).Length + 64L);
+        var bytes = BatchAccounting.SourceBytes(normalized, source.Provenance);
         lock (lifecycle)
         {
             if (sealedIngress) return false;
-            if (ingress.TryAdd(captured, bytes)) { Interlocked.Increment(ref accepted); return true; }
+            if (source.Provenance.Clock is { } sourceClock) RegisterSourceClock(sourceClock);
+            if (!acceptedStreams.ContainsKey(normalized.Stream) && acceptedStreams.Count >= MaximumAcceptedStreams)
+            {
+                StopAtLimit(IngestionIssue.SourceFailure, "Accepted stream/epoch metadata bound reached.");
+                return false;
+            }
+            if (ingress.TryAdd(captured, bytes))
+            {
+                acceptedStreams.TryAdd(normalized.Stream, info.Producers.Any(p => p.ProviderId == normalized.Stream.ProviderId && p.Epoch == normalized.Stream.ProducerEpoch));
+                Interlocked.Increment(ref accepted); return true;
+            }
             health.Report(new(IngestionIssue.QueueOverflow, "Ingress item/byte bound reached; acquisition stopped, no older history was evicted."));
             Seal(SessionStatus.StoppedAtLimit, "Ingress item/byte bound reached.");
             return false;
         }
     }
+    public void RegisterSourceClock(SourceClockMetadata clock)
+    {
+        clock.Validate();
+        if (clock.Mapping.SessionFrequency != info.QpcFrequency) throw new ArgumentException("Source clock uses another normalized session frequency.");
+        lock (lifecycle)
+        {
+            if (healthFinalizing) throw new InvalidOperationException("Source clock registration is finalized.");
+            if (sourceClocks.TryGetValue(clock.SourceId, out var existing))
+            {
+                if (existing != clock) throw new ArgumentException("An original source-clock mapping is immutable.");
+                return;
+            }
+            if (sourceClocks.Count >= SourceClockMetadata.MaximumSources)
+            {
+                StopAtLimit(IngestionIssue.SourceFailure, "Source-clock metadata bound reached.");
+                throw new InvalidDataException("Source-clock metadata bound reached.");
+            }
+            sourceClocks.Add(clock.SourceId, clock);
+        }
+    }
+    private IReadOnlyList<SourceClockMetadata> ClockSnapshot() { lock (lifecycle) return sourceClocks.Values.ToArray(); }
     public void Report(IngestionDiagnostic diagnostic, long count = 1)
     {
         lock (lifecycle)
@@ -149,7 +185,7 @@ public sealed class ProcessingWorker : IAsyncDisposable
     }
     private void Seal(SessionStatus terminal, string reason)
     {
-        if (!sealedIngress || terminal == SessionStatus.Failed)
+        if (!sealedIngress || terminal == SessionStatus.Failed || terminal == SessionStatus.StoppedAtLimit && status != SessionStatus.Failed)
         {
             status = terminal; stopReason = reason;
         }
@@ -171,82 +207,140 @@ public sealed class ProcessingWorker : IAsyncDisposable
         long healthVersion = -1;
         try
         {
-            while (ingress.Take(out var first, out var firstBytes))
+            DecodedEvent? pending = null;
+            while (pending is not null || ingress.Take(out pending, out _))
             {
                 if (writerFailed) break;
-                var incoming = new List<DecodedEvent> { first };
-                var inputBytes = firstBytes;
-                while (incoming.Count < options.BatchItems && ingress.Take(out var next, out var bytes, false, options.BatchBytes - inputBytes))
-                { incoming.Add(next); inputBytes += bytes; }
+                var sources = new List<NormalizedEvent>();
+                var provenance = new List<SourceProvenanceChange>();
+                var batchInfo = info;
+                var batchTimestamp = timestamp;
+                var sourceBytes = 0L;
+                var containsLoss = false;
+                long batchBytes = 0;
+                var quality = BatchQuality(false);
+                do
+                {
+                    var candidate = pending!;
+                    pending = null;
+                    var e = candidate.Event.Envelope;
+                    var source = EventCodec.Normalize(new(e.SessionId, e.Process, e.ProducerProcessId, e.ThreadId, e.TimestampQpc,
+                        checked(ordinal + sources.Count + 1), e.SourceSequence, e.ActivityId, e.Identity, e.OwnedPayload), candidate.Event.Stream);
+                    var nextInfo = IncludeCapabilities(batchInfo, source);
+                    var nextLoss = containsLoss || IsLoss(source);
+                    var nextQuality = BatchQuality(nextLoss);
+                    var candidateBytes = BatchAccounting.SourceBytes(source, candidate.Provenance);
+                    long totalBytes;
+                    try { totalBytes = sourceBytes + candidateBytes + BatchAccounting.MetadataBytes(nextInfo, nextQuality, options.BatchBytes); }
+                    catch (ProcessingLimitException) { totalBytes = options.BatchBytes + 1L; }
+                    if (totalBytes > options.BatchBytes)
+                    {
+                        if (sources.Count == 0) throw new ProcessingLimitException();
+                        pending = candidate;
+                        break;
+                    }
+                    sources.Add(source);
+                    provenance.Add(new(source.Envelope.IngestOrdinal, candidate.Provenance));
+                    sourceBytes += candidateBytes; batchBytes = totalBytes;
+                    batchInfo = nextInfo; containsLoss = nextLoss; quality = nextQuality;
+                    batchTimestamp = Math.Max(batchTimestamp, source.Envelope.TimestampQpc);
+                    if (sources.Count >= options.BatchItems) break;
+                } while (ingress.Take(out pending, out _, false));
+
+                if (containsLoss)
+                    Report(new(IngestionIssue.ProducerLoss, "Producer explicitly reported loss; affected projections require a new baseline."), sources.LongCount(IsLoss));
                 var snapshot = health.Snapshot();
                 if (snapshot.Version != healthVersion)
                 {
                     foreach (var processor in processors) processor.Invalidate(snapshot);
                     healthVersion = snapshot.Version;
                 }
-                var sources = incoming.Select(item =>
-                {
-                    var e = item.Event.Envelope;
-                    timestamp = Math.Max(timestamp, e.TimestampQpc);
-                    return EventCodec.Normalize(new(e.SessionId, e.Process, e.ProducerProcessId, e.ThreadId, e.TimestampQpc,
-                        checked(++ordinal), e.SourceSequence, e.ActivityId, e.Identity, e.OwnedPayload), item.Event.Stream);
-                }).ToArray();
-                foreach (var source in sources)
-                {
-                    if (source.Envelope.Identity.ProviderId == EventCatalog.RuntimeProviderId && source.Envelope.Identity.EventId == 1)
-                    {
-                        var capabilities = EventCodec.ReadPayload<RuntimeCapabilitiesPayload>(source.Envelope);
-                        var producers = info.Producers.Where(p => p.ProviderId != source.Stream.ProviderId || p.Epoch != source.Stream.ProducerEpoch).ToList();
-                        if (producers.Count >= 128) throw new InvalidDataException("Producer metadata bound reached.");
-                        producers.Add(new(source.Stream.ProviderId, source.Stream.ProducerEpoch, 1, capabilities.Build, capabilities.Architecture, capabilities.Capabilities));
-                        info = info with { Producers = producers.AsReadOnly() };
-                    }
-                    if (EventCatalog.Get(source.Envelope.Identity.ProviderId, source.Envelope.Identity.EventId).PayloadType == typeof(LossPayload))
-                        Report(new(IngestionIssue.ProducerLoss, "Producer explicitly reported loss; affected projections require a new baseline."));
-                }
-                // A loss in this very batch must invalidate state before any processor sees it.
-                snapshot = health.Snapshot();
-                if (snapshot.Version != healthVersion)
-                {
-                    foreach (var processor in processors) processor.Invalidate(snapshot);
-                    healthVersion = snapshot.Version;
-                }
-                var quality = Partial(snapshot.HasContinuityFailure ? "Ingestion discontinuity; projections invalid until a proven baseline." : "Runtime observational/baseline coverage is not established.");
-                var context = new ProcessingContext(store.Scope, new(ordinal, timestamp), quality);
+                var budget = new ProjectionBudget(options.BatchBytes - batchBytes);
+                var context = new ProcessingContext(store.Scope, new(ordinal + sources.Count, batchTimestamp), quality, budget);
                 var changes = new List<ProjectionChange>();
-                var readOnlySources = Array.AsReadOnly(sources);
+                var readOnlySources = sources.AsReadOnly();
                 foreach (var processor in processors)
                 {
-                    var produced = processor.Process(readOnlySources, context);
-                    if (produced.Count > SessionWriter.MaximumBatchRecords - changes.Count) throw new InvalidDataException("Projection change count bound reached.");
-                    changes.AddRange(produced.Select(c => new ProjectionChange(c.SourceOrdinal,
-                        SessionWriter.Freeze(c.Value, new(store.Scope, context.BatchBoundary, quality)), c.Deleted)));
+                    if (budget.RemainingBytes <= BatchAccounting.ChangeHeaderBytes || budget.RemainingRecords == 0)
+                        throw new ProcessingLimitException();
+                    using var produced = processor.Process(readOnlySources, context).GetEnumerator();
+                    while (true)
+                    {
+                        if (budget.RemainingBytes <= BatchAccounting.ChangeHeaderBytes || budget.RemainingRecords == 0)
+                            throw new ProcessingLimitException();
+                        if (!produced.MoveNext()) break;
+                        var change = produced.Current;
+                        if (change.SourceOrdinal < ordinal + 1 || change.SourceOrdinal > context.BatchBoundary.IngestOrdinal)
+                            throw new InvalidDataException("Projection change belongs to another source batch.");
+                        var cap = (int)Math.Min(ProjectionBudget.MaximumRecordBytes, budget.RemainingBytes - BatchAccounting.ChangeHeaderBytes);
+                        _ = BatchAccounting.JsonBytes(change.Value, cap);
+                        var frozen = SessionWriter.Freeze(change.Value, new(store.Scope, context.BatchBoundary, quality));
+                        var bytes = BatchAccounting.JsonBytes(frozen, cap) + BatchAccounting.ChangeHeaderBytes;
+                        budget.Consume(bytes);
+                        batchBytes += bytes;
+                        changes.Add(new(change.SourceOrdinal, frozen, change.Deleted));
+                    }
                 }
-                var provenance = sources.Select((source, index) => new SourceProvenanceChange(source.Envelope.IngestOrdinal, incoming[index].Provenance)).ToArray();
-                var batch = new SessionBatch(readOnlySources, changes.AsReadOnly(), info, quality, Provenance: Array.AsReadOnly(provenance));
-                var batchBytes = sources.Sum(e => (long)EventCodec.Encode(e.Envelope).Length + 64) +
-                    changes.Sum(c => (long)Encoding.UTF8.GetByteCount(JsonSerializer.Serialize(c.Value, c.Value.GetType(), WireJson.Options))) +
-                    Encoding.UTF8.GetByteCount(SessionStore.EncodeBounded(info)) + Encoding.UTF8.GetByteCount(SessionStore.EncodeBounded(quality));
-                if (batchBytes > options.BatchBytes || !persistence.Add(batch, batchBytes, TimeSpan.FromMilliseconds(options.BacklogTimeoutMilliseconds)))
+                var batch = new SessionBatch(readOnlySources, changes.AsReadOnly(), batchInfo, quality, Provenance: provenance.AsReadOnly());
+                if (!persistence.Add(batch, batchBytes, TimeSpan.FromMilliseconds(options.BacklogTimeoutMilliseconds)))
                 {
                     StopAtLimit(IngestionIssue.PersistenceBacklog, "Bounded persistence backlog exceeded its size/deadline; uncommitted tail is incomplete.");
                     break;
                 }
-                Interlocked.Add(ref processed, sources.Length);
+                ordinal += sources.Count; timestamp = batchTimestamp; info = batchInfo;
+                lock (lifecycle)
+                    foreach (var source in sources)
+                        if (source.Envelope.Identity.ProviderId == EventCatalog.RuntimeProviderId && source.Envelope.Identity.EventId == 1)
+                            acceptedStreams[source.Stream] = true;
+                Interlocked.Add(ref processed, sources.Count);
             }
-            processingDrained.TrySetResult();
-            acquisitionDone.Wait();
-            if (info.Producers.Count == 0) Report(new(IngestionIssue.MissingMetadata, "No runtime capabilities/build metadata was received; independently enabled observations remain accepted."));
-            var finalHealth = health.Snapshot();
-            if (finalHealth.Version != healthVersion)
-                foreach (var processor in processors) processor.Invalidate(finalHealth);
+        }
+        catch (ProcessingLimitException)
+        {
+            StopAtLimit(IngestionIssue.PersistenceBacklog, "Owner input/metadata or incremental projection budget exceeded; uncommitted source batch is incomplete.");
         }
         catch (Exception error)
         {
             Report(new(IngestionIssue.SourceFailure, "Processing failed: " + error.GetType().Name));
             lock (lifecycle) Seal(SessionStatus.Failed, "Processing failed: " + error.GetType().Name);
         }
-        finally { persistence.Complete(); ownerDone.Set(); processingDrained.TrySetResult(); }
+        finally
+        {
+            processingDrained.TrySetResult();
+            acquisitionDone.Wait();
+            try
+            {
+                ProducerStreamKey[] missing;
+                lock (lifecycle) missing = acceptedStreams.Where(pair => !pair.Value).Select(pair => pair.Key).ToArray();
+                foreach (var stream in missing)
+                    Report(new(IngestionIssue.MissingMetadata, $"No capabilities/build metadata for accepted producer epoch {stream.ProducerEpoch:N}; independently enabled observations remain accepted.",
+                        stream.ProviderId, "ProducerEpoch/" + stream.ProducerEpoch.ToString("N"), stream.ProducerProcessId));
+                if (acceptedStreams.Count == 0 && info.Producers.Count == 0)
+                    Report(new(IngestionIssue.MissingMetadata, "No runtime capabilities/build metadata was received; independently enabled observations remain accepted."));
+                var finalHealth = health.Snapshot();
+                if (finalHealth.Version != healthVersion)
+                    foreach (var processor in processors) processor.Invalidate(finalHealth);
+            }
+            catch (Exception error)
+            {
+                Report(new(IngestionIssue.SourceFailure, "Final invalidation failed: " + error.GetType().Name));
+                lock (lifecycle) Seal(SessionStatus.Failed, "Final invalidation failed.");
+            }
+            finally { persistence.Complete(); ownerDone.Set(); }
+        }
+    }
+    private DataQuality BatchQuality(bool containsLoss) => Partial(containsLoss || health.Snapshot().HasContinuityFailure
+        ? "Ingestion discontinuity; projections invalid until a proven baseline." : "Runtime observational/baseline coverage is not established.");
+    private static bool IsLoss(NormalizedEvent source) =>
+        EventCatalog.Get(source.Envelope.Identity.ProviderId, source.Envelope.Identity.EventId).PayloadType == typeof(LossPayload);
+    private static SessionInfo IncludeCapabilities(SessionInfo metadata, NormalizedEvent source)
+    {
+        if (source.Envelope.Identity.ProviderId != EventCatalog.RuntimeProviderId || source.Envelope.Identity.EventId != 1) return metadata;
+        var capabilities = EventCodec.ReadPayload<RuntimeCapabilitiesPayload>(source.Envelope);
+        var producers = metadata.Producers.Where(p => p.ProviderId != source.Stream.ProviderId || p.Epoch != source.Stream.ProducerEpoch).ToList();
+        if (producers.Count >= 128) throw new ProcessingLimitException();
+        producers.Add(new(source.Stream.ProviderId, source.Stream.ProducerEpoch, 1, capabilities.Build, capabilities.Architecture, capabilities.Capabilities));
+        return metadata with { Producers = producers.AsReadOnly() };
     }
     private void Write()
     {
@@ -260,7 +354,7 @@ public sealed class ProcessingWorker : IAsyncDisposable
             while (persistence.Take(out var batch, out _))
             {
                 durable = writer.Commit(batch);
-                writer.CommitHealth(health.Snapshot());
+                writer.CommitHealth(health.Snapshot(), clocks: ClockSnapshot());
             }
             ownerDone.Wait();
             acquisitionDone.Wait();
@@ -272,7 +366,7 @@ public sealed class ProcessingWorker : IAsyncDisposable
                 { status = SessionStatus.Stopped; stopReason = "Finite source ended with ingestion loss/schema failures; recording is incomplete."; }
             }
             var terminal = info with { Status = status, StopReason = stopReason };
-            writer.CommitHealth(snapshot, terminal, Partial(stopReason ?? "Observation coverage is not established."));
+            writer.CommitHealth(snapshot, terminal, Partial(stopReason ?? "Observation coverage is not established."), ClockSnapshot());
         }
         catch (Exception error)
         {

@@ -9,6 +9,156 @@ namespace WinUIProfiler.Engine.Tests;
 public sealed class BackpressureTests
 {
     [Fact]
+    public async Task Accepted_epoch_tracking_stops_at_its_bound_and_retains_each_metadata_gap()
+    {
+        using var f = new StoreFixture();
+        using var store = f.Create();
+        await using var worker = new ProcessingWorker(store, f.Info);
+        var source = f.Batch(1, 1).Sources[0];
+        for (var index = 0; index < ProcessingWorker.MaximumAcceptedStreams; index++)
+        {
+            var next = EventCodec.Normalize(source.Envelope, new(source.Stream.ProviderId, source.Stream.ProducerProcessId, Guid.NewGuid()));
+            Assert.True(worker.TryEnqueue(new(next, new(f.Scope.Process, 10))));
+        }
+        var overflow = EventCodec.Normalize(source.Envelope, new(source.Stream.ProviderId, source.Stream.ProducerProcessId, Guid.NewGuid()));
+        Assert.False(worker.TryEnqueue(new(overflow, new(f.Scope.Process, 10))));
+        var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(20));
+        Assert.Equal(SessionStatus.StoppedAtLimit, result.Status);
+        Assert.Equal(ProcessingWorker.MaximumAcceptedStreams, result.Accepted);
+        Assert.Equal(result.Accepted, result.DurableBoundary.IngestOrdinal);
+        Assert.Equal(ProcessingWorker.MaximumAcceptedStreams, result.Health.Count(IngestionIssue.MissingMetadata));
+        Assert.Equal(ProcessingWorker.MaximumAcceptedStreams, store.ReadDiagnosticSamples().Count);
+    }
+
+    [Fact]
+    public async Task Oversized_first_owner_source_never_invokes_a_processor()
+    {
+        using var f = new StoreFixture();
+        using var store = f.Create();
+        var processor = new ThreadProcessor();
+        await using var worker = new ProcessingWorker(store, f.Info, new(BatchBytes: 1024), [processor]);
+        var identity = EventCatalog.Get(EventCatalog.RuntimeProviderId, 3).Identity;
+        var envelope = new EventEnvelope(f.Scope.SessionId, f.Scope.Process, 42, 7, 10, 1, 1, null, identity,
+            EventCodec.EncodePayload(new TypeResolvedPayload(f.Epoch, 1, new string('x', 3000)), f.Scope.Process));
+        Assert.True(worker.TryEnqueue(new(EventCodec.Normalize(envelope, new(identity.ProviderId, 42, f.Epoch)), new(f.Scope.Process, 10))));
+        worker.Complete(SourceCompletion.FiniteEnd);
+        var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.Equal(0, processor.Events);
+        Assert.Equal(new(0, 0), result.DurableBoundary);
+        Assert.Equal(SessionStatus.StoppedAtLimit, result.Status);
+    }
+
+    [Fact]
+    public async Task Projection_byte_exhaustion_stops_enumeration_and_remaining_processors()
+    {
+        using var f = new StoreFixture();
+        using var store = f.Create();
+        var first = new IncrementalProcessor(f);
+        var remaining = new ThreadProcessor();
+        await using var worker = new ProcessingWorker(store, f.Info, new(BatchBytes: 4096), [first, remaining]);
+        var source = f.Batch(1, 1).Sources[0];
+        Assert.True(worker.TryEnqueue(new(source, new(f.Scope.Process, 10))));
+        worker.Complete(SourceCompletion.FiniteEnd);
+        var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.Equal(1, first.Generated);
+        Assert.Equal(0, remaining.Events);
+        Assert.Equal(new(0, 0), result.DurableBoundary);
+        Assert.Equal(SessionStatus.StoppedAtLimit, result.Status);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task Owner_input_boundary_includes_exact_metadata_provenance_and_header_bytes(int adjustment)
+    {
+        using var f = new StoreFixture();
+        using var store = f.Create();
+        var identity = EventCatalog.Get(EventCatalog.RuntimeProviderId, 3).Identity;
+        var envelope = new EventEnvelope(f.Scope.SessionId, f.Scope.Process, 42, 7, 10, 1, 1, null, identity,
+            EventCodec.EncodePayload(new TypeResolvedPayload(f.Epoch, 1, new string('x', 700)), f.Scope.Process));
+        var source = EventCodec.Normalize(envelope, new(identity.ProviderId, 42, f.Epoch));
+        var provenance = new SourceProvenance(f.Scope.Process, 10, new(Guid.NewGuid(), 1, new(f.Info.QpcFrequency, f.Info.QpcFrequency)));
+        var quality = new DataQuality(MeasurementKind.Measured, CoverageState.Partial, "Runtime observational/baseline coverage is not established.");
+        int Bytes(object value) => System.Text.Encoding.UTF8.GetByteCount(System.Text.Json.JsonSerializer.Serialize(value, value.GetType(), WireJson.Options));
+        var exact = 32 + EventCodec.Encode(envelope).Length + Bytes(provenance) + Bytes(f.Info) + Bytes(quality);
+        Assert.True(exact >= 1024);
+        await using var worker = new ProcessingWorker(store, f.Info, new(BatchBytes: exact + adjustment));
+        Assert.True(worker.TryEnqueue(new(source, provenance)));
+        worker.Complete(SourceCompletion.FiniteEnd);
+        var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.Equal(adjustment == 0 ? 1 : 0, result.DurableBoundary.IngestOrdinal);
+        Assert.Equal(adjustment == 0 ? SessionStatus.Completed : SessionStatus.StoppedAtLimit, result.Status);
+    }
+
+    [Fact]
+    public async Task Projection_budget_is_shared_across_processors_and_single_record_is_capped()
+    {
+        foreach (var giant in new[] { false, true })
+        {
+            using var f = new StoreFixture();
+            using var store = f.Create();
+            var first = new IncrementalProcessor(f, 100, 1);
+            var second = new IncrementalProcessor(f, giant ? 70_000 : 3500);
+            var last = new ThreadProcessor();
+            await using var worker = new ProcessingWorker(store, f.Info, new(BatchBytes: giant ? 200_000 : 4096), [first, second, last]);
+            var source = f.Batch(1, 1).Sources[0];
+            Assert.True(worker.TryEnqueue(new(source, new(f.Scope.Process, 10))));
+            worker.Complete(SourceCompletion.FiniteEnd);
+            var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.Equal(1, first.Generated);
+            Assert.Equal(1, second.Generated);
+            Assert.Equal(0, last.Events);
+            Assert.Equal(new(0, 0), result.DurableBoundary);
+            Assert.Equal(SessionStatus.StoppedAtLimit, result.Status);
+        }
+    }
+
+    [Fact]
+    public async Task Incremental_projection_limit_preserves_the_previous_source_and_durable_boundary()
+    {
+        using var f = new StoreFixture();
+        using var store = f.Create();
+        var limited = new IncrementalProcessor(f, minimumOrdinal: 2);
+        var remaining = new ThreadProcessor();
+        await using var worker = new ProcessingWorker(store, f.Info, new(BatchItems: 1, BatchBytes: 4096), [limited, remaining]);
+        var first = f.Batch(1, 1).Sources[0];
+        Assert.True(worker.TryEnqueue(new(first, new(f.Scope.Process, 10))));
+        Assert.True(SpinWait.SpinUntil(() => store.Watermark.IngestOrdinal == 1, TimeSpan.FromSeconds(10)));
+        var second = f.Batch(2, 2).Sources[0];
+        Assert.True(worker.TryEnqueue(new(second, new(f.Scope.Process, 20))));
+        var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.Equal(1, limited.Generated);
+        Assert.Equal(1, remaining.Events);
+        Assert.Equal(new(1, 10), result.DurableBoundary);
+        Assert.Equal(SessionStatus.StoppedAtLimit, result.Status);
+        using var db = f.Raw();
+        Assert.Equal(1L, StoreFixture.Scalar(db, "SELECT count(*) FROM SourceEvents"));
+    }
+
+    private sealed class IncrementalProcessor(StoreFixture fixture, int textLength = 3500, int count = 20, long minimumOrdinal = 1) : IEventProcessor
+    {
+        internal int Generated;
+        public IEnumerable<ProjectionChange> Process(IReadOnlyList<NormalizedEvent> events, ProcessingContext context) =>
+            events[0].Envelope.IngestOrdinal < minimumOrdinal ? [] : new GeneratedChanges(() =>
+            {
+                Generated++;
+                var sample = (MetricSample)fixture.Batch(1, 1).Changes[0].Value;
+                return new(events[0].Envelope.IngestOrdinal, sample with { Source = new string('x', textLength) });
+            }, count);
+        public void Invalidate(HealthSnapshot health) { }
+    }
+    private sealed class GeneratedChanges(Func<ProjectionChange> next, int count) : IReadOnlyList<ProjectionChange>
+    {
+        public int Count => count;
+        public ProjectionChange this[int index] => next();
+        public IEnumerator<ProjectionChange> GetEnumerator()
+        {
+            for (var index = 0; index < Count; index++) yield return next();
+        }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    [Fact]
     public async Task Distinct_unknown_schema_diagnostics_are_bounded_durable_and_stop_instead_of_eviction()
     {
         using var f = new StoreFixture();
@@ -298,7 +448,7 @@ public sealed class BackpressureTests
         internal int Events;
         internal readonly List<IReadOnlyList<NormalizedEvent>> Batches = [];
         internal HealthSnapshot? Latest;
-        public IReadOnlyList<ProjectionChange> Process(IReadOnlyList<NormalizedEvent> events, ProcessingContext context)
+        public IEnumerable<ProjectionChange> Process(IReadOnlyList<NormalizedEvent> events, ProcessingContext context)
         {
             if (ThreadId == 0) ThreadId = Environment.CurrentManagedThreadId;
             Assert.Equal(ThreadId, Environment.CurrentManagedThreadId);

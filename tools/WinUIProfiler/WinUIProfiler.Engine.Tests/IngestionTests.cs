@@ -10,10 +10,97 @@ using Xunit.Abstractions;
 
 namespace WinUIProfiler.Engine.Tests;
 
+[Collection("P03 native ETW")]
 public sealed class IngestionTests(ITestOutputHelper output)
 {
     internal static string Root => Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\.."));
     internal static string Harness => Path.Combine(Root, @"BuildOutput\ProfilerHarness\x64\Release\ProfilerInstrumentationHarness.exe");
+
+    [Fact]
+    public async Task Mixed_announced_and_unannounced_runtime_epochs_preserve_observations_and_specific_metadata_gap()
+    {
+        using var fixtures = new NativeFixtures();
+        var records = fixtures.Read();
+        var capabilities = records.First(r => r.Name == "RuntimeCapabilities");
+        var unannounced = records.First(r => r.Name == "TypeResolved");
+        var fields = unannounced.Fields.ToDictionary();
+        var epoch = Guid.NewGuid();
+        fields["ProducerEpoch"] = epoch;
+        unannounced = unannounced.WithFields(fields);
+        var scope = new SessionScope(Guid.NewGuid(), capabilities.ReadRuntimeTarget());
+        var info = new SessionInfo(SessionMode.Offline, SessionStatus.Recording, Stopwatch.Frequency, null, [], null);
+        using var store = SessionStore.Create(Path.Combine(fixtures.DirectoryPath, "epochs.sqlite"), scope, info, StoreFixture.Partial);
+        await using var worker = new ProcessingWorker(store, info);
+        var decoder = new EventDecoder(scope, new(Stopwatch.Frequency, Stopwatch.Frequency));
+        Assert.True(worker.TryEnqueue(decoder.Decode(capabilities)!));
+        Assert.True(worker.TryEnqueue(decoder.Decode(unannounced)!));
+        worker.Complete(SourceCompletion.FiniteEnd);
+        var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.Equal(2, result.DurableBoundary.IngestOrdinal);
+        Assert.Equal(1, result.Health.Count(IngestionIssue.MissingMetadata));
+        Assert.False(result.Health.HasContinuityFailure);
+        var gap = Assert.Single(store.ReadDiagnosticSamples(), row => row.Diagnostic.Issue == IngestionIssue.MissingMetadata);
+        Assert.Contains(epoch.ToString("N"), gap.Diagnostic.Reason);
+        Assert.Equal(EventCatalog.RuntimeProviderId, gap.Diagnostic.ProviderId);
+        Assert.Equal(unannounced.ProducerProcessId, gap.Diagnostic.ProducerProcessId);
+    }
+
+    [Fact]
+    public async Task Foreign_runtime_schema_failures_cannot_consume_selected_health_or_diagnostic_budget()
+    {
+        using var fixtures = new NativeFixtures();
+        var selected = fixtures.Read().First(r => r.Name == "Frame");
+        var target = selected.ReadRuntimeTarget();
+        var scope = new SessionScope(Guid.NewGuid(), target);
+        var info = new SessionInfo(SessionMode.Offline, SessionStatus.Recording, Stopwatch.Frequency, null, [], null);
+        using var store = SessionStore.Create(Path.Combine(fixtures.DirectoryPath, "isolation.sqlite"), scope, info, StoreFixture.Partial);
+        await using var worker = new ProcessingWorker(store, info);
+        var decoder = new EventDecoder(scope, new(Stopwatch.Frequency, Stopwatch.Frequency));
+        var recycledPrefix = selected.RawPayload.ToArray();
+        System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(recycledPrefix.AsSpan(32), target.CreationTimeFileTime!.Value + 1);
+        Assert.True(decoder.IsProvablyForeignRuntime(selected.ProviderId, selected.ProducerProcessId, recycledPrefix));
+        Assert.False(decoder.IsProvablyForeignRuntime(selected.ProviderId, selected.ProducerProcessId, recycledPrefix.AsSpan(0, 40)));
+        recycledPrefix[2] = 255;
+        Assert.False(decoder.IsProvablyForeignRuntime(selected.ProviderId, selected.ProducerProcessId, recycledPrefix));
+        Assert.True(decoder.IsProvablyForeignRuntime(selected.ProviderId, selected.ProducerProcessId + 1, []));
+        Assert.False(decoder.IsProvablyForeignRuntime(EventCatalog.CollectorProviderId, selected.ProducerProcessId + 1, []));
+        Assert.False(decoder.IsProvablyForeignRuntime(EventCatalog.KernelProcessProviderId, selected.ProducerProcessId + 1, []));
+        for (var index = 0; index < 130; index++)
+        {
+            var foreign = new NativeRecord(selected.ProviderId, "Future-" + index, selected.Level, selected.Keywords,
+                selected.ProducerProcessId + 1, selected.ThreadId, selected.TimestampQpc, null,
+                new Dictionary<string, object>(), selected.RawPayload[..10]);
+            Assert.Null(decoder.Decode(foreign));
+            var unsupported = selected.Fields.ToDictionary();
+            unsupported["EventSchemaVersion"] = (byte)255;
+            Assert.Null(decoder.Decode(new(selected.ProviderId, selected.Name, selected.Level, selected.Keywords,
+                selected.ProducerProcessId + 1, selected.ThreadId, selected.TimestampQpc, null, unsupported, selected.RawPayload)));
+            var truncated = selected.Fields.ToDictionary();
+            truncated.Remove("Attempt");
+            Assert.Null(decoder.Decode(new(selected.ProviderId, selected.Name, selected.Level, selected.Keywords,
+                selected.ProducerProcessId + 1, selected.ThreadId, selected.TimestampQpc, null, truncated, selected.RawPayload[..10])));
+            var fields = selected.Fields.ToDictionary();
+            var otherInstance = ((IReadOnlyDictionary<string, object>)fields["TargetProcess"]).ToDictionary();
+            otherInstance["CreationTimeFileTime"] = target.CreationTimeFileTime!.Value + 1;
+            fields["TargetProcess"] = otherInstance;
+            fields.Remove("Attempt");
+            Assert.Null(decoder.Decode(selected.WithFields(fields)));
+            Assert.True(worker.TryEnqueue(decoder.Decode(selected)!));
+        }
+        worker.Complete(SourceCompletion.FiniteEnd);
+        var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(20));
+        Assert.Equal(130, result.DurableBoundary.IngestOrdinal);
+        Assert.False(result.Health.HasContinuityFailure);
+        Assert.Equal(0, result.Health.Count(IngestionIssue.UnknownSchema));
+        Assert.Equal(0, result.Health.Count(IngestionIssue.DecodeFailure));
+        Assert.Equal(0, result.Health.Count(IngestionIssue.DiagnosticLimit));
+        var unattributable = new NativeRecord(selected.ProviderId, "Unknown-selected", selected.Level, selected.Keywords,
+            selected.ProducerProcessId, selected.ThreadId, selected.TimestampQpc, null, new Dictionary<string, object>());
+        Assert.Throws<InvalidDataException>(() => decoder.Decode(unattributable));
+        var unsupportedSelected = selected.Fields.ToDictionary();
+        unsupportedSelected["EventSchemaVersion"] = (byte)255;
+        Assert.Throws<NotSupportedException>(() => decoder.Decode(selected.WithFields(unsupportedSelected)));
+    }
 
     [Fact]
     public void Owned_native_stop_returns_final_transport_statistics()
@@ -242,7 +329,7 @@ public sealed class IngestionTests(ITestOutputHelper output)
     private sealed class SignalProcessor(string eventName) : IEventProcessor
     {
         internal TaskCompletionSource Seen { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public IReadOnlyList<ProjectionChange> Process(IReadOnlyList<NormalizedEvent> events, ProcessingContext context)
+        public IEnumerable<ProjectionChange> Process(IReadOnlyList<NormalizedEvent> events, ProcessingContext context)
         {
             if (events.Any(e => e.Envelope.Identity.Name == eventName)) Seen.TrySetResult();
             return [];

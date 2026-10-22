@@ -7,7 +7,7 @@ using WinUIProfiler.Engine.Query;
 
 namespace WinUIProfiler.Engine.Storage;
 
-public sealed class SessionStore : IDisposable
+public sealed partial class SessionStore : IDisposable
 {
     private const int ApplicationId = 1465208912;
     private const int FailureBytes = 4096;
@@ -59,6 +59,7 @@ public sealed class SessionStore : IDisposable
             using var reader = new StreamReader(stream);
             Execute(db, reader.ReadToEnd(), transaction);
             UpgradeIngestionSchema(db, transaction);
+            UpgradeClockSchema(db, transaction);
             Execute(db, "INSERT INTO Sessions VALUES($id,$scope,$key,$hash)", transaction,
                 ("$id", scope.SessionId.ToString("N")), ("$scope", Encode(scope)), ("$key", RandomNumberGenerator.GetBytes(32)), ("$hash", SchemaHash(db, transaction)));
             Execute(db, "INSERT INTO ProcessInstances VALUES($instance,$session,$pid,$creation)", transaction,
@@ -80,10 +81,11 @@ public sealed class SessionStore : IDisposable
         try
         {
             db = Connect(path, false); ValidateDatabase(db); ConfigureWriter(db, pages);
-            if (SchemaVersion(db) == 1)
+            if (SchemaVersion(db) < 3)
             {
                 using var transaction = db.BeginTransaction();
-                UpgradeIngestionSchema(db, transaction);
+                if (SchemaVersion(db, transaction) == 1) UpgradeIngestionSchema(db, transaction);
+                UpgradeClockSchema(db, transaction);
                 Execute(db, "UPDATE Sessions SET SchemaHash=$hash", transaction, ("$hash", SchemaHash(db, transaction)));
                 transaction.Commit();
             }
@@ -195,8 +197,8 @@ public sealed class SessionStore : IDisposable
             using var transaction = db.BeginTransaction(deferred: true);
             using var version = Command(db, "PRAGMA user_version", transaction);
             var schemaVersion = Convert.ToInt32(version.ExecuteScalar());
-            if (schemaVersion > 2) throw new NotSupportedException($"Future session schema {schemaVersion}.");
-            if (schemaVersion is not (1 or 2)) throw new InvalidDataException($"Unsupported session schema {schemaVersion}.");
+            if (schemaVersion > 3) throw new NotSupportedException($"Future session schema {schemaVersion}.");
+            if (schemaVersion is not (1 or 2 or 3)) throw new InvalidDataException($"Unsupported session schema {schemaVersion}.");
             using var app = Command(db, "PRAGMA application_id", transaction);
             if (Convert.ToInt32(app.ExecuteScalar()) != ApplicationId) throw new InvalidDataException("Not a WinUI profiler session.");
             using var integrity = Command(db, "PRAGMA quick_check", transaction);
@@ -207,6 +209,7 @@ public sealed class SessionStore : IDisposable
             using var violations = foreignKeys.ExecuteReader();
             if (violations.Read()) throw new InvalidDataException("Session foreign-key state is corrupt.");
             var checkpoint = ReadCheckpoint(db, null, transaction);
+            if (schemaVersion >= 3) _ = ReadClocks(db, checkpoint.Info.QpcFrequency, transaction);
             if (schemaVersion >= 2 && ReadTerminal(db, transaction) is { } terminal && terminal.Watermark != checkpoint.Watermark)
                 throw new InvalidDataException("Terminal health does not match the durable source boundary.");
             using var identity = Command(db, """
