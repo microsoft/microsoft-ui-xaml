@@ -90,7 +90,6 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
     }
     // </snippet>
 
-    // <snippet>
     // ---- Header lines -------------------------------------------------------------------
 
     private void OnHeaderLinesChanged(object sender, SelectionChangedEventArgs e)
@@ -101,17 +100,20 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
         }
 
         var mode = SampleShaping.SelectedTag(HeaderLinesSelector, "default");
-        SetHeaderLinesResources(mode == "brush"); // snippet:skip
-        PeopleTable.ColumnHeaderStyle = mode == "style"
-            ? (Style)Resources["NoColumnSeparatorsHeaderStyle"]
-            : null;
-
+        SetHeaderLinesResources(mode == "brush");
+        SetColumnSeparatorsHidden(mode == "style");
         SetLastAction(mode switch
         {
             "brush" => "Header lines -> hidden: column separators and the line under the header row",
             "style" => "Header lines -> column separators hidden; the line under the header row stays",
             _ => "Header lines -> shown",
         });
+    }
+
+    // <snippet>
+    private void SetColumnSeparatorsHidden(bool hidden)
+    {
+        PeopleTable.ColumnHeaderStyle = hidden ? (Style)Resources["NoColumnSeparatorsHeaderStyle"] : null;
     }
     // </snippet>
 

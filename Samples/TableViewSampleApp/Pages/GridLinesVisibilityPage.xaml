@@ -18,15 +18,14 @@
         </Style>
         <!-- /snippet -->
 
-        <!-- snippet -->
-        <!-- Hides every header line. In an app, put this brush directly in <tv:TableView.Resources>;
-             the page merges it at runtime only so the option can be switched. -->
+        <!-- Runtime copy of the override shown in the table snippet, for the Header lines option. -->
         <ResourceDictionary x:Key="HiddenHeaderLinesResources">
             <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="Transparent"/>
         </ResourceDictionary>
 
-        <!-- Copy of the default TableViewColumnHeader template in TableView.xaml without the optional
-             PART_GridLine; re-copy it when that template changes. -->
+        <!-- snippet -->
+        <!-- Hides the column separators only. Copy of the default TableViewColumnHeader template in
+             TableView.xaml without the optional PART_GridLine; re-copy it when that template changes. -->
         <Style x:Key="NoColumnSeparatorsHeaderStyle" TargetType="tv:TableViewColumnHeader">
             <Setter Property="Template">
                 <Setter.Value>
@@ -132,6 +131,12 @@
                 IsReadOnly="True"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
+                <!-- To hide every header line (column separators and bottom rule), override the brush
+                     both use; the Header lines option switches this at runtime:
+                <tv:TableView.Resources>
+                    <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="Transparent"/>
+                </tv:TableView.Resources>
+                -->
                 <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
                 <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
                 <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
@@ -167,7 +172,6 @@
                 <controls:RailSection
                     Header="Header lines"
                     Description="The header separators are always drawn; GridLinesVisibility affects only the body. Hide all header lines sets TabularSurfaceHeaderSeparatorBrush to Transparent in the table's Resources, which removes the column separators and the bottom rule. An app declares that brush in XAML; to switch it at runtime this page re-applies the table's template, which rebuilds the rows. Hide column separators sets ColumnHeaderStyle to a header template without PART_GridLine, so the bottom rule stays.">
-                    <!-- snippet -->
                     <ComboBox
                         x:Name="HeaderLinesSelector"
                         AutomationProperties.AutomationId="GridLinesVisibilityHeaderLinesSelector"
@@ -179,7 +183,6 @@
                         <ComboBoxItem Content="Hide all header lines (brush override)" Tag="brush"/>
                         <ComboBoxItem Content="Hide column separators (header Style)" Tag="style"/>
                     </ComboBox>
-                    <!-- /snippet -->
                 </controls:RailSection>
 
                 <controls:RailSection

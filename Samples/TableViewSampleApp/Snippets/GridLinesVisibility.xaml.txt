@@ -7,14 +7,8 @@
 
 <!-- … -->
 
-<!-- Hides every header line. In an app, put this brush directly in <tv:TableView.Resources>;
-     the page merges it at runtime only so the option can be switched. -->
-<ResourceDictionary x:Key="HiddenHeaderLinesResources">
-    <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="Transparent"/>
-</ResourceDictionary>
-
-<!-- Copy of the default TableViewColumnHeader template in TableView.xaml without the optional
-     PART_GridLine; re-copy it when that template changes. -->
+<!-- Hides the column separators only. Copy of the default TableViewColumnHeader template in
+     TableView.xaml without the optional PART_GridLine; re-copy it when that template changes. -->
 <Style x:Key="NoColumnSeparatorsHeaderStyle" TargetType="tv:TableViewColumnHeader">
     <Setter Property="Template">
         <Setter.Value>
@@ -110,6 +104,12 @@
     IsReadOnly="True"
     VerticalAlignment="Stretch"
     MinHeight="320">
+    <!-- To hide every header line (column separators and bottom rule), override the brush
+         both use; the Header lines option switches this at runtime:
+    <tv:TableView.Resources>
+        <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="Transparent"/>
+    </tv:TableView.Resources>
+    -->
     <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
     <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
     <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
@@ -131,18 +131,4 @@
     <ComboBoxItem Content="Horizontal" Tag="Horizontal"/>
     <ComboBoxItem Content="Vertical" Tag="Vertical"/>
     <ComboBoxItem Content="All (default)" Tag="All"/>
-</ComboBox>
-
-<!-- … -->
-
-<ComboBox
-    x:Name="HeaderLinesSelector"
-    AutomationProperties.AutomationId="GridLinesVisibilityHeaderLinesSelector"
-    Header="Header lines"
-    SelectedIndex="0"
-    SelectionChanged="OnHeaderLinesChanged"
-    HorizontalAlignment="Stretch">
-    <ComboBoxItem Content="Shown (default)" Tag="default"/>
-    <ComboBoxItem Content="Hide all header lines (brush override)" Tag="brush"/>
-    <ComboBoxItem Content="Hide column separators (header Style)" Tag="style"/>
 </ComboBox>

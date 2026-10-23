@@ -35,19 +35,9 @@ private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
 
 // …
 
-// ---- Header lines -------------------------------------------------------------------
-
-private void OnHeaderLinesChanged(object sender, SelectionChangedEventArgs e)
+private void SetColumnSeparatorsHidden(bool hidden)
 {
-    if (PeopleTable is null || HeaderLinesText is null)
-    {
-        return;
-    }
-
-    var mode = SampleShaping.SelectedTag(HeaderLinesSelector, "default");
-    PeopleTable.ColumnHeaderStyle = mode == "style"
-        ? (Style)Resources["NoColumnSeparatorsHeaderStyle"]
-        : null;
+    PeopleTable.ColumnHeaderStyle = hidden ? (Style)Resources["NoColumnSeparatorsHeaderStyle"] : null;
 }
 
 // …
