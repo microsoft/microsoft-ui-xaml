@@ -828,6 +828,7 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottomImpl()
 void TeachingTip::OnIsOpenChanged()
 {
     ++m_unloadCloseGeneration;
+    CaptureTargetDataContext();
     if (m_ignoreNextIsOpenChanged) {
         m_ignoreNextIsOpenChanged = false;
     }
@@ -1433,7 +1434,15 @@ void TeachingTip::CloseIfUnloaded(uint32_t generation)
     }
 
     auto const target = m_target.get();
-    if (IsLoaded() && (!target || target.IsLoaded()))
+    auto const xamlRoot = XamlRoot();
+    auto const popup = m_popup.get();
+    // Keep the tip open only if the tip and its target are both back in the same XamlRoot as the tip's popup (the popup
+    // can't move to another window) and the target still shows the same data. An ItemsRepeater (for example
+    // NavigationView's shared NavigationViewItem pool) can hand the same container to a different item.
+    const bool tipIsBack = IsLoaded() && xamlRoot && (!popup || popup.XamlRoot() == xamlRoot);
+    const bool targetIsBack = !target ||
+        (target.IsLoaded() && target.XamlRoot() == xamlRoot && IsSameDataContext(target.DataContext(), m_targetDataContext.get()));
+    if (tipIsBack && targetIsBack)
     {
         // The element was only moved; keep the tip open and follow the target to its new position.
         RepositionPopup();
@@ -1442,6 +1451,26 @@ void TeachingTip::CloseIfUnloaded(uint32_t generation)
 
     IsOpen(false);
     ClosePopup();
+}
+
+void TeachingTip::CaptureTargetDataContext()
+{
+    auto const target = m_target.get();
+    m_targetDataContext.set(IsOpen() && target ? target.DataContext() : nullptr);
+}
+
+bool TeachingTip::IsSameDataContext(const winrt::IInspectable& a, const winrt::IInspectable& b)
+{
+    if (a == b)
+    {
+        return true;
+    }
+    // Strings (for example a MenuItemsSource of strings) can come back as a new box on each read, so compare them by value.
+    auto const aValue = a.try_as<winrt::IPropertyValue>();
+    auto const bValue = b.try_as<winrt::IPropertyValue>();
+    return aValue && bValue &&
+        aValue.Type() == winrt::PropertyType::String && bValue.Type() == winrt::PropertyType::String &&
+        aValue.GetString() == bValue.GetString();
 }
 
 void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
@@ -1584,6 +1613,7 @@ void TeachingTip::OnTargetChanged()
 
     auto const target = Target();
     m_target.set(target);
+    CaptureTargetDataContext();
 
     bool isTargetLoaded = false;
 
