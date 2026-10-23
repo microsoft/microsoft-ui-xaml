@@ -948,10 +948,12 @@ public sealed partial class MainWindow : Window
         DetailEventCountText.Text = $"{node.EventHistory.Count} event(s) recorded";
         DetailHistoryList.ItemsSource = node.EventHistory;
 
-        // Right panel: WUC IVisual properties (only WucVisual nodes carry these).
-        if (node.Kind == TreeNodeKind.WucVisual && node.VisualProperties != null)
+        // Right panel: WUC IVisual properties (only WucVisual nodes carry these). Rendered on each
+        // read, so read once.
+        var visualProperties = node.Kind == TreeNodeKind.WucVisual ? node.VisualProperties : null;
+        if (visualProperties != null)
         {
-            DetailPropertiesList.ItemsSource = node.VisualProperties.ToRows();
+            DetailPropertiesList.ItemsSource = visualProperties.ToRows();
             DetailPropertiesList.Visibility = Visibility.Visible;
             DetailPropertiesEmpty.Visibility = Visibility.Collapsed;
         }

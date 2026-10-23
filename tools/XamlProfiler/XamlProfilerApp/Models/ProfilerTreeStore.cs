@@ -688,16 +688,16 @@ public class ProfilerTreeStore
     /// <summary>
     /// Connect a child IVisual under a parent IVisual (the producer fires this
     /// at InsertAtTop/Bottom/Above/Below and the comp-node spine builders). The
-    /// child node is (re)stamped with its type, parsed properties and owner comp
+    /// child node is (re)stamped with its type, property bag and owner comp
     /// node, then reparented using the same get-or-create + EnsureRooted pattern
     /// as the other trees, so events can arrive in any order.
     /// </summary>
-    public void AddWucChild(ulong parentId, ulong childId, ulong ownerCompNodeId, int index, string? visualType, string? properties)
+    public void AddWucChild(ulong parentId, ulong childId, ulong ownerCompNodeId, int index, string? visualType, WucVisualPropertyBag? bag)
     {
         var parent = GetOrCreateWucNode(parentId);
         var child = GetOrCreateWucNode(childId);
 
-        ApplyWucPayload(child, visualType, properties);
+        ApplyWucPayload(child, visualType, bag);
         SetWucOwner(child, ownerCompNodeId);
 
         RemoveFromCurrentParent(child, WucVisualRoots);
@@ -743,10 +743,10 @@ public class ProfilerTreeStore
     /// target → root mapping so a later <see cref="ClearWucRoot"/> (which only
     /// carries the target id) can find and drop the root subtree.
     /// </summary>
-    public void SetWucRoot(ulong visualId, ulong targetId, ulong ownerCompNodeId, string? visualType, string? properties)
+    public void SetWucRoot(ulong visualId, ulong targetId, ulong ownerCompNodeId, string? visualType, WucVisualPropertyBag? bag)
     {
         var node = GetOrCreateWucNode(visualId);
-        ApplyWucPayload(node, visualType, properties);
+        ApplyWucPayload(node, visualType, bag);
         SetWucOwner(node, ownerCompNodeId);
         node.IslandTargetId = targetId;
         node.DisplayName = $"{(string.IsNullOrEmpty(visualType) ? "IVisual" : visualType)} 0x{visualId:X} [root → 0x{targetId:X}]";
@@ -777,10 +777,10 @@ public class ProfilerTreeStore
             node.RecordEvent(eventName, summary);
     }
 
-    private static void ApplyWucPayload(TreeNode node, string? visualType, string? properties)
+    private static void ApplyWucPayload(TreeNode node, string? visualType, WucVisualPropertyBag? bag)
     {
         if (!string.IsNullOrEmpty(visualType)) node.VisualType = visualType;
-        if (!string.IsNullOrEmpty(properties)) node.VisualProperties = WucVisualProperties.Parse(properties);
+        if (bag != null) node.VisualPropertyBag = bag;
 
         var typeName = string.IsNullOrEmpty(node.VisualType) ? "IVisual" : node.VisualType;
         var owner = node.LinkedCompNodeId.GetValueOrDefault();

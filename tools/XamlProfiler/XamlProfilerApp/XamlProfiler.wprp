@@ -16,7 +16,9 @@
       </Keywords>
     </EventProvider>
 
-    <!-- Also capture the existing Microsoft-Windows-XAML provider for reference -->
+    <!-- Microsoft-Windows-XAML. Its ElementSetNameInfo event (213) carries the x:Name that ElementEnteredTree
+         doesn't, and ElementCreatedInfo (61) marks new elements; both are in the Detailed keyword (0x1). The
+         wider mask also records the provider's other events for reference. -->
     <EventProvider Id="EP_MicrosoftWindowsXaml" Name="531A35AB-63CE-4BCF-AA98-F88C7A89E455" Level="5">
       <Keywords>
         <Keyword Value="0xFFFF" />

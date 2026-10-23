@@ -269,11 +269,26 @@ public class TreeNode : INotifyPropertyChanged
     public ulong? LinkedCompNodeId { get; set; }
 
     /// <summary>
-    /// For a <see cref="TreeNodeKind.WucVisual"/> node: the parsed WUC IVisual
-    /// property payload (offset/size/opacity/transform/brush/clip/shadow...).
-    /// Null for the other tree kinds.
+    /// For a <see cref="TreeNodeKind.WucVisual"/> node: the visual's latest WUC properties, kept up
+    /// to date by the granular WucVisual*Changed events. Null for the other tree kinds.
     /// </summary>
-    public WucVisualProperties? VisualProperties { get; set; }
+    public WucVisualPropertyBag? VisualPropertyBag { get; set; }
+
+    /// <summary>
+    /// For a <see cref="TreeNodeKind.WucVisual"/> node: the visual's current properties
+    /// (offset/size/opacity/transform/brush/clip/shadow...), rendered from
+    /// <see cref="VisualPropertyBag"/> on each read. Null for the other tree kinds.
+    /// </summary>
+    public WucVisualProperties? VisualProperties
+    {
+        get
+        {
+            var bag = VisualPropertyBag;
+            if (bag == null) return null;
+            var kind = bag.Kind != WucVisualKind.Unknown ? bag.Kind : WucVisualPropertyBag.KindFromTypeName(VisualType);
+            return WucVisualProperties.Parse(bag.ToPropertiesString(kind, Children.Count));
+        }
+    }
 
     /// <summary>
     /// For a WucVisual node: the concrete visual class name (SpriteVisual,

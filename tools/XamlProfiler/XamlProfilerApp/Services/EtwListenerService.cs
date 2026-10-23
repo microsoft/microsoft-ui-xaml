@@ -2,29 +2,23 @@ using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Session;
 using Microsoft.UI.Dispatching;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using XamlProfiler.Models;
 
 namespace XamlProfiler.Services;
 
 /// <summary>
-/// Real-time ETW listener that subscribes to the XamlProfilerTracing provider
+/// Real-time ETW listener that subscribes to the XamlProfilerTracing provider (plus the two
+/// Microsoft-Windows-XAML events that carry x:Name, see <see cref="ProfilerProviders"/>)
 /// and dispatches tree mutations to the ProfilerTreeStore on the UI thread.
 /// The session enables only the tree keyword groups the views consume, and when the
 /// target is known up front it is scoped to that executable (or PID), so other WinUI
-/// processes on the machine don't turn the instrumentation on.
+/// processes on the machine don't turn the instrumentation on. Events are put back in
+/// timestamp order (<see cref="EventReorderBuffer{T}"/>) before they reach the router, so
+/// the trees lag the target by about <see cref="ReorderHoldBack"/>.
 /// </summary>
 public sealed class EtwListenerService : IDisposable
 {
-    // Must match the provider defined in XamlProfilerTracing.cpp ("Microsoft-Windows-XAML-Profiler"),
-    // whose GUID is the EventSource name hash of the provider name.
-    private static readonly Guid XamlProfilerProviderGuid =
-        new("26f28a5c-7d30-54c5-40f4-fff6d3beda7d");
-
-    // XamlProfilerKeywords (XamlProfilerTracing.h): XamlTree (0x01) | CompTree (0x02) | WucTree (0x04).
-    // The router only consumes the tree events, so the surface, texture, heap-snapshot and
-    // GPU-snapshot groups (and the work behind them) stay off in the target.
-    private const ulong TreeKeywords = 0x01 | 0x02 | 0x04;
-
     private const string SessionName = "XamlProfilerSession";
 
     // Batching: events arrive on the ETW pump thread far faster than the UI
@@ -33,6 +27,10 @@ public sealed class EtwListenerService : IDisposable
     // invalidation, keeping the UI thread responsive.
     private const int FlushIntervalMs = 50;
     private const int MaxBatchSize = 500;
+
+    // How long each event is held for reordering. ETW flushes a real-time session's partly
+    // filled buffers about once a second, so that's how late an event can arrive.
+    private static readonly TimeSpan ReorderHoldBack = TimeSpan.FromSeconds(1.5);
 
     private TraceEventSession? _session;
     private ETWTraceEventSource? _source;
@@ -45,7 +43,15 @@ public sealed class EtwListenerService : IDisposable
     private volatile int _targetProcessId;
     // File name (with extension, no path) of the process to launch; null when unknown.
     private readonly string? _targetExecutableName;
-    private readonly ConcurrentQueue<(string name, object?[] payload)> _pending = new();
+    // Captured on the ETW pump thread: the event, its ETW timestamp (100 ns ticks) and when it
+    // arrived (Stopwatch ticks).
+    private readonly ConcurrentQueue<(EtwEvent Event, long Timestamp, long Arrival)> _pending = new();
+    // UI thread only.
+    private readonly EventReorderBuffer<EtwEvent> _reorder =
+        new((long)(ReorderHoldBack.TotalSeconds * Stopwatch.Frequency));
+    private readonly List<EtwEvent> _released = new();
+    // Events held in _reorder, published for ScheduleFlush on the timer thread.
+    private volatile int _held;
     private System.Threading.Timer? _flushTimer;
     private int _flushScheduled;   // 0 = no flush in flight, 1 = one queued on dispatcher
     private bool _isRunning;
@@ -81,27 +87,21 @@ public sealed class EtwListenerService : IDisposable
     public void SetTargetProcess(int processId) => _targetProcessId = processId;
 
     /// <summary>
-    /// Re-enables the provider in the running session for one process, or for all processes
+    /// Re-enables the providers in the running session for one process, or for all processes
     /// when <paramref name="processId"/> is 0, replacing the executable-name scope given at
     /// construction, and narrows the consumer-side filter to match. Used when the process that
     /// hosts XAML doesn't run the executable the session was scoped to, so ETW never enabled the
-    /// provider in it. That process's events from before this call were not captured.
-    /// Returns false if the provider couldn't be re-enabled.
+    /// providers in it. That process's events from before this call were not captured.
+    /// Returns false if the providers couldn't be re-enabled.
     /// </summary>
     public bool RescopeToProcess(int processId)
     {
         _targetProcessId = processId;
         if (_session == null || !_isRunning) return false;
 
-        var options = new TraceEventProviderOptions();
-        if (processId != 0)
-        {
-            options.ProcessIDFilter = new List<int> { processId };
-        }
-
         try
         {
-            _session.EnableProvider(XamlProfilerProviderGuid, TraceEventLevel.Verbose, TreeKeywords, options);
+            ProfilerProviders.Enable(_session, null, processId);
             return true;
         }
         catch (Exception ex)
@@ -126,17 +126,14 @@ public sealed class EtwListenerService : IDisposable
             };
 
             // Scope filter, applied by ETW in the target processes: only processes that match
-            // enable the provider. The consumer-side PID check in OnEvent still applies.
-            var options = new TraceEventProviderOptions();
+            // enable the providers. The consumer-side PID check in OnEvent still applies.
             string scopeInfo;
             if (_targetExecutableName != null)
             {
-                options.ProcessNameFilter = new List<string> { _targetExecutableName };
                 scopeInfo = $" ({_targetExecutableName})";
             }
             else if (_targetProcessId != 0)
             {
-                options.ProcessIDFilter = new List<int> { _targetProcessId };
                 scopeInfo = $" (PID: {_targetProcessId})";
             }
             else
@@ -144,7 +141,7 @@ public sealed class EtwListenerService : IDisposable
                 scopeInfo = " (all processes)";
             }
 
-            _session.EnableProvider(XamlProfilerProviderGuid, TraceEventLevel.Verbose, TreeKeywords, options);
+            ProfilerProviders.Enable(_session, _targetExecutableName, _targetProcessId);
 
             StatusChanged?.Invoke($"Session started{scopeInfo} — waiting for events...");
 
@@ -185,6 +182,7 @@ public sealed class EtwListenerService : IDisposable
         }
     }
 
+    /// <summary>Stops the session and applies every event still queued or held. Call on the UI thread.</summary>
     public void Stop()
     {
         if (!_isRunning) return;
@@ -196,8 +194,9 @@ public sealed class EtwListenerService : IDisposable
         _session?.Stop();
         _processingThread?.Join(2000);
 
-        // Final drain so events captured right before stop still reach the UI.
-        ScheduleFlush();
+        // Final drain so events captured right before stop still reach the UI, including
+        // those still held for reordering.
+        FlushPending(drainAll: true);
 
         StatusChanged?.Invoke("Session stopped.");
     }
@@ -215,18 +214,13 @@ public sealed class EtwListenerService : IDisposable
         // Reading evt.PayloadValue / evt.EventName from the dispatcher lambda would
         // dereference recycled memory => NullReferenceException / FormatException.
 
-        string eventName;
-        object?[] payload;
+        EtwEvent captured;
+        long timestamp;
         try
         {
-            eventName = evt.EventName;
-            int count = evt.PayloadNames?.Length ?? 0;
-            payload = new object?[count];
-            for (int i = 0; i < count; i++)
-            {
-                try { payload[i] = evt.PayloadValue(i); }
-                catch { payload[i] = null; }
-            }
+            if (!ProfilerProviders.TryCapture(evt, out captured)) return;
+            // 100 ns ticks since the session started, which keeps the QPC resolution.
+            timestamp = (long)(evt.TimeStampRelativeMSec * 10_000);
         }
         catch
         {
@@ -235,7 +229,7 @@ public sealed class EtwListenerService : IDisposable
         }
 
         // Just enqueue — the flush timer will drain in batches on the UI thread.
-        _pending.Enqueue((eventName, payload));
+        _pending.Enqueue((captured, timestamp, Stopwatch.GetTimestamp()));
     }
 
     /// <summary>
@@ -244,7 +238,7 @@ public sealed class EtwListenerService : IDisposable
     /// </summary>
     private void ScheduleFlush()
     {
-        if (_pending.IsEmpty) return;
+        if (_pending.IsEmpty && _held == 0) return;
         if (Interlocked.Exchange(ref _flushScheduled, 1) == 1) return;
 
         _dispatcherQueue.TryEnqueue(() =>
@@ -254,27 +248,44 @@ public sealed class EtwListenerService : IDisposable
         });
     }
 
-    private void FlushPending()
+    // UI thread. Moves newly captured events into the reorder buffer, then applies those whose
+    // hold-back has ended (at most MaxBatchSize), or every held event when draining.
+    private void FlushPending(bool drainAll = false)
     {
-        int applied = 0;
-        while (applied < MaxBatchSize && _pending.TryDequeue(out var item))
+        while (_pending.TryDequeue(out var item))
+        {
+            _reorder.Add(item.Event, item.Timestamp, item.Arrival);
+        }
+
+        _released.Clear();
+        if (drainAll)
+        {
+            _reorder.ReleaseAll(_released);
+        }
+        else
+        {
+            _reorder.Release(Stopwatch.GetTimestamp(), MaxBatchSize, _released);
+        }
+        _held = _reorder.Count;
+
+        foreach (var e in _released)
         {
             try
             {
                 _store.EventCount++;
-                _router.Dispatch(new EtwEvent(item.name, item.payload));
+                _router.Dispatch(e);
             }
             catch
             {
                 // Robustness — one bad event must not poison the batch.
             }
-            applied++;
         }
 
-        if (applied > 0)
+        if (_released.Count > 0)
         {
             EventCountChanged?.Invoke(_store.EventCount);
         }
+        _released.Clear();
     }
 
     public void Dispose()

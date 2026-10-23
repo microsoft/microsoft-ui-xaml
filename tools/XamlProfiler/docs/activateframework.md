@@ -76,7 +76,7 @@ consumer project gets the macro.
 <ClCompile Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\WucVisualTreeProfiler.cpp"/>
 ```
 `XamlProfilerTracing.cpp` defines the provider and the out-of-line event emitters;
-`WucVisualTreeProfiler.cpp` holds the WUC visual-tree walker. Each has a top-of-file
+`WucVisualTreeProfiler.cpp` holds the WUC structure, creation and property emitters. Each has a top-of-file
 `#error` safeguard that fires if it is ever compiled with `XAMLPROFILER_ENABLED`
 undefined. Because all three sites read the same `XamlProfilerEnabled` property,
 they stay in sync automatically.
@@ -96,18 +96,19 @@ with the switch off and on (`dumpbin /headers` virtual sizes, in bytes):
 
 | Section | Off | On | Delta |
 |---|---:|---:|---:|
-| `.text` | 10,183,372 | 10,201,852 | +18,480 |
-| `.rdata` | 3,124,994 | 3,129,762 | +4,768 |
-| `.data` | 61,808 | 61,856 | +48 |
-| `.pdata` | 348,264 | 348,840 | +576 |
-| `.reloc` | 503,116 | 503,140 | +24 |
-| File | 14,375,424 | 14,398,976 | +23,552 (+0.16%) |
+| `.text` | 10,187,004 | 10,213,596 | +26,592 |
+| `.rdata` | 3,125,778 | 3,128,882 | +3,104 |
+| `.data` | 61,792 | 62,128 | +336 |
+| `.pdata` | 348,384 | 349,104 | +720 |
+| File | 14,380,032 | 14,410,240 | +30,208 (+0.21%) |
 
 - **No session, a session below verbose level, or a session without a site's
   keyword:** the site's inline `TraceLoggingProviderEnabled` check fails and nothing
   else runs. Argument helpers and emitters are out of line (`__declspec(noinline)`).
-- **Profiler attached (keywords `0x07`):** the tree events are built and written.
-- **Release data:** `ElementEnteredTree.CoreSize` is 0 (unknown) and
+- **Profiler attached (keywords `0x07`):** the tree events and their granular detail
+  events (type info, visual creation and properties) are built and written. The
+  events that fire on every tree change carry scalars only.
+- **Release data:** `ElementTypeInfo.CoreSize` is 0 (unknown) and
   `XamlHeapSnapshot` is never emitted; both need the Debug allocator.
 
 ---
@@ -116,7 +117,7 @@ with the switch off and on (`dumpbin /headers` virtual sizes, in bytes):
 
 1. After `init.cmd amd64fre`, build with the switch off:
    `msbuild dxaml\xcp\dxaml\dllsrv\winrt\native\Microsoft.ui.xaml.vcxproj /p:Configuration=Release /p:Platform=x64 /p:XamlProfilerEnabled=false`
-   - The build succeeds and `Microsoft.ui.xaml.dll` is about 23 KB (x64) smaller
+   - The build succeeds and `Microsoft.ui.xaml.dll` is about 30 KB (x64) smaller
      than the default build — physical proof the code was excluded.
    - If it fails with the `#error` from `XamlProfilerTracing.cpp` or
      `WucVisualTreeProfiler.cpp`, a `ClCompile` condition is out of sync with the
