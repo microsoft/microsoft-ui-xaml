@@ -1180,6 +1180,32 @@ void TableView::DrainCoalescedEditReshape()
     // layout" signal, so it gates this too.
     if (m_suppressEditVisualRestore)
     {
+        // No later close is coming to replay them.
+        if (!IsEditing() && !m_editReshapeDrainQueued &&
+            (!m_reshapesAfterEditCloses.empty() || !m_pendingEditReshapes.empty()))
+        {
+            if (auto const queue = DispatcherQueue())
+            {
+                m_editReshapeDrainQueued = queue.TryEnqueue([weakThis = get_weak()]()
+                {
+                    if (auto const strongThis = weakThis.get())
+                    {
+                        strongThis->m_editReshapeDrainQueued = false;
+                        if (!strongThis->IsEditing())
+                        {
+                            try
+                            {
+                                strongThis->DrainCoalescedEditReshape();
+                            }
+                            catch (...)
+                            {
+                                TVDiag::LogRetailF(L"[TableView] A reshape deferred past a forced edit close threw while draining.");
+                            }
+                        }
+                    }
+                });
+            }
+        }
         return;
     }
 

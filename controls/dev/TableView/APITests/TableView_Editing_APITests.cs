@@ -751,6 +751,81 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(1, clearedCount, "The clear must be reported once.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sort opt-out made from BeginningEdit still clears the sort when the edit is then closed by a forced teardown that cannot replay it in place.")]
+        [TestProperty("data:OptOut", "{CanSort, CanUserSortColumns}")]
+        public void VerifySortOptOutDuringBeginningEditClearsAfterForcedClose()
+        {
+            var optOut = ((string)TestContext.DataRow["OptOut"]).Trim();
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            bool requested = false;
+            bool vetoClose = true;
+            int clearedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Precondition: the Name column sorts.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = tableView.Columns[0];
+                tableView.Sorted += (s, e) =>
+                {
+                    if (e.Direction == SortDirection.None)
+                    {
+                        clearedCount++;
+                    }
+                };
+                tableView.BeginningEdit += (s, e) =>
+                {
+                    if (!requested)
+                    {
+                        requested = true;
+                        if (optOut == "CanSort")
+                        {
+                            name.CanSort = false;
+                        }
+                        else
+                        {
+                            tableView.CanUserSortColumns = false;
+                        }
+                    }
+                };
+
+                // Holds the edit open after SetValue so a forced close can end it.
+                tableView.CellEditEnding += (s, e) => e.Cancel = vetoClose;
+
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 1), "Pilot");
+                Verify.IsTrue(requested, "Precondition: BeginningEdit opted the sort out.");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the edit stays open.");
+                Verify.AreEqual(0, clearedCount, "Precondition: the sort clear waits for the edit to close.");
+
+                // A forced close from a property-change callback, which must not reshape in place.
+                vetoClose = false;
+                tableView.IsReadOnly = true;
+                Verify.IsFalse(tableView.IsEditing, "Precondition: IsReadOnly closes the edit.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, $"{optOut}: the opted-out sort must be cleared once the edit closes.");
+                Verify.AreEqual(1, clearedCount, $"{optOut}: the clear must be reported once.");
+            });
+        }
     }
 
     // Category 10.5 of the TableView test plan: validation, teardown and reentrancy.
