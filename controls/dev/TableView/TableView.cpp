@@ -3116,6 +3116,10 @@ void TableView::RebuildHeadersCore()
             // never-accessed Setters reseals it and re-merges its BasedOn setters.
             const bool styleSetsMinHeight = StyleSetsProperty(headerStyle, winrt::FrameworkElement::MinHeightProperty());
             const bool styleSetsPadding = StyleSetsProperty(headerStyle, winrt::Control::PaddingProperty());
+            const bool styleSetsCornerRadius = StyleSetsProperty(headerStyle, winrt::Control::CornerRadiusProperty());
+            const bool styleSetsContentTemplate =
+                StyleSetsProperty(headerStyle, winrt::ContentControl::ContentTemplateProperty()) ||
+                StyleSetsProperty(headerStyle, winrt::ContentControl::ContentTemplateSelectorProperty());
             if (headerStyle)
             {
                 header.Style(headerStyle);
@@ -3123,7 +3127,10 @@ void TableView::RebuildHeadersCore()
 
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
-            AttachFocusCornerRadius(header);
+            if (!styleSetsCornerRadius)
+            {
+                AttachFocusCornerRadius(header);
+            }
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {
@@ -3149,7 +3156,7 @@ void TableView::RebuildHeadersCore()
                 header.Content(column.Header());
                 header.ContentTemplate(headerTemplate);
             }
-            else if (!headerText.empty() && IsPlainStringHeader(column))
+            else if (!headerText.empty() && IsPlainStringHeader(column) && !styleSetsContentTemplate)
             {
                 // A ContentPresenter renders a bare string through an implicit TextBlock carrying no
                 // TextTrimming, so a too-wide header hard-clips mid-glyph while its cells ellipsize.

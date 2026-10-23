@@ -815,6 +815,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header Style's ContentTemplate or ContentTemplateSelector renders a plain string Header, and the column's HeaderTemplate still wins.")]
+        [TestProperty("data:Setter", "{ContentTemplate, ContentTemplateSelector}")]
+        public void VerifyHeaderStyleContentTemplateAppliesToStringHeader()
+        {
+            var setter = ((string)TestContext.DataRow["Setter"]).Trim();
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var template = CreateTextTemplate("Styled");
+                var style = new Style(typeof(TableViewColumnHeader));
+                style.Setters.Add(setter == "ContentTemplate"
+                    ? new Setter(ContentControl.ContentTemplateProperty, template)
+                    : new Setter(ContentControl.ContentTemplateSelectorProperty, new TestHeaderTemplateSelector { Template = template }));
+
+                tableView = CreateTableView(headers: new[] { "Name", "Role" });
+                tableView.ColumnHeaderStyle = style;
+                tableView.Columns[1].HeaderTemplate = CreateTextTemplate("Column");
+
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (ContentControl)GetHeaderCell(tableView, 0);
+                Verify.AreEqual("Name", header.Content as string, $"{setter}: the string Header must reach the style's template as data.");
+                Verify.IsTrue(FindVisualChildrenByType<TextBlock>(header).Any(t => t.Text == "Styled"),
+                    $"{setter}: the header Style's template must render the string Header.");
+                Verify.IsTrue(FindVisualChildrenByType<TextBlock>(GetHeaderCell(tableView, 1)).Any(t => t.Text == "Column"),
+                    $"{setter}: the column's HeaderTemplate must win over the header Style's.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies replacing HeaderTemplate on a loaded column rebuilds the header.")]
         public void VerifyHeaderTemplateChangeAfterLoadUpdatesLive()
         {
