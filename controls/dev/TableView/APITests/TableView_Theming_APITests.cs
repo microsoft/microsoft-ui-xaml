@@ -96,6 +96,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Repro #12115: the reported crash is "Cannot load DefaultStyleResourceUri
+        // 'ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/generic.xaml'".
+        [TestMethod]
+        public void VerifyTableViewDefaultStyleResourceUriLoads()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var expected = new Uri("ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/generic.xaml");
+                var tableView = new TableView();
+                Verify.AreEqual(expected.AbsoluteUri, tableView.DefaultStyleResourceUri?.AbsoluteUri,
+                    "TableView must point its default style at the Tabular generic.xaml.");
+
+                ResourceDictionary generic = null;
+                try
+                {
+                    generic = new ResourceDictionary { Source = expected };
+                }
+                catch (Exception e)
+                {
+                    Verify.Fail($"Loading '{expected}' threw 0x{e.HResult:X8}: {e.Message}");
+                    return;
+                }
+
+                bool HasKey(ResourceDictionary d, object key) => d.ContainsKey(key) || d.MergedDictionaries.Any(m => HasKey(m, key));
+                Verify.IsTrue(HasKey(generic, "TableViewGroupHeaderPadding"),
+                    "The loaded generic.xaml must be TableView's default-style page.");
+            });
+        }
+
         // Both types are MUX_INTERNAL but projected into the test app as Microsoft.UI.Private.Controls;
         // TableView_Sizing_APITests.cs already constructs a ResizeGripper the same way.
         [TestMethod]
