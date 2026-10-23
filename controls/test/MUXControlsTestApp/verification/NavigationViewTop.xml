@@ -40,7 +40,7 @@
         Margin=0,0,0,0
         Name=PaneToggleButtonGrid
         Padding=0,0,0,0
-        RenderSize=48,48
+        RenderSize=44,48
         Visibility=Visible
       [Microsoft.UI.Xaml.Controls.Grid]
           Background=[NULL]
@@ -55,7 +55,7 @@
           Margin=0,0,0,0
           Name=TogglePaneTopPadding
           Padding=0,0,0,0
-          RenderSize=48,0
+          RenderSize=44,0
           Visibility=Visible
       [Microsoft.UI.Xaml.Controls.Grid]
           Background=[NULL]
@@ -69,7 +69,7 @@
           Margin=0,4,0,4
           Name=ButtonHolderGrid
           Padding=0,0,0,0
-          RenderSize=48,40
+          RenderSize=44,40
           Visibility=Visible
         [Microsoft.UI.Xaml.Controls.Button]
             Background=#00FFFFFF
@@ -82,10 +82,10 @@
             FocusVisualSecondaryThickness=1,1,1,1
             Foreground=#E4000000
             Margin=0,-4,0,0
-            MinWidth=48
+            MinWidth=44
             Name=NavigationViewBackButton
-            Padding=4,6,4,2
-            RenderSize=48,44
+            Padding=4,6,0,2
+            RenderSize=44,44
             Visibility=Visible
             Width=40
           [Microsoft.UI.Xaml.Controls.Grid]
@@ -100,7 +100,7 @@
               Margin=0,0,0,0
               Name=HitTargetGrid
               Padding=0,0,0,0
-              RenderSize=48,44
+              RenderSize=44,44
               Visibility=Visible
             [Microsoft.UI.Xaml.Controls.Grid]
                 Background=#00FFFFFF
@@ -112,7 +112,7 @@
                 FocusVisualSecondaryBrush=#B3FFFFFF
                 FocusVisualSecondaryThickness=1,1,1,1
                 Height=36
-                Margin=4,6,4,2
+                Margin=4,6,0,2
                 Name=RootGrid
                 Padding=0,0,0,0
                 RenderSize=40,36

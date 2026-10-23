@@ -84,7 +84,7 @@
                 </VisualState>
               </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
-            <Grid x:Name="RootGrid" Height="{ThemeResource NavigationBackButtonHeight}" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+            <Grid x:Name="RootGrid" Control.IsTemplateFocusTarget="True" Height="{ThemeResource NavigationBackButtonHeight}" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
               <controls:AnimatedIcon x:Name="Content" Height="16" Width="16" local:AnimatedIcon.State="Normal" MirroredWhenRightToLeft="True" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" xmlns:local="using:Microsoft.UI.Xaml.Controls">
                 <animatedvisuals:AnimatedBackVisualSource />
                 <controls:AnimatedIcon.FallbackIconSource>
