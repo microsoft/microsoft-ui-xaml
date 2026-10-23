@@ -864,6 +864,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header Style's selector is probed with the string Header and a header container tagged with its column, and a null or throwing result keeps the trimming TextBlock.")]
+        [TestProperty("data:Result", "{Null, Throw}")]
+        public void VerifyHeaderStyleSelectorProbeFallsBackToTrimmingText()
+        {
+            var result = ((string)TestContext.DataRow["Result"]).Trim();
+            TableView tableView = null;
+            RecordingHeaderTemplateSelector selector = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                selector = new RecordingHeaderTemplateSelector { Throw = result == "Throw" };
+                var style = new Style(typeof(TableViewColumnHeader));
+                style.Setters.Add(new Setter(ContentControl.ContentTemplateSelectorProperty, selector));
+                tableView = CreateTableView(headers: new[] { "Name" });
+                tableView.ColumnHeaderStyle = style;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(selector.Calls.Count, 0, "The selector must be probed.");
+                Verify.IsTrue(selector.Calls.All(call => call.Item as string == "Name"),
+                    $"{result}: the selector must only see the string Header, never the fallback TextBlock.");
+                var container = selector.Calls[0].Container as TableViewColumnHeader;
+                Verify.IsNotNull(container, "The selector must receive the header as its container.");
+                Verify.IsTrue(ReferenceEquals(tableView.Columns[0], container.Tag), "The container must already be tagged with its column.");
+
+                var block = ((ContentControl)GetHeaderCell(tableView, 0)).Content as TextBlock;
+                Verify.IsNotNull(block, $"{result}: the header must keep its own TextBlock.");
+                Verify.AreEqual(TextTrimming.CharacterEllipsis, block.TextTrimming, "The header text must still ellipsize.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies replacing HeaderTemplate on a loaded column rebuilds the header.")]
         public void VerifyHeaderTemplateChangeAfterLoadUpdatesLive()
         {
@@ -1043,6 +1079,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             protected override DataTemplate SelectTemplateCore(object item) => Template;
 
             protected override DataTemplate SelectTemplateCore(object item, DependencyObject container) => Template;
+        }
+
+        private sealed class RecordingHeaderTemplateSelector : DataTemplateSelector
+        {
+            public bool Throw { get; set; }
+
+            public List<(object Item, DependencyObject Container)> Calls { get; } = new List<(object, DependencyObject)>();
+
+            protected override DataTemplate SelectTemplateCore(object item) => SelectTemplateCore(item, null);
+
+            protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
+            {
+                Calls.Add((item, container));
+                if (Throw)
+                {
+                    throw new InvalidOperationException("Header selector fault");
+                }
+                return null;
+            }
         }
     }
 

@@ -1263,6 +1263,9 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     // projection, so the reported sort state and the chevron go with it - otherwise they describe
     // an order the new rows are not in.
     ResetSortStateForNewItemsSource();
+    // Deferred reshapes target the discarded data set.
+    m_pendingEditReshapes.clear();
+    m_reshapesAfterEditCloses.clear();
     AdoptItemsSource();
     RefreshRowsPipeline();
     completed = true;
@@ -3217,6 +3220,11 @@ void TableView::RebuildHeadersCore()
                 winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
                 header.Content(headerBlock);
                 headerImpl->SetOwnsContentInternal(true);
+                if (styleContentTemplateSelector)
+                {
+                    // Otherwise the Style's selector would be asked again, with the TextBlock as item.
+                    header.ContentTemplateSelector(nullptr);
+                }
             }
             else
             {
@@ -3648,6 +3656,10 @@ void TableView::ReclaimItemsSource()
     }
 
     AdoptItemsSource(true /* reclaimActiveSource */);
+    if (!m_activeSourceReleased)
+    {
+        QueueDeferredEditReshapeDrain();
+    }
     // While drained, OnRowsRepeaterLoaded re-sources the repeater.
     if (!m_rowsSourceDrained)
     {
