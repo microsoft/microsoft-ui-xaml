@@ -60,6 +60,7 @@
 #include "BuildTreeService.g.h"
 #include "BudgetManager.g.h"
 #include "XamlIslandRoot.g.h"
+#include "DesktopWindowXamlSource_Partial.h"
 #include "CaretBrowsingDialog.h"
 #include "TextControlFlyoutHelper.h"
 #include <RuntimeEnabledFeatures.h>
@@ -1371,6 +1372,28 @@ namespace FxCallbacks
 
     void XamlIslandRoot_OnSizeChanged(_In_ CXamlIslandRoot* xamlIslandRoot)
         { DirectUI::XamlIslandRoot::OnSizeChangedStatic(xamlIslandRoot); }
+
+    _Check_return_ HRESULT XamlIslandRoot_UpdateContentIsland(_In_ CXamlIslandRoot* xamlIslandRoot, bool initialize)
+    {
+        ctl::ComPtr<DirectUI::XamlIslandRoot> peer;
+        IFC_RETURN(DXamlCore::GetCurrent()->GetPeer<DirectUI::XamlIslandRoot>(xamlIslandRoot, &peer));
+
+        ctl::ComPtr<IInspectable> owner;
+        if (peer->TryGetOwner(&owner) && owner)
+        {
+            ctl::ComPtr<DirectUI::DesktopWindowXamlSource> desktopSource;
+            if (SUCCEEDED(owner.As(&desktopSource)))
+            {
+                return desktopSource->UpdateContentIsland(initialize);
+            }
+
+            ctl::ComPtr<DirectUI::XamlIsland> island;
+            IFC_RETURN(owner.As(&island));
+            IFC_RETURN(island->UpdateContentIsland(initialize));
+        }
+
+        return S_OK;
+    }
 
     _Check_return_ HRESULT FrameworkApplication_RemoveIsland(_In_ xaml_hosting::IXamlIslandRoot* island)
     {

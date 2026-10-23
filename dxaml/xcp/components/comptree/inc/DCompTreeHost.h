@@ -114,11 +114,12 @@ public:
     _Check_return_ HRESULT EnsureResources() noexcept;
 
     // The following methods are safe to call before EnsureResources.
-    _Check_return_ HRESULT ReleaseResources(bool shouldDeferClosingInteropCompositor, bool preserveCompositor = false);
+    _Check_return_ HRESULT ReleaseResources(bool shouldDeferClosingInteropCompositor);
 
     void CloseAndReleaseInteropCompositor();
 
     void ReleaseGraphicsResources();
+    _Check_return_ HRESULT RebuildXamlIslandResources();
 
     bool CheckMainDeviceState();
 

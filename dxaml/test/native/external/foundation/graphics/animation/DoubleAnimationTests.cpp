@@ -4751,9 +4751,33 @@ void DoubleAnimationTests::DeviceLostDuringAnimationWUCFull()
         });
 
         wh->SynchronouslyTickUIThread(2);
-        VERIFY_IS_TRUE(mockDevice == wh->MockDCompDevice);
+        VERIFY_IS_TRUE(mockDevice != wh->MockDCompDevice);
+        mockDevice = wh->MockDCompDevice;
         u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"DeviceLost");
     }
+
+    Button^ button;
+    auto clickRegistration = CreateSafeEventRegistration(Button, Click);
+    auto clickEvent = std::make_shared<Event>();
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"[Create button after island recovery]");
+        storyboard->Stop();
+        button = ref new Button();
+        root->Children->Append(button);
+        clickRegistration.Attach(button, [clickEvent]() { clickEvent->Set(); });
+    });
+    LOG_OUTPUT(L"[Wait for rebuilt island to become idle]");
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"[Focus button after island recovery]");
+        VERIFY_IS_TRUE(button->Focus(FocusState::Programmatic));
+    });
+    TestServices::KeyboardHelper->Enter();
+    clickEvent->WaitForDefault();
+    VERIFY_IS_TRUE(clickEvent->HasFired());
 }
 
 DoubleAnimationUsingKeyFrames^ DoubleAnimationTests::MakeDuration60DAUKF(DependencyObject^ target)

@@ -48,6 +48,9 @@ public:
     //  IFrameworkApplicationPrivate::CreateIslandRoot():
     _Check_return_ HRESULT Initialize();
 
+    _Check_return_ HRESULT ReleaseContentIslandResources();
+    _Check_return_ HRESULT RebuildContentIsland();
+
     KnownTypeIndex GetTypeIndex() const override
     {
         return DependencyObjectTraits<CXamlIslandRoot>::Index;
@@ -266,6 +269,7 @@ private:
     bool HasContent() const { XAML_FAIL_FAST(); return true; }
 
     _Check_return_ HRESULT InitializeCommon();
+    _Check_return_ HRESULT InitializeContentIsland();
     void InitializeOwnerHWNDForWindowedPopups(_In_ IUnknown* host);
     void InitInputObjects(_In_ ixp::IContentIsland* const contentIsland);
     void SubscribeToInputKeyboardSourceEvents();

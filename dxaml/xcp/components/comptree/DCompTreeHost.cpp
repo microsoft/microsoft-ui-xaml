@@ -188,8 +188,20 @@ DCompTreeHost::CloseAndReleaseInteropCompositor()
 //
 //----------------------------------------------------------------------------
 _Check_return_ HRESULT
-DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompositor, bool preserveCompositor)
+DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompositor)
 {
+    if (shouldDeferClosingInteropCompositor)
+    {
+        // Unhook island-owned input and events while the old compositor is still usable.
+        // Keep the registered XAML roots so recovery can create new ContentIslands for them.
+        for (auto& islandData : m_islandRenderData)
+        {
+            IFC_RETURN(FxCallbacks::XamlIslandRoot_UpdateContentIsland(islandData.first, false));
+            IFC_RETURN(islandData.first->ReleaseContentIslandResources());
+            islandData.second = XamlIslandRenderData();
+        }
+    }
+
     if (m_systemBackdropBrush != nullptr)
     {
         CCoreServices* coreServicesNoRef = GetCoreServicesNoRef();
@@ -231,23 +243,6 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompositor, bool p
     m_dcompObjectRegistry.ReleaseDCompResources();
     m_wucBrushManager.ReleaseDCompResources();
     m_sharedTransitionAnimations.ReleaseDCompResources();
-
-    if (preserveCompositor)
-    {
-        ASSERT(shouldDeferClosingInteropCompositor);
-
-        // Reconnect rebuilt XAML visuals on the next render walk, without closing the
-        // ContentIslands or their host/input connections on the existing compositor.
-        for (auto& islandData : m_islandRenderData)
-        {
-            islandData.first->SetRootVisual(nullptr);
-            islandData.second = XamlIslandRenderData();
-        }
-
-        ReleaseGraphicsResources();
-        m_offerTracker->Reset();
-        return S_OK;
-    }
 
     // It's possible in multi-view scenarios that there are still some UIElements with handoff (or handin) visuals at this point. There is no need
     // force close these since the WUC Compositor will be destroyed shortly, and do a full force close of all of its visuals at that point.
@@ -642,6 +637,20 @@ void DCompTreeHost::ReleaseGraphicsResources()
 
     m_compositionGraphicsDevice.Reset();
     m_wucBrushManager.ReleaseGraphicsDevice();
+}
+
+_Check_return_ HRESULT DCompTreeHost::RebuildXamlIslandResources()
+{
+    for (auto& islandData : m_islandRenderData)
+    {
+        if (islandData.first->GetContentIsland() == nullptr)
+        {
+            IFC_RETURN(islandData.first->RebuildContentIsland());
+            IFC_RETURN(FxCallbacks::XamlIslandRoot_UpdateContentIsland(islandData.first, true));
+        }
+    }
+
+    return S_OK;
 }
 
 _Check_return_

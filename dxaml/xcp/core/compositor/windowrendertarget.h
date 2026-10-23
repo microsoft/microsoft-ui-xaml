@@ -74,7 +74,7 @@ public:
         bool fForceRedraw,
         _Out_ bool * pFrameDrawn);
 
-    _Check_return_ HRESULT CleanupResources(_In_ bool cleanupDComp, _In_ bool isDeviceLost, _In_ bool preserveCompositor);
+    _Check_return_ HRESULT CleanupResources(_In_ bool cleanupDComp, _In_ bool isDeviceLost);
 
     _Check_return_ HRESULT RebuildResources();
 

@@ -116,7 +116,7 @@ Cleanup:
 //      Releases the cached device after it's been lost.
 //
 //------------------------------------------------------------------------------
-void WindowsGraphicsDeviceManager::CleanupCachedDeviceResources(_In_ bool cleanupDComp, _In_ bool isDeviceLost, _In_ bool preserveCompositor)
+void WindowsGraphicsDeviceManager::CleanupCachedDeviceResources(_In_ bool cleanupDComp, _In_ bool isDeviceLost)
 {
     IGNOREHR(WaitForInitializationThreadCompletion());
 
@@ -134,7 +134,7 @@ void WindowsGraphicsDeviceManager::CleanupCachedDeviceResources(_In_ bool cleanu
     m_cachedD3DDevice.reset();
     if (cleanupDComp)
     {
-        IFCFAILFAST(m_pDCompTreeHost->ReleaseResources(true /* shouldDeferClosingInteropCompostior */, preserveCompositor));
+        IFCFAILFAST(m_pDCompTreeHost->ReleaseResources(true /* shouldDeferClosingInteropCompostior */));
     }
     else
     {
