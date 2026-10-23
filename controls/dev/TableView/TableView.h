@@ -117,6 +117,8 @@ struct ColumnResizeDragState
     bool didDelta{ false };
     // Filled on the first write, not at DragStarted, so a press that never moves mutates nothing.
     std::vector<ColumnResizeFrozenColumn> frozen;
+    uint64_t lastPressTimestamp{ 0 };
+    winrt::Point lastPressPosition{};
 };
 
 // Per-instance cache of density metrics and the resolved gridline brush. Held as a
@@ -275,6 +277,9 @@ public:
     // bounds, Star handling and announcement match a pointer or Alt+Arrow resize exactly.
     bool CanResizeColumnFromAutomation(const winrt::TableViewColumn& column);
     bool TryResizeColumnFromAutomation(const winrt::TableViewColumn& column, double width);
+    bool AutoFitColumn(const winrt::TableViewColumn& column);
+    static double DoubleClickSlop(const winrt::UIElement& element);
+    static uint64_t DoubleClickIntervalMicroseconds();
     void AnnounceColumnWidth(const winrt::IInspectable& announcer, const winrt::TableViewColumn& column);
 
     // Coalesces bursts of column-driven header rebuilds (bulk Columns edits, per-column Header /

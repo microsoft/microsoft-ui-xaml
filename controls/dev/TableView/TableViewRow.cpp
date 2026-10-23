@@ -71,45 +71,6 @@ namespace
         }
     }
 
-    // Slop allowed between the two presses of a double-click, in DIPs.
-    //
-    // SM_CXDOUBLECLK is in PHYSICAL pixels, so it must be divided by the element's rasterization
-    // scale to be comparable with the DIP-space positions this gesture works in. Without that the
-    // effective tolerance halves at 200% - a user whose two presses land 6 DIPs apart is inside the
-    // system tolerance but outside ours, and the double-click is silently dropped.
-    //
-    // Read per press rather than cached: the metric changes with the mouse control panel and the
-    // scale changes when the window moves between monitors, and a cached value never sees either.
-    // GetSystemMetrics is a cheap cached read in user32, not a round trip.
-    double GetDoubleClickSlop(winrt::UIElement const& element)
-    {
-        const auto cx = static_cast<double>(::GetSystemMetrics(SM_CXDOUBLECLK));
-        const auto cy = static_cast<double>(::GetSystemMetrics(SM_CYDOUBLECLK));
-        const double physical = (std::max)((std::max)(cx, cy), 4.0) / 2.0;
-
-        double scale = 1.0;
-        if (element)
-        {
-            if (auto const root = element.XamlRoot())
-            {
-                const auto rasterization = root.RasterizationScale();
-                if (rasterization > 0.0)
-                {
-                    scale = rasterization;
-                }
-            }
-        }
-
-        return physical / scale;
-    }
-
-    // PointerPoint.Timestamp is in microseconds; the system double-click time is in milliseconds.
-    // Not cached, so a change made in the mouse control panel takes effect immediately.
-    uint64_t GetDoubleClickIntervalMicroseconds()
-    {
-        return static_cast<uint64_t>(::GetDoubleClickTime()) * 1000ull;
-    }
-
     bool IsKeyDown(winrt::VirtualKey key)
     {
         return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
@@ -3197,7 +3158,7 @@ void TableViewRow::OnPointerPressedForEditing(
     const auto timestamp = pointerPoint.Timestamp();
     const auto position = pointerPoint.Position();
 
-    const double slop = GetDoubleClickSlop(*this);
+    const double slop = TableView::DoubleClickSlop(*this);
 
     // Device type is part of the repeat identity so a mouse click following a pen tap is not read
     // as one double-click. Pointer ID deliberately is NOT: every touch contact gets a fresh id, so
@@ -3208,7 +3169,7 @@ void TableViewRow::OnPointerPressedForEditing(
         TableView::SameInspectableIdentity(m_lastPressItem.get(), item) &&
         m_lastPressDeviceType == deviceType &&
         timestamp >= m_lastPressTimestamp &&
-        (timestamp - m_lastPressTimestamp) <= GetDoubleClickIntervalMicroseconds() &&
+        (timestamp - m_lastPressTimestamp) <= TableView::DoubleClickIntervalMicroseconds() &&
         std::abs(position.X - m_lastPressPosition.X) <= slop &&
         std::abs(position.Y - m_lastPressPosition.Y) <= slop;
 
