@@ -343,7 +343,11 @@ this.Write("                ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(fieldInfo.FieldName));
 
-this.Write("(nullptr);\r\n");
+this.Write("(");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(fieldInfo.FieldTypeName == typeof(string).FullName ? "::winrt::hstring{}" : "nullptr"));
+
+this.Write(");\r\n");
 
                  Output_ApiInformationCall_Pop(element.ApiInformation, Indent.TwoTabs); 
              } 
@@ -359,11 +363,19 @@ this.Write("            default:\r\n            {\r\n                throw hresu
      string objectName = element.ElementCodeName;
      Output_PushDeprecated(element.Type.IsDeprecated()); 
      Output_ApiInformationCall_Push(element.ApiInformation, Indent.TwoTabs); 
-this.Write("                auto targetElement = target.as<");
+this.Write("                auto targetElement = ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(element.Type.IsString() ? "target ? " : ""));
+
+this.Write("target.as<");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(element.Type));
 
-this.Write(">();\r\n");
+this.Write(">()");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(element.Type.IsString() ? " : ::winrt::hstring{}" : ""));
+
+this.Write(";\r\n");
 
      if (element.HasFieldDefinition) {
          objectName = $"{element.FieldDefinition.FieldName}()"; 

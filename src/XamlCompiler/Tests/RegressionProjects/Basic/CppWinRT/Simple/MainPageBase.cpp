@@ -12,4 +12,9 @@ namespace winrt::Simple::implementation
 
     void MainPageBase::EventHandlerOnBase(IInspectable  const&, Microsoft::UI::Xaml::RoutedEventArgs const&)
     {}
+
+    void MainPageBase::OnNavigatedTo(Microsoft::UI::Xaml::Navigation::NavigationEventArgs const& e)
+    {
+        Microsoft::UI::Xaml::Controls::IPageOverridesT<MainPageBase>::OnNavigatedTo(e);
+    }
 }

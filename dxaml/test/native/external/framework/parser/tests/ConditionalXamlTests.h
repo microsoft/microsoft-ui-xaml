@@ -38,6 +38,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates behavior when known properties are conditionally declared.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyDeferredTextBlockLanguage)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates saved language on unnamed TextBlocks with and without XBFv2 encoding.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyDuplicatePropertiesThrowsError)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that duplicate properties, even when conditionally declared "
                 L"(and evaluating to true) will cause an error to be thrown.")

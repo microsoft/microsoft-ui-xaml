@@ -4,6 +4,7 @@
 #pragma once
 
 #include <functional>
+#include <optional>
 
 #include "XamlWriter.h"
 #include "XamlNodeType.h"
@@ -54,6 +55,7 @@ private:
     std::shared_ptr<ObjectWriterCallbacksDelegate> m_spObjectWriterCallbacks;
     std::shared_ptr<ObjectWriterCommonRuntime> m_spRuntime;
     std::shared_ptr<ObjectWriterErrorService> m_spErrorService;
+    std::optional<size_t> m_pendingConditionalScopeIndex;
 
     bool m_bCheckDuplicateProperty{};
     bool m_bIsEncoding;
@@ -204,6 +206,7 @@ private:
     _Check_return_ HRESULT Logic_CreatePropertyValueFromText();
     _Check_return_ HRESULT Logic_DuplicatePropertyCheck(_In_ const std::shared_ptr<XamlProperty>& spProperty);
     _Check_return_ HRESULT Logic_ApplyCurrentSavedDirectives();
+    _Check_return_ HRESULT Logic_ApplyCurrentSavedConnectionId();
     _Check_return_ HRESULT Logic_ProvideValue();
     _Check_return_ HRESULT Logic_AssignProvidedValue();
     _Check_return_ HRESULT Logic_DoAssignmentToParentCollection();
@@ -242,4 +245,3 @@ private:
         _In_ const std::shared_ptr<XamlTextSyntax>& collectionspTextSyntax,
         _In_ xstring_ptr& trimmedObjectString);
 };
-

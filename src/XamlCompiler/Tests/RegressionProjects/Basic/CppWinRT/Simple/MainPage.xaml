@@ -8,8 +8,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
+    <!-- Named strings cover resource and property-element connections, including empty defaults. -->
     <Page.Resources>
+        <x:String x:Name="NamedResourceString">Resource value</x:String>
+        <x:String x:Key="emptyString" x:Name="NamedEmptyString"></x:String>
         <!-- Primitive Type Property CodeGen -->
         <!-- Short Form -->
         <local:PropBag x:Name="propertyBagObject" StringProp="StringValue" IntProp="32" DoubleProp="22.22" BooleanProp="False"/>
@@ -30,20 +32,28 @@
         </local:PropBag>
     </Page.Resources>
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <StackPanel Orientation="Horizontal">
-            <!-- Element Name CodeGen -->
-            <Button x:Name="Button1">Button 1</Button>
-            <Button Name="Button2">Button 2</Button>
-            <!-- Event CodeGen -->
-            <Button Click="ClickHandler" Tapped="TappedHandler">Don't Click Me</Button>
-            <Button Click="EventHandlerOnBase">Event Handler On Base</Button>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock>
-                    <Run>Page name: </Run>
-                    <Run Text="{x:Bind PageName}"/>
+    <Grid x:Name="MainGrid" Background="{StaticResource CppWinRTSimpleMainGridWhiteColor}">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock x:Name="NamedStringTextBlock">
+                <TextBlock.Text><x:String x:Name="NamedInlineString">Inline value</x:String></TextBlock.Text>
             </TextBlock>
+            <TextBlock x:Name="EmptyStringTextBlock">
+                <TextBlock.Text><x:String x:Name="NamedEmptyInlineString"></x:String></TextBlock.Text>
+            </TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <!-- Element Name CodeGen -->
+                <Button x:Name="Button1">Button 1</Button>
+                <Button Name="Button2">Button 2</Button>
+                <!-- Event CodeGen -->
+                <Button Click="ClickHandler" Tapped="TappedHandler">Don't Click Me</Button>
+                <Button Click="EventHandlerOnBase">Event Handler On Base</Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock>
+                        <Run>Page name: </Run>
+                        <Run Text="{x:Bind PageName}"/>
+                </TextBlock>
+            </StackPanel>
         </StackPanel>
-    </StackPanel>
+    </Grid>
 </local:MainPageBase>
