@@ -13,8 +13,10 @@ and what it costs when compiled in.
 
 The profiler is gated by a single preprocessor macro, **`XAMLPROFILER_ENABLED`**,
 which is driven by **one MSBuild property, `XamlProfilerEnabled`**, declared in
-`dxaml\Xaml.Cpp.Props`. Every profiler `#include` and call site is wrapped in
-`#ifdef XAMLPROFILER_ENABLED`.
+`dxaml\Xaml.Cpp.Props`. Profiler call sites are wrapped in
+`#ifdef XAMLPROFILER_ENABLED`, except the WUC visual property sites: they use the
+`XAMLPROFILER_WUC_*` macros from `WucVisualTreeProfiler.h`, which is included
+unconditionally and whose macros expand to nothing without the define.
 
 - **On (default, every configuration):** the instrumentation is compiled into Debug
   and Release builds. With no profiler session, each instrumented site costs one
@@ -23,8 +25,11 @@ which is driven by **one MSBuild property, `XamlProfilerEnabled`**, declared in
   `Microsoft-Windows-XAML-Profiler` provider at verbose level, and only for the
   keyword groups that session enables (see `frameworksidechanges.md` §2).
 - **Off:** build with `/p:XamlProfilerEnabled=false`. `XAMLPROFILER_ENABLED` is
-  never defined, the dedicated `.cpp` files are not compiled, and the compiler never
-  sees any profiler code: **zero code, zero binary size, zero ETW events.**
+  never defined and the dedicated `.cpp` files are not compiled, so **no profiler
+  code is generated and no ETW events are written.** Only declarations remain: the
+  `WucVisualTreeProfiler` enums, and the one-bit
+  `HWCompNode::m_isProfilerSuppressed` flag, which shares a byte with an existing
+  bit field, so the node's size doesn't change.
 
 ---
 
@@ -84,8 +89,11 @@ they stay in sync automatically.
 ### Cosmetic (header project-membership, no build effect)
 Two `ClInclude` entries (in `Microsoft.UI.Xaml.CompTree.vcxproj` and
 `Microsoft.UI.Xaml.Base.vcxproj`) are also gated on the property. Headers are never
-compiled and are self-guarded (`#ifdef XAMLPROFILER_ENABLED` around their whole body),
-so these only affect Solution Explorer / project membership.
+compiled on their own, so these only affect Solution Explorer / project membership.
+`XamlProfilerTracing.h` wraps its whole body in `#ifdef XAMLPROFILER_ENABLED`.
+`WucVisualTreeProfiler.h` keeps its two enums outside the guard (they're
+just declarations), and without the define it defines the `XAMLPROFILER_WUC_*` macros
+as no-ops.
 
 ---
 

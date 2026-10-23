@@ -124,9 +124,15 @@ using namespace DirectUI;
 using namespace DirectUISynonyms;
 
 #ifdef XAMLPROFILER_ENABLED
-// Out of line so the peer QueryInterface stays out of GetPeerPrivate.
+// Out of line so the peer QueryInterface stays out of GetPeerPrivate. Only UIElements are
+// reported, since the profiler uses the handle only for tree nodes.
 static __declspec(noinline) void TraceProfilerPeerAssociated(_In_ const CDependencyObject* coreDO)
 {
+    if (!coreDO->OfTypeByIndex<KnownTypeIndex::UIElement>())
+    {
+        return;
+    }
+
     const uint64_t peerHandle = XamlProfilerGetPeerHandle(coreDO);
     if (peerHandle != 0)
     {
@@ -1731,18 +1737,6 @@ DXamlCore::GetPeerPrivate(
                 m_Peers.insert(pDO);
                 pCoreDO->SetDXamlPeer(pDO);
 
-                // The peer is now bound to the core object. Tell the XAML Profiler: this event is
-                // the only source of a tree node's PeerHandle (ElementEnteredTree doesn't carry
-                // it), whether the peer exists before the element enters the tree or is created
-                // lazily afterwards. The handle is computed the same way every other profiler
-                // event computes it, so the values match across events.
-#ifdef XAMLPROFILER_ENABLED
-                if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::XamlTree))
-                {
-                    TraceProfilerPeerAssociated(pCoreDO);
-                }
-#endif // XAMLPROFILER_ENABLED
-
                 IFC(CoreImports::DependencyObject_ShouldCreatePeerWithStrongRef(pCoreDO, &fForceStrong));
 
                 if (fForceStrong)
@@ -1762,6 +1756,19 @@ DXamlCore::GetPeerPrivate(
                     pDO->UpdatePeg(true);
                 }
             }
+
+#ifdef XAMLPROFILER_ENABLED
+            // The peer is now bound to the core object. Tell the XAML Profiler, which joins the
+            // handle to the element's ElementEnteredTree node (that event doesn't carry it), whether
+            // the peer was created before the element entered the tree or lazily afterwards. This
+            // must stay outside the PeerTable lock above: computing the handle QIs the peer, and for
+            // a composed peer (e.g. a C# subclass) that QI runs app code, which can wait for a
+            // background GC that waits for this lock (see the PrepareState note below).
+            if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::XamlTree))
+            {
+                TraceProfilerPeerAssociated(pCoreDO);
+            }
+#endif // XAMLPROFILER_ENABLED
 
             // For core types which are extended by composition we should report that such controls are custom types
             // thus RPInvokes for overrides (MeasureOverride, ArrangeOverride, etc.) will be invoked for such types.

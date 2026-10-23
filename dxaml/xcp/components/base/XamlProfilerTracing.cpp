@@ -22,8 +22,8 @@ TRACELOGGING_DEFINE_PROVIDER(
 
 namespace
 {
-    // TryMarkTypeFirstSeen's set: one bit per KnownTypeIndex below c_typeTableCapacity.
-    std::atomic<uint64_t> s_typesSeen[XamlProfilerTracing::c_typeTableCapacity / 64] {};
+    // IsTypeDescribed's set: one bit per KnownTypeIndex below c_typeTableCapacity.
+    std::atomic<uint64_t> s_typesDescribed[XamlProfilerTracing::c_typeTableCapacity / 64] {};
 }
 
 namespace XamlProfilerTracing
@@ -37,33 +37,40 @@ namespace XamlProfilerTracing
         _In_opt_ PEVENT_FILTER_DESCRIPTOR /* filterData */,
         _Inout_opt_ PVOID /* callbackContext */) noexcept
     {
-        // EVENT_CONTROL_CODE_ENABLE_PROVIDER / EVENT_CONTROL_CODE_CAPTURE_STATE from evntrace.h,
-        // which TraceLoggingProvider.h doesn't pull in.
+        // EVENT_CONTROL_CODE_DISABLE_PROVIDER / ENABLE_PROVIDER / CAPTURE_STATE from evntrace.h,
+        // which TraceLoggingProvider.h doesn't pull in. Resetting on disable too means a session
+        // that starts later normally finds the table already empty.
+        constexpr ULONG c_disableProvider = 0;
         constexpr ULONG c_enableProvider = 1;
         constexpr ULONG c_captureState = 2;
-        if (controlCode == c_enableProvider || controlCode == c_captureState)
+        if (controlCode == c_disableProvider || controlCode == c_enableProvider || controlCode == c_captureState)
         {
-            for (std::atomic<uint64_t>& word : s_typesSeen)
+            for (std::atomic<uint64_t>& word : s_typesDescribed)
             {
                 word.store(0, std::memory_order_relaxed);
             }
         }
     }
 
-    bool TryMarkTypeFirstSeen(uint32_t typeIndex) noexcept
+    bool IsTypeDescribed(uint32_t typeIndex) noexcept
     {
         if (typeIndex >= c_typeTableCapacity)
         {
-            return true;
-        }
-
-        std::atomic<uint64_t>& word = s_typesSeen[typeIndex / 64];
-        const uint64_t bit = uint64_t{ 1 } << (typeIndex % 64);
-        if ((word.load(std::memory_order_relaxed) & bit) != 0)
-        {
             return false;
         }
-        return (word.fetch_or(bit, std::memory_order_relaxed) & bit) == 0;
+
+        const uint64_t bit = uint64_t{ 1 } << (typeIndex % 64);
+        return (s_typesDescribed[typeIndex / 64].load(std::memory_order_acquire) & bit) != 0;
+    }
+
+    void MarkTypeDescribed(uint32_t typeIndex) noexcept
+    {
+        if (typeIndex < c_typeTableCapacity)
+        {
+            // Pairs with the acquire in IsTypeDescribed: a thread that sees the bit writes its
+            // ElementEnteredTree after this thread's ElementTypeInfo.
+            s_typesDescribed[typeIndex / 64].fetch_or(uint64_t{ 1 } << (typeIndex % 64), std::memory_order_release);
+        }
     }
 }
 

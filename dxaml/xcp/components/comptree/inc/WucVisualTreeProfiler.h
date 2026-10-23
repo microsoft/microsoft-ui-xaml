@@ -33,7 +33,7 @@
 namespace WucVisualTreeProfiler
 {
     // Concrete visual type carried by WucVisualChildInserted / WucVisualRootSet. Part of the ETW
-    // contract consumed by winui-perf-tools: append only.
+    // contract with the profiler tools (e.g. tools/XamlProfiler/XamlProfilerApp): append only.
     enum class VisualKind : uint32_t
     {
         Unknown = 0,
@@ -160,6 +160,22 @@ namespace WucVisualTreeProfiler
         _In_opt_ IUnknown* visual,
         _In_reads_(16) const float* matrix);
 
+    // NotifyTransformChanged for a 4x4 matrix struct with members M11..M44 (wfn::Matrix4x4),
+    // taken by reference and out of line so the 16-value copy stays out of the setter call
+    // sites. Used by XAMLPROFILER_WUC_TRANSFORM.
+    template <typename TMatrix>
+    __declspec(noinline) void NotifyTransformMatrixChanged(
+        _In_opt_ IUnknown* visual,
+        const TMatrix& matrix)
+    {
+        const float values[16] = {
+            matrix.M11, matrix.M12, matrix.M13, matrix.M14,
+            matrix.M21, matrix.M22, matrix.M23, matrix.M24,
+            matrix.M31, matrix.M32, matrix.M33, matrix.M34,
+            matrix.M41, matrix.M42, matrix.M43, matrix.M44 };
+        NotifyTransformChanged(visual, values);
+    }
+
     // XAML set (or cleared, when object is null) an object-valued property on 'visual'.
     // Prefer XAMLPROFILER_WUC_OBJECT.
     void NotifyObjectChanged(
@@ -206,14 +222,7 @@ namespace WucVisualTreeProfiler
     do { if (WucVisualTreeProfiler::IsEnabled()) { const auto& xpVector_ = (vector); WucVisualTreeProfiler::NotifyPropertyChanged((visual), WucVisualTreeProfiler::VisualProperty::property, xpVector_.X, xpVector_.Y, xpVector_.Z, xpVector_.W); } } while (0)
 
 #define XAMLPROFILER_WUC_TRANSFORM(visual, matrix) \
-    do { if (WucVisualTreeProfiler::IsEnabled()) { \
-        const auto& xpMatrix_ = (matrix); \
-        const float xpValues_[16] = { \
-            xpMatrix_.M11, xpMatrix_.M12, xpMatrix_.M13, xpMatrix_.M14, \
-            xpMatrix_.M21, xpMatrix_.M22, xpMatrix_.M23, xpMatrix_.M24, \
-            xpMatrix_.M31, xpMatrix_.M32, xpMatrix_.M33, xpMatrix_.M34, \
-            xpMatrix_.M41, xpMatrix_.M42, xpMatrix_.M43, xpMatrix_.M44 }; \
-        WucVisualTreeProfiler::NotifyTransformChanged((visual), xpValues_); } } while (0)
+    do { if (WucVisualTreeProfiler::IsEnabled()) { WucVisualTreeProfiler::NotifyTransformMatrixChanged((visual), (matrix)); } } while (0)
 
 #define XAMLPROFILER_WUC_OBJECT(visual, property, object) \
     do { if (WucVisualTreeProfiler::IsEnabled()) { WucVisualTreeProfiler::NotifyObjectChanged((visual), WucVisualTreeProfiler::VisualProperty::property, (object)); } } while (0)

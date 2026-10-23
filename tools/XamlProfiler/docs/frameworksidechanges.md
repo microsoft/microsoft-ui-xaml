@@ -103,9 +103,9 @@ No `.wprp`/manifest change is required for new payload fields.
 | `ChildInserted` | `ParentId, ChildId, Index, ChildLabel, IsTemplateChild, ChildPeerHandle` | `CUIElement::InsertChild` | Child inserted at an index |
 | `ChildRemoved` | `ParentId, ChildId` | `CUIElement::RemoveChild` | Child removed (no label — consumer already has it) |
 | `ElementEnteredTree` | `ElementId, ParentId, IsLive, IsTemplateChild, TypeIndex` | `CUIElement::EnterImpl` | Element entered the live tree (authoritative parent source). `TypeIndex` is the core object's `KnownTypeIndex`, the key into `ElementTypeInfo` |
-| `ElementTypeInfo` | `TypeIndex, TypeName, CoreSize` | `CUIElement::EnterImpl`, before the first `ElementEnteredTree` of each type in a session | The core class name (what `GetDebugLabel()` falls back to without an `x:Name`) and the core object's allocation size in bytes, which is fixed per type. `CoreSize` is measured in Debug builds and is 0 (unknown) in other builds |
+| `ElementTypeInfo` | `TypeIndex, TypeName, CoreSize` | `CUIElement::EnterImpl`, before the first `ElementEnteredTree` of each type in a session | The core class name (what `GetDebugLabel()` falls back to without an `x:Name`) and the core object's allocation size in bytes, which is fixed per type. `CoreSize` is measured in Debug builds and is 0 (unknown) in other builds. Best-effort: it can repeat, or arrive after the first enters of its type (see below) |
 | `ElementLeftTree` | `ElementId, ParentId, IsLive` | `CUIElement::LeaveImpl` | Element left the live tree |
-| `PeerAssociated` | `ElementId, PeerHandle` | `DXamlCore::GetPeerPrivate` (peer creation) | A DXaml peer was just bound to a core element. The only source of an `ElementEnteredTree` node's peer handle: it fires before the enter for elements whose peer exists first, and **lazily back-fills** elements whose peer is created later |
+| `PeerAssociated` | `ElementId, PeerHandle` | `DXamlCore::GetPeerPrivate` (peer creation, after the PeerTable lock is released) | A DXaml peer was just bound to a core UIElement. The only source of an `ElementEnteredTree` node's peer handle: it fires before the enter for elements whose peer exists first, and **lazily back-fills** elements whose peer is created later |
 | `ContentChanged` | `ParentId, OldContentId, NewContentId, NewContentLabel, NewContentPeerHandle` | `CContentControl` content set | `ContentControl.Content` replaced |
 | `PopupOpened` | `PopupId, ChildId, PopupLabel, ChildLabel, ChildPeerHandle` | `CPopup::Open` | Popup opened, child entered the tree (**two** labels) |
 | `PopupClosed` | `PopupId, ChildId` | `CPopup` close | Popup closed |
@@ -114,8 +114,12 @@ No `.wprp`/manifest change is required for new payload fields.
 source location. Consumers join those back by `ElementId` from granular events:
 
 - **Class name and core size:** `ElementTypeInfo`, by `TypeIndex`. The runtime keeps a
-  per-session "type seen" table that resets whenever a session enables the provider,
-  so every session gets the rows for the types it sees.
+  per-session table of the types it has described, which resets whenever a session
+  enables or disables the provider, so every session gets the rows for the types it
+  sees. A type is marked only after its row is written, so UI threads racing on a new
+  type may each write one. Delivery is best-effort: when a session starts while
+  elements are entering, the first enters of a type can arrive before its row, so
+  consumers apply a late row to the nodes they already hold with that `TypeIndex`.
 - **`x:Name`:** the `Microsoft-Windows-XAML` manifest provider
   (`{531a35ab-63ce-4bcf-aa98-f88c7a89e455}`, keyword `0x1`): `ElementSetNameInfo`
   (event 213) when a name is set, and `ElementCreatedInfo` (event 61), which clears
@@ -235,10 +239,12 @@ created later, and there was no signal for that moment — the node would stay
 un-highlightable forever.
 
 **Fix:** a dedicated `PeerAssociated(ElementId, PeerHandle)` event fired from the
-peer-creation path in `dxaml/xcp/dxaml/lib/DXamlCore.cpp`, **immediately after
-`SetDXamlPeer`** binds the new peer to the core object. It computes the handle
+peer-creation path in `dxaml/xcp/dxaml/lib/DXamlCore.cpp`, **after `SetDXamlPeer`**
+binds the new peer to the core object and the PeerTable lock is released. Computing
+the handle QIs the peer, and for a composed peer (e.g. a C# subclass) that QI runs
+app code, which mustn't run under that lock. It computes the handle
 with the *same* `XamlProfilerGetPeerHandle` helper (so the value matches every
-other event) and only emits when the handle is non-zero. The consumer's
+other event) and only emits for UIElements, when the handle is non-zero. The consumer's
 `SetPeerHandle` ("first non-zero wins") then upgrades that element's logical /
 visual / comp nodes from `0` to the real handle — so a Ctrl+Click can highlight
 it live even though its peer didn't exist at enter time.
@@ -373,7 +379,7 @@ phantom nodes in the very tree being inspected. Suppression is producer-side:
 | File | Role in the change |
 | --- | --- |
 | `dxaml/Xaml.Cpp.Props` | `XamlProfilerEnabled` master switch (on for every configuration; see `activateframework.md`) |
-| `dxaml/xcp/components/base/inc/XamlProfilerTracing.h` | Provider declaration, keyword groups, inline `IsEnabled(keywords)` gate, emitter declarations (**all** event schemas); `XamlProfilerGetPeerHandle` / `XamlProfilerGetCoreSize` declarations; the `ElementTypeInfo` type table (`TryMarkTypeFirstSeen`) and the enable callback that resets it; inline `XamlProfilerTraceHeapSnapshot` (Debug builds) |
+| `dxaml/xcp/components/base/inc/XamlProfilerTracing.h` | Provider declaration, keyword groups, inline `IsEnabled(keywords)` gate, emitter declarations (**all** event schemas); `XamlProfilerGetPeerHandle` / `XamlProfilerGetCoreSize` declarations; the `ElementTypeInfo` type table (`IsTypeDescribed` / `MarkTypeDescribed`) and the enable callback that resets it; inline `XamlProfilerTraceHeapSnapshot` (Debug builds) |
 | `dxaml/xcp/components/base/XamlProfilerTracing.cpp` | **New.** Provider definition, the out-of-line emitters, the type table and its enable callback |
 | `dxaml/xcp/components/base/lib/Microsoft.UI.Xaml.Base.vcxproj` | Registered `XamlProfilerTracing.cpp` in `ClCompile` |
 | `dxaml/xcp/dxaml/dllsrv/winrt/dllentry.cpp` | Registers the provider (with the enable callback) and unregisters it with the DLL |
@@ -390,7 +396,7 @@ phantom nodes in the very tree being inspected. Suppression is producer-side:
 | `dxaml/xcp/core/core/elements/Popup.cpp` | `PopupOpened`/`PopupClosed`; windowed-popup island WUC root tree and its creation and property events |
 | `dxaml/xcp/core/core/elements/SwapChainPanel.cpp` | Creation event for the swap-chain sprite visual |
 | `dxaml/xcp/core/core/elements/XamlIslandRoot.cpp` | Creation event for the island's root container visual |
-| `dxaml/xcp/dxaml/lib/DXamlCore.cpp` | `PeerAssociated` emit after `SetDXamlPeer` — the peer handle for `ElementEnteredTree` nodes, including lazy back-fill (§6) |
+| `dxaml/xcp/dxaml/lib/DXamlCore.cpp` | `PeerAssociated` emit after `SetDXamlPeer`, outside the PeerTable lock — the peer handle for `ElementEnteredTree` nodes, including lazy back-fill (§6) |
 | `dxaml/xcp/core/hw/VisualContentRenderer.cpp` | `VisualSurfaceChanged` call sites; creation and property events for content visuals (sprites, shapes) |
 | `dxaml/xcp/plat/win/desktop/DCompSurface.h` / `.cpp` | `DCompSurfaceMemoryChanged` / `DCompSurfaceTextureObserved` / snapshot emits behind inline per-group gates |
 | `dxaml/xcp/components/allocation/inc/XcpAllocation.h`, `lib/XcpAllocation.cpp` | `XCP_COUNT_OUTSTANDING_ALLOC` and the allocator counter getters used by `XamlHeapSnapshot` |

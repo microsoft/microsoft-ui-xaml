@@ -38,6 +38,8 @@ class CDependencyObject;
 // profiler bridge a tree node back to the live element so the element can be highlighted
 // in the target app. The core pointer IDs emitted alongside it are kept as-is, since those
 // are what stitch the logical/visual/composition trees together. Defined in uielement.cpp.
+// It QIs the peer, and for a composed peer (e.g. a C# subclass) that QI runs app code, so
+// never call it while holding the PeerTable lock (AutoReentrantReferenceLock).
 uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexcept;
 
 // Returns the actual heap-allocation size (in bytes) of the core object — its concrete,
@@ -106,8 +108,8 @@ namespace XamlProfilerTracing
 
     // ETW enable callback, passed to TraceLoggingRegisterEx in dllentry.cpp (runs on an ETW
     // thread, after TraceLogging has updated the state IsEnabled reads). It only resets the
-    // session-scoped type table below, when a session enables the provider or requests capture
-    // state, so every session receives ElementTypeInfo for the types it sees.
+    // session-scoped type table below, whenever a session enables or disables the provider or
+    // requests capture state, so every session receives ElementTypeInfo for the types it sees.
     void NTAPI ProviderEnableCallback(
         _In_ LPCGUID sourceId,
         ULONG controlCode,
@@ -117,14 +119,19 @@ namespace XamlProfilerTracing
         _In_opt_ PEVENT_FILTER_DESCRIPTOR filterData,
         _Inout_opt_ PVOID callbackContext) noexcept;
 
-    // Session-scoped "first seen" set of KnownTypeIndex values (a bitset of this many entries).
-    // ElementEnteredTree carries only a TypeIndex; the first enter of each type in a session is
-    // preceded by one ElementTypeInfo row.
+    // Session-scoped set of the KnownTypeIndex values whose ElementTypeInfo has been written (a
+    // bitset of this many entries). ElementEnteredTree carries only a TypeIndex; the first enter
+    // of each type in a session is preceded by an ElementTypeInfo row.
     constexpr uint32_t c_typeTableCapacity = 2048;
 
-    // True the first time typeIndex is seen since the table was last reset, and always for an
-    // index beyond the table: the caller must then emit ElementTypeInfo before ElementEnteredTree.
-    bool TryMarkTypeFirstSeen(uint32_t typeIndex) noexcept;
+    // True when typeIndex's ElementTypeInfo has been written since the table was last reset, and
+    // always false for an index beyond the table. When it's false, the caller writes
+    // ElementTypeInfo and then calls MarkTypeDescribed, so a type is marked only after its row is
+    // written. UI threads that race on a new type may each write the row.
+    bool IsTypeDescribed(uint32_t typeIndex) noexcept;
+
+    // Records that typeIndex's ElementTypeInfo has been written. No-op for an index beyond the table.
+    void MarkTypeDescribed(uint32_t typeIndex) noexcept;
 
     // Out-of-line emitters, defined in XamlProfilerTracing.cpp. Event names, field names, field
     // types and field order are the wire contract with the profiler tools.
@@ -166,7 +173,7 @@ namespace XamlProfilerTracing
     // Fired when a UIElement enters the tree (live or non-live). Scalar-only by design, since it
     // fires for every element: the consumer resolves the remaining node details from granular
     // events that are emitted once, when the detail is established:
-    //   - type name and core size: ElementTypeInfo (below), once per TypeIndex per session;
+    //   - type name and core size: ElementTypeInfo (below), normally once per TypeIndex per session;
     //   - x:Name: Microsoft-Windows-XAML ElementSetNameInfo (CDependencyObject::SetName);
     //   - DXaml peer InstanceHandle: PeerAssociated (below);
     //   - XAML source location: Microsoft-Windows-XAML-Diagnostics ElementCreatedWithSourceInfo1;
@@ -180,8 +187,11 @@ namespace XamlProfilerTracing
         bool isTemplateChild,
         uint32_t typeIndex) noexcept;
 
-    // Emitted once per TypeIndex per session, immediately before the first ElementEnteredTree
-    // that references it (see TryMarkTypeFirstSeen). TypeName is the core class name (what
+    // Emitted before the first ElementEnteredTree of each TypeIndex in a session (see
+    // IsTypeDescribed). Delivery is best-effort: a type can be described more than once (racing
+    // UI threads, overlapping sessions), and when a session starts while elements are entering,
+    // the first enters of a type can precede its row. Consumers therefore apply a late row to the
+    // nodes they already hold with that TypeIndex. TypeName is the core class name (what
     // GetDebugLabel() falls back to when there's no x:Name). CoreSize is the heap-block size of
     // the concrete core object, which is fixed per type (0 when unknown, see
     // XamlProfilerGetCoreSize); sparse properties and the DXaml peer are separate allocations.
@@ -200,12 +210,12 @@ namespace XamlProfilerTracing
     // Peer Association Events (XamlTree)
     // =====================================================================
 
-    // Fired when a DependencyObject's DXaml framework peer is created and associated with the
-    // core object (DXamlCore::GetPeerPrivate, at SetDXamlPeer). This is the source of the
-    // InstanceHandle for ElementEnteredTree nodes: it fires for every DO, before the element
-    // enters the tree for peer-first objects and after it for lazy-peer elements (e.g.
+    // Fired when a UIElement's DXaml framework peer is created and associated with the core
+    // object (DXamlCore::GetPeerPrivate, after SetDXamlPeer, once the PeerTable lock is released).
+    // This is the source of the InstanceHandle for ElementEnteredTree nodes: it fires before the
+    // element enters the tree for peer-first objects and after it for lazy-peer elements (e.g.
     // ContentPresenter, ClientAreaPresenter), so the consumer holds it per ElementId until the
-    // element enters.
+    // element enters. Other DependencyObjects aren't reported.
     // ElementId is the core CDependencyObject* (the same id stitched across all other events);
     // PeerHandle is the peer's IInspectable identity (the XAML Diagnostics InstanceHandle).
     void PeerAssociated(

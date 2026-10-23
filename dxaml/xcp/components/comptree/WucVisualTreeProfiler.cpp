@@ -40,7 +40,8 @@ namespace
             if (pFull != nullptr)
             {
                 const WCHAR* pShort = wcsrchr(pFull, L'.');
-                wcscpy_s(buffer, bufferSize, pShort != nullptr ? pShort + 1 : pFull);
+                // Truncate rather than fail fast on an unexpectedly long name.
+                wcsncpy_s(buffer, bufferSize, pShort != nullptr ? pShort + 1 : pFull, _TRUNCATE);
             }
         }
     }

@@ -85,7 +85,9 @@ _Check_return_ UINT64 XcpDebugGetAllocationSize(_In_opt_ const void *pAddress) n
 // value XAML Diagnostics / the WinUISnoop tap use as an InstanceHandle (see HandleMap::GetHandle):
 // the peer's IInspectable COM identity pointer. Returns 0 when there is no peer yet. The peer is
 // forward-declared in XamlProfilerTracing.h, so we reinterpret_cast to IUnknown* before QI-ing,
-// matching the existing pattern in CDependencyObject::GetSourceInfo.
+// matching the existing pattern in CDependencyObject::GetSourceInfo. For a composed peer (e.g. a
+// C# subclass) the QI runs app code, so callers must not hold the PeerTable lock
+// (AutoReentrantReferenceLock); see DXamlCore::GetPeerPrivate.
 uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexcept
 {
     if (obj == nullptr)
@@ -136,7 +138,7 @@ static __declspec(noinline) void TraceProfilerElementEnteredTree(
     // and the XAML source location come from their own granular events (see XamlProfilerTracing.h).
     static_assert(KnownTypeCount <= XamlProfilerTracing::c_typeTableCapacity, "The XAML Profiler type table must cover every KnownTypeIndex");
     const uint32_t typeIndex = static_cast<uint32_t>(element->GetTypeIndex());
-    if (XamlProfilerTracing::TryMarkTypeFirstSeen(typeIndex))
+    if (!XamlProfilerTracing::IsTypeDescribed(typeIndex))
     {
         XamlProfilerTracing::ElementTypeInfo(
             typeIndex,
@@ -145,6 +147,9 @@ static __declspec(noinline) void TraceProfilerElementEnteredTree(
             // Core block size (bytes) of the concrete object. It's fixed per type, so it's
             // measured once per type, whether the element first enters live or non-live.
             XamlProfilerGetCoreSize(element));
+        // Marked only after the row is written: another UI thread entering this type either sees
+        // the mark, so the row is already written, or writes the row itself.
+        XamlProfilerTracing::MarkTypeDescribed(typeIndex);
     }
 
     XamlProfilerTracing::ElementEnteredTree(
