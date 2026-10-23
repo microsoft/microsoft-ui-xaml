@@ -1162,7 +1162,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsTrue(reopened);
                 Verify.IsTrue(navView.IsPaneOpen, "The superseded executor must not close the reopened pane.");
-                Verify.AreEqual(3, closingCount, "The original dismiss, the manual close and the canceled new dismiss each notify once.");
+                Verify.AreEqual(2, closingCount, "The original dismiss (whose handler closes the pane, committing it) and the canceled new dismiss each notify once.");
             });
         }
 

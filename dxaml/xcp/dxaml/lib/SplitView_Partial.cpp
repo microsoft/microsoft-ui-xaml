@@ -541,7 +541,9 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
 
     IFC_RETURN(RegisterForDisplayModeStatesChangedEvent());
 
-    if (m_tpDisplayModeStates && m_tpDisplayModeStates.Cast<VisualStateGroup>()->GetHandle()->IsActive())
+    // Record the request even when the group is inactive (off-tree): a custom
+    // VisualStateManager can still complete it through RaiseCurrentStateChanged.
+    if (m_tpDisplayModeStates)
     {
         const auto group = static_cast<CVisualStateGroup*>(m_tpDisplayModeStates.Cast<VisualStateGroup>()->GetHandle());
         const auto sequence = group->GetCurrentStateChangedSequence() + 1;

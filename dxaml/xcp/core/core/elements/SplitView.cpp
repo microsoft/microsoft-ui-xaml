@@ -40,6 +40,11 @@ private:
 //
 // CSplitView Implementation
 //
+CSplitView::CSplitView(_In_ CCoreServices *pCore)
+    : CControl(pCore)
+{
+}
+
 CSplitView::~CSplitView()
 {
     VERIFYHR(UnregisterEventHandlers());
@@ -215,6 +220,7 @@ CSplitView::TryCloseLightDismissiblePane()
     // Flag that we're attempting to close so that we don't queue up multiple of these messages.
     const auto lightDismissId = ++m_nextLightDismissId;
     m_pendingLightDismissId = lightDismissId;
+    m_spPendingLightDismissArgs = spArgs;
 
     // Raise the closing event to give the app a chance to cancel.
     CEventManager *pEventManager = core->GetEventManager();
@@ -236,7 +242,7 @@ CSplitView::TryCloseLightDismissiblePane()
     const HRESULT result = core->ExecuteOnUIThread(spSplitViewExecutor, ReentrancyBehavior::CrashOnReentrancy);
     if (FAILED(result) && m_pendingLightDismissId == lightDismissId)
     {
-        m_pendingLightDismissId = 0;
+        SupersedeLightDismiss();
     }
     IFC_RETURN(result);
 
@@ -257,7 +263,7 @@ _Check_return_ HRESULT CSplitView::ExecuteLightDismiss(uint64_t lightDismissId, 
     {
         if (m_pendingLightDismissId == lightDismissId)
         {
-            m_pendingLightDismissId = 0;
+            SupersedeLightDismiss();
         }
         m_isLightDismissClose = false;
     });
@@ -275,12 +281,27 @@ _Check_return_ HRESULT CSplitView::ExecuteLightDismiss(uint64_t lightDismissId, 
 
 bool CSplitView::ConsumeLightDismissClose()
 {
-    return std::exchange(m_isLightDismissClose, false);
+    if (std::exchange(m_isLightDismissClose, false))
+    {
+        return true;
+    }
+
+    // A close while an uncanceled dismiss is pending (for example from its PaneClosing
+    // handler, or a bound view model) commits that dismiss, whose PaneClosing was already
+    // raised. Its executor then has nothing left to do.
+    if (m_pendingLightDismissId != 0 && m_spPendingLightDismissArgs && !m_spPendingLightDismissArgs->m_cancel)
+    {
+        SupersedeLightDismiss();
+        return true;
+    }
+
+    return false;
 }
 
 void CSplitView::SupersedeLightDismiss()
 {
     m_pendingLightDismissId = 0;
+    m_spPendingLightDismissArgs.reset();
 }
 
 CDependencyObject*

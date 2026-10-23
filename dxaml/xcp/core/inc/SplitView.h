@@ -9,14 +9,13 @@
 class CUIElement;
 class CRectangleGeometry;
 class CSplitViewTemplateSettings;
+class CSplitViewPaneClosingEventArgs;
 
 class CSplitView final : public CControl
 {
 private:
-    CSplitView(_In_ CCoreServices *pCore)
-        : CControl(pCore)
-    {
-    }
+    // Out of line so the xref_ptr to the forward-declared closing args is only instantiated in SplitView.cpp.
+    CSplitView(_In_ CCoreServices *pCore);
 
     ~CSplitView() override;
 
@@ -96,6 +95,7 @@ private:
 
     uint64_t m_nextLightDismissId{ 0 };
     uint64_t m_pendingLightDismissId{ 0 };
+    xref_ptr<CSplitViewPaneClosingEventArgs> m_spPendingLightDismissArgs;
     bool m_isLightDismissClose{ false };
     double m_paneMeasuredLength{ 0.0 };
 
