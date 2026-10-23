@@ -407,12 +407,22 @@ bool TableView::ClearSort()
 
 bool TableView::IsSortLitOnlyByApp() const
 {
-    if (m_activeSourceReleased || !m_tableViewSourceSort.AxisToken.empty())
+    if (!m_tableViewSourceSort.AxisToken.empty())
     {
         return false;
     }
     auto const source = ShapingSourceInternal();
-    return source && !winrt::get_self<::TableViewSource>(source)->ActiveSortAxisInfos().empty();
+    if (!source)
+    {
+        return false;
+    }
+    auto const sourceImpl = winrt::get_self<::TableViewSource>(source);
+    // Released but unowned (unloaded): the axes are still the app's.
+    if (m_activeSourceReleased && sourceImpl->IsOwnedByOther(*this))
+    {
+        return false;
+    }
+    return !sourceImpl->ActiveSortAxisInfos().empty();
 }
 
 bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
