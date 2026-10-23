@@ -47,17 +47,26 @@ void TableViewRowTemplateSelector::EnsureTemplates()
     MUX_ASSERT(m_templatesResolved);
 }
 
-void TableViewRowTemplateSelector::Detach()
+void TableViewRowTemplateSelector::Detach() noexcept
 {
     // Breaks the template -> pool edge; see the header for why this cannot be a destructor.
-    if (m_rowTemplate)
+    // Runs from ~TableView, where SetValue fails once XAML is shutting down; a throw would terminate.
+    for (auto const& dataTemplate : { m_rowTemplate, m_groupHeaderTemplate })
     {
-        winrt::RecyclePool::SetPoolInstance(m_rowTemplate, nullptr);
-    }
-
-    if (m_groupHeaderTemplate)
-    {
-        winrt::RecyclePool::SetPoolInstance(m_groupHeaderTemplate, nullptr);
+        if (dataTemplate)
+        {
+            try
+            {
+                winrt::RecyclePool::SetPoolInstance(dataTemplate, nullptr);
+            }
+            catch (...)
+            {
+                wchar_t message[96];
+                swprintf_s(message, L"TableView: RecyclePool.SetPoolInstance failed in Detach (0x%08X).\n",
+                    static_cast<unsigned int>(winrt::to_hresult()));
+                OutputDebugStringW(message);
+            }
+        }
     }
 
     m_rowTemplate = nullptr;

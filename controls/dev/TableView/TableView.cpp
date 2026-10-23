@@ -551,7 +551,18 @@ TableView::~TableView()
     }
 
     // Unloaded may not have run; release ThemeSettings and drop the Destroying subscription.
-    ReleaseThemeSettings();
+    // A throw from a destructor during XAML shutdown would terminate, so contain it.
+    try
+    {
+        ReleaseThemeSettings();
+    }
+    catch (...)
+    {
+        wchar_t message[96];
+        swprintf_s(message, L"TableView: ReleaseThemeSettings failed in destructor (0x%08X).\n",
+            static_cast<unsigned int>(winrt::to_hresult()));
+        OutputDebugStringW(message);
+    }
 }
 
 TableView::TableView()
