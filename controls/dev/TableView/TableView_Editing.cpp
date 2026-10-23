@@ -1227,7 +1227,8 @@ void TableView::QueueDeferredEditReshapeDrain()
 
 void TableView::FlushDeferredEditReshapes()
 {
-    if (!m_suppressEditVisualRestore && !m_isApplyingCoalescedEditReshape && !m_activeSourceReleased && !IsEditing() &&
+    // Each pass pops at least one operation, so this terminates even if every one throws.
+    while (!m_suppressEditVisualRestore && !m_isApplyingCoalescedEditReshape && !m_activeSourceReleased && !IsEditing() &&
         (!m_pendingEditReshapes.empty() || !m_reshapesAfterEditCloses.empty()))
     {
         try

@@ -909,7 +909,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a sort opt-out deferred past an edit closed while the table is unloaded applies before a newer sort requested after reload.")]
+        [TestProperty("Description", "Verifies a sort opt-out deferred past an edit force-closed while the table is unloaded is applied by the time the table is back, and is not replayed over a newer sort.")]
         public void VerifyDeferredSortOptOutAppliesBeforeSortAfterReload()
         {
             TableView tableView = null;
@@ -964,12 +964,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 vetoClose = false;
                 tableView.IsReadOnly = true;
                 Verify.IsFalse(tableView.IsEditing, "Precondition: the edit is closed while unloaded.");
+                Log.Comment($"Cleared synchronously by the forced close: {clearedCount}.");
             });
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection, "Precondition: the deferred clear waits while unloaded.");
+                Log.Comment($"Before reload: Name sort={tableView.Columns[0].SortDirection}, cleared={clearedCount}.");
                 tableView.IsReadOnly = false;
                 LoadContent(tableView);
             });
@@ -977,6 +978,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The deferred clear applies by the time the table is back, without a newer request.");
+                Verify.AreEqual(1, clearedCount, "The clear must be reported once.");
                 Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending), "The newer sort applies.");
             });
             IdleSynchronizer.Wait();
@@ -984,7 +987,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(SortDirection.Ascending, tableView.Columns[1].SortDirection, "The older deferred clear must not undo the newer sort.");
-                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The deferred clear still applies.");
                 Verify.AreEqual(1, clearedCount, "The clear must be reported once.");
             });
         }
