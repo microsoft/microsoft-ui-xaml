@@ -18,6 +18,11 @@
 #else
 #define FEATURE_XAML2018_OVERRIDE
 #endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
+#else
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE
+#endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks) 
 #define FEATURE_XAMLMOTIONSYSTEMHOLDBACKS_OVERRIDE override
 #else
@@ -35,6 +40,7 @@ namespace ctl
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_Interactions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::InteractionBase*>** ppValue) override { return This()->get_Interactions(ppValue); }
     };
+    
     template<typename impl_type>
     class interface_forwarder< ABI::Microsoft::UI::Xaml::IUIElementFeature_XamlMotionSystemHoldbacks, impl_type> final
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IUIElementFeature_XamlMotionSystemHoldbacks, impl_type>
@@ -97,6 +103,8 @@ namespace DirectUI
 #if WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IUIElementFeature_Xaml2018, UIElementGenerated >
 #endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+#endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IUIElementFeature_XamlMotionSystemHoldbacks, UIElementGenerated >
 #endif
@@ -115,6 +123,8 @@ namespace DirectUI
             INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Xaml::IUIElementPrivate)
 #if WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
             INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Xaml::IUIElementFeature_Xaml2018)
+#endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
             INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Xaml::IUIElementFeature_XamlMotionSystemHoldbacks)
@@ -643,11 +653,17 @@ namespace DirectUI
         , public ABI::Microsoft::UI::Xaml::IUIElementFactory
         , public ABI::Microsoft::UI::Xaml::IUIElementStatics
         , public ABI::Microsoft::UI::Xaml::IUIElementStaticsPrivate
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ABI::Microsoft::UI::Xaml::IUIElementStaticsFeature_ExperimentalApi
+#endif
     {
         BEGIN_INTERFACE_MAP(UIElementFactory, ctl::BetterAggregableAbstractCoreObjectActivationFactory)
             INTERFACE_ENTRY(UIElementFactory, ABI::Microsoft::UI::Xaml::IUIElementFactory)
             INTERFACE_ENTRY(UIElementFactory, ABI::Microsoft::UI::Xaml::IUIElementStatics)
             INTERFACE_ENTRY(UIElementFactory, ABI::Microsoft::UI::Xaml::IUIElementStaticsPrivate)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(UIElementFactory, ABI::Microsoft::UI::Xaml::IUIElementStaticsFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(UIElementFactory, ctl::BetterAggregableAbstractCoreObjectActivationFactory)
 
     public:
@@ -765,6 +781,7 @@ namespace DirectUI
         // Static methods.
         IFACEMETHOD(TryStartDirectManipulation)(_In_ ABI::Microsoft::UI::Xaml::Input::IPointer* pValue, _Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(RegisterAsScrollPort)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement) override;
+        IFACEMETHOD(InvalidateViewport)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement) FEATURE_EXPERIMENTALAPI_OVERRIDE;
         IFACEMETHOD(InternalGetIsEnabled)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pResult) override;
         IFACEMETHOD(InternalPutIsEnabled)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value) override;
 
@@ -818,6 +835,7 @@ namespace DirectUI
         // Customized static  methods.
          _Check_return_ HRESULT TryStartDirectManipulationImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IPointer* pValue, _Out_ BOOLEAN* pReturnValue); 
          _Check_return_ HRESULT RegisterAsScrollPortImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement); 
+         _Check_return_ HRESULT InvalidateViewportImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement); 
          _Check_return_ HRESULT InternalGetIsEnabledImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pResult); 
          _Check_return_ HRESULT InternalPutIsEnabledImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value); 
     };
