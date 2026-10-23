@@ -4,7 +4,6 @@
 #include "precomp.h"
 #include <DependencyLocator.h>
 #ifdef XAMLPROFILER_ENABLED
-#include "XamlProfilerTracing.h"
 #include <WucVisualTreeProfiler.h>
 #endif // XAMLPROFILER_ENABLED
 #include <D2DUtils.h>

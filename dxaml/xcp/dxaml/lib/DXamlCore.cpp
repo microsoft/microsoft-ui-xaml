@@ -3,9 +3,6 @@
 
 #include "precomp.h"
 #include <CoreWindow.h>
-#ifdef XAMLPROFILER_ENABLED
-#include <XamlProfilerTracing.h>
-#endif // XAMLPROFILER_ENABLED
 #include "UserControl.g.h"
 #include "Control.g.h"
 #include "TextBoxView.g.h"
