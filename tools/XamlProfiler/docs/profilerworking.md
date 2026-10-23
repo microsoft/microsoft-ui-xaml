@@ -112,16 +112,22 @@ misses the elements that already exist.
 machine never turn the instrumentation on. Exe mode uses the chosen file's name;
 package mode reads the `Application@Executable` for the app from the installed
 package's `AppxManifest.xml`. If the name can't be resolved, the session isn't
-scoped. A target that is already running (PID passed to the constructor) is scoped
-with `ProcessIDFilter` instead.
+scoped until the target's PID is known. A target that is already running (PID
+passed to the constructor) is scoped with `ProcessIDFilter` instead.
 
 After the launch, `MainWindow` checks that the target's process runs the
 executable the session was scoped to. If it doesn't (for example, a packaged app
 started through a launcher such as `PsfLauncher64.exe`), `RescopeToProcess`
 re-enables both providers for that PID, and the status bar warns that the target's
 startup events were missed. If no process was found (package mode only),
-`RescopeToProcess` re-enables them for all processes, and the status bar
-says it is listening to all processes.
+`RescopeToProcess` re-enables them for all processes, and the status bar warns
+that the session now listens to all processes and that the app's startup events
+may have been missed. A session that wasn't scoped is re-scoped to the target's
+PID once the process is found, so other WinUI processes stop emitting.
+
+While the session listens to all processes (before the target's PID is known, or
+when it isn't found), the events of every WinUI process feed the same trees: the
+router's state isn't keyed by process.
 
 **The recycled-buffer hazard (critical).** The `TraceEvent` instance and its
 payload buffer are **reused** by the parser and become invalid the moment the
@@ -139,7 +145,8 @@ consumer a buffer when it fills or when the session flushes (about once a second
 when a thread moves between CPUs, its later events can arrive before its earlier
 ones. The router needs them in order: an `ElementSetName` or `PeerAssociated` that
 happened before an element entered the tree must reach the router before its
-`ElementEnteredTree`, and so must the `ElementTypeInfo` for its type.
+`ElementEnteredTree`. (An `ElementTypeInfo` that arrives after an enter of its
+type is still applied; see §4.)
 `FlushPending` moves queued events into an `EventReorderBuffer`, which holds each
 event for 1.5 s after it arrived and then releases events in timestamp order (ties
 keep arrival order). So the trees lag the target by about 1.5 s. `Stop()` applies
@@ -151,7 +158,10 @@ mutations apply under one layout pass. At most one drain is queued on the
 dispatcher at a time (`_flushScheduled` interlock).
 
 **Process filter.** When a target PID is known, events from other processes are
-also dropped in `OnEvent`.
+also dropped in `OnEvent`, and again when held events are released, so those
+captured before the PID was known are dropped too if they're still held. The
+profiler's own events are always dropped: it's a WinUI app too, so a session that
+isn't scoped to the target enables the providers in it.
 
 **Dispatch.** `ProfilerEventRouter.Dispatch(e)` switches on the event name to about
 25 handlers. Payload slots are read with `EtwEvent`'s typed helpers that tolerate
@@ -169,14 +179,19 @@ the logical tree via `FindNearestLogicalAncestor`; finally `SetPeerHandle`.
 (`ElementId, ParentId, IsLive, IsTemplateChild, TypeIndex`), so the router keeps the
 rest itself:
 
-- `ElementTypeInfo(TypeIndex, TypeName, CoreSize)`, emitted once per type before
-  that type's first enter, fills `_types`.
+- `ElementTypeInfo(TypeIndex, TypeName, CoreSize)`, normally emitted once per type
+  before that type's first enter, fills `_types`. It's best-effort: around a session
+  start it can arrive after enters of its type. Such elements are held in `_untyped`
+  and get the type name as a label when it arrives (`SetLateTypeName`).
 - `ElementSetName(ElementId, Name)` fills `_names`; an empty name (x:Name cleared) is
   stored too.
-- `ElementCreated(ElementId)` drops what `_names` and `_peers` hold for that id,
-  because a new element can reuse a destroyed element's address.
+- `ElementCreated(ElementId)` drops what `_names`, `_peers` and `_untyped` hold for
+  that id, because a new element can reuse a destroyed element's address.
 
-At enter, the label is the element's x:Name, else its type name.
+At enter, the label is the element's x:Name, else its type name. The type name is
+provisional (`TreeNode.IsLabelProvisional`): an element named before the session
+started has no `ElementSetName` in it, so a later event that carries the producer's
+label (such as `ChildAdded`) replaces the type name with the x:Name.
 
 **Lazy peer handles.** `ElementEnteredTree` doesn't carry a peer handle; the
 producer's `PeerAssociated(elementId, peerHandle)` is its only source. It fires when
@@ -217,7 +232,8 @@ Summary column resolves ids to `Label (0xADDR)` via `ResolveName(id)` (looks up
 logical → visual → comp). See `resources/feature-resolved-summary-names.md`.
 `ChildAdded`, `ChildInserted`, `ContentChanged`, `PopupOpened` and `CompPeerLinked`
 carry the producer's `GetDebugLabel()`; for `ElementEnteredTree` the router builds the
-same label from `ElementSetName` and `ElementTypeInfo` (§4).
+same label from `ElementSetName` and `ElementTypeInfo` (§4). A node keeps the first
+label it gets, unless that label is provisional and a definite one arrives.
 
 ### Display-name toggles (readability)
 Two **static** `TreeNode` flags let the user declutter every row on the fly; each
@@ -283,7 +299,7 @@ One class for all four trees, distinguished by `TreeNodeKind`
 (`Logical` / `Visual` / `Composition` / `WucVisual`). Carries:
 
 - `Id` (pointer identity — `CUIElement*` / `HWCompTreeNode*` / `IVisual*`),
-  `Label`, `DisplayName`, `Children`.
+  `Label` (and `IsLabelProvisional`), `DisplayName`, `Children`.
 - Cross-link ids: `LinkedLogicalNodeId`, `LinkedVisualNodeId`, `LinkedCompNodeId`.
 - `PeerHandle` — the DXaml peer `IInspectable` identity (0 = none). What the tap
   needs to highlight an element. **Not** the same as `Id`.

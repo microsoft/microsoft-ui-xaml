@@ -4,7 +4,7 @@ namespace XamlProfiler.Services;
 /// Restores timestamp order to a real-time ETW stream. ETW buffers events per CPU and hands a
 /// real-time consumer each buffer when it fills, or when the session's flush timer fires (about
 /// once a second), so when a thread moves between CPUs its later events can arrive before its
-/// earlier ones. The router needs them in order: an element's <c>ElementTypeInfo</c> must come
+/// earlier ones. The router needs them in order: an element's <c>ElementSetName</c> must come
 /// before its <c>ElementEnteredTree</c>.
 /// <para>
 /// Each event is held until <c>holdBack</c> has passed since it arrived, then released in

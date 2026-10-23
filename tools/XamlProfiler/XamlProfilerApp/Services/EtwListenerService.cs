@@ -39,17 +39,20 @@ public sealed class EtwListenerService : IDisposable
     private readonly ProfilerEventRouter _router;
     private readonly DispatcherQueue _dispatcherQueue;
     // volatile: written from the UI thread (SetTargetProcess) and read on the ETW pump
-    // thread (OnEvent). 0 means "capture all processes".
+    // thread (OnEvent) and when held events are released. 0 means "capture all processes".
     private volatile int _targetProcessId;
+    // The profiler is a WinUI app too, so a session that isn't scoped to the target also enables
+    // the providers here. Its own events are always dropped.
+    private static readonly int s_ownProcessId = Environment.ProcessId;
     // File name (with extension, no path) of the process to launch; null when unknown.
     private readonly string? _targetExecutableName;
-    // Captured on the ETW pump thread: the event, its ETW timestamp (100 ns ticks) and when it
-    // arrived (Stopwatch ticks).
-    private readonly ConcurrentQueue<(EtwEvent Event, long Timestamp, long Arrival)> _pending = new();
+    // Captured on the ETW pump thread: the event, the process that wrote it, its ETW timestamp
+    // (100 ns ticks) and when it arrived (Stopwatch ticks).
+    private readonly ConcurrentQueue<(EtwEvent Event, int ProcessId, long Timestamp, long Arrival)> _pending = new();
     // UI thread only.
-    private readonly EventReorderBuffer<EtwEvent> _reorder =
+    private readonly EventReorderBuffer<(EtwEvent Event, int ProcessId)> _reorder =
         new((long)(ReorderHoldBack.TotalSeconds * Stopwatch.Frequency));
-    private readonly List<EtwEvent> _released = new();
+    private readonly List<(EtwEvent Event, int ProcessId)> _released = new();
     // Events held in _reorder, published for ScheduleFlush on the timer thread.
     private volatile int _held;
     private System.Threading.Timer? _flushTimer;
@@ -81,17 +84,20 @@ public sealed class EtwListenerService : IDisposable
     /// Narrows (or clears) the process filter after the session is already running.
     /// Pass the target PID once it is known; pass 0 to capture all processes.
     /// Used to start capturing BEFORE the target is launched (so boot events aren't
-    /// missed), then focus on the target the moment its PID is resolved. Only affects
-    /// events processed after this call — events already enqueued are kept.
+    /// missed), then focus on the target the moment its PID is resolved. Events already
+    /// applied are kept; events from other processes that are still held for reordering
+    /// are dropped. Filters in the consumer only: ETW still enables the providers in every
+    /// process the session is scoped to (see <see cref="RescopeToProcess"/>).
     /// </summary>
     public void SetTargetProcess(int processId) => _targetProcessId = processId;
 
     /// <summary>
     /// Re-enables the providers in the running session for one process, or for all processes
-    /// when <paramref name="processId"/> is 0, replacing the executable-name scope given at
-    /// construction, and narrows the consumer-side filter to match. Used when the process that
-    /// hosts XAML doesn't run the executable the session was scoped to, so ETW never enabled the
-    /// providers in it. That process's events from before this call were not captured.
+    /// when <paramref name="processId"/> is 0, replacing the scope given at construction, and
+    /// narrows the consumer-side filter to match. Used when the process that hosts XAML doesn't
+    /// run the executable the session was scoped to, so ETW never enabled the providers in it
+    /// (that process's events from before this call were not captured), and to scope a session
+    /// that wasn't scoped once the target's PID is known.
     /// Returns false if the providers couldn't be re-enabled.
     /// </summary>
     public bool RescopeToProcess(int processId)
@@ -203,8 +209,9 @@ public sealed class EtwListenerService : IDisposable
 
     private void OnEvent(TraceEvent evt)
     {
-        // Filter to target process only (if specified)
-        if (_targetProcessId != 0 && evt.ProcessID != _targetProcessId)
+        // Filter to target process only (if specified), and never route the profiler's own events.
+        int processId = evt.ProcessID;
+        if ((_targetProcessId != 0 && processId != _targetProcessId) || processId == s_ownProcessId)
             return;
 
         // IMPORTANT: The TraceEvent instance is reused by the ETW parser and its
@@ -229,7 +236,7 @@ public sealed class EtwListenerService : IDisposable
         }
 
         // Just enqueue — the flush timer will drain in batches on the UI thread.
-        _pending.Enqueue((captured, timestamp, Stopwatch.GetTimestamp()));
+        _pending.Enqueue((captured, processId, timestamp, Stopwatch.GetTimestamp()));
     }
 
     /// <summary>
@@ -254,7 +261,7 @@ public sealed class EtwListenerService : IDisposable
     {
         while (_pending.TryDequeue(out var item))
         {
-            _reorder.Add(item.Event, item.Timestamp, item.Arrival);
+            _reorder.Add((item.Event, item.ProcessId), item.Timestamp, item.Arrival);
         }
 
         _released.Clear();
@@ -268,11 +275,17 @@ public sealed class EtwListenerService : IDisposable
         }
         _held = _reorder.Count;
 
-        foreach (var e in _released)
+        // The target can be narrowed after an event was captured (a session that started out
+        // listening to all processes), so check each event's process again.
+        int targetProcessId = _targetProcessId;
+        int applied = 0;
+        foreach (var (e, processId) in _released)
         {
+            if (targetProcessId != 0 && processId != targetProcessId) continue;
             try
             {
                 _store.EventCount++;
+                applied++;
                 _router.Dispatch(e);
             }
             catch
@@ -281,7 +294,7 @@ public sealed class EtwListenerService : IDisposable
             }
         }
 
-        if (_released.Count > 0)
+        if (applied > 0)
         {
             EventCountChanged?.Invoke(_store.EventCount);
         }

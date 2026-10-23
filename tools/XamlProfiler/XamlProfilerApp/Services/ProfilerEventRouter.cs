@@ -29,6 +29,10 @@ public sealed class ProfilerEventRouter
     private readonly Dictionary<ulong, string> _names = new();
     private readonly Dictionary<ulong, ulong> _peers = new();
     private readonly Dictionary<ulong, WucVisualPropertyBag> _bags = new();
+    // Elements that entered the tree before their type's ElementTypeInfo arrived, with the TypeIndex
+    // they entered with. ElementTypeInfo is best-effort (around a session start it can trail the
+    // first enter of its type), so the type name is applied when it arrives.
+    private readonly Dictionary<ulong, uint> _untyped = new();
 
     public ProfilerEventRouter(ProfilerTreeStore store) => _store = store;
 
@@ -162,22 +166,38 @@ public sealed class ProfilerEventRouter
     }
 
     // [0]elementId u64, [1]parentId u64, [2]isLive bool, [3]isTemplateChild bool, [4]typeIndex u32.
-    // The label is the element's x:Name, else its class name.
+    // The label is the element's x:Name, else its class name. The class name is provisional: the
+    // x:Name of an element named before the session started is never seen here, but a later
+    // ChildAdded carries it and replaces the class name.
     private void HandleElementEnteredTree(in EtwEvent e)
     {
         var elementId = e.U64(0);
         var parentId = e.U64(1);
         var isLive = e.Bool(2);
         var isTemplateChild = e.Bool(3);
-        var label = _names.TryGetValue(elementId, out var name) && !string.IsNullOrEmpty(name)
-            ? name
-            : _types.GetValueOrDefault(e.U32(4)) ?? string.Empty;
+        var typeIndex = e.U32(4);
+        var label = string.Empty;
+        var provisional = false;
+        _untyped.Remove(elementId);
+        if (_names.TryGetValue(elementId, out var name) && !string.IsNullOrEmpty(name))
+        {
+            label = name;
+        }
+        else if (_types.TryGetValue(typeIndex, out var typeName))
+        {
+            label = typeName;
+            provisional = true;
+        }
+        else
+        {
+            _untyped[elementId] = typeIndex;
+        }
         _peers.TryGetValue(elementId, out var peerHandle);
         var isInfra = ProfilerTreeStore.IsInfrastructureLabel(label);
         var summary = $"parent={_store.ResolveName(parentId)}, live={isLive}";
 
         // Always enter visual tree
-        _store.MarkVisualEnter(elementId, parentId, isLive, label);
+        _store.MarkVisualEnter(elementId, parentId, isLive, label, provisional);
         _store.RecordVisualEvent(elementId, "ElementEnteredTree",
             summary + (isTemplateChild ? " [template]" : isInfra ? " [infra]" : ""));
 
@@ -187,12 +207,12 @@ public sealed class ProfilerEventRouter
             var logicalParentId = _store.FindNearestLogicalAncestor(parentId);
             if (logicalParentId == parentId)
             {
-                _store.MarkLogicalEnter(elementId, parentId, isLive, label);
+                _store.MarkLogicalEnter(elementId, parentId, isLive, label, provisional);
             }
             else
             {
                 // Parent is template/infra — use nearest logical ancestor or 0 (root)
-                _store.MarkLogicalEnter(elementId, logicalParentId, isLive, label);
+                _store.MarkLogicalEnter(elementId, logicalParentId, isLive, label, provisional);
             }
             _store.RecordLogicalEvent(elementId, "ElementEnteredTree", summary);
         }
@@ -238,11 +258,20 @@ public sealed class ProfilerEventRouter
     // Element details (ElementTypeInfo + Microsoft-Windows-XAML events)
     // =====================================================================
 
-    // Once per TypeIndex per session, before the first enter of that type:
-    // [0]typeIndex u32, [1]typeName str, [2]coreSize u64 (unused).
+    // Normally once per TypeIndex per session, before the first enter of that type:
+    // [0]typeIndex u32, [1]typeName str, [2]coreSize u64 (unused). It's best-effort, so elements
+    // of the type that entered before it get their label now.
     private void HandleElementTypeInfo(in EtwEvent e)
     {
-        _types[e.U32(0)] = e.Str(1);
+        var typeIndex = e.U32(0);
+        var typeName = e.Str(1);
+        _types[typeIndex] = typeName;
+        if (_untyped.Count == 0) return;
+        foreach (var elementId in _untyped.Where(p => p.Value == typeIndex).Select(p => p.Key).ToList())
+        {
+            _untyped.Remove(elementId);
+            _store.SetLateTypeName(elementId, typeName);
+        }
     }
 
     // Microsoft-Windows-XAML ElementCreated, from the CUIElement constructor: [0]elementId u64.
@@ -252,6 +281,7 @@ public sealed class ProfilerEventRouter
         var elementId = e.U64(0);
         _names.Remove(elementId);
         _peers.Remove(elementId);
+        _untyped.Remove(elementId);
     }
 
     // Microsoft-Windows-XAML ElementSetName: [0]elementId u64, [1]name str. An empty name clears

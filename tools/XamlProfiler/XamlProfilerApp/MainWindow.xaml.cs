@@ -398,26 +398,38 @@ public sealed partial class MainWindow : Window
         }
 
         // Narrow the listener to the target process now that we know its PID. Events already
-        // captured from the target during the all-process window are kept; only future events
-        // from other processes are filtered out. (0 = keep listening to all processes.)
+        // applied from the all-process window are kept; events from other processes are dropped
+        // from now on, including those still held for reordering. (0 = keep listening to all
+        // processes.)
         // If the session is scoped to an executable the target doesn't run (for example a
         // packaged app started through a launcher such as PsfLauncher64.exe), or no target was
         // found, ETW never enabled the provider in it, so re-scope the session to the target's
-        // PID, or to all processes.
+        // PID, or to all processes. A session that isn't scoped (the executable name couldn't be
+        // resolved) has the providers enabled in every WinUI process, so scope it to the PID too.
         if (targetExecutableName != null &&
             (_targetProcess == null || ProcessResolver.RunsOtherExecutable(_targetProcess, targetExecutableName)))
         {
-            if (_listener.RescopeToProcess(targetPid) && targetPid != 0)
+            if (_listener.RescopeToProcess(targetPid))
             {
                 // Queued like the listener's status messages, so it isn't overwritten by them.
-                string warning = $"PID {targetPid} doesn't run {targetExecutableName}, so the session now listens to that PID. " +
-                    "Its startup events were missed, so the trees may be incomplete.";
+                string warning = targetPid != 0
+                    ? $"PID {targetPid} doesn't run {targetExecutableName}, so the session now listens to that PID. " +
+                      "Its startup events were missed, so the trees may be incomplete."
+                    : "The app's process wasn't found, so the session now listens to all processes. " +
+                      "The app's startup events may have been missed, so the trees may be incomplete.";
                 DispatcherQueue.TryEnqueue(() => StatusText.Text = warning);
             }
         }
         else if (targetPid != 0)
         {
-            _listener.SetTargetProcess(targetPid);
+            if (targetExecutableName == null)
+            {
+                _listener.RescopeToProcess(targetPid);
+            }
+            else
+            {
+                _listener.SetTargetProcess(targetPid);
+            }
         }
 
         // The live-highlight tap is now injected on demand via the Tap button, so the

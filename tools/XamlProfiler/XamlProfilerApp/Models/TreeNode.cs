@@ -20,6 +20,7 @@ public class TreeNode : INotifyPropertyChanged
     private LinkHighlightKind _linkHighlight = LinkHighlightKind.None;
     private string? _createdByEvent;
     private string? _label;
+    private bool _isLabelProvisional;
     private string _fallbackPrefix = string.Empty;
     private string _suffix = string.Empty;
 
@@ -102,7 +103,9 @@ public class TreeNode : INotifyPropertyChanged
     /// <para>
     /// Set on the first event that carries a non-empty label for this node and
     /// then frozen — subsequent events that don't carry a label (e.g. removal
-    /// events) do not erase it. See <see cref="SetLabelIfEmpty"/>.
+    /// events) do not erase it. The exception is a provisional label (see
+    /// <see cref="IsLabelProvisional"/>), which a later definite one replaces.
+    /// See <see cref="SetLabelIfEmpty"/>.
     /// </para>
     /// </summary>
     public string? Label
@@ -112,15 +115,27 @@ public class TreeNode : INotifyPropertyChanged
     }
 
     /// <summary>
+    /// <c>true</c> when <see cref="Label"/> is a class name the router fell back to without
+    /// knowing whether the element has an <c>x:Name</c>; it misses the name of an element named
+    /// before the session started. A definite label, such as the one <c>ChildAdded</c> carries,
+    /// replaces it.
+    /// </summary>
+    public bool IsLabelProvisional => _isLabelProvisional;
+
+    /// <summary>
     /// Stamp the label once. The "first non-empty wins" rule matters because a
     /// node can first appear via a label-carrying event (ChildAdded, EnteredTree)
     /// OR via a label-less one (CompPeerUnlinked for an element we never saw
     /// added). We don't want a later label-less event to wipe a real label.
+    /// A definite label also replaces a provisional one; a provisional label never
+    /// replaces an existing label. Returns <c>true</c> when the label text changed.
     /// </summary>
-    public bool SetLabelIfEmpty(string? label)
+    public bool SetLabelIfEmpty(string? label, bool provisional = false)
     {
         if (string.IsNullOrEmpty(label)) return false;
-        if (!string.IsNullOrEmpty(_label)) return false;
+        if (!string.IsNullOrEmpty(_label) && (provisional || !_isLabelProvisional)) return false;
+        _isLabelProvisional = provisional;
+        if (label == _label) return false;
         Label = label;
         return true;
     }
