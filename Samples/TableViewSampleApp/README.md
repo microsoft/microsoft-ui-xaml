@@ -95,7 +95,7 @@ visible on purpose.
 - Selection, sorting, filtering, keyboard navigation, and accessibility behavior
 - Column layout &amp; sizing (Pixel / Star widths, Min/Max clamps, drag-to-resize) and column
   lifecycle (add, remove, reorder at runtime), plus header visibility
-- Tooltips, context menus, grid lines, cell templating, text wrapping, row height, cell editing,
+- Tooltips, context menus, grid lines (including hiding the header lines), cell templating, text wrapping, row height, cell editing,
   empty state, density, and grouped rows
 - Hierarchical rows (`TableViewSource.ParentBy`): one flat list, two relations, composed with
   filter, sort and grouping, and `IsLiveShaping` reshaping both trees when a row's property changes.

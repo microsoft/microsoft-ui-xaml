@@ -4,9 +4,11 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Media;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -86,6 +88,54 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
         SetLastAction(custom
             ? "Row banding -> custom RowBackground / AlternatingRowBackground"
             : "Row banding -> default theme");
+    }
+    // </snippet>
+
+    // <snippet>
+    // ---- Header lines -------------------------------------------------------------------
+
+    private void OnHeaderLinesChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (PeopleTable is null || HeaderLinesText is null)
+        {
+            return;
+        }
+
+        var mode = SampleShaping.SelectedTag(HeaderLinesSelector, "default");
+        SetHeaderSeparatorsTransparent(PeopleTable, mode == "brush");
+        PeopleTable.ColumnHeaderStyle = mode == "style"
+            ? (Style)Resources["NoColumnSeparatorsHeaderStyle"]
+            : null;
+
+        SetLastAction(mode switch
+        {
+            "brush" => "Header lines -> hidden: column separators and the line under the header row",
+            "style" => "Header lines -> column separators hidden; the line under the header row stays",
+            _ => "Header lines -> shown",
+        });
+    }
+
+    // Static equivalent: the same keyed brush under <tv:TableView.Resources>.
+    private static void SetHeaderSeparatorsTransparent(TableView table, bool transparent)
+    {
+        const string key = "TabularSurfaceHeaderSeparatorBrush";
+        if (transparent == table.Resources.ContainsKey(key))
+        {
+            return;
+        }
+
+        if (transparent)
+        {
+            table.Resources[key] = new SolidColorBrush(Colors.Transparent);
+        }
+        else
+        {
+            table.Resources.Remove(key);
+        }
+
+        // {ThemeResource} resolves at template apply, so re-apply the table's template.
+        table.Template = null;
+        table.ClearValue(Control.TemplateProperty);
     }
     // </snippet>
 

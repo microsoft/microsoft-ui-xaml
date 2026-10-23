@@ -7,6 +7,89 @@
 
 <!-- … -->
 
+<!-- The default TableViewColumnHeader template minus the optional PART_GridLine. -->
+<Style x:Key="NoColumnSeparatorsHeaderStyle" TargetType="tv:TableViewColumnHeader">
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="tv:TableViewColumnHeader">
+                <Grid x:Name="PART_Root"
+                      Background="{TemplateBinding Background}"
+                      CornerRadius="{TemplateBinding CornerRadius}">
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal"/>
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                        <VisualStateGroup x:Name="HighContrastStates">
+                            <VisualState x:Name="HighContrastNormal"/>
+                            <VisualState x:Name="HighContrastPointerOver">
+                                <VisualState.Setters>
+                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPointerOverBrush}"/>
+                                    <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="HighContrastPressed">
+                                <VisualState.Setters>
+                                    <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPressedBrush}"/>
+                                    <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                        <VisualStateGroup x:Name="SortStates">
+                            <VisualState x:Name="Unsorted"/>
+                            <VisualState x:Name="SortAscending">
+                                <VisualState.Setters>
+                                    <Setter Target="PART_SortIndicatorHost.Visibility" Value="Visible"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="SortDescending">
+                                <VisualState.Setters>
+                                    <Setter Target="PART_SortIndicatorHost.Visibility" Value="Visible"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                      ContentTransitions="{TemplateBinding ContentTransitions}"
+                                      Padding="{TemplateBinding Padding}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      AutomationProperties.AccessibilityView="Raw"/>
+
+                    <Border x:Name="PART_SortIndicatorHost"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            IsHitTestVisible="False"
+                            Visibility="Collapsed"
+                            AutomationProperties.AccessibilityView="Raw"/>
+
+                    <Border x:Name="PART_ResizeGripperHost"/>
+                </Grid>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
+
+<!-- … -->
+
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.AutomationId="GridLinesVisibilityTable"
@@ -38,4 +121,18 @@
     <ComboBoxItem Content="Horizontal" Tag="Horizontal"/>
     <ComboBoxItem Content="Vertical" Tag="Vertical"/>
     <ComboBoxItem Content="All (default)" Tag="All"/>
+</ComboBox>
+
+<!-- … -->
+
+<ComboBox
+    x:Name="HeaderLinesSelector"
+    AutomationProperties.AutomationId="GridLinesVisibilityHeaderLinesSelector"
+    Header="Header lines"
+    SelectedIndex="0"
+    SelectionChanged="OnHeaderLinesChanged"
+    HorizontalAlignment="Stretch">
+    <ComboBoxItem Content="Shown (default)" Tag="default"/>
+    <ComboBoxItem Content="Hide all header lines (brush override)" Tag="brush"/>
+    <ComboBoxItem Content="Hide column separators (header Style)" Tag="style"/>
 </ComboBox>

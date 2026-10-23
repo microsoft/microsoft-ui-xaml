@@ -17,15 +17,98 @@
             <Setter Property="AlternatingRowBackground" Value="{ThemeResource SampleCustomAlternatingRowBackgroundBrush}"/>
         </Style>
         <!-- /snippet -->
+
+        <!-- snippet -->
+        <!-- The default TableViewColumnHeader template minus the optional PART_GridLine. -->
+        <Style x:Key="NoColumnSeparatorsHeaderStyle" TargetType="tv:TableViewColumnHeader">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="tv:TableViewColumnHeader">
+                        <Grid x:Name="PART_Root"
+                              Background="{TemplateBinding Background}"
+                              CornerRadius="{TemplateBinding CornerRadius}">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="HighContrastStates">
+                                    <VisualState x:Name="HighContrastNormal"/>
+                                    <VisualState x:Name="HighContrastPointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPointerOverBrush}"/>
+                                            <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="HighContrastPressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPressedBrush}"/>
+                                            <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="SortStates">
+                                    <VisualState x:Name="Unsorted"/>
+                                    <VisualState x:Name="SortAscending">
+                                        <VisualState.Setters>
+                                            <Setter Target="PART_SortIndicatorHost.Visibility" Value="Visible"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="SortDescending">
+                                        <VisualState.Setters>
+                                            <Setter Target="PART_SortIndicatorHost.Visibility" Value="Visible"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+
+                            <ContentPresenter x:Name="PART_ContentPresenter"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                              ContentTransitions="{TemplateBinding ContentTransitions}"
+                                              Padding="{TemplateBinding Padding}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              AutomationProperties.AccessibilityView="Raw"/>
+
+                            <Border x:Name="PART_SortIndicatorHost"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    IsHitTestVisible="False"
+                                    Visibility="Collapsed"
+                                    AutomationProperties.AccessibilityView="Raw"/>
+
+                            <Border x:Name="PART_ResizeGripperHost"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- /snippet -->
     </Page.Resources>
 
     <controls:SamplePresenter
         Header="Grid lines visibility"
-        Description="TableView.GridLinesVisibility draws a bottom border under each row (Horizontal), a right border on each cell (Vertical), both (All, the default) or neither (None). The lines run through every kind of cell on this page: a photo, text, a chip, a checkbox, a date picker and a number. Row banding swaps RowBackground and AlternatingRowBackground through a Style, so you can check the lines against tinted rows, and Grouped shaping adds group header bands for them to meet."
+        Description="TableView.GridLinesVisibility draws a bottom border under each row (Horizontal), a right border on each cell (Vertical), both (All, the default) or neither (None). It affects the body only: the header row always draws its column separators and bottom rule, and Header lines shows the two ways an app can hide them. The lines run through every kind of cell on this page: a photo, text, a chip, a checkbox, a date picker and a number. Row banding swaps RowBackground and AlternatingRowBackground through a Style, so you can check the lines against tinted rows, and Grouped shaping adds group header bands for them to meet."
         Snippet="GridLinesVisibility"
         StretchExample="True"
-        TryIt="Choose Horizontal, Vertical or None under Grid lines and watch the borders around the chip, checkbox and date picker cells. Switch Row banding to Custom colors, then set Shaping to Grouped and check where the lines meet the group header bands."
-        WhatToLookFor="Vertical lines run the full height of template cells too, so the chip, checkbox and date picker sit inside their cell borders, not on top of them. Under a Contrast theme the custom banding falls back to the theme's row brushes and the chips lose their tint, yet the lines stay visible.">
+        TryIt="Choose Horizontal, Vertical or None under Grid lines and watch the borders around the chip, checkbox and date picker cells. Switch Header lines between its three choices and watch only the header row change. Switch Row banding to Custom colors, then set Shaping to Grouped and check where the lines meet the group header bands."
+        WhatToLookFor="Vertical lines run the full height of template cells too, so the chip, checkbox and date picker sit inside their cell borders, not on top of them. Grid lines None leaves the header lines in place. Hide all header lines removes both the column separators and the line under the header row; Hide column separators keeps that line, and sorting, hover and column resizing still work. Under a Contrast theme the custom banding falls back to the theme's row brushes and the chips lose their tint, yet the lines stay visible.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
@@ -67,6 +150,24 @@
                         <ComboBoxItem Content="Horizontal" Tag="Horizontal"/>
                         <ComboBoxItem Content="Vertical" Tag="Vertical"/>
                         <ComboBoxItem Content="All (default)" Tag="All"/>
+                    </ComboBox>
+                    <!-- /snippet -->
+                </controls:RailSection>
+
+                <controls:RailSection
+                    Header="Header lines"
+                    Description="The header separators are always drawn; GridLinesVisibility affects only the body. Hide all header lines overrides TabularSurfaceHeaderSeparatorBrush with Transparent in the table's Resources, which removes the column separators and the bottom rule. Hide column separators sets ColumnHeaderStyle to a header template without PART_GridLine, so the bottom rule stays.">
+                    <!-- snippet -->
+                    <ComboBox
+                        x:Name="HeaderLinesSelector"
+                        AutomationProperties.AutomationId="GridLinesVisibilityHeaderLinesSelector"
+                        Header="Header lines"
+                        SelectedIndex="0"
+                        SelectionChanged="OnHeaderLinesChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Shown (default)" Tag="default"/>
+                        <ComboBoxItem Content="Hide all header lines (brush override)" Tag="brush"/>
+                        <ComboBoxItem Content="Hide column separators (header Style)" Tag="style"/>
                     </ComboBox>
                     <!-- /snippet -->
                 </controls:RailSection>
@@ -149,6 +250,7 @@
 
                 <controls:StatusPanel x:Name="Status" AutomationIdPrefix="GridLinesVisibility">
                     <TextBlock x:Name="GridLinesText" controls:StatusPanel.Label="Grid lines" Text="All"/>
+                    <TextBlock x:Name="HeaderLinesText" controls:StatusPanel.Label="Header lines" Text="Shown (default)"/>
                     <TextBlock x:Name="RowBandingText" controls:StatusPanel.Label="Row banding" Text="Default theme"/>
                 </controls:StatusPanel>
             </StackPanel>
