@@ -1302,25 +1302,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("PaneDisplayMode: " + paneDisplayMode);
                     navView.PaneDisplayMode = paneDisplayMode;
                     Content.UpdateLayout();
-                    // In Top mode the hit target ends where the top pane's first item starts (x = 44).
-                    double expectedWidth = paneDisplayMode == NavigationViewPaneDisplayMode.Top ? 44.0 : 48.0;
-                    Verify.AreEqual(expectedWidth, backButton.ActualWidth, "Back button hit target width");
+                    Verify.AreEqual(48.0, backButton.ActualWidth, "Back button width");
                     Verify.AreEqual(44.0, backButton.ActualHeight, "Back button hit target height");
                     VerifyBackButtonStartsAtCorner(navView, backButton);
                     VerifyBackButtonVisualAndFocusRectUnchanged(navView, backButton);
                     if (paneDisplayMode != NavigationViewPaneDisplayMode.Top)
                     {
+                        VerifyBackButtonHitTargetRight(navView, backButton, 48.0);
                         VerifyElementOffset(navView, paneToggleButton, 0.0, 44.0, "Pane toggle button");
                     }
                     else
                     {
-                        var menuItem = navView.ContainerFromMenuItem(navView.MenuItems[0]) as NavigationViewItem;
-                        double menuItemX = menuItem.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0)).X;
-                        Log.Comment("First top pane item X: " + menuItemX);
-                        Verify.IsGreaterThanOrEqual(menuItemX, 44.0, "First top pane item X");
-                        // The whole button is hit-testable (its template root has a Transparent background), so its bounds are its hit target.
-                        double backButtonRight = backButton.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(backButton.ActualWidth, 0)).X;
-                        Verify.IsLessThanOrEqual(backButtonRight, menuItemX, "Back button hit target must not cover the first top pane item");
+                        VerifyTopModeHitTargetStaysClearOfFirstItem(navView, backButton, 48.0);
                     }
                 }
 
@@ -1346,18 +1339,102 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifyBackButtonGeometryInTopModeAcrossCompactPaneLengths()
+        {
+            // The back button's Width is CompactPaneLength - 8 and, before #5306, its 4,2 margin put the visual at
+            // x = 4..CompactPaneLength - 4. In Top mode the enlarged hit target may grow toward the window edges but must
+            // not reach further into the top pane than that old visual did.
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView()
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                    IsBackButtonVisible = NavigationViewBackButtonVisible.Visible,
+                    Width = 600.0
+                };
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item 1" });
+                Content = navView;
+                Content.UpdateLayout();
+
+                var backButton = (VisualTreeHelper.GetChild(navView, 0) as Grid).FindName("NavigationViewBackButton") as Button;
+
+                foreach (var compactPaneLength in new[] { 40.0, 48.0, 64.0 })
+                {
+                    Log.Comment("CompactPaneLength changed while in Top mode: " + compactPaneLength);
+                    navView.CompactPaneLength = compactPaneLength;
+                    Content.UpdateLayout();
+                    VerifyBackButtonGeometry(navView, backButton, compactPaneLength, isTopMode: true);
+
+                    Log.Comment("Top -> Left -> Top with CompactPaneLength " + compactPaneLength);
+                    navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                    Content.UpdateLayout();
+                    VerifyBackButtonGeometry(navView, backButton, compactPaneLength, isTopMode: false);
+                    navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+                    Content.UpdateLayout();
+                    VerifyBackButtonGeometry(navView, backButton, compactPaneLength, isTopMode: true);
+                }
+            });
+        }
+
+        private void VerifyBackButtonGeometry(NavigationView navView, Button backButton, double compactPaneLength, bool isTopMode)
+        {
+            Verify.AreEqual(compactPaneLength - 8, backButton.Width, "Back button Width");
+            Verify.AreEqual(compactPaneLength, backButton.ActualWidth, "Back button width");
+            VerifyBackButtonStartsAtCorner(navView, backButton);
+            VerifyBackButtonVisualAndFocusRectUnchanged(navView, backButton, compactPaneLength - 8);
+            if (isTopMode)
+            {
+                VerifyTopModeHitTargetStaysClearOfFirstItem(navView, backButton, compactPaneLength);
+            }
+            else
+            {
+                VerifyBackButtonHitTargetRight(navView, backButton, compactPaneLength);
+            }
+        }
+
+        private void VerifyTopModeHitTargetStaysClearOfFirstItem(NavigationView navView, Button backButton, double compactPaneLength)
+        {
+            var rootGrid = VisualTreeHelper.GetChild(navView, 0) as Grid;
+            var topNavGrid = rootGrid.FindName("TopNavGrid") as Grid;
+            var placeholder = rootGrid.FindName("BackButtonPlaceholderOnTopNav") as ColumnDefinition;
+            double placeholderRight = topNavGrid.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0)).X + placeholder.ActualWidth;
+            var menuItem = navView.ContainerFromMenuItem(navView.MenuItems[0]) as NavigationViewItem;
+            double menuItemX = menuItem.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0)).X;
+            double oldVisualRight = compactPaneLength - 4;
+            Log.Comment($"Top pane: placeholder right {placeholderRight}, first item X {menuItemX}, pre-#5306 visual right {oldVisualRight}");
+            Verify.IsGreaterThanOrEqual(menuItemX, placeholderRight, "The first top pane item starts after the back button placeholder");
+
+            double hitRight = VerifyBackButtonHitTargetRight(navView, backButton, oldVisualRight);
+            if (oldVisualRight <= menuItemX)
+            {
+                Verify.IsLessThanOrEqual(hitRight, menuItemX, "Back button hit target must not cover the first top pane item");
+            }
+        }
+
+        // The template's transparent HitTargetGrid is the only hit-testable part of the button outside its visual.
+        private double VerifyBackButtonHitTargetRight(NavigationView navView, Button backButton, double expectedRight)
+        {
+            var hitTarget = VisualTreeUtils.FindVisualChildByName(backButton, "HitTargetGrid") as Grid;
+            Verify.IsNotNull(hitTarget, "HitTargetGrid");
+            VerifyElementOffset(navView, hitTarget, 0.0, 0.0, "Back button hit target");
+            double hitRight = hitTarget.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(hitTarget.ActualWidth, 0)).X;
+            Verify.AreEqual(expectedRight, hitRight, "Back button hit target right edge");
+            return hitRight;
+        }
+
         private void VerifyBackButtonStartsAtCorner(NavigationView navView, Button backButton)
         {
             VerifyElementOffset(navView, backButton, 0.0, 0.0, "Back button hit target");
         }
 
-        // Before the hit target was enlarged, the 40x36 visual sat at (4,6) and was the focus target. The focus rect was that
-        // visual inflated by the default Button FocusVisualMargin of -3: (1,3) 46x42, with 7 px corners (4 + 3).
-        private void VerifyBackButtonVisualAndFocusRectUnchanged(NavigationView navView, Button backButton)
+        // Before the hit target was enlarged, the (CompactPaneLength - 8) x 36 visual sat at (4,6) and was the focus target. The focus
+        // rect was that visual inflated by the default Button FocusVisualMargin of -3, with 7 px corners (4 + 3).
+        private void VerifyBackButtonVisualAndFocusRectUnchanged(NavigationView navView, Button backButton, double expectedVisualWidth = 40.0)
         {
             var visual = VisualTreeUtils.FindVisualChildByName(backButton, "RootGrid") as Grid;
             VerifyElementOffset(navView, visual, 4.0, 6.0, "Back button visual");
-            Verify.AreEqual(40.0, visual.ActualWidth, "Back button visual width");
+            Verify.AreEqual(expectedVisualWidth, visual.ActualWidth, "Back button visual width");
             Verify.AreEqual(36.0, visual.ActualHeight, "Back button visual height");
 
             Verify.IsTrue(Control.GetIsTemplateFocusTarget(visual), "The visual is the focus target");

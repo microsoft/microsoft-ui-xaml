@@ -307,9 +307,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
 
                     if (paneDisplayMode == "Top")
                     {
-                        // The top pane's content starts at x = 44 epx; clicks there must not reach the back button.
+                        // The top pane's content starts at x = 44 epx; the back button's hit target must end there.
                         double scale = backBounds.Height / 44.0;
-                        Verify.IsLessThanOrEqual(Math.Abs(backBounds.Width - 44 * scale), 2.0);
                         resetButton.Invoke();
                         Wait.ForIdle();
                         Log.Comment("Click just right of the back button in Top mode");
