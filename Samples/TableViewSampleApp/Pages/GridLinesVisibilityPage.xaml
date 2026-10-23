@@ -19,14 +19,23 @@
         <!-- /snippet -->
 
         <!-- snippet -->
-        <!-- The default TableViewColumnHeader template minus the optional PART_GridLine. -->
+        <!-- Hides every header line. In an app, put this brush directly in <tv:TableView.Resources>;
+             the page merges it at runtime only so the option can be switched. -->
+        <ResourceDictionary x:Key="HiddenHeaderLinesResources">
+            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="Transparent"/>
+        </ResourceDictionary>
+
+        <!-- Copy of the default TableViewColumnHeader template in TableView.xaml without the optional
+             PART_GridLine; re-copy it when that template changes. -->
         <Style x:Key="NoColumnSeparatorsHeaderStyle" TargetType="tv:TableViewColumnHeader">
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="tv:TableViewColumnHeader">
+                        <!-- CornerRadius is set only while keyboard-focused: a rounded root clips. -->
                         <Grid x:Name="PART_Root"
                               Background="{TemplateBinding Background}"
                               CornerRadius="{TemplateBinding CornerRadius}">
+                            <!-- State groups must sit on the template root. -->
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualState x:Name="Normal"/>
@@ -93,6 +102,7 @@
                                     Visibility="Collapsed"
                                     AutomationProperties.AccessibilityView="Raw"/>
 
+                            <!-- Last, so the gripper wins the hit test on the shared edge. -->
                             <Border x:Name="PART_ResizeGripperHost"/>
                         </Grid>
                     </ControlTemplate>
@@ -107,7 +117,7 @@
         Description="TableView.GridLinesVisibility draws a bottom border under each row (Horizontal), a right border on each cell (Vertical), both (All, the default) or neither (None). It affects the body only: the header row always draws its column separators and bottom rule, and Header lines shows the two ways an app can hide them. The lines run through every kind of cell on this page: a photo, text, a chip, a checkbox, a date picker and a number. Row banding swaps RowBackground and AlternatingRowBackground through a Style, so you can check the lines against tinted rows, and Grouped shaping adds group header bands for them to meet."
         Snippet="GridLinesVisibility"
         StretchExample="True"
-        TryIt="Choose Horizontal, Vertical or None under Grid lines and watch the borders around the chip, checkbox and date picker cells. Switch Header lines between its three choices and watch only the header row change. Switch Row banding to Custom colors, then set Shaping to Grouped and check where the lines meet the group header bands."
+        TryIt="Choose Horizontal, Vertical or None under Grid lines and watch the borders around the chip, checkbox and date picker cells. Switch Header lines between its three choices and watch the header separators and the line under the header row. Switch Row banding to Custom colors, then set Shaping to Grouped and check where the lines meet the group header bands."
         WhatToLookFor="Vertical lines run the full height of template cells too, so the chip, checkbox and date picker sit inside their cell borders, not on top of them. Grid lines None leaves the header lines in place. Hide all header lines removes both the column separators and the line under the header row; Hide column separators keeps that line, and sorting, hover and column resizing still work. Under a Contrast theme the custom banding falls back to the theme's row brushes and the chips lose their tint, yet the lines stay visible.">
 
         <controls:SamplePresenter.Example>
@@ -156,7 +166,7 @@
 
                 <controls:RailSection
                     Header="Header lines"
-                    Description="The header separators are always drawn; GridLinesVisibility affects only the body. Hide all header lines overrides TabularSurfaceHeaderSeparatorBrush with Transparent in the table's Resources, which removes the column separators and the bottom rule. Hide column separators sets ColumnHeaderStyle to a header template without PART_GridLine, so the bottom rule stays.">
+                    Description="The header separators are always drawn; GridLinesVisibility affects only the body. Hide all header lines sets TabularSurfaceHeaderSeparatorBrush to Transparent in the table's Resources, which removes the column separators and the bottom rule. An app declares that brush in XAML; to switch it at runtime this page re-applies the table's template, which rebuilds the rows. Hide column separators sets ColumnHeaderStyle to a header template without PART_GridLine, so the bottom rule stays.">
                     <!-- snippet -->
                     <ComboBox
                         x:Name="HeaderLinesSelector"
