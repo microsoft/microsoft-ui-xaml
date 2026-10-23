@@ -236,9 +236,10 @@ void SvgImageSourceTests::UriSource()
             svgImageSourceOpenedEvent->Set();
         }));
 
-        svgImageSource->UriSource = testUri;
+        // Set the rasterization dimensions before UriSource so the initial load uses the requested surface size.
         svgImageSource->RasterizePixelWidth = 100;
         svgImageSource->RasterizePixelHeight = 100;
+        svgImageSource->UriSource = testUri;
     });
     svgImageSourceOpenedEvent->WaitForDefault();
     TestServices::WindowHelper->SynchronouslyTickUIThread(2);

@@ -62,13 +62,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(TextBoxSelectionHighlightColor)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates SelectionHighlightColor and SelectionHighlightColorWhenNotFocused.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(RichEditBoxSelectionHighlightColor)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates SelectionHighlightColor and SelectionHighlightColorWhenNotFocused on RichEditBox.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -87,7 +87,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(VerifyTextBoxFocusAndSelectAll)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates scroll into view for calling SelectAll inside the GotFocus handler.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO 36060166: Re-enable after fixing unreliability.
             END_TEST_METHOD()
