@@ -1602,6 +1602,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies an unloaded table does not treat the sort another table installed on their shared source as app-lit: CanSort = false drops its own stale state and leaves that sort alone.")]
+        public void VerifyUngatingWhileUnloadedLeavesOtherTablesSort()
+        {
+            TableViewSource source = null;
+            TableView first = null;
+            TableView second = null;
+            int sortedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                first = CreateSortTable(source);
+                second = CreateSortTable(source);
+                LoadContent(first);
+            });
+
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Ascending));
+
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, first.Columns[0].SortDirection, "Precondition: the source sort lights the first table's Name column.");
+                LoadContent(second);
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(second.SortByColumn(second.Columns[0], SortDirection.Descending), "Precondition: the loaded table sorts the shared source.");
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                first.Sorted += (s, e) => sortedCount++;
+                first.Columns[0].CanSort = false;
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, sortedCount, "The unloaded table clears its own stale sort.");
+                Verify.AreEqual(SortDirection.None, first.Columns[0].SortDirection, "The unloaded table's opted-out column drops its sort.");
+                Verify.AreEqual(SortDirection.Descending, second.Columns[0].SortDirection, "The owning table keeps its sort.");
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(second, person => person.Name), "the owning table's sort stays on the source");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a sort opt-out rebuilds the headers even when a Sorted handler throws.")]
         [TestProperty("data:OptOut", "{CanSort, CanUserSortColumns}")]
         public void VerifySortOptOutRebuildsHeadersWhenSortedHandlerThrows()
