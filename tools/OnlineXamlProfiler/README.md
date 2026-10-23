@@ -1,7 +1,10 @@
 # Online XAML Profiler
 
-A standalone live-snapshot tool. This is a new implementation: it does not use
-`tools\XamlProfiler`, its TAP/helpers, or any ETW/ETL capture, parsing, or replay.
+A standalone tool for taking live snapshots of a desktop WinUI 3 application's
+XAML visual, internal HWCompNode, and Composition IVisual trees.
+
+This README covers building, deploying, and using the profiler. See
+[Architecture](ARCHITECTURE.md) for the implementation and design.
 
 ## Build
 
@@ -12,13 +15,14 @@ Install Visual Studio's .NET desktop and C++ desktop workloads, the Windows
 .\build.ps1 -Platform x64 -Configuration Debug -Test
 ```
 
-The script restores public SDK package dependencies, builds the native injector and TAP first,
-builds the unpackaged WinUI app, and optionally runs native TAP-walker tests and
-focused protocol/tree tests. Running tests requires a host that can execute the
-selected architecture.
+The script restores public SDK package dependencies and builds the native
+components and unpackaged WinUI app. `-Test` also runs native TAP-walker tests and
+focused managed tests. Running tests requires a host that can execute the selected
+architecture.
 Use `ARM64` or `x86` for those targets. Profiler, TAP, and target must have the same
-architecture. Keep `OnlineXamlProfiler.Injector.exe` next to the TAP DLL. The output is under `artifacts\bin\OnlineXamlProfiler.App`; run
-`OnlineXamlProfiler.App.exe` in its output directory, with its dependencies.
+architecture. Keep `OnlineXamlProfiler.Injector.exe` next to the TAP DLL. The output
+is under `artifacts\bin\OnlineXamlProfiler.App`; run `OnlineXamlProfiler.App.exe`
+in its output directory, with its dependencies.
 
 Core/transport tests can also be run independently:
 
@@ -33,9 +37,9 @@ The tool intentionally fails with an actionable diagnostic when the runtime lack
 the new `OnlineXamlProfilerWithTreeAccess` export. It does not silently substitute
 ETW reconstruction or another tree source.
 
-Build the repository's `Microsoft.UI.Xaml.dll` normally (initialize the repository
-with `.\init.ps1 amd64chk`, then build through `build.cmd` or its documented
-component-build workflow). Deploy the resulting runtime and its **matching**
+Build the repository's `Microsoft.UI.Xaml.dll` normally: from the repository root,
+initialize with `.\init.ps1 amd64chk`, then build through `build.cmd` or its
+documented component-build workflow. Deploy the resulting runtime and its **matching**
 dependencies using the target app's existing local-WinUI deployment mechanism.
 For a self-contained test app this means its app-local WinUI runtime, not the
 profiler's own WinUI files. For a framework-package app use a matching locally
@@ -67,79 +71,41 @@ cross-architecture attach are not supported.
    retains earlier captures in memory, so A and B can be inspected independently.
    **Disconnect** leaves the target running and retains captured data.
 
+**Cancel** aborts an in-progress connection or capture. If the connection is
+interrupted, attach again before taking another snapshot. Closing the profiler
+disconnects; it never terminates the target.
+
 ### Live process statistics
 
-The collapsible **Process statistics** panel starts on attach and samples the
-selected process in the profiler host, off the UI thread, approximately once a
-second. Its four graphs retain the last 60 seconds: working set/private working
-set, private commit, dedicated/shared GPU memory, and busiest GPU engine usage.
-No ETW session, providers, or additional TAP/runtime instrumentation are used.
-The first memory series is solid and the second is dashed. Values are process
-totals, not per-XAML-element allocation or GPU-resource attribution.
+Expand **Process statistics** to see working set/private working set, private
+commit, dedicated/shared GPU memory, and busiest GPU engine usage. The graphs
+update approximately once a second and show the last 60 seconds. The first memory
+series is solid and the second is dashed. Values are process totals, not
+per-XAML-element allocation or GPU-resource attribution.
 
 Working-set and commit peaks are OS-reported process-lifetime values. The GPU
 memory peak is the highest sampled dedicated-plus-shared total **since attach**,
-not a lifetime peak; polling can miss short spikes. GPU counters are read through
-PDH with English counter paths, scoped to the target PID across adapters.
-Utilization is the busiest engine, not the sum of engine percentages. Windows
-and driver counter limitations also apply; failed/missing samples show
-**Unavailable** with diagnostics and leave gaps, rather than inventing zeroes.
-On older Windows versions without `PROCESS_MEMORY_COUNTERS_EX2`, working set and
-commit remain available but private working set is explicitly unavailable.
+not a lifetime peak; polling can miss short spikes. Utilization is the busiest
+engine, not the sum of engine percentages. Failed or missing samples show
+**Unavailable** with diagnostics and leave graph gaps, rather than displaying
+zero. Private working set can be unavailable on older Windows versions while
+working set and commit remain available.
 
-Each tree snapshot retains the nearest process sample within two seconds of its
-request midpoint, including sample time and diagnostics. Dashed graph markers
-show capture midpoints. Selecting an earlier snapshot shows its frozen readings
-while the live graphs continue; tree and memory capture are **not atomic**.
-Disconnect, target exit, and window close stop sampling. Reattaching starts a new
-history and observed GPU peak, verifies the process creation time against PID
-reuse, and preserves earlier snapshots' readings in memory.
+Dashed graph markers identify tree captures. Selecting an earlier snapshot shows
+its frozen process readings, sample time, and time offset while the live graphs
+continue. Tree and process readings are **not atomic**; a snapshot can have no
+nearby process sample. Disconnect, target exit, and window close stop sampling.
+Reattaching starts a new live history and observed GPU peak while preserving
+earlier snapshots' readings in memory.
 
-Snapshot transport, validation, and plain-data tree construction run off the UI
-thread. Native TreeView nodes are published in cancellable UI-thread batches;
-their complete parent graph allows links to select even previously collapsed
-descendants. The native diagnostics-injection call runs in a short-lived, separate helper,
-using the FrameworkUdk DLL already loaded by the target. This avoids mixing
-different SDK diagnostic payload layouts or loading the target's SDK into the
-profiler UI. Cancel stops the owned injector and aborts connection/capture; an
-interrupted frame closes the session, requiring attach again. Closing the
-profiler disconnects; it never terminates the target.
-
-## Snapshot contract and limits
-
-`OnlineXamlTreeAccess.h` is a versioned private diagnostic ABI, not a supported SDK
-API. All three graph walks, node limits, properties, and snapshot assembly live
-in the TAP. MUX only supplies existing roots and read-only, one-node-at-a-time
-native access: immediate children, private HWCompNode parents, scalar XAML data,
-ownership links, and existing backing visuals. It neither walks the graph nor
-creates roots/visuals or forces layout/rendering. The TAP serializes the copied
-snapshot on its worker and returns bounded, correlated frames on
-a randomly named, current-user-only pipe. The profiler verifies the pipe client's
-PID, process creation time, runtime path, ABI, request ID, schema, and tree topology.
-
-```text
-Profiler UI -- named pipe --> TAP worker in target
-                                 |
-                                 v target UI DispatcherQueue
-                             TAP SnapshotWalker
-                                 |
-                                 v synchronous callback scope
-                             MUX thin TreeAccess adapter
-```
-
-`OnlineXamlProfilerWithTreeAccess` invokes the TAP's callback synchronously on
-the current UI thread. Its `TreeAccess` table supplies a `ReadNode` operation
-for XAML and HWCompNode metadata plus immediate-child enumeration; the TAP walks
-Composition IVisual objects itself. Native IDs, the adapter, and live COM references
-must not escape this scope. Borrowed strings are copied during each node callback,
-and visual references are released before returning from the access callback.
-Callbacks must not pump messages, mutate objects, or throw across the ABI. Only
-copied records remain for the worker. The previous full-walker runtime export is
-not used or retained; redeploy both the updated TAP and adapter-enabled MUX.
+## Usage notes and limitations
 
 - Each UI-thread capture is synchronous, but the collection of threads is **not a
   globally atomic snapshot or compositor-presented frame**. Capture QPC intervals
   and per-thread errors are included. A failed thread contributes no partial tree.
+- Attaching can lazily create a popup root through WinUI diagnostics. The capture
+  adapter itself does not create roots or force layout/rendering; see the
+  [attachment caveat](ARCHITECTURE.md#attachment-and-ui-thread-discovery).
 - The trees reflect existing visual content. Before a render produces composition
   peers, the composition trees can be empty. Nonvisual dependency objects,
   disconnected/cached elements, and other processes' compositor internals are not
@@ -153,9 +119,9 @@ not used or retained; redeploy both the updated TAP and adapter-enabled MUX.
 - Captured XAML properties include type/name, actual size, and visibility.
   Composition visuals additionally include size, offset, scale, rotation,
   opacity, and visibility. Property-read failures retain their HRESULT.
-- Each capture is limited to 100,000 nodes across all threads and trees and
-  64 MiB of JSON. Each target UI-thread dispatch has a 15-second timeout;
-  the client bounds a request to one minute. Snapshot history is in-memory only.
+- Snapshot history is in-memory only. Capture size and duration are bounded; see
+  [transport, consistency, and limits](ARCHITECTURE.md#transport-consistency-and-limits)
+  for the limits and failure behavior.
 - Only one tool should own a target's diagnostics session at a time; do not attach
   concurrently with Visual Studio Live Visual Tree or other TAPs.
 
