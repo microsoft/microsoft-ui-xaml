@@ -245,7 +245,6 @@ bool TableView::IsSortRequestStillValid(const winrt::TableViewColumn& column, bo
 
 bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDirection direction)
 {
-    FlushDeferredEditReshapes();
     // A column that opted out of sorting can still have the sort it holds cleared.
     const bool clearsOwnSort = direction == winrt::SortDirection::None &&
         column && column.SortDirection() != winrt::SortDirection::None;
