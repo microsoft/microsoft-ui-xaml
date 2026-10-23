@@ -17,10 +17,10 @@
                 <ComboBoxItem>Verbose</ComboBoxItem>
             </ComboBox>
             <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="2">
-                <CheckBox x:Name="chkSelectorBar" Content="SelectorBar" IsChecked="True" Margin="2"/>
-                <CheckBox x:Name="chkItemsView" Content="ItemsView" IsChecked="True" Margin="2"/>
-                <CheckBox x:Name="chkItemsRepeater" Content="ItemsRepeater" IsChecked="True" Margin="2"/>
-                <CheckBox x:Name="chkItemContainer" Content="ItemContainer" Margin="2"/>
+                <CheckBox x:Name="chkSelectorBar" Content="SelectorBar" IsChecked="True" Margin="2" Checked="ChkOutputDebugStringLevel_CheckedChanged" Unchecked="ChkOutputDebugStringLevel_CheckedChanged"/>
+                <CheckBox x:Name="chkItemsView" Content="ItemsView" IsChecked="True" Margin="2" Checked="ChkOutputDebugStringLevel_CheckedChanged" Unchecked="ChkOutputDebugStringLevel_CheckedChanged"/>
+                <CheckBox x:Name="chkItemsRepeater" Content="ItemsRepeater" IsChecked="True" Margin="2" Checked="ChkOutputDebugStringLevel_CheckedChanged" Unchecked="ChkOutputDebugStringLevel_CheckedChanged"/>
+                <CheckBox x:Name="chkItemContainer" Content="ItemContainer" Margin="2" Checked="ChkOutputDebugStringLevel_CheckedChanged" Unchecked="ChkOutputDebugStringLevel_CheckedChanged"/>
             </StackPanel>
         </Grid>
         <Button x:Name="navigateToSummary" AutomationProperties.Name="navigateToSummary" Margin="2" HorizontalAlignment="Stretch">SelectorBar in summary page</Button>
