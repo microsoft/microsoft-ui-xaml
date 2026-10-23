@@ -32,4 +32,5 @@ private:
     // Resolved once at construction (UI thread). Looking a resource up from the GetHelpTextCore UIA
     // callback can escape as a fail-fast, so cache it here like the localized control type.
     winrt::hstring m_rangeFormat;
+    winrt::hstring m_nameFormat;
 };
