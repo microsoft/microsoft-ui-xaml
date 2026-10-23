@@ -753,8 +753,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a sort opt-out made from BeginningEdit still clears the sort when the edit is then force-closed from a property-change callback (IsReadOnly), which cannot replay it in place.")]
-        [TestProperty("data:OptOut", "{CanSort, CanUserSortColumns}")]
+        [TestProperty("Description", "Verifies a sort opt-out made from BeginningEdit still clears the sort when the edit is then force-closed from a property-change callback (IsReadOnly), which cannot replay it in place, and applies before a newer sort requested in the meantime.")]
+        [TestProperty("data:OptOut", "{CanSort, CanUserSortColumns, CanUserSortColumnsThenSort}")]
         public void VerifySortOptOutDuringBeginningEditClearsAfterForcedClose()
         {
             var optOut = ((string)TestContext.DataRow["OptOut"]).Trim();
@@ -817,11 +817,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 vetoClose = false;
                 tableView.IsReadOnly = true;
                 Verify.IsFalse(tableView.IsEditing, "Precondition: IsReadOnly closes the edit.");
+                if (optOut == "CanUserSortColumnsThenSort")
+                {
+                    Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending), "The newer sort applies.");
+                }
             });
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
+                if (optOut == "CanUserSortColumnsThenSort")
+                {
+                    Verify.AreEqual(SortDirection.Ascending, tableView.Columns[1].SortDirection, "The older deferred clear must not undo the newer sort.");
+                }
                 Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, $"{optOut}: the opted-out sort must be cleared once the edit closes.");
                 Verify.AreEqual(1, clearedCount, $"{optOut}: the clear must be reported once.");
             });

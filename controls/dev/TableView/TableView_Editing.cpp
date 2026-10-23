@@ -1118,6 +1118,8 @@ bool TableView::TryTerminateEditForControlInitiatedReshape()
 {
     if (m_editState == EditState::None)
     {
+        // Work deferred past an earlier forced close is older than this request.
+        FlushDeferredEditReshapes();
         return true;
     }
 
@@ -1176,7 +1178,9 @@ void TableView::QueueDeferredEditReshapeDrain()
             if (auto const strongThis = weakThis.get())
             {
                 strongThis->m_editReshapeDrainQueued = false;
-                if (!strongThis->IsEditing())
+                // Released (unloaded): the source may belong to another table now; the queue waits
+                // for the next edit close, as it did before it was posted.
+                if (!strongThis->IsEditing() && !strongThis->m_activeSourceReleased)
                 {
                     try
                     {
@@ -1185,12 +1189,20 @@ void TableView::QueueDeferredEditReshapeDrain()
                     catch (...)
                     {
                         TVDiag::LogRetailF(L"[TableView] A reshape deferred past a forced edit close threw while draining.");
-                        // The throwing operation was already popped, so this terminates.
-                        strongThis->QueueDeferredEditReshapeDrain();
                     }
                 }
             }
         });
+    }
+}
+
+void TableView::FlushDeferredEditReshapes()
+{
+    if (m_editReshapeDrainQueued && !m_suppressEditVisualRestore && !m_isApplyingCoalescedEditReshape &&
+        !m_activeSourceReleased && !IsEditing())
+    {
+        m_editReshapeDrainQueued = false;
+        DrainCoalescedEditReshape();
     }
 }
 
@@ -1240,7 +1252,16 @@ void TableView::DrainCoalescedEditReshape()
         m_pendingEditReshapes.pop_front();
         if (operation)
         {
-            operation();
+            try
+            {
+                operation();
+            }
+            catch (...)
+            {
+                // Already popped, so re-posting the rest terminates.
+                QueueDeferredEditReshapeDrain();
+                throw;
+            }
         }
     }
 }
