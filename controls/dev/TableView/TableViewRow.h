@@ -113,9 +113,12 @@ public:
     void RefreshDensity();
     void RefreshCells();
 
-    // Releases control-owned cell tooltips (recycle-out).
-    void ReleaseCellToolTips();
-    void RefreshCellToolTips();
+    // Releases control-owned row and cell tooltips (recycle-out).
+    void ReleaseToolTips();
+    void RefreshToolTips();
+    void QueueRefreshToolTips();
+    // TableView.RowToolTipBinding, set on the row so its DataContext drives it like a cell's binding.
+    void ApplyRowToolTipBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& binding);
     // Raises NameProperty changed on cell peers that already exist; creates none.
     void RaiseCellAutomationNamesChangedInternal(winrt::UIElement const& skipCell = nullptr);
 
@@ -166,7 +169,9 @@ private:
         const winrt::UIElement& sender,
         const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
 
-    void OnRowGotFocus();
+    void OnRowGotFocus(const winrt::RoutedEventArgs& args);
+    static bool IsPointerFocus(const winrt::IInspectable& source);
+    void CancelRowToolTipForDescendantFocus();
     // Routes an expansion-state transition to this row's automation peer, if a client is listening.
     void RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
 
@@ -228,7 +233,7 @@ private:
 
     // Returns true when the rebuild reached the row-chrome refresh (grid lines and row background).
     bool RebuildCells(bool updateExistingCellPeerItems = true);
-    void ClearOwnedCellToolTips(const winrt::Panel& host);
+    bool ClearOwnedCellToolTips(const winrt::Panel& host);
 
     // Coalesces a burst of Columns-collection changes into a single cell rebuild on the next
     // dispatcher tick (each realized row observes Columns, so N bulk edits would otherwise cost N
@@ -237,6 +242,9 @@ private:
     void UpdateVisualState(bool useTransitions);
 
     tracker_ref<winrt::Panel> m_cellsHost{ this };
+    tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_rowToolTipBinding{ this };
+    bool m_refreshToolTipsQueued{ false };
+    bool m_hasNeutralizedToolTips{ false };
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
     // Chevron hit target. Null if a re-template drops the part (indent still applies).
     tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };

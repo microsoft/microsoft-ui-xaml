@@ -117,6 +117,13 @@
                     IsTabStop="False"
                     AllowFocusOnInteraction="False"
                     Click="OnDelayedDisableClick" />
+            <CheckBox Content="Row ToolTips"
+                      AutomationProperties.Name="RowToolTipCheckBox"
+                      AutomationProperties.AutomationId="RowToolTipCheckBox"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False"
+                      Checked="OnRowToolTipToggled"
+                      Unchecked="OnRowToolTipToggled" />
             <Button x:Name="navigateToTouch"
                     Content="Touch Page"
                     AutomationProperties.Name="navigateToTouch"
@@ -137,7 +144,7 @@
              buttons below, give the same one-table-at-a-time surface without the Pivot. -->
         <Grid Grid.Row="1">
 
-            <Grid x:Name="BasicTableHost" Visibility="Visible">
+            <Grid x:Name="BasicTableHost" Visibility="Visible" PreviewKeyDown="OnBasicTableHostPreviewKeyDown">
                 <controls:TableView x:Name="BasicTableView"
                                     AutomationProperties.Name="BasicTableView"
                                     AutomationProperties.AutomationId="BasicTableView"
@@ -432,6 +439,41 @@
                 </controls:TableView>
             </Grid>
 
+            <!-- Row tooltips with a focusable inline Hyperlink in a cell. KeyDown on the host records an Escape that
+                 the table left unhandled, so a test can tell "reached the host" from "swallowed". -->
+            <Grid x:Name="HyperlinkTableHost" Visibility="Collapsed" KeyDown="OnHyperlinkTableHostKeyDown" RowSpacing="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Button Content="Focus table hyperlink"
+                        AutomationProperties.Name="FocusTableHyperlinkButton"
+                        AutomationProperties.AutomationId="FocusTableHyperlinkButton"
+                        IsTabStop="False"
+                        AllowFocusOnInteraction="False"
+                        Click="OnFocusTableHyperlinkClick" />
+                <controls:TableView x:Name="HyperlinkTableView"
+                                    Grid.Row="1"
+                                    AutomationProperties.Name="HyperlinkTableView"
+                                    AutomationProperties.AutomationId="HyperlinkTableView"
+                                    Height="300"
+                                    Width="500"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    RowToolTipBinding="{Binding City}">
+                    <controls:TableViewTextColumn Header="Name" Width="160" Binding="{Binding Name}" />
+                    <controls:TableViewTemplateColumn Header="Link" Width="160">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <TextBlock VerticalAlignment="Center">
+                                    <Hyperlink><Run Text="{x:Bind Name}" /></Hyperlink>
+                                </TextBlock>
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                    </controls:TableViewTemplateColumn>
+                </controls:TableView>
+            </Grid>
+
         </Grid>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
@@ -467,6 +509,12 @@
                     AutomationProperties.Name="GoToContextMenuButton"
                     AutomationProperties.AutomationId="GoToContextMenuButton"
                     Click="OnGoToContextMenuClick" />
+            <Button Content="Hyperlink"
+                    AutomationProperties.Name="GoToHyperlinkButton"
+                    AutomationProperties.AutomationId="GoToHyperlinkButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnGoToHyperlinkClick" />
             <TextBlock x:Name="StatusTextBlock"
                        AutomationProperties.Name="StatusTextBlock"
                        AutomationProperties.AutomationId="StatusTextBlock"

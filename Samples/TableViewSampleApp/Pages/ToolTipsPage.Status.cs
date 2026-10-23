@@ -13,6 +13,7 @@ public sealed partial class ToolTipsPage
     {
         Status.Rows = SampleShaping.RowCountText(People.Count);
         CellToolTipsText.Text = NameColumn.CellToolTipBinding is null ? "Detached" : "Attached";
+        RowToolTipText.Text = PeopleTable.RowToolTipBinding is null ? "Off" : "Bio";
 
         // Read back from the columns, so the readout reports what the control actually holds.
         var parts = new List<string>();

@@ -200,11 +200,11 @@ TableViewRow::TableViewRow()
 
     m_gotFocusRevoker = GotFocus(
         winrt::auto_revoke,
-        [weakRow](winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+        [weakRow](winrt::IInspectable const&, winrt::RoutedEventArgs const& args)
         {
             if (auto strongRow = weakRow.get())
             {
-                strongRow->OnRowGotFocus();
+                strongRow->OnRowGotFocus(args);
             }
         });
 
@@ -1009,11 +1009,91 @@ void TableViewRow::OnRowGettingFocus(
     }
 }
 
-void TableViewRow::OnRowGotFocus()
+void TableViewRow::OnRowGotFocus(const winrt::RoutedEventArgs& args)
 {
     if (auto const owner = GetOwningTableView())
     {
         winrt::get_self<TableView>(owner)->OnRowCellFocusChanged(*this);
+    }
+
+    winrt::IInspectable const self = *this;
+    if (!TableView::SameInspectableIdentity(args.OriginalSource(), self) && !IsPointerFocus(args.OriginalSource()))
+    {
+        CancelRowToolTipForDescendantFocus();
+    }
+}
+
+// ToolTipService opens on focus only for keyboard (or UIA-programmatic) focus, so pointer focus has
+// nothing pending to cancel.
+bool TableViewRow::IsPointerFocus(const winrt::IInspectable& source)
+{
+    if (auto const element = source.try_as<winrt::UIElement>())
+    {
+        return element.FocusState() == winrt::FocusState::Pointer;
+    }
+    if (auto const link = source.try_as<winrt::Microsoft::UI::Xaml::Documents::Hyperlink>())
+    {
+        return link.FocusState() == winrt::FocusState::Pointer;
+    }
+    return false;
+}
+
+// GotFocus bubbles, so ToolTipService also opens the row's tooltip when a cell or cell content takes
+// keyboard focus and has no tooltip of its own. The row tooltip belongs to row-level focus only;
+// posted so it runs after ToolTipService has started its open timer.
+void TableViewRow::CancelRowToolTipForDescendantFocus()
+{
+    winrt::FrameworkElement const self = *this;
+    auto const record = TableViewDetails::GetRecord(self);
+    if (!record || !record->ToolTip || record->Detached || record->Neutralized)
+    {
+        return;
+    }
+
+    auto weakRow = get_weak();
+    if (auto const queue = DispatcherQueue())
+    {
+        queue.TryEnqueue(winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::High, [weakRow]()
+        {
+            auto const strongRow = weakRow.get();
+            if (!strongRow)
+            {
+                return;
+            }
+
+            try
+            {
+                winrt::FrameworkElement const row = *strongRow;
+                auto const root = row.XamlRoot();
+                auto current = root ?
+                    winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>() :
+                    nullptr;
+                if (!current || TableView::SameInspectableIdentity(current, row))
+                {
+                    return;
+                }
+
+                // A focused descendant that owns a tooltip already took the open, so the row has none pending.
+                for (; current && !TableView::SameInspectableIdentity(current, row);
+                    current = TableViewDetails::GetFocusWalkParent(current))
+                {
+                    if (winrt::ToolTipService::GetToolTip(current))
+                    {
+                        return;
+                    }
+                }
+
+                if (current)
+                {
+                    TableViewDetails::CancelOwnedToolTipOpen(row);
+                }
+            }
+            catch (...)
+            {
+                TVDiag::LogRetailF(L"[TableView] Withholding a row tooltip from cell focus failed (HRESULT 0x%08X).",
+                    static_cast<unsigned int>(winrt::to_hresult()));
+            }
+        });
     }
 }
 
@@ -1192,6 +1272,68 @@ void TableViewRow::OnDataContextChanged(
         return;
     }
     RebuildCells();
+
+    // A grouped reshape can rebind a pooled row through DataContext alone, without ElementPrepared.
+    if (DataContext())
+    {
+        if (auto const owner = GetOwningTableView())
+        {
+            auto const binding = winrt::get_self<TableView>(owner)->RowToolTipBinding();
+            if (binding || m_rowToolTipBinding.get())
+            {
+                try
+                {
+                    ApplyRowToolTipBinding(binding);
+                }
+                catch (...)
+                {
+                    TVDiag::LogRetailF(L"[TableView] Applying RowToolTipBinding failed (HRESULT 0x%08X).",
+                        static_cast<unsigned int>(winrt::to_hresult()));
+                }
+            }
+            if (m_hasNeutralizedToolTips)
+            {
+                QueueRefreshToolTips();
+            }
+        }
+    }
+}
+
+// Deferred: on an ordinary recycle ElementPrepared refreshes first and this finds nothing to revive;
+// running it inline would revive with the previous item's values before the bindings update.
+void TableViewRow::QueueRefreshToolTips()
+{
+    if (m_refreshToolTipsQueued)
+    {
+        return;
+    }
+
+    auto const queue = DispatcherQueue();
+    if (!queue)
+    {
+        return;
+    }
+
+    m_refreshToolTipsQueued = true;
+    auto weakRow = get_weak();
+    if (!queue.TryEnqueue(winrt::Microsoft::UI::Dispatching::DispatcherQueuePriority::Low, [weakRow]()
+        {
+            if (auto const strongRow = weakRow.get())
+            {
+                strongRow->m_refreshToolTipsQueued = false;
+                auto const owner = strongRow->GetOwningTableView();
+                auto const repeater = owner ? winrt::get_self<TableView>(owner)->GetRowsRepeaterInternal() : nullptr;
+                // A pooled row reports no index; reviving it would pin content in the recycle pool.
+                winrt::UIElement const element = *strongRow;
+                if (strongRow->DataContext() && repeater && repeater.GetElementIndex(element) >= 0)
+                {
+                    strongRow->RefreshToolTips();
+                }
+            }
+        }))
+    {
+        m_refreshToolTipsQueued = false;
+    }
 }
 
 void TableViewRow::OnColumnsVectorChanged(
@@ -2218,25 +2360,61 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
 
 // Recycle-out. Always walks: the bound value can revive a tooltip at any time, so a cached
 // per-row flag would go stale and strand app content in the pool.
-void TableViewRow::ReleaseCellToolTips()
+void TableViewRow::ReleaseToolTips()
 {
-    if (auto const host = m_cellsHost.get())
+    // Contained: this runs from ElementClearing, inside the repeater's measure pass.
+    try
     {
-        ClearOwnedCellToolTips(host);
+        winrt::FrameworkElement const self = *this;
+        bool neutralized = TableViewDetails::NeutralizeOwnedToolTip(self);
+
+        if (auto const host = m_cellsHost.get())
+        {
+            neutralized = ClearOwnedCellToolTips(host) || neutralized;
+        }
+        m_hasNeutralizedToolTips = m_hasNeutralizedToolTips || neutralized;
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] Releasing row tooltips failed (HRESULT 0x%08X).",
+            static_cast<unsigned int>(winrt::to_hresult()));
     }
 }
 
-// Recycle-in. ReleaseCellToolTips neutralized the tooltips, and a bound value that did not change
+// Recycle-in. ReleaseToolTips neutralized the tooltips, and a bound value that did not change
 // (an explicit Source, or equal across the DataContext reset) raises no callback to revive them.
-void TableViewRow::RefreshCellToolTips()
+// A value that is still null detaches instead, so the element cannot block an ancestor's tooltip.
+void TableViewRow::RefreshToolTips()
 {
+    m_hasNeutralizedToolTips = false;
+
+    auto const isNeutralized = [](const winrt::FrameworkElement& element)
+    {
+        auto const record = TableViewDetails::GetRecord(element);
+        return record && record->ToolTip && record->Neutralized && !record->SuppressedForEdit;
+    };
+
+    auto const editingWrapper = m_editingCellWrapper.get();
+    winrt::FrameworkElement const self = *this;
+    if (!editingWrapper && isNeutralized(self))
+    {
+        try
+        {
+            TableViewDetails::ReviveOwnedToolTip(self);
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] Re-applying a row tooltip failed (HRESULT 0x%08X).",
+                static_cast<unsigned int>(winrt::to_hresult()));
+        }
+    }
+
     auto const host = m_cellsHost.get();
     if (!host)
     {
         return;
     }
 
-    auto const editingWrapper = m_editingCellWrapper.get();
     auto const children = host.Children();
     const uint32_t count = children.Size();
     for (uint32_t i = 0; i < count; ++i)
@@ -2245,15 +2423,14 @@ void TableViewRow::RefreshCellToolTips()
             cellWrapper && cellWrapper != editingWrapper)
         {
             // Usually the value changed with the DataContext and the tooltip is already live.
-            auto const record = TableViewDetails::GetRecord(cellWrapper);
-            if (!record || !record->ToolTip || record->ToolTip.IsEnabled())
+            if (!isNeutralized(cellWrapper))
             {
                 continue;
             }
 
             try
             {
-                TableViewDetails::RefreshOwnedToolTip(cellWrapper);
+                TableViewDetails::ReviveOwnedToolTip(cellWrapper);
             }
             catch (...)
             {
@@ -2264,17 +2441,43 @@ void TableViewRow::RefreshCellToolTips()
     }
 }
 
-void TableViewRow::ClearOwnedCellToolTips(const winrt::Panel& host)
+void TableViewRow::ApplyRowToolTipBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& binding)
 {
+    if (binding == m_rowToolTipBinding.get())
+    {
+        return;
+    }
+
+    winrt::FrameworkElement const self = *this;
+    if (binding)
+    {
+        // A binding set mid-edit must not surface the tooltip the edit withheld.
+        if (m_editingCellWrapper.get())
+        {
+            TableViewDetails::SetOwnedToolTipSuppressedForEdit(self, true);
+        }
+        TableViewDetails::ApplyCellToolTipBinding(self, binding);
+    }
+    else
+    {
+        TableViewDetails::ClearToolTipBinding(self);
+    }
+    m_rowToolTipBinding.set(binding);
+}
+
+bool TableViewRow::ClearOwnedCellToolTips(const winrt::Panel& host)
+{
+    bool neutralized = false;
     auto const children = host.Children();
     const uint32_t count = children.Size();
     for (uint32_t i = 0; i < count; ++i)
     {
         if (auto const cellWrapper = children.GetAt(i).try_as<winrt::Grid>())
         {
-            TableViewDetails::ClearOwnedToolTip(cellWrapper);
+            neutralized = TableViewDetails::NeutralizeOwnedToolTip(cellWrapper) || neutralized;
         }
     }
+    return neutralized;
 }
 
 // Installs a generated display element as a cell's content, including the ContentPresenter wiring a
@@ -2584,7 +2787,8 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
             if (TableViewCell::Child(cellWrapper) != displayElement)
             {
                 TableViewCell::Child(cellWrapper, displayElement);
-                TableViewDetails::RefreshOwnedToolTip(cellWrapper);
+                TableViewDetails::SetOwnedToolTipSuppressedForEdit(winrt::FrameworkElement{ *this }, false);
+                TableViewDetails::SetOwnedToolTipSuppressedForEdit(cellWrapper, false);
             }
         }
         catch (...)
@@ -2687,7 +2891,8 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
 
     m_editingColumn.set(column);
     m_editingCellWrapper.set(cellWrapper);
-    TableViewDetails::ClearOwnedToolTip(cellWrapper);
+    TableViewDetails::SetOwnedToolTipSuppressedForEdit(cellWrapper, true);
+    TableViewDetails::SetOwnedToolTipSuppressedForEdit(winrt::FrameworkElement{ *this }, true);
     m_editingElement.set(editingElement);
 
     unwindOnThrow.release();
@@ -2815,7 +3020,8 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<
     m_editingDisplayElement.set(nullptr);
 
     // The bound value did not change, so only an explicit re-apply restores what the edit retracted.
-    TableViewDetails::RefreshOwnedToolTip(cellWrapper);
+    TableViewDetails::SetOwnedToolTipSuppressedForEdit(winrt::FrameworkElement{ *this }, false);
+    TableViewDetails::SetOwnedToolTipSuppressedForEdit(cellWrapper, false);
 
     try
     {
@@ -2981,7 +3187,8 @@ void TableViewRow::AbandonCellEdit()
     m_editingDisplayElement.set(nullptr);
 
     // The cell is a display cell again; restore the tooltip the edit retracted.
-    TableViewDetails::RefreshOwnedToolTip(cellWrapper);
+    TableViewDetails::SetOwnedToolTipSuppressedForEdit(winrt::FrameworkElement{ *this }, false);
+    TableViewDetails::SetOwnedToolTipSuppressedForEdit(cellWrapper, false);
 }
 
 void TableViewRow::ResetPressState()

@@ -9,6 +9,7 @@
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewSource.h"
+#include "TableViewToolTipHelpers.h"
 #include "TableViewRowAutomationPeer.properties.cpp"
 
 #include <UIAutomationCore.h>
@@ -511,6 +512,49 @@ hstring TableViewRowAutomationPeer::GetNameCore()
     }
 
     return winrt::hstring{ composed };
+}
+
+hstring TableViewRowAutomationPeer::GetHelpTextCore()
+{
+    auto const helpText = __super::GetHelpTextCore();
+    if (helpText.empty())
+    {
+        return helpText;
+    }
+
+    // Gated on the record so text the app set is never dropped.
+    auto const row = Owner().try_as<winrt::TableViewRow>();
+    auto const record = TableViewDetails::GetRecord(row);
+    if (!record || record->PublishedHelpText.empty() || helpText != record->PublishedHelpText)
+    {
+        return helpText;
+    }
+
+    // Resolved at query time, not at attach, where the cells' bindings may not have produced a value yet.
+    // Cell texts first: they are cheap, and the composed name is built from them.
+    auto const rowImpl = winrt::get_self<TableViewRow>(row);
+    if (auto const cellsHost = rowImpl->GetCellsHostPanelInternal())
+    {
+        auto const cellChildren = cellsHost.Children();
+        const auto count = cellChildren.Size();
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            auto const cellElement = cellChildren.GetAt(i).try_as<winrt::FrameworkElement>();
+            if (cellElement &&
+                IsVisibleColumn(rowImpl->GetCellOwningColumn(cellElement)) &&
+                GetCellDisplayText(cellElement, false /* allowPeerCreation */) == helpText)
+            {
+                return {};
+            }
+        }
+    }
+
+    if (helpText == GetNameCore())
+    {
+        return {};
+    }
+
+    return helpText;
 }
 
 std::wstring TableViewRowAutomationPeer::ComposeCellTexts(

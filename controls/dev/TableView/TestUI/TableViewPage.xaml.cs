@@ -955,6 +955,14 @@ namespace MUXControlsTestApp
             BasicTableView.CanUserSortColumns = ((CheckBox)sender).IsChecked == true;
         }
 
+        // Off by default: a row tooltip also opens over cells without their own, which the cell hover tests rely on.
+        private void OnRowToolTipToggled(object sender, RoutedEventArgs e)
+        {
+            BasicTableView.RowToolTipBinding = ((CheckBox)sender).IsChecked == true
+                ? new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath("City") }
+                : null;
+        }
+
         // Page switching without a Pivot: hosting the TableViews in a Pivot asserts in
         // Microsoft.UI.Xaml.Phone.dll (0xC0000420) on the second navigation to this page. These
         // buttons are reachable by AutomationId, which also keeps switching off the name-based UIA
@@ -972,6 +980,73 @@ namespace MUXControlsTestApp
         private void OnGoToGroupedPagingClick(object sender, RoutedEventArgs e) => ShowTableHost(GroupedPagingTableHost);
         private void OnGoToContextMenuClick(object sender, RoutedEventArgs e) => ShowTableHost(ContextMenuTableHost);
 
+        private void OnGoToHyperlinkClick(object sender, RoutedEventArgs e)
+        {
+            HyperlinkTableView.ItemsSource ??= _basicItems;
+            ShowTableHost(HyperlinkTableHost);
+        }
+
+        private void OnHyperlinkTableHostKeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (e.Key == global::Windows.System.VirtualKey.Escape)
+            {
+                StatusTextBlock.Text = Facts.EscapeReachedHostStatus;
+            }
+        }
+
+        // F4 reopens the focused row's tooltip, for tests that need one open while the pointer is pressed
+        // (the platform closes tooltips on pointer press).
+        private void OnBasicTableHostPreviewKeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (e.Key != global::Windows.System.VirtualKey.F4)
+            {
+                return;
+            }
+
+            var current = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(XamlRoot) as DependencyObject;
+            while (current != null && !(current is TableViewRow))
+            {
+                current = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(current);
+            }
+
+            if (current is TableViewRow row && ToolTipService.GetToolTip(row) is ToolTip toolTip)
+            {
+                toolTip.IsOpen = true;
+                e.Handled = true;
+            }
+        }
+
+        // An inline Hyperlink is a TextElement, not a UIElement, so UIA SetFocus cannot reach it.
+        private void OnFocusTableHyperlinkClick(object sender, RoutedEventArgs e)
+        {
+            var link = FindFirstHyperlink(HyperlinkTableView);
+            StatusTextBlock.Text = link != null && link.Focus(FocusState.Keyboard)
+                ? Facts.HyperlinkFocusedStatus
+                : "HyperlinkFocusFailed";
+        }
+
+        private static Microsoft.UI.Xaml.Documents.Hyperlink FindFirstHyperlink(DependencyObject root)
+        {
+            if (root is TextBlock textBlock)
+            {
+                var link = textBlock.Inlines.OfType<Microsoft.UI.Xaml.Documents.Hyperlink>().FirstOrDefault();
+                if (link != null)
+                {
+                    return link;
+                }
+            }
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+            {
+                if (FindFirstHyperlink(VisualTreeHelper.GetChild(root, i)) is { } found)
+                {
+                    return found;
+                }
+            }
+
+            return null;
+        }
+
         private void ShowTableHost(FrameworkElement host)
         {
             BasicTableHost.Visibility = Visibility.Collapsed;
@@ -981,6 +1056,7 @@ namespace MUXControlsTestApp
             ScrollingTableHost.Visibility = Visibility.Collapsed;
             HierarchyTableHost.Visibility = Visibility.Collapsed;
             ContextMenuTableHost.Visibility = Visibility.Collapsed;
+            HyperlinkTableHost.Visibility = Visibility.Collapsed;
             host.Visibility = Visibility.Visible;
         }
 

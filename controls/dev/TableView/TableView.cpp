@@ -1392,6 +1392,35 @@ void TableView::ForEachRealizedRow(std::function<void(winrt::TableViewRow const&
     }
 }
 
+winrt::Microsoft::UI::Xaml::Data::Binding TableView::RowToolTipBinding()
+{
+    return m_rowToolTipBinding.get();
+}
+
+void TableView::RowToolTipBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value)
+{
+    m_rowToolTipBinding.set(value);
+
+    // Rows realized later, including pooled rows, pick the binding up in OnRowElementPrepared.
+    auto const repeater = m_rowsRepeater.get();
+    ForEachRealizedRow([&value, &repeater](winrt::TableViewRow const& row)
+    {
+        try
+        {
+            if (value && repeater && repeater.GetElementIndex(row) < 0)
+            {
+                return;
+            }
+            winrt::get_self<TableViewRow>(row)->ApplyRowToolTipBinding(value);
+        }
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] Applying RowToolTipBinding to a row failed (HRESULT 0x%08X).",
+                static_cast<unsigned int>(winrt::to_hresult()));
+        }
+    });
+}
+
 void TableView::RefreshGridLinesOnRealizedRows()
 {
     const auto terminalRow = m_terminalGridLineRow.get();
@@ -2522,7 +2551,8 @@ void TableView::OnRowElementPrepared(
             rowImpl->RefreshGridLines();
             rowImpl->RefreshRowBackground();
         }
-        rowImpl->RefreshCellToolTips();
+        rowImpl->ApplyRowToolTipBinding(m_rowToolTipBinding.get());
+        rowImpl->RefreshToolTips();
         RefreshRowHierarchyState(row, args.Index());
         RefreshRowSelectionState(row);
         InvalidateMeasureForRowRealizationChange();
@@ -2577,7 +2607,7 @@ void TableView::OnRowElementClearing(
             m_cellLevelRow = nullptr;
         }
         // Release app-supplied tooltip content rather than pinning it in the recycle pool.
-        rowImpl->ReleaseCellToolTips();
+        rowImpl->ReleaseToolTips();
         rowImpl->SetTerminalGridLineSuppression({}, false /* refresh */);
         if (auto terminalRow = m_terminalGridLineRow.get(); terminalRow && IsSameObject(row, terminalRow))
         {

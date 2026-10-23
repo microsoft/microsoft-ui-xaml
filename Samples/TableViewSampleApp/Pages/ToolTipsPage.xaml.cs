@@ -17,7 +17,7 @@ using TableViewSampleApp.Models;
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Demonstrates the two opt-in tooltip surfaces, both per column:
+/// Demonstrates the three opt-in tooltip surfaces:
 /// <list type="bullet">
 ///   <item><description><c>TableViewColumn.HeaderToolTip</c>: a plain object. A header is not
 ///     bound against a row, so there is nothing to defer and no binding involved. A string is
@@ -25,6 +25,8 @@ namespace TableViewSampleApp.Pages;
 ///   <item><description><c>TableViewColumn.CellToolTipBinding</c>: a Binding evaluated against
 ///     each row's data item. A CLR property rather than a DP, so XAML passes the Binding through
 ///     unevaluated instead of resolving it once.</description></item>
+///   <item><description><c>TableView.RowToolTipBinding</c>: the same, attached to the row, so it
+///     also opens when keyboard focus lands on the row.</description></item>
 /// </list>
 /// The control never invents a tooltip, and never touches one a cell's own template already set.
 /// </summary>
@@ -99,6 +101,20 @@ public sealed partial class ToolTipsPage : SamplePageBase
             DetachCellToolTips();
             SetLastAction("Cell tooltips -> detached (CellToolTipBinding = null)");
         }
+    }
+
+    // ---- Row tooltip --------------------------------------------------------------------------
+
+    private void OnRowToolTipToggled(object sender, RoutedEventArgs e)
+    {
+        // On the row, not a cell: keyboard focus lands on the row, and ToolTipService opens a tooltip
+        // on keyboard focus only for the focused element or one of its ancestors.
+        PeopleTable.RowToolTipBinding = RowToolTipToggle.IsOn
+            ? new Binding { Path = new PropertyPath(nameof(Person.Bio)) }
+            : null;
+        SetLastAction(RowToolTipToggle.IsOn
+            ? "Row tooltip -> the row's Bio (RowToolTipBinding set)"
+            : "Row tooltip -> off (RowToolTipBinding = null)");
     }
 
     // ---- Header tooltips --------------------------------------------------------------------

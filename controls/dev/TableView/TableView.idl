@@ -538,6 +538,11 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground { get; set; };
 
+    // Opt-in per-row tooltip content, bound against each row's data item; null or empty means no
+    // tooltip. Shows on row hover and on row keyboard focus. A CLR property, not a DP, so XAML passes
+    // the Binding through unevaluated.
+    Microsoft.UI.Xaml.Data.Binding RowToolTipBinding;
+
     // Optional empty-state template shown when ItemsSource is null or empty.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.DataTemplate EmptyTemplate { get; set; };

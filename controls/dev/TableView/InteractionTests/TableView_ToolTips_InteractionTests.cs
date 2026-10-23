@@ -11,8 +11,10 @@ using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
 
+using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
+using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using MUXTestInfra.Shared.Infra;
 using Point = System.Drawing.Point;
 
@@ -349,6 +351,269 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         #endregion
+
+        #region 10. Row tooltip
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies RowToolTipBinding opens the focused row's tooltip on keyboard focus, follows Up/Down, and closes on Escape without moving focus.")]
+        public void RowToolTipFollowsRowKeyboardFocus()
+        {
+            // Contract: TableView.RowToolTipBinding attaches the tooltip to the ROW, where keyboard focus lands, so
+            //   ToolTipService opens it on keyboard focus as well as hover (WCAG 2.1.1). Escape dismisses it
+            //   without moving focus (WCAG 1.4.13). The page binds it to City (TableViewPage.xaml.cs).
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!EnableRowToolTips()) { return; }
+                DismissToolTip();
+
+                if (FocusRowAt(BasicTable, 0) == null) { return; }
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                UIObject rowsHost = GetRowsHost(BasicTable);
+                Verify.IsTrue(rowsHost.Children[1].HasKeyboardFocus, "Precondition: Down moved focus to row 1.");
+                VerifyOpenToolTipText(CityOf(1), "after Down onto row 1");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[0].HasKeyboardFocus, "Precondition: Up moved focus back to row 0.");
+                VerifyOpenToolTipText(CityOf(0), "after Up onto row 0");
+
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+
+                Verify.IsTrue(WaitForToolTipClosed("after Escape"), "Escape must close the row tooltip.");
+                Verify.IsTrue(rowsHost.Children[0].HasKeyboardFocus, "Escape must dismiss the tooltip without moving focus off the row.");
+
+                MoveFocusOffTableBeforeTeardown();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the row tooltip is limited to row-level focus: a cell's own tooltip wins, and a focused cell without one shows nothing; on hover the row tooltip covers cells without their own.")]
+        public void RowToolTipYieldsToCellToolTip()
+        {
+            // The Name column sets CellToolTipBinding="{Binding Name}"; Age sets none. GotFocus bubbles, so without
+            // TableView's row-level filter ToolTipService would open the row tooltip over the focused Age cell.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!EnableRowToolTips()) { return; }
+                DismissToolTip();
+
+                if (!DrillIntoRow(BasicTable, 0)) { return; }
+                VerifyOpenToolTipText(BasicName(0), "with keyboard focus on row 0's Name cell", notExpected: CityOf(0));
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.AreEqual(1, IndexOfFocusedCell(GetRowsHost(BasicTable).Children[0]), "Precondition: Right moved focus to the Age cell.");
+                VerifyNoToolTipOpens("with keyboard focus on row 0's Age cell",
+                    "A focused cell with no tooltip of its own must not show the row tooltip; it belongs to row-level focus.");
+
+                MoveFocusOffTableBeforeTeardown();
+
+                UIObject tableView = FindElement.ById(BasicTable);
+                UIObject firstRow = GetRow(tableView, 0);
+                HoverPoint(CellPoint(FindColumnHeader(tableView, "Name"), firstRow), "the Name cell of row 0");
+                VerifyOpenToolTipText(BasicName(0), "hovering row 0's Name cell", notExpected: CityOf(0));
+
+                HoverPoint(CellPoint(FindColumnHeader(tableView, "Age"), firstRow), "the Age cell of row 0");
+                VerifyOpenToolTipText(CityOf(0), "hovering row 0's Age cell", notExpected: BasicName(0));
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies opening an edit withdraws the cell and row tooltips, so the first Escape cancels the edit.")]
+        public void ToolTipsDoNotInterceptEscapeWhileEditing()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!EnableRowToolTips()) { return; }
+                DismissToolTip();
+
+                if (!DrillIntoRow(BasicTable, 0)) { return; }
+                VerifyOpenToolTipText(BasicName(0), "with keyboard focus on row 0's Name cell");
+
+                KeyboardHelper.PressKey(Key.F2);
+                KeyboardHelper.PressKey(Key.a, ModifierKey.Control);
+                TextInput.SendText("Discarded");
+                Wait.ForIdle();
+                VerifyNoToolTipOpens("while editing", "An open edit must withdraw the cell and row tooltips.");
+
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+
+                Verify.AreEqual("Cancel;", ReadEditEndReport(), "The first Escape must cancel the edit, not close a tooltip.");
+                Verify.AreEqual(BasicName(0), ReadFirstItemName(), "The cancelled edit must leave the value intact.");
+                MoveFocusOffTableBeforeTeardown();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Escape during a column resize drag cancels the drag and leaves the row tooltip open during it alone.")]
+        public void EscapeCancelsColumnResizeWithRowToolTipOn()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!EnableRowToolTips()) { return; }
+                DismissToolTip();
+
+                if (FocusRowAt(BasicTable, 0) == null) { return; }
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+
+                UIObject tableView = FindElement.ById(BasicTable);
+                UIObject nameHeader = FindColumnHeader(tableView, "Name");
+                double widthBefore = nameHeader.BoundingRectangle.Width;
+
+                // Inline rather than DragColumnBoundary, so the tooltip can be reopened mid-drag: the platform
+                // closes it on pointer press, and the page's F4 reopens the focused row's tooltip.
+                VerifyOpenToolTipText(CityOf(1), "before the drag starts");
+                var bounds = nameHeader.BoundingRectangle;
+                int startX = bounds.Left + bounds.Width - 1;
+                int y = bounds.Top + (bounds.Height / 2);
+                InputHelper.LeftMouseButtonDown(nameHeader, (bounds.Width / 2) - 1, 0);
+                InputHelper.MoveMouse(new Point(startX + 45, y));
+                InputHelper.MoveMouse(new Point(startX + 90, y));
+                KeyboardHelper.PressKey(Key.F4);
+                VerifyOpenToolTipText(CityOf(1), "mid-drag");
+                double widthMidDrag = FindColumnHeader(tableView, "Name").BoundingRectangle.Width;
+                Verify.IsGreaterThan(widthMidDrag, widthBefore + 30.0, "Precondition: the drag is resizing the column.");
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+                Verify.IsNotNull(FindOpenToolTip("after Escape mid-drag"),
+                    "Escape during a resize drag belongs to the drag; it must not also close the row tooltip.");
+                InputHelper.LeftMouseButtonUp();
+                Wait.ForIdle();
+
+                double widthAfter = FindColumnHeader(tableView, "Name").BoundingRectangle.Width;
+                Log.Comment("Name header width before={0}, after cancelled drag={1}.", widthBefore, widthAfter);
+                Verify.IsLessThanOrEqual(Math.Abs(widthAfter - widthBefore), 8.0,
+                    "Escape must cancel the resize drag rather than being consumed by tooltip dismissal.");
+                MoveFocusOffTableBeforeTeardown();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Escape on a focused inline Hyperlink in a row-tooltip table neither crashes nor is swallowed by tooltip dismissal.")]
+        public void EscapeOnFocusedHyperlinkInCellIsNotSwallowed()
+        {
+            // Focus on a TextElement has no visual parent; the tooltip walks must step through its host TextBlock.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(HyperlinkPivotItem))
+                {
+                    Verify.Fail("GoToHyperlinkButton was not found on the test page.");
+                    return;
+                }
+
+                var focusButton = FindElement.ById<Button>(FocusTableHyperlinkButton);
+                if (focusButton == null)
+                {
+                    Verify.Fail("FocusTableHyperlinkButton was not found on the test page.");
+                    return;
+                }
+
+                focusButton.Invoke();
+                Verify.IsTrue(WaitForStatusText(HyperlinkFocusedStatus, 5000), "Precondition: the inline Hyperlink took keyboard focus.");
+                VerifyNoToolTipOpens("with focus on the Hyperlink",
+                    "The row tooltip belongs to row-level focus and must not open over the Hyperlink.");
+
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+
+                Verify.IsNotNull(FindElement.ById(HyperlinkTable), "The app must survive Escape on a focused Hyperlink.");
+                Verify.IsTrue(WaitForStatusText(EscapeReachedHostStatus, 5000),
+                    "With no tooltip open, Escape on the Hyperlink must not be handled by the table and must reach the host.");
+                MoveFocusOffTableBeforeTeardown();
+            }
+        }
+
+        #endregion
+
+        private static bool EnableRowToolTips()
+        {
+            var toggle = FindElement.ById<CheckBox>(RowToolTipCheckBox);
+            if (toggle == null)
+            {
+                Verify.Fail("RowToolTipCheckBox was not found on the test page.");
+                return false;
+            }
+
+            toggle.Check();
+            Wait.ForIdle();
+            return true;
+        }
+
+        private const int c_toolTipPollTimeoutMs = 6000;
+        private const int c_toolTipPollIntervalMs = 250;
+
+        // Polls until a tooltip carrying the expected text is open; the previous row's may still be closing.
+        private static UIObject WaitForOpenToolTip(string phase, string expected)
+        {
+            var deadline = DateTime.Now.AddMilliseconds(c_toolTipPollTimeoutMs);
+            UIObject toolTip;
+            do
+            {
+                Wait.ForIdle();
+                toolTip = FindOpenToolTip(phase);
+                if (toolTip != null && ReadToolTipText(toolTip).Contains(expected))
+                {
+                    return toolTip;
+                }
+                Wait.ForMilliseconds(c_toolTipPollIntervalMs);
+            }
+            while (DateTime.Now < deadline);
+
+            return toolTip;
+        }
+
+        private static bool WaitForToolTipClosed(string phase)
+        {
+            var deadline = DateTime.Now.AddMilliseconds(c_toolTipPollTimeoutMs);
+            do
+            {
+                Wait.ForIdle();
+                if (FindOpenToolTip(phase) == null)
+                {
+                    return true;
+                }
+                Wait.ForMilliseconds(c_toolTipPollIntervalMs);
+            }
+            while (DateTime.Now < deadline);
+
+            return false;
+        }
+
+        // Absence can only be shown by watching past the point a tooltip would have opened.
+        private static void VerifyNoToolTipOpens(string phase, string message)
+        {
+            var deadline = DateTime.Now.AddMilliseconds(c_toolTipDwellMs);
+            do
+            {
+                Wait.ForIdle();
+                Verify.IsNull(FindOpenToolTip(phase), message);
+                Wait.ForMilliseconds(c_toolTipPollIntervalMs);
+            }
+            while (DateTime.Now < deadline);
+        }
+
+        private static void VerifyOpenToolTipText(string expected, string phase, string notExpected = null)
+        {
+            UIObject toolTip = WaitForOpenToolTip(phase, expected);
+            if (toolTip == null)
+            {
+                Verify.Fail(string.Format("A tooltip carrying '{0}' must be open {1}.", expected, phase));
+                return;
+            }
+
+            string text = ReadToolTipText(toolTip);
+            Log.Comment("Tooltip {0}: '{1}'.", phase, text);
+            Verify.IsTrue(text.Contains(expected), string.Format("The tooltip {0} must carry '{1}'; got '{2}'.", phase, expected, text));
+            if (notExpected != null)
+            {
+                Verify.IsFalse(text.Contains(notExpected), string.Format("The tooltip {0} must not carry '{1}'; got '{2}'.", phase, notExpected, text));
+            }
+        }
 
         // The screen point over a given column's cell in a given row: the column's x from its HEADER, the row's
         // y from the ROW. See the note in CellToolTipAppearsOnHover for why this composition is what keeps the

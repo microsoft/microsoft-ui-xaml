@@ -134,6 +134,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(tableView.SelectedItem);
                 Verify.AreEqual(-1, tableView.SelectedIndex);
                 Verify.IsTrue(tableView.CanUserSortColumns);
+                Verify.IsNull(tableView.RowToolTipBinding, "RowToolTipBinding is a CLR property and defaults to null, meaning no row tooltip.");
             });
         }
 

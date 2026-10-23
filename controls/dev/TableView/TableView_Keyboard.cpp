@@ -11,6 +11,7 @@
 #include "ResourceAccessor.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewFocusHelpers.h"
+#include "TableViewToolTipHelpers.h"
 #include "Utils.h"
 #include "SharedHelpers.h"
 #include "TVDiag.h"
@@ -801,6 +802,55 @@ void TableView::OnPreviewKeyDownForNavigation(
         IsFocusExactlyOnBodyItem())
     {
         args.Handled(true);
+    }
+
+    DismissFocusedRowToolTip(args);
+}
+
+// Only the RowToolTipBinding tooltip: cell and header tooltips keep the platform's Escape behavior.
+// Preview, so the Escape that closes it does not also reach a host that closes on Escape.
+void TableView::DismissFocusedRowToolTip(const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Handled() || args.Key() != winrt::Windows::System::VirtualKey::Escape || m_activeColumnResizeDrag)
+    {
+        return;
+    }
+
+    auto const root = XamlRoot();
+    if (!root)
+    {
+        return;
+    }
+
+    try
+    {
+        winrt::DependencyObject const self = *this;
+        winrt::TableViewRow row{ nullptr };
+        auto current = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+        for (; current && !SameInspectableIdentity(current, self);
+            current = TableViewDetails::GetFocusWalkParent(current))
+        {
+            // A nested table dismisses its own rows' tooltips.
+            if (current.try_as<winrt::TableView>())
+            {
+                return;
+            }
+            if (!row)
+            {
+                row = current.try_as<winrt::TableViewRow>();
+            }
+        }
+
+        // Only when focus is inside this table; a popup's walk ends without reaching it.
+        if (current && row && TableViewDetails::TryCloseOpenOwnedToolTip(row))
+        {
+            args.Handled(true);
+        }
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] Escape row tooltip dismissal failed (HRESULT 0x%08X).",
+            static_cast<unsigned int>(winrt::to_hresult()));
     }
 }
 

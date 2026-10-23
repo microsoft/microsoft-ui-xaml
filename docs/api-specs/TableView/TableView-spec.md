@@ -482,6 +482,7 @@ Scrolling is structural rather than a named part. The header scroller and the bo
 | `Density` | `TableViewDensity` | `Standard` | Controls row/cell spacing. |
 | `RowBackground` | `Brush` | `null` | Background brush for rows. |
 | `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
+| `RowToolTipBinding` | `Microsoft.UI.Xaml.Data.Binding` | `null` | **Proposed (API review pending).** Opt-in per-row tooltip, evaluated against each row's data item. `null` or an empty string means no tooltip for that row. A CLR property, not a DP, so XAML hands the `Binding` over unevaluated. See [Row tooltips](#row-tooltips-proposed). |
 | `EmptyTemplate` | `DataTemplate` | `null` | Template displayed when there are no rows. |
 | `GroupHeaderTemplate` | `DataTemplate` | `null` | Content template for the group-header band shown when the source is grouped. Fills only the header's content region; the chevron and themed band remain control-owned. The data context is a `TableViewGroupInfo`. Ignored when the source is not grouped. |
 | `ColumnHeaderStyle` | `Style` | `null` | `Style` applied to every `TableViewColumnHeader`. `TableViewColumn.HeaderStyle` overrides it for one column. Layered over the default header style, so it need not be `BasedOn` it. See [TableViewColumnHeader class](#tableviewcolumnheader-class). |
@@ -746,6 +747,94 @@ header peer publishes the text itself rather than through
 tooltip visual. The provider is available once the header is realized. As with cells, non-string content is
 mouse-only: pair it with `Header` text that carries the same information when it matters.
 
+### Row tooltips (proposed)
+
+> **Proposal — API review pending.** `TableView.RowToolTipBinding` is new in this change and may be
+> renamed or reshaped in review.
+
+Keyboard focus in a `TableView` lands on the **row**: Tab enters the table on a row, and at row level
+Up/Down move by row; Right/Left drill into cells. XAML's `ToolTipService` opens a tooltip on keyboard focus
+only for the focused element or one of its ancestors, so a cell or header tooltip cannot appear while
+a row has focus. A tooltip that shows the full text of a truncated value on hover therefore has no
+keyboard equivalent at row level, yet truncated text must be reachable by keyboard focus as well as
+hover ([WCAG 2.2 SC 2.1.1 Keyboard](https://www.w3.org/WAI/WCAG22/Understanding/keyboard)).
+
+`RowToolTipBinding` attaches the tooltip to the row itself:
+
+```xml
+<tabular:TableView ItemsSource="{x:Bind Drives}"
+                   RowToolTipBinding="{Binding DisplayName}">
+    <tabular:TableViewTextColumn Header="Drive" Binding="{Binding DisplayName}" />
+    <tabular:TableViewTextColumn Header="Size" Binding="{Binding SizeText}" />
+</tabular:TableView>
+```
+
+It is the row-level counterpart of `CellToolTipBinding` and shares its contract: the binding tracks
+the row's `DataContext` (recycling and source `PropertyChanged` need no invalidation API), the bound
+value is tooltip *content* (a `ToolTip` value is rejected), the control owns placement, and it never
+touches a tooltip the app set on the row. Changing `RowToolTipBinding` re-applies it to realized rows.
+While a cell in the row is being edited, the row and the edited cell carry no tooltip and publish no
+help text, whatever the bound value or binding does during the edit; ending the edit re-applies them.
+A realized row or cell whose value is null or empty has no tooltip registered, so a cell without a
+value never blocks the row tooltip. (Recycled containers waiting in the pool keep a disabled,
+contentless tooltip registered, which is cheaper than re-registering on every scroll; it is
+re-enabled, or removed if the new value is empty, when the container is reused.) The row tooltip
+covers the whole row, including a tree row's expander gutter.
+
+Which tooltip shows is decided by `ToolTipService`, which shows one automatic tooltip at a time and
+prefers the innermost owner, plus one rule of `TableView`'s own: the row tooltip belongs to
+**row-level** focus. `GotFocus` bubbles, so on its own `ToolTipService` would also open the row's
+tooltip when a cell (or a control inside a cell) without a tooltip of its own takes keyboard focus;
+`TableView` cancels that pending open.
+
+| Input | Row tooltip | Cell's own tooltip |
+|---|---|---|
+| Keyboard focus on the row (Tab, Up/Down, Home/End, PageUp/PageDown) | Opens after the keyboard show delay | — |
+| Keyboard focus moves into a cell (Right/Left) that has its own tooltip | Closes | Opens |
+| Keyboard focus moves into a cell, or cell content, with no tooltip of its own | Closes; does not reopen | — |
+| Pointer over a cell that has its own tooltip | Does not open | Opens |
+| Pointer over any other part of the row | Opens | — |
+| Focus leaves the owner, or the pointer leaves the owner and the tooltip | Closes | Closes |
+
+There are never two tooltips at once. A keyboard-opened tooltip is placed above the row, because XAML
+treats `PlacementMode.Mouse` as `Top` for keyboard focus. The tooltip never takes focus.
+
+Escape closes an open row tooltip without moving focus when keyboard focus is on that row or inside
+it, however the tooltip was opened: a tooltip opened by hovering the focused row (or a cell in it
+without its own tooltip) is closed too. `TableView` marks that Escape handled in `PreviewKeyDown` so
+it does not also reach a host that closes on Escape. A row tooltip open on a different row (for
+example by hover while focus is elsewhere) is not affected, and a nested `TableView` handles its own
+rows. Escape is not taken while a column resize
+drag is in progress, and an open edit has no row tooltip, so the first Escape still cancels the edit
+or the drag. Cell and header tooltips keep the platform's Escape behavior (XAML tooltips do not
+handle Escape). This is `TableView` behavior layered on the platform popup.
+
+> **Open question for API review:** should Escape also dismiss open `CellToolTipBinding` and
+> `HeaderToolTip` tooltips? That would change behavior for existing users, so it is not part of this
+> proposal.
+
+Group-header bands get no row tooltip: their `DataContext` is a `TableViewGroupInfo`, not a data item,
+so a row binding would evaluate against the wrong object. A group-header tooltip needs its own opt-in
+and is not part of this proposal.
+
+#### Platform dependencies
+
+The tooltip popup, its timing and its dismissal are XAML `ToolTip` behavior, not `TableView`'s:
+
+- It closes when its owner loses focus, when the pointer leaves the owner and the tooltip's safe
+  zone, and on a Ctrl press-and-release. XAML has no Escape handling for tooltips.
+- It has no display timeout. `ToolTipService` reads `SPI_GETMESSAGEDURATION` but starts no close
+  timer, so keyboard- and hover-opened tooltips stay open until one of the conditions above occurs.
+  This persistence, the safe zone and Ctrl dismissal are what the
+  [WCAG 2.2 SC 1.4.13 Content on Hover or Focus](https://www.w3.org/WAI/WCAG22/Understanding/content-on-hover-or-focus)
+  properties rest on, so they are platform guarantees rather than `TableView`'s.
+- Placement under keyboard focus is `Top` regardless of the requested placement.
+
+This change makes the row's information reachable from the keyboard
+([WCAG 2.2 SC 2.1.1 Keyboard](https://www.w3.org/WAI/WCAG22/Understanding/keyboard)); it does not
+claim the hover-content requirements that depend on the platform popup. See also the
+[Tooltips](https://learn.microsoft.com/windows/apps/design/controls/tooltips) design guidance.
+
 ## TableViewTextColumn class
 
 A column that generates a data-bound `TextBlock` for each cell, and a `TextBox` when the cell is edited.
@@ -934,9 +1023,16 @@ The control owns the `ToolTip`; the bound value is its content, not a `ToolTip` 
 
 - String tooltip text is published as the cell's `AutomationProperties.HelpText`, and retracted on recycle and when a cell edit begins.
 - `TableViewCellAutomationPeer` suppresses it at UIA query time when it equals the cell's own UIA text, so Narrator does not read it twice. Suppression is gated on the control's ownership record, so text the app set is never dropped, and it is resolved at query time because the cell's own binding may not have produced a value when the tooltip is applied.
-- The popup is **pointer-only**. The UIA pairing serves keyboard and screen-reader users, which is why it is not optional.
+- The popup also opens when keyboard focus lands on the cell (after Right/Left), as for any XAML tooltip owner. At row-level focus only a row tooltip can show; see [Row tooltips](#row-tooltips-proposed). The UIA pairing serves screen-reader users regardless.
 - Placement is control-owned and fixed (`PlacementMode.Mouse`), matching `TabViewItem`. An app needing different placement uses a tooltip inside its own cell content template.
 - Non-string content is **mouse-only** and has no accessible representation: no `HelpText` is published (it cannot be stringified), and the cell wrapper is internal so an app cannot set `HelpText` on it either. Keyboard and screen-reader users get nothing. `TabViewItem` and `NavigationViewItem` refuse non-string tooltip content outright for this reason; `TableView` allows it, so **use a converter that returns text whenever the value must be accessible**. Reaching parity needs a public cell element, which is post-v1.
+
+### Row tooltip accessibility (proposed)
+
+- String `RowToolTipBinding` text is published as the row's `AutomationProperties.HelpText`, and retracted on recycle, when the binding is cleared, and while a cell in the row is edited.
+- `TableViewRowAutomationPeer` withholds it at UIA query time when it equals the row's `Name` or the text of one of the row's visible cells: the row name is composed from the visible cells, so the full value is already announced and Narrator would otherwise read it twice. This is the usual case when the row tooltip repeats a truncated column. Text that adds information (for example a description no column shows) is reported. As with cells, suppression is gated on the ownership record, so `HelpText` the app set on the row is never dropped.
+- Non-string content is mouse- and focus-visible only, with no `HelpText`; use a converter that returns text when the value must be accessible.
+- A keyboard-opened tooltip raises the platform's UIA `ToolTipOpened` event about a second after focus lands, as every XAML tooltip does (cell tooltips included). Verified with a UIA event probe: focus moves to the row (name includes the full text), then `ToolTipOpened` carries the same text. A screen reader that voices `ToolTipOpened` may therefore read the value a second time; that is platform behavior, not suppressible from the row peer.
 
 ## Selection event args
 
@@ -1199,6 +1295,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility GridLinesVisibility;
         Microsoft.UI.Xaml.Media.Brush RowBackground;
         Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground;
+        Microsoft.UI.Xaml.Data.Binding RowToolTipBinding; // Proposed; CLR property, not a DP.
         Microsoft.UI.Xaml.DataTemplate EmptyTemplate;
         Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate;
         Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity Density;

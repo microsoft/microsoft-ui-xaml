@@ -26,11 +26,11 @@
 
     <controls:SamplePresenter
         Header="Tooltips"
-        Description="TableView has two opt-in tooltip surfaces, both set per column. TableViewColumn.HeaderToolTip is a plain object shown over the column header; a string is also reported to UI Automation as help text. TableViewColumn.CellToolTipBinding is a Binding evaluated against each row, so a cell tooltip can repeat the cell's text, show a different property, or build rich content from the whole row, and it follows the data when a value changes. Set neither and no tooltip appears: the control never invents one, and never touches a tooltip the cell template already set."
+        Description="TableView has three opt-in tooltip surfaces. TableViewColumn.HeaderToolTip is a plain object shown over the column header; a string is also reported to UI Automation as help text. TableViewColumn.CellToolTipBinding is a Binding evaluated against each row, so a cell tooltip can repeat the cell's text, show a different property, or build rich content from the whole row, and it follows the data when a value changes. TableView.RowToolTipBinding is the same kind of Binding on the whole row, which is where keyboard focus lands, so it also opens from the keyboard. Set none and no tooltip appears: the control never invents one, and never touches a tooltip the cell template already set."
         Snippet="ToolTips"
         StretchExample="True"
-        TryIt="Hover a Name cell for a card built from the whole row, a Department chip for the person's role, and a Salary cell for nothing at all. Press Give the first 10 people their next role, then hover a Department chip again: the tooltip followed the data. Turn Cell tooltips off and hover again."
-        WhatToLookFor="A cell tooltip is evaluated against the row, so after an action the Department chip's tooltip shows the new role without the app refreshing anything. The Name card's binding has no Path, so it is built from the row item when the binding evaluates and does not track individual property changes. Salary has no CellToolTipBinding and stays silent. Its header tooltip repeats the header text, so UI Automation reads it once, not twice. The Email envelope's tooltip belongs to the cell template and survives Cell tooltips Off.">
+        TryIt="Hover a Name cell for a card built from the whole row, a Department chip for the person's role, and a Salary cell for nothing at all. Press Give the first 10 people their next role, then hover a Department chip again: the tooltip followed the data. Turn Cell tooltips off and hover again. Turn Row tooltip on, Tab into the table and press Down: the focused row's full bio appears without a mouse. Press Escape to close it."
+        WhatToLookFor="A cell tooltip is evaluated against the row, so after an action the Department chip's tooltip shows the new role without the app refreshing anything. The Name card's binding has no Path, so it is built from the row item when the binding evaluates and does not track individual property changes. Salary has no CellToolTipBinding and stays silent until Row tooltip is on, when it shows the row's tooltip. Its header tooltip repeats the header text, so UI Automation reads it once, not twice. The row tooltip repeats the Bio cell, which the row's name already reads in full, so it is not announced again as help text. The Email envelope's tooltip belongs to the cell template and survives Cell tooltips Off.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
@@ -75,6 +75,17 @@
                         Header="Cell tooltips"
                         IsOn="True"
                         Toggled="OnCellToolTipsToggled"/>
+                </controls:RailSection>
+
+                <controls:RailSection
+                    Header="Row tooltip"
+                    Description="Sets TableView.RowToolTipBinding to the row's Bio, which the Bio column truncates. The tooltip belongs to the row, so it opens when keyboard focus lands on a row (Tab into the table, then Up or Down), not only on hover. It is limited to row-level focus: Right into a cell shows that cell's own tooltip, if it has one, and never the row's. Under the pointer, a cell's own tooltip wins. Escape closes it without moving focus. Off sets the binding to null.">
+                    <ToggleSwitch
+                        x:Name="RowToolTipToggle"
+                        AutomationProperties.AutomationId="ToolTipsRowToolTipToggle"
+                        Header="Row tooltip"
+                        IsOn="False"
+                        Toggled="OnRowToolTipToggled"/>
                 </controls:RailSection>
 
                 <controls:RailSection
@@ -137,6 +148,7 @@
 
                 <controls:StatusPanel x:Name="Status" AutomationIdPrefix="ToolTips">
                     <TextBlock x:Name="CellToolTipsText" controls:StatusPanel.Label="Cell tooltips" Text="Attached"/>
+                    <TextBlock x:Name="RowToolTipText" controls:StatusPanel.Label="Row tooltip" Text="Off"/>
                     <TextBlock x:Name="PerColumnText" controls:StatusPanel.Label="Per column" Text="(none)"/>
                 </controls:StatusPanel>
             </StackPanel>

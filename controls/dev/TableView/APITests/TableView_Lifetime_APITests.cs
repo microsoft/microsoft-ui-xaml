@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using MUXControlsTestApp.Utilities;
 using System;
@@ -82,6 +83,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             AssertCollected(tracked);
 
             Verify.AreEqual(40, items.Count, "The items source must still be alive after the table was collected.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a TableView with row and cell tooltips is collected after unload.")]
+        public void VerifyTableViewWithRowToolTipsIsCollected()
+        {
+            var items = new ObservableCollection<Person>(MakeManyItems(40));
+            var tracked = new Dictionary<string, WeakReference>();
+
+            RunOnUIThread.Execute(() => CreateAndLoadToolTipTable(items, tracked));
+
+            SettleAfterLoad();
+
+            RunOnUIThread.Execute(() => TrackRealizedToolTips(tracked));
+
+            RunOnUIThread.Execute(() => Content = null);
+
+            AssertCollected(tracked);
+
+            Verify.AreEqual(40, items.Count, "The items source must still be alive after the table was collected.");
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void CreateAndLoadToolTipTable(object itemsSource, Dictionary<string, WeakReference> tracked)
+        {
+            var tableView = CreateTableView(itemsSource, headers: new[] { "Name", "Role" }, width: 400, height: 300);
+            tableView.RowToolTipBinding = new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath("Role") };
+            tableView.Columns[0].CellToolTipBinding = new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath("Name") };
+            LoadContent(tableView);
+
+            tracked["TableView"] = new WeakReference(tableView);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void TrackRealizedToolTips(Dictionary<string, WeakReference> tracked)
+        {
+            var tableView = (TableView)tracked["TableView"].Target;
+            var row = RequireFirstRow(tableView);
+            var rowToolTip = ToolTipService.GetToolTip(row) as ToolTip;
+            var cellToolTip = ToolTipService.GetToolTip(GetRowCell(row, 0)) as ToolTip;
+            Verify.IsNotNull(rowToolTip, "Precondition: the realized row carries its tooltip.");
+            Verify.IsNotNull(cellToolTip, "Precondition: the realized cell carries its tooltip.");
+
+            tracked["Row"] = new WeakReference(row);
+            tracked["RowToolTip"] = new WeakReference(rowToolTip);
+            tracked["CellToolTip"] = new WeakReference(cellToolTip);
         }
 
         // NoInlining so the JIT cannot keep the control alive in a stack slot; on the test class because LoadContent is protected.

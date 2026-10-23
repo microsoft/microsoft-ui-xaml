@@ -186,6 +186,14 @@ Entry c_typeEntries[] =
                     }
 
                     xamlType.AddMember(
+                        L"RowToolTipBinding", /* propertyName */
+                        L"Microsoft.UI.Xaml.Data.Binding", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::TableView>().RowToolTipBinding(); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableView>().RowToolTipBinding(value ? value.as<winrt::Microsoft::UI::Xaml::Data::Binding>() : nullptr); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
                         L"IsEditing", /* propertyName */
                         L"Boolean", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableView>().IsEditing()); },

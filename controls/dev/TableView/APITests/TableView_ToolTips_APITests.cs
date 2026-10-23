@@ -864,10 +864,694 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
+
+        #region 14.4 Row tooltips
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies RowToolTipBinding attaches a ToolTip to each row carrying that row's value, and none to its cells.")]
+        public void VerifyRowToolTipBindingProducesPerRowToolTip()
+        {
+            TableView tableView = null;
+            var items = MakeItems();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateRowToolTipTable(items, rowToolTipPath: "Role");
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = GetRealizedRows(tableView);
+                Verify.IsGreaterThan(rows.Count, 1, "Two rows are needed: one row cannot distinguish a per-row value from a constant.");
+
+                for (int rowIndex = 0; rowIndex < 2; rowIndex++)
+                {
+                    // On the row itself: keyboard focus lands on the row, and ToolTipService opens a
+                    // tooltip on focus only for the focused element or one of its ancestors.
+                    Verify.AreEqual(items[rowIndex].Role, RequireToolTipContent(rows[rowIndex], $"row {rowIndex}"),
+                        $"Row {rowIndex}'s tooltip must carry row {rowIndex}'s bound value.");
+                    Verify.IsNull(ToolTipService.GetToolTip(GetRowCell(rows[rowIndex], 0)),
+                        "A row tooltip must not be copied onto the row's cells.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies no RowToolTipBinding, or an empty or null bound value, attaches no row tooltip.")]
+        public void VerifyEmptyOrNullRowToolTipValueProducesNoToolTip()
+        {
+            TableView unset = null;
+            TableView tableView = null;
+            var items = new List<Person>
+            {
+                new Person { Name = "Asha", Role = "Designer" },
+                new Person { Name = "Diego", Role = string.Empty },
+                new Person { Name = "Mei", Role = null },
+            };
+
+            RunOnUIThread.Execute(() =>
+            {
+                unset = CreateRowToolTipTable(MakeItems(), rowToolTipPath: null);
+                tableView = CreateRowToolTipTable(items, rowToolTipPath: "Role");
+                LoadContent(new StackPanel { Children = { unset, tableView } });
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var row in GetRealizedRows(unset))
+                {
+                    Verify.IsNull(ToolTipService.GetToolTip(row), "A table with no RowToolTipBinding must not attach a row tooltip.");
+                }
+
+                var rows = GetRealizedRows(tableView);
+                Verify.IsGreaterThan(rows.Count, 2, "All three rows must be realized.");
+
+                Verify.AreEqual("Designer", RequireToolTipContent(rows[0], "row 0"),
+                    "A row with a real value must still get its tooltip.");
+                Verify.IsNull(ToolTipService.GetToolTip(rows[1]), "An empty-string row tooltip value must attach no tooltip.");
+                Verify.IsNull(ToolTipService.GetToolTip(rows[2]), "A null row tooltip value must attach no tooltip.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies RowToolTipBinding set in XAML reaches the control as an unevaluated Binding.")]
+        public void VerifyRowToolTipBindingFromXaml()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+
+                tableView = (TableView)XamlReader.Load(
+                    @"<tabular:TableView
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:tabular='using:Microsoft.UI.Xaml.Controls.Tabular'
+                        Width='500' Height='300'
+                        RowToolTipBinding='{Binding Role}'>
+                        <tabular:TableViewTextColumn Header='Name' Binding='{Binding Name}' />
+                    </tabular:TableView>");
+
+                // A DP would evaluate the binding against the TableView's own DataContext instead.
+                Verify.IsNotNull(tableView.RowToolTipBinding, "The XAML Binding must be passed through to the CLR property.");
+                Verify.AreEqual("Role", tableView.RowToolTipBinding.Path.Path);
+
+                tableView.ItemsSource = MakeItems();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Designer", RequireToolTipContent(RequireFirstRow(tableView), "row 0"),
+                    "A XAML-authored RowToolTipBinding must be evaluated per row.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies changing RowToolTipBinding after load re-applies it to realized rows, and clearing it removes the tooltip.")]
+        public void VerifyRowToolTipBindingChangeIsReappliedToRealizedRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateRowToolTipTable(MakeItems(), rowToolTipPath: null);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(ToolTipService.GetToolTip(RequireFirstRow(tableView)), "Precondition: no row tooltip before one is bound.");
+                tableView.RowToolTipBinding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay };
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Designer", RequireToolTipContent(RequireFirstRow(tableView), "row 0"),
+                    "Setting RowToolTipBinding after load must reach realized rows.");
+                tableView.RowToolTipBinding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay };
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha", RequireToolTipContent(RequireFirstRow(tableView), "row 0"),
+                    "Replacing the binding must replace the content.");
+                tableView.RowToolTipBinding = null;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RequireFirstRow(tableView);
+                // An on-screen row with no value registers no tooltip, so it cannot block anything.
+                Verify.IsNull(ToolTipService.GetToolTip(row), "Clearing RowToolTipBinding must remove the row tooltip.");
+
+                Verify.AreEqual(string.Empty, AutomationProperties.GetHelpText(row),
+                    "Clearing RowToolTipBinding must retract the help text it published.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies rows a grouped reshape rebinds carry the tooltip of their new item.")]
+        public void VerifyRowToolTipFollowsItemsAcrossGroupedReshape()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            var items = Enumerable.Range(0, 400)
+                .Select(i => new Person { Name = $"Person {i}", Role = $"Team {i % 7}" })
+                .ToList();
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(items).GroupBy(o => ((Person)o).Role);
+                tableView = CreateRowToolTipTable(source, rowToolTipPath: "Name");
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            VerifyRowToolTipsMatchItemsWhileScrolling(tableView, "grouped by Role");
+
+            RunOnUIThread.Execute(() =>
+            {
+                source.GroupBy(o => ((Person)o).Name.Length.ToString());
+                source.Sort("Name", SortDirection.Descending);
+            });
+
+            SettleLayout(tableView);
+            VerifyRowToolTipsMatchItemsWhileScrolling(tableView, "after regrouping and sorting");
+
+            RunOnUIThread.Execute(() => source.ClearGroupBy());
+
+            SettleLayout(tableView);
+            VerifyRowToolTipsMatchItemsWhileScrolling(tableView, "after clearing the grouping");
+        }
+
+        // Scrolls far enough that rows come back out of the recycle pool, checking at each stop.
+        private static void VerifyRowToolTipsMatchItemsWhileScrolling(TableView tableView, string when)
+        {
+            foreach (var offset in new[] { 0.0, 6000.0, 3000.0, 0.0 })
+            {
+                ScrollBodyTo(tableView, ScrollAxis.Vertical, offset);
+                RunOnUIThread.Execute(() => VerifyEachRowToolTipMatchesItsItem(tableView, $"{when}, offset {offset}"));
+            }
+        }
+
+        private static void VerifyEachRowToolTipMatchesItsItem(TableView tableView, string when)
+        {
+            var repeater = GetRowsRepeater(tableView);
+            int checkedRows = 0;
+            foreach (var row in GetRealizedRows(tableView))
+            {
+                if (repeater.GetElementIndex(row) >= 0 && row.DataContext is Person item && row.ActualHeight > 0)
+                {
+                    Verify.AreEqual(item.Name, RequireToolTipContent(row, $"the row for {item.Name}"),
+                        $"A row's tooltip must match its current item {when}.");
+                    checkedRows++;
+                }
+            }
+
+            Verify.IsGreaterThan(checkedRows, 0, $"Rows must be realized {when}.");
+        }
+        [TestMethod]
+        [TestProperty("Description", "Verifies cells and rows whose value is null after scrolling far and back register no tooltip, so they block nothing.")]
+        public void VerifyRecycledThenNullValuesRegisterNoToolTip()
+        {
+            TableView tableView = null;
+            var items = MakeManyItems(400);
+            for (int i = 0; i < items.Count; i += 3)
+            {
+                items[i].Role = null;
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateToolTipTable(items, cellToolTipPath: "Role");
+                tableView.RowToolTipBinding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay };
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            foreach (var offset in new[] { 6000.0, 12000.0, 0.0 })
+            {
+                ScrollBodyTo(tableView, ScrollAxis.Vertical, offset);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    int nullRows = 0;
+                    foreach (var row in GetRealizedRows(tableView))
+                    {
+                        if (!(row.DataContext is Person item) || row.ActualHeight <= 0)
+                        {
+                            continue;
+                        }
+
+                        var cell = GetRowCell(row, 0);
+                        if (item.Role == null)
+                        {
+                            nullRows++;
+                            Verify.IsNull(ToolTipService.GetToolTip(cell), $"The cell for {item.Name} must register no tooltip at offset {offset}.");
+                            Verify.IsNull(ToolTipService.GetToolTip(row), $"The row for {item.Name} must register no tooltip at offset {offset}.");
+                        }
+                        else
+                        {
+                            Verify.IsTrue(RequireToolTip(cell, $"the cell for {item.Name}").IsEnabled, $"The cell for {item.Name} must keep a live tooltip.");
+                            Verify.IsTrue(RequireToolTip(row, $"the row for {item.Name}").IsEnabled, $"The row for {item.Name} must keep a live tooltip.");
+                        }
+                    }
+
+                    Verify.IsGreaterThan(nullRows, 0, $"Some realized rows must have a null value at offset {offset}.");
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a recycled row shows the new item's row tooltip, never the previous item's.")]
+        public void VerifyRecycledRowShowsTheNewItemsRowToolTip()
+        {
+            TableView tableView = null;
+            var items = MakeManyItems(200);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateRowToolTipTable(items, rowToolTipPath: "Role");
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 2000.0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = GetRealizedRows(tableView);
+                Verify.IsGreaterThan(rows.Count, 0, "Rows must be realized after the scroll.");
+
+                foreach (var row in rows)
+                {
+                    var item = row.DataContext as Person;
+                    if (item == null)
+                    {
+                        Verify.Fail("Every realized row must carry its item as its DataContext.");
+                        continue;
+                    }
+
+                    Verify.AreEqual(item.Role, RequireToolTipContent(row, $"the row for {item.Name}"),
+                        "A recycled row's tooltip must re-resolve to its current item.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies recycled rows keep their row tooltip and help text when the bound value does not change between items.")]
+        public void VerifyRecycledRowKeepsRowToolTipWhenItemsShareTheValue()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateRowToolTipTable(MakeManyItems(200), rowToolTipPath: null);
+                // A constant across the DataContext reset raises no callback to revive the released tooltip.
+                tableView.RowToolTipBinding = new Binding { Source = "Shared row", Mode = BindingMode.OneWay };
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 2000.0);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 4000.0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = GetRealizedRows(tableView);
+                Verify.IsGreaterThan(rows.Count, 0, "Rows must be realized after the scroll.");
+
+                foreach (var row in rows)
+                {
+                    var toolTip = RequireToolTip(row, $"the row for {(row.DataContext as Person)?.Name}");
+                    Verify.AreEqual("Shared row", toolTip.Content as string, "A recycled row must keep its tooltip content.");
+                    Verify.IsTrue(toolTip.IsEnabled, "A recycled row's tooltip must be enabled.");
+                    Verify.AreEqual("Shared row", AutomationProperties.GetHelpText(row),
+                        "A recycled row must re-publish the tooltip as help text.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the row tooltip stays withdrawn for the whole edit, through a bound value change and a new RowToolTipBinding, and returns when the edit commits.")]
+        public void VerifyRowToolTipIsSuppressedForTheWholeEdit()
+        {
+            TableView tableView = null;
+            var items = MakeEditableItems("Asha", "Diego", "Mei");
+            bool veto = true;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                tableView.RowToolTipBinding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay };
+                tableView.CellEditEnding += (s, e) => e.Cancel = veto;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Designer", RequireToolTipContent(RequireFirstRow(tableView), "row 0"),
+                    "Precondition: the row starts with its tooltip.");
+
+                // A vetoed commit holds the edit open.
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Asha Kapoor");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the vetoed commit keeps the edit open.");
+                VerifyRowToolTipWithdrawn(RequireFirstRow(tableView), "once the edit opens");
+
+                items[0].Role = "Principal Designer";
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyRowToolTipWithdrawn(RequireFirstRow(tableView), "after the bound value changes mid-edit");
+                tableView.RowToolTipBinding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay };
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyRowToolTipWithdrawn(RequireFirstRow(tableView), "after RowToolTipBinding is replaced mid-edit");
+
+                veto = false;
+                Verify.IsTrue(tableView.CommitEdit(), "The commit must now close the edit.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RequireFirstRow(tableView);
+                var toolTip = RequireToolTip(row, "row 0");
+                Verify.AreEqual("Asha Kapoor", toolTip.Content as string, "After the edit the row tooltip must carry the current binding's value.");
+                Verify.IsTrue(toolTip.IsEnabled, "The restored row tooltip must be able to open.");
+                Verify.AreEqual("Asha Kapoor", AutomationProperties.GetHelpText(row), "The help text must be published again.");
+            });
+        }
+
+        // Withdrawn, not merely disabled: a registered ToolTip would still claim focus and Escape.
+        private static void VerifyRowToolTipWithdrawn(TableViewRow row, string when)
+        {
+            Verify.IsNull(ToolTipService.GetToolTip(row), $"The row must carry no tooltip {when}.");
+            Verify.AreEqual(string.Empty, AutomationProperties.GetHelpText(row), $"The row must publish no help text {when}.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell whose tooltip value becomes empty after recycling is left with no registered tooltip, so the row tooltip covers it.")]
+        public void VerifyClearedCellToolTipIsDetachedSoTheRowToolTipCoversTheCell()
+        {
+            TableView tableView = null;
+            var items = MakeManyItems(200);
+            for (int i = 0; i < items.Count; i += 2)
+            {
+                items[i].Role = string.Empty;
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateToolTipTable(items, cellToolTipPath: "Role");
+                tableView.RowToolTipBinding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay };
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 2000.0);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 4000.0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                int emptyRows = 0;
+                foreach (var row in GetRealizedRows(tableView))
+                {
+                    if (!(row.DataContext is Person item))
+                    {
+                        continue;
+                    }
+
+                    var cell = GetRowCell(row, 0);
+                    if (string.IsNullOrEmpty(item.Role))
+                    {
+                        emptyRows++;
+                        // ToolTipService prefers the innermost registered owner, so a disabled-but-registered
+                        // cell tooltip would block the row's on hover and focus.
+                        Verify.IsNull(ToolTipService.GetToolTip(cell), $"The cell for {item.Name} must not keep a registered tooltip.");
+                    }
+                    else
+                    {
+                        Verify.AreEqual(item.Role, RequireToolTipContent(cell, $"the cell for {item.Name}"));
+                    }
+
+                    Verify.AreEqual(item.Name, RequireToolTipContent(row, $"the row for {item.Name}"));
+                }
+
+                Verify.IsGreaterThan(emptyRows, 0, "Some realized rows must have an empty cell tooltip value.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row tooltip and a cell tooltip coexist on their own elements without overwriting each other.")]
+        public void VerifyRowToolTipCoexistsWithCellToolTip()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateToolTipTable(MakeItems(), cellToolTipPath: "Name");
+                tableView.RowToolTipBinding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay };
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RequireFirstRow(tableView);
+
+                // ToolTipService shows one automatic tooltip at a time, preferring the innermost owner,
+                // so a cell's own tooltip wins under the pointer and the row's covers the rest.
+                Verify.AreEqual("Designer", RequireToolTipContent(row, "row 0"), "The row must carry the row tooltip.");
+                Verify.AreEqual("Asha", RequireToolTipContent(GetRowCell(row, 0), "row 0's cell"), "The cell must keep its own tooltip.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a string row tooltip is published as help text on the row and reported by the row peer.")]
+        public void VerifyRowToolTipIsReportedAsRowHelpText()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // The row shows Name only, so the Role tooltip adds information the row name lacks.
+                tableView = CreateRowToolTipTable(MakeItems(), rowToolTipPath: "Role");
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RequireFirstRow(tableView);
+                Verify.AreEqual("Designer", AutomationProperties.GetHelpText(row),
+                    "String row tooltip text must be published as the row's AutomationProperties.HelpText.");
+                Verify.AreEqual("Designer", GetRowPeer(row).GetHelpText(),
+                    "The row peer must report it, or a screen reader never hears the row tooltip.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the row peer withholds row tooltip help text that repeats the row name or a visible cell, but keeps text that does not.")]
+        public void VerifyRowPeerSuppressesHelpTextAlreadyInTheRowName()
+        {
+            TableView repeatsCell = null;
+            TableView adds = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                // The common shape: tooltip the column that truncates, which the row name already reads in full.
+                repeatsCell = CreateTableViewWithColumns(MakeItems(), height: 150,
+                    columns: new[] { ("Name", new GridLength(120.0, GridUnitType.Pixel)) });
+                repeatsCell.Columns.Add(MakeTextColumn("Role", "Role", new GridLength(120.0, GridUnitType.Pixel)));
+                repeatsCell.RowToolTipBinding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay };
+
+                adds = CreateRowToolTipTable(MakeItems(), rowToolTipPath: "Role");
+                adds.Height = 150;
+
+                LoadContent(new StackPanel { Children = { repeatsCell, adds } });
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RequireFirstRow(repeatsCell);
+                Verify.AreEqual("Asha", AutomationProperties.GetHelpText(row),
+                    "The published help text stays on the element; suppression is a query-time decision.");
+
+                var duplicate = GetRowPeer(row).GetHelpText();
+                Verify.IsTrue(string.IsNullOrEmpty(duplicate),
+                    $"Help text repeating a visible cell is already in the row name and must be withheld; saw '{duplicate}'.");
+
+                Verify.AreEqual("Designer", GetRowPeer(RequireFirstRow(adds)).GetHelpText(),
+                    "Help text the row name does not contain must still be reported.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a style-set row HelpText is never overwritten or cleared by the row tooltip, before or after recycling.")]
+        public void VerifyStyleSetRowHelpTextSurvivesRowToolTipAndRecycling()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateRowToolTipTable(MakeManyItems(200), rowToolTipPath: "Role");
+                tableView.Resources[typeof(TableViewRow)] = XamlReader.Load(
+                    @"<Style xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                             xmlns:tabular='using:Microsoft.UI.Xaml.Controls.Tabular'
+                             TargetType='tabular:TableViewRow'>
+                          <Setter Property='AutomationProperties.HelpText' Value='X' />
+                      </Style>");
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => VerifyStyleHelpText(tableView, "before recycling"));
+
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 3000.0);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 0.0);
+
+            RunOnUIThread.Execute(() => VerifyStyleHelpText(tableView, "after recycling"));
+        }
+
+        private static void VerifyStyleHelpText(TableView tableView, string when)
+        {
+            foreach (var row in GetRealizedRows(tableView))
+            {
+                if (!(row.DataContext is Person item))
+                {
+                    continue;
+                }
+
+                Verify.AreEqual(item.Role, RequireToolTipContent(row, $"the row for {item.Name}"), $"The row tooltip must apply {when}.");
+                Verify.AreEqual("X", AutomationProperties.GetHelpText(row), $"The style-set HelpText must survive {when}.");
+                Verify.AreEqual("X", GetRowPeer(row).GetHelpText(), $"The peer must report the style-set HelpText {when}.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies cell and row tooltips with the same value on every item survive scrolling far and back.")]
+        public void VerifyIdenticalCellAndRowToolTipsSurviveScrollingFarAndBack()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateRowToolTipTable(MakeManyItems(400), rowToolTipPath: null);
+                tableView.RowToolTipBinding = new Binding { Source = "Same row", Mode = BindingMode.OneWay };
+                tableView.Columns[0].CellToolTipBinding = new Binding { Source = "Same cell", Mode = BindingMode.OneWay };
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            foreach (var offset in new[] { 6000.0, 12000.0, 0.0 })
+            {
+                ScrollBodyTo(tableView, ScrollAxis.Vertical, offset);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var rows = GetRealizedRows(tableView).Where(r => r.DataContext is Person).ToList();
+                    Verify.IsGreaterThan(rows.Count, 0, "Rows must be realized.");
+                    foreach (var row in rows)
+                    {
+                        var name = ((Person)row.DataContext).Name;
+                        var rowTip = RequireToolTip(row, $"the row for {name}");
+                        Verify.IsTrue(rowTip.IsEnabled && (rowTip.Content as string) == "Same row", $"The row for {name} must keep its tooltip at offset {offset}.");
+                        var cellTip = RequireToolTip(GetRowCell(row, 0), $"the cell for {name}");
+                        Verify.IsTrue(cellTip.IsEnabled && (cellTip.Content as string) == "Same cell", $"The cell for {name} must keep its tooltip at offset {offset}.");
+                    }
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies help text the app set on a row is never dropped by the row peer.")]
+        public void VerifyRowPeerKeepsAppAuthoredHelpText()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateRowToolTipTable(MakeItems(), rowToolTipPath: null);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RequireFirstRow(tableView);
+                // Set before the binding applies, and equal to both the Name cell and the row tooltip, so
+                // only the ownership gate keeps the suppression rule from dropping it.
+                AutomationProperties.SetHelpText(row, "Asha");
+                tableView.RowToolTipBinding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay };
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RequireFirstRow(tableView);
+                Verify.AreEqual("Asha", RequireToolTipContent(row, "row 0"), "Precondition: the row tooltip applied.");
+                Verify.AreEqual("Asha", GetRowPeer(row).GetHelpText(),
+                    "Suppression must be gated on the control's ownership record.");
+            });
+        }
+
+        #endregion
     }
 
     internal static class TableViewToolTipTestHelpers
     {
+        // One text column showing Name, with the rows optionally tooltipped from another path.
+        internal static TableView CreateRowToolTipTable(object items, string rowToolTipPath)
+        {
+            var tableView = CreateTableViewWithColumns(items, height: 300);
+            if (rowToolTipPath != null)
+            {
+                tableView.RowToolTipBinding = new Binding { Path = new PropertyPath(rowToolTipPath), Mode = BindingMode.OneWay };
+            }
+
+            return tableView;
+        }
+
         // One text column showing Name, optionally tooltipped from another path. cellToolTipPath null
         // means the column opts out entirely, which is its own tested behaviour.
         internal static TableView CreateToolTipTable(

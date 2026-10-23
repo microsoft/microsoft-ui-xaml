@@ -224,6 +224,9 @@ public:
     void OnGroupHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+    winrt::Microsoft::UI::Xaml::Data::Binding RowToolTipBinding();
+    void RowToolTipBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value);
+
     // Density resources fall back to Standard defaults; rows and columns call these via get_self.
     double GetDensityRowMinHeight();
     winrt::Thickness GetDensityCellPadding();
@@ -1123,6 +1126,8 @@ private:
     // the recycle pools it caches; see TableViewRowTemplateSelector::Detach.
     tracker_ref<winrt::TableViewRowTemplateSelector> m_rowTemplateSelector{ this };
 
+    tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_rowToolTipBinding{ this };
+
     // --- Sorting ---
     //
     // Re-validated after every point where app code could have run (a Sorting handler, or an
@@ -1527,6 +1532,9 @@ private:
     void OnPreviewKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
+
+    // Escape closes an open row tooltip on the focus path; handled so it does not also act on the key.
+    void DismissFocusedRowToolTip(const winrt::KeyRoutedEventArgs& args);
 
     bool TryHandleCellNavigationKey(const winrt::KeyRoutedEventArgs& args);
 

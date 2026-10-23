@@ -28,6 +28,9 @@ public:
     // and AT announces a bare "data item". Compose the visible cell texts instead.
     hstring GetNameCore();
 
+    // Withholds a published RowToolTipBinding text that the row name already announces.
+    hstring GetHelpTextCore();
+
     // Rows are virtualized: UIA only ever sees the realized window, so the control has to supply
     // "row i of n" on the same flat basis as IGridProvider. A tree row reports its position
     // within its sibling set instead.

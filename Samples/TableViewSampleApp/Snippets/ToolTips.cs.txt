@@ -55,6 +55,17 @@ private void OnCellToolTipsToggled(object sender, RoutedEventArgs e)
     }
 }
 
+// ---- Row tooltip --------------------------------------------------------------------------
+
+private void OnRowToolTipToggled(object sender, RoutedEventArgs e)
+{
+    // On the row, not a cell: keyboard focus lands on the row, and ToolTipService opens a tooltip
+    // on keyboard focus only for the focused element or one of its ancestors.
+    PeopleTable.RowToolTipBinding = RowToolTipToggle.IsOn
+        ? new Binding { Path = new PropertyPath(nameof(Person.Bio)) }
+        : null;
+}
+
 // ---- Header tooltips --------------------------------------------------------------------
 
 private void OnHeaderToolTipsChanged(object sender, SelectionChangedEventArgs e)
