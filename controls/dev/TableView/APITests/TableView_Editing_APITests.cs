@@ -907,6 +907,87 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(1, clearedCount, "The clear must be reported once.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sort opt-out deferred past an edit closed while the table is unloaded applies before a newer sort requested after reload.")]
+        public void VerifyDeferredSortOptOutAppliesBeforeSortAfterReload()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            bool requested = false;
+            bool vetoClose = true;
+            int clearedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                tableView = CreateEditableTable(items);
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Precondition: the Name column sorts.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Sorted += (s, e) =>
+                {
+                    if (e.Direction == SortDirection.None)
+                    {
+                        clearedCount++;
+                    }
+                };
+                tableView.BeginningEdit += (s, e) =>
+                {
+                    if (!requested)
+                    {
+                        requested = true;
+                        tableView.CanUserSortColumns = false;
+                    }
+                };
+                tableView.CellEditEnding += (s, e) => e.Cancel = vetoClose;
+
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 1), "Pilot");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the edit stays open.");
+                // Still vetoed, so the focus loss on unload cannot commit it in place.
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                vetoClose = false;
+                tableView.IsReadOnly = true;
+                Verify.IsFalse(tableView.IsEditing, "Precondition: the edit is closed while unloaded.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection, "Precondition: the deferred clear waits while unloaded.");
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending), "The newer sort applies.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[1].SortDirection, "The older deferred clear must not undo the newer sort.");
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The deferred clear still applies.");
+                Verify.AreEqual(1, clearedCount, "The clear must be reported once.");
+            });
+        }
     }
 
     // Category 10.5 of the TableView test plan: validation, teardown and reentrancy.
