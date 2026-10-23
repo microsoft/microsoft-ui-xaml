@@ -369,5 +369,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             Log.Comment("Repeated create/load/unload/collect cycles completed without crashing.");
         }
+
+        // UWP: CoreWetStrokeUpdateSource.Create(InkPresenter) returns the presenter's one source. The OS source only
+        // accepts handlers on the thread that owns the OS presenter; the WinUI mirror must accept them on the UI thread.
+        [TestMethod]
+        public void CoreWetStrokeUpdateSourceCreateTest()
+        {
+            InkCanvas inkCanvas = null;
+            RunOnUIThread.Execute(() =>
+            {
+                inkCanvas = new InkCanvas { Width = 400, Height = 300 };
+                Content = inkCanvas;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var presenter = inkCanvas.InkPresenter;
+                var source = CoreWetStrokeUpdateSource.Create(presenter);
+                Verify.IsNotNull(source, "Create should return a source.");
+                Verify.AreSame(source, CoreWetStrokeUpdateSource.Create(presenter), "Create should return the same source for the same presenter.");
+                Verify.AreSame(presenter, source.InkPresenter, "InkPresenter should be the presenter the source was created for.");
+
+                var hr = 0;
+                try
+                {
+                    CoreWetStrokeUpdateSource.Create(null);
+                }
+                catch (Exception ex)
+                {
+                    hr = ex.HResult;
+                }
+                Verify.AreEqual(unchecked((int)0x80070057), hr, "Create(null) should throw E_INVALIDARG.");
+
+                // Attaching on the UI thread must not throw RPC_E_WRONG_THREAD (it would on the OS source).
+                global::Windows.Foundation.TypedEventHandler<CoreWetStrokeUpdateSource, global::Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs> handler = (s, e) => { };
+                source.WetStrokeStarting += handler;
+                source.WetStrokeContinuing += handler;
+                source.WetStrokeStopping += handler;
+                source.WetStrokeCompleted += handler;
+                source.WetStrokeCanceled += handler;
+                source.WetStrokeStarting -= handler;
+                source.WetStrokeContinuing -= handler;
+                source.WetStrokeStopping -= handler;
+                source.WetStrokeCompleted -= handler;
+                source.WetStrokeCanceled -= handler;
+
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
     }
 }
