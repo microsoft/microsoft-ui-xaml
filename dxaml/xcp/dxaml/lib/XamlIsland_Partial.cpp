@@ -85,18 +85,6 @@ _Check_return_ HRESULT XamlIsland::Initialize()
     return InitializeContentIsland();
 }
 
-_Check_return_ HRESULT XamlIsland::UpdateContentIsland(bool initialize)
-{
-    if (!initialize)
-    {
-        IFC_RETURN(UpdateSystemBackdrop(false));
-        return ReleaseContentIslandResources();
-    }
-
-    IFC_RETURN(InitializeContentIsland());
-    return UpdateSystemBackdrop(true);
-}
-
 _Check_return_ HRESULT XamlIsland::InitializeContentIsland()
 {
     // Configure the XamlIsland will take focus when requested
@@ -241,6 +229,18 @@ _Check_return_ HRESULT XamlIsland::InitializeContentIsland()
         &m_islandDisconnectedToken));
 
     return S_OK;
+}
+
+_Check_return_ HRESULT XamlIsland::UpdateContentIsland(bool initialize)
+{
+    if (!initialize)
+    {
+        IFC_RETURN(UpdateSystemBackdrop(false));
+        return ReleaseContentIslandResources();
+    }
+
+    IFC_RETURN(InitializeContentIsland());
+    return UpdateSystemBackdrop(true);
 }
 
 _Check_return_ HRESULT XamlIsland::get_ContentImpl(_Outptr_ xaml::IUIElement** ppValue)

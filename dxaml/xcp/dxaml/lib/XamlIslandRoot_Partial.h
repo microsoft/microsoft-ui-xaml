@@ -71,6 +71,7 @@ namespace DirectUI
         void SetOwner(_In_opt_ IInspectable* owner);
         _Success_(return != false) bool TryGetOwner(_COM_Outptr_opt_result_maybenull_ IInspectable** owner);
         static void OnSizeChangedStatic(_In_ CXamlIslandRoot* xamlIslandRoot);
+        static _Check_return_ HRESULT UpdateContentIslandStatic(_In_ CXamlIslandRoot* xamlIslandRoot, bool initialize);
 
     private:
         ContentManager m_contentManager;

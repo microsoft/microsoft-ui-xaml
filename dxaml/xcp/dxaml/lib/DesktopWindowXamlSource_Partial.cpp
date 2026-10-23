@@ -446,8 +446,8 @@ _Check_return_ HRESULT DesktopWindowXamlSource::UpdateContentIsland(bool initial
 
         if (m_desktopBridge)
         {
-            auto core = static_cast<CXamlIslandRoot*>(m_spXamlIslandRoot.Cast<XamlIslandRoot>()->GetHandle());
-            IFC_RETURN(m_desktopBridge->Connect(core->GetContentIsland()));
+            auto pXamlIslandCore = static_cast<CXamlIslandRoot*>(m_spXamlIslandRoot.Cast<XamlIslandRoot>()->GetHandle());
+            IFC_RETURN(m_desktopBridge->Connect(pXamlIslandCore->GetContentIsland()));
         }
     }
 

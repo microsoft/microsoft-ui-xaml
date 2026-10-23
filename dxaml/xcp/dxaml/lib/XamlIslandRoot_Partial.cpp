@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "XamlIslandRoot.g.h"
+#include "DesktopWindowXamlSource_Partial.h"
 #include "FrameworkApplication_Partial.h"
 #include "PopupRoot_Partial.h"
 #include "JupiterControl.h"
@@ -59,6 +60,28 @@ void DirectUI::XamlIslandRoot::OnSizeChangedStatic(_In_ CXamlIslandRoot* xamlIsl
     DirectUI::XamlIslandRoot* pThis = static_cast<DirectUI::XamlIslandRoot*>(directuiDo.Get());
 
     IFCFAILFAST(pThis->m_contentManager.OnWindowSizeChanged());
+}
+
+_Check_return_ HRESULT DirectUI::XamlIslandRoot::UpdateContentIslandStatic(_In_ CXamlIslandRoot* xamlIslandRoot, bool initialize)
+{
+    ctl::ComPtr<DirectUI::XamlIslandRoot> peer;
+    IFC_RETURN(DXamlCore::GetCurrent()->GetPeer<DirectUI::XamlIslandRoot>(xamlIslandRoot, &peer));
+
+    ctl::ComPtr<IInspectable> owner;
+    if (peer->TryGetOwner(&owner) && owner)
+    {
+        ctl::ComPtr<DirectUI::DesktopWindowXamlSource> desktopSource;
+        if (SUCCEEDED(owner.As(&desktopSource)))
+        {
+            return desktopSource->UpdateContentIsland(initialize);
+        }
+
+        ctl::ComPtr<DirectUI::XamlIsland> island;
+        IFC_RETURN(owner.As(&island));
+        IFC_RETURN(island->UpdateContentIsland(initialize));
+    }
+
+    return S_OK;
 }
 
 template <typename T_core, typename T_directui, typename T_interface>
@@ -157,5 +180,4 @@ _Success_(return != false) bool DirectUI::XamlIslandRoot::TryGetOwner(_COM_Outpt
     }
     return false;
 }
-
 

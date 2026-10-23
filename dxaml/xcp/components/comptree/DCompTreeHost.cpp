@@ -190,6 +190,7 @@ DCompTreeHost::CloseAndReleaseInteropCompositor()
 _Check_return_ HRESULT
 DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompositor)
 {
+    // shouldDeferClosingInteropCompositor is true when WindowsGraphicsDeviceManager::CleanupCachedDeviceResources performs DComp cleanup.
     if (shouldDeferClosingInteropCompositor)
     {
         // Unhook island-owned input and events while the old compositor is still usable.
