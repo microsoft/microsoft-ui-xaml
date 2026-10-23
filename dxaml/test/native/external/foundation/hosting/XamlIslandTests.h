@@ -158,15 +158,9 @@ public:
                                                     // Run it manually by using the -RunIgnoredTests flag
     END_TEST_METHOD()
 
-    // Regression test for Watson 45261470-df6b-6b64-885d-aa1320507fbc / AB#55026189: reading Window.DispatcherQueue
-    // on a closed Window from a background thread-pool worker, after the XAML core on the window's thread has been
-    // deleted, must return the window's DispatcherQueue instead of walking DesktopWindowImpl's dangling core pointer.
     BEGIN_TEST_METHOD(GetDispatcherQueueFromThreadpoolAfterCoreShutdown)
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")  // Shuts XAML down on a UI thread; isolate from other tests.
-        TEST_METHOD_PROPERTY(
-            L"Description",
-            L"Regression test for Watson 45261470 (AB#55026189): Window.DispatcherQueue read on a closed Window "
-                L"from an MTA thread-pool worker after core shutdown must return the window's queue, not AV.")
+        TEST_METHOD_PROPERTY(L"Description", L"Reading Window.DispatcherQueue from a thread-pool worker after the window's XAML core has shut down returns the window's DispatcherQueue.")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(PointerInput)
