@@ -38,7 +38,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(TextBoxHeaderDoesNotScrollIntoViewWhenViewPortIsSmall)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates TextBox header is not scrolled into view at the expense of textbox view")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
@@ -46,7 +46,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(TextBoxHeaderDoesNotScrollIntoViewIfNoGotFocus)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates TextBox header is not scrolled into view if the textbox is not receiving focus.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
                 
                 // This test currently attempts to exercise the feature by panning on the text box.  However, panning doesn't seem to exercise the

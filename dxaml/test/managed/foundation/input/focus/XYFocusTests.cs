@@ -1077,6 +1077,19 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
                 Verify.AreEqual(null, focusCandidate);
                 Verify.AreEqual(buttonA, FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
             });
+
+            TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
+            UIExecutor.Execute(() =>
+            {
+                rootPanel = null;
+                buttonA = null;
+                buttonB = null;
+                navigationOptions = null;
+                focusCandidate = null;
+            });
+            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+            GC.WaitForPendingFinalizers();
+            TestServices.WindowHelper.WaitForIdle();
         }
 
 
@@ -1509,7 +1522,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
 
         [TestMethod]
         [TestProperty("Description", "Verify that plateau scaling works correctly with HintRect in the FindNextElement API")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Ignore", "TRUE")]    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
         public void FindNextElementHintRectWorksWithPlateauScaling()
         {
@@ -1670,7 +1683,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
         */
         [TestMethod]
         [TestProperty("Description", "Verify that plateau scaling works correctly with ExclusionRect in the FindNextElement API")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Ignore", "TRUE")]    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
         public void FindNextElementExclusionRectWorksWithPlateauScaling()
         {
