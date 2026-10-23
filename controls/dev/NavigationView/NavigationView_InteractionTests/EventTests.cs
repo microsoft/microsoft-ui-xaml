@@ -304,6 +304,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     Log.Comment("Click the NavigationView's top-left corner (formerly the back button's margin area)");
                     InputHelper.LeftClick(navView, 1, 1);
                     Verify.AreEqual("Back was requested", textBlock.DocumentText);
+
+                    if (paneDisplayMode == "Top")
+                    {
+                        // The top pane's content starts at x = 44 epx; clicks there must not reach the back button.
+                        double scale = backBounds.Height / 44.0;
+                        Verify.IsLessThanOrEqual(Math.Abs(backBounds.Width - 44 * scale), 2.0);
+                        resetButton.Invoke();
+                        Wait.ForIdle();
+                        Log.Comment("Click just right of the back button in Top mode");
+                        InputHelper.LeftClick(navView, 46 * scale, 20 * scale);
+                        Wait.ForIdle();
+                        Verify.AreEqual("Test reset", textBlock.DocumentText);
+                    }
                 }
             }
         }
