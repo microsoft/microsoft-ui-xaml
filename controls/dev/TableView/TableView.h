@@ -516,6 +516,7 @@ public:
     void ClearCoalescedEditReshape();
     void DrainCoalescedEditReshape();
     void QueueDeferredEditReshapeDrain();
+    void FlushDeferredEditReshapes();
 
     // ----- Editing input gestures (TableView_EditingInput.cpp) -----
     // The pointer gesture lives on TableViewRow: the row owns its cells, so it is the level that
