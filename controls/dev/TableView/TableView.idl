@@ -196,23 +196,6 @@ unsealed runtimeclass TableViewTemplateColumn : TableViewColumn
 
 [MUX_PREVIEW]
 [webhosthidden]
-runtimeclass TableViewSortingEventArgs
-{
-    MU_XC_NAMESPACE.TableViewColumn Column { get; };
-    SortDirection Direction { get; };
-    Boolean Cancel;
-}
-
-[MUX_PREVIEW]
-[webhosthidden]
-runtimeclass TableViewSortedEventArgs
-{
-    MU_XC_NAMESPACE.TableViewColumn Column { get; };
-    SortDirection Direction { get; };
-}
-
-[MUX_PREVIEW]
-[webhosthidden]
 runtimeclass TableViewBeginningEditEventArgs
 {
     Object Item { get; };
@@ -231,24 +214,28 @@ runtimeclass TableViewCellEditEndingEventArgs
 }
 
 [MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewSortingEventArgs
+{
+    MU_XC_NAMESPACE.TableViewColumn Column { get; };
+    SortDirection Direction { get; };
+    Boolean Cancel;
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewSortedEventArgs
+{
+    MU_XC_NAMESPACE.TableViewColumn Column { get; };
+    SortDirection Direction { get; };
+}
+
+[MUX_PREVIEW]
 [default_interface]
 [webhosthidden]
 runtimeclass TableViewGroupHeaderToggleRequestedEventArgs
 {
     Object GroupKey { get; };
-}
-
-[MUX_PREVIEW]
-[webhosthidden]
-runtimeclass TableViewGroupInfo : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
-{
-    Object Key { get; };
-    Int32 ItemCount { get; };
-    Int32 Level { get; };
-    Boolean IsExpandable { get; };
-    Boolean IsExpanded { get; };
-    String KeyText { get; };
-    String ItemCountText { get; };
 }
 
 [MUX_PREVIEW]
@@ -263,25 +250,6 @@ unsealed runtimeclass TableViewCellsPanel : Microsoft.UI.Xaml.Controls.Panel
 runtimeclass TableViewColumnHeader : Microsoft.UI.Xaml.Controls.ContentControl
 {
     TableViewColumn Column { get; };
-}
-
-[MUX_PREVIEW]
-[webhosthidden]
-[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
-unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentControl
-{
-    TableViewGroupHeader();
-
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Boolean IsExpanded { get; set; };
-
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Boolean IsExpandable { get; set; };
-
-    event Windows.Foundation.TypedEventHandler<TableViewGroupHeader, TableViewGroupHeaderToggleRequestedEventArgs> ToggleRequested;
-
-    static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
 }
 
 [MUX_PREVIEW]
@@ -313,6 +281,38 @@ unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
 unsealed runtimeclass TableViewRowTemplateSelector : Microsoft.UI.Xaml.Controls.DataTemplateSelector
 {
     TableViewRowTemplateSelector();
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewGroupInfo : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+{
+    Object Key { get; };
+    Int32 ItemCount { get; };
+    Int32 Level { get; };
+    Boolean IsExpandable { get; };
+    Boolean IsExpanded { get; };
+    String KeyText { get; };
+    String ItemCountText { get; };
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentControl
+{
+    TableViewGroupHeader();
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsExpanded { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsExpandable { get; set; };
+
+    event Windows.Foundation.TypedEventHandler<TableViewGroupHeader, TableViewGroupHeaderToggleRequestedEventArgs> ToggleRequested;
+
+    static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
 }
 
 [MUX_PREVIEW]
@@ -430,21 +430,22 @@ unsealed runtimeclass TableViewAutomationPeer
 
 [MUX_PREVIEW]
 [webhosthidden]
+unsealed runtimeclass TableViewCellAutomationPeer
+    : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+      Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider,
+      Microsoft.UI.Xaml.Automation.Provider.ITableItemProvider,
+      Microsoft.UI.Xaml.Automation.Provider.IValueProvider
+{
+    TableViewCellAutomationPeer(Microsoft.UI.Xaml.FrameworkElement cell, MU_XC_NAMESPACE.TableViewRow row, MU_XC_NAMESPACE.TableViewColumn column, Int32 columnIndex);
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
 unsealed runtimeclass TableViewColumnHeaderAutomationPeer
     : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
       Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
 {
     TableViewColumnHeaderAutomationPeer(MU_XC_NAMESPACE.TableView owner, MU_XC_NAMESPACE.TableViewColumn column);
-}
-
-[MUX_PREVIEW]
-[webhosthidden]
-unsealed runtimeclass TableViewGroupHeaderAutomationPeer
-    : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-      Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider,
-      Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider
-{
-    TableViewGroupHeaderAutomationPeer(MU_XC_NAMESPACE.TableViewGroupHeader owner);
 }
 
 [MUX_PREVIEW]
@@ -459,13 +460,12 @@ unsealed runtimeclass TableViewRowAutomationPeer
 
 [MUX_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass TableViewCellAutomationPeer
+unsealed runtimeclass TableViewGroupHeaderAutomationPeer
     : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-      Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider,
-      Microsoft.UI.Xaml.Automation.Provider.ITableItemProvider,
-      Microsoft.UI.Xaml.Automation.Provider.IValueProvider
+      Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider,
+      Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider
 {
-    TableViewCellAutomationPeer(Microsoft.UI.Xaml.FrameworkElement cell, MU_XC_NAMESPACE.TableViewRow row, MU_XC_NAMESPACE.TableViewColumn column, Int32 columnIndex);
+    TableViewGroupHeaderAutomationPeer(MU_XC_NAMESPACE.TableViewGroupHeader owner);
 }
 
 }

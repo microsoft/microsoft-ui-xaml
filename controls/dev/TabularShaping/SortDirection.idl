@@ -1,3 +1,4 @@
+// Do not move to Microsoft.UI.Xaml.Data: C# consumers then fail with CS0234. See TableView/IdlCommentsDump.md.
 namespace MU_XC_NAMESPACE
 {
 

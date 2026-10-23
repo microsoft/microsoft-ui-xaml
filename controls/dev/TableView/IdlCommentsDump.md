@@ -1,8 +1,9 @@
 # TableView IDL comments dump
 
-Comments removed from the TableView-effort IDL files so the IDLs match the comment density of the
-other controls' IDLs. Each entry is the original comment, verbatim, grouped by source file and keyed
-by the type/member it documented. Line numbers refer to the file as it was before the reorganization.
+Comments moved out of the TableView-effort IDL files so the IDLs match the comment density of the
+other controls' IDLs. Entries are grouped by source file and keyed by the type/member they documented.
+Comment text is carried over from the IDLs; section-divider comments were dropped, and multi-line
+blocks are shown de-indented. "Original" line numbers refer to the files at origin/main ebf444c10.
 
 ## controls/dev/TableView/TableView.idl
 

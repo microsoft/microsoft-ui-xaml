@@ -1,4 +1,5 @@
-﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+﻿// Do not move out of the private namespace: it, not [MUX_INTERNAL], keeps these types out of shipped winmds.
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
 {
 
 [MUX_INTERNAL]

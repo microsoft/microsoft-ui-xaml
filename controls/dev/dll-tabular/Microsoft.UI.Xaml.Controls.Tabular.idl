@@ -1,6 +1,9 @@
-﻿#define MU_XC_NAMESPACE Microsoft.UI.Xaml.Controls.Tabular
+﻿// Do not reorder: this file must stay the first @(Midl) entry of the Tabular project. Do not redeclare the
+// Microsoft.UI.Xaml.CustomAttributes types here; they come from MUXC's winmd. See TableView/IdlCommentsDump.md.
+#define MU_XC_NAMESPACE Microsoft.UI.Xaml.Controls.Tabular
 #define MU_XCP_NAMESPACE Microsoft.UI.Xaml.Controls.Tabular.Primitives
 #define MU_XCD_NAMESPACE Microsoft.UI.Xaml.Data
+// Do not change: must equal MUXC's value; a Tabular-specific child namespace breaks the cppwinrt projection.
 #define MU_PRIVATE_CONTROLS_NAMESPACE Microsoft.UI.Private.Controls
 #define MU_X_XTI_NAMESPACE Microsoft.UI.Xaml.XamlTypeInfo
 

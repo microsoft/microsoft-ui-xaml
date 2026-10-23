@@ -17,11 +17,11 @@ delegate String TableViewIdentitySelector(Object item);
 [webhosthidden]
 runtimeclass TableViewSource
 {
-    static TableViewSource From(Object items);
-
     Boolean IsLiveShaping { get; set; };
 
     TableViewSource Filter(TableViewPredicate predicate);
+    // Do not remove the [default_overload]/[method_name] metadata on GroupBy/Sort: it is frozen ABI, and
+    // without it MIDL renames the overloads (GroupBy2/Sort2).
     [default_overload] [method_name("GroupBy")]
     TableViewSource GroupBy(TableViewKeySelector keySelector);
     [method_name("GroupByWithIdentity")]
@@ -35,6 +35,8 @@ runtimeclass TableViewSource
     TableViewSource ClearGroupBy();
     TableViewSource ClearSort();
     TableViewSource ClearParentBy();
+
+    static TableViewSource From(Object items);
 }
 
 }
