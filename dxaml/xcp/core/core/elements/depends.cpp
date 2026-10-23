@@ -745,7 +745,7 @@ _Check_return_ HRESULT CDependencyObject::TryReCreateUIAWrapper()
                 CUIAWindow* oldUIAWindow = static_cast<CUIAWrapper*>(wrapper)->GetUIAWindow();
                 CUIAWindow* uiaWindow = GetContext()->GetUIAWindowForElementNoRef(this);
 
-                if (oldUIAWindow != uiaWindow)
+                if (!static_cast<CUIAWrapper*>(wrapper)->GetUIAWindowIfValid() || oldUIAWindow != uiaWindow)
                 {
                     currentAP->InvalidateUIAWrapper();
                     wrapper->Invalidate();
