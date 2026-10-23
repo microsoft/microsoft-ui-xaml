@@ -828,7 +828,6 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottomImpl()
 void TeachingTip::OnIsOpenChanged()
 {
     ++m_unloadCloseGeneration;
-    CaptureTargetDataContext();
     if (m_ignoreNextIsOpenChanged) {
         m_ignoreNextIsOpenChanged = false;
     }
@@ -1437,11 +1436,12 @@ void TeachingTip::CloseIfUnloaded(uint32_t generation)
     auto const xamlRoot = XamlRoot();
     auto const popup = m_popup.get();
     // Keep the tip open only if the tip and its target are both back in the same XamlRoot as the tip's popup (the popup
-    // can't move to another window) and the target still shows the same data. An ItemsRepeater (for example
-    // NavigationView's shared NavigationViewItem pool) can hand the same container to a different item.
+    // can't move to another window), and the target isn't inside a container generated for a data item: such a container
+    // can be recycled to a different item (for example by NavigationView's shared NavigationViewItem pool), and there is
+    // no reliable way to tell that it still shows the same item.
     const bool tipIsBack = IsLoaded() && xamlRoot && (!popup || popup.XamlRoot() == xamlRoot);
     const bool targetIsBack = !target ||
-        (target.IsLoaded() && target.XamlRoot() == xamlRoot && IsSameDataContext(target.DataContext(), m_targetDataContext.get()));
+        (target.IsLoaded() && target.XamlRoot() == xamlRoot && !IsInGeneratedItemContainer(target));
     if (tipIsBack && targetIsBack)
     {
         // The element was only moved; keep the tip open and follow the target to its new position.
@@ -1453,24 +1453,38 @@ void TeachingTip::CloseIfUnloaded(uint32_t generation)
     ClosePopup();
 }
 
-void TeachingTip::CaptureTargetDataContext()
+bool TeachingTip::IsInGeneratedItemContainer(const winrt::DependencyObject& element)
 {
-    auto const target = m_target.get();
-    m_targetDataContext.set(IsOpen() && target ? target.DataContext() : nullptr);
-}
-
-bool TeachingTip::IsSameDataContext(const winrt::IInspectable& a, const winrt::IInspectable& b)
-{
-    if (a == b)
+    // Walk up from the element. A child of an ItemsRepeater, or an ItemsControl item container, that is not itself its
+    // item was generated for a data item and can be reused for another one.
+    winrt::DependencyObject current = element;
+    while (current)
     {
-        return true;
+        auto const parent = winrt::VisualTreeHelper::GetParent(current);
+        if (auto const repeater = parent.try_as<winrt::ItemsRepeater>())
+        {
+            const int index = repeater.GetElementIndex(current.as<winrt::UIElement>());
+            if (index >= 0)
+            {
+                if (auto const itemsSourceView = repeater.ItemsSourceView())
+                {
+                    if (itemsSourceView.GetAt(index) != current)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        else if (auto const itemsControl = winrt::ItemsControl::ItemsControlFromItemContainer(current))
+        {
+            if (itemsControl.ItemFromContainer(current) != current)
+            {
+                return true;
+            }
+        }
+        current = parent;
     }
-    // Strings (for example a MenuItemsSource of strings) can come back as a new box on each read, so compare them by value.
-    auto const aValue = a.try_as<winrt::IPropertyValue>();
-    auto const bValue = b.try_as<winrt::IPropertyValue>();
-    return aValue && bValue &&
-        aValue.Type() == winrt::PropertyType::String && bValue.Type() == winrt::PropertyType::String &&
-        aValue.GetString() == bValue.GetString();
+    return false;
 }
 
 void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
@@ -1613,7 +1627,6 @@ void TeachingTip::OnTargetChanged()
 
     auto const target = Target();
     m_target.set(target);
-    CaptureTargetDataContext();
 
     bool isTargetLoaded = false;
 

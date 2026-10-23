@@ -137,11 +137,8 @@ private:
     void RepositionPopup();
     void ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const& e);
     void CloseIfUnloaded(uint32_t generation);
-    void CaptureTargetDataContext();
-    static bool IsSameDataContext(const winrt::IInspectable& a, const winrt::IInspectable& b);
+    static bool IsInGeneratedItemContainer(const winrt::DependencyObject& element);
     uint32_t m_unloadCloseGeneration{ 0 };
-    // The target's DataContext while the tip is open, used to tell a moved target from a recycled one.
-    tracker_ref<winrt::IInspectable> m_targetDataContext{ this };
     winrt::FrameworkElement::Unloaded_revoker m_TargetUnloadedRevoker;
 
     void CreateExpandAnimation();
