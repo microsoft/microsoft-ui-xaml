@@ -3033,12 +3033,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             finally
             {
+                // Close the second window on the UI thread and wait for Closed, so the test host doesn't shut down
+                // with a window still closing.
+                var windowClosed = new ManualResetEvent(false);
                 RunOnUIThread.Execute(() =>
                 {
                     tip.IsOpen = false;
                     secondHost.Children.Clear();
+                    secondWindow.Closed += (s, e) => windowClosed.Set();
                     secondWindow.Close();
                 });
+                Verify.IsTrue(windowClosed.WaitOne(DefaultWaitTimeInMS), "Waiting for the second window to close");
                 IdleSynchronizer.Wait();
             }
         }
