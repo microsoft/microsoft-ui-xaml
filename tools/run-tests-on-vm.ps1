@@ -86,7 +86,7 @@ function Get-VMCredential {
         [switch]$ResetCredential
     )
 
-    $credDir = Join-Path $env:USERPROFILE ".winui-test"
+    $credDir = "~\.winui-test"
     if (-not (Test-Path $credDir)) { New-Item -ItemType Directory $credDir -Force | Out-Null }
     $credFile = Join-Path $credDir "vmcred-$($VMName -replace '[^a-zA-Z0-9]','_').xml"
 
