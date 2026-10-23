@@ -602,6 +602,91 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Bug 64665235. Double-clicking a header divider fits the column to its header and widest realized cell, as in
+        // Explorer, Task Manager and WPF DataGrid; that includes shrinking. Name authors Width="160" and every Basic name
+        // is "Person N" (TableViewTestPageFacts.BasicName), far narrower than 160.
+        [TestMethod]
+        [TestProperty("Description", "Verifies double-clicking a column's resize gripper shrinks a too-wide column to fit its content.")]
+        public void PointerDoubleClickGripperShrinksColumnToFitContent()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                if (tableView == null)
+                {
+                    Verify.Fail("BasicTableView was not found on the test page.");
+                    return;
+                }
+
+                double scale = GetAppWindowScale();
+                double before = FindColumnHeader(tableView, "Name").BoundingRectangle.Width;
+                double ageBefore = FindColumnHeader(tableView, "Age").BoundingRectangle.Width;
+
+                DoubleClickColumnGripper(FindColumnHeader(tableView, "Name"));
+
+                double after = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                double ageAfter = FindColumnHeader(FindElement.ById(BasicTable), "Age").BoundingRectangle.Width;
+                Log.Comment("Name width before={0}, after double-click={1}; Age before={2}, after={3}; scale={4}.", before, after, ageBefore, ageAfter, scale);
+
+                Verify.IsLessThan(after, before - (20.0 * scale),
+                    "Double-clicking the gripper must shrink a column wider than its content to fit that content.");
+                Verify.IsTrue(after >= (60.0 * scale) - 1.0, "The fitted width must still honour MinWidth=60.");
+                Verify.IsTrue(Math.Abs(ageAfter - ageBefore) <= 1.0, "Fitting Name must not resize the Age column.");
+
+                // Fitting is idempotent: a second double-click on the already-fitted column must not move it.
+                DoubleClickColumnGripper(FindColumnHeader(FindElement.ById(BasicTable), "Name"));
+                double again = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("Name width after a second double-click={0}.", again);
+                Verify.IsTrue(Math.Abs(again - after) <= 2.0, "A second double-click on a fitted column must leave its width unchanged.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies double-clicking a column's resize gripper grows a too-narrow column to fit its content.")]
+        public void PointerDoubleClickGripperGrowsColumnToFitContent()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                if (tableView == null)
+                {
+                    Verify.Fail("BasicTableView was not found on the test page.");
+                    return;
+                }
+
+                double scale = GetAppWindowScale();
+                double authored = FindColumnHeader(tableView, "Name").BoundingRectangle.Width;
+
+                // Narrow Name to its MinWidth=60, which clips "Person NN" plus the cell padding.
+                DragColumnBoundary(FindColumnHeader(tableView, "Name"), -(int)Math.Round(150.0 * scale));
+                double narrowed = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("Name width authored={0}, narrowed={1}; scale={2}.", authored, narrowed, scale);
+                Verify.IsLessThan(narrowed, 70.0 * scale, "Precondition: dragging left must narrow Name to about its MinWidth.");
+
+                DoubleClickColumnGripper(FindColumnHeader(FindElement.ById(BasicTable), "Name"));
+
+                double after = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
+                Log.Comment("Name width after double-click={0}.", after);
+
+                Verify.IsGreaterThan(after, narrowed + (5.0 * scale),
+                    "Double-clicking the gripper must grow a column narrower than its content to fit that content.");
+                // Fit-to-content, not "restore the authored Width": the content is far narrower than 160.
+                Verify.IsLessThan(after, authored - (20.0 * scale),
+                    "The fitted width must come from the content, not from the authored Width.");
+            }
+        }
+
+        // The 8-DIP gripper is right-aligned in the header cell; aim at its centre.
+        private static void DoubleClickColumnGripper(UIObject header)
+        {
+            var bounds = header.BoundingRectangle;
+            var point = new Point(
+                bounds.Left + bounds.Width - (int)Math.Round(4.0 * GetAppWindowScale()),
+                bounds.Top + (bounds.Height / 2));
+
+            DoubleClickPoint(point);
+        }
+
         #endregion
 
         #region 7. Scrolling

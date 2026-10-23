@@ -1,3 +1,5 @@
+
+**Double-click to fit.** A mouse double-click on a gripper (counted by the table from `PointerPressed`, handled events too) sets the column's `Width` in pixels to the widest of its header and realized cells measured unconstrained, clamped to `MinWidth`/`MaxWidth`, through the same `BeginDrag`/`TryDrag`/`EndDrag` path, so the gates, bounds and announcement match a drag.
 <!-- The purpose of this document is to describe the design and implementation of a new WinUI control.
      This document contains architectural and implementation details that do not appear in the functional spec. -->
 
