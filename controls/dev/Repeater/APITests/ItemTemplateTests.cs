@@ -254,16 +254,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateDataTemplateWithElementNameBinding()
         {
-            ValidateDataTemplateWithElementNameBinding(useNestedElements: false);
+            ValidateDataTemplateWithElementNameBinding(useNestedElements: false, useDerivedRepeater: false);
         }
 
         [TestMethod]
         public void ValidateDataTemplateWithNestedElementNameBinding()
         {
-            ValidateDataTemplateWithElementNameBinding(useNestedElements: true);
+            ValidateDataTemplateWithElementNameBinding(useNestedElements: true, useDerivedRepeater: false);
         }
 
-        private void ValidateDataTemplateWithElementNameBinding(bool useNestedElements)
+        [TestMethod]
+        public void ValidateDataTemplateWithElementNameBindingInDerivedRepeater()
+        {
+            ValidateDataTemplateWithElementNameBinding(useNestedElements: false, useDerivedRepeater: true);
+        }
+
+        [TestMethod]
+        public void ValidateDataTemplateWithNestedElementNameBindingInDerivedRepeater()
+        {
+            ValidateDataTemplateWithElementNameBinding(useNestedElements: true, useDerivedRepeater: true);
+        }
+
+        private void ValidateDataTemplateWithElementNameBinding(bool useNestedElements, bool useDerivedRepeater)
         {
             const int numItems = 5;
             ItemsRepeater itemsRepeater = null;
@@ -301,13 +313,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Text = "DataSource"
                 };
 
-                itemsRepeater = new ItemsRepeater()
-                {
-                    Name = "itemsRepeater",
-                    ItemsSource = Enumerable.Range(0, numItems).Select(i => i.ToString()),
-                    Layout = new StackLayout(),
-                    ItemTemplate = dataTemplate
-                };
+                // MyItemsRepeater is declared in TestUI and referenced from compiled XAML, so like an app-defined subclass it is
+                // known to XAML metadata under its own name (bug 52456662).
+                itemsRepeater = useDerivedRepeater ? new MUXControlsTestApp.Samples.MyItemsRepeater() : new ItemsRepeater();
+                itemsRepeater.Name = "itemsRepeater";
+                itemsRepeater.ItemsSource = Enumerable.Range(0, numItems).Select(i => i.ToString());
+                itemsRepeater.Layout = new StackLayout();
+                itemsRepeater.ItemTemplate = dataTemplate;
 
                 stackPanel.Children.Add(siblingTextBlock);
                 stackPanel.Children.Add(itemsRepeater);
