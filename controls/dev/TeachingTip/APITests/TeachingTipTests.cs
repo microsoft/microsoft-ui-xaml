@@ -2935,6 +2935,114 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(WaitForTipState(tip, isOpen: false), "The tip should close when its target is removed");
         }
 
+        // Scenario (issue #8095 review): NavigationView.MenuItemsSource holds 3 strings, so NavigationView wraps them in
+        //           NavigationViewItems from a shared, recycled pool. An OPEN tip targets the container of "Item0", then
+        //           PaneDisplayMode switches Left -> Top, which recycles the containers into the top repeater.
+        // Expected: the tip either closes or its target still shows "Item0".
+        // A failure means: the tip stayed open on a container that was recycled to a different item.
+        [TestMethod]
+        public void OpenTipClosesWhenNavigationViewRecyclesTargetToAnotherItem()
+        {
+            TeachingTip tip = null;
+            NavigationView navView = null;
+            NavigationViewItem container = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var root = (StackPanel)XamlReader.Load(@"
+                    <StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                                xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                        <controls:NavigationView x:Name='NavView' PaneDisplayMode='Left' IsSettingsVisible='False'/>
+                        <controls:TeachingTip x:Name='Tip' Title='Title' Subtitle='Subtitle' PreferredPlacement='BottomRight'/>
+                    </StackPanel>");
+                navView = (NavigationView)root.FindName("NavView");
+                tip = (TeachingTip)root.FindName("Tip");
+                navView.MenuItemsSource = new List<string> { "Item0", "Item1", "Item2" };
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                container = (NavigationViewItem)navView.ContainerFromMenuItem("Item0");
+                Verify.IsNotNull(container, "Container for Item0");
+                tip.Target = container;
+                tip.IsOpen = true;
+            });
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open on the Item0 container");
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            WaitForTipState(tip, isOpen: false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var shownItem = container.Content as string;
+                Log.Comment($"After Left -> Top: tip.IsOpen={tip.IsOpen}, target.IsLoaded={container.IsLoaded}, target.Content={shownItem}, target.DataContext={container.DataContext}");
+                Verify.IsTrue(!tip.IsOpen || shownItem == "Item0",
+                    $"An open tip must not stay on a container that now shows '{shownItem}' instead of 'Item0'");
+            });
+            RunOnUIThread.Execute(() => tip.IsOpen = false);
+            WaitForTipState(tip, isOpen: false);
+        }
+
+        // Scenario (issue #8095 review): an OPEN tip's target is moved, in one UI-thread step, into a second window
+        //           (a different XamlRoot); the tip stays in the main window.
+        // Expected: the tip closes, because its popup belongs to the main window's XamlRoot and can't follow the target.
+        // A failure means: the tip stayed open in the old window, pointing at a target that is now in another window.
+        [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void OpenTipClosesWhenTargetMovesToAnotherXamlRoot()
+        {
+            var (tip, target, root) = CreateBoundTargetedTip();
+            Window secondWindow = null;
+            StackPanel secondHost = null;
+            var secondLoaded = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                secondHost = new StackPanel();
+                secondHost.Loaded += (s, e) => secondLoaded.Set();
+                secondWindow = new Window() { Title = "TeachingTip second XamlRoot", Content = secondHost };
+                secondWindow.Activate();
+            });
+
+            try
+            {
+                Verify.IsTrue(secondLoaded.WaitOne(DefaultWaitTimeInMS), "Waiting for the second window to load");
+                IdleSynchronizer.Wait();
+                SetBoundSourceAndWait(tip, target, true);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreNotEqual(tip.XamlRoot, secondHost.XamlRoot, "The second window should have its own XamlRoot");
+                    ((StackPanel)root.FindName("TargetHostA")).Children.Remove(target);
+                    secondHost.Children.Add(target);
+                });
+                IdleSynchronizer.Wait();
+                bool closed = WaitForTipState(tip, isOpen: false);
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"After moving the target: tip.IsOpen={tip.IsOpen}, target.IsLoaded={target.IsLoaded}, sameXamlRoot={target.XamlRoot == tip.XamlRoot}");
+                    Verify.IsTrue(closed, "The tip should close when its target moves to another XamlRoot");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    tip.IsOpen = false;
+                    secondHost.Children.Clear();
+                    secondWindow.Close();
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
         private (TeachingTip, Microsoft.UI.Xaml.Controls.Primitives.ToggleButton, StackPanel) CreateBoundTargetedTip()
         {
             TeachingTip tip = null;
