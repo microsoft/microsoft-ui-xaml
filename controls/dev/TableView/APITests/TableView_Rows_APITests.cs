@@ -1022,6 +1022,79 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
             }
         }
+
+        // Guard for GitHub #12353: once the last column's trailing edge meets the outer border, the
+        // header and body must not draw a second vertical line beside that border.
+        [TestMethod]
+        [TestProperty("Description", "Verifies the last column's trailing separator is suppressed where it meets the outer border (GitHub #12353).")]
+        public void VerifyLastColumnTrailingSeparatorSuppressedAtOuterBorder()
+        {
+            var layouts = new[]
+            {
+                (Name: "star columns filling the viewport", Width: new GridLength(1.0, GridUnitType.Star), ScrollToEnd: false),
+                (Name: "pixel columns scrolled to the end", Width: new GridLength(200.0, GridUnitType.Pixel), ScrollToEnd: true),
+            };
+
+            foreach (var layout in layouts)
+            {
+                var current = layout;
+                TableView tableView = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateTableViewWithColumns(
+                        width: 400,
+                        height: 260,
+                        columns: new[] { ("A", current.Width), ("B", current.Width), ("C", current.Width) });
+                    tableView.GridLinesVisibility = TableViewGridLinesVisibility.All;
+                    LoadContent(tableView);
+                });
+
+                SettleLayout(tableView);
+
+                if (current.ScrollToEnd)
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var scroller = GetBodyScroller(tableView);
+                        Verify.IsGreaterThan(scroller.ScrollableWidth, 0.0, $"Precondition: the body scrolls horizontally ({current.Name}).");
+                        scroller.ChangeView(scroller.ScrollableWidth, null, null, true);
+                    });
+
+                    SettleLayout(tableView);
+                }
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var lastHeaderLine = GetHeaderCell(tableView, 2).FindVisualChildByName("PART_GridLine") as Border;
+                    var innerHeaderLine = GetHeaderCell(tableView, 1).FindVisualChildByName("PART_GridLine") as Border;
+                    Verify.IsNotNull(lastHeaderLine, "Every header cell must contain PART_GridLine.");
+                    Verify.IsNotNull(innerHeaderLine, "Every header cell must contain PART_GridLine.");
+
+                    var row = RequireFirstRow(tableView);
+                    var lastCell = GetRowCell(row, 2);
+                    var innerCell = GetRowCell(row, 1);
+
+                    var lastBounds = lastCell.TransformToVisual(tableView).TransformBounds(
+                        new Rect(0, 0, lastCell.ActualWidth, lastCell.ActualHeight));
+                    Log.Comment($"{current.Name}: last cell right={lastBounds.Right}, table inner right={tableView.ActualWidth - tableView.BorderThickness.Right}; " +
+                        $"header line={lastHeaderLine?.Visibility}, body brush={(lastCell.BorderBrush == null ? "null" : "set")}.");
+
+                    Verify.IsTrue(Math.Abs(lastBounds.Right - (tableView.ActualWidth - tableView.BorderThickness.Right)) <= 1.0,
+                        $"Precondition: the last column meets the outer border ({current.Name}).");
+
+                    Verify.AreEqual(Visibility.Visible, innerHeaderLine.Visibility,
+                        $"An inner header separator stays visible ({current.Name}).");
+                    Verify.IsNotNull(innerCell.BorderBrush,
+                        $"An inner body separator keeps its brush ({current.Name}).");
+
+                    Verify.AreEqual(Visibility.Collapsed, lastHeaderLine.Visibility,
+                        $"The last header separator must not double the outer border ({current.Name}).");
+                    Verify.IsNull(lastCell.BorderBrush,
+                        $"The last body separator must not double the outer border ({current.Name}).");
+                });
+            }
+        }
     }
 
     // Category 5.5 of the TableView test plan: visual states.
