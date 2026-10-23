@@ -3610,6 +3610,7 @@ void TableView::OnTableViewUnloaded()
         return;
     }
 
+    CancelColumnResizeDrag();
     m_headerSortSpaceArmedColumn = nullptr;
     IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
     TableViewTelemetry::EndSession(m_telemetrySession);
@@ -4129,8 +4130,8 @@ bool TableView::AutoFitColumn(const winrt::TableViewColumn& column)
     return TryResizeColumnFromAutomation(column, std::clamp(fitted, lo, hi));
 }
 
-// Escape is the only host-driven cancel left: the gripper ends its own gesture on release, on a
-// canceled contact and on unload. Idempotent - EndDrag no-ops when no drag is in flight.
+// Host-driven cancels are Escape and the table unloading; the gripper ends its own gesture on
+// release and on a canceled contact. Idempotent - EndDrag no-ops when no drag is in flight.
 void TableView::CancelColumnResizeDrag()
 {
     auto const state = m_activeColumnResizeDrag;
