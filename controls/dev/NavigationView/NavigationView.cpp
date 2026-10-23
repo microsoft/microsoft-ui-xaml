@@ -1808,8 +1808,8 @@ void NavigationView::UpdateIsClosedCompact()
         m_isClosedCompact = !splitView.IsPaneOpen() && (splitViewDisplayMode == winrt::SplitViewDisplayMode::CompactOverlay || splitViewDisplayMode == winrt::SplitViewDisplayMode::CompactInline);
         winrt::VisualStateManager::GoToState(*this, m_isClosedCompact ? L"ClosedCompact" : L"NotClosedCompact", true /*useTransitions*/);
 
-        // Set the initial state of the list size
-        if (!m_initialListSizeStateSet)
+        // A deferred close can finish in a different mode than the closing notification.
+        if (!m_initialListSizeStateSet || m_isClosedCompact)
         {
             m_initialListSizeStateSet = true;
             winrt::VisualStateManager::GoToState(*this, m_isClosedCompact ? L"ListSizeCompact" : L"ListSizeFull", true /*useTransitions*/);
