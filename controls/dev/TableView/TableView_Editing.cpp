@@ -1162,6 +1162,38 @@ void TableView::ClearCoalescedEditReshape()
     m_pendingEditReshapes.clear();
 }
 
+void TableView::QueueDeferredEditReshapeDrain()
+{
+    if (IsEditing() || m_editReshapeDrainQueued ||
+        (m_reshapesAfterEditCloses.empty() && m_pendingEditReshapes.empty()))
+    {
+        return;
+    }
+    if (auto const queue = DispatcherQueue())
+    {
+        m_editReshapeDrainQueued = queue.TryEnqueue([weakThis = get_weak()]()
+        {
+            if (auto const strongThis = weakThis.get())
+            {
+                strongThis->m_editReshapeDrainQueued = false;
+                if (!strongThis->IsEditing())
+                {
+                    try
+                    {
+                        strongThis->DrainCoalescedEditReshape();
+                    }
+                    catch (...)
+                    {
+                        TVDiag::LogRetailF(L"[TableView] A reshape deferred past a forced edit close threw while draining.");
+                        // The throwing operation was already popped, so this terminates.
+                        strongThis->QueueDeferredEditReshapeDrain();
+                    }
+                }
+            }
+        });
+    }
+}
+
 void TableView::DrainCoalescedEditReshape()
 {
     // Every edit close lands here. Release a held live reshape unconditionally: it is posted, so
@@ -1181,31 +1213,7 @@ void TableView::DrainCoalescedEditReshape()
     if (m_suppressEditVisualRestore)
     {
         // No later close is coming to replay them.
-        if (!IsEditing() && !m_editReshapeDrainQueued &&
-            (!m_reshapesAfterEditCloses.empty() || !m_pendingEditReshapes.empty()))
-        {
-            if (auto const queue = DispatcherQueue())
-            {
-                m_editReshapeDrainQueued = queue.TryEnqueue([weakThis = get_weak()]()
-                {
-                    if (auto const strongThis = weakThis.get())
-                    {
-                        strongThis->m_editReshapeDrainQueued = false;
-                        if (!strongThis->IsEditing())
-                        {
-                            try
-                            {
-                                strongThis->DrainCoalescedEditReshape();
-                            }
-                            catch (...)
-                            {
-                                TVDiag::LogRetailF(L"[TableView] A reshape deferred past a forced edit close threw while draining.");
-                            }
-                        }
-                    }
-                });
-            }
-        }
+        QueueDeferredEditReshapeDrain();
         return;
     }
 
