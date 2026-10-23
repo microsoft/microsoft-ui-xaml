@@ -827,6 +827,7 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottomImpl()
 
 void TeachingTip::OnIsOpenChanged()
 {
+    ++m_unloadCloseGeneration;
     if (m_ignoreNextIsOpenChanged) {
         m_ignoreNextIsOpenChanged = false;
     }
@@ -1406,10 +1407,40 @@ void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::Rou
     // Only write IsOpen when the tip is open. Setting it while it is already closed would replace an app's
     // IsOpen binding with a local value, so the tip could never be opened through that binding again. That
     // happens for a Target inside a NavigationViewItem, which can be unloaded while NavigationView (re)hosts its items.
-    if (IsOpen())
+    if (!IsOpen())
     {
-        IsOpen(false);
+        ClosePopup();
+        return;
     }
+
+    // The tip is open. Unloaded is raised asynchronously, and an element that is only being moved (for example a
+    // NavigationViewItem's content when NavigationView re-hosts its items) is already back in the tree, or gets its
+    // Loaded raised before the next CompositionTarget.Rendering. So check on that tick and close only if the tip or
+    // its target really left the tree. Closing writes a local IsOpen=false, which replaces an app's IsOpen binding.
+    const auto generation = ++m_unloadCloseGeneration;
+    SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong(), generation]()
+    {
+        strongThis->CloseIfUnloaded(generation);
+    });
+}
+
+void TeachingTip::CloseIfUnloaded(uint32_t generation)
+{
+    // Ignore the check if IsOpen changed (or another unload was queued) since it was queued.
+    if (generation != m_unloadCloseGeneration || !IsOpen())
+    {
+        return;
+    }
+
+    auto const target = m_target.get();
+    if (IsLoaded() && (!target || target.IsLoaded()))
+    {
+        // The element was only moved; keep the tip open and follow the target to its new position.
+        RepositionPopup();
+        return;
+    }
+
+    IsOpen(false);
     ClosePopup();
 }
 

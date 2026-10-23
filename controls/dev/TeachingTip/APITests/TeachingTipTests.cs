@@ -2866,7 +2866,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsTrue(stayedOpen, $"The open tip should stay open when NavigationView re-hosts its target ({mode})");
                     Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), $"IsOpen binding should survive the target being re-hosted ({mode})");
                     Verify.IsTrue(target.IsLoaded, "Target should be loaded");
-                    VerifyTipIsNextToTarget(tip, target, mode.ToString());
+                    if (stayedOpen)
+                    {
+                        VerifyTipIsNextToTarget(tip, target, mode.ToString());
+                    }
                 });
             }
 
@@ -2897,7 +2900,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment(string.Join(Environment.NewLine, events));
                 Verify.IsTrue(stayedOpen, "The open tip should stay open when its target is moved to another panel");
                 Verify.IsNotNull(tip.GetBindingExpression(TeachingTip.IsOpenProperty), "IsOpen binding should survive the target being moved");
-                VerifyTipIsNextToTarget(tip, target, "after the target moved");
+                if (stayedOpen)
+                {
+                    VerifyTipIsNextToTarget(tip, target, "after the target moved");
+                }
 
                 ((StackPanel)root.FindName("TipHostA")).Children.Remove(tip);
                 ((StackPanel)root.FindName("TipHostB")).Children.Add(tip);
@@ -2960,24 +2966,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return (tip, target, root);
         }
 
-        // Logs the target's Loaded/Unloaded order and its IsLoaded state at the event, at the next Low-priority dispatcher
-        // item and at the next CompositionTarget.Rendering after Unloaded.
+        // Logs the target's Loaded/Unloaded order, and its IsLoaded state at each event, to show how the target is re-hosted.
         private static void LogTargetLoadedAndUnloaded(FrameworkElement target, TeachingTip tip, List<string> events)
         {
             target.Loaded += (s, e) => events.Add($"Target Loaded: IsLoaded={target.IsLoaded} tip.IsOpen={tip.IsOpen}");
-            target.Unloaded += (s, e) =>
-            {
-                events.Add($"Target Unloaded: IsLoaded={target.IsLoaded} tip.IsOpen={tip.IsOpen}");
-                target.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
-                    () => events.Add($"  Low-priority item after Unloaded: IsLoaded={target.IsLoaded}"));
-                EventHandler<object> onRendering = null;
-                onRendering = (s2, e2) =>
-                {
-                    CompositionTarget.Rendering -= onRendering;
-                    events.Add($"  Rendering after Unloaded: IsLoaded={target.IsLoaded}");
-                };
-                CompositionTarget.Rendering += onRendering;
-            };
+            target.Unloaded += (s, e) => events.Add($"Target Unloaded: IsLoaded={target.IsLoaded} tip.IsOpen={tip.IsOpen}");
         }
 
         private static void VerifyTipIsNextToTarget(TeachingTip tip, FrameworkElement target, string what)
