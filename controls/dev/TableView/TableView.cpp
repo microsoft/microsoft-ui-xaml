@@ -2762,6 +2762,48 @@ static bool StyleSetsProperty(const winrt::Style& style, const winrt::Dependency
     return false;
 }
 
+// Most-derived setter first, matching which setter a sealed Style applies.
+static winrt::IInspectable StyleSetterValue(const winrt::Style& style, const winrt::DependencyProperty& property)
+{
+    for (auto current = style; current; current = current.BasedOn())
+    {
+        for (auto const& setterBase : current.Setters())
+        {
+            if (auto const setter = setterBase.try_as<winrt::Setter>(); setter && setter.Property() == property)
+            {
+                return setter.Value();
+            }
+        }
+    }
+    return nullptr;
+}
+
+// A selector that returns no template leaves the presenter's untrimmed implicit TextBlock, so the
+// header keeps its own ellipsizing one instead.
+static bool StyleTemplatesHeader(
+    const winrt::DataTemplate& styleTemplate,
+    const winrt::DataTemplateSelector& styleSelector,
+    const winrt::IInspectable& headerContent,
+    const winrt::DependencyObject& header)
+{
+    if (styleTemplate)
+    {
+        return true;
+    }
+    if (!styleSelector)
+    {
+        return false;
+    }
+    try
+    {
+        return static_cast<bool>(styleSelector.SelectTemplate(headerContent, header));
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
 // GetColumnHeaderText renders an untemplated IStringable for automation purposes, but only a genuine string
 // may be swapped for a TextBlock -- a UIElement or a type with an implicit DataTemplate must keep
 // the ContentPresenter's content model.
@@ -3176,9 +3218,9 @@ void TableView::RebuildHeadersCore()
             const bool styleSetsMinHeight = StyleSetsProperty(headerStyle, winrt::FrameworkElement::MinHeightProperty());
             const bool styleSetsPadding = StyleSetsProperty(headerStyle, winrt::Control::PaddingProperty());
             const bool styleSetsCornerRadius = StyleSetsProperty(headerStyle, winrt::Control::CornerRadiusProperty());
-            const bool styleSetsContentTemplate =
-                StyleSetsProperty(headerStyle, winrt::ContentControl::ContentTemplateProperty()) ||
-                StyleSetsProperty(headerStyle, winrt::ContentControl::ContentTemplateSelectorProperty());
+            auto const styleContentTemplate = StyleSetterValue(headerStyle, winrt::ContentControl::ContentTemplateProperty()).try_as<winrt::DataTemplate>();
+            auto const styleContentTemplateSelector = styleContentTemplate ? winrt::DataTemplateSelector{ nullptr } :
+                StyleSetterValue(headerStyle, winrt::ContentControl::ContentTemplateSelectorProperty()).try_as<winrt::DataTemplateSelector>();
             if (headerStyle)
             {
                 header.Style(headerStyle);
@@ -3217,7 +3259,8 @@ void TableView::RebuildHeadersCore()
                 header.Content(column.Header());
                 header.ContentTemplate(headerTemplate);
             }
-            else if (!headerText.empty() && IsPlainStringHeader(column) && !styleSetsContentTemplate)
+            else if (!headerText.empty() && IsPlainStringHeader(column) &&
+                !StyleTemplatesHeader(styleContentTemplate, styleContentTemplateSelector, column.Header(), header))
             {
                 // A ContentPresenter renders a bare string through an implicit TextBlock carrying no
                 // TextTrimming, so a too-wide header hard-clips mid-glyph while its cells ellipsize.
