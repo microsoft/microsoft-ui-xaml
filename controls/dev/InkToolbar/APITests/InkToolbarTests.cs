@@ -659,6 +659,55 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // UWP fills InkToolbarStencilButton.Ruler / Protractor when the toolbar shows a stencil
+        // (InkToolbar_Partial.cpp, put_Ruler / put_Protractor), so apps can position the stencil (Transform)
+        // and hit-test against it. The OS stencils are agile, so they are usable from the UI thread.
+        [TestMethod]
+        public void InkToolbarStencilButtonExposesRulerAndProtractorTest()
+        {
+            InkToolbar toolbar = null;
+            InkCanvas canvas = null;
+            InkToolbarStencilButton stencil = null;
+            RunOnUIThread.Execute(() =>
+            {
+                canvas = new InkCanvas { Width = 400, Height = 300 };
+                toolbar = new InkToolbar { TargetInkCanvas = canvas };
+                var root = new StackPanel();
+                root.Children.Add(toolbar);
+                root.Children.Add(canvas);
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                stencil = toolbar.GetMenuButton(InkToolbarMenuKind.Stencil) as InkToolbarStencilButton;
+                Verify.IsNotNull(stencil, "The default toolbar should have a stencil button.");
+                Verify.IsNull(stencil.Ruler, "No stencil has been shown yet.");
+
+                stencil.SelectedStencil = InkToolbarStencilKind.Ruler;
+                toolbar.IsStencilButtonChecked = true;
+                var ruler = stencil.Ruler;
+                Verify.IsNotNull(ruler, "Showing the ruler should fill InkToolbarStencilButton.Ruler.");
+                Verify.IsTrue(ruler.IsVisible, "The ruler should be visible.");
+
+                var transform = global::System.Numerics.Matrix3x2.CreateTranslation(40, 25);
+                ruler.Transform = transform;
+                Verify.AreEqual(transform, ruler.Transform, "The ruler's Transform should round-trip from the UI thread.");
+
+                toolbar.IsStencilButtonChecked = false;
+                stencil.SelectedStencil = InkToolbarStencilKind.Protractor;
+                toolbar.IsStencilButtonChecked = true;
+                Verify.IsNotNull(stencil.Protractor, "Showing the protractor should fill InkToolbarStencilButton.Protractor.");
+                Verify.IsTrue(stencil.Protractor.IsVisible, "The protractor should be visible.");
+
+                toolbar.IsStencilButtonChecked = false;
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
         // ====================================================================
         // Missing API coverage: EraserButton, CustomPen, CustomPenButton, Events
         // ====================================================================
