@@ -827,6 +827,8 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottomImpl()
 
 void TeachingTip::OnIsOpenChanged()
 {
+    ++m_unloadCloseGeneration;
+    CaptureTargetDataContext();
     if (m_ignoreNextIsOpenChanged) {
         m_ignoreNextIsOpenChanged = false;
     }
@@ -920,7 +922,12 @@ void TeachingTip::IsOpenChangedToOpen()
         auto const closedArgs = winrt::make_self<TeachingTipClosedEventArgs>();
         closedArgs->Reason(m_lastCloseReason);
         m_closedEventSource(*this, *closedArgs);
-        IsOpen(false);
+        // The Closing/Closed handlers may already have reset an IsOpen binding's source; writing false again would
+        // replace that binding with a local value.
+        if (IsOpen())
+        {
+            IsOpen(false);
+        }
     }
     else
     {
@@ -1283,9 +1290,19 @@ void TeachingTip::OnAutomationIdChanged(const winrt::IInspectable&, const winrt:
 
 void TeachingTip::OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
+    // The click can arrive while the tip is already closing (the popup stays up during the close animation), and the
+    // CloseButtonClick handler may itself reset an IsOpen binding's source. Only claim the close (reason + IsOpen write)
+    // if the tip was open, and don't write IsOpen onto an already closed tip: that would replace an app's IsOpen binding.
+    const bool wasOpen = IsOpen();
     m_closeButtonClickEventSource(*this, nullptr);
-    m_lastCloseReason = winrt::TeachingTipCloseReason::CloseButton;
-    IsOpen(false);
+    if (wasOpen || IsOpen())
+    {
+        m_lastCloseReason = winrt::TeachingTipCloseReason::CloseButton;
+    }
+    if (IsOpen())
+    {
+        IsOpen(false);
+    }
 }
 
 void TeachingTip::OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
@@ -1388,17 +1405,83 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
 
 void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
+    // Only write IsOpen when the tip is open. Setting it while it is already closed would replace an app's
+    // IsOpen binding with a local value, so the tip could never be opened through that binding again. That
+    // happens for a Target inside a NavigationViewItem, which can be unloaded while NavigationView (re)hosts its items.
+    if (!IsOpen())
+    {
+        ClosePopup();
+        return;
+    }
+
+    // The tip is open. Unloaded is raised asynchronously, and an element that is only being moved (for example a
+    // NavigationViewItem's content when NavigationView re-hosts its items) is already back in the tree, or gets its
+    // Loaded raised before the next CompositionTarget.Rendering. So check on that tick and close only if the tip or
+    // its target really left the tree. Closing writes a local IsOpen=false, which replaces an app's IsOpen binding.
+    const auto generation = ++m_unloadCloseGeneration;
+    SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong(), generation]()
+    {
+        strongThis->CloseIfUnloaded(generation);
+    });
+}
+
+void TeachingTip::CloseIfUnloaded(uint32_t generation)
+{
+    // Ignore the check if IsOpen changed (or another unload was queued) since it was queued.
+    if (generation != m_unloadCloseGeneration || !IsOpen())
+    {
+        return;
+    }
+
+    auto const target = m_target.get();
+    auto const xamlRoot = XamlRoot();
+    auto const popup = m_popup.get();
+    // Keep the tip open only if the tip and its target are both back in the same XamlRoot as the tip's popup (the popup
+    // can't move to another window) and the target still shows the same data. An ItemsRepeater (for example
+    // NavigationView's shared NavigationViewItem pool) can hand the same container to a different item.
+    const bool tipIsBack = IsLoaded() && xamlRoot && (!popup || popup.XamlRoot() == xamlRoot);
+    const bool targetIsBack = !target ||
+        (target.IsLoaded() && target.XamlRoot() == xamlRoot && IsSameDataContext(target.DataContext(), m_targetDataContext.get()));
+    if (tipIsBack && targetIsBack)
+    {
+        // The element was only moved; keep the tip open and follow the target to its new position.
+        RepositionPopup();
+        return;
+    }
+
     IsOpen(false);
     ClosePopup();
 }
 
+void TeachingTip::CaptureTargetDataContext()
+{
+    auto const target = m_target.get();
+    m_targetDataContext.set(IsOpen() && target ? target.DataContext() : nullptr);
+}
+
+bool TeachingTip::IsSameDataContext(const winrt::IInspectable& a, const winrt::IInspectable& b)
+{
+    if (a == b)
+    {
+        return true;
+    }
+    // Strings (for example a MenuItemsSource of strings) can come back as a new box on each read, so compare them by value.
+    auto const aValue = a.try_as<winrt::IPropertyValue>();
+    auto const bValue = b.try_as<winrt::IPropertyValue>();
+    return aValue && bValue &&
+        aValue.Type() == winrt::PropertyType::String && bValue.Type() == winrt::PropertyType::String &&
+        aValue.GetString() == bValue.GetString();
+}
+
 void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
+    // The indicator popup also closes whenever the tip itself closes, so don't write IsOpen on an already closed tip
+    // (that would replace an app's IsOpen binding with a local value).
     if (IsOpen())
     {
         m_lastCloseReason = winrt::TeachingTipCloseReason::LightDismiss;
+        IsOpen(false);
     }
-    IsOpen(false);
 }
 
 void TeachingTip::RaiseClosingEvent(bool attachDeferralCompletedHandler)
@@ -1530,6 +1613,7 @@ void TeachingTip::OnTargetChanged()
 
     auto const target = Target();
     m_target.set(target);
+    CaptureTargetDataContext();
 
     bool isTargetLoaded = false;
 
