@@ -108,6 +108,7 @@ public:
 
     void RefreshFrozenColumnLayout(double horizontalOffset, double leadingFrozenWidth);
     void SyncExpanderGutterWithLeadCell(winrt::Panel const& host);
+    bool SyncSelectionIndicatorOffset(double horizontalOffset);
     // Cells panel reports the lead cell's arranged slot to confine the chevron. leadWidth < 0: none.
     void OnCellsArrangedInternal(double leadLeft, double leadWidth, double height);
     void RefreshDensity();
@@ -240,6 +241,7 @@ private:
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
     // Chevron hit target. Null if a re-template drops the part (indent still applies).
     tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
+    tracker_ref<winrt::UIElement> m_selectionIndicator{ this };
     // Transparent cell wrapper fill, created on first use and shared by this row's cells.
     winrt::Brush m_cellWrapperBackground{ nullptr };
     winrt::UIElement::PointerPressed_revoker m_gutterPointerPressedRevoker{};
