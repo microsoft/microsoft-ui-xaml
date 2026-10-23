@@ -1227,11 +1227,18 @@ void TableView::QueueDeferredEditReshapeDrain()
 
 void TableView::FlushDeferredEditReshapes()
 {
-    if (m_editReshapeDrainQueued && !m_suppressEditVisualRestore && !m_isApplyingCoalescedEditReshape &&
-        !m_activeSourceReleased && !IsEditing())
+    if (!m_suppressEditVisualRestore && !m_isApplyingCoalescedEditReshape && !m_activeSourceReleased && !IsEditing() &&
+        (!m_pendingEditReshapes.empty() || !m_reshapesAfterEditCloses.empty()))
     {
-        m_editReshapeDrainQueued = false;
-        DrainCoalescedEditReshape();
+        try
+        {
+            DrainCoalescedEditReshape();
+        }
+        catch (...)
+        {
+            // The rest is re-posted; the newer request must not fail for an older one.
+            TVDiag::LogRetailF(L"[TableView] A deferred edit reshape threw while flushing ahead of a newer one.");
+        }
     }
 }
 

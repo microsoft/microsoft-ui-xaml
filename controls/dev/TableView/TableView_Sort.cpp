@@ -245,6 +245,7 @@ bool TableView::IsSortRequestStillValid(const winrt::TableViewColumn& column, bo
 
 bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDirection direction)
 {
+    FlushDeferredEditReshapes();
     // A column that opted out of sorting can still have the sort it holds cleared.
     const bool clearsOwnSort = direction == winrt::SortDirection::None &&
         column && column.SortDirection() != winrt::SortDirection::None;
@@ -254,6 +255,7 @@ bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDi
 bool TableView::SortByColumnInternal(
     const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort)
 {
+    FlushDeferredEditReshapes();
     // Only a clear may skip the CanSort gate.
     requireCanSort = requireCanSort || direction != winrt::SortDirection::None;
     if (!CanSortColumnNow(column, requireCanSort))
@@ -320,6 +322,7 @@ bool TableView::SortByColumnInternal(
 
 bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
 {
+    FlushDeferredEditReshapes();
     if (!CanSortColumnNow(column))
     {
         return false;
@@ -422,11 +425,17 @@ bool TableView::IsSortLitOnlyByApp() const
     {
         return false;
     }
-    return !sourceImpl->ActiveSortAxisInfos().empty();
+    // A column: axis is one a table installed, never the app's.
+    auto const axes = sourceImpl->ActiveSortAxisInfos();
+    return std::any_of(axes.begin(), axes.end(), [](auto const& axis)
+    {
+        return !std::wstring_view{ axis.AxisToken }.starts_with(L"column:");
+    });
 }
 
 bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
 {
+    FlushDeferredEditReshapes();
     if (m_sortedColumns.empty())
     {
         return false;
