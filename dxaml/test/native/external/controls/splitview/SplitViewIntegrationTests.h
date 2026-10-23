@@ -224,6 +224,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that interrupting a light-dismiss animation does not suppress the next PaneClosing event.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(DoesRaiseClosingOnceWhenClosingHandlerClosesPane)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that closing the pane from a light-dismiss PaneClosing handler commits that dismiss without a second PaneClosing.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DoesRaisePaneOpenedOffTreeWithCustomVisualStateManager)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that a custom visual state manager completing synchronously off-tree still raises PaneOpened.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(DoesFireOpenedAndClosedEventsWhenRetemplated)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the opened &closed events fire even when SplitView is re-templated to excluded the DisplayModesStates state group.")
         END_TEST_METHOD()

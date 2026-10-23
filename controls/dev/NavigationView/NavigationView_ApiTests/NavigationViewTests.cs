@@ -1261,6 +1261,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Closing the pane from the light-dismiss PaneClosing handler must commit that dismiss without a second PaneClosing.")]
+        public void VerifyClosingPaneFromLightDismissClosingHandlerRaisesClosingOnce()
+        {
+            var (navView, splitView) = CreateNavigationViewWithOpenOverlayPane();
+            using var closed = new ManualResetEvent(false);
+            int closingCount = 0;
+            int closedCount = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                navView.PaneClosing += (sender, args) =>
+                {
+                    closingCount++;
+                    navView.IsPaneOpen = false;
+                };
+                navView.PaneClosed += (sender, args) =>
+                {
+                    closedCount++;
+                    closed.Set();
+                };
+                InvokeLightDismissLayer(splitView);
+            });
+            Verify.IsTrue(closed.WaitOne(TimeSpan.FromSeconds(5)), "The light dismiss must close the pane.");
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(navView.IsPaneOpen);
+                Verify.AreEqual(1, closingCount, "NavigationView.PaneClosing must fire once for one light-dismiss close.");
+                Verify.AreEqual(1, closedCount);
+            });
+        }
+
         private (NavigationView, SplitView) CreateNavigationViewWithOpenOverlayPane()
         {
             NavigationView navView = null;
