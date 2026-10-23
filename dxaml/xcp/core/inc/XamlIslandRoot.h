@@ -48,7 +48,8 @@ public:
     //  IFrameworkApplicationPrivate::CreateIslandRoot():
     _Check_return_ HRESULT Initialize();
 
-    _Check_return_ HRESULT ReleaseContentIslandResources();
+    // Release/RebuildContentIsland are used in tests when rebuilding all Composition resources.
+    _Check_return_ HRESULT ReleaseContentIsland();
     _Check_return_ HRESULT RebuildContentIsland();
 
     KnownTypeIndex GetTypeIndex() const override
@@ -270,6 +271,7 @@ private:
 
     _Check_return_ HRESULT InitializeCommon();
     _Check_return_ HRESULT InitializeContentIsland();
+    _Check_return_ HRESULT ReleaseContentIslandResources();
     void InitializeOwnerHWNDForWindowedPopups(_In_ IUnknown* host);
     void InitInputObjects(_In_ ixp::IContentIsland* const contentIsland);
     void SubscribeToInputKeyboardSourceEvents();

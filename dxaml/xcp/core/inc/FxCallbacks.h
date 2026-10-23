@@ -543,7 +543,8 @@ namespace FxCallbacks
     _Check_return_ HRESULT DXamlCore_GetUISettings(_Out_ ctl::ComPtr<wuv::IUISettings>& spUISettings);
 
     void XamlIslandRoot_OnSizeChanged(_In_ CXamlIslandRoot* xamlIslandRoot);
-    _Check_return_ HRESULT XamlIslandRoot_UpdateContentIsland(_In_ CXamlIslandRoot* xamlIslandRoot, bool initialize);
+    _Check_return_ HRESULT XamlIslandRoot_ReleaseContentIsland(_In_ CXamlIslandRoot* xamlIslandRoot);
+    _Check_return_ HRESULT XamlIslandRoot_RebuildContentIsland(_In_ CXamlIslandRoot* xamlIslandRoot);
     CXamlIslandRoot* GetXamlIslandRootFromXamlIsland(_In_ xaml_hosting::IXamlIslandRoot* xamlIslandRoot);
 
     _Check_return_ HRESULT FrameworkApplication_RemoveIsland(_In_ xaml_hosting::IXamlIslandRoot* pIsland);

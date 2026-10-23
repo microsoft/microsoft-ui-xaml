@@ -107,6 +107,7 @@ _Check_return_ HRESULT CXamlIslandRoot::ReleaseContentIslandResources()
 
     if (m_contentRoot)
     {
+        // Release the m_xamlFocusController
         IFC_RETURN(m_contentRoot->GetFocusManagerNoRef()->GetFocusObserverNoRef()->Init(
             static_cast<xaml_hosting::IFocusController*>(nullptr)));
     }
@@ -158,8 +159,18 @@ _Check_return_ HRESULT CXamlIslandRoot::ReleaseContentIslandResources()
     return S_OK;
 }
 
+// Used in tests when disposing of all Composition resources, including the ContentIsland, which is created with a visual
+_Check_return_ HRESULT CXamlIslandRoot::ReleaseContentIsland()
+{
+    IFC_RETURN(FxCallbacks::XamlIslandRoot_ReleaseContentIsland(this));
+    return ReleaseContentIslandResources();
+}
+
+// Rebuild after disposing of the ContentIsland from an earlier call to ReleaseContentIsland()
 _Check_return_ HRESULT CXamlIslandRoot::RebuildContentIsland()
 {
+    ASSERT(GetContentIsland() == nullptr);
+
     IFC_RETURN(InitializeContentIsland());
 
     if (m_inputNonClientPointerSource)
@@ -167,7 +178,7 @@ _Check_return_ HRESULT CXamlIslandRoot::RebuildContentIsland()
         SubscribeToInputNonClientPointerSourceEvents();
     }
 
-    return S_OK;
+    return FxCallbacks::XamlIslandRoot_RebuildContentIsland(this);
 }
 
 _Check_return_ HRESULT CXamlIslandRoot::Initialize(_In_ WUComp::Desktop::IDesktopWindowContentBridgeInterop* /*contentBridge*/)

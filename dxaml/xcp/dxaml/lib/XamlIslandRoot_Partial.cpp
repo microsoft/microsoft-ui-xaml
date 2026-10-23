@@ -62,6 +62,16 @@ void DirectUI::XamlIslandRoot::OnSizeChangedStatic(_In_ CXamlIslandRoot* xamlIsl
     IFCFAILFAST(pThis->m_contentManager.OnWindowSizeChanged());
 }
 
+_Check_return_ HRESULT DirectUI::XamlIslandRoot::ReleaseContentIslandStatic(_In_ CXamlIslandRoot* xamlIslandRoot)
+{
+    return UpdateContentIslandStatic(xamlIslandRoot, false);
+}
+
+_Check_return_ HRESULT DirectUI::XamlIslandRoot::RebuildContentIslandStatic(_In_ CXamlIslandRoot* xamlIslandRoot)
+{
+    return UpdateContentIslandStatic(xamlIslandRoot, true);
+}
+
 _Check_return_ HRESULT DirectUI::XamlIslandRoot::UpdateContentIslandStatic(_In_ CXamlIslandRoot* xamlIslandRoot, bool initialize)
 {
     ctl::ComPtr<DirectUI::XamlIslandRoot> peer;

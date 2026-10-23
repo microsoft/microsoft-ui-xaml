@@ -527,6 +527,91 @@ void CompositorTreeDeviceLostTests::RenderingNewCompNodeThatSplitsContainer()
     wh->SynchronouslyTickUIThread(2);
 }
 
+void CompositorTreeDeviceLostTests::RebuildContentIslandAfterDeviceLost()
+{
+    const auto& wh = TestServices::WindowHelper;
+
+    WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    StackPanel^ root;
+    Border^ border;
+    XamlRoot^ xamlRoot;
+    Microsoft::UI::Content::ContentIsland^ contentIsland;
+    RunOnUIThread([&]()
+    {
+        root = ref new StackPanel();
+        border = ref new Border();
+        border->Width = 50;
+        border->Height = 50;
+        border->Background = ref new SolidColorBrush(Microsoft::UI::Colors::Green);
+        root->Children->Append(border);
+        wh->WindowContent = root;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        xamlRoot = root->XamlRoot;
+        VERIFY_IS_NOT_NULL(xamlRoot);
+        contentIsland = xamlRoot->ContentIsland;
+        VERIFY_IS_NOT_NULL(contentIsland);
+    });
+    auto mockDevice = wh->MockDCompDevice;
+    VERIFY_IS_NOT_NULL(mockDevice);
+
+    for (int reset = 0; reset < 2; ++reset)
+    {
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"> Release the ContentIsland with a full device reset.");
+            wh->ResetDeviceAndVisualsWithoutUIThreadTick();
+        });
+
+        wh->SynchronouslyTickUIThread(2);
+        VERIFY_IS_NOT_NULL(wh->MockDCompDevice);
+        VERIFY_IS_TRUE(mockDevice != wh->MockDCompDevice);
+        mockDevice = wh->MockDCompDevice;
+        wh->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"> Verify the rebuilt ContentIsland preserves the XAML tree.");
+            auto rebuiltIsland = xamlRoot->ContentIsland;
+            VERIFY_IS_NOT_NULL(rebuiltIsland);
+            VERIFY_IS_TRUE(contentIsland != rebuiltIsland);
+            contentIsland = rebuiltIsland;
+            VERIFY_ARE_EQUAL(root, wh->WindowContent);
+            VERIFY_ARE_EQUAL(xamlRoot, root->XamlRoot);
+            VERIFY_ARE_EQUAL(border, root->Children->GetAt(0));
+            VERIFY_ARE_EQUAL(xamlRoot, border->XamlRoot);
+            VERIFY_ARE_EQUAL(50.0, border->ActualWidth);
+            VERIFY_ARE_EQUAL(50.0, border->ActualHeight);
+        });
+    }
+
+    Button^ button;
+    auto clickRegistration = CreateSafeEventRegistration(Button, Click);
+    auto clickEvent = std::make_shared<Event>();
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Add new content after repeated island recovery.");
+        button = ref new Button();
+        root->Children->Append(button);
+        clickRegistration.Attach(button, [clickEvent]() { clickEvent->Set(); });
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"> Verify focus and keyboard input after island recovery.");
+        VERIFY_ARE_EQUAL(xamlRoot, button->XamlRoot);
+        VERIFY_IS_TRUE(button->Focus(FocusState::Programmatic));
+    });
+    TestServices::KeyboardHelper->Enter();
+    clickEvent->WaitForDefault();
+    VERIFY_IS_TRUE(clickEvent->HasFired());
+}
+
 WriteableBitmap^ CompositorTreeDeviceLostTests::CreateWriteableBitmap()
 {
     WriteableBitmap^ bitmap = ref new WriteableBitmap(30, 30);

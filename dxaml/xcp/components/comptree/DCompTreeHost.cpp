@@ -190,15 +190,15 @@ DCompTreeHost::CloseAndReleaseInteropCompositor()
 _Check_return_ HRESULT
 DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompositor)
 {
-    // shouldDeferClosingInteropCompositor is true when WindowsGraphicsDeviceManager::CleanupCachedDeviceResources performs DComp cleanup.
+    // shouldDeferClosingInteropCompositor is true when WindowsGraphicsDeviceManager::CleanupCachedDeviceResources
+    // performs DComp cleanup. Islands need to do extra cleanup in this scenario.
     if (shouldDeferClosingInteropCompositor)
     {
         // Unhook island-owned input and events while the old compositor is still usable.
         // Keep the registered XAML roots so recovery can create new ContentIslands for them.
         for (auto& islandData : m_islandRenderData)
         {
-            IFC_RETURN(FxCallbacks::XamlIslandRoot_UpdateContentIsland(islandData.first, false));
-            IFC_RETURN(islandData.first->ReleaseContentIslandResources());
+            IFC_RETURN(islandData.first->ReleaseContentIsland());
             islandData.second = XamlIslandRenderData();
         }
     }
@@ -647,7 +647,6 @@ _Check_return_ HRESULT DCompTreeHost::RebuildXamlIslandResources()
         if (islandData.first->GetContentIsland() == nullptr)
         {
             IFC_RETURN(islandData.first->RebuildContentIsland());
-            IFC_RETURN(FxCallbacks::XamlIslandRoot_UpdateContentIsland(islandData.first, true));
         }
     }
 

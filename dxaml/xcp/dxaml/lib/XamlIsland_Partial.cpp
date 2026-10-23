@@ -236,7 +236,8 @@ _Check_return_ HRESULT XamlIsland::UpdateContentIsland(bool initialize)
     if (!initialize)
     {
         IFC_RETURN(UpdateSystemBackdrop(false));
-        return ReleaseContentIslandResources();
+        ReleaseContentIslandResources();
+        return S_OK;
     }
 
     IFC_RETURN(InitializeContentIsland());
@@ -373,6 +374,8 @@ _Check_return_ HRESULT XamlIsland::UpdateSystemBackdrop(bool connected)
         IFC_RETURN(m_systemBackdrop.As(&systemBackdrop));
         if (connected)
         {
+            // Directly get the XamlRoot, creating it if necessary, so this works even if
+            // no Content has yet been set on this XamlIsland.
             ctl::ComPtr<IInspectable> root = m_pXamlIslandCore->GetContentRootNoRef()->GetOrCreateXamlRootNoRef();
             ctl::ComPtr<xaml::IXamlRoot> xamlRoot;
             IFC_RETURN(root.As(&xamlRoot));
@@ -417,7 +420,7 @@ IFACEMETHODIMP XamlIsland::Close()
         m_systemBackdrop = nullptr;
     }
 
-    IFC_RETURN(ReleaseContentIslandResources());
+    ReleaseContentIslandResources();
 
     if (m_spXamlIsland.Get() != nullptr)
     {
@@ -461,11 +464,11 @@ IFACEMETHODIMP XamlIsland::Close()
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlIsland::ReleaseContentIslandResources()
+void XamlIsland::ReleaseContentIslandResources()
 {
     if (m_inputFocusController2 != nullptr)
     {
-        IFC_RETURN(m_inputFocusController2->remove_NavigateFocusRequested(m_focusNavigationRequestedToken));
+        m_inputFocusController2->remove_NavigateFocusRequested(m_focusNavigationRequestedToken);
         m_inputFocusController2 = nullptr;
         m_focusNavigationRequestedToken.value = 0;
     }
@@ -474,21 +477,19 @@ _Check_return_ HRESULT XamlIsland::ReleaseContentIslandResources()
     {
         wrl::ComPtr<ixp::IContentIsland> contentIsland = m_pXamlIslandCore->GetContentIsland();
         wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
-        IFC_RETURN(contentIsland.As(&contentIslandExperimental));
+        IFCFAILFAST(contentIsland.As(&contentIslandExperimental));
 
         if (m_islandConnectedToken.value != 0)
         {
-            IFC_RETURN(contentIslandExperimental->remove_Connected(m_islandConnectedToken));
+            IFCFAILFAST(contentIslandExperimental->remove_Connected(m_islandConnectedToken));
             m_islandConnectedToken.value = 0;
         }
         if (m_islandDisconnectedToken.value != 0)
         {
-            IFC_RETURN(contentIslandExperimental->remove_Disconnected(m_islandDisconnectedToken));
+            IFCFAILFAST(contentIslandExperimental->remove_Disconnected(m_islandDisconnectedToken));
             m_islandDisconnectedToken.value = 0;
         }
     }
-
-    return S_OK;
 }
 
 void XamlIsland::PrepareToClose()
