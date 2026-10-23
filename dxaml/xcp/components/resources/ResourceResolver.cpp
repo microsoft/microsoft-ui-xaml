@@ -382,10 +382,9 @@ namespace Resources {
         {
             if (auto popup = do_pointer_cast<CPopup>(element))
             {
-                if (auto flyout = popup->GetAssociatedFlyoutNoRef();
-                    flyout && flyout->IsTemplateNamescopeMember())
+                if (auto flyout = popup->GetAssociatedFlyoutNoRef())
                 {
-                    // A control template's attached flyout keeps its declaration scope as its mentor.
+                    // An attached flyout keeps its declaration scope as its mentor.
                     // Shared flyouts can be attached inside their own content, so do not revisit a popup.
                     auto& visitedPopups = context.m_vector;
                     if (std::find(visitedPopups.begin(), visitedPopups.end(), popup) == visitedPopups.end())
@@ -415,7 +414,7 @@ namespace Resources {
         // in scope, matching the XAML scoping model for a {ThemeResource} set on the element.
         //
         // Share the ancestry walk with live theme re-resolution, including the declaration scope of
-        // template-owned flyouts, so installing a binding and refreshing it use the same resources.
+        // flyouts, so installing a binding and refreshing it use the same resources.
         AmbientValuesVector vecAmbientValues;
         ResourceParentLookupContext parentLookupContext;
         for (CDependencyObject* current = element; current; )
