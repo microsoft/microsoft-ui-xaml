@@ -321,6 +321,8 @@ public:
     void PinSelectionIndicatorForRow(const winrt::TableViewRow& row);
     double GetBodyHorizontalOffsetInternal() const;
 
+    uint64_t CellLayoutGenerationInternal() const noexcept { return m_cellLayoutGeneration; }
+
     // Requested by a cell panel (header/row) during measure when a realized cell's own measured width
     // changed (grow or shrink). Invalidates our measure synchronously so ResolveColumnWidths re-runs in
     // the same layout tick (no deferral -> no one-frame lag). Bridges the body ScrollViewer, which
@@ -798,6 +800,7 @@ private:
     // recognise itself as stale.
     uint32_t m_editGeneration{ 0 };
 
+    uint64_t m_cellLayoutGeneration{ 0 };
     uint32_t m_pendingTabEditGeneration{ 0 };
     bool m_pendingTabEditActive{ false };
     bool m_pendingTabEditTurnQueued{ false };

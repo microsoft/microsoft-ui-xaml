@@ -42,8 +42,8 @@ public:
 
     // Updates the weak owner ref, column subscription, and realized cells. Both return true when the
     // cell rebuild also refreshed the row chrome (grid lines and row background).
-    bool SetOwningTableViewInternal(winrt::TableView const& owner);
-    bool EnsureOwningTableViewInternal(winrt::TableView const& owner);
+    bool SetOwningTableViewInternal(winrt::TableView const& owner, bool rebuildCells = true);
+    bool EnsureOwningTableViewInternal(winrt::TableView const& owner, bool skipIfCellsCurrent = false);
 
     // Rewire realized rows when the owner keeps the same identity but Columns changes.
     void RefreshColumnsSubscriptionInternal();
@@ -294,6 +294,11 @@ private:
     bool m_isRebuildingCells{ false };
 
     bool m_rebuildCellsQueued{ false };
+
+    void* m_cellsBuiltItem{ nullptr };
+    uint64_t m_cellsBuiltGeneration{ 0 };
+    void MarkCellsBuilt(winrt::TableView const& owner);
+    bool AreCellsBuiltFor(winrt::TableView const& owner);
 
     tracker_ref<winrt::TableViewColumn> m_editingColumn{ this };
     tracker_ref<winrt::Grid> m_editingCellWrapper{ this };
