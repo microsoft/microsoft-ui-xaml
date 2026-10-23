@@ -119,6 +119,10 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object HeaderToolTip { get; set; };
 
+    // Style for this column's TableViewColumnHeader; wins over TableView.ColumnHeaderStyle.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Microsoft.UI.Xaml.Style HeaderStyle { get; set; };
+
     // Width carries GridLength intent; ActualWidth is the resolved, MinWidth/MaxWidth-clamped
     // pixels (see TableView_Layout.cpp). Pixel = exact; Auto = widest realized cell (grows within a
     // data set); Star = a proportional share of the body viewport after fixed columns.
@@ -154,8 +158,8 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     [MUX_DEFAULT_VALUE("winrt::Visibility::Visible")]
     Microsoft.UI.Xaml.Visibility Visibility { get; set; };
 
-    // Per-column opt-out for the click-to-sort UX. Default true. When false the header click
-    // handler ignores this column; programmatic SortByColumn still works.
+    // Per-column sort opt-out (default true). False blocks header clicks, SortByColumn (except None) and
+    // ToggleSortDirection; setting it false on the sorted column clears that sort.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("true")]
     Boolean CanSort { get; set; };
@@ -222,8 +226,8 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     // headers never use it.
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
 
-    // Shown at the header cell. First match wins: a ContextFlyout inside the HeaderTemplate, this,
-    // then TableView.ContextFlyout. Collapsed columns and an editing table open no header menu.
+    // Shown at the header cell, after a Style/HeaderTemplate ContextFlyout and before
+    // TableView.ContextFlyout. Not opened for collapsed columns or while editing.
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
 
     // The editing hooks a derived column would override - GenerateEditingElement, PrepareCellForEdit,
@@ -234,6 +238,7 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeaderToolTipProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty HeaderStyleProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };
@@ -377,11 +382,8 @@ runtimeclass TableViewGroupHeaderToggleRequestedEventArgs
 // The whole band is the toggle target (matching ListView / TreeView) rather than a
 // nested Button, so there is one interactive element and one automation story.
 //
-// Parts (all optional; omitting one degrades rather than fails):
-//   PART_ExpanderGutter  Border    reserves the chevron column so content stays aligned
-//   PART_ExpanderIcon    FontIcon  glyph driven by ExpansionStates, not by code
-//   PART_GridLineBorder  Border    renders border chrome and terminal-line suppression
-//   content region       inherited from ContentControl
+// Parts: PART_Root, PART_ContentPresenter, PART_ExpanderIcon (targeted by the default states), PART_ExpanderGutter;
+// optional PART_GridLineBorder.
 //
 // States: CommonStates Normal|PointerOver|Pressed|Disabled
 //         ExpansionStates Expanded|Collapsed
@@ -410,6 +412,16 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
 
     static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
+}
+
+// Templated header, one per column, created only by TableView; restyled via TableView.ColumnHeaderStyle
+// or TableViewColumn.HeaderStyle.
+// Optional parts: PART_ContentPresenter, PART_GridLine, PART_SortIndicatorHost, PART_ResizeGripperHost.
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewColumnHeader : Microsoft.UI.Xaml.Controls.ContentControl
+{
+    TableViewColumn Column { get; };
 }
 
 [MUX_PREVIEW]
@@ -509,7 +521,7 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("winrt::TableViewHeadersVisibility::Column")]
     TableViewHeadersVisibility HeadersVisibility { get; set; };
 
-    // Controls row dividers and column separators; row banding is separate.
+    // Body row dividers and column separators. Header lines are always drawn.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::TableViewGridLinesVisibility::All")]
     TableViewGridLinesVisibility GridLinesVisibility { get; set; };
@@ -532,6 +544,10 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate { get; set; };
+
+    // Style for every TableViewColumnHeader; TableViewColumn.HeaderStyle overrides it per column.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Microsoft.UI.Xaml.Style ColumnHeaderStyle { get; set; };
 
     // Vertical density preset for row height and built-in cell/header padding.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
@@ -636,12 +652,12 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
 
     // Clears any other sort state, then sets this column's SortDirection. Pass SortDirection.None
     // to clear. Returns true when the sort state changed; returns false when the sort could not be
-    // applied (for example, when the rows cannot be ordered).
+    // applied (for example, the column cannot sort). Clearing with None works even when CanSort is false.
     Boolean SortByColumn(MU_XC_NAMESPACE.TableViewColumn column, SortDirection direction);
 
     // Cycles the trigger column's direction per SortCycle, clearing any other sort state first.
     // Returns true when the sort state changed; returns false when the sort could not be applied
-    // (for example, when the rows cannot be ordered).
+    // (for example, when the rows cannot be ordered, or the column cannot sort, as for SortByColumn).
     Boolean ToggleSortDirection(MU_XC_NAMESPACE.TableViewColumn column);
 
     // Clears every column's sort state in one batch. Returns true when anything was cleared.
@@ -663,6 +679,7 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty GroupHeaderTemplateProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ColumnHeaderStyleProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty DensityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SelectionModeProperty { get; };
@@ -721,7 +738,7 @@ unsealed runtimeclass TableViewGroupHeaderAutomationPeer
     TableViewGroupHeaderAutomationPeer(MU_XC_NAMESPACE.TableViewGroupHeader owner);
 }
 
-// Header peer gives plain Grid header visuals distinct automation metadata.
+// Peer of a TableViewColumnHeader and of the TableView-owned header entries.
 [MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass TableViewColumnHeaderAutomationPeer
@@ -736,6 +753,7 @@ unsealed runtimeclass TableViewColumnHeaderAutomationPeer
 // are shown and the column is visible. Only when column headers are hidden does the name become
 // "{column header}, {cell value}". A cell holding an interactive control is named after its column
 // header, since the control names itself.
+// The constructor throws E_INVALIDARG for null arguments, a negative columnIndex, or a column/index outside the owning table.
 [MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass TableViewCellAutomationPeer

@@ -62,14 +62,14 @@
             <ColumnDefinition x:Name="OptionsColumn" Width="0"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Example (live demo). No card frame: tables draw their own border. -->
+        <!-- No card frame: tables draw their own border. -->
         <!-- No x:Name on the InfoBars: WinUI reports an unset AutomationId as the x:Name. -->
         <Grid x:Name="ExampleGrid" Grid.Row="0" Grid.Column="0" RowSpacing="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition x:Name="ExampleHostRow" Height="Auto"/>
             </Grid.RowDefinitions>
-            <!-- Not an InfoBar: it announces on open (64477279). Unnamed: WinUI reports an unset AutomationId as the x:Name. -->
+            <!-- Not an InfoBar, which announces on open. Unnamed for the same AutomationId reason. -->
             <Border
                 Grid.Row="0"
                 MinHeight="104"

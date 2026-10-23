@@ -60,7 +60,7 @@ TableView — Default Template
       ├─ Header band  [Row 0, Auto]
       │  └─ Border PART_HeaderRow                 (header background + 1px bottom gridline)
       │     └─ ScrollViewer PART_HeaderScroller   (H-only; scrollbar hidden; V disabled; synced to body)
-      │        └─ TableViewCellsPanel PART_HeaderHost   -> one Grid header cell per column (L->R)
+      │        └─ TableViewCellsPanel PART_HeaderHost   -> one TableViewColumnHeader per column (L->R)
       └─ Body band  [Row 1, *]
          └─ ScrollViewer PART_BodyScroller         (H + V, auto scrollbars)
             └─ Grid PART_BodyContent
@@ -80,11 +80,9 @@ Each `TableViewCellsPanel` measures its cells unconstrained and arranges them at
 
 `Border` `PART_HeaderRow` → `ScrollViewer` `PART_HeaderScroller` → `TableViewCellsPanel` `PART_HeaderHost`.
 
-`PART_HeaderRow` provides the header-surface background and a 1px bottom gridline. `PART_HeaderScroller` is horizontal-only (`HorizontalScrollMode="Auto"`, horizontal scrollbar hidden, vertical disabled). `PART_HeaderHost` is a `TableViewCellsPanel` (inherently horizontal); `RebuildHeaders` fills it with one `Grid` header cell per non-null column (each cell mirrors the column's `Visibility`), in `Columns` order, left-to-right. Header cells use the density row minimum height, so the header band matches body rows. Like rows, header cells carry `ControlCornerRadius`, consumed only by the system focus visual, so header keyboard focus is rounded. Header content comes from `TableViewColumn.Header`, displayed via `HeaderTemplateSelector` when set, otherwise `HeaderTemplate`, otherwise the default text presenter. A focused header keeps focus when `RebuildHeaders` replaces the band (a header, template or theme change); hiding the focused column moves focus to the next visible header, or the previous one when it was last.
+`PART_HeaderRow` provides the header-surface background and a 1px bottom rule. `PART_HeaderScroller` is horizontal-only (`HorizontalScrollMode="Auto"`, horizontal scrollbar hidden, vertical disabled). `PART_HeaderHost` is a `TableViewCellsPanel` (inherently horizontal); `RebuildHeaders` fills it with one `TableViewColumnHeader` per non-null column (each cell mirrors the column's `Visibility`), in `Columns` order, left-to-right. Header cells use the density row minimum height, so the header band matches body rows. Like rows, header cells carry `ControlCornerRadius`, consumed only by the system focus visual, so header keyboard focus is rounded. Header content comes from `TableViewColumn.Header`, displayed via `HeaderTemplateSelector` when set, otherwise `HeaderTemplate`, otherwise the default text presenter. Header lines are always drawn, independently of the body's `GridLinesVisibility`: each header's full-height 1px `PART_GridLine` separator on its trailing edge and the 1px rule under `PART_HeaderRow`, both with `TabularSurfaceHeaderSeparatorBrush`; overriding that resource with `Transparent` hides them. `TableView::ApplyGridLinesToHeader` owns the separators; the template draws the bottom rule (`PART_HeaderRow`'s `BorderThickness="0,0,0,1"`). Like the body's vertical lines, the last visible column's separator is suppressed only where it would double the outer border. A focused header keeps focus when `RebuildHeaders` replaces the band (a header, template or theme change); hiding the focused column moves focus to the next visible header, or the previous one when it was last.
 
-Custom templates using a `Border` for `PART_HeaderRow` must supply its gridline `BorderThickness` through a style setter rather than a local value, so `GridLinesVisibility` can restore it with `ClearValue` for `Horizontal` or `All`.
-
-**Pointer feedback.** A sortable header (`CanUserSortColumns` and `TableViewColumn.CanSort`) reacts to the pointer like a row: on hover it paints `TabularSurfaceHeaderBackgroundPointerOverBrush`, while pressed `TabularSurfaceHeaderBackgroundPressedBrush`, and it returns to its transparent fill on exit, release, capture loss or cancel (a capture loss or cancel from the resize gripper's own drag capture is ignored, so a header still under the pointer stays hovered). In High Contrast only, the default header text presenter and sort indicator also take `TabularSurfaceHeaderForegroundPointerOverBrush` / `TabularSurfaceHeaderForegroundPressedBrush` (`SystemColorHighlightTextColor` on a `SystemColorHighlightColor` fill). In Light and Dark the header text keeps its inherited foreground, so an app-set `TableView.Foreground`, `HeaderTemplate` foreground or `SortIndicatorForeground` is not overridden on hover; there those foreground keys equal the default rest foreground (`TabularSurfaceRowForegroundBrush`), and the fills equal the row pointer-over/pressed fills. Brushes are looked up on each state change, and again when the header's `ActualTheme` changes. A header that cannot sort shows no feedback, the pointer events are never marked handled (click-to-sort and focus are unchanged), and a press on the resize gripper stays with the gripper.
+**Pointer feedback.** A sortable header (`CanUserSortColumns` and `TableViewColumn.CanSort`) reacts to the pointer like a row: on hover it paints `TabularSurfaceHeaderBackgroundPointerOverBrush`, while pressed `TabularSurfaceHeaderBackgroundPressedBrush`, and it returns to its transparent fill on exit, release, capture loss or cancel (a capture loss or cancel from the resize gripper's own drag capture is ignored, so a header still under the pointer stays hovered). In High Contrast only, the default header text presenter and sort indicator also take `TabularSurfaceHeaderForegroundPointerOverBrush` / `TabularSurfaceHeaderForegroundPressedBrush` (`SystemColorHighlightTextColor` on a `SystemColorHighlightColor` fill). In Light and Dark the header text keeps its inherited foreground, so an app-set `TableView.Foreground`, `HeaderTemplate` foreground or `SortIndicatorForeground` is not overridden on hover; there those foreground keys equal the default rest foreground (`TabularSurfaceRowForegroundBrush`), and the fills equal the row pointer-over/pressed fills. The fills and High Contrast foregrounds are `{ThemeResource}` setters in the `TableViewColumnHeader` template's `CommonStates` and `HighContrastStates`; a theme or High Contrast change rebuilds the header band, so each header restarts in `Normal`/`HighContrastNormal`. `Disabled` dims the text and sort glyph with `TabularSurfaceRowForegroundDisabledBrush`. A header that cannot sort shows no feedback, the pointer events are never marked handled (click-to-sort and focus are unchanged), and a press on the resize gripper stays with the gripper.
 
 ## Body band
 
@@ -176,7 +174,7 @@ Two-column expectations, viewport 478, `MinWidth` 50 (`!` = `CanResize="False"`)
 
 Rows are virtualized by `ItemsRepeater` on the vertical axis. With the vertical `StackLayout`, only rows whose realization rect intersects the body viewport — plus two viewports of cache on each side — are materialized as `TableViewRow` instances; off-screen rows return to the recycle pool. `StackLayout` is used instead of a uniform two-axis layout because row heights vary with density and template content.
 
-On recycle, `ItemsRepeater` re-points a pooled row's `DataContext` to the new item and cell **data** updates **reactively** through `DataContext` inheritance + bindings — cells are **not** re-stamped imperatively (mutating a live cell during the repeater's measure pass re-enters framework layout and fails fast). `TableViewTextColumn` binds `TextBlock.Text` to the consumer `Binding` (resolved against the inherited `DataContext`); `TableViewTemplateColumn` binds its `ContentPresenter.Content` to the cell-wrapper `Border`'s inherited `DataContext` — bound to the *wrapper*, not the presenter's own `DataContext`, because `ContentPresenter` pins its `DataContext` to its `Content` (a self-referential binding would freeze after the first item). Consequently `RebuildCells` is needed only for structural changes (columns / template / density); a pure recycle refreshes only index-dependent visuals — alternating-row banding (`RefreshRowBackground`) and frozen-column pinning. Custom columns (overridable `GenerateElementCore`) must bind reactively to the inherited `DataContext` for the same reason.
+On recycle, `ItemsRepeater` re-points a pooled row's `DataContext` to the new item and cell **data** updates **reactively** through `DataContext` inheritance + bindings — cells are **not** re-stamped imperatively (mutating a live cell during the repeater's measure pass re-enters framework layout and fails fast). `TableViewTextColumn` binds `TextBlock.Text` to the consumer `Binding` (resolved against the inherited `DataContext`); `TableViewTemplateColumn` binds its `ContentPresenter.Content` to the cell-wrapper `Border`'s inherited `DataContext` — bound to the *wrapper*, not the presenter's own `DataContext`, because `ContentPresenter` pins its `DataContext` to its `Content` (a self-referential binding would freeze after the first item). Consequently `RebuildCells` is needed only for structural changes (columns / template / density); a pure recycle refreshes only index-dependent visuals — alternating-row banding (`RefreshRowBackground`) and frozen-column pinning. Custom columns (overridable `GenerateElementCore`) must bind reactively to the inherited `DataContext` for the same reason. This holds on every recycle to a new item: unless a client has realized a cell automation peer, the row reuses its cells, so a custom column that bakes `dataItem` into its element, or template content initialized once per element (in `Loaded`, or through `x:Bind` with `OneTime`), keeps showing the previous item after a scroll.
 
 Column virtualization is intentionally not implemented: each realized row renders a cell for every non-null column (collapsed columns get a hidden cell), which is the right trade for typical 5–50 column tables. Because every realized row materializes one cell wrapper per non-null column, `TableView` targets typical application tables (~5–50 columns) and is **not** designed for spreadsheet-scale column counts (100+). Column virtualization is independent of the width engine: `Auto`/`*` sizing ships in this PR (see *Column width sizing*) without column virtualization, which stays out of scope — each realized row still renders one cell per non-null column.
 
@@ -202,7 +200,7 @@ Cell generation is column-specific:
 - `TableViewTemplateColumn` instantiates `CellTemplate`; a null template produces an empty cell.
 - Custom columns override `GenerateElementCore(Object dataItem)`.
 
-`RowBackground` and `AlternatingRowBackground` provide opt-in row banding; when both are null, rows stay unbanded. `GridLinesVisibility` controls row/cell gridline borders. `Density` selects row minimum height and built-in cell/header padding for `Compact`, `Standard`, or `Comfortable`.
+`RowBackground` and `AlternatingRowBackground` provide opt-in row banding; when both are null, rows stay unbanded. `GridLinesVisibility` controls row/cell gridline borders; the column-header separators and bottom rule are always drawn. `Density` selects row minimum height and built-in cell/header padding for `Compact`, `Standard`, or `Comfortable`.
 
 Keyboard handling is cell-aware and follows the WAI-ARIA treegrid model. `TableView` listens to bubbling `KeyDown` so template-column descendants handle input first. The table itself is not a tab stop (`IsTabStop=False`). It has **two tab stops**: the header band, then the body. The two share one column cursor, so Tab and Shift+Tab between them keep the current column.
 
@@ -247,7 +245,7 @@ Tabular's compiled `ResourceAccessor` reads `Microsoft.UI.Xaml.Controls.Tabular/
 
 Lifetime rules: columns and rows use weak owner back-pointers (`GetOwningTableView()` resolves a strong owner for synchronous work); runtime classes use `ReferenceTracker` where required; cross-object events use `auto_revoke`; recycled rows reset transient visual state before reuse.
 
-Theme values resolve through `TabularSurfaces` resources and re-resolve across theme (and high-contrast) changes. `TabularSurfaceGridLineBrush` (grid lines, header lines and the control border) uses the Fluent `DividerStrokeColorDefault` value, and `SystemColorWindowTextColor` under High Contrast. The stock style always provides the key; if it is missing, only High Contrast draws grid lines.
+Theme values resolve through `TabularSurfaces` resources and re-resolve across theme (and high-contrast) changes. `TabularSurfaceGridLineBrush` (body grid lines) and `TabularSurfaceHeaderSeparatorBrush` (header separators and bottom rule) use the Fluent `DividerStrokeColorDefault` value and `TabularSurfaceOuterBorderBrush` (the control border) uses `CardStrokeColorDefault`; High Contrast uses `SystemColorWindowTextColor` for both. `TabularSurfaceHeaderSeparatorBrush` is the header line brush: overriding `TabularSurfaceGridLineBrush` does not recolor header lines, so override both to recolor every line. The stock style always provides the key; if it is missing, High Contrast falls back to `SystemColorWindowTextColor` and every other theme draws no grid line.
 
 `TableView.xaml` does not redeclare the `TabularSurface*` brush keys: generic-style fallbacks would shadow the canonical palette and bypass its HighContrast system-color brushes. Consumers merge `TabularControlsResources` as documented by the sample.
 
@@ -264,6 +262,17 @@ Sort has two front-ends and exactly one axis is ever in force; they reconcile ra
   column's `SortMemberPath` and light that column's chevron. The delegate overload
   (`Sort(keySelector, direction)`) is opaque — the key may not correspond to a column at all
   (computed key, multi-field, custom comparer) — so no chevron is shown.
+- `TableViewColumn.SortDirection` is read-only to apps. An app that cancels `Sorting` to order the
+  rows itself can make the chevron follow only by declaring that order with the path overload on
+  the bound `TableViewSource`.
+
+**Axis identity on the source.** A path axis is keyed on its path, so re-sorting the same path
+replaces it in place. A delegate axis is keyed on the delegate object's COM identity
+(`ShapingPipeline::SetSort`): the same delegate instance re-sorts that axis in place and `None`
+removes it, while any other instance, even one with identical logic, is a new, least significant
+axis, and `None` with it removes nothing. Path and delegate axes never match each other, and the
+control's own axis is keyed on column identity, so two columns sharing a `SortMemberPath` stay
+separate.
 
 Reconciliation rules:
 
@@ -281,7 +290,16 @@ the new page before unloading the old one resolves on its own. While refused, a 
 
 **Refused sorts.** `SortByColumn` and `ToggleSortDirection` return `false`, with no state changed,
 when the sort cannot be applied: besides a canceled `Sorting` or an edit that will not close, a
-source containing a null row object or the same object on two rows has no row identity to sort by.
+column with `CanSort=False` (or with neither a sort member path nor a `CustomSortComparer`) is not
+sortable, and a source containing a null row object or the same object on two rows has no row
+identity to sort by. `CanUserSortColumns=False` gates only header clicks, not these methods.
+Setting `CanSort=False` on the sorted column clears its sort through an internal path that skips
+that gate, raising `Sorting`/`Sorted` exactly as `SortByColumn(column, None)` does. A `Sorting`
+handler can cancel that clear, and it is skipped while the source is refused; the column then keeps
+its sort, and `SortByColumn(column, None)` (allowed on a column still holding a sort, whatever its
+`CanSort`) or `ClearSort` removes it. A column lit only by the app's `TableViewSource` sort, with
+no sort installed by the table, keeps that state and raises no events, as when
+`CanUserSortColumns` turns off.
 
 Without this, the earlier-declared axis would silently outrank the later one while the chevron
 advertised the loser. WPF splits the same way: `SortDescriptions` carry a property name, which is
@@ -358,6 +376,11 @@ recycling a header does not re-evaluate every binding in the template. `KeyText`
 are computed lazily through a `DecimalFormatter`, so a template that binds only `Key`/`ItemCount`
 pays nothing for them.
 
+Under grouping, a hierarchical root row's lead cell is indented by the group header's expander
+gutter plus its spacing (`TableViewGroupExpanderSize` + `TableViewGroupExpanderSpacing`, 32px by
+default). The header's own `Padding` is not part of the indent, so the root row's chevron starts
+`Padding.Left` (8px by default) left of the group key text rather than under it.
+
 **Interaction with selection.** Group headers share the flat projection's index space with data
 rows but are **not** selectable. `Select(index)` on a header index is rejected rather than coerced
 (without that, the internal grouped entry would be handed to the app as `SelectedItem`), and
@@ -382,7 +405,8 @@ only the bulk commands plus the header's own gesture and UIA pattern. Grouping i
 
 Styling is layered so the display-only base stays minimal while a richer surface can grow
 additively — the realized row/cell/header are already styleable targets (`TableViewRow` is a
-public `Control`; cell wrappers are `Border`s; header cells are `Grid`s), so the additions below
+public `Control`; cell wrappers are `Border`s; column headers are public, sealed
+`TableViewColumnHeader` controls that only the TableView creates), so the additions below
 need no new base API or re-plumbing.
 
 **v1 (this base):**
@@ -394,18 +418,30 @@ need no new base API or re-plumbing.
   default brushes, re-resolved on theme and high-contrast changes.
 - Typography theme keys — `TableViewCellFontSize` (14), `TableViewHeaderFontSize` (14) and
   `TableViewHeaderFontWeight` (`SemiBold`). They do not vary with `Density`; an override in the
-  TableView's or an ancestor's `Resources`, or in `Application.Resources`, wins. Values are cached
-  per instance, so a later override applies after a theme, high-contrast or density change.
+  TableView's or an ancestor's `Resources`, or in `Application.Resources`, wins. The cell size is
+  cached per instance, so a later override applies after a theme, high-contrast or density change.
+  The header keys are `{ThemeResource}` setters in the `TableViewColumnHeader` default style, so a
+  header style's `FontSize`/`FontWeight` setter wins over them and nothing is written as a local value.
+- `ColumnHeaderStyle` / `TableViewColumn.HeaderStyle` — `Style` for the templated
+  `TableViewColumnHeader` (`ContentControl`); the column's style wins. Both are layered over the
+  default header style, so they need not be `BasedOn` it. Pointer-over and pressed are `CommonStates`
+  (`Normal`/`PointerOver`/`Pressed`/`Disabled`) that change only the fill (the `TabularSurfaceHeader*`
+  brushes), so a custom `TableView.Foreground` survives hover; under High Contrast a separate
+  `HighContrastStates` group (`HighContrastNormal`/`HighContrastPointerOver`/`HighContrastPressed`)
+  swaps the text and glyph to the highlight-text brush. `SortStates`
+  (`Unsorted`/`SortAscending`/`SortDescending`) only show or hide the sort glyph. `MinHeight` and
+  `Padding` follow `Density` unless the applied header style sets them (an implicit header style's
+  setters for those two are overridden by the density values).
 
 **Rich styling (later):** delivered as **per-element `Style` dependency properties**, matching WPF
 `DataGrid` (`RowStyle` / `CellStyle` / `ColumnHeaderStyle`) — **not** a monolithic `TableStyle`.
+`ColumnHeaderStyle` has shipped (above); `RowStyle` and `CellStyle` follow the same shape.
 `RowStyle` targets the realized `TableViewRow`; `CellStyle` the per-cell container (the cell-wrapper
 `Border`; cell *content* is customized via the column's template / `GenerateElementCore`, matching
 WPF where `CellStyle` targets `DataGridCell`, not the content); `ColumnHeaderStyle` the generated
-header cell. They form a cohesive set and land together, since shipping one alone would leave an
-asymmetric styling surface. Header restyling beyond the `TabularSurfaceHeader*` keys (for example
-replacing the pointer-over/pressed visuals) needs a public templated header type and
-`ColumnHeaderStyle`, both of which require API review; today's header cell is an internal `Grid`.
+header. The header went first because its pointer, sort and typography visuals were the ones
+built in code; the public `TableViewColumnHeader` type and `ColumnHeaderStyle` are preview API
+pending API review.
 
 **Why per-element Styles + theme resources, not a monolithic `TableStyle`:** per-element `Style`s
 compose with the standard WinUI `Style`/`Setter`/`ControlTemplate` machinery and scale to any
@@ -485,7 +521,7 @@ Editing bindings use `UpdateSourceTrigger=Explicit`, so the typed value lives in
 
 A forced close (the source changes under the edit, or the control turns read-only) commits a valid pending value while the edited item is still in the source and passes the filter, and reports `Cancel` on a failed write or validation error. Because the pending value is still in the editor, a forced close first transfers it to the item, then validates; a value that fails validation is rolled back to the pre-edit value, so the item never keeps a value the control rejected. Inside a layout pass (a recycled or rebuilt row) restoring the editor would re-enter layout, so that rollback is posted to the dispatcher, and it is skipped if the item's value has changed in the meantime — another edit of the same cell is open, or the property no longer holds the rejected value — so a newer write is never overwritten. If the item was removed, filtered out, or `ItemsSource` was replaced, it reports `Cancel` and writes nothing, as WPF `DataGrid` does; an item that is only under a collapsed group or node has not been removed. A forced close during a pending commit deferral can finish as `Cancel` without a second `CellEditEnding`.
 
-Rollback prefers `ITableViewEditableItem` on the data item. Without it the control snapshots the value at the column's `GetEditingPropertyPathCore()` path, falling back to scraping the editor's bindings — inherently incomplete for an arbitrary editor, so the inability to capture anything is recorded and reported rather than silently ignored.
+There is no item-owned transaction interface in this release (`ITableViewEditableItem` is deferred with row editing). The control snapshots the value at the edited property path, falling back to scraping the editor's bindings — inherently incomplete for an arbitrary editor, so the inability to capture anything is recorded and reported rather than silently ignored.
 
 ## Re-entrancy rules (load-bearing)
 
@@ -498,9 +534,9 @@ Row recycling, cell rebuild and dependency-property change callbacks can all run
 
 ## Key internal components
 
-- **`PART_HeaderScroller`** — horizontal-only header scroller synchronized with the body.
+- **`PART_HeaderScroller`** — horizontal-only header scroller synchronized with the body. Found as `PART_HeaderHost`'s nearest `ScrollViewer` ancestor; the name is for readability only.
 - **`PART_HeaderHost`** — `TableViewCellsPanel` header host rebuilt from the non-null columns.
-- **`PART_BodyScroller`** — body scroll presenter and source of horizontal offset.
+- **`PART_BodyScroller`** — body scroll presenter and source of horizontal offset. Found as `PART_RowsRepeater`'s nearest `ScrollViewer` ancestor; the name is for readability only.
 - **`PART_RowsRepeater`** — vertical row realization surface.
 - **`PART_CellsHost`** — row-local `TableViewCellsPanel` cell host.
 - **`TableViewCellsPanel`** — the custom `Panel` used for `PART_HeaderHost` and each row's `PART_CellsHost`; its `MeasureOverride` reports each cell's measured width and its `ArrangeOverride` places cells at the column's resolved `ActualWidth` (see *Column alignment*).

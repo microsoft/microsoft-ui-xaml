@@ -29,7 +29,7 @@
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceRowForegroundBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGridLineBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceOuterBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
@@ -48,12 +48,8 @@
                             <Border x:Name="PART_HeaderRow"
                                     Grid.Row="0"
                                     Background="{ThemeResource TabularSurfaceHeaderBackgroundBrush}"
-                                    BorderBrush="{ThemeResource TabularSurfaceGridLineBrush}">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                    </Style>
-                                </Border.Style>
+                                    BorderBrush="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
+                                    BorderThickness="0,0,0,1">
                                 <Grid>
                                     <ScrollViewer x:Name="PART_HeaderScroller"
                                                   HorizontalScrollMode="Disabled"
@@ -94,6 +90,107 @@
                             </ScrollViewer>
                         </Grid>
                     </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="controls:TableViewColumnHeader">
+        <Setter Property="IsTabStop" Value="True" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <!-- Without a fill the padding takes no pointer input, killing the tooltip and click-to-sort there. -->
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FontSize" Value="{ThemeResource TableViewHeaderFontSize}" />
+        <Setter Property="FontWeight" Value="{ThemeResource TableViewHeaderFontWeight}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:TableViewColumnHeader">
+                    <!-- CornerRadius is set only while keyboard-focused: a rounded root clips. -->
+                    <Grid x:Name="PART_Root"
+                          Background="{TemplateBinding Background}"
+                          CornerRadius="{TemplateBinding CornerRadius}">
+                        <!-- See TableViewRow: state groups must sit on the template root. -->
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPointerOverBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_Root.Background" Value="{ThemeResource TabularSurfaceHeaderBackgroundPressedBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="HighContrastStates">
+                                <VisualState x:Name="HighContrastNormal" />
+                                <VisualState x:Name="HighContrastPointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPointerOverBrush}" />
+                                        <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="HighContrastPressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_ContentPresenter.Foreground" Value="{ThemeResource TabularSurfaceHeaderForegroundPressedBrush}" />
+                                        <Setter Target="PART_ContentPresenter.HighContrastAdjustment" Value="None" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="SortStates">
+                                <VisualState x:Name="Unsorted" />
+                                <VisualState x:Name="SortAscending">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_SortIndicatorHost.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="SortDescending">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_SortIndicatorHost.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+                        <ContentPresenter x:Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                          ContentTransitions="{TemplateBinding ContentTransitions}"
+                                          Padding="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          AutomationProperties.AccessibilityView="Raw" />
+
+                        <Border x:Name="PART_GridLine"
+                                Width="1"
+                                HorizontalAlignment="Right"
+                                Background="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
+                                IsHitTestVisible="False"
+                                Visibility="Collapsed"
+                                AutomationProperties.AccessibilityView="Raw" />
+
+                        <Border x:Name="PART_SortIndicatorHost"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                IsHitTestVisible="False"
+                                Visibility="Collapsed"
+                                AutomationProperties.AccessibilityView="Raw" />
+
+                        <!-- Last, so the gripper wins the hit test on the shared edge. -->
+                        <Border x:Name="PART_ResizeGripperHost" />
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -360,19 +457,32 @@
         is declared here rather than assigned from C++.
     -->
     <x:Double x:Key="TableViewGroupExpanderSize">24</x:Double>
-    <Thickness x:Key="TableViewGroupHeaderPadding">8,6,16,6</Thickness>
+    <!-- Gap between the expander gutter and the content; root rows are indented by size + spacing. -->
+    <x:Double x:Key="TableViewGroupExpanderSpacing">8</x:Double>
+    <Thickness x:Key="TableViewGroupHeaderPadding">8,8,12,8</Thickness>
+
+    <!-- BodyStrongTextBlockStyle equivalent, single line. -->
+    <Style x:Key="TableViewGroupHeaderKeyTextStyle" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Opacity is a Style setter, not a local value, so TableViewGroupHeader can override it while disabled and clear it back. -->
+    <Style x:Key="TableViewGroupHeaderCountTextStyle" TargetType="TextBlock">
+        <Setter Property="Opacity" Value="{ThemeResource TabularSurfaceGroupHeaderCountOpacity}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
 
     <DataTemplate x:Key="TableViewDefaultGroupHeaderContentTemplate">
-        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+        <StackPanel x:Name="TableViewDefaultGroupHeaderContentRoot" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
             <TextBlock Text="{Binding KeyText, Mode=OneWay}"
-                       FontWeight="SemiBold"
-                       VerticalAlignment="Center"
-                       TextTrimming="CharacterEllipsis" />
-            <!-- Inherits Foreground so it follows the PointerOver / Pressed / Disabled states
-                 exactly like the key text; a local brush would win over the state setters. -->
-            <TextBlock Text="{Binding ItemCountText, Mode=OneWay}"
-                       Opacity="{ThemeResource TabularSurfaceGroupHeaderCountOpacity}"
-                       VerticalAlignment="Center" />
+                       Style="{StaticResource TableViewGroupHeaderKeyTextStyle}" />
+            <!-- Inherits Foreground so it follows the header's states and an app's Foreground. -->
+            <TextBlock x:Name="TableViewGroupHeaderItemCountText"
+                       Text="{Binding ItemCountText, Mode=OneWay}"
+                       Style="{StaticResource TableViewGroupHeaderCountTextStyle}" />
         </StackPanel>
     </DataTemplate>
 
@@ -456,7 +566,7 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}"
                                 HorizontalAlignment="Stretch">
-                        <Grid ColumnSpacing="6">
+                        <Grid ColumnSpacing="{ThemeResource TableViewGroupExpanderSpacing}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
