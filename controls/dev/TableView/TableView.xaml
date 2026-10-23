@@ -48,6 +48,7 @@
                             <Border x:Name="PART_HeaderRow"
                                     Grid.Row="0"
                                     Background="{ThemeResource TabularSurfaceHeaderBackgroundBrush}"
+                                    BackgroundSizing="OuterBorderEdge"
                                     BorderBrush="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
                                     BorderThickness="0,0,0,1">
                                 <Grid>
