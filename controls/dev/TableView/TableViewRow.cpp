@@ -1009,9 +1009,10 @@ void TableViewRow::AttachColumnsSubscription(winrt::TableView const& owner)
     }
 }
 
-bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
+bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner, bool rebuildCells)
 {
     auto const currentOwner = GetOwningTableView();
+    m_cellsBuiltItem = nullptr;
     // Compare through the typed accessor so unchanged weak refs hit the no-op path.
     if (currentOwner == owner)
     {
@@ -1037,6 +1038,12 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
     else
     {
         ResetCellAutomationNames();
+        // Cell peers must not keep describing the outgoing item while the row is pooled.
+        if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
+            .try_as<winrt::TableViewRowAutomationPeer>())
+        {
+            winrt::get_self<TableViewRowAutomationPeer>(rowPeer)->DropCellPeerCache();
+        }
         m_owningTableView = nullptr;
         // Reset transient interaction state so a row recycled while hovered/pressed
         // re-enters the pool in Normal state (ListViewItem parity), not a stale tint.
@@ -1057,6 +1064,7 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
         m_isCellLevel = false;
 
         RestoreCellContentTabStopsInternal();
+        ApplyFocusLevelInternal();
 
         UpdateVisualState(false);
     }
@@ -1064,10 +1072,10 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
     // Observe the new owner's Columns vector (no-op on recycle-out when owner is null).
     AttachColumnsSubscription(owner);
 
-    return RebuildCells();
+    return rebuildCells ? RebuildCells() : false;
 }
 
-bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
+bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, bool skipIfCellsCurrent)
 {
     if (!owner)
     {
@@ -1078,6 +1086,8 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
     {
         return SetOwningTableViewInternal(owner);
     }
+
+    const bool skipRebuild = skipIfCellsCurrent && AreCellsBuiltFor(owner);
 
     auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
         .try_as<winrt::TableViewRowAutomationPeer>();
@@ -1100,13 +1110,13 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
         else
         {
             peerImpl->DropCellPeerCache();
-            chromeRefreshed = RebuildCells();
+            chromeRefreshed = skipRebuild ? false : RebuildCells();
         }
         peerImpl->TrackCurrentRowItem(*this, owner);
         return chromeRefreshed;
     }
 
-    const bool chromeRefreshed = RebuildCells();
+    const bool chromeRefreshed = skipRebuild ? false : RebuildCells();
 
     if (peerImpl)
     {
@@ -1148,6 +1158,12 @@ void TableViewRow::OnDataContextChanged(
     // from child DataContext propagation.
     if (m_isRebuildingCells)
     {
+        return;
+    }
+    // Recycle-out clears DataContext; the next item rebuilds.
+    if (!DataContext())
+    {
+        m_cellsBuiltItem = nullptr;
         return;
     }
     RebuildCells();
@@ -1906,6 +1922,7 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     m_isRebuildingCells = true;
     // Synchronous RAII guard: captures this only until RebuildCells returns.
     auto rebuildGuard = wil::scope_exit([this]() { m_isRebuildingCells = false; });
+    m_cellsBuiltItem = nullptr;
 
     auto owner = GetOwningTableView();
     if (!owner)
@@ -2086,6 +2103,7 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         RefreshGridLines();
         RefreshRowBackground();
         ApplyHierarchyAffordance();
+        MarkCellsBuilt(owner);
         return true;
     }
 
@@ -2178,7 +2196,24 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     RefreshGridLines();
     RefreshRowBackground();
     ApplyHierarchyAffordance();
+    MarkCellsBuilt(owner);
     return true;
+}
+
+void TableViewRow::MarkCellsBuilt(winrt::TableView const& owner)
+{
+    auto const item = DataContext();
+    m_cellsBuiltItem = item ? winrt::get_abi(item.as<winrt::Windows::Foundation::IUnknown>()) : nullptr;
+    m_cellsBuiltGeneration = winrt::get_self<TableView>(owner)->CellLayoutGenerationInternal();
+}
+
+// The DataContext holds the item alive, so a pointer match is an identity match.
+bool TableViewRow::AreCellsBuiltFor(winrt::TableView const& owner)
+{
+    auto const item = DataContext();
+    return item && m_cellsBuiltItem &&
+        m_cellsBuiltItem == winrt::get_abi(item.as<winrt::Windows::Foundation::IUnknown>()) &&
+        m_cellsBuiltGeneration == winrt::get_self<TableView>(owner)->CellLayoutGenerationInternal();
 }
 
 // Recycle-out. Always walks: the bound value can revive a tooltip at any time, so a cached

@@ -2445,6 +2445,8 @@ void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedE
         return;
     }
 
+    ++m_cellLayoutGeneration;
+
     InvalidateTableViewResourceCache(this);
 
     // Density changes require rebuilding headers and refreshing realized rows.
@@ -2543,7 +2545,7 @@ void TableView::OnRowElementPrepared(
         rowImpl->SetTerminalGridLineSuppression({
             .suppressTrailing = m_suppressTrailingGridLine,
             .suppressBottom = false }, false /* refresh */);
-        if (!rowImpl->EnsureOwningTableViewInternal(*this))
+        if (!rowImpl->EnsureOwningTableViewInternal(*this, true /* skipIfCellsCurrent */))
         {
             rowImpl->RefreshGridLines();
             rowImpl->RefreshRowBackground();
@@ -2615,11 +2617,9 @@ void TableView::OnRowElementClearing(
         // Grouped reshapes can rebind a pooled row through DataContext without a fresh
         // ElementPrepared/ElementIndexChanged callback. Keep the weak owner available so that path
         // can rebuild cells and publish a live row peer; item-identity tracking still rejects stale
-        // peers after the rebind.
-        if (!rowImpl->EnsureOwningTableViewInternal(*this))
-        {
-            rowImpl->RefreshGridLines();
-        }
+        // peers after the rebind. The outgoing item's cells are not rebuilt.
+        rowImpl->SetOwningTableViewInternal(*this, false /* rebuildCells */);
+        rowImpl->RefreshGridLines();
         InvalidateMeasureForRowRealizationChange();
         QueueTerminalGridLineRefresh();
     }
