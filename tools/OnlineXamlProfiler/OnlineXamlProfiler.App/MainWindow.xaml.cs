@@ -110,6 +110,12 @@ public sealed partial class MainWindow : Window
 
     private async void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs args)
     {
+        if (_closed) { return; }
+        if (args.PropertyName is nameof(MainViewModel.StatisticsHistory) or nameof(MainViewModel.SelectedSnapshot))
+        {
+            ProcessStatistics.Update(ViewModel.StatisticsHistory, ViewModel.Snapshots,
+                ViewModel.SelectedSnapshot, ViewModel.StatisticsStatus);
+        }
         if (args.PropertyName != nameof(MainViewModel.SelectedSnapshot))
         {
             return;

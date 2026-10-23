@@ -67,6 +67,34 @@ cross-architecture attach are not supported.
    retains earlier captures in memory, so A and B can be inspected independently.
    **Disconnect** leaves the target running and retains captured data.
 
+### Live process statistics
+
+The collapsible **Process statistics** panel starts on attach and samples the
+selected process in the profiler host, off the UI thread, approximately once a
+second. Its four graphs retain the last 60 seconds: working set/private working
+set, private commit, dedicated/shared GPU memory, and busiest GPU engine usage.
+No ETW session, providers, or additional TAP/runtime instrumentation are used.
+The first memory series is solid and the second is dashed. Values are process
+totals, not per-XAML-element allocation or GPU-resource attribution.
+
+Working-set and commit peaks are OS-reported process-lifetime values. The GPU
+memory peak is the highest sampled dedicated-plus-shared total **since attach**,
+not a lifetime peak; polling can miss short spikes. GPU counters are read through
+PDH with English counter paths, scoped to the target PID across adapters.
+Utilization is the busiest engine, not the sum of engine percentages. Windows
+and driver counter limitations also apply; failed/missing samples show
+**Unavailable** with diagnostics and leave gaps, rather than inventing zeroes.
+On older Windows versions without `PROCESS_MEMORY_COUNTERS_EX2`, working set and
+commit remain available but private working set is explicitly unavailable.
+
+Each tree snapshot retains the nearest process sample within two seconds of its
+request midpoint, including sample time and diagnostics. Dashed graph markers
+show capture midpoints. Selecting an earlier snapshot shows its frozen readings
+while the live graphs continue; tree and memory capture are **not atomic**.
+Disconnect, target exit, and window close stop sampling. Reattaching starts a new
+history and observed GPU peak, verifies the process creation time against PID
+reuse, and preserves earlier snapshots' readings in memory.
+
 Snapshot transport, validation, and plain-data tree construction run off the UI
 thread. Native TreeView nodes are published in cancellable UI-thread batches;
 their complete parent graph allows links to select even previously collapsed
@@ -159,6 +187,8 @@ $profiler = (Resolve-Path '.\artifacts\bin\OnlineXamlProfiler.App\x64\Debug\net9
 ```
 
 The UI test checks two snapshots, expanding all descendants in all three trees, a collapsed
-HWCompNode-to-IVisual link, snapshot-history selection, and disconnect. It closes
-only its own profiler window; it never terminates the selected target. In launch
+HWCompNode-to-IVisual link, live statistics updates, frozen snapshot readings,
+snapshot-history selection, stopping samples on disconnect, and reattach. Add
+`-ScreenshotPath '<absolute path to image.png>'` to retain a profiler-window image.
+It closes only its own profiler window; it never terminates the selected target. In launch
 mode it prints the newly launched PID so the caller can clean up a test-owned app.

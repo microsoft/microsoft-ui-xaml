@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory)][string]$ProfilerPath,
     [Parameter(Mandatory, ParameterSetName='Attach')][uint32]$TargetProcessId,
-    [Parameter(Mandatory, ParameterSetName='Launch')][string]$TargetExecutable
+    [Parameter(Mandatory, ParameterSetName='Launch')][string]$TargetExecutable,
+    [string]$ScreenshotPath
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName UIAutomationTypes
@@ -24,6 +25,11 @@ function Wait-For([scriptblock]$Condition, [string]$Description) {
 
 function Find-Name([string]$Name) {
     $root.FindFirst($scope, [System.Windows.Automation.PropertyCondition]::new($nameProperty, $Name))
+}
+
+function Find-Id([string]$Id) {
+    $root.FindFirst($scope, [System.Windows.Automation.PropertyCondition]::new(
+        [System.Windows.Automation.AutomationElement]::AutomationIdProperty, $Id))
 }
 
 function Invoke-Button([string]$Name) {
@@ -102,7 +108,16 @@ function Expand-AllTrees {
                 }
                 return $true
             } "expanding every displayed descendant in $id"
-            $names = @(Tree-Items $id | ForEach-Object { $_.Current.Name })
+            $realized = @{ Previous = $null; Names = @() }
+            Wait-For {
+                $current = @(Tree-Items $id | ForEach-Object { $_.Current.Name })
+                $key = $current -join "`n"
+                $stable = $key -eq $realized.Previous
+                $realized.Previous = $key
+                $realized.Names = $current
+                $stable
+            } "stabilizing recycled item labels in $id"
+            $names = $realized.Names
             foreach ($name in $names) { [void]$seen.Add($name) }
             if (!$scroll -or !$scroll.Current.VerticallyScrollable -or $scroll.Current.VerticalScrollPercent -ge 100) {
                 break
@@ -135,15 +150,32 @@ try {
         Invoke-Button 'Attach'
     }
     Wait-For { (Find-Name 'Take snapshot').Current.IsEnabled } 'connecting to the target'
+    Wait-For {
+        (Find-Id 'StatisticsStatus').Current.Name -like 'Live process statistics | PID *' -and
+        (Find-Id 'RamStatistics').Current.Name -match '\d+[\.,]\d+ MiB'
+    } 'sampling process memory without a tree snapshot'
+    $firstSample = (Find-Id 'StatisticsStatus').Current.Name
+    Wait-For { (Find-Id 'StatisticsStatus').Current.Name -ne $firstSample } 'refreshing live statistics'
+    foreach ($id in @('CommitStatistics', 'GpuMemoryStatistics', 'GpuEngineStatistics')) {
+        if (!(Find-Id $id)) { throw "Statistics card '$id' is missing." }
+        Write-Output "$id : $((Find-Id $id).Current.Name)"
+    }
+    Write-Output "Statistics diagnostic: $((Find-Id 'StatisticsDiagnostic').Current.Name)"
     if ($PSCmdlet.ParameterSetName -eq 'Launch') {
         $pidBox = Find-Name 'Running process ID'
         $launchedPid = ([System.Windows.Automation.ValuePattern]$pidBox.GetCurrentPattern(
             [System.Windows.Automation.ValuePattern]::Pattern)).Current.Value
         Write-Output "Launched target PID: $launchedPid"
     }
+    $snapshotAStatistics = $null
     foreach ($number in 1..2) {
         Invoke-Button 'Take snapshot'
         Wait-For { (Selected-Snapshot) -like "#$number |*" } "publishing snapshot $number"
+        Wait-For {
+            (Find-Id 'SnapshotStatistics').Current.Name -like "#$number |*" -and
+            (Find-Id 'SnapshotStatistics').Current.Name -match 'ms from capture midpoint'
+        } "retaining process statistics for snapshot $number"
+        if ($number -eq 1) { $snapshotAStatistics = (Find-Id 'SnapshotStatistics').Current.Name }
     }
 
     foreach ($id in @('XamlTree', 'CompTree', 'VisualTree')) {
@@ -179,15 +211,46 @@ try {
     ([System.Windows.Automation.SelectionItemPattern]$first.GetCurrentPattern(
         [System.Windows.Automation.SelectionItemPattern]::Pattern)).Select()
     Wait-For { (Selected-Snapshot) -like '#1 |*' } 'returning to snapshot A'
+    if ((Find-Id 'SnapshotStatistics').Current.Name -ne $snapshotAStatistics) {
+        throw 'Snapshot A process statistics changed after capture.'
+    }
     Expand-AllTrees
+    if ($ScreenshotPath) {
+        Add-Type -AssemblyName System.Drawing
+        (Find-Name 'Take snapshot').SetFocus()
+        $rect = $root.Current.BoundingRectangle
+        $bitmap = [System.Drawing.Bitmap]::new([int]$rect.Width, [int]$rect.Height)
+        $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+        try {
+            $graphics.CopyFromScreen([int]$rect.Left, [int]$rect.Top, 0, 0, $bitmap.Size)
+            $bitmap.Save($ScreenshotPath, [System.Drawing.Imaging.ImageFormat]::Png)
+        } finally { $graphics.Dispose(); $bitmap.Dispose() }
+    }
     Invoke-Button 'Disconnect'
     Wait-For { (Find-Name 'Attach').Current.IsEnabled } 'disconnecting'
-    Write-Output 'Passed: launch/attach, snapshots A and B, expand all three trees including descendants, cross-tree selection, retained history, and disconnect.'
+    Wait-For { (Find-Id 'StatisticsStatus').Current.Name -like 'Process statistics stopped.*' } 'stopping process sampling'
+    $stoppedRam = (Find-Id 'RamStatistics').Current.Name
+    Start-Sleep -Milliseconds 1500
+    if ((Find-Id 'RamStatistics').Current.Name -ne $stoppedRam) { throw 'Process sampling continued after disconnect.' }
+    if ((Find-Id 'SnapshotStatistics').Current.Name -ne $snapshotAStatistics) {
+        throw 'Disconnect changed the retained snapshot statistics.'
+    }
+    Invoke-Button 'Attach'
+    Wait-For {
+        (Find-Id 'StatisticsStatus').Current.Name -like 'Live process statistics | PID *' -and
+        (Find-Id 'RamStatistics').Current.Name -match '\d+[\.,]\d+ MiB'
+    } 'restarting process sampling after reattach'
+    if ((Find-Id 'SnapshotStatistics').Current.Name -ne $snapshotAStatistics) {
+        throw 'Reattaching changed the retained snapshot statistics.'
+    }
+    Invoke-Button 'Disconnect'
+    Write-Output 'Passed: launch/attach, live statistics updates, snapshots A and B with frozen statistics, expand all trees, cross-tree selection, retained history, stopped sampling on disconnect, and reattach.'
 }
 finally {
     $profiler.Refresh()
     if (!$profiler.HasExited) {
         $null = $profiler.CloseMainWindow()
         if (!$profiler.WaitForExit(5000)) { Stop-Process -Id $profiler.Id }
+        elseif ($profiler.ExitCode -ne 0) { throw "Profiler exited with code $($profiler.ExitCode)." }
     }
 }

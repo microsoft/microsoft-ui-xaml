@@ -3,8 +3,10 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using Microsoft.UI.Dispatching;
 using Microsoft.Windows.ApplicationModel.Resources;
 using OnlineXamlProfiler.Core;
 using OnlineXamlProfiler.Windows;
@@ -16,13 +18,17 @@ public sealed record CapturedSnapshot(
     string Label, SnapshotDocument Document,
     IReadOnlyList<SnapshotTreeNode> XamlRoots,
     IReadOnlyList<SnapshotTreeNode> CompRoots,
-    IReadOnlyList<SnapshotTreeNode> VisualRoots);
+    IReadOnlyList<SnapshotTreeNode> VisualRoots,
+    DateTimeOffset CapturedAtUtc, long CounterTimestamp, ProcessStatisticsSample? Statistics,
+    ulong? ObservedGpuMemoryPeakBytes);
 
 public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
 {
     private readonly ResourceLoader _resources = new();
+    private readonly DispatcherQueue _dispatcher = DispatcherQueue.GetForCurrentThread();
     private ProfilerSession? _session;
     private CancellationTokenSource? _operation;
+    private CancellationTokenSource? _statisticsLifetime;
     private bool _busy;
     private string _status = "";
     private string _error = "";
@@ -57,6 +63,8 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
     public AsyncCommand CancelCommand { get; }
     public ObservableCollection<CapturedSnapshot> Snapshots { get; } = [];
     public ObservableCollection<PropertyRow> Properties { get; } = [];
+    public ProcessStatisticsHistory? StatisticsHistory { get; private set; }
+    public string StatisticsStatus { get; private set; } = "";
 
     public CapturedSnapshot? SelectedSnapshot
     {
@@ -196,6 +204,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         Status = Text("Connecting");
         _session = await ProfilerSession.ConnectAsync(pid, TapPath, token);
         Status = $"{Text("Connected")} {pid} | {_session.RuntimePath}";
+        StartStatistics(_session);
     }
 
     private Task CaptureAsync() => RunAsync(async token =>
@@ -204,14 +213,30 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         try
         {
             var session = _session ?? throw new InvalidOperationException(Text("NotConnected"));
+            int number = Snapshots.Count + 1;
             var snapshot = await Task.Run(async () =>
             {
+                long started = Stopwatch.GetTimestamp();
+                var time = DateTimeOffset.UtcNow;
                 var document = await session.CaptureAsync(token);
+                long midpoint = started + (Stopwatch.GetTimestamp() - started) / 2;
+                var capturedAt = time + Stopwatch.GetElapsedTime(started, midpoint);
                 return new CapturedSnapshot(
-                    $"#{Snapshots.Count + 1} | PID {document.ProcessId} | {DateTime.Now:T}",
+                    $"#{number} | PID {document.ProcessId} | {capturedAt.ToLocalTime():T}",
                     document, SnapshotTree.Build(document, TreeKind.Xaml),
-                    SnapshotTree.Build(document, TreeKind.Composition), SnapshotTree.Build(document, TreeKind.Visual));
+                    SnapshotTree.Build(document, TreeKind.Composition), SnapshotTree.Build(document, TreeKind.Visual),
+                    capturedAt, midpoint, null, null);
             }, token);
+            if (StatisticsHistory is { } history &&
+                history.ProcessId == snapshot.Document.ProcessId &&
+                history.ProcessStartTime == snapshot.Document.ProcessStartTime)
+            {
+                snapshot = snapshot with
+                {
+                    Statistics = history.FindNearest(snapshot.CounterTimestamp),
+                    ObservedGpuMemoryPeakBytes = history.ObservedGpuMemoryPeakBytes,
+                };
+            }
             Snapshots.Add(snapshot);
             SelectedSnapshot = snapshot;
         }
@@ -242,10 +267,70 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
     private void Disconnect()
     {
         _operation?.Cancel();
+        _statisticsLifetime?.Cancel();
+        _statisticsLifetime?.Dispose();
+        _statisticsLifetime = null;
         _session?.Dispose();
         _session = null;
         Status = Text("Disconnected");
+        StatisticsStatus = Text("StatisticsStopped");
+        Notify(nameof(StatisticsHistory));
         NotifyCommands();
+    }
+
+    private void StartStatistics(ProfilerSession session)
+    {
+        var lifetime = new CancellationTokenSource();
+        _statisticsLifetime = lifetime;
+        var history = new ProcessStatisticsHistory(session.ProcessId, session.ProcessStartTime);
+        StatisticsHistory = history;
+        StatisticsStatus = Text("StatisticsStarting");
+        Notify(nameof(StatisticsHistory));
+        _ = SampleStatisticsAsync(session, history, lifetime.Token);
+    }
+
+    private async Task SampleStatisticsAsync(
+        ProfilerSession session, ProcessStatisticsHistory history, CancellationToken token)
+    {
+        try
+        {
+            await Task.Run(async () =>
+            {
+                using var reader = new ProcessStatisticsReader(session.ProcessId, session.ProcessStartTime);
+                using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+                do
+                {
+                    token.ThrowIfCancellationRequested();
+                    var sample = reader.Read();
+                    if (!_dispatcher.TryEnqueue(() =>
+                    {
+                        if (token.IsCancellationRequested || !ReferenceEquals(_session, session)) { return; }
+                        history.Add(sample);
+                        StatisticsStatus = string.Format(CultureInfo.CurrentCulture,
+                            Text("StatisticsLive"), session.ProcessId, sample.TimeUtc.ToLocalTime());
+                        if (sample.ProcessExited)
+                        {
+                            Disconnect();
+                            StatisticsStatus = Text("StatisticsTargetExited");
+                        }
+                        Notify(nameof(StatisticsHistory));
+                    })) { return; }
+                    if (sample.ProcessExited) { return; }
+                } while (await timer.WaitForNextTickAsync(token).ConfigureAwait(false));
+            }, token);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // Disconnect or window close owns the sampler's lifetime.
+        }
+        catch (Exception exception) when (exception is Win32Exception or InvalidOperationException or IOException or OverflowException)
+        {
+            if (!token.IsCancellationRequested && ReferenceEquals(_session, session))
+            {
+                StatisticsStatus = $"{Text("StatisticsFailed")} {exception.Message}";
+                Notify(nameof(StatisticsHistory));
+            }
+        }
     }
 
     internal void ReportError(Exception exception)
