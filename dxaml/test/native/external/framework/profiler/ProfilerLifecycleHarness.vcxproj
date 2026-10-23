@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64"><Configuration>Debug</Configuration><Platform>x64</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64"><Configuration>Release</Configuration><Platform>x64</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64"><Configuration>Debug</Configuration><Platform>ARM64</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64"><Configuration>Release</Configuration><Platform>ARM64</Platform></ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C0171175-D15D-4415-AF0C-AC9143915DE4}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <UseXamlCompiler>false</UseXamlCompiler>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <AppxPackage>false</AppxPackage>
+    <OutputType>Exe</OutputType>
+    <WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
+    <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
+    <RepoRoot>$(MSBuildThisFileDirectory)..\..\..\..\..\..\</RepoRoot>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.props" />
+  <Import Project="$(LiftedMRTPackagePath)\build\native\Microsoft.WindowsAppSDK.Foundation.props" />
+  <Import Project="$(LiftedIXPPackagePath)\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.props" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Base.$(BasePackageVersion)\build\native\Microsoft.WindowsAppSDK.Base.props" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.MSIX.$(MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.MSIX.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Release'">false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <ProducerFlavor Condition="'$(Platform)'=='x64' and '$(Configuration)'=='Release'">amd64fre</ProducerFlavor>
+    <ProducerFlavor Condition="'$(Platform)'=='x64' and '$(Configuration)'=='Debug'">amd64chk</ProducerFlavor>
+    <ProducerFlavor Condition="'$(Platform)'=='ARM64' and '$(Configuration)'=='Release'">arm64fre</ProducerFlavor>
+    <ProducerFlavor Condition="'$(Platform)'=='ARM64' and '$(Configuration)'=='Debug'">arm64chk</ProducerFlavor>
+    <OutDir>$(RepoRoot)BuildOutput\ProfilerLifecycleHarness\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(OutDir)obj\</IntDir>
+    <IntermediateOutputPath>$(IntDir)</IntermediateOutputPath>
+    <ProfilerLocalProduct>$(ArtifactsBinDir)Product\</ProfilerLocalProduct>
+    <ProfilerLocalComponent>$(IntDir)LocalWinUIComponent\</ProfilerLocalComponent>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ArtifactsObjDir)controls\dev\dll\generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link><AdditionalDependencies>advapi32.lib;ole32.lib;runtimeobject.lib;tdh.lib;%(AdditionalDependencies)</AdditionalDependencies></Link>
+  </ItemDefinitionGroup>
+  <ItemGroup><ClCompile Include="ProfilerHostTests.cpp" /></ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.targets" />
+  <Import Project="$(LiftedIXPPackagePath)\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.targets" />
+  <Import Project="$(LiftedMRTPackagePath)\build\native\Microsoft.WindowsAppSDK.Foundation.targets" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Base.$(BasePackageVersion)\build\native\Microsoft.WindowsAppSDK.Base.targets" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.MSIX.$(MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.MSIX.targets" />
+  <Target Name="StageProfilerLocalWinUIComponent" BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromComponents" DependsOnTargets="GetWindowsAppSDKNativePlatform">
+    <Error Condition="!Exists('$(ProfilerLocalProduct)Microsoft.UI.Xaml.dll') or !Exists('$(ProfilerLocalProduct)Microsoft.UI.Xaml.Resources.19H1.dll')"
+           Text="Build the matching local WinUI product and res\19h1 resource target before the selfcontained host." />
+    <ItemGroup>
+      <ProfilerLocalPayload Include="$(ProfilerLocalProduct)**\*.dll;$(ProfilerLocalProduct)**\*.pri;$(ProfilerLocalProduct)**\*.winmd;$(ProfilerLocalProduct)**\*.mui;$(ProfilerLocalProduct)**\*.xbf;$(ProfilerLocalProduct)**\*.xaml;$(ProfilerLocalProduct)**\*.png;$(ProfilerLocalProduct)**\*.html;$(ProfilerLocalProduct)**\*.json"
+                            Exclude="$(ProfilerLocalProduct)Microsoft.UI.Xaml.Design.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ProfilerLocalPayload)" DestinationFiles="@(ProfilerLocalPayload->'$(ProfilerLocalComponent)runtimes-framework\win-$(NativePlatform)\native\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\runtimes-framework\package.appxfragment" DestinationFiles="$(ProfilerLocalComponent)runtimes-framework\package.appxfragment" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <WindowsAppSdkComponentPackages Remove="@(WindowsAppSdkComponentPackages)"
+        Condition="$([System.String]::Copy('%(WindowsAppSdkComponentPackages.Identity)').Contains('Microsoft.WindowsAppSDK.WinUI.'))" />
+      <WindowsAppSdkComponentPackages Include="$(ProfilerLocalComponent)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="WriteProfilerHostDeployment" AfterTargets="Build" DependsOnTargets="CreateWinRTRegistration">
+    <ItemGroup>
+      <ProfilerHostPayload Include="@(MicrosoftWindowsAppSDKFiles);@(MicrosoftWindowsAppSDKFilesRes)">
+        <Destination>$(OutDir)%(RecursiveDir)%(Filename)%(Extension)</Destination>
+      </ProfilerHostPayload>
+    </ItemGroup>
+    <Copy SourceFiles="@(ProfilerHostPayload)" DestinationFiles="@(ProfilerHostPayload->'%(Destination)')" SkipUnchangedFiles="true" />
+    <WriteLinesToFile File="$(OutDir)ProfilerHostPayloads.txt" Lines="@(ProfilerHostPayload->'%(FullPath)|%(Destination)')" Overwrite="true" />
+    <WriteLinesToFile File="$(RepoRoot)BuildOutput\ProfilerHost.$(ProducerFlavor).properties"
+      Lines="OutDir=$(OutDir);TargetPath=$(TargetPath);Product=$(ProfilerLocalProduct);ApplicationManifest=$(ApplicationManifest);Foundation=$(FoundationTransportPackageVersion);IXP=$(IxpTransportPackageVersion);Base=$(BasePackageVersion);SelfContained=$(WindowsAppSDKSelfContained);PackageType=$(WindowsPackageType)"
+      Overwrite="true" />
+  </Target>
+  <Target Name="PreferCompleteLocalProfilerPayload" AfterTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromComponents">
+    <ItemGroup>
+      <ProfilerReplacedPackageFile Include="@(MicrosoftWindowsAppSDKFiles);@(MicrosoftWindowsAppSDKFilesRes)"
+        Condition="Exists('$(ProfilerLocalProduct)%(RecursiveDir)%(Filename)%(Extension)') and !$([System.String]::Copy('%(Identity)').Contains('LocalWinUIComponent'))" />
+      <MicrosoftWindowsAppSDKFiles Remove="@(ProfilerReplacedPackageFile)" />
+      <MicrosoftWindowsAppSDKFilesRes Remove="@(ProfilerReplacedPackageFile)" />
+      <MicrosoftWindowsAppSDKDllFiles Remove="@(ProfilerReplacedPackageFile)" />
+      <None Remove="@(ProfilerReplacedPackageFile)" />
+      <ReferenceCopyLocalPaths Remove="@(ProfilerReplacedPackageFile)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="DeduplicateProfilerHostAutoInitializer" AfterTargets="WindowsAppRuntimeAutoInitializer">
+    <RemoveDuplicates Inputs="@(ClCompile)">
+      <Output TaskParameter="Filtered" ItemName="ProfilerHostUniqueSource" />
+    </RemoveDuplicates>
+    <ItemGroup>
+      <ClCompile Remove="@(ClCompile)" />
+      <ClCompile Include="@(ProfilerHostUniqueSource)" />
+      <ProfilerHostUniqueSource Remove="@(ProfilerHostUniqueSource)" />
+    </ItemGroup>
+  </Target>
+</Project>

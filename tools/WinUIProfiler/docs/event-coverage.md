@@ -67,6 +67,38 @@ Use amd64chk/Debug for checked x64 execution, or arm64fre/Release/ARM64
 and arm64chk/Debug/ARM64 for cross-compilation. Building an ARM64 executable
 on an x64 host is not executing its tests.
 
+## P05a app-local host gate
+
+The separate `ProfilerLifecycleHarness.vcxproj` now provides an unpackaged
+`WindowsAppSDKSelfContained=true`, `WindowsPackageType=None` native smoke host.
+It uses the SDK's ordinary native auto-initialization and self-contained manifest
+generation, not hand-written WinRT activation registration or installed packages.
+Its Foundation/IXP paths are the same evaluated `LiftedMRTPackagePath` and
+`LiftedIXPPackagePath` used by the native build; sample-app package defaults are
+not substituted. The entire evaluated local Product runtime/resource payload is
+staged as a local WinUI component; all overlapping package files defer to that
+payload, not just MUX/MUXC. No profiler UI is introduced.
+
+From the initialized implementation checkout:
+
+```powershell
+.\initrun.ps1 -Flavor amd64fre msb /q dxaml\test\native\external\framework\profiler\ProfilerLifecycleHarness.vcxproj /p:Configuration=Release /p:Platform=x64 /p:UseXamlCompiler=false /p:PGOBuildMode=Off
+.\dxaml\test\native\external\framework\profiler\Stage-ProfilerLifecycleHarness.ps1 -Flavor amd64fre -Run
+```
+
+The host needs matching local Product outputs, including the `res\19h1` resource
+target and generated C++/WinRT projections. The SDK creates and embeds its
+activation manifest. Evaluated deployment properties, the complete payload hash
+manifest, actual loaded-module paths/hashes and bounded runtime output are saved
+under `BuildOutput`. The runner verifies hashes against original inputs and local
+Product, rejects loaded files outside the expected deployment or unmanifested
+app-local DLLs, and terminates only its own child if it fails to exit.
+
+P05a executes XAML initialization and one real Grid construction/teardown, followed
+by WindowsXamlManager teardown. It proves this hosting prerequisite only: it does
+not claim producer-hook correctness, frame semantics, checked/ARM64 execution,
+four-flavor validation, or measured P17 overhead. Those remain separate gates.
+
 ## Product requirement matrix
 
 | Requirement | Required observations/contracts | Initial actual hook / producer boundary | Consumer/query and coverage limits |
