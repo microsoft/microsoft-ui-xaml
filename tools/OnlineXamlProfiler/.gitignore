@@ -1,0 +1,5 @@
+artifacts/
+**/bin/
+**/obj/
+.vs/
+*.user

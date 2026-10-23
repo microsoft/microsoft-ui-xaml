@@ -1,0 +1,14 @@
+<Project>
+  <!-- This standalone tool consumes public SDK packages, not the repo's mock packages. -->
+  <PropertyGroup>
+    <OnlineXamlWinAppSdkVersion>2.0.1</OnlineXamlWinAppSdkVersion>
+    <OnlineXamlBuildToolsVersion>10.0.26100.4654</OnlineXamlBuildToolsVersion>
+    <OnlineXamlCppWinRTVersion>2.0.250303.1</OnlineXamlCppWinRTVersion>
+    <OnlineXamlWilVersion>1.0.240803.1</OnlineXamlWilVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)artifacts\bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)artifacts\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+</Project>
