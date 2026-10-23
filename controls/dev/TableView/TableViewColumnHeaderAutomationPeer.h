@@ -12,7 +12,7 @@
 // Cached/public peers are owned by the TableView so headers can be enumerated before the
 // templates realize; realized header cells use the same per-column identity.
 class TableViewColumnHeaderAutomationPeer :
-    public ReferenceTracker<TableViewColumnHeaderAutomationPeer, winrt::implementation::TableViewColumnHeaderAutomationPeerT>
+    public ReferenceTracker<TableViewColumnHeaderAutomationPeer, winrt::implementation::TableViewColumnHeaderAutomationPeerT, winrt::ITransformProvider>
 {
 public:
     TableViewColumnHeaderAutomationPeer(winrt::TableView const& owner, winrt::TableViewColumn const& column);
@@ -35,6 +35,16 @@ public:
 
     // IInvokeProvider
     void Invoke();
+
+    // ITransformProvider. Offered whenever the column opts in to resizing; CanResize then tracks
+    // whether the gripper is currently usable (for example a pinned Star column reports false).
+    bool CanMove();
+    bool CanResize();
+    bool CanRotate();
+    void Move(double x, double y);
+    void Resize(double width, double height);
+    void Rotate(double degrees);
+
     // Complements the distinct RuntimeId: AT announces "column i of n" for spatial context.
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
@@ -53,6 +63,7 @@ public:
 private:
     winrt::FrameworkElement GetHeaderElement();
     bool IsSortableColumn();
+    bool IsResizableColumn();
     int32_t GetColumnIndex();
 
     winrt::weak_ref<winrt::TableViewColumn> m_column{ nullptr };

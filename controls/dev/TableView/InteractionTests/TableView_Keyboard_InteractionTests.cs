@@ -1448,13 +1448,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "A header click on a CanSort=False column does not sort, while a sortable sibling column still does (IDL:156-158).")]
+        [TestProperty("Description", "A header click on a CanSort=False column does not sort, while a sortable sibling column still does (TableView.idl CanSort).")]
         public void HeaderClickDoesNotSortColumnWithCanSortFalse()
         {
-            // TableView.idl:156-158 states the gate as a fact about the CLICK: "Per-column opt-out for the
-            // click-to-sort UX. Default true. When false the header click handler ignores this column;
-            // programmatic SortByColumn still works." No API test can assert that sentence - API 7 can only
-            // cover the programmatic half - so the route test is the only place the opt-out is checked.
+            // The only check of the click half of CanSort; API tests cover SortByColumn/ToggleSortDirection.
             //
             // The ReadOnlyCity column of BasicTableView is authored CanSort="False"; Age is CanSort="True".
             // Clicking Age afterwards is a NEGATIVE CONTROL and is the point of the test: without it, a click

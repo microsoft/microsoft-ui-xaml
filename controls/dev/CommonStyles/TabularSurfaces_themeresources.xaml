@@ -73,12 +73,13 @@
             <!-- Group-header row surfaces (P2.8 grouped rows) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#4C3A3A3A" />                  <!-- LayerFillColorDefault -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#FFFFFF" />                    <!-- TextFillColorPrimary -->
-            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.7</x:Double>
+            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.77</x:Double>                                       <!-- TextFillColorSecondary over TextFillColorPrimary -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="Transparent" />
             <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0</Thickness>
 
             <!-- Grid lines -->
             <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#15FFFFFF" />                               <!-- DividerStrokeColorDefault -->
+            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="#19000000" />                            <!-- CardStrokeColorDefault -->
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
@@ -119,12 +120,13 @@
             <!-- Group header surfaces (parity with Default theme) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#14000000" />                  <!-- subtle group-header band, a touch darker than the rows (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#E4000000" />                  <!-- TextFillColorPrimary (Light) -->
-            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.7</x:Double>
+            <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.7</x:Double>                                        <!-- TextFillColorSecondary over TextFillColorPrimary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="Transparent" />
             <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0</Thickness>
 
             <!-- Grid lines -->
             <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#0F000000" />                               <!-- DividerStrokeColorDefault (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="#0F000000" />                            <!-- CardStrokeColorDefault (Light) -->
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -167,6 +169,7 @@
 
             <!-- Grid lines -->
             <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

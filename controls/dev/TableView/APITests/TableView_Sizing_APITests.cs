@@ -1365,6 +1365,58 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies re-parenting a gripper mid-drag keeps the drag: the stale Unloaded after the new Loaded must not cancel it.")]
+        public void VerifyReparentingGripperMidDragKeepsDrag()
+        {
+            ResizeGripper gripper = null;
+            StackPanel first = null;
+            StackPanel second = null;
+            var completions = new List<bool>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gripper = new ResizeGripper { Width = 8, Height = 24 };
+                gripper.DragCompleted += (s, e) => completions.Add(e.Canceled);
+                first = new StackPanel();
+                second = new StackPanel();
+                first.Children.Add(gripper);
+                var root = new StackPanel();
+                root.Children.Add(first);
+                root.Children.Add(second);
+                LoadContent(root);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gripper.BeginDrag();
+                Verify.IsTrue(gripper.IsDragging, "Precondition: the drag starts.");
+                first.Children.Remove(gripper);
+                second.Children.Add(gripper);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(gripper.IsLoaded, "Precondition: the gripper is loaded in its new parent.");
+                Verify.IsTrue(gripper.IsDragging, "A re-parent must not end the drag.");
+                Verify.AreEqual(0, completions.Count, "A re-parent must not raise DragCompleted.");
+
+                second.Children.Remove(gripper);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(gripper.IsDragging, "A real unload must end the drag.");
+                Verify.IsTrue(completions.Count == 1 && completions[0], "A real unload cancels the drag once.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a drag on a gripper that was never loaded completes without touching pointer capture.")]
         public void VerifyEndDragOnUnloadedGripperRaisesDragCompleted()
         {
@@ -2167,7 +2219,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var cellRight = GetVisualRight(headerCell, wrapper);
                 Log.Comment($"Header cell spans {cellLeft}..{cellRight}.");
 
-                var gridLine = headerCell.FindVisualChildByName("TableViewHeaderGridLine");
+                var gridLine = headerCell.FindVisualChildByName("PART_GridLine");
                 Verify.IsNotNull(gridLine, "The header cell must contain its vertical grid line.");
                 Verify.AreEqual(Visibility.Visible, gridLine.Visibility,
                     "Precondition: a non-terminal header grid line must be visible with GridLinesVisibility.All.");
