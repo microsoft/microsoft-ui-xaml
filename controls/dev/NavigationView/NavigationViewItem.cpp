@@ -58,6 +58,18 @@ void NavigationViewItem::OnNavigationViewItemBaseDepthChanged()
 void NavigationViewItem::OnNavigationViewItemBaseIsSelectedChanged()
 {
     UpdateVisualStateForPointer();
+    if (!IsInNavigationViewOwnedRepeater())
+    {
+        if (auto const navigationView = GetNavigationView())
+        {
+            winrt::get_self<NavigationView>(navigationView)->OnNavigationViewItemIsSelectedPropertyChanged(*this, s_IsSelectedProperty);
+        }
+    }
+}
+
+void NavigationViewItem::OnNavigationViewItemBaseParentChanged()
+{
+    UpdateRepeaterItemsSource();
 }
 
 void NavigationViewItem::OnNavigationViewItemBasePositionChanged()
@@ -185,24 +197,61 @@ void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEvent
 
 void NavigationViewItem::UpdateRepeaterItemsSource()
 {
+    m_itemsSourceViewCollectionChangedRevoker.revoke();
+    if (!m_repeater && !GetNavigationView())
+    {
+        return;
+    }
+
+    auto const itemsSource = [this]()
+    {
+        if (auto const menuItemsSource = MenuItemsSource())
+        {
+            return menuItemsSource;
+        }
+        return MenuItems().as<winrt::IInspectable>();
+    }();
+
+    auto sourceView = itemsSource.try_as<winrt::ItemsSourceView>();
+    if (!sourceView)
+    {
+        sourceView = winrt::ItemsSourceView(itemsSource);
+    }
+    auto items = sourceView;
     if (auto repeater = m_repeater.get())
     {
-        auto const itemsSource = [this]()
-        {
-            if (auto const menuItemsSource = MenuItemsSource())
-            {
-                return menuItemsSource;
-            }
-            return MenuItems().as<winrt::IInspectable>();
-        }();
-        m_itemsSourceViewCollectionChangedRevoker.revoke();
         repeater.ItemsSource(itemsSource);
-        m_itemsSourceViewCollectionChangedRevoker = repeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &NavigationViewItem::OnItemsSourceViewChanged });
+        items = repeater.ItemsSourceView();
+    }
+
+    if (m_repeater || MenuItemsSource())
+    {
+        m_itemsSourceViewCollectionChangedRevoker = items.CollectionChanged(winrt::auto_revoke,
+            [weakThis = winrt::weak_ref<winrt::NavigationViewItem>(*this)](const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args)
+            {
+                if (auto const item = weakThis.get())
+                {
+                    winrt::get_self<NavigationViewItem>(item)->OnItemsSourceViewChanged(sender, args);
+                }
+            });
+    }
+
+    // A vector notification can arrive before the repeater's view updates its cached count.
+    UpdateNavigationViewForChildren(sourceView);
+}
+
+void NavigationViewItem::UpdateNavigationViewForChildren(const winrt::ItemsSourceView& items)
+{
+    if (auto const navigationView = GetNavigationView())
+    {
+        winrt::get_self<NavigationView>(navigationView)->UpdateSelectedItemFromMenuItems(items, navigationView.SelectedItem() != nullptr);
+        SetNavigationViewParentForItems(items, navigationView);
     }
 }
 
-void NavigationViewItem::OnItemsSourceViewChanged(const winrt::IInspectable& /*sender*/, const winrt::NotifyCollectionChangedEventArgs& /*args*/)
+void NavigationViewItem::OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& /*args*/)
 {
+    UpdateNavigationViewForChildren(sender.as<winrt::ItemsSourceView>());
     UpdateVisualStateForChevron();
 }
  

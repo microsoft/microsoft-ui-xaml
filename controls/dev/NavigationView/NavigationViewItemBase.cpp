@@ -73,6 +73,18 @@ winrt::SplitView NavigationViewItemBase::GetSplitView() const
 void NavigationViewItemBase::SetNavigationViewParent(winrt::NavigationView const& navigationView)
 {
     m_navigationView = winrt::make_weak(navigationView);
+    OnNavigationViewItemBaseParentChanged();
+}
+
+void NavigationViewItemBase::SetNavigationViewParentForItems(const winrt::ItemsSourceView& items, const winrt::NavigationView& navigationView)
+{
+    for (int i = 0; i < items.Count(); i++)
+    {
+        if (auto const item = items.GetAt(i).try_as<winrt::NavigationViewItemBase>())
+        {
+            winrt::get_self<NavigationViewItemBase>(item)->SetNavigationViewParent(navigationView);
+        }
+    }
 }
 
 void NavigationViewItemBase::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)

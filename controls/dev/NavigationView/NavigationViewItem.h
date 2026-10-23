@@ -28,6 +28,7 @@ public:
     void OnApplyTemplate() override;
 
     void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
+    void OnNavigationViewItemBaseParentChanged() override;
 
     // Property change callbacks
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -113,6 +114,7 @@ private:
     bool IsOutOfControlBounds(const winrt::Point& point);
 
     void UpdateRepeaterItemsSource();
+    void UpdateNavigationViewForChildren(const winrt::ItemsSourceView& items);
     void OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
     void ReparentRepeater();
     void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);

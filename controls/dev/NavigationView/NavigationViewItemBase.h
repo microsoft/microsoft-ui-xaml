@@ -58,6 +58,8 @@ public:
     winrt::NavigationView GetNavigationView() const;
     winrt::SplitView GetSplitView() const;
     void SetNavigationViewParent(winrt::NavigationView const& navigationView);
+    virtual void OnNavigationViewItemBaseParentChanged() {}
+    static void SetNavigationViewParentForItems(const winrt::ItemsSourceView& items, const winrt::NavigationView& navigationView);
 
     // TODO: Constant is a temporary measure. Potentially expose using TemplateSettings.
     static constexpr int c_itemIndentation = 31;

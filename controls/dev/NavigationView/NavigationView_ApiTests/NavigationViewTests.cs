@@ -991,6 +991,99 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyUnrealizedChildInitiallySelected()
+        {
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                NavigationView navView = null;
+                NavigationViewItem parent = null;
+                NavigationViewItem child = null;
+                object selectedAtLoaded = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    navView = (NavigationView)XamlReader.Load(
+                        "<NavigationView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
+                        "Width='1000' Height='600'><NavigationView.MenuItems>" +
+                        "<NavigationViewItem Content='Parent'><NavigationViewItem.MenuItems>" +
+                        "<NavigationViewItem Content='Child' IsSelected='True' />" +
+                        "</NavigationViewItem.MenuItems></NavigationViewItem>" +
+                        "</NavigationView.MenuItems></NavigationView>");
+                    navView.PaneDisplayMode = mode;
+                    parent = (NavigationViewItem)navView.MenuItems[0];
+                    child = (NavigationViewItem)parent.MenuItems[0];
+                    navView.Loaded += (sender, args) => selectedAtLoaded = navView.SelectedItem;
+                    Content = navView;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(child, selectedAtLoaded);
+                    Verify.AreEqual(child, navView.SelectedItem);
+                    Verify.IsNull(VisualTreeHelper.GetParent(child));
+                    Verify.IsTrue(parent.IsChildSelected);
+                    Verify.IsFalse(parent.IsExpanded);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyUnrealizedChildSelectionChanges()
+        {
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                foreach (var sourceKind in new[] { "MenuItems", "Collection", "ItemsSourceView" })
+                {
+                    var navView = SetupNavigationView(mode);
+                    var children = new ObservableCollection<object>();
+                    NavigationViewItem parent = null;
+                    NavigationViewItem child = null;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        parent = (NavigationViewItem)navView.MenuItems[0];
+                        child = new NavigationViewItem { Content = "Unrealized child" };
+                        if (sourceKind != "MenuItems")
+                        {
+                            parent.MenuItemsSource = sourceKind == "ItemsSourceView" ? new ItemsSourceView(children) : children;
+                            children.Add(child);
+                        }
+                        else
+                        {
+                            parent.MenuItems.Add(child);
+                        }
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsNull(VisualTreeHelper.GetParent(child));
+                        child.IsSelected = true;
+                        Verify.AreEqual(child, navView.SelectedItem);
+                        Verify.IsTrue(parent.IsChildSelected);
+                        Verify.IsFalse(parent.IsExpanded);
+                        Verify.IsNull(VisualTreeHelper.GetParent(child));
+
+                        child.IsSelected = false;
+                        Verify.IsNull(navView.SelectedItem);
+                        Verify.IsFalse(parent.IsChildSelected);
+
+                        if (sourceKind != "MenuItems")
+                        {
+                            children.Remove(child);
+                        }
+                        else
+                        {
+                            parent.MenuItems.Remove(child);
+                        }
+                        navView.SelectedItem = parent;
+                        child.IsSelected = true;
+                        Verify.AreEqual(parent, navView.SelectedItem, "A removed child must not select itself in its former NavigationView.");
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
         public void VerifySingleSelection()
         {
             string navItemPresenter1CurrentState = string.Empty;
