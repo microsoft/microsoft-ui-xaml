@@ -7,7 +7,6 @@ namespace TableViewAppCsUnpackaged
         public App()
         {
             this.InitializeComponent();
-            HighContrastAdjustment = ApplicationHighContrastAdjustment.None;
         }
 
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)

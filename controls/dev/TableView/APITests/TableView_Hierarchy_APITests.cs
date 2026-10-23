@@ -12,7 +12,9 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Windows.Foundation;
 
+using WEX.Logging.Interop;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
@@ -1291,6 +1293,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("ok", CheckChevronClip(tableView, "Dan"), "Widened: chevron clip for Dan.");
                 Verify.AreEqual("ok", CheckChevronClip(tableView, "Ben"), "Widened: chevron clip for Ben.");
                 Verify.IsTrue(GetChevron(tableView, "Dan").IsHitTestVisible, "Widened: Dan's chevron is hit-testable.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped root row is indented by the group header's expander gutter plus its spacing.")]
+        public void VerifyGroupedRootIndentMatchesGroupHeaderGutterAndSpacing()
+        {
+            TableViewSource source = null;
+            RunOnUIThread.Execute(() => source = Tree(MakeTree()).GroupBy(ByDept));
+            var tableView = Place(source);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = GetProjectedElements(tableView).OfType<TableViewGroupHeader>().First();
+                var gutter = header.FindVisualChildByName("PART_ExpanderGutter") as FrameworkElement;
+                var gutterGrid = gutter == null ? null : Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(gutter) as Grid;
+                Verify.IsNotNull(gutterGrid, "The group header should host PART_ExpanderGutter in a Grid.");
+                double expected = gutter.ActualWidth + gutterGrid.ColumnSpacing;
+
+                var row = FindTreeRow(tableView, "Ada");
+                double rowX = row.TransformToVisual(tableView).TransformPoint(new Point(0, 0)).X;
+                double chevronX = GetChevron(tableView, "Ada").TransformToVisual(tableView).TransformPoint(new Point(0, 0)).X;
+                Log.Comment($"Root indent={chevronX - rowX}, gutter + TableViewGroupExpanderSpacing={expected}, header Padding.Left={header.Padding.Left}");
+                Verify.AreEqual(24.0 + 8.0, expected, "Default gutter (TableViewGroupExpanderSize) plus TableViewGroupExpanderSpacing.");
+                Verify.IsLessThan(Math.Abs(chevronX - rowX - expected), 0.5,
+                    "A grouped root row's indent must equal the group header's gutter plus TableViewGroupExpanderSpacing.");
             });
         }
 

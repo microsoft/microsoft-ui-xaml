@@ -870,23 +870,71 @@ namespace MUXControlsTestApp
         // direct click cannot do while the control holds pointer capture.
         private void OnDelayedUnloadClick(object sender, RoutedEventArgs e)
         {
-            var unloadTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
-            unloadTimer.Tick += (s, args) =>
+            RunAfterDelay(() =>
             {
-                unloadTimer.Stop();
                 BasicTableHost.Children.Remove(BasicTableView);
                 StatusTextBlock.Text = "Unloaded";
-
-                var reloadTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
-                reloadTimer.Tick += (s2, args2) =>
+                RunAfterDelay(() =>
                 {
-                    reloadTimer.Stop();
                     BasicTableHost.Children.Add(BasicTableView);
                     StatusTextBlock.Text = "Reloaded";
-                };
-                reloadTimer.Start();
+                });
+            });
+        }
+
+        private static void RunAfterDelay(Action action)
+        {
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
+            timer.Tick += (s, args) =>
+            {
+                timer.Stop();
+                action();
             };
-            unloadTimer.Start();
+            timer.Start();
+        }
+
+        private void OnDelayedGripperCaptureLossClick(object sender, RoutedEventArgs e)
+        {
+            RunAfterDelay(() =>
+            {
+                foreach (var gripper in FindDescendants<Microsoft.UI.Private.Controls.ResizeGripper>(BasicTableView))
+                {
+                    gripper.ReleasePointerCaptures();
+                }
+                StatusTextBlock.Text = "Gripper capture released";
+            });
+        }
+
+        private void OnDelayedDisableClick(object sender, RoutedEventArgs e)
+        {
+            RunAfterDelay(() =>
+            {
+                BasicTableView.IsEnabled = false;
+                StatusTextBlock.Text = "Disabled";
+                RunAfterDelay(() =>
+                {
+                    BasicTableView.IsEnabled = true;
+                    StatusTextBlock.Text = "Enabled";
+                });
+            });
+        }
+
+        private static IEnumerable<T> FindDescendants<T>(DependencyObject root) where T : DependencyObject
+        {
+            int count = VisualTreeHelper.GetChildrenCount(root);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(root, i);
+                if (child is T typed)
+                {
+                    yield return typed;
+                }
+
+                foreach (var nested in FindDescendants<T>(child))
+                {
+                    yield return nested;
+                }
+            }
         }
 
         private void OnIsReadOnlyToggled(object sender, RoutedEventArgs e)
@@ -985,6 +1033,21 @@ namespace MUXControlsTestApp
             if (BasicTableView.Columns.Count > 0)
             {
                 BasicTableView.Columns.RemoveAt(BasicTableView.Columns.Count - 1);
+            }
+        }
+
+        // MinWidth == MaxWidth pins the column, which withdraws its resize gripper.
+        private void OnToggleScorePinClick(object sender, RoutedEventArgs e)
+        {
+            if (double.IsPositiveInfinity(ScoreColumn.MaxWidth))
+            {
+                ScoreColumn.MinWidth = ScoreColumn.ActualWidth;
+                ScoreColumn.MaxWidth = ScoreColumn.ActualWidth;
+            }
+            else
+            {
+                ScoreColumn.ClearValue(TableViewColumn.MaxWidthProperty);
+                ScoreColumn.ClearValue(TableViewColumn.MinWidthProperty);
             }
         }
 

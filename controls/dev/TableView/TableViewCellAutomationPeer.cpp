@@ -22,7 +22,44 @@
 #include <tuple>
 #include <vector>
 
+namespace
+{
+    winrt::FrameworkElement CellForPublicConstructor(
+        winrt::FrameworkElement const& cell,
+        winrt::TableViewRow const& row,
+        winrt::TableViewColumn const& column,
+        int32_t columnIndex)
+    {
+        if (!cell || !row || !column || columnIndex < 0)
+        {
+            throw winrt::hresult_invalid_argument();
+        }
+
+        // A row not yet owned by a TableView has no column set to check against.
+        if (auto const table = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
+        {
+            if (winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != table ||
+                static_cast<uint32_t>(columnIndex) >= table.Columns().Size())
+            {
+                throw winrt::hresult_invalid_argument();
+            }
+        }
+
+        return cell;
+    }
+}
+
 TableViewCellAutomationPeer::TableViewCellAutomationPeer(
+    winrt::FrameworkElement const& cell,
+    winrt::TableViewRow const& row,
+    winrt::TableViewColumn const& column,
+    int32_t columnIndex)
+    : TableViewCellAutomationPeer(TrustedOwnerTag{}, CellForPublicConstructor(cell, row, column, columnIndex), row, column, columnIndex)
+{
+}
+
+TableViewCellAutomationPeer::TableViewCellAutomationPeer(
+    TrustedOwnerTag,
     winrt::FrameworkElement const& cell,
     winrt::TableViewRow const& row,
     winrt::TableViewColumn const& column,

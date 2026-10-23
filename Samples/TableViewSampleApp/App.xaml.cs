@@ -30,7 +30,6 @@ public partial class App : Application
     {
         _commandLineArguments = commandLineArguments ?? Array.Empty<string>();
         InitializeComponent();
-        HighContrastAdjustment = ApplicationHighContrastAdjustment.None;
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)

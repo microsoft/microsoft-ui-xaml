@@ -33,6 +33,9 @@ public:
     void HeaderContextFlyout(winrt::FlyoutBase const& value);
     winrt::FlyoutBase HeaderContextFlyout();
 
+    void HeaderStyle(winrt::Style const& value);
+    winrt::Style HeaderStyle();
+
     void HeaderTemplate(winrt::DataTemplate const& value);
     winrt::DataTemplate HeaderTemplate();
 
@@ -74,6 +77,7 @@ public:
     static winrt::DependencyProperty FrozenEdgeProperty() { return s_FrozenEdgeProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HeaderContextFlyoutProperty() { return s_HeaderContextFlyoutProperty; }
+    static winrt::DependencyProperty HeaderStyleProperty() { return s_HeaderStyleProperty; }
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty HeaderTemplateSelectorProperty() { return s_HeaderTemplateSelectorProperty; }
     static winrt::DependencyProperty HeaderToolTipProperty() { return s_HeaderToolTipProperty; }
@@ -94,6 +98,7 @@ public:
     static GlobalDependencyProperty s_FrozenEdgeProperty;
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HeaderContextFlyoutProperty;
+    static GlobalDependencyProperty s_HeaderStyleProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_HeaderTemplateSelectorProperty;
     static GlobalDependencyProperty s_HeaderToolTipProperty;
@@ -126,6 +131,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnHeaderPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHeaderStylePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
