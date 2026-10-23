@@ -22,6 +22,7 @@
 static constexpr std::wstring_view s_CellsHostPartName{ L"PART_CellsHost"sv };
 static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
 static constexpr std::wstring_view s_RowExpanderGutterPartName{ L"PART_RowExpanderGutter"sv };
+static constexpr std::wstring_view s_SelectionIndicatorPartName{ L"PART_SelectionIndicator"sv };
 
 // Used only when there is no owner to ask; mirrors the TableViewRowExpanderSize resource.
 static constexpr double c_defaultRowExpanderSize{ 24.0 };
@@ -238,6 +239,7 @@ void TableViewRow::OnApplyTemplate()
     m_cellsHost.set(host);
     m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
     m_rowExpanderGutter.set(GetTemplateChild(hstring{ s_RowExpanderGutterPartName }).try_as<winrt::FrameworkElement>());
+    m_selectionIndicator.set(GetTemplateChild(hstring{ s_SelectionIndicatorPartName }).try_as<winrt::UIElement>());
 
     // Revoke unconditionally so a re-template that drops the gutter leaves no stale subscription.
     m_gutterPointerPressedRevoker.revoke();
@@ -1382,6 +1384,12 @@ void TableViewRow::UpdateVisualState(bool useTransitions)
     std::wstring_view state;
     if (IsSelected())
     {
+        // Unselected rows skip indicator syncs while scrolling, so catch up on becoming selected.
+        if (auto const owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->PinSelectionIndicatorForRow(*this);
+        }
+
         state = !IsEnabled()      ? L"SelectedDisabled"sv
               : m_isPressed       ? L"SelectedPressed"sv
               : m_isPointerOver   ? L"SelectedPointerOver"sv
@@ -2506,6 +2514,27 @@ void TableViewRow::SyncExpanderGutterWithLeadCell(winrt::Panel const& host)
     {
         winrt::Canvas::SetZIndex(gutter, 2);
     }
+}
+
+// Counter-translates the indicator like a leading-frozen cell so it stays at the viewport's leading
+// edge; the FlowDirection mirror above the row maps this to the visual right under RTL. The pill is
+// hidden once unselected and faded out, so those rows skip the work until UpdateVisualState selects them.
+bool TableViewRow::SyncSelectionIndicatorOffset(double horizontalOffset)
+{
+    auto const indicator = m_selectionIndicator.get();
+    if (!indicator || (!IsSelected() && indicator.Opacity() <= 0.0))
+    {
+        return false;
+    }
+
+    const float offset = static_cast<float>(horizontalOffset);
+    auto const translation = indicator.Translation();
+    if (translation.x != offset || translation.y != 0.0f || translation.z != 0.0f)
+    {
+        winrt::ElementCompositionPreview::SetIsTranslationEnabled(indicator, true);
+        indicator.Translation({ offset, 0.0f, 0.0f });
+    }
+    return true;
 }
 
 // ----- Editing -----

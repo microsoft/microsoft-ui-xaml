@@ -312,8 +312,10 @@ public:
     // band re-pins.
     void OnColumnFrozenEdgeChanged(const winrt::TableViewColumn& column);
 
-    // Pin rebuilt rows immediately when leading-frozen columns are active.
+    // Pin rebuilt rows' selection indicator, and leading-frozen columns when active, immediately.
     void PinFrozenColumnsForRow(const winrt::TableViewRow& row);
+    void PinSelectionIndicatorForRow(const winrt::TableViewRow& row);
+    double GetBodyHorizontalOffsetInternal() const;
 
     // Requested by a cell panel (header/row) during measure when a realized cell's own measured width
     // changed (grow or shrink). Invalidates our measure synchronously so ResolveColumnWidths re-runs in
@@ -1397,6 +1399,8 @@ private:
     void InvalidateCellPanels();
 
     bool m_frozenColumnsActive{ false };
+    // A realized row may show its selection indicator, so horizontal scroll must re-pin it.
+    bool m_selectionIndicatorPinned{ false };
 
     bool m_rebuildHeadersQueued{ false };
     bool m_rebuildingHeaders{ false };
