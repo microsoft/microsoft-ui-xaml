@@ -358,6 +358,149 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyNoNullItemsAndClear();
         }
 
+        // Scenario: items {A, B, C, D, E} with E selected; replace B, C and D with a single item X in one Replace
+        //     notification.
+        // Expected: E stays selected at its new index 2, its container is the only checked one, and SelectedItem is "E".
+        // Failure means: while ItemsRepeater shifted E's container it could still find the old container at index 2,
+        //     so RadioButtons checked that stale container and then cleared the selection when it was recycled.
+        [TestMethod]
+        public void VerifyRangeReplaceBeforeSelectedItemKeepsSelection()
+        {
+            RadioButtons radioButtons = null;
+            var items = new RangeReplaceCollection<string>(new[] { "A", "B", "C", "D", "E" });
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons();
+                radioButtons.ItemsSource = items;
+                Content = radioButtons;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectedIndex = 4;
+                Content.UpdateLayout();
+                Verify.AreEqual("E", radioButtons.SelectedItem);
+
+                items.ReplaceRange(1, 3, new[] { "X" });
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(2, radioButtons.SelectedIndex);
+                Verify.AreEqual("E", radioButtons.SelectedItem);
+                VerifyCheckedContainers(radioButtons, items, expectedCheckedIndex: 2);
+            });
+        }
+
+        // Scenario: items {A, B, C, D, E}; a SelectionChanged handler replaces the newly selected item C with Z. Runs
+        //     with the default containers and with an ItemTemplate whose root is a RadioButton.
+        // Expected: the selection is cleared (SelectedIndex -1, SelectedItem null), no container is checked, and the
+        //     last SelectionChanged reports C as removed, as when the selected item is replaced outside the handler.
+        // Failure means: the selected container was recycled while RadioButtons was raising SelectionChanged, leaving
+        //     SelectedIndex set with no checked RadioButton, or a recycled template RadioButton stayed checked and
+        //     selected the item it was reused for.
+        [TestMethod]
+        public void VerifyReplacingSelectedItemFromSelectionChangedClearsSelection()
+        {
+            foreach (bool useRadioButtonTemplate in new[] { false, true })
+            {
+                Log.Comment("RadioButton item template: " + useRadioButtonTemplate);
+                RadioButtons radioButtons = null;
+                var items = new global::System.Collections.ObjectModel.ObservableCollection<string>() { "A", "B", "C", "D", "E" };
+                var selectionChanges = new List<SelectionChangedEventArgs>();
+                bool replaced = false;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    radioButtons = new RadioButtons();
+                    if (useRadioButtonTemplate)
+                    {
+                        radioButtons.ItemTemplate = (DataTemplate)XamlReader.Load(
+                            @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><RadioButton Content='{Binding}'/></DataTemplate>");
+                    }
+                    radioButtons.ItemsSource = items;
+                    Content = radioButtons;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    radioButtons.SelectionChanged += (sender, args) =>
+                    {
+                        selectionChanges.Add(args);
+                        if (!replaced && radioButtons.SelectedIndex == 2)
+                        {
+                            replaced = true;
+                            items[2] = "Z";
+                        }
+                    };
+                    radioButtons.SelectedIndex = 2;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(replaced, "The SelectionChanged handler replaced the selected item.");
+                    Verify.AreEqual(-1, radioButtons.SelectedIndex);
+                    Verify.IsNull(radioButtons.SelectedItem);
+                    VerifyCheckedContainers(radioButtons, items, expectedCheckedIndex: -1);
+
+                    Verify.AreEqual(2, selectionChanges.Count, "Selecting C, then clearing the selection.");
+                    Verify.AreEqual(0, selectionChanges[0].RemovedItems.Count);
+                    Verify.AreEqual(1, selectionChanges[0].AddedItems.Count);
+                    Verify.AreEqual("C", selectionChanges[0].AddedItems[0]);
+                    Verify.AreEqual(1, selectionChanges[1].RemovedItems.Count);
+                    Verify.AreEqual("C", selectionChanges[1].RemovedItems[0], "The replaced item, not its replacement, is reported as removed.");
+                    Verify.AreEqual(0, selectionChanges[1].AddedItems.Count);
+                    Content = null;
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+        private static void VerifyCheckedContainers(RadioButtons radioButtons, IList<string> items, int expectedCheckedIndex)
+        {
+            for (int i = 0; i < items.Count; i++)
+            {
+                var container = radioButtons.ContainerFromIndex(i) as RadioButton;
+                Verify.IsNotNull(container, $"Container {i} is realized.");
+                Verify.AreEqual(items[i], container.Content, $"Content of container {i}.");
+                Verify.AreEqual(i == expectedCheckedIndex, container.IsChecked == true, $"IsChecked of container {i}.");
+            }
+        }
+
+        // An ObservableCollection that can raise a single Replace notification for a range of items.
+        private class RangeReplaceCollection<T> : global::System.Collections.ObjectModel.ObservableCollection<T>
+        {
+            public RangeReplaceCollection(IEnumerable<T> items) : base(items) { }
+
+            public void ReplaceRange(int index, int oldCount, IList<T> newItems)
+            {
+                var oldItems = this.Skip(index).Take(oldCount).ToList();
+                for (int i = 0; i < oldCount; i++)
+                {
+                    Items.RemoveAt(index);
+                }
+                for (int i = 0; i < newItems.Count; i++)
+                {
+                    Items.Insert(index + i, newItems[i]);
+                }
+                OnPropertyChanged(new global::System.ComponentModel.PropertyChangedEventArgs("Count"));
+                OnPropertyChanged(new global::System.ComponentModel.PropertyChangedEventArgs("Item[]"));
+                OnCollectionChanged(new global::System.Collections.Specialized.NotifyCollectionChangedEventArgs(
+                    global::System.Collections.Specialized.NotifyCollectionChangedAction.Replace,
+                    (global::System.Collections.IList)newItems.ToList(),
+                    (global::System.Collections.IList)oldItems,
+                    index));
+            }
+        }
+
         private RadioButtons CreateLoadedRadioButtons(int itemCount, int maxColumns, double width = 1000)
         {
             RadioButtons radioButtons = null;
