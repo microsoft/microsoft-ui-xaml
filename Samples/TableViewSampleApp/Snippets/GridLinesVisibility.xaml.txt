@@ -7,14 +7,23 @@
 
 <!-- … -->
 
-<!-- The default TableViewColumnHeader template minus the optional PART_GridLine. -->
+<!-- Hides every header line. In an app, put this brush directly in <tv:TableView.Resources>;
+     the page merges it at runtime only so the option can be switched. -->
+<ResourceDictionary x:Key="HiddenHeaderLinesResources">
+    <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="Transparent"/>
+</ResourceDictionary>
+
+<!-- Copy of the default TableViewColumnHeader template in TableView.xaml without the optional
+     PART_GridLine; re-copy it when that template changes. -->
 <Style x:Key="NoColumnSeparatorsHeaderStyle" TargetType="tv:TableViewColumnHeader">
     <Setter Property="Template">
         <Setter.Value>
             <ControlTemplate TargetType="tv:TableViewColumnHeader">
+                <!-- CornerRadius is set only while keyboard-focused: a rounded root clips. -->
                 <Grid x:Name="PART_Root"
                       Background="{TemplateBinding Background}"
                       CornerRadius="{TemplateBinding CornerRadius}">
+                    <!-- State groups must sit on the template root. -->
                     <VisualStateManager.VisualStateGroups>
                         <VisualStateGroup x:Name="CommonStates">
                             <VisualState x:Name="Normal"/>
@@ -81,6 +90,7 @@
                             Visibility="Collapsed"
                             AutomationProperties.AccessibilityView="Raw"/>
 
+                    <!-- Last, so the gripper wins the hit test on the shared edge. -->
                     <Border x:Name="PART_ResizeGripperHost"/>
                 </Grid>
             </ControlTemplate>

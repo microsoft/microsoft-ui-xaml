@@ -45,33 +45,9 @@ private void OnHeaderLinesChanged(object sender, SelectionChangedEventArgs e)
     }
 
     var mode = SampleShaping.SelectedTag(HeaderLinesSelector, "default");
-    SetHeaderSeparatorsTransparent(PeopleTable, mode == "brush");
     PeopleTable.ColumnHeaderStyle = mode == "style"
         ? (Style)Resources["NoColumnSeparatorsHeaderStyle"]
         : null;
-}
-
-// Static equivalent: the same keyed brush under <tv:TableView.Resources>.
-private static void SetHeaderSeparatorsTransparent(TableView table, bool transparent)
-{
-    const string key = "TabularSurfaceHeaderSeparatorBrush";
-    if (transparent == table.Resources.ContainsKey(key))
-    {
-        return;
-    }
-
-    if (transparent)
-    {
-        table.Resources[key] = new SolidColorBrush(Colors.Transparent);
-    }
-    else
-    {
-        table.Resources.Remove(key);
-    }
-
-    // {ThemeResource} resolves at template apply, so re-apply the table's template.
-    table.Template = null;
-    table.ClearValue(Control.TemplateProperty);
 }
 
 // …

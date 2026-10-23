@@ -4,7 +4,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
@@ -102,7 +101,7 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
         }
 
         var mode = SampleShaping.SelectedTag(HeaderLinesSelector, "default");
-        SetHeaderSeparatorsTransparent(PeopleTable, mode == "brush");
+        SetHeaderLinesResources(mode == "brush"); // snippet:skip
         PeopleTable.ColumnHeaderStyle = mode == "style"
             ? (Style)Resources["NoColumnSeparatorsHeaderStyle"]
             : null;
@@ -114,30 +113,60 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
             _ => "Header lines -> shown",
         });
     }
+    // </snippet>
 
-    // Static equivalent: the same keyed brush under <tv:TableView.Resources>.
-    private static void SetHeaderSeparatorsTransparent(TableView table, bool transparent)
+    private const string HeaderSeparatorBrushKey = "TabularSurfaceHeaderSeparatorBrush";
+
+    // Demo plumbing; an app declares the brush in XAML. {ThemeResource} resolves when a template is
+    // applied, so a runtime switch re-applies the table's template and then restores the scroll.
+    private void SetHeaderLinesResources(bool hidden)
     {
-        const string key = "TabularSurfaceHeaderSeparatorBrush";
-        if (transparent == table.Resources.ContainsKey(key))
+        var overrides = (ResourceDictionary)Resources["HiddenHeaderLinesResources"];
+        var tableResources = PeopleTable.Resources;
+        if (hidden == tableResources.ContainsKey(HeaderSeparatorBrushKey))
         {
             return;
         }
 
-        if (transparent)
+        foreach (var (key, value) in overrides)
         {
-            table.Resources[key] = new SolidColorBrush(Colors.Transparent);
-        }
-        else
-        {
-            table.Resources.Remove(key);
+            if (hidden)
+            {
+                tableResources[key] = value;
+            }
+            else
+            {
+                tableResources.Remove(key);
+            }
         }
 
-        // {ThemeResource} resolves at template apply, so re-apply the table's template.
-        table.Template = null;
-        table.ClearValue(Control.TemplateProperty);
+        var scroller = FindBodyScroller(PeopleTable);
+        var horizontal = scroller?.HorizontalOffset ?? 0;
+        var vertical = scroller?.VerticalOffset ?? 0;
+        PeopleTable.Template = null;
+        PeopleTable.ClearValue(Control.TemplateProperty);
+        PeopleTable.UpdateLayout();
+        FindBodyScroller(PeopleTable)?.ChangeView(horizontal, vertical, null, disableAnimation: true);
     }
-    // </snippet>
+
+    private static ScrollViewer? FindBodyScroller(DependencyObject parent)
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is ScrollViewer { Name: "PART_BodyScroller" } scroller)
+            {
+                return scroller;
+            }
+
+            if (FindBodyScroller(child) is { } found)
+            {
+                return found;
+            }
+        }
+
+        return null;
+    }
 
     // ---- In-cell edits ------------------------------------------------------------------
 
