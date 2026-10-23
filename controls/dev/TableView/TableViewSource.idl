@@ -9,124 +9,32 @@ delegate Boolean TableViewPredicate(Object item);
 [webhosthidden]
 delegate Object TableViewKeySelector(Object item);
 
-// Stable string identity for a group key (GroupBy overload). Row identity is not app-supplied:
-// the projection derives it from each item's object identity.
 [MUX_PREVIEW]
 [webhosthidden]
 delegate String TableViewIdentitySelector(Object item);
 
 [MUX_PREVIEW]
 [webhosthidden]
-// Sealed deliberately: TableView drives the concrete implementation, so an override of a shaping
-// verb would be bypassed. Unsealing later is compatible; sealing later is not.
 runtimeclass TableViewSource
 {
-    // Whole class:
-    //  * Null items, predicate, or keySelector throws E_INVALIDARG. (Note this differs from
-    //    TableView's command surface, which no-ops on bad input.) The optional
-    //    groupIdentitySelector may be null and selects the built-in value-type group identity.
-    //  * UI-thread affinity, like any XAML items source. The underlying collection must also
-    //    raise its change notifications on that thread; raising them from a background thread
-    //    is not supported. The verbs hold no lock.
-    //  * Rows are identified by their item's OBJECT identity (under ParentBy, by its node key,
-    //    which also survives re-creation). So selection and focus re-anchor across a reshape, but
-    //    NOT across an item being re-created, and the same object in two rows fails fast at
-    //    materialization.
-    //  * A TableViewSource can be the ItemsSource of one TableView at a time. A second table it is
-    //    bound to is refused and renders empty until the owner releases it (assigns a different
-    //    ItemsSource or is unloaded), then binds it. The refusal is not an error: nothing throws.
-    //    An unloaded owner that is loaded again reacquires the source automatically, or waits for
-    //    it if another table took it meanwhile.
-
-    // Accepts the same collection interfaces as ItemsSourceView: IVector<Object> (so also
-    // IObservableVector<Object>), IBindableVector, IIterable<Object>, or IBindableIterable.
-    // Anything else throws E_INVALIDARG. The projection is populated by the time From returns.
     static TableViewSource From(Object items);
 
-    // Use ClearFilter() to remove an existing filter rather than passing a pass-everything one.
-    TableViewSource Filter(TableViewPredicate predicate);
+    Boolean IsLiveShaping { get; set; };
 
-    // keySelector: required, non-null (throws E_INVALIDARG when null; use ClearGroupBy() to
-    // remove grouping). Overload metadata is frozen at v1 — without it MIDL bakes GroupBy2 into
-    // the ABI.
-    //
-    // Grouping FAILS FAST. When a group's identity cannot be resolved, the call that builds the
-    // projection throws E_INVALIDARG; the projection is never silently flattened, because a
-    // grouping request that quietly renders ungrouped is a bug an app ships without noticing.
-    // An identity is unresolvable when:
-    //   * the key is null, or is a reference type and no groupIdentitySelector was supplied;
-    //   * the key is the EMPTY STRING, or a supplied groupIdentitySelector returns the empty
-    //     string. String is a supported key type, but "" is not a usable identity, so an app
-    //     grouping on a property that can be null/blank must coalesce it to a real bucket label
-    //     (e.g. "(none)") itself;
-    //   * a supplied groupIdentitySelector throws;
-    //   * two logically-different keys resolve to the same identity string and no
-    //     groupIdentitySelector was supplied to declare that collapse intentional.
+    TableViewSource Filter(TableViewPredicate predicate);
     [default_overload] [method_name("GroupBy")]
     TableViewSource GroupBy(TableViewKeySelector keySelector);
-
-    // groupIdentitySelector is OPTIONAL: null selects the built-in value-type group identity
-    // (String/Int32/Int64/Guid/Boolean/enum); a reference-type group key with no selector fails
-    // fast at projection time, as does an empty identity from either source (see above).
     [method_name("GroupByWithIdentity")]
     TableViewSource GroupBy(TableViewKeySelector keySelector, TableViewIdentitySelector groupIdentitySelector);
-
-    // SortDirection.None removes that key's sort axis rather than seeding a stage, so sorting
-    // every axis to None leaves the source unsorted. When several axes are active the FIRST one
-    // declared is the primary sort and each later axis breaks ties within the previous, matching
-    // WPF DataGrid's SortDescriptions order; re-sorting an existing axis keeps its position.
-    //
-    // Both overloads are LAST WRITER WINS against TableView's own sort: declaring a sort here
-    // replaces the control's axis rather than stacking behind it, so the rows are ordered by this
-    // axis alone. What differs is what the headers can say about it.
-    //
-    // sortMemberPath names the property this axis sorts on and is the preferred form. The path is
-    // evaluated by the same binding-based evaluator a column uses for its SortMemberPath, so a
-    // path that displays also sorts (dotted paths and indexers included), and a bound TableView
-    // can match the path to a column and light that column's sort indicator. Re-sorting the same
-    // path replaces that axis in place rather than adding a second one.
-    // Throws E_INVALIDARG when sortMemberPath is empty.
-    // Overload metadata is frozen at v1 — without it MIDL bakes Sort2 into the ABI.
     [method_name("SortByPath")]
     TableViewSource Sort(String sortMemberPath, SortDirection direction);
-
-    // keySelector form: for keys no property path expresses — computed, multi-field, normalized,
-    // or the identity of a primitive collection. The axis is ANONYMOUS: nothing names a property,
-    // so a bound TableView cannot attribute it to a column and clears every sort indicator
-    // instead of leaving one describing a sort that is no longer primary. Prefer the
-    // sortMemberPath overload whenever the key is a property.
-    //
-    // The axis is keyed by delegate instance: the same instance re-sorts it in place and None removes
-    // it; any other instance (e.g. a re-evaluated lambda) adds a new least-significant axis, and
-    // None with an instance that keys no axis leaves the sort unchanged. To remove the axis, pass
-    // the same delegate instance with None; ClearSort removes every axis.
     [default_overload] [method_name("Sort")]
     TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
-
+    TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
     TableViewSource ClearFilter();
     TableViewSource ClearGroupBy();
     TableViewSource ClearSort();
-
-    // Declares a self-referencing parent/child relation over the flat source: keySelector returns
-    // each item's unique key, parentKeySelector its parent's key (null or empty for a root; an
-    // unknown parent key makes an orphan root). Null selectors, duplicate/empty keys, self-parent
-    // and cycles throw E_INVALIDARG and keep the previous projection. Value-typed keys compare by
-    // value and type; other objects (including app-defined enums and structs) by reference, never
-    // by Equals. Rows start collapsed; sort applies per sibling set, filter keeps matching rows plus
-    // their ancestors, and GroupBy buckets the roots.
-    // See docs/design-notes/TabularControls/Hierarchical-Data-Rows-Parent-Key-Design.md.
-    TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
-
-    // Removes the relation and shows the source flat again. Resets expansion state.
     TableViewSource ClearParentBy();
-
-    // Opt-in: reshapes when an item's sort key, group key, filter result or parent relation changes
-    // (PropertyChanged), coalesced to one reshape per dispatcher turn and deferred while a cell is
-    // being edited. Each reshape re-reads every item (O(n) in the source size), however few
-    // changed. A PropertyChanged raised off the UI thread is marshalled to it; one that cannot be
-    // is picked up by the next live change on the UI thread.
-    Boolean IsLiveShaping{ get; set; };
-
 }
 
 }

@@ -1,5 +1,3 @@
-// Peer for the framework-internal ResizeGripper primitive, so it lives in the
-// same private namespace as its owner and never reaches a shipped WinMD.
 namespace MU_PRIVATE_CONTROLS_NAMESPACE
 {
 
@@ -7,7 +5,8 @@ namespace MU_PRIVATE_CONTROLS_NAMESPACE
 [webhosthidden]
 unsealed runtimeclass ResizeGripperAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
-    [method_name("CreateInstanceWithOwner")] ResizeGripperAutomationPeer(ResizeGripper owner);
+    [method_name("CreateInstanceWithOwner")]
+    ResizeGripperAutomationPeer(ResizeGripper owner);
 }
 
 }
