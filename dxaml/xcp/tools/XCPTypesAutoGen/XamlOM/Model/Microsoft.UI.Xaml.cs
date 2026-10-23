@@ -1913,6 +1913,26 @@ namespace Microsoft.UI.Xaml
         {
         }
 
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [NativeClassName("CFrameworkElement")]
+        [DXamlOverloadName("SetCompiledBinding")]
+        public void SetCompiledBinding(Microsoft.UI.Xaml.DependencyProperty dp, Microsoft.UI.Xaml.Data.CompiledBindingGetter getter)
+        {
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [NativeClassName("CFrameworkElement")]
+        [DXamlName("SetCompiledBindingWithSetter")]
+        [DXamlOverloadName("SetCompiledBinding")]
+        public void SetCompiledBinding(
+            Microsoft.UI.Xaml.DependencyProperty dp,
+            Microsoft.UI.Xaml.Data.CompiledBindingGetter getter,
+            Microsoft.UI.Xaml.Data.CompiledBindingSetter setter)
+        {
+        }
+
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [TypeTable(IsExcludedFromCore = true)]
         protected virtual Windows.Foundation.Boolean GoToElementStateCore(Windows.Foundation.String stateName, Windows.Foundation.Boolean useTransitions)
