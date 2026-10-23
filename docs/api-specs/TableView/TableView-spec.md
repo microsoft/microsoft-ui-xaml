@@ -265,6 +265,8 @@ TableView supports read-only cell focus. Up, Down, PageUp, and PageDown move to 
 
 Read-only UI Automation grid/table peers are provided for the table, rows, cells, and column headers.
 
+Today the header band and the body are separate tab stops. The focus model behind these keys (the planned single tab stop for the table, which headers take focus, interaction mode for controls in cells, keyboard access to tooltips) and the standards it follows are described in the [functional spec](../../design-notes/TabularControls/TableView-functional-spec.md#keyboard-focus-and-accessibility-model), which also marks which parts are current and which are planned.
+
 ```xaml
 <tabular:TableView
     ItemsSource="{x:Bind People}"
@@ -743,8 +745,9 @@ String content is reported as the header's UIA help text by
 `TableViewColumnHeaderAutomationPeer`, joined with the column's sort state when it has one — the
 header peer publishes the text itself rather than through
 `AutomationProperties.HelpText`, and it reads the value from the column rather than the
-tooltip visual. The provider is available once the header is realized. As with cells, non-string content is
-mouse-only: pair it with `Header` text that carries the same information when it matters.
+tooltip visual. A `TableView`-owned header peer (the one `GetColumnHeaders` returns before the
+header is realized, or any peer built with the public constructor) also reports this text. As with cells, non-string content is
+visual-only: pair it with `Header` text that carries the same information when it matters.
 
 ## TableViewTextColumn class
 
@@ -934,9 +937,9 @@ The control owns the `ToolTip`; the bound value is its content, not a `ToolTip` 
 
 - String tooltip text is published as the cell's `AutomationProperties.HelpText`, and retracted on recycle and when a cell edit begins.
 - `TableViewCellAutomationPeer` suppresses it at UIA query time when it equals the cell's own UIA text, so Narrator does not read it twice. Suppression is gated on the control's ownership record, so text the app set is never dropped, and it is resolved at query time because the cell's own binding may not have produced a value when the tooltip is applied.
-- The popup is **pointer-only**. The UIA pairing serves keyboard and screen-reader users, which is why it is not optional.
+- The popup opens on pointer hover, and on keyboard focus of the cell or of any element inside it (the platform `ToolTipService` handles the owner's bubbling `GotFocus`), so it also opens when a control in the cell is focused in interaction mode. Opened by keyboard, `PlacementMode.Mouse` falls back to `Top`. The UIA pairing serves screen-reader users, which is why it is not optional.
 - Placement is control-owned and fixed (`PlacementMode.Mouse`), matching `TabViewItem`. An app needing different placement uses a tooltip inside its own cell content template.
-- Non-string content is **mouse-only** and has no accessible representation: no `HelpText` is published (it cannot be stringified), and the cell wrapper is internal so an app cannot set `HelpText` on it either. Keyboard and screen-reader users get nothing. `TabViewItem` and `NavigationViewItem` refuse non-string tooltip content outright for this reason; `TableView` allows it, so **use a converter that returns text whenever the value must be accessible**. Reaching parity needs a public cell element, which is post-v1.
+- Non-string content is **visual-only** and has no accessible representation: no `HelpText` is published (it cannot be stringified), and the cell wrapper is internal so an app cannot set `HelpText` on it either. The popup still opens on hover and keyboard focus, but screen-reader users get nothing. `TabViewItem` and `NavigationViewItem` refuse non-string tooltip content outright for this reason; `TableView` allows it, so **use a converter that returns text whenever the value must be accessible**. Reaching parity needs a public cell element, which is post-v1.
 
 ## Selection event args
 
@@ -952,20 +955,20 @@ TableView provides UI Automation peers for grid/table accessibility, cell value 
 
 | Peer | Base type | Provider interfaces |
 |---|---|---|
-| `TableViewAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionProvider`, `IGridProvider`, `ITableProvider`, `IItemContainerProvider` |
-| `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider` |
+| `TableViewAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionProvider` (while selectable), `IGridProvider`, `ITableProvider`, `IItemContainerProvider` |
+| `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider` (while selectable), `IExpandCollapseProvider` (hierarchical rows), `IVirtualizedItemProvider` (when virtualized; implementation-only, not in the IDL) |
 | `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IInvokeProvider` (sort), `ITransformProvider` (resize; implementation-only, not in the IDL) |
 | `TableViewGroupHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IExpandCollapseProvider`, `IGridItemProvider` |
-| `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` |
+| `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` (editable text cells only), `IVirtualizedItemProvider` (when virtualized; implementation-only, not in the IDL) |
 
-These peers expose the table structure to assistive technologies. Cell peers also expose their value and use the `Custom` automation control type with localized control type `cell`; UIA only permits that localized-control-type override on `Custom`, and the previous `DataItem`-inside-`DataItem` shape broke Narrator item counting.
+These peers expose the table structure to assistive technologies. Cell peers also expose their value and use the `DataItem` automation control type with localized control type `cell`.
 
 Migration notes:
 
-- Header `AutomationId` is no longer synthesized. `GetAutomationIdCore` returns empty unless the app sets `AutomationProperties.AutomationId`; the old pointer-derived value varied per process. Apps that need stable header IDs must set `AutomationProperties.AutomationId` on the header explicitly.
 - Programmatic row focus now resolves to a cell. Apps with `GotFocus` / `LostFocus` handlers on `TableViewRow`, row focus-visual styling, or `FocusManager` assertions can observe a cell as the focused element instead of the row.
-- Cell automation peers now report control type `Custom`, with localized control type `cell`.
 - A cell's automation `Name` no longer repeats its column header while column headers are shown: the name is the cell value (for example "Sales"), the header comes from `ITableItemProvider.GetColumnHeaderItems`, and an empty cell is named "blank". Only while `HeadersVisibility` hides the column headers is the name "{header}, {value}" (for example "Department, Sales"), with `GetColumnHeaderItems` and `ITableProvider.GetColumnHeaders` then empty. A cell whose content is an interactive control (for example a `Button` or `ToggleSwitch`) is still named after its column header, since the control names itself. UI tests and automation scripts that find a cell by a name such as "Department, Sales" must match the value instead, or read the column through `GetColumnHeaderItems`.
+
+Header `AutomationId`: unless the app sets `AutomationProperties.AutomationId` on the header element, a header peer reports `TableViewColumnHeader_<n>`, where `<n>` is a process-wide counter assigned to the column the first time it is needed. It is unique and stable for the column's lifetime, but not stable across runs, because it depends on the order in which columns are first queried. An app-set ID is read from the realized header, so it applies once the header is realized; a peer obtained earlier (for example through `GetColumnHeaders`) reports the synthesized ID until then. UI tests that need IDs stable across runs set `AutomationProperties.AutomationId` on the header through `HeaderStyle` or `ColumnHeaderStyle`.
 
 Rows report `PositionInSet` / `SizeOfSet` and compose their name from their visible cells, so a virtualized row still announces "row *i* of *n*" and what it contains. When the source is grouped, both values are **relative to the containing group** and exclude the group-header bands, matching `ItemsControlAutomationPeer`. An app-set `AutomationProperties.PositionInSet` / `SizeOfSet` / `Level` always takes precedence over the computed value.
 
@@ -979,7 +982,7 @@ Accessible labels name a cell but do not replace its intrinsic text `Value`. For
 
 A cell visual owns its peer through normal `OnCreateAutomationPeer` discovery; the row peer caches that same instance. Both tree enumeration and `IGridProvider.GetItem` connect it to its row before returning it. Child-parent queries and framework automation walks therefore cannot replace the visual's native peer association behind a retained provider. The implementation-only single-child Grid keeps the cell's border chrome and inherited data binding while allowing peer creation to be overridden (`Border` is sealed). Grid-only clients do not need a preliminary tree walk to establish the parent relationship.
 
-Each realized column-header visual owns its `HeaderItem` peer. `ITableProvider.GetColumnHeaders`, `ITableItemProvider.GetColumnHeaderItems`, tree navigation, focus, and hit-testing use that same peer. Names and set metadata honor overrides on the header itself. The existing Grid layout and mouse handlers are unchanged; sortable headers expose Invoke and sort on Enter or Space on the actual keyboard target. Surviving header visuals retain identity, while a header rebuild creates new visuals and identities; a retained old header cannot invoke sorting on its replacement. No provider is fabricated before header realization. Cell names still include the semantic column name when the header strip is hidden. The preview peer constructor requires a realized header for its column and returns `E_INVALIDARG` before realization or when that column has no header in the table.
+Each realized column-header visual owns its `HeaderItem` peer. `ITableProvider.GetColumnHeaders`, `ITableItemProvider.GetColumnHeaderItems`, tree navigation, focus, and hit-testing use that same peer. Names and set metadata honor overrides on the header itself. The existing Grid layout and mouse handlers are unchanged; sortable headers expose Invoke and sort on Enter or Space on the actual keyboard target. Surviving header visuals retain identity, while a header rebuild creates new visuals and identities; a retained old header cannot invoke sorting on its replacement. Some header peers are owned by the `TableView` rather than by a header visual: `ITableProvider.GetColumnHeaders` returns one for a column whose header is not yet realized and switches to the header visual's own peer once it is, while the preview peer constructor **always** returns a `TableView`-owned peer, even after realization, and that peer is never replaced. A `TableView`-owned peer is offscreen, has empty bounds, a NaN clickable point and no children. Its name, `AutomationId` and set metadata follow the realized header when there is one (otherwise a string `Header` names it). The `LabeledBy` fallback in its name lookup, however, resolves against the `TableView` (a known bug with the same root cause as the help-text fallback below): when the realized header has no `AutomationProperties.Name`, a constructor-built peer can announce the table's `LabeledBy` label instead of the column header. Its help text is the `HeaderToolTip`/sort-state text, falling back to the `TableView`'s own `AutomationProperties.HelpText` when it has neither (a known bug). Implementation follow-up: `Invoke` on a header peer whose table has been released throws `UIA_E_ELEMENTNOTENABLED` rather than `UIA_E_ELEMENTNOTAVAILABLE`. Cell names still include the semantic column name when the header strip is hidden. The preview peer constructor throws `E_INVALIDARG` when the table or column is null or the column does not belong to that table.
 
 Header `IsEnabled` reflects the owning table's effective state and disabled control ancestors between the header visual and the table (including template controls); Invoke rejects a disabled header without changing sort state. Cell header lookup resolves the realized visual independently of the table's peer type, so application-supplied table peers preserve canonical header identity. A cell with no reachable header (including a collapsed or removed column) returns an empty header array.
 
@@ -1261,7 +1264,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
     [MUX_PREVIEW, webhosthidden]
     unsealed runtimeclass TableViewRowAutomationPeer :
         Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-        Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider
+        Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider,
+        Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
     {
         TableViewRowAutomationPeer(Microsoft.UI.Xaml.Controls.Tabular.TableViewRow owner);
     };
