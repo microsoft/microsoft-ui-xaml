@@ -3,6 +3,7 @@
 using Common;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
@@ -31,6 +32,360 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
+        }
+
+        [TestMethod]
+        public void NavigationViewItemMouseDragStarting()
+        {
+            VerifyNavigationViewItemDragStarting(PointerInputType.Mouse);
+        }
+
+        [TestMethod]
+        public void NavigationViewItemPenDragStarting()
+        {
+            VerifyNavigationViewItemDragStarting(PointerInputType.Pen);
+        }
+
+        private static void VerifyNavigationViewItemDragStarting(PointerInputType inputType)
+        {
+            using var inputController = InputController.Activate(inputType);
+            foreach (bool topMode in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
+                {
+                    if (topMode)
+                    {
+                        new CheckBox(FindElement.ById("TopMode")).Check();
+                        Wait.ForIdle();
+                    }
+
+                    int expectedDragCount = 0;
+                    var sourceIds = topMode ? new[] { "DragItem" } : new[] { "DragItem", "NestedDragItem" };
+                    foreach (var sourceId in sourceIds)
+                    {
+                        for (int attempt = 0; attempt < 2; ++attempt)
+                        {
+                            // Cancel at DragStarting to isolate gesture detection and capture cleanup
+                            // from the system drag/drop service.
+                            InputHelper.MouseDragToTarget(FindElement.ById(sourceId), FindElement.ById("DropTarget"));
+                            Verify.AreEqual(inputType.ToString(), new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                            Verify.AreEqual((++expectedDragCount).ToString(), new TextBlock(FindElement.ById("DragCount")).GetText());
+                            Verify.AreEqual(sourceId, new TextBlock(FindElement.ById("DragSource")).GetText());
+                            Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                            VerifyNavigationViewDragStateReset();
+                        }
+                    }
+
+                    InputHelper.LeftClick(FindElement.ById("DragItem"));
+                    Wait.ForIdle();
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+
+                    InputHelper.MouseDragToTarget(FindElement.ById("DragItem"), FindElement.ById("DropTarget"));
+                    Verify.AreEqual((++expectedDragCount).ToString(), new TextBlock(FindElement.ById("DragCount")).GetText());
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+
+                    new CheckBox(FindElement.ById("Draggable")).Uncheck();
+                    Wait.ForIdle();
+                    InputHelper.MouseDragToTarget(FindElement.ById("DragItem"), FindElement.ById("DropTarget"));
+                    Verify.AreEqual(expectedDragCount.ToString(), new TextBlock(FindElement.ById("DragCount")).GetText());
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+
+                    InputHelper.LeftClick(FindElement.ById("DragItem"));
+                    Wait.ForIdle();
+                    Verify.AreEqual("2", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+                }
+            }
+        }
+
+        [TestMethod]
+        public void NavigationViewItemPenDragStartingWithDeferral()
+        {
+            using var inputController = InputController.Activate(PointerInputType.Pen);
+            foreach (bool topMode in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
+                {
+                    if (topMode)
+                    {
+                        new CheckBox(FindElement.ById("TopMode")).Check();
+                    }
+                    new CheckBox(FindElement.ById("DeferDragStart")).Check();
+                    Wait.ForIdle();
+
+                    for (int attempt = 0; attempt < 2; ++attempt)
+                    {
+                        try
+                        {
+                            InputHelper.MouseDragToTarget(FindElement.ById("DragItem"), FindElement.ById("DropTarget"));
+                            Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                            Verify.AreEqual((attempt + 1).ToString(), new TextBlock(FindElement.ById("DragCount")).GetText());
+                            Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                            Verify.IsTrue(new Button(FindElement.ById("CompleteDragDeferral")).IsEnabled);
+                            VerifyNavigationViewDragStateReset();
+                        }
+                        finally
+                        {
+                            var completeDeferral = new Button(FindElement.ById("CompleteDragDeferral"));
+                            if (completeDeferral.IsEnabled)
+                            {
+                                completeDeferral.Invoke();
+                            }
+                            Wait.ForIdle();
+                        }
+                    }
+
+                    InputHelper.LeftClick(FindElement.ById("DragItem"));
+                    Wait.ForIdle();
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+                }
+            }
+        }
+
+        [TestMethod]
+        public void NavigationViewItemPenTapDoesNotDragOnHover()
+        {
+            VerifyNavigationViewItemTapDoesNotDragOnHover(PointerInputType.Pen);
+        }
+
+        [TestMethod]
+        public void NavigationViewItemMouseClickDoesNotDragOnHover()
+        {
+            VerifyNavigationViewItemTapDoesNotDragOnHover(PointerInputType.Mouse);
+        }
+
+        private static void VerifyNavigationViewItemTapDoesNotDragOnHover(PointerInputType inputType)
+        {
+            using var inputController = InputController.Activate(inputType);
+            foreach (bool topMode in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
+                {
+                    if (topMode)
+                    {
+                        new CheckBox(FindElement.ById("TopMode")).Check();
+                        Wait.ForIdle();
+                    }
+
+                    var source = FindElement.ById("DragItem");
+                    var bounds = source.BoundingRectangle;
+                    for (int attempt = 1; attempt <= 3; ++attempt)
+                    {
+                        var center = new System.Drawing.Point(
+                            (int)(bounds.Left + bounds.Width / 2), (int)(bounds.Top + bounds.Height / 2));
+                        PointerInput.Move(center);
+                        // Pen injection supports whole gestures but not separate press/release.
+                        PointerInput.ClickDrag(center, PointerButtons.Primary, 100);
+                        Wait.ForIdle();
+                        Verify.AreEqual(inputType.ToString(), new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                        Verify.AreEqual(attempt.ToString(), new TextBlock(FindElement.ById("InvocationCount")).GetText());
+
+                        int hoverMoves = int.Parse(new TextBlock(FindElement.ById("HoverMoveCount")).GetText());
+                        // The test input stack cannot inject pen hover, so hover with the mouse.
+                        using (InputController.Activate(PointerInputType.Mouse))
+                        {
+                            foreach (double fraction in new[] { 0.7, 0.3 })
+                            {
+                                PointerInput.Move(new System.Drawing.Point(
+                                    (int)(bounds.Left + bounds.Width * fraction), (int)(bounds.Top + bounds.Height / 2)));
+                                Wait.ForIdle();
+                            }
+                        }
+                        Verify.IsTrue(int.Parse(new TextBlock(FindElement.ById("HoverMoveCount")).GetText()) > hoverMoves);
+                        Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
+                        Verify.AreEqual(attempt.ToString(), new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                        VerifyNavigationViewDragStateReset();
+                    }
+
+                    InputHelper.MouseDragToTarget(source, FindElement.ById("DropTarget"));
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("DragCount")).GetText());
+                    Verify.AreEqual("3", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+
+                    InputHelper.LeftClick(source);
+                    Verify.AreEqual("4", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+                }
+            }
+        }
+
+        [TestMethod]
+        public void NavigationViewItemPenSubthresholdExitClearsHover()
+        {
+            using var inputController = InputController.Activate(PointerInputType.Pen);
+            foreach (bool topMode in new[] { false, true })
+            {
+                using var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" });
+                if (topMode)
+                {
+                    new CheckBox(FindElement.ById("TopMode")).Check();
+                    Wait.ForIdle();
+                }
+
+                new Button(FindElement.ById("Snapshot")).Invoke();
+                Wait.ForIdle();
+                double scale = double.Parse(new TextBlock(FindElement.ById("ItemRasterizationScale")).GetText(), CultureInfo.InvariantCulture);
+                double width = double.Parse(new TextBlock(FindElement.ById("ItemWidth")).GetText(), CultureInfo.InvariantCulture);
+                var bounds = FindElement.ById("DragItem").BoundingRectangle;
+                double right = bounds.Left + bounds.Width / 2 + width * scale / 2;
+                var start = new System.Drawing.Point((int)(right - 5 * scale), (int)(bounds.Top + bounds.Height / 2));
+                var end = new System.Drawing.Point((int)(right + scale), start.Y);
+                PointerInput.Move(start);
+                Wait.ForIdle();
+                // The test input stack cannot inject pen hover, so the hover state before the
+                // press is not checked; the press itself enters the item.
+
+                // Pen injection supports whole gestures but not separate press/release.
+                PointerInput.ClickDrag(end, PointerButtons.Primary, 500);
+                Wait.ForIdle();
+                Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
+                VerifyNavigationViewDragStateReset();
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                Verify.AreEqual("False", new TextBlock(FindElement.ById("ItemPointerOver")).GetText());
+            }
+        }
+
+        [TestMethod]
+        public void NavigationViewItemPenDragWithinBounds()
+        {
+            using var inputController = InputController.Activate(PointerInputType.Pen);
+            foreach (bool topMode in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
+                {
+                    if (topMode)
+                    {
+                        new CheckBox(FindElement.ById("TopMode")).Check();
+                        Wait.ForIdle();
+                    }
+
+                    new Button(FindElement.ById("Snapshot")).Invoke();
+                    Wait.ForIdle();
+                    double scale = double.Parse(new TextBlock(FindElement.ById("ItemRasterizationScale")).GetText(), CultureInfo.InvariantCulture);
+                    double width = double.Parse(new TextBlock(FindElement.ById("ItemWidth")).GetText(), CultureInfo.InvariantCulture);
+                    var bounds = FindElement.ById("DragItem").BoundingRectangle;
+                    double right = bounds.Left + bounds.Width / 2 + width * scale / 2;
+                    // Start 5 DIPs from the right edge and drag left, so the drag anchor stays
+                    // inside the item in DIPs but is outside it when read as physical pixels at
+                    // non-100% scale. Dragging horizontally avoids panning the pane's vertical
+                    // ScrollViewer with the pen.
+                    var start = new System.Drawing.Point((int)(right - 5 * scale), (int)(bounds.Top + bounds.Height / 2));
+                    var end = new System.Drawing.Point((int)(start.X - 16 * scale), start.Y);
+                    PointerInput.Move(start);
+                    PointerInput.ClickDrag(end, PointerButtons.Primary, 2000);
+                    Wait.ForIdle();
+
+                    Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("DragCount")).GetText());
+                    Verify.AreEqual("True", new TextBlock(FindElement.ById("DragStartPointerOver")).GetText());
+                    Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+
+                    string anchor = new TextBlock(FindElement.ById("DragStartAnchor")).GetText();
+                    double anchorX = double.Parse(anchor.Split(',')[0], CultureInfo.InvariantCulture);
+                    Log.Comment($"Top={topMode} RasterizationScale={scale} ItemWidth={width} DragStartAnchor={anchor}");
+                    if (scale > 1 && !topMode)
+                    {
+                        // Precondition: without the physical-to-logical conversion the anchor would be
+                        // treated as outside the item, so DragStartPointerOver=True proves the conversion.
+                        // The Left-mode item is wide enough for this at any non-100% scale; the narrow
+                        // Top-mode item is only logged.
+                        Verify.IsTrue(anchorX > width, "The drag anchor must be outside the item's logical width when read unconverted.");
+                    }
+                    else if (scale <= 1)
+                    {
+                        Log.Warning("RasterizationScale is 1; the physical-to-logical anchor conversion is not exercised by this run.");
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void NavigationViewItemRetemplateDuringPointerPress()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
+            {
+                new CheckBox(FindElement.ById("RetemplateOnPress")).Check();
+                InputHelper.LeftClick(FindElement.ById("DragItem"));
+                Wait.ForIdle();
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("RetemplateCount")).GetText());
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                VerifyNavigationViewDragStateReset();
+
+                new CheckBox(FindElement.ById("RetemplateOnPress")).Uncheck();
+                InputHelper.LeftClick(FindElement.ById("DragItem"));
+                Wait.ForIdle();
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                VerifyNavigationViewDragStateReset();
+            }
+        }
+
+        [TestMethod]
+        public void NavigationViewItemPenRetemplateDuringPressDoesNotDrag()
+        {
+            using var inputController = InputController.Activate(PointerInputType.Pen);
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
+            {
+                new CheckBox(FindElement.ById("RetemplateOnPress")).Check();
+                Wait.ForIdle();
+
+                // The retemplate ends the item's press and releases its capture. Pen capture
+                // release may not raise PointerCaptureLost, so moving must not start a drag.
+                // Pen injection supports whole gestures but not separate press/release.
+                var bounds = FindElement.ById("DragItem").BoundingRectangle;
+                int y = (int)(bounds.Top + bounds.Height / 2);
+                PointerInput.Move(new System.Drawing.Point((int)(bounds.Left + bounds.Width * 0.2), y));
+                PointerInput.ClickDrag(new System.Drawing.Point((int)(bounds.Left + bounds.Width * 0.8), y), PointerButtons.Primary, 2000);
+                Wait.ForIdle();
+                Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("RetemplateCount")).GetText());
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                VerifyNavigationViewDragStateReset();
+
+                new CheckBox(FindElement.ById("RetemplateOnPress")).Uncheck();
+                Wait.ForIdle();
+                InputHelper.MouseDragToTarget(FindElement.ById("DragItem"), FindElement.ById("DropTarget"));
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("DragCount")).GetText());
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                VerifyNavigationViewDragStateReset();
+            }
+        }
+
+        [TestMethod]
+        public void NavigationViewItemPenDrop()
+        {
+            // Injected mouse input does not complete a system drop on the test machine. Pen uses
+            // the same item-owned capture and drag-detection path, so it verifies the drop.
+            using var inputController = InputController.Activate(PointerInputType.Pen);
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
+            {
+                new CheckBox(FindElement.ById("CancelDrag")).Uncheck();
+                Wait.ForIdle();
+                InputHelper.MouseDragToTarget(FindElement.ById("DragItem"), FindElement.ById("DropTarget"));
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(
+                    () => new TextBlock(FindElement.ById("CompletionResult")).GetText() == "Copy",
+                    retryTimoutByMilliseconds: 3000);
+                Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastPointerDevice")).GetText());
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("DragCount")).GetText());
+                Verify.AreEqual("DragItem", new TextBlock(FindElement.ById("DroppedText")).GetText());
+                Verify.AreEqual("Copy", new TextBlock(FindElement.ById("CompletionResult")).GetText());
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                VerifyNavigationViewDragStateReset();
+            }
+        }
+
+        private static void VerifyNavigationViewDragStateReset()
+        {
+            new Button(FindElement.ById("Snapshot")).Invoke();
+            Wait.ForIdle();
+            Verify.AreEqual("0", new TextBlock(FindElement.ById("CaptureCount")).GetText());
+            Verify.AreEqual("None", new TextBlock(FindElement.ById("PressedStates")).GetText());
         }
 
         [TestMethod]

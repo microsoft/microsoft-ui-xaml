@@ -52,6 +52,10 @@ namespace DirectUI
         _Check_return_ HRESULT StopCheckingForMouseDrag(
             _In_ xaml_input::IPointer* pPointer);
 
+        _Check_return_ HRESULT OwnerHasPointerCapture(
+            _In_ xaml_input::IPointer* pPointer,
+            _Out_ bool* hasCapture);
+
         // Return true if we're tracking the mouse and newMousePosition is outside the drag
         // rectangle centered at m_lastMouseLeftButtonDownPosition (see IsOutsideDragRectangle).
         bool ShouldStartMouseDrag(
@@ -74,6 +78,9 @@ namespace DirectUI
         bool m_isHoldingCompleted = false;
 
         bool m_shouldAddInputHandlers = false;
+
+        // Valid while a mouse/pen press is being tracked.
+        UINT m_mouseDragPointerId = 0;
 
         ctl::ComPtr<ixp::IPointerPoint> m_spPointerPoint;
         ctl::ComPtr<xaml_input::IPointer> m_spPointer;
