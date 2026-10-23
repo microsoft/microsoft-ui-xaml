@@ -7,6 +7,7 @@
 #include "common.h"
 
 #include "TableViewRow.g.h"
+#include "TableViewContextMenu.h"
 #include "TableViewRow.properties.h"
 
 #include <optional>
@@ -48,6 +49,10 @@ public:
 
     // Typed accessor for the owning TableView.
     winrt::TableView GetOwningTableView();
+    bool IsContextMenuTargetCurrent(TableViewDetails::ContextMenuTarget const& target) const;
+    // Row automation peer ShowContextMenu. False when TableView left it alone, so the peer falls
+    // back to the framework (TableView.ContextFlyout and ancestors).
+    bool ShowContextMenuFromPeer();
 
     void RefreshGridLines();
     void SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state);
@@ -177,6 +182,14 @@ private:
     winrt::TableViewColumn ResolvePressedColumn(
         const winrt::IInspectable& originalSource,
         const winrt::Point& hostPoint);
+    void OnCellsHostContextRequested(winrt::ContextRequestedEventArgs const& args);
+    void OnTemplateRootContextRequested(winrt::ContextRequestedEventArgs const& args);
+    void ProcessContextRequest(
+        TableViewDetails::ContextMenuTarget const& target,
+        winrt::ContextRequestedEventArgs const& args);
+    std::optional<TableViewDetails::ContextMenuTarget> MakeRowContextMenuTarget();
+    std::optional<TableViewDetails::ContextMenuTarget> ResolveContextMenuTarget(
+        winrt::ContextRequestedEventArgs const& args);
 
     void OnDataContextChanged(
         const winrt::FrameworkElement& sender,
@@ -239,6 +252,8 @@ private:
     bool m_cellsArranged{ false };
     // Use auto_revoke for self-event subscriptions instead of manual token cleanup.
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_cellsHostContextRequestedRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     winrt::UIElement::GotFocus_revoker m_gotFocusRevoker{};

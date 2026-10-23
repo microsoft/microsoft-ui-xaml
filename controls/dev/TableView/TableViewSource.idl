@@ -95,6 +95,11 @@ runtimeclass TableViewSource
     // so a bound TableView cannot attribute it to a column and clears every sort indicator
     // instead of leaving one describing a sort that is no longer primary. Prefer the
     // sortMemberPath overload whenever the key is a property.
+    //
+    // The axis is keyed by delegate instance: the same instance re-sorts it in place and None removes
+    // it; any other instance (e.g. a re-evaluated lambda) adds a new least-significant axis, and
+    // None with an instance that keys no axis leaves the sort unchanged. To remove the axis, pass
+    // the same delegate instance with None; ClearSort removes every axis.
     [default_overload] [method_name("Sort")]
     TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
 

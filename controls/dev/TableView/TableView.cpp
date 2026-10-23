@@ -69,10 +69,10 @@ namespace
                right.as<winrt::Windows::Foundation::IUnknown>();
     }
 
-    winrt::ScrollViewer FindScrollViewerAncestor(winrt::DependencyObject const& start)
+    winrt::ScrollViewer FindScrollViewerAncestor(winrt::DependencyObject const& start, winrt::DependencyObject const& boundary)
     {
         winrt::DependencyObject node = start;
-        while (node)
+        while (node && !IsSameObject(node, boundary))
         {
             if (auto sv = node.try_as<winrt::ScrollViewer>())
             {
@@ -538,6 +538,12 @@ winrt::Brush TableView::GetGridLineBrush()
     if (!brush)
     {
         brush = CreateGridLineFallbackBrush(*this, highContrast);
+        // Outside High Contrast a miss draws no grid lines; say so once per instance.
+        if (!brush && !m_reportedMissingGridLineBrush)
+        {
+            m_reportedMissingGridLineBrush = true;
+            TVDiag::DbgLogF(L"[TableView] TabularSurfaceGridLineBrush not found - merge TabularControlsResources; grid lines are not drawn.");
+        }
     }
 
     cache.gridLine.hasBrush = true;
@@ -884,6 +890,19 @@ try
         m_headerHostGettingFocusRevoker.revoke();
         m_headerHostGotFocusRevoker.revoke();
     }
+    m_headerContextRequestedRevoker.revoke();
+    m_templateRootContextRequestedRevoker.revoke();
+
+    // Below the TableView so TableView.ContextFlyout (and any ancestor's) stays closed while a cell
+    // is editing; the framework shows an element's ContextFlyout before its own handlers run.
+    m_templateRootContextRequestedRevoker = TableViewDetails::HookTemplateRootContextRequested(*this,
+        [weakThis = get_weak()](auto&&, winrt::ContextRequestedEventArgs const& args)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->SuppressContextRequestWhileEditing(args);
+            }
+        });
     if (auto oldBodyScroller = m_bodyScroller.get())
     {
         oldBodyScroller.ViewChanged(m_bodyScrollerViewChangedToken);
@@ -929,6 +948,15 @@ try
                 if (auto strongThis = weakThis.get())
                 {
                     strongThis->OnHeaderHostGotFocus(sender, args);
+                }
+            });
+
+        m_headerContextRequestedRevoker = headerHost.ContextRequested(winrt::auto_revoke,
+            [weakThis](winrt::IInspectable const&, winrt::ContextRequestedEventArgs const& args)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->OnHeaderContextRequested(args);
                 }
             });
 
@@ -1089,7 +1117,7 @@ void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const 
     if (auto headerHost = m_headerHost.get())
     {
         winrt::ScrollViewer scroller{ nullptr };
-        try { scroller = FindScrollViewerAncestor(headerHost); } catch (...) {}
+        try { scroller = FindScrollViewerAncestor(headerHost, *this); } catch (...) {}
         m_headerScroller.set(scroller);
         // Header pans can transiently desync; reverse-sync can clamp when header/body extents differ.
         UpdateHeaderVisibility();
@@ -1112,7 +1140,7 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
     if (auto repeater = m_rowsRepeater.get())
     {
         winrt::ScrollViewer scroller{ nullptr };
-        try { scroller = FindScrollViewerAncestor(repeater); } catch (...) {}
+        try { scroller = FindScrollViewerAncestor(repeater, *this); } catch (...) {}
         m_bodyScroller.set(scroller);
         if (auto bodyScroller = m_bodyScroller.get())
         {

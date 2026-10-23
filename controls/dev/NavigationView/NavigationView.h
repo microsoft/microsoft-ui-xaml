@@ -14,6 +14,7 @@ struct bringintoview_event_revoker;
 #include "NavigationView.properties.h"
 #include "NavigationViewItemsFactory.h"
 #include "NavigationViewTrace.h"
+#include "LiveShapingTracker.h"
 
 enum class TopNavigationViewLayoutState
 {
@@ -74,6 +75,7 @@ public:
     winrt::SplitView GetSplitView();
     TopNavigationViewDataProvider& GetTopDataProvider() { return m_topDataProvider; };
     void TopNavigationViewItemContentChanged(bool forceInvalidateWidthCache = false);
+    void TopNavigationViewItemChildrenChanged(const winrt::NavigationViewItem& item);
 
     void CoerceToGreaterThanZero(double& value);
 
@@ -482,6 +484,8 @@ private:
     NavigationRecommendedTransitionDirection m_pendingSelectionChangedDirection{ NavigationRecommendedTransitionDirection::Default };
 
     bool m_appliedTemplate{ false };
+    // Unlike m_appliedTemplate, this is never reset, so it tells first-time setup apart from re-templating.
+    bool m_templateAppliedOnce{ false };
 
     // Identifies whenever a call is the result of OnApplyTemplate
     bool m_fromOnApplyTemplate{ false };
@@ -521,5 +525,27 @@ private:
     bool m_isLeftPaneTitleEmpty{ false };
 
     double m_OpenPaneLength{ 320.0 };
-};
 
+    struct TopNavigationItemObserver
+    {
+        TopNavigationItemObserver(const ITrackerHandleManager* owner, const winrt::IInspectable& item)
+            : Item(owner, item), ChildrenSource(owner), ChildrenView(owner) {}
+
+        tracker_ref<winrt::IInspectable> Item;
+        tracker_ref<winrt::IInspectable> ChildrenSource;
+        tracker_ref<winrt::ItemsSourceView> ChildrenView;
+        winrt::ItemsSourceView::CollectionChanged_revoker ChildrenChanged{};
+        bool RefreshChildren{ true };
+    };
+
+    void ClearTopNavigationItemObservers();
+    void PruneTopNavigationItemObservers();
+    void RefreshTopNavigationItemObservers();
+    void ObserveTopNavigationItemChildren(const winrt::IInspectable& data, const winrt::NavigationViewItem& container);
+    void OnTopNavigationItemPropertyChanged(const winrt::IInspectable& item);
+
+    LiveShapingTracker m_topNavigationItemProperties;
+    std::unordered_map<void const*, std::shared_ptr<TopNavigationItemObserver>> m_topNavigationItemObservers;
+    bool m_topNavigationObserversDirty{ true };
+    bool m_refreshingTopNavigationObservers{ false };
+};

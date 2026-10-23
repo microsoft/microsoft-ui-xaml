@@ -120,6 +120,7 @@ winrt::AutomationPeer NavigationView::OnCreateAutomationPeer()
 
 void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
 {
+    ClearTopNavigationItemObservers();
     // Revoke per-item revokers early (before template fields are nulled) so we revoke against still-connected sources.
     if (isFromDestructor)
     {
@@ -216,6 +217,16 @@ NavigationView::NavigationView()
             {
                 NavigationView* rawThis = winrt::get_self<NavigationView>(strongThis);
                 rawThis->OnTopNavDataSourceChanged(args);
+            }
+        });
+
+    m_topNavigationItemProperties.SetChangeHandler(
+        [weakThis, queue = DispatcherQueue()](const winrt::IInspectable& item, const winrt::hstring&)
+        {
+            winrt::check_hresult(queue.HasThreadAccess() ? S_OK : RPC_E_WRONG_THREAD);
+            if (auto strongThis = weakThis.get())
+            {
+                winrt::get_self<NavigationView>(strongThis)->OnTopNavigationItemPropertyChanged(item);
             }
         });
 
@@ -696,6 +707,7 @@ void NavigationView::OnApplyTemplate()
     m_shadowCasterEaseOutStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_shadowCasterEaseOutStoryboard, controlProtected));
 
     m_appliedTemplate = true;
+    m_templateAppliedOnce = true;
 
     // Do initial setup
     UpdatePaneDisplayMode();
@@ -760,6 +772,15 @@ void NavigationView::UpdateTopNavRepeatersItemSource(const winrt::IInspectable& 
 {
     // Change data source and setup vectors
     m_topDataProvider.SetDataSource(items);
+    m_topNavigationObserversDirty = true;
+    if (!items)
+    {
+        ClearTopNavigationItemObservers();
+    }
+    else
+    {
+        PruneTopNavigationItemObservers();
+    }
 
     // rebinding
     UpdateTopNavPrimaryRepeaterItemsSource(items);
@@ -1274,6 +1295,11 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
 
             auto item = MenuItemFromContainer(nvi);
 
+            if (ir == m_topNavRepeater.get() || ir == m_topNavRepeaterOverflowView.get())
+            {
+                ObserveTopNavigationItemChildren(item, nvi);
+            }
+
             if (SelectedItem() == item && IsVisible(nvi))
             {
                 if (m_isSelectionChangedPending && m_pendingSelectionChangedItem)
@@ -1360,6 +1386,7 @@ winrt::Size NavigationView::MeasureOverride(winrt::Size const& availableSize)
 {
     if (IsTopNavigationView() && IsTopPrimaryListVisible())
     {
+        RefreshTopNavigationItemObservers();
         if (availableSize.Width == std::numeric_limits<float>::infinity())
         {
             // We have infinite space, so move all items to primary list
@@ -1423,10 +1450,18 @@ void NavigationView::UpdateOpenPaneLength(double width)
 {
     if (!IsTopNavigationView() && m_rootSplitView)
     {
-        m_OpenPaneLength = std::max(0.0, std::min(width, OpenPaneLength()));
+        const auto newOpenPaneLength = std::max(0.0, std::min(width, OpenPaneLength()));
+        const bool openPaneLengthChanged = m_OpenPaneLength != newOpenPaneLength;
+        m_OpenPaneLength = newOpenPaneLength;
 
         const auto templateSettings = GetTemplateSettings();
         templateSettings->OpenPaneLength(m_OpenPaneLength);
+
+        // With a PaneTitle, UpdatePaneToggleSize stretches TogglePaneButton to m_OpenPaneLength.
+        if (openPaneLengthChanged)
+        {
+            UpdatePaneToggleSize();
+        }
     }
 }
 
@@ -1822,8 +1857,17 @@ void NavigationView::UpdatePaneButtonsWidths()
         return CompactPaneLength();
     }();
 
+    const bool paneToggleButtonWidthChanged = templateSettings->PaneToggleButtonWidth() != newButtonWidths;
+
     templateSettings->PaneToggleButtonWidth(newButtonWidths);
     templateSettings->SmallerPaneToggleButtonWidth(std::max(0.0, newButtonWidths - 8));
+
+    // UpdatePaneToggleSize copies PaneToggleButtonWidth into TogglePaneButton.Width. It can run before this
+    // template setting is first initialized (still 0), so re-apply it when the width changes.
+    if (paneToggleButtonWidthChanged)
+    {
+        UpdatePaneToggleSize();
+    }
 }
 
 void NavigationView::OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
@@ -3291,6 +3335,8 @@ winrt::DependencyObject NavigationView::ContainerFromMenuItem(winrt::IInspectabl
 
 void NavigationView::OnTopNavDataSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args)
 {
+    m_topNavigationObserversDirty = true;
+    PruneTopNavigationItemObservers();
     CloseTopNavigationViewFlyout();
 
     // Assume that raw data doesn't change very often for navigationview.
@@ -3330,6 +3376,222 @@ void NavigationView::TopNavigationViewItemContentChanged(bool forceInvalidateWid
             m_topDataProvider.InvalidWidthCache();
         }
         InvalidateMeasure();
+    }
+}
+
+void NavigationView::ClearTopNavigationItemObservers()
+{
+    const bool wasRefreshing = std::exchange(m_refreshingTopNavigationObservers, true);
+    auto restore = gsl::finally([this, wasRefreshing]() { m_refreshingTopNavigationObservers = wasRefreshing; });
+    auto observers = std::exchange(m_topNavigationItemObservers, {});
+    m_topNavigationItemProperties.UnsubscribeAll();
+    m_topNavigationObserversDirty = true;
+}
+
+void NavigationView::PruneTopNavigationItemObservers()
+{
+    auto observers = m_topNavigationItemObservers;
+    std::unordered_set<void const*> live;
+    if (IsTopNavigationView())
+    {
+        for (int index = 0; index < m_topDataProvider.Size(); ++index)
+        {
+            live.insert(LiveShapingTracker::Identity(m_topDataProvider.GetAt(index)));
+        }
+    }
+    for (const auto& [identity, observer] : observers)
+    {
+        if (live.find(identity) == live.end())
+        {
+            const auto current = m_topNavigationItemObservers.find(identity);
+            if (current != m_topNavigationItemObservers.end() && current->second == observer)
+            {
+                m_topNavigationItemObservers.erase(current);
+            }
+        }
+    }
+    m_topNavigationItemProperties.RetainOnly(live);
+}
+
+void NavigationView::OnTopNavigationItemPropertyChanged(const winrt::IInspectable& item)
+{
+    if (auto found = m_topNavigationItemObservers.find(LiveShapingTracker::Identity(item));
+        found != m_topNavigationItemObservers.end())
+    {
+        found->second->RefreshChildren = true;
+        TopNavigationViewItemContentChanged(true /*forceInvalidateWidthCache*/);
+    }
+}
+
+void NavigationView::ObserveTopNavigationItemChildren(
+    const winrt::IInspectable& data, const winrt::NavigationViewItem& container)
+{
+    const auto identity = LiveShapingTracker::Identity(data);
+    const auto found = m_topNavigationItemObservers.find(identity);
+    if (found == m_topNavigationItemObservers.end())
+    {
+        return;
+    }
+
+    const auto observer = found->second;
+    observer->RefreshChildren = false;
+    const auto source = container.MenuItemsSource();
+    if (observer->ChildrenSource.get() == source)
+    {
+        return;
+    }
+
+    // Release the old subscription only after publishing replacement state; revocation can run app code.
+    auto oldSource = observer->ChildrenSource.get();
+    auto oldView = observer->ChildrenView.get();
+    auto oldRevoker = std::move(observer->ChildrenChanged);
+    observer->ChildrenView.set(nullptr);
+    observer->ChildrenSource.set(source);
+    if (source)
+    {
+        auto view = source.try_as<winrt::ItemsSourceView>();
+        if (!view)
+        {
+            view = winrt::ItemsSourceView(source);
+        }
+        const auto current = m_topNavigationItemObservers.find(identity);
+        if (current == m_topNavigationItemObservers.end() || current->second != observer ||
+            observer->ChildrenSource.get() != source)
+        {
+            return;
+        }
+        observer->ChildrenView.set(view);
+        observer->ChildrenChanged = view.CollectionChanged(winrt::auto_revoke,
+            [weakThis = winrt::make_weak(static_cast<winrt::NavigationView>(*this)),
+                weakObserver = std::weak_ptr<TopNavigationItemObserver>(observer),
+                weakView = winrt::make_weak(view),
+                identity, queue = DispatcherQueue()](const auto&, const auto&)
+            {
+                winrt::check_hresult(queue.HasThreadAccess() ? S_OK : RPC_E_WRONG_THREAD);
+                if (auto strongThis = weakThis.get())
+                {
+                    const auto owner = winrt::get_self<NavigationView>(strongThis);
+                    const auto current = owner->m_topNavigationItemObservers.find(identity);
+                    if (current != owner->m_topNavigationItemObservers.end() && current->second == weakObserver.lock() &&
+                        current->second->ChildrenView.get() == weakView.get())
+                    {
+                        owner->TopNavigationViewItemContentChanged(true /*forceInvalidateWidthCache*/);
+                    }
+                }
+            });
+    }
+}
+
+void NavigationView::TopNavigationViewItemChildrenChanged(const winrt::NavigationViewItem& item)
+{
+    const auto itemImpl = winrt::get_self<NavigationViewItem>(item);
+    if (IsTopNavigationView() && itemImpl->IsTopLevelItem() && itemImpl->IsInNavigationViewOwnedRepeater())
+    {
+        ObserveTopNavigationItemChildren(MenuItemFromContainer(item), item);
+    }
+}
+
+void NavigationView::RefreshTopNavigationItemObservers()
+{
+    if (!m_appliedTemplate || m_refreshingTopNavigationObservers)
+    {
+        return;
+    }
+    m_refreshingTopNavigationObservers = true;
+    auto restore = gsl::finally([this]() { m_refreshingTopNavigationObservers = false; });
+
+    const bool reconcile = std::exchange(m_topNavigationObserversDirty, false);
+    std::vector<std::pair<int, winrt::IInspectable>> items;
+    for (int index = 0; index < m_topDataProvider.Size(); ++index)
+    {
+        if (auto item = m_topDataProvider.GetAt(index); item && !item.try_as<winrt::NavigationViewItemBase>())
+        {
+            items.emplace_back(index, item);
+        }
+    }
+    if (reconcile)
+    {
+        for (const auto& [index, item] : items)
+        {
+            if (m_topNavigationObserversDirty)
+            {
+                break;
+            }
+            const auto identity = LiveShapingTracker::Identity(item);
+            if (m_topNavigationItemObservers.find(identity) == m_topNavigationItemObservers.end())
+            {
+                m_topNavigationItemObservers.emplace(identity, std::make_shared<TopNavigationItemObserver>(this, item));
+            }
+            m_topNavigationItemObservers.at(identity)->RefreshChildren = true;
+            m_topNavigationItemProperties.Subscribe(item);
+        }
+        PruneTopNavigationItemObservers();
+    }
+
+    // Resolving a template can run application code and mutate the source.
+    for (const auto& [index, item] : items)
+    {
+        if (m_topNavigationObserversDirty)
+        {
+            InvalidateMeasure();
+            break;
+        }
+        const auto identity = LiveShapingTracker::Identity(item);
+        const auto found = m_topNavigationItemObservers.find(identity);
+        if (found == m_topNavigationItemObservers.end() || !std::exchange(found->second->RefreshChildren, false))
+        {
+            continue;
+        }
+        const auto observer = found->second;
+        auto container = m_topNavRepeater && m_topNavRepeaterOverflowView
+            ? GetContainerForIndex(index, false /*inFooter*/).try_as<winrt::NavigationViewItem>() : nullptr;
+        bool recycle = false;
+        if (!container)
+        {
+            container = ResolveContainerForItem(item).try_as<winrt::NavigationViewItem>();
+            recycle = static_cast<bool>(container);
+        }
+        if (container)
+        {
+            if (recycle)
+            {
+                if (auto component = CachedVisualTreeHelpers::GetDataTemplateComponent(container))
+                {
+                    component.Recycle();
+                    int nextPhase = VirtualizationInfo::PhaseReachedEnd;
+                    component.ProcessBindings(item, index, 0 /*currentPhase*/, nextPhase);
+                }
+                else
+                {
+                    auto context = item;
+                    if (auto element = item.try_as<winrt::FrameworkElement>())
+                    {
+                        if (auto dataContext = element.DataContext())
+                        {
+                            context = dataContext;
+                        }
+                    }
+                    container.DataContext(context);
+                }
+            }
+            const auto current = m_topNavigationItemObservers.find(identity);
+            if (current != m_topNavigationItemObservers.end() && current->second == observer)
+            {
+                ObserveTopNavigationItemChildren(item, container);
+            }
+            if (recycle)
+            {
+                if (auto component = CachedVisualTreeHelpers::GetDataTemplateComponent(container))
+                {
+                    component.Recycle();
+                }
+                else
+                {
+                    container.DataContext(nullptr);
+                }
+                RecycleContainer(container);
+            }
+        }
     }
 }
 
@@ -4147,6 +4409,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         property == s_ExpandedModeThresholdWidthProperty)
     {
         UpdateAdaptiveLayout(ActualWidth());
+        UpdateBackAndCloseButtonsVisibility();
     }
     else if (property == s_AlwaysShowHeaderProperty || property == s_HeaderProperty)
     {
@@ -4206,7 +4469,12 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         // m_wasForceClosed is set to true because ToggleButton is clicked and Pane is closed.
         // When PaneDisplayMode is changed, reset the force flag to make the Pane can be opened automatically again.
-        m_wasForceClosed = false;
+        // Before the template is first applied, the flag can only have come from the app setting IsPaneOpen=false
+        // (e.g. in XAML ahead of PaneDisplayMode), so keep it to honor that initial state. Re-templating still resets it.
+        if (m_templateAppliedOnce)
+        {
+            m_wasForceClosed = false;
+        }
 
         UpdatePaneToggleButtonVisibility();
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
@@ -4214,6 +4482,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         UpdatePaneVisibility();
         UpdateVisualState();
         UpdatePaneButtonsWidths();
+        UpdateBackAndCloseButtonsVisibility();
     }
     else if (property == s_IsPaneVisibleProperty)
     {
@@ -4306,6 +4575,11 @@ void NavigationView::UpdateNavigationViewItemsFactory()
 void NavigationView::SyncItemTemplates()
 {
     UpdateNavigationViewItemsFactory();
+    for (const auto& [identity, observer] : m_topNavigationItemObservers)
+    {
+        observer->RefreshChildren = true;
+    }
+    TopNavigationViewItemContentChanged(true /*forceInvalidateWidthCache*/);
 }
 
 void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -4636,7 +4910,8 @@ void NavigationView::UpdatePaneToggleSize()
 
             if (auto toggleButton = m_paneToggleButton.get())
             {
-                toggleButton.Width(togglePaneButtonWidth);
+                // OpenPaneLength can be smaller than the back/close button, and Width rejects negative values.
+                toggleButton.Width(std::max(0.0, togglePaneButtonWidth));
             }
         }
     }
@@ -4702,6 +4977,13 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
                 leftPaddingForBackOrCloseButton += paneHeaderPaddingForCloseButton;
             }
         }
+    }
+
+    if (useLeftPaddingForBackOrCloseButton && leftPaddingForBackOrCloseButton == 0.0)
+    {
+        // NavigationViewMinimalHeaderMargin has a negative left value that pulls the header back into the
+        // first button slot. Keep that slot reserved when no buttons are shown, so the header isn't clipped.
+        leftPaddingForBackOrCloseButton = GetPaneToggleButtonWidth();
     }
 
     if (auto contentLeftPadding = m_contentLeftPadding.get())

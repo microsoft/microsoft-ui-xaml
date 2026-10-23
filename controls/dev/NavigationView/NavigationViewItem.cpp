@@ -724,6 +724,7 @@ void NavigationViewItem::OnChildrenChanged(bool isCollectionChange)
         if (auto navView = GetNavigationView())
         {
             const auto navViewImpl = winrt::get_self<NavigationView>(navView);
+            navViewImpl->TopNavigationViewItemChildrenChanged(*this);
             // Ignore property changes caused by recycling a data-templated container.
             if (isCollectionChange || IsInNavigationViewOwnedRepeater() ||
                 navViewImpl->GetTopDataProvider().IndexOf(*this) != -1)
