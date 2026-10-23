@@ -41,7 +41,7 @@ public:
         GroupedSourceAdapterPtr const& adapter,
         ItemKeySelector const& itemKeySelector = {});
 
-    // All rows are data rows; level/expandability come from the adapter descriptor, keys are "node:".
+    // All rows are data rows; level/expandability and object identity come from the adapter.
     static TableViewRowMetadataProvider CreateForHierarchicalRows(
         HierarchicalSourceAdapterPtr const& adapter,
         ItemKeySelector const& itemKeySelector = {});
@@ -103,8 +103,8 @@ private:
     // Returns true when the expansion state changed.
     bool SetGroupExpandedCore(winrt::IInspectable const& group, std::optional<bool> desired);
 
-    // Hierarchy equivalent; the node key is the adapter's addressing scheme.
-    bool SetNodeExpandedCore(winrt::hstring const& nodeKey, std::optional<bool> desired);
+    // Hierarchy equivalent; object identity is the adapter's addressing scheme.
+    bool SetNodeExpandedCore(winrt::hstring const& identity, std::optional<bool> desired);
 
     // Composed projection routes both key spaces through Expand/Collapse/Toggle.
     bool IsNodeExpansionKey(winrt::hstring const& key) const;

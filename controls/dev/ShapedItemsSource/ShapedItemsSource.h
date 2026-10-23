@@ -159,7 +159,7 @@ public:
     std::shared_ptr<HierarchicalSourceAdapter> HierarchicalAdapter() const noexcept { return m_hierarchicalAdapter; }
     // The selector every identity consumer must use. Derives identity from each item's object
     // identity, so shaping never depends on the app having a unique domain key.
-    ShapingHelpers::KeySelector const& IdentitySelector() const noexcept { return EffectiveIdentitySelector(); }
+    ShapingHelpers::KeySelector const& IdentitySelector() const noexcept { return m_intrinsicKeySelector; }
 
     void Refresh();
 
@@ -181,9 +181,19 @@ public:
     // item may have changed untracked).
     void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook) { m_liveItemChangedHook = std::move(hook); }
 
-    // Lets the owner drop per-row state (comparer ranks) for rows that left the source: called with the
-    // removed item after an in-place sorted removal, or with null and every source row after a rebuild.
-    void SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook) { m_rowsReleasedHook = std::move(hook); }
+    // Reconcile owner state against the unfiltered source, or retire one outgoing item.
+    // Called while the previous source snapshot still keeps departing objects alive.
+    void SetSourceItemLifetimeHandlers(
+        std::function<void(std::vector<winrt::IInspectable> const&)> retain,
+        std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> remove)
+    {
+        m_sourceItemsRetained = std::move(retain);
+        m_sourceItemRemoved = std::move(remove);
+        if (auto const reconcile = m_sourceItemsRetained)
+        {
+            reconcile(m_sourceItems);
+        }
+    }
 
 private:
     void SubscribeToSourceCollectionChanges();
@@ -206,7 +216,10 @@ private:
     // handler per row observing the same change.
     bool ShouldTrackSortKeyChanges() const { return HasActiveSort() && !IsLiveShapingEnabled(); }
     void ClearSortDirtyRows();
-    void OnFlatItemPropertyChanged(uintptr_t itemAddress, winrt::hstring const& propertyName);
+    void OnFlatItemPropertyChanged(
+        ShapingHelpers::ObjectAddress itemAddress,
+        uint64_t subscriptionId,
+        winrt::hstring const& propertyName);
     void UpdateSortKeyPropertyFilter();
     void ApplyShapingChange();
     bool TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta const& delta, bool allowDuringIncrementalChange = false);
@@ -258,7 +271,7 @@ private:
     void ResliceGroupsFromHierarchy();
 
     // Root -> bucket, by object identity.
-    std::unordered_map<void*, size_t> m_rootBucketIndex;
+    std::unordered_map<ShapingHelpers::ObjectAddress, size_t> m_rootBucketIndex;
     std::vector<winrt::com_ptr<ShapedGroup>> m_hierarchyGroups;
 
     // Tears down the hierarchical projection and adapter. Every non-hierarchical rebuild calls it,
@@ -289,12 +302,6 @@ private:
     // which is also true for a merely mutable source: a mutable source with no verbs still wants
     // no identity, because there is no projection to anchor.
     bool HasAnyShapingVerb() const;
-    // Every identity consumer funnels through here. Identity comes from each item's object
-    // identity, so a row ALWAYS has one and no shaping verb has to refuse to run for want of one.
-    ShapingHelpers::KeySelector const& EffectiveIdentitySelector() const noexcept
-    {
-        return m_intrinsicKeySelector;
-    }
     // Confirm every row in the set a rebuild is about to publish has a usable, distinct identity.
     bool ValidateRowIdentities(std::vector<winrt::IInspectable> const& rows, wchar_t const*& reason) const;
     bool IsSourceMutable() const;
@@ -334,7 +341,6 @@ private:
     static bool LiveShapeSnapshotsDiffer(
         LiveShapeSnapshot const& left,
         LiveShapeSnapshot const& right);
-    static void const* LiveShapingKeyFor(winrt::IInspectable const& item);
     // Mark-and-sweep reconcile; surviving items keep their subscription.
     void RefreshLiveShapingSubscriptions(std::vector<winrt::IInspectable> const& items);
     void ClearLiveShapingSubscriptions();
@@ -342,8 +348,9 @@ private:
     // O(1) per-item delta for incremental paths.
     void AddLiveShapingSubscription(winrt::IInspectable const& item);
     void RemoveLiveShapingSubscription(winrt::IInspectable const& item);
-    // Subscription delta driven by the args, not the projection, so every apply path is covered.
-    void ApplyLiveShapingDelta(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
+    void RemoveSourceItemState(winrt::IInspectable const& item, bool preserveOwnerState = false);
+    // Lifetime and subscription delta from the source args, before any projection drops a row.
+    void ApplySourceItemStateDelta(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     void OnLiveShapedItemChanged(
         winrt::IInspectable const& item,
         winrt::hstring const& propertyName);
@@ -381,6 +388,8 @@ private:
     bool m_projectedAsGrouped{ false };
     winrt::hstring m_diagnosticName{ L"ShapedItemsSource" };
     winrt::IObservableVector<winrt::IInspectable> m_rows{ nullptr };
+    // Unfiltered source ownership: even hidden rows stay alive until their state is purged.
+    std::vector<winrt::IInspectable> m_sourceItems;
     winrt::IObservableVector<winrt::IInspectable> m_groupSource{ nullptr };
     // Identities of the rows currently in the flat projection, and each one's index in it.
     // Maintained incrementally so the sorted fast-path can detect duplicate/empty identities and
@@ -389,13 +398,15 @@ private:
     std::unordered_map<winrt::hstring, uint32_t> m_flatRowIdentityToIndex;
     // Sort-key changes raise no collection notification, so while sorted, INPC rows are observed
     // and a change to a sort-key property marks the row dirty for the next collection change.
-    // Keyed by IUnknown address (stable across re-orders); holding Item keeps the address unique.
+    // Keyed by IUnknown address; m_sourceItems keeps subscribed objects alive.
     struct FlatItemPropertyChangedSubscription
     {
-        winrt::IInspectable Item{ nullptr };
+        // Rejects queued events from a retired subscription, even if its address is recycled.
+        uint64_t Id{};
         winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged::PropertyChanged_revoker Revoker{};
     };
-    std::unordered_map<uintptr_t, FlatItemPropertyChangedSubscription> m_flatItemPropertyChangedRevokers;
+    std::unordered_map<ShapingHelpers::ObjectAddress, FlatItemPropertyChangedSubscription> m_flatItemPropertyChangedRevokers;
+    uint64_t m_nextFlatItemSubscriptionId{ 0 };
     bool m_flatItemPropertyChangedTrackingActive{ false };
     bool m_flatItemsMayChangeSortWithoutNotification{ false };
     // First path segment of each active sort axis' SortMemberPath.
@@ -403,7 +414,7 @@ private:
     // Some axis has no path (delegate key / comparer), so any property may affect the sort.
     bool m_anyPropertyMayAffectSort{ false };
     // Owner thread only: off-thread PropertyChanged is marshalled before it reaches these.
-    std::unordered_set<uintptr_t> m_sortDirtyRows;
+    std::unordered_set<ShapingHelpers::ObjectAddress> m_sortDirtyRows;
     bool m_sortDirtyOverflow{ false };
     bool m_raiseReorderAfterIncrementalChange{ false };
     // Bumped by every rebuild and every invalidation of the retained shaping state. The sorted
@@ -435,7 +446,7 @@ private:
     // live change forces a full restore. Shared so the handler never has to lock `this` off-thread.
     std::shared_ptr<std::atomic<bool>> m_liveShapingChangeDropped{ std::make_shared<std::atomic<bool>>(false) };
     bool m_liveShapingEnabled{ false };
-    std::unordered_map<void const*, LiveShapeSnapshot> m_liveShapeSnapshots;
+    std::unordered_map<ShapingHelpers::ObjectAddress, LiveShapeSnapshot> m_liveShapeSnapshots;
     // Pending live reshape: the projection may not reflect the captured snapshots.
     bool m_liveShapingDirty{ false };
     // A restore is queued on m_ownerQueue (so it implies m_ownerQueue is set). Separate from dirty
@@ -447,7 +458,8 @@ private:
     // Set only while dirty, but a refresh may clear dirty first, so it alone does not imply dirty.
     bool m_liveShapingHeld{ false };
     std::function<bool(winrt::IInspectable const&, bool)> m_liveItemChangedHook{};
-    std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> m_rowsReleasedHook{};
+    std::function<void(std::vector<winrt::IInspectable> const&)> m_sourceItemsRetained{};
+    std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> m_sourceItemRemoved{};
 
     // Both set or both null; m_parentKeySelector is the "hierarchy declared" test.
     ShapingHelpers::KeySelector m_keySelector{ nullptr };

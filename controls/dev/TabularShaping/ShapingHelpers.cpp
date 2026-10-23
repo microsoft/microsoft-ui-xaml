@@ -16,6 +16,56 @@
 
 namespace ShapingHelpers
 {
+    ObjectAddress GetObjectAddress(winrt::IInspectable const& item) noexcept
+    {
+        if (!item)
+        {
+            return ObjectAddress::Null;
+        }
+
+        auto const unknown = item.try_as<::IUnknown>();
+        return static_cast<ObjectAddress>(reinterpret_cast<uintptr_t>(unknown.get()));
+    }
+
+    winrt::hstring FormatObjectAddress(ObjectAddress address)
+    {
+        wchar_t buffer[2 + (sizeof(uintptr_t) * 2) + 1]{};
+        swprintf_s(buffer, L"0x%zx", static_cast<size_t>(address));
+        return winrt::hstring{ buffer };
+    }
+
+    bool TryParseObjectAddress(std::wstring_view identity, ObjectAddress& address) noexcept
+    {
+        address = ObjectAddress::Null;
+        if (identity.size() < 3 || identity.size() > 2 + sizeof(uintptr_t) * 2 ||
+            !identity.starts_with(L"0x") || (identity.size() > 3 && identity[2] == L'0'))
+        {
+            return false;
+        }
+
+        uintptr_t value = 0;
+        for (wchar_t ch : identity.substr(2))
+        {
+            uintptr_t digit;
+            if (ch >= L'0' && ch <= L'9')
+            {
+                digit = static_cast<uintptr_t>(ch - L'0');
+            }
+            else if (ch >= L'a' && ch <= L'f')
+            {
+                digit = static_cast<uintptr_t>(ch - L'a' + 10);
+            }
+            else
+            {
+                return false;
+            }
+            value = (value << 4) | digit;
+        }
+
+        address = static_cast<ObjectAddress>(value);
+        return true;
+    }
+
     namespace
     {
         enum class NumericKind { None, Signed, Unsigned, Floating };
@@ -555,10 +605,10 @@ namespace ShapingHelpers
             }
         }
 
-        if (auto unknown = value.try_as<::IUnknown>())
+        if (auto const address = GetObjectAddress(value); address != ObjectAddress::Null)
         {
             wchar_t buffer[40];
-            swprintf_s(buffer, 40, L"o:%016llX", static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(unknown.get())));
+            swprintf_s(buffer, 40, L"o:%016llX", static_cast<unsigned long long>(address));
             return winrt::hstring{ buffer };
         }
 
@@ -578,10 +628,10 @@ namespace ShapingHelpers
             return L"value:" + key;
         }
 
-        if (auto unknown = value.try_as<::IUnknown>())
+        if (auto const address = GetObjectAddress(value); address != ObjectAddress::Null)
         {
             wchar_t buffer[32];
-            swprintf_s(buffer, 32, L"object:%p", unknown.get());
+            swprintf_s(buffer, 32, L"object:%p", reinterpret_cast<void*>(static_cast<uintptr_t>(address)));
             return winrt::hstring{ buffer };
         }
 
@@ -1098,17 +1148,10 @@ namespace ShapingHelpers
     void CustomSortRankAdapter::ClearRanks()
     {
         ++m_generation;
-        m_ranks.clear();
         m_rankByIdentity.clear();
+        m_ranks.clear();
         m_evicted.clear();
         m_rerankAllPending = false;
-    }
-
-    void* CustomSortRankAdapter::IdentityOf(winrt::IInspectable const& item)
-    {
-        // The entry's Item keeps the object alive, so the raw identity stays valid while ranked.
-        auto const unknown = item.try_as<::IUnknown>();
-        return unknown ? unknown.get() : nullptr;
     }
 
     void CustomSortRankAdapter::AddRanked(winrt::IInspectable const& item, int32_t rank)
@@ -1118,12 +1161,24 @@ namespace ShapingHelpers
 
     void CustomSortRankAdapter::InsertRanked(size_t position, winrt::IInspectable const& item, int32_t rank)
     {
-        void* const identity = IdentityOf(item);
-        m_ranks.insert(m_ranks.begin() + position, RankEntry{ item, rank, identity });
-        if (identity)
+        auto const identity = GetObjectAddress(item);
+        RankEntry entry;
+        const bool canResolveItem = item && item.try_as<::IWeakReferenceSource>();
+        if (canResolveItem)
         {
-            m_rankByIdentity[identity] = rank;
+            entry.WeakItem = winrt::make_weak(item);
         }
+        else
+        {
+            entry.StrongItem = item;
+        }
+        entry.Rank = rank;
+        entry.Identity = identity;
+        if (identity != ObjectAddress::Null)
+        {
+            m_rankByIdentity[identity] = { rank, entry.WeakItem, canResolveItem };
+        }
+        m_ranks.insert(m_ranks.begin() + position, std::move(entry));
     }
 
     void CustomSortRankAdapter::Reset()
@@ -1140,65 +1195,45 @@ namespace ShapingHelpers
         }
     }
 
-    void CustomSortRankAdapter::Forget(winrt::IInspectable const& item)
+    void CustomSortRankAdapter::Remove(winrt::IInspectable const& item)
     {
-        if (m_comparerActive || !item)
+        auto const identity = GetObjectAddress(item);
+        if (identity == ObjectAddress::Null)
         {
             return;
         }
 
-        void* const identity = IdentityOf(item);
-        auto const isItem = [&](winrt::IInspectable const& candidate, void* candidateIdentity)
+        ++m_generation;
+        m_rankByIdentity.erase(identity);
+        std::erase_if(m_ranks, [identity](RankEntry const& entry) { return entry.Identity == identity; });
+        std::erase_if(m_evicted, [identity](RankEntry const& entry) { return entry.Identity == identity; });
+        if (m_ranks.empty() && m_evicted.empty())
         {
-            return candidate == item || (identity && candidateIdentity == identity);
-        };
-        m_ranks.erase(
-            std::remove_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry) { return isItem(entry.Item, entry.Identity); }),
-            m_ranks.end());
-        m_evicted.erase(
-            std::remove_if(m_evicted.begin(), m_evicted.end(), [&](winrt::IInspectable const& evicted) { return isItem(evicted, IdentityOf(evicted)); }),
-            m_evicted.end());
-        if (identity)
-        {
-            m_rankByIdentity.erase(identity);
+            m_rerankAllPending = false;
         }
     }
 
-    void CustomSortRankAdapter::RetainOnly(std::vector<winrt::IInspectable> const& liveRows)
+    void CustomSortRankAdapter::RetainOnly(std::unordered_set<ObjectAddress> const& live)
     {
-        if (m_comparerActive || (m_ranks.empty() && m_evicted.empty()))
+        auto const departed = [&live](RankEntry const& entry) { return !live.contains(entry.Identity); };
+        if (std::none_of(m_ranks.begin(), m_ranks.end(), departed) &&
+            std::none_of(m_evicted.begin(), m_evicted.end(), departed))
         {
+            if (m_comparerActive)
+            {
+                ++m_generation;
+            }
             return;
         }
 
-        std::unordered_set<void*> live;
-        live.reserve(liveRows.size());
-        for (auto const& row : liveRows)
+        ++m_generation;
+        std::erase_if(m_rankByIdentity, [&live](auto const& entry) { return !live.contains(entry.first); });
+        std::erase_if(m_ranks, departed);
+        std::erase_if(m_evicted, departed);
+        if (m_ranks.empty() && m_evicted.empty())
         {
-            if (void* const identity = row ? IdentityOf(row) : nullptr)
-            {
-                live.insert(identity);
-            }
+            m_rerankAllPending = false;
         }
-        auto const isLive = [&](void* identity) { return identity && live.find(identity) != live.end(); };
-
-        m_ranks.erase(
-            std::remove_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry)
-            {
-                if (isLive(entry.Identity))
-                {
-                    return false;
-                }
-                if (entry.Identity)
-                {
-                    m_rankByIdentity.erase(entry.Identity);
-                }
-                return true;
-            }),
-            m_ranks.end());
-        m_evicted.erase(
-            std::remove_if(m_evicted.begin(), m_evicted.end(), [&](winrt::IInspectable const& evicted) { return !isLive(IdentityOf(evicted)); }),
-            m_evicted.end());
     }
 
     void CustomSortRankAdapter::Rank(
@@ -1282,17 +1317,27 @@ namespace ShapingHelpers
             PlaceEvicted();
         }
 
-        const auto generation = m_generation;
-
-        if (auto unknown = item.try_as<::IUnknown>())
+        if (auto const identity = GetObjectAddress(item); identity != ObjectAddress::Null)
         {
-            auto const found = m_rankByIdentity.find(unknown.get());
+            auto const found = m_rankByIdentity.find(identity);
             if (found != m_rankByIdentity.end())
             {
-                return winrt::box_value(found->second);
+                auto const lookup = found->second;
+                auto const generation = m_generation;
+                const bool matches = !lookup.CanResolveItem || GetObjectAddress(lookup.Item.get()) == identity;
+                if (m_generation != generation)
+                {
+                    return nullptr;
+                }
+                if (matches)
+                {
+                    return winrt::box_value(lookup.Rank);
+                }
+                Remove(item);
             }
         }
 
+        const auto generation = m_generation;
         // A row the rank pass never saw - added after the sort was applied.
         int32_t rank = 0;
         bool tied = false;
@@ -1313,6 +1358,20 @@ namespace ShapingHelpers
         // this can run inside the app's PropertyChanged setter. Find the first entry not below item.
         rank = 0;
         tied = false;
+        // A weak entry whose object died cannot be compared; it no longer needs a rank either.
+        std::erase_if(m_ranks, [this](RankEntry const& entry)
+        {
+            if (entry.Identity == ObjectAddress::Null || entry.StrongItem || entry.WeakItem.get())
+            {
+                return false;
+            }
+            if (auto const lookup = m_rankByIdentity.find(entry.Identity);
+                lookup != m_rankByIdentity.end() && lookup->second.CanResolveItem && !lookup->second.Item.get())
+            {
+                m_rankByIdentity.erase(lookup);
+            }
+            return true;
+        });
         size_t low = 0;
         size_t high = m_ranks.size();
         bool highIsEqual = false;
@@ -1320,7 +1379,7 @@ namespace ShapingHelpers
         {
             const size_t mid = low + (high - low) / 2;
             // Copied: the comparer is app code and must not see a reference into m_ranks.
-            auto const entryItem = m_ranks[mid].Item;
+            auto const entryItem = m_ranks[mid].Item();
             const int32_t comparison = SafeCompare(entryItem, item);
             if (m_generation != generation)
             {
@@ -1350,9 +1409,9 @@ namespace ShapingHelpers
         {
             auto& entry = m_ranks[i];
             ++entry.Rank;
-            if (entry.Identity)
+            if (entry.Identity != ObjectAddress::Null)
             {
-                m_rankByIdentity[entry.Identity] = entry.Rank;
+                m_rankByIdentity[entry.Identity].Rank = entry.Rank;
             }
         }
 
@@ -1426,10 +1485,10 @@ namespace ShapingHelpers
         bool& wasShared)
     {
 
-        void* const identity = IdentityOf(item);
+        auto const identity = GetObjectAddress(item);
         auto const found = std::find_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry)
         {
-            return entry.Item == item || (identity && entry.Identity == identity);
+            return identity != ObjectAddress::Null && entry.Identity == identity;
         });
         if (found == m_ranks.end())
         {
@@ -1438,11 +1497,12 @@ namespace ShapingHelpers
 
         const int32_t rank = found->Rank;
         oldRank = rank;
-        m_ranks.erase(found);
-        if (identity)
+        if (identity != ObjectAddress::Null)
         {
             m_rankByIdentity.erase(identity);
         }
+        auto evicted = std::move(*found);
+        m_ranks.erase(found);
 
         // Keep the ranks dense: re-placing an item that did not move must hand every row back the
         // key it had, or the reshape would see a change where there was none.
@@ -1458,15 +1518,15 @@ namespace ShapingHelpers
                 if (entry.Rank > rank)
                 {
                     --entry.Rank;
-                    if (entry.Identity)
+                    if (entry.Identity != ObjectAddress::Null)
                     {
-                        m_rankByIdentity[entry.Identity] = entry.Rank;
+                        m_rankByIdentity[entry.Identity].Rank = entry.Rank;
                     }
                 }
             }
         }
 
-        m_evicted.push_back(item);
+        m_evicted.push_back(std::move(evicted));
         return true;
     }
 
@@ -1493,8 +1553,17 @@ namespace ShapingHelpers
         auto evicted = std::move(m_evicted);
         m_evicted.clear();
         const auto generation = m_generation;
-        for (auto const& item : evicted)
+        for (auto const& entry : evicted)
         {
+            auto const item = entry.Item();
+            if (m_generation != generation)
+            {
+                return;
+            }
+            if (!item && entry.Identity != ObjectAddress::Null)
+            {
+                continue;
+            }
             int32_t rank = 0;
             bool tied = false;
             if (!PlaceUnranked(item, generation, rank, tied))
@@ -1511,18 +1580,31 @@ namespace ShapingHelpers
             return left.Rank < right.Rank;
         });
 
-        std::vector<winrt::IInspectable> rows;
-        rows.reserve(m_ranks.size() + m_evicted.size());
-        for (auto const& entry : m_ranks)
-        {
-            rows.push_back(entry.Item);
-        }
-        for (auto const& item : m_evicted)
-        {
-            rows.push_back(item);
-        }
-
+        auto ranked = std::move(m_ranks);
+        auto evicted = std::move(m_evicted);
         ClearRanks();
-        PopulateRanks(rows, m_generation);
+        const auto generation = m_generation;
+        std::vector<winrt::IInspectable> rows;
+        rows.reserve(ranked.size() + evicted.size());
+        auto const append = [&](std::vector<RankEntry> const& entries)
+        {
+            for (auto const& entry : entries)
+            {
+                auto item = entry.Item();
+                if (m_generation != generation)
+                {
+                    return false;
+                }
+                if (item || entry.Identity == ObjectAddress::Null)
+                {
+                    rows.push_back(std::move(item));
+                }
+            }
+            return true;
+        };
+        if (append(ranked) && append(evicted))
+        {
+            PopulateRanks(rows, generation);
+        }
     }
 }
