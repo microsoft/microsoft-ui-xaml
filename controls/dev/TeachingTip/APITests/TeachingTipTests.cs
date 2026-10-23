@@ -3048,6 +3048,175 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario (issue #8095 review): Target and IsOpen=true are set while the tip and the target are still detached; both
+        //           are then added under a panel that has a DataContext, so the target inherits it only after the tip
+        //           opened. Then, while open, a new detached target is assigned and added. Each time the target is moved
+        //           to another panel under the same parent.
+        // Expected: the tip stays open after each move.
+        // A failure means: the tip compared the target's data with a value read before the target was in the tree.
+        [TestMethod]
+        public void OpenTipStaysOpenWhenTargetInheritsDataContextAfterOpening()
+        {
+            TeachingTip tip = null;
+            StackPanel hostA = null, hostB = null;
+            Button target = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var root = new StackPanel() { DataContext = new object() };
+                hostA = new StackPanel();
+                hostB = new StackPanel() { Margin = new Thickness(0, 40, 0, 0) };
+                target = new Button() { Content = "Target" };
+                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle" };
+                tip.Target = target;
+                tip.IsOpen = true;
+                hostA.Children.Add(target);
+                root.Children.Add(hostA);
+                root.Children.Add(hostB);
+                root.Children.Add(tip);
+                Content = root;
+                Content.UpdateLayout();
+            });
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open once it and its target are in the tree");
+            VerifyTipStaysOpenWhenTargetMoves(tip, target, hostA, hostB, "a target that inherited its DataContext after the tip opened");
+
+            Button newTarget = null;
+            RunOnUIThread.Execute(() =>
+            {
+                newTarget = new Button() { Content = "New target" };
+                tip.Target = newTarget;
+                hostA.Children.Add(newTarget);
+                Content.UpdateLayout();
+            });
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should stay open on the new target");
+            VerifyTipStaysOpenWhenTargetMoves(tip, newTarget, hostA, hostB, "a detached target assigned while the tip was open");
+
+            RunOnUIThread.Execute(() => tip.IsOpen = false);
+            Verify.IsTrue(WaitForTipState(tip, isOpen: false), "The tip should close");
+        }
+
+        // Scenario (issue #8095 review): two ItemsRepeaters share an element factory whose elements use a compiled-binding
+        //           style DataTemplateComponent (as x:Bind does), so ItemsRepeater calls ProcessBindings instead of setting
+        //           DataContext. An OPEN tip targets the element for "A0"; the first repeater's items are cleared and the
+        //           second repeater gets "B0", so the shared pool hands the same element to "B0".
+        // Expected: the tip either closes or its target still shows "A0".
+        // A failure means: the tip stayed open on an element that now represents a different item.
+        [TestMethod]
+        public void OpenTipClosesWhenCompiledTemplateElementIsReusedForAnotherItem()
+        {
+            TeachingTip tip = null;
+            ItemsRepeater repeaterA = null, repeaterB = null;
+            Button target = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var factory = new SharedPoolCompiledBindingFactory();
+                repeaterA = new ItemsRepeater() { ItemTemplate = factory, ItemsSource = new List<string> { "A0" } };
+                repeaterB = new ItemsRepeater() { ItemTemplate = factory };
+                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle", PreferredPlacement = TeachingTipPlacementMode.BottomRight };
+                var root = new StackPanel();
+                root.Children.Add(repeaterA);
+                root.Children.Add(repeaterB);
+                root.Children.Add(tip);
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                target = (Button)repeaterA.TryGetElement(0);
+                Verify.IsNotNull(target, "Element for A0");
+                Verify.IsNull(target.DataContext, "A compiled-binding element gets no DataContext from ItemsRepeater");
+                tip.Target = target;
+                tip.IsOpen = true;
+            });
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open on the A0 element");
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeaterA.ItemsSource = null;
+                repeaterB.ItemsSource = new List<string> { "B0" };
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            WaitForTipState(tip, isOpen: false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var shownItem = target.Content as string;
+                Log.Comment($"After reuse: tip.IsOpen={tip.IsOpen}, target.IsLoaded={target.IsLoaded}, target.Content={shownItem}, target.DataContext={target.DataContext}");
+                Verify.AreSame(repeaterB, VisualTreeHelper.GetParent(target), "Precondition: the shared pool should hand the A0 element to the second repeater");
+                Verify.IsTrue(!tip.IsOpen || shownItem == "A0",
+                    $"An open tip must not stay on an element that now shows '{shownItem}' instead of 'A0'");
+                tip.IsOpen = false;
+            });
+            WaitForTipState(tip, isOpen: false);
+        }
+
+        private static void VerifyTipStaysOpenWhenTargetMoves(TeachingTip tip, FrameworkElement target, Panel from, Panel to, string what)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                from.Children.Remove(target);
+                to.Children.Add(target);
+            });
+            bool stayedOpen = WaitForTipState(tip, isOpen: true);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(stayedOpen, "The tip should stay open when it targets " + what + " and that target moves to another panel");
+                to.Children.Remove(target);
+                from.Children.Add(target);
+            });
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should stay open when the target moves back");
+        }
+
+        // Element factory with one pool shared by every repeater that uses it. Each element carries a DataTemplateComponent,
+        // like a compiled x:Bind template, so ItemsRepeater runs ProcessBindings instead of setting DataContext.
+        private partial class SharedPoolCompiledBindingFactory : ElementFactory
+        {
+            private readonly Stack<Button> _pool = new Stack<Button>();
+
+            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
+            {
+                if (_pool.Count > 0)
+                {
+                    return _pool.Pop();
+                }
+                var element = new Button() { Width = 100, Height = 40 };
+                XamlBindingHelper.SetDataTemplateComponent(element, new ContentBindingComponent(element));
+                return element;
+            }
+
+            protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
+            {
+                var element = (Button)args.Element;
+                if (args.Parent is Panel parent)
+                {
+                    parent.Children.Remove(element);
+                }
+                _pool.Push(element);
+            }
+        }
+
+        private partial class ContentBindingComponent : IDataTemplateComponent
+        {
+            private readonly Button _element;
+
+            public ContentBindingComponent(Button element)
+            {
+                _element = element;
+            }
+
+            public void Recycle()
+            {
+            }
+
+            public void ProcessBindings(object item, int itemIndex, int phase, out int nextPhase)
+            {
+                _element.Content = item;
+                nextPhase = -1;
+            }
+        }
+
         private (TeachingTip, Microsoft.UI.Xaml.Controls.Primitives.ToggleButton, StackPanel) CreateBoundTargetedTip()
         {
             TeachingTip tip = null;
