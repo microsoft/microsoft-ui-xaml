@@ -33,6 +33,10 @@ The greatest drawback of manifest-based ETW events is the necessity of having a 
 
 TraceLogging is an alternative way of writing ETW events that has been used by components like Shell for years. It doesn't require a manifest at all, so the traces that are generated can be opened anywhere without messing with a .man file. TraceLogging events don't show up in the Event Viewer, which is a limitation that WinUI can live with for most of the events that we want to log. This is the way to add new ETW events into Xaml. We should also gradually convert existing manifest-based events to TraceLogging.
 
+When converting an existing manifest event, preserve its payload field names and event level unless an intentional schema or filtering change is required. Explicit `TraceLoggingProviderEnabled` checks must use the same level as the event write.
+
+When profiling is enabled, PasswordBox temporarily emits both manifest events 399 (`SendInputScopeToRichEditInfo`) and 400 (`SetIhmKeyboardSkinInfo`) and their corresponding TraceLogging events to preserve existing test consumers. Remove these compatibility emissions only after those consumers support TraceLogging.
+
 WIL TraceLogging documentation has detailed documentation for TraceLogging. This document covers the basics.
 
 TraceLogging needs a GUID corresponding to the provider. For now, use the same provider as system Xaml. To create new providers, generate the GUID with `TldGuid.exe`.

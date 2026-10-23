@@ -405,22 +405,24 @@ public:
     //     payload preserves the retail fields alongside the typed identities.
     // =====================================================================
 
-    // Resolve relationships only when this verbose event can actually be emitted.
-#define TRACE_ELEMENT_EVENT(OpName, Object, RelatedUIElement, ...) \
+    // Resolve relationships only when the event can actually be emitted at its original level.
+#define TRACE_ELEMENT_EVENT(OpName, Object, RelatedUIElement, Level, ...) \
     do \
     { \
-        if (TraceLoggingProviderEnabled(TraceLoggingType::Provider(), WINEVENT_LEVEL_VERBOSE, 0)) \
+        if (TraceLoggingProviderEnabled(TraceLoggingType::Provider(), Level, 0)) \
         { \
             const auto identity = GetIdentity(Object, RelatedUIElement); \
             if (identity.uiElement != 0 && identity.objectPointer == 0) \
             { \
                 TraceLoggingWrite(TraceLoggingType::Provider(), OpName, \
+                    TraceLoggingLevel(Level), \
                     TraceLoggingValue(identity.uiElement, "ElementId"), \
                     __VA_ARGS__); \
             } \
             else if (identity.uiElement != 0) \
             { \
                 TraceLoggingWrite(TraceLoggingType::Provider(), OpName, \
+                    TraceLoggingLevel(Level), \
                     TraceLoggingValue(identity.uiElement, "ElementId"), \
                     TraceLoggingValue(identity.objectPointer, "objectpointer"), \
                     __VA_ARGS__); \
@@ -428,6 +430,7 @@ public:
             else \
             { \
                 TraceLoggingWrite(TraceLoggingType::Provider(), OpName, \
+                    TraceLoggingLevel(Level), \
                     TraceLoggingValue(identity.objectPointer, "objectpointer"), \
                     __VA_ARGS__); \
             } \
@@ -438,154 +441,144 @@ public:
     // so the consumer pairs them into a duration exactly like the retail Begin/End.
     // End always takes a subject; the parameterless Begin exists only for
     // GenerateContainer (see above).
-#define DEFINE_ELEMENT_ACTIVITY(OpName) \
+#define DEFINE_ELEMENT_ACTIVITY(OpName, Level) \
     static void OpName##Begin(CDependencyObject* object, CDependencyObject* relatedUIElement = nullptr) \
     { \
-        TRACE_ELEMENT_EVENT(#OpName, object, relatedUIElement, \
-            TraceLoggingOpcode(WINEVENT_OPCODE_START), \
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE)); \
+        TRACE_ELEMENT_EVENT(#OpName, object, relatedUIElement, Level, \
+            TraceLoggingOpcode(WINEVENT_OPCODE_START)); \
     } \
     static void OpName##End(CDependencyObject* object, CDependencyObject* relatedUIElement = nullptr) \
     { \
-        TRACE_ELEMENT_EVENT(#OpName, object, relatedUIElement, \
-            TraceLoggingOpcode(WINEVENT_OPCODE_STOP), \
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE)); \
+        TRACE_ELEMENT_EVENT(#OpName, object, relatedUIElement, Level, \
+            TraceLoggingOpcode(WINEVENT_OPCODE_STOP)); \
     }
 
     // Layout-manager passes (CLayoutManager): the subject is the layout root.
-    DEFINE_ELEMENT_ACTIVITY(FireLayoutUpdated);
-    DEFINE_ELEMENT_ACTIVITY(FireSizeChanged);
+    DEFINE_ELEMENT_ACTIVITY(FireLayoutUpdated, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(FireSizeChanged, WINEVENT_LEVEL_INFO);
     // Per-element size-changed notification: the subject is the element whose size changed.
-    DEFINE_ELEMENT_ACTIVITY(IndividualSizeChanged);
+    DEFINE_ELEMENT_ACTIVITY(IndividualSizeChanged, WINEVENT_LEVEL_INFO);
     // Root visual set on a visual tree: the subject is the root element.
-    DEFINE_ELEMENT_ACTIVITY(PutRootVisual);
+    DEFINE_ELEMENT_ACTIVITY(PutRootVisual, WINEVENT_LEVEL_INFO);
 
     // Top-level layout passes (CLayoutManager::UpdateLayout): the subject is the layout root.
-    DEFINE_ELEMENT_ACTIVITY(Layout);
-    DEFINE_ELEMENT_ACTIVITY(Measure);
-    DEFINE_ELEMENT_ACTIVITY(Arrange);
+    DEFINE_ELEMENT_ACTIVITY(Layout, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(Measure, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(Arrange, WINEVENT_LEVEL_INFO);
 
     // Layout transitions: the subject is the element the transition targets.
     // RealizeTransition stays a point event: its retail Begin/End brackets a whole
     // pass while the element identity is per-iteration inside the loop.
     static void RealizeTransition(CDependencyObject* object)
     {
-        TRACE_ELEMENT_EVENT("RealizeTransition", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+        TRACE_ELEMENT_EVENT("RealizeTransition", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingOpcode(WINEVENT_OPCODE_INFO));
     }
-    DEFINE_ELEMENT_ACTIVITY(CancelTransitions);
-    DEFINE_ELEMENT_ACTIVITY(ProcessLayoutForTransition);
+    DEFINE_ELEMENT_ACTIVITY(CancelTransitions, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(ProcessLayoutForTransition, WINEVENT_LEVEL_VERBOSE);
 
     // Focus (CFocusManager): the subject can be a UI element or a non-UI Hyperlink.
     // UpdateFocus Begin carries the requested target and End carries pNewFocus; they can
     // differ after redirection. End also runs on cancellation/error, not just successful focus.
-    DEFINE_ELEMENT_ACTIVITY(UpdateFocus);
-    DEFINE_ELEMENT_ACTIVITY(XYFocusEntered);
+    DEFINE_ELEMENT_ACTIVITY(UpdateFocus, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(XYFocusEntered, WINEVENT_LEVEL_INFO);
     // XYFocusEntered adds the retail Begin's focus-direction string on the Begin edge.
     static void XYFocusEnteredBegin(CDependencyObject* object, PCWSTR Direction)
     {
-        TRACE_ELEMENT_EVENT("XYFocusEntered", object, nullptr,
+        TRACE_ELEMENT_EVENT("XYFocusEntered", object, nullptr, WINEVENT_LEVEL_INFO,
             TraceLoggingOpcode(WINEVENT_OPCODE_START),
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
             TraceLoggingValue(Direction, "Direction"));
     }
 
     // Items virtualization (dxaml projection layer): the subject is the container/panel.
     // GenerateContainer carries an identity on its End: the container is only realized near the
     // end of the generate call (inverted Begin/End pair; CopyTo keeps it live through Cleanup).
-    DEFINE_ELEMENT_ACTIVITY(GenerateContainer);
+    DEFINE_ELEMENT_ACTIVITY(GenerateContainer, WINEVENT_LEVEL_INFO);
     static void GenerateContainerBegin()
     {
         TraceLoggingWrite(TraceLoggingType::Provider(), "GenerateContainer",
             TraceLoggingOpcode(WINEVENT_OPCODE_START),
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+            TraceLoggingLevel(WINEVENT_LEVEL_INFO));
     }
-    DEFINE_ELEMENT_ACTIVITY(GenerateItems);
+    DEFINE_ELEMENT_ACTIVITY(GenerateItems, WINEVENT_LEVEL_INFO);
     // GenerateMCContainer carries the retail item-collection index on Begin and the container
     // identity on End, once the container is available.
-    DEFINE_ELEMENT_ACTIVITY(GenerateMCContainer);
+    DEFINE_ELEMENT_ACTIVITY(GenerateMCContainer, WINEVENT_LEVEL_INFO);
     static void GenerateMCContainerBegin(int32_t Index)
     {
         TraceLoggingWrite(TraceLoggingType::Provider(), "GenerateMCContainer",
             TraceLoggingOpcode(WINEVENT_OPCODE_START),
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(Index, "Index"));
+            TraceLoggingLevel(WINEVENT_LEVEL_INFO),
+            TraceLoggingValue(Index, "ItemIndex"));
     }
-    DEFINE_ELEMENT_ACTIVITY(PlaceElement);
+    DEFINE_ELEMENT_ACTIVITY(PlaceElement, WINEVENT_LEVEL_INFO);
     // PlaceElement adds the retail Begin's data index on the Begin edge.
     static void PlaceElementBegin(CDependencyObject* object, int32_t DataIndex)
     {
-        TRACE_ELEMENT_EVENT("PlaceElement", object, nullptr,
+        TRACE_ELEMENT_EVENT("PlaceElement", object, nullptr, WINEVENT_LEVEL_INFO,
             TraceLoggingOpcode(WINEVENT_OPCODE_START),
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(DataIndex, "DataIndex"));
+            TraceLoggingValue(DataIndex, "ItemIndex"));
     }
-    DEFINE_ELEMENT_ACTIVITY(PrepareContainer);
-    DEFINE_ELEMENT_ACTIVITY(MeasureChild);
-    DEFINE_ELEMENT_ACTIVITY(VirtualizationMeasure);
+    DEFINE_ELEMENT_ACTIVITY(PrepareContainer, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(MeasureChild, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(VirtualizationMeasure, WINEVENT_LEVEL_INFO);
     // OrientedVirtualizingPanel-scoped virtualization bookkeeping (CleanupContainers,
     // UpdateLogicalScrollData: the subject is the panel itself). VirtualizationAdd is
     // per-container: the subject is the container being added.
-    DEFINE_ELEMENT_ACTIVITY(VirtualizationAdd);
-    DEFINE_ELEMENT_ACTIVITY(VirtualizationCleanup);
-    DEFINE_ELEMENT_ACTIVITY(UpdateLogicalScrollData);
+    DEFINE_ELEMENT_ACTIVITY(VirtualizationAdd, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(VirtualizationCleanup, WINEVENT_LEVEL_INFO);
+    DEFINE_ELEMENT_ACTIVITY(UpdateLogicalScrollData, WINEVENT_LEVEL_INFO);
     // VirtualizationIsEnabledByLayout stays a point event (retail form is win:Info).
-    // IsVirtualizationActive/ElementName/ClassName/ParentClassName mirror the retail Info1 payload.
+    // IsEnabled/Name/ClassType/PropertyType mirror the retail Info1 payload.
     static void VirtualizationIsEnabledByLayout(CDependencyObject* object, bool IsVirtualizationActive, PCWSTR ElementName, PCWSTR ClassName, PCWSTR ParentClassName)
     {
-        TRACE_ELEMENT_EVENT("VirtualizationIsEnabledByLayout", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(IsVirtualizationActive, "IsVirtualizationActive"),
-            TraceLoggingValue(ElementName, "ElementName"),
-            TraceLoggingValue(ClassName, "ClassName"),
-            TraceLoggingValue(ParentClassName, "ParentClassName"));
+        TRACE_ELEMENT_EVENT("VirtualizationIsEnabledByLayout", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(IsVirtualizationActive, "IsEnabled"),
+            TraceLoggingValue(ElementName, "Name"),
+            TraceLoggingValue(ClassName, "ClassType"),
+            TraceLoggingValue(ParentClassName, "PropertyType"));
     }
-    DEFINE_ELEMENT_ACTIVITY(GetElementCount);
+    DEFINE_ELEMENT_ACTIVITY(GetElementCount, WINEVENT_LEVEL_VERBOSE);
 
     // Control template/style operations (CControl): the subject is the control, not the style.
-    DEFINE_ELEMENT_ACTIVITY(GetBuiltInStyle);
+    DEFINE_ELEMENT_ACTIVITY(GetBuiltInStyle, WINEVENT_LEVEL_INFO);
     // GetBuiltInStyle adds the retail End's resolved style target-type name on the End edge.
     static void GetBuiltInStyleEnd(CDependencyObject* object, PCWSTR StyleName)
     {
-        TRACE_ELEMENT_EVENT("GetBuiltInStyle", object, nullptr,
+        TRACE_ELEMENT_EVENT("GetBuiltInStyle", object, nullptr, WINEVENT_LEVEL_INFO,
             TraceLoggingOpcode(WINEVENT_OPCODE_STOP),
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(StyleName, "StyleName"));
+            TraceLoggingValue(StyleName, "ClassName"));
     }
 
     // Hit-testing (CUIElement::BoundsTestEntry): the subject is the subtree being hit-tested.
-    DEFINE_ELEMENT_ACTIVITY(HitTest);
+    DEFINE_ELEMENT_ACTIVITY(HitTest, WINEVENT_LEVEL_INFO);
     // Per-hit-test bounds cache stats, emitted once BoundsTestEntry completes. The subject is the
     // same element as the enclosing HitTest activity; RecalculatedCount/ReusedCount mirror the
     // retail Info payload.
     static void OuterBoundsStats(CDependencyObject* object, uint32_t RecalculatedCount, uint32_t ReusedCount)
     {
-        TRACE_ELEMENT_EVENT("OuterBoundsStats", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+        TRACE_ELEMENT_EVENT("OuterBoundsStats", object, nullptr, WINEVENT_LEVEL_INFO,
             TraceLoggingValue(RecalculatedCount, "RecalculatedCount"),
             TraceLoggingValue(ReusedCount, "ReusedCount"));
     }
 
     static void InnerBoundsStats(CDependencyObject* object, uint32_t RecalculatedCount, uint32_t ReusedCount)
     {
-        TRACE_ELEMENT_EVENT("InnerBoundsStats", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+        TRACE_ELEMENT_EVENT("InnerBoundsStats", object, nullptr, WINEVENT_LEVEL_INFO,
             TraceLoggingValue(RecalculatedCount, "RecalculatedCount"),
             TraceLoggingValue(ReusedCount, "ReusedCount"));
     }
 
     static void ContentBoundsStats(CDependencyObject* object, uint32_t RecalculatedCount, uint32_t ReusedCount)
     {
-        TRACE_ELEMENT_EVENT("ContentBoundsStats", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+        TRACE_ELEMENT_EVENT("ContentBoundsStats", object, nullptr, WINEVENT_LEVEL_INFO,
             TraceLoggingValue(RecalculatedCount, "RecalculatedCount"),
             TraceLoggingValue(ReusedCount, "ReusedCount"));
     }
 
     static void ChildBoundsStats(CDependencyObject* object, uint32_t RecalculatedCount, uint32_t ReusedCount)
     {
-        TRACE_ELEMENT_EVENT("ChildBoundsStats", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+        TRACE_ELEMENT_EVENT("ChildBoundsStats", object, nullptr, WINEVENT_LEVEL_INFO,
             TraceLoggingValue(RecalculatedCount, "RecalculatedCount"),
             TraceLoggingValue(ReusedCount, "ReusedCount"));
     }
@@ -593,52 +586,46 @@ public:
     // Hub section count (Hub_Partial.cpp): the subject is the Hub whose section count changed.
     static void HubSectionCount(CDependencyObject* object, uint32_t SectionCount)
     {
-        TRACE_ELEMENT_EVENT("HubSectionCount", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(SectionCount, "SectionCount"));
+        TRACE_ELEMENT_EVENT("HubSectionCount", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(SectionCount, "CurrentSectionCount"));
     }
 
     // Frame navigation (Frame_Partial.cpp): the subject is the Frame, not its content.
     static void FrameNavigated(CDependencyObject* object, PCWSTR Descriptor, uint8_t NavigationMode)
     {
-        TRACE_ELEMENT_EVENT("FrameNavigated", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(Descriptor, "Descriptor"),
+        TRACE_ELEMENT_EVENT("FrameNavigated", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(Descriptor, "PageDescriptor"),
             TraceLoggingValue(NavigationMode, "NavigationMode"));
     }
 
     static void FrameNavigating(CDependencyObject* object, PCWSTR Descriptor, uint8_t NavigationMode)
     {
-        TRACE_ELEMENT_EVENT("FrameNavigating", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(Descriptor, "Descriptor"),
+        TRACE_ELEMENT_EVENT("FrameNavigating", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(Descriptor, "PageDescriptor"),
             TraceLoggingValue(NavigationMode, "NavigationMode"));
     }
 
     // Text input scope/keyboard skin (CPasswordBox): the subject is the PasswordBox.
     static void SendInputScopeToRichEdit(CDependencyObject* object, uint32_t InputScope)
     {
-        TRACE_ELEMENT_EVENT("SendInputScopeToRichEdit", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(InputScope, "InputScope"));
+        TRACE_ELEMENT_EVENT("SendInputScopeToRichEdit", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(InputScope, "InputScopeValue"));
     }
 
     static void SetIhmKeyboardSkin(CDependencyObject* object, uint32_t KeyboardSkin)
     {
-        TRACE_ELEMENT_EVENT("SetIhmKeyboardSkin", object, nullptr,
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-            TraceLoggingValue(KeyboardSkin, "KeyboardSkin"));
+        TRACE_ELEMENT_EVENT("SetIhmKeyboardSkin", object, nullptr, WINEVENT_LEVEL_INFO,
+            TraceLoggingValue(KeyboardSkin, "IKSkinValue"));
     }
 
     // Container-content-changing setup (ListViewBase_Partial_ContainerPhase.cpp): the subject is
     // the container being set up.
-    DEFINE_ELEMENT_ACTIVITY(SetupCCC);
+    DEFINE_ELEMENT_ACTIVITY(SetupCCC, WINEVENT_LEVEL_INFO);
     // SetupCCC adds the retail Begin's item index on the Begin edge.
     static void SetupCCCBegin(CDependencyObject* object, int32_t ItemIndex, CDependencyObject* relatedUIElement = nullptr)
     {
-        TRACE_ELEMENT_EVENT("SetupCCC", object, relatedUIElement,
+        TRACE_ELEMENT_EVENT("SetupCCC", object, relatedUIElement, WINEVENT_LEVEL_INFO,
             TraceLoggingOpcode(WINEVENT_OPCODE_START),
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
             TraceLoggingValue(ItemIndex, "ItemIndex"));
     }
 
