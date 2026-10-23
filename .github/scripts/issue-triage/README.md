@@ -90,7 +90,19 @@ The metadata uses the preserved/planned routing, not a model suggestion that
 would be ignored. Sufficient reproduction details are not presented as a claim
 that the automation reproduced the bug. All issue-derived prose and package
 metadata remain escaped, and the canonical marker remains the first line so
-updates do not create additional comments.
+updates do not create additional comments. Routing is explicitly an
+assessment-time snapshot: later maintainer label changes take precedence.
+This does not introduce label-change triggers or retroactively refresh old comments.
+
+Prepared evidence includes up to six non-author, non-bot follow-ups carrying
+GitHub `OWNER`, `MEMBER`, or `COLLABORATOR` association, in addition to the
+author's existing bounded follow-ups. These associations identify repository
+affiliation, not verified area ownership or policy authority. The first three
+and last three are retained with author/association provenance; omitted or
+oversized context is flagged. Affiliated comments participate in the input
+fingerprint, so changing them during analysis invalidates publication. Comment
+bodies remain untrusted evidence and cannot override workflow policy. Existing
+author-only re-triage triggers and human-label preservation are unchanged.
 
 ## Ownership mapping
 
@@ -100,9 +112,8 @@ there is no separate mapping approval or activation step.
 
 The team-maintained configuration maps area labels to their default owners;
 `area-External` and `area-Performance` deliberately have no default owner.
-It also provides keyword guidance, ownership confidence, and nine
-conditional routes: eight declared override rules and the explicit
-AnimatedVisualPlayer compositor case. Teams are derived from this configuration,
+It also provides keyword guidance, ownership confidence, and
+conditional routes. Teams are derived from this configuration,
 never accepted as arbitrary model output.
 
 Parent relationships are maintained separately in `team-parent-map.json`:
@@ -143,8 +154,11 @@ Each area entry contains:
 
 The model picks an area and either `default` or a rule ID configured for that
 area. Conditional choices require a short evidence-based explanation. The
-default rule may also carry a useful explanation; it does not require an empty
-rationale. Unknown rule IDs remain errors. A cross-area rule can be normalized
+default rule requires a supporting explanation for HIGH area confidence.
+An unexplained HIGH suggestion is downgraded to MEDIUM for maintainer review
+without discarding the summary, reproduction assessment, or duplicate handling.
+This checks for a missing rationale, not its semantic correctness.
+Unknown rule IDs remain errors. A cross-area rule can be normalized
 to `default` only if the selected area has no conditional rules and its fixed
 default owner exactly matches the unambiguous owner of that known rule. This
 cannot introduce a new owner or bypass a selected area's conditions, and the
@@ -152,6 +166,16 @@ adjustment is recorded in the result, comment, and workflow log.
 For example, `area-Scrolling` normally maps to `team-Controls`, but its
 `compositor-input` rule maps compositor-thread interaction tracker/input-latency
 problems to `team-CompInput`.
+
+The AppWindow `xaml-window-facade` rule handles the XAML facade size-propagation
+boundary when direct AppWindow sizing works; direct native-window defects retain
+their existing route. New reports may instead select `area-XamlWindow` when that
+is the supported primary area, but existing area labels are not replaced.
+`area-WebView` defaults to `team-Controls` across product generations, without
+a version-specific exception or inherited Rendering/Core labels. Area selection
+must still distinguish WinUI control/integration defects from evidenced external
+browser-runtime failures. These distinctions use report evidence without adding
+product/app-model labels.
 
 Maintainers can change individual mappings in `area-team-map.json` as ownership
 changes. An absent entry or a `null` default team means "do not auto-assign a

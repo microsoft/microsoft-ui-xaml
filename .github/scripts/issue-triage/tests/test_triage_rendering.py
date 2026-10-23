@@ -39,6 +39,8 @@ class DecoratedCommentTests(TriageFixture):
         self.assertIn("**\U0001f41e Bug**", body)
         self.assertIn("WinUI maintainers make final decisions", body)
         self.assertIn("never closes issues automatically", body)
+        self.assertIn("Routing at assessment time (existing labels preserved)", body)
+        self.assertIn("later maintainer label changes take precedence", body)
         self.assertNotIn("For the issue author", body)
 
     def test_author_request_is_visible_before_team_investigation(self):

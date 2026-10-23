@@ -24,6 +24,82 @@ class AssessmentRecoveryTests(unittest.TestCase):
             output["items"][0].pop("missing_information_kind")
         return t.validate(output, evidence), evidence
 
+    def test_webview_default_routes_controls_without_rendering_or_core(self):
+        for description in (
+            "WinUI 2.8 UWP: the WebView2 control throws in HandleAcceleratorKeyActivated.",
+            "WinUI 3: WebView2 control focus integration fails.",
+            "The WebView2 control loses focus; the product version is unspecified.",
+        ):
+            with self.subTest(description=description):
+                self.client.issue["body"] = description
+                evidence = t.prepare(self.client, event(), self.mapping)
+                result = t.validate(agent_output(
+                    evidence, area="area-WebView",
+                    routing_reason="The report identifies a WinUI WebView2 control integration defect.",
+                ), evidence)
+                plan = t.publish(self.client, result, evidence, self.mapping, write=False)
+                self.assertEqual(plan["add_labels"], ["area-WebView", "team-Controls"])
+                self.assertNotIn("team-Rendering", plan["comment"])
+                self.assertNotIn("team-Core", plan["comment"])
+                self.assertEqual(self.client.writes, [])
+
+    def test_existing_webview_area_supplies_controls_without_model_routing(self):
+        self.client.issue["labels"].append({"name": "area-WebView"})
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, area="None", area_confidence="NONE", routing_reason="None",
+        ), evidence)
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["team-Controls"])
+
+    def test_external_browser_failure_does_not_inherit_webview_owner(self):
+        self.client.issue.update(
+            title="WebView2 browser process exits",
+            body="The browser runtime exits; product version and control failure site are unknown.",
+        )
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, area="area-External",
+            routing_reason="The report identifies an external browser-runtime failure, not a WinUI control defect.",
+        ), evidence)
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["area-External"])
+        self.assertIn("No automatic team assignment", t.render(result, evidence, self.mapping))
+
+    def test_xaml_facade_exception_preserves_existing_appwindow_area_and_routes_core(self):
+        self.client.issue.update(
+            title="Window Width/Height are not reflected before activation",
+            body="XAML Window.Width/Height have not propagated to AppWindow.Size before Activate; "
+                 "using direct AppWindow.Resize works.",
+        )
+        self.client.issue["labels"].append({"name": "area-AppWindow"})
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            evidence, area="area-AppWindow", routing_rule="xaml-window-facade",
+            routing_reason="XAML dimensions have not propagated, while the direct AppWindow sizing operation works.",
+        ), evidence)
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), ["team-Core"])
+        self.assertNotIn("team-CompInput", t.render(result, evidence, self.mapping))
+
+    def test_direct_appwindow_failure_keeps_its_native_owner(self):
+        result, evidence = self.validate(
+            area="area-AppWindow",
+            routing_reason="Direct AppWindow.Resize fails without any XAML Window size properties.",
+        )
+        self.assertEqual(
+            t.planned_labels(result, evidence, self.mapping),
+            ["area-AppWindow", "team-CompInput"],
+        )
+
+    def test_existing_human_owner_is_not_reassigned_by_a_new_exception(self):
+        self.evidence["existing_labels"] += ["area-AppWindow", "team-CompInput"]
+        result, evidence = self.validate(
+            area="area-AppWindow", routing_rule="xaml-window-facade",
+            routing_reason="XAML size propagation is implicated, but existing human routing is authoritative.",
+        )
+        self.assertEqual(t.planned_labels(result, evidence, self.mapping), [])
+        body = t.render(result, evidence, self.mapping)
+        self.assertIn("`team-CompInput`", body)
+        self.assertNotIn("`team-Core`", body)
+
     def test_all_observed_rejection_shapes_are_recoverable(self):
         cases = [
             (708, "OTHER", dict(issue_kind="OTHER", reproduction="SUFFICIENT",

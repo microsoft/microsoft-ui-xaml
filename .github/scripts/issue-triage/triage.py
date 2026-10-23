@@ -31,6 +31,7 @@ TEAM_PARENT_MAP_PATH = Path(__file__).with_name("team-parent-map.json")
 MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 MAX_COMMENTS = 1000
 MAX_AUTHOR_COMMENTS = 10
+MAX_REPOSITORY_COMMENTS = 6
 MAX_COMMENT_BODY = 2000
 MAX_CONTEXT_BYTES = 1024 * 1024
 MAX_PROMPT_BYTES = 2 * 1024 * 1024
@@ -209,12 +210,24 @@ def snapshot(client: GitHub, number: int) -> dict:
         if comment["user"]["id"] == issue["user"]["id"]
         and comment["user"].get("type") != "Bot"
     ]
+    repository_comments = [
+        {
+            "id": comment["id"], "body": comment.get("body") or "",
+            "author": comment["user"]["login"],
+            "association": comment["author_association"],
+        }
+        for comment in comments
+        if comment["user"]["id"] != issue["user"]["id"]
+        and comment["user"].get("type") != "Bot"
+        and comment.get("author_association") in {"OWNER", "MEMBER", "COLLABORATOR"}
+    ]
     content = {
         "number": number,
         "title": issue.get("title") or "",
         "body": issue.get("body") or "",
         "labels": sorted(label_names(issue)),
         "author_comments": author_comments,
+        "repository_comments": repository_comments,
     }
     digest = hashlib.sha256(
         json.dumps(content, sort_keys=True, ensure_ascii=True).encode("utf-8")
@@ -314,6 +327,10 @@ def prepare(client: GitHub, event: dict, mapping: dict) -> dict:
     content = current["content"]
     author_comments = content["author_comments"]
     selected = {comment["id"]: comment for comment in author_comments[:5] + author_comments[-5:]}
+    repository_comments = content["repository_comments"]
+    selected_repository = {
+        comment["id"]: comment for comment in repository_comments[:3] + repository_comments[-3:]
+    }
     kind = issue_kind(issue)
 
     def search(query):
@@ -335,10 +352,16 @@ def prepare(client: GitHub, event: dict, mapping: dict) -> dict:
             {"id": comment["id"], "body": evidence_text(comment["body"], MAX_COMMENT_BODY)}
             for comment in selected.values()
         ],
+        "repository_followups": [
+            {**comment, "body": evidence_text(comment["body"], MAX_COMMENT_BODY)}
+            for comment in selected_repository.values()
+        ],
         "context_truncated": (
             len(content["body"]) > MAX_BODY
             or len(author_comments) > MAX_AUTHOR_COMMENTS
             or any(len(comment["body"]) > MAX_COMMENT_BODY for comment in selected.values())
+            or len(repository_comments) > MAX_REPOSITORY_COMMENTS
+            or any(len(comment["body"]) > MAX_COMMENT_BODY for comment in selected_repository.values())
         ),
         "existing_labels": content["labels"],
         "allowed_areas": areas,
@@ -431,6 +454,12 @@ def validate(output: dict, evidence: dict) -> dict:
             raise TriageError("Conditional routing requires evidence for the selected rule")
     if result["reproduction"] not in ("SUFFICIENT", "INSUFFICIENT", "NOT_APPLICABLE"):
         raise TriageError("Invalid reproduction classification")
+    if result["area_confidence"] == "HIGH" and result["routing_reason"] == "None":
+        result["area_confidence"] = "MEDIUM"
+        result["review_notes"].append(
+            "The area suggestion lacks supporting report evidence. HIGH confidence was "
+            "reduced to MEDIUM; new area routing needs maintainer confirmation."
+        )
     raw_duplicates = required_string(item, "duplicate_candidates_json", 6000)
     duplicates = json.loads(raw_duplicates)
     if not isinstance(duplicates, list) or len(duplicates) > MAX_SUGGESTIONS:
@@ -657,7 +686,7 @@ def render(result: dict, evidence: dict, mapping: dict) -> str:
     if package:
         lines.append("- **Package version (reported):** " + plain_text(package))
     if route_areas or route_teams:
-        lines.append("- **Routing plan (existing labels preserved):** "
+        lines.append("- **Routing at assessment time (existing labels preserved):** "
                      + ", ".join(f"`{label}`" for label in route_areas + route_teams) + ".")
     if result["area"] != "None":
         area = result["area"]
@@ -706,6 +735,7 @@ def render(result: dict, evidence: dict, mapping: dict) -> str:
     lines.extend([
         "",
         "_AI-assisted automated triage; WinUI maintainers make final decisions. "
+        "Routing above is an assessment-time snapshot; later maintainer label changes take precedence. "
         "Existing labels are preserved; this workflow never closes issues automatically._",
     ])
     return "\n".join(lines)
