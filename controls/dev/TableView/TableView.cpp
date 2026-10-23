@@ -632,7 +632,20 @@ TableView::TableView()
             {
                 if (auto strongThis = weakThis.get())
                 {
+                    strongThis->CancelPendingTabEdit();
                     strongThis->CancelReshapeFocusRestoreForUserInput();
+                }
+            })),
+        true /* handledEventsToo */);
+
+    AddHandler(
+        winrt::UIElement::PointerWheelChangedEvent(),
+        winrt::box_value(winrt::PointerEventHandler(
+            [weakThis](winrt::IInspectable const&, winrt::PointerRoutedEventArgs const&)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->CancelPendingTabEdit();
                 }
             })),
         true /* handledEventsToo */);
@@ -2131,6 +2144,7 @@ void TableView::OnRowsSourceResetForFocus(
 
     SuppressBodyFocusTrackingForThisTurn();
 
+    CancelPendingTabEdit();
     CaptureBodyFocusForReshape();
 
     // Close the edit before the repeater recycles the editor's container for another record.
@@ -3616,6 +3630,7 @@ void TableView::OnTableViewUnloaded()
     TableViewTelemetry::EndSession(m_telemetrySession);
     // Neither a pending restore nor a remembered position may outlive this tree.
     CancelReshapeFocusRestore();
+    CancelPendingTabEdit();
     ForgetBodyFocusPosition();
     m_reshapeFocusValid = false;
     m_reshapeFocusRow = -1;

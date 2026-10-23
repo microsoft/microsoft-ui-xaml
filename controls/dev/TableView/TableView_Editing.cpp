@@ -1234,6 +1234,8 @@ bool TableView::BeginEdit()
 
 bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column)
 {
+    CancelPendingTabEdit();
+
     if (IsReadOnly() || !item || !column || column.IsReadOnly() || !IsColumnInColumns(*this, column))
     {
         return false;

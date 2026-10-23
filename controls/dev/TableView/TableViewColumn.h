@@ -66,6 +66,7 @@ public:
     virtual winrt::hstring GetSortMemberPathCore();
     virtual winrt::FrameworkElement GenerateElementCore(const winrt::IInspectable& dataItem);
     virtual winrt::FrameworkElement GenerateEditingElementCore(const winrt::IInspectable& dataItem);
+    virtual bool CanGenerateEditingElementCore();
     virtual winrt::IInspectable PrepareCellForEditCore(const winrt::FrameworkElement& editingElement, const winrt::RoutedEventArgs& editingEventArgs);
     virtual bool CommitCellEditCore(const winrt::FrameworkElement& editingElement);
     virtual void CancelCellEditCore(const winrt::FrameworkElement& editingElement, const winrt::IInspectable& uneditedValue);

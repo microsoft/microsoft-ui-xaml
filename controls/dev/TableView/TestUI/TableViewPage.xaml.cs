@@ -333,6 +333,32 @@ namespace MUXControlsTestApp
         private void OnBasicTableViewCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
         {
             EditEndReportTextBlock.Text += args.EditAction + ";";
+            if (VetoCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                args.Cancel = true;
+            }
+
+            if (SortOnCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                // Raised while the edit is closing, so the control replays the sort once the commit completes.
+                TableViewColumn age = BasicTableView.Columns.FirstOrDefault(column => (column.Header as string) == "Age");
+                if (age != null)
+                {
+                    BasicTableView.SortByColumn(age, SortDirection.Descending);
+                }
+            }
+
+            if (FocusAwayOnCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.High,
+                    () => AfterTableButton.Focus(FocusState.Programmatic));
+            }
+
+            if (FocusHeaderOnCommitCheckBox.IsChecked == true && args.EditAction == TableViewEditAction.Commit)
+            {
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.High,
+                    () => FindDescendant<TableViewColumnHeader>(BasicTableView)?.Focus(FocusState.Programmatic));
+            }
         }
 
         // Reports the editor an edit opened, by an in-process visual-tree walk. Posted at Low priority: the
@@ -373,6 +399,11 @@ namespace MUXControlsTestApp
         private void OnBasicTableViewBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
         {
             EditColumnReportTextBlock.Text += (args.Column?.Header?.ToString() ?? "null") + ";";
+            if (CancelAgeBeginEditCheckBox.IsChecked == true && (args.Column?.Header as string) == "Age")
+            {
+                args.Cancel = true;
+                return;
+            }
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, ProbeEditor);
         }
 
@@ -940,6 +971,13 @@ namespace MUXControlsTestApp
         private void OnIsReadOnlyToggled(object sender, RoutedEventArgs e)
         {
             BasicTableView.IsReadOnly = ((CheckBox)sender).IsChecked == true;
+        }
+
+        private void OnAllowSecondaryTableEditingToggled(object sender, RoutedEventArgs e)
+        {
+            bool readOnly = ((CheckBox)sender).IsChecked != true;
+            ScrollingTableView.IsReadOnly = readOnly;
+            GroupedTableView.IsReadOnly = readOnly;
         }
 
         // Guarded because IsChecked="True" in markup raises Checked during InitializeComponent, before the

@@ -413,6 +413,7 @@ Editing starts only from user input in this release. There is no programmatic wa
 | `F2` | Begins editing the current cell |
 | `Enter` | Commits and closes the editor |
 | `Esc` | Cancels and discards the editor |
+| `Tab` / `Shift+Tab` | Commits and edits the next / previous editable cell, wrapping to the adjacent row; past the last (first) editable cell, focus leaves the table |
 | Moving focus off the cell | Commits |
 
 The data item needs settable properties, and should raise `PropertyChanged` so the display cell refreshes once the edit closes.

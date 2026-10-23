@@ -90,6 +90,11 @@ winrt::FrameworkElement TableViewColumn::GenerateEditingElementCore(const winrt:
     return presenter;
 }
 
+bool TableViewColumn::CanGenerateEditingElementCore()
+{
+    return CellEditingTemplate() != nullptr;
+}
+
 winrt::IInspectable TableViewColumn::PrepareCellForEdit(const winrt::FrameworkElement& editingElement, const winrt::RoutedEventArgs& editingEventArgs)
 {
     return PrepareCellForEditCore(editingElement, editingEventArgs);
