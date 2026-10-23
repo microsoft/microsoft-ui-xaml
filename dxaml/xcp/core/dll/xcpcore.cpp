@@ -8780,6 +8780,12 @@ _Check_return_ HRESULT CCoreServices::CleanupDeviceRelatedResources(_In_ bool cl
 {
     TraceReleaseGraphicsDeviceResourcesBegin(cleanupDComp, isDeviceLost);
 
+    // ContentIslands and their host connections outlive a visual reset. Closing their
+    // compositor would also close those islands, which cannot be recovered by a render walk.
+    const bool preserveCompositor = cleanupDComp && isDeviceLost &&
+        m_pNWWindowRenderTarget != nullptr &&
+        m_pNWWindowRenderTarget->GetDCompTreeHost()->HasXamlIslandData();
+
     // Release our D3D device lost listener before moving on to releasing D3D device.
     ReleaseDeviceLostListener();
 
@@ -8795,7 +8801,7 @@ _Check_return_ HRESULT CCoreServices::CleanupDeviceRelatedResources(_In_ bool cl
 #ifdef USE_RELEASE_ASSERTER
     xref_ptr<IPALDebugDeviceFinalReleaseAsserter> asserter;
 
-    if (cleanupDComp && m_isDCompLeakDetectionEnabled)
+    if (cleanupDComp && !preserveCompositor && m_isDCompLeakDetectionEnabled)
     {
         IFC_RETURN(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->CreateFinalReleaseAsserter(asserter.ReleaseAndGetAddressOf()));
     }
@@ -8925,7 +8931,7 @@ _Check_return_ HRESULT CCoreServices::CleanupDeviceRelatedResources(_In_ bool cl
     // Cleanup the primary render target.
     if (m_pNWWindowRenderTarget != nullptr)
     {
-        IFC_RETURN(m_pNWWindowRenderTarget->CleanupResources(cleanupDComp, isDeviceLost));
+        IFC_RETURN(m_pNWWindowRenderTarget->CleanupResources(cleanupDComp, isDeviceLost, preserveCompositor));
 
         // Ensure debug settings will be updated if DComp resources are re-created.
         m_debugSettingsChanged = TRUE;
@@ -8952,7 +8958,7 @@ _Check_return_ HRESULT CCoreServices::CleanupDeviceRelatedResources(_In_ bool cl
 
     // Finish DCompTreeHost::ReleaseResources work. We delayed force closing and releasing the interop compositor
     // in order to give the DebugDeviceFinalReleaseAsserter a chance to do its leak verification.
-    if (cleanupDComp)
+    if (cleanupDComp && !preserveCompositor)
     {
         m_pNWWindowRenderTarget->GetDCompTreeHost()->CloseAndReleaseInteropCompositor();
     }
@@ -10151,6 +10157,7 @@ CCoreServices::SimulateDeviceLost(bool resetVisuals, bool resetDManip)
     if (resetVisuals && resetDManip)
     {
         // MockDComp may have just been injected. Reset the cache so we can create mock objects.
+        // Live islands keep their compositor during recovery, but still rebuild XAML visuals.
         ActivationFactoryCache::GetActivationFactoryCache()->ResetCache();
     }
 

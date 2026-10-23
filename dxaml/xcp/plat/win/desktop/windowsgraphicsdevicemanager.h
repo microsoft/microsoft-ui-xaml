@@ -32,7 +32,7 @@ public:
 
     _Check_return_ HRESULT GetGraphicsDeviceForVideo(_Outptr_result_maybenull_ CD3D11Device **ppVideoGraphicsDevice);
 
-    void CleanupCachedDeviceResources(_In_ bool cleanupDComp, _In_ bool isDeviceLost);
+    void CleanupCachedDeviceResources(_In_ bool cleanupDComp, _In_ bool isDeviceLost, _In_ bool preserveCompositor);
 
     _Check_return_ HRESULT StartResourceCreation();
 

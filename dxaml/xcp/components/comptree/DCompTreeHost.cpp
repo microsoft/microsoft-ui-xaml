@@ -188,7 +188,7 @@ DCompTreeHost::CloseAndReleaseInteropCompositor()
 //
 //----------------------------------------------------------------------------
 _Check_return_ HRESULT
-DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompositor)
+DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompositor, bool preserveCompositor)
 {
     if (m_systemBackdropBrush != nullptr)
     {
@@ -231,6 +231,23 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompositor)
     m_dcompObjectRegistry.ReleaseDCompResources();
     m_wucBrushManager.ReleaseDCompResources();
     m_sharedTransitionAnimations.ReleaseDCompResources();
+
+    if (preserveCompositor)
+    {
+        ASSERT(shouldDeferClosingInteropCompositor);
+
+        // Reconnect rebuilt XAML visuals on the next render walk, without closing the
+        // ContentIslands or their host/input connections on the existing compositor.
+        for (auto& islandData : m_islandRenderData)
+        {
+            islandData.first->SetRootVisual(nullptr);
+            islandData.second = XamlIslandRenderData();
+        }
+
+        ReleaseGraphicsResources();
+        m_offerTracker->Reset();
+        return S_OK;
+    }
 
     // It's possible in multi-view scenarios that there are still some UIElements with handoff (or handin) visuals at this point. There is no need
     // force close these since the WUC Compositor will be destroyed shortly, and do a full force close of all of its visuals at that point.
@@ -488,11 +505,9 @@ DCompTreeHost::EnsureDCompDevice() noexcept
     LoadMockDevice();
     #endif
 
-    // The static factory can survive device loss. No need to create it again.
-    if (m_easingFunctionStatics == nullptr)
-    {
-        m_easingFunctionStatics = ActivationFactoryCache::GetActivationFactoryCache()->GetCompositionEasingFunctionStatics();
-    }
+    // MockDComp injection and removal reset the process-wide factory cache. Refresh this
+    // per-host reference when recreating the compositor so it follows the active composition engine.
+    m_easingFunctionStatics = ActivationFactoryCache::GetActivationFactoryCache()->GetCompositionEasingFunctionStatics();
 
     IFC_RETURN(m_pCompositionHelper.Initialize(this));
 

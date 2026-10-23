@@ -182,7 +182,7 @@ _Check_return_ HRESULT CWindowRenderTarget::Initialize()
 //
 //------------------------------------------------------------------------------
 _Check_return_ HRESULT
-CWindowRenderTarget::CleanupResources(_In_ bool cleanupDComp, _In_ bool isDeviceLost)
+CWindowRenderTarget::CleanupResources(_In_ bool cleanupDComp, _In_ bool isDeviceLost, _In_ bool preserveCompositor)
 {
     m_pHwWalk->HandleDeviceLost(cleanupDComp);
 
@@ -204,7 +204,7 @@ CWindowRenderTarget::CleanupResources(_In_ bool cleanupDComp, _In_ bool isDevice
         {
             // The device cached in the device manager has been lost and can no longer be reused.
             // This may also clean-up DComp resources.
-            m_graphicsDeviceManager->CleanupCachedDeviceResources(cleanupDComp, isDeviceLost);
+            m_graphicsDeviceManager->CleanupCachedDeviceResources(cleanupDComp, isDeviceLost, preserveCompositor);
         }
 
         TraceCompositorLockEnd();

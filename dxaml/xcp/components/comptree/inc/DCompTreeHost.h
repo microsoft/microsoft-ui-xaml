@@ -114,7 +114,7 @@ public:
     _Check_return_ HRESULT EnsureResources() noexcept;
 
     // The following methods are safe to call before EnsureResources.
-    _Check_return_ HRESULT ReleaseResources(bool shouldDeferClosingInteropCompositor);
+    _Check_return_ HRESULT ReleaseResources(bool shouldDeferClosingInteropCompositor, bool preserveCompositor = false);
 
     void CloseAndReleaseInteropCompositor();
 

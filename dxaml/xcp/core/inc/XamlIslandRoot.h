@@ -119,7 +119,7 @@ public:
     bool HasFocus() const;
 
     wrl::ComPtr<ixp::IVisual> GetRootVisual() { return m_rootVisual; }
-    void SetRootVisual(_In_ ixp::IVisual* visual) { m_rootVisual = visual;}
+    void SetRootVisual(_In_opt_ ixp::IVisual* visual) { m_rootVisual = visual;}
 
     wrl::ComPtr<ixp::IInputPointerSource> GetInputPointerSource() const { return m_inputPointerSource; }
 
