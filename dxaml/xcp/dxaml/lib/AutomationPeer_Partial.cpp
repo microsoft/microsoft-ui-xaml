@@ -104,16 +104,14 @@ _Check_return_ HRESULT DirectUI::AutomationPeer::QueryInterfaceImpl(_In_ REFIID 
         xref_ptr<CUIAWrapper> wrapper;
         ctl::ComPtr<IRawElementProviderFragment> spRawProviderFrag;
 
-        CUIAWindow* window = nullptr;
-        if (auto existing = static_cast<CUIAWrapper*>(peer->GetUIAWrapper()))
-        {
-            window = existing->GetUIAWindowIfValid();
-        }
+        auto core = DXamlCore::GetFromDependencyObject(this);
+        auto coreServices = core ? core->GetHandle() : nullptr;
+        auto window = coreServices ? coreServices->GetUIAWindowForAutomationPeerNoRef(peer) : nullptr;
         if (window)
         {
             IFC_RETURN(window->CreateProviderForAP(peer, wrapper.ReleaseAndGetAddressOf()));
         }
-        else if (auto core = DXamlCore::GetFromDependencyObject(this))
+        else if (core)
         {
             IFC_RETURN(core->CreateProviderForAP(peer, wrapper.ReleaseAndGetAddressOf()));
         }
