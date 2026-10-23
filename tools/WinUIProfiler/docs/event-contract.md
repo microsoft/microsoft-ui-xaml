@@ -484,6 +484,24 @@ commits never increment submitted counts. Submitted IDs are total across
 roots/dispatchers for the stream, not a per-root startup counter. Startup
 counts ten total and never forces idle frames, ticks or presentations.
 
+One qualifying physical commit allocates one submitted ID. When that commit
+includes work from multiple roots, each participating root's qualified attempt
+can emit a Submitted observation with the **same** producer epoch, submitted
+ID and commit timestamp. Startup counts distinct
+`(ProcessInstanceKey, ProducerEpoch, SubmittedFrameId)` values, not Submitted
+records or root-qualified FrameInfo rows.
+
+Participation requires evidence of pending XAML composition work included in
+the commit, not merely an existing root or a render walk in the current tick.
+Root-associated animation or commit-request work can participate without a new
+render walk when its root association is proven. Layout/render boundaries may
+end before submission, but a submitted attempt's completion and query range
+must include its actual commit timestamp. An attempt can complete without a
+submission; failed commits produce no submitted ID. Unknown root attribution
+is explicitly partial and diagnosed, never replaced with a synthetic root.
+These are producer/consumer contract requirements, not claims that current
+framework hooks or startup processing implement every path.
+
 ### Resources and allocation
 
 Resource operations: Create, Destroy, OwnershipRelease, Close, Rebind,
