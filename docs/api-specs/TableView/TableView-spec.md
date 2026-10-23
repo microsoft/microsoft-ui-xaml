@@ -265,6 +265,8 @@ TableView supports read-only cell focus. Up, Down, PageUp, and PageDown move to 
 
 Read-only UI Automation grid/table peers are provided for the table, rows, cells, and column headers.
 
+The planned keyboard focus model is described in the [functional spec](../../design-notes/TabularControls/TableView-functional-spec.md#keyboard-focus-and-accessibility-model).
+
 ```xaml
 <tabular:TableView
     ItemsSource="{x:Bind People}"

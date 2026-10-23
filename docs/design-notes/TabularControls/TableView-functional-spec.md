@@ -131,6 +131,33 @@ the source publishes, so the same engine serves an app that never touches `Table
 - Grid/Table peers; Row peer (`SelectionItem` + `GridItem`); ColumnHeader peer (`Invoke` → sort). — **PR2** read-only Grid/Table · **PR3** Selection + sort invoke
 - Narrator, keyboard navigation parity, sort announcements. — **PR2** nav · **PR3** sort
 
+### Keyboard focus and accessibility model
+
+Planned model (today the header band and the body are separate tab stops). The whole `TableView` is
+one tab stop: the column header row. `Down` moves from the header row into the rows, `Up` from the
+first row returns to it, and `Tab` leaves the table; when no header is actionable or headers are
+hidden, the rows are the stop.
+
+Takes keyboard focus:
+
+- Actionable headers: sort, resize, context menu, tooltip, or interactive content.
+- Rows.
+- Actionable cells: editable, interactive content, or tooltip.
+
+Nothing else.
+
+Controls in a cell: `Enter` or `F2` moves into them, `Esc` or `F2` returns to the cell.
+
+Screen readers reach inactive headers and cells through the row name, scan mode, and Narrator
+table navigation (`Ctrl+Alt+Arrow`).
+
+Why: Windows guidance asks for one tab stop per collection and tab stops only for actionable items
+([Keyboard interactions](https://learn.microsoft.com/windows/apps/design/input/keyboard-interactions)),
+and APG lets header cells that don't sort or filter stay unfocusable
+([APG grid pattern](https://www.w3.org/WAI/ARIA/apg/patterns/grid/)). Making inactive data cells
+unfocusable deliberately departs from APG's focusable-cell advice; screen readers reach them
+through table navigation instead.
+
 ### Reliability & servicing
 - Deterministic behavior, unit-test coverage (**PR4**), SFI/security compliance, post-adoption API stability.
 
