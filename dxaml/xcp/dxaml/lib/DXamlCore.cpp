@@ -1731,11 +1731,11 @@ DXamlCore::GetPeerPrivate(
                 m_Peers.insert(pDO);
                 pCoreDO->SetDXamlPeer(pDO);
 
-                // The peer is now bound to the core object. Tell the XAML Profiler so it can
-                // back-fill the PeerHandle on any tree node that was created before the peer
-                // existed (lazy-peer elements traced a PeerHandle of 0 at enter time). The
-                // handle is computed the same way every other profiler event computes it, so
-                // the value matches and the consumer's "first non-zero wins" stamping just works.
+                // The peer is now bound to the core object. Tell the XAML Profiler: this event is
+                // the only source of a tree node's PeerHandle (ElementEnteredTree doesn't carry
+                // it), whether the peer exists before the element enters the tree or is created
+                // lazily afterwards. The handle is computed the same way every other profiler
+                // event computes it, so the values match across events.
 #ifdef XAMLPROFILER_ENABLED
                 if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::XamlTree))
                 {

@@ -33,8 +33,8 @@
 #include <RuntimeEnabledFeatures.h>
 #ifdef XAMLPROFILER_ENABLED
 #include "XamlProfilerTracing.h"
-#include "WucVisualTreeProfiler.h"
 #endif // XAMLPROFILER_ENABLED
+#include "WucVisualTreeProfiler.h"
 #include <DependencyLocator.h>
 #include <XamlLightTargetMap.h>
 #include <XamlLightCollection.h>
@@ -327,6 +327,12 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::EnsureVisual(_In_ DCompTreeHost *dco
             ASSERT(m_primaryVisual != nullptr);
             SetDebugTag(m_primaryVisual.Get(), s_primaryVisualTag);
             DCompTreeHost::SetTagIfEnabled(m_primaryVisual.Get(), VisualDebugTags::CompNode_PrimaryVisual);
+#ifdef XAMLPROFILER_ENABLED
+            if (WucVisualTreeProfiler::IsEnabled())
+            {
+                WucVisualTreeProfiler::NotifyHandOffVisualAdopted(m_primaryVisual.Get(), this);
+            }
+#endif // XAMLPROFILER_ENABLED
 
             // If the UIElement gets recycled, and the HandOff visual is in use, care must be taken to cache/restore the
             // property values we're tracking for the purposes of knowing when XAML can and cannot stomp over
@@ -377,6 +383,7 @@ void HWCompTreeNodeWinRT::CreateWUCSpineVisual(_In_ DCompTreeHost* dcompTreeHost
 {
     wrl::ComPtr<ixp::IContainerVisual> containerVisual;
     IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
+    XAMLPROFILER_WUC_CREATED(containerVisual.Get(), ContainerVisual);
     IFCFAILFAST(containerVisual->QueryInterface(IID_PPV_ARGS(visual)));
 
     SetDebugTag(*visual, debugTag);
@@ -610,7 +617,14 @@ void HWCompTreeNodeWinRT::ReparentVisualChildrenHelper(
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
-            WucVisualTreeProfiler::NotifyChildInserted(newParent, visual.get(), this, -1 /* index */);
+            if (visual.get() == m_handInVisual.Get())
+            {
+                WucVisualTreeProfiler::NotifyHandInVisualInserted(newParent, m_handInVisual.Get(), this);
+            }
+            else
+            {
+                WucVisualTreeProfiler::NotifyChildInserted(newParent, visual.get(), this, -1 /* index */);
+            }
         }
 #endif // XAMLPROFILER_ENABLED
     }
@@ -843,6 +857,7 @@ void HWCompTreeNodeWinRT::UpdatePrependTransform()
 
         // Update our static prepend transform
         IFCFAILFAST(m_prependVisual->put_TransformMatrix(prependTransform));
+        XAMLPROFILER_WUC_TRANSFORM(m_prependVisual.Get(), prependTransform);
     }
 
     if (!IsECPTranslationInUse())
@@ -850,6 +865,7 @@ void HWCompTreeNodeWinRT::UpdatePrependTransform()
         // Set the Offset back to [0,0,0] as we're no longer using ECP Translation
         wfn::Vector3 offsetValue = {};
         IFCFAILFAST(m_prependVisual->put_Offset(offsetValue));
+        XAMLPROFILER_WUC_VECTOR3(m_prependVisual.Get(), Offset, offsetValue);
     }
 }
 
@@ -1186,6 +1202,7 @@ void HWCompTreeNodeWinRT::SetPrependClipRect(_In_ DCompTreeHost *dcompTreeHost, 
         size.X = m_pUIElementNoRef->GetActualWidth();
         size.Y = m_pUIElementNoRef->GetActualHeight();
         IFCFAILFAST(m_prependVisual->put_Size(size));
+        XAMLPROFILER_WUC_VECTOR2(m_prependVisual.Get(), Size, size);
 
         xref_ptr<WUComp::ICompositionClip> compositionClip;
         xref_ptr<WUComp::IInsetClip> insetClip;
@@ -1195,6 +1212,7 @@ void HWCompTreeNodeWinRT::SetPrependClipRect(_In_ DCompTreeHost *dcompTreeHost, 
             IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateInsetClip(insetClip.ReleaseAndGetAddressOf()));
             VERIFYHR(insetClip->QueryInterface(IID_PPV_ARGS(compositionClip.ReleaseAndGetAddressOf())));
             IFCFAILFAST(m_prependVisual->put_Clip(compositionClip));
+            XAMLPROFILER_WUC_OBJECT(m_prependVisual.Get(), Clip, compositionClip.get());
         }
         else
         {
@@ -1211,6 +1229,7 @@ void HWCompTreeNodeWinRT::SetPrependClipRect(_In_ DCompTreeHost *dcompTreeHost, 
     {
         // We have an empty clip.  Clear out any InsetClip we might have set.
         IFCFAILFAST(m_prependVisual->put_Clip(nullptr));
+        XAMLPROFILER_WUC_OBJECT(m_prependVisual.Get(), Clip, nullptr);
     }
 }
 
@@ -1251,6 +1270,7 @@ void HWCompTreeNodeWinRT::UpdatePrependOpacity(_In_ DCompTreeHost *dcompTreeHost
         }
 
         IFCFAILFAST(m_prependVisual->put_Opacity(staticOpacity));
+        XAMLPROFILER_WUC_SCALAR(m_prependVisual.Get(), Opacity, staticOpacity);
 
         m_transitionTargetOpacityExpressionCache.Reset();
     }
@@ -1300,6 +1320,7 @@ void HWCompTreeNodeWinRT::UpdatePrependPixelSnapping(bool disablePixelSnapping)
     wrl::ComPtr<ixp::IVisual4> visual4;
     VERIFYHR(m_prependVisual.As(&visual4));
     IFCFAILFAST(visual4->put_IsPixelSnappingEnabled(isPixelSnappingEnabled));
+    XAMLPROFILER_WUC_SCALAR(visual4.Get(), IsPixelSnappingEnabled, isPixelSnappingEnabled);
 }
 
 // DropShadow visual design notes
@@ -1366,6 +1387,7 @@ void HWCompTreeNodeWinRT::UpdateDropShadowVisual(_In_ DCompTreeHost *dcompTreeHo
         wrl::ComPtr<ixp::IVisual3> visual3;
         VERIFYHR(m_dropShadowParentVisual.As(&visual3));
         IFCFAILFAST(visual3->put_IsHitTestVisible(false));
+        XAMLPROFILER_WUC_SCALAR(visual3.Get(), IsHitTestVisible, false);
     }
     else
     {
@@ -1446,12 +1468,14 @@ void HWCompTreeNodeWinRT::UpdateDropShadowVisualBounds(_In_ DCompTreeHost *dcomp
     offset.Y = -recipe.Insets.top;
     offset.Z = 0;
     IFCFAILFAST(m_dropShadowSpriteVisual->put_Offset(offset));
+    XAMLPROFILER_WUC_VECTOR3(m_dropShadowSpriteVisual.Get(), Offset, offset);
 
     // Update the Size
     wfn::Vector2 size;
     size.X = m_pUIElementNoRef->GetActualWidth() + recipe.Insets.left + recipe.Insets.right;
     size.Y = m_pUIElementNoRef->GetActualHeight() + recipe.Insets.top + recipe.Insets.bottom;
     IFCFAILFAST(m_dropShadowSpriteVisual->put_Size(size));
+    XAMLPROFILER_WUC_VECTOR2(m_dropShadowSpriteVisual.Get(), Size, size);
 }
 
 void HWCompTreeNodeWinRT::UpdateDropShadowVisualBrush(_In_ DCompTreeHost *dcompTreeHost, _In_ const DropShadowRecipe& recipe)
@@ -1463,6 +1487,7 @@ void HWCompTreeNodeWinRT::UpdateDropShadowVisualBrush(_In_ DCompTreeHost *dcompT
     if (auto cachedBrush = wucBrushManager->GetDropShadowBrushFromCache(recipe))
     {
         dropShadowSV->put_Brush(cachedBrush.Get());
+        XAMLPROFILER_WUC_OBJECT(dropShadowSV.Get(), Brush, cachedBrush.Get());
     }
     else
     {
@@ -1508,6 +1533,7 @@ void HWCompTreeNodeWinRT::UpdateDropShadowVisualBrush(_In_ DCompTreeHost *dcompT
         wrl::ComPtr<ixp::ICompositionBrush> nineGridCompBrush;
         nineGridBrush.As(&nineGridCompBrush);
         IFCFAILFAST(dropShadowSV->put_Brush(nineGridCompBrush.Get()));
+        XAMLPROFILER_WUC_OBJECT(dropShadowSV.Get(), Brush, nineGridCompBrush.Get());
 
         wucBrushManager->PutDropShadowBrushInCache(recipe, nineGridCompBrush);
     }
@@ -1713,6 +1739,7 @@ void HWCompTreeNodeWinRT::CreateDropShadowVisual(_In_ DCompTreeHost *dcompTreeHo
     // Now to combine the Ambient and Directional visuals, we'll put them in a container visual.
     wrl::ComPtr<ixp::IContainerVisual> shadowVisualContainer;
     IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateContainerVisual(&shadowVisualContainer));
+    XAMLPROFILER_WUC_CREATED(shadowVisualContainer.Get(), ContainerVisual);
     wrl::ComPtr<ixp::IVisualCollection> shadowVisualCollection;
     shadowVisualContainer->get_Children(&shadowVisualCollection);
     if (ambientLayerVisual)
@@ -1723,6 +1750,7 @@ void HWCompTreeNodeWinRT::CreateDropShadowVisual(_In_ DCompTreeHost *dcompTreeHo
     wrl::ComPtr<ixp::IVisual> shadowVisual;
     IFCFAILFAST(shadowVisualContainer.As(&shadowVisual));
     shadowVisual->put_Size(containerSize);
+    XAMLPROFILER_WUC_VECTOR2(shadowVisual.Get(), Size, (wfn::Vector2{ containerSize.x, containerSize.y }));
 
     // Now we'll clip out the rounded rectangle from our visual.
     // We'll have to create the clip using D2D since it's able to combine geometries
@@ -1765,6 +1793,7 @@ void HWCompTreeNodeWinRT::CreateDropShadowVisual(_In_ DCompTreeHost *dcompTreeHo
     wrl::ComPtr<ixp::ICompositionClip> clip;
     VERIFYHR(geoClip.As(&clip));
     shadowVisual->put_Clip(clip.Get());
+    XAMLPROFILER_WUC_OBJECT(shadowVisual.Get(), Clip, clip.Get());
 
     *visual = shadowVisual.Detach();
 }
@@ -1790,15 +1819,19 @@ wrl::ComPtr<ixp::IVisual> HWCompTreeNodeWinRT::MakeShapeVisual(_In_ DCompTreeHos
 {
     wrl::ComPtr<ixp::IShapeVisual> shapeVisual;
     IFCFAILFAST(dcompTreeHost->GetCompositor5()->CreateShapeVisual(&shapeVisual));
+    XAMLPROFILER_WUC_CREATED(shapeVisual.Get(), ShapeVisual);
 
     wrl::ComPtr<wfc::IVector<ixp::CompositionShape*>> shapeCollection;
     IFCFAILFAST(shapeVisual->get_Shapes(&shapeCollection));
     shapeCollection->Append(compositionShape);
+    XAMLPROFILER_WUC_SCALAR(shapeVisual.Get(), ShapeCount, 1);
 
     wrl::ComPtr<ixp::IVisual> visual;
     IFCFAILFAST(shapeVisual.As(&visual));
     visual->put_Size(size);
+    XAMLPROFILER_WUC_VECTOR2(visual.Get(), Size, (wfn::Vector2{ size.x, size.y }));
     visual->put_Offset(offset);
+    XAMLPROFILER_WUC_VECTOR3(visual.Get(), Offset, (wfn::Vector3{ offset.x, offset.y, offset.z }));
     return visual;
 }
 
@@ -1806,10 +1839,12 @@ wrl::ComPtr<ixp::IVisual> HWCompTreeNodeWinRT::MakeLayerVisual(_In_ DCompTreeHos
 {
     wrl::ComPtr<ixp::ILayerVisual> layerVisual;
     IFCFAILFAST(dcompTreeHost->GetCompositor2()->CreateLayerVisual(&layerVisual));
+    XAMLPROFILER_WUC_CREATED(layerVisual.Get(), LayerVisual);
 
     wrl::ComPtr<ixp::ILayerVisual2> layerVisual2;
     VERIFYHR(layerVisual.As(&layerVisual2));
     layerVisual2->put_Shadow(shadow);
+    XAMLPROFILER_WUC_OBJECT(layerVisual2.Get(), Shadow, shadow);
 
     wrl::ComPtr<ixp::IContainerVisual> containerVisual;
     IFCFAILFAST(layerVisual.As(&containerVisual));
@@ -1820,6 +1855,7 @@ wrl::ComPtr<ixp::IVisual> HWCompTreeNodeWinRT::MakeLayerVisual(_In_ DCompTreeHos
     wrl::ComPtr<ixp::IVisual> visual;
     IFCFAILFAST(layerVisual.As(&visual));
     visual->put_Size(size);
+    XAMLPROFILER_WUC_VECTOR2(visual.Get(), Size, (wfn::Vector2{ size.x, size.y }));
     return visual;
 }
 
@@ -1846,6 +1882,7 @@ void HWCompTreeNodeWinRT::UpdateDropShadowVisualOpacity(_In_ DCompTreeHost *dcom
         float opacity;
         IFCFAILFAST(m_primaryVisual->get_Opacity(&opacity));
         IFCFAILFAST(m_dropShadowParentVisual->put_Opacity(opacity));
+        XAMLPROFILER_WUC_SCALAR(m_dropShadowParentVisual.Get(), Opacity, opacity);
         m_dropShadowOpacityExpressionCache.Reset();
     }
     else
@@ -1916,6 +1953,7 @@ void HWCompTreeNodeWinRT::UpdateDropShadowVisualForThemeTransitionClip(_In_ DCom
             wrl::ComPtr<ixp::ICompositionObject> visualCO;
             VERIFYHR(m_dropShadowSpriteVisual.As(&visualCO));
             IFCFAILFAST(m_dropShadowSpriteVisual->put_Opacity(0.0f));   // Static 0 to apply the value while we wait for the DelayTime on the animation
+            XAMLPROFILER_WUC_SCALAR(m_dropShadowSpriteVisual.Get(), Opacity, 0.0f);
             IFCFAILFAST(visualCO->StartAnimation(wrl::Wrappers::HStringReference(ExpressionHelper::sc_OpacityPropertyName).Get(), opacityAnimationCA.Get()));
 
             m_isPlayingDropShadowOpacityAnimation = true;
@@ -1944,6 +1982,7 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisual(
     size.X = m_pUIElementNoRef->GetActualWidth();
     size.Y = m_pUIElementNoRef->GetActualHeight();
     IFCFAILFAST(m_primaryVisual->put_Size(size));
+    XAMLPROFILER_WUC_VECTOR2(m_primaryVisual.Get(), Size, size);
 
     UpdatePrimaryVisualOffset(dcompTreeHost->GetCompositor());
 
@@ -2003,6 +2042,7 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualOffset(_In_ WUComp::ICompositor* co
             || offset.Z != m_previousWUCOffset.Z)
         {
             IFCFAILFAST(m_primaryVisual->put_Offset(offset));
+            XAMLPROFILER_WUC_VECTOR3(m_primaryVisual.Get(), Offset, offset);
             m_previousWUCOffset = offset;
         }
     }
@@ -2077,6 +2117,7 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualOpacity(_In_ WUComp::ICompositor* c
             || opacity != m_previousWUCOpacity)
         {
             IFCFAILFAST(m_primaryVisual->put_Opacity(opacity));
+            XAMLPROFILER_WUC_SCALAR(m_primaryVisual.Get(), Opacity, opacity);
             m_previousWUCOpacity = opacity;
         }
     }
@@ -2098,6 +2139,7 @@ void HWCompTreeNodeWinRT::UpdateVisualClipAndTransform(_In_ DCompTreeHost *dcomp
         // If we are in a connected animation we will want to snapshot the entire element so
         // make sure there is no clip.
         IFCFAILFAST(visual->put_Clip(nullptr));
+        XAMLPROFILER_WUC_OBJECT(visual, Clip, nullptr);
     }
     else if (isClipRequiredOnPrimaryVisual)
     {
@@ -2112,6 +2154,7 @@ void HWCompTreeNodeWinRT::UpdateVisualClipAndTransform(_In_ DCompTreeHost *dcomp
             IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateInsetClip(insetClip.ReleaseAndGetAddressOf()));
             IFCFAILFAST(insetClip.As(&clip));
             IFCFAILFAST(visual->put_Clip(clip.Get()));
+            XAMLPROFILER_WUC_OBJECT(visual, Clip, clip.Get());
             // No need to manually attach a property change listener to the clip. We already have one attached to the WUC visual,
             // and the visual will send a property update notification when the clip changes. We'll attach the clip listener then.
         }
@@ -2274,6 +2317,7 @@ void HWCompTreeNodeWinRT::UpdateVisualClipAndTransform(_In_ DCompTreeHost *dcomp
     else if (m_previousHasWUCInsetClip || m_pUIElementNoRef->IsStrictOnly())
     {
         IFCFAILFAST(visual->put_Clip(nullptr));
+        XAMLPROFILER_WUC_OBJECT(visual, Clip, nullptr);
         m_previousHasWUCInsetClip = false;
 
         if (IsUsingHandOffVisual(*m_pUIElementNoRef))
@@ -2521,6 +2565,7 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualTransformMatrix(_In_ DCompTreeHost 
         if (IsWUCTransformMatrixDifferentFromPrevious(finalTransform4x4))
         {
             IFCFAILFAST(m_primaryVisual->put_TransformMatrix(finalTransform4x4));
+            XAMLPROFILER_WUC_TRANSFORM(m_primaryVisual.Get(), finalTransform4x4);
             m_previousWUCTransformMatrix = finalTransform4x4;
         }
 
@@ -2659,6 +2704,7 @@ void HWCompTreeNodeWinRT::EnsureDManipHitTestVisual(_In_ DCompTreeHost *dcompTre
         WUComp::ICompositor* compositor = dcompTreeHost->GetCompositor();
         wrl::ComPtr<WUComp::ISpriteVisual> spriteVisual;
         IFCFAILFAST(compositor->CreateSpriteVisual(&spriteVisual));
+        XAMLPROFILER_WUC_CREATED(spriteVisual.Get(), SpriteVisual);
         VERIFYHR(spriteVisual.As(&m_dmanipHitTestVisual));
 
         if (runtimeEnabledFeatureDetector->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::DumpMockDManipHitTestVisual))
@@ -2681,12 +2727,14 @@ void HWCompTreeNodeWinRT::EnsureDManipHitTestVisual(_In_ DCompTreeHost *dcompTre
         size.X = largeDimension;
         size.Y = largeDimension;
         IFCFAILFAST(m_dmanipHitTestVisual->put_Size(size));
+        XAMLPROFILER_WUC_VECTOR2(m_dmanipHitTestVisual.Get(), Size, size);
 
         wfn::Vector3 offset;
         offset.X = -largeDimension/2;
         offset.Y = -largeDimension/2;
         offset.Z = 0.0f;
         IFCFAILFAST(m_dmanipHitTestVisual->put_Offset(offset));
+        XAMLPROFILER_WUC_VECTOR3(m_dmanipHitTestVisual.Get(), Offset, offset);
 
         wrl::ComPtr<WUComp::ICompositionColorBrush> transparentBrush;
         IFCFAILFAST(compositor->CreateColorBrush(&transparentBrush));
@@ -2694,6 +2742,7 @@ void HWCompTreeNodeWinRT::EnsureDManipHitTestVisual(_In_ DCompTreeHost *dcompTre
         wrl::ComPtr<WUComp::ICompositionBrush> brush;
         VERIFYHR(transparentBrush.As(&brush));
         IFCFAILFAST(spriteVisual->put_Brush(brush.Get()));
+        XAMLPROFILER_WUC_OBJECT(spriteVisual.Get(), Brush, brush.Get());
 
         // We want to insert the hit test visual at the bottom of this comp node's child collection. For that, we use
         // the bottommost non-content visual. The content visual contains the UIElement's children, and is updated during
@@ -2759,6 +2808,7 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualCompositeMode()
     if (compositeMode != m_previousWUCCompositeMode)
     {
         IFCFAILFAST(m_primaryVisual->put_CompositeMode(compositeMode));
+        XAMLPROFILER_WUC_SCALAR(m_primaryVisual.Get(), CompositeMode, compositeMode);
         m_previousWUCCompositeMode = compositeMode;
     }
 }
@@ -2782,6 +2832,7 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualPixelSnapping(bool disablePixelSnap
         wrl::ComPtr<ixp::IVisual4> visual4;
         VERIFYHR(m_primaryVisual.As(&visual4));
         IFCFAILFAST(visual4->put_IsPixelSnappingEnabled(isPixelSnappingEnabled));
+        XAMLPROFILER_WUC_SCALAR(visual4.Get(), IsPixelSnappingEnabled, isPixelSnappingEnabled);
     }
 }
 
@@ -2795,6 +2846,7 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualHitTestVisibility()
         wrl::ComPtr<WUComp::IVisual3> visual3;
         VERIFYHR(m_primaryVisual.As(&visual3));
         IFCFAILFAST(visual3->put_IsHitTestVisible(m_isHitTestVisible));
+        XAMLPROFILER_WUC_SCALAR(visual3.Get(), IsHitTestVisible, m_isHitTestVisible);
     }
 }
 
@@ -2936,10 +2988,15 @@ void HWCompTreeNodeWinRT::UpdateComponentsVisualConfiguration(_In_ DCompTreeHost
 
             // Clear out properties that might have been previously set on Primary visual, these are moving to Components Visual
             m_primaryVisual->put_Clip(nullptr);
+            XAMLPROFILER_WUC_OBJECT(m_primaryVisual.Get(), Clip, nullptr);
             m_primaryVisual->put_RotationAngleInDegrees(static_cast<float>(SimpleProperty::Property::Default<KnownPropertyIndex::UIElement_Rotation>()));
+            XAMLPROFILER_WUC_SCALAR(m_primaryVisual.Get(), RotationAngleInDegrees, static_cast<float>(SimpleProperty::Property::Default<KnownPropertyIndex::UIElement_Rotation>()));
             m_primaryVisual->put_Scale(SimpleProperty::Property::Default<KnownPropertyIndex::UIElement_Scale>());
+            XAMLPROFILER_WUC_VECTOR3(m_primaryVisual.Get(), Scale, SimpleProperty::Property::Default<KnownPropertyIndex::UIElement_Scale>());
             m_primaryVisual->put_CenterPoint(SimpleProperty::Property::Default<KnownPropertyIndex::UIElement_CenterPoint>());
+            XAMLPROFILER_WUC_VECTOR3(m_primaryVisual.Get(), CenterPoint, SimpleProperty::Property::Default<KnownPropertyIndex::UIElement_CenterPoint>());
             m_primaryVisual->put_RotationAxis(SimpleProperty::Property::Default<KnownPropertyIndex::UIElement_RotationAxis>());
+            XAMLPROFILER_WUC_VECTOR3(m_primaryVisual.Get(), RotationAxis, SimpleProperty::Property::Default<KnownPropertyIndex::UIElement_RotationAxis>());
 
             // Facades_TODO:  This can probably be removed
             m_previousWUCTransformMatrix.M11 = FloatUtil::NaN;
@@ -2948,6 +3005,7 @@ void HWCompTreeNodeWinRT::UpdateComponentsVisualConfiguration(_In_ DCompTreeHost
         size.X = m_pUIElementNoRef->GetActualWidth();
         size.Y = m_pUIElementNoRef->GetActualHeight();
         IFCFAILFAST(GetComponentsVisual()->put_Size(size));
+        XAMLPROFILER_WUC_VECTOR2(GetComponentsVisual(), Size, size);
 
         // Facades_TODO - what about pixel snapping?
     }
@@ -3009,7 +3067,9 @@ void HWCompTreeNodeWinRT::UpdateRotationFacade(_In_ DCompTreeHost *dcompTreeHost
     }
     else
     {
-        IFCFAILFAST(visual->put_RotationAngleInDegrees(m_pUIElementNoRef->GetRotation()));
+        const FLOAT rotation = m_pUIElementNoRef->GetRotation();
+        IFCFAILFAST(visual->put_RotationAngleInDegrees(rotation));
+        XAMLPROFILER_WUC_SCALAR(visual, RotationAngleInDegrees, rotation);
     }
 }
 
@@ -3024,7 +3084,9 @@ void HWCompTreeNodeWinRT::UpdateScaleFacade(_In_ DCompTreeHost *dcompTreeHost, _
     }
     else
     {
-        IFCFAILFAST(visual->put_Scale(m_pUIElementNoRef->GetScale()));
+        const wfn::Vector3 scale = m_pUIElementNoRef->GetScale();
+        IFCFAILFAST(visual->put_Scale(scale));
+        XAMLPROFILER_WUC_VECTOR3(visual, Scale, scale);
     }
 }
 
@@ -3039,7 +3101,9 @@ void HWCompTreeNodeWinRT::UpdateTransformMatrixFacade(_In_ DCompTreeHost *dcompT
     }
     else
     {
-        IFCFAILFAST(visual->put_TransformMatrix(m_pUIElementNoRef->GetTransformMatrix()));
+        const wfn::Matrix4x4 transformMatrix = m_pUIElementNoRef->GetTransformMatrix();
+        IFCFAILFAST(visual->put_TransformMatrix(transformMatrix));
+        XAMLPROFILER_WUC_TRANSFORM(visual, transformMatrix);
     }
 }
 
@@ -3054,7 +3118,9 @@ void HWCompTreeNodeWinRT::UpdateCenterPointFacade(_In_ DCompTreeHost *dcompTreeH
     }
     else
     {
-        IFCFAILFAST(visual->put_CenterPoint(m_pUIElementNoRef->GetCenterPoint()));
+        const wfn::Vector3 centerPoint = m_pUIElementNoRef->GetCenterPoint();
+        IFCFAILFAST(visual->put_CenterPoint(centerPoint));
+        XAMLPROFILER_WUC_VECTOR3(visual, CenterPoint, centerPoint);
     }
 }
 
@@ -3069,7 +3135,9 @@ void HWCompTreeNodeWinRT::UpdateRotationAxisFacade(_In_ DCompTreeHost *dcompTree
     }
     else
     {
-        IFCFAILFAST(visual->put_RotationAxis(m_pUIElementNoRef->GetRotationAxis()));
+        const wfn::Vector3 rotationAxis = m_pUIElementNoRef->GetRotationAxis();
+        IFCFAILFAST(visual->put_RotationAxis(rotationAxis));
+        XAMLPROFILER_WUC_VECTOR3(visual, RotationAxis, rotationAxis);
     }
 }
 
@@ -3100,6 +3168,7 @@ void HWCompTreeNodeWinRT::UpdateTransitionClipVisual(
         size.X = m_pUIElementNoRef->GetActualWidth();
         size.Y = m_pUIElementNoRef->GetActualHeight();
         IFCFAILFAST(transitionClipVisual->put_Size(size));
+        XAMLPROFILER_WUC_VECTOR2(transitionClipVisual, Size, size);
 
         wrl::ComPtr<WUComp::ICompositionClip> clip;
         wrl::ComPtr<WUComp::IInsetClip> insetClip;
@@ -3112,6 +3181,7 @@ void HWCompTreeNodeWinRT::UpdateTransitionClipVisual(
             IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateInsetClip(insetClip.ReleaseAndGetAddressOf()));
             IFCFAILFAST(insetClip.As(&clip));
             IFCFAILFAST(transitionClipVisual->put_Clip(clip.Get()));
+            XAMLPROFILER_WUC_OBJECT(transitionClipVisual, Clip, clip.Get());
         }
         else
         {
@@ -3186,6 +3256,7 @@ void HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual(_In_ DCompTreeHost* dcom
             IFCFAILFAST(compositor7->CreateRectangleClip(rectangleClip.ReleaseAndGetAddressOf()));
             IFCFAILFAST(rectangleClip.As(&clip));
             IFCFAILFAST(roundedCornerClipVisual->put_Clip(clip.Get()));
+            XAMLPROFILER_WUC_OBJECT(roundedCornerClipVisual, Clip, clip.Get());
         }
         else
         {
@@ -3327,7 +3398,7 @@ void HWCompTreeNodeWinRT::UpdateHandInVisual()
 #ifdef XAMLPROFILER_ENABLED
             if (WucVisualTreeProfiler::IsEnabled())
             {
-                WucVisualTreeProfiler::NotifyChildInserted(GetBottomMostNonContentVisual(), currentHandInVisual.get(), this, -1 /* index */);
+                WucVisualTreeProfiler::NotifyHandInVisualInserted(GetBottomMostNonContentVisual(), currentHandInVisual.get(), this);
             }
 #endif // XAMLPROFILER_ENABLED
         }
@@ -3904,6 +3975,7 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::SetConnectedAnimationRunning(_In_ bo
     if (m_prependVisual)
     {
         m_prependVisual->put_IsVisible(!isRunning);
+        XAMLPROFILER_WUC_SCALAR(m_prependVisual.Get(), IsVisible, !isRunning);
         m_isInConnectedAnimation = isRunning;
         UpdateVisualClipAndTransform(m_pUIElementNoRef->GetDCompTreeHost(), HasComponentsVisual() ? GetComponentsVisual() : m_primaryVisual.Get());
         UpdateTransitionClipVisual(m_pUIElementNoRef->GetDCompTreeHost());
@@ -3970,6 +4042,7 @@ void HWCompTreeNodeWinRT::UpdateContentVisual(_In_ DCompTreeHost *dcompTreeHost)
         // defer setting their size until they are actually added to WUC ProjectedShadowScene.
         wfn::Vector2 size = { m_pUIElementNoRef->GetActualWidth(), m_pUIElementNoRef->GetActualHeight() };
         IFCFAILFAST(m_contentVisual->put_Size(size));
+        XAMLPROFILER_WUC_VECTOR2(m_contentVisual.Get(), Size, size);
     }
 
     if (!CThemeShadow::IsDropShadowMode())
@@ -4141,6 +4214,7 @@ void HWCompTreeNodeWinRT::EnsureDropShadowVisual(_In_ DCompTreeHost* dcompTreeHo
         // Create a SpriteVisual to hold most properties and draw the drop shadow.
         wrl::ComPtr<ixp::ISpriteVisual> dropShadowSpriteVisual;
         IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateSpriteVisual(dropShadowSpriteVisual.ReleaseAndGetAddressOf()));
+        XAMLPROFILER_WUC_CREATED(dropShadowSpriteVisual.Get(), SpriteVisual);
         dropShadowSpriteVisual.As(&m_dropShadowSpriteVisual);
         InsertWUCSpineVisual(m_dropShadowParentVisual.Get(), m_dropShadowSpriteVisual.Get());
     }

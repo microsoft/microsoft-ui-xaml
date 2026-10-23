@@ -4,9 +4,9 @@
 #include "precomp.h"
 #include "DCompTreeHost.h"
 #ifdef XAMLPROFILER_ENABLED
-#include "WucVisualTreeProfiler.h"
 #include "XamlProfilerTracing.h"
 #endif // XAMLPROFILER_ENABLED
+#include "WucVisualTreeProfiler.h"
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <windows.applicationmodel.core.h>
@@ -764,6 +764,7 @@ DCompTreeHost::SetTargetWindowUWP(HWND targetHwnd)
 
                 wrl::ComPtr<ixp::IContainerVisual> containerRootVisual;
                 IFCFAILFAST(m_spCompositor->CreateContainerVisual(&containerRootVisual));
+                XAMLPROFILER_WUC_CREATED(containerRootVisual.Get(), ContainerVisual);
 
                 wrl::ComPtr<ixp::IVisual> rootVisual;
                 IFCFAILFAST(containerRootVisual.As(&rootVisual));
@@ -804,6 +805,7 @@ _Check_return_ HRESULT
 DCompTreeHost::SetTargetHelper()
 {
     IFCFAILFAST(GetCompositor()->CreateContainerVisual(m_hwndVisual.ReleaseAndGetAddressOf()));
+    XAMLPROFILER_WUC_CREATED(m_hwndVisual.Get(), ContainerVisual);
 
     // Mark this visual as a standard visual root to differentiate it from the root of Xaml Islands.
     // This is necessary because using lifted IXP we now put standard visual roots into a composition
@@ -825,9 +827,11 @@ DCompTreeHost::SetTargetHelper()
 
         wrl::ComPtr<WUComp::IContainerVisual> containerVisual;
         IFCFAILFAST(GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
+        XAMLPROFILER_WUC_CREATED(containerVisual.Get(), ContainerVisual);
         IFCFAILFAST(containerVisual.As(&m_mockDCompDummyVisual1));
         IFC_RETURN(childCollection->InsertAtTop(m_mockDCompDummyVisual1.Get()));
         IFCFAILFAST(GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
+        XAMLPROFILER_WUC_CREATED(containerVisual.Get(), ContainerVisual);
         IFCFAILFAST(containerVisual.As(&m_mockDCompDummyVisual2));
         IFC_RETURN(childCollection->InsertAtTop(m_mockDCompDummyVisual2.Get()));
     }
@@ -896,12 +900,15 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
 
             ComPtr<WUComp::ISpriteVisual> spriteVisual;
             IFCFAILFAST(GetCompositor()->CreateSpriteVisual(&spriteVisual));
+            XAMLPROFILER_WUC_CREATED(spriteVisual.Get(), SpriteVisual);
             IFCFAILFAST(spriteVisual->put_Brush(brush.Get()));
+            XAMLPROFILER_WUC_OBJECT(spriteVisual.Get(), Brush, brush.Get());
             IFCFAILFAST(spriteVisual.As(&renderData.m_disconnectedRootVisual));
 
             const wf::Size islandSize = xamlIslandRoot->GetSize();
             wfn::Vector2 size = { islandSize.Width, islandSize.Height };
             IFCFAILFAST(renderData.m_disconnectedRootVisual->put_Size(size));
+            XAMLPROFILER_WUC_VECTOR2(renderData.m_disconnectedRootVisual.Get(), Size, size);
 
             ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
             IFCFAILFAST(xamlIslandRoot->GetContentIsland()->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
@@ -920,13 +927,16 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
 
         ComPtr<WUComp::ISpriteVisual> spriteVisual;
         IFCFAILFAST(GetCompositor()->CreateSpriteVisual(&spriteVisual));
+        XAMLPROFILER_WUC_CREATED(spriteVisual.Get(), SpriteVisual);
         IFCFAILFAST(spriteVisual->put_Brush(brush.Get()));
+        XAMLPROFILER_WUC_OBJECT(spriteVisual.Get(), Brush, brush.Get());
         IFCFAILFAST(spriteVisual.As(&m_disconnectedHWndVisual));
 
         wfn::Vector2 size;
         size.X = backgroundRect.Width;
         size.Y = backgroundRect.Height;
         IFCFAILFAST(m_disconnectedHWndVisual->put_Size(size));
+        XAMLPROFILER_WUC_VECTOR2(m_disconnectedHWndVisual.Get(), Size, size);
 
         IFC_RETURN(SetRootForCorrectContext(m_disconnectedHWndVisual.Get()));
     }
@@ -1242,6 +1252,7 @@ _Check_return_ HRESULT DCompTreeHost::CreateContainerVisual(_Outptr_ WUComp::ICo
 {
     xref_ptr<WUComp::IContainerVisual> spContainerVisual;
     IFC_RETURN(GetCompositor()->CreateContainerVisual(spContainerVisual.ReleaseAndGetAddressOf()));
+    XAMLPROFILER_WUC_CREATED(spContainerVisual.get(), ContainerVisual);
 
     if (VisualDebugTagsEnabled())
     {
@@ -1635,11 +1646,13 @@ void DCompTreeHost::UpdateUIThreadCounters(
     ComPtr<WUComp::ISpriteVisual> spriteVisual;
     IFCFAILFAST(m_frameRateVisual.As(&spriteVisual));
     IFCFAILFAST(spriteVisual->put_Brush(brush.Get()));
+    XAMLPROFILER_WUC_OBJECT(spriteVisual.Get(), Brush, brush.Get());
 
     wfn::Vector2 size;
     size.X = c_FrameRateTotalWidth;
     size.Y = c_FrameRateHeight;
     IFCFAILFAST(m_frameRateVisual->put_Size(size));
+    XAMLPROFILER_WUC_VECTOR2(m_frameRateVisual.Get(), Size, size);
 }
 
 void DCompTreeHost::ShowUIThreadCounters()
@@ -1702,6 +1715,7 @@ void DCompTreeHost::ShowUIThreadCounters()
                 IFCFAILFAST(iter->first->GetContentIsland()->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
                 IFCFAILFAST(contentIslandExperimental->put_Root(nullptr));
                 IFCFAILFAST(GetCompositor()->CreateContainerVisual(hostVisual.ReleaseAndGetAddressOf()));
+                XAMLPROFILER_WUC_CREATED(hostVisual.Get(), ContainerVisual);
 
                 // mark this as our FrameCount/Root host.
                 wrl::ComPtr<WUComp::ICompositionObject> compositionObject;
@@ -1727,6 +1741,7 @@ void DCompTreeHost::ShowUIThreadCounters()
     {
         wrl::ComPtr<WUComp::ISpriteVisual> spriteVisual;
         IFCFAILFAST(GetCompositor()->CreateSpriteVisual(spriteVisual.ReleaseAndGetAddressOf()));
+        XAMLPROFILER_WUC_CREATED(spriteVisual.Get(), SpriteVisual);
         IFCFAILFAST(spriteVisual.As(&m_frameRateVisual));
 
         wrl::ComPtr<WUComp::IVisualCollection> childCollection;

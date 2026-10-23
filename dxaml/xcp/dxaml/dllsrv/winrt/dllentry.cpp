@@ -119,7 +119,8 @@ BOOL InitializeDll()
     TraceLoggingRegister(g_hTraceProvider);
 
 #ifdef XAMLPROFILER_ENABLED
-    TraceLoggingRegister(g_hXamlProfilerProvider);
+    // The enable callback resets the profiler's per-session type table.
+    TraceLoggingRegisterEx(g_hXamlProfilerProvider, XamlProfilerTracing::ProviderEnableCallback, nullptr);
 #endif
 
     // Override the debugger output string formatting method that WIL uses to log errors.  The default formatting

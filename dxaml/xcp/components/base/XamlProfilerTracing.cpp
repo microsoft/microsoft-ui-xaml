@@ -10,6 +10,7 @@
 #endif // XAMLPROFILER_ENABLED
 
 #include "XamlProfilerTracing.h"
+#include <atomic>
 
 // "Microsoft-Windows-XAML-Profiler" -> {26f28a5c-7d30-54c5-40f4-fff6d3beda7d}, the EventSource name
 // hash of the provider name. No provider-group option: only sessions that enable this provider
@@ -18,6 +19,53 @@ TRACELOGGING_DEFINE_PROVIDER(
     g_hXamlProfilerProvider,
     "Microsoft-Windows-XAML-Profiler",
     (0x26f28a5c, 0x7d30, 0x54c5, 0x40, 0xf4, 0xff, 0xf6, 0xd3, 0xbe, 0xda, 0x7d));
+
+namespace
+{
+    // TryMarkTypeFirstSeen's set: one bit per KnownTypeIndex below c_typeTableCapacity.
+    std::atomic<uint64_t> s_typesSeen[XamlProfilerTracing::c_typeTableCapacity / 64] {};
+}
+
+namespace XamlProfilerTracing
+{
+    void NTAPI ProviderEnableCallback(
+        _In_ LPCGUID /* sourceId */,
+        ULONG controlCode,
+        UCHAR /* level */,
+        ULONGLONG /* matchAnyKeyword */,
+        ULONGLONG /* matchAllKeyword */,
+        _In_opt_ PEVENT_FILTER_DESCRIPTOR /* filterData */,
+        _Inout_opt_ PVOID /* callbackContext */) noexcept
+    {
+        // EVENT_CONTROL_CODE_ENABLE_PROVIDER / EVENT_CONTROL_CODE_CAPTURE_STATE from evntrace.h,
+        // which TraceLoggingProvider.h doesn't pull in.
+        constexpr ULONG c_enableProvider = 1;
+        constexpr ULONG c_captureState = 2;
+        if (controlCode == c_enableProvider || controlCode == c_captureState)
+        {
+            for (std::atomic<uint64_t>& word : s_typesSeen)
+            {
+                word.store(0, std::memory_order_relaxed);
+            }
+        }
+    }
+
+    bool TryMarkTypeFirstSeen(uint32_t typeIndex) noexcept
+    {
+        if (typeIndex >= c_typeTableCapacity)
+        {
+            return true;
+        }
+
+        std::atomic<uint64_t>& word = s_typesSeen[typeIndex / 64];
+        const uint64_t bit = uint64_t{ 1 } << (typeIndex % 64);
+        if ((word.load(std::memory_order_relaxed) & bit) != 0)
+        {
+            return false;
+        }
+        return (word.fetch_or(bit, std::memory_order_relaxed) & bit) == 0;
+    }
+}
 
 // Each emitter is noinline so the TraceLoggingWrite expansion (metadata, data descriptors and the
 // write call) stays here rather than in the instrumented functions. TraceLoggingWrite rechecks the
@@ -77,13 +125,8 @@ namespace XamlProfilerTracing
         uint64_t elementId,
         uint64_t parentId,
         bool isLive,
-        PCWSTR label,
         bool isTemplateChild,
-        uint64_t peerHandle,
-        uint64_t coreSize,
-        PCWSTR sourceFileUri,
-        uint32_t sourceLine,
-        uint32_t sourceColumn) noexcept
+        uint32_t typeIndex) noexcept
     {
         TraceLoggingWrite(g_hXamlProfilerProvider, "ElementEnteredTree",
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
@@ -91,13 +134,21 @@ namespace XamlProfilerTracing
             TraceLoggingValue(elementId, "ElementId"),
             TraceLoggingValue(parentId, "ParentId"),
             TraceLoggingValue(isLive, "IsLive"),
-            TraceLoggingValue(label, "Label"),
             TraceLoggingValue(isTemplateChild, "IsTemplateChild"),
-            TraceLoggingValue(peerHandle, "PeerHandle"),
-            TraceLoggingValue(coreSize, "CoreSize"),
-            TraceLoggingValue(sourceFileUri, "SourceFileUri"),
-            TraceLoggingValue(sourceLine, "SourceLine"),
-            TraceLoggingValue(sourceColumn, "SourceColumn"));
+            TraceLoggingValue(typeIndex, "TypeIndex"));
+    }
+
+    __declspec(noinline) void ElementTypeInfo(
+        uint32_t typeIndex,
+        PCWSTR typeName,
+        uint64_t coreSize) noexcept
+    {
+        TraceLoggingWrite(g_hXamlProfilerProvider, "ElementTypeInfo",
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+            TraceLoggingKeyword(XamlProfilerKeywords::XamlTree),
+            TraceLoggingValue(typeIndex, "TypeIndex"),
+            TraceLoggingValue(typeName, "TypeName"),
+            TraceLoggingValue(coreSize, "CoreSize"));
     }
 
     __declspec(noinline) void ElementLeftTree(
@@ -219,13 +270,23 @@ namespace XamlProfilerTracing
             TraceLoggingValue(childCompNodeId, "ChildCompNodeId"));
     }
 
+    __declspec(noinline) void WucVisualCreated(
+        uint64_t visualId,
+        uint32_t visualKind) noexcept
+    {
+        TraceLoggingWrite(g_hXamlProfilerProvider, "WucVisualCreated",
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+            TraceLoggingKeyword(XamlProfilerKeywords::WucTree),
+            TraceLoggingValue(visualId, "VisualId"),
+            TraceLoggingValue(visualKind, "VisualKind"));
+    }
+
     __declspec(noinline) void WucVisualChildInserted(
         uint64_t parentVisualId,
         uint64_t childVisualId,
         uint64_t ownerCompNodeId,
         int32_t index,
-        PCWSTR visualType,
-        PCWSTR properties) noexcept
+        uint32_t visualKind) noexcept
     {
         TraceLoggingWrite(g_hXamlProfilerProvider, "WucVisualChildInserted",
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
@@ -234,8 +295,7 @@ namespace XamlProfilerTracing
             TraceLoggingValue(childVisualId, "ChildVisualId"),
             TraceLoggingValue(ownerCompNodeId, "OwnerCompNodeId"),
             TraceLoggingValue(index, "Index"),
-            TraceLoggingValue(visualType, "VisualType"),
-            TraceLoggingValue(properties, "Properties"));
+            TraceLoggingValue(visualKind, "VisualKind"));
     }
 
     __declspec(noinline) void WucVisualChildRemoved(
@@ -262,8 +322,7 @@ namespace XamlProfilerTracing
         uint64_t visualId,
         uint64_t targetId,
         uint64_t ownerCompNodeId,
-        PCWSTR visualType,
-        PCWSTR properties) noexcept
+        uint32_t visualKind) noexcept
     {
         TraceLoggingWrite(g_hXamlProfilerProvider, "WucVisualRootSet",
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
@@ -271,8 +330,7 @@ namespace XamlProfilerTracing
             TraceLoggingValue(visualId, "VisualId"),
             TraceLoggingValue(targetId, "TargetId"),
             TraceLoggingValue(ownerCompNodeId, "OwnerCompNodeId"),
-            TraceLoggingValue(visualType, "VisualType"),
-            TraceLoggingValue(properties, "Properties"));
+            TraceLoggingValue(visualKind, "VisualKind"));
     }
 
     __declspec(noinline) void WucVisualRootCleared(
@@ -282,6 +340,66 @@ namespace XamlProfilerTracing
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
             TraceLoggingKeyword(XamlProfilerKeywords::WucTree),
             TraceLoggingValue(targetId, "TargetId"));
+    }
+
+    __declspec(noinline) void WucVisualPropertyChanged(
+        uint64_t visualId,
+        uint32_t property,
+        float x,
+        float y,
+        float z,
+        float w) noexcept
+    {
+        TraceLoggingWrite(g_hXamlProfilerProvider, "WucVisualPropertyChanged",
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+            TraceLoggingKeyword(XamlProfilerKeywords::WucTree),
+            TraceLoggingValue(visualId, "VisualId"),
+            TraceLoggingValue(property, "Property"),
+            TraceLoggingValue(x, "X"),
+            TraceLoggingValue(y, "Y"),
+            TraceLoggingValue(z, "Z"),
+            TraceLoggingValue(w, "W"));
+    }
+
+    __declspec(noinline) void WucVisualTransformChanged(
+        uint64_t visualId,
+        _In_reads_(16) const float* matrix) noexcept
+    {
+        TraceLoggingWrite(g_hXamlProfilerProvider, "WucVisualTransformChanged",
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+            TraceLoggingKeyword(XamlProfilerKeywords::WucTree),
+            TraceLoggingValue(visualId, "VisualId"),
+            TraceLoggingValue(matrix[0], "M11"),
+            TraceLoggingValue(matrix[1], "M12"),
+            TraceLoggingValue(matrix[2], "M13"),
+            TraceLoggingValue(matrix[3], "M14"),
+            TraceLoggingValue(matrix[4], "M21"),
+            TraceLoggingValue(matrix[5], "M22"),
+            TraceLoggingValue(matrix[6], "M23"),
+            TraceLoggingValue(matrix[7], "M24"),
+            TraceLoggingValue(matrix[8], "M31"),
+            TraceLoggingValue(matrix[9], "M32"),
+            TraceLoggingValue(matrix[10], "M33"),
+            TraceLoggingValue(matrix[11], "M34"),
+            TraceLoggingValue(matrix[12], "M41"),
+            TraceLoggingValue(matrix[13], "M42"),
+            TraceLoggingValue(matrix[14], "M43"),
+            TraceLoggingValue(matrix[15], "M44"));
+    }
+
+    __declspec(noinline) void WucVisualObjectChanged(
+        uint64_t visualId,
+        uint32_t property,
+        uint64_t objectId,
+        PCWSTR typeName) noexcept
+    {
+        TraceLoggingWrite(g_hXamlProfilerProvider, "WucVisualObjectChanged",
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+            TraceLoggingKeyword(XamlProfilerKeywords::WucTree),
+            TraceLoggingValue(visualId, "VisualId"),
+            TraceLoggingValue(property, "Property"),
+            TraceLoggingValue(objectId, "ObjectId"),
+            TraceLoggingValue(typeName, "TypeName"));
     }
 
     __declspec(noinline) void DCompSurfaceMemoryChanged(

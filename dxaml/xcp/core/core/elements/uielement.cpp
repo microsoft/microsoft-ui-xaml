@@ -8,8 +8,8 @@
 #include "XamlTraceLogging.h"
 #ifdef XAMLPROFILER_ENABLED
 #include "XamlProfilerTracing.h"
-#include "WucVisualTreeProfiler.h"
 #endif // XAMLPROFILER_ENABLED
+#include "WucVisualTreeProfiler.h"
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <FrameworkTheming.h>
@@ -125,35 +125,34 @@ uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
 }
 
 // Out-of-line argument work for the hot instrumented sites below. Each site is an inline
-// keyword gate plus one call, so labels, peer handles and source info are only computed while
-// a session has the group enabled, and none of that code is in the hot functions.
-__declspec(noinline) void CUIElement::TraceProfilerElementEnteredTree(bool isLive)
+// keyword gate plus one call, so labels and peer handles are only computed while a session has
+// the group enabled, and none of that code is in the hot functions.
+static __declspec(noinline) void TraceProfilerElementEnteredTree(
+    _In_ CUIElement* element,
+    bool isLive)
 {
-    // Best-effort XAML source location for this element. Populated only when source-info
-    // storage is enabled in the process (e.g. the profiler enables the XAML-Diagnostics
-    // provider) and this element has a peer carrying stored source info; otherwise the
-    // values remain empty/0 and the profiler simply shows no location.
-    UINT32 sourceLine = 0;
-    UINT32 sourceColumn = 0;
-    xstring_ptr sourceUri;
-    xstring_ptr sourceHash;
-    TryGetSourceInfoFromPeer(&sourceLine, &sourceColumn, &sourceUri, &sourceHash);
+    // Scalar-only per-enter event. The class name and core size depend only on the type, so
+    // they're emitted once per type per session (ElementTypeInfo). x:Name, the DXaml peer handle
+    // and the XAML source location come from their own granular events (see XamlProfilerTracing.h).
+    static_assert(KnownTypeCount <= XamlProfilerTracing::c_typeTableCapacity, "The XAML Profiler type table must cover every KnownTypeIndex");
+    const uint32_t typeIndex = static_cast<uint32_t>(element->GetTypeIndex());
+    if (XamlProfilerTracing::TryMarkTypeFirstSeen(typeIndex))
+    {
+        XamlProfilerTracing::ElementTypeInfo(
+            typeIndex,
+            // Same name GetDebugLabel() falls back to when there's no x:Name.
+            element->CDependencyObject::GetClassName().GetBuffer(),
+            // Core block size (bytes) of the concrete object. It's fixed per type, so it's
+            // measured once per type, whether the element first enters live or non-live.
+            XamlProfilerGetCoreSize(element));
+    }
 
     XamlProfilerTracing::ElementEnteredTree(
-        reinterpret_cast<uint64_t>(this),
-        reinterpret_cast<uint64_t>(GetUIElementParentInternal()),
+        reinterpret_cast<uint64_t>(element),
+        reinterpret_cast<uint64_t>(element->GetUIElementParentInternal()),
         isLive,
-        GetDebugLabel().GetBuffer(),
-        GetTemplatedParent() != nullptr,
-        XamlProfilerGetPeerHandle(this),
-        // Core block size (bytes) of the concrete object. It's a fixed per-type struct size —
-        // timing- and live-state-independent — so we always measure it here, for both live and
-        // non-live enters. (Elements frequently first enter as non-live, e.g. during parse, so
-        // gating on fIsLive would leave most nodes reporting 0.)
-        XamlProfilerGetCoreSize(this),
-        sourceUri.GetBuffer(),
-        sourceLine,
-        sourceColumn);
+        element->GetTemplatedParent() != nullptr,
+        typeIndex);
 }
 
 static __declspec(noinline) void TraceProfilerChildAdded(
@@ -1401,7 +1400,7 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
 #ifdef XAMLPROFILER_ENABLED
     if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::XamlTree))
     {
-        TraceProfilerElementEnteredTree(static_cast<bool>(params.fIsLive));
+        TraceProfilerElementEnteredTree(this, static_cast<bool>(params.fIsLive));
     }
 #if XCP_COUNT_OUTSTANDING_ALLOC
     if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::HeapSnapshots))
@@ -7508,12 +7507,14 @@ _Check_return_ HRESULT CUIElement::EnsureHandOffVisual(
         {
             ctl::ComPtr<WUComp::ILayerVisual> layerHandOffVisual;
             IFC_RETURN(GetDCompTreeHost()->GetCompositor2()->CreateLayerVisual(&layerHandOffVisual));
+            XAMLPROFILER_WUC_CREATED(layerHandOffVisual.Get(), LayerVisual);
             IFCFAILFAST(layerHandOffVisual.As(&spHandOffVisual));
         }
         else
         {
             ctl::ComPtr<ixp::IContainerVisual> handOffVisual;
             IFC_RETURN(GetDCompTreeHost()->GetCompositor()->CreateContainerVisual(handOffVisual.ReleaseAndGetAddressOf()));
+            XAMLPROFILER_WUC_CREATED(handOffVisual.Get(), ContainerVisual);
             IFCFAILFAST(handOffVisual.As(&spHandOffVisual));
 
         }

@@ -7,13 +7,22 @@
 // configuration from the XamlProfilerEnabled MSBuild property (dxaml\Xaml.Cpp.Props; applied by
 // Xaml.Cpp.Targets / LibraryCompile.props). Every consumer #includes this header (and its call
 // sites) inside its own #ifdef XAMLPROFILER_ENABLED, matching the SwipeTestHooks convention, so
-// building with /p:XamlProfilerEnabled=false still compiles all of it out.
+// building with /p:XamlProfilerEnabled=false still compiles all of it out. The one exception is
+// the WUC visual property sites, which use the XAMLPROFILER_WUC_* macros from
+// WucVisualTreeProfiler.h; those macros compile to nothing without XAMLPROFILER_ENABLED.
 //
 // Cost with no profiler session: every instrumented site is gated by the inline
 // XamlProfilerTracing::IsEnabled(<keyword>) check below - one load, compare and branch. Argument
-// work (labels, peer handles, source info) lives in out-of-line helpers next to the call sites,
+// work (labels, peer handles, type info) lives in out-of-line helpers next to the call sites,
 // and every event is written by an out-of-line emitter in XamlProfilerTracing.cpp, so no
 // TraceLoggingWrite expansion lands in a hot function.
+//
+// Cost with a session: the per-change tree events ElementEnteredTree, WucVisualChildInserted and
+// WucVisualRootSet carry scalar payloads only. Anything that is a property of a type rather than
+// an instance (type name, core size) is emitted once per type per session (ElementTypeInfo), and
+// per-instance details (x:Name, DXaml peer, XAML source location, WUC visual properties) come from
+// granular events emitted when that detail changes. The consumer joins them back into the same
+// trees.
 #ifdef XAMLPROFILER_ENABLED
 
 #include <cstdint>
@@ -61,15 +70,16 @@ TRACELOGGING_DECLARE_PROVIDER(g_hXamlProfilerProvider);
 // are reserved for Microsoft telemetry and bits 48-63 by ETW.
 namespace XamlProfilerKeywords
 {
-    // ChildAdded, ChildInserted, ChildRemoved, ElementEnteredTree, ElementLeftTree,
-    // PeerAssociated, ContentChanged, PopupOpened, PopupClosed.
+    // ChildAdded, ChildInserted, ChildRemoved, ElementEnteredTree, ElementTypeInfo,
+    // ElementLeftTree, PeerAssociated, ContentChanged, PopupOpened, PopupClosed.
     constexpr ULONGLONG XamlTree = 0x01;
 
     // CompPeerLinked, CompPeerUnlinked, CompNodeChildInserted, CompNodeChildRemoved.
     constexpr ULONGLONG CompTree = 0x02;
 
-    // WucVisualChildInserted, WucVisualChildRemoved, WucVisualChildrenCleared,
-    // WucVisualRootSet, WucVisualRootCleared (including visual property serialization).
+    // WucVisualCreated, WucVisualChildInserted, WucVisualChildRemoved, WucVisualChildrenCleared,
+    // WucVisualRootSet, WucVisualRootCleared, and the visual property events
+    // WucVisualPropertyChanged, WucVisualTransformChanged, WucVisualObjectChanged.
     constexpr ULONGLONG WucTree = 0x04;
 
     // DCompSurfaceMemoryChanged, VisualSurfaceChanged.
@@ -93,6 +103,28 @@ namespace XamlProfilerTracing
     {
         return TraceLoggingProviderEnabled(g_hXamlProfilerProvider, WINEVENT_LEVEL_VERBOSE, keywords) != 0;
     }
+
+    // ETW enable callback, passed to TraceLoggingRegisterEx in dllentry.cpp (runs on an ETW
+    // thread, after TraceLogging has updated the state IsEnabled reads). It only resets the
+    // session-scoped type table below, when a session enables the provider or requests capture
+    // state, so every session receives ElementTypeInfo for the types it sees.
+    void NTAPI ProviderEnableCallback(
+        _In_ LPCGUID sourceId,
+        ULONG controlCode,
+        UCHAR level,
+        ULONGLONG matchAnyKeyword,
+        ULONGLONG matchAllKeyword,
+        _In_opt_ PEVENT_FILTER_DESCRIPTOR filterData,
+        _Inout_opt_ PVOID callbackContext) noexcept;
+
+    // Session-scoped "first seen" set of KnownTypeIndex values (a bitset of this many entries).
+    // ElementEnteredTree carries only a TypeIndex; the first enter of each type in a session is
+    // preceded by one ElementTypeInfo row.
+    constexpr uint32_t c_typeTableCapacity = 2048;
+
+    // True the first time typeIndex is seen since the table was last reset, and always for an
+    // index beyond the table: the caller must then emit ElementTypeInfo before ElementEnteredTree.
+    bool TryMarkTypeFirstSeen(uint32_t typeIndex) noexcept;
 
     // Out-of-line emitters, defined in XamlProfilerTracing.cpp. Event names, field names, field
     // types and field order are the wire contract with the profiler tools.
@@ -131,25 +163,32 @@ namespace XamlProfilerTracing
         uint64_t parentId,
         uint64_t childId) noexcept;
 
-    // Fired when a UIElement enters the live tree.
-    // Label is the element's GetDebugLabel().
+    // Fired when a UIElement enters the tree (live or non-live). Scalar-only by design, since it
+    // fires for every element: the consumer resolves the remaining node details from granular
+    // events that are emitted once, when the detail is established:
+    //   - type name and core size: ElementTypeInfo (below), once per TypeIndex per session;
+    //   - x:Name: Microsoft-Windows-XAML ElementSetNameInfo (CDependencyObject::SetName);
+    //   - DXaml peer InstanceHandle: PeerAssociated (below);
+    //   - XAML source location: Microsoft-Windows-XAML-Diagnostics ElementCreatedWithSourceInfo1;
+    //   - per-address reset for the above: Microsoft-Windows-XAML ElementCreatedInfo (CUIElement ctor).
     // IsTemplateChild is true when the element was created by a ControlTemplate (GetTemplatedParent() != null).
-    // PeerHandle is the element's DXaml-peer InstanceHandle (0 when no peer) for live highlighting.
-    // CoreSize is the fixed core-object allocation size (0 when unknown, see XamlProfilerGetCoreSize);
-    // sparse properties and the DXaml peer are separate.
-    // SourceFileUri/Line/Column are populated when source-info storage is enabled and the peer has source info.
-    // Missing source info uses an empty URI and 0 coordinates; XBF without line info also uses 0 coordinates.
+    // TypeIndex is the core object's KnownTypeIndex.
     void ElementEnteredTree(
         uint64_t elementId,
         uint64_t parentId,
         bool isLive,
-        PCWSTR label,
         bool isTemplateChild,
-        uint64_t peerHandle,
-        uint64_t coreSize,
-        PCWSTR sourceFileUri,
-        uint32_t sourceLine,
-        uint32_t sourceColumn) noexcept;
+        uint32_t typeIndex) noexcept;
+
+    // Emitted once per TypeIndex per session, immediately before the first ElementEnteredTree
+    // that references it (see TryMarkTypeFirstSeen). TypeName is the core class name (what
+    // GetDebugLabel() falls back to when there's no x:Name). CoreSize is the heap-block size of
+    // the concrete core object, which is fixed per type (0 when unknown, see
+    // XamlProfilerGetCoreSize); sparse properties and the DXaml peer are separate allocations.
+    void ElementTypeInfo(
+        uint32_t typeIndex,
+        PCWSTR typeName,
+        uint64_t coreSize) noexcept;
 
     // Fired when a UIElement leaves the live tree.
     void ElementLeftTree(
@@ -162,10 +201,11 @@ namespace XamlProfilerTracing
     // =====================================================================
 
     // Fired when a DependencyObject's DXaml framework peer is created and associated with the
-    // core object (DXamlCore::CreateAggregableDO). Lazy-peer elements (e.g. ContentPresenter,
-    // ClientAreaPresenter) have no peer when ElementEnteredTree/ChildAdded fire, so their
-    // PeerHandle is traced as 0 there; this event back-fills the real InstanceHandle the moment
-    // the peer exists, letting the consumer make those nodes live-highlightable after the fact.
+    // core object (DXamlCore::GetPeerPrivate, at SetDXamlPeer). This is the source of the
+    // InstanceHandle for ElementEnteredTree nodes: it fires for every DO, before the element
+    // enters the tree for peer-first objects and after it for lazy-peer elements (e.g.
+    // ContentPresenter, ClientAreaPresenter), so the consumer holds it per ElementId until the
+    // element enters.
     // ElementId is the core CDependencyObject* (the same id stitched across all other events);
     // PeerHandle is the peer's IInspectable identity (the XAML Diagnostics InstanceHandle).
     void PeerAssociated(
@@ -255,21 +295,34 @@ namespace XamlProfilerTracing
     // some leaf SpriteVisuals). Join it against CompPeerLinked (CompNode -> UIElement)
     // to bridge the WUC tree to the logical/visual trees.
     //
-    // Properties: the full property set of the inserted visual, serialized in the
-    // exact same XML-attribute format DCompTreeHelper uses for <WucVisual> nodes, so
-    // a consumer can reuse the same attribute parser. Type is also surfaced as its
-    // own field for convenience (SpriteVisual / LayerVisual / ShapeVisual /
-    // RedirectVisual / ContainerVisual / Visual).
+    // VisualKind: the concrete visual type (WucVisualTreeProfiler::VisualKind: 0 Unknown,
+    // 1 Visual, 2 ContainerVisual, 3 SpriteVisual, 4 LayerVisual, 5 ShapeVisual,
+    // 6 RedirectVisual).
+    //
+    // Visual properties are not carried on the insert/root events. XAML reports each property
+    // it sets on a visual through WucVisualPropertyChanged / WucVisualTransformChanged /
+    // WucVisualObjectChanged at the setter, so the consumer keeps a per-visual property bag
+    // that is current (an insert-time snapshot was stale: most spine visuals are inserted
+    // before their properties are pushed). Properties can be reported before the visual is
+    // inserted. WucVisualCreated resets a VisualId's bag, because a new visual can reuse the
+    // address of a destroyed one. Visuals whose properties the app sets (hand-in visuals, and
+    // hand-off visuals XAML adopts as a primary visual) are read in full when XAML takes them.
     // =====================================================================
 
-    // Fired when a WUC visual is inserted as a child of another WUC visual.
+    // Fired when XAML creates a WUC visual. The consumer resets that VisualId's property bag to
+    // the WUC defaults (the per-address reset ElementCreatedInfo gives element ids).
+    void WucVisualCreated(
+        uint64_t visualId,
+        uint32_t visualKind) noexcept;
+
+    // Fired when a WUC visual is inserted as a child of another WUC visual. An insert of a
+    // visual that's already parented is a move.
     void WucVisualChildInserted(
         uint64_t parentVisualId,
         uint64_t childVisualId,
         uint64_t ownerCompNodeId,
         int32_t index,
-        PCWSTR visualType,
-        PCWSTR properties) noexcept;
+        uint32_t visualKind) noexcept;
 
     // Fired when a WUC visual is removed from its parent's children collection.
     void WucVisualChildRemoved(
@@ -290,12 +343,37 @@ namespace XamlProfilerTracing
         uint64_t visualId,
         uint64_t targetId,
         uint64_t ownerCompNodeId,
-        PCWSTR visualType,
-        PCWSTR properties) noexcept;
+        uint32_t visualKind) noexcept;
 
     // Fired when a composition target/island root is cleared (Root set to null).
     void WucVisualRootCleared(
         uint64_t targetId) noexcept;
+
+    // Fired when XAML sets a scalar or vector property on a WUC visual (or when an app-owned
+    // visual is read). Property is a WucVisualTreeProfiler::VisualProperty value; X/Y/Z/W carry
+    // its components (unused ones are 0; booleans are 0/1; enums are their numeric value).
+    void WucVisualPropertyChanged(
+        uint64_t visualId,
+        uint32_t property,
+        float x,
+        float y,
+        float z,
+        float w) noexcept;
+
+    // Fired when XAML sets a visual's TransformMatrix. 'matrix' is row-major M11..M44, emitted
+    // as the fields M11..M44.
+    void WucVisualTransformChanged(
+        uint64_t visualId,
+        _In_reads_(16) const float* matrix) noexcept;
+
+    // Fired when XAML sets an object-valued property (clip, brush, shadow, ...) on a WUC visual.
+    // ObjectId is the object's identity (0 when cleared). For Source it is the source visual's
+    // VisualId. TypeName is the object's runtime class name without its namespace.
+    void WucVisualObjectChanged(
+        uint64_t visualId,
+        uint32_t property,
+        uint64_t objectId,
+        PCWSTR typeName) noexcept;
 
     // =====================================================================
     // Surface Events (Surfaces, SurfaceTextures)
