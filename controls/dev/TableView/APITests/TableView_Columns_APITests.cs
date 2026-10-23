@@ -830,9 +830,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ? new Setter(ContentControl.ContentTemplateProperty, template)
                     : new Setter(ContentControl.ContentTemplateSelectorProperty, new TestHeaderTemplateSelector { Template = template }));
 
-                tableView = CreateTableView(headers: new[] { "Name", "Role" });
+                tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
                 tableView.ColumnHeaderStyle = style;
                 tableView.Columns[1].HeaderTemplate = CreateTextTemplate("Column");
+                tableView.Columns[2].HeaderTemplateSelector = new TestHeaderTemplateSelector { Template = CreateTextTemplate("Selected") };
 
                 LoadContent(tableView);
             });
@@ -847,6 +848,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     $"{setter}: the header Style's template must render the string Header.");
                 Verify.IsTrue(FindVisualChildrenByType<TextBlock>(GetHeaderCell(tableView, 1)).Any(t => t.Text == "Column"),
                     $"{setter}: the column's HeaderTemplate must win over the header Style's.");
+                Verify.IsTrue(FindVisualChildrenByType<TextBlock>(GetHeaderCell(tableView, 2)).Any(t => t.Text == "Selected"),
+                    $"{setter}: the column's HeaderTemplateSelector must win over the header Style's.");
             });
         }
 

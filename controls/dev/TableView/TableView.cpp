@@ -3149,6 +3149,8 @@ void TableView::RebuildHeadersCore()
             if (auto headerTemplateSelector = column.HeaderTemplateSelector())
             {
                 header.Content(column.Header());
+                // A local null keeps a Style's ContentTemplate from outranking the selector.
+                header.ContentTemplate(nullptr);
                 header.ContentTemplateSelector(headerTemplateSelector);
             }
             else if (auto headerTemplate = column.HeaderTemplate())
