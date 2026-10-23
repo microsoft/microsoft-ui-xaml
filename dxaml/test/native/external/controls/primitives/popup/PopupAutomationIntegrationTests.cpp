@@ -14,6 +14,7 @@
 #include <UIAutomationHelper.h>
 #include <FlyoutHelper.h>
 #include <PopupHelper.h>
+#include <WindowAutoCloser.h>
 
 using namespace ::Windows::UI;
 using namespace Microsoft::UI::Xaml;
@@ -104,6 +105,205 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderIsRecreatedAfte
 void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderIsRecreatedAfterHostReinitialization()
 {
     VerifyWindowedPopupProviderLifetime(PopupHostChange::Reinitialize);
+}
+
+void PopupAutomationIntegrationTests::VerifyPopupPropertyEventToleratesReentrantHostChange()
+{
+    WindowAutoCloser destinationWindow;
+    xaml_controls::Grid^ sourceRoot;
+    xaml_controls::Grid^ destinationRoot;
+    ReentrantButton^ button;
+    xaml_primitives::Popup^ popup = nullptr;
+    ReentrantAutomationPeer^ peer = nullptr;
+    TestCleanupWrapper cleanup([&]()
+    {
+        RunOnUIThread([&]()
+        {
+            if (peer) peer->Callback = nullptr;
+            if (popup) popup->IsOpen = false;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+    });
+    HWND popupWindow = nullptr;
+    RunOnUIThread([&]()
+    {
+        sourceRoot = ref new xaml_controls::Grid();
+        TestServices::WindowHelper->WindowContent = sourceRoot;
+        destinationRoot = ref new xaml_controls::Grid();
+        destinationWindow.Attach(ref new xaml::Window());
+        destinationWindow->Content = destinationRoot;
+        destinationWindow->Activate();
+        button = ref new ReentrantButton();
+        button->Content = L"Reentrant target";
+        popup = ref new xaml_primitives::Popup();
+        popup->ShouldConstrainToRootBounds = false;
+        popup->Child = button;
+        sourceRoot->Children->Append(popup);
+    });
+    TestServices::WindowHelper->WaitForIdle();
+    PopupHelper::OpenPopup(popup);
+    RunOnUIThread([&]()
+    {
+        popupWindow = reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popup));
+        VERIFY_IS_NOT_NULL(popupWindow);
+    });
+    AutomationClient::UIAElementInfo info{};
+    info.m_Name = L"Reentrant target";
+    std::shared_ptr<AutomationClient::AutomationClientManager> client;
+    UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+    {
+        client = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, info);
+    });
+    RunOnUIThread([&]()
+    {
+        peer = safe_cast<ReentrantAutomationPeer^>(xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(button));
+        VERIFY_IS_NOT_NULL(peer);
+        peer->Callback = ref new xaml::RoutedEventHandler([&](Platform::Object^, xaml::RoutedEventArgs^)
+        {
+            popup->IsOpen = false;
+            sourceRoot->Children->RemoveAt(0);
+            destinationRoot->Children->Append(popup);
+            popup->IsOpen = true;
+        });
+        peer->RaisePropertyChangedEvent(xaml_automation::AutomationElementIdentifiers::NameProperty, L"before", L"after");
+        VERIFY_IS_TRUE(peer->CallbackInvoked);
+        VERIFY_IS_TRUE(popup->IsOpen);
+        VERIFY_ARE_EQUAL(destinationRoot->XamlRoot, popup->XamlRoot);
+        popupWindow = reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popup));
+        VERIFY_IS_NOT_NULL(popupWindow);
+    });
+    TestServices::WindowHelper->WaitForIdle();
+    UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+    {
+        client = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfoPopup(popupWindow, info);
+        wrl::ComPtr<IUIAutomationElement> element;
+        client->GetCurrentUIAutomationElement(&element);
+        VERIFY_IS_NOT_NULL(element.Get());
+        Common::AutoBSTR name;
+        LogThrow_IfFailed(element->get_CurrentName(name.ReleaseAndGetAddressOf()));
+        Common::AutoBSTR::VerifyAreEqual(L"Reentrant target", name);
+    });
+    RunOnUIThread([&]() { popup->IsOpen = false; });
+    TestServices::WindowHelper->WaitForIdle();
+}
+
+void PopupAutomationIntegrationTests::VerifyComboBoxTemplateChildSharesDataPeerFragment()
+{
+    VerifyComboBoxTemplateChildFragment(false);
+}
+
+void PopupAutomationIntegrationTests::VerifyComboBoxTemplateChildCreatedBeforeDataNavigationSharesFragment()
+{
+    VerifyComboBoxTemplateChildFragment(true);
+}
+
+void PopupAutomationIntegrationTests::VerifyComboBoxTemplateChildFragment(bool createBeforeDataNavigation)
+{
+    TestCleanupWrapper cleanup;
+    xaml_controls::ComboBox^ combo;
+    xaml_controls::Button^ anchor;
+    RunOnUIThread([&]()
+    {
+        auto root = ref new xaml_controls::StackPanel();
+        anchor = ref new xaml_controls::Button();
+        anchor->Content = L"Combo fragment anchor";
+        root->Children->Append(anchor);
+        combo = ref new xaml_controls::ComboBox();
+        combo->Width = 300;
+        combo->Items->Append(ref new Platform::String(L"Template item"));
+        combo->ItemTemplate = safe_cast<xaml::DataTemplate^>(xaml_markup::XamlReader::Load(
+            L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>"
+            L"<Button Content='{Binding}'/>"
+            L"</DataTemplate>"));
+        root->Children->Append(combo);
+        TestServices::WindowHelper->WindowContent = root;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+    AutomationClient::UIAElementInfo info{};
+    info.m_Name = L"Combo fragment anchor";
+    std::shared_ptr<AutomationClient::AutomationClientManager> mainClient;
+    UIAutomationHelper::RunOnCorrectThreadForUIA([&]()
+    {
+        mainClient = AutomationClient::AutomationClientManager::CreateAutomationClientManagerFromInfo(info);
+    });
+
+    wrl::ComPtr<IRawElementProviderFragment> earlyProvider;
+    wrl::ComPtr<IRawElementProviderFragment> retainedProvider;
+    xaml_automation_peers::AutomationPeer^ retainedPeer = nullptr;
+    for (int cycle = 0; cycle < 3; ++cycle)
+    {
+        RunOnUIThread([&]() { combo->IsDropDownOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            auto providerForPeer = [](xaml_automation_peers::AutomationPeer^ peer)
+            {
+                VERIFY_IS_NOT_NULL(peer);
+                wrl::ComPtr<IInspectable> inspectable(reinterpret_cast<IInspectable*>(peer));
+                wrl::ComPtr<IRawElementProviderFragment> provider;
+                LogThrow_IfFailed(inspectable.As(&provider));
+                return provider;
+            };
+            auto rootIdentity = [](IRawElementProviderFragment* provider)
+            {
+                wrl::ComPtr<IRawElementProviderFragmentRoot> root;
+                wrl::ComPtr<IUnknown> identity;
+                LogThrow_IfFailed(provider->get_FragmentRoot(&root));
+                LogThrow_IfFailed(root.As(&identity));
+                return identity;
+            };
+            auto popups = xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(combo->XamlRoot);
+            VERIFY_ARE_EQUAL(1u, popups->Size);
+            VERIFY_IS_NOT_NULL(reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popups->GetAt(0))));
+            auto container = safe_cast<xaml_controls::ComboBoxItem^>(combo->ContainerFromIndex(0));
+            VERIFY_IS_NOT_NULL(container);
+            auto containerPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(container);
+            auto templateChildren = containerPeer->GetChildren();
+            VERIFY_ARE_EQUAL(1u, templateChildren->Size);
+            auto childPeer = safe_cast<xaml_automation_peers::ButtonAutomationPeer^>(templateChildren->GetAt(0));
+            if (createBeforeDataNavigation && cycle == 0)
+            {
+                earlyProvider = providerForPeer(childPeer);
+            }
+            auto comboPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(combo);
+            xaml_automation_peers::ComboBoxItemDataAutomationPeer^ dataPeer = nullptr;
+            for (xaml_automation_peers::AutomationPeer^ child : comboPeer->GetChildren())
+            {
+                if (auto item = dynamic_cast<xaml_automation_peers::ComboBoxItemDataAutomationPeer^>(child))
+                {
+                    dataPeer = item;
+                    break;
+                }
+            }
+            VERIFY_IS_NOT_NULL(dataPeer);
+            auto dataChildren = dataPeer->GetChildren();
+            VERIFY_ARE_EQUAL(1u, dataChildren->Size);
+            VERIFY_ARE_EQUAL(childPeer, dataChildren->GetAt(0));
+            auto childProvider = providerForPeer(childPeer);
+            auto dataProvider = providerForPeer(dataPeer);
+            auto mainProvider = providerForPeer(xaml_automation_peers::FrameworkElementAutomationPeer::FromElement(anchor));
+            wrl::ComPtr<IRawElementProviderFragment> parentProvider;
+            LogThrow_IfFailed(childProvider->Navigate(NavigateDirection_Parent, &parentProvider));
+            VERIFY_IS_NOT_NULL(parentProvider.Get());
+            VERIFY_ARE_EQUAL(rootIdentity(mainProvider.Get()), rootIdentity(dataProvider.Get()));
+            VERIFY_ARE_EQUAL(rootIdentity(dataProvider.Get()), rootIdentity(childProvider.Get()));
+            VERIFY_ARE_EQUAL(rootIdentity(parentProvider.Get()), rootIdentity(childProvider.Get()));
+            dataPeer->GetChildren();
+            VERIFY_ARE_EQUAL(childProvider, providerForPeer(childPeer),
+                L"Repeated data-peer navigation must not replace a valid provider.");
+            if (retainedProvider && retainedPeer == childPeer)
+            {
+                VERIFY_ARE_EQUAL(retainedProvider, childProvider,
+                    L"Reopening the dropdown must preserve a provider in the same logical fragment.");
+            }
+            retainedProvider = childProvider;
+            retainedPeer = childPeer;
+            earlyProvider.Reset();
+            combo->IsDropDownOpen = false;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
 }
 
 void PopupAutomationIntegrationTests::VerifyPopupProviderIsRecreatedAfterWindowedFallback()

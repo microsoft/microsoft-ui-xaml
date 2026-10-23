@@ -123,8 +123,51 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyPopupPropertyEventToleratesReentrantHostChange)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a peer callback can move its popup without event dispatch using the deinitialized host.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyComboBoxTemplateChildSharesDataPeerFragment)
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyComboBoxTemplateChildCreatedBeforeDataNavigationSharesFragment)
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
     private:
+        void VerifyComboBoxTemplateChildFragment(bool createBeforeDataNavigation);
         enum class PopupHostChange { None, NewPopup, NonWindowed, NestedInline, Reinitialize };
+
+        ref class ReentrantAutomationPeer sealed : public xaml_automation_peers::ButtonAutomationPeer
+        {
+        public:
+            ReentrantAutomationPeer(xaml_controls::Button^ owner) : ButtonAutomationPeer(owner) {}
+            property xaml::RoutedEventHandler^ Callback;
+            property bool CallbackInvoked;
+
+        protected:
+            xaml_automation_peers::AutomationControlType GetAutomationControlTypeCore() override
+            {
+                if (auto callback = Callback)
+                {
+                    Callback = nullptr;
+                    CallbackInvoked = true;
+                    callback(Owner, nullptr);
+                }
+                return xaml_automation_peers::AutomationControlType::Button;
+            }
+        };
+
+        ref class ReentrantButton sealed : public xaml_controls::Button
+        {
+        protected:
+            xaml_automation_peers::AutomationPeer^ OnCreateAutomationPeer() override
+            {
+                return ref new ReentrantAutomationPeer(this);
+            }
+        };
 
         ref class PeerReferenceAutomationPeer sealed : public xaml_automation_peers::ButtonAutomationPeer
         {

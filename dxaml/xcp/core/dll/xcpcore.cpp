@@ -5954,6 +5954,29 @@ CUIAWindow* CCoreServices::GetUIAWindowForAutomationPeerNoRef(_In_ CAutomationPe
 
 CUIAWindow* CCoreServices::GetUIAWindowForElementNoRef(_In_ CDependencyObject* element, bool onlyGet)
 {
+    // Data-item peers can expose template children across a popup boundary.
+    // Ignore a cached parent whose owner is no longer in the element's ancestry.
+    for (auto ancestor = element; ancestor && !ancestor->OfTypeByIndex<KnownTypeIndex::Popup>();
+         ancestor = ancestor->GetParentFollowPopups())
+    {
+        auto peer = ancestor->GetAutomationPeer();
+        if (peer && peer->HasParent())
+        {
+            auto parent = peer->GetAPParent();
+            if (parent && do_pointer_cast<CAutomationPeer>(parent->GetDONoRef()))
+            {
+                auto owner = parent->GetElementOwnerNoRef();
+                for (auto current = ancestor->GetParentFollowPopups(); current; current = current->GetParentFollowPopups())
+                {
+                    if (current == owner)
+                    {
+                        return GetUIAWindowForElementNoRef(owner, onlyGet);
+                    }
+                }
+            }
+        }
+    }
+
     xref_ptr<CPopup> popup(do_pointer_cast<CPopup>(element));
     if (!popup || !popup->IsOpen() || !popup->IsWindowed())
     {

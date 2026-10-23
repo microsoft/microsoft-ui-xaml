@@ -1693,6 +1693,13 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseAutomationEvent(
     _In_ CAutomationPeer *pAP,
     _In_ UIAXcp::APAutomationEvents eAutomationEvent)
 {
+    xref_ptr<CUIAWindow> keepAlive(this);
+    xref_ptr<IUIAWindowValidator> validator(m_pUIAWindowValidator);
+    if (!validator || !validator->IsValid())
+    {
+        return E_FAIL;
+    }
+
     xref_ptr<CUIAWrapper> wrapper;
     xref_ptr<IRawElementProviderSimple> provider;
 
@@ -1712,6 +1719,10 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseAutomationEvent(
     {
         IFC_RETURN(E_FAIL);
     }
+    if (!validator->IsValid())
+    {
+        return E_FAIL;
+    }
     IFC_RETURN(UiaRaiseAutomationEvent(provider, ConvertEnumToId(eAutomationEvent)));
 
     return S_OK;
@@ -1730,6 +1741,13 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseAutomationPropertyChangedEvent(
    _In_ const CValue& oldValue,
    _In_ const CValue& newValue)
 {
+    xref_ptr<CUIAWindow> keepAlive(this);
+    xref_ptr<IUIAWindowValidator> validator(m_pUIAWindowValidator);
+    if (!validator || !validator->IsValid())
+    {
+        return E_FAIL;
+    }
+
     HRESULT hr = S_OK;
     VARIANT oldVariant;
     VARIANT newVariant;
@@ -1740,6 +1758,7 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseAutomationPropertyChangedEvent(
     xref_ptr<IRawElementProviderSimple> provider;
 
     pAPEventsSource = pAP->GetAPEventsSource();
+    IFC(validator->IsValid() ? S_OK : E_FAIL);
     if (pAPEventsSource)
     {
         pAP = pAPEventsSource;
@@ -1754,6 +1773,7 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseAutomationPropertyChangedEvent(
     {
         IFC(E_FAIL);
     }
+    IFC(validator->IsValid() ? S_OK : E_FAIL);
     switch (eAutomationProperty)
     {
         case UIAXcp::APStructureChangeType_ChildrenBulkRemovedProperty:
@@ -1796,9 +1816,11 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseAutomationPropertyChangedEvent(
                 IFC(AutomationPeerAnnotationCollectionToVariant(pOldAnnotations, m_pUIAIds->AnnotationTypes_Property, &newVariant));
             }
             IFC(UiaRaiseAutomationPropertyChangedEvent(provider, m_pUIAIds->AnnotationTypes_Property, oldVariant, newVariant));
+            IFC(validator->IsValid() ? S_OK : E_FAIL);
 
             VariantClear(&oldVariant);
             VariantClear(&newVariant);
+            IFC(validator->IsValid() ? S_OK : E_FAIL);
             if (pOldAnnotations)
             {
                 IFC(AutomationPeerAnnotationCollectionToVariant(pOldAnnotations, m_pUIAIds->AnnotationObjects_Property, &oldVariant));
@@ -1807,6 +1829,7 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseAutomationPropertyChangedEvent(
             {
                 IFC(AutomationPeerAnnotationCollectionToVariant(pOldAnnotations, m_pUIAIds->AnnotationObjects_Property, &oldVariant));
             }
+            IFC(validator->IsValid() ? S_OK : E_FAIL);
             IFC(UiaRaiseAutomationPropertyChangedEvent(provider, m_pUIAIds->AnnotationObjects_Property, oldVariant, newVariant));
 
             break;
@@ -1862,12 +1885,20 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseTextEditTextChangedEvent(
     _In_ CValue *pChangedData
     )
 {
+    xref_ptr<CUIAWindow> keepAlive(this);
+    xref_ptr<IUIAWindowValidator> validator(m_pUIAWindowValidator);
+    if (!validator || !validator->IsValid())
+    {
+        return E_FAIL;
+    }
+
     xref_ptr<CUIAWrapper> spWrapper;
     xref_ptr<CAutomationPeer> spAPEventsSource;
     xref_ptr<IRawElementProviderSimple> spProvider;
     UINT size = 0;
 
     spAPEventsSource = pAP->GetAPEventsSource();
+    IFC_RETURN(validator->IsValid() ? S_OK : E_FAIL);
     if (spAPEventsSource)
     {
         pAP = spAPEventsSource;
@@ -1882,6 +1913,7 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseTextEditTextChangedEvent(
     {
         IFC_RETURN(E_FAIL);
     }
+    IFC_RETURN(validator->IsValid() ? S_OK : E_FAIL);
 
     xref_ptr<wfc::IVectorView<HSTRING>> spChangedData;
     xref_ptr<IInspectable> spChangedDataAsInspectable(pChangedData->AsIInspectable());
@@ -1901,6 +1933,7 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseTextEditTextChangedEvent(
         IFC_RETURN(SafeArrayPutElement(safeArray.get(), &i, static_cast<void*>(bstr)));
     }
 
+    IFC_RETURN(validator->IsValid() ? S_OK : E_FAIL);
     switch (eAutomationProperty)
     {
     case UIAXcp::AutomationTextEditChangeType::AutomationTextEditChangeType_None:
@@ -1924,7 +1957,15 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseNotificationEvent(
     const xstring_ptr& displayString,
     const xstring_ptr& activityId)
 {
+    xref_ptr<CUIAWindow> keepAlive(this);
+    xref_ptr<IUIAWindowValidator> validator(m_pUIAWindowValidator);
+    if (!validator || !validator->IsValid())
+    {
+        return E_FAIL;
+    }
+
     CAutomationPeer* const eventSource = ap->GetAPEventsSource();
+    IFC_RETURN(validator->IsValid() ? S_OK : E_FAIL);
     if (eventSource)
     {
         ap = eventSource;
@@ -1941,6 +1982,7 @@ _Check_return_ HRESULT CUIAWindow::UIARaiseNotificationEvent(
     {
         IFC_RETURN(E_FAIL);
     }
+    IFC_RETURN(validator->IsValid() ? S_OK : E_FAIL);
 
     wil::unique_bstr bstrDisplayString;
     if (!displayString.IsNullOrEmpty())
@@ -2694,6 +2736,13 @@ HRESULT CUIAWindow::AutomationPeerAnnotationCollectionToVariant(
     _In_ PROPERTYID propertyId,
     _Out_ VARIANT* pResult)
 {
+    xref_ptr<CUIAWindow> keepAlive(this);
+    xref_ptr<IUIAWindowValidator> validator(m_pUIAWindowValidator);
+    if (!validator || !validator->IsValid())
+    {
+        return E_FAIL;
+    }
+
     HRESULT hr = S_OK;
     CDependencyObject* pDO = nullptr;
     CAutomationPeerAnnotation* pAutomationAnnotation = nullptr;
@@ -2715,6 +2764,7 @@ HRESULT CUIAWindow::AutomationPeerAnnotationCollectionToVariant(
 
     for (LONG i = 0; i < count; i++)
     {
+        IFC_RETURN(validator->IsValid() ? S_OK : E_FAIL);
         bool good = false;
         pDO = pAnnotations->GetItemImpl(i);
         hr = DoPointerCast(pAutomationAnnotation, pDO);
@@ -2751,6 +2801,7 @@ HRESULT CUIAWindow::AutomationPeerAnnotationCollectionToVariant(
                         {
                             Microsoft::WRL::ComPtr<CUIAWrapper> spWrapper;
                             hr = CreateProviderForAP(pPeer, spWrapper.GetAddressOf());
+                            IFC_RETURN(validator->IsValid() ? S_OK : E_FAIL);
                             if (hr == S_OK && spWrapper)
                             {
                                 Microsoft::WRL::ComPtr<IUnknown> spUnk;
@@ -2781,6 +2832,7 @@ HRESULT CUIAWindow::AutomationPeerAnnotationCollectionToVariant(
     }
 
     // If we only have NULLs in annotation objects array, return nothing
+    IFC_RETURN(validator->IsValid() ? S_OK : E_FAIL);
     if (!(propertyId == m_pUIAIds->AnnotationObjects_Property && !fHaveNonNullsInObjects))
     {
         pResult->vt = VT_ARRAY | vt;
@@ -2971,14 +3023,21 @@ Cleanup:
 //------------------------------------------------------------------------
 HRESULT CUIAWindow::CreateProviderForAP(CAutomationPeer* pAP, CUIAWrapper** ppRet)
 {
+    xref_ptr<CUIAWindow> keepAlive(this);
+    xref_ptr<IUIAWindowValidator> validator(m_pUIAWindowValidator);
+    if (!validator || !validator->IsValid())
+    {
+        return E_FAIL;
+    }
     xref_ptr<CUIAWrapper> wrapper;
 
     IFCPTR_RETURN(pAP);
 
-    CUIAWindow* providerWindow = this;
+    xref_ptr<CUIAWindow> providerWindow(this);
     // Data peers reach their element owner through their parent automation peers.
     // Preserve the supplied host only when no element owner can be resolved.
-    if (auto owner = pAP->GetElementOwnerNoRef())
+    xref_ptr<CDependencyObject> owner(pAP->GetElementOwnerNoRef());
+    if (owner)
     {
         if (auto ownerWindow = pAP->GetContext()->GetUIAWindowForElementNoRef(owner))
         {
@@ -2986,13 +3045,43 @@ HRESULT CUIAWindow::CreateProviderForAP(CAutomationPeer* pAP, CUIAWrapper** ppRe
         }
     }
 
+    xref_ptr<IUIAWindowValidator> providerValidator(providerWindow->m_pUIAWindowValidator);
+    if (!validator->IsValid() || !providerValidator || !providerValidator->IsValid())
+    {
+        return E_FAIL;
+    }
+
+    // Reconcile providers created before logical parenting was established. Closed
+    // popup content keeps its existing host so closing handlers can still raise events.
+    auto popup = do_pointer_cast<CPopup>(owner.get());
+    if (owner && owner->IsActive() && (!popup || popup->IsOpen()))
+    {
+        if (auto existing = static_cast<CUIAWrapper*>(pAP->GetUIAWrapper()))
+        {
+            if (existing->GetUIAWindowIfValid() != providerWindow.get())
+            {
+                pAP->InvalidateUIAWrapper();
+                existing->Invalidate();
+            }
+        }
+    }
+    if (!validator->IsValid() || !providerValidator->IsValid())
+    {
+        return E_FAIL;
+    }
+
     IFC_RETURN(CUIAWrapper::Create(
         providerWindow->m_uiaHostEnvironmentInfo,
         providerWindow->m_pHost,
-        providerWindow,
+        providerWindow.get(),
         pAP,
         providerWindow->m_pUIAIds,
         wrapper.ReleaseAndGetAddressOf()));
+
+    if (!validator->IsValid() || !providerValidator->IsValid())
+    {
+        return E_FAIL;
+    }
 
     *ppRet = wrapper.detach();
 
