@@ -663,6 +663,14 @@ Entry c_typeEntries[] =
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
                     xamlType.AddMember(
+                        L"AlwaysExpanded", /* propertyName */
+                        L"Boolean", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::CommandBarFlyout>().AlwaysExpanded()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::CommandBarFlyout>().AlwaysExpanded(unbox_value<bool>(value)); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
                         L"PrimaryCommands", /* propertyName */
                         L"Windows.Foundation.Collections.IObservableVector`1<Microsoft.UI.Xaml.Controls.ICommandBarElement>", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::CommandBarFlyout>().PrimaryCommands(); },
@@ -675,14 +683,6 @@ Entry c_typeEntries[] =
                         L"Windows.Foundation.Collections.IObservableVector`1<Microsoft.UI.Xaml.Controls.ICommandBarElement>", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::CommandBarFlyout>().SecondaryCommands(); },
                         nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"AlwaysExpanded", /* propertyName */
-                        L"Boolean", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::CommandBarFlyout>().AlwaysExpanded()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::CommandBarFlyout>().AlwaysExpanded(unbox_value<bool>(value)); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -843,55 +843,6 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                 });
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.Layout",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Layout",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.DependencyObject",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
-                {
-                    xamlType.AddMember(
-                        L"IndexBasedLayoutOrientation", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.IndexBasedLayoutOrientation", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::Layout>().IndexBasedLayoutOrientation()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                });
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.VirtualizingLayout",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.VirtualizingLayout",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Layout",
-                /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IVirtualizingLayoutFactory>(L"Microsoft.UI.Xaml.Controls.VirtualizingLayout"); },
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
@@ -1138,26 +1089,6 @@ Entry c_typeEntries[] =
             auto xamlType = winrt::make_self<XamlType>(
                 /* Arg 1 - TypeName */ 
                 (PCWSTR)L"Microsoft.UI.Xaml.Controls.IKeyIndexMapping",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual",
                 /* Arg 2 - BaseTypeName */ 
                 (PCWSTR)L"",
                 /* Arg 3 - Activator func */ 
@@ -1491,18 +1422,18 @@ Entry c_typeEntries[] =
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
                     xamlType.AddMember(
-                        L"IsPrimaryBarrelButtonInputEnabled", /* propertyName */
-                        L"Boolean", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::InkInputConfiguration>().IsPrimaryBarrelButtonInputEnabled()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::InkInputConfiguration>().IsPrimaryBarrelButtonInputEnabled(unbox_value<bool>(value)); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
                         L"IsEraserInputEnabled", /* propertyName */
                         L"Boolean", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value(instance.as<winrt::InkInputConfiguration>().IsEraserInputEnabled()); },
                         [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::InkInputConfiguration>().IsEraserInputEnabled(unbox_value<bool>(value)); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"IsPrimaryBarrelButtonInputEnabled", /* propertyName */
+                        L"Boolean", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::InkInputConfiguration>().IsPrimaryBarrelButtonInputEnabled()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::InkInputConfiguration>().IsPrimaryBarrelButtonInputEnabled(unbox_value<bool>(value)); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -1528,18 +1459,18 @@ Entry c_typeEntries[] =
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
                     xamlType.AddMember(
-                        L"RightDragAction", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.InkInputRightDragAction", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkInputProcessingConfiguration>().RightDragAction()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::InkInputProcessingConfiguration>().RightDragAction(unbox_value<winrt::InkInputRightDragAction>(value)); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
                         L"Mode", /* propertyName */
                         L"Microsoft.UI.Xaml.Controls.InkInputProcessingMode", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkInputProcessingConfiguration>().Mode()); },
                         [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::InkInputProcessingConfiguration>().Mode(unbox_value<winrt::InkInputProcessingMode>(value)); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"RightDragAction", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.InkInputRightDragAction", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkInputProcessingConfiguration>().RightDragAction()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::InkInputProcessingConfiguration>().RightDragAction(unbox_value<winrt::InkInputRightDragAction>(value)); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -1606,22 +1537,6 @@ Entry c_typeEntries[] =
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
                     xamlType.AddMember(
-                        L"IsInputEnabled", /* propertyName */
-                        L"Boolean", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::InkPresenter>().IsInputEnabled()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::InkPresenter>().IsInputEnabled(unbox_value<bool>(value)); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"InputDeviceTypes", /* propertyName */
-                        L"Windows.UI.Core.CoreInputDeviceTypes", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkPresenter>().InputDeviceTypes()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::InkPresenter>().InputDeviceTypes(unbox_value<winrt::CoreInputDeviceTypes>(value)); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
                         L"HighContrastAdjustment", /* propertyName */
                         L"Microsoft.UI.Xaml.Controls.InkHighContrastAdjustment", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkPresenter>().HighContrastAdjustment()); },
@@ -1638,10 +1553,26 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                     xamlType.AddMember(
+                        L"InputDeviceTypes", /* propertyName */
+                        L"Windows.UI.Core.CoreInputDeviceTypes", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkPresenter>().InputDeviceTypes()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::InkPresenter>().InputDeviceTypes(unbox_value<winrt::CoreInputDeviceTypes>(value)); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
                         L"InputProcessingConfiguration", /* propertyName */
                         L"Microsoft.UI.Xaml.Controls.InkInputProcessingConfiguration", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::InkPresenter>().InputProcessingConfiguration(); },
                         nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"IsInputEnabled", /* propertyName */
+                        L"Boolean", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::InkPresenter>().IsInputEnabled()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::InkPresenter>().IsInputEnabled(unbox_value<bool>(value)); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -1789,71 +1720,6 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.InkToolbarToolButton",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarToolButton",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.RadioButton",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
-                {
-                    winrt::IInkToolbarToolButtonStatics statics = GetFactory<winrt::IInkToolbarToolButtonStatics>(L"Microsoft.UI.Xaml.Controls.InkToolbarToolButton");
-                    {
-                        xamlType.AddDPMember(L"IsExtensionGlyphShown", L"Boolean", statics.IsExtensionGlyphShownProperty(), false /* isContent */);
-                    }
-
-                    xamlType.AddMember(
-                        L"ToolKind", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.InkToolbarTool", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkToolbarToolButton>().ToolKind()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                });
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.InkToolbarPenButton",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarPenButton",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarToolButton",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
-                {
-                    winrt::IInkToolbarPenButtonStatics statics = GetFactory<winrt::IInkToolbarPenButtonStatics>(L"Microsoft.UI.Xaml.Controls.InkToolbarPenButton");
-                    {
-                        xamlType.AddDPMember(L"MaxStrokeWidth", L"Double", statics.MaxStrokeWidthProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"MinStrokeWidth", L"Double", statics.MinStrokeWidthProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"Palette", L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Media.Brush>", statics.PaletteProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"SelectedBrushIndex", L"Int32", statics.SelectedBrushIndexProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"SelectedBrush", L"Microsoft.UI.Xaml.Media.Brush", statics.SelectedBrushProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"SelectedStrokeWidth", L"Double", statics.SelectedStrokeWidthProperty(), false /* isContent */);
-                    }
-
-                });
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.InkToolbarBallpointPenButton",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -1937,35 +1803,6 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"CustomPen", L"Microsoft.UI.Xaml.Controls.InkToolbarCustomPen", statics.CustomPenProperty(), false /* isContent */);
                     }
 
-                });
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.InkToolbarToggleButton",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarToggleButton",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.CheckBox",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
-                {
-                    xamlType.AddMember(
-                        L"ToggleKind", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.InkToolbarToggle", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkToolbarToggleButton>().ToggleKind()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);
@@ -2189,23 +2026,28 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.InkToolbarPenConfigurationControl",
+        L"Microsoft.UI.Xaml.Controls.InkToolbarPenButton",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
         {
             auto xamlType = winrt::make_self<XamlType>(
                 /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarPenConfigurationControl",
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarPenButton",
                 /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Control",
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarToolButton",
                 /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IInkToolbarPenConfigurationControlFactory>(L"Microsoft.UI.Xaml.Controls.InkToolbarPenConfigurationControl"); },
+                nullptr,
                 /* Arg 4 - Populate properties func */ 
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
-                    winrt::IInkToolbarPenConfigurationControlStatics statics = GetFactory<winrt::IInkToolbarPenConfigurationControlStatics>(L"Microsoft.UI.Xaml.Controls.InkToolbarPenConfigurationControl");
+                    winrt::IInkToolbarPenButtonStatics statics = GetFactory<winrt::IInkToolbarPenButtonStatics>(L"Microsoft.UI.Xaml.Controls.InkToolbarPenButton");
                     {
-                        xamlType.AddDPMember(L"PenButton", L"Microsoft.UI.Xaml.Controls.InkToolbarPenButton", statics.PenButtonProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"MaxStrokeWidth", L"Double", statics.MaxStrokeWidthProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"MinStrokeWidth", L"Double", statics.MinStrokeWidthProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"Palette", L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Media.Brush>", statics.PaletteProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"SelectedBrushIndex", L"Int32", statics.SelectedBrushIndexProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"SelectedBrush", L"Microsoft.UI.Xaml.Media.Brush", statics.SelectedBrushProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"SelectedStrokeWidth", L"Double", statics.SelectedStrokeWidthProperty(), false /* isContent */);
                     }
 
                 });
@@ -2229,6 +2071,32 @@ Entry c_typeEntries[] =
                 /* Arg 4 - Populate properties func */ 
                 nullptr
             );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.InkToolbarPenConfigurationControl",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarPenConfigurationControl",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Control",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IInkToolbarPenConfigurationControlFactory>(L"Microsoft.UI.Xaml.Controls.InkToolbarPenConfigurationControl"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::IInkToolbarPenConfigurationControlStatics statics = GetFactory<winrt::IInkToolbarPenConfigurationControlStatics>(L"Microsoft.UI.Xaml.Controls.InkToolbarPenConfigurationControl");
+                    {
+                        xamlType.AddDPMember(L"PenButton", L"Microsoft.UI.Xaml.Controls.InkToolbarPenButton", statics.PenButtonProperty(), false /* isContent */);
+                    }
+
+                });
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
@@ -2325,6 +2193,35 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.InkToolbarToggleButton",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarToggleButton",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.CheckBox",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    xamlType.AddMember(
+                        L"ToggleKind", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.InkToolbarToggle", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkToolbarToggleButton>().ToggleKind()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.InkToolbarTool",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -2345,6 +2242,40 @@ Entry c_typeEntries[] =
                 });
 
             return xamlType;
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.InkToolbarToolButton",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkToolbarToolButton",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.RadioButton",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::IInkToolbarToolButtonStatics statics = GetFactory<winrt::IInkToolbarToolButtonStatics>(L"Microsoft.UI.Xaml.Controls.InkToolbarToolButton");
+                    {
+                        xamlType.AddDPMember(L"IsExtensionGlyphShown", L"Boolean", statics.IsExtensionGlyphShownProperty(), false /* isContent */);
+                    }
+
+                    xamlType.AddMember(
+                        L"ToolKind", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.InkToolbarTool", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::InkToolbarToolButton>().ToolKind()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
         }
     },
     {
@@ -2372,6 +2303,26 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                 });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.ISelfPlayingAnimatedVisual",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
@@ -2721,10 +2672,18 @@ Entry c_typeEntries[] =
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
                     xamlType.AddMember(
-                        L"VerticalAnchorRatio", /* propertyName */
+                        L"CurrentAnchor", /* propertyName */
+                        L"Microsoft.UI.Xaml.UIElement", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::ItemsRepeaterScrollHost>().CurrentAnchor(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"HorizontalAnchorRatio", /* propertyName */
                         L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ItemsRepeaterScrollHost>().VerticalAnchorRatio()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::ItemsRepeaterScrollHost>().VerticalAnchorRatio(unbox_value<double>(value)); },
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ItemsRepeaterScrollHost>().HorizontalAnchorRatio()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::ItemsRepeaterScrollHost>().HorizontalAnchorRatio(unbox_value<double>(value)); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -2737,18 +2696,10 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                     xamlType.AddMember(
-                        L"HorizontalAnchorRatio", /* propertyName */
+                        L"VerticalAnchorRatio", /* propertyName */
                         L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ItemsRepeaterScrollHost>().HorizontalAnchorRatio()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::ItemsRepeaterScrollHost>().HorizontalAnchorRatio(unbox_value<double>(value)); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"CurrentAnchor", /* propertyName */
-                        L"Microsoft.UI.Xaml.UIElement", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::ItemsRepeaterScrollHost>().CurrentAnchor(); },
-                        nullptr, /* setter */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ItemsRepeaterScrollHost>().VerticalAnchorRatio()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::ItemsRepeaterScrollHost>().VerticalAnchorRatio(unbox_value<double>(value)); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -2857,6 +2808,35 @@ Entry c_typeEntries[] =
                 });
 
             return xamlType;
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Layout",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Layout",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.DependencyObject",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    xamlType.AddMember(
+                        L"IndexBasedLayoutOrientation", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.IndexBasedLayoutOrientation", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::Layout>().IndexBasedLayoutOrientation()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
         }
     },
     {
@@ -3081,26 +3061,6 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.MapLayer",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.MapLayer",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.DependencyObject",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.MapElementsLayer",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -3147,6 +3107,26 @@ Entry c_typeEntries[] =
                     }
 
                 });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.MapLayer",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.MapLayer",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.DependencyObject",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
@@ -3334,32 +3314,6 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.NavigationViewItemBase",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.NavigationViewItemBase",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.ContentControl",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
-                {
-                    winrt::INavigationViewItemBaseStatics statics = GetFactory<winrt::INavigationViewItemBaseStatics>(L"Microsoft.UI.Xaml.Controls.NavigationViewItemBase");
-                    {
-                        xamlType.AddDPMember(L"IsSelected", L"Boolean", statics.IsSelectedProperty(), false /* isContent */);
-                    }
-
-                });
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.NavigationViewItem",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -3393,6 +3347,32 @@ Entry c_typeEntries[] =
                     winrt::INavigationViewItemStatics3 statics3 = GetFactory<winrt::INavigationViewItemStatics3>(L"Microsoft.UI.Xaml.Controls.NavigationViewItem");
                     {
                         xamlType.AddDPMember(L"InfoBadge", L"Microsoft.UI.Xaml.Controls.InfoBadge", statics3.InfoBadgeProperty(), false /* isContent */);
+                    }
+
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.NavigationViewItemBase",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.NavigationViewItemBase",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.ContentControl",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::INavigationViewItemBaseStatics statics = GetFactory<winrt::INavigationViewItemBaseStatics>(L"Microsoft.UI.Xaml.Controls.NavigationViewItemBase");
+                    {
+                        xamlType.AddDPMember(L"IsSelected", L"Boolean", statics.IsSelectedProperty(), false /* isContent */);
                     }
 
                 });
@@ -4386,6 +4366,14 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                     xamlType.AddMember(
+                        L"ExpandedWidth", /* propertyName */
+                        L"Double", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::CommandBarFlyoutCommandBarTemplateSettings>().ExpandedWidth()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
                         L"ExpandUpAnimationEndPosition", /* propertyName */
                         L"Double", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value(instance.as<winrt::CommandBarFlyoutCommandBarTemplateSettings>().ExpandUpAnimationEndPosition()); },
@@ -4413,14 +4401,6 @@ Entry c_typeEntries[] =
                         L"ExpandUpOverflowVerticalPosition", /* propertyName */
                         L"Double", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value(instance.as<winrt::CommandBarFlyoutCommandBarTemplateSettings>().ExpandUpOverflowVerticalPosition()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"ExpandedWidth", /* propertyName */
-                        L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::CommandBarFlyoutCommandBarTemplateSettings>().ExpandedWidth()); },
                         nullptr, /* setter */
                         false, /* isContent */
                         false, /* isDependencyProperty */
@@ -4605,46 +4585,6 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.Primitives.IScrollController",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.IScrollController",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.Primitives.IScrollControllerPanningInfo",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.IScrollControllerPanningInfo",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.Primitives.InfoBarPanel",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -4685,6 +4625,46 @@ Entry c_typeEntries[] =
                 (PCWSTR)L"Microsoft.UI.Xaml.Controls.Slider",
                 /* Arg 3 - Activator func */ 
                 (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IInkToolbarStrokeWidthSliderFactory>(L"Microsoft.UI.Xaml.Controls.Primitives.InkToolbarStrokeWidthSlider"); },
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Primitives.IScrollController",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.IScrollController",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Primitives.IScrollControllerPanningInfo",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.IScrollControllerPanningInfo",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"",
+                /* Arg 3 - Activator func */ 
+                nullptr,
                 /* Arg 4 - Populate properties func */ 
                 nullptr
             );
@@ -4780,55 +4760,6 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.Primitives.SnapPointBase",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.SnapPointBase",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Object",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointBase",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointBase",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.SnapPointBase",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
-                {
-                    xamlType.AddMember(
-                        L"Alignment", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::ScrollSnapPointBase>().Alignment()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                });
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -4876,26 +4807,6 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                 });
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPointBase",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPointBase",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.SnapPointBase",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
@@ -5005,22 +4916,6 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                     xamlType.AddMember(
-                        L"HorizontalScrollController", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.Primitives.IScrollController", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::ScrollPresenter>().HorizontalScrollController(); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::ScrollPresenter>().HorizontalScrollController(value.as<winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController>()); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"VerticalScrollController", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.Primitives.IScrollController", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::ScrollPresenter>().VerticalScrollController(); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::ScrollPresenter>().VerticalScrollController(value.as<winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController>()); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
                         L"ExpressionAnimationSources", /* propertyName */
                         L"Microsoft.UI.Composition.CompositionPropertySet", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::ScrollPresenter>().ExpressionAnimationSources(); },
@@ -5049,6 +4944,14 @@ Entry c_typeEntries[] =
                         L"Double", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollPresenter>().HorizontalOffset()); },
                         nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"HorizontalScrollController", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.Primitives.IScrollController", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::ScrollPresenter>().HorizontalScrollController(); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::ScrollPresenter>().HorizontalScrollController(value.as<winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController>()); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -5089,6 +4992,14 @@ Entry c_typeEntries[] =
                         L"Double", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollPresenter>().VerticalOffset()); },
                         nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"VerticalScrollController", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.Primitives.IScrollController", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::ScrollPresenter>().VerticalScrollController(); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::ScrollPresenter>().VerticalScrollController(value.as<winrt::Microsoft::UI::Xaml::Controls::Primitives::IScrollController>()); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -5168,6 +5079,35 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointBase",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointBase",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.SnapPointBase",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    xamlType.AddMember(
+                        L"Alignment", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::ScrollSnapPointBase>().Alignment()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -5185,6 +5125,26 @@ Entry c_typeEntries[] =
                 });
 
             return xamlType;
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Primitives.SnapPointBase",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.SnapPointBase",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Object",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
         }
     },
     {
@@ -5232,6 +5192,26 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                 });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPointBase",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPointBase",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Primitives.SnapPointBase",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
@@ -5570,26 +5550,6 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.RatingItemInfo",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.RatingItemInfo",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.DependencyObject",
-                /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IRatingItemInfoFactory>(L"Microsoft.UI.Xaml.Controls.RatingItemInfo"); },
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.RatingItemFontInfo",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -5652,6 +5612,26 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.RatingItemInfo",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.RatingItemInfo",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.DependencyObject",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IRatingItemInfoFactory>(L"Microsoft.UI.Xaml.Controls.RatingItemInfo"); },
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.RecyclePool",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -5693,19 +5673,19 @@ Entry c_typeEntries[] =
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
                     xamlType.AddMember(
-                        L"Templates", /* propertyName */
-                        L"Windows.Foundation.Collections.IMap`2<String,Microsoft.UI.Xaml.DataTemplate>", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::RecyclingElementFactory>().Templates(); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::RecyclingElementFactory>().Templates(value.as<winrt::Windows::Foundation::Collections::IMap<winrt::hstring, winrt::Microsoft::UI::Xaml::DataTemplate>>()); },
-                        true, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
                         L"RecyclePool", /* propertyName */
                         L"Microsoft.UI.Xaml.Controls.RecyclePool", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::RecyclingElementFactory>().RecyclePool(); },
                         [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::RecyclingElementFactory>().RecyclePool(value.as<winrt::Microsoft::UI::Xaml::Controls::RecyclePool>()); },
                         false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"Templates", /* propertyName */
+                        L"Windows.Foundation.Collections.IMap`2<String,Microsoft.UI.Xaml.DataTemplate>", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::RecyclingElementFactory>().Templates(); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::RecyclingElementFactory>().Templates(value.as<winrt::Windows::Foundation::Collections::IMap<winrt::hstring, winrt::Microsoft::UI::Xaml::DataTemplate>>()); },
+                        true, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                 });
@@ -5852,154 +5832,6 @@ Entry c_typeEntries[] =
                 /* Arg 4 - Populate properties func */ 
                 nullptr
             );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.ScrollView",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.ScrollView",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Control",
-                /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IScrollViewFactory>(L"Microsoft.UI.Xaml.Controls.ScrollView"); },
-                /* Arg 4 - Populate properties func */ 
-                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
-                {
-                    winrt::IScrollViewStatics statics = GetFactory<winrt::IScrollViewStatics>(L"Microsoft.UI.Xaml.Controls.ScrollView");
-                    {
-                        xamlType.AddDPMember(L"ComputedHorizontalScrollBarVisibility", L"Microsoft.UI.Xaml.Visibility", statics.ComputedHorizontalScrollBarVisibilityProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"ComputedHorizontalScrollMode", L"Microsoft.UI.Xaml.Controls.ScrollingScrollMode", statics.ComputedHorizontalScrollModeProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"ComputedVerticalScrollBarVisibility", L"Microsoft.UI.Xaml.Visibility", statics.ComputedVerticalScrollBarVisibilityProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"ComputedVerticalScrollMode", L"Microsoft.UI.Xaml.Controls.ScrollingScrollMode", statics.ComputedVerticalScrollModeProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"ContentOrientation", L"Microsoft.UI.Xaml.Controls.ScrollingContentOrientation", statics.ContentOrientationProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"Content", L"Microsoft.UI.Xaml.UIElement", statics.ContentProperty(), true /* isContent */);
-                        xamlType.AddDPMember(L"HorizontalAnchorRatio", L"Double", statics.HorizontalAnchorRatioProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"HorizontalScrollBarVisibility", L"Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility", statics.HorizontalScrollBarVisibilityProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"HorizontalScrollChainMode", L"Microsoft.UI.Xaml.Controls.ScrollingChainMode", statics.HorizontalScrollChainModeProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"HorizontalScrollMode", L"Microsoft.UI.Xaml.Controls.ScrollingScrollMode", statics.HorizontalScrollModeProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"HorizontalScrollRailMode", L"Microsoft.UI.Xaml.Controls.ScrollingRailMode", statics.HorizontalScrollRailModeProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"IgnoredInputKinds", L"Microsoft.UI.Xaml.Controls.ScrollingInputKinds", statics.IgnoredInputKindsProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"MaxZoomFactor", L"Double", statics.MaxZoomFactorProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"MinZoomFactor", L"Double", statics.MinZoomFactorProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"ScrollPresenter", L"Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter", statics.ScrollPresenterProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"VerticalAnchorRatio", L"Double", statics.VerticalAnchorRatioProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"VerticalScrollBarVisibility", L"Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility", statics.VerticalScrollBarVisibilityProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"VerticalScrollChainMode", L"Microsoft.UI.Xaml.Controls.ScrollingChainMode", statics.VerticalScrollChainModeProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"VerticalScrollMode", L"Microsoft.UI.Xaml.Controls.ScrollingScrollMode", statics.VerticalScrollModeProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"VerticalScrollRailMode", L"Microsoft.UI.Xaml.Controls.ScrollingRailMode", statics.VerticalScrollRailModeProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"ZoomChainMode", L"Microsoft.UI.Xaml.Controls.ScrollingChainMode", statics.ZoomChainModeProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"ZoomMode", L"Microsoft.UI.Xaml.Controls.ScrollingZoomMode", statics.ZoomModeProperty(), false /* isContent */);
-                    }
-
-                    winrt::IScrollViewStatics2 statics2 = GetFactory<winrt::IScrollViewStatics2>(L"Microsoft.UI.Xaml.Controls.ScrollView");
-                    {
-                        xamlType.AddDPMember(L"CanContentRenderOutsideBounds", L"Boolean", statics2.CanContentRenderOutsideBoundsProperty(), false /* isContent */);
-                    }
-
-                    xamlType.AddMember(
-                        L"CurrentAnchor", /* propertyName */
-                        L"Microsoft.UI.Xaml.UIElement", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::ScrollView>().CurrentAnchor(); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"ExpressionAnimationSources", /* propertyName */
-                        L"Microsoft.UI.Composition.CompositionPropertySet", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::ScrollView>().ExpressionAnimationSources(); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"ExtentHeight", /* propertyName */
-                        L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ExtentHeight()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"ExtentWidth", /* propertyName */
-                        L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ExtentWidth()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"HorizontalOffset", /* propertyName */
-                        L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().HorizontalOffset()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"ScrollableHeight", /* propertyName */
-                        L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ScrollableHeight()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"ScrollableWidth", /* propertyName */
-                        L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ScrollableWidth()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"State", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.ScrollingInteractionState", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::ScrollView>().State()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"VerticalOffset", /* propertyName */
-                        L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().VerticalOffset()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"ViewportHeight", /* propertyName */
-                        L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ViewportHeight()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"ViewportWidth", /* propertyName */
-                        L"Double", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ViewportWidth()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"ZoomFactor", /* propertyName */
-                        L"Single", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ZoomFactor()); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                });
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
@@ -6194,18 +6026,18 @@ Entry c_typeEntries[] =
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
                     xamlType.AddMember(
-                        L"SnapPointsMode", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::ScrollingScrollOptions>().SnapPointsMode()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::ScrollingScrollOptions>().SnapPointsMode(unbox_value<winrt::ScrollingSnapPointsMode>(value)); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
                         L"AnimationMode", /* propertyName */
                         L"Microsoft.UI.Xaml.Controls.ScrollingAnimationMode", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::ScrollingScrollOptions>().AnimationMode()); },
                         [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::ScrollingScrollOptions>().AnimationMode(unbox_value<winrt::ScrollingAnimationMode>(value)); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"SnapPointsMode", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::ScrollingScrollOptions>().SnapPointsMode()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::ScrollingScrollOptions>().SnapPointsMode(unbox_value<winrt::ScrollingSnapPointsMode>(value)); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -6271,6 +6103,14 @@ Entry c_typeEntries[] =
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
                     xamlType.AddMember(
+                        L"AnimationMode", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.ScrollingAnimationMode", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::ScrollingZoomOptions>().AnimationMode()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::ScrollingZoomOptions>().AnimationMode(unbox_value<winrt::ScrollingAnimationMode>(value)); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
                         L"SnapPointsMode", /* propertyName */
                         L"Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::ScrollingZoomOptions>().SnapPointsMode()); },
@@ -6278,11 +6118,151 @@ Entry c_typeEntries[] =
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.ScrollView",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.ScrollView",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Control",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IScrollViewFactory>(L"Microsoft.UI.Xaml.Controls.ScrollView"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::IScrollViewStatics statics = GetFactory<winrt::IScrollViewStatics>(L"Microsoft.UI.Xaml.Controls.ScrollView");
+                    {
+                        xamlType.AddDPMember(L"ComputedHorizontalScrollBarVisibility", L"Microsoft.UI.Xaml.Visibility", statics.ComputedHorizontalScrollBarVisibilityProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ComputedHorizontalScrollMode", L"Microsoft.UI.Xaml.Controls.ScrollingScrollMode", statics.ComputedHorizontalScrollModeProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ComputedVerticalScrollBarVisibility", L"Microsoft.UI.Xaml.Visibility", statics.ComputedVerticalScrollBarVisibilityProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ComputedVerticalScrollMode", L"Microsoft.UI.Xaml.Controls.ScrollingScrollMode", statics.ComputedVerticalScrollModeProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ContentOrientation", L"Microsoft.UI.Xaml.Controls.ScrollingContentOrientation", statics.ContentOrientationProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"Content", L"Microsoft.UI.Xaml.UIElement", statics.ContentProperty(), true /* isContent */);
+                        xamlType.AddDPMember(L"HorizontalAnchorRatio", L"Double", statics.HorizontalAnchorRatioProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"HorizontalScrollBarVisibility", L"Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility", statics.HorizontalScrollBarVisibilityProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"HorizontalScrollChainMode", L"Microsoft.UI.Xaml.Controls.ScrollingChainMode", statics.HorizontalScrollChainModeProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"HorizontalScrollMode", L"Microsoft.UI.Xaml.Controls.ScrollingScrollMode", statics.HorizontalScrollModeProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"HorizontalScrollRailMode", L"Microsoft.UI.Xaml.Controls.ScrollingRailMode", statics.HorizontalScrollRailModeProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"IgnoredInputKinds", L"Microsoft.UI.Xaml.Controls.ScrollingInputKinds", statics.IgnoredInputKindsProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"MaxZoomFactor", L"Double", statics.MaxZoomFactorProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"MinZoomFactor", L"Double", statics.MinZoomFactorProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ScrollPresenter", L"Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter", statics.ScrollPresenterProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"VerticalAnchorRatio", L"Double", statics.VerticalAnchorRatioProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"VerticalScrollBarVisibility", L"Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility", statics.VerticalScrollBarVisibilityProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"VerticalScrollChainMode", L"Microsoft.UI.Xaml.Controls.ScrollingChainMode", statics.VerticalScrollChainModeProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"VerticalScrollMode", L"Microsoft.UI.Xaml.Controls.ScrollingScrollMode", statics.VerticalScrollModeProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"VerticalScrollRailMode", L"Microsoft.UI.Xaml.Controls.ScrollingRailMode", statics.VerticalScrollRailModeProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ZoomChainMode", L"Microsoft.UI.Xaml.Controls.ScrollingChainMode", statics.ZoomChainModeProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ZoomMode", L"Microsoft.UI.Xaml.Controls.ScrollingZoomMode", statics.ZoomModeProperty(), false /* isContent */);
+                    }
+
+                    winrt::IScrollViewStatics2 statics2 = GetFactory<winrt::IScrollViewStatics2>(L"Microsoft.UI.Xaml.Controls.ScrollView");
+                    {
+                        xamlType.AddDPMember(L"CanContentRenderOutsideBounds", L"Boolean", statics2.CanContentRenderOutsideBoundsProperty(), false /* isContent */);
+                    }
+
                     xamlType.AddMember(
-                        L"AnimationMode", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.ScrollingAnimationMode", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::ScrollingZoomOptions>().AnimationMode()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::ScrollingZoomOptions>().AnimationMode(unbox_value<winrt::ScrollingAnimationMode>(value)); },
+                        L"CurrentAnchor", /* propertyName */
+                        L"Microsoft.UI.Xaml.UIElement", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::ScrollView>().CurrentAnchor(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"ExpressionAnimationSources", /* propertyName */
+                        L"Microsoft.UI.Composition.CompositionPropertySet", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::ScrollView>().ExpressionAnimationSources(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"ExtentHeight", /* propertyName */
+                        L"Double", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ExtentHeight()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"ExtentWidth", /* propertyName */
+                        L"Double", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ExtentWidth()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"HorizontalOffset", /* propertyName */
+                        L"Double", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().HorizontalOffset()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"ScrollableHeight", /* propertyName */
+                        L"Double", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ScrollableHeight()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"ScrollableWidth", /* propertyName */
+                        L"Double", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ScrollableWidth()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"State", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.ScrollingInteractionState", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value<int>((int)instance.as<winrt::ScrollView>().State()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"VerticalOffset", /* propertyName */
+                        L"Double", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().VerticalOffset()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"ViewportHeight", /* propertyName */
+                        L"Double", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ViewportHeight()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"ViewportWidth", /* propertyName */
+                        L"Double", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ViewportWidth()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"ZoomFactor", /* propertyName */
+                        L"Single", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::ScrollView>().ZoomFactor()); },
+                        nullptr, /* setter */
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -6308,18 +6288,10 @@ Entry c_typeEntries[] =
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
                     xamlType.AddMember(
-                        L"Source", /* propertyName */
-                        L"Object", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::SelectionModel>().Source(); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::SelectionModel>().Source(value); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"SingleSelect", /* propertyName */
-                        L"Boolean", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::SelectionModel>().SingleSelect()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::SelectionModel>().SingleSelect(unbox_value<bool>(value)); },
+                        L"AnchorIndex", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.IndexPath", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::SelectionModel>().AnchorIndex(); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::SelectionModel>().AnchorIndex(value.as<winrt::Microsoft::UI::Xaml::Controls::IndexPath>()); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -6328,14 +6300,6 @@ Entry c_typeEntries[] =
                         L"Microsoft.UI.Xaml.Controls.IndexPath", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::SelectionModel>().SelectedIndex(); },
                         [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::SelectionModel>().SelectedIndex(value.as<winrt::Microsoft::UI::Xaml::Controls::IndexPath>()); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"AnchorIndex", /* propertyName */
-                        L"Microsoft.UI.Xaml.Controls.IndexPath", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::SelectionModel>().AnchorIndex(); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::SelectionModel>().AnchorIndex(value.as<winrt::Microsoft::UI::Xaml::Controls::IndexPath>()); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -6360,6 +6324,22 @@ Entry c_typeEntries[] =
                         L"Windows.Foundation.Collections.IReadOnlyList`1<Object>", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::SelectionModel>().SelectedItems(); },
                         nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"SingleSelect", /* propertyName */
+                        L"Boolean", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::SelectionModel>().SingleSelect()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::SelectionModel>().SingleSelect(unbox_value<bool>(value)); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"Source", /* propertyName */
+                        L"Object", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::SelectionModel>().Source(); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::SelectionModel>().Source(value); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -7138,9 +7118,9 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                     xamlType.AddMember(
-                        L"SelectedNodes", /* propertyName */
-                        L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.TreeViewNode>", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::TreeView>().SelectedNodes(); },
+                        L"SelectedItems", /* propertyName */
+                        L"Windows.Foundation.Collections.IVector`1<Object>", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::TreeView>().SelectedItems(); },
                         nullptr, /* setter */
                         false, /* isContent */
                         false, /* isDependencyProperty */
@@ -7154,9 +7134,9 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                     xamlType.AddMember(
-                        L"SelectedItems", /* propertyName */
-                        L"Windows.Foundation.Collections.IVector`1<Object>", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::TreeView>().SelectedItems(); },
+                        L"SelectedNodes", /* propertyName */
+                        L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.TreeViewNode>", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::TreeView>().SelectedNodes(); },
                         nullptr, /* setter */
                         false, /* isContent */
                         false, /* isDependencyProperty */
@@ -7278,18 +7258,18 @@ Entry c_typeEntries[] =
                     }
 
                     xamlType.AddMember(
-                        L"HasUnrealizedChildren", /* propertyName */
-                        L"Boolean", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TreeViewNode>().HasUnrealizedChildren()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TreeViewNode>().HasUnrealizedChildren(unbox_value<bool>(value)); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
                         L"Children", /* propertyName */
                         L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.TreeViewNode>", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::TreeViewNode>().Children(); },
                         nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"HasUnrealizedChildren", /* propertyName */
+                        L"Boolean", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TreeViewNode>().HasUnrealizedChildren()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TreeViewNode>().HasUnrealizedChildren(unbox_value<bool>(value)); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -7547,6 +7527,26 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.VirtualizingLayout",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.VirtualizingLayout",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Layout",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IVirtualizingLayoutFactory>(L"Microsoft.UI.Xaml.Controls.VirtualizingLayout"); },
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -7562,18 +7562,18 @@ Entry c_typeEntries[] =
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
                     xamlType.AddMember(
-                        L"LayoutOrigin", /* propertyName */
-                        L"Windows.Foundation.Point", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::VirtualizingLayoutContext>().LayoutOrigin()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::VirtualizingLayoutContext>().LayoutOrigin(unbox_value<winrt::Point>(value)); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
                         L"ItemCount", /* propertyName */
                         L"Int32", /* propertyType */
                         [](winrt::IInspectable instance) { return box_value(instance.as<winrt::VirtualizingLayoutContext>().ItemCount()); },
                         nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"LayoutOrigin", /* propertyName */
+                        L"Windows.Foundation.Point", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::VirtualizingLayoutContext>().LayoutOrigin()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::VirtualizingLayoutContext>().LayoutOrigin(unbox_value<winrt::Point>(value)); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -8001,35 +8001,6 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Media.RevealBrush",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Media.RevealBrush",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Media.XamlCompositionBrushBase",
-                /* Arg 3 - Activator func */ 
-                nullptr,
-                /* Arg 4 - Populate properties func */ 
-                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
-                {
-                    winrt::IRevealBrushStatics statics = GetFactory<winrt::IRevealBrushStatics>(L"Microsoft.UI.Xaml.Media.RevealBrush");
-                    {
-                        xamlType.AddDPMember(L"AlwaysUseFallback", L"Boolean", statics.AlwaysUseFallbackProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"Color", L"Windows.UI.Color", statics.ColorProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"State", L"Microsoft.UI.Xaml.Media.RevealBrushState", statics.StateProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"TargetTheme", L"Microsoft.UI.Xaml.ApplicationTheme", statics.TargetThemeProperty(), false /* isContent */);
-                    }
-
-                });
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Media.RevealBackgroundBrush",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -8064,6 +8035,35 @@ Entry c_typeEntries[] =
                 /* Arg 4 - Populate properties func */ 
                 nullptr
             );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Media.RevealBrush",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Media.RevealBrush",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Media.XamlCompositionBrushBase",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::IRevealBrushStatics statics = GetFactory<winrt::IRevealBrushStatics>(L"Microsoft.UI.Xaml.Media.RevealBrush");
+                    {
+                        xamlType.AddDPMember(L"AlwaysUseFallback", L"Boolean", statics.AlwaysUseFallbackProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"Color", L"Windows.UI.Color", statics.ColorProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"State", L"Microsoft.UI.Xaml.Media.RevealBrushState", statics.StateProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"TargetTheme", L"Microsoft.UI.Xaml.ApplicationTheme", statics.TargetThemeProperty(), false /* isContent */);
+                    }
+
+                });
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
