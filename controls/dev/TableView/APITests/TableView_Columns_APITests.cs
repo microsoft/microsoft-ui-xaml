@@ -815,8 +815,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a header Style's ContentTemplate or ContentTemplateSelector renders a plain string Header, and the column's HeaderTemplate still wins.")]
-        [TestProperty("data:Setter", "{ContentTemplate, ContentTemplateSelector}")]
+        [TestProperty("Description", "Verifies a header Style's ContentTemplate or ContentTemplateSelector renders a plain string Header, a selector returning no template keeps the trimming TextBlock, and the column's templates still win.")]
+        [TestProperty("data:Setter", "{ContentTemplate, ContentTemplateSelector, NullSelector}")]
         public void VerifyHeaderStyleContentTemplateAppliesToStringHeader()
         {
             var setter = ((string)TestContext.DataRow["Setter"]).Trim();
@@ -828,7 +828,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var style = new Style(typeof(TableViewColumnHeader));
                 style.Setters.Add(setter == "ContentTemplate"
                     ? new Setter(ContentControl.ContentTemplateProperty, template)
-                    : new Setter(ContentControl.ContentTemplateSelectorProperty, new TestHeaderTemplateSelector { Template = template }));
+                    : new Setter(ContentControl.ContentTemplateSelectorProperty,
+                        new TestHeaderTemplateSelector { Template = setter == "NullSelector" ? null : template }));
 
                 tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
                 tableView.ColumnHeaderStyle = style;
@@ -843,9 +844,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var header = (ContentControl)GetHeaderCell(tableView, 0);
-                Verify.AreEqual("Name", header.Content as string, $"{setter}: the string Header must reach the style's template as data.");
-                Verify.IsTrue(FindVisualChildrenByType<TextBlock>(header).Any(t => t.Text == "Styled"),
-                    $"{setter}: the header Style's template must render the string Header.");
+                if (setter == "NullSelector")
+                {
+                    var block = header.Content as TextBlock;
+                    Verify.IsNotNull(block, "A selector returning no template must keep the header's own TextBlock.");
+                    Verify.AreEqual(TextTrimming.CharacterEllipsis, block.TextTrimming, "The header text must still ellipsize.");
+                }
+                else
+                {
+                    Verify.AreEqual("Name", header.Content as string, $"{setter}: the string Header must reach the style's template as data.");
+                    Verify.IsTrue(FindVisualChildrenByType<TextBlock>(header).Any(t => t.Text == "Styled"),
+                        $"{setter}: the header Style's template must render the string Header.");
+                }
                 Verify.IsTrue(FindVisualChildrenByType<TextBlock>(GetHeaderCell(tableView, 1)).Any(t => t.Text == "Column"),
                     $"{setter}: the column's HeaderTemplate must win over the header Style's.");
                 Verify.IsTrue(FindVisualChildrenByType<TextBlock>(GetHeaderCell(tableView, 2)).Any(t => t.Text == "Selected"),
