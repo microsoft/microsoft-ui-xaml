@@ -2779,12 +2779,12 @@ static winrt::IInspectable StyleSetterValue(const winrt::Style& style, const win
 }
 
 // A selector that returns no template leaves the presenter's untrimmed implicit TextBlock, so the
-// header keeps its own ellipsizing one instead.
+// header keeps its own ellipsizing one instead. Probed with the header's real content in place.
 static bool StyleTemplatesHeader(
     const winrt::DataTemplate& styleTemplate,
     const winrt::DataTemplateSelector& styleSelector,
-    const winrt::IInspectable& headerContent,
-    const winrt::DependencyObject& header)
+    const winrt::ContentControl& header,
+    const winrt::IInspectable& headerContent)
 {
     if (styleTemplate)
     {
@@ -2794,12 +2794,14 @@ static bool StyleTemplatesHeader(
     {
         return false;
     }
+    header.Content(headerContent);
     try
     {
         return static_cast<bool>(styleSelector.SelectTemplate(headerContent, header));
     }
     catch (...)
     {
+        TVDiag::LogRetailF(L"[TableView] A header Style's ContentTemplateSelector threw; using the default header text.");
         return false;
     }
 }
@@ -3247,6 +3249,8 @@ void TableView::RebuildHeadersCore()
                 header.Padding(cachedHeaderCellPadding);
             }
 
+            header.Tag(column);
+
             if (auto headerTemplateSelector = column.HeaderTemplateSelector())
             {
                 header.Content(column.Header());
@@ -3260,7 +3264,7 @@ void TableView::RebuildHeadersCore()
                 header.ContentTemplate(headerTemplate);
             }
             else if (!headerText.empty() && IsPlainStringHeader(column) &&
-                !StyleTemplatesHeader(styleContentTemplate, styleContentTemplateSelector, column.Header(), header))
+                !StyleTemplatesHeader(styleContentTemplate, styleContentTemplateSelector, header, column.Header()))
             {
                 // A ContentPresenter renders a bare string through an implicit TextBlock carrying no
                 // TextTrimming, so a too-wide header hard-clips mid-glyph while its cells ellipsize.
@@ -3277,8 +3281,6 @@ void TableView::RebuildHeadersCore()
             {
                 header.Content(column.Header());
             }
-
-            header.Tag(column);
 
             TableViewDetails::ApplyHeaderToolTip(header, column.HeaderToolTip());
 
