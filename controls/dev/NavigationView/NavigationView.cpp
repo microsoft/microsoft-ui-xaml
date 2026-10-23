@@ -1662,11 +1662,24 @@ void NavigationView::OnPaneToggleButtonClick(const winrt::IInspectable& /*sender
     const auto paneToggleButton = m_paneToggleButton.get();
     winrt::FocusManager::GettingFocus_revoker gettingFocusRevoker{};
     winrt::SplitView::PaneOpening_revoker paneOpeningRevoker{};
+    winrt::ISplitViewPrivate focusOperationOwner{ nullptr };
+    winrt::TypedEventHandler<winrt::SplitView, winrt::IInspectable> previousCompletionCallback{ nullptr };
+    auto restoreCompletionCallback = gsl::finally([&]()
+    {
+        if (focusOperationOwner)
+        {
+            focusOperationOwner.PaneFocusOperationCompletedCallback(previousCompletionCallback);
+        }
+    });
     if (!IsPaneOpen() && IsLightDismissible() && paneToggleButton &&
         paneToggleButton.FocusState() != winrt::FocusState::Unfocused)
     {
         if (const auto splitView = m_rootSplitView.get())
         {
+            focusOperationOwner = splitView.as<winrt::ISplitViewPrivate>();
+            previousCompletionCallback = focusOperationOwner.PaneFocusOperationCompletedCallback();
+            focusOperationOwner.PaneFocusOperationCompletedCallback(
+                [&gettingFocusRevoker](auto const&, auto const&) { gettingFocusRevoker.revoke(); });
             paneOpeningRevoker = splitView.PaneOpening(winrt::auto_revoke,
                 [this, splitView, paneToggleButton, &gettingFocusRevoker](auto const&, auto const&)
                 {
@@ -4951,6 +4964,15 @@ void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::Naviga
     if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && !DoesNavigationViewItemHaveChildren(selectedContainer) && !m_shouldIgnoreNextSelectionChange)
     {
         winrt::FocusManager::GettingFocus_revoker gettingFocusRevoker{};
+        winrt::ISplitViewPrivate focusOperationOwner{ nullptr };
+        winrt::TypedEventHandler<winrt::SplitView, winrt::IInspectable> previousCompletionCallback{ nullptr };
+        auto restoreCompletionCallback = gsl::finally([&]()
+        {
+            if (focusOperationOwner)
+            {
+                focusOperationOwner.PaneFocusOperationCompletedCallback(previousCompletionCallback);
+            }
+        });
         const auto splitView = m_rootSplitView.get();
         const auto opener = m_paneOpeningFocusedElement.get();
         const auto canRetainFocus = [selectedContainer, splitView]()
@@ -4963,6 +4985,10 @@ void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::Naviga
         if (isItemInvoked && canRetainFocus() && opener &&
             selectedContainer.FocusState() != winrt::FocusState::Unfocused)
         {
+            focusOperationOwner = splitView.as<winrt::ISplitViewPrivate>();
+            previousCompletionCallback = focusOperationOwner.PaneFocusOperationCompletedCallback();
+            focusOperationOwner.PaneFocusOperationCompletedCallback(
+                [&gettingFocusRevoker](auto const&, auto const&) { gettingFocusRevoker.revoke(); });
             gettingFocusRevoker = winrt::FocusManager::GettingFocus(winrt::auto_revoke,
                 [selectedContainer, opener, canRetainFocus, &gettingFocusRevoker](auto const&, winrt::GettingFocusEventArgs const& args)
                 {

@@ -356,6 +356,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyClosingPropertyCallbackCanFocusOpener()
         {
+            VerifyClosingCallbackFocusAfterCancellation(cancelInLosingFocus: false);
+        }
+
+        [TestMethod]
+        public void VerifyClosingLosingFocusCancellationPreservesCallbackFocus()
+        {
+            VerifyClosingCallbackFocusAfterCancellation(cancelInLosingFocus: true);
+        }
+
+        [TestMethod]
+        public void VerifyClosingWithoutFocusTransferPreservesCallbackFocus()
+        {
+            VerifyClosingCallbackFocusAfterCancellation(cancelInLosingFocus: false, disableOpener: true);
+        }
+
+        private void VerifyClosingCallbackFocusAfterCancellation(bool cancelInLosingFocus, bool disableOpener = false)
+        {
             foreach (bool useSplitViewCallback in new[] { false, true })
             {
                 var navView = SetupNavigationView(NavigationViewPaneDisplayMode.LeftCompact);
@@ -365,6 +382,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 DependencyProperty property = null;
                 long token = 0;
                 int callbackCount = 0;
+                bool invokingItem = false;
+                bool canceledDefaultFocus = false;
                 RunOnUIThread.Execute(() =>
                 {
                     navView.IsPaneOpen = false;
@@ -374,11 +393,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     callbackOwner = useSplitViewCallback ? (DependencyObject)splitView : navView;
                     property = useSplitViewCallback ? SplitView.IsPaneOpenProperty : NavigationView.IsPaneOpenProperty;
                     item = (NavigationViewItem)navView.MenuItems[1];
+                    navView.LosingFocus += (sender, args) =>
+                    {
+                        if (cancelInLosingFocus && invokingItem && !canceledDefaultFocus &&
+                            args.OldFocusedElement == item && args.NewFocusedElement == opener)
+                        {
+                            canceledDefaultFocus = true;
+                            Verify.IsTrue(args.TryCancel());
+                        }
+                    };
                     token = callbackOwner.RegisterPropertyChangedCallback(property, (sender, args) =>
                     {
                         if (!navView.IsPaneOpen && !splitView.IsPaneOpen)
                         {
                             callbackCount++;
+                            if (disableOpener) { opener.IsEnabled = true; }
                             Verify.IsTrue(opener.Focus(FocusState.Keyboard));
                             Verify.AreEqual(opener, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot));
                         }
@@ -397,13 +426,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         RunOnUIThread.Execute(() =>
                         {
                             Verify.IsTrue(item.Focus(FocusState.Keyboard));
+                            if (disableOpener) { opener.IsEnabled = false; }
                             var peer = new NavigationViewItemAutomationPeer(item);
-                            ((ISelectionItemProvider)peer.GetPattern(PatternInterface.SelectionItem)).Select();
+                            canceledDefaultFocus = false;
+                            invokingItem = true;
+                            try
+                            {
+                                ((ISelectionItemProvider)peer.GetPattern(PatternInterface.SelectionItem)).Select();
+                            }
+                            finally
+                            {
+                                invokingItem = false;
+                            }
                         });
                         IdleSynchronizer.Wait();
                         RunOnUIThread.Execute(() =>
                         {
                             Verify.AreEqual(cycle + 1, callbackCount);
+                            Verify.AreEqual(cancelInLosingFocus, canceledDefaultFocus);
                             Verify.IsFalse(navView.IsPaneOpen);
                             Verify.AreEqual(opener, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot));
                         });
@@ -419,15 +459,37 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyOpeningPropertyCallbackCanFocusPaneItem()
         {
+            VerifyOpeningCallbackFocusAfterCancellation(cancelInLosingFocus: false);
+        }
+
+        [TestMethod]
+        public void VerifyOpeningLosingFocusCancellationPreservesCallbackFocus()
+        {
+            VerifyOpeningCallbackFocusAfterCancellation(cancelInLosingFocus: true);
+        }
+
+        private void VerifyOpeningCallbackFocusAfterCancellation(bool cancelInLosingFocus)
+        {
             var navView = SetupNavigationView(NavigationViewPaneDisplayMode.LeftCompact);
             NavigationViewItem item = null;
             long token = 0;
             bool callbackRan = false;
+            bool canceledDefaultFocus = false;
             RunOnUIThread.Execute(() =>
             {
                 navView.IsPaneOpen = false;
                 Content.UpdateLayout();
                 item = (NavigationViewItem)navView.MenuItems[0];
+                var toggle = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                navView.LosingFocus += (sender, args) =>
+                {
+                    if (cancelInLosingFocus && !canceledDefaultFocus &&
+                        args.OldFocusedElement == toggle && args.NewFocusedElement == item)
+                    {
+                        canceledDefaultFocus = true;
+                        Verify.IsTrue(args.TryCancel());
+                    }
+                };
                 token = navView.RegisterPropertyChangedCallback(NavigationView.IsPaneOpenProperty, (sender, args) =>
                 {
                     if (navView.IsPaneOpen)
@@ -450,6 +512,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Verify.IsTrue(callbackRan);
+                    Verify.AreEqual(cancelInLosingFocus, canceledDefaultFocus);
                     Verify.IsTrue(navView.IsPaneOpen);
                     Verify.AreEqual(item, Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(navView.XamlRoot));
                 });
