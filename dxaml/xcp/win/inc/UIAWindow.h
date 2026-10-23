@@ -8,6 +8,8 @@
 
 #include "UIAHostEnvironmentInfo.h"
 #include <map>
+#include <memory>
+#include <vector>
 #include <fwd/windows.foundation.h>
 
 #ifndef UIA_TRACE
@@ -23,6 +25,8 @@
 
 class CAutomationPeerCollection; // Forward declaration for ConvertToVariant(CAutomationPeerCollection, ...)
 class CAutomationPeerAnnotationCollection;
+
+namespace DirectUI { class DxamlCoreTestHooks; }
 
 DEFINE_GUID(GUID_PreventKeyboardDisplayOnProgrammaticFocus, 0xd48814c, 0x1e01, 0x49b1, 0x91, 0xe8, 0x61, 0xab, 0x2f, 0x24, 0x9f, 0x4f);
 
@@ -482,6 +486,8 @@ protected:
     virtual HRESULT GetPropertyValueOverride(_In_ PROPERTYID propertyId, _Out_ VARIANT * pRetVal) = 0;
 
 private:
+    friend class DirectUI::DxamlCoreTestHooks;
+
     void FlushUiaBridgeEventTable();
     HRESULT GetAPForHwnd(HWND hwnd, CAutomationPeer* pAPRoot, CAutomationPeer** pHwndAP);
     _Check_return_ HRESULT GetPreventKeyboardDisplayOnProgrammaticFocusId();
@@ -525,6 +531,9 @@ private:
     XUINT32 m_cAdviseNotificationEvent {0};
 
     IUIAWindowValidator* m_pUIAWindowValidator {nullptr};
+
+    // Non-owning membership; a retained provider must not keep its core alive.
+    std::weak_ptr<std::vector<CUIAWindow*>> m_uiaWindowRegistry;
 
     bool m_isEnabledMockUIAClientsListening {false};
     bool m_fInitialized {false};

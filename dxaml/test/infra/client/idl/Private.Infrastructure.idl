@@ -931,6 +931,8 @@ namespace Private.Infrastructure
         HRESULT GetDeallocationCount([out, retval] UINT64* count);
 
         HRESULT ResetDeviceAndVisualsWithoutUIThreadTick();
+
+        HRESULT Popup_ResetUIAWindowValidator([in] Microsoft.UI.Xaml.Controls.Primitives.Popup* popup);
     }
 
     [version(NTDDI_WIN10_RS3)]

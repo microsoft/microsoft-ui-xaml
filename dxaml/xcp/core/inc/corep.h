@@ -14,6 +14,8 @@
 #include <vector_set.h>
 #include <unordered_set>
 #include <deque>
+#include <memory>
+#include <vector>
 #include "ConnectedAnimationService.h"
 #include <UIThreadScheduler.h>
 #include <AKExport.h>
@@ -1227,6 +1229,7 @@ public:
     IPALWorkItemFactory* GetWorkItemFactory() const { return m_pWorkItemFactory; }
 
 // UIAutomation Accessibility
+    std::shared_ptr<std::vector<CUIAWindow*>> GetUIAWindowRegistry();
     _Check_return_ HRESULT UIAClientsAreListening(_In_ UIAXcp::APAutomationEvents eAutomationEvent);
     _Check_return_ HRESULT UIARaiseAutomationEvent(_In_ CAutomationPeer *pAP,
                                                   _In_ UIAXcp::APAutomationEvents eAutomationEvent);
@@ -1245,6 +1248,8 @@ public:
         xstring_ptr displayString,
         _In_ xstring_ptr activityId);
     CUIAWindow* GetUIAWindowForElementRootNoRef(_In_ CDependencyObject* root);
+    CUIAWindow* GetUIAWindowForElementNoRef(_In_ CDependencyObject* element, bool onlyGet = false);
+    CUIAWindow* GetUIAWindowForAutomationPeerNoRef(_In_ CAutomationPeer* peer);
 
     void RegisterForStructureChangedEvent(
         _In_ CAutomationPeer* automationPeer,
@@ -1913,6 +1918,8 @@ private:
 
     xvector<CUIElement*>        m_redirectionElementsNoRef;
     xvector<IGripper*>          m_grippersNoRef;
+
+    std::shared_ptr<std::vector<CUIAWindow*>> m_uiaWindowRegistry;
 
 //  TRUE when ResetVisualTree is processing
     bool                        m_bInResetVisualTree;

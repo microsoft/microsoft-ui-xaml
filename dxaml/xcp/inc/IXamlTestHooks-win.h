@@ -33,7 +33,8 @@ enum XamlInternalCommand : int
     FrameworkElement_HasPeer,
     FlyoutBase_GetWindow,
     Popup_GetWindow,
-    ToolTip_GetWindow
+    ToolTip_GetWindow,
+    Popup_ResetUIAWindowValidator
 };
 
 struct JupiterGripperPoint
