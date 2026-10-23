@@ -92,7 +92,7 @@
                         Toggled="OnReadOnlyToggled"/>
                     <!-- /snippet -->
                     <TextBlock Style="{StaticResource RailCaptionTextStyle}"
-                               Text="Press F2 to edit, Enter to commit, Esc to cancel."/>
+                               Text="Press F2 to edit, Enter to commit, Tab to edit the next cell, Esc to cancel."/>
                 </controls:RailSection>
 
                 <controls:ShapingOptions

@@ -518,6 +518,16 @@ public:
     void OnKeyDownForEditing(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
+    // Tab / Shift+Tab while editing. True when the key is consumed (moved, or the commit was vetoed).
+    bool TryMoveEditToAdjacentCell(bool forward);
+    // A Tab move to a row not yet in view; opened once it is, cancelled by any newer intent.
+    void RequestPendingTabEdit(int32_t rowIndex, winrt::IInspectable const& item, winrt::TableViewColumn const& column);
+    void TryCompletePendingTabEdit(uint32_t generation);
+    void QueuePendingTabEditTurn(winrt::DispatcherQueuePriority priority = winrt::DispatcherQueuePriority::Normal);
+    void CancelPendingTabEdit();
+    void CancelPendingTabEditForFocusMove(const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args);
+    // True once the cell was found and focused; the BeginEdit itself may still be refused.
+    bool FocusCellAndBeginEdit(int32_t rowIndex, winrt::IInspectable const& item, winrt::TableViewColumn const& column);
     void OnLosingFocusForEditing(
         const winrt::IInspectable& sender,
         const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args);
@@ -792,6 +802,16 @@ private:
     // Bumped when a forced teardown closes an edit awaiting a deferral, so a late completion can
     // recognise itself as stale.
     uint32_t m_editGeneration{ 0 };
+
+    // The pending Tab move (RequestPendingTabEdit). Any newer intent bumps the generation.
+    uint32_t m_pendingTabEditGeneration{ 0 };
+    bool m_pendingTabEditActive{ false };
+    bool m_pendingTabEditTurnQueued{ false };
+    int32_t m_pendingTabEditRow{ -1 };
+    int32_t m_pendingTabEditAttemptsLeft{ 0 };
+    tracker_ref<winrt::IInspectable> m_pendingTabEditItem{ this };
+    tracker_ref<winrt::TableViewColumn> m_pendingTabEditColumn{ this };
+    winrt::FrameworkElement::LayoutUpdated_revoker m_pendingTabEditLayoutRevoker{};
 
     // Pending source-reshaping operations. A deque, not a vector: the drain pops from the front so
     // replay order matches arrival order.

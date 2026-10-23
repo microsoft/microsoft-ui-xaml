@@ -129,6 +129,58 @@
                     AutomationProperties.AutomationId="navigateToVirtualization"
                     IsTabStop="False"
                     AllowFocusOnInteraction="False" />
+            <!-- UIA Toggle only. When checked, BasicTableView's CellEditEnding cancels every Commit. -->
+            <CheckBox x:Name="VetoCommitCheckBox"
+                      Content="Veto commit"
+                      AutomationProperties.Name="VetoCommitCheckBox"
+                      AutomationProperties.AutomationId="VetoCommitCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False" />
+            <!-- UIA Toggle only. When checked, every Commit in BasicTableView's CellEditEnding sorts it by Age descending. -->
+            <CheckBox x:Name="SortOnCommitCheckBox"
+                      Content="Sort on commit"
+                      AutomationProperties.Name="SortOnCommitCheckBox"
+                      AutomationProperties.AutomationId="SortOnCommitCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False" />
+            <!-- UIA Toggle only. When checked, every Commit in BasicTableView's CellEditEnding posts a High-priority
+                 focus move to AfterTableButton, ahead of anything the control posts at Normal priority. -->
+            <CheckBox x:Name="FocusAwayOnCommitCheckBox"
+                      Content="Focus away on commit"
+                      AutomationProperties.Name="FocusAwayOnCommitCheckBox"
+                      AutomationProperties.AutomationId="FocusAwayOnCommitCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False" />
+            <!-- UIA Toggle only. When checked, every Commit in BasicTableView's CellEditEnding posts a High-priority
+                 focus move to BasicTableView's first column header, ahead of anything the control posts at Normal priority. -->
+            <CheckBox x:Name="FocusHeaderOnCommitCheckBox"
+                      Content="Focus header on commit"
+                      AutomationProperties.Name="FocusHeaderOnCommitCheckBox"
+                      AutomationProperties.AutomationId="FocusHeaderOnCommitCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False" />
+            <!-- UIA Toggle only. When checked, ScrollingTableView and GroupedTableView allow editing (IsReadOnly defaults to true). -->
+            <CheckBox x:Name="AllowSecondaryTableEditingCheckBox"
+                      Content="Allow editing in Scrolling and Grouped"
+                      AutomationProperties.Name="AllowSecondaryTableEditingCheckBox"
+                      AutomationProperties.AutomationId="AllowSecondaryTableEditingCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False"
+                      Checked="OnAllowSecondaryTableEditingToggled"
+                      Unchecked="OnAllowSecondaryTableEditingToggled" />
+            <!-- UIA Toggle only. When checked, BasicTableView's BeginningEdit cancels every edit of the Age column. -->
+            <CheckBox x:Name="CancelAgeBeginEditCheckBox"
+                      Content="Cancel Age edits"
+                      AutomationProperties.Name="CancelAgeBeginEditCheckBox"
+                      AutomationProperties.AutomationId="CancelAgeBeginEditCheckBox"
+                      IsChecked="False"
+                      IsTabStop="False"
+                      AllowFocusOnInteraction="False" />
         </StackPanel>
 
         <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in
@@ -178,8 +230,10 @@
                             </DataTemplate>
                         </controls:TableViewTemplateColumn.CellTemplate>
                         <controls:TableViewTemplateColumn.CellEditingTemplate>
-                            <DataTemplate x:DataType="local:TableViewTestPerson">
-                                <TextBox Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <!-- Classic {Binding}, Explicit: the base commit discovers editor bindings with
+                                 GetBindingExpression, which cannot see compiled {x:Bind} (see the API spec). -->
+                            <DataTemplate>
+                                <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=Explicit}"
                                          AutomationProperties.Name="TemplateCellEditor"
                                          AutomationProperties.AutomationId="TemplateCellEditor" />
                             </DataTemplate>

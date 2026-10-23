@@ -389,6 +389,574 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         #endregion
 
+        #region Tab / Shift+Tab while editing (ADO 64540419)
+
+        // Expected behavior follows WPF DataGrid: Tab commits and opens the next editable visible cell, Shift+Tab
+        // the previous one; read-only and non-editable columns are skipped; the end of a row wraps to the next
+        // row; past the last editable cell the edit closes and Tab leaves normally; a vetoed commit keeps the editor.
+        // BasicTableView columns: Name, Age, ReadOnlyCity (IsReadOnly), Score, Template (editing template),
+        // Action (no editing template, so not editable).
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab in an open editor commits it and opens the next editable cell in the same row.")]
+        public void TabWhileEditingMovesToNextEditableCell()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject row = GetFirstRow();
+
+                OpenNameEditorAndReplaceText(row, "Tabbed");
+                Verify.AreEqual("Name;", ReadEditReport(), "Precondition: the edit opened on Name.");
+
+                Log.Comment("Press Tab inside the Name editor.");
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+
+                string editReport = ReadEditReport();
+                string endReport = ReadEditEndReport();
+                string itemName = ReadFirstItemName();
+                string probe = ReadEditorProbe();
+                Log.Comment("Edit report: '{0}'. End report: '{1}'. Item Name: '{2}'. Probe: '{3}'.", editReport, endReport, itemName, probe);
+
+                Verify.AreEqual("Commit;", endReport, "Tab must commit the open edit.");
+                Verify.AreEqual("Tabbed", itemName, "Tab must write the editor's value through to the item.");
+                Verify.AreEqual("Name;Age;", editReport, "Tab must open an edit on the next editable cell (Age).");
+                Verify.AreEqual(BasicAge(0).ToString(), ProbeEntryField(probe, 1, 2), "The new editor must belong to row 0's Age cell.");
+                Verify.AreEqual("focus=True", ProbeEntryField(probe, 1, 3), "Focus must move into the new editor.");
+
+                CancelAnyOpenEdit();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Shift+Tab in an open editor commits it and opens the previous editable cell in the same row.")]
+        public void ShiftTabWhileEditingMovesToPreviousEditableCell()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject row = GetFirstRow();
+
+                DoubleClickRowAtColumnOffset(row, AgeCellRelativeX);
+                Verify.AreEqual("Age;", ReadEditReport(), "Precondition: the edit opened on Age.");
+
+                Log.Comment("Press Shift+Tab inside the Age editor.");
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+
+                string editReport = ReadEditReport();
+                string endReport = ReadEditEndReport();
+                string probe = ReadEditorProbe();
+                Log.Comment("Edit report: '{0}'. End report: '{1}'. Probe: '{2}'.", editReport, endReport, probe);
+
+                Verify.AreEqual("Commit;", endReport, "Shift+Tab must commit the open edit.");
+                Verify.AreEqual("Age;Name;", editReport, "Shift+Tab must open an edit on the previous editable cell (Name).");
+                Verify.AreEqual(BasicName(0), ProbeEntryField(probe, 1, 2), "The new editor must belong to row 0's Name cell.");
+                Verify.AreEqual("focus=True", ProbeEntryField(probe, 1, 3), "Focus must move into the new editor.");
+
+                CancelAnyOpenEdit();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab and Shift+Tab while editing skip a read-only column in both directions.")]
+        public void TabWhileEditingSkipsReadOnlyColumn()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject row = GetFirstRow();
+
+                DoubleClickRowAtColumnOffset(row, AgeCellRelativeX);
+                Verify.AreEqual("Age;", ReadEditReport(), "Precondition: the edit opened on Age.");
+
+                Log.Comment("Tab from Age must skip ReadOnlyCity and land on Score.");
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                string afterTab = ReadEditReport();
+                Log.Comment("Edit report after Tab: '{0}'.", afterTab);
+                Verify.AreEqual("Age;Score;", afterTab, "Tab must skip the IsReadOnly column and edit Score.");
+
+                Log.Comment("Shift+Tab from Score must skip ReadOnlyCity and land back on Age.");
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+                string afterShiftTab = ReadEditReport();
+                Log.Comment("Edit report after Shift+Tab: '{0}'. End report: '{1}'.", afterShiftTab, ReadEditEndReport());
+                Verify.AreEqual("Age;Score;Age;", afterShiftTab, "Shift+Tab must skip the IsReadOnly column and edit Age.");
+                Verify.AreEqual("Commit;Commit;", ReadEditEndReport(), "Each move must commit the cell it leaves.");
+
+                CancelAnyOpenEdit();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab from the last editable cell of a row wraps to the first editable cell of the next row, still editing.")]
+        public void TabWhileEditingAtEndOfRowWrapsToNextRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject row = GetFirstRow();
+
+                Log.Comment("Double-click the Template cell, the last editable cell of row 0 (Action is not editable).");
+                DoubleClickRowAtColumnOffset(row, TemplateCellRelativeX);
+                Verify.AreEqual("Template;", ReadEditReport(), "Precondition: the edit opened on Template.");
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+
+                string editReport = ReadEditReport();
+                string endReport = ReadEditEndReport();
+                string probe = ReadEditorProbe();
+                Log.Comment("Edit report: '{0}'. End report: '{1}'. Probe: '{2}'.", editReport, endReport, probe);
+
+                Verify.AreEqual("Commit;", endReport, "Tab must commit the open edit.");
+                Verify.AreEqual("Template;Name;", editReport, "Tab past the last editable cell must wrap to the next row's first editable cell.");
+                Verify.AreEqual(BasicName(1), ProbeEntryField(probe, 1, 2), "The new editor must belong to row 1, not row 0.");
+                Verify.AreEqual("focus=True", ProbeEntryField(probe, 1, 3), "Focus must move into the new editor.");
+
+                CancelAnyOpenEdit();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab from the last editable cell of the last row commits, ends editing, and opens no new edit.")]
+        public void TabWhileEditingLastCellOfLastRowExitsEdit()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!DrillIntoRow(BasicTable, 0)) { return; }
+
+                Log.Comment("Ctrl+End to the last cell of the last row, Left to its Template cell, F2.");
+                KeyboardHelper.PressKey(Key.End, ModifierKey.Control);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.F2);
+                Wait.ForIdle();
+
+                Verify.AreEqual("Template;", ReadEditReport(), "Precondition: F2 opened an edit on the last row's Template cell.");
+                Verify.AreEqual(BasicName(BasicItemCount - 1), ProbeEntryField(ReadEditorProbe(), 0, 2), "Precondition: the editor belongs to the last row.");
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+
+                string editReport = ReadEditReport();
+                string endReport = ReadEditEndReport();
+                string focus;
+                bool inEditor = IsFocusInBasicTableEditor(out focus);
+                Log.Comment("Edit report: '{0}'. End report: '{1}'. Focus: {2}.", editReport, endReport, focus);
+
+                Verify.AreEqual("Commit;", endReport, "Tab from the last editable cell must commit.");
+                Verify.AreEqual("Template;", editReport, "There is no next editable cell, so no new edit may open.");
+                Verify.IsFalse(inEditor, "Focus must leave the editor so Tab continues normally.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab while editing keeps the editor open and focused when CellEditEnding cancels the commit.")]
+        public void TabWhileEditingStaysInEditorWhenCommitVetoed()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var veto = FindElement.ById<CheckBox>(VetoCommitCheckBox);
+                if (veto == null) { Verify.Fail("VetoCommitCheckBox was not found."); return; }
+
+                try
+                {
+                    veto.Check();
+                    Wait.ForIdle();
+
+                    UIObject row = GetFirstRow();
+                    OpenNameEditorAndReplaceText(row, "Vetoed");
+
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.ForIdle();
+
+                    string editReport = ReadEditReport();
+                    string endReport = ReadEditEndReport();
+                    string itemName = ReadFirstItemName();
+                    string focus;
+                    bool inEditor = IsFocusInBasicTableEditor(out focus);
+                    Log.Comment("Edit report: '{0}'. End report: '{1}'. Item Name: '{2}'. Focus: {3}.", editReport, endReport, itemName, focus);
+
+                    Verify.AreEqual("Commit;", endReport, "Tab must attempt a commit, which the page cancels.");
+                    Verify.AreEqual("Name;", editReport, "A vetoed commit must not move on to another cell.");
+                    Verify.AreEqual(BasicName(0), itemName, "A vetoed commit must not write the value.");
+                    Verify.IsTrue(inEditor, "A vetoed commit must leave focus in the current editor.");
+                }
+                finally
+                {
+                    veto.Uncheck();
+                    Wait.ForIdle();
+                    CancelAnyOpenEdit();
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Shift+Tab from the first editable cell of a row wraps to the last editable cell of the previous row, still editing.")]
+        public void ShiftTabWhileEditingAtStartOfRowWrapsToPreviousRow()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject tableView = FindElement.ById(BasicTable);
+                UIObject secondRow = tableView != null ? GetRow(tableView, 1) : null;
+                if (secondRow == null) { Verify.Fail("The second realized TableViewRow peer was not found."); return; }
+
+                DoubleClickRowAtColumnOffset(secondRow, NameCellRelativeX);
+                Verify.AreEqual("Name;", ReadEditReport(), "Precondition: the edit opened on row 1's Name.");
+
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+
+                string editReport = ReadEditReport();
+                string endReport = ReadEditEndReport();
+                string probe = ReadEditorProbe();
+                Log.Comment("Edit report: '{0}'. End report: '{1}'. Probe: '{2}'.", editReport, endReport, probe);
+
+                Verify.AreEqual("Commit;", endReport, "Shift+Tab must commit the open edit.");
+                Verify.AreEqual("Name;Template;", editReport, "Shift+Tab before the first editable cell must wrap to the previous row's last editable cell.");
+                Verify.AreEqual(BasicName(0), ProbeEntryField(probe, 1, 2), "The new editor must belong to row 0, not row 1.");
+                Verify.AreEqual("focus=True", ProbeEntryField(probe, 1, 3), "Focus must move into the new editor.");
+
+                CancelAnyOpenEdit();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Tab wrap to the next row does not open its editor once focus has moved elsewhere before the row is ready.")]
+        public void TabWrapDoesNotOpenEditorAfterFocusMovesAway()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var focusAway = FindElement.ById<CheckBox>(FocusAwayOnCommitCheckBox);
+                if (focusAway == null) { Verify.Fail("FocusAwayOnCommitCheckBox was not found."); return; }
+
+                try
+                {
+                    focusAway.Check();
+                    Wait.ForIdle();
+
+                    UIObject row = GetFirstRow();
+                    DoubleClickRowAtColumnOffset(row, TemplateCellRelativeX);
+                    Verify.AreEqual("Template;", ReadEditReport(), "Precondition: the edit opened on Template.");
+
+                    Log.Comment("Tab wraps to row 1; the page moves focus to AfterTableButton before the wrapped edit can open.");
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.ForIdle();
+
+                    string editReport = ReadEditReport();
+                    string endReport = ReadEditEndReport();
+                    string focus = DescribeFocused();
+                    Log.Comment("Edit report: '{0}'. End report: '{1}'. Focus: {2}.", editReport, endReport, focus);
+
+                    Verify.AreEqual("Commit;", endReport, "Tab must commit the open edit.");
+                    Verify.AreEqual("Template;", editReport, "The wrapped edit must not open after focus moved away.");
+                    Verify.AreEqual(AfterTableButton, UIObject.Focused?.AutomationId, "The deferred edit must not pull focus back into the table.");
+                }
+                finally
+                {
+                    focusAway.Uncheck();
+                    Wait.ForIdle();
+                    CancelAnyOpenEdit();
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab after a commit that re-sorts the edited row edits the same record, not the one now at its old position.")]
+        public void TabWhileEditingFollowsRecordResortedByCommit()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var sortOnCommit = FindElement.ById<CheckBox>(SortOnCommitCheckBox);
+                if (sortOnCommit == null) { Verify.Fail("SortOnCommitCheckBox was not found."); return; }
+
+                try
+                {
+                    sortOnCommit.Check();
+                    Wait.ForIdle();
+
+                    UIObject row = GetFirstRow();
+                    DoubleClickRowAtColumnOffset(row, NameCellRelativeX);
+                    Verify.AreEqual("Name;", ReadEditReport(), "Precondition: the edit opened on row 0's Name.");
+
+                    Log.Comment("Tab commits; the commit sorts by Age descending, moving Person 0 from the first row to the last.");
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.ForIdle();
+
+                    string editReport = ReadEditReport();
+                    string endReport = ReadEditEndReport();
+                    string probe = ReadEditorProbe();
+                    Log.Comment("Edit report: '{0}'. End report: '{1}'. Probe: '{2}'.", editReport, endReport, probe);
+
+                    Verify.AreEqual("Commit;", endReport, "Tab must commit the open edit.");
+                    Verify.AreEqual("Name;Age;", editReport, "Tab must open the edited record's next editable cell.");
+                    Verify.AreEqual(BasicAge(0).ToString(), ProbeEntryField(probe, 1, 2),
+                        "The new editor must belong to Person 0, not to the record now at its old position (" +
+                        BasicName(BasicIdAtPositionWhenAgeDescending(0)) + ").");
+                }
+                finally
+                {
+                    sortOnCommit.Uncheck();
+                    Wait.ForIdle();
+                    CancelAnyOpenEdit();
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Tab wrap to the next row does not open its editor once focus moved to another element inside the table.")]
+        public void TabWrapDoesNotOpenEditorAfterFocusMovesWithinTable()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var focusHeader = FindElement.ById<CheckBox>(FocusHeaderOnCommitCheckBox);
+                if (focusHeader == null) { Verify.Fail("FocusHeaderOnCommitCheckBox was not found."); return; }
+
+                try
+                {
+                    focusHeader.Check();
+                    Wait.ForIdle();
+
+                    UIObject row = GetFirstRow();
+                    DoubleClickRowAtColumnOffset(row, TemplateCellRelativeX);
+                    Verify.AreEqual("Template;", ReadEditReport(), "Precondition: the edit opened on Template.");
+
+                    Log.Comment("Tab wraps to row 1; the page focuses the Name column header before the wrapped edit can open.");
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.ForIdle();
+
+                    string editReport = ReadEditReport();
+                    string endReport = ReadEditEndReport();
+                    string focus;
+                    bool inEditor = IsFocusInBasicTableEditor(out focus);
+                    Log.Comment("Edit report: '{0}'. End report: '{1}'. Focus: {2}.", editReport, endReport, focus);
+
+                    Verify.AreEqual("Commit;", endReport, "Tab must commit the open edit.");
+                    Verify.AreEqual("Template;", editReport, "The wrapped edit must not open after focus moved within the table.");
+                    Verify.IsFalse(inEditor, "The deferred edit must not pull focus back from the header.");
+                }
+                finally
+                {
+                    focusHeader.Uncheck();
+                    Wait.ForIdle();
+                    CancelAnyOpenEdit();
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Ctrl+Tab while editing is not a cell move.")]
+        public void CtrlTabWhileEditingDoesNotMoveTheEdit()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject row = GetFirstRow();
+                DoubleClickRowAtColumnOffset(row, NameCellRelativeX);
+                Verify.AreEqual("Name;", ReadEditReport(), "Precondition: the edit opened on Name.");
+
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control);
+                Wait.ForIdle();
+
+                string editReport = ReadEditReport();
+                Log.Comment("Edit report: '{0}'. End report: '{1}'. Focus: {2}.", editReport, ReadEditEndReport(), DescribeFocused());
+                Verify.AreEqual("Name;", editReport, "Ctrl+Tab must not open an edit on another cell.");
+
+                CancelAnyOpenEdit();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Shift+Tab wrapping to a row above the viewport scrolls it into view and opens its editor there.")]
+        public void ShiftTabWrapToRowOutsideViewportOpensEditorAfterScroll()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                CheckBox allowEditing = EnableSecondaryTableEditing();
+                if (allowEditing == null) { return; }
+
+                try
+                {
+                    ShiftTabWrapToRowOutsideViewportCore();
+                }
+                finally
+                {
+                    CancelAnyOpenEdit();
+                    allowEditing.Uncheck();
+                    Wait.ForIdle();
+                }
+            }
+        }
+
+        private static void ShiftTabWrapToRowOutsideViewportCore()
+        {
+            if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
+
+            UIObject rowsHost = GetRowsHost(ScrollingTable);
+            if (rowsHost == null) { return; }
+            if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized rows."); return; }
+
+            Log.Comment("PageDown twice scrolls a page; PageUp then lands on the first fully visible row without scrolling.");
+            rowsHost.Children[0].SetFocus();
+            Wait.ForIdle();
+            KeyboardHelper.PressKey(Key.PageDown);
+            Wait.ForIdle();
+            KeyboardHelper.PressKey(Key.PageDown);
+            Wait.ForIdle();
+            KeyboardHelper.PressKey(Key.PageUp);
+            Wait.ForIdle();
+
+            int firstVisible = FocusedPositionInSet() - 1;
+            if (firstVisible < 1) { Verify.Fail("Precondition: the table must be scrolled so a row sits above the viewport (" + firstVisible + ")."); return; }
+            int target = firstVisible - 1;
+
+            KeyboardHelper.PressKey(Key.Right);
+            Wait.ForIdle();
+            Verify.AreEqual(ScrollingName(firstVisible), UIObject.Focused?.Name,
+                "Precondition: Right must drill into the FrozenName cell of the first fully visible row. Focus: " + DescribeFocused());
+            KeyboardHelper.PressKey(Key.F2);
+            Wait.ForIdle();
+
+            UIObject editor = UIObject.Focused;
+            if (editor == null || editor.ControlType != ControlType.Edit) { Verify.Fail("Precondition: F2 must open the FrozenName editor. Focus: " + DescribeFocused()); return; }
+            Verify.AreEqual(ScrollingName(firstVisible), new Edit(editor).Value, "Precondition: the editor belongs to the first fully visible row.");
+
+            Log.Comment("Shift+Tab wraps to row {0}'s last editable cell (ScrollId), above the viewport.", target);
+            KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+            Wait.ForIdle();
+
+            editor = UIObject.Focused;
+            Log.Comment("Focus after Shift+Tab: {0}.", DescribeFocused());
+            Verify.IsTrue(editor != null && editor.ControlType == ControlType.Edit, "An editor must open on the wrapped row once it scrolls into view.");
+            if (editor != null && editor.ControlType == ControlType.Edit)
+            {
+                Verify.AreEqual(target.ToString(), new Edit(editor).Value, "The editor must belong to the row above the viewport.");
+            }
+        }
+
+        // Scrolling and Grouped default to IsReadOnly; the page toggle lets them edit. Null (after failing) if missing.
+        private static CheckBox EnableSecondaryTableEditing()
+        {
+            var allowEditing = FindElement.ById<CheckBox>(AllowSecondaryTableEditingCheckBox);
+            if (allowEditing == null)
+            {
+                Verify.Fail("AllowSecondaryTableEditingCheckBox was not found.");
+                return null;
+            }
+
+            allowEditing.Check();
+            Wait.ForIdle();
+            return allowEditing;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab onto a cell whose BeginningEdit is cancelled ends the move there instead of skipping ahead.")]
+        public void TabStopsOnCellWhoseBeginningEditIsCancelled()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                var cancelAge = FindElement.ById<CheckBox>(CancelAgeBeginEditCheckBox);
+                if (cancelAge == null) { Verify.Fail("CancelAgeBeginEditCheckBox was not found."); return; }
+
+                try
+                {
+                    cancelAge.Check();
+                    Wait.ForIdle();
+
+                    UIObject row = GetFirstRow();
+                    DoubleClickRowAtColumnOffset(row, NameCellRelativeX);
+                    Verify.AreEqual("Name;", ReadEditReport(), "Precondition: the edit opened on Name.");
+
+                    KeyboardHelper.PressKey(Key.Tab);
+                    Wait.ForIdle();
+
+                    string editReport = ReadEditReport();
+                    string endReport = ReadEditEndReport();
+                    string focus;
+                    bool inEditor = IsFocusInBasicTableEditor(out focus);
+                    Log.Comment("Edit report: '{0}'. End report: '{1}'. Focus: {2}.", editReport, endReport, focus);
+
+                    Verify.AreEqual("Commit;", endReport, "Tab must commit the open edit.");
+                    Verify.AreEqual("Name;Age;", editReport, "The move must end on Age when its BeginningEdit is cancelled, not continue to Score.");
+                    Verify.IsFalse(inEditor, "No editor may be open after the refused edit.");
+                }
+                finally
+                {
+                    cancelAge.Uncheck();
+                    Wait.ForIdle();
+                    CancelAnyOpenEdit();
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Shift+Tab wrapping across a group header lands on the previous group's last data row, still editing.")]
+        public void ShiftTabWrapSkipsGroupHeader()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                CheckBox allowEditing = EnableSecondaryTableEditing();
+                if (allowEditing == null) { return; }
+
+                try
+                {
+                    ShiftTabWrapSkipsGroupHeaderCore();
+                }
+                finally
+                {
+                    CancelAnyOpenEdit();
+                    allowEditing.Uncheck();
+                    Wait.ForIdle();
+                }
+            }
+        }
+
+        private static void ShiftTabWrapSkipsGroupHeaderCore()
+        {
+            if (!SelectPivotItem(GroupedPivotItem)) { Verify.Fail(GoToButton(GroupedPivotItem) + " was not found."); return; }
+
+            UIObject rowsHost = GetRowsHost(GroupedTable);
+            if (rowsHost == null) { return; }
+
+            int secondHeader = -1;
+            int headersSeen = 0;
+            for (int i = 0; i < rowsHost.Children.Count; i++)
+            {
+                if (IsGroupHeader(rowsHost.Children[i]) && ++headersSeen == 2)
+                {
+                    secondHeader = i;
+                    break;
+                }
+            }
+            if (secondHeader < 1 || secondHeader + 1 >= rowsHost.Children.Count ||
+                !IsRow(rowsHost.Children[secondHeader - 1]) || !IsRow(rowsHost.Children[secondHeader + 1]))
+            {
+                Verify.Fail("Precondition: a second group header with data rows on both sides is needed (" + secondHeader + ").");
+                return;
+            }
+
+            UIObject previousRow = rowsHost.Children[secondHeader - 1];
+            string expectedCity = previousRow.Children.Count > 1 ? previousRow.Children[1].Name : null;
+            if (string.IsNullOrEmpty(expectedCity)) { Verify.Fail("Precondition: the previous group's last row must expose its GroupedCity cell."); return; }
+
+            DoubleClickRowAtColumnOffset(rowsHost.Children[secondHeader + 1], 100);
+            UIObject editor = UIObject.Focused;
+            if (editor == null || editor.ControlType != ControlType.Edit) { Verify.Fail("Precondition: double-click must open the GroupedName editor. Focus: " + DescribeFocused()); return; }
+
+            Log.Comment("Shift+Tab from the second group's first GroupedName must skip the header and edit GroupedCity above it.");
+            KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+            Wait.ForIdle();
+
+            editor = UIObject.Focused;
+            Log.Comment("Focus after Shift+Tab: {0}.", DescribeFocused());
+            Verify.IsTrue(editor != null && editor.ControlType == ControlType.Edit, "An editor must open past the group header.");
+            if (editor != null && editor.ControlType == ControlType.Edit)
+            {
+                Verify.AreEqual(expectedCity, new Edit(editor).Value, "The editor must belong to the previous group's last row.");
+            }
+        }
+
+        #endregion
+
         #region Helpers
 
         // Row-relative x inside the Name column (0-160), which is editable.
@@ -439,6 +1007,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             KeyboardHelper.PressKey(Key.Escape);
             Wait.ForIdle();
+        }
+
+        // Field of the entry'th probe entry (0-based), or a diagnostic string the assertion will print.
+        private static string ProbeEntryField(string probe, int entry, int field)
+        {
+            string[] entries = (probe ?? string.Empty).Split(new[] { ';' }, System.StringSplitOptions.RemoveEmptyEntries);
+            if (entry >= entries.Length)
+            {
+                return "<no probe entry " + entry + ": '" + probe + "'>";
+            }
+
+            string[] fields = entries[entry].Split('|');
+            return field < fields.Length ? fields[field] : "<probe entry has no field " + field + ": '" + entries[entry] + "'>";
+        }
+
+        // True when UIA focus is on an Edit inside BasicTableView, i.e. in an open cell editor.
+        private static bool IsFocusInBasicTableEditor(out string description)
+        {
+            description = DescribeFocused();
+            UIObject focused = UIObject.Focused;
+            if (focused == null || focused.ControlType != ControlType.Edit)
+            {
+                return false;
+            }
+
+            UIObject ancestor = focused.Parent;
+            for (int depth = 0; ancestor != null && depth < 16; depth++, ancestor = ancestor.Parent)
+            {
+                if (ancestor.AutomationId == BasicTable)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         // The probe writes one entry per opened edit, "<type>|<automationName>|<text>|focus=<bool>;".
