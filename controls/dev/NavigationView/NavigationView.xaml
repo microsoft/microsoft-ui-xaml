@@ -24,8 +24,8 @@
                 </VisualState>
                 <VisualState x:Name="TopNavigationMinimal">
                   <VisualState.Setters>
-                    <!-- End the back button's hit target where the top pane's items start (TopNavGrid margin 4 + BackButtonPlaceholderOnTopNav 40). -->
-                    <Setter Target="NavigationViewBackButton.MinWidth" Value="44" />
+                    <!-- Keep the hit target's right edge at the backplate's (as before #5306) so it doesn't grow toward the top pane's items. -->
+                    <Setter Target="NavigationViewBackButton.BorderThickness" Value="0,0,4,0" />
                     <Setter Target="NavigationViewBackButton.Padding" Value="4,6,0,2" />
                     <Setter Target="ContentGrid.BorderThickness" Value="{ThemeResource TopNavigationViewContentGridBorderThickness}" />
                     <Setter Target="ContentGrid.CornerRadius" Value="{ThemeResource TopNavigationViewContentGridCornerRadius}" />

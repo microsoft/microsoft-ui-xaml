@@ -74,7 +74,7 @@
         [Microsoft.UI.Xaml.Controls.Button]
             Background=#00FFFFFF
             BorderBrush=Microsoft.UI.Xaml.Media.LinearGradientBrush
-            BorderThickness=1,1,1,1
+            BorderThickness=0,0,0,0
             CornerRadius=4,4,4,4
             FocusVisualPrimaryBrush=#E4000000
             FocusVisualPrimaryThickness=2,2,2,2
