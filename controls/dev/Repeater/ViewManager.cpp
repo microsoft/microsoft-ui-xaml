@@ -451,12 +451,8 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
     case winrt::NotifyCollectionChangedAction::Replace:
     {
         // Requirement: oldStartIndex == newStartIndex. It is not a replace if this is not true.
-        // Two cases here
-        // case 1: oldCount == newCount 
-        //         indices are not affected. nothing to do here.  
-        // case 2: oldCount != newCount
-        //         Replaced with less or more items. This is like an insert or remove
-        //         depending on the counts.
+        // Clear replaced elements whose lifetime we manage, and shift later indices
+        // when the replacement changes the item count.
         const auto oldStartIndex = args.OldStartingIndex();
         const auto newStartingIndex = args.NewStartingIndex();
         const auto oldCount = static_cast<int>(args.OldItems().Size());
@@ -477,29 +473,28 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         }
 
         const int countChange = newCount - oldCount;
-        if (countChange != 0)
+        const auto children = m_owner->Children();
+        // Clearing a UIElement item without a template removes it from Children.
+        for (unsigned i = children.Size(); i > 0u; --i)
         {
-            // countChange > 0 : countChange items were added
-            // countChange < 0 : -countChange  items were removed
-            const auto children = m_owner->Children();
-            for (unsigned i = 0u; i < children.Size(); ++i)
-            {
-                const auto element = children.GetAt(i);
-                const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
-                const auto dataIndex = virtInfo->Index();
+            const auto element = children.GetAt(i - 1u);
+            const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+            const auto dataIndex = virtInfo->Index();
 
-                if (virtInfo->IsRealized())
+            if (virtInfo->IsRealized())
+            {
+                if (virtInfo->AutoRecycleCandidate() && oldStartIndex <= dataIndex && dataIndex < oldStartIndex + oldCount)
                 {
-                    if (dataIndex >= oldStartIndex + oldCount)
-                    {
-                        UpdateElementIndex(element, virtInfo, dataIndex + countChange);
-                    }
+                    m_owner->ClearElementImpl(element);
+                }
+                else if (countChange != 0 && dataIndex >= oldStartIndex + oldCount)
+                {
+                    UpdateElementIndex(element, virtInfo, dataIndex + countChange);
                 }
             }
-
-            EnsureFirstLastRealizedIndices();
-            m_lastRealizedElementIndexHeldByLayout += countChange;
         }
+
+        InvalidateRealizedIndicesHeldByLayout();
         break;
     }
 
