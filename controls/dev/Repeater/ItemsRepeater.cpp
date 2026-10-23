@@ -523,6 +523,10 @@ void ItemsRepeater::OnLayoutUpdated(const winrt::IInspectable& /*sender*/, const
     m_stackLayoutMeasureCounter = 0u;
 
     EnsureDefaultLayoutState();
+
+    // A focused element cleared by a collection change (e.g. Reset) may only get a focus candidate once the layout
+    // has realized the new items.
+    m_viewManager.ProcessPendingFocusMove();
 }
 
 void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& oldValue, const winrt::ItemsSourceView& newValue)
@@ -565,6 +569,10 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
             // After a data source change, reset the potential cache buffer so that the realization window regrows from scratch.
             m_viewportManager.ResetLayoutRealizationWindowCacheBuffer();
 
+            // The layout only recycles the elements it tracks; pinned (e.g. focused, scrolled away) elements belong to the
+            // old source and must not be kept alive or reused.
+            m_viewManager.ClearPinnedPoolElements();
+
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
         else if (auto const nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
@@ -595,6 +603,8 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
 
         InvalidateMeasure();
     }
+
+    m_viewManager.ProcessPendingFocusMove();
 }
 
 void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue, const winrt::IElementFactory& newValue)
@@ -626,6 +636,9 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
 
         if (auto const virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
         {
+            // Pinned elements are not tracked by the layout; clear them too so they go back to the old template.
+            m_viewManager.ClearPinnedPoolElements();
+
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
         else if (auto const nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
@@ -770,27 +783,32 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
         throw winrt::hresult_error(E_FAIL, L"Changes in the data source are not allowed during another change in the data source.");
     }
 
-    m_processingItemsSourceChange.set(args);
-    auto processingChange = gsl::finally([this]()
-        {
-            m_processingItemsSourceChange.set(nullptr);
-        });
-
-    m_transitionManager.OnItemsSourceChanged(sender, args);
-    m_viewManager.OnItemsSourceChanged(sender, args);
-
-    if (auto layout = GetEffectiveLayout())
     {
-        if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
+        m_processingItemsSourceChange.set(args);
+        auto processingChange = gsl::finally([this]()
+            {
+                m_processingItemsSourceChange.set(nullptr);
+            });
+
+        m_transitionManager.OnItemsSourceChanged(sender, args);
+        m_viewManager.OnItemsSourceChanged(sender, args);
+
+        if (auto layout = GetEffectiveLayout())
         {
-            virtualLayout.OnItemsChangedCore(GetLayoutContext(), sender, args);
-        }
-        else
-        {
-            // NonVirtualizingLayout
-            InvalidateMeasure();
+            if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
+            {
+                virtualLayout.OnItemsChangedCore(GetLayoutContext(), sender, args);
+            }
+            else
+            {
+                // NonVirtualizingLayout
+                InvalidateMeasure();
+            }
         }
     }
+
+    // All elements affected by the change have been cleared: focus can now move to a surviving realized element.
+    m_viewManager.ProcessPendingFocusMove();
 }
 
 void ItemsRepeater::InvalidateMeasureForLayout(winrt::Layout const&, winrt::IInspectable const&)
