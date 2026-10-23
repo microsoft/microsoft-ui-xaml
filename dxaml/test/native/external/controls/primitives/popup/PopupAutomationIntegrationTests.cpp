@@ -101,6 +101,11 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderIsRecreatedAfte
     VerifyWindowedPopupProviderLifetime(PopupHostChange::NewPopup);
 }
 
+void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderIsRecreatedAfterHostReinitialization()
+{
+    VerifyWindowedPopupProviderLifetime(PopupHostChange::Reinitialize);
+}
+
 void PopupAutomationIntegrationTests::VerifyPopupProviderIsRecreatedAfterWindowedFallback()
 {
     VerifyWindowedPopupProviderLifetime(PopupHostChange::NonWindowed);
@@ -583,7 +588,7 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
     const int reopenCount = hostChange == PopupHostChange::NonWindowed ? 1 : 3;
     for (int cycle = 0; cycle < reopenCount; cycle++)
     {
-        const bool changeHost = hostChange == PopupHostChange::NewPopup ||
+        const bool changeHost = hostChange == PopupHostChange::NewPopup || hostChange == PopupHostChange::Reinitialize ||
             (hostChange == PopupHostChange::NonWindowed && cycle == 0);
         RunOnUIThread([&]()
         {
@@ -613,6 +618,13 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
                 auto rotation = ref new xaml_media::RotateTransform();
                 rotation->Angle = 15;
                 popup->Child->RenderTransform = rotation;
+            }
+            else if (hostChange == PopupHostChange::Reinitialize)
+            {
+                TestServices::WindowHelper->Popup_ResetUIAWindowValidator(popup);
+                wrl::ComPtr<IRawElementProviderFragmentRoot> expiredRoot;
+                VERIFY_IS_TRUE(FAILED(retainedProvider->get_FragmentRoot(&expiredRoot)),
+                    L"The old validator must be invalid before re-entry.");
             }
         });
         PopupHelper::OpenPopup(inlinePopup ? inlinePopup : popup);
@@ -692,6 +704,13 @@ void PopupAutomationIntegrationTests::VerifyWindowedPopupProviderLifetime(PopupH
             {
                 VERIFY_ARE_EQUAL(retainedProvider, currentProvider);
                 VERIFY_ARE_EQUAL(retainedRoot, currentRoot);
+            }
+            else if (hostChange == PopupHostChange::Reinitialize)
+            {
+                VERIFY_ARE_NOT_EQUAL(retainedProvider, currentProvider,
+                    L"An invalid provider must be replaced even at the same host address.");
+                VERIFY_ARE_EQUAL(retainedRoot, currentRoot,
+                    L"The regression must exercise the unchanged host address.");
             }
             else
             {

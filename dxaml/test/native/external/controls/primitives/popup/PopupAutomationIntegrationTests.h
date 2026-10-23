@@ -78,6 +78,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyWindowedPopupProviderIsRecreatedAfterHostReinitialization)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify an invalid provider is recreated even when its UIA host address is unchanged.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyPopupProviderIsRecreatedAfterWindowedFallback)
             TEST_METHOD_PROPERTY(L"Description", L"Verify a retained provider is invalidated when a parented popup falls back to non-windowed rendering.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
@@ -119,7 +124,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
     private:
-        enum class PopupHostChange { None, NewPopup, NonWindowed, NestedInline };
+        enum class PopupHostChange { None, NewPopup, NonWindowed, NestedInline, Reinitialize };
 
         ref class PeerReferenceAutomationPeer sealed : public xaml_automation_peers::ButtonAutomationPeer
         {

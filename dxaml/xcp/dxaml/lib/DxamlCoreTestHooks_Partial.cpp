@@ -51,6 +51,7 @@
 #include <ImageSource.h>
 #include "HWTextureMgr.h"
 #include <Hyperlink.h>
+#include "UIAWindow.h"
 #include "ListViewBaseItemChrome.h"
 #include "AsyncCopyToSurfaceTask.h"
 #include "EncodedImageData.h"
@@ -518,6 +519,20 @@ IFACEMETHODIMP
         {
             CPopup *pPopup = static_cast<CPopup*>(spObject.Cast<Popup>()->GetHandle());
             pPopup->SetIsWindowed();
+            break;
+        }
+
+        case Popup_ResetUIAWindowValidator:
+        {
+            auto popup = static_cast<CPopup*>(spObject.Cast<Popup>()->GetHandle());
+            IFCEXPECT_RETURN(!popup->IsOpen());
+            auto window = popup->GetUIAWindow();
+            IFCPTR_RETURN(window);
+            IFCPTR_RETURN(window->m_pUIAWindowValidator);
+            // Reproduce a new host generation at the same address without allocator-dependent tests.
+            window->m_pUIAWindowValidator->Invalidate();
+            ReleaseInterface(window->m_pUIAWindowValidator);
+            window->m_pUIAWindowValidator = window->GetUIAWindowValidator();
             break;
         }
 
