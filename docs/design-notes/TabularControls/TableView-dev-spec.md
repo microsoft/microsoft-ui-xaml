@@ -5,7 +5,7 @@
 
 `TableView` is a virtualized tabular control that ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`. It renders an `ItemsSource` as rows and generates one cell per realized row and column from `Columns`. It is read-only by default with opt-in cell editing.
 
-It provides column width sizing, row virtualization, leading frozen columns, single-row selection, single-column sort, filtering, single-level grouping, hierarchical rows, column resize, cell-level keyboard navigation and a UIA grid/table model. Column reorder is not yet implemented.
+It provides column width sizing, row virtualization, leading frozen columns, single-row selection, single-column, control-driven sorting, filtering, single-level grouping, hierarchical rows, column resize, cell-level keyboard navigation and a UIA grid/table model. Column reorder is not yet implemented.
 
 # Design considerations
 
@@ -36,14 +36,16 @@ It provides column width sizing, row virtualization, leading frozen columns, sin
 `TableView` owns columns, row realization, the header band, scroll sync, frozen columns, sort, selection and edit state, keyboard navigation and the UIA root. Data shaping lives in a separate stack:
 
 ```text
-TableView                    realization, layout, input, UIA
- └─ TableViewSource          public shaping verbs
-     └─ ShapedItemsSource    live projection, row identity, live shaping
-         ├─ GroupedSourceAdapter / HierarchicalSourceAdapter   flatten groups or trees into rows
-         └─ TabularShaping   ShapingPipeline, RowExpansionModel, ParentKeyIndex, SortDirection
+TableView / RowMetadataProvider                    consume visible rows and metadata
+    ↑
+GroupedSourceAdapter / HierarchicalSourceAdapter   publish the flat visible projection
+    ↑
+ShapedItemsSource                                  observes the source; builds shape and indexes
+    ↑
+TableViewSource                                    exposes public shaping verbs
 ```
 
-Dependencies point down only; the shaping engine never learns what a `TableView` is. An `ItemsSource` that is not a `TableViewSource` is wrapped in one internally, so sorting works over any supported collection.
+Arrows show data flow, not ownership: `TableView` holds a `TableViewSource`, which owns a `ShapedItemsSource`, which creates the adapter for the active shape. `TabularShaping` (`ShapingPipeline`, `RowExpansionModel`, `ParentKeyIndex`, `SortDirection`) provides the headless algorithms used below `TableView` and has no dependency on the control; the adapters depend only on it. An `ItemsSource` that is not a `TableViewSource` is wrapped in one internally, so sorting works over any supported collection.
 
 ## Key public components
 
@@ -107,6 +109,7 @@ TableViewRow
 
 `RebuildHeaders` and `RebuildCells` create one header or cell per non-null column, in `Columns` order. A cell hosts the element from `TableViewColumn.GenerateElement(dataItem)`. `TableView` sets `PART_RowsRepeater.ItemTemplate` (the selector needs an owner XAML cannot supply) and owns its `ItemsSource`.
 
+**Header focus survives a rebuild.** `RebuildHeaders` restores header focus by column identity. If the focused column becomes hidden, focus moves to the next visible header, or to the previous one when it was last.
 # Performance considerations
 
 - **No column virtualization.** Each realized row renders a cell per non-null column, which suits tables of about 5 to 50 columns, not spreadsheet scale (100+).
@@ -125,7 +128,7 @@ TableViewRow
 ## Gesture recognizer handling
 
 - **Begin edit** uses `PointerPressed` with click counting and `handledEventsToo`, not `DoubleTapped`: a row that takes part in selection marks the press handled, which suppresses `Tapped`/`DoubleTapped`.
-- **`ResizeGripper`** reads manipulation events, so touch, pen and multi-pointer arbitration come from the gesture recognizer. `ManipulationMode` (one translate axis) is set in the constructor, so a failed style load cannot disable resize. Because the gripper moves with the edge it drags, deltas are measured in `ManipulationContainer` (default: the `XamlRoot` content), not the gripper. Only the mouse is captured, so touch can still pan an ancestor `ScrollViewer`.
+- **`ResizeGripper`** reads manipulation events, so touch, pen and multi-pointer arbitration come from the gesture recognizer. `ManipulationMode` (one translate axis) is set in the constructor, so a failed style load cannot disable resize. Because the gripper moves with the edge it drags, deltas are measured in `ManipulationContainer`, which `TableView` sets to itself (the primitive falls back to the `XamlRoot` content), not the gripper. Only the mouse is captured, so touch can still pan an ancestor `ScrollViewer`.
 
 # Implementation details
 
@@ -140,9 +143,9 @@ Width resolution is a **table-level** decision, made once per layout pass in `Ta
 
 Cells only measure and cache; they never push a width. Every panel reads the same `ActualWidth`, so columns stay aligned without cross-row coordination. The default `Width` is 120 px, `MinWidth` 20 and `MaxWidth` unbounded.
 
-**`Auto` rows are grow-only.** The row term only grows within a data set, so scrolling never narrows a column. The header term is the current measurement and is dropped while headers are hidden, so a shorter header or turning off sorting can narrow the column.
+**`Auto` rows are grow-only.** For an `Auto` column, `ActualWidth` is the maximum of the current header measurement and a grow-only maximum measured across realized row cells. The row maximum resets only at a data-set boundary, so scrolling never narrows a column; the header measurement remains current and is zero while headers are hidden, so a shorter header or turning off sorting can narrow it.
 
-**Data-set boundaries** reset the row term: an `ItemsSource` change or a `Reset` of `Columns` for every column, and a `CellTemplate` or `Header` change for that column. Filtering, an in-place items `Reset`, `Density`, `MinWidth`/`MaxWidth` and adding or removing a column are not boundaries.
+**Data-set boundaries** reset the row maximum: an `ItemsSource` change or a `Reset` of `Columns` for every column, and a `CellTemplate` or `Header` change for that column. Filtering, an in-place items `Reset`, `Density`, `MinWidth`/`MaxWidth` and adding or removing a column are not boundaries.
 
 **`*` needs a finite width.** The body is measured at infinite width, so the engine reads `ScrollViewer.ViewportWidth` and re-resolves on the body scroller's `SizeChanged`.
 
@@ -179,7 +182,7 @@ On recycle, `ItemsRepeater` re-points a row's `DataContext`, and cells update **
 - `TableViewTemplateColumn` binds `ContentPresenter.Content` to the cell wrapper's inherited `DataContext`, because a `ContentPresenter` sets its own `DataContext` to its `Content`.
 - **Custom columns** must bind to the inherited `DataContext` and not set a local one. `dataItem` is for initial setup only; content that bakes it in (or initializes once, in `Loaded` or with `x:Bind` `OneTime`) shows the previous item after a scroll.
 
-`RebuildCells` runs only for structural changes (columns, templates, density). A recycle refreshes only banding and frozen pinning.
+`RebuildCells` runs only for structural changes (columns, templates, density). A recycle doesn't rebuild cells; it refreshes per-row chrome only (gridlines, banding, tooltips, hierarchy and selection state).
 
 ## Scrolling: sticky headers and frozen leading columns
 
@@ -193,14 +196,14 @@ Shaping is declared on the **source**, never on the control. `TableView` renders
 
 **Single owner.** A `TableViewSource` has one owning `TableView`. A second table bound to it is refused without an error and renders empty, and cannot sort, until the owner releases it by changing `ItemsSource` or unloading. Tables release on `Unloaded` and reclaim on `Loaded`, so page navigation resolves on its own.
 
-**Row identity** is the item's object identity (under `ParentBy`, its node key). Selection and focus re-anchor across a reshape. With no shaping verb, a null item or one object on two rows still displays, but control sorts return `false`; with a verb in force, the same data throws `E_INVALIDARG`.
+**Row identity** is the item's object identity (under `ParentBy`, its node key). Selection, and `Tab` re-entry into the body, follow the item across a reshape. Focus already in the body stays at its row index (see [Keyboard navigation](#keyboard-navigation)). With no shaping verb, a null item or one object on two rows still displays, but control sorts return `false`; with a verb in force, the same data throws `E_INVALIDARG`.
 
-**One sort axis in force.** The two front-ends reconcile instead of stacking:
+**One control sort axis in force.** The two front-ends reconcile instead of stacking:
 
 - `TableView.SortByColumn`, `ToggleSortDirection` and header clicks declare the control's axis, keyed on column identity so columns sharing a `SortMemberPath` stay separate. The column's read-only `SortDirection` draws the chevron.
 - `TableViewSource.Sort(path, …)` lights the column whose sort path matches. `Sort(keySelector, …)` is keyed on the delegate's COM identity and shows no chevron.
 - Sorting through the control clears app-declared axes, and a source sort clears the control's axis. Otherwise an older axis could outrank a newer one while the chevron showed the loser.
-- With several source axes, the first declared is primary, as in WPF `SortDescriptions`.
+- `TableViewSource` may declare several ordered source axes; the first declared is primary, as in WPF `SortDescriptions`.
 
 A sort declared before `GroupBy` orders the groups; one declared after orders rows within each group. Filtering runs first, and an emptied group disappears.
 
@@ -249,7 +252,7 @@ Keyboard handling follows the WAI-ARIA treegrid model. `TableView` handles bubbl
 | Row | `Home`/`End` | First or last row. |
 | Row | `Right`/`Left` | Flat row: drill into the first cell / nothing. Tree row: expand, else drill in / collapse, else go to parent. |
 | Row | `Multiply` | Expand the subtree. |
-| Group header | `Right`/`Left` | Expand / collapse. |
+| Group header | `Enter`, `Space` / `Right`/`Left` | Toggle / expand / collapse. |
 | Cell | `Left`/`Right`, `Home`/`End` | Move within the row, no wrap; `Left` on the first cell returns to the row. |
 | Cell | `Ctrl+Home`/`Ctrl+End` | First or last cell of the table. |
 | Cell | `Enter` / `Escape` | Into the cell's control / back out. |
@@ -266,9 +269,9 @@ Keyboard handling follows the WAI-ARIA treegrid model. `TableView` handles bubbl
 | Peer | Control type | Patterns |
 |---|---|---|
 | Table | `DataGrid` | `Grid`, `Table`, `ItemContainer`; `Selection` unless `SelectionMode` is `None`; `Scroll` from the body scroller. Bounds exclude cache rows. |
-| Row | `DataItem` | `SelectionItem`; `ExpandCollapse` for tree rows; `VirtualizedItem` while virtualized. |
+| Row | `DataItem` | `SelectionItem` unless `SelectionMode` is `None`; `ExpandCollapse` for tree rows; `VirtualizedItem` while virtualized. |
 | Cell | `DataItem` ("cell") | `GridItem`, `TableItem`; `Value` only when editable with a text editor; `VirtualizedItem`. |
-| Column header | | `Invoke` (sort) when sortable; `Transform` (resize) when resizable, with `CanResize` false while pinned. |
+| Column header | `HeaderItem` | `Invoke` (sort) when sortable; `Transform` (resize) when resizable, with `CanResize` false while pinned. |
 | Group header | `Group` | `ExpandCollapse` always (empty groups report `LeafNode`), `GridItem`. |
 
 The column-header peer implements `ITransformProvider`, though the IDL lists only `IInvokeProvider`.
@@ -287,7 +290,7 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 |---|---|
 | `RowBackground`, `AlternatingRowBackground` | Opt-in banding; both null means unbanded. |
 | `GridLinesVisibility` | Body gridlines. Header lines are always drawn. |
-| `Density` | Row minimum height (`TableViewRowMinHeight` 30/40/48) and padding. |
+| `Density` | Row minimum height (`TableViewRowMinHeightCompact` / `TableViewRowMinHeight` / `TableViewRowMinHeightComfortable`, 30/40/48) and padding. |
 | `ColumnHeaderStyle`, `TableViewColumn.HeaderStyle` | Header `Style`; the column's wins; no `BasedOn` needed. |
 | Theme keys | `TableViewCellFontSize` and `TableViewHeaderFontSize` (both 14), `TableViewHeaderFontWeight` (`SemiBold`), `TabularSurface*` brushes. |
 
@@ -309,8 +312,8 @@ A sortable header's `CommonStates` change only the fill, so an app foreground su
 |---|---|
 | `TableView` | Resolved: `PART_HeaderHost` (`Panel`, required), `PART_RowsRepeater` (`ItemsRepeater`, required, do not bind `ItemsSource`), `PART_HeaderRow` (collapsed when headers hide), `PART_EmptyStatePresenter` (`ContentControl`, optional). |
 | `TableViewRow` | Resolved: `PART_CellsHost` (`Panel`, required), `PART_GridLineBorder` and `PART_RowExpanderGutter` (optional). State: `PART_RootBorder`, `PART_CellForegroundPresenter`, `PART_SelectionIndicator`, `PART_RowExpanderIcon`. |
-| `TableViewColumnHeader` | Resolved, optional: `PART_ContentPresenter`, `PART_GridLine`, `PART_SortIndicatorHost`, `PART_ResizeGripperHost`. State: `PART_Root`. |
-| `TableViewGroupHeader` | Resolved, optional: `PART_GridLineBorder`. State: `PART_Root`, `PART_ExpanderGutter`, `PART_ExpanderIcon`, `PART_ContentPresenter`. |
+| `TableViewColumnHeader` | Resolved, optional: `PART_ContentPresenter`, `PART_GridLine`, `PART_SortIndicatorHost`, `PART_ResizeGripperHost`. State: `PART_Root`, `PART_ContentPresenter`, `PART_SortIndicatorHost`. |
+| `TableViewGroupHeader` | Resolved, optional: `PART_GridLineBorder`. State: `PART_Root`, `PART_ExpanderIcon`, `PART_ContentPresenter`. |
 
 The scrollers are found as the nearest `ScrollViewer` ancestors of the header host and repeater, not by name. Row states are `CommonStates` (including four `Selected*` states), `RowExpansionStates`, `RowExpandabilityStates` and `RowHierarchyStates`, `Row`-prefixed so they cannot collide with an app's `Expanded`/`Collapsed`.
 
@@ -330,7 +333,7 @@ Code comments link here; keep the reasons intact.
 - **Private namespace.** `MU_PRIVATE_CONTROLS_NAMESPACE` equals MUXC's value (`Microsoft.UI.Private.Controls`); a Tabular child namespace breaks cppwinrt, which includes a parent that is never generated. It is safe because this build never references MUXC's private winmd. That namespace, not `[MUX_INTERNAL]`, keeps `ResizeGripper` and its peer out of shipped winmds.
 - **Frozen overloads.** `[default_overload]`/`[method_name]` on `TableViewSource.GroupBy` (`GroupBy`, `GroupByWithIdentity`) and `Sort` (`SortByPath`, `Sort`) are frozen ABI; without them MIDL emits `GroupBy2`/`Sort2`.
 - **`TableViewSource` is sealed** because `TableView` drives the concrete type, so an override would be bypassed. Unsealing later is compatible; sealing later is not.
-- **`TableView` is unsealed** for `ReferenceTracker`. `TableViewColumn` has a public constructor so apps can derive columns.
+- **`TableView` is unsealed** so apps can derive from it, consistent with other MUXC controls such as `ItemsView`, `ItemsRepeater`, `NavigationView` and `TabView`. (`ReferenceTracker` does not require it: the sealed `TableViewColumnHeader` and `TableViewSource` use it too.) `TableViewColumn` has a public constructor so apps can derive columns.
 - **`TableViewRowTemplateSelector`** is projected only because `ItemTemplateWrapper` is in another DLL. It is `[MUX_INTERNAL]`, and unsealed with a constructor because MIDL requires that for a member-less class.
 
 # Appendix
