@@ -2781,31 +2781,22 @@ static winrt::IInspectable StyleSetterValue(const winrt::Style& style, const win
     return nullptr;
 }
 
-// A selector that returns no template leaves the presenter's untrimmed implicit TextBlock, so the
-// header keeps its own ellipsizing one instead. Probed with the header's real content in place.
-static bool StyleTemplatesHeader(
-    const winrt::DataTemplate& styleTemplate,
+// Asked once, with the header's real content in place; the caller applies the result locally so the
+// framework does not ask the selector again with a possibly different answer.
+static winrt::DataTemplate SelectStyleHeaderTemplate(
     const winrt::DataTemplateSelector& styleSelector,
     const winrt::ContentControl& header,
     const winrt::IInspectable& headerContent)
 {
-    if (styleTemplate)
-    {
-        return true;
-    }
-    if (!styleSelector)
-    {
-        return false;
-    }
     try
     {
         header.Content(headerContent);
-        return static_cast<bool>(styleSelector.SelectTemplate(headerContent, header));
+        return styleSelector.SelectTemplate(headerContent, header);
     }
     catch (...)
     {
         TVDiag::LogRetailF(L"[TableView] A header Style's ContentTemplateSelector threw; using the default header text.");
-        return false;
+        return nullptr;
     }
 }
 
@@ -3226,6 +3217,11 @@ void TableView::RebuildHeadersCore()
             auto const styleContentTemplate = StyleSetterValue(headerStyle, winrt::ContentControl::ContentTemplateProperty()).try_as<winrt::DataTemplate>();
             auto const styleContentTemplateSelector = styleContentTemplate ? winrt::DataTemplateSelector{ nullptr } :
                 StyleSetterValue(headerStyle, winrt::ContentControl::ContentTemplateSelectorProperty()).try_as<winrt::DataTemplateSelector>();
+            if (styleContentTemplateSelector)
+            {
+                // Held off locally so the Style's selector is only asked by the probe below.
+                header.ContentTemplateSelector(nullptr);
+            }
             if (headerStyle)
             {
                 header.Style(headerStyle);
@@ -3266,27 +3262,38 @@ void TableView::RebuildHeadersCore()
                 header.Content(column.Header());
                 header.ContentTemplate(headerTemplate);
             }
-            else if (!headerText.empty() && IsPlainStringHeader(column) &&
-                !StyleTemplatesHeader(styleContentTemplate, styleContentTemplateSelector, header, column.Header()))
+            else if (!headerText.empty() && IsPlainStringHeader(column) && !styleContentTemplate)
             {
-                // A ContentPresenter renders a bare string through an implicit TextBlock carrying no
-                // TextTrimming, so a too-wide header hard-clips mid-glyph while its cells ellipsize.
-                winrt::TextBlock headerBlock;
-                headerBlock.Text(headerText);
-                headerBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
-                headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
-                // The header's peer already announces this text.
-                winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
+                winrt::DataTemplate selected{ nullptr };
                 if (styleContentTemplateSelector)
                 {
-                    // Before the content swap: ContentControl asks the selector again on Content change.
-                    header.ContentTemplateSelector(nullptr);
+                    selected = SelectStyleHeaderTemplate(styleContentTemplateSelector, header, column.Header());
                 }
-                header.Content(headerBlock);
-                headerImpl->SetOwnsContentInternal(true);
+                if (selected)
+                {
+                    header.Content(column.Header());
+                    header.ContentTemplate(selected);
+                }
+                else
+                {
+                    // A ContentPresenter renders a bare string through an implicit TextBlock carrying no
+                    // TextTrimming, so a too-wide header hard-clips mid-glyph while its cells ellipsize.
+                    winrt::TextBlock headerBlock;
+                    headerBlock.Text(headerText);
+                    headerBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
+                    headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
+                    // The header's peer already announces this text.
+                    winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
+                    header.Content(headerBlock);
+                    headerImpl->SetOwnsContentInternal(true);
+                }
             }
             else
             {
+                if (styleContentTemplateSelector)
+                {
+                    header.ClearValue(winrt::ContentControl::ContentTemplateSelectorProperty());
+                }
                 header.Content(column.Header());
             }
 

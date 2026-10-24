@@ -864,8 +864,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a header Style's selector is probed with the string Header and a header container tagged with its column, and a null or throwing result keeps the trimming TextBlock.")]
-        [TestProperty("data:Result", "{Null, Throw}")]
+        [TestProperty("Description", "Verifies a header Style's selector is asked once, with the string Header and a header container tagged with its column; its template is applied, and a null or throwing result keeps the trimming TextBlock.")]
+        [TestProperty("data:Result", "{Template, Null, Throw}")]
         public void VerifyHeaderStyleSelectorProbeFallsBackToTrimmingText()
         {
             var result = ((string)TestContext.DataRow["Result"]).Trim();
@@ -874,7 +874,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                selector = new RecordingHeaderTemplateSelector { Throw = result == "Throw" };
+                selector = new RecordingHeaderTemplateSelector { Throw = result == "Throw", Template = result == "Template" ? CreateTextTemplate("Styled") : null };
                 var style = new Style(typeof(TableViewColumnHeader));
                 style.Setters.Add(new Setter(ContentControl.ContentTemplateSelectorProperty, selector));
                 tableView = CreateTableView(headers: new[] { "Name" });
@@ -887,15 +887,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Selector calls: " + string.Join("; ", selector.Calls.Select(call => $"{call.Item?.GetType().Name ?? "null"}:{call.Item}")));
-                Verify.IsFalse(selector.Calls.Any(call => call.Item is UIElement),
-                    $"{result}: the selector must never be asked about the fallback TextBlock.");
-                var probe = selector.Calls.FirstOrDefault(call => call.Item as string == "Name");
-                Verify.IsNotNull(probe.Container, "The selector must be probed with the string Header and the header as its container.");
-                var container = probe.Container as TableViewColumnHeader;
+                Verify.AreEqual(1, selector.Calls.Count, $"{result}: the selector must be asked exactly once.");
+                Verify.AreEqual("Name", selector.Calls[0].Item as string, "The selector must be asked about the string Header.");
+                var container = selector.Calls[0].Container as TableViewColumnHeader;
                 Verify.IsNotNull(container, "The selector must receive the header as its container.");
                 Verify.IsTrue(ReferenceEquals(tableView.Columns[0], container.Tag), "The container must already be tagged with its column.");
 
-                var block = ((ContentControl)GetHeaderCell(tableView, 0)).Content as TextBlock;
+                var header = (ContentControl)GetHeaderCell(tableView, 0);
+                if (result == "Template")
+                {
+                    Verify.AreEqual("Name", header.Content as string, "The string Header must reach the selected template as data.");
+                    Verify.IsTrue(FindVisualChildrenByType<TextBlock>(header).Any(t => t.Text == "Styled"), "The selected template must render.");
+                    return;
+                }
+                var block = header.Content as TextBlock;
                 Verify.IsNotNull(block, $"{result}: the header must keep its own TextBlock.");
                 Verify.AreEqual(TextTrimming.CharacterEllipsis, block.TextTrimming, "The header text must still ellipsize.");
             });
@@ -1087,6 +1092,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             public bool Throw { get; set; }
 
+            public DataTemplate Template { get; set; }
+
             public List<(object Item, DependencyObject Container)> Calls { get; } = new List<(object, DependencyObject)>();
 
             protected override DataTemplate SelectTemplateCore(object item) => SelectTemplateCore(item, null);
@@ -1098,7 +1105,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     throw new InvalidOperationException("Header selector fault");
                 }
-                return null;
+                return Template;
             }
         }
     }
