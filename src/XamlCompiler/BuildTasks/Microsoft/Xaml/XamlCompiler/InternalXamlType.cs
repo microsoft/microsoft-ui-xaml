@@ -98,6 +98,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 
         public void Init(XamlType xamlType)
         {
+            // Only registered types should be Init'd
+            Debug.Assert(_schemaInfo.GetType(xamlType) != null);
+
             IsArray = xamlType.IsArray;
             IsCollection = xamlType.IsCollection;
             IsDictionary = xamlType.IsDictionary;
@@ -112,9 +115,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 
             if (xamlType.ContentProperty != null)
             {
-                // Add the Content property member, but ensure the declaring type (which is really this type) is added as a return type stub
-                // so we don't accidentally un-stub this type when AddMember() looks at its declaring type
-                ContentProperty = _schemaInfo.AddMember(this._simpleTypeEntry, xamlType.ContentProperty, true);
+                ContentProperty = _schemaInfo.AddMember(xamlType.ContentProperty);
             }
 
             if (xamlType.ItemType != null)
@@ -293,7 +294,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         {
             // Name and Declaring type must already be set, and correct.
             Debug.Assert(Name == xamlMember.Name
-                      && DeclaringType == schemaInfo.AddType(xamlMember.DeclaringType));
+                      && DeclaringType == schemaInfo.GetType(xamlMember.DeclaringType));
 
             // We can't call AddTypeAndProperties() here because that would cause us to
             // codegen the properties of every type of every property, and every property

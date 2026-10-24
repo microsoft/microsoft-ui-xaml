@@ -159,7 +159,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             return AddType(xamlType, true);
         }
 
-        public InternalTypeEntry AddType(XamlType xamlType, bool isReturnTypeStub = false)
+        public InternalTypeEntry GetType(XamlType xamlType)
         {
             if (xamlType == null)
             {
@@ -168,6 +168,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
             InternalTypeEntry xamlTypeEntry;
             if (TryFindType(xamlType.UnderlyingType.FullName, out xamlTypeEntry))
+            {
+                return xamlTypeEntry;
+            }
+            return null;
+        }
+
+        public InternalTypeEntry AddType(XamlType xamlType, bool isReturnTypeStub = false)
+        {
+            InternalTypeEntry xamlTypeEntry = GetType(xamlType);
+            if (xamlTypeEntry != null)
             {
                 if (xamlTypeEntry.UserTypeInfo != null && !isReturnTypeStub)
                 {
@@ -278,19 +288,18 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     }
                 }
 
-                InternalTypeEntry declaringTypeEntry = AddType(declaringType);
-                AddMember(declaringTypeEntry, xamlMember);
+                AddMember(xamlMember);
             }
         }
 
-        public InternalXamlUserMemberInfo AddMember(InternalTypeEntry usingType, XamlMember xamlMember, bool declaringTypeAsStub = false)
+        public InternalXamlUserMemberInfo AddMember(XamlMember xamlMember)
         {
             if (xamlMember.IsDirective)
             {
                 return null;
             }
 
-            InternalTypeEntry declaringType = AddType(xamlMember.DeclaringType, declaringTypeAsStub);
+            InternalTypeEntry declaringType = GetType(xamlMember.DeclaringType);
             if (declaringType == null)
             {
                 throw new InvalidOperationException("declaring type is null on a non-directive property");
