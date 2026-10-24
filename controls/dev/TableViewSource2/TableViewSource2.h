@@ -7,7 +7,7 @@
 #include "common.h"
 
 #include "TableViewSource2.g.h"
-#include "Source/SourceRecord.h"
+#include "Source/SourceTable.h"
 
 // Scaffold for the shaping redesign. Exposes the same fluent verb surface as TableViewSource;
 // From() constructs a working instance, and every shaping verb throws hresult_not_implemented
@@ -48,8 +48,10 @@ private:
     // The app's source collection, kept for the engine that will consume it.
     tracker_ref<winrt::IInspectable> m_items{ this };
 
-    // One record per source position, plus raw-pointer, address, and identity lookups. Consumers may
-    // share it past this object's lifetime; ~TableViewSource2() calls Clear(), which detaches it
-    // (destroys every tracker_ref bound to this) so a lingering table is empty and owner-free.
+    // Every source record (root collection and, under ChildrenBy, child collections), the source
+    // tree built by ParentBy / ChildrenBy, plus raw-pointer, address, and identity lookups.
+    // Consumers may share it past this object's lifetime; ~TableViewSource2() calls Clear(), which
+    // detaches it (destroys every tracker_ref bound to this) so a lingering table is empty and
+    // owner-free.
     std::shared_ptr<SourceTable> m_sourceTable;
 };

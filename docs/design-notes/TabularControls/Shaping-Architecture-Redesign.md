@@ -18,7 +18,7 @@ is implemented, and every verb still throws `hresult_not_implemented`.
 
 `controls/dev/TableViewSource2` is the domain root. Each layer below the runtime class lives in its
 own subdirectory. Includes are relative to the root (the `.vcxitems` adds `$(MSBuildThisFileDirectory)`
-to the include path), e.g. `#include "Source/SourceRecord.h"`; files inside a layer include siblings
+to the include path), e.g. `#include "Source/SourceTable.h"`; files inside a layer include siblings
 by bare name.
 
 ```text
@@ -26,11 +26,14 @@ controls/dev/TableViewSource2/
   TableViewSource2.idl / .h / .cpp / .vcxitems   public runtime class (verbs, Refresh, IsLiveShaping)
   Source/                                        source layer: input collection + record table
     CollectionAccessor2.h
-    SourceRecord.h                               SourceRecord, SourceTable, SourceChange
+    SourceRecord.h                               SourceRecord, SourceChange
+    SourceTable.h                                SourceTable (records + source tree), HierarchyKind
+  Engine/                                        shaping engine (only node types so far)
+    ShapedTree.h                                 ShapedRef, GroupNode
 ```
 
-Future layers (shape spec, engine, projection, coordinator) each get their own subdirectory when
-they are added.
+Future layers (shape spec, visible list, coordinator) each get their own subdirectory when they
+are added.
 
 ## Why redesign
 
@@ -54,9 +57,9 @@ table serves as both the shared identity store and the cached full set that shap
 | 1 | Public verb API | `TableViewSource2.idl` | Declared |
 | 2 | `TableViewSource2` runtime class | `TableViewSource2.h/.cpp` | Verbs are stubs; `Refresh` and `IsLiveShaping` are declared |
 | 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h` | Declared, not implemented |
-| 4 | Source tracking: `SourceRecord`, `SourceTable`, `SourceChange` | `Source/SourceRecord.h` | Declared, not implemented |
+| 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange` | `Source/SourceRecord.h`, `Source/SourceTable.h` | Declared, not implemented |
 | 5 | Shape spec | — | **Next to design** |
-| 6 | Shaping engine | — | Not started |
+| 6 | Shaping engine: shaped tree node types `ShapedRef`, `GroupNode` | `Engine/ShapedTree.h` | Node types declared; engine not started |
 | 7 | Projection output (rows view and row metadata) | — | Not started |
 | 8 | Coordinator (incremental vs rebuild, owner notifications) | — | Not started |
 
@@ -105,6 +108,8 @@ classDiagram
 
     class SourceChange {
         +NotifyCollectionChangedAction Kind
+        +SourceRecord* OldParent
+        +SourceRecord* NewParent
         +uint32 OldIndex
         +uint32 NewIndex
         +vector~SourceRecord*~ Added
@@ -116,6 +121,10 @@ classDiagram
         -optional~CollectionAccessor2~ m_sourceAccessor
         -event_token m_sourceEventToken
         -vector~SourceRecordPtr~ m_records
+        -vector~SourceRecord*~ m_topLevel
+        -HierarchyKind m_hierarchyKind
+        -map~hstring, SourceRecord*~ m_keyIndex
+        -map~SourceRecord*, ChildFeed~ m_childFeeds
         -map~void*, SourceRecord*~ m_rawLookup
         -map~ObjectAddress, SourceRecord*~ m_addressLookup
         -bool m_identityIndexEnabled
@@ -137,6 +146,10 @@ classDiagram
         +Size() uint32
         +At(index) SourceRecord*
         +Records() vector~SourceRecordPtr~
+        +TopLevel() vector~SourceRecord*~
+        +SetParentKeyHierarchy(key, parentKey)
+        +SetChildCollectionHierarchy(children)
+        +ClearHierarchy()
         +SetSourceChangedHandler(handler)
         +SetItemChangedHandler(handler)
         +SetLiveShaping(enabled)
@@ -167,6 +180,10 @@ classDiagram
         +ObjectAddress Address
         +event_token PropertyChangedToken
         +WatchState Watch
+        +SourceRecord* Parent
+        +vector~SourceRecord*~ Children
+        +uint16 Depth
+        +HasChildren() bool
         -hstring m_identity
         +Identity() hstring
     }
@@ -280,6 +297,7 @@ and that live exactly as long as the item stays in the source.
 | `Address` (`ObjectAddress` = `uintptr_t`) | The canonical `IUnknown` pointer: the object's physical identity. It costs one QI, at creation. |
 | `Identity()` | The logical identity string (`"0x…"` today). It is formatted on first use and cached; this accessor is the only way to read it. |
 | `PropertyChangedToken`, `Watch` | Live-shaping subscription state, revoked in `~SourceRecord()`. `NotObservable` records that an item has no `INotifyPropertyChanged`, so it is not probed again. |
+| `Parent`, `Children`, `Depth`, `HasChildren()` | Source-tree links, written only by `SourceTable`. Non-owning; flat sources leave every record top-level (`Parent == nullptr`) with no children. See *Hierarchy: the source tree in `SourceTable`*. |
 
 Records are not copyable. `SourceTable` holds the sole strong `shared_ptr<SourceRecord>` (`SourceRecordPtr`)
 for each record so that `PropertyChanged` callbacks can capture `weak_ptr<SourceRecord>`
@@ -299,7 +317,8 @@ where any external event (collection or item) enters the pipeline. Output projec
 
 ```text
 m_sourceAccessor   resolved read + change-notification interfaces for the bound source
-Records()          one record per source position, in source order (shared_ptr)
+Records()          root-collection records, one per source position, in source order (shared_ptr)
+TopLevel()         top-level records of the source tree, in source order (flat: same as Records())
 raw lookup         get_abi(item) -> SourceRecord*   always on; pipeline map-back, no QI
 address lookup     Address       -> SourceRecord*   always on; duplicate check + COM identity lookup
 identity index     Identity      -> SourceRecord*   shaped only; selection, focus, expansion
@@ -311,7 +330,8 @@ identity index     Identity      -> SourceRecord*   shaped only; selection, focu
 |---|---|---|
 | `Create(owner, source)` | Public (static) | The only way to build a table. `make_shared<SourceTable>(PrivateToken{}, owner)`, then private `AttachSource(source)`: resolves `CollectionAccessor2(owner, source)`, subscribes to change notifications (storing `m_sourceEventToken`), and performs the initial `Refresh()`. `owner` is the enclosing `TableViewSource2`'s `ITrackerHandleManager const*`. The constructor takes a private `PrivateToken`, so it is reachable by `make_shared` but not by callers; there is no default constructor. |
 | `Refresh()` | Public | Re-enumerates `m_sourceAccessor` and reconciles against existing records (initial load, `Reset`, or explicit `Refresh()` for non-observable sources). No-op when detached. |
-| `Clear()` | Public | Teardown, called by `~TableViewSource2()` on the UI thread while the owner is alive. Nulls both handlers (raises nothing), unsubscribes from the source via `safe_get`, clears the lookups wholesale, destroys every record, resets `m_sourceAccessor`, and nulls `m_trackerOwner`. Idempotent. Afterwards the table is detached. |
+| `Clear()` | Public | Teardown, called by `~TableViewSource2()` on the UI thread while the owner is alive. Nulls both handlers (raises nothing), unsubscribes from the source and every child collection via `safe_get`, clears the lookups and key index wholesale, destroys the child feeds and their records, then every root record, resets `m_sourceAccessor`, and nulls `m_trackerOwner`. Idempotent. Afterwards the table is detached. |
+| `TopLevel()` / `SetParentKeyHierarchy` / `SetChildCollectionHierarchy` / `ClearHierarchy` | Public | Source tree. See *Hierarchy: the source tree in `SourceTable`*. |
 | `IsDetached()` | Public | True after `Clear()`. Every public entry point and event lambda returns early when detached. |
 | `SetSourceChangedHandler` | Public | Single handler (the coordinator) for normalized, record-level `SourceChange` notifications. See *Source change notification* below. |
 | `SetItemChangedHandler` | Public | Single handler (the coordinator) for per-record `PropertyChanged` notifications (`(SourceRecord*, hstring const& propertyName)`). See *Item property change notification* below. |
@@ -334,12 +354,17 @@ using SourceChangeKind = winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionCh
 struct SourceChange
 {
     SourceChangeKind Kind;
-    uint32_t OldIndex;                                // Remove, Replace, Move
-    uint32_t NewIndex;                                // Add, Replace, Move
-    std::vector<SourceRecord*> const& Added;          // Add, Replace (one); Reset (all new)
-    std::vector<SourceRecord const*> const& Removed;  // Remove, Replace (one); Reset (all gone)
+    SourceRecord* OldParent;                          // Remove, Replace, Move; nullptr = top level
+    SourceRecord* NewParent;                          // Add, Replace, Move; nullptr = top level
+    uint32_t OldIndex;                                // Remove, Replace, Move; within OldParent's children
+    uint32_t NewIndex;                                // Add, Replace, Move; within NewParent's children
+    std::vector<SourceRecord*> const& Added;          // Add, Replace (subtree, pre-order); Reset (all new)
+    std::vector<SourceRecord const*> const& Removed;  // Remove, Replace (subtree, pre-order); Reset (all gone)
 };
 ```
+
+Flat sources always report null parents, so the indices are source positions. See *Hierarchy: the
+source tree in `SourceTable`* for hierarchical sources.
 
 The change kind reuses `NotifyCollectionChangedAction`. Its five values match exactly, so the
 table adds no enum of its own. `NotifyCollectionChangedEventArgs` itself is not reused:
@@ -377,15 +402,32 @@ on `IsLiveShaping`, **never on which shaping verbs are active**:
 
 **Reference tracking and teardown:**
 
-`CollectionAccessor2` and every `SourceRecord::Item` hold their references through `tracker_ref`
-bound to `m_trackerOwner` (the owning `TableViewSource2`). The source subscription is a raw
-`event_token`, not `winrt::event_revoker`, which would hold an untracked strong reference.
+**Rule: every app-supplied object or delegate held natively goes through `tracker_ref`** bound to
+the owning `TableViewSource2`. This covers:
+- `CollectionAccessor2` (root and child feeds) and every `SourceRecord::Item`;
+- the hierarchy selectors (`m_keySelector`, `m_parentKeySelector`, `m_childrenSelector`);
+- `ParentBy` object keys (`NodeKeys::KeyObject`);
+- `GroupNode::Key`;
+- the filter, sort and group delegates, once the shape spec stores them (Phase 2).
+
+Why: a strong native reference to a .NET object (for example a lambda capturing the page or VM)
+roots it, so the cycle back through `TableViewSource2` is invisible to the GC and leaks. v1 holds
+its selectors strongly inside `std::function` and has this leak. XAML core does the same for event
+handlers (`TrackerPtrFamily.h` wraps listener delegates in `TrackerPtr`), and `TableView` already
+holds `tracker_ref<TableViewRowTemplateSelector>`. `tracker_ref` accepts any COM type, delegates
+included.
+
+Fields that can outlive their owner are `std::optional<tracker_ref<T>>` so they can be reset while
+the owner is alive. Delegates are invoked only on live UI-thread paths, never during teardown.
+
+The source subscription is a raw `event_token`, not `winrt::event_revoker`, which would hold an
+untracked strong reference.
 
 | Rule | Detail |
 |---|---|
 | Cost | Each record costs one `NewTrackerHandle` + `SetTrackerValue` on creation and one `DeleteTrackerHandle` on removal, the same as `Vector<IInspectable>`. A load or `Reset` of *n* items pays *n* of each. |
 | Single source token | `SubscribeToSourceChanges` binds exactly one interface (`INotifyCollectionChanged` > `IObservableVector` > `IBindableObservableVector`). `UnsubscribeFromSourceChanges` re-derives it with the same precedence; no kind is stored. |
-| No `tracker_ref` outlives the owner | `~tracker_ref` dereferences its owner even when empty. `Clear()` destroys every record, resets `m_sourceAccessor` (a `std::optional` for this reason), and nulls `m_trackerOwner` while the owner is alive. |
+| No `tracker_ref` outlives the owner | `~tracker_ref` dereferences its owner even when empty. `Clear()` destroys every record, resets `m_sourceAccessor`, the selectors and the key index (all `std::optional` for this reason), and nulls `m_trackerOwner` while the owner is alive. |
 | Detached table | After `Clear()` the table is empty and owner-free, so it is safe to outlive `TableViewSource2` (consumer `shared_ptr`s, or a posted off-thread lambda that has the table locked). Every entry point and event lambda checks `IsDetached()` and returns. `~SourceTable()` asserts it was detached and never touches `m_trackerOwner`. |
 | GC-collected targets | `tracker_ref` holds no reference count; the owner's tracker handle does. When the GC collects a cycle (item ↔ VM ↔ `TableViewSource2`), items and the collection may already be collected when `final_release` → `~TableViewSource2()` → `Clear()` runs, and `tracker_ref::get()` would return a dangling pointer. So teardown never calls `get()`: handlers are nulled first (no consumer reads `Item` or `Identity()`), lookups are cleared wholesale (`RemoveFromLookups`, which reads `Item.get()`, is for incremental paths only), `~SourceRecord()` revokes via `Item.safe_get()`, and `UnsubscribeFromSourceChanges` uses the accessor's `AsXxx(true)`. Revoke failures are swallowed (`SafeRevoke`). |
 | Address reuse | The owner's tracker handle keeps each item alive until the record is destroyed, so a COM address cannot be reused while its record is in the table. The only exception is GC collection of the whole cycle, where nothing remains to observe the reused address. |
@@ -440,6 +482,305 @@ and enabling the first verb needs no validation pass.
 | v1 `ShapedItemsSource` & `CollectionAccessor`: plain `IInspectable` references to source and items | `tracker_ref` bound to `TableViewSource2` (`ITrackerHandleManager`) for both `CollectionAccessor2` and `SourceRecord::Item`, plus raw `event_token` instead of `winrt::event_revoker` | Matches `InspectingDataSource` and `Vector<IInspectable>`: lets the .NET GC collect cycles when the collection or row items hold back-references to the page/VM/source. `~TableViewSource2()` calls `m_sourceTable->Clear()` so tracker handles are deleted while the owner is still alive. |
 | `ObjectAddress` type | Alias for `uintptr_t` | This branch has no `ObjectAddress` type. |
 
+### Hierarchy: the source tree in `SourceTable`
+
+With a hierarchy the tree must exist before any other verb runs:
+
+- **Filter** keeps matches plus their ancestors, so it walks parent chains.
+- **Sort** orders each sibling set separately.
+- **`GroupBy`** buckets the top-level records.
+
+So the tree is part of the source, not of shaping:
+`SourceTable (records + source tree) → filter / sort / group over the tree → projection`.
+Shaping reads only `TopLevel()` and `SourceRecord::Parent` / `Children` / `Depth`, and does not care
+whether `ParentBy` or `ChildrenBy` built the tree.
+
+The tree lives **on `SourceRecord` and in `SourceTable`**; there is no separate tree object. Keeping
+it in the table gives one set of lookups, one validation path, one re-entrancy gate and queue, one
+`SourceChanged` and one `Clear()`.
+
+**Record fields.** The record carries the *source* tree only; everything shaped lives in the shaped
+tree (below).
+
+| Member | Meaning | Who reads it |
+|---|---|---|
+| `SourceRecord* Parent` | Source parent; `nullptr` for top-level records | Reparent, ancestor walk for filter-with-ancestors |
+| `std::vector<SourceRecord*> Children` | Non-owning, source order | Shaped tree reads it directly when no filter or sort is active (no copy) |
+| `uint16_t Depth` | Top level = 0; never changed by grouping | Indent = spacer offset + per-level indent × `Depth`; `ShapedDepth()` |
+| `HasChildren()` | Derived from `Children` | Expandability of a source parent (`ShapedRef` row, not a group) |
+
+Not on the record (decided by the shaped tree section): expanded state (expansion model keyed by
+identity), group membership and group level (`GroupNode`), filtered and sorted children (side table
+keyed by record), visible flag (presence in the visible list), shaped depth (`ShapedDepth()` getter).
+
+**`SourceTable` additions** (`Source/SourceTable.h`):
+
+| Member | Purpose |
+|---|---|
+| `TopLevel()` / `m_topLevel` | Top-level records in source order (non-owning). Flat: mirrors `m_records`. |
+| `GetHierarchyKind()` / `HierarchyKind` | `None`, `ParentKey` (`ParentBy`), `ChildCollections` (`ChildrenBy`). |
+| `SetParentKeyHierarchy(key, parentKey)` | `ParentBy`. Validates the whole tree and throws before touching any record; then links every record and raises one `Reset`. |
+| `SetChildCollectionHierarchy(children)` | `ChildrenBy`. Enumerates every child collection eagerly and recursively, validates the whole tree, then creates child records, subscribes to every observable child collection and raises one `Reset`. |
+| `ClearHierarchy()` | Back to flat; resets the selectors; one `Reset`. |
+| `SiblingsOf(parent)` (private) | `parent ? parent->Children : m_topLevel`; tree maintenance only. |
+| `m_keyIndex`, `m_nodeKeys` (private) | `ParentBy` key index and each record's cached keys. Object keys are held (as `optional<tracker_ref<IInspectable>>`) while the tree is current so their addresses cannot be reused (v1 §3.1). Kept off `SourceRecord` so flat tables pay nothing. |
+| `ChildFeed`, `m_childFeeds` (private) | `ChildrenBy`: one feed per record with a non-null child collection. A feed holds a weak `Owner`, an `optional<CollectionAccessor2>`, an `event_token`, the sole strong `SourceRecordPtr`s for that collection in collection order, and an `OutOfSync` flag. |
+| Selectors (private) | `m_keySelector`, `m_parentKeySelector`, `m_childrenSelector`; each an `optional<tracker_ref<…>>` (see *Reference tracking and teardown*). |
+
+`Records()` / `Size()` / `At()` stay the root collection (owning, source order). `ChildrenBy` records
+are owned by their feed and are not in `Records()`, but they are in the lookups, the identity index,
+validation and live shaping. Shaping walks `TopLevel()` and `Children`, never `Records()`.
+
+| Decision | Detail |
+|---|---|
+| Eager materialization | `ChildrenBy` enumerates every child collection up front, recursively. Filter and sort always cover the whole tree. No load-on-expand. |
+| One object, one position | Null and duplicate items are rejected across the whole tree, including child collections. Identity stays the item itself; there is no path-based identity. |
+| Last writer wins (assumed) | A new `ParentBy` / `ChildrenBy` replaces the previous tree. |
+| Verb change rewrites links | Setting or clearing the hierarchy rewrites `Parent` / `Children` / `Depth` on every record (O(n)) and raises one `Reset`. `Filter`, `Sort` and `GroupBy` never write to records. |
+| Ownership per collection | Under `ParentBy` source order differs from tree order, so `m_records` keeps owning in source order and `Parent` / `Children` are non-owning links. Under `ChildrenBy` the child feed owns. |
+| Reparent | A `ParentBy` key change moves the record and updates `Depth` for the whole moved subtree. |
+| Child collections are source | Their changes are tracked whether or not live shaping is on, through the same normalization, validation, re-entrancy gate and queue as the root collection. A rejected change sets that feed's `OutOfSync`; its next notification rebuilds the subtree as a `Reset` of that subtree. |
+| Key and children-property edits | A change to an existing item's key, parent key or children property is seen only through live shaping. `OnRecordPropertyChanged` re-evaluates it (reparent, or swap the feed) and raises the resulting `SourceChange` before forwarding `ItemChanged`. |
+
+**`ParentBy` key rules** follow v1 (`Hierarchical-Data-Rows-Parent-Key-Design.md` §3):
+
+- Value keys compare by value; object keys compare by reference.
+- A null or empty parent key, or an orphan (no item has that key), makes a top-level record.
+- A null or empty key, a duplicate key, an item that is its own parent, or a cycle throws
+  `hresult_invalid_argument` before any mutation. Cycles are found by counting the records
+  reachable from the top level.
+
+**`SourceChange` with a tree.** One struct for flat and hierarchical sources. Positions are within the parent's children
+(`TopLevel()` when the parent is null), so a flat source reports source positions and a
+hierarchical one reports tree positions.
+
+```cpp
+struct SourceChange
+{
+    SourceChangeKind Kind;
+    SourceRecord* OldParent;                          // nullptr = top level
+    SourceRecord* NewParent;                          // OldParent != NewParent on Move = reparent
+    uint32_t OldIndex, NewIndex;                      // within the parent's children
+    std::vector<SourceRecord*> const& Added;          // subtree in pre-order; Reset: every record
+    std::vector<SourceRecord const*> const& Removed;  // subtree in pre-order; alive for the handler
+};
+```
+
+**Threading, lifetime and teardown** follow the existing `SourceTable` contracts:
+
+- Child-collection notifications must arrive on the UI thread, like the root collection's.
+- Feed lambdas capture `weak_from_this()` plus the owner record's `weak_ptr`, and lock them only on
+  the UI thread.
+- Feed accessors, the selectors and object keys hold `tracker_ref`s bound to `m_trackerOwner`.
+- `Clear()` unsubscribes every feed via `safe_get`, destroys the child feeds and their records
+  first, then the root records, then resets `m_sourceAccessor` and nulls `m_trackerOwner`.
+
+**Source root: no sentinel record.** Top-level records have `Parent == nullptr`, and `SourceTable`
+keeps `m_topLevel` in source order. Every `SourceRecord` keeps its item invariants (`Address`,
+`Identity()`, token, watch), and up-walks stop at `nullptr`.
+
+- `SiblingsOf(parent)` is used only by tree maintenance: insert, remove, reparent, and
+  `OldIndex` / `NewIndex` for `SourceChange`. `nullptr` means "top level" in those paths.
+- Grouping is unaffected: it buckets `TopLevel()` under the shaped root `GroupNode`. A record's
+  group comes from the engine's `m_groupOf` map (top-level record → bottom-level `GroupNode`),
+  never from `record->Parent`; a nested record's group is that of its top-level ancestor.
+- The shaped root is always an engine-owned `GroupNode`; there is no source root record.
+- `ShapedRef` tags the low pointer bit, so `SourceRecord` and `GroupNode` must have `alignof >= 2`
+  (`static_assert` next to `ShapedRef`).
+- Rejected: a sentinel `SourceRecord` with no item. It removes the one branch in `SiblingsOf`, but
+  moves an `IsRoot()` check into every reader (filter-with-ancestors, find-group-of-ancestor, live
+  shaping, validation, lookups, `Records()` / `Size()`), and a missed check treats the root as data.
+  It breaks the same invariants cited below for rejecting `GroupRecord`.
+
+**Open (hierarchy):**
+
+- One source change can produce several tree changes. Under `ParentBy`, inserting an item can adopt
+  existing orphans, each of which becomes a Move from the top level to the new item. Deliver them
+  as an ordered batch in one dispatch, or collapse to `Reset` above a threshold?
+- **Visible-descendant counts for source parents.** The visible list needs a count of visible
+  descendants per node to splice in O(depth). `GroupNode` can hold it; for source parents it must
+  live in the side table keyed by record (keeps records free of shaped state) or on the record.
+  Undecided.
+- **Indent without per-row writes (spacer column).** Applying or removing grouping must not write a
+  level to every row. Data rows store only `SourceRecord.Depth`, which never changes with grouping.
+  Group-level indent is one shared offset, like Avalonia's `RowGroupSpacerColumn`:
+  - `EnsureRowGroupSpacerColumnWidth(groupLevelCount)` sets one width from the cumulative
+    `RowGroupSublevelIndents[]`.
+  - `EnsureRowGrouping(false)` removes the column.
+  - No row is touched in either case.
+
+  Row indent = spacer width (group-level count) + per-level indent × `Depth`. Group headers carry
+  their own group level. The work that remains is the O(n) group rebuild, the same as WPF
+  `PrepareGroups` and Avalonia. Contrast with AG Grid:
+  - Its `resetGrouping` writes `level = 0` and clears the shaped child arrays on every leaf.
+  - Its `FlattenStage` calls `setUiLevel` on every visible row on every run.
+
+#### Shaped tree representation (decided: option A, tagged reference)
+
+The shaped tree does not copy the source tree. Only group headers are new nodes; rows are
+references to existing `SourceRecord`s.
+
+Declared in `Engine/ShapedTree.h`:
+
+```cpp
+// One slot in a shaped child list: a group or a source record (low pointer bit = tag).
+struct ShapedRef
+{
+    static ShapedRef FromRecord(SourceRecord*) noexcept;
+    static ShapedRef FromGroup(GroupNode*) noexcept;
+    bool IsNull() const noexcept;
+    bool IsGroup() const noexcept;
+    GroupNode* Group() const noexcept;      // null if this slot holds a record
+    SourceRecord* Record() const noexcept;  // null if this slot holds a group
+private:
+    uintptr_t m_bits;
+};
+// static_assert: alignof(SourceRecord) >= 2, alignof(GroupNode) >= 2, sizeof(ShapedRef) == pointer
+
+struct GroupNode                       // engine-owned; headers exist only while grouping is active
+{
+    optional<tracker_ref<IInspectable>> Key;  // empty on the shaped root
+    GroupNode* Parent;                 // nullptr only on the shaped root
+    uint16_t GroupLevel;               // top-level groups = 0; the header's ShapedDepth()
+    std::vector<ShapedRef> Children;   // subgroups, or top-level records after filter and sort
+    uint32_t ItemCount;                // bucketed top-level records (descendants not counted)
+    uint32_t VisibleDescendantCount;   // maintained by the flattener
+    bool IsRoot() const noexcept;      // Parent == nullptr
+};
+```
+
+- Engine-owned in a container with stable addresses, so `GroupNode*` and `ShapedRef` stay valid
+  until the engine drops the group.
+- `ItemCount` counts bucketed top-level records only, matching v1 `GroupItemCount`.
+- **Bottom level is derived by the engine**, not stored or asked of the node: a group is
+  bottom-level when `GroupLevel + 1 == groupLevelCount`; the shaped root is when
+  `groupLevelCount == 0`. Inspecting `Children` cannot classify an empty group.
+- A `GroupNode` is surfaced to consumers as `TableViewGroupInfo` (Key, ItemCount,
+  Level = `GroupLevel`).
+- **Record → group map.** While grouping is active the engine keeps
+  `std::unordered_map<SourceRecord*, GroupNode*> m_groupOf`: top-level record → its bottom-level
+  group.
+  - Top-level records only; descendants never need an entry (groups bucket `TopLevel()` only).
+  - Filled during bucketing (already one visit per top-level record), so it adds no pass. Dropped
+    with the groups when `GroupBy` is cleared.
+  - Needed anyway: removing a record, or re-bucketing it after `ItemChanged` changed its group key,
+    must find the old group when the item is gone or its old key is no longer computable.
+  - A row's owning group is then: header → `GroupNode::Parent`; record → climb `Parent` to the
+    top-level record (O(depth)), then `m_groupOf` (O(1)); ungrouped → the shaped root. Used only
+    for group-scoped actions (collapse this row's group, sticky header, group selection).
+
+- **The shaped root is always a `GroupNode`.** Without grouping, `_root` (shaped) holds
+  `ShapedRef`s to the filtered and sorted top-level records and no other group exists. There is
+  no grouped/ungrouped mode: the same walk handles both.
+- **Children of a source parent, after filter and sort:**
+  - With no filter and no sort, they are read straight from `SourceRecord::Children` (no copy).
+  - Otherwise they live in a side table keyed by record (`vector<SourceRecord*>` per parent),
+    built only for parents that are expanded or have matches, and dropped when the verbs are
+    cleared.
+- **Group vs. source node:** `ShapedRef::IsGroup()`.
+  - A source parent (`Record()->HasChildren()`) is expandable but is not a group.
+  - This avoids AG Grid's mix-up, where `rowNode.group` is also true for tree-data parents and
+    user rows need a separate `sourceRowIndex >= 0` check.
+- **`SourceRecord` and `SourceTable` are unchanged by grouping.** No record stores its group or
+  shaped level. Applying or removing grouping rebuilds `GroupNode`s, which is O(n) bucketing, and
+  writes nothing to records.
+
+**Visible list (flattener output).** One list for every case: flat, grouped, hierarchical, and
+grouped + hierarchical.
+
+```cpp
+struct VisibleRow
+{
+    ShapedRef Ref;          // data context, identity, children, selection target
+    ShapedRef Parent;       // shaped parent: group header or source parent record; null = shaped root
+    uint32_t IndexInParent; // position among Parent's shaped children; PositionInSet without a scan
+};
+```
+
+- **`Parent` is the shaped parent**, whatever its kind: the containing `GroupNode` for headers and
+  top-level records, the source parent record for nested records, null for anything directly under
+  the shaped root. Set size, parent identity and "go to parent" therefore take one path for every
+  row.
+- **The owning group is not stored.** It is found through `m_groupOf` (see "Record → group map");
+  only group-scoped actions need it.
+- **Set size is not stored.** It is the shaped child count of `Parent`, O(1): `Children.size()` of
+  the group or shaped root, the side-table entry size, or `Record()->Children.size()` with no filter
+  or sort. Storing it would mean rewriting every visible sibling on each insert or remove.
+- **`IndexInParent` is stored** because it is not O(1) to derive (it would need a sibling search).
+  The cost is accepted: an insert or remove updates the later siblings' entries during the splice.
+- Only visible rows have entries; a collapsed node's descendants have none.
+
+**`VisibleRow` vs. `TableViewRowInfo`.** They are not the same thing:
+- `VisibleRow` is the stored entry of the visible list: three pointer-sized fields into the shaped
+  tree, kept per visible row and internal to the flattener and the visible list.
+- `TableViewRowInfo` is the consumer-facing metadata snapshot returned by
+  `ITableViewRowMetadataProvider::GetRowInfo(index)`. The v2 provider builds it on demand, in O(1),
+  from the `VisibleRow` at that index; it is never stored per row (storing it would duplicate state
+  and bring back per-row writes when grouping or expansion changes).
+
+| `TableViewRowInfo` field | Derived from |
+|---|---|
+| Kind | `Ref.IsGroup()` |
+| Level | `ShapedDepth()` |
+| IsExpandable | group header, or `Record()->HasChildren()` (shaped children for filtered views) |
+| IsExpanded | expansion model, by identity |
+| ChildCount | `GroupNode::ItemCount`, or the record's shaped child count |
+| ParentIdentity | `Parent.Record()->Identity()` when the shaped parent is a record; empty otherwise |
+| PositionInSet | `IndexInParent + 1` |
+| SizeOfSet | shaped child count of `Parent` (the shaped root when `Parent` is null) |
+
+Everything else is read through `Ref`:
+- Kind comes from the tag.
+- `Depth` and expandability come from the record or group.
+- Expanded comes from the expansion model, by identity.
+- Indent = spacer offset (group-level count) + per-level indent × `Depth`.
+- `ShapedDepth()` (getter, never stored) = depth in the shaped tree, 0-based below the shaped root:
+  - Group header: `GroupNode::GroupLevel` (top-level groups = 0).
+  - Row: `groupLevelCount + record->Depth`. Every row sits under a bottom-level group, so the group
+    part is the same for all rows; ungrouped, `groupLevelCount` is 0 and this equals `Depth`.
+  - O(1), computed from the flattener's active group-level count. Not stored on `SourceRecord`,
+    because it changes when grouping changes and that would bring back per-row writes.
+  - Used by the UIA `Level` property (`ShapedDepth() + 1`) and by keyboard navigation to the parent
+    or child. Indentation does not need it: it uses spacer width + `Depth`.
+- Each node keeps a count of its visible descendants, so a node's position in the visible list is
+  found in O(depth), letting changes splice only their range instead of rebuilding.
+
+**Effect on downstream code.** `ShapedRef` and `GroupNode` stay inside the engine and the
+flattener. Consumers see only `VisibleRow`s and branch on group vs. row, never on whether
+grouping is on:
+- Container and template choice, UIA peer: header or row.
+- Selection, editing, copy: skip headers.
+- Keyboard: walks the same list.
+
+The v1 `IsTableViewSourceGrouped()` branches, and the O(n) scan in
+`GetDataRowPositionInSetInternal`, go away.
+
+**Difference from the v1 flat list:**
+
+| | v1 | v2 |
+|---|---|---|
+| Visible-list types | Five, by `ProjectionKind` (`m_rows`, plus the grouped and hierarchical adapters' `Entries()`) | One `VisibleRow` list |
+| Duplicate state | `m_rows` is kept up to date even when grouped or hierarchical, though not displayed | Shaped tree plus visible list only |
+| Row metadata | A provider per kind; some values found by scanning | Stored on, or read through, the `VisibleRow` |
+| Source change when grouped or hierarchical | Full `Refresh()`: re-read the source, new provider, possibly a new view object | Shaped tree is updated; only the affected range is spliced |
+| Object the repeater is bound to | Can be swapped on `Refresh` | Same object for the control's lifetime |
+
+**Alternatives rejected:**
+- **Mirror every row with a shaped node.** n extra nodes, rebuilt on every filter or sort, and
+  stale after records are recreated by Replace or Refresh. AG Grid is close to this: it stores
+  `childrenAfterFilter` and `childrenAfterSort` on every `RowNode`, so its `resetGrouping` must
+  clear every leaf.
+- **`GroupRecord : SourceRecord` under a separate `_groupRoot`** (AG Grid style).
+  - Compile-time safety is lost: selection, editing, live shaping and `SourceChange` could be
+    handed a group as an item.
+  - `SourceTable` invariants break: groups have no `Address`, `Identity()`,
+    `PropertyChangedToken` or `Watch`.
+  - Polymorphism adds a vtable pointer to every record.
+  - A row → group link needs either rewriting `Parent` (corrupting the source tree) or a
+    `ShapedParent` written on every row when grouping changes.
+- **Shared `ShapedNodeBase { Kind }` base for `SourceRecord` and `GroupNode`.** Viable, but adds
+  1 byte plus padding to every record for no gain over the tag bit.
+
 ## 5. Next: shape spec
 
 The shape spec is the stored set of verbs currently in force. The engine, the projection and the
@@ -450,8 +791,9 @@ coordinator all read it. Questions to settle:
 - **Sort and group ordering:** v1 decides whether a sort orders the groups or the rows within them
   by declaration order relative to `GroupBy`. Keep that, or make it explicit?
 - **Filter:** one predicate, or several combined?
-- **Hierarchy:** `ParentBy` and `ChildrenBy` look mutually exclusive. If both are called, does the
-  second replace the first, or throw?
+- **Hierarchy:** `ParentBy` and `ChildrenBy` are mutually exclusive. Assumed: the last call replaces
+  the earlier one (see *Hierarchy: the source tree in `SourceTable`*). The tree itself lives in
+  `SourceTable` and on `SourceRecord`, not in the spec; the spec stores only the selectors.
 - **Diffing:** whether the spec is a comparable value, so the engine can pick the cheapest update.
   v1 always treats a re-declared verb as changed.
 - **Mutability:** whether each verb replaces the whole spec, or edits it in place.
@@ -466,26 +808,31 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
 - [x] **1.2 Source collection resolution** (`Source/CollectionAccessor2.h`):
       single-pass resolution of read (`IVector` / `IVectorView` / `IBindableVector`) and notification
       (`INotifyCollectionChanged` / `IObservableVector` / `IBindableObservableVector`) interfaces.
-- [x] **1.3 Source record & table** (`Source/SourceRecord.h`):
+- [x] **1.3 Source record & table** (`Source/SourceRecord.h`, `Source/SourceTable.h`):
       `SourceRecord` (item, canonical `Address`, lazy `Identity()`, live-shaping watch state) and
       `SourceTable` (owns `CollectionAccessor2` + the source `event_token`, maintains `m_records`, `m_rawLookup`,
       `m_addressLookup`, shaped-only `m_identityIndex`, verb-independent per-record `INotifyPropertyChanged`
       subscriptions via `SetLiveShaping`, and the `SourceChanged` + `ItemChanged` callbacks).
 - [ ] **1.4 Implement Phase 1 `.cpp` files**:
   - `CollectionAccessor2.cpp`: port `Count`, `TryGetAt`, `Enumerate`, `GetAtUnchecked`.
-  - `SourceRecord.cpp`: `SourceTable::Create` / `AttachSource`, canonical `IUnknown` QI, lazy hex
-    `Identity()`, `~SourceRecord()` token revoke,
+  - `SourceRecord.cpp`: canonical `IUnknown` QI, lazy hex `Identity()`, `~SourceRecord()` token revoke.
+  - `SourceTable.cpp`: `SourceTable::Create` / `AttachSource`,
     upfront null/duplicate validation (`ValidateItems`, `ValidateIncoming`, `m_outOfSync` recovery), 3-pass `Reconcile`
     (position → raw pointer → address), incremental `InsertAt`/`RemoveAt`/`ReplaceAt`/`Move`,
     `RaiseSourceChanged` ordering and re-entrant queueing, source change subscriptions, and
     `SetLiveShaping` / per-record `INotifyPropertyChanged` subscription + `ItemChanged` forwarding,
     off-thread marshalling to `m_ownerQueue` and dropped-change recovery, and `Clear()` detach
     (optional accessor reset, `m_trackerOwner` nulled, `IsDetached()` guards) with `safe_get`-only
-    teardown in `~SourceRecord()` and `UnsubscribeFromSourceChanges`.
+    teardown in `UnsubscribeFromSourceChanges`.
   - `TableViewSource2.cpp`: add `Refresh()` and `IsLiveShaping` implementations forwarding to
     `m_sourceTable`, construct `m_sourceTable` via `SourceTable::Create(this, items)` in `TableViewSource2(items)`, and call
     `m_sourceTable->Clear()` in `~TableViewSource2()`.
 
+- [ ] **1.5 Source tree** (`Source/SourceRecord.h`, `Source/SourceTable.h`): declared on `SourceRecord` (`Parent`,
+      `Children`, `Depth`, `HasChildren()`) and `SourceTable` (`TopLevel()`,
+      `SetParentKeyHierarchy`, `SetChildCollectionHierarchy`, `ClearHierarchy`, `ChildFeed`s,
+      key index, `SiblingsOf`). Implement, then wire `TableViewSource2` (`ParentBy`, `ChildrenBy`,
+      `ClearHierarchy`).
 
 ### Phase 2 — Shape spec (`Spec/ShapeSpec.h/.cpp`)
 - [ ] Define how active verbs (`Filter`, `Sort` list, `GroupBy`, `ParentBy` vs `ChildrenBy`) are stored.
@@ -501,8 +848,10 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       `std::shared_ptr<SourceTable>` without recomputing `Identity()`.
 
 ### Phase 4 — Shaping engine (`Engine/ShapingEngine.h/.cpp`)
-- [ ] Run filter, sort, group, and hierarchy (`ParentBy` and `ChildrenBy`) over `SourceTable::Records()`
-      without re-enumerating the underlying collection.
+- [ ] Shaped tree node types `ShapedRef`, `GroupNode` (`Engine/ShapedTree.h`): declared, no
+      implementation.
+- [ ] Run filter, sort, group, and hierarchy over `SourceTable::TopLevel()` and
+      `SourceRecord::Children` without re-enumerating the underlying collection.
 - [ ] Map shaped output back to `SourceRecord*` in O(1) via `SourceTable::TryFindByRawPointer`.
 
 ### Phase 5 — Coordinator (`Coordinator/ShapingCoordinator.h/.cpp`)
@@ -527,7 +876,22 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
 
 - `Refresh` and `IsLiveShaping` are declared in the IDL and the header, with no `.cpp` stubs yet (Phase 1.4).
 - `m_sourceTable` is never created yet (the constructor does not allocate it).
-- `Source/SourceRecord.h` and `Source/CollectionAccessor2.h` have no `.cpp` files yet (Phase 1.4).
+- `Source/SourceRecord.h`, `Source/SourceTable.h` and `Source/CollectionAccessor2.h` have no `.cpp` files yet (Phase 1.4).
+- The source-tree members of `SourceTable` are declared only (Phase 1.5).
+- `Engine/ShapedTree.h` (`ShapedRef`, `GroupNode`) is declared only (Phase 4).
+- **Split hierarchy out of `SourceTable` (later).** `SourceTable` mixes always-on code with code
+  used only by one feature (ParentBy, ChildrenBy, live shaping, identity index), which hurts
+  readability and single responsibility. Proposed: a `SourceHierarchy` strategy owned by
+  `SourceTable` (`std::unique_ptr`, null = flat) with `ParentKeyHierarchy` and
+  `ChildCollectionsHierarchy` implementations; hooks `Prepare`/`Commit` (validate, then build),
+  `CollectIncoming`, `OnInserted`/`OnRemoving`/`OnMoved`, `Reevaluate`, `Release`/`Clear`.
+  Not a `HierarchicalSourceTable` subclass: hierarchy is set and cleared on a live table, and
+  lookups, live shaping and removal all need hierarchy hooks. Callback models considered: a thin
+  `ISourceHierarchyHost` (`CreateRecord`, `ReleaseRecord`, `RaiseSourceChanged`) plus extracted
+  `SourceLookups` (with object validation) and `SourceTree` (top level and links) passed by
+  reference; or strategies as `friend`s holding `SourceTable&`. Live shaping and its threading
+  state could move to an `ItemWatcher` the same way. Undecided; done after the file split
+  (`SourceRecord.h` / `SourceTable.h`).
 - **Re-entrant `ItemChanged` (parked).** A `PropertyChanged` raised while `SourceChanged` or
   `ItemChanged` is dispatching (for example, a setter called from a comparer) would reach the
   coordinator mid-reshape. Leading candidate: route it through the same `m_isDispatching` gate,
