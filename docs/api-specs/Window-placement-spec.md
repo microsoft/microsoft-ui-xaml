@@ -1,6 +1,9 @@
 Window placement persistence
 ---
 
+See the [window placement scenarios](Window-placement-scenarios.md) for illustrated use
+cases, app code, and acceptance assertions.
+
 - [Window placement persistence](#window-placement-persistence)
 - [1. Background](#1-background)
   - [1.1. Guiding principles](#11-guiding-principles)
