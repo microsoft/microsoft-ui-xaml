@@ -790,7 +790,6 @@
                 <VisualState x:Name="IconOnLeft" />
                 <VisualState x:Name="IconOnly">
                   <VisualState.Setters>
-                    <Setter Target="LayoutRoot.Width" Value="36" />
                     <Setter Target="LayoutRoot.Height" Value="36" />
                     <Setter Target="LayoutRoot.Margin" Value="2" />
                     <Setter Target="IconBox.Margin" Value="10,0" />

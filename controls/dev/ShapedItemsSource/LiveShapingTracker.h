@@ -30,6 +30,7 @@ public:
     void RetainOnly(std::unordered_set<void const*> const& live);
     void UnsubscribeAll() noexcept;
     bool Empty() const noexcept { return m_subscriptions.empty(); }
+    static void const* Identity(winrt::IInspectable const& item);
 
 private:
     struct Subscription
@@ -54,8 +55,6 @@ private:
 
         void Revoke() noexcept;
     };
-
-    static void const* Identity(winrt::IInspectable const& item);
 
     std::unordered_map<void const*, Subscription> m_subscriptions;
     ChangeHandler m_changeHandler;
