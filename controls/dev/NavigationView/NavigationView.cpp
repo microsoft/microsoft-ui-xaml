@@ -1453,11 +1453,6 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
         return;
     }
 
-    // If we decide we want it to animate open/closed when you resize the
-    // window we'll have to change how we figure out the initial state
-    // instead of this:
-    m_initialListSizeStateSet = false; // see UpdateIsClosedCompact()
-
     winrt::NavigationViewDisplayMode displayMode = winrt::NavigationViewDisplayMode::Compact;
 
     const auto paneDisplayMode = PaneDisplayMode();
@@ -1511,7 +1506,6 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
     if (previousMode == winrt::NavigationViewDisplayMode::Expanded
         && displayMode == winrt::NavigationViewDisplayMode::Compact)
     {
-        m_initialListSizeStateSet = false;
         ClosePane();
     }
 
@@ -1747,6 +1741,7 @@ void NavigationView::OnSplitViewClosedCompactChanged(const winrt::DependencyObje
 
 void NavigationView::OnSplitViewPaneClosed(const winrt::DependencyObject& /*sender*/, const winrt::IInspectable& obj)
 {
+    UpdateIsClosedCompact();
     m_paneClosedEventSource(*this, nullptr);
 }
 
@@ -1786,6 +1781,7 @@ void NavigationView::OnSplitViewPaneClosing(const winrt::DependencyObject& /*sen
 
 void NavigationView::OnSplitViewPaneOpened(const winrt::DependencyObject& /*sender*/, const winrt::IInspectable& obj)
 {
+    UpdateIsClosedCompact();
     m_paneOpenedEventSource(*this, nullptr);
 }
 
@@ -1808,12 +1804,9 @@ void NavigationView::UpdateIsClosedCompact()
         m_isClosedCompact = !splitView.IsPaneOpen() && (splitViewDisplayMode == winrt::SplitViewDisplayMode::CompactOverlay || splitViewDisplayMode == winrt::SplitViewDisplayMode::CompactInline);
         winrt::VisualStateManager::GoToState(*this, m_isClosedCompact ? L"ClosedCompact" : L"NotClosedCompact", true /*useTransitions*/);
 
-        // Set the initial state of the list size
-        if (!m_initialListSizeStateSet)
-        {
-            m_initialListSizeStateSet = true;
-            winrt::VisualStateManager::GoToState(*this, m_isClosedCompact ? L"ListSizeCompact" : L"ListSizeFull", true /*useTransitions*/);
-        }
+        // PaneClosing can precede an adaptive mode change, and light dismiss
+        // does not raise it again when the deferred close is committed.
+        winrt::VisualStateManager::GoToState(*this, m_isClosedCompact ? L"ListSizeCompact" : L"ListSizeFull", true /*useTransitions*/);
 
         UpdateTitleBarPadding();
         UpdateBackAndCloseButtonsVisibility();
