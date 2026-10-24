@@ -254,6 +254,7 @@ bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDi
 bool TableView::SortByColumnInternal(
     const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort)
 {
+    FlushDeferredEditReshapes();
     // Only a clear may skip the CanSort gate.
     requireCanSort = requireCanSort || direction != winrt::SortDirection::None;
     if (!CanSortColumnNow(column, requireCanSort))
@@ -320,6 +321,7 @@ bool TableView::SortByColumnInternal(
 
 bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
 {
+    FlushDeferredEditReshapes();
     if (!CanSortColumnNow(column))
     {
         return false;
@@ -407,16 +409,32 @@ bool TableView::ClearSort()
 
 bool TableView::IsSortLitOnlyByApp() const
 {
-    if (m_activeSourceReleased || !m_tableViewSourceSort.AxisToken.empty())
+    if (!m_tableViewSourceSort.AxisToken.empty())
     {
         return false;
     }
     auto const source = ShapingSourceInternal();
-    return source && !winrt::get_self<::TableViewSource>(source)->ActiveSortAxisInfos().empty();
+    if (!source)
+    {
+        return false;
+    }
+    auto const sourceImpl = winrt::get_self<::TableViewSource>(source);
+    // Released but unowned (unloaded): the axes are still the app's.
+    if (m_activeSourceReleased && sourceImpl->IsOwnedByOther(*this))
+    {
+        return false;
+    }
+    // A column: axis is one a table installed, never the app's.
+    auto const axes = sourceImpl->ActiveSortAxisInfos();
+    return std::any_of(axes.begin(), axes.end(), [](auto const& axis)
+    {
+        return !std::wstring_view{ axis.AxisToken }.starts_with(L"column:");
+    });
 }
 
 bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
 {
+    FlushDeferredEditReshapes();
     if (m_sortedColumns.empty())
     {
         return false;

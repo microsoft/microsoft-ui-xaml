@@ -1263,6 +1263,9 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     // projection, so the reported sort state and the chevron go with it - otherwise they describe
     // an order the new rows are not in.
     ResetSortStateForNewItemsSource();
+    // Deferred reshapes target the discarded data set.
+    m_pendingEditReshapes.clear();
+    m_reshapesAfterEditCloses.clear();
     AdoptItemsSource();
     RefreshRowsPipeline();
     completed = true;
@@ -2703,6 +2706,50 @@ static bool StyleSetsProperty(const winrt::Style& style, const winrt::Dependency
     return false;
 }
 
+// Most-derived setter first, matching which setter a sealed Style applies.
+static winrt::IInspectable StyleSetterValue(const winrt::Style& style, const winrt::DependencyProperty& property)
+{
+    for (auto current = style; current; current = current.BasedOn())
+    {
+        for (auto const& setterBase : current.Setters())
+        {
+            if (auto const setter = setterBase.try_as<winrt::Setter>(); setter && setter.Property() == property)
+            {
+                return setter.Value();
+            }
+        }
+    }
+    return nullptr;
+}
+
+// A selector that returns no template leaves the presenter's untrimmed implicit TextBlock, so the
+// header keeps its own ellipsizing one instead. Probed with the header's real content in place.
+static bool StyleTemplatesHeader(
+    const winrt::DataTemplate& styleTemplate,
+    const winrt::DataTemplateSelector& styleSelector,
+    const winrt::ContentControl& header,
+    const winrt::IInspectable& headerContent)
+{
+    if (styleTemplate)
+    {
+        return true;
+    }
+    if (!styleSelector)
+    {
+        return false;
+    }
+    try
+    {
+        header.Content(headerContent);
+        return static_cast<bool>(styleSelector.SelectTemplate(headerContent, header));
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] A header Style's ContentTemplateSelector threw; using the default header text.");
+        return false;
+    }
+}
+
 // GetColumnHeaderText renders an untemplated IStringable for automation purposes, but only a genuine string
 // may be swapped for a TextBlock -- a UIElement or a type with an implicit DataTemplate must keep
 // the ContentPresenter's content model.
@@ -3116,6 +3163,10 @@ void TableView::RebuildHeadersCore()
             // never-accessed Setters reseals it and re-merges its BasedOn setters.
             const bool styleSetsMinHeight = StyleSetsProperty(headerStyle, winrt::FrameworkElement::MinHeightProperty());
             const bool styleSetsPadding = StyleSetsProperty(headerStyle, winrt::Control::PaddingProperty());
+            const bool styleSetsCornerRadius = StyleSetsProperty(headerStyle, winrt::Control::CornerRadiusProperty());
+            auto const styleContentTemplate = StyleSetterValue(headerStyle, winrt::ContentControl::ContentTemplateProperty()).try_as<winrt::DataTemplate>();
+            auto const styleContentTemplateSelector = styleContentTemplate ? winrt::DataTemplateSelector{ nullptr } :
+                StyleSetterValue(headerStyle, winrt::ContentControl::ContentTemplateSelectorProperty()).try_as<winrt::DataTemplateSelector>();
             if (headerStyle)
             {
                 header.Style(headerStyle);
@@ -3123,7 +3174,10 @@ void TableView::RebuildHeadersCore()
 
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
-            AttachFocusCornerRadius(header);
+            if (!styleSetsCornerRadius)
+            {
+                AttachFocusCornerRadius(header);
+            }
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {
@@ -3139,9 +3193,13 @@ void TableView::RebuildHeadersCore()
                 header.Padding(cachedHeaderCellPadding);
             }
 
+            header.Tag(column);
+
             if (auto headerTemplateSelector = column.HeaderTemplateSelector())
             {
                 header.Content(column.Header());
+                // A local null keeps a Style's ContentTemplate from outranking the selector.
+                header.ContentTemplate(nullptr);
                 header.ContentTemplateSelector(headerTemplateSelector);
             }
             else if (auto headerTemplate = column.HeaderTemplate())
@@ -3149,7 +3207,8 @@ void TableView::RebuildHeadersCore()
                 header.Content(column.Header());
                 header.ContentTemplate(headerTemplate);
             }
-            else if (!headerText.empty() && IsPlainStringHeader(column))
+            else if (!headerText.empty() && IsPlainStringHeader(column) &&
+                !StyleTemplatesHeader(styleContentTemplate, styleContentTemplateSelector, header, column.Header()))
             {
                 // A ContentPresenter renders a bare string through an implicit TextBlock carrying no
                 // TextTrimming, so a too-wide header hard-clips mid-glyph while its cells ellipsize.
@@ -3159,6 +3218,11 @@ void TableView::RebuildHeadersCore()
                 headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
                 // The header's peer already announces this text.
                 winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
+                if (styleContentTemplateSelector)
+                {
+                    // Before the content swap: ContentControl asks the selector again on Content change.
+                    header.ContentTemplateSelector(nullptr);
+                }
                 header.Content(headerBlock);
                 headerImpl->SetOwnsContentInternal(true);
             }
@@ -3166,8 +3230,6 @@ void TableView::RebuildHeadersCore()
             {
                 header.Content(column.Header());
             }
-
-            header.Tag(column);
 
             TableViewDetails::ApplyHeaderToolTip(header, column.HeaderToolTip());
 
@@ -3594,6 +3656,10 @@ void TableView::ReclaimItemsSource()
     }
 
     AdoptItemsSource(true /* reclaimActiveSource */);
+    if (!m_activeSourceReleased)
+    {
+        QueueDeferredEditReshapeDrain();
+    }
     // While drained, OnRowsRepeaterLoaded re-sources the repeater.
     if (!m_rowsSourceDrained)
     {

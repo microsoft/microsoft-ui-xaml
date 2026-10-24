@@ -500,6 +500,8 @@ public:
     void QueueReshapeAfterEditCloses(std::function<void()> operation);
     void ClearCoalescedEditReshape();
     void DrainCoalescedEditReshape();
+    void QueueDeferredEditReshapeDrain();
+    void FlushDeferredEditReshapes();
 
     // ----- Editing input gestures (TableView_EditingInput.cpp) -----
     // The pointer gesture lives on TableViewRow: the row owns its cells, so it is the level that
@@ -787,6 +789,7 @@ private:
     // replay order matches arrival order.
     std::deque<std::function<void()>> m_pendingEditReshapes;
     std::deque<std::function<void()>> m_reshapesAfterEditCloses;
+    bool m_editReshapeDrainQueued{ false };
 
     // Keyboard/focus position. Deliberately NOT redefined while an edit is open, so a value read
     // inside an EditEnding handler stays valid once the edit closes.

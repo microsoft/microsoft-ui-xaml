@@ -1532,11 +1532,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies turning sorting off for the table or the column leaves a column the app's source sort lit untouched and raises no sort events.")]
-        [TestProperty("data:Change", "{CanUserSortColumnsFalse, CanSortFalse}")]
+        [TestProperty("Description", "Verifies turning sorting off for the table or the column leaves a column the app's source sort lit untouched and raises no sort events, also while the table is unloaded.")]
+        [TestProperty("data:Change", "{CanUserSortColumnsFalse, CanSortFalse, CanUserSortColumnsFalseUnloaded, CanSortFalseUnloaded}")]
         public void VerifyUngatingKeepsAppLitColumnWithoutEvents()
         {
             var change = ((string)TestContext.DataRow["Change"]).Trim();
+            var unloaded = change.EndsWith("Unloaded");
             TableView tableView = null;
             TableViewSource source = null;
             int sortingCount = 0;
@@ -1559,10 +1560,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "Precondition: the source sort lights the Name column.");
+            });
+
+            if (unloaded)
+            {
+                RunOnUIThread.Execute(() => Content = null);
+                IdleSynchronizer.Wait();
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
                 tableView.Sorting += (s, e) => sortingCount++;
                 tableView.Sorted += (s, e) => sortedCount++;
                 tableView.Columns[0].RegisterPropertyChangedCallback(TableViewColumn.SortDirectionProperty, (s, dp) => directionChanges++);
-                if (change == "CanSortFalse")
+                if (change.StartsWith("CanSortFalse"))
                 {
                     tableView.Columns[0].CanSort = false;
                 }
@@ -1571,6 +1582,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     tableView.CanUserSortColumns = false;
                 }
             });
+
+            if (unloaded)
+            {
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() => LoadContent(tableView));
+            }
 
             SettleLayout(tableView);
 
@@ -1581,6 +1598,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(0, directionChanges, "The column's SortDirection must not flip.");
                 Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The column keeps describing the app's sort.");
                 VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "the app's sort stays on the source");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an unloaded table does not treat the sort another table installed on their shared source as app-lit: CanSort = false drops its own stale state and leaves that sort alone.")]
+        public void VerifyUngatingWhileUnloadedLeavesOtherTablesSort()
+        {
+            TableViewSource source = null;
+            TableView first = null;
+            TableView second = null;
+            int sortedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                first = CreateSortTable(source);
+                second = CreateSortTable(source);
+                LoadContent(first);
+            });
+
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() => source.Sort("Name", SortDirection.Ascending));
+
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, first.Columns[0].SortDirection, "Precondition: the source sort lights the first table's Name column.");
+                LoadContent(second);
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(second.SortByColumn(second.Columns[0], SortDirection.Descending), "Precondition: the loaded table sorts the shared source.");
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                first.Sorted += (s, e) => sortedCount++;
+                first.Columns[0].CanSort = false;
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, sortedCount, "The unloaded table clears its own stale sort.");
+                Verify.AreEqual(SortDirection.None, first.Columns[0].SortDirection, "The unloaded table's opted-out column drops its sort.");
+                Verify.AreEqual(SortDirection.Descending, second.Columns[0].SortDirection, "The owning table keeps its sort.");
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(second, person => person.Name), "the owning table's sort stays on the source");
             });
         }
 

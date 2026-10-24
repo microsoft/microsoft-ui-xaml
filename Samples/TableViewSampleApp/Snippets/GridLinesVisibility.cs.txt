@@ -35,6 +35,13 @@ private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
 
 // …
 
+private void SetColumnSeparatorsHidden(bool hidden)
+{
+    PeopleTable.ColumnHeaderStyle = hidden ? (Style)Resources["NoColumnSeparatorsHeaderStyle"] : null;
+}
+
+// …
+
 private void OnMoveToNextGroupClick(object sender, RoutedEventArgs e)
 {
     if (PeopleTable.SelectedItem is not Person person)

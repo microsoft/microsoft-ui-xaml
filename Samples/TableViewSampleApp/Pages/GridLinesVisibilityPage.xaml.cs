@@ -7,6 +7,7 @@ using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Media;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -88,6 +89,86 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
             : "Row banding -> default theme");
     }
     // </snippet>
+
+    // ---- Header lines -------------------------------------------------------------------
+
+    private void OnHeaderLinesChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (PeopleTable is null || HeaderLinesText is null)
+        {
+            return;
+        }
+
+        var mode = SampleShaping.SelectedTag(HeaderLinesSelector, "default");
+        SetHeaderLinesResources(mode == "brush");
+        SetColumnSeparatorsHidden(mode == "style");
+        SetLastAction(mode switch
+        {
+            "brush" => "Header lines -> hidden: column separators and the line under the header row",
+            "style" => "Header lines -> column separators hidden; the line under the header row stays",
+            _ => "Header lines -> shown",
+        });
+    }
+
+    // <snippet>
+    private void SetColumnSeparatorsHidden(bool hidden)
+    {
+        PeopleTable.ColumnHeaderStyle = hidden ? (Style)Resources["NoColumnSeparatorsHeaderStyle"] : null;
+    }
+    // </snippet>
+
+    private const string HeaderSeparatorBrushKey = "TabularSurfaceHeaderSeparatorBrush";
+
+    // Demo plumbing; an app declares the brush in XAML. {ThemeResource} resolves when a template is
+    // applied, so a runtime switch re-applies the table's template and then restores the scroll.
+    private void SetHeaderLinesResources(bool hidden)
+    {
+        var overrides = (ResourceDictionary)Resources["HiddenHeaderLinesResources"];
+        var tableResources = PeopleTable.Resources;
+        if (hidden == tableResources.ContainsKey(HeaderSeparatorBrushKey))
+        {
+            return;
+        }
+
+        foreach (var (key, value) in overrides)
+        {
+            if (hidden)
+            {
+                tableResources[key] = value;
+            }
+            else
+            {
+                tableResources.Remove(key);
+            }
+        }
+
+        var scroller = FindBodyScroller(PeopleTable);
+        var horizontal = scroller?.HorizontalOffset ?? 0;
+        var vertical = scroller?.VerticalOffset ?? 0;
+        PeopleTable.Template = null;
+        PeopleTable.ClearValue(Control.TemplateProperty);
+        PeopleTable.UpdateLayout();
+        FindBodyScroller(PeopleTable)?.ChangeView(horizontal, vertical, null, disableAnimation: true);
+    }
+
+    private static ScrollViewer? FindBodyScroller(DependencyObject parent)
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is ScrollViewer { Name: "PART_BodyScroller" } scroller)
+            {
+                return scroller;
+            }
+
+            if (FindBodyScroller(child) is { } found)
+            {
+                return found;
+            }
+        }
+
+        return null;
+    }
 
     // ---- In-cell edits ------------------------------------------------------------------
 
