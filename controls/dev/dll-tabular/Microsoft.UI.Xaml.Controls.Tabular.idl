@@ -1,31 +1,11 @@
-﻿#define MU_XC_NAMESPACE Microsoft.UI.Xaml.Controls.Tabular
+﻿// Do not reorder: this file must stay the first @(Midl) entry of the Tabular project. Do not redeclare the
+// Microsoft.UI.Xaml.CustomAttributes types here; they come from MUXC's winmd. See TableView/IdlCommentsDump.md.
+#define MU_XC_NAMESPACE Microsoft.UI.Xaml.Controls.Tabular
 #define MU_XCP_NAMESPACE Microsoft.UI.Xaml.Controls.Tabular.Primitives
 #define MU_XCD_NAMESPACE Microsoft.UI.Xaml.Data
-#define MU_X_XTI_NAMESPACE Microsoft.UI.Xaml.XamlTypeInfo
-
-// Deliberately the SAME value MUXC's metadata IDL uses, not a Tabular-specific child such as
-// Microsoft.UI.Xaml.Controls.Tabular.Primitives.Private. A child namespace breaks the projection
-// outright: cppwinrt emits an include for the parent namespace and no parent is ever generated.
-// Reusing the value is safe because MIDL never references MUXC's private winmd from this build, so
-// there is no duplicate-runtimeclass hazard, and framework-internal primitives stay out of every
-// shipped winmd either way because metadata is partitioned by namespace.
+// Do not change: must equal MUXC's value; a Tabular-specific child namespace breaks the cppwinrt projection.
 #define MU_PRIVATE_CONTROLS_NAMESPACE Microsoft.UI.Private.Controls
-
-// ===========================================================================
-// Tabular controls DLL (Microsoft.UI.Xaml.Controls.Tabular) metadata IDL.
-//
-// This is a renamed copy of controls\idl\Microsoft.UI.Xaml.Controls.idl. MUXC's
-// winmd already owns XamlControlsXamlMetaDataProvider and XamlControlsResources,
-// so the Tabular DLL PRODUCEs differently-named types to avoid duplicate-runtimeclass
-// collisions: XamlControlsTabularXamlMetaDataProvider and TabularControlsResources.
-//
-// The Microsoft.UI.Xaml.CustomAttributes types (MUXHasCustomActivationFactoryAttribute
-// etc.) are NOT redeclared here — MIDL references MUXC's winmd (see
-// controls\Tabular.ProjectImports.targets), which already defines them. Only the
-// MUX_* macros are kept verbatim, since tabular control IDLs depend on them. This
-// file is the FIRST entry in the Tabular project's @(Midl) so those macros are
-// visible to all control IDLs merged after it.
-// ===========================================================================
+#define MU_X_XTI_NAMESPACE Microsoft.UI.Xaml.XamlTypeInfo
 
 namespace features
 {
