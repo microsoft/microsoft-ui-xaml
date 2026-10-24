@@ -14,6 +14,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -24,8 +25,14 @@
         <TextBlock x:Name="StatusText" AutomationProperties.Name="StatusText" Grid.Row="1"
                    Margin="0,0,0,4" Text="Draw with mouse, pen, or touch — the InkCanvas inks by default." />
 
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,0,0,4">
+            <Button x:Name="ListenForUnprocessedInputButton" AutomationProperties.AutomationId="ListenForUnprocessedInputButton"
+                    Content="Read UnprocessedInput args" Click="OnListenForUnprocessedInputClick" />
+            <TextBlock x:Name="UnprocessedInputStatus" AutomationProperties.AutomationId="UnprocessedInputStatus" Text="0,0,0,0" />
+        </StackPanel>
+
         <!-- InkCanvas self-inks out of the box: no app code needed for wet ink. -->
-        <Border Grid.Row="2" BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1">
+        <Border Grid.Row="3" BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1">
             <controls:InkCanvas x:Name="TestInkCanvas" AutomationProperties.Name="TestInkCanvas" />
         </Border>
     </Grid>
