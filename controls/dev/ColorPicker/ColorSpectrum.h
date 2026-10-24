@@ -46,6 +46,7 @@ private:
 
     // ColorSpectrum event handlers
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnEffectiveViewportChanged(winrt::FrameworkElement const& sender, winrt::EffectiveViewportChangedEventArgs const& args);
 
     // Template part event handlers
     void OnLayoutRootSizeChanged(winrt::IInspectable const& sender, winrt::SizeChangedEventArgs const& args);
@@ -54,10 +55,15 @@ private:
     void OnInputTargetPointerMoved(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
     void OnInputTargetPointerReleased(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
     void OnInputTargetPointerPressed(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
+    void OnInputTargetPointerCanceled(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
+    void OnInputTargetPointerCaptureLost(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
     void OnSelectionEllipseFlowDirectionChanged(winrt::DependencyObject const& o, winrt::DependencyProperty const& p);
 
     // Helper functions
     void SetColor();
+    void EndPointerInteraction();
+    void OpenColorNameToolTip();
+    void CloseColorNameToolTip();
 
     void UpdateVisualState(bool useTransitions);
     void UpdateColor(Hsv newHsv);
