@@ -886,10 +886,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsGreaterThan(selector.Calls.Count, 0, "The selector must be probed.");
-                Verify.IsTrue(selector.Calls.All(call => call.Item as string == "Name"),
-                    $"{result}: the selector must only see the string Header, never the fallback TextBlock.");
-                var container = selector.Calls[0].Container as TableViewColumnHeader;
+                Log.Comment("Selector calls: " + string.Join("; ", selector.Calls.Select(call => $"{call.Item?.GetType().Name ?? "null"}:{call.Item}")));
+                Verify.IsFalse(selector.Calls.Any(call => call.Item is UIElement),
+                    $"{result}: the selector must never be asked about the fallback TextBlock.");
+                var probe = selector.Calls.FirstOrDefault(call => call.Item as string == "Name");
+                Verify.IsNotNull(probe.Container, "The selector must be probed with the string Header and the header as its container.");
+                var container = probe.Container as TableViewColumnHeader;
                 Verify.IsNotNull(container, "The selector must receive the header as its container.");
                 Verify.IsTrue(ReferenceEquals(tableView.Columns[0], container.Tag), "The container must already be tagged with its column.");
 

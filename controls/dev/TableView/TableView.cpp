@@ -2797,9 +2797,9 @@ static bool StyleTemplatesHeader(
     {
         return false;
     }
-    header.Content(headerContent);
     try
     {
+        header.Content(headerContent);
         return static_cast<bool>(styleSelector.SelectTemplate(headerContent, header));
     }
     catch (...)
@@ -3277,13 +3277,13 @@ void TableView::RebuildHeadersCore()
                 headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
                 // The header's peer already announces this text.
                 winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
-                header.Content(headerBlock);
-                headerImpl->SetOwnsContentInternal(true);
                 if (styleContentTemplateSelector)
                 {
-                    // Otherwise the Style's selector would be asked again, with the TextBlock as item.
+                    // Before the content swap: ContentControl asks the selector again on Content change.
                     header.ContentTemplateSelector(nullptr);
                 }
+                header.Content(headerBlock);
+                headerImpl->SetOwnsContentInternal(true);
             }
             else
             {
