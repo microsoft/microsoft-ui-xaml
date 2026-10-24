@@ -64,10 +64,10 @@ TableView — Default Template
       └─ Body band  [Row 1, *]
          └─ ScrollViewer PART_BodyScroller         (H + V, auto scrollbars)
             └─ Grid PART_BodyContent
-               ├─ ItemsRepeater PART_RowsRepeater  (vertical StackLayout; ItemTemplate = TableViewRow)
+               ├─ ItemsRepeater PART_RowsRepeater  (vertical StackLayout; ItemTemplate = TableViewRowTemplateSelector, set in code)
                └─ ContentControl PART_EmptyStatePresenter  (overlay; Collapsed unless data empty)
 
-TableViewRow — ItemTemplate   (realized / recycled by PART_RowsRepeater)
+TableViewRow — data-row container   (realized / recycled by PART_RowsRepeater; group entries use TableViewGroupHeader)
 └─ Grid (template root; CommonStates + RowExpansion/RowExpandability/RowHierarchy states)
    ├─ Border PART_RootBorder   (row background)
    │  └─ Grid
@@ -95,7 +95,7 @@ Each `TableViewCellsPanel` measures its cells unconstrained and arranges them at
 
 `ScrollViewer` `PART_BodyScroller` → `Grid` `PART_BodyContent` → `ItemsRepeater` `PART_RowsRepeater`.
 
-`PART_BodyScroller` enables both horizontal and vertical scrolling with auto scrollbars. `PART_RowsRepeater.Layout` is a vertical `StackLayout` (`HorizontalCacheLength`/`VerticalCacheLength` = `2.0`; `ItemTemplate` = `TableViewRow`). `PART_EmptyStatePresenter` is a `ContentControl` overlaid in the same `PART_BodyContent` cell, `Collapsed` unless the empty state is shown.
+`PART_BodyScroller` enables both horizontal and vertical scrolling with auto scrollbars. `PART_RowsRepeater.Layout` is a vertical `StackLayout` (`HorizontalCacheLength`/`VerticalCacheLength` = `2.0`). Its `ItemTemplate` is not set in the template: `TableView::OnApplyTemplate` assigns a `TableViewRowTemplateSelector` (which needs an owning `TableView` that XAML cannot supply), and the selector returns the `TableViewRow` template for data entries and the `TableViewGroupHeader` template for group entries (`TableView::GetRowKindForItem`), so `ItemsRepeater` keeps a separate recycle pool per container kind. `PART_EmptyStatePresenter` is a `ContentControl` overlaid in the same `PART_BodyContent` cell, `Collapsed` unless the empty state is shown.
 
 ## Row
 
