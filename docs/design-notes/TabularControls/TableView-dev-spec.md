@@ -182,7 +182,7 @@ On recycle, `ItemsRepeater` re-points a row's `DataContext`, and cells update **
 - `TableViewTemplateColumn` binds `ContentPresenter.Content` to the cell wrapper's inherited `DataContext`, because a `ContentPresenter` sets its own `DataContext` to its `Content`.
 - **Custom columns** must bind to the inherited `DataContext` and not set a local one. `dataItem` is for initial setup only; content that bakes it in (or initializes once, in `Loaded` or with `x:Bind` `OneTime`) shows the previous item after a scroll.
 
-`RebuildCells` runs only for structural changes (columns, templates, density). A normal recycle restamps the existing cells and refreshes per-row chrome (frozen pinning, gridlines, banding, tooltips, hierarchy and selection state). Exception: when cell automation peers exist and the row is re-bound to a different item, the cells are cleared and rebuilt.
+`RebuildCells` runs only for structural changes (columns, templates, density). A normal recycle keeps the existing cells (they update through bindings) and refreshes per-row chrome (frozen pinning, gridlines, banding, tooltips, hierarchy and selection state). Exception: when cell automation peers exist and the row is re-bound to a different item, the cells are cleared and rebuilt.
 
 ## Scrolling: sticky headers and frozen leading columns
 
