@@ -9,14 +9,13 @@
 class CUIElement;
 class CRectangleGeometry;
 class CSplitViewTemplateSettings;
+class CSplitViewPaneClosingEventArgs;
 
 class CSplitView final : public CControl
 {
 private:
-    CSplitView(_In_ CCoreServices *pCore)
-        : CControl(pCore)
-    {
-    }
+    // Out of line so the xref_ptr to the forward-declared closing args is only instantiated in SplitView.cpp.
+    CSplitView(_In_ CCoreServices *pCore);
 
     ~CSplitView() override;
 
@@ -49,10 +48,12 @@ public:
     _Check_return_ HRESULT TryCloseLightDismissiblePane();
 
     _Check_return_ HRESULT OnPaneOpening();
-    _Check_return_ HRESULT OnPaneClosing();
-    _Check_return_ HRESULT OnPaneClosed();
+    _Check_return_ HRESULT OnPaneClosing(bool isLightDismissClose);
+    _Check_return_ HRESULT OnPaneOpenedOrClosed(bool isPaneOpen);
 
-    void OnCancelClosing();
+    _Check_return_ HRESULT ExecuteLightDismiss(uint64_t lightDismissId, bool isCanceled);
+    bool ConsumeLightDismissClose();
+    void SupersedeLightDismiss();
 
     CDependencyObject* ProcessTabStop(
         _In_ bool isForward,
@@ -92,7 +93,10 @@ private:
     xref::weakref_ptr<CDependencyObject> m_spPrevFocusedElementWeakRef;
     DirectUI::FocusState m_prevFocusState{ DirectUI::FocusState::Unfocused };
 
-    bool m_isPaneClosingByLightDismiss{ false };
+    uint64_t m_nextLightDismissId{ 0 };
+    uint64_t m_pendingLightDismissId{ 0 };
+    xref_ptr<CSplitViewPaneClosingEventArgs> m_spPendingLightDismissArgs;
+    bool m_isLightDismissClose{ false };
     double m_paneMeasuredLength{ 0.0 };
 
 }; // class CSplitView
