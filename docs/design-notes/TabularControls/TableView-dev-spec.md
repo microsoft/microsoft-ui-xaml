@@ -68,8 +68,15 @@ TableView — Default Template
                └─ ContentControl PART_EmptyStatePresenter  (overlay; Collapsed unless data empty)
 
 TableViewRow — ItemTemplate   (realized / recycled by PART_RowsRepeater)
-└─ Border PART_RootBorder   (MinHeight 40; 1px bottom gridline; CommonStates: Normal/PointerOver/Pressed/Disabled)
-   └─ TableViewCellsPanel PART_CellsHost   -> one cell-wrapper Border per column (hosts GenerateElement, L->R)
+└─ Grid (template root; CommonStates + RowExpansion/RowExpandability/RowHierarchy states)
+   ├─ Border PART_RootBorder   (row background)
+   │  └─ Grid
+   │     ├─ ContentPresenter PART_CellForegroundPresenter   (Foreground for the Selected* states)
+   │     │  └─ Grid
+   │     │     ├─ TableViewCellsPanel PART_CellsHost   -> one cell-wrapper per column (hosts GenerateElement, L->R)
+   │     │     └─ Border PART_RowExpanderGutter > FontIcon PART_RowExpanderIcon   (hierarchy chevron; Collapsed unless hierarchical)
+   │     └─ Rectangle PART_SelectionIndicator   (leading-edge selection pill; Opacity 0 unless Selected*)
+   └─ Border PART_GridLineBorder   (1px bottom gridline overlay; not hit-testable)
 ```
 
 Each `TableViewCellsPanel` measures its cells unconstrained and arranges them at the owning column's `ActualWidth` (no `Width` binding) — see *Column alignment* below.
@@ -92,9 +99,9 @@ Each `TableViewCellsPanel` measures its cells unconstrained and arranges them at
 
 ## Row
 
-`Border` `PART_RootBorder` → `TableViewCellsPanel` `PART_CellsHost`.
+`Border` `PART_RootBorder` → `ContentPresenter` `PART_CellForegroundPresenter` → `TableViewCellsPanel` `PART_CellsHost`, with `Border` `PART_GridLineBorder` as a sibling overlay. The full part and state list is in *Template contracts*.
 
-`PART_RootBorder` is the row chrome: it supplies the default 40px minimum row height, a 1px bottom gridline, and the `CommonStates` visual states (`Normal`, `PointerOver`, `Pressed`, `Disabled`) that animate the row background. `PART_CellsHost` is a `TableViewCellsPanel` (inherently horizontal); `RebuildCells` fills it with one cell-wrapper `Border` per non-null column (mirroring the column's `Visibility`), in `Columns` order, left-to-right. Each wrapper hosts the element returned by `TableViewColumn.GenerateElement(dataItem)` when non-null. The row's `CornerRadius` (default `ControlCornerRadius`) is consumed only by the system focus visual (`UseSystemFocusVisuals="True"`, which rounds to the focused element's corners), so row/keyboard focus is rounded; it is intentionally **not** bound to `PART_RootBorder`, keeping the row background and 1px bottom gridline rectangular across the gapless row stack (no corner notches between adjacent rows). Group headers follow the same rule. Cells and header cells are `Grid`s, and a rounded `Grid` clips its children and its hit-test area, so they take the TableView's `CornerRadius` (`ControlCornerRadius` by default, set in XAML) only while the focus rect shows (keyboard focus, or programmatic focus after keyboard input) (`TableView::AttachFocusCornerRadius`). The focus rect is rounded, and the clip stays under it.
+`PART_RootBorder` is the row chrome whose `Background` the `CommonStates` visual states animate (`Normal`, `PointerOver`, `Pressed`, `Disabled` and the `Selected`/`SelectedPointerOver`/`SelectedPressed`/`SelectedDisabled` variants); the selected states also animate `PART_CellForegroundPresenter`'s `Foreground` (a `Border` has none, and cell text inherits it from there) and fade in the leading-edge `PART_SelectionIndicator`. The 1px bottom gridline (`BorderThickness="0,0,0,1"`, `TabularSurfaceGridLineBrush`) is drawn by `PART_GridLineBorder`, a non-hit-testable overlay. The minimum row height comes from `Density` (`TableViewRowMinHeight`, 40px at `Standard`). For hierarchical sources `PART_RowExpanderGutter`/`PART_RowExpanderIcon` overlay the first cell and are driven by the `RowExpansionStates`, `RowExpandabilityStates` and `RowHierarchyStates` groups. `PART_CellsHost` is a `TableViewCellsPanel` (inherently horizontal); `RebuildCells` fills it with one cell-wrapper `Border` per non-null column (mirroring the column's `Visibility`), in `Columns` order, left-to-right. Each wrapper hosts the element returned by `TableViewColumn.GenerateElement(dataItem)` when non-null. The row's `CornerRadius` (default `ControlCornerRadius`) is consumed only by the system focus visual (`UseSystemFocusVisuals="True"`, which rounds to the focused element's corners), so row/keyboard focus is rounded; it is intentionally **not** bound to `PART_RootBorder`, keeping the row background and 1px bottom gridline rectangular across the gapless row stack (no corner notches between adjacent rows). Group headers follow the same rule. Cells and header cells are `Grid`s, and a rounded `Grid` clips its children and its hit-test area, so they take the TableView's `CornerRadius` (`ControlCornerRadius` by default, set in XAML) only while the focus rect shows (keyboard focus, or programmatic focus after keyboard input) (`TableView::AttachFocusCornerRadius`). The focus rect is rounded, and the clip stays under it.
 
 ## Column alignment
 
@@ -680,7 +687,7 @@ The split is what lets a future keyboard or selection layer change gesture routi
 
 ## Edit state machine
 
-`EditState` is explicit: `None → Beginning → {None, Editing}` and `Editing → Ending → {Editing, None}`. `Ending → Editing` is the veto / validation-failure / deferral path — the edit stays open. It replaces a set of independent booleans whose combinations encoded the real invariants only implicitly.
+`EditState` is explicit: `None → Beginning → {None, Editing}` and `Editing → Ending → {Editing, None}`. `Ending → Editing` is the veto / validation-failure path — the edit stays open. It replaces a set of independent booleans whose combinations encoded the real invariants only implicitly.
 
 ## Gesture layer
 
@@ -696,7 +703,7 @@ Cell resolution walks up from `OriginalSource` to the cell wrapper (`TableViewCe
 
 Editing bindings use `UpdateSourceTrigger=Explicit`, so the typed value lives in the editor until the control pushes it. That is what lets a cancel restore something and a validation failure hold the edit open. On commit the control calls `UpdateSource()` on the binding expressions discovered from the editing element; validation runs **after** the write, and a blocked commit undoes it.
 
-A forced close (the source changes under the edit, or the control turns read-only) commits a valid pending value while the edited item is still in the source and passes the filter, and reports `Cancel` on a failed write or validation error. Because the pending value is still in the editor, a forced close first transfers it to the item, then validates; a value that fails validation is rolled back to the pre-edit value, so the item never keeps a value the control rejected. Inside a layout pass (a recycled or rebuilt row) restoring the editor would re-enter layout, so that rollback is posted to the dispatcher, and it is skipped if the item's value has changed in the meantime — another edit of the same cell is open, or the property no longer holds the rejected value — so a newer write is never overwritten. If the item was removed, filtered out, or `ItemsSource` was replaced, it reports `Cancel` and writes nothing, as WPF `DataGrid` does; an item that is only under a collapsed group or node has not been removed. A forced close during a pending commit deferral can finish as `Cancel` without a second `CellEditEnding`.
+A forced close (the source changes under the edit, or the control turns read-only) commits a valid pending value while the edited item is still in the source and passes the filter, and reports `Cancel` on a failed write or validation error. Because the pending value is still in the editor, a forced close first transfers it to the item, then validates; a value that fails validation is rolled back to the pre-edit value, so the item never keeps a value the control rejected. Inside a layout pass (a recycled or rebuilt row) restoring the editor would re-enter layout, so that rollback is posted to the dispatcher, and it is skipped if the item's value has changed in the meantime — another edit of the same cell is open, or the property no longer holds the rejected value — so a newer write is never overwritten. If the item was removed, filtered out, or `ItemsSource` was replaced, it reports `Cancel` and writes nothing, as WPF `DataGrid` does; an item that is only under a collapsed group or node has not been removed. A forced close that arrives while an edit is already closing (state `Ending`, e.g. from inside a `CellEditEnding` handler) completes that close directly without raising a second `CellEditEnding`, so it can finish as `Cancel` even though the event reported `Commit`.
 
 There is no item-owned transaction interface in this release (`ITableViewEditableItem` is deferred with row editing). An item-owned transaction (the WinRT counterpart of `IEditableObject`) is the rollback mechanism for **row**-scoped editing, and editing is cell-scoped here, so shipping it now would be public surface with nothing behind it; it lands with row editing, when it has a job to do. The control snapshots the value at the edited property path, falling back to scraping the editor's bindings — inherently incomplete for an arbitrary editor, so the inability to capture anything is recorded and reported rather than silently ignored.
 
