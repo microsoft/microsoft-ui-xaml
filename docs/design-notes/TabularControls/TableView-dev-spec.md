@@ -24,7 +24,7 @@ Frozen columns are limited to a contiguous leading prefix in v1. `TableViewFroze
 
 Single-level grouping is delivered (see *Grouping model* below): group headers are their own container kind interleaved into the flat row projection, not a second nesting level in the layout. Hierarchical rows are delivered through `TableViewSource.ParentBy(keySelector, parentKeySelector)` over a flat source, with no depth limit: each visible row carries its level and expansion state, and the row's lead cell is indented with an expander gutter, so the layout stays a flat virtualized list. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md).
 
-`TableViewRow` is intentionally a public `unsealed` `Control` despite carrying no v1 dependency properties: it is the realized row container (mirroring `ListViewItem`/`DataGridRow`) and is referenced by the public `TableViewRowAutomationPeer` and `TableViewCellAutomationPeer` constructors, so it cannot be internalized without collapsing the public accessibility surface. Row-level features layer onto it: selection and hierarchy already do. Grouping deliberately does **not** — a group header is a `TableViewGroupHeader`, a separate container kind chosen by `TableViewRowTemplateSelector`, so `TableViewRow` never grows an "am I a header?" adaptive branch.
+`TableViewRow` is intentionally a public `unsealed` `Control` despite carrying only read-only, control-written dependency properties: it is the realized row container (mirroring `ListViewItem`/`DataGridRow`) and is referenced by the public `TableViewRowAutomationPeer` and `TableViewCellAutomationPeer` constructors, so it cannot be internalized without collapsing the public accessibility surface. Row-level features layer onto it: selection and hierarchy already do. Grouping deliberately does **not** — a group header is a `TableViewGroupHeader`, a separate container kind chosen by `TableViewRowTemplateSelector`, so `TableViewRow` never grows an "am I a header?" adaptive branch.
 
 
 ## Column model: `TextColumn` vs `TemplateColumn`
@@ -638,15 +638,23 @@ state groups: `CommonStates` (`Normal`, `PointerOver`, `Pressed`, `Disabled`), `
 
 ## Key public components
 
-**`TableView`** — `Control`, `[contentproperty("Columns")]`. DPs: `ItemsSource`, `Columns` (get-only `IVector<TableViewColumn>`), `HeadersVisibility`, `GridLinesVisibility`, `RowBackground`, `AlternatingRowBackground`, `EmptyTemplate`, `Density`, `IsReadOnly` (default `true`).
+**`TableView`** — `unsealed` `Control`, `[contentproperty("Columns")]`. DPs: `ItemsSource`, `Columns` (get-only `IVector<TableViewColumn>`), `HeadersVisibility`, `GridLinesVisibility`, `CanUserResizeColumns` (default `true`), `RowBackground`, `AlternatingRowBackground`, `EmptyTemplate`, `GroupHeaderTemplate`, `ColumnHeaderStyle`, `Density`, `IsReadOnly` (default `true`), `SelectionMode` (default `Single`), `SelectedItem` (get-only), `SelectedIndex` (get-only, default `-1`), `CanUserSortColumns` (default `true`). Other members: `IsEditing` (get-only), `CommitEdit()`, `CancelEdit()`, `Select(Int32)`, `Deselect(Int32)`, `IsSelected(Int32)`, `DeselectAll()`, `ExpandAllGroups()`, `CollapseAllGroups()`, `ExpandAllRows()`, `CollapseAllRows()`, `SortByColumn(TableViewColumn, SortDirection)`, `ToggleSortDirection(TableViewColumn)`, `ClearSort()`. Events: `BeginningEdit`, `CellEditEnding`, `SelectionChanged`, `Sorting`, `Sorted`.
 
-**`TableViewColumn`** — `DependencyObject`, `[contentproperty("Header")]`. Members: `Header`, `HeaderTemplate`, `HeaderTemplateSelector`, `Width` (`GridLength`), `MinWidth` (`20`), `MaxWidth` (infinity), `ActualWidth` (get-only), `FrozenEdge`, `Visibility`, `IsReadOnly` (default `false`), `GetOwningTableView()`, `GenerateElement(Object)`, overridable `GenerateElementCore(Object)`, `GenerateEditingElement(Object)`, overridable `GenerateEditingElementCore(Object)` and `GetEditingPropertyPathCore()`.
+**`TableViewColumn`** — `unsealed` `DependencyObject`, `[contentproperty("Header")]`, public constructor. DPs: `Header`, `HeaderTemplate`, `HeaderTemplateSelector`, `HeaderToolTip`, `HeaderStyle`, `Width` (`GridLength`), `MinWidth` (`20`), `MaxWidth` (infinity), `CanResize` (default `true`), `ActualWidth` (get-only), `FrozenEdge`, `Visibility`, `CanSort` (default `true`), `SortCycle`, `SortMemberPath`, `SortDirection` (get-only), `IsReadOnly` (default `false`), `CellEditingTemplate`, `CellContextFlyout`, `HeaderContextFlyout`. Non-DP properties: `CustomSortComparer` (`ITableViewSortComparer`) and the CLR `CellToolTipBinding`. Methods: `GenerateElement(Object)`, overridable `GenerateElementCore(Object)`, overridable `GetSortMemberPathCore()`. The editing hooks (`GenerateEditingElement` and friends) are internal in this release (see *Public editing surface*).
 
 **`TableViewTextColumn`** — `TableViewColumn` that generates text cells. `Binding` is a plain CLR property. Its editing element is a `TextBox` bound with a clone of `Binding` forced to `TwoWay` + `UpdateSourceTrigger=Explicit`. The built-in text column's editor `TextBox` takes `AutomationProperties.Name` from the column header text.
 
-**`TableViewTemplateColumn`** — `TableViewColumn` that generates templated cells. DPs `CellTemplate` and `CellEditingTemplate`.
+**`TableViewTemplateColumn`** — `TableViewColumn` that generates templated cells. DP `CellTemplate`; its editing template is the inherited `TableViewColumn.CellEditingTemplate`.
 
-**`TableViewRow`** — `Control` representing one realized item row. `GetOwningTableView()`.
+**`TableViewRow`** — `unsealed` `Control` representing one realized item row. Read-only DPs written by the owning `TableView`: `IsSelected`, `Level`, `IsExpandable`, `IsExpanded`.
+
+**`TableViewColumnHeader`** — sealed `ContentControl`, one per column, created only by `TableView`. `Column` (get-only).
+
+**`TableViewCellsPanel`** — `unsealed` `Panel` used as the header host and each row's cell host (see *Column alignment*).
+
+**`TableViewSource`** — sealed shaping source. `static From(Object)`, `Filter(TableViewPredicate)`, `GroupBy(TableViewKeySelector)`, `GroupBy(TableViewKeySelector, TableViewIdentitySelector)` (`GroupByWithIdentity`), `Sort(String, SortDirection)` (`SortByPath`), `Sort(TableViewKeySelector, SortDirection)`, `ParentBy(TableViewKeySelector, TableViewKeySelector)`, `ClearFilter()`, `ClearGroupBy()`, `ClearSort()`, `ClearParentBy()`, `IsLiveShaping`. Delegates `TableViewPredicate`, `TableViewKeySelector`, `TableViewIdentitySelector`.
+
+**Event args** — `TableViewBeginningEditEventArgs` (`Item`, `Column`, `Cancel`), `TableViewCellEditEndingEventArgs` (`Item`, `Column`, `EditAction`, `Cancel`), `TableViewSortingEventArgs` (`Column`, `Direction`, `Cancel`), `TableViewSortedEventArgs` (`Column`, `Direction`), `TableViewGroupHeaderToggleRequestedEventArgs` (`GroupKey`).
 
 **`TableViewGroupHeader`** — `ContentControl` representing one realized group-header band under a
 grouped source. DPs `IsExpanded`, `IsExpandable`; event `ToggleRequested`
@@ -659,7 +667,7 @@ culture-formatted `KeyText` / `ItemCountText`. Updated in place across recycling
 
 **Automation peers** — `TableViewAutomationPeer`, `TableViewRowAutomationPeer`, `TableViewCellAutomationPeer`, `TableViewColumnHeaderAutomationPeer`, `TableViewGroupHeaderAutomationPeer` (providers: `IGridProvider`, `ITableProvider`, `ISelectionProvider`, `IItemContainerProvider`, `IGridItemProvider`, `ITableItemProvider`, `ISelectionItemProvider`, `IValueProvider`, `IInvokeProvider`, `IExpandCollapseProvider`).
 
-**Enums** — `TableViewFrozenEdge` (`None`/`Leading`/`Trailing`), `TableViewHeadersVisibility` (`None`/`Column`), `TableViewGridLinesVisibility` (`All`/`Horizontal`/`None`/`Vertical`), `TableViewDensity` (`Compact`/`Standard`/`Comfortable`), `TableViewEditingUnit` (`Cell`/`Row`), `TableViewEditAction` (`Commit`/`Cancel`/`Discard`).
+**Enums** — `TableViewFrozenEdge` (`None`/`Leading`/`Trailing`), `TableViewHeadersVisibility` (`None`/`Column`), `TableViewGridLinesVisibility` (`All`/`Horizontal`/`None`/`Vertical`), `TableViewDensity` (`Compact`/`Standard`/`Comfortable`), `TableViewEditAction` (`Commit`/`Cancel`), `TableViewSelectionMode` (`None`/`Single`), `TableViewSortCycle` (`AscendingDescending`/`AscendingDescendingNone`/`DescendingAscending`/`DescendingAscendingNone`), `SortDirection` (`None`/`Ascending`/`Descending`). Interface: `ITableViewSortComparer` (`Compare(Object, Object)`).
 
 # Editing
 
