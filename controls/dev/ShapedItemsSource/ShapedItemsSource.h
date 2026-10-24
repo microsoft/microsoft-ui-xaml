@@ -141,6 +141,18 @@ public:
     // exists".
     std::vector<ActiveSortAxisInfo> ActiveSortAxisInfos() const;
     bool HasActiveSort() const;
+    // Whether a clear verb has anything to clear, so an owner can tell a no-op clear from a real one.
+    bool HasFilter() const noexcept { return m_pipeline.HasFilter(); }
+    // The app predicates and key selectors that threw since the last take; resets the tally.
+    ShapingHelpers::SwallowedFaults TakeSwallowedFaults() noexcept { return m_pipeline.TakeSwallowedFaults(); }
+    bool HasGroup() const noexcept { return static_cast<bool>(m_groupSelector); }
+    bool HasParentBy() const noexcept { return static_cast<bool>(m_parentKeySelector); }
+    bool HasSortAxis(winrt::hstring const& axisToken) const noexcept { return m_pipeline.HasSortAxis(axisToken); }
+    bool HasSortOtherThan(winrt::hstring const& axisToken) const noexcept { return m_pipeline.HasSortOtherThan(axisToken); }
+    bool HasMatchingSort(winrt::hstring const& axisToken, winrt::Windows::Foundation::IUnknown const& keyIdentity) const noexcept
+    {
+        return m_pipeline.HasMatchingSort(axisToken, keyIdentity);
+    }
 
     // -- projection -----------------------------------------------------------------------
     // Name this engine uses to prefix caller-facing diagnostics. Layer 2 must not hardcode a
@@ -155,6 +167,10 @@ public:
     // ItemsSourceView instead, but this vector is still maintained as the flat shaped projection
     // (group order, headers excluded) so Rows() stays coherent regardless of grouping.
     winrt::IObservableVector<winrt::IInspectable> Rows() const noexcept { return m_rows; }
+    // The source's rows before the filter (every node for a tree), without reading the source: a filtered
+    // projection rebuilds on every source change, so the count its last Refresh read is current, and without a
+    // filter Rows() holds every source row.
+    uint32_t SourceRowCount() const;
     std::shared_ptr<GroupedSourceAdapter> GroupedAdapter() const noexcept { return m_groupedAdapter; }
     std::shared_ptr<HierarchicalSourceAdapter> HierarchicalAdapter() const noexcept { return m_hierarchicalAdapter; }
     // The selector every identity consumer must use. Derives identity from each item's object
@@ -185,6 +201,10 @@ public:
     // removed item after an in-place sorted removal, or with null and every source row after a rebuild.
     void SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook) { m_rowsReleasedHook = std::move(hook); }
 
+    // Lets the owner learn that live shaping is reacting to the app's items: called when an item change leaves the
+    // projection stale, at most once until the projection is next rebuilt, and not when live shaping turns on.
+    void SetLiveItemReshapeHandler(std::function<void()> handler) { m_liveItemReshape = std::move(handler); }
+
 private:
     void SubscribeToSourceCollectionChanges();
     void UnsubscribeFromSourceCollectionChanges();
@@ -211,6 +231,7 @@ private:
     void ApplyShapingChange();
     bool TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta const& delta, bool allowDuringIncrementalChange = false);
     void InvalidateShapingState();
+    // Reads the caller's source (CollectionOwner::Caller). Only ever given m_source.
     static std::vector<winrt::IInspectable> Materialize(winrt::IInspectable const& source);
     void ApplyFilter(std::vector<winrt::IInspectable>& rows) const { m_pipeline.ApplyFilter(rows); }
     void ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder = -1, int32_t beforeOrder = -1) const { m_pipeline.ApplySort(rows, afterOrder, beforeOrder); }
@@ -243,6 +264,8 @@ private:
     uint64_t m_sourceChangeStamp{ 0 };
     // Stamp captured when the current Refresh materialized the source.
     uint64_t m_refreshSourceStamp{ 0 };
+    // The rows the last Refresh materialized, before the filter (SourceRowCount).
+    uint32_t m_refreshSourceRowCount{ 0 };
     // Stamp whose rows the last successful shaped Refresh validated; never a real stamp until then.
     uint64_t m_validatedSourceStamp{ ~uint64_t{ 0 } };
 
@@ -349,6 +372,8 @@ private:
         winrt::hstring const& propertyName);
     // Marks stale and posts ONE restore; N changes in a turn cost one reshape.
     void MarkLiveShapingDirty();
+    // MarkLiveShapingDirty for an item change; the first since the last rebuild also notifies the owner.
+    void MarkLiveShapingDirtyForItem();
     // Posts a restore for a dirty projection unless one is queued or the hold still applies.
     void EnsureLiveShapingRestore();
     // Posts RestoreLiveShaping to the owner's queue. Runs it now only when the owner has no
@@ -448,6 +473,7 @@ private:
     bool m_liveShapingHeld{ false };
     std::function<bool(winrt::IInspectable const&, bool)> m_liveItemChangedHook{};
     std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> m_rowsReleasedHook{};
+    std::function<void()> m_liveItemReshape{};
 
     // Both set or both null; m_parentKeySelector is the "hierarchy declared" test.
     ShapingHelpers::KeySelector m_keySelector{ nullptr };

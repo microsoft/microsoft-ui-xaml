@@ -61,6 +61,13 @@ namespace
         UNREFERENCED_PARAMETER(reason);
 #endif
     }
+
+    // The caller's selector or data broke a documented contract: the caller's fault, so owners can tell it from
+    // shaping failures.
+    [[noreturn]] void ThrowCallerContract(winrt::hstring const& message)
+    {
+        throw ShapingHelpers::CallerError(winrt::hresult_invalid_argument(message), ShapingHelpers::c_callerDataFault);
+    }
 }
 
 ShapedItemsSource::ShapedItemsSource(winrt::IInspectable const& source) :
@@ -393,7 +400,7 @@ bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta
 
     // Re-seats Items on FilteredSource (source order) and re-sorts, so ties break exactly as a
     // full reshape of the same spec would.
-    ShapingHelpers::Reshape(m_shapingState, m_pipeline.CommittedSpec(), delta);
+    ShapingHelpers::Reshape(m_shapingState, m_pipeline.CommittedSpec(), delta, &m_pipeline.SwallowedFaultsTally());
 
     ++m_projectionGeneration;
     m_rows.ReplaceAll(m_shapingState.Items);
@@ -433,7 +440,7 @@ void ShapedItemsSource::SubscribeToSourceCollectionChanges()
 
     // Classify the source once, here, where it is bound. Every later indexed read, count and
     // observability check reads off this resolution instead of re-probing.
-    m_sourceAccessor = ShapingHelpers::CollectionAccessor{ m_source };
+    m_sourceAccessor = ShapingHelpers::CollectionAccessor{ m_source, ShapingHelpers::CollectionOwner::Caller };
 
     if (!m_source)
     {
@@ -1608,7 +1615,7 @@ std::vector<ShapingHelpers::KeyedBucket> ShapedItemsSource::BucketizeGroupsOrThr
         [this](winrt::IInspectable const& item) -> winrt::IInspectable
         {
             try { return m_groupSelector(item); }
-            catch (...) { return nullptr; }
+            catch (...) { m_pipeline.SwallowedFaultsTally().Note(); return nullptr; }
         },
         [this](winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason)
         {
@@ -1641,7 +1648,7 @@ std::vector<ShapingHelpers::KeyedBucket> ShapedItemsSource::BucketizeGroupsOrThr
         {
             message = message + L": " + winrt::hstring{ rejectReason };
         }
-        throw winrt::hresult_invalid_argument(message);
+        ThrowCallerContract(message);
     }
 
     return keyedBuckets;
@@ -1794,6 +1801,7 @@ void ShapedItemsSource::Refresh()
         // keeps the flag set, so the next live change still forces a rebuild.
         m_liveShapingChangeDropped->store(false);
         auto rows = Materialize(authoritativeSource);
+        m_refreshSourceRowCount = static_cast<uint32_t>(rows.size());
         if (m_rowsReleasedHook)
         {
             m_rowsReleasedHook(nullptr, rows);
@@ -1839,7 +1847,7 @@ void ShapedItemsSource::Refresh()
                 constexpr std::wstring_view c_duplicateObjectReason{ L"the same item object appears on more than one row" };
                 if (reason && c_duplicateObjectReason == reason)
                 {
-                    throw winrt::hresult_invalid_argument(
+                    ThrowCallerContract(
                         Diagnostic(
                             L"The same item object appears in the source more than once. Rows are "
                             L"identified by object identity, so two rows backed by one object cannot "
@@ -1851,7 +1859,7 @@ void ShapedItemsSource::Refresh()
                 {
                     message = message + L": " + winrt::hstring{ reason };
                 }
-                throw winrt::hresult_invalid_argument(message);
+                ThrowCallerContract(message);
             }
 
             if (m_parentKeySelector && m_groupSelector)
@@ -2014,7 +2022,7 @@ void ShapedItemsSource::RebuildFlat(std::vector<winrt::IInspectable>& rows)
 
 std::vector<winrt::IInspectable> ShapedItemsSource::Materialize(winrt::IInspectable const& source)
 {
-    return ShapingHelpers::EnumerateInspectableItems(source, true);
+    return ShapingHelpers::EnumerateInspectableItems(source, true, ShapingHelpers::CollectionOwner::Caller);
 }
 
 void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
@@ -2271,7 +2279,7 @@ std::shared_ptr<ShapingHelpers::ParentKeyIndex> ShapedItemsSource::BuildHierarch
 
         if (!valid)
         {
-            throw winrt::hresult_invalid_argument(Diagnostic(error));
+            ThrowCallerContract(Diagnostic(error));
         }
 
         structure = std::move(built);
@@ -2668,6 +2676,19 @@ bool ShapedItemsSource::TryGetSourceItemCount(uint32_t& count) const
     return true;
 }
 
+uint32_t ShapedItemsSource::SourceRowCount() const
+{
+    if (m_hierarchicalAdapter && m_hierarchicalAdapter->HasIndex())
+    {
+        return m_hierarchicalAdapter->NodeCount();
+    }
+    if (m_pipeline.HasFilter())
+    {
+        return m_refreshSourceRowCount;
+    }
+    return m_rows ? m_rows.Size() : 0;
+}
+
 winrt::hstring ShapedItemsSource::Diagnostic(std::wstring_view text) const
 {
     return m_diagnosticName + L": " + winrt::hstring{ text };
@@ -2934,13 +2955,13 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
     // the full restore, which re-reads every item.
     if (m_liveShapingChangeDropped->exchange(false))
     {
-        MarkLiveShapingDirty();
+        MarkLiveShapingDirtyForItem();
     }
 
     // Before the coalescing early-out: the owner must see every changed item.
     if (m_liveItemChangedHook && m_liveItemChangedHook(item, m_liveShapingDirty))
     {
-        MarkLiveShapingDirty();
+        MarkLiveShapingDirtyForItem();
         return;
     }
 
@@ -2963,13 +2984,22 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
         return;
     }
 
-    MarkLiveShapingDirty();
+    MarkLiveShapingDirtyForItem();
 }
 
 void ShapedItemsSource::MarkLiveShapingDirty()
 {
     m_liveShapingDirty = true;
     EnsureLiveShapingRestore();
+}
+
+void ShapedItemsSource::MarkLiveShapingDirtyForItem()
+{
+    if (!m_liveShapingDirty && m_liveItemReshape)
+    {
+        m_liveItemReshape();
+    }
+    MarkLiveShapingDirty();
 }
 
 void ShapedItemsSource::EnsureLiveShapingRestore()

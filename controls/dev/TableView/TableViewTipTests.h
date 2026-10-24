@@ -4,54 +4,82 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <tip/tip.h>
 #include "WindowsAppSdk-ProductInfo.h"
+#include "TableViewTipTypes.h"
 
 namespace TableViewTip
 {
-    enum class Operation : uint32_t
+    // 17 was internal_failure under 64477764 and 64477774; do not reuse it.
+    enum class TableViewTipReason : unsigned short
     {
-        Setup = 0, ReplaceSource = 1, Sort = 2, HeaderRefresh = 3,
-        Filter = 5, GroupConfiguration = 6, Selection = 8,
-        BeginEdit = 9, CommitEdit = 10, CancelEdit = 11
+        scenario_completed = 1, scenario_not_completed = 2,
+        template_setup_failed = 18, source_attach_failed = 19,
+        sort_failed = 20, edit_begin_failed = 21, edit_commit_failed = 22,
+        filter_failed = 23, group_expansion_failed = 24, hierarchy_expansion_failed = 25
     };
-    enum class IgnoreReason : unsigned short
-    {
-        Cancelled = 100, Vetoed = 101, ValidationRejected = 102, Superseded = 103,
-        Unloaded = 104, Retemplated = 105, Stale = 106,
-        DeferredOrUnproven = 107, ApplicationFault = 108
-    };
-    enum class AppFaultKind : uint32_t { None = 0, Callback = 1, Validation = 3, Write = 4, Factory = 5, Data = 6 };
-    // Where a fault happened and whose it was; recorded on the TableView_Error diagnostic.
-    enum class Stage : uint32_t
-    {
-        None = 0, Template = 1, Source = 3, Sort = 4, HeaderRefresh = 5,
-        Selection = 6, Editing = 7, Filter = 8, Grouping = 9
-    };
-    enum class Attribution : uint32_t { Unknown = 0, Product = 1, Application = 2 };
 
-    constexpr bool IsMeasuredOperation(Operation operation) noexcept
+    // The operation tests' measure IDs.
+    namespace OperationMeasure
+    {
+        constexpr unsigned int Sort = 64745033;
+        constexpr unsigned int EditBegin = 64745034;
+        constexpr unsigned int EditCommit = 64745035;
+        constexpr unsigned int Filter = 64745036;
+        constexpr unsigned int GroupExpansion = 64745037;
+        constexpr unsigned int HierarchyExpansion = 64745038;
+    }
+
+    // What an operation's TiP test reports under, and the flag its failure sets (TIP_reason: TiP names a flag after its
+    // spelling). TableViewOperationTest requires every failure reason clear.
+    struct TestIdentity
+    {
+        unsigned int measure;
+        const char* name;
+        unsigned short failReason;
+        const char* failReasonName;
+    };
+
+    // An operation without an identity runs no TiP test.
+    constexpr std::optional<TestIdentity> OperationTestIdentity(Operation operation) noexcept
     {
         switch (operation)
         {
-        case Operation::ReplaceSource:
         case Operation::Sort:
-        case Operation::Filter:
-        case Operation::GroupConfiguration:
-        case Operation::Selection:
+            return TestIdentity{ OperationMeasure::Sort, "TableViewSortTest",
+                TIP_reason(TableViewTipReason::sort_failed) };
         case Operation::BeginEdit:
+            return TestIdentity{ OperationMeasure::EditBegin, "TableViewEditBeginTest",
+                TIP_reason(TableViewTipReason::edit_begin_failed) };
         case Operation::CommitEdit:
-        case Operation::CancelEdit:
-            return true;
-        default:
-            return false;
+            return TestIdentity{ OperationMeasure::EditCommit, "TableViewEditCommitTest",
+                TIP_reason(TableViewTipReason::edit_commit_failed) };
+        case Operation::Filter:
+            return TestIdentity{ OperationMeasure::Filter, "TableViewFilterTest",
+                TIP_reason(TableViewTipReason::filter_failed) };
+        case Operation::GroupExpansion:
+            return TestIdentity{ OperationMeasure::GroupExpansion, "TableViewGroupExpansionTest",
+                TIP_reason(TableViewTipReason::group_expansion_failed) };
+        case Operation::HierarchyExpansion:
+            return TestIdentity{ OperationMeasure::HierarchyExpansion, "TableViewHierarchyExpansionTest",
+                TIP_reason(TableViewTipReason::hierarchy_expansion_failed) };
+        default: return std::nullopt;
         }
     }
 
-    enum class TableViewTipReason : unsigned short
+    // config_set_identity fail-fasts on a zero measure or a null name, and only a tracked operation starts a test.
+    constexpr bool OperationTestIdentitiesValid() noexcept
     {
-        scenario_completed = 1, scenario_not_completed = 2, internal_failure = 17
-    };
+        for (uint32_t value = 0; value < static_cast<uint32_t>(Operation::Max); ++value)
+        {
+            auto const operation = static_cast<Operation>(value);
+            auto const identity = OperationTestIdentity(operation);
+            if (identity && (!IsTrackedOperation(operation) || !identity->measure || !identity->name)) { return false; }
+        }
+        return true;
+    }
+    static_assert(OperationTestIdentitiesValid(), "Every operation test needs a measure, a name and a tracked operation.");
 
     struct TableViewTipDimensions
     {
@@ -68,9 +96,11 @@ namespace TableViewTip
         }
     };
 
+    // From inputs ready (template applied, source attached) to the layout pass of the first row or group header,
+    // or at once for an empty view.
     TIP_declare_test(TableViewInitializationTest, 64477764)
     {
-        TIP_set_data_version(5);
+        TIP_set_data_version(1);
         TIP_set_metrics_enabled();
         using reason = TableViewTipReason;
 
@@ -80,8 +110,13 @@ namespace TableViewTip
         HRESULT diagnosticHResult{};
         bool diagnosticHResultAvailable{};
         AppFaultKind appFaultKind{};
+        // The metrics bucket's inputs (MetricsBucket), and the rows before and after the filter (Log2Bucket).
+        bool rightToLeft{};
+        bool largeData{};
+        uint8_t sourceRowsBucket{};
+        uint8_t dataRowsBucket{};
 
-        TIP_require_all_flags_clear(reason::internal_failure);
+        TIP_require_all_flags_clear(reason::template_setup_failed, reason::source_attach_failed);
 
         void evaluate()
         {
@@ -100,26 +135,35 @@ namespace TableViewTip
         template<class Archive>
         unsigned char serialize_metrics(Archive& archive)
         {
-            archive(TIP_value(dimensions));
-            return 0;
+            archive(TIP_value(dimensions), TIP_value(rightToLeft), TIP_value(largeData), TIP_value(sourceRowsBucket),
+                TIP_value(dataRowsBucket));
+            return MetricsBucket(rightToLeft, largeData);
         }
     };
 
-    TIP_declare_test(TableViewOperationTest, 64477774)
+    // Sort, edit begin and commit, filter, and group and tree-node expansion share this test; each reports under its
+    // own measure and name (OperationTestIdentity), so the declaration's measure is Sort's. Initialize keeps its own
+    // declaration, so a change to these tests' data leaves its data version alone.
+    TIP_declare_test(TableViewOperationTest, OperationMeasure::Sort)
     {
-        TIP_set_data_version(4);
+        TIP_set_data_version(1);
         TIP_set_metrics_enabled();
         using reason = TableViewTipReason;
 
         TableViewTipDimensions dimensions;
-        Operation operation{};
         HRESULT failureHResult{};
         bool failureHResultAvailable{};
         HRESULT diagnosticHResult{};
         bool diagnosticHResultAvailable{};
         AppFaultKind appFaultKind{};
+        // The metrics bucket's inputs (MetricsBucket), and the rows before and after the filter (Log2Bucket).
+        bool rightToLeft{};
+        bool largeData{};
+        uint8_t sourceRowsBucket{};
+        uint8_t dataRowsBucket{};
 
-        TIP_require_all_flags_clear(reason::internal_failure);
+        TIP_require_all_flags_clear(reason::sort_failed, reason::edit_begin_failed, reason::edit_commit_failed,
+            reason::filter_failed, reason::group_expansion_failed, reason::hierarchy_expansion_failed);
 
         void evaluate()
         {
@@ -131,15 +175,16 @@ namespace TableViewTip
         template<class Archive>
         void serialize(Archive& archive)
         {
-            archive(TIP_value(dimensions), TIP_value(operation), TIP_value(failureHResult), TIP_value(failureHResultAvailable),
+            archive(TIP_value(dimensions), TIP_value(failureHResult), TIP_value(failureHResultAvailable),
                 TIP_value(diagnosticHResult), TIP_value(diagnosticHResultAvailable), TIP_value(appFaultKind));
         }
 
         template<class Archive>
         unsigned char serialize_metrics(Archive& archive)
         {
-            archive(TIP_value(dimensions));
-            return static_cast<unsigned char>(operation);
+            archive(TIP_value(dimensions), TIP_value(rightToLeft), TIP_value(largeData), TIP_value(sourceRowsBucket),
+                TIP_value(dataRowsBucket));
+            return MetricsBucket(rightToLeft, largeData);
         }
     };
 }

@@ -249,6 +249,13 @@ void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::op
         ? BulkExpansionAxis::Groups
         : BulkExpansionAxis::Rows;
 
+    // One group or node is use; a subtree is a bulk request, like ExpandAllGroups.
+    if (!subtree && !identity.empty())
+    {
+        TableViewTelemetry::MarkUsed(m_telemetrySession, m_telemetrySession.generation,
+            axis == BulkExpansionAxis::Groups ? TableViewTelemetry::Feature::Grouping : TableViewTelemetry::Feature::Hierarchy);
+    }
+
     QueueGroupExpansionByIdentity(identity, desired, axis, subtree);
 }
 
@@ -496,13 +503,21 @@ void TableView::ApplyGroupExpansionByIdentity(
     }
 
     bool changed = false;
-    try
+    // Local strong ref: a handler may re-declare the shape and replace the provider mid-call. Edit-ending handlers
+    // ran app code above, so re-check the source before mutating; a stale request still falls through to drain
+    // queued edit reshapes.
+    auto const provider = m_tableViewSourceRowMetadata;
+    if (provider && generation == m_rowMetadataGeneration)
     {
-        // Local strong ref: a handler may re-declare the shape and replace the provider mid-call.
-        // Edit-ending handlers ran app code above, so re-check the source before mutating; a stale
-        // request still falls through to drain queued edit reshapes.
-        auto const provider = m_tableViewSourceRowMetadata;
-        if (provider && generation == m_rowMetadataGeneration)
+        // While actions are tracked, every request is, so a failure writes TableView_Error. A request that changes one
+        // group or tree node also runs a TiP test. A subtree is a bulk request, like ExpandAllGroups, and a request
+        // that changes nothing runs none: each arrow on a group header is requested by the header and again by
+        // TryHandleGroupHeaderExpandCollapseKey. The lookup runs only while actions are tracked.
+        auto const withTest = TracksTipActions() && !subtree && provider->WouldChangeExpansion(identity, desired);
+        ActionTip tip{ *this, axis == BulkExpansionAxis::Groups ?
+                TableViewTip::Operation::GroupExpansion : TableViewTip::Operation::HierarchyExpansion,
+            TableViewTip::Stage::Expansion, true, withTest };
+        try
         {
             if (subtree)
             {
@@ -520,11 +535,22 @@ void TableView::ApplyGroupExpansionByIdentity(
             {
                 changed = provider->Toggle(identity);
             }
+
+            if (generation != m_rowMetadataGeneration) { tip.Ignore(TableViewTip::IgnoreReason::Stale); }
+            else if (changed) { tip.Complete(); }
+            // No change shown yet. A tested request expected one; an untested one closes without a TiP result.
+            else { tip.Ignore(TableViewTip::IgnoreReason::DeferredOrUnproven); }
         }
-    }
-    catch (...)
-    {
-        // Best-effort: the grouping source or its state can change during cleanup.
+        catch (...)
+        {
+            // Best-effort: the grouping source or its state can change during cleanup. Expansion reads only the
+            // projection TableView built, so a failure is TableView's unless the source was replaced or the exception
+            // is tagged as the app's.
+            auto const fault = TableViewTip::CurrentFault();
+            if (generation != m_rowMetadataGeneration) { tip.Ignore(TableViewTip::IgnoreReason::Stale); }
+            else if (fault.appFault != TableViewTip::AppFaultKind::None) { tip.ApplicationFault(fault.appFault, fault.error); }
+            else { tip.Fail(fault.error); }
+        }
     }
 
     DrainCoalescedEditReshape();
