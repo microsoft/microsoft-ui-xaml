@@ -3514,7 +3514,7 @@ _Check_return_ HRESULT HWWalk::InsertVisualIntoCurrentContainer(
 #ifdef XAMLPROFILER_ENABLED
     if (WucVisualTreeProfiler::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildInserted(m_pCurrentContainerNoRef, visual, 0 /* ownerCompNodeId */, -1 /* index */);
+        WucVisualTreeProfiler::NotifyChildInserted(m_pCurrentContainerNoRef, visual, nullptr /* ownerCompNode */, -1 /* index */);
     }
 #endif // XAMLPROFILER_ENABLED
 
@@ -3535,7 +3535,7 @@ _Check_return_ HRESULT HWWalk::InsertVisualIntoCollection(
 #ifdef XAMLPROFILER_ENABLED
     if (WucVisualTreeProfiler::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildInserted(m_pCurrentContainerNoRef, visual, 0 /* ownerCompNodeId */, -1 /* index */);
+        WucVisualTreeProfiler::NotifyChildInserted(m_pCurrentContainerNoRef, visual, nullptr /* ownerCompNode */, -1 /* index */);
     }
 #endif // XAMLPROFILER_ENABLED
 

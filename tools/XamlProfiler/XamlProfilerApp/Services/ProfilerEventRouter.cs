@@ -11,10 +11,28 @@ namespace XamlProfiler.Services;
 /// Because it only depends on <see cref="EtwEvent"/> and the store, the router can be
 /// unit-tested without an ETW session or Administrator rights: construct one over a
 /// store, feed synthetic <see cref="EtwEvent"/> values, and assert the resulting tree state.
+///
+/// <c>ElementEnteredTree</c>, <c>WucVisualChildInserted</c> and <c>WucVisualRootSet</c> carry
+/// scalar payloads only, so the details they used to carry come from granular events: element
+/// labels from the once-per-type <c>ElementTypeInfo</c> and the Microsoft-Windows-XAML
+/// <c>ElementSetName</c> (x:Name), peer handles from <c>PeerAssociated</c>, and visual properties
+/// from the <c>WucVisual*Changed</c> events. The router holds that state and applies it when the
+/// element enters the tree or the visual is inserted. It expects events in timestamp order
+/// (see <see cref="EventReorderBuffer{T}"/>).
 /// </summary>
 public sealed class ProfilerEventRouter
 {
     private readonly ProfilerTreeStore _store;
+
+    // Granular state, keyed by TypeIndex, element id (core object address) and IVisual id.
+    private readonly Dictionary<uint, string> _types = new();
+    private readonly Dictionary<ulong, string> _names = new();
+    private readonly Dictionary<ulong, ulong> _peers = new();
+    private readonly Dictionary<ulong, WucVisualPropertyBag> _bags = new();
+    // Elements that entered the tree before their type's ElementTypeInfo arrived, with the TypeIndex
+    // they entered with. ElementTypeInfo is best-effort (around a session start it can trail the
+    // first enter of its type), so the type name is applied when it arrives.
+    private readonly Dictionary<ulong, uint> _untyped = new();
 
     public ProfilerEventRouter(ProfilerTreeStore store) => _store = store;
 
@@ -40,6 +58,13 @@ public sealed class ProfilerEventRouter
             case "WucVisualChildrenCleared": HandleWucVisualChildrenCleared(e); break;
             case "WucVisualRootSet":         HandleWucVisualRootSet(e); break;
             case "WucVisualRootCleared":     HandleWucVisualRootCleared(e); break;
+            case "ElementTypeInfo":           HandleElementTypeInfo(e); break;
+            case "WucVisualCreated":          HandleWucVisualCreated(e); break;
+            case "WucVisualPropertyChanged":  HandleWucVisualPropertyChanged(e); break;
+            case "WucVisualTransformChanged": HandleWucVisualTransformChanged(e); break;
+            case "WucVisualObjectChanged":    HandleWucVisualObjectChanged(e); break;
+            case ProfilerProviders.ElementCreatedEvent: HandleElementCreated(e); break;
+            case ProfilerProviders.ElementSetNameEvent: HandleElementSetName(e); break;
             default: /* unknown — ignore */ break;
         }
     }
@@ -140,19 +165,39 @@ public sealed class ProfilerEventRouter
         }
     }
 
+    // [0]elementId u64, [1]parentId u64, [2]isLive bool, [3]isTemplateChild bool, [4]typeIndex u32.
+    // The label is the element's x:Name, else its class name. The class name is provisional: the
+    // x:Name of an element named before the session started is never seen here, but a later
+    // ChildAdded carries it and replaces the class name.
     private void HandleElementEnteredTree(in EtwEvent e)
     {
         var elementId = e.U64(0);
         var parentId = e.U64(1);
         var isLive = e.Bool(2);
-        var label = e.Str(3);
-        var isTemplateChild = e.Bool(4);
-        var peerHandle = e.U64(5);
+        var isTemplateChild = e.Bool(3);
+        var typeIndex = e.U32(4);
+        var label = string.Empty;
+        var provisional = false;
+        _untyped.Remove(elementId);
+        if (_names.TryGetValue(elementId, out var name) && !string.IsNullOrEmpty(name))
+        {
+            label = name;
+        }
+        else if (_types.TryGetValue(typeIndex, out var typeName))
+        {
+            label = typeName;
+            provisional = true;
+        }
+        else
+        {
+            _untyped[elementId] = typeIndex;
+        }
+        _peers.TryGetValue(elementId, out var peerHandle);
         var isInfra = ProfilerTreeStore.IsInfrastructureLabel(label);
         var summary = $"parent={_store.ResolveName(parentId)}, live={isLive}";
 
         // Always enter visual tree
-        _store.MarkVisualEnter(elementId, parentId, isLive, label);
+        _store.MarkVisualEnter(elementId, parentId, isLive, label, provisional);
         _store.RecordVisualEvent(elementId, "ElementEnteredTree",
             summary + (isTemplateChild ? " [template]" : isInfra ? " [infra]" : ""));
 
@@ -162,12 +207,12 @@ public sealed class ProfilerEventRouter
             var logicalParentId = _store.FindNearestLogicalAncestor(parentId);
             if (logicalParentId == parentId)
             {
-                _store.MarkLogicalEnter(elementId, parentId, isLive, label);
+                _store.MarkLogicalEnter(elementId, parentId, isLive, label, provisional);
             }
             else
             {
                 // Parent is template/infra — use nearest logical ancestor or 0 (root)
-                _store.MarkLogicalEnter(elementId, logicalParentId, isLive, label);
+                _store.MarkLogicalEnter(elementId, logicalParentId, isLive, label, provisional);
             }
             _store.RecordLogicalEvent(elementId, "ElementEnteredTree", summary);
         }
@@ -196,15 +241,55 @@ public sealed class ProfilerEventRouter
     }
 
     // Fired by the producer the instant a DXaml peer is created and bound to its core object.
-    // Lazy-peer elements (e.g. ContentPresenter) traced PeerHandle=0 at enter time; this
+    // Lazy-peer elements (e.g. ContentPresenter) get their peer after they enter the tree; this
     // back-fills the real InstanceHandle so they become live-highlightable after the fact.
     // SetPeerHandle is "first non-zero wins" and no-ops for ids we don't track, so this is safe
-    // even for peers that never made it into a tree.
+    // even for peers that never made it into a tree. ElementEnteredTree doesn't carry the peer,
+    // so the handle is also held for a later enter (peer-first objects).
     private void HandlePeerAssociated(in EtwEvent e)
     {
         var elementId = e.U64(0);
         var peerHandle = e.U64(1);
+        if (elementId != 0 && peerHandle != 0) _peers[elementId] = peerHandle;
         _store.SetPeerHandle(elementId, peerHandle);
+    }
+
+    // =====================================================================
+    // Element details (ElementTypeInfo + Microsoft-Windows-XAML events)
+    // =====================================================================
+
+    // Normally once per TypeIndex per session, before the first enter of that type:
+    // [0]typeIndex u32, [1]typeName str, [2]coreSize u64 (unused). It's best-effort, so elements
+    // of the type that entered before it get their label now.
+    private void HandleElementTypeInfo(in EtwEvent e)
+    {
+        var typeIndex = e.U32(0);
+        var typeName = e.Str(1);
+        _types[typeIndex] = typeName;
+        if (_untyped.Count == 0) return;
+        foreach (var elementId in _untyped.Where(p => p.Value == typeIndex).Select(p => p.Key).ToList())
+        {
+            _untyped.Remove(elementId);
+            _store.SetLateTypeName(elementId, typeName);
+        }
+    }
+
+    // Microsoft-Windows-XAML ElementCreated, from the CUIElement constructor: [0]elementId u64.
+    // A new element can reuse a destroyed element's address, so drop what was held for the old one.
+    private void HandleElementCreated(in EtwEvent e)
+    {
+        var elementId = e.U64(0);
+        _names.Remove(elementId);
+        _peers.Remove(elementId);
+        _untyped.Remove(elementId);
+    }
+
+    // Microsoft-Windows-XAML ElementSetName: [0]elementId u64, [1]name str. An empty name clears
+    // x:Name, so it's stored too. Used as the label when the element next enters the tree.
+    private void HandleElementSetName(in EtwEvent e)
+    {
+        var elementId = e.U64(0);
+        if (elementId != 0) _names[elementId] = e.Str(1);
     }
 
     // =====================================================================
@@ -360,15 +445,21 @@ public sealed class ProfilerEventRouter
     // WUC (Windows.UI.Composition) IVisual tree events
     //
     // Payload layouts (see XamlProfilerTracing.h):
-    //   WucVisualChildInserted  : [0]parentVisualId u64, [1]childVisualId u64,
-    //                             [2]ownerCompNodeId u64, [3]index i32,
-    //                             [4]visualType str, [5]properties str
-    //   WucVisualChildRemoved   : [0]parentVisualId u64, [1]childVisualId u64
-    //   WucVisualChildrenCleared: [0]parentVisualId u64
-    //   WucVisualRootSet        : [0]visualId u64, [1]targetId u64,
-    //                             [2]ownerCompNodeId u64, [3]visualType str,
-    //                             [4]properties str
-    //   WucVisualRootCleared    : [0]targetId u64
+    //   WucVisualChildInserted   : [0]parentVisualId u64, [1]childVisualId u64,
+    //                              [2]ownerCompNodeId u64, [3]index i32, [4]visualKind u32
+    //   WucVisualChildRemoved    : [0]parentVisualId u64, [1]childVisualId u64
+    //   WucVisualChildrenCleared : [0]parentVisualId u64
+    //   WucVisualRootSet         : [0]visualId u64, [1]targetId u64,
+    //                              [2]ownerCompNodeId u64, [3]visualKind u32
+    //   WucVisualRootCleared     : [0]targetId u64
+    //   WucVisualCreated         : [0]visualId u64, [1]visualKind u32
+    //   WucVisualPropertyChanged : [0]visualId u64, [1]property u32, [2..5]X, Y, Z, W f32
+    //   WucVisualTransformChanged: [0]visualId u64, [1..16]M11..M44 f32 (row-major)
+    //   WucVisualObjectChanged   : [0]visualId u64, [1]property u32, [2]objectId u64 (0 = cleared),
+    //                              [3]typeName str
+    // Each visual's properties accumulate in a bag that the visual's tree node shares, so the
+    // node always shows the latest values. Bags outlive the nodes (a removed visual keeps its
+    // properties if it is re-inserted).
     // =====================================================================
 
     private void HandleWucVisualChildInserted(in EtwEvent e)
@@ -377,9 +468,9 @@ public sealed class ProfilerEventRouter
         var childId = e.U64(1);
         var ownerCompNodeId = e.U64(2);
         var index = e.I32(3);
-        var visualType = e.Str(4);
-        var properties = e.Str(5);
-        _store.AddWucChild(parentId, childId, ownerCompNodeId, index, visualType, properties);
+        var bag = BagWithKind(childId, (WucVisualKind)e.U32(4));
+        var visualType = WucVisualPropertyBag.TypeNameFromKind(bag.Kind);
+        _store.AddWucChild(parentId, childId, ownerCompNodeId, index, visualType, bag);
         _store.RecordWucEvent(childId, "WucVisualChildInserted",
             $"parent=0x{parentId:X} owner={_store.ResolveName(ownerCompNodeId)} type={visualType} idx={index}");
     }
@@ -404,9 +495,9 @@ public sealed class ProfilerEventRouter
         var visualId = e.U64(0);
         var targetId = e.U64(1);
         var ownerCompNodeId = e.U64(2);
-        var visualType = e.Str(3);
-        var properties = e.Str(4);
-        _store.SetWucRoot(visualId, targetId, ownerCompNodeId, visualType, properties);
+        var bag = BagWithKind(visualId, (WucVisualKind)e.U32(3));
+        var visualType = WucVisualPropertyBag.TypeNameFromKind(bag.Kind);
+        _store.SetWucRoot(visualId, targetId, ownerCompNodeId, visualType, bag);
         _store.RecordWucEvent(visualId, "WucVisualRootSet",
             $"target=0x{targetId:X} owner={_store.ResolveName(ownerCompNodeId)} type={visualType}");
     }
@@ -415,5 +506,51 @@ public sealed class ProfilerEventRouter
     {
         var targetId = e.U64(0);
         _store.ClearWucRoot(targetId);
+    }
+
+    private void HandleWucVisualCreated(in EtwEvent e)
+    {
+        var visualId = e.U64(0);
+        if (visualId != 0) Bag(visualId).Reset((WucVisualKind)e.U32(1));
+    }
+
+    private void HandleWucVisualPropertyChanged(in EtwEvent e)
+    {
+        var visualId = e.U64(0);
+        if (visualId == 0) return;
+        Bag(visualId).SetValue((WucVisualPropertyId)e.U32(1), e.F32(2), e.F32(3), e.F32(4), e.F32(5));
+    }
+
+    private void HandleWucVisualTransformChanged(in EtwEvent e)
+    {
+        var visualId = e.U64(0);
+        if (visualId == 0) return;
+        Span<float> matrix = stackalloc float[16];
+        for (int i = 0; i < matrix.Length; i++) matrix[i] = e.F32(i + 1);
+        Bag(visualId).SetTransform(matrix);
+    }
+
+    private void HandleWucVisualObjectChanged(in EtwEvent e)
+    {
+        var visualId = e.U64(0);
+        if (visualId == 0) return;
+        Bag(visualId).SetObject((WucVisualPropertyId)e.U32(1), e.U64(2), e.Str(3));
+    }
+
+    // Insert and root-set report the visual's kind (Unknown when the producer couldn't tell, which
+    // keeps the kind already known). Every inserted visual gets a bag, so it shows properties
+    // (composition defaults where XAML reported nothing), as the old full payload did.
+    private WucVisualPropertyBag BagWithKind(ulong visualId, WucVisualKind kind)
+    {
+        var bag = Bag(visualId);
+        if (kind != WucVisualKind.Unknown) bag.Kind = kind;
+        return bag;
+    }
+
+    private WucVisualPropertyBag Bag(ulong visualId)
+    {
+        if (!_bags.TryGetValue(visualId, out var bag))
+            _bags[visualId] = bag = new WucVisualPropertyBag();
+        return bag;
     }
 }

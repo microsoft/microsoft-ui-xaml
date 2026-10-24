@@ -8,10 +8,17 @@
       <Buffers Value="64" />
     </EventCollector>
 
-    <!-- XAML Profiler TraceLogging Provider -->
-    <EventProvider Id="EP_XamlProfiler" Name="A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D" Level="5" />
+    <!-- XAML Profiler TraceLogging provider ("Microsoft-Windows-XAML-Profiler").
+         0x7 = XamlTree | CompTree | WucTree; see XamlProfilerKeywords in XamlProfilerTracing.h for the other groups. -->
+    <EventProvider Id="EP_XamlProfiler" Name="26f28a5c-7d30-54c5-40f4-fff6d3beda7d" Level="5">
+      <Keywords>
+        <Keyword Value="0x7" />
+      </Keywords>
+    </EventProvider>
 
-    <!-- Also capture the existing Microsoft-Windows-XAML provider for reference -->
+    <!-- Microsoft-Windows-XAML. Its ElementSetNameInfo event (213) carries the x:Name that ElementEnteredTree
+         doesn't, and ElementCreatedInfo (61) marks new elements; both are in the Detailed keyword (0x1). The
+         wider mask also records the provider's other events for reference. -->
     <EventProvider Id="EP_MicrosoftWindowsXaml" Name="531A35AB-63CE-4BCF-AA98-F88C7A89E455" Level="5">
       <Keywords>
         <Keyword Value="0xFFFF" />

@@ -33,7 +33,9 @@ Two **independent** channels:
    "pick from app". Degrades gracefully when absent.
 
 The whole four-tree model is a **pure function of the ETW event stream**, so it
-rebuilds deterministically on every capture, regardless of event order.
+rebuilds deterministically on every capture. The listener puts events back in
+timestamp order first (§4), because an element's type name, x:Name and (usually)
+peer handle arrive in separate events before the element enters the tree.
 
 ---
 
@@ -62,10 +64,15 @@ on MSBuild Core which can't compile a vcxproj. So:
 
 | File | Responsibility |
 | --- | --- |
-| `Services/EtwListenerService.cs` | Subscribe to the provider, snapshot payloads on the ETW thread, batch, dispatch to the store on the UI thread |
+| `Services/EtwListenerService.cs` | Subscribe to the providers, snapshot payloads on the ETW thread, restore timestamp order, batch, and hand events to the router on the UI thread |
+| `Services/ProfilerProviders.cs` | The providers and keywords the session enables, and the mapping from a `TraceEvent` to an `EtwEvent`. No WinUI dependency, so a recorded trace can be replayed through it |
+| `Services/EtwEvent.cs` | A snapshotted event (name + payload values) and its typed payload readers |
+| `Services/EventReorderBuffer.cs` | Holds each real-time event briefly and releases them in timestamp order |
+| `Services/ProfilerEventRouter.cs` | One handler per event, each mutating the store; holds the granular state (type names, x:Names, peer handles, visual property bags) until the element enters the tree or the visual is inserted |
 | `Models/ProfilerTreeStore.cs` | The heart — 4 tree models, get-or-create nodes, cross-tree links, highlight passes |
 | `Models/TreeNode.cs` | One node in any tree: id, label, kind, link ids, `PeerHandle`, event history |
-| `Models/WucVisualProperties.cs` | Strongly-typed parse of the `Properties` attribute string from WUC events |
+| `Models/WucVisualPropertyBag.cs` | One visual's latest WUC properties, accumulated from the `WucVisual*Changed` events and rendered as a `key="value"` string |
+| `Models/WucVisualProperties.cs` | Strongly-typed parse of that `key="value"` string |
 | `Converters/*` | XAML value converters (badges, link-highlight brushes, etc.) |
 | `MainWindow.xaml{,.cs}` | The 4 TreeViews, launch/listen, tap wiring, click gestures, exports |
 | `Services/TapChannel.cs` | Managed injector: creates pipes, injects the tap, sends commands |
@@ -77,29 +84,90 @@ on MSBuild Core which can't compile a vcxproj. So:
 ## 4. The ETW listener — `EtwListenerService`
 
 **Subscription.** `Start()` creates a real-time `TraceEventSession`
-(`Microsoft.Diagnostics.Tracing`, TraceEvent library), enables the provider GUID
-`{A1B2C3D4-…}` at `Verbose`, and pumps events on a dedicated background thread via
-`_source.Process()`. Requires **Administrator** (ETW real-time sessions do).
+(`Microsoft.Diagnostics.Tracing`, TraceEvent library), and `ProfilerProviders.Enable`
+enables two providers in it:
+
+- `Microsoft-Windows-XAML-Profiler` (`{26f28a5c-7d30-54c5-40f4-fff6d3beda7d}`) at
+  `Verbose` with keywords `0x07` (`XamlTree | CompTree | WucTree`, the only groups the
+  views consume).
+- `Microsoft-Windows-XAML` (`{531a35ab-63ce-4bcf-aa98-f88c7a89e455}`), the
+  framework's manifest provider, for two events: `ElementSetNameInfo` (event 213),
+  which carries an element's x:Name, and `ElementCreatedInfo` (event 61), which marks
+  a new element so a name held for a destroyed element at the same address is
+  dropped. They're in the
+  `Detailed` keyword (`0x1`); an event-ID filter (`EventIDsToEnable`) keeps the
+  keyword's other events (layout, template bindings, …) out of the session. The
+  target still writes those other events and ETW discards them, so the filter saves
+  the profiler's work, not the target's.
+
+Events are pumped on a dedicated background thread via `_source.Process()`.
+Requires **Administrator** (ETW real-time sessions do).
+
+**Start before launch.** The tree groups carry deltas, not snapshots, so the session
+is started before the target is launched; a session started after the UI is built
+misses the elements that already exist.
+
+**Process scope.** Both providers are scoped in ETW to the target's executable name
+(`TraceEventProviderOptions.ProcessNameFilter`), so other WinUI processes on the
+machine never turn the instrumentation on. Exe mode uses the chosen file's name;
+package mode reads the `Application@Executable` for the app from the installed
+package's `AppxManifest.xml`. If the name can't be resolved, the session isn't
+scoped until the target's PID is known. A target that is already running (PID
+passed to the constructor) is scoped with `ProcessIDFilter` instead.
+
+After the launch, `MainWindow` checks that the target's process runs the
+executable the session was scoped to. If it doesn't (for example, a packaged app
+started through a launcher such as `PsfLauncher64.exe`), `RescopeToProcess`
+re-enables both providers for that PID, and the status bar warns that the target's
+startup events were missed. If no process was found (package mode only),
+`RescopeToProcess` re-enables them for all processes, and the status bar warns
+that the session now listens to all processes and that the app's startup events
+may have been missed. A session that wasn't scoped is re-scoped to the target's
+PID once the process is found, so other WinUI processes stop emitting.
+
+While the session listens to all processes (before the target's PID is known, or
+when it isn't found), the events of every WinUI process feed the same trees: the
+router's state isn't keyed by process.
 
 **The recycled-buffer hazard (critical).** The `TraceEvent` instance and its
 payload buffer are **reused** by the parser and become invalid the moment the
 callback returns. So `OnEvent` **snapshots synchronously on the ETW thread**:
-copies `EventName` and every `PayloadValue(i)` into an `object?[]`, then enqueues
-`(name, payload)`. Reading the live `TraceEvent` from a later UI-thread lambda
-would dereference recycled memory.
+`ProfilerProviders.TryCapture` copies the event into an `EtwEvent`. A profiler event
+keeps its `EventName` and every `PayloadValue(i)` by position; the two
+Microsoft-Windows-XAML events are read by field name (`ElementId`, `Name`) and
+renamed `Microsoft-Windows-XAML/ElementCreated` and `…/ElementSetName`; any other
+event is dropped. `OnEvent` enqueues the `EtwEvent` with its timestamp and arrival
+time. Reading the live `TraceEvent` from a later UI-thread lambda would dereference
+recycled memory.
+
+**Reordering.** ETW buffers a real-time session's events per CPU and hands the
+consumer a buffer when it fills or when the session flushes (about once a second), so
+when a thread moves between CPUs, its later events can arrive before its earlier
+ones. The router needs them in order: an `ElementSetName` or `PeerAssociated` that
+happened before an element entered the tree must reach the router before its
+`ElementEnteredTree`. (An `ElementTypeInfo` that arrives after an enter of its
+type is still applied; see §4.)
+`FlushPending` moves queued events into an `EventReorderBuffer`, which holds each
+event for 1.5 s after it arrived and then releases events in timestamp order (ties
+keep arrival order). So the trees lag the target by about 1.5 s. `Stop()` applies
+every event still queued or held.
 
 **Batching.** Events arrive far faster than the UI can absorb one-by-one. A
-50 ms timer drains up to 500 queued events per hop (`FlushPending`), so many
+50 ms timer drains up to 500 released events per hop (`FlushPending`), so many
 mutations apply under one layout pass. At most one drain is queued on the
 dispatcher at a time (`_flushScheduled` interlock).
 
 **Process filter.** When a target PID is known, events from other processes are
-dropped in `OnEvent`.
+also dropped in `OnEvent`, and again when held events are released, so those
+captured before the PID was known are dropped too if they're still held. The
+profiler's own events are always dropped: it's a WinUI app too, so a session that
+isn't scoped to the target enables the providers in it.
 
-**Dispatch.** `Dispatch(name, payload)` switches on the event name to ~18
-handlers. Payload slots are read with typed helpers that tolerate missing/null
-slots (forward/backward compat): `U64` (note: TraceLogging `uint64_t` arrives as
-`Int64`, so it's `unchecked((ulong)Convert.ToInt64(v))`), `Bool`, `I32`, `Str`.
+**Dispatch.** `ProfilerEventRouter.Dispatch(e)` switches on the event name to about
+25 handlers. Payload slots are read with `EtwEvent`'s typed helpers that tolerate
+missing/null slots (forward/backward compat): `U64` (note: TraceLogging `uint64_t`
+arrives as `Int64`, so it's `unchecked((ulong)Convert.ToInt64(v))`), `U32` (a
+`uint32_t` such as a `TypeIndex` or an enum value), `F32`, `Bool`, `I32`, `Str`.
 Each handler mutates the store and records the event onto the node's history.
 
 Example — `HandleChildAdded` reads
@@ -107,13 +175,34 @@ Example — `HandleChildAdded` reads
 always `AddVisualChild`; if **not** template and **not** infrastructure, route to
 the logical tree via `FindNearestLogicalAncestor`; finally `SetPeerHandle`.
 
-**Lazy peer handles.** Elements with a lazily-created DXaml peer trace
-`PeerHandle = 0` at enter time. The producer's `PeerAssociated(elementId,
-peerHandle)` event fires later, when the peer is actually bound; its handler
-(`HandlePeerAssociated`) simply calls `_store.SetPeerHandle(elementId,
-peerHandle)`. Because `SetPeerHandle` is **first-non-zero-wins**, this upgrades
-the element's logical/visual/comp nodes from `0` to the real handle, so it becomes
-live-highlightable even though its peer didn't exist when it first appeared.
+**Names and types.** `ElementEnteredTree` carries only scalars
+(`ElementId, ParentId, IsLive, IsTemplateChild, TypeIndex`), so the router keeps the
+rest itself:
+
+- `ElementTypeInfo(TypeIndex, TypeName, CoreSize)`, normally emitted once per type
+  before that type's first enter, fills `_types`. It's best-effort: around a session
+  start it can arrive after enters of its type. Such elements are held in `_untyped`
+  and get the type name as a label when it arrives (`SetLateTypeName`).
+- `ElementSetName(ElementId, Name)` fills `_names`; an empty name (x:Name cleared) is
+  stored too.
+- `ElementCreated(ElementId)` drops what `_names`, `_peers` and `_untyped` hold for
+  that id, because a new element can reuse a destroyed element's address.
+
+At enter, the label is the element's x:Name, else its type name. The type name is
+provisional (`TreeNode.IsLabelProvisional`): an element named before the session
+started has no `ElementSetName` in it, so a later event that carries the producer's
+label (such as `ChildAdded`) replaces the type name with the x:Name.
+
+**Lazy peer handles.** `ElementEnteredTree` doesn't carry a peer handle; the
+producer's `PeerAssociated(elementId, peerHandle)` is its only source. It fires when
+the peer is bound to its core object: before the enter for most elements, after it
+for elements with a lazily-created DXaml peer. Its handler (`HandlePeerAssociated`)
+holds the handle in `_peers` for a later enter, and calls
+`_store.SetPeerHandle(elementId, peerHandle)`. Because `SetPeerHandle` is
+**first-non-zero-wins** and no-ops for ids the store doesn't track, this upgrades the
+element's logical/visual/comp nodes from `0` to the real handle, so a lazy-peer
+element becomes live-highlightable even though its peer didn't exist when it first
+appeared.
 
 ---
 
@@ -137,10 +226,14 @@ converges to the correct tree.
    `FindNearestLogicalAncestor`; if none, it becomes a logical root.
 
 ### Labels → readable names
-`GetDebugLabel()` labels are stored per node and surfaced everywhere:
-tree rows show `Button "RefreshButton" (0x…)`, and the detail pane's history
+Labels (an element's x:Name, else its class name) are stored per node and surfaced
+everywhere: tree rows show `Button "RefreshButton" (0x…)`, and the detail pane's history
 Summary column resolves ids to `Label (0xADDR)` via `ResolveName(id)` (looks up
 logical → visual → comp). See `resources/feature-resolved-summary-names.md`.
+`ChildAdded`, `ChildInserted`, `ContentChanged`, `PopupOpened` and `CompPeerLinked`
+carry the producer's `GetDebugLabel()`; for `ElementEnteredTree` the router builds the
+same label from `ElementSetName` and `ElementTypeInfo` (§4). A node keeps the first
+label it gets, unless that label is provisional and a definite one arrives.
 
 ### Display-name toggles (readability)
 Two **static** `TreeNode` flags let the user declutter every row on the fly; each
@@ -174,8 +267,26 @@ second back-fills), in `GetOrCreateLogicalNode` / `GetOrCreateVisualNode` /
 the consumer half of `resources/addingisvisualtree.md`.
 
 ### WUC properties
-`WucVisualProperties.Parse(propertiesString)` turns the producer's `key="value"`
-attribute string (byte-identical to `DCompTreeHelper`) into an immutable model
+`WucVisualChildInserted` and `WucVisualRootSet` carry the visual's kind
+(`VisualKind`), not its properties. The router keeps one `WucVisualPropertyBag` per
+`IVisual` id, filled by the granular events:
+
+- `WucVisualCreated(VisualId, Kind)` resets the bag (a new visual can reuse an old
+  address).
+- `WucVisualPropertyChanged(VisualId, Property, X, Y, Z, W)` sets a scalar or vector
+  property (offset, size, opacity, …).
+- `WucVisualTransformChanged(VisualId, M11..M44)` sets the transform matrix.
+- `WucVisualObjectChanged(VisualId, Property, ObjectId, TypeName)` sets or clears an
+  object-valued property (clip, brush, shadow, …).
+
+The visual's tree node shares its bag, so the node shows the latest values, not a
+snapshot taken at insert. A property the producer never reported keeps the
+composition default. Bags outlive nodes, so a removed visual that is re-inserted keeps
+its properties.
+
+`TreeNode.VisualProperties` renders the bag as the `key="value"` attribute string the
+insert events used to carry (the `DCompTreeHelper` format), and
+`WucVisualProperties.Parse` turns it into an immutable model
 (offset/size/transform/opacity/clip/brush/shadow/child-count/…). Every field is
 best-effort with a default fallback, so producer schema drift never crashes the
 consumer.
@@ -188,13 +299,15 @@ One class for all four trees, distinguished by `TreeNodeKind`
 (`Logical` / `Visual` / `Composition` / `WucVisual`). Carries:
 
 - `Id` (pointer identity — `CUIElement*` / `HWCompTreeNode*` / `IVisual*`),
-  `Label`, `DisplayName`, `Children`.
+  `Label` (and `IsLabelProvisional`), `DisplayName`, `Children`.
 - Cross-link ids: `LinkedLogicalNodeId`, `LinkedVisualNodeId`, `LinkedCompNodeId`.
 - `PeerHandle` — the DXaml peer `IInspectable` identity (0 = none). What the tap
   needs to highlight an element. **Not** the same as `Id`.
 - `LinkHighlight` (`LinkHighlightKind`: `None` / `Peer` / `Path`) — the transient
   glow state the TreeView templates bind to during a Ctrl+Click.
-- WUC-only: `VisualProperties`, `VisualType`, `IslandTargetId`.
+- WUC-only: `VisualPropertyBag` (the visual's latest properties) and
+  `VisualProperties` (rendered from the bag on each read), `VisualType`,
+  `IslandTargetId`.
 - Composition-only: `ResponsibleElementId` (the linked UIElement, for the
   `→ Element 0x…` annotation). Plus the static toggles `IncludeMemoryAddress` /
   `ShowResponsibleElementAddress` and `ComposeDisplayName()` / `RefreshDisplayName()`.
@@ -329,11 +442,12 @@ element's `PeerHandle` (or picked `IVisual`) only arrives over ETW a frame later
 ## 11. End-to-end walkthrough (Ctrl+Click a Button)
 
 1. App runs → runtime emits `ElementEnteredTree`/`ChildAdded`/`CompPeerLinked`/
-   `WucVisualChildInserted`… over ETW, each carrying label + peer handle +
-   (for WUC) full properties.
-2. `EtwListenerService` snapshots + batches them; `ProfilerTreeStore` builds the
-   four trees and cross-links them; `MainWindow` renders four TreeViews with
-   readable names.
+   `WucVisualChildInserted`… over ETW, plus the granular events that carry the
+   details: type names, x:Names, peer handles and WUC visual properties.
+2. `EtwListenerService` snapshots them, restores timestamp order and batches them;
+   `ProfilerEventRouter` applies the details, `ProfilerTreeStore` builds the four
+   trees and cross-links them, and `MainWindow` renders four TreeViews with readable
+   names.
 3. User clicks **Tap** → `TapChannel` injects `XamlProfilerTap.dll`, which
    enumerates the live tree (peer handles now resolvable).
 4. User **Ctrl+Clicks** the `Button` in the Visual tree:
@@ -348,13 +462,17 @@ element's `PeerHandle` (or picked `IVisual`) only arrives over ETW a frame later
 
 - **Live:** run `XamlProfiler.exe` **as Administrator** (ETW real-time session),
   then Launch and Listen. Tap is optional and same-integrity-level only.
-- **Offline:** `XamlProfiler.wprp` records an `.etl` against the same provider via
-  WPR for later analysis; the same reconstruction logic applies to a recorded
-  stream.
-- **Runtime match:** to see labels/handles/WUC data, the target must load a
-  runtime built with the framework-side changes (see `frameworksidechanges.md`
-  §13). Against a stock runtime the trees still build but nodes fall back to bare
-  addresses / no live highlight.
+- **Offline:** `XamlProfiler.wprp` records an `.etl` against the same providers
+  (the profiler provider with keywords `0x7`, the tree groups, and
+  Microsoft-Windows-XAML, whose `ElementSetNameInfo` events carry x:Names) via WPR
+  for later analysis; the same reconstruction logic applies to a recorded stream,
+  read in timestamp order.
+- **Runtime match:** the target must load a runtime that includes the
+  framework-side changes (see `frameworksidechanges.md` §13). They are compiled
+  into every configuration unless the runtime is built with
+  `/p:XamlProfilerEnabled=false` (see `activateframework.md`). Runtimes from before
+  the provider moved to `{26f28a5c-7d30-54c5-40f4-fff6d3beda7d}` emit on the old
+  placeholder GUID, which this app no longer enables.
 
 ---
 

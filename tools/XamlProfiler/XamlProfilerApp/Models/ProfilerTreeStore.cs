@@ -168,7 +168,7 @@ public class ProfilerTreeStore
         // Promote the last verified non-infra visual ancestor
         if (lastNonInfraId != 0 && lastNonInfraVisual != null)
         {
-            var node = GetOrCreateLogicalNode(lastNonInfraId, lastNonInfraVisual.Label);
+            var node = GetOrCreateLogicalNode(lastNonInfraId, lastNonInfraVisual.Label, lastNonInfraVisual.IsLabelProvisional);
             if (node.ParentId == 0 && !LogicalRoots.Contains(node))
             {
                 LogicalRoots.Add(node);
@@ -211,7 +211,7 @@ public class ProfilerTreeStore
     // Logical Tree
     // =====================================================================
 
-    public TreeNode GetOrCreateLogicalNode(ulong id, string? label = null)
+    public TreeNode GetOrCreateLogicalNode(ulong id, string? label = null, bool provisional = false)
     {
         if (!_logicalNodes.TryGetValue(id, out var node))
         {
@@ -222,7 +222,7 @@ public class ProfilerTreeStore
 
         // First non-empty label wins; refresh DisplayName if the label was just set
         // OR if the node still shows the placeholder (no label has ever arrived).
-        if (node.SetLabelIfEmpty(label) || string.IsNullOrEmpty(node.Label))
+        if (node.SetLabelIfEmpty(label, provisional) || string.IsNullOrEmpty(node.Label))
         {
             node.UpdateDisplayName("Element");
         }
@@ -236,8 +236,8 @@ public class ProfilerTreeStore
             node.LinkedVisualNodeId = id;
             v.LinkedLogicalNodeId = id;
             // Logical and visual share x:Name — propagate either direction.
-            if (v.SetLabelIfEmpty(node.Label)) v.UpdateDisplayName("Visual");
-            if (node.SetLabelIfEmpty(v.Label)) node.UpdateDisplayName("Element");
+            if (v.SetLabelIfEmpty(node.Label, node.IsLabelProvisional)) v.UpdateDisplayName("Visual");
+            if (node.SetLabelIfEmpty(v.Label, v.IsLabelProvisional)) node.UpdateDisplayName("Element");
         }
         if (_compByElement.TryGetValue(id, out var c))
         {
@@ -307,9 +307,9 @@ public class ProfilerTreeStore
     /// Marks an element as entering the visual tree only (no logical tree entry).
     /// Used for template-generated elements (IsTemplateChild == true).
     /// </summary>
-    public void MarkVisualEnter(ulong elementId, ulong parentId, bool isLive, string? label = null)
+    public void MarkVisualEnter(ulong elementId, ulong parentId, bool isLive, string? label = null, bool provisional = false)
     {
-        var vNode = GetOrCreateVisualNode(elementId, label);
+        var vNode = GetOrCreateVisualNode(elementId, label, provisional);
         vNode.UpdateDisplayName("Visual");
         vNode.IsHighlighted = true;
 
@@ -350,9 +350,9 @@ public class ProfilerTreeStore
         }
     }
 
-    public void MarkLogicalEnter(ulong elementId, ulong parentId, bool isLive, string? label = null)
+    public void MarkLogicalEnter(ulong elementId, ulong parentId, bool isLive, string? label = null, bool provisional = false)
     {
-        var node = GetOrCreateLogicalNode(elementId, label);
+        var node = GetOrCreateLogicalNode(elementId, label, provisional);
         node.UpdateDisplayName("Element");
         node.IsHighlighted = true;
 
@@ -395,7 +395,7 @@ public class ProfilerTreeStore
     // Visual Tree (mirrors logical tree for UIElements, plus popups)
     // =====================================================================
 
-    public TreeNode GetOrCreateVisualNode(ulong id, string? label = null)
+    public TreeNode GetOrCreateVisualNode(ulong id, string? label = null, bool provisional = false)
     {
         if (!_visualNodes.TryGetValue(id, out var node))
         {
@@ -404,7 +404,7 @@ public class ProfilerTreeStore
             NodeAdded?.Invoke(node);
         }
 
-        if (node.SetLabelIfEmpty(label) || string.IsNullOrEmpty(node.Label))
+        if (node.SetLabelIfEmpty(label, provisional) || string.IsNullOrEmpty(node.Label))
         {
             node.UpdateDisplayName("Visual");
         }
@@ -417,8 +417,8 @@ public class ProfilerTreeStore
         {
             logical.LinkedVisualNodeId = id;
             node.LinkedLogicalNodeId = id;
-            if (logical.SetLabelIfEmpty(node.Label)) logical.UpdateDisplayName("Element");
-            if (node.SetLabelIfEmpty(logical.Label)) node.UpdateDisplayName("Visual");
+            if (logical.SetLabelIfEmpty(node.Label, node.IsLabelProvisional)) logical.UpdateDisplayName("Element");
+            if (node.SetLabelIfEmpty(logical.Label, logical.IsLabelProvisional)) node.UpdateDisplayName("Visual");
         }
         if (_compByElement.TryGetValue(id, out var c))
         {
@@ -430,6 +430,17 @@ public class ProfilerTreeStore
 
     public TreeNode? FindVisualNode(ulong id) =>
         _visualNodes.TryGetValue(id, out var n) ? n : null;
+
+    /// <summary>
+    /// Label element <paramref name="id"/>'s logical and visual nodes with its class name when the
+    /// name arrives after the element entered the tree (<c>ElementTypeInfo</c> is best-effort).
+    /// The label is provisional, and nodes that already have a label keep it.
+    /// </summary>
+    public void SetLateTypeName(ulong id, string? typeName)
+    {
+        if (_logicalNodes.TryGetValue(id, out var l) && l.SetLabelIfEmpty(typeName, provisional: true)) l.RefreshDisplayName();
+        if (_visualNodes.TryGetValue(id, out var v) && v.SetLabelIfEmpty(typeName, provisional: true)) v.RefreshDisplayName();
+    }
 
     /// <summary>
     /// Stamp the DXaml-peer <c>InstanceHandle</c> (from the producer) onto every node that
@@ -688,16 +699,16 @@ public class ProfilerTreeStore
     /// <summary>
     /// Connect a child IVisual under a parent IVisual (the producer fires this
     /// at InsertAtTop/Bottom/Above/Below and the comp-node spine builders). The
-    /// child node is (re)stamped with its type, parsed properties and owner comp
+    /// child node is (re)stamped with its type, property bag and owner comp
     /// node, then reparented using the same get-or-create + EnsureRooted pattern
     /// as the other trees, so events can arrive in any order.
     /// </summary>
-    public void AddWucChild(ulong parentId, ulong childId, ulong ownerCompNodeId, int index, string? visualType, string? properties)
+    public void AddWucChild(ulong parentId, ulong childId, ulong ownerCompNodeId, int index, string? visualType, WucVisualPropertyBag? bag)
     {
         var parent = GetOrCreateWucNode(parentId);
         var child = GetOrCreateWucNode(childId);
 
-        ApplyWucPayload(child, visualType, properties);
+        ApplyWucPayload(child, visualType, bag);
         SetWucOwner(child, ownerCompNodeId);
 
         RemoveFromCurrentParent(child, WucVisualRoots);
@@ -743,10 +754,10 @@ public class ProfilerTreeStore
     /// target → root mapping so a later <see cref="ClearWucRoot"/> (which only
     /// carries the target id) can find and drop the root subtree.
     /// </summary>
-    public void SetWucRoot(ulong visualId, ulong targetId, ulong ownerCompNodeId, string? visualType, string? properties)
+    public void SetWucRoot(ulong visualId, ulong targetId, ulong ownerCompNodeId, string? visualType, WucVisualPropertyBag? bag)
     {
         var node = GetOrCreateWucNode(visualId);
-        ApplyWucPayload(node, visualType, properties);
+        ApplyWucPayload(node, visualType, bag);
         SetWucOwner(node, ownerCompNodeId);
         node.IslandTargetId = targetId;
         node.DisplayName = $"{(string.IsNullOrEmpty(visualType) ? "IVisual" : visualType)} 0x{visualId:X} [root → 0x{targetId:X}]";
@@ -777,10 +788,10 @@ public class ProfilerTreeStore
             node.RecordEvent(eventName, summary);
     }
 
-    private static void ApplyWucPayload(TreeNode node, string? visualType, string? properties)
+    private static void ApplyWucPayload(TreeNode node, string? visualType, WucVisualPropertyBag? bag)
     {
         if (!string.IsNullOrEmpty(visualType)) node.VisualType = visualType;
-        if (!string.IsNullOrEmpty(properties)) node.VisualProperties = WucVisualProperties.Parse(properties);
+        if (bag != null) node.VisualPropertyBag = bag;
 
         var typeName = string.IsNullOrEmpty(node.VisualType) ? "IVisual" : node.VisualType;
         var owner = node.LinkedCompNodeId.GetValueOrDefault();

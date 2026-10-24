@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Xml.Linq;
 
 namespace XamlProfiler.Services;
 
@@ -51,6 +52,57 @@ internal static class ProcessResolver
                 return proc;
         }
         return null;
+    }
+
+    /// <summary>
+    /// Returns the file name (for example "MyApp.exe") of the executable that the installed
+    /// package's AppxManifest.xml declares for the application in
+    /// <paramref name="appUserModelId"/> ("PackageFamilyName!AppId"), or null when it can't
+    /// be determined (manifest not readable, or an application without an Executable).
+    /// </summary>
+    public static string? TryGetPackagedAppExecutableName(string? installedPath, string appUserModelId)
+    {
+        try
+        {
+            int separator = appUserModelId.IndexOf('!');
+            if (string.IsNullOrEmpty(installedPath) || separator < 0)
+                return null;
+
+            string appId = appUserModelId[(separator + 1)..];
+            var manifest = XDocument.Load(Path.Combine(installedPath, "AppxManifest.xml"));
+            var application = manifest.Descendants().FirstOrDefault(e =>
+                e.Name.LocalName == "Application" &&
+                e.Parent?.Name.LocalName == "Applications" &&
+                string.Equals((string?)e.Attribute("Id"), appId, StringComparison.OrdinalIgnoreCase));
+
+            string? executable = (string?)application?.Attribute("Executable");
+            return string.IsNullOrEmpty(executable) ? null : Path.GetFileName(executable);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Returns true when <paramref name="proc"/> is known to run an executable other than
+    /// <paramref name="executableName"/> (a file name such as "MyApp.exe"), compared by image
+    /// name, which is what ETW's executable-name filter matches. False when it runs that
+    /// executable or its name can't be read (for example, because it has exited).
+    /// </summary>
+    public static bool RunsOtherExecutable(Process proc, string executableName)
+    {
+        try
+        {
+            return !string.Equals(
+                proc.ProcessName,
+                Path.GetFileNameWithoutExtension(executableName),
+                StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     /// <summary>

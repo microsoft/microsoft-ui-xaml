@@ -6,6 +6,7 @@
 #include "SwapChainPanelOwner.h"
 #include "RootScale.h"
 #include "LoadLibraryAbs.h"
+#include "WucVisualTreeProfiler.h"
 
 //------------------------------------------------------------------------
 //
@@ -594,6 +595,7 @@ wrl::ComPtr<ixp::ISpriteVisual> CSwapChainPanel::GetOrEnsureSwapChainVisual()
     if (m_swapChainVisual == nullptr)
     {
         IFCFAILFAST(GetDCompTreeHost()->GetCompositor()->CreateSpriteVisual(&m_swapChainVisual));
+        XAMLPROFILER_WUC_CREATED(m_swapChainVisual.Get(), SpriteVisual);
     }
     return m_swapChainVisual;
 }

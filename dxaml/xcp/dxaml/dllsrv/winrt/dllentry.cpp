@@ -16,6 +16,9 @@
 #include <XamlTraceLogging.h>
 #include "XamlTelemetry.h"
 #include "LoadLibraryAbs.h"
+#ifdef XAMLPROFILER_ENABLED
+#include "XamlProfilerTracing.h"
+#endif
 
 #include <WinUIrc.ver>           //  To define VER_FILEVERSION_STR
 
@@ -115,6 +118,11 @@ BOOL InitializeDll()
     // Register trace logging provider
     TraceLoggingRegister(g_hTraceProvider);
 
+#ifdef XAMLPROFILER_ENABLED
+    // The enable callback resets the profiler's per-session type table.
+    TraceLoggingRegisterEx(g_hXamlProfilerProvider, XamlProfilerTracing::ProviderEnableCallback, nullptr);
+#endif
+
     // Override the debugger output string formatting method that WIL uses to log errors.  The default formatting
     // is more verbose than desired compared to the previous XAML debug output.  This bridges the difference.
     wil::SetResultMessageCallback(WILResultMessageCallback);
@@ -203,6 +211,11 @@ void DeinitializeDll()
     ctl::__module.ClearFactoryCache();
 
     DCompSurfaceFactoryManager::Deinitialize();
+
+#ifdef XAMLPROFILER_ENABLED
+    // After surface teardown, which still emits profiler events.
+    TraceLoggingUnregister(g_hXamlProfilerProvider);
+#endif
 
     // Unregister ETW Tracing
     EventUnregisterMicrosoft_Windows_XAML();

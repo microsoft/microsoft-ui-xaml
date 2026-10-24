@@ -11,51 +11,16 @@
 
 #include "WucVisualTreeProfiler.h"
 #include <Windows.UI.Composition.h>
-#include "XcpAllocation.h"
+#include <HWCompNode.h>
 #include "XamlProfilerTracing.h"
-#include <unordered_set>
 
-// This file ports the WUC-visual property extraction used by DCompTreeHelper's live
-// <VisualTree> dump and reuses the identical attribute serialization, so the profiler
-// stream and the live dump describe visuals the same way. All work here is gated behind
-// XamlProfilerTracing::IsEnabled() by the callers below.
+// Every public entry point returns immediately unless a session has the WucTree group enabled
+// (IsEnabled()).
 
 namespace
 {
-    // Maps the small WUC enums to readable names (instead of raw ints), matching DCompTreeHelper.
-    const WCHAR* CompositeModeName(WUComp::CompositionCompositeMode value)
-    {
-        switch (value)
-        {
-            case WUComp::CompositionCompositeMode::CompositionCompositeMode_Inherit:           return L"Inherit";
-            case WUComp::CompositionCompositeMode::CompositionCompositeMode_SourceOver:        return L"SourceOver";
-            case WUComp::CompositionCompositeMode::CompositionCompositeMode_DestinationInvert: return L"DestinationInvert";
-            case WUComp::CompositionCompositeMode::CompositionCompositeMode_MinBlend:          return L"MinBlend";
-            default:                                                                            return L"Unknown";
-        }
-    }
-
-    const WCHAR* BorderModeName(WUComp::CompositionBorderMode value)
-    {
-        switch (value)
-        {
-            case WUComp::CompositionBorderMode::CompositionBorderMode_Inherit: return L"Inherit";
-            case WUComp::CompositionBorderMode::CompositionBorderMode_Soft:    return L"Soft";
-            case WUComp::CompositionBorderMode::CompositionBorderMode_Hard:    return L"Hard";
-            default:                                                            return L"Unknown";
-        }
-    }
-
-    const WCHAR* BackfaceVisibilityName(WUComp::CompositionBackfaceVisibility value)
-    {
-        switch (value)
-        {
-            case WUComp::CompositionBackfaceVisibility::CompositionBackfaceVisibility_Inherit: return L"Inherit";
-            case WUComp::CompositionBackfaceVisibility::CompositionBackfaceVisibility_Visible: return L"Visible";
-            case WUComp::CompositionBackfaceVisibility::CompositionBackfaceVisibility_Hidden:  return L"Hidden";
-            default:                                                                            return L"Unknown";
-        }
-    }
+    using WucVisualTreeProfiler::VisualKind;
+    using WucVisualTreeProfiler::VisualProperty;
 
     // Asks a WUC object for its own runtime class name (e.g. "CompositionColorBrush"),
     // stripping the leading "Microsoft.UI.Composition." namespace. Writes "" on failure.
@@ -75,86 +40,92 @@ namespace
             if (pFull != nullptr)
             {
                 const WCHAR* pShort = wcsrchr(pFull, L'.');
-                wcscpy_s(buffer, bufferSize, pShort != nullptr ? pShort + 1 : pFull);
+                // Truncate rather than fail fast on an unexpectedly long name.
+                wcsncpy_s(buffer, bufferSize, pShort != nullptr ? pShort + 1 : pFull, _TRUNCATE);
             }
         }
     }
 
-    // Returns the concrete WUC visual type name via a QI ladder (most-derived first, since
+    // Returns the concrete WUC visual kind via a QI ladder (most-derived first, since
     // Sprite/Layer/Shape/Redirect all derive from ContainerVisual). Mirrors DCompTreeHelper.
-    const WCHAR* GetWucVisualTypeName(_In_opt_ WUComp::IVisual* pVisual)
+    VisualKind GetVisualKind(_In_opt_ WUComp::IVisual* pVisual)
     {
         if (pVisual == nullptr)
         {
-            return L"null";
+            return VisualKind::Unknown;
         }
 
         wrl::ComPtr<WUComp::ISpriteVisual> spSprite;
         if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spSprite))))
         {
-            return L"SpriteVisual";
+            return VisualKind::SpriteVisual;
         }
         wrl::ComPtr<WUComp::ILayerVisual> spLayer;
         if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spLayer))))
         {
-            return L"LayerVisual";
+            return VisualKind::LayerVisual;
         }
         wrl::ComPtr<WUComp::IShapeVisual> spShape;
         if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spShape))))
         {
-            return L"ShapeVisual";
+            return VisualKind::ShapeVisual;
         }
         wrl::ComPtr<WUComp::IRedirectVisual> spRedirect;
         if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spRedirect))))
         {
-            return L"RedirectVisual";
+            return VisualKind::RedirectVisual;
         }
         wrl::ComPtr<WUComp::IContainerVisual> spContainer;
         if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spContainer))))
         {
-            return L"ContainerVisual";
+            return VisualKind::ContainerVisual;
         }
-        return L"Visual";
+        return VisualKind::Visual;
     }
 
     // Normalizes any interface pointer of a WUC visual to its IVisual* identity, so the
     // emitted id matches DCompTreeHelper's "wucVisual" attribute regardless of which
     // interface the call site happened to hold (IVisual / IContainerVisual / sprite / ...).
+    wrl::ComPtr<WUComp::IVisual> AsVisual(_In_opt_ IUnknown* pUnknown)
+    {
+        wrl::ComPtr<WUComp::IVisual> spVisual;
+        if (pUnknown != nullptr && FAILED(pUnknown->QueryInterface(IID_PPV_ARGS(&spVisual))))
+        {
+            spVisual = nullptr;
+        }
+        return spVisual;
+    }
+
     uint64_t VisualId(_In_opt_ IUnknown* pUnknown)
     {
-        if (pUnknown == nullptr)
+        return reinterpret_cast<uint64_t>(AsVisual(pUnknown).Get());
+    }
+
+    // COM identity of a non-visual composition object (clip, brush, shadow, ...).
+    uint64_t ObjectId(_In_opt_ IUnknown* pObject)
+    {
+        if (pObject == nullptr)
         {
             return 0;
         }
-        wrl::ComPtr<WUComp::IVisual> spVisual;
-        if (FAILED(pUnknown->QueryInterface(IID_PPV_ARGS(&spVisual))))
+        wrl::ComPtr<IUnknown> spIdentity;
+        if (FAILED(pObject->QueryInterface(IID_PPV_ARGS(&spIdentity))))
         {
             return 0;
         }
-        return reinterpret_cast<uint64_t>(spVisual.Get());
+        return reinterpret_cast<uint64_t>(spIdentity.Get());
     }
 
     // Comment marker the tap stamps onto its OWN highlight adorner visual, so the producer
     // can skip emitting tree events for it (otherwise the adorner would surface as a phantom
-    // node in the profiler's IVisual tree).
+    // node in the profiler's IVisual tree). The adorner is attached as a hand-in visual.
     constexpr const WCHAR* c_adornerCommentPrefix = L"__xp_adorner";
 
-    // Registry of comp-node ids that belong to the profiler's pick overlay and must be
-    // suppressed from all emitted trees. Comp-tree mutation + the IsEnabled()-gated Notify*
-    // paths run on the UI thread, but guard with an SRW lock so the set is never observed in a
-    // torn state if a tracing callback ever runs off-thread.
-    SRWLOCK g_suppressedCompNodesLock = SRWLOCK_INIT;
-
-    using SuppressedCompNodeSet = std::unordered_set<
-        uint64_t,
-        std::hash<uint64_t>,
-        std::equal_to<uint64_t>,
-        XcpAllocation::LeakIgnoringAllocator<uint64_t>>;
-
-    SuppressedCompNodeSet& SuppressedCompNodes()
+    // True if the visual belongs to a pick-overlay comp node (see the suppression notes in
+    // WucVisualTreeProfiler.h), so no structure event may be emitted for it.
+    bool IsSuppressedOwner(_In_opt_ const HWCompNode* ownerCompNode)
     {
-        static SuppressedCompNodeSet set;
-        return set;
+        return ownerCompNode != nullptr && ownerCompNode->IsProfilerSuppressed();
     }
 
     // True if the visual is the tap's highlight adorner (its Comment starts with the adorner
@@ -184,240 +155,226 @@ namespace
                wcsncmp(raw, c_adornerCommentPrefix, wcslen(c_adornerCommentPrefix)) == 0;
     }
 
-    // Builds the full property attribute string for a visual in the exact format
-    // DCompTreeHelper emits for <WucVisual> nodes. Safe with pVisual == nullptr.
-    void BuildPropertiesString(_In_opt_ WUComp::IVisual* pVisual, _Out_writes_(cap) WCHAR* out, _In_ int cap)
+    void EmitProperty(uint64_t visualId, VisualProperty property, float x, float y = 0.0f, float z = 0.0f, float w = 0.0f)
     {
-        out[0] = L'\0';
+        XamlProfilerTracing::WucVisualPropertyChanged(visualId, static_cast<uint32_t>(property), x, y, z, w);
+    }
 
-        // Base render properties.
-        float offsetX = 0, offsetY = 0, offsetZ = 0;
-        float sizeW = 0, sizeH = 0;
-        float opacity = 1.0f;
-        bool isVisible = true;
-
-        // Type-specific properties.
-        int wucChildCount = -1;
-        int shapeCount = -1;
-        bool hasBrush = false, hasShadow = false, hasEffect = false, hasViewBox = false, hasClip = false;
-        WCHAR brushType[128] = L"";
-        WCHAR shadowType[128] = L"";
-        WCHAR clipType[128] = L"";
-        void* pSourceVisualRaw = nullptr;
-
-        // Extended base Visual transform properties (IVisual / IVisual2 / IVisual3 / IVisual4).
-        float anchorX = 0, anchorY = 0;
-        float centerX = 0, centerY = 0, centerZ = 0;
-        float scaleX = 1, scaleY = 1, scaleZ = 1;
-        float rotationDegrees = 0;
-        float rotationAxisX = 0, rotationAxisY = 0, rotationAxisZ = 1;
-        float orientX = 0, orientY = 0, orientZ = 0, orientW = 1;
-        wfn::Matrix4x4 matrix = { 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 };
-        float relOffsetX = 0, relOffsetY = 0, relOffsetZ = 0;
-        float relSizeX = 0, relSizeY = 0;
-        const WCHAR* compositeMode = L"Inherit";
-        const WCHAR* borderMode = L"Inherit";
-        const WCHAR* backfaceVisibility = L"Inherit";
-        bool isHitTestVisible = true;
-        bool isPixelSnappingEnabled = false;
-
-        if (pVisual != nullptr)
+    void EmitObject(uint64_t visualId, VisualProperty property, _In_opt_ IUnknown* pObject)
+    {
+        uint64_t objectId = 0;
+        WCHAR typeName[128] = L"";
+        if (pObject != nullptr)
         {
-            wfn::Vector3 offset = {};
-            wfn::Vector2 size = {};
-            boolean visible = TRUE;
-            if (SUCCEEDED(pVisual->get_Offset(&offset))) { offsetX = offset.X; offsetY = offset.Y; offsetZ = offset.Z; }
-            if (SUCCEEDED(pVisual->get_Size(&size)))     { sizeW = size.X; sizeH = size.Y; }
-            pVisual->get_Opacity(&opacity);
-            if (SUCCEEDED(pVisual->get_IsVisible(&visible))) { isVisible = !!visible; }
+            objectId = (property == VisualProperty::Source) ? VisualId(pObject) : ObjectId(pObject);
 
-            wfn::Vector2 anchor = {};
-            if (SUCCEEDED(pVisual->get_AnchorPoint(&anchor))) { anchorX = anchor.X; anchorY = anchor.Y; }
-            wfn::Vector3 center = {};
-            if (SUCCEEDED(pVisual->get_CenterPoint(&center))) { centerX = center.X; centerY = center.Y; centerZ = center.Z; }
-            wfn::Vector3 scale = {};
-            if (SUCCEEDED(pVisual->get_Scale(&scale))) { scaleX = scale.X; scaleY = scale.Y; scaleZ = scale.Z; }
-            pVisual->get_RotationAngleInDegrees(&rotationDegrees);
-            wfn::Vector3 axis = {};
-            if (SUCCEEDED(pVisual->get_RotationAxis(&axis))) { rotationAxisX = axis.X; rotationAxisY = axis.Y; rotationAxisZ = axis.Z; }
-            wfn::Quaternion orient = {};
-            if (SUCCEEDED(pVisual->get_Orientation(&orient))) { orientX = orient.X; orientY = orient.Y; orientZ = orient.Z; orientW = orient.W; }
-            pVisual->get_TransformMatrix(&matrix);
-
-            WUComp::CompositionCompositeMode compMode = {};
-            if (SUCCEEDED(pVisual->get_CompositeMode(&compMode))) { compositeMode = CompositeModeName(compMode); }
-            WUComp::CompositionBorderMode bMode = {};
-            if (SUCCEEDED(pVisual->get_BorderMode(&bMode))) { borderMode = BorderModeName(bMode); }
-            WUComp::CompositionBackfaceVisibility bfVis = {};
-            if (SUCCEEDED(pVisual->get_BackfaceVisibility(&bfVis))) { backfaceVisibility = BackfaceVisibilityName(bfVis); }
-
-            wrl::ComPtr<WUComp::ICompositionClip> spClip;
-            if (SUCCEEDED(pVisual->get_Clip(&spClip)) && spClip != nullptr)
+            wrl::ComPtr<IInspectable> spInspectable;
+            if (SUCCEEDED(pObject->QueryInterface(IID_PPV_ARGS(&spInspectable))))
             {
-                hasClip = true;
-                GetWucClassName(spClip.Get(), clipType, _countof(clipType));
-            }
-
-            wrl::ComPtr<WUComp::IVisual2> spVisual2;
-            if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spVisual2))))
-            {
-                wfn::Vector3 relOffset = {};
-                if (SUCCEEDED(spVisual2->get_RelativeOffsetAdjustment(&relOffset))) { relOffsetX = relOffset.X; relOffsetY = relOffset.Y; relOffsetZ = relOffset.Z; }
-                wfn::Vector2 relSize = {};
-                if (SUCCEEDED(spVisual2->get_RelativeSizeAdjustment(&relSize))) { relSizeX = relSize.X; relSizeY = relSize.Y; }
-            }
-            wrl::ComPtr<WUComp::IVisual3> spVisual3;
-            if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spVisual3))))
-            {
-                boolean htv = TRUE;
-                if (SUCCEEDED(spVisual3->get_IsHitTestVisible(&htv))) { isHitTestVisible = !!htv; }
-            }
-            wrl::ComPtr<WUComp::IVisual4> spVisual4;
-            if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spVisual4))))
-            {
-                boolean pse = FALSE;
-                if (SUCCEEDED(spVisual4->get_IsPixelSnappingEnabled(&pse))) { isPixelSnappingEnabled = !!pse; }
-            }
-
-            wrl::ComPtr<WUComp::ISpriteVisual> spSprite;
-            wrl::ComPtr<WUComp::ILayerVisual> spLayer;
-            wrl::ComPtr<WUComp::IShapeVisual> spShape;
-            wrl::ComPtr<WUComp::IRedirectVisual> spRedirect;
-            wrl::ComPtr<WUComp::IContainerVisual> spContainer;
-
-            if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spSprite))))
-            {
-                wrl::ComPtr<WUComp::ICompositionBrush> spBrush;
-                if (SUCCEEDED(spSprite->get_Brush(&spBrush)) && spBrush != nullptr)
-                {
-                    hasBrush = true;
-                    GetWucClassName(spBrush.Get(), brushType, _countof(brushType));
-                }
-                wrl::ComPtr<WUComp::ISpriteVisual2> spSprite2;
-                if (SUCCEEDED(spSprite->QueryInterface(IID_PPV_ARGS(&spSprite2))))
-                {
-                    wrl::ComPtr<WUComp::ICompositionShadow> spShadow;
-                    if (SUCCEEDED(spSprite2->get_Shadow(&spShadow)) && spShadow != nullptr)
-                    {
-                        hasShadow = true;
-                        GetWucClassName(spShadow.Get(), shadowType, _countof(shadowType));
-                    }
-                }
-            }
-            else if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spLayer))))
-            {
-                wrl::ComPtr<WUComp::ICompositionEffectBrush> spEffect;
-                if (SUCCEEDED(spLayer->get_Effect(&spEffect)) && spEffect != nullptr)
-                {
-                    hasEffect = true;
-                }
-                wrl::ComPtr<WUComp::ILayerVisual2> spLayer2;
-                if (SUCCEEDED(spLayer->QueryInterface(IID_PPV_ARGS(&spLayer2))))
-                {
-                    wrl::ComPtr<WUComp::ICompositionShadow> spShadow;
-                    if (SUCCEEDED(spLayer2->get_Shadow(&spShadow)) && spShadow != nullptr)
-                    {
-                        hasShadow = true;
-                        GetWucClassName(spShadow.Get(), shadowType, _countof(shadowType));
-                    }
-                }
-            }
-            else if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spShape))))
-            {
-                wrl::ComPtr<wfc::IVector<WUComp::CompositionShape*>> spShapes;
-                if (SUCCEEDED(spShape->get_Shapes(&spShapes)) && spShapes != nullptr)
-                {
-                    unsigned int count = 0;
-                    if (SUCCEEDED(spShapes->get_Size(&count))) { shapeCount = static_cast<int>(count); }
-                }
-                wrl::ComPtr<WUComp::ICompositionViewBox> spViewBox;
-                if (SUCCEEDED(spShape->get_ViewBox(&spViewBox)) && spViewBox != nullptr)
-                {
-                    hasViewBox = true;
-                }
-            }
-            else if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spRedirect))))
-            {
-                wrl::ComPtr<WUComp::IVisual> spSource;
-                if (SUCCEEDED(spRedirect->get_Source(&spSource)))
-                {
-                    pSourceVisualRaw = spSource.Get();
-                }
-            }
-
-            if (spContainer == nullptr)
-            {
-                pVisual->QueryInterface(IID_PPV_ARGS(&spContainer));
-            }
-            if (spContainer != nullptr)
-            {
-                wrl::ComPtr<WUComp::IVisualCollection> spChildren;
-                if (SUCCEEDED(spContainer->get_Children(&spChildren)) && spChildren != nullptr)
-                {
-                    int count = 0;
-                    if (SUCCEEDED(spChildren->get_Count(&count))) { wucChildCount = count; }
-                }
+                GetWucClassName(spInspectable.Get(), typeName, _countof(typeName));
             }
         }
 
-        int n = 0;
+        XamlProfilerTracing::WucVisualObjectChanged(visualId, static_cast<uint32_t>(property), objectId, typeName);
+    }
 
-        n += swprintf_s(out + n, cap - n,
-            L"offsetX=\"%.1f\" offsetY=\"%.1f\" offsetZ=\"%.1f\" width=\"%.1f\" height=\"%.1f\" "
-            L"anchorPointX=\"%.2f\" anchorPointY=\"%.2f\" "
-            L"centerPointX=\"%.2f\" centerPointY=\"%.2f\" centerPointZ=\"%.2f\" "
-            L"scaleX=\"%.3f\" scaleY=\"%.3f\" scaleZ=\"%.3f\" "
-            L"rotationAngleInDegrees=\"%.2f\" rotationAxisX=\"%.2f\" rotationAxisY=\"%.2f\" rotationAxisZ=\"%.2f\" "
-            L"orientationX=\"%.3f\" orientationY=\"%.3f\" orientationZ=\"%.3f\" orientationW=\"%.3f\" ",
-            offsetX, offsetY, offsetZ, sizeW, sizeH,
-            anchorX, anchorY,
-            centerX, centerY, centerZ,
-            scaleX, scaleY, scaleZ,
-            rotationDegrees, rotationAxisX, rotationAxisY, rotationAxisZ,
-            orientX, orientY, orientZ, orientW);
-
-        n += swprintf_s(out + n, cap - n,
-            L"transformMatrix=\"%.3f,%.3f,%.3f,%.3f, %.3f,%.3f,%.3f,%.3f, %.3f,%.3f,%.3f,%.3f, %.3f,%.3f,%.3f,%.3f\" "
-            L"opacity=\"%.3f\" isVisible=\"%s\" isHitTestVisible=\"%s\" isPixelSnappingEnabled=\"%s\" "
-            L"compositeMode=\"%s\" borderMode=\"%s\" backfaceVisibility=\"%s\" hasClip=\"%s\" clipType=\"%s\" "
-            L"relativeOffsetAdjustmentX=\"%.2f\" relativeOffsetAdjustmentY=\"%.2f\" relativeOffsetAdjustmentZ=\"%.2f\" "
-            L"relativeSizeAdjustmentX=\"%.2f\" relativeSizeAdjustmentY=\"%.2f\" ",
+    void EmitTransform(uint64_t visualId, const wfn::Matrix4x4& matrix)
+    {
+        const float values[16] = {
             matrix.M11, matrix.M12, matrix.M13, matrix.M14,
             matrix.M21, matrix.M22, matrix.M23, matrix.M24,
             matrix.M31, matrix.M32, matrix.M33, matrix.M34,
-            matrix.M41, matrix.M42, matrix.M43, matrix.M44,
-            opacity,
-            isVisible ? L"true" : L"false",
-            isHitTestVisible ? L"true" : L"false",
-            isPixelSnappingEnabled ? L"true" : L"false",
-            compositeMode, borderMode, backfaceVisibility,
-            hasClip ? L"true" : L"false", clipType,
-            relOffsetX, relOffsetY, relOffsetZ,
-            relSizeX, relSizeY);
+            matrix.M41, matrix.M42, matrix.M43, matrix.M44 };
+        XamlProfilerTracing::WucVisualTransformChanged(visualId, values);
+    }
 
-        n += swprintf_s(out + n, cap - n,
-            L"wucChildCount=\"%d\" shapeCount=\"%d\" hasBrush=\"%s\" brushType=\"%s\" "
-            L"hasShadow=\"%s\" shadowType=\"%s\" hasEffect=\"%s\" hasViewBox=\"%s\" sourceVisual=\"0x%p\"",
-            wucChildCount, shapeCount,
-            hasBrush ? L"true" : L"false", brushType,
-            hasShadow ? L"true" : L"false", shadowType,
-            hasEffect ? L"true" : L"false",
-            hasViewBox ? L"true" : L"false",
-            pSourceVisualRaw);
+    // Reads every reported property of a visual whose properties the app sets, and emits each as
+    // a property event. Together these overwrite everything the consumer holds for visualId.
+    // This is the only place visual properties are read back; it runs only for hand-in visuals
+    // and adopted hand-off visuals, which are rare.
+    void EmitAllProperties(uint64_t visualId, _In_ WUComp::IVisual* pVisual)
+    {
+        wfn::Vector3 offset = {};
+        if (SUCCEEDED(pVisual->get_Offset(&offset)))
+        {
+            EmitProperty(visualId, VisualProperty::Offset, offset.X, offset.Y, offset.Z);
+        }
+        wfn::Vector2 size = {};
+        if (SUCCEEDED(pVisual->get_Size(&size)))
+        {
+            EmitProperty(visualId, VisualProperty::Size, size.X, size.Y);
+        }
+        float opacity = 1.0f;
+        if (SUCCEEDED(pVisual->get_Opacity(&opacity)))
+        {
+            EmitProperty(visualId, VisualProperty::Opacity, opacity);
+        }
+        boolean isVisible = TRUE;
+        if (SUCCEEDED(pVisual->get_IsVisible(&isVisible)))
+        {
+            EmitProperty(visualId, VisualProperty::IsVisible, isVisible ? 1.0f : 0.0f);
+        }
+        wfn::Vector2 anchor = {};
+        if (SUCCEEDED(pVisual->get_AnchorPoint(&anchor)))
+        {
+            EmitProperty(visualId, VisualProperty::AnchorPoint, anchor.X, anchor.Y);
+        }
+        wfn::Vector3 center = {};
+        if (SUCCEEDED(pVisual->get_CenterPoint(&center)))
+        {
+            EmitProperty(visualId, VisualProperty::CenterPoint, center.X, center.Y, center.Z);
+        }
+        wfn::Vector3 scale = {};
+        if (SUCCEEDED(pVisual->get_Scale(&scale)))
+        {
+            EmitProperty(visualId, VisualProperty::Scale, scale.X, scale.Y, scale.Z);
+        }
+        float rotationDegrees = 0.0f;
+        if (SUCCEEDED(pVisual->get_RotationAngleInDegrees(&rotationDegrees)))
+        {
+            EmitProperty(visualId, VisualProperty::RotationAngleInDegrees, rotationDegrees);
+        }
+        wfn::Vector3 axis = {};
+        if (SUCCEEDED(pVisual->get_RotationAxis(&axis)))
+        {
+            EmitProperty(visualId, VisualProperty::RotationAxis, axis.X, axis.Y, axis.Z);
+        }
+        wfn::Quaternion orientation = {};
+        if (SUCCEEDED(pVisual->get_Orientation(&orientation)))
+        {
+            EmitProperty(visualId, VisualProperty::Orientation, orientation.X, orientation.Y, orientation.Z, orientation.W);
+        }
+        wfn::Matrix4x4 matrix = {};
+        if (SUCCEEDED(pVisual->get_TransformMatrix(&matrix)))
+        {
+            EmitTransform(visualId, matrix);
+        }
+        WUComp::CompositionCompositeMode compositeMode = {};
+        if (SUCCEEDED(pVisual->get_CompositeMode(&compositeMode)))
+        {
+            EmitProperty(visualId, VisualProperty::CompositeMode, static_cast<float>(compositeMode));
+        }
+        WUComp::CompositionBorderMode borderMode = {};
+        if (SUCCEEDED(pVisual->get_BorderMode(&borderMode)))
+        {
+            EmitProperty(visualId, VisualProperty::BorderMode, static_cast<float>(borderMode));
+        }
+        WUComp::CompositionBackfaceVisibility backfaceVisibility = {};
+        if (SUCCEEDED(pVisual->get_BackfaceVisibility(&backfaceVisibility)))
+        {
+            EmitProperty(visualId, VisualProperty::BackfaceVisibility, static_cast<float>(backfaceVisibility));
+        }
+        wrl::ComPtr<WUComp::ICompositionClip> spClip;
+        if (SUCCEEDED(pVisual->get_Clip(&spClip)))
+        {
+            EmitObject(visualId, VisualProperty::Clip, spClip.Get());
+        }
+
+        wrl::ComPtr<WUComp::IVisual2> spVisual2;
+        if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spVisual2))))
+        {
+            wfn::Vector3 relativeOffset = {};
+            if (SUCCEEDED(spVisual2->get_RelativeOffsetAdjustment(&relativeOffset)))
+            {
+                EmitProperty(visualId, VisualProperty::RelativeOffsetAdjustment, relativeOffset.X, relativeOffset.Y, relativeOffset.Z);
+            }
+            wfn::Vector2 relativeSize = {};
+            if (SUCCEEDED(spVisual2->get_RelativeSizeAdjustment(&relativeSize)))
+            {
+                EmitProperty(visualId, VisualProperty::RelativeSizeAdjustment, relativeSize.X, relativeSize.Y);
+            }
+        }
+        wrl::ComPtr<WUComp::IVisual3> spVisual3;
+        if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spVisual3))))
+        {
+            boolean isHitTestVisible = TRUE;
+            if (SUCCEEDED(spVisual3->get_IsHitTestVisible(&isHitTestVisible)))
+            {
+                EmitProperty(visualId, VisualProperty::IsHitTestVisible, isHitTestVisible ? 1.0f : 0.0f);
+            }
+        }
+        wrl::ComPtr<WUComp::IVisual4> spVisual4;
+        if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spVisual4))))
+        {
+            boolean isPixelSnappingEnabled = FALSE;
+            if (SUCCEEDED(spVisual4->get_IsPixelSnappingEnabled(&isPixelSnappingEnabled)))
+            {
+                EmitProperty(visualId, VisualProperty::IsPixelSnappingEnabled, isPixelSnappingEnabled ? 1.0f : 0.0f);
+            }
+        }
+
+        wrl::ComPtr<WUComp::ISpriteVisual> spSprite;
+        wrl::ComPtr<WUComp::ILayerVisual> spLayer;
+        wrl::ComPtr<WUComp::IShapeVisual> spShape;
+        wrl::ComPtr<WUComp::IRedirectVisual> spRedirect;
+        if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spSprite))))
+        {
+            wrl::ComPtr<WUComp::ICompositionBrush> spBrush;
+            if (SUCCEEDED(spSprite->get_Brush(&spBrush)))
+            {
+                EmitObject(visualId, VisualProperty::Brush, spBrush.Get());
+            }
+            wrl::ComPtr<WUComp::ISpriteVisual2> spSprite2;
+            if (SUCCEEDED(spSprite.As(&spSprite2)))
+            {
+                wrl::ComPtr<WUComp::ICompositionShadow> spShadow;
+                if (SUCCEEDED(spSprite2->get_Shadow(&spShadow)))
+                {
+                    EmitObject(visualId, VisualProperty::Shadow, spShadow.Get());
+                }
+            }
+        }
+        else if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spLayer))))
+        {
+            wrl::ComPtr<WUComp::ICompositionEffectBrush> spEffect;
+            if (SUCCEEDED(spLayer->get_Effect(&spEffect)))
+            {
+                EmitObject(visualId, VisualProperty::Effect, spEffect.Get());
+            }
+            wrl::ComPtr<WUComp::ILayerVisual2> spLayer2;
+            if (SUCCEEDED(spLayer.As(&spLayer2)))
+            {
+                wrl::ComPtr<WUComp::ICompositionShadow> spShadow;
+                if (SUCCEEDED(spLayer2->get_Shadow(&spShadow)))
+                {
+                    EmitObject(visualId, VisualProperty::Shadow, spShadow.Get());
+                }
+            }
+        }
+        else if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spShape))))
+        {
+            wrl::ComPtr<wfc::IVector<WUComp::CompositionShape*>> spShapes;
+            if (SUCCEEDED(spShape->get_Shapes(&spShapes)) && spShapes != nullptr)
+            {
+                unsigned int count = 0;
+                if (SUCCEEDED(spShapes->get_Size(&count)))
+                {
+                    EmitProperty(visualId, VisualProperty::ShapeCount, static_cast<float>(count));
+                }
+            }
+            wrl::ComPtr<WUComp::ICompositionViewBox> spViewBox;
+            if (SUCCEEDED(spShape->get_ViewBox(&spViewBox)))
+            {
+                EmitObject(visualId, VisualProperty::ViewBox, spViewBox.Get());
+            }
+        }
+        else if (SUCCEEDED(pVisual->QueryInterface(IID_PPV_ARGS(&spRedirect))))
+        {
+            wrl::ComPtr<WUComp::IVisual> spSource;
+            if (SUCCEEDED(spRedirect->get_Source(&spSource)))
+            {
+                EmitObject(visualId, VisualProperty::Source, spSource.Get());
+            }
+        }
     }
 }
 
 namespace WucVisualTreeProfiler
 {
-    bool IsEnabled()
-    {
-        return XamlProfilerTracing::IsEnabled();
-    }
-
     void NotifyChildInserted(
         _In_opt_ IUnknown* parentVisual,
         _In_opt_ IUnknown* childVisual,
-        uint64_t ownerCompNodeId,
+        _In_opt_ const HWCompNode* ownerCompNode,
         int32_t index)
     {
         if (!IsEnabled())
@@ -426,22 +383,46 @@ namespace WucVisualTreeProfiler
         }
 
         // Skip visuals owned by a suppressed pick-overlay comp node.
-        if (IsCompNodeSuppressed(ownerCompNodeId))
+        if (IsSuppressedOwner(ownerCompNode))
         {
             return;
         }
 
         const uint64_t parentVisualId = VisualId(parentVisual);
-        const uint64_t childVisualId = VisualId(childVisual);
-        if (parentVisualId == 0 || childVisualId == 0)
+        const wrl::ComPtr<WUComp::IVisual> spChild = AsVisual(childVisual);
+        if (parentVisualId == 0 || spChild == nullptr)
         {
             return;
         }
 
-        wrl::ComPtr<WUComp::IVisual> spChild;
-        if (childVisual != nullptr)
+        XamlProfilerTracing::WucVisualChildInserted(
+            parentVisualId,
+            reinterpret_cast<uint64_t>(spChild.Get()),
+            reinterpret_cast<uint64_t>(ownerCompNode),
+            index,
+            static_cast<uint32_t>(GetVisualKind(spChild.Get())));
+    }
+
+    void NotifyHandInVisualInserted(
+        _In_opt_ IUnknown* parentVisual,
+        _In_opt_ IUnknown* handInVisual,
+        _In_opt_ const HWCompNode* ownerCompNode)
+    {
+        if (!IsEnabled())
         {
-            childVisual->QueryInterface(IID_PPV_ARGS(&spChild));
+            return;
+        }
+
+        if (IsSuppressedOwner(ownerCompNode))
+        {
+            return;
+        }
+
+        const uint64_t parentVisualId = VisualId(parentVisual);
+        const wrl::ComPtr<WUComp::IVisual> spChild = AsVisual(handInVisual);
+        if (parentVisualId == 0 || spChild == nullptr)
+        {
+            return;
         }
 
         // Skip the tap's own highlight adorner so it never surfaces as a phantom node.
@@ -450,16 +431,56 @@ namespace WucVisualTreeProfiler
             return;
         }
 
-        WCHAR properties[4096];
-        BuildPropertiesString(spChild.Get(), properties, _countof(properties));
-
+        const uint64_t childVisualId = reinterpret_cast<uint64_t>(spChild.Get());
         XamlProfilerTracing::WucVisualChildInserted(
             parentVisualId,
             childVisualId,
-            ownerCompNodeId,
-            index,
-            GetWucVisualTypeName(spChild.Get()),
-            properties);
+            reinterpret_cast<uint64_t>(ownerCompNode),
+            -1 /* index */,
+            static_cast<uint32_t>(GetVisualKind(spChild.Get())));
+
+        EmitAllProperties(childVisualId, spChild.Get());
+    }
+
+    void NotifyHandOffVisualAdopted(
+        _In_opt_ IUnknown* handOffVisual,
+        _In_opt_ const HWCompNode* ownerCompNode)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        if (IsSuppressedOwner(ownerCompNode))
+        {
+            return;
+        }
+
+        const wrl::ComPtr<WUComp::IVisual> spVisual = AsVisual(handOffVisual);
+        if (spVisual == nullptr)
+        {
+            return;
+        }
+
+        EmitAllProperties(reinterpret_cast<uint64_t>(spVisual.Get()), spVisual.Get());
+    }
+
+    void NotifyVisualCreated(
+        _In_opt_ IUnknown* visual,
+        VisualKind kind)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        const uint64_t visualId = VisualId(visual);
+        if (visualId == 0)
+        {
+            return;
+        }
+
+        XamlProfilerTracing::WucVisualCreated(visualId, static_cast<uint32_t>(kind));
     }
 
     void NotifyChildRemoved(
@@ -502,7 +523,7 @@ namespace WucVisualTreeProfiler
     void NotifyRootSet(
         _In_opt_ IUnknown* visual,
         uint64_t targetId,
-        uint64_t ownerCompNodeId)
+        _In_opt_ const HWCompNode* ownerCompNode)
     {
         if (!IsEnabled())
         {
@@ -510,32 +531,22 @@ namespace WucVisualTreeProfiler
         }
 
         // Skip visuals owned by a suppressed pick-overlay comp node.
-        if (IsCompNodeSuppressed(ownerCompNodeId))
+        if (IsSuppressedOwner(ownerCompNode))
         {
             return;
         }
 
-        const uint64_t visualId = VisualId(visual);
-        if (visualId == 0)
+        const wrl::ComPtr<WUComp::IVisual> spVisual = AsVisual(visual);
+        if (spVisual == nullptr)
         {
             return;
         }
-
-        wrl::ComPtr<WUComp::IVisual> spVisual;
-        if (visual != nullptr)
-        {
-            visual->QueryInterface(IID_PPV_ARGS(&spVisual));
-        }
-
-        WCHAR properties[4096];
-        BuildPropertiesString(spVisual.Get(), properties, _countof(properties));
 
         XamlProfilerTracing::WucVisualRootSet(
-            visualId,
+            reinterpret_cast<uint64_t>(spVisual.Get()),
             targetId,
-            ownerCompNodeId,
-            GetWucVisualTypeName(spVisual.Get()),
-            properties);
+            reinterpret_cast<uint64_t>(ownerCompNode),
+            static_cast<uint32_t>(GetVisualKind(spVisual.Get())));
     }
 
     void NotifyRootCleared(uint64_t targetId)
@@ -548,37 +559,62 @@ namespace WucVisualTreeProfiler
         XamlProfilerTracing::WucVisualRootCleared(targetId);
     }
 
-    void SuppressCompNode(uint64_t compNodeId)
+    void NotifyPropertyChanged(
+        _In_opt_ IUnknown* visual,
+        VisualProperty property,
+        float x,
+        float y,
+        float z,
+        float w)
     {
-        if (compNodeId == 0)
+        if (!IsEnabled())
         {
             return;
         }
-        AcquireSRWLockExclusive(&g_suppressedCompNodesLock);
-        SuppressedCompNodes().insert(compNodeId);
-        ReleaseSRWLockExclusive(&g_suppressedCompNodesLock);
-    }
 
-    void UnsuppressCompNode(uint64_t compNodeId)
-    {
-        if (compNodeId == 0)
+        const uint64_t visualId = VisualId(visual);
+        if (visualId == 0)
         {
             return;
         }
-        AcquireSRWLockExclusive(&g_suppressedCompNodesLock);
-        SuppressedCompNodes().erase(compNodeId);
-        ReleaseSRWLockExclusive(&g_suppressedCompNodesLock);
+
+        EmitProperty(visualId, property, x, y, z, w);
     }
 
-    bool IsCompNodeSuppressed(uint64_t compNodeId)
+    void NotifyTransformChanged(
+        _In_opt_ IUnknown* visual,
+        _In_reads_(16) const float* matrix)
     {
-        if (compNodeId == 0)
+        if (!IsEnabled())
         {
-            return false;
+            return;
         }
-        AcquireSRWLockShared(&g_suppressedCompNodesLock);
-        const bool suppressed = SuppressedCompNodes().count(compNodeId) != 0;
-        ReleaseSRWLockShared(&g_suppressedCompNodesLock);
-        return suppressed;
+
+        const uint64_t visualId = VisualId(visual);
+        if (visualId == 0)
+        {
+            return;
+        }
+
+        XamlProfilerTracing::WucVisualTransformChanged(visualId, matrix);
+    }
+
+    void NotifyObjectChanged(
+        _In_opt_ IUnknown* visual,
+        VisualProperty property,
+        _In_opt_ IUnknown* object)
+    {
+        if (!IsEnabled())
+        {
+            return;
+        }
+
+        const uint64_t visualId = VisualId(visual);
+        if (visualId == 0)
+        {
+            return;
+        }
+
+        EmitObject(visualId, property, object);
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace XamlProfiler.Services;
 
@@ -53,6 +54,26 @@ public readonly struct EtwEvent
         if (v == null) return 0;
         try { return Convert.ToInt32(v); }
         catch { return 0; }
+    }
+
+    /// <summary>Read an unsigned 32-bit slot (e.g. a TypeIndex or an enum value).</summary>
+    public uint U32(int index)
+    {
+        if (index < 0 || index >= _payload.Length) return 0;
+        var v = _payload[index];
+        if (v == null) return 0;
+        try { return unchecked((uint)Convert.ToInt64(v)); }
+        catch { return 0; }
+    }
+
+    /// <summary>Read a 32-bit float slot.</summary>
+    public float F32(int index)
+    {
+        if (index < 0 || index >= _payload.Length) return 0f;
+        var v = _payload[index];
+        if (v == null) return 0f;
+        try { return Convert.ToSingle(v, CultureInfo.InvariantCulture); }
+        catch { return 0f; }
     }
 
     /// <summary>

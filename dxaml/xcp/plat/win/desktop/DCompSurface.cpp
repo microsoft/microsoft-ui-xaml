@@ -23,6 +23,31 @@ bool DCompSurface::s_traceDCompSurfacesInitialized = false;
 bool DCompSurface::s_traceDCompSurfaces = false;
 bool DCompSurface::s_traceDCompSurfaceUpdates = false;
 
+#ifdef XAMLPROFILER_ENABLED
+// XAML Profiler gates, defined ahead of their callers in this file so every call site inlines
+// them. The work is in the noinline ...Impl functions further down.
+__forceinline void DCompSurface::TraceProfilerMemoryChange(bool isAllocation)
+{
+    if (XamlProfilerTracing::IsEnabled(
+            XamlProfilerKeywords::Surfaces |
+            XamlProfilerKeywords::HeapSnapshots |
+            XamlProfilerKeywords::GpuSnapshots))
+    {
+        TraceProfilerMemoryChangeImpl(isAllocation);
+    }
+}
+
+__forceinline void DCompSurface::TraceProfilerTextureObserved(
+    _In_ IUnknown* updateObject,
+    const POINT& offset) noexcept
+{
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::SurfaceTextures))
+    {
+        TraceProfilerTextureObservedImpl(updateObject, offset);
+    }
+}
+#endif // XAMLPROFILER_ENABLED
+
 //-------------------------------------------------------------------------
 //
 //  Synopsis:
@@ -1372,15 +1397,10 @@ DCompSurface::GetTextureSizeInBytes() const
 }
 
 #ifdef XAMLPROFILER_ENABLED
-void DCompSurface::TraceProfilerTextureObserved(
+__declspec(noinline) void DCompSurface::TraceProfilerTextureObservedImpl(
     _In_ IUnknown* updateObject,
     const POINT& offset) noexcept
 {
-    if (!XamlProfilerTracing::IsEnabled())
-    {
-        return;
-    }
-
     Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
     if (FAILED(updateObject->QueryInterface(IID_PPV_ARGS(&texture))))
     {
@@ -1416,40 +1436,40 @@ void DCompSurface::TraceProfilerTextureObserved(
         desc.ArraySize,
         static_cast<uint32_t>(desc.Format),
         desc.SampleDesc.Count,
-        offset.x,
-        offset.y);
+        static_cast<int32_t>(offset.x),
+        static_cast<int32_t>(offset.y));
 }
 
-void DCompSurface::TraceProfilerMemoryChange(bool isAllocation)
+// Called when any of the Surfaces, HeapSnapshots or GpuSnapshots groups is on; each part checks
+// its own group.
+__declspec(noinline) void DCompSurface::TraceProfilerMemoryChangeImpl(bool isAllocation)
 {
-    if (!XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::Surfaces))
     {
-        return;
+        const uint64_t estimatedSizeBytes =
+            static_cast<uint64_t>(GetWidthWithGutters()) *
+            static_cast<uint64_t>(GetHeightWithGutters()) *
+            static_cast<uint64_t>(GetPixelStride());
+
+        XamlProfilerTracing::DCompSurfaceMemoryChanged(
+            reinterpret_cast<uint64_t>(this),
+            isAllocation,
+            estimatedSizeBytes,
+            GetWidthWithGutters(),
+            GetHeightWithGutters(),
+            GetPixelStride(),
+            m_pVirtualCompositionSurface != nullptr);
     }
 
-    const uint64_t estimatedSizeBytes =
-        static_cast<uint64_t>(GetWidthWithGutters()) *
-        static_cast<uint64_t>(GetHeightWithGutters()) *
-        static_cast<uint64_t>(GetPixelStride());
+#if XCP_COUNT_OUTSTANDING_ALLOC
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::HeapSnapshots))
+    {
+        XamlProfilerTraceHeapSnapshot();
+    }
+#endif
 
-    XamlProfilerTracing::DCompSurfaceMemoryChanged(
-        reinterpret_cast<uint64_t>(this),
-        isAllocation,
-        estimatedSizeBytes,
-        GetWidthWithGutters(),
-        GetHeightWithGutters(),
-        GetPixelStride(),
-        m_pVirtualCompositionSurface != nullptr);
-    XamlProfilerTracing::XamlHeapSnapshot(
-        XcpAllocation::GetHeapHandle(),
-        XcpAllocation::IsUsingPrivateHeap(),
-        XcpAllocation::GetOutstandingAllocationSize(),
-        XcpAllocation::GetOutstandingAllocationCount(),
-        XcpAllocation::GetAllocationSize(),
-        XcpAllocation::GetAllocationCount(),
-        XcpAllocation::GetDeallocationCount());
-
-    if (m_d3dDevice == nullptr)
+    if (m_d3dDevice == nullptr ||
+        !XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::GpuSnapshots))
     {
         return;
     }

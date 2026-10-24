@@ -10,6 +10,7 @@
 #ifdef XAMLPROFILER_ENABLED
 #include "XamlProfilerTracing.h"
 #endif
+#include "WucVisualTreeProfiler.h"
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
@@ -78,10 +79,11 @@ VisualContentRenderer::RenderSolidColorRectangle(
 
     IFC_RETURN(EnsureSpriteVisual(pCompositor, rect, AAEdge_All, &spContentVisual, &spVisual));
     IFCFAILFAST(spContentVisual->put_Brush(wucBrush.Get()));
+    XAMLPROFILER_WUC_OBJECT(spContentVisual.Get(), Brush, wucBrush.Get());
     IFC_RETURN(LinkVisual(pBrush, nullptr, spVisual.Get()));
 
 #ifdef XAMLPROFILER_ENABLED
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::Surfaces))
     {
         const auto visualId = reinterpret_cast<uint64_t>(spVisual.Get());
         XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 0);
@@ -420,12 +422,13 @@ _Check_return_ HRESULT VisualContentRenderer::RenderPrimitive(
     if (newBrush != existingBrush)
     {
         IFC_RETURN(spContentVisual->put_Brush(newBrush.Get()));
+        XAMLPROFILER_WUC_OBJECT(spContentVisual.Get(), Brush, newBrush.Get());
     }
 
     IFC_RETURN(LinkVisual(brush, nullptr, spVisual.Get()));
 
 #ifdef XAMLPROFILER_ENABLED
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::Surfaces))
     {
         const auto getSurfaceId = [](HWTexture* texture) -> uint64_t
         {
@@ -589,6 +592,7 @@ VisualContentRenderer::EnsureSpriteVisual(
     else
     {
         IFC_RETURN(pCompositor->CreateSpriteVisual(&spContentVisual));
+        XAMLPROFILER_WUC_CREATED(spContentVisual.Get(), SpriteVisual);
         VERIFYHR(spContentVisual.As(&spVisual));
     }
 
@@ -608,11 +612,13 @@ VisualContentRenderer::EnsureSpriteVisual(
     }
 
     IFC_RETURN(spVisual->put_BorderMode(borderMode));
+    XAMLPROFILER_WUC_SCALAR(spVisual.Get(), BorderMode, borderMode);
 
     // Hit-test visibility
     ComPtr<WUComp::IVisual3> visual3;
     VERIFYHR(spVisual.As(&visual3));
     IFC_RETURN(visual3->put_IsHitTestVisible(!ShouldSpriteVisualBeTransparentForInput()));
+    XAMLPROFILER_WUC_SCALAR(visual3.Get(), IsHitTestVisible, !ShouldSpriteVisualBeTransparentForInput());
 
     *ppContentVisual = spContentVisual.Detach();
     *ppVisual = spVisual.Detach();
@@ -637,6 +643,7 @@ void VisualContentRenderer::EnsureShapeVisual(
     {
         // Create a ShapeVisual
         IFCFAILFAST(GetCompositor5()->CreateShapeVisual(&shapeVisual));
+        XAMLPROFILER_WUC_CREATED(shapeVisual.Get(), ShapeVisual);
         shapeVisual.As(&visual);
     }
 
@@ -648,6 +655,7 @@ void VisualContentRenderer::EnsureShapeVisual(
     ComPtr<WUComp::IVisual3> visual3;
     VERIFYHR(visual.As(&visual3));
     IFCFAILFAST(visual3->put_IsHitTestVisible(!ShouldSpriteVisualBeTransparentForInput()));
+    XAMLPROFILER_WUC_SCALAR(visual3.Get(), IsHitTestVisible, !ShouldSpriteVisualBeTransparentForInput());
 
     *ppContentVisual = shapeVisual.Detach();
     *ppVisual = visual.Detach();
@@ -666,9 +674,11 @@ _Check_return_ HRESULT VisualContentRenderer::PopulateVisual(
     size.X = rect.Width;
     size.Y = rect.Height;
     IFC_RETURN(pVisual->put_Size(size));
+    XAMLPROFILER_WUC_VECTOR2(pVisual, Size, size);
 
     // Opacity:
     IFC_RETURN(pVisual->put_Opacity(m_pRenderParams->opacityToCompNode));
+    XAMLPROFILER_WUC_SCALAR(pVisual, Opacity, m_pRenderParams->opacityToCompNode);
 
     // Clip:
     // NOTE: Composition nodes are pushed for all elements with projections, transforms, or clip transforms that
@@ -699,6 +709,7 @@ _Check_return_ HRESULT VisualContentRenderer::PopulateVisual(
     if (scale.X != existingScale.X || scale.Y != existingScale.Y || scale.Z != existingScale.Z)
     {
         IFC_RETURN(pVisual->put_Scale(scale));
+        XAMLPROFILER_WUC_VECTOR3(pVisual, Scale, scale);
     }
 
     // Offset:
@@ -716,6 +727,7 @@ _Check_return_ HRESULT VisualContentRenderer::PopulateVisual(
 
     // Now that we have the combined offset, actually apply it to the visual.
     IFC_RETURN(pVisual->put_Offset(offset));
+    XAMLPROFILER_WUC_VECTOR3(pVisual, Offset, offset);
 
     return S_OK;
 }
@@ -769,6 +781,7 @@ VisualContentRenderer::EnsureClip(
     }
 
     IFC_RETURN(pVisual->put_Clip(spCompositionClip.Get()));
+    XAMLPROFILER_WUC_OBJECT(pVisual, Clip, spCompositionClip.Get());
     return S_OK;
 }
 
@@ -944,6 +957,7 @@ _Check_return_ HRESULT VisualContentRenderer::RenderShape(_In_ CShape *pShapeEle
     ComPtr<WUComp::ICompositionShape> compShape;
     sprite.As(&compShape);
     shapeCollection->Append(compShape.Get());
+    XAMLPROFILER_WUC_SCALAR(shapeVisual.Get(), ShapeCount, 1);
 
     // Add ShapeVisual into the Visual tree
     IFC_RETURN(LinkVisual(pShapeElement->GetStroke(), pShapeElement->m_pFill, visual.Get()));

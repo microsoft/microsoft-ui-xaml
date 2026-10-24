@@ -5,6 +5,20 @@
 #include <ParserAPI.h>
 #ifdef XAMLPROFILER_ENABLED
 #include "XamlProfilerTracing.h"
+
+// Out of line so the label and peer work stays out of the Content setter.
+static __declspec(noinline) void TraceProfilerContentChanged(
+    _In_ const CContentControl* contentControl,
+    _In_opt_ const CDependencyObject* oldContent,
+    _In_opt_ const CDependencyObject* newContent)
+{
+    XamlProfilerTracing::ContentChanged(
+        reinterpret_cast<uint64_t>(contentControl),
+        reinterpret_cast<uint64_t>(oldContent),
+        reinterpret_cast<uint64_t>(newContent),
+        newContent ? newContent->GetDebugLabel().GetBuffer() : L"",
+        XamlProfilerGetPeerHandle(newContent));
+}
 #endif // XAMLPROFILER_ENABLED
 
 CContentControl::~CContentControl()
@@ -326,14 +340,9 @@ CContentControl::Content(
         IFC(FxCallbacks::ContentControl_OnContentChanged(pThis, &oldForManaged, &newForManaged, pValueOuter));
 
 #ifdef XAMLPROFILER_ENABLED
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::XamlTree))
         {
-            XamlProfilerTracing::ContentChanged(
-                reinterpret_cast<uint64_t>(pThis),
-                reinterpret_cast<uint64_t>(pOldContent),
-                reinterpret_cast<uint64_t>(pNewContent),
-                pNewContent ? pNewContent->GetDebugLabel().GetBuffer() : L"",
-                XamlProfilerGetPeerHandle(pNewContent));
+            TraceProfilerContentChanged(pThis, pOldContent, pNewContent);
         }
 #endif // XAMLPROFILER_ENABLED
     }

@@ -41,6 +41,7 @@
 #include "PointerPointTransform.h"
 
 #include "LoadLibraryAbs.h"
+#include "WucVisualTreeProfiler.h"
 
 using namespace Microsoft::WRL;
 using namespace WRLHelper;
@@ -205,6 +206,7 @@ _Check_return_ HRESULT CXamlIslandRoot::InitializeCommon()
 
     ctl::ComPtr<ixp::IContainerVisual> containerRootVisual;
     IFCFAILFAST(pCompositor->CreateContainerVisual(&containerRootVisual));
+    XAMLPROFILER_WUC_CREATED(containerRootVisual.Get(), ContainerVisual);
 
     ctl::ComPtr<ixp::IVisual> rootVisual;
     IFCFAILFAST(containerRootVisual.As(&rootVisual));

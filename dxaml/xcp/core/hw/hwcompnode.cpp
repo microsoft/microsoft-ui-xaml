@@ -6,8 +6,8 @@
 #include "palgfx.h"
 #ifdef XAMLPROFILER_ENABLED
 #include "XamlProfilerTracing.h"
-#include "WucVisualTreeProfiler.h"
 #endif // XAMLPROFILER_ENABLED
+#include "WucVisualTreeProfiler.h"
 
 #include "TimeMgr.h"
 #include "InputServices.h"
@@ -35,6 +35,7 @@ HWCompNode::HWCompNode(
     : CDependencyObject(coreServices)
     , m_pCompositorTreeHostNoRef(pCompositorTreeHost)
     , m_usesPlaceholderVisual(false)
+    , m_isProfilerSuppressed(false)
 {
 }
 
@@ -639,9 +640,9 @@ HWCompTreeNode::InsertChild(
 
 #ifdef XAMLPROFILER_ENABLED
     // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-    if (XamlProfilerTracing::IsEnabled() &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::CompTree) &&
+        !IsProfilerSuppressed() &&
+        !pChild->IsProfilerSuppressed())
     {
         XamlProfilerTracing::CompNodeChildInserted(
             reinterpret_cast<uint64_t>(this),
@@ -686,9 +687,9 @@ HWCompTreeNode::InsertChildAtBeginning(
 
 #ifdef XAMLPROFILER_ENABLED
     // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-    if (XamlProfilerTracing::IsEnabled() &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
-        !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
+    if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::CompTree) &&
+        !IsProfilerSuppressed() &&
+        !pChild->IsProfilerSuppressed())
     {
         XamlProfilerTracing::CompNodeChildInserted(
             reinterpret_cast<uint64_t>(this),
@@ -723,9 +724,9 @@ HWCompTreeNode::RemoveChild(
 
 #ifdef XAMLPROFILER_ENABLED
             // Skip comp-node-tree edges touching a suppressed pick-overlay node.
-            if (XamlProfilerTracing::IsEnabled() &&
-                !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(this)) &&
-                !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pChild)))
+            if (XamlProfilerTracing::IsEnabled(XamlProfilerKeywords::CompTree) &&
+                !IsProfilerSuppressed() &&
+                !pChild->IsProfilerSuppressed())
             {
                 XamlProfilerTracing::CompNodeChildRemoved(
                     reinterpret_cast<uint64_t>(this),
@@ -1089,6 +1090,7 @@ HWCompMediaNode::SetMedia(
             IFC_RETURN(surfaceBrush->put_Surface(surface.Get()));
             IFC_RETURN(surfaceBrush.As(&brush));
             IFC_RETURN(m_spriteVisual->put_Brush(brush.Get()));
+            XAMLPROFILER_WUC_OBJECT(m_spriteVisual.get(), Brush, brush.Get());
         }
 
         m_swapchainHandleNoRef = swapchainHandle;
@@ -1100,11 +1102,13 @@ HWCompMediaNode::SetMedia(
 
     auto visual = GetWUCVisual();
     IFC_RETURN(visual->put_Size(panelSize));
+    XAMLPROFILER_WUC_VECTOR2(visual.get(), Size, panelSize);
 
     CMILMatrix stretch(stretchTransform);
     wfn::Matrix4x4 stretch4x4;
     stretch.ToMatrix4x4(&stretch4x4);
     IFC_RETURN(visual->put_TransformMatrix(stretch4x4));
+    XAMLPROFILER_WUC_TRANSFORM(visual.get(), stretch4x4);
 
     xref_ptr<WUComp::ICompositionClip> compositionClip;
     const float leftInset = stretchClip.X;
@@ -1122,6 +1126,7 @@ HWCompMediaNode::SetMedia(
 
     VERIFYHR(insetClip->QueryInterface(IID_PPV_ARGS(compositionClip.ReleaseAndGetAddressOf())));
     IFCFAILFAST(visual->put_Clip(compositionClip));
+    XAMLPROFILER_WUC_OBJECT(visual.get(), Clip, compositionClip.get());
 
     TraceCompositorSetMediaInfo(
         reinterpret_cast<uint64_t>(pVisualTreeHost),
@@ -1149,6 +1154,7 @@ _Check_return_ HRESULT HWCompMediaNode::EnsureVisual(_In_opt_ DCompTreeHost* pDC
     {
         ixp::ICompositor* compositorNoRef = pDCompTreeHost->GetCompositor();
         IFC_RETURN(compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf()));
+        XAMLPROFILER_WUC_CREATED(m_spriteVisual.get(), SpriteVisual);
     }
     return S_OK;
 }
@@ -1273,6 +1279,7 @@ HWCompSwapChainNode::SetSwapChain(
             IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0x00000000)));
             IFC_RETURN(colorBrush.As(&brush));
             IFC_RETURN(m_spriteVisual->put_Brush(brush.Get()));
+            XAMLPROFILER_WUC_OBJECT(m_spriteVisual.get(), Brush, brush.Get());
         }
     }
     else
@@ -1293,6 +1300,7 @@ HWCompSwapChainNode::SetSwapChain(
             IFC_RETURN(surfaceBrush->put_Surface(surface.Get()));
             IFC_RETURN(surfaceBrush.As(&brush));
             IFC_RETURN(m_spriteVisual->put_Brush(brush.Get()));
+            XAMLPROFILER_WUC_OBJECT(m_spriteVisual.get(), Brush, brush.Get());
         }
     }
 
@@ -1355,6 +1363,7 @@ HWCompSwapChainNode::SetSwapChain(
     ComPtr<WUComp::IVisual> visual;
     IFC_RETURN(m_spriteVisual->QueryInterface(IID_PPV_ARGS(visual.ReleaseAndGetAddressOf())));
     IFC_RETURN(visual->put_Size(panelSize));
+    XAMLPROFILER_WUC_VECTOR2(visual.Get(), Size, panelSize);
 
     return S_OK;
 }
@@ -1391,6 +1400,7 @@ _Check_return_ HRESULT HWCompSwapChainNode::EnsureVisual(_In_opt_ DCompTreeHost*
         {
             ixp::ICompositor* compositorNoRef = pDCompTreeHost->GetCompositor();
             IFC_RETURN(compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf()));
+            XAMLPROFILER_WUC_CREATED(m_spriteVisual.get(), SpriteVisual);
         }
     }
     return S_OK;
