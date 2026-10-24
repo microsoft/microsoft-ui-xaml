@@ -68,32 +68,49 @@ void TableView::RefreshFrozenColumns()
 {
     const double leadingFrozenWidth = ComputeLeadingFrozenWidth();
 
-    // No active frozen columns; avoid walking realized rows on every scroll.
-    if (leadingFrozenWidth <= 0.0 && !m_frozenColumnsActive)
+    // Skip the row walk when nothing is frozen and no realized row shows its selection indicator;
+    // a frozen pass still runs once after deactivation to clear prior transforms and clips.
+    const bool refreshFrozenCells = leadingFrozenWidth > 0.0 || m_frozenColumnsActive;
+    if (!refreshFrozenCells && !m_selectionIndicatorPinned)
     {
         return;
     }
-
-    // Run once after deactivation to clear prior transforms and clips.
     m_frozenColumnsActive = leadingFrozenWidth > 0.0;
 
-    double horizontalOffset = 0.0;
-    if (auto bodyScroller = m_bodyScroller.get())
-    {
-        horizontalOffset = bodyScroller.HorizontalOffset();
-    }
+    const double horizontalOffset = GetBodyHorizontalOffsetInternal();
 
     // Header and row cells share pinning so they stay aligned.
-    if (auto headerHost = m_headerHost.get())
+    if (refreshFrozenCells)
     {
-        TableViewCellsPanel::ApplyFrozenColumnLayout(headerHost, horizontalOffset, leadingFrozenWidth);
+        if (auto headerHost = m_headerHost.get())
+        {
+            TableViewCellsPanel::ApplyFrozenColumnLayout(headerHost, horizontalOffset, leadingFrozenWidth);
+        }
     }
 
     // Re-pin realized rows.
+    bool indicatorPinned = false;
     ForEachRealizedRow([&](winrt::TableViewRow const& row)
     {
-        winrt::get_self<TableViewRow>(row)->RefreshFrozenColumnLayout(horizontalOffset, leadingFrozenWidth);
+        auto const rowImpl = winrt::get_self<TableViewRow>(row);
+        if (refreshFrozenCells)
+        {
+            rowImpl->RefreshFrozenColumnLayout(horizontalOffset, leadingFrozenWidth);
+        }
+        if (rowImpl->SyncSelectionIndicatorOffset(horizontalOffset))
+        {
+            indicatorPinned = true;
+        }
     });
+    m_selectionIndicatorPinned = indicatorPinned;
+}
+
+void TableView::PinSelectionIndicatorForRow(const winrt::TableViewRow& row)
+{
+    if (row && winrt::get_self<TableViewRow>(row)->SyncSelectionIndicatorOffset(GetBodyHorizontalOffsetInternal()))
+    {
+        m_selectionIndicatorPinned = true;
+    }
 }
 
 void TableView::PinFrozenColumnsForRow(const winrt::TableViewRow& row)
@@ -103,21 +120,26 @@ void TableView::PinFrozenColumnsForRow(const winrt::TableViewRow& row)
         return;
     }
 
+    PinSelectionIndicatorForRow(row);
+
     const double leadingFrozenWidth = ComputeLeadingFrozenWidth();
     if (leadingFrozenWidth <= 0.0)
     {
         return;
     }
 
-    double horizontalOffset = 0.0;
-    if (auto bodyScroller = m_bodyScroller.get())
-    {
-        horizontalOffset = bodyScroller.HorizontalOffset();
-    }
-
     // The row owns its cell panel; ask it to pin its own cells (the same path RefreshFrozenColumns
     // uses) instead of having TableView reach into and lay out the row's panel.
-    winrt::get_self<TableViewRow>(row)->RefreshFrozenColumnLayout(horizontalOffset, leadingFrozenWidth);
+    winrt::get_self<TableViewRow>(row)->RefreshFrozenColumnLayout(GetBodyHorizontalOffsetInternal(), leadingFrozenWidth);
+}
+
+double TableView::GetBodyHorizontalOffsetInternal() const
+{
+    if (auto bodyScroller = m_bodyScroller.get())
+    {
+        return bodyScroller.HorizontalOffset();
+    }
+    return 0.0;
 }
 
 void TableView::DetachAllColumnOwners()
@@ -163,6 +185,8 @@ void TableView::OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedE
     {
         return;
     }
+
+    ++m_cellLayoutGeneration;
 
     // Detach the old vector so replaced Columns do not leak subscriptions or owners.
     if (m_columnsVectorChangedToken.value)
@@ -223,6 +247,8 @@ void TableView::OnColumnsVectorChanged(
     const winrt::IObservableVector<winrt::TableViewColumn>& sender,
     const winrt::IVectorChangedEventArgs& args)
 {
+    ++m_cellLayoutGeneration;
+
     // Track columns incrementally so owner back-pointers stay in sync without diffing.
     const auto change = args.CollectionChange();
     const auto index = args.Index();
@@ -361,6 +387,8 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
         return;
     }
 
+    ++m_cellLayoutGeneration;
+
     const auto visibility = column.Visibility();
 
     if (auto headerHost = m_headerHost.get())
@@ -480,6 +508,8 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
         return;
     }
 
+    ++m_cellLayoutGeneration;
+
     // Rebuild realized rows so the new CellTemplate is applied; virtualized rows pick it up on realization.
     ForEachRealizedRow([](winrt::TableViewRow const& row)
     {
@@ -549,6 +579,8 @@ void TableView::OnColumnFrozenEdgeChanged(const winrt::TableViewColumn& column)
     {
         return;
     }
+
+    ++m_cellLayoutGeneration;
 
     // Re-render headers to re-tag cells for the new frozen prefix; RebuildHeaders ends with
     // RefreshFrozenColumns, which re-pins the leading-frozen band on the header and realized rows.

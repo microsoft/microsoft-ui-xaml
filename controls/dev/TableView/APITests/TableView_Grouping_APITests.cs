@@ -281,6 +281,58 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Repro #12352: WinUI Gallery shape - loaded flat, then GroupBy(string key) + ExpandAllGroups at runtime.
+        [TestMethod]
+        [TestProperty("Description", "Verifies the default group header shows a visible key after GroupBy is applied to a loaded table.")]
+        public void VerifyDefaultGroupHeaderShowsKeyWhenGroupedAfterLoad()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(MakeShapedPeople());
+                tableView = CreateTableView(source, headers: new[] { "Name", "Role" }, width: 480, height: 320);
+                tableView.Columns[0].Width = new GridLength(1, GridUnitType.Star);
+                tableView.HorizontalAlignment = HorizontalAlignment.Left;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                source.GroupBy(o => Person(o).Role);
+                tableView.ExpandAllGroups();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var expected = new[] { "Designer", "Engineer", "Architect" };
+                for (var i = 0; i < expected.Length; i++)
+                {
+                    var info = GetGroupInfo(tableView, i);
+                    if (info == null)
+                    {
+                        return;
+                    }
+
+                    Verify.AreEqual(expected[i], info.KeyText, $"Group {i} KeyText.");
+
+                    var presenter = FindVisualChildrenByType<ContentPresenter>(GetGroupHeader(tableView, i)).FirstOrDefault();
+                    var keyBlock = presenter == null ? null
+                        : FindVisualChildrenByType<TextBlock>(presenter).FirstOrDefault(tb => tb.Text == expected[i]);
+                    Verify.IsNotNull(keyBlock, $"Group {i} default header must render '{expected[i]}', rendered '{HeaderText(tableView, i)}'.");
+                    if (keyBlock != null)
+                    {
+                        Verify.IsTrue(keyBlock.ActualWidth > 0, $"Group {i} key text must have visible width, was {keyBlock.ActualWidth}.");
+                    }
+                }
+            });
+        }
+
         [TestMethod]
         [TestProperty("Description", "Verifies GroupHeaderTemplate replaces the default group header content.")]
         public void VerifyGroupHeaderTemplateApplies()

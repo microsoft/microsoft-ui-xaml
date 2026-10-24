@@ -22,6 +22,7 @@
 static constexpr std::wstring_view s_CellsHostPartName{ L"PART_CellsHost"sv };
 static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
 static constexpr std::wstring_view s_RowExpanderGutterPartName{ L"PART_RowExpanderGutter"sv };
+static constexpr std::wstring_view s_SelectionIndicatorPartName{ L"PART_SelectionIndicator"sv };
 
 // Used only when there is no owner to ask; mirrors the TableViewRowExpanderSize resource.
 static constexpr double c_defaultRowExpanderSize{ 24.0 };
@@ -70,50 +71,7 @@ namespace
         }
     }
 
-    // Slop allowed between the two presses of a double-click, in DIPs.
-    //
-    // SM_CXDOUBLECLK is in PHYSICAL pixels, so it must be divided by the element's rasterization
-    // scale to be comparable with the DIP-space positions this gesture works in. Without that the
-    // effective tolerance halves at 200% - a user whose two presses land 6 DIPs apart is inside the
-    // system tolerance but outside ours, and the double-click is silently dropped.
-    //
-    // Read per press rather than cached: the metric changes with the mouse control panel and the
-    // scale changes when the window moves between monitors, and a cached value never sees either.
-    // GetSystemMetrics is a cheap cached read in user32, not a round trip.
-    double GetDoubleClickSlop(winrt::UIElement const& element)
-    {
-        const auto cx = static_cast<double>(::GetSystemMetrics(SM_CXDOUBLECLK));
-        const auto cy = static_cast<double>(::GetSystemMetrics(SM_CYDOUBLECLK));
-        const double physical = (std::max)((std::max)(cx, cy), 4.0) / 2.0;
-
-        double scale = 1.0;
-        if (element)
-        {
-            if (auto const root = element.XamlRoot())
-            {
-                const auto rasterization = root.RasterizationScale();
-                if (rasterization > 0.0)
-                {
-                    scale = rasterization;
-                }
-            }
-        }
-
-        return physical / scale;
-    }
-
-    // PointerPoint.Timestamp is in microseconds; the system double-click time is in milliseconds.
-    // Not cached, so a change made in the mouse control panel takes effect immediately.
-    uint64_t GetDoubleClickIntervalMicroseconds()
-    {
-        return static_cast<uint64_t>(::GetDoubleClickTime()) * 1000ull;
-    }
-
-    bool IsKeyDown(winrt::VirtualKey key)
-    {
-        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
-            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-    }
+    using TableViewDetails::IsKeyDown;
 
     // Collects tab stops BELOW a cell wrapper (the wrapper is owned by SetCellsTabStopInternal).
     // Keeps descending past a found tab stop: a focusable container can hold more.
@@ -238,6 +196,7 @@ void TableViewRow::OnApplyTemplate()
     m_cellsHost.set(host);
     m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
     m_rowExpanderGutter.set(GetTemplateChild(hstring{ s_RowExpanderGutterPartName }).try_as<winrt::FrameworkElement>());
+    m_selectionIndicator.set(GetTemplateChild(hstring{ s_SelectionIndicatorPartName }).try_as<winrt::UIElement>());
 
     // Revoke unconditionally so a re-template that drops the gutter leaves no stale subscription.
     m_gutterPointerPressedRevoker.revoke();
@@ -1050,9 +1009,10 @@ void TableViewRow::AttachColumnsSubscription(winrt::TableView const& owner)
     }
 }
 
-bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
+bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner, bool rebuildCells)
 {
     auto const currentOwner = GetOwningTableView();
+    m_cellsBuiltItem = nullptr;
     // Compare through the typed accessor so unchanged weak refs hit the no-op path.
     if (currentOwner == owner)
     {
@@ -1078,6 +1038,12 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
     else
     {
         ResetCellAutomationNames();
+        // Cell peers must not keep describing the outgoing item while the row is pooled.
+        if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
+            .try_as<winrt::TableViewRowAutomationPeer>())
+        {
+            winrt::get_self<TableViewRowAutomationPeer>(rowPeer)->DropCellPeerCache();
+        }
         m_owningTableView = nullptr;
         // Reset transient interaction state so a row recycled while hovered/pressed
         // re-enters the pool in Normal state (ListViewItem parity), not a stale tint.
@@ -1098,6 +1064,7 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
         m_isCellLevel = false;
 
         RestoreCellContentTabStopsInternal();
+        ApplyFocusLevelInternal();
 
         UpdateVisualState(false);
     }
@@ -1105,10 +1072,10 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
     // Observe the new owner's Columns vector (no-op on recycle-out when owner is null).
     AttachColumnsSubscription(owner);
 
-    return RebuildCells();
+    return rebuildCells ? RebuildCells() : false;
 }
 
-bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
+bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, bool skipIfCellsCurrent)
 {
     if (!owner)
     {
@@ -1119,6 +1086,8 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
     {
         return SetOwningTableViewInternal(owner);
     }
+
+    const bool skipRebuild = skipIfCellsCurrent && AreCellsBuiltFor(owner);
 
     auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
         .try_as<winrt::TableViewRowAutomationPeer>();
@@ -1141,13 +1110,13 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
         else
         {
             peerImpl->DropCellPeerCache();
-            chromeRefreshed = RebuildCells();
+            chromeRefreshed = skipRebuild ? false : RebuildCells();
         }
         peerImpl->TrackCurrentRowItem(*this, owner);
         return chromeRefreshed;
     }
 
-    const bool chromeRefreshed = RebuildCells();
+    const bool chromeRefreshed = skipRebuild ? false : RebuildCells();
 
     if (peerImpl)
     {
@@ -1189,6 +1158,12 @@ void TableViewRow::OnDataContextChanged(
     // from child DataContext propagation.
     if (m_isRebuildingCells)
     {
+        return;
+    }
+    // Recycle-out clears DataContext; the next item rebuilds.
+    if (!DataContext())
+    {
+        m_cellsBuiltItem = nullptr;
         return;
     }
     RebuildCells();
@@ -1382,6 +1357,12 @@ void TableViewRow::UpdateVisualState(bool useTransitions)
     std::wstring_view state;
     if (IsSelected())
     {
+        // Unselected rows skip indicator syncs while scrolling, so catch up on becoming selected.
+        if (auto const owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->PinSelectionIndicatorForRow(*this);
+        }
+
         state = !IsEnabled()      ? L"SelectedDisabled"sv
               : m_isPressed       ? L"SelectedPressed"sv
               : m_isPointerOver   ? L"SelectedPointerOver"sv
@@ -1941,6 +1922,7 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     m_isRebuildingCells = true;
     // Synchronous RAII guard: captures this only until RebuildCells returns.
     auto rebuildGuard = wil::scope_exit([this]() { m_isRebuildingCells = false; });
+    m_cellsBuiltItem = nullptr;
 
     auto owner = GetOwningTableView();
     if (!owner)
@@ -2121,6 +2103,7 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         RefreshGridLines();
         RefreshRowBackground();
         ApplyHierarchyAffordance();
+        MarkCellsBuilt(owner);
         return true;
     }
 
@@ -2213,7 +2196,24 @@ bool TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
     RefreshGridLines();
     RefreshRowBackground();
     ApplyHierarchyAffordance();
+    MarkCellsBuilt(owner);
     return true;
+}
+
+void TableViewRow::MarkCellsBuilt(winrt::TableView const& owner)
+{
+    auto const item = DataContext();
+    m_cellsBuiltItem = item ? winrt::get_abi(item.as<winrt::Windows::Foundation::IUnknown>()) : nullptr;
+    m_cellsBuiltGeneration = winrt::get_self<TableView>(owner)->CellLayoutGenerationInternal();
+}
+
+// The DataContext holds the item alive, so a pointer match is an identity match.
+bool TableViewRow::AreCellsBuiltFor(winrt::TableView const& owner)
+{
+    auto const item = DataContext();
+    return item && m_cellsBuiltItem &&
+        m_cellsBuiltItem == winrt::get_abi(item.as<winrt::Windows::Foundation::IUnknown>()) &&
+        m_cellsBuiltGeneration == winrt::get_self<TableView>(owner)->CellLayoutGenerationInternal();
 }
 
 // Recycle-out. Always walks: the bound value can revive a tooltip at any time, so a cached
@@ -2506,6 +2506,27 @@ void TableViewRow::SyncExpanderGutterWithLeadCell(winrt::Panel const& host)
     {
         winrt::Canvas::SetZIndex(gutter, 2);
     }
+}
+
+// Counter-translates the indicator like a leading-frozen cell so it stays at the viewport's leading
+// edge; the FlowDirection mirror above the row maps this to the visual right under RTL. The pill is
+// hidden once unselected and faded out, so those rows skip the work until UpdateVisualState selects them.
+bool TableViewRow::SyncSelectionIndicatorOffset(double horizontalOffset)
+{
+    auto const indicator = m_selectionIndicator.get();
+    if (!indicator || (!IsSelected() && indicator.Opacity() <= 0.0))
+    {
+        return false;
+    }
+
+    const float offset = static_cast<float>(horizontalOffset);
+    auto const translation = indicator.Translation();
+    if (translation.x != offset || translation.y != 0.0f || translation.z != 0.0f)
+    {
+        winrt::ElementCompositionPreview::SetIsTranslationEnabled(indicator, true);
+        indicator.Translation({ offset, 0.0f, 0.0f });
+    }
+    return true;
 }
 
 // ----- Editing -----
@@ -3170,7 +3191,7 @@ void TableViewRow::OnPointerPressedForEditing(
     const auto timestamp = pointerPoint.Timestamp();
     const auto position = pointerPoint.Position();
 
-    const double slop = GetDoubleClickSlop(*this);
+    const double slop = TableView::DoubleClickSlop(*this);
 
     // Device type is part of the repeat identity so a mouse click following a pen tap is not read
     // as one double-click. Pointer ID deliberately is NOT: every touch contact gets a fresh id, so
@@ -3181,7 +3202,7 @@ void TableViewRow::OnPointerPressedForEditing(
         TableView::SameInspectableIdentity(m_lastPressItem.get(), item) &&
         m_lastPressDeviceType == deviceType &&
         timestamp >= m_lastPressTimestamp &&
-        (timestamp - m_lastPressTimestamp) <= GetDoubleClickIntervalMicroseconds() &&
+        (timestamp - m_lastPressTimestamp) <= TableView::DoubleClickIntervalMicroseconds() &&
         std::abs(position.X - m_lastPressPosition.X) <= slop &&
         std::abs(position.Y - m_lastPressPosition.Y) <= slop;
 

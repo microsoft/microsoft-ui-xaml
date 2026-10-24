@@ -24,11 +24,7 @@
 
 namespace
 {
-    bool IsKeyDown(winrt::VirtualKey key)
-    {
-        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
-            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-    }
+    using TableViewDetails::IsKeyDown;
 
     // Row cells carry the same column Tag as header cells, so finding a tagged ancestor is not
     // enough: the walk must actually reach the header host, or a focused cell (an open editor,
@@ -733,6 +729,7 @@ void TableView::OnPreviewKeyDownForNavigation(
     case winrt::Windows::System::VirtualKey::RightWindows:
         break;
     default:
+        CancelPendingTabEdit();
         if (!IsKeyboardBodyFocusPending())
         {
             CancelReshapeFocusRestoreForUserInput();
@@ -1518,6 +1515,9 @@ void TableView::CancelReshapeFocusRestore()
         LayoutUpdated(m_reshapeFocusLayoutToken);
         m_reshapeFocusLayoutToken = {};
     }
+
+    // A pending Tab edit waiting on this loop takes over its own wait now it has ended.
+    QueuePendingTabEditTurn();
 }
 
 // A restore re-aims at its row until it confirms, which is right against the repeater's own focus
@@ -2817,6 +2817,7 @@ bool TableView::FocusRowElementInternal(
 
     // This request is newer intent than any keyboard or re-shape focus still settling.
     CancelReshapeFocusRestore();
+    CancelPendingTabEdit();
 
     // A row the repeater has not realized is scrolled to first and focused once realized.
     // GetOrCreateElement would make it the repeater's anchor at an estimated position, and repeated

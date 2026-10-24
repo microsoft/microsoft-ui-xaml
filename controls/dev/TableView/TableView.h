@@ -117,6 +117,9 @@ struct ColumnResizeDragState
     bool didDelta{ false };
     // Filled on the first write, not at DragStarted, so a press that never moves mutates nothing.
     std::vector<ColumnResizeFrozenColumn> frozen;
+    // The previous press on the gripper, for double-click detection; zero when there is none.
+    uint64_t lastPressTimestamp{ 0 };
+    winrt::Point lastPressPosition{};
 };
 
 // Per-instance cache of density metrics and the resolved gridline brush. Held as a
@@ -275,6 +278,11 @@ public:
     // bounds, Star handling and announcement match a pointer or Alt+Arrow resize exactly.
     bool CanResizeColumnFromAutomation(const winrt::TableViewColumn& column);
     bool TryResizeColumnFromAutomation(const winrt::TableViewColumn& column, double width);
+    // Double-click on a gripper: the widest of the header and realized cells, measured unconstrained.
+    bool AutoFitColumn(const winrt::TableViewColumn& column);
+    // System double-click tolerances in DIPs and in PointerPoint.Timestamp units (microseconds).
+    static double DoubleClickSlop(const winrt::UIElement& element);
+    static uint64_t DoubleClickIntervalMicroseconds();
     void AnnounceColumnWidth(const winrt::IInspectable& announcer, const winrt::TableViewColumn& column);
 
     // Coalesces bursts of column-driven header rebuilds (bulk Columns edits, per-column Header /
@@ -312,8 +320,13 @@ public:
     // band re-pins.
     void OnColumnFrozenEdgeChanged(const winrt::TableViewColumn& column);
 
-    // Pin rebuilt rows immediately when leading-frozen columns are active.
+    // Pin rebuilt rows' selection indicator, and leading-frozen columns when active, immediately.
     void PinFrozenColumnsForRow(const winrt::TableViewRow& row);
+    void PinSelectionIndicatorForRow(const winrt::TableViewRow& row);
+    double GetBodyHorizontalOffsetInternal() const;
+
+    // Bumped when the column set or anything a row's cells are built from changes.
+    uint64_t CellLayoutGenerationInternal() const noexcept { return m_cellLayoutGeneration; }
 
     // Requested by a cell panel (header/row) during measure when a realized cell's own measured width
     // changed (grow or shrink). Invalidates our measure synchronously so ResolveColumnWidths re-runs in
@@ -508,6 +521,16 @@ public:
     void OnKeyDownForEditing(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
+    // Tab / Shift+Tab while editing. True when the key is consumed (moved, or the commit was vetoed).
+    bool TryMoveEditToAdjacentCell(bool forward);
+    // A Tab move to a row not yet in view; opened once it is, cancelled by any newer intent.
+    void RequestPendingTabEdit(int32_t rowIndex, winrt::IInspectable const& item, winrt::TableViewColumn const& column);
+    void TryCompletePendingTabEdit(uint32_t generation);
+    void QueuePendingTabEditTurn(winrt::DispatcherQueuePriority priority = winrt::DispatcherQueuePriority::Normal);
+    void CancelPendingTabEdit();
+    void CancelPendingTabEditForFocusMove(const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args);
+    // True once the cell was found and focused; the BeginEdit itself may still be refused.
+    bool FocusCellAndBeginEdit(int32_t rowIndex, winrt::IInspectable const& item, winrt::TableViewColumn const& column);
     void OnLosingFocusForEditing(
         const winrt::IInspectable& sender,
         const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args);
@@ -782,6 +805,17 @@ private:
     // Bumped when a forced teardown closes an edit awaiting a deferral, so a late completion can
     // recognise itself as stale.
     uint32_t m_editGeneration{ 0 };
+
+    uint64_t m_cellLayoutGeneration{ 0 };
+    // The pending Tab move (RequestPendingTabEdit). Any newer intent bumps the generation.
+    uint32_t m_pendingTabEditGeneration{ 0 };
+    bool m_pendingTabEditActive{ false };
+    bool m_pendingTabEditTurnQueued{ false };
+    int32_t m_pendingTabEditRow{ -1 };
+    int32_t m_pendingTabEditAttemptsLeft{ 0 };
+    tracker_ref<winrt::IInspectable> m_pendingTabEditItem{ this };
+    tracker_ref<winrt::TableViewColumn> m_pendingTabEditColumn{ this };
+    winrt::FrameworkElement::LayoutUpdated_revoker m_pendingTabEditLayoutRevoker{};
 
     // Pending source-reshaping operations. A deque, not a vector: the drain pops from the front so
     // replay order matches arrival order.
@@ -1397,6 +1431,8 @@ private:
     void InvalidateCellPanels();
 
     bool m_frozenColumnsActive{ false };
+    // A realized row may show its selection indicator, so horizontal scroll must re-pin it.
+    bool m_selectionIndicatorPinned{ false };
 
     bool m_rebuildHeadersQueued{ false };
     bool m_rebuildingHeaders{ false };

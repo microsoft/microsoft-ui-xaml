@@ -413,6 +413,7 @@ Editing starts only from user input in this release. There is no programmatic wa
 | `F2` | Begins editing the current cell |
 | `Enter` | Commits and closes the editor |
 | `Esc` | Cancels and discards the editor |
+| `Tab` / `Shift+Tab` | Commits and edits the next / previous editable cell, wrapping to the adjacent row; past the last (first) editable cell, focus leaves the table |
 | Moving focus off the cell | Commits |
 
 The data item needs settable properties, and should raise `PropertyChanged` so the display cell refreshes once the edit closes.
@@ -562,7 +563,6 @@ Selection is suppressed while a cell edit is open, because row navigation is: an
 These are understood and deliberately not addressed by single selection:
 
 - **Pointer selection is not blocked during an open edit.** Keyboard navigation is suppressed while editing, but clicking another row moves `SelectedItem` and the highlight immediately. If the resulting commit is then vetoed by validation, the editor stays open on the previous row while the selection has already moved. Whether selection should be blocked, deferred, or allowed to diverge from the edit target is an open decision.
-- **The selection indicator scrolls with the row.** `PART_SelectionIndicator` lives inside the horizontally scrolling row content, so the accent strip scrolls off the leading edge. `TreeViewItem` and `ItemContainer` pin theirs to the container; doing the same here likely means reusing the frozen-column offset mechanism.
 - **A `TableViewTemplateColumn` whose `CellTemplate` sets an explicit `Foreground` overrides the selected foreground.** `PART_CellForegroundPresenter` only reaches cells that *inherit* `Foreground`. `TableViewTextColumn` correctly sets none; template columns are free to, and in High Contrast that renders app-chosen text over `SystemColorHighlightColor`. Hovered, pressed and selected cells also turn off High Contrast text backplates (`HighContrastAdjustment="None"` on `PART_CellForegroundPresenter`, which cell content inherits), because the control paints its own high-contrast highlight pair; such app-coloured text therefore gets no automatic backplate either. Template columns should leave `Foreground` unset unless they take responsibility for the selected and High Contrast cases.
 - **Reconciliation order is load-bearing.** Row chrome is restamped from `ItemsSourceView.CollectionChanged`, which is correct only because `SelectionModel` is handed the repeater's *shared* `ItemsSourceView` and is subscribed ahead of the control. Handing the model a raw source, or reordering those two calls in `ResolveSelectionAfterSourceChange`, silently reintroduces stale-index stamping — and an insert above the selection raises no event to correct it. This is deliberately different from `ItemsView`, which hands the model a raw source and repairs the resulting race afterwards with a dispatcher hop; the ordering here is structural instead.
 - **Adding `Multiple`/`Extended` is not purely additive.** The enum values are appended and the event args already carry both vectors, so the shapes that are expensive to reverse are settled. But `SelectedItems` is deliberately **not** exposed in this release — it would be redundant with `SelectedItem` while at most one row can be selected, and `SelectionModel`'s view leaves `IndexOf` and `GetMany` unimplemented, so `Contains`, `ToList` and `ToArray` throw. It should be added with `Multiple`, where it becomes the only way to read the whole selection and those sharp edges are worth the capability. The gesture layer also routes through `SelectRowIndexFromInteraction(index, toggle)`, which carries no anchor or range state, and `ApplySelection` encodes single-selection semantics; multi-selection needs modifier state threaded through those entry points and an anchor model, closer to `ItemsView`'s `SelectorBase` strategy split.
@@ -814,7 +814,7 @@ Template parts:
 |---|---|---|
 | `PART_RootBorder` | `Border` | Row root border. Its `Background` is driven by `CommonStates`. |
 | `PART_CellsHost` | `TableViewCellsPanel` (typed `Panel`) | Host for generated cell elements. See [TableViewCellsPanel class](#tableviewcellspanel-class). |
-| `PART_SelectionIndicator` | `Shape` (default: `Rectangle`) | **Required by the default state definitions.** Leading-edge selection strip; the `Selected*` states animate `Opacity` to `1`, and `SelectedDisabled` also animates `Fill`. Custom templates using other indicator types must adapt the corresponding state targets. |
+| `PART_SelectionIndicator` | `Shape` (default: `Rectangle`) | **Required by the default state definitions.** Leading-edge selection strip, kept at the viewport's leading edge during horizontal scroll like a leading-frozen cell; the `Selected*` states animate `Opacity` to `1`, and `SelectedDisabled` also animates `Fill`. Custom templates using other indicator types must adapt the corresponding state targets. |
 
 Visual states:
 

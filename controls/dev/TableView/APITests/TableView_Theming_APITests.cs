@@ -96,6 +96,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Repro #12115: the reported crash is "Cannot load DefaultStyleResourceUri
+        // 'ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/generic.xaml'".
+        [TestMethod]
+        public void VerifyTableViewDefaultStyleResourceUriLoads()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var expected = new Uri("ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/generic.xaml");
+                var tableView = new TableView();
+                Verify.AreEqual(expected.AbsoluteUri, tableView.DefaultStyleResourceUri?.AbsoluteUri,
+                    "TableView must point its default style at the Tabular generic.xaml.");
+
+                ResourceDictionary generic = null;
+                try
+                {
+                    generic = new ResourceDictionary { Source = expected };
+                }
+                catch (Exception e)
+                {
+                    Verify.Fail($"Loading '{expected}' threw 0x{e.HResult:X8}: {e.Message}");
+                    return;
+                }
+
+                bool HasKey(ResourceDictionary d, object key) => d.ContainsKey(key) || d.MergedDictionaries.Any(m => HasKey(m, key));
+                Verify.IsTrue(HasKey(generic, "TableViewGroupHeaderPadding"),
+                    "The loaded generic.xaml must be TableView's default-style page.");
+            });
+        }
+
         // Both types are MUX_INTERNAL but projected into the test app as Microsoft.UI.Private.Controls;
         // TableView_Sizing_APITests.cs already constructs a ResizeGripper the same way.
         [TestMethod]
@@ -351,6 +380,82 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
             }
         }
+
+        // Repro for GitHub #12351. The header bottom rule must read as a line: its pixel has to be
+        // distinct from BOTH the header band above and the first row below, not a midtone between them
+        // (which reads as a soft band edge with no divider). Composited from the realized brushes over
+        // the window backdrop, honoring PART_HeaderRow.BackgroundSizing.
+        [TestMethod]
+        public void VerifyHeaderBottomRuleIsVisibleAgainstBandAndRows()
+        {
+            var cases = new[]
+            {
+                (Theme: ElementTheme.Light, Backdrop: Color.FromArgb(0xFF, 0xF3, 0xF3, 0xF3)),
+                (Theme: ElementTheme.Dark, Backdrop: Color.FromArgb(0xFF, 0x20, 0x20, 0x20)),
+            };
+
+            foreach (var testCase in cases)
+            {
+                var current = testCase;
+                TableView tableView = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    EnsureTabularControlsResources();
+                    tableView = CreateThemingTable();
+                    var host = new Grid { RequestedTheme = current.Theme };
+                    host.Children.Add(tableView);
+                    LoadContent(host);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var headerRow = tableView.FindVisualChildByName("PART_HeaderRow") as Border;
+                    var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
+                    if (headerRow == null || row == null)
+                    {
+                        Verify.Fail("The template must contain PART_HeaderRow and realize a row.");
+                        return;
+                    }
+
+                    var band = (headerRow.Background as SolidColorBrush)?.Color ?? default(Color);
+                    var rule = (headerRow.BorderBrush as SolidColorBrush)?.Color ?? default(Color);
+                    var tableFill = (tableView.Background as SolidColorBrush)?.Color ?? default(Color);
+                    var rowFill = (row.Background as SolidColorBrush)?.Color ?? default(Color);
+                    var rowLine = (row.BorderBrush as SolidColorBrush)?.Color ?? default(Color);
+
+                    var under = Over(tableFill, current.Backdrop);
+                    var bandPixel = Over(band, under);
+                    var rowPixel = Over(rowFill, under);
+                    var rulePixel = Over(rule, headerRow.BackgroundSizing == BackgroundSizing.OuterBorderEdge ? bandPixel : under);
+                    var rowLinePixel = Over(rowLine, rowPixel);
+
+                    double toBand = Luminance(rulePixel) - Luminance(bandPixel);
+                    double toRow = Luminance(rulePixel) - Luminance(rowPixel);
+                    double rowLineContrast = Math.Abs(Luminance(rowLinePixel) - Luminance(rowPixel));
+
+                    Log.Comment($"{current.Theme}: thickness={headerRow.BorderThickness.Bottom}, sizing={headerRow.BackgroundSizing}, " +
+                        $"band={bandPixel}, rule={rulePixel}, row={rowPixel}; rule-band={toBand:F2}, rule-row={toRow:F2}, row line contrast={rowLineContrast:F2}.");
+
+                    Verify.IsGreaterThan(headerRow.BorderThickness.Bottom, 0.0, $"The header bottom rule must have thickness ({current.Theme}).");
+                    Verify.IsTrue(Math.Sign(toBand) == Math.Sign(toRow) && toBand != 0.0,
+                        $"The header bottom rule must not be a midtone between the header band and the rows, or it reads as no border ({current.Theme}).");
+                    Verify.IsTrue(Math.Min(Math.Abs(toBand), Math.Abs(toRow)) >= rowLineContrast / 2.0,
+                        $"The header bottom rule must stand out from its neighbours at least half as much as a body row line ({current.Theme}).");
+                });
+            }
+        }
+
+        private static Color Over(Color top, Color opaqueBottom)
+        {
+            double a = top.A / 255.0;
+            byte Mix(byte t, byte b) => (byte)Math.Round(t * a + b * (1.0 - a));
+            return Color.FromArgb(0xFF, Mix(top.R, opaqueBottom.R), Mix(top.G, opaqueBottom.G), Mix(top.B, opaqueBottom.B));
+        }
+
+        private static double Luminance(Color c) => 0.2126 * c.R + 0.7152 * c.G + 0.0722 * c.B;
 
         // TableView-dev-spec.md:227-231 makes overriding a TabularSurface* key THE supported way to
         // restyle the table, in place of a monolithic style. If the control caches or hardcodes the

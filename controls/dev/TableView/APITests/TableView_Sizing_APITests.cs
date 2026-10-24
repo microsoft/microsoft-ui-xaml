@@ -2244,6 +2244,233 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
+    // ADO 64540418 / GitHub #12358: the row selection indicator must stay at the row's leading
+    // viewport edge while the body scrolls horizontally, with or without frozen columns.
+    [TestClass]
+    public class TableViewSelectionIndicatorScrollTests : TableViewApiTestBase
+    {
+        [TestMethod]
+        [TestProperty("Description", "Verifies the selection indicator stays at the viewport's leading edge during horizontal scroll without frozen columns.")]
+        public void VerifySelectionIndicatorStaysInViewDuringHorizontalScroll()
+        {
+            VerifyIndicatorHoldsLeadingEdge(frozenColumnCount: 0);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the selection indicator stays at the viewport's leading edge during horizontal scroll with a leading frozen column.")]
+        public void VerifySelectionIndicatorStaysInViewDuringHorizontalScrollWithFrozenColumn()
+        {
+            VerifyIndicatorHoldsLeadingEdge(frozenColumnCount: 1);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row selected after the body has scrolled horizontally shows its indicator at the viewport's leading edge.")]
+        public void VerifySelectionIndicatorInViewWhenSelectedAfterHorizontalScroll()
+        {
+            TableView tableView = null;
+            double unscrolledLeft = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateScrollableTable(columnCount: 8);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => tableView.Select(0));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => unscrolledLeft = GetVisualLeft(GetSelectedRowIndicator(tableView), tableView));
+
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
+
+            RunOnUIThread.Execute(() => tableView.Select(1));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(GetBodyHorizontalOffset(tableView), 0.0, "Precondition: the body must have scrolled horizontally.");
+                Verify.IsTrue(tableView.IsSelected(1), "Precondition: row 1 must be selected.");
+
+                var indicatorLeft = GetVisualLeft(GetSelectedRowIndicator(tableView), tableView);
+                Log.Comment($"Indicator left {indicatorLeft}, unscrolled reference {unscrolledLeft}.");
+
+                VerifyNear(unscrolledLeft, indicatorLeft, c_positionTolerance,
+                    "A row selected while scrolled must draw its indicator at the same viewport position as when unscrolled");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row reselected after scrolling back does not keep the indicator offset from its earlier selection.")]
+        public void VerifySelectionIndicatorInViewWhenReselectedAfterScrollingBack()
+        {
+            TableView tableView = null;
+            double unscrolledLeft = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateScrollableTable(columnCount: 8);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => tableView.Select(0));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => unscrolledLeft = GetVisualLeft(GetSelectedRowIndicator(tableView), tableView));
+
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
+
+            // Row 0's indicator keeps its scrolled offset while unselected; scrolling back must not leave it there.
+            RunOnUIThread.Execute(() => tableView.Select(1));
+            SettleLayout(tableView);
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, 0.0);
+
+            RunOnUIThread.Execute(() => tableView.Select(0));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyNear(0.0, GetBodyHorizontalOffset(tableView), 0.5, "Precondition: the body must be scrolled back to the start");
+                Verify.IsTrue(tableView.IsSelected(0), "Precondition: row 0 must be reselected.");
+
+                var indicatorLeft = GetVisualLeft(GetSelectedRowIndicator(tableView), tableView);
+                Log.Comment($"Indicator left {indicatorLeft}, unscrolled reference {unscrolledLeft}.");
+
+                VerifyNear(unscrolledLeft, indicatorLeft, c_positionTolerance,
+                    "A reselected row must draw its indicator at the current viewport position");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the selection indicator stays at the viewport's leading (visual right) edge during horizontal scroll under RTL.")]
+        public void VerifySelectionIndicatorStaysInViewDuringHorizontalScrollInRightToLeft()
+        {
+            // Measured against an explicit LeftToRight wrapper so the RTL mirror boundary sits between
+            // the frame and the indicator (see VerifyLeadingFrozenColumnPinsToVisualRightInRightToLeft).
+            TableView tableView = null;
+            FrameworkElement wrapper = null;
+            double rightBefore = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateScrollableTable(columnCount: 8);
+                tableView.FlowDirection = FlowDirection.RightToLeft;
+
+                var host = new Grid { FlowDirection = FlowDirection.LeftToRight };
+                host.Children.Add(tableView);
+                wrapper = host;
+
+                LoadContent(host);
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => tableView.Select(0));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var indicator = GetSelectedRowIndicator(tableView);
+                rightBefore = GetVisualRight(indicator, wrapper);
+                var viewportRight = GetVisualRight(GetBodyScroller(tableView), wrapper, GetBodyViewportWidth(tableView));
+                Log.Comment($"Before scrolling: indicator right {rightBefore}, viewport right {viewportRight}.");
+
+                Verify.IsTrue(rightBefore <= viewportRight + c_positionTolerance,
+                    "Precondition: under RTL the indicator must start inside the viewport");
+                Verify.IsGreaterThan(rightBefore, GetVisualRight(GetRowCell(GetRealizedRows(tableView).First(), 1), wrapper),
+                    "Precondition: under RTL the indicator must sit at the visual right, beyond the second column");
+            });
+
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(GetBodyHorizontalOffset(tableView), 0.0, "Precondition: the body must have scrolled horizontally.");
+
+                var indicator = GetSelectedRowIndicator(tableView);
+                var rightAfter = GetVisualRight(indicator, wrapper);
+                var viewportLeft = GetVisualLeft(GetBodyScroller(tableView), wrapper);
+                var viewportRight = GetVisualRight(GetBodyScroller(tableView), wrapper, GetBodyViewportWidth(tableView));
+                Log.Comment($"After scrolling: indicator right {rightAfter}, viewport {viewportLeft}..{viewportRight}.");
+
+                VerifyNear(rightBefore, rightAfter, c_positionTolerance,
+                    "Under RTL the selection indicator must hold its viewport position while the body scrolls");
+                Verify.IsTrue(rightAfter <= viewportRight + c_positionTolerance && rightAfter - indicator.ActualWidth >= viewportLeft - c_positionTolerance,
+                    "Under RTL the selection indicator must stay inside the body viewport");
+            });
+        }
+
+        private void VerifyIndicatorHoldsLeadingEdge(int frozenColumnCount)
+        {
+            TableView tableView = null;
+            double leftBefore = 0.0;
+            double leadCellGapBefore = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateScrollableTable(columnCount: 8);
+                for (int i = 0; i < frozenColumnCount; i++)
+                {
+                    tableView.Columns[i].FrozenEdge = TableViewFrozenEdge.Leading;
+                }
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => tableView.Select(0));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var indicator = GetSelectedRowIndicator(tableView);
+                leftBefore = GetVisualLeft(indicator, tableView);
+                leadCellGapBefore = leftBefore - GetVisualLeft(GetRowCell(GetRealizedRows(tableView).First(r => r.IsSelected), 0), tableView);
+                var viewportLeft = GetVisualLeft(GetBodyScroller(tableView), tableView);
+                Log.Comment($"Before scrolling: indicator left {leftBefore}, viewport left {viewportLeft}.");
+
+                Verify.IsTrue(leftBefore >= viewportLeft - c_positionTolerance,
+                    "Precondition: the indicator must start inside the viewport");
+            });
+
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var offset = GetBodyHorizontalOffset(tableView);
+                Log.Comment($"Scrolled to horizontal offset {offset} with {frozenColumnCount} frozen column(s).");
+                Verify.IsGreaterThan(offset, 0.0, "Precondition: the body must have scrolled horizontally.");
+
+                var row = GetRealizedRows(tableView).First(r => r.IsSelected);
+                var indicator = GetSelectedRowIndicator(tableView);
+                var leftAfter = GetVisualLeft(indicator, tableView);
+                var viewportLeft = GetVisualLeft(GetBodyScroller(tableView), tableView);
+                var viewportRight = viewportLeft + GetBodyViewportWidth(tableView);
+                Log.Comment($"After scrolling: indicator left {leftAfter}, viewport {viewportLeft}..{viewportRight}.");
+
+                VerifyNear(leftBefore, leftAfter, c_positionTolerance,
+                    "The selection indicator must hold its viewport position while the body scrolls horizontally");
+                Verify.IsTrue(leftAfter >= viewportLeft - c_positionTolerance && leftAfter + indicator.ActualWidth <= viewportRight + c_positionTolerance,
+                    "The selection indicator must stay inside the body viewport");
+
+                if (frozenColumnCount > 0)
+                {
+                    // The pill overlays the pinned lead cell, so it must track that cell's left edge.
+                    var frozenLeft = GetVisualLeft(GetRowCell(row, 0), tableView);
+                    VerifyNear(frozenLeft + leadCellGapBefore, leftAfter, c_positionTolerance,
+                        "The selection indicator must stay over the pinned leading frozen cell");
+                }
+            });
+        }
+
+        private static FrameworkElement GetSelectedRowIndicator(TableView tableView)
+        {
+            var row = GetRealizedRows(tableView).FirstOrDefault(r => r.IsSelected);
+            Verify.IsNotNull(row, "Precondition: the selected row must be realized.");
+
+            var indicator = row.FindVisualChildByName("PART_SelectionIndicator") as FrameworkElement;
+            Verify.IsNotNull(indicator, "Precondition: the row template must contain PART_SelectionIndicator.");
+            return indicator;
+        }
+    }
+
     internal static class TableViewSizingTestHelpers
     {
         // TableViewColumn.ActualWidth's declared default (TableView.idl:145), which is also the
