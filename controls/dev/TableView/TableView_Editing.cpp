@@ -1207,9 +1207,8 @@ void TableView::QueueDeferredEditReshapeDrain()
             if (auto const strongThis = weakThis.get())
             {
                 strongThis->m_editReshapeDrainQueued = false;
-                // Released (unloaded): the source may belong to another table now; the queue waits
-                // for the next edit close, as it did before it was posted.
-                if (!strongThis->IsEditing() && !strongThis->m_activeSourceReleased)
+                // While another table owns the source the queue waits for the next edit close.
+                if (!strongThis->IsEditing() && !strongThis->IsActiveSourceOwnedByOther())
                 {
                     try
                     {
@@ -1228,7 +1227,7 @@ void TableView::QueueDeferredEditReshapeDrain()
 void TableView::FlushDeferredEditReshapes()
 {
     // Each pass pops at least one operation, so this terminates even if every one throws.
-    while (!m_suppressEditVisualRestore && !m_isApplyingCoalescedEditReshape && !m_activeSourceReleased && !IsEditing() &&
+    while (!m_suppressEditVisualRestore && !m_isApplyingCoalescedEditReshape && !IsActiveSourceOwnedByOther() && !IsEditing() &&
         (!m_pendingEditReshapes.empty() || !m_reshapesAfterEditCloses.empty()))
     {
         try

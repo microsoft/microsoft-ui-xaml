@@ -909,9 +909,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a sort opt-out deferred past an edit force-closed while the table is unloaded is applied by the time the table is back, and is not replayed over a newer sort.")]
+        [TestProperty("Description", "Verifies a sort opt-out deferred past an edit force-closed while the table is unloaded is applied by the time the table is back, and is not replayed over a newer sort made after reload or while unloaded.")]
+        [TestProperty("data:When", "{AfterReload, WhileUnloaded}")]
         public void VerifyDeferredSortOptOutAppliesBeforeSortAfterReload()
         {
+            var sortWhileUnloaded = ((string)TestContext.DataRow["When"]).Trim() == "WhileUnloaded";
             TableView tableView = null;
             List<EditablePerson> items = null;
             bool requested = false;
@@ -971,6 +973,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment($"Before reload: Name sort={tableView.Columns[0].SortDirection}, cleared={clearedCount}.");
+                if (sortWhileUnloaded)
+                {
+                    Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending), "The app's sort applies while unloaded.");
+                }
                 tableView.IsReadOnly = false;
                 LoadContent(tableView);
             });
@@ -978,6 +984,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                if (sortWhileUnloaded)
+                {
+                    Verify.AreEqual(SortDirection.Ascending, tableView.Columns[1].SortDirection, "The deferred clear must not undo the sort applied while unloaded.");
+                    Verify.AreEqual(1, clearedCount, "The clear must be reported once.");
+                    return;
+                }
                 Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The deferred clear applies by the time the table is back, without a newer request.");
                 Verify.AreEqual(1, clearedCount, "The clear must be reported once.");
                 Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending), "The newer sort applies.");

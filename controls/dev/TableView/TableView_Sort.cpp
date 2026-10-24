@@ -407,6 +407,12 @@ bool TableView::ClearSort()
     return ClearSortInternal(true, true);
 }
 
+bool TableView::IsActiveSourceOwnedByOther() const
+{
+    auto const source = ShapingSourceInternal();
+    return source && m_activeSourceReleased && winrt::get_self<::TableViewSource>(source)->IsOwnedByOther(*this);
+}
+
 bool TableView::IsSortLitOnlyByApp() const
 {
     if (!m_tableViewSourceSort.AxisToken.empty())
