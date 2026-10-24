@@ -134,6 +134,14 @@ Interactive column resize is a **policy split** between a framework-internal pri
 
 **Keyboard.** The header cell, not the gripper, is the keyboard target. Column commands belong there, and one tab stop per column would sit between the user and the data. The table therefore sets `IsTabStop(false)` on the gripper and routes **`Alt+Left`/`Alt+Right`** on a focused header into `TryKeyboardStep(VirtualKey)`. That function owns direction, the RTL mirror, `KeyboardIncrement` and the Shift multiplier (`Alt+Shift+Arrow` is the large step), so the pointer and keyboard paths cannot drift apart. `Alt` is the **only** resize modifier: `Ctrl+Arrow` on a header does nothing, and bare `Left`/`Right` move focus between headers (see *Keyboard* below). The binding matches WPF `DataGrid`.
 
+**Primitive surface.** `ResizeGripper` and `ResizeGripperAutomationPeer` are framework-internal: the private namespace (`MU_PRIVATE_CONTROLS_NAMESPACE`), not the `[MUX_INTERNAL]` attribute, is what keeps them out of every shipped winmd. The peer lives in the same private namespace as its owner for the same reason. Move them to `MU_XCP_NAMESPACE` + `[MUX_PREVIEW]` only if the primitive is ever exposed.
+
+- `ManipulationContainer` is the frame drags are measured in. A host sets it to an ancestor that does **not** move while the drag resizes something: the gripper travels with the edge it drags, so the default frame (the gripper itself) feeds the resize back into the gesture and stalls it, while the `XamlRoot` content picks up any scale or zoom applied between it and the gripper. Null falls back to the `XamlRoot` content, which is correct whenever nothing between it and the gripper is scaled.
+- `OwnerName` is the qualifier the automation peer prepends to its localized name, so N grippers in one band are distinguishable ("Price, Resize gripper"). It is declared rather than read off `Tag`: `Tag` is a general-purpose slot a host may already be using, and a silent wrong name is an a11y bug.
+- `KeyboardIncrement` is how far one arrow key travels; Shift multiplies it. Step size is host policy, so it is settable rather than baked in.
+- `BeginDrag`/`TryDrag`/`EndDrag` raise the same events a pointer drag would, so a keyboard step is indistinguishable from the gesture. `TryDrag` takes the offset from where the drag began and returns whether it moved far enough to raise `DragDelta`. Pass `canceled` to `EndDrag` when the gesture was torn down.
+- `TryKeyboardStep` is one arrow key as a complete one-step drag. The gripper acts on its own keys when a host makes it focusable; a host that keeps focus on its own element calls this instead, so neither path re-derives the direction, the RTL mirror or the step. It returns `false` when the key is not on this axis.
+- Template contract (MIDL3 does not surface `[TemplatePart]`): no required parts — there is no `GetTemplateChild` call, so a template may omit everything. The visual-state setters target `Separator` by name. Visual state groups are `CommonStates` (`Normal`, `PointerOver`, `Pressed`, `Disabled`) and `OrientationStates` (`Horizontal`, `Vertical`; follows `DragOrientation`). Styling keys are `ResizeGripperSeparatorBrush`, `ResizeGripperSeparatorThickness` and `ResizeGripperSeparatorThicknessVertical` (`ResizeGripper_themeresources.xaml`). There is no mirrored RTL state; only the drag delta is mirrored in code.
 ### Resize policy — what each column configuration does
 
 The reference behavior is **WPF `DataGrid`**, and the rules below are derived from measuring it rather than from its source. `ResizeBoundsForColumn` turns them into a `[Min, Max]` the drag is clamped to.
@@ -231,9 +239,9 @@ The internal `GridCoordinateHelper` performs the row/column ↔ flat-index math,
 Accessibility exposes a UIA grid/table model:
 
 - `TableViewAutomationPeer`: `IGridProvider`, `ITableProvider`, `ISelectionProvider`, `IItemContainerProvider`. `BoundingRectangle` is clipped to the control's layout box, so realized cache rows outside the body viewport are excluded; the default bounds are used when the clip is unavailable.
-- `TableViewRowAutomationPeer`: `DataItem` control type, `ISelectionItemProvider`, composed name and group-relative `PositionInSet`/`SizeOfSet`; no grid/table provider (exposes its cell peers as children)
-- `TableViewCellAutomationPeer`: `IGridItemProvider`, `ITableItemProvider`, `IValueProvider`, `Custom` control type with localized `cell`. The name is the cell value; while column headers are shown, the column header is reported only through `GetColumnHeaderItems`, and an empty cell is named with the localized `TableViewCellBlankName` ("blank"). While they are hidden, `GetColumnHeaderItems` (and the table's `GetColumnHeaders`) is empty and the name becomes "{header}, {value}"; an object or templated header contributes its header item's name. A cell whose content is focusable (a `Button`, `ToggleSwitch`, ...) is named after its column header alone in both cases, because the control is a Content-view child that names itself. Toggling the column-header bit of `HeadersVisibility` raises `Name` changed on cell peers that already exist.
-- `TableViewColumnHeaderAutomationPeer`: column-header name/bounds, `IInvokeProvider` (sort), `PositionInSet`/`SizeOfSet`
+- `TableViewRowAutomationPeer`: `DataItem` control type, `ISelectionItemProvider`, composed name and group-relative `PositionInSet`/`SizeOfSet`; no grid/table provider (exposes its cell peers as children). It also implements `IExpandCollapseProvider`, but `ExpandCollapse` is advertised only by rows of a hierarchical source.
+- `TableViewCellAutomationPeer`: `IGridItemProvider`, `ITableItemProvider`, `IValueProvider`, `Custom` control type with localized `cell`. The constructor throws `E_INVALIDARG` for null arguments, a negative `columnIndex`, or a column/index outside the owning table. The name is the cell value; while column headers are shown, the column header is reported only through `GetColumnHeaderItems`, and an empty cell is named with the localized `TableViewCellBlankName` ("blank"). While they are hidden, `GetColumnHeaderItems` (and the table's `GetColumnHeaders`) is empty and the name becomes "{header}, {value}"; an object or templated header contributes its header item's name. A cell whose content is focusable (a `Button`, `ToggleSwitch`, ...) is named after its column header alone in both cases, because the control is a Content-view child that names itself. Toggling the column-header bit of `HeadersVisibility` raises `Name` changed on cell peers that already exist.
+- `TableViewColumnHeaderAutomationPeer`: peer of a `TableViewColumnHeader` and of the TableView-owned header entries; column-header name/bounds, `IInvokeProvider` (sort), `PositionInSet`/`SizeOfSet`
 - `TableViewGroupHeaderAutomationPeer`: `IExpandCollapseProvider`, `IGridItemProvider`. It computes **no** `Level`: grouping is single-level, so the band reports `0` ("not specified") unless the app sets `AutomationProperties.Level`.
 - A stale `GridItem` (a cell whose row or item is gone, a cell replaced by a same-row rebuild such as a column reorder or `CellTemplate` change, a cell whose column is collapsed, or a recycled group header) throws `UIA_E_ELEMENTNOTAVAILABLE` from `Row` (a cell also from `Column`) instead of reporting `-1` or another cell's coordinate. A cell whose row is between recycle and re-prepare while its item is still in the source reports the item's index.
 
@@ -306,6 +314,85 @@ advertised the loser. WPF splits the same way: `SortDescriptions` carry a proper
 how `DataGrid` matches a column and lights its arrow, while a data-layer sort with no property
 name stays headerless.
 
+**Control sort surface.** Sorting is single-column. The control reshapes the rows itself: an
+`ItemsSource` that is not already a `TableViewSource` is projected through one internally, so
+sorting works over any collection the control can display. `Sorting` is raised first; cancel it to
+own the ordering instead. The active sort state lives on the column, as
+`TableViewColumn.SortDirection`; `Sorted` hands the app the column that changed, and a null column
+there means the sort was cleared.
+
+- `CanUserSortColumns` is the control-wide gate for the click-to-sort UX. When `false` no sort
+  affordance is built and header clicks do not sort; programmatic sorting still works. The
+  per-column cycle policy is `TableViewColumn.SortCycle`.
+- `SortByColumn(column, direction)` clears any other sort state, then sets this column's
+  `SortDirection`. Pass `SortDirection.None` to clear. It returns `true` when the sort state
+  changed and `false` when the sort could not be applied (for example, the column cannot sort).
+  Clearing with `None` works even when `CanSort` is `false`.
+- `ToggleSortDirection(column)` cycles the trigger column's direction per its `SortCycle`, clearing
+  any other sort state first. It returns `true` when the sort state changed and `false` when the
+  sort could not be applied (for example, when the rows cannot be ordered, or the column cannot
+  sort, as for `SortByColumn`).
+- `ClearSort()` clears every column's sort state in one batch and returns `true` when anything was
+  cleared.
+- `Sorting` is raised **before** a sort-state change is applied. `TableViewSortingEventArgs.Column`
+  is the trigger column (null is the clear-all sentinel used by `ClearSort`), `Direction` is the
+  direction the control is about to apply, and setting `Cancel` to `true` stops the control
+  applying the sort, leaving the app to own the ordering: the control's sort state, glyph and
+  `Sorted` are suppressed, and `TableViewSource.Sort` can light the glyph.
+- `Sorted` is raised **after** a sort-state change has been applied and is not cancellable.
+  `TableViewSortedEventArgs.Column` is the trigger column for the change (null is the clear-all
+  sentinel); `Direction` is the direction now applied to the column.
+
+**Column sort members.**
+
+- `CanSort` is the per-column sort opt-out (default `true`). `false` blocks header clicks,
+  `SortByColumn` (except `None`) and `ToggleSortDirection`; setting it `false` on the sorted column
+  clears that sort.
+- `SortCycle` (`TableViewSortCycle`) is the direction sequence repeated header clicks walk for
+  **this** column. The first member of the pair is the direction an unsorted column opens in:
+  `Ascending*` suits names and categories, `Descending*` suits metrics where the interesting rows are
+  the largest (CPU, memory, size). The `*None` variants add a trailing unsorted step, so a third click
+  returns the column to source order instead of going straight back to the opening direction. The
+  policy is per-column because it describes how one column responds to being clicked again, and a
+  table can reasonably mix policies — a metric column that should open on its largest values
+  alongside a name column that should open A-Z. It is read at click time, so a change needs no
+  rebuild.
+- `SortMemberPath` is the property name on the row item used to extract the sort key. When empty,
+  `TableViewTextColumn` falls back to its `Binding.Path.Path`; the base column returns an empty
+  string and the column is only sortable if it supplies a `CustomSortComparer`. The effective path
+  comes from overridable `GetSortMemberPathCore()`: the base column returns `SortMemberPath`
+  verbatim, and `TableViewTextColumn` overrides it to apply that fallback. The path need not be
+  unique — several columns may name the same property, a common shape when one column formats a
+  value and another ranks it. Each column sorts as its own independent axis, keyed on column
+  identity rather than on the path, so duplicates neither collide nor prevent the table from being
+  built. Sorting one of them leaves the others' `SortDirection` at `None`, since applying a sort
+  clears any previous one.
+- `CustomSortComparer` (`ITableViewSortComparer`) is an optional comparer for custom ordering and
+  takes precedence over `SortMemberPath`. With `TableViewSource.IsLiveShaping`, changed items are
+  re-compared and moved. `Compare(left, right)` orders two row items and returns `<0`, `0` or `>0`
+  like a classic three-way comparison. The comparer must be a pure function of its inputs:
+  re-entering the control from it is an app bug. It is an interface rather than a delegate so a
+  comparer can be declared as a XAML resource and assigned in markup.
+- `SortDirection` is a read-only DP driven by the owning `TableView`. `None` means the column is
+  not part of the active sort; apps change it through the `TableView` sort methods or
+  `TableViewSource.Sort`.
+
+**Source sort axes.** On `TableViewSource.Sort`, `SortDirection.None` removes that key's axis
+rather than seeding a stage, so sorting every axis to `None` leaves the source unsorted. When
+several axes are active the **first** one declared is the primary sort and each later axis breaks
+ties within the previous, matching WPF `DataGrid`'s `SortDescriptions` order; re-sorting an existing
+axis keeps its position. Both overloads are last-writer-wins against the control's own sort (see
+above); what differs is what the headers can say about it.
+
+- `Sort(sortMemberPath, direction)` is the preferred form. The path is evaluated by the same
+  binding-based evaluator a column uses for its `SortMemberPath`, so a path that displays also sorts
+  (dotted paths and indexers included). It throws `E_INVALIDARG` when `sortMemberPath` is empty.
+- `Sort(keySelector, direction)` is for keys no property path expresses — computed, multi-field,
+  normalized, or the identity of a primitive collection. Its axis is anonymous, so a bound
+  `TableView` clears every sort indicator instead of leaving one describing a sort that is no
+  longer primary. Prefer the path overload whenever the key is a property. To remove the axis, pass
+  the same delegate instance with `None`; `ClearSort` removes every axis.
+
 
 ## Grouping model
 
@@ -375,6 +462,38 @@ content region — so an app template cannot accidentally drop the expander. Its
 recycling a header does not re-evaluate every binding in the template. `KeyText`/`ItemCountText`
 are computed lazily through a `DecimalFormatter`, so a template that binds only `Key`/`ItemCount`
 pays nothing for them.
+
+**Grouping API notes.**
+
+- `GroupBy(keySelector)` requires a non-null `keySelector` (it throws `E_INVALIDARG` when null);
+  use `ClearGroupBy()` to remove grouping. On `GroupBy(keySelector, groupIdentitySelector)` the
+  identity selector is optional: null selects the built-in value-type identity, and a
+  reference-type key with no selector fails fast at projection time, as does an empty identity from
+  either source. The call that builds the projection is the one that throws, so an app grouping on
+  a property that can be null or blank must coalesce it to a real bucket label (e.g. `"(none)"`)
+  itself.
+- `TableViewIdentitySelector` returns the stable string identity for a group key. Row identity is
+  not app-supplied: the projection derives it from each item's object identity.
+- `TableViewGroupInfo` mirrors `ICollectionViewGroup` (`Key` ↔ `Group`, `ItemCount` ↔
+  `GroupItems.Count`). `Key` is the `GroupBy` key, `ItemCount` the number of members in the group,
+  `Level` is `0` for single-level v1, and `IsExpandable` is `false` when the group cannot expand
+  (e.g. it is empty).
+- A group header's `Content` is the `TableViewGroupInfo` projection, and it is also the header's
+  `DataContext`, so bindings in a group-header `Style` or its `ContextFlyout` see it.
+  `ContentTemplate` is the header content template: the default `Style` seeds it, and
+  `TableView.GroupHeaderTemplate` overrides it as a local value that `ClearValue` reverts back to the
+  `Style` setter. Replacing `Style`/`Template` outright still hands the app the whole visual — the
+  usual re-template contract (see *Template contracts*).
+- `TableViewGroupHeaderToggleRequestedEventArgs.GroupKey` is carried on the args so a handler that
+  re-enters and mutates the header still sees the key that was actually activated.
+- `ExpandAllGroups`/`CollapseAllGroups` expand or collapse every group in one batch; they are the
+  programmatic bulk counterparts of the header's `ExpandCollapse` pattern and click. Both are no-ops
+  when the source is not grouped, and under `GroupBy` + `ParentBy` they affect only group headers,
+  not tree nodes.
+- `ExpandAllRows`/`CollapseAllRows` expand or collapse every tree node of a
+  `TableViewSource.ParentBy` projection and are no-ops otherwise. They are independent of the group
+  verbs, and set the remembered state of every node, so the result persists after the filter
+  changes or clears.
 
 Under grouping, a hierarchical root row's lead cell is indented by the group header's expander
 gutter plus its spacing (`TableViewGroupExpanderSize` + `TableViewGroupExpanderSpacing`, 32px by
@@ -456,6 +575,56 @@ retained as WPF-migration shortcuts and **augment** the Style DPs — an explici
 brush wins over the corresponding `RowStyle` setter. If they prove redundant once `RowStyle` lands,
 they can be obsoleted while the API is still `[MUX_PREVIEW]`.
 
+## Template contracts
+
+MIDL3 does not surface `[TemplatePart]`, so the template contracts are documented here.
+
+**`TableView`.** Re-templates must provide these named parts; a missing required part disables the
+related feature.
+
+| Part | Type | Notes |
+|---|---|---|
+| `PART_HeaderRow` | `FrameworkElement` | Collapsed when headers are hidden. |
+| `PART_HeaderHost` | `Panel` | Receives one header cell per column. |
+| `PART_RowsRepeater` | `ItemsRepeater` | Hosts row containers; do not `TemplateBind` `ItemsSource`. |
+| `PART_EmptyStatePresenter` | `ContentControl`/`ContentPresenter` (optional) | Hosts `EmptyTemplate`. |
+
+The header and body scrollers are structure, not named parts: they are the nearest `ScrollViewer`
+ancestors of `PART_HeaderHost` / `PART_RowsRepeater` inside the template, and their names are not
+looked up.
+
+**`TableViewRow`.** The first four parts are **required**: the `Selected*` states target them by name.
+
+| Part | Type | Notes |
+|---|---|---|
+| `PART_RootBorder` | `Border` | Row chrome; `Background` driven by `CommonStates`. |
+| `PART_GridLineBorder` | `Border` | Renders border chrome and terminal-line suppression. |
+| `PART_CellsHost` | `Panel` | One cell wrapper per column, in `Columns` order. |
+| `PART_CellForegroundPresenter` | `ContentPresenter` | Hosts `PART_CellsHost`. Exists because a `Border` has no `Foreground` for the `Selected*` states to animate. |
+| `PART_SelectionIndicator` | `Shape` (default `Rectangle`) | `Selected*` states animate `Opacity` 0 → 1; `SelectedDisabled` also animates `Fill`. Custom templates using other indicator types must adapt the state targets. |
+| `PART_RowExpanderGutter` | `FrameworkElement` (optional) | Chevron column and toggle target; `Margin` set in code to the row's indent. |
+| `PART_RowExpanderIcon` | `FontIcon` (optional) | Glyph and `Visibility` driven by the hierarchy state groups. |
+
+Visual state groups: `CommonStates` (`Normal`, `PointerOver`, `Pressed`, `Disabled`, `Selected`,
+`SelectedPointerOver`, `SelectedPressed`, `SelectedDisabled`), `RowHierarchyStates`
+(`RowHierarchical`, `RowNotHierarchical`), `RowExpandabilityStates` (`RowExpandable`,
+`RowNotExpandable`) and `RowExpansionStates` (`RowExpanded`, `RowCollapsed`). The hierarchy parts
+are optional but declared together with the three hierarchy state groups. The hierarchy groups are
+entered on every row, including in flat and grouped tables, and their names are `Row`-prefixed so
+they cannot collide with an app's own `Expanded`/`Collapsed` states in a retemplate. The selected
+states share the one `CommonStates` group so nothing depends on `GoToState` call order.
+Multiple/Extended selection will add a separate `MultiSelectStates` group (and a checkbox part)
+rather than extending this one, so it stays additive for existing templates.
+
+**`TableViewColumnHeader`.** A templated header, one per column, created only by `TableView`;
+restyled via `TableView.ColumnHeaderStyle` or `TableViewColumn.HeaderStyle`. Optional parts:
+`PART_ContentPresenter`, `PART_GridLine`, `PART_SortIndicatorHost`, `PART_ResizeGripperHost`.
+
+**`TableViewGroupHeader`.** Parts: `PART_Root`, `PART_ContentPresenter`, `PART_ExpanderIcon`
+(targeted by the default states), `PART_ExpanderGutter`; optional `PART_GridLineBorder`. Visual
+state groups: `CommonStates` (`Normal`, `PointerOver`, `Pressed`, `Disabled`), `ExpansionStates`
+(`Expanded`, `Collapsed`) and `ExpandabilityStates` (`Expandable`, `NotExpandable`).
+
 # Architectural overview
 
 `TableView` owns the column collection, row realization, header realization, scroll synchronization, frozen-column layout, density/theming state, keyboard navigation, and the automation surface. The architecture separates:
@@ -521,7 +690,16 @@ Editing bindings use `UpdateSourceTrigger=Explicit`, so the typed value lives in
 
 A forced close (the source changes under the edit, or the control turns read-only) commits a valid pending value while the edited item is still in the source and passes the filter, and reports `Cancel` on a failed write or validation error. Because the pending value is still in the editor, a forced close first transfers it to the item, then validates; a value that fails validation is rolled back to the pre-edit value, so the item never keeps a value the control rejected. Inside a layout pass (a recycled or rebuilt row) restoring the editor would re-enter layout, so that rollback is posted to the dispatcher, and it is skipped if the item's value has changed in the meantime — another edit of the same cell is open, or the property no longer holds the rejected value — so a newer write is never overwritten. If the item was removed, filtered out, or `ItemsSource` was replaced, it reports `Cancel` and writes nothing, as WPF `DataGrid` does; an item that is only under a collapsed group or node has not been removed. A forced close during a pending commit deferral can finish as `Cancel` without a second `CellEditEnding`.
 
-There is no item-owned transaction interface in this release (`ITableViewEditableItem` is deferred with row editing). The control snapshots the value at the edited property path, falling back to scraping the editor's bindings — inherently incomplete for an arbitrary editor, so the inability to capture anything is recorded and reported rather than silently ignored.
+There is no item-owned transaction interface in this release (`ITableViewEditableItem` is deferred with row editing). An item-owned transaction (the WinRT counterpart of `IEditableObject`) is the rollback mechanism for **row**-scoped editing, and editing is cell-scoped here, so shipping it now would be public surface with nothing behind it; it lands with row editing, when it has a job to do. The control snapshots the value at the edited property path, falling back to scraping the editor's bindings — inherently incomplete for an arbitrary editor, so the inability to capture anything is recorded and reported rather than silently ignored.
+
+## Public editing surface
+
+- **Opt-in.** `TableView.IsReadOnly` defaults to `true`, and while it is `true` no cell can be edited, whatever the column says. `TableViewColumn.IsReadOnly` is the per-column opt-out: a read-only column can still be the current cell, but cannot be edited. A column with no `CellEditingTemplate` and no built-in editor is not editable.
+- **Starting an edit.** Editing starts from the user: double-click, or `F2` on the current cell. There is no programmatic `BeginEdit` in this release, and therefore no public current-cell surface for one to target. The context-menu feature keeps current-cell access internal; a public command surface arrives later, when there is a programmatic editing scenario to justify it.
+- **`IsEditing`** is `true` while an edit is in flight on a cell: from the edit being accepted, through the open editor, until the matching close completes. It also covers the brief windows where an edit is still opening and where a close is already underway, because the control uses it to reject re-entrant edit operations from inside consumer callbacks; an app querying it from a `BeginningEdit` handler therefore sees `true` even if that handler goes on to cancel. Its scope is "a cell editor is open"; row-scoped editing is not part of this release.
+- **`CommitEdit()` / `CancelEdit()`** close the open **cell** edit. They return `false` when the edit did not close: a veto or failed validation leaves the edit open and `IsEditing` `true`. There is no row-scoped commit/cancel API and no `RowEditEnding` in this release; both arrive with row editing.
+- **Events.** `TableViewBeginningEditEventArgs` and `TableViewCellEditEndingEventArgs` carry the `Item` and `Column`; `CellEditEnding` also reports the outcome as `EditAction` (`TableViewEditAction`, see *Value transfer and rollback* for how a forced close reports). `Cancel` is read synchronously, right after the handler returns, so a handler must decide before returning; asynchronous validation would need a deferral, which is not in this release. There is no post-close event: `CellEditEnding` is raised for every close, so a second "it finished" event would be surface without a scenario of its own yet. It can be added later without breaking anyone.
+- **Editing hooks.** The hooks a derived column would override — `GenerateEditingElement`, `PrepareCellForEdit`, `CommitCellEdit`, `CancelCellEdit` — are internal in this release. The built-in columns use them, but a `CellEditingTemplate` is the supported way to customise an editor, so publishing the hooks now would fix their exact shape forever. They can be added later without breaking anyone.
 
 ## Re-entrancy rules (load-bearing)
 
@@ -545,6 +723,158 @@ Row recycling, cell rebuild and dependency-property change callbacks can all run
 - **`GridCoordinateHelper`** — internal C++ helper for row/column ↔ flat-index and focus-navigation math used by keyboard navigation; not projected (no public runtimeclass).
 - **`TableViewRowTemplateSelector`** — picks the container kind for an entry in the projection: a `TableViewGroupHeader` for a group entry, a `TableViewRow` for a data row.
 - **`RowExpansionModel`** — internal layer-1 store of expand/collapse *intent*, keyed by group identity and holding only the exceptions to a default. Carries no XAML or tabular vocabulary, so hierarchy can reuse it unchanged.
+
+# API contract notes
+
+Contract details of the public (and framework-internal) IDL surface that the sections above do not
+already cover, organized by type.
+
+## Namespace, build and ABI guards
+
+- **`SortDirection` namespace.** `SortDirection` is the control-agnostic sort direction for the
+  shaping primitives. It is declared in layer 1 (`TabularShaping`) rather than beside any one
+  consumer, because `TableViewSource`, `TableViewColumn` and `TableViewSortingEventArgs` all name it.
+  The namespace is load-bearing: the type must **not** be declared into `Microsoft.UI.Xaml.Data`, a
+  namespace the Windows App SDK also owns. A managed consumer referencing both winmds binds its C#
+  projection to the SDK's copy of that namespace, which makes a type declared there by this binary
+  invisible (`error CS0234: The type or namespace name 'SortDirection' does not exist in the
+  namespace 'Microsoft.UI.Xaml.Data'`). Declaring shaping types only in namespaces this binary
+  exclusively owns removes the split-namespace collision at the root.
+- **Tabular metadata IDL.** `Microsoft.UI.Xaml.Controls.Tabular.idl` is a renamed copy of
+  `controls\idl\Microsoft.UI.Xaml.Controls.idl`. MUXC's winmd already owns
+  `XamlControlsXamlMetaDataProvider` and `XamlControlsResources`, so the Tabular DLL produces
+  differently-named types to avoid duplicate-runtimeclass collisions:
+  `XamlControlsTabularXamlMetaDataProvider` and `TabularControlsResources`. The
+  `Microsoft.UI.Xaml.CustomAttributes` types (`MUXHasCustomActivationFactoryAttribute` etc.) are
+  **not** redeclared there — MIDL references MUXC's winmd (see
+  `controls\Tabular.ProjectImports.targets`), which already defines them. Only the `MUX_*` macros are
+  kept verbatim, since the tabular control IDLs depend on them, and the file must stay the **first**
+  entry in the Tabular project's `@(Midl)` so those macros are visible to every control IDL merged
+  after it.
+- **`MU_PRIVATE_CONTROLS_NAMESPACE`** is deliberately the **same** value MUXC's metadata IDL uses
+  (`Microsoft.UI.Private.Controls`), not a Tabular-specific child such as
+  `Microsoft.UI.Xaml.Controls.Tabular.Primitives.Private`. A child namespace breaks the projection
+  outright: cppwinrt emits an include for the parent namespace and no parent is ever generated.
+  Reusing the value is safe because MIDL never references MUXC's private winmd from this build, so
+  there is no duplicate-runtimeclass hazard, and framework-internal primitives stay out of every
+  shipped winmd either way because metadata is partitioned by namespace. (See *Column resize* for
+  why `ResizeGripper` lives there.)
+- **Overload metadata is frozen.** The `[default_overload]` / `[method_name]` attributes on
+  `TableViewSource.GroupBy` (`GroupBy` / `GroupByWithIdentity`) and `TableViewSource.Sort`
+  (`SortByPath` / `Sort`) are frozen at v1 — without them MIDL bakes `GroupBy2` / `Sort2` into the
+  ABI.
+- **`TableViewSource` is sealed deliberately.** `TableView` drives the concrete implementation, so
+  an override of a shaping verb would be bypassed. Unsealing later is compatible; sealing later is
+  not.
+- **`TableView` is unsealed** because `ReferenceTracker` requires the cppwinrt-projected derivable
+  type surface.
+- **`TableViewColumn()`** is a public constructor because derivation requires it: the overridable
+  cell factories are only reachable if a consumer can actually construct a derived column.
+- **`TableViewRowTemplateSelector`** picks the row container template from `TableViewRowKind`. It is
+  set as `PART_RowsRepeater.ItemTemplate`, so `ItemsRepeater` supplies the per-template recycle
+  pools. It is projected only because `ItemTemplateWrapper` lives in another DLL, and it is not
+  app-facing (`[MUX_INTERNAL]`), since selection needs an owning `TableView` that only `TableView` can
+  set. `unsealed` + a constructor is what MIDL requires for a member-less runtimeclass.
+
+## TableView
+
+- `Columns`: the ABI exposes `IVector`, but the backing vector is observable for live column
+  updates.
+- `HeadersVisibility` controls column-header visibility without mutating `Columns`.
+- `EmptyTemplate` is the optional empty-state template shown when `ItemsSource` is null or empty.
+
+## TableViewColumn
+
+- `HeaderToolTip` is opt-in header tooltip content; null or empty means no tooltip. It is not a
+  `Binding` property: a header is not bound against a row, so there is nothing to defer.
+- `CellToolTipBinding` is opt-in per-cell tooltip content, bound against the row's data item; null
+  or empty means no tooltip. It is a CLR property, not a DP, so XAML passes the `Binding` through
+  unevaluated. (`TableViewTextColumn.Binding` is a CLR property for the same reason: Binding-typed
+  XAML values route through the setter.)
+- `CellContextFlyout` is shown at the cell, with the row's item as its items' `DataContext`, and is
+  shared by the column's cells. First match wins: a `ContextFlyout` inside the cell (not on a nested
+  items host's items or anywhere in a nested `TableView`; on text controls only one set on the
+  element itself), `CellContextFlyout`, the row's `ContextFlyout`, then `TableView.ContextFlyout`.
+  The cell takes focus; selection does not change. No TableView menu opens while a cell is editing.
+  Group headers never use it.
+- `HeaderContextFlyout` is shown at the header cell, after a `Style`/`HeaderTemplate`
+  `ContextFlyout` and before `TableView.ContextFlyout`. It is not opened for collapsed columns or
+  while editing.
+- `GenerateElement(dataItem)` generates the display-only visual root for a cell; custom columns
+  override `GenerateElementCore`. The returned element must bind reactively to its inherited
+  `DataContext` (the row data item) and must **not** set a local `DataContext`: rows are recycled
+  and their `DataContext` is updated in place, so cells refresh through inheritance and bindings.
+  `dataItem` is provided for initial setup only (see *Row virtualization*).
+
+## Selection
+
+- `SelectionMode` (`TableViewSelectionMode`) defaults to `Single`, matching `ItemsView`, `ListView`
+  and WPF's `DataGrid`; `None` is display-only. Only `None` and `Single` exist in this release:
+  `Multiple`/`Extended` need an anchor and a range model, and their members will be appended, so the
+  existing values stay stable when they arrive.
+- Selection is row-scoped and single-item, and independent of editing. `SelectedItem` (the selected
+  data item, or null) and `SelectedIndex` (the selected item's index in the displayed row
+  projection, or `-1` when nothing is selected) are read-only projections of the selection and stay
+  coherent with each other.
+- Selection is driven through `Select` / `Deselect` / `IsSelected` / `DeselectAll`, named to match
+  `ItemsView`. There are no identity-based overloads: an index is the only addressing mode.
+
+## TableViewRow
+
+- `IsSelected` is a read-only DP written only by the owning `TableView` (registered with `Register`
+  plus a setter that is not projected, **not** `RegisterReadOnly`). It drives the `Selected*`
+  states.
+- `Level`, `IsExpandable` and `IsExpanded` are read-only DPs written by the owning `TableView`; all
+  are `0`/`false` for flat and grouped sources. `Level` is the 1-based depth (roots are `1`),
+  matching `AutomationProperties.Level`; `0` means not hierarchical. `IsExpandable` is `true` when
+  the row has children and drives `RowExpandabilityStates`. `IsExpanded` is `true` when the row's
+  children are currently projected as rows beneath it.
+
+## TableViewSource
+
+Whole-class contract:
+
+- Null items, predicate, or `keySelector` throws `E_INVALIDARG`. (This differs from `TableView`'s
+  command surface, which no-ops on bad input.) The optional `groupIdentitySelector` may be null and
+  selects the built-in value-type group identity.
+- UI-thread affinity, like any XAML items source. The underlying collection must also raise its
+  change notifications on that thread; raising them from a background thread is not supported. The
+  verbs hold no lock.
+- Rows are identified by their item's **object** identity (under `ParentBy`, by its node key, which
+  also survives re-creation). So selection and focus re-anchor across a reshape, but **not** across
+  an item being re-created, and the same object in two rows fails fast at materialization.
+- A `TableViewSource` can be the `ItemsSource` of one `TableView` at a time (see *Single owner*
+  under *Sort ownership and reconciliation*). The refusal of a second table is not an error: nothing
+  throws. An unloaded owner that is loaded again reacquires the source automatically, or waits for it
+  if another table took it meanwhile.
+
+Members:
+
+- `From(items)` accepts the same collection interfaces as `ItemsSourceView`: `IVector<Object>` (so
+  also `IObservableVector<Object>`), `IBindableVector`, `IIterable<Object>`, or `IBindableIterable`.
+  Anything else throws `E_INVALIDARG`. The projection is populated by the time `From` returns.
+- `Filter(predicate)`: use `ClearFilter()` to remove an existing filter rather than passing a
+  pass-everything one.
+- `ParentBy(keySelector, parentKeySelector)` declares a self-referencing parent/child relation over
+  the flat source: `keySelector` returns each item's unique key, `parentKeySelector` its parent's
+  key (null or empty for a root; an unknown parent key makes an orphan root). Null selectors,
+  duplicate/empty keys, self-parent and cycles throw `E_INVALIDARG` and keep the previous
+  projection. Value-typed keys compare by value and type; other objects (including app-defined enums
+  and structs) by reference, never by `Equals`. Rows start collapsed; sort applies per sibling set,
+  filter keeps matching rows plus their ancestors, and `GroupBy` buckets the roots. See
+  [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md).
+- `ClearParentBy()` removes the relation and shows the source flat again. It resets expansion
+  state.
+- `IsLiveShaping` (opt-in) reshapes when an item's sort key, group key, filter result or parent
+  relation changes (`PropertyChanged`), coalesced to one reshape per dispatcher turn and deferred
+  while a cell is being edited. Each reshape re-reads every item (O(n) in the source size), however
+  few changed. A `PropertyChanged` raised off the UI thread is marshalled to it; one that cannot be
+  is picked up by the next live change on the UI thread.
+
+## Enums
+
+- `TableViewGridLinesVisibility` mirrors WPF `DataGridGridLinesVisibility` names **and values**, so
+  persisted casts round-trip.
 
 # Appendix
 

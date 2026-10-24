@@ -1,5 +1,5 @@
 ﻿// Do not reorder: this file must stay the first @(Midl) entry of the Tabular project. Do not redeclare the
-// Microsoft.UI.Xaml.CustomAttributes types here; they come from MUXC's winmd. See TableView/IdlCommentsDump.md.
+// Microsoft.UI.Xaml.CustomAttributes types here; they come from MUXC's winmd. See docs/design-notes/TabularControls/TableView-dev-spec.md.
 #define MU_XC_NAMESPACE Microsoft.UI.Xaml.Controls.Tabular
 #define MU_XCP_NAMESPACE Microsoft.UI.Xaml.Controls.Tabular.Primitives
 #define MU_XCD_NAMESPACE Microsoft.UI.Xaml.Data
