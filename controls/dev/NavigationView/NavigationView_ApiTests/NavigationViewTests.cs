@@ -1573,6 +1573,116 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyHeaderContentMargin(NavigationViewPaneDisplayMode.LeftMinimal, "VerifyVerifyHeaderContentMarginOnMinimalNav");
         }
 
+        [TestMethod]
+        public void VerifyBackButtonHitTargetDoesNotShiftContent()
+        {
+            // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/5306: the back button's hit target
+            // must start at the NavigationView's top-left corner in every pane mode, and its larger size must not change
+            // the Width that NavigationView adds to ContentLeftPadding.
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView()
+                {
+                    Header = "HEADER",
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal,
+                    IsBackButtonVisible = NavigationViewBackButtonVisible.Visible,
+                    Width = 400.0
+                };
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item 1" });
+                Content = navView;
+                Content.UpdateLayout();
+
+                var rootGrid = VisualTreeHelper.GetChild(navView, 0) as Grid;
+                var backButton = rootGrid.FindName("NavigationViewBackButton") as Button;
+                var contentLeftPadding = rootGrid.FindName("ContentLeftPadding") as FrameworkElement;
+                var paneToggleButton = rootGrid.FindName("TogglePaneButton") as Button;
+
+                Verify.AreEqual(40.0, backButton.Width, "Back button Width");
+                Verify.AreEqual(48.0, backButton.ActualWidth, "Back button hit target width");
+                Verify.AreEqual(44.0, backButton.ActualHeight, "Back button hit target height");
+                VerifyBackButtonStartsAtCorner(navView, backButton);
+                VerifyBackButtonVisualAndFocusRectUnchanged(navView, backButton);
+                // PaneToggleButtonWidth (40) + back button Width (40).
+                Verify.AreEqual(80.0, contentLeftPadding.Width, "ContentLeftPadding Width");
+                VerifyElementOffset(navView, paneToggleButton, 40.0, 4.0, "Pane toggle button");
+
+                foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.Top })
+                {
+                    Log.Comment("PaneDisplayMode: " + paneDisplayMode);
+                    navView.PaneDisplayMode = paneDisplayMode;
+                    Content.UpdateLayout();
+                    // In Top mode the hit target ends where the top pane's first item starts (x = 44).
+                    double expectedWidth = paneDisplayMode == NavigationViewPaneDisplayMode.Top ? 44.0 : 48.0;
+                    Verify.AreEqual(expectedWidth, backButton.ActualWidth, "Back button hit target width");
+                    Verify.AreEqual(44.0, backButton.ActualHeight, "Back button hit target height");
+                    VerifyBackButtonStartsAtCorner(navView, backButton);
+                    VerifyBackButtonVisualAndFocusRectUnchanged(navView, backButton);
+                    if (paneDisplayMode != NavigationViewPaneDisplayMode.Top)
+                    {
+                        VerifyElementOffset(navView, paneToggleButton, 0.0, 44.0, "Pane toggle button");
+                    }
+                    else
+                    {
+                        var menuItem = navView.ContainerFromMenuItem(navView.MenuItems[0]) as NavigationViewItem;
+                        double menuItemX = menuItem.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0)).X;
+                        Log.Comment("First top pane item X: " + menuItemX);
+                        Verify.IsGreaterThanOrEqual(menuItemX, 44.0, "First top pane item X");
+                        // The whole button is hit-testable (its template root has a Transparent background), so its bounds are its hit target.
+                        double backButtonRight = backButton.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(backButton.ActualWidth, 0)).X;
+                        Verify.IsLessThanOrEqual(backButtonRight, menuItemX, "Back button hit target must not cover the first top pane item");
+                    }
+                }
+
+                Log.Comment("RightToLeft: the hit target reaches the mirrored (top-right) corner");
+                navView.FlowDirection = FlowDirection.RightToLeft;
+                foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.LeftMinimal, NavigationViewPaneDisplayMode.Left })
+                {
+                    Log.Comment("PaneDisplayMode: " + paneDisplayMode);
+                    navView.PaneDisplayMode = paneDisplayMode;
+                    Content.UpdateLayout();
+                    Verify.AreEqual(48.0, backButton.ActualWidth, "Back button hit target width");
+                    VerifyBackButtonStartsAtCorner(navView, backButton);
+                }
+                navView.FlowDirection = FlowDirection.LeftToRight;
+
+                Log.Comment("Changing CompactPaneLength at runtime resizes the hit target with the button");
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                navView.CompactPaneLength = 64;
+                Content.UpdateLayout();
+                Verify.AreEqual(56.0, backButton.Width, "Back button Width");
+                Verify.AreEqual(64.0, backButton.ActualWidth, "Back button hit target width");
+                VerifyBackButtonStartsAtCorner(navView, backButton);
+            });
+        }
+
+        private void VerifyBackButtonStartsAtCorner(NavigationView navView, Button backButton)
+        {
+            VerifyElementOffset(navView, backButton, 0.0, 0.0, "Back button hit target");
+        }
+
+        // Before the hit target was enlarged, the 40x36 visual sat at (4,6) and was the focus target. The focus rect was that
+        // visual inflated by the default Button FocusVisualMargin of -3: (1,3) 46x42, with 7 px corners (4 + 3).
+        private void VerifyBackButtonVisualAndFocusRectUnchanged(NavigationView navView, Button backButton)
+        {
+            var visual = VisualTreeUtils.FindVisualChildByName(backButton, "RootGrid") as Grid;
+            VerifyElementOffset(navView, visual, 4.0, 6.0, "Back button visual");
+            Verify.AreEqual(40.0, visual.ActualWidth, "Back button visual width");
+            Verify.AreEqual(36.0, visual.ActualHeight, "Back button visual height");
+
+            Verify.IsTrue(Control.GetIsTemplateFocusTarget(visual), "The visual is the focus target");
+            // The focus target has no FocusVisualMargin of its own, so the button's (inherited from the default Button style) applies.
+            Verify.AreEqual(new Thickness(0), visual.FocusVisualMargin, "Focus target FocusVisualMargin");
+            Verify.AreEqual(new Thickness(-3), backButton.FocusVisualMargin, "Back button FocusVisualMargin");
+            Verify.AreEqual(new CornerRadius(4), visual.CornerRadius, "Focus target CornerRadius");
+        }
+
+        private void VerifyElementOffset(NavigationView navView, FrameworkElement element, double expectedX, double expectedY, string name)
+        {
+            var origin = element.TransformToVisual(navView).TransformPoint(new global::Windows.Foundation.Point(0, 0));
+            Verify.AreEqual(expectedX, origin.X, name + " X");
+            Verify.AreEqual(expectedY, origin.Y, name + " Y");
+        }
+
         private void VerifyHeaderContentMargin(NavigationViewPaneDisplayMode paneDisplayMode, string verificationFileNamePrefix)
         {
             UIElement headerContent = null;
