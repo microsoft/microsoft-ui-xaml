@@ -26,6 +26,7 @@ namespace DirectUI
         public DirectUI::Control
         , public ABI::Microsoft::UI::Xaml::Controls::ISplitView
         , public ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener
+        , public ABI::Microsoft::UI::Xaml::Controls::ISplitViewPrivate
     {
         friend class DirectUI::SplitView;
 
@@ -34,6 +35,7 @@ namespace DirectUI
         BEGIN_INTERFACE_MAP(SplitViewGenerated, DirectUI::Control)
             INTERFACE_ENTRY(SplitViewGenerated, ABI::Microsoft::UI::Xaml::Controls::ISplitView)
             INTERFACE_ENTRY(SplitViewGenerated, ABI::Microsoft::Internal::FrameworkUdk::IBackButtonPressedListener)
+            INTERFACE_ENTRY(SplitViewGenerated, ABI::Microsoft::UI::Xaml::Controls::ISplitViewPrivate)
         END_INTERFACE_MAP(SplitViewGenerated, DirectUI::Control)
 
     public:
@@ -73,6 +75,8 @@ namespace DirectUI
         IFACEMETHOD(put_Pane)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue) override;
         IFACEMETHOD(get_PaneBackground)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_PaneBackground)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
+        IFACEMETHOD(get_PaneFocusOperationCompletedCallback)(_Outptr_result_maybenull_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::SplitView*, IInspectable*>** ppValue) override;
+        IFACEMETHOD(put_PaneFocusOperationCompletedCallback)(_In_opt_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::SplitView*, IInspectable*>* pValue) override;
         IFACEMETHOD(get_PanePlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::SplitViewPanePlacement* pValue) override;
         IFACEMETHOD(put_PanePlacement)(ABI::Microsoft::UI::Xaml::Controls::SplitViewPanePlacement value) override;
         IFACEMETHOD(get_TemplateSettings)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ISplitViewTemplateSettings** ppValue) override;
