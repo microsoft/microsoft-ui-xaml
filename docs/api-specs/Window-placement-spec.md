@@ -13,7 +13,7 @@ Window placement persistence
 - [3. Examples](#3-examples)
   - [3.1. Persist window placement automatically](#31-persist-window-placement-automatically)
   - [3.2. Tell WinUI your window is part of the app's launch process](#32-tell-winui-your-window-is-part-of-the-apps-launch-process)
-  - [3.3. Center a window on the display where it was last used](#33-center-a-window-on-the-display-where-it-was-last-used)
+  - [3.3. Center a window on the display where it was last used by using AppWindow APIs](#33-center-a-window-on-the-display-where-it-was-last-used-by-using-appwindow-apis)
   - [3.4. Save and load placement in your own storage](#34-save-and-load-placement-in-your-own-storage)
   - [3.5. Recreate windows after an app or system restart](#35-recreate-windows-after-an-app-or-system-restart)
   - [3.6. Start a new window in full-screen mode](#36-start-a-new-window-in-full-screen-mode)
@@ -125,6 +125,8 @@ If your app doesn't have package identity, see the instructions below about usin
 - **Virtual desktop (`VirtualDesktopId`).** WinUI remembers the virtual desktop the
   window was on (this is only used for restart scenarios).
 
+WinUI does not capture visibility, activation, presenter kind, or Z-order.
+
 The following table shows how WinUI adjusts a new window's position and size when the
 display configuration has changed since its placement was saved.  The goal is that the
 window appears where the user expects it.
@@ -145,7 +147,7 @@ Additional notes:
   [Start a new window in full-screen mode](#36-start-a-new-window-in-full-screen-mode).
 - You can set `Window.Width`, `Window.Height`, or both to choose a fallback size. WinUI uses
   these values only when it does not apply custom placement, cascade from another open,
-  visible window, or load saved placement.
+  visible window, or load saved placement.  (see [ApplyInitialPlacement](#42-windowapplyinitialplacement) for more information)
 - WinUI can cascade a new window from an open, visible window with the same `PlacementId`,
   rather than placing both windows at the exact same position.
 
@@ -246,7 +248,7 @@ protected override void OnLaunched(LaunchActivatedEventArgs args)
 }
 ```
 
-### 3.3. Center a window on the display where it was last used
+### 3.3. Center a window on the display where it was last used by using AppWindow APIs
 
 Suppose you want to open a normal window centered on the display where it was last used, even if the
 saved window was maximized or snapped. You can use the `ApplyInitialPlacement` API to run WinUI's
@@ -271,7 +273,6 @@ WindowPlacementInfo placement = WindowPlacementInfo.TryLoadForPlacementId(window
 if (placement is not null)
 {
     placement.State = WindowPlacementState.Normal;
-    placement.SnapRect = null;
 }
 
 // Apply placement while the window remains hidden.
@@ -451,18 +452,17 @@ This also enables WinUI's automatic placement persistence for the window.
 public string PlacementId { get; set; }
 ```
 
-Set this property to a non-empty ID to enable:
+This property is currently only supported for apps with package identity.
 
-- **Automatic placement persistence:** If your app has package identity, setting the ID
+Set this property to a non-empty string ID to enable:
+
+- **Automatic placement persistence:** Setting `PlacementID`
   opts this window into WinUI's automatic saving and loading of its position, size, and
   state. Reuse the same ID when you recreate a window so WinUI can find its saved placement.
 - **Cascade related windows:** WinUI also uses this identifier to find open, visible windows
   to cascade from.
 
-For apps without package identity, `PlacementId` still groups windows for cascading, but
-does not enable automatic placement persistence. Use
-[your own storage](#34-save-and-load-placement-in-your-own-storage) to save and load placement.
-
+See `ApplyInitialPlacement` for more information.
 
 ### 4.2. Window.ApplyInitialPlacement
 
@@ -538,7 +538,9 @@ If this is the first time `Activate` has been called for this Window:
 2. WinUI shows the window.
 3. If automatic window placement is enabled OR `ApplyInitialPlacement` has been called:
     - WinUI requests window activation if the initial placement requests it (see below).
-    - Otherwise, WinUI requests activation for the window.
+4. If not:
+    - WinUI restores the window if it's minimized.
+    - WinUI requests activation for the Window.
 
 See `ApplyInitialPlacement` documentation for more information about how your app can call it directly.
 
@@ -559,7 +561,11 @@ WinUI handles first-show sizing and visibility notifications and keeps the manag
 
 If you've previously successfully called `Activate` on your window:
 - WinUI restores the window if it's minimized.
-- WinUI requests activation for the Window. If honored, this will bring your window to the top z-order
+- WinUI requests activation for the Window. 
+
+**Requesting Activation**
+
+If the OS honors your app's request for window activation, it will bring your window to the top z-order
 and give it input focus.
 
 If the application is in the background, the OS will not bring your application to the foreground,
