@@ -8,6 +8,7 @@
 #include <XamlTailored.h>
 #include <TestEvent.h>
 #include <WUCRenderingScopeGuard.h>
+#include <xcperrorresource.h>
 
 using namespace ::Windows::Foundation;
 using namespace Microsoft::UI::Xaml::Tests::Common;
@@ -66,6 +67,121 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
 
         BringIntoViewVerticallyWithOptions(options, L"button10", 1500.0 /*expectedVerticalOffset*/);
+    }
+
+    template<typename T>
+    static void VerifyInvalidBringIntoViewOffsets(T^ target, const wchar_t* typeName)
+    {
+        // Access the XAML module and its resource DLL to load ERROR_INVALID_DOUBLE_VALUE_WITH_PROPERTY
+        // and format it with the property name for comparison with the HRESULT's error message.
+        const auto xamlModule = GetModuleHandleW(L"Microsoft.UI.Xaml.dll");
+        VERIFY_IS_NOT_NULL(xamlModule);
+
+        wchar_t modulePath[MAX_PATH];
+        const auto pathLength = GetModuleFileNameW(xamlModule, modulePath, ARRAYSIZE(modulePath));
+        VERIFY_IS_TRUE(pathLength > 0 && pathLength < ARRAYSIZE(modulePath));
+        std::wstring resourcePath(modulePath, pathLength);
+        resourcePath.resize(resourcePath.find_last_of(L'\\') + 1);
+        resourcePath.append(L"Microsoft.UI.Xaml.resources.common.dll");
+
+        wil::unique_hmodule resources(LoadLibraryExW(
+            resourcePath.c_str(), nullptr, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE));
+        VERIFY_IS_NOT_NULL(resources.get());
+
+        const wchar_t* resourceString = nullptr;
+        const auto formatLength = LoadStringW(
+            resources.get(), ERROR_INVALID_DOUBLE_VALUE_WITH_PROPERTY, reinterpret_cast<LPWSTR>(&resourceString), 0);
+        VERIFY_IS_TRUE(formatLength > 0);
+        const std::wstring messageFormat(resourceString, formatLength);
+
+        target->HorizontalOffset = -12.25;
+        target->VerticalOffset = 7.75;
+
+        for (bool horizontal : { true, false })
+        {
+            const std::wstring propertyName = std::wstring(typeName) + (horizontal ? L".HorizontalOffset" : L".VerticalOffset");
+            std::vector<wchar_t> messageBuffer(messageFormat.size() + propertyName.size() + 1);
+            const auto messageLength = swprintf_s(
+                messageBuffer.data(), messageBuffer.size(), messageFormat.c_str(), propertyName.c_str());
+            VERIFY_IS_TRUE(messageLength > 0);
+            const std::wstring expectedMessage(messageBuffer.data(), messageLength);
+
+            for (double value : {
+                std::numeric_limits<double>::quiet_NaN(),
+                std::numeric_limits<double>::infinity(),
+                -std::numeric_limits<double>::infinity() })
+            {
+                LOG_OUTPUT(L"Setting %s to %g", horizontal ? L"HorizontalOffset" : L"VerticalOffset", value);
+                bool threw = false;
+                try
+                {
+                    if (horizontal)
+                    {
+                        target->HorizontalOffset = value;
+                    }
+                    else
+                    {
+                        target->VerticalOffset = value;
+                    }
+                }
+                catch (Platform::Exception^ exception)
+                {
+                    threw = true;
+                    VERIFY_ARE_EQUAL(E_INVALIDARG, exception->HResult);
+                    VERIFY_IS_NOT_NULL(exception->Message);
+                    // C++/CX can prepend the system HRESULT description to the originated message.
+                    const std::wstring actualMessage(exception->Message->Data(), exception->Message->Length());
+                    VERIFY_IS_TRUE(actualMessage.size() >= expectedMessage.size());
+                    VERIFY_ARE_EQUAL(expectedMessage.c_str(),
+                        actualMessage.c_str() + actualMessage.size() - expectedMessage.size());
+                }
+                VERIFY_IS_TRUE(threw, L"Setting an invalid offset should throw");
+                VERIFY_ARE_EQUAL(-12.25, target->HorizontalOffset);
+                VERIFY_ARE_EQUAL(7.75, target->VerticalOffset);
+            }
+        }
+    }
+
+    void UIElementIntegrationTests::BringIntoViewOptionsRejectInvalidOffsets()
+    {
+        RunOnUIThread([&]()
+        {
+            VerifyInvalidBringIntoViewOffsets(ref new BringIntoViewOptions(), L"BringIntoViewOptions");
+        });
+    }
+
+    void UIElementIntegrationTests::BringIntoViewRequestedEventArgsRejectInvalidOffsets()
+    {
+        xaml_controls::Button^ button = nullptr;
+        xaml::BringIntoViewRequestedEventArgs^ eventArgs = nullptr;
+        auto requestedEvent = std::make_shared<Event>();
+        auto registration = CreateSafeEventRegistration(xaml::UIElement, BringIntoViewRequested);
+
+        RunOnUIThread([&]()
+        {
+            button = ref new xaml_controls::Button();
+            TestServices::WindowHelper->WindowContent = button;
+            registration.Attach(button, ref new wf::TypedEventHandler<xaml::UIElement^, xaml::BringIntoViewRequestedEventArgs^>(
+                [&](xaml::UIElement^ sender, xaml::BringIntoViewRequestedEventArgs^ args)
+            {
+                args->Handled = true;
+                eventArgs = args;
+                requestedEvent->Set();
+            }));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            button->StartBringIntoView();
+        });
+        requestedEvent->WaitForDefault();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(eventArgs);
+            VerifyInvalidBringIntoViewOffsets(eventArgs, L"BringIntoViewRequestedEventArgs");
+        });
     }
 
     void UIElementIntegrationTests::CanBringIntoViewWithSmallTargetRect()
