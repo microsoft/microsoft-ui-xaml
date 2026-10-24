@@ -1091,6 +1091,102 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyChildSelectionIndicatorUsesAncestorResourcesInFlyout()
+        {
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                Grid root = null;
+                NavigationView navView = null;
+                NavigationViewItem parent = null;
+                NavigationViewItem child = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    root = (Grid)XamlReader.Load(@"
+<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Grid.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key='Light'>
+                    <SolidColorBrush x:Key='NavigationViewSelectionIndicatorForeground' Color='Red'/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key='Default'>
+                    <SolidColorBrush x:Key='NavigationViewSelectionIndicatorForeground' Color='Blue'/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Grid.Resources>
+    <NavigationView x:Name='NavView' IsSettingsVisible='False'>
+        <NavigationView.MenuItems>
+            <NavigationViewItem Content='Parent' Icon='Home'>
+                <NavigationViewItem.MenuItems>
+                    <NavigationViewItem Content='Child'/>
+                </NavigationViewItem.MenuItems>
+            </NavigationViewItem>
+        </NavigationView.MenuItems>
+    </NavigationView>
+</Grid>");
+                    root.RequestedTheme = ElementTheme.Light;
+                    navView = (NavigationView)root.FindName("NavView");
+                    navView.PaneDisplayMode = mode;
+                    navView.IsPaneOpen = true;
+                    parent = (NavigationViewItem)navView.MenuItems[0];
+                    child = (NavigationViewItem)parent.MenuItems[0];
+                    Content = root;
+                });
+                IdleSynchronizer.Wait();
+
+                if (mode == NavigationViewPaneDisplayMode.Left)
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        parent.IsExpanded = true;
+                        navView.SelectedItem = child;
+                    });
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var indicator = (Rectangle)VisualTreeUtils.FindVisualChildByName(child, "SelectionIndicator");
+                        Verify.AreEqual(Colors.Red, ((SolidColorBrush)indicator.Fill).Color);
+                        parent.IsExpanded = false;
+                        navView.IsPaneOpen = false;
+                        navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftCompact;
+                    });
+                    IdleSynchronizer.Wait();
+                }
+
+                RunOnUIThread.Execute(() =>
+                {
+                    parent.IsExpanded = true;
+                    navView.SelectedItem = child;
+                });
+                IdleSynchronizer.Wait();
+
+                foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
+                {
+                    RunOnUIThread.Execute(() => root.RequestedTheme = theme);
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var itemRoot = (Grid)VisualTreeUtils.FindVisualChildByName(parent, "NVIRootGrid");
+                        var flyout = Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase.GetAttachedFlyout(itemRoot);
+                        Verify.IsTrue(flyout.IsOpen);
+                        Verify.IsTrue(child.IsSelected);
+                        var indicator = (Rectangle)VisualTreeUtils.FindVisualChildByName(child, "SelectionIndicator");
+                        var expectedColor = theme == ElementTheme.Light ? Colors.Red : Colors.Blue;
+                        Verify.AreEqual(expectedColor, ((SolidColorBrush)indicator.Fill).Color);
+                        indicator.SetThemeResourceBinding(Rectangle.FillProperty, "NavigationViewSelectionIndicatorForeground");
+                        Verify.AreEqual(expectedColor, ((SolidColorBrush)indicator.Fill).Color);
+                    });
+                }
+
+                RunOnUIThread.Execute(() => parent.IsExpanded = false);
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        [TestMethod]
         public void VerifySelectionWithOpacityTransition()
         {
             if (!new UISettings().AnimationsEnabled)

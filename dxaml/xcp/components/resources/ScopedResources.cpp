@@ -141,6 +141,7 @@ namespace Resources { namespace ScopedResources
         const Visitor& visitor)
     {
         const CDependencyObject* current = startObject;
+        ResourceResolver::ResourceParentLookupContext parentLookupContext;
 
         while (current != nullptr)
         {
@@ -158,17 +159,10 @@ namespace Resources { namespace ScopedResources
                     }
                 }
 
-                // this is here on purpose, to avoid runtime type check.
-                current = const_cast<CFrameworkElement*>(currentAsFe)->GetParentFollowPopups();
             }
-            else if (const CUIElement* currentAsUIE = do_pointer_cast<CUIElement>(current))
-            {
-                current = const_cast<CUIElement*>(currentAsUIE)->GetParentFollowPopups();
-            }
-            else
-            {
-                current = current->GetParentInternal(false /* public */);
-            }
+
+            current = ResourceResolver::GetParentForResourceLookup(
+                const_cast<CDependencyObject*>(current), parentLookupContext);
         }
 
         return S_OK;
