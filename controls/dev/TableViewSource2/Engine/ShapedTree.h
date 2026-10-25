@@ -29,8 +29,10 @@
 //   - The shaped root is always a GroupNode; there is no grouped/ungrouped mode. It is never in the
 //     visible list (the flattener starts at its Children).
 //   - Groups bucket SourceTable::TopLevel() only. A record's source descendants are reached through
-//     SourceRecord::Children (or the engine's filtered/sorted side table), never through a group.
-//   - Applying or removing GroupBy rebuilds GroupNodes (O(n) bucketing); records are untouched.
+//     SourceRecord::Children (or the filtered/sorted children in the record's engine ShapeState),
+//     never through a group.
+//   - Applying or removing GroupBy rebuilds GroupNodes (O(n) bucketing); the source tree is
+//     untouched. Engine state for records lives in each record's ShapeState slot.
 //   - ShapedRef and GroupNode stay inside the engine and the flattener. Consumers see VisibleRows
 //     and the TableViewRowInfo / TableViewGroupInfo derived from them.
 //   - UI-thread affine, like SourceTable. GroupNodes are owned by the engine in a container with
@@ -93,7 +95,7 @@ struct GroupNode
     // Rows below this node currently in the visible list (headers and data rows, honouring
     // expansion). Lets the flattener find a node's visible position in O(depth) and splice only
     // the affected range. Maintained by the flattener.
-    // OPEN: where the same count lives for source parents (side table vs SourceRecord).
+    // For source parents the same count lives in the record's ShapeState slot.
     uint32_t VisibleDescendantCount{ 0 };
 
     bool IsRoot() const noexcept { return Parent == nullptr; }

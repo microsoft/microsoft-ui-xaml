@@ -24,8 +24,9 @@
 // Logical order: filter -> group -> sort rows within each group. The engine may pre-sort for
 // efficiency as long as the result matches this order.
 //
-// Open (decided with the engine): who owns the spec, whether verbs edit a pending copy in place or
-// produce new copies, and how DeferRefresh batches are applied.
+// Ownership (decided, WPF model): verbs edit the source's desired spec in place; the engine keeps
+// a copy of the last applied spec and applies Diff(applied, desired) synchronously, or once at the
+// end of the outermost DeferRefresh. Apply never fails (errors are handled per record).
 
 // Refers to a delegate registered in ShapeDelegates. A plain value: holding or copying one does not
 // keep the delegate alive; the registry decides that at commit. The same delegate object always
@@ -119,7 +120,8 @@ struct ShapeSpec
 
 // What the engine has to redo to go from one spec to the next. Flags, so independent changes
 // (for example group order and row sort) combine. Hierarchy changes are not here; they arrive from
-// SourceTable as a Reset. Per-row key cache invalidation is added if the engine caches keys.
+// SourceTable as a Reset. The engine caches keys per record (ShapeState); Sort and GroupKey
+// invalidate the affected cached keys.
 enum class ShapeDelta : uint8_t
 {
     None = 0x0,

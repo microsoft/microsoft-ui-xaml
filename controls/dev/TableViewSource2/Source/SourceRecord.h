@@ -66,8 +66,9 @@ struct SourceRecord
     // ---- Source tree (written only by SourceTable) ------------------------------------------
     //
     // The tree the source describes, built by ParentBy / ChildrenBy; flat sources leave every record
-    // top-level with no children. Never written by Filter, Sort or GroupBy: shaped children, group
-    // membership, group level, expansion and visibility live in the shaping layer.
+    // top-level with no children. Never written by Filter, Sort or GroupBy: group membership, group
+    // level and expansion live in the shaping layer; filtered/sorted children, filter flags, cached
+    // keys and visible counts live in the engine's ShapeState slot (below, not declared yet).
     // Non-owning; ownership stays with the item's collection (m_records or a ChildFeed).
 
     // Source parent; nullptr for a top-level record.
@@ -81,6 +82,13 @@ struct SourceRecord
     uint16_t Depth{ 0 };
 
     bool HasChildren() const noexcept { return !Children.empty(); }
+
+    // ---- Engine state (decided, not declared yet) -------------------------------------------
+    //
+    // One engine-owned ShapeState slot per record (type defined in Engine/, opaque here): filter
+    // pass and has-passing-descendant flags, cached sort/group keys, filtered and sorted children,
+    // VisibleDescendantCount. Tree links come from Parent/Children above. Written only by the
+    // engine. OPEN: inline storage or a lazily allocated unique_ptr.
 
     // Logical identity, formatted on first use and then cached. The only way to read it.
     winrt::hstring const& Identity() const;

@@ -62,7 +62,7 @@ table serves as both the shared identity store and the cached full set that shap
 | 2 | `TableViewSource2` runtime class | `TableViewSource2.h/.cpp` | Verbs are stubs; `Refresh` and `IsLiveShaping` are declared |
 | 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h` | Declared, not implemented |
 | 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange` | `Source/SourceRecord.h`, `Source/SourceTable.h` | Declared, not implemented |
-| 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership and application open |
+| 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in source, applied in engine) |
 | 6 | Shaping engine: shaped tree node types `ShapedRef`, `GroupNode` | `Engine/ShapedTree.h` | Node types declared; engine not started |
 | 7 | Projection output (rows view and row metadata) | — | Not started |
 | 8 | Coordinator (incremental vs rebuild, owner notifications) | — | Not started |
@@ -528,9 +528,11 @@ tree (below).
 | `uint16_t Depth` | Top level = 0; never changed by grouping | Indent = spacer offset + per-level indent × `Depth`; `ShapedDepth()` |
 | `HasChildren()` | Derived from `Children` | Expandability of a source parent (`ShapedRef` row, not a group) |
 
-Not on the record (decided by the shaped tree section): expanded state (expansion model keyed by
-identity), group membership and group level (`GroupNode`), filtered and sorted children (side table
-keyed by record), visible flag (presence in the visible list), shaped depth (`ShapedDepth()` getter).
+Not in the source tree (decided by the shaped tree section): expanded state (expansion model keyed
+by identity), group membership and group level (`GroupNode`), visible flag (presence in the visible
+list), shaped depth (`ShapedDepth()` getter). Filtered and sorted children, filter flags, cached keys
+and the visible-descendant count live in the engine-owned `ShapeState` slot on the record (see
+"Engine state storage").
 
 **`SourceTable` additions** (`Source/SourceTable.h`):
 
@@ -616,10 +618,9 @@ keeps `m_topLevel` in source order. Every `SourceRecord` keeps its item invarian
 - One source change can produce several tree changes. Under `ParentBy`, inserting an item can adopt
   existing orphans, each of which becomes a Move from the top level to the new item. Deliver them
   as an ordered batch in one dispatch, or collapse to `Reset` above a threshold?
-- **Visible-descendant counts for source parents.** The visible list needs a count of visible
-  descendants per node to splice in O(depth). `GroupNode` can hold it; for source parents it must
-  live in the side table keyed by record (keeps records free of shaped state) or on the record.
-  Undecided.
+- **Visible-descendant counts for source parents (decided).** The visible list needs a count of
+  visible descendants per node to splice in O(depth). `GroupNode` holds it for groups; source
+  parents hold it in their `ShapeState` slot (see "Engine state storage").
 - **Indent without per-row writes (spacer column).** Applying or removing grouping must not write a
   level to every row. Data rows store only `SourceRecord.Depth`, which never changes with grouping.
   Group-level indent is one shared offset, like Avalonia's `RowGroupSpacerColumn`:
@@ -693,9 +694,31 @@ struct GroupNode                       // engine-owned; headers exist only while
   no grouped/ungrouped mode: the same walk handles both.
 - **Children of a source parent, after filter and sort:**
   - With no filter and no sort, they are read straight from `SourceRecord::Children` (no copy).
-  - Otherwise they live in a side table keyed by record (`vector<SourceRecord*>` per parent),
-    built only for parents that are expanded or have matches, and dropped when the verbs are
-    cleared.
+  - Otherwise they live in the parent's `ShapeState` (`vector<SourceRecord*>`), built only for
+    parents that are expanded or have matches, and dropped when the verbs are cleared.
+- **Engine state storage (decided: on the record).** Survey: side maps (Qt, JavaFX, Glazed
+  Lists, WPF `_internalList`) stay simple only for flat data; with hierarchy they become a second
+  tree held in a hash (Qt's per-parent `Mapping` with `mapped_children` and parent links). State on
+  the node (AG Grid `RowNode.childrenAfterFilter/AfterSort`, VS Code `visible`/`renderNodeCount`)
+  and parallel nodes (WPF `LiveShapingItem`, Avalonia `HierarchicalRow`, Glazed Lists
+  `TreeList.Node`) remain. We put the state on the record:
+  - Each `SourceRecord` carries one engine-owned `ShapeState` slot; the type is defined in
+    `Engine/` and opaque to `Source/`. It holds the filter pass and has-passing-descendant flags
+    (ancestors of matches stay visible), cached keys (one per sort level, plus the group key), the
+    filtered and sorted children, and `VisibleDescendantCount`. Tree links come from the record's
+    existing `Parent`/`Children`.
+  - Why not parallel `ShapedRecord` nodes: they must mirror every add, remove, reparent and
+    Reset, and need a record-to-node back-pointer for `ItemChanged`, removal and selection.
+    `ShapedRef`, `VisibleRow` and identity (record address) stay unchanged with state on the record.
+  - What we give up: building a new shaped tree beside the live one and swapping (not needed:
+    apply never fails, and the flattener's old visible list gives the delta), and several shaped
+    views over one source (not a requirement: one `SourceTable` per `TableViewSource2`). If
+    several views become a requirement, move to parallel nodes.
+  - Keys are cached (unlike Qt/JavaFX/Glazed Lists): path keys go through a binding and key
+    selectors cross into app code, so each key is read once per record per level and refreshed
+    on `ItemChanged` and on the affected `ShapeDelta`.
+  - Open: `ShapeState` stored inline, or as a lazily allocated `unique_ptr` (no cost when nothing
+    is shaped).
 - **Group vs. source node:** `ShapedRef::IsGroup()`.
   - A source parent (`Record()->HasChildren()`) is expandable but is not a group.
   - This avoids AG Grid's mix-up, where `rowNode.group` is also true for tree-data parents and
@@ -915,40 +938,40 @@ Decisions and open questions:
     property, which live shaping already tracks.
 - **Diffing:** whether the spec is a comparable value, so the engine can pick the cheapest update.
   **Decided:** yes. Because re-declarations bump a `Version`, `==` means no work.
-- **Spec ownership, mutability and application (open; decide with the engine, after surveying
-  other frameworks).** A future `DeferRefresh` batches several verbs into one reshape, so the
-  verb-time spec and the applied spec must be separate. Options considered:
-  - **Committed + pending (transaction):** a pending copy exists only inside a batch; verbs edit
-    it in place; at the end the engine applies it and, only on success, it becomes the committed
-    spec (frozen `shared_ptr<const ShapeSpec>` read by the engine and all readers). On failure the
-    pending copy is discarded.
-  - **Copy per verb:** each verb produces a new immutable spec. Same semantics; gains a frozen
-    snapshot per verb, costs a copy per verb. Combining both (edit pending in place, freeze at
-    commit) gets the snapshot without per-verb copies.
-  - **Desired in the source, applied in the engine:** verbs edit the source's desired spec and bump
-    a version; the engine pulls the latest version when ready, dropping intermediate ones (each
-    spec is a full state, not a delta). Failure of the latest cannot fall back to an
-    intermediate, which the app never asked for; on failure the desired spec would reset to the
-    applied one.
-  - Points that hold for every option:
-    - Readers (`IsGrouped`, sort indicators, row metadata, live shaping) and source changes
-      arriving during a batch use only the applied spec.
-    - Re-declarations are carried by `DelegateRef::Version` inside the spec, so no side state
-      travels with the pending/desired spec.
-    - `DelegateId` is a plain value; the registry drops unused delegates at commit, so a delegate
-      the applied spec still uses is never released early.
-    - Nested `DeferRefresh` uses a depth counter (as WPF's `CollectionView`): all levels edit one
-      pending spec, only the outermost end commits, levels have no separate rollback, and
-      disposing a handle twice is a no-op.
-    - With coalesced or deferred application, the verb has already returned, so errors have no
-      caller. Candidate rule: validate inputs at the verb call (throw synchronously), and make
-      application itself non-failing by handling delegate errors per item (a throwing predicate
-      excludes the item as in v1, a throwing key selector gives `null`, a throwing comparer means
-      "equal"). Only fatal errors remain.
-    - A verb called from inside a delegate during apply either throws, or edits the
-      pending/desired spec and triggers one more apply afterwards.
-    - Hierarchy verbs act on `SourceTable`, not the spec, so they are not batched by
-      `DeferRefresh` unless `SourceTable` gets its own deferral.
+- **Spec ownership, mutability and application (decided, WPF model).** Survey: WPF, Avalonia,
+  UWP and the Community Toolkit keep one spec edited in place and defer only the recompute
+  (`_deferLevel` counter, one refresh at the outermost end); TanStack/MUI replace caller-owned
+  state and memoize derived row models; DynamicData is latest-wins with no rollback; only JavaFX
+  `TableView.sort` rolls back, and only for a returned failure. No framework keeps a separate
+  pending copy or rolls back on an exception. Decision:
+  - **Desired spec in the source, applied spec in the engine.** Verbs edit the source's spec in
+    place. The engine keeps a copy of the last applied spec, which `Diff(applied, desired)` needs
+    anyway. There is never more than one desired spec, so intermediate states are never applied.
+  - **When it is applied.** Synchronously after the verb when no `DeferRefresh` is open;
+    otherwise once, when the outermost `DeferRefresh` ends. Nesting is a depth counter as in WPF:
+    every verb is gated (unlike the Community Toolkit's `Filter`), inner ends never refresh, and
+    disposing a handle twice is a no-op.
+  - **Apply never fails.** App delegate errors are handled per record, so there is nothing to
+    roll back. What happens to a misbehaving record is decided per verb (open, below). Invalid
+    arguments are rejected synchronously at the verb call.
+  - **Re-entrancy.** A verb (or `Refresh`/`DeferRefresh`) called while apply runs, for example
+    from inside a delegate, throws `InvalidOperationException`, like WPF's edit guards.
+  - **Readers.** Properties that describe the spec itself (sort indicators, `IsGrouped`) read the
+    desired spec, as WPF's `SortDescriptions` do. Rows, groups and row metadata reflect only the
+    applied spec. Source changes arriving inside a batch are shaped with the applied spec.
+  - `DelegateId` stays a plain value; `ShapeDelegates`/`PathEvaluator` `Retain` the desired and
+    applied specs after each apply, so a delegate the applied spec uses is never released early.
+  - Hierarchy verbs act on `SourceTable`, not the spec, so `DeferRefresh` does not batch them
+    unless `SourceTable` gets its own deferral (open).
+- **Misbehaving records, per verb (open).** Apply never fails, so each verb needs a rule for a
+  record whose delegate throws or returns something unusable:
+  - Filter predicate throws (v1: the record is excluded).
+  - Key selector throws, or returns a key that is not comparable with the others.
+  - Comparer throws, or is inconsistent (not a strict weak ordering).
+  - Path cannot be evaluated (the resolver returns `null` today).
+  - Group key selector throws or returns an unusable key.
+  - Hierarchy selectors (`ParentBy`/`ChildrenBy`) throw, or produce a cycle.
+  - Whether errors are reported anywhere (debug output, an event) or are silent.
 - **Path evaluation: revisit `PathEvaluator` and `SortMemberPathResolver` (open).** The current
   declaration reuses v1's resolver (a hidden `ContentControl` with a `OneTime {Binding}`, one
   per path) so v1 and v2 agree on what a path means. Questions to settle:
@@ -965,7 +988,7 @@ Decisions and open questions:
     row item does not report. Re-read every path key on `ItemChanged`, or match the first segment
     against the property name?
   - Ownership: should `PathEvaluator` be shared with v1 / the column-header sort path, and who
-    calls `Retain` (tied to the spec-ownership question above)?
+    calls `Retain` (after each apply, per the ownership decision above)?
 
 ## 6. Implementation plan
 
@@ -1013,8 +1036,9 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
 - [x] Declare the delegate registry (`ShapeDelegates`) and the path evaluator (`PathEvaluator`).
 - [ ] Implement `SortSpec::Matches`, `Diff`, `ShapeDelegates` and `PathEvaluator`.
 - [ ] Revisit path evaluation (`PathEvaluator`, `SortMemberPathResolver`; open, see §5).
-- [ ] Decide spec ownership and application (open, see §5), then add the members to
-      `TableViewSource2` or the coordinator.
+- [x] Decide spec ownership and application (§5: desired spec in the source, applied in the engine).
+- [ ] Decide the per-verb rule for misbehaving records (open, see §5).
+- [ ] Add the desired spec and `DeferRefresh` depth counter to `TableViewSource2` (or the coordinator).
 - [ ] Wire `TableViewSource2` verb methods to update `ShapeSpec`.
 
 ### Phase 3 — Projection output & row metadata (`Projection/Projection.h/.cpp`, `RowMetadataProvider`)
@@ -1027,6 +1051,8 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
 ### Phase 4 — Shaping engine (`Engine/ShapingEngine.h/.cpp`)
 - [ ] Shaped tree node types `ShapedRef`, `GroupNode` (`Engine/ShapedTree.h`): declared, no
       implementation.
+- [x] Decide where engine state lives: an engine-owned `ShapeState` slot on `SourceRecord`.
+- [ ] Declare `ShapeState` (decide inline vs `unique_ptr`) and add the slot to `SourceRecord`.
 - [ ] Run filter, sort, group, and hierarchy over `SourceTable::TopLevel()` and
       `SourceRecord::Children` without re-enumerating the underlying collection.
 - [ ] Map shaped output back to `SourceRecord*` in O(1) via `SourceTable::TryFindByRawPointer`.
