@@ -388,9 +388,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         public void CanHandleSentinelsInRealizationRangeWhenRecycling()
         {
             ListView list = null;
-            var listLoaded = new AutoResetEvent(false);
+            using var listLoaded = new AutoResetEvent(false);
             var data = new ObservableCollection<DataObject>(Enumerable.Range(0, 15).Select(i => new DataObject($"Item #{i}", false)));
-            RoutedEventHandler listLoadedHandler = null;
 
             try
             {
@@ -425,13 +424,12 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                         Height = 390
                     };
 
-                    listLoadedHandler = (s, e) =>
+                    list.Loaded += (s, e) =>
                     {
                         Log.Comment("ListView loaded. Setting ISP.CacheLength to zero.");
                         ((ItemsStackPanel)list.ItemsPanelRoot).CacheLength = 0;
                         listLoaded.Set();
                     };
-                    list.Loaded += listLoadedHandler;
                     TestServices.WindowHelper.WindowContent = list;
                 });
 
@@ -470,23 +468,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
             finally
             {
                 TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
-                UIExecutor.Execute(() =>
-                {
-                    if (list != null)
-                    {
-                        list.Loaded -= listLoadedHandler;
-                        list.ItemsSource = null;
-                        list.ItemTemplateSelector = null;
-                    }
-
-                    data.Clear();
-                    list = null;
-                    listLoadedHandler = null;
-                });
-                listLoaded.Dispose();
-                GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-                GC.WaitForPendingFinalizers();
-                TestServices.WindowHelper.WaitForIdle();
+                list = null;
             }
         }
 

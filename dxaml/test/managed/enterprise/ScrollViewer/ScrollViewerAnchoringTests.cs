@@ -224,8 +224,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
         private void AnchoringAtFarEdgeWhileIncreasingContent(Orientation orientation, double viewportSizeChange)
         {
             ScrollViewer scrollViewer = null;
-            AutoResetEvent scrollViewerLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent scrollViewerViewChangedEvent = new AutoResetEvent(false);
+            using var scrollViewerLoadedEvent = new AutoResetEvent(false);
+            using var scrollViewerViewChangedEvent = new AutoResetEvent(false);
 
             UIExecutor.Execute(() =>
              {
@@ -316,15 +316,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
              });
 
             TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
-            UIExecutor.Execute(() =>
-            {
-                scrollViewer = null;
-            });
-            scrollViewerLoadedEvent.Dispose();
-            scrollViewerViewChangedEvent.Dispose();
-            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-            GC.WaitForPendingFinalizers();
-            TestServices.WindowHelper.WaitForIdle();
+            scrollViewer = null;
         }
 
         [TestMethod]

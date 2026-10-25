@@ -201,14 +201,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
             finally
             {
                 TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
-                UIExecutor.Execute(() =>
-                {
-                    list = null;
-                    scrollViewer = null;
-                });
-                GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-                GC.WaitForPendingFinalizers();
-                TestServices.WindowHelper.WaitForIdle();
+                list = null;
+                scrollViewer = null;
             }
         }
 
