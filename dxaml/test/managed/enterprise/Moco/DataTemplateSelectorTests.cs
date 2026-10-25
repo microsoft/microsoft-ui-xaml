@@ -388,7 +388,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         public void CanHandleSentinelsInRealizationRangeWhenRecycling()
         {
             ListView list = null;
-            using var listLoaded = new AutoResetEvent(false);
+            var listLoaded = new AutoResetEvent(false);
             var data = new ObservableCollection<DataObject>(Enumerable.Range(0, 15).Select(i => new DataObject($"Item #{i}", false)));
 
             //

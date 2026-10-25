@@ -224,8 +224,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
         private void AnchoringAtFarEdgeWhileIncreasingContent(Orientation orientation, double viewportSizeChange)
         {
             ScrollViewer scrollViewer = null;
-            using var scrollViewerLoadedEvent = new AutoResetEvent(false);
-            using var scrollViewerViewChangedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollViewerLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollViewerViewChangedEvent = new AutoResetEvent(false);
 
             UIExecutor.Execute(() =>
              {
