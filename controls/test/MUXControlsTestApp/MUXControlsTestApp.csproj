@@ -75,6 +75,10 @@
   <Import Project="$(MUXCProjectRoot)dev\**\*.vcxitems" />
   <ItemGroup>
     <PageToTest Include="@(Page)" />
+    <Page Include="ActualThemeBindingPage.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="LeakTestPage.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -110,6 +114,7 @@
   <ItemGroup>
     <Compile Remove="LeakTestPage.xaml.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
     <Compile Remove="ThemeResourcesTests.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
+    <Compile Remove="ActualThemeBindingPage.xaml.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
     <Compile Remove="MiscTests\FocusTests.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
     <Compile Remove="LeakTests.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
   </ItemGroup>
