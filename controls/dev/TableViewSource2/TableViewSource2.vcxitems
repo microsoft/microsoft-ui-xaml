@@ -23,6 +23,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Engine\ShapedTree.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Engine\ShapeState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Shaping\ShapingManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Source\CollectionAccessor2.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Source\SourceRecord.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Source\SourceTable.h" />

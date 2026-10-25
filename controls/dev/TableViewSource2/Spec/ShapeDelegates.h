@@ -26,7 +26,7 @@
 // a re-declared delegate still reads as a change in the spec.
 //
 // Lifetime: DelegateId is a plain value and does not keep its delegate alive. Retain() is called
-// with every spec still in use (the applied one and, during a batch, the pending one); anything
+// with every spec still in use (the applied one and the desired one); anything
 // they no longer refer to is released. So a delegate the applied spec still uses is never released
 // while a newer spec is being built.
 //

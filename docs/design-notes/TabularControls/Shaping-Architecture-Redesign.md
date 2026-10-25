@@ -35,10 +35,12 @@ controls/dev/TableViewSource2/
   Engine/                                        shaping engine (only node types so far)
     ShapedTree.h                                 ShapedRef, GroupNode
     ShapeState.h                                 ShapeState, ShapeFlags (engine state inline on SourceRecord)
+  Shaping/                                       owns and wires the layers above
+    ShapingManager.h                             ShapingManager (the coordinator)
 ```
 
-Future layers (visible list, coordinator) each get their own subdirectory when they
-are added.
+Future layers (the View: the visible list the repeater binds to) each get their own subdirectory
+when they are added.
 
 ## Why redesign
 
@@ -63,10 +65,10 @@ table serves as both the shared identity store and the cached full set that shap
 | 2 | `TableViewSource2` runtime class | `TableViewSource2.h/.cpp` | Verbs are stubs; `Refresh` and `IsLiveShaping` are declared |
 | 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h` | Declared, not implemented |
 | 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange` | `Source/SourceRecord.h`, `Source/SourceTable.h` | Declared, not implemented |
-| 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in source, applied in engine) |
+| 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
 | 6 | Shaping engine: shaped tree node types `ShapedRef`, `GroupNode`; per-record `ShapeState` | `Engine/ShapedTree.h`, `Engine/ShapeState.h` | Node types and record state declared; engine not started |
-| 7 | Projection output (rows view and row metadata) | — | Not started |
-| 8 | Coordinator (incremental vs rebuild, owner notifications) | — | Not started |
+| 7 | Visible list and row metadata, wrapped in the `ItemsSourceView` that `ShapingManager::View()` returns | — | Not started |
+| 8 | Coordinator: `ShapingManager` | `Shaping/ShapingManager.h` | Ownership decided; verbs, handlers, `View()` and owned parts declared; engine, flattener and visible list pending |
 
 ## Class diagram
 
@@ -77,7 +79,7 @@ classDiagram
     class TableViewSource2 {
         <<WinRT runtimeclass, ReferenceTracker>>
         -tracker_ref~IInspectable~ m_items
-        -shared_ptr~SourceTable~ m_sourceTable
+        -unique_ptr~ShapingManager~ m_shapingManager
         +From(items)$ TableViewSource2
         +Filter(predicate) TableViewSource2
         +GroupBy(keySelector, groupDirection) TableViewSource2
@@ -120,6 +122,25 @@ classDiagram
         +uint32 NewIndex
         +vector~SourceRecord*~ Added
         +vector~SourceRecord*~ Removed
+    }
+
+    class ShapingManager {
+        <<native coordinator>>
+        -shared_ptr~SourceTable~ m_sourceTable
+        -ShapeSpec m_desired
+        -ShapeDelegates m_delegates
+        -PathEvaluator m_paths
+        -optional~tracker_ref~ItemsSourceView~~ m_view
+        -bool m_isApplying
+        +View() ItemsSourceView
+        +Filter/GroupBy/Sort/ParentBy/ChildrenBy/Clear*()
+        +Refresh()
+        +IsLiveShaping : bool
+        +Clear()
+        -OnSourceChanged(change)
+        -OnItemChanged(record, propertyName)
+        -ApplyDesiredSpec()
+        -Reapply()
     }
 
     class SourceTable {
@@ -224,7 +245,8 @@ classDiagram
         Descending
     }
 
-    TableViewSource2 *-- SourceTable : shared_ptr (shareable with consumers)
+    TableViewSource2 *-- ShapingManager : unique_ptr (forwards verbs)
+    ShapingManager *-- SourceTable : shared_ptr (shareable with consumers)
     SourceTable *-- CollectionAccessor2 : owns source accessor (optional, reset on Clear)
     SourceTable ..> SourceChange : raises (single handler)
     SourceTable "1" *-- "0..*" SourceRecord : sole strong shared_ptr per source position
@@ -279,19 +301,21 @@ whether `Sort` was declared before or after `GroupBy`.
   members let the garbage collector walk references to app objects.
 - **Members:**
   - `m_items` is the app collection, held as a `tracker_ref`.
-  - `m_sourceTable` is a `shared_ptr<SourceTable>`. Consumers (the row metadata provider and
-    adapters) may share it past this object's lifetime. `~TableViewSource2()` calls
-    `m_sourceTable->Clear()`, which detaches the table (see *Reference tracking and teardown*), so a
-    lingering table is empty and holds no `tracker_ref` bound to the dead owner.
-  - No live-shaping flag. `IsLiveShaping` get/set forward to `m_sourceTable->IsLiveShaping()` /
-    `SetLiveShaping()`, so `SourceTable::m_liveShapingEnabled` is the single source of truth.
-    Implementation note: until `m_sourceTable` exists (no source bound), the getter returns
-    `false` and the setter has nothing to apply; Phase 1.4 constructs the table in `From(items)` so
-    this window does not occur in practice.
+  - `m_shapingManager` is a `unique_ptr<ShapingManager>`, the coordinator (§6). It owns the
+    `shared_ptr<SourceTable>`; consumers (the row metadata provider and adapters) may share the
+    table past this object's lifetime. `~TableViewSource2()` calls `m_shapingManager->Clear()`, which
+    detaches the table (see *Reference tracking and teardown*), so a lingering table is empty and
+    holds no `tracker_ref` bound to the dead owner.
+  - Verbs validate their arguments, forward to `m_shapingManager`, and return `*this`.
+  - No live-shaping flag. `IsLiveShaping` get/set forward through `m_shapingManager` to
+    `SourceTable::IsLiveShaping()` / `SetLiveShaping()`, so `SourceTable::m_liveShapingEnabled` is
+    the single source of truth. Implementation note: until `m_shapingManager` exists, the getter
+    returns `false` and the setter has nothing to apply; Phase 1.4 constructs it in `From(items)`
+    so this window does not occur in practice.
 - **`Refresh()`** re-reads the source and rebuilds. It is for sources that do not raise change
   notifications, which the record table cannot otherwise detect.
-- **Not included:** `DeferRefresh` (batching verbs into one rebuild) was considered and removed for
-  now.
+- **Not included:** `DeferRefresh` (batching verbs into one rebuild) is postponed to a later design
+  session; see *Later design sessions: `DeferRefresh`*.
 
 ## 3. Source collection resolution: `CollectionAccessor2`
 
@@ -500,7 +524,7 @@ and enabling the first verb needs no validation pass.
 | D7/D9: projection stored inside `SourceRecordTable` | Split out of `SourceTable` | `SourceTable` strictly manages input source records, addresses, identities, and lookups; output projection belongs to the downstream stage. |
 | D10/D21: co-owned `shared_ptr` + `Retired` flag | Sole strong `shared_ptr` in `SourceTable`, no `Retired` flag | Downstream stages hold `SourceRecord*` and purge synchronously before destruction; `weak_ptr::lock()` alone rejects late async callbacks. |
 | Original draft §5.2: `ItemPropertyObserver` owned by the coordinator, subscribing only items read by live-enabled steps | Item subscriptions owned by `SourceTable`, gated only by `IsLiveShaping` | Tokens live on the record and are revoked by `~SourceRecord()`, so subscription lifetime matches record lifetime with no separate tracker. Property filtering by dependency moves to the coordinator's `ItemChanged` handler. |
-| v1 `ShapedItemsSource` & `CollectionAccessor`: plain `IInspectable` references to source and items | `tracker_ref` bound to `TableViewSource2` (`ITrackerHandleManager`) for both `CollectionAccessor2` and `SourceRecord::Item`, plus raw `event_token` instead of `winrt::event_revoker` | Matches `InspectingDataSource` and `Vector<IInspectable>`: lets the .NET GC collect cycles when the collection or row items hold back-references to the page/VM/source. `~TableViewSource2()` calls `m_sourceTable->Clear()` so tracker handles are deleted while the owner is still alive. |
+| v1 `ShapedItemsSource` & `CollectionAccessor`: plain `IInspectable` references to source and items | `tracker_ref` bound to `TableViewSource2` (`ITrackerHandleManager`) for both `CollectionAccessor2` and `SourceRecord::Item`, plus raw `event_token` instead of `winrt::event_revoker` | Matches `InspectingDataSource` and `Vector<IInspectable>`: lets the .NET GC collect cycles when the collection or row items hold back-references to the page/VM/source. `~TableViewSource2()` calls `m_shapingManager->Clear()` (which calls `SourceTable::Clear()`) so tracker handles are deleted while the owner is still alive. |
 | `ObjectAddress` type | Alias for `uintptr_t` | This branch has no `ObjectAddress` type. |
 
 ### Hierarchy: the source tree in `SourceTable`
@@ -569,9 +593,15 @@ validation and live shaping. Shaping walks `TopLevel()` and `Children`, never `R
 
 - Value keys compare by value; object keys compare by reference.
 - A null or empty parent key, or an orphan (no item has that key), makes a top-level record.
-- A null or empty key, a duplicate key, an item that is its own parent, or a cycle throws
-  `hresult_invalid_argument` before any mutation. Cycles are found by counting the records
-  reachable from the top level.
+- At the verb (`ParentBy`), a null or empty key, a duplicate key, an item that is its own
+  parent, or a cycle throws `hresult_invalid_argument` before any mutation. Cycles are found by
+  counting the records reachable from the top level. A selector exception propagates as is (v1
+  swallows it into a null key); the whole tree is evaluated before any record is linked, so the
+  old tree stays.
+- After the verb (source events, live key edits), one bad record never blocks the rest: the
+  change is applied with that record excluded or moved, and the exception still propagates (see
+  §5, *Misbehaving records*). v1 instead re-validates the whole table on every change, so one bad
+  item makes every later change throw until it is fixed.
 
 **`SourceChange` with a tree.** One struct for flat and hierarchical sources. Positions are within the parent's children
 (`TopLevel()` when the parent is null), so a flat source reports source positions and a
@@ -714,8 +744,10 @@ struct GroupNode                       // engine-owned; headers exist only while
   - Why not parallel `ShapedRecord` nodes: they must mirror every add, remove, reparent and
     Reset, and need a record-to-node back-pointer for `ItemChanged`, removal and selection.
     `ShapedRef`, `VisibleRow` and identity (record address) stay unchanged with state on the record.
-  - What we give up: building a new shaped tree beside the live one and swapping (not needed:
-    apply never fails, and the flattener's old visible list gives the delta), and several shaped
+  - What we give up: building a new shaped tree beside the live one and swapping (not needed: a
+    failing full apply stages its results in a temporary buffer and moves them into each record's
+    `Shape` only at commit, see *Misbehaving records*; the flattener's old visible list gives the
+    delta), and several shaped
     views over one source (not a requirement: one `SourceTable` per `TableViewSource2`). If
     several views become a requirement, move to parallel nodes.
   - Keys are cached (unlike Qt/JavaFX/Glazed Lists): path keys go through a binding and key
@@ -952,34 +984,108 @@ Decisions and open questions:
   state and memoize derived row models; DynamicData is latest-wins with no rollback; only JavaFX
   `TableView.sort` rolls back, and only for a returned failure. No framework keeps a separate
   pending copy or rolls back on an exception. Decision:
-  - **Desired spec in the source, applied spec in the engine.** Verbs edit the source's spec in
-    place. The engine keeps a copy of the last applied spec, which `Diff(applied, desired)` needs
-    anyway. There is never more than one desired spec, so intermediate states are never applied.
-  - **When it is applied.** Synchronously after the verb when no `DeferRefresh` is open;
-    otherwise once, when the outermost `DeferRefresh` ends. Nesting is a depth counter as in WPF:
-    every verb is gated (unlike the Community Toolkit's `Filter`), inner ends never refresh, and
-    disposing a handle twice is a no-op.
-  - **Apply never fails.** App delegate errors are handled per record, so there is nothing to
-    roll back. What happens to a misbehaving record is decided per verb (open, below). Invalid
-    arguments are rejected synchronously at the verb call.
-  - **Re-entrancy.** A verb (or `Refresh`/`DeferRefresh`) called while apply runs, for example
+  - **Desired spec in the coordinator, applied spec in the engine.** Verbs edit the desired spec
+    held by `ShapingManager` (§6) in place. The engine keeps a copy of the last applied spec,
+    which `Diff(applied, desired)` needs anyway. There is never more than one desired spec, so intermediate states are never applied.
+  - **When it is applied.** Synchronously after each verb. Batching several verbs into one apply
+    (`DeferRefresh`) is postponed; see *Later design sessions: `DeferRefresh`*.
+  - **Apply can fail, but never leaves shaped state half-written.** An exception from app code
+    propagates; every call into app code runs before any write, so a failed apply leaves the
+    shaped state as it was. See *Misbehaving records* below. Invalid arguments are rejected
+    synchronously at the verb call.
+  - **Re-entrancy.** A verb (or `Refresh`) called while apply runs, for example
     from inside a delegate, throws `InvalidOperationException`, like WPF's edit guards.
-  - **Readers.** Properties that describe the spec itself (sort indicators, `IsGrouped`) read the
-    desired spec, as WPF's `SortDescriptions` do. Rows, groups and row metadata reflect only the
-    applied spec. Source changes arriving inside a batch are shaped with the applied spec.
+  - **Readers.** Properties that describe the spec itself (the declared sort levels,
+    `IsGrouped`) read the desired spec, as WPF's `SortDescriptions` do. Sort indicators in column
+    headers read the applied spec, so the arrow never claims an order the rows do not have; this
+    follows Avalonia TreeDataGrid, which sets `SortDirection` only after the sort succeeds. Rows,
+    groups and row metadata reflect only the applied spec. Source changes arriving inside a batch
+    are shaped with the applied spec.
   - `DelegateId` stays a plain value; `ShapeDelegates`/`PathEvaluator` `Retain` the desired and
     applied specs after each apply, so a delegate the applied spec uses is never released early.
-  - Hierarchy verbs act on `SourceTable`, not the spec, so `DeferRefresh` does not batch them
-    unless `SourceTable` gets its own deferral (open).
-- **Misbehaving records, per verb (open).** Apply never fails, so each verb needs a rule for a
-  record whose delegate throws or returns something unusable:
-  - Filter predicate throws (v1: the record is excluded).
-  - Key selector throws, or returns a key that is not comparable with the others.
-  - Comparer throws, or is inconsistent (not a strict weak ordering).
-  - Path cannot be evaluated (the resolver returns `null` today).
-  - Group key selector throws or returns an unusable key.
-  - Hierarchy selectors (`ParentBy`/`ChildrenBy`) throw, or produce a cycle.
-  - Whether errors are reported anywhere (debug output, an event) or are silent.
+- **Misbehaving records (decided, except where marked open).** Survey: WPF, Avalonia, the
+  Community Toolkit, AG Grid callbacks, TanStack/MUI and JavaFX let delegate exceptions propagate
+  and never roll back. They differ in what state the throw leaves behind:
+  - The incremental add is safe in all of them, because the filter runs before the insert.
+  - WPF's full refresh builds a new list and swaps it in, so a throw leaves the old rows.
+  - The Toolkit's full refresh clears and refills in place, and WPF does the same with live
+    shaping. A throw leaves a partial view and no `Reset`, so the control goes out of sync.
+  - Avalonia inserts into the flat list before computing the group key. It also clears its
+    grouping flag before the refresh `try`, and a range add that throws keeps the items before
+    the failure and loses the rest.
+  - WPF rejects range notifications outright (`NotSupportedException`).
+
+  Rule: **propagate, and compute before commit**:
+  - **Filter predicate throws:** the exception propagates; the record is treated as not passing
+    (nothing is written for it).
+  - **Key selector or comparer throws:** the exception propagates.
+  - **Path cannot be evaluated:** the key is `null`, no throw (WPF, v1 `SortMemberPathResolver`).
+  - **Null-key ordering (decided).** `null` compares lower than every non-null key, and
+    descending negates the whole comparison, so nulls come first ascending and last descending.
+    The same rule orders groups, so the null-key group moves with `GroupDirection`. This matches
+    WPF (`Comparer.Default`, `PropertyGroupDescription` name comparers), Avalonia, the Toolkit,
+    AG Grid and MUI X; WinForms `DataGridView` is the inverse and TanStack places `undefined` only
+    when `sortUndefined` is set. A per-level override is not provided.
+  - **Comparer inconsistent (not a strict weak ordering):** must not be undefined behaviour; sort
+    with an algorithm that is safe for any comparer. The resulting order is unspecified.
+  - **Compute, then commit, per unit of work.** Every call into app code for the unit runs before
+    any write: filter, then keys, then group key, then positions by binary search, which calls
+    the comparer. Only then are `Shape`, `ShapedChildren`, counts, groups and the flat delta
+    written. The commit phase calls no app code, so it cannot fail.
+  - **Full re-apply** (`Reapply()`, §6; a verb or `Reset`): evaluate every record into
+    a staging buffer, build new `ShapedChildren` (sorted as copies) and a new group tree, then
+    commit by moving the staged state into each record's `Shape`. A throw discards the buffer.
+    The old rows stay, nothing is published, applied stays old while desired is new, and the next
+    verb or `Refresh` retries. **The desired spec is not reverted (decided).** No surveyed
+    framework reverts: WPF, Avalonia and the Toolkit write `Filter`/`SortDescriptions` before
+    applying and leave them set, so the next `Refresh` retries; TanStack leaves `sorting` set but
+    its memo stores the new inputs before computing, so it does not retry until state changes.
+    Our engine always retries on the next verb or `Refresh`, because applied stays old.
+  - **Range notifications are all-or-nothing (decided, for now).** For a range event (add,
+    remove, move or replace of several items), app code runs for all of the records first. A
+    throw anywhere discards the shaped part of the whole event, and the exception propagates
+    into the source's raiser. The source and `SourceTable` already hold the change and cannot be
+    undone, so the new records exist but behave as filtered out until something re-evaluates them
+    (`ItemChanged`, `Refresh`, the next verb). The alternative was to skip the bad record, commit
+    the rest and rethrow. No collection-view framework does either deliberately.
+  - Where the exception surfaces: the verb call; the app's own `Add`/`Insert` for source events (as in WPF); the property setter for live shaping.
+    A delegate error can surface later than the verb that declared it. Keys are computed only for
+    records placed into `ShapedChildren`, so `Sort` succeeding does not prove the comparer or key
+    selector works for every record. A record that starts passing later (removing or relaxing the
+    filter, `ItemChanged`, an add) gets its keys then, and a throw surfaces from that operation.
+    WPF behaves the same: `PrepareLocalArray` sorts only the items that pass the filter, so
+    setting `Filter = null` is where a bad comparer first throws.
+  - **Group key selector throws or returns an unusable key (decided).** The record goes into the
+    null-key group, the same group that holds records whose key is `null`; a throw and a `null`
+    key are not distinguished. The exception does not escape. The null-key group is an ordinary
+    group, not pinned first or last: like WPF (`CollectionViewGroupRoot.AddToSubgroup` creates a
+    group with `Name == null` and inserts it like any other), its position comes from the group
+    ordering under `GroupDirection`. Where `null` orders relative to other keys follows the
+    null-key ordering rule shared with sort (`null` lowest, flips with direction). This deviates from WPF only for throws: WPF's
+    `GroupNameFromItem` lets a converter exception escape, while a path it cannot evaluate already
+    yields a null-like name.
+  - **Hierarchy selectors (decided).** At the verb, the rules in
+    *`ParentBy` key rules* apply: invalid data throws before any change, and a selector
+    exception propagates with the old tree kept. After the verb, a bad record is placed as below
+    and the exception propagates from the app's `Add`/`Insert` (source events) or the property
+    setter (live edits), so a single record never freezes the table:
+
+    | Case (after the verb) | Placement |
+    |---|---|
+    | `ParentBy` duplicate key (add or key edit) | The record that already holds the key keeps it; the newcomer is excluded. |
+    | `ParentBy` null or empty key | Excluded. |
+    | `ParentBy` parent-key selector throws | Top level, like an orphan. |
+    | `ParentBy` edit making a cycle or a self-parent | The edited record moves to the top level with its subtree; it moves to its proper parent once the key becomes valid. |
+    | `ChildrenBy` children selector throws | Treated as a leaf (no child feed). |
+    | `ChildrenBy` item already elsewhere in the tree (including an ancestor, or twice in one collection) | The *Null and duplicate items* rule applies: the change is rejected (nothing written), and that feed's `OutOfSync` is set. Every later notification on that collection is handled as a `Reset` of its subtree and re-validated, so the collection stops updating until the app removes the duplicate. The root and other feeds stay live. Rejected alternative: skip only the duplicate edge, which keeps the rest of the collection live but needs a source-to-feed position map per feed and rules for promoting a skipped item when the original leaves, and gives flat and hierarchical sources two rules for one violation. |
+
+    Excluded records behave as filtered out and are re-evaluated on `ItemChanged`, `Refresh` or
+    the next hierarchy verb. Under `ParentBy` a record has one parent key, so it is linked under
+    one parent only; a record can never appear twice. The top-level placement of an orphan or a
+    cycle-breaking record is the only place the tree disagrees with the item's key. Precedent: AG
+    Grid moves orphans and cycles to the root with a warning; TanStack, Avalonia TreeDataGrid and
+    MUI X propagate selector exceptions.
+  - **Reporting:** nothing beyond the propagated exception (no framework reports separately).
 - **Path evaluation: revisit `PathEvaluator` and `SortMemberPathResolver` (open).** The current
   declaration reuses v1's resolver (a hidden `ContentControl` with a `OneTime {Binding}`, one
   per path) so v1 and v2 agree on what a path means. Questions to settle:
@@ -998,7 +1104,76 @@ Decisions and open questions:
   - Ownership: should `PathEvaluator` be shared with v1 / the column-header sort path, and who
     calls `Retain` (after each apply, per the ownership decision above)?
 
-## 6. Implementation plan
+## 6. Coordinator: `ShapingManager`
+
+`Shaping/ShapingManager.h`. A native C++ class that owns every shaping part behind
+`TableViewSource2` and wires them together.
+
+- **Decision: a native coordinator, named `ShapingManager` (decided).** Options considered:
+  - A. `TableViewSource2` owns and wires everything. Rejected: the WinRT class would hold the
+    verbs, the event handling, the pipeline and the metadata provider, which is v1's god object.
+  - B. The visible list (the WinRT collection the repeater binds to) owns `SourceTable`, the
+    engine and the flattener, as v1 `ShapedItemsSource` does. Rejected: the same god object one
+    layer down, and a view that shapes data.
+  - C. A separate native coordinator. Chosen.
+  - D. `TableViewSource2` owns `SourceTable`; `ShapingManager` holds a reference and owns the
+    rest. Rejected (revisited): source and shaping would be peer layers, hierarchy verbs would
+    skip forwarding, and lazy shaping would become possible, but it needs build and teardown
+    ordering across two owners, makes "only subscriber" a convention, splits the re-entrancy
+    guard between `TableViewSource2` and the manager, leaves a stale reference on source swap,
+    and blurs `shared_ptr` ownership. Worth it only if `SourceTable` must outlive or predate
+    shaping; in v2 one source means one table and one manager, cleared together.
+    A read-only `ShapingManager::Source()` accessor (returning the `shared_ptr`) would give
+    non-shaping consumers the table without moving ownership. Deferred until a consumer needs it.
+- **Name: `ShapingManager` (decided, for now).** Follows ItemsRepeater's internal native helpers
+  (`ElementManager`, `ViewManager`, `ViewportManager`): plain C++, owned by the control, built with
+  the owner's `ITrackerHandleManager`. Rejected: `ShapedItemsSource2` (reads as v1's collection,
+  which this is not), `ShapingCoordinator`, `TableViewModel` (TreeView's `ViewModel` is itself the
+  bound vector, and the name clashes with app MVVM code), `TableCollectionView` (WPF's
+  `CollectionView` is the bound view; this hands one out through `View()`). The visible list in
+  `stash@{0}` (`View/ShapedItemsSource2.h`) can keep its name.
+- **Ownership.**
+
+  | Owner | Owns |
+  |---|---|
+  | `TableViewSource2` | `m_items` and `std::unique_ptr<ShapingManager>`. Validates verb arguments and forwards; returns itself for chaining. |
+  | `ShapingManager` | `SourceTable` (`shared_ptr`), the desired `ShapeSpec`, `ShapeDelegates`, `PathEvaluator`, the cached `ItemsSourceView` (`m_view`). Later: the engine (applied spec, shaped tree), the flattener and the visible list. |
+
+- **Pipeline.** Spec verbs edit `m_desired`, then `ApplyDesiredSpec()` runs
+  `Diff(applied, desired)` → engine apply → flat delta → publish to the visible list, then `Retain()`s
+  the delegates and paths both specs use. Hierarchy verbs forward to `SourceTable`, whose
+  `Reset` comes back through `OnSourceChanged`.
+- **`Refresh` vs `Reapply` (decided).** Two distinct names so `Refresh` always means "read the
+  source":
+  - `Refresh()` (public) is the only path that re-enumerates the root source on request. It calls
+    `SourceTable::Refresh()`, whose `Reset` comes back through `OnSourceChanged` and runs
+    `Reapply()` once.
+  - `Reapply()` (private) rebuilds the shaped tree from `SourceTable::Records()` with the desired
+    spec and never reads the source. It runs for a `SourceTable` `Reset`, a `Diff` that falls back
+    to a full rebuild, and dropped-`ItemChanged` recovery. Verbs, live shaping and incremental
+    source changes never re-read the source either; unlike v1, nothing internal calls `Refresh`.
+  - `SourceTable` still enumerates without a `Refresh()` call in three cases: the initial load in
+    `Create()`, a `Reset` raised by the source, and out-of-sync recovery. `ChildrenBy` enumerates
+    the child collections it attaches, not the root.
+- **Only subscriber.** `ShapingManager` is the single `SourceChanged` and `ItemChanged`
+  handler, and fans out to the engine, the visible list and the owner in a fixed order.
+- **Not the WinRT collection.** Unlike v1 `ShapedItemsSource`, it is not the collection the
+  repeater binds to. That collection is the visible list, not declared yet.
+- **`View()` returns an `ItemsSourceView`** wrapping the visible list, as v1
+  `TableViewSource::GetItemsSourceView()` does. It is created on first call and cached in
+  `m_view` (`std::optional<tracker_ref<ItemsSourceView>>`, reset by `Clear()`), and stays the same
+  object for the coordinator's lifetime: reshapes raise `CollectionChanged` on it rather than
+  replacing it. Returns `nullptr` after `Clear()`.
+- **Row metadata and selection.** `TableView` talks only to `TableViewSource2`, and through it to
+  the coordinator, never to `SourceTable`. Identity lookups go through `SourceTable` and index
+  lookups through the flattener, both owned here.
+- **Reference tracking.** Holds no app object itself; `SourceTable`, `ShapeDelegates` and `m_view`
+  bind their `tracker_ref`s to `TableViewSource2`. `~TableViewSource2()` calls `Clear()` while it is
+  still alive.
+- **Re-entrancy.** `m_isApplying`: a verb or `Refresh` while an apply runs throws (§5).
+- **Testability.** Plain C++, so it can be tested without WinRT activation.
+
+## 7. Implementation plan
 
 Each phase is designed (headers first) and agreed before its `.cpp` implementation is wired up.
 
@@ -1024,30 +1199,34 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
     off-thread marshalling to `m_ownerQueue` and dropped-change recovery, and `Clear()` detach
     (optional accessor reset, `m_trackerOwner` nulled, `IsDetached()` guards) with `safe_get`-only
     teardown in `UnsubscribeFromSourceChanges`.
-  - `TableViewSource2.cpp`: add `Refresh()` and `IsLiveShaping` implementations forwarding to
-    `m_sourceTable`, construct `m_sourceTable` via `SourceTable::Create(this, items)` in `TableViewSource2(items)`, and call
-    `m_sourceTable->Clear()` in `~TableViewSource2()`.
+  - `TableViewSource2.cpp`: construct `m_shapingManager` (`ShapingManager(this, items)`, which
+    calls `SourceTable::Create(this, items)`) in `TableViewSource2(items)`, forward `Refresh()` and
+    `IsLiveShaping` to it, and call `m_shapingManager->Clear()` in `~TableViewSource2()`.
 
 - [ ] **1.5 Source tree** (`Source/SourceRecord.h`, `Source/SourceTable.h`): declared on `SourceRecord` (`Parent`,
       `Children`, `Depth`, `HasChildren()`) and `SourceTable` (`TopLevel()`,
       `SetParentKeyHierarchy`, `SetChildCollectionHierarchy`, `ClearHierarchy`, `ChildFeed`s,
       key index, `SiblingsOf`). Implement, then wire `TableViewSource2` (`ParentBy`, `ChildrenBy`,
-      `ClearHierarchy`).
+      `ClearHierarchy`) through `ShapingManager`.
 
 ### Phase 2 — Shape spec (`Spec/ShapeSpec.h/.cpp`, `Spec/ShapeDelegates.h/.cpp`, `Spec/PathEvaluator.h/.cpp`)
 - [x] Declare how active verbs (`Filter` list, `Sort` levels, `GroupBy`) are stored (`ShapeSpec`,
       `FilterSpec`, `SortSpec`, `GroupSpec`, `DelegateRef`). Hierarchy selectors stay in `SourceTable`.
 - [x] Declare spec diffing (`ShapeDelta`, `Diff`) so the coordinator knows whether
-      a verb change is a no-op, flat re-sort, or filter/group reshape from `m_sourceTable` (no source
+      a verb change is a no-op, flat re-sort, or filter/group reshape from `SourceTable` (no source
       re-read). A delegate re-declaration always marks its verb changed; hierarchy changes arrive as a
       `SourceTable` Reset.
 - [x] Declare the delegate registry (`ShapeDelegates`) and the path evaluator (`PathEvaluator`).
 - [ ] Implement `SortSpec::Matches`, `Diff`, `ShapeDelegates` and `PathEvaluator`.
 - [ ] Revisit path evaluation (`PathEvaluator`, `SortMemberPathResolver`; open, see §5).
-- [x] Decide spec ownership and application (§5: desired spec in the source, applied in the engine).
-- [ ] Decide the per-verb rule for misbehaving records (open, see §5).
-- [ ] Add the desired spec and `DeferRefresh` depth counter to `TableViewSource2` (or the coordinator).
-- [ ] Wire `TableViewSource2` verb methods to update `ShapeSpec`.
+- [x] Decide spec ownership and application (§5: desired spec in the coordinator, applied in the engine).
+- [x] Decide the per-verb rule for misbehaving records (§5: propagate, compute before commit,
+  ranges all-or-nothing, group key failures go to the null-key group, desired spec not reverted
+  on a failed apply, `null` keys lowest and flipping with direction, hierarchy selector errors
+  placed per record after the verb, a `ChildrenBy` item already in the tree rejected with
+  per-feed out-of-sync recovery).
+- [x] Add the desired spec to the coordinator (`ShapingManager::m_desired`, declared).
+- [ ] Wire `TableViewSource2` verb methods to forward to `ShapingManager`, which updates `m_desired`.
 
 ### Phase 3 — Projection output & row metadata (`Projection/Projection.h/.cpp`, `RowMetadataProvider`)
 - [ ] Define the projected row store (`std::vector<SourceRecord*>` + `Identity` → projected index for
@@ -1065,7 +1244,14 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       `SourceRecord::Children` without re-enumerating the underlying collection.
 - [ ] Map shaped output back to `SourceRecord*` in O(1) via `SourceTable::TryFindByRawPointer`.
 
-### Phase 5 — Coordinator (`Coordinator/ShapingCoordinator.h/.cpp`)
+### Phase 5 — Coordinator (`Shaping/ShapingManager.h/.cpp`)
+
+- [x] Decide who owns the shaping parts (§6: native coordinator `ShapingManager`, owned by
+      `TableViewSource2`).
+- [x] Declare `ShapingManager` (verbs, `Refresh`, `IsLiveShaping`, `Clear`, handlers, owned
+      parts) and replace `TableViewSource2::m_sourceTable` with `m_shapingManager`.
+- [x] Declare `View()` (returns the cached `ItemsSourceView`, `m_view`).
+- [ ] Declare the engine, flattener and visible-list members.
 
 The coordinator reacts to live-shaping events but does not own subscriptions; those live in
 `SourceTable` (Phase 1).
@@ -1083,16 +1269,45 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
 - [ ] Build and run API + interaction test suites (`TableViewSource_APITests`, `TableView_Sorting_APITests`,
       `TableView_LiveShaping_APITests`, `TableView_HierarchicalRows_APITests`).
 
+## Later design sessions: `DeferRefresh`
+
+Postponed, not dropped. This records what is already settled so the later session starts from it.
+
+- **What it is.** `DeferRefresh()` returns a handle; verbs called while a handle is open edit the
+  desired spec but do not apply it. The outermost handle's `Dispose` applies
+  `Diff(applied, desired)` once, giving one reshape and one `FlatDelta` for several verbs.
+- **Nesting (proposed, WPF model).** A depth counter: every verb is gated (unlike the Community
+  Toolkit's `Filter`), inner ends never refresh, and disposing a handle twice is a no-op.
+- **Errors.** An apply exception from app code surfaces from the outermost `Dispose`, with the same
+  rules as a verb (see *Misbehaving records*: desired not reverted, applied stays old).
+- **Hierarchy verbs (decided).** `ParentBy`/`ChildrenBy` act on `SourceTable`, not the spec, so a
+  spec-only deferral would not batch them: the tree would rebuild and reshape with the old spec,
+  then reshape again at `Dispose`. `SourceTable` therefore gets its own deferral counter, and an
+  open `DeferRefresh` holds it too. At the outermost `Dispose`, `SourceTable` rebuilds the tree
+  once and the engine reshapes once with the new spec. Rejected: leaving hierarchy verbs
+  undeferred (two reshapes, an intermediate state visible), and moving the hierarchy selectors
+  into the spec (contradicts `SourceTable` owning the tree).
+- **Open for that session.** Whether source changes arriving while a handle is open are shaped
+  immediately with the applied spec or queued; how a held `SourceTable` deferral interacts with
+  `m_pendingReset`; whether `Refresh()` inside a handle is deferred too.
+- **Checklist (when picked up).**
+  - [ ] Declare `DeferRefresh()` in the IDL and `TableViewSource2`.
+  - [ ] Add the `DeferRefresh` depth counter to `TableViewSource2` (or the coordinator).
+  - [ ] Add the `SourceTable` deferral counter and hold it from `DeferRefresh`.
+
 ## Open items
 
 - `Refresh` and `IsLiveShaping` are declared in the IDL and the header, with no `.cpp` stubs yet (Phase 1.4).
-- `m_sourceTable` is never created yet (the constructor does not allocate it).
+- `m_shapingManager` is never created yet (the constructor does not allocate it), and
+  `Shaping/ShapingManager.h` has no `.cpp` (Phase 1.4 / Phase 5).
 - `Source/SourceRecord.h`, `Source/SourceTable.h` and `Source/CollectionAccessor2.h` have no `.cpp` files yet (Phase 1.4).
 - The source-tree members of `SourceTable` are declared only (Phase 1.5).
 - `Engine/ShapedTree.h` (`ShapedRef`, `GroupNode`) and `Engine/ShapeState.h` (`ShapeState`) are declared
   only (Phase 4).
 - `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h` and `Spec/PathEvaluator.h` are declared only
-  (Phase 2); nothing owns a `ShapeSpec`, `ShapeDelegates` or `PathEvaluator` yet.
+  (Phase 2); `ShapingManager` declares the members that own them (§6).
+- **`ShapingManager::Source()` accessor (later).** Add only if a non-shaping consumer (column
+  autogeneration, source-keyed selection) needs `SourceTable` directly (§6, option D).
 - **Split hierarchy out of `SourceTable` (later).** `SourceTable` mixes always-on code with code
   used only by one feature (ParentBy, ChildrenBy, live shaping, identity index), which hurts
   readability and single responsibility. Proposed: a `SourceHierarchy` strategy owned by

@@ -24,9 +24,11 @@
 // Logical order: filter -> group -> sort rows within each group. The engine may pre-sort for
 // efficiency as long as the result matches this order.
 //
-// Ownership (decided, WPF model): verbs edit the source's desired spec in place; the engine keeps
-// a copy of the last applied spec and applies Diff(applied, desired) synchronously, or once at the
-// end of the outermost DeferRefresh. Apply never fails (errors are handled per record).
+// Ownership (decided, WPF model): verbs edit the desired spec held by ShapingManager (the
+// coordinator) in place; the engine keeps a copy of the last applied spec and applies
+// Diff(applied, desired) synchronously after each verb (DeferRefresh batching is postponed).
+// App-code exceptions propagate; apply runs all app code before any write, so a failed apply
+// leaves the shaped state unchanged.
 
 // Refers to a delegate registered in ShapeDelegates. A plain value: holding or copying one does not
 // keep the delegate alive; the registry decides that at commit. The same delegate object always

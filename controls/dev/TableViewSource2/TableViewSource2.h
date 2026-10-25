@@ -7,11 +7,12 @@
 #include "common.h"
 
 #include "TableViewSource2.g.h"
-#include "Source/SourceTable.h"
+#include "Shaping/ShapingManager.h"
 
 // Scaffold for the shaping redesign. Exposes the same fluent verb surface as TableViewSource;
 // From() constructs a working instance, and every shaping verb throws hresult_not_implemented
-// until the new engine (ShapeSpec / ShapingEngine / ShapingCoordinator) is wired in.
+// until the new engine is wired in. Shaping state lives in ShapingManager (the coordinator);
+// this class validates arguments and forwards.
 //
 // Reference-tracked for the same reasons as TableViewSource: final_release runs on the owning
 // UI thread, and tracker_ref members let the GC walk references to app-supplied objects.
@@ -39,7 +40,8 @@ public:
 
     void Refresh();
 
-    // Forwards to SourceTable, which owns the flag and the per-item subscriptions.
+    // Forwards to ShapingManager, which forwards to SourceTable (owner of the flag and the
+    // per-item subscriptions).
     bool IsLiveShaping() const;
     void IsLiveShaping(bool value);
 
@@ -49,10 +51,8 @@ private:
     // The app's source collection, kept for the engine that will consume it.
     tracker_ref<winrt::IInspectable> m_items{ this };
 
-    // Every source record (root collection and, under ChildrenBy, child collections), the source
-    // tree built by ParentBy / ChildrenBy, plus raw-pointer, address, and identity lookups.
-    // Consumers may share it past this object's lifetime; ~TableViewSource2() calls Clear(), which
-    // detaches it (destroys every tracker_ref bound to this) so a lingering table is empty and
-    // owner-free.
-    std::shared_ptr<SourceTable> m_sourceTable;
+    // The coordinator: owns SourceTable, the desired spec, the delegate registry, and later the
+    // engine, flattener and View. Its tracker_refs are bound to this, so ~TableViewSource2() calls
+    // m_shapingManager->Clear() while this object is still alive.
+    std::unique_ptr<ShapingManager> m_shapingManager;
 };
