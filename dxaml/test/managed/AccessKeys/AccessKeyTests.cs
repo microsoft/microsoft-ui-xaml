@@ -385,6 +385,17 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
                     TestServices.WindowHelper.WaitForIdle();
                 }
             }
+
+            TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
+            UIExecutor.Execute(() =>
+            {
+                rootPanel = null;
+                pivot = null;
+                xamlRoot = null;
+            });
+            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+            GC.WaitForPendingFinalizers();
+            TestServices.WindowHelper.WaitForIdle();
         }
 
         [TestMethod]
@@ -968,4 +979,3 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         #endregion
     }
 }
-

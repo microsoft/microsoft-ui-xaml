@@ -324,8 +324,9 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
     }
     else if (property == s_CellEditingTemplateProperty)
     {
-        // Realized editors were generated from the previous template.
-        NotifyCellContentChanged();
+        // Realized editors were generated from the previous template. An editor does not change
+        // what the cell displays, so the Auto width keeps its history.
+        NotifyCellContentChanged(false /* resetAutoWidth */);
     }
     else if (property == s_HeaderTemplateProperty ||
              property == s_HeaderTemplateSelectorProperty ||
@@ -343,6 +344,13 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         if (auto owner = GetOwningTableView())
         {
             winrt::get_self<TableView>(owner)->OnColumnHeaderToolTipChanged(*this);
+        }
+    }
+    else if (property == s_HeaderStyleProperty)
+    {
+        if (auto owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->QueueRebuildHeaders();
         }
     }
     else if (property == s_FrozenEdgeProperty)
@@ -425,11 +433,11 @@ void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
 // column would then have no way to invalidate its cells without editing this file. This mirrors
 // WPF, where DataGridColumn owns the notification and each derived column routes its own property
 // callbacks into it.
-void TableViewColumn::NotifyCellContentChanged()
+void TableViewColumn::NotifyCellContentChanged(bool resetAutoWidth)
 {
     if (auto owner = GetOwningTableView())
     {
-        winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(*this);
+        winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(*this, resetAutoWidth);
     }
 }
 
@@ -442,8 +450,9 @@ void TableViewColumn::CellToolTipBinding(const winrt::Microsoft::UI::Xaml::Data:
 {
     m_cellToolTipBinding.set(value);
 
-    // Realized cells carry the previous binding. The only invalidation this feature needs.
-    NotifyCellContentChanged();
+    // Realized cells carry the previous binding. A tooltip does not change what the cell displays,
+    // so the Auto width keeps its history.
+    NotifyCellContentChanged(false /* resetAutoWidth */);
 }
 
 bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
@@ -480,14 +489,16 @@ void TableViewColumn::SetResolvedActualWidthInternal(double width)
     }
 }
 
-void TableViewColumn::SetDesiredWidthInternal(double desiredWidth)
+void TableViewColumn::SetDesiredWidthInternal(double rowsDesiredWidth, double headerDesiredWidth)
 {
-    m_desiredWidth = std::max(0.0, desiredWidth);
+    m_rowsDesiredWidth = std::max(0.0, rowsDesiredWidth);
+    m_headerDesiredWidth = std::max(0.0, headerDesiredWidth);
 }
 
 void TableViewColumn::ResetDesiredWidthInternal()
 {
-    m_desiredWidth = 0.0;
+    m_rowsDesiredWidth = 0.0;
+    m_headerDesiredWidth = 0.0;
 }
 
 void TableViewColumn::UpdateActualWidth()

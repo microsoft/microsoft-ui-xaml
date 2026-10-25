@@ -95,7 +95,7 @@ public sealed partial class GroupsPage : SamplePageBase
 
     private void ApplyGroupHeaderTemplate()
     {
-        PeopleTable.GroupHeaderTemplate = SampleShaping.SelectedTag(HeaderTemplateSelector, "custom") == "custom"
+        PeopleTable.GroupHeaderTemplate = SampleShaping.SelectedTag(HeaderTemplateSelector, "builtin") == "custom"
             ? (DataTemplate)Resources["CustomGroupHeaderTemplate"]
             : null;
     }

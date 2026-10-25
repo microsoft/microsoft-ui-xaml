@@ -7,6 +7,7 @@
 #include "ShapingHelpers.h"
 
 #include <bit>
+#include <cmath>
 #include <string>
 
 namespace ShapingHelpers
@@ -73,21 +74,21 @@ namespace
         case winrt::Windows::Foundation::PropertyType::Point:
         {
             const auto p = pv.GetPoint();
-            swprintf_s(buffer, L"pt:%08X,%08X", std::bit_cast<uint32_t>(p.X), std::bit_cast<uint32_t>(p.Y));
+            swprintf_s(buffer, L"pt:%08X,%08X", CanonicalFloatBits(p.X), CanonicalFloatBits(p.Y));
             return std::wstring{ c_valueKeyPrefix } + buffer;
         }
         case winrt::Windows::Foundation::PropertyType::Size:
         {
             const auto s = pv.GetSize();
-            swprintf_s(buffer, L"sz:%08X,%08X", std::bit_cast<uint32_t>(s.Width), std::bit_cast<uint32_t>(s.Height));
+            swprintf_s(buffer, L"sz:%08X,%08X", CanonicalFloatBits(s.Width), CanonicalFloatBits(s.Height));
             return std::wstring{ c_valueKeyPrefix } + buffer;
         }
         case winrt::Windows::Foundation::PropertyType::Rect:
         {
             const auto r = pv.GetRect();
             swprintf_s(buffer, L"rc:%08X,%08X,%08X,%08X",
-                std::bit_cast<uint32_t>(r.X), std::bit_cast<uint32_t>(r.Y),
-                std::bit_cast<uint32_t>(r.Width), std::bit_cast<uint32_t>(r.Height));
+                CanonicalFloatBits(r.X), CanonicalFloatBits(r.Y),
+                CanonicalFloatBits(r.Width), CanonicalFloatBits(r.Height));
             return std::wstring{ c_valueKeyPrefix } + buffer;
         }
         default:
@@ -199,6 +200,11 @@ bool BuildParentStructure(
     {
         auto key = SafeSelect(keySelector, rows[i]);
         auto nodeKey = MakeNodeKey(key);
+        if (IsObjectNodeKey(nodeKey))
+        {
+            // Outlives the build: the address is also expansion intent and selection identity.
+            result.KeyObjects.push_back(key);
+        }
         keepAlive.push_back(std::move(key));
         if (nodeKey.empty())
         {

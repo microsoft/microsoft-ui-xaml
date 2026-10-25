@@ -39,8 +39,6 @@ public sealed partial class VirtualizationPage : SamplePageBase
         PeopleTable.ItemsSource = _source;
         UpdateActionLabels();
 
-        // No re-selection fallback: the control keeps the selection on its item across a reshape.
-        Shaping.RestoreSelection = false;
         InitializeSample(Status, Shaping.Attach(PeopleTable, _source));
 
         // Realization changes as the user scrolls and the control raises no event for it, so the

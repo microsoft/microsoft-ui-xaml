@@ -83,19 +83,48 @@ public:
     bool IsToggleHooked() const { return m_toggleHooked; }
     void SetToggleHooked() { m_toggleHooked = true; }
 
+    void ResetPointerStateInternal();
+
+    // Consumed once by RequestGroupExpansion so the focus restore uses the gesture's state.
+    void SetGestureFocusStateInternal(winrt::FocusState state) noexcept { m_gestureFocusState = state; }
+    winrt::FocusState TakeGestureFocusStateInternal() noexcept
+    {
+        return std::exchange(m_gestureFocusState, winrt::FocusState::Unfocused);
+    }
+
+    // Internal: the projection entry this header was last prepared for. DataContext carries the
+    // public TableViewGroupInfo once prepared, so a re-prepare that cannot read the projection
+    // falls back to this instead.
+    winrt::IInspectable GroupEntryInternal() const { return m_groupEntry.get(); }
+    void SetGroupEntryInternal(winrt::IInspectable const& entry) { m_groupEntry.set(entry); }
+
 private:
     void UpdateVisualStates(bool useTransitions);
+    void UpdateDefaultCountOpacity();
+    void TrackDefaultCount(winrt::UIElement const& root);
+    winrt::Size MeasureBand(winrt::Size const& availableSize);
     void UpdateTerminalBottomGridLineSuppression();
+
+    winrt::hstring GetGroupIdentity();
 
     // Mirror the authoritative IsExpandable/IsExpanded DPs onto the bound projection.
     void SyncExpansionToContent();
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
+    winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
+    // The count in the default content template, cached per inspected ContentTemplateRoot.
+    tracker_ref<winrt::TextBlock> m_defaultCount{ this };
+    winrt::weak_ref<winrt::UIElement> m_inspectedContentRoot{ nullptr };
+    tracker_ref<winrt::IInspectable> m_groupEntry{ this };
 
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
+    uint32_t m_pressedPointerId{};
     bool m_suppressBottomGridLine{ false };
+    winrt::hstring m_pressedGroupIdentity{};
+    winrt::FocusState m_gestureFocusState{ winrt::FocusState::Unfocused };
 
     winrt::weak_ref<winrt::TableView> m_owningTableView{ nullptr };
 

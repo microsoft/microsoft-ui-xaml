@@ -5,6 +5,8 @@
 
 #include "ITreeBuilder.g.h"
 #include "LifetimeUtils.h"
+#include <atomic>
+#include <memory>
 
 namespace DirectUI
 {
@@ -44,6 +46,7 @@ namespace DirectUI
 
         std::vector<ObjectReleaseInfo> m_queuedObjectsForUnreachableCleanup;
         std::vector<ObjectReleaseInfo> m_queuedObjectsForFinalRelease;
+        std::atomic<bool> m_hasUnreachableObjects{ false };
 
         wil::critical_section m_CriticalSection;
         BOOLEAN m_bInCleanup = FALSE;
@@ -53,7 +56,23 @@ namespace DirectUI
         UINT m_cDoCleanupAttempts = 0;
         int m_cleanupCount = 0;
 
+        struct CleanupWakeState
+        {
+            ctl::WeakRefPtr target;
+            std::atomic<bool> pending{ false };
+        };
+        wrl::ComPtr<msy::IDispatcherQueue> m_wakeDispatcher;
+        std::shared_ptr<CleanupWakeState> m_wakeState;
+
+        static _Check_return_ HRESULT RequestCleanupWake(
+            _In_opt_ msy::IDispatcherQueue* dispatcher,
+            const std::shared_ptr<CleanupWakeState>& state);
+        static _Check_return_ HRESULT OnPlatformCleanupWake(const std::shared_ptr<CleanupWakeState>& state);
+        static _Check_return_ HRESULT OnCleanupWake(std::shared_ptr<CleanupWakeState> state);
+
     protected:
+
+        _Check_return_ HRESULT Initialize() override;
 
         BEGIN_INTERFACE_MAP(UIAffinityReleaseQueue, ctl::WeakReferenceSourceNoThreadId)
             INTERFACE_ENTRY(UIAffinityReleaseQueue, ITreeBuilder)
@@ -67,18 +86,26 @@ namespace DirectUI
 
         HRESULT QueueUnreachableCleanup( ctl::WeakReferenceSourceNoThreadId *pItem )
         {
-            HRESULT hr = S_OK;
             m_queuedObjectsForUnreachableCleanup.emplace_back(pItem, reinterpret_cast<void*>(*reinterpret_cast<uintptr_t*>(pItem)));
             ctl::addref_interface_inner(pItem);
-            RRETURN(hr);//RRETURN_REMOVAL
+            m_hasUnreachableObjects.store(true, std::memory_order_release);
+            const auto dispatcher = m_wakeDispatcher;
+            const auto wakeState = m_wakeState;
+            return RequestCleanupWake(dispatcher.Get(), wakeState);
         }
 
         HRESULT QueueFinalRelease( ctl::WeakReferenceSourceNoThreadId *pItem )
         {
-            HRESULT hr = S_OK;
-            auto lock = m_CriticalSection.lock();
-            m_queuedObjectsForFinalRelease.emplace_back(pItem, reinterpret_cast<void*>(*reinterpret_cast<uintptr_t*>(pItem)));
-            RRETURN(hr);//RRETURN_REMOVAL
+            wrl::ComPtr<msy::IDispatcherQueue> dispatcher;
+            std::shared_ptr<CleanupWakeState> wakeState;
+            {
+                auto lock = m_CriticalSection.lock();
+                m_queuedObjectsForFinalRelease.emplace_back(pItem, reinterpret_cast<void*>(*reinterpret_cast<uintptr_t*>(pItem)));
+                dispatcher = m_wakeDispatcher;
+                wakeState = m_wakeState;
+            }
+            // Shutdown may destroy this queue after unlocking; posting uses only the retained state.
+            return RequestCleanupWake(dispatcher.Get(), wakeState);
         }
 
         BOOLEAN IsEmpty();

@@ -13,6 +13,7 @@ using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
+using MUXTestInfra.Shared.Infra;
 using Point = System.Drawing.Point;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPageFacts;
@@ -114,6 +115,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         internal static UIObject GetFirstGroupHeader(UIObject rowsHost) => GetGroupHeaderAt(rowsHost, 0);
+
+        // A collapse or expand recycles the group header container, so callers re-read the header after each toggle
+        // instead of reusing the UIObject captured before it. Fails (and returns null) if it is gone or names another group.
+        internal static UIObject RefetchFirstGroupHeader(UIObject tableView, string expectedName)
+        {
+            Wait.ForIdle();
+            ElementCache.Clear();
+            UIObject header = GetFirstGroupHeader(GetRowsHost(tableView));
+            if (header == null)
+            {
+                Verify.Fail("The first group header must still be realized after the toggle.");
+                return null;
+            }
+
+            Verify.AreEqual(expectedName, header.Name, "The first group header must still name the same group.");
+            return header;
+        }
+
+        // Injected touch is delivered asynchronously, so a single idle wait can observe the header before the tap
+        // lands. Polls until the first group header reports the expected state, then falls back to the strict refetch.
+        internal static UIObject WaitForFirstGroupHeaderState(UIObject tableView, string expectedName, ExpandCollapseState expected)
+        {
+            for (int attempt = 0; attempt < 20; attempt++)
+            {
+                Wait.ForIdle();
+                ElementCache.Clear();
+                UIObject header = GetFirstGroupHeader(GetRowsHost(tableView));
+                if (header != null &&
+                    header.Name == expectedName &&
+                    new ExpandCollapseImplementation(header).ExpandCollapseState == expected)
+                {
+                    Log.Comment("Group header reached {0} after {1} poll(s).", expected, attempt + 1);
+                    return header;
+                }
+
+                Wait.ForMilliseconds(100);
+            }
+
+            return RefetchFirstGroupHeader(tableView, expectedName);
+        }
 
         // The index-th group header among the rows host's own children, or null.
         internal static UIObject GetGroupHeaderAt(UIObject rowsHost, int index)
@@ -260,18 +301,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.IsTrue(focused != null && focused.Name == expectedHeader, message);
         }
 
-        // Focuses the row at index and drills into its first cell with Right. Returns false (after failing) if
-        // either step does not take; callers then stop, since every later assertion would be unmeasured.
-        internal static bool DrillIntoRow(string tableAutomationId, int rowIndex)
+        // Focuses the row at index through UIA. Returns null (after failing) if it is missing or does not take focus.
+        internal static UIObject FocusRowAt(string tableAutomationId, int rowIndex)
         {
             UIObject rowsHost = GetRowsHost(tableAutomationId);
-            if (rowsHost == null) { return false; }
-            if (rowsHost.Children.Count <= rowIndex) { Verify.Fail(string.Format("Need at least {0} realized rows.", rowIndex + 1)); return false; }
+            if (rowsHost == null) { return null; }
+            if (rowsHost.Children.Count <= rowIndex) { Verify.Fail(string.Format("Need at least {0} realized rows.", rowIndex + 1)); return null; }
 
             UIObject row = rowsHost.Children[rowIndex];
             row.SetFocus();
             Wait.ForIdle();
-            if (!row.HasKeyboardFocus) { Verify.Fail(string.Format("Precondition: row {0} did not take focus.", rowIndex)); return false; }
+            if (!row.HasKeyboardFocus) { Verify.Fail(string.Format("Precondition: row {0} did not take focus.", rowIndex)); return null; }
+            return row;
+        }
+
+        // Focuses the row at index and drills into its first cell with Right. Returns false (after failing) if
+        // either step does not take; callers then stop, since every later assertion would be unmeasured.
+        internal static bool DrillIntoRow(string tableAutomationId, int rowIndex)
+        {
+            if (FocusRowAt(tableAutomationId, rowIndex) == null) { return false; }
 
             KeyboardHelper.PressKey(Key.Right);
             Wait.ForIdle();
@@ -383,6 +431,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // ---------- Pointer (absolute screen points) ----------
 
+        internal static string DescribeFocused()
+        {
+            try
+            {
+                UIObject focused = UIObject.Focused;
+                return focused == null ? "<none>" : string.Format("'{0}' [{1}]", focused.Name, focused.ClassName);
+            }
+            catch (Exception e)
+            {
+                return "<unavailable: " + e.GetType().Name + ">";
+            }
+        }
+
+        // Vertical only: MITA has no horizontal wheel and Shift does not make one; use DragHorizontalScrollBar.
+        internal static void WheelAtPoint(Point point, int delta)
+        {
+            Log.Comment("Rotate wheel by {0} at ({1}, {2}).", delta, point.X, point.Y);
+
+            PointerInput.Move(point);
+            MouseWheelInput.RotateWheel(delta);
+            Wait.ForIdle();
+        }
+
         internal static Point CentreOf(UIObject element)
         {
             var bounds = element.BoundingRectangle;
@@ -467,6 +538,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
         }
 
+        // dx is a screen delta; positive scrolls the content right. Returns false if the ScrollBar was not found.
+        // The ScrollBars are direct children of the body scroller; enumerating those is safe, unlike a row's children.
+        internal static bool DragHorizontalScrollBar(UIObject tableView, int dx)
+        {
+            UIObject scrollBar = null;
+            foreach (UIObject child in tableView.Children)
+            {
+                if (child.ClassName != "ScrollViewer")
+                {
+                    continue;
+                }
+
+                foreach (UIObject scrollerChild in child.Children)
+                {
+                    if (scrollerChild.ClassName == "ScrollBar" && scrollerChild.Name == "Horizontal")
+                    {
+                        scrollBar = scrollerChild;
+                        break;
+                    }
+                }
+            }
+
+            if (scrollBar == null)
+            {
+                return false;
+            }
+
+            var bounds = scrollBar.BoundingRectangle;
+            if (bounds.Width <= 0 || bounds.Height <= 0)
+            {
+                return false;
+            }
+
+            // A quarter along the track is inside the thumb at offset 0: the viewport is ~62% of the extent.
+            int startX = bounds.Left + (bounds.Width / 4);
+            int y = bounds.Top + (bounds.Height / 2);
+
+            Log.Comment("Dragging the horizontal ScrollBar thumb from ({0}, {1}) by {2}px.", startX, y, dx);
+
+            InputHelper.LeftMouseButtonDown(scrollBar, -(bounds.Width / 4), 0);
+            InputHelper.MoveMouse(new Point(startX + (dx / 2), y));
+            InputHelper.MoveMouse(new Point(startX + dx, y));
+            InputHelper.LeftMouseButtonUp();
+            Wait.ForIdle();
+
+            return true;
+        }
+
         // ---------- Test page ----------
 
         // MUXTestInfra's AppWatcherThread kills the test host once ONE app instance has run for 15 minutes
@@ -491,6 +610,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             catch (Exception e) when (e is InvalidOperationException || e is System.ComponentModel.Win32Exception)
             {
                 // The process could not be queried; leave the restart decision to the infra.
+            }
+        }
+
+        // Call last inside the TestSetupHelper scope of a test that leaves a column header focused. On 25H2 the UIA
+        // call after GoBack (back-button InvokeAndWait, or the next test's page lookup) has blocked until the TAEF
+        // timeout when the page was torn down with a header holding keyboard focus; the app itself stayed responsive.
+        // Parking focus on a page button and settling first keeps that teardown off the header path. Best-effort.
+        internal static void MoveFocusOffTableBeforeTeardown()
+        {
+            UIObject outside = TryFindElement.ById(DummyButton);
+            if (outside == null)
+            {
+                Log.Comment(DummyButton + " was not found; leaving focus where it is for teardown.");
+                return;
+            }
+
+            outside.SetFocus();
+            Wait.ForIdle();
+            if (!outside.HasKeyboardFocus)
+            {
+                Log.Comment("Could not move keyboard focus to " + DummyButton + " before teardown.");
             }
         }
 
@@ -545,6 +685,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return report == null ? null : report.Value;
         }
 
+        // The value of one "key=value" field of a ';'-separated page readout, or null if the field is absent.
+        internal static string ReadReadoutField(string readoutId, string field)
+        {
+            string readout = ReadPageReadout(readoutId);
+            if (readout == null)
+            {
+                return null;
+            }
+
+            foreach (string part in readout.Split(';'))
+            {
+                int separator = part.IndexOf('=');
+                if (separator > 0 && part.Substring(0, separator) == field)
+                {
+                    return part.Substring(separator + 1);
+                }
+            }
+
+            return null;
+        }
+
+        // Pages refresh readouts on a dispatcher hop; a few idle waits let one settle. Returns the last value read, so
+        // the caller asserts on what was actually observed.
+        internal static string WaitForReadoutField(string readoutId, string field, string expected)
+        {
+            string value = ReadReadoutField(readoutId, field);
+            for (int attempt = 0; attempt < 5 && value != expected; attempt++)
+            {
+                Wait.ForIdle();
+                value = ReadReadoutField(readoutId, field);
+            }
+
+            Log.Comment("Readout {0} = '{1}' (expected '{2}').", field, value, expected);
+            return value;
+        }
+
+        internal static bool WaitForStatusText(string expected, int timeoutMs = 10000)
+        {
+            var status = FindElement.ById<TextBlock>(StatusText);
+            string value = null;
+            DateTime deadline = DateTime.Now.AddMilliseconds(timeoutMs);
+            while (status != null)
+            {
+                value = status.DocumentText;
+                if (value == expected || DateTime.Now >= deadline)
+                {
+                    break;
+                }
+                Wait.ForMilliseconds(100);
+            }
+
+            Log.Comment("Status = '{0}' (expected '{1}').", value, expected);
+            return value == expected;
+        }
+
         internal static string ReadEditReport() => ReadPageReadout(EditColumnReport);
 
         internal static string ReadEditorProbe() => ReadPageReadout(EditorProbe);
@@ -585,6 +780,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
             return double.NaN;
+        }
+
+        internal static string VerticalOffsetOf(string offsets)
+        {
+            foreach (string field in offsets.Split(';'))
+            {
+                if (field.StartsWith("V=", StringComparison.Ordinal))
+                {
+                    return field;
+                }
+            }
+            return offsets;
         }
     }
 }

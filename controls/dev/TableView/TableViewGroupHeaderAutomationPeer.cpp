@@ -99,6 +99,18 @@ void TableViewGroupHeaderAutomationPeer::SetFocusCore()
     __super::SetFocusCore();
 }
 
+void TableViewGroupHeaderAutomationPeer::ShowContextMenuCore()
+{
+    // The base raises ContextRequested on the header itself, which shows the header's own
+    // ContextFlyout before any TableView suppression hook can see it.
+    if (auto const tableView = GetOwningTableView(); tableView && winrt::get_self<TableView>(tableView)->AreContextMenusSuppressed())
+    {
+        return;
+    }
+
+    __super::ShowContextMenuCore();
+}
+
 int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
 {
     // An app-set AutomationProperties.Level wins, as in the dxaml peers that compute this.
@@ -205,11 +217,15 @@ int32_t TableViewGroupHeaderAutomationPeer::Row()
         {
             if (auto const repeater = winrt::get_self<TableView>(owner)->GetRowsRepeaterForPeer())
             {
-                return repeater.GetElementIndex(header);
+                if (const auto index = repeater.GetElementIndex(header); index >= 0)
+                {
+                    return index;
+                }
             }
         }
     }
-    return -1;
+    // A recycled header has no row; -1 would read as a real coordinate.
+    ThrowElementNotAvailable();
 }
 
 int32_t TableViewGroupHeaderAutomationPeer::Column()

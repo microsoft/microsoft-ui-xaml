@@ -15,7 +15,17 @@ class TableViewCellAutomationPeer :
     public ReferenceTracker<TableViewCellAutomationPeer, winrt::implementation::TableViewCellAutomationPeerT, winrt::IVirtualizedItemProvider>
 {
 public:
+    // Lets TableViewCell skip the public constructor's argument validation.
+    struct TrustedOwnerTag {};
+
+    // Throws E_INVALIDARG for arguments that cannot describe a cell.
     TableViewCellAutomationPeer(
+        winrt::FrameworkElement const& cell,
+        winrt::TableViewRow const& row,
+        winrt::TableViewColumn const& column,
+        int32_t columnIndex);
+    TableViewCellAutomationPeer(
+        TrustedOwnerTag,
         winrt::FrameworkElement const& cell,
         winrt::TableViewRow const& row,
         winrt::TableViewColumn const& column,
@@ -34,6 +44,7 @@ public:
     // Overrides base IsTabStop-derived focusability for the two-level body navigation model.
     bool IsKeyboardFocusableCore();
     void SetFocusCore();
+    void ShowContextMenuCore();
 
     // IGridItemProvider — per-cell coordinates in the owning TableView.
     int32_t Row();
@@ -56,11 +67,16 @@ public:
     // IVirtualizedItemProvider — available only after the owning row has been recycled out.
     void Realize();
 
+    // The name a client last read, for a NameProperty change; empty while an edit pins the name.
+    std::optional<winrt::hstring> TakeLastNameInternal();
+
     winrt::hstring ReadNameForEdit();
     void BeginEditName();
     void EndEditName();
     void ResetEditName();
     void UpdateNameItem(winrt::IInspectable const& item);
+    // Row() without the ElementNotAvailable throw: -1 when the row is gone.
+    int32_t GetRowIndexInternal();
 
 private:
     // True when this cell is editable AND its column produces a TextBox editor, which is the only
@@ -69,6 +85,7 @@ private:
 
     // Resolves the row index from the owning ItemsRepeater.
     int32_t GetRowIndex();
+    int32_t GetRowIndex(winrt::TableViewRow const& row, winrt::TableView const& tableView);
     bool IsVirtualized();
     void RealizeCore();
     winrt::UIElement GetRealizedCellFromRow(winrt::TableViewRow const& row);
@@ -78,14 +95,17 @@ private:
     int32_t GetItemOccurrenceAtIndex(winrt::TableView const& tableView, winrt::IInspectable const& item, int32_t targetIndex);
     bool IsTrackedRow(winrt::TableViewRow const& row, winrt::TableView const& tableView);
     void TrackRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
-    [[noreturn]] static void ThrowElementNotAvailable();
+    bool IsOwnerCurrentCellOfRow(winrt::TableViewRow const& row);
 
-    // Resolves the column's stringified Header.
-    winrt::hstring GetColumnHeaderText();
+    // Resolves the column's stringified Header, else the name its header item exposes.
+    // Table arguments are the already-tracked owner (or null), so these do not re-validate the row.
+    winrt::hstring GetColumnHeaderText(winrt::TableView const& table);
+    // True when GetColumnHeaderItems reports a header, so the cell name must not repeat it.
+    bool IsColumnHeaderReachable(winrt::TableView const& table);
 
     // Resolves displayed text from the TextBlock or content peer name.
     winrt::hstring GetCellValueText();
-    winrt::hstring ReadDisplayName(winrt::FrameworkElement const& display = nullptr);
+    winrt::hstring ReadDisplayName(winrt::TableView const& table, winrt::FrameworkElement const& display = nullptr);
     void PrepareAutomationContentView(winrt::FrameworkElement const& cell);
     bool GetCachedHasInteractiveCellContent(winrt::FrameworkElement const& cell);
     winrt::IInspectable GetCurrentAutomationContentItem();

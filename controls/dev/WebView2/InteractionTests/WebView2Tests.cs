@@ -764,12 +764,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public void NavigationErrorTest()
+        public void NavigationHttpErrorTest()
         {
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
-                ChooseTest("NavigationErrorTest");
-                CompleteTestAndWaitForResult("NavigationErrorTest");
+                ChooseTest("NavigationHttpErrorTest");
+                CompleteTestAndWaitForResult("NavigationHttpErrorTest");
             }
         }
 

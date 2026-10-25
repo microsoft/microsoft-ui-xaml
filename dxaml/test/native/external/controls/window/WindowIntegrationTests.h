@@ -56,6 +56,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(WindowTopBorderPainting)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the Windows 10 Window ECITB border erase without changing either entry point's geometry.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
 #ifdef MUX_PRERELEASE
         // Experimental Width/Height properties on Window are only present in prerelease builds.
         BEGIN_TEST_METHOD(CanGetSetWindowWidthHeight)
@@ -89,12 +94,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowWidthHeightAfterClose)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates frozen Width/Height and ignored assignments after close across activation, restored, minimized, maximized, and non-default presenter states.")
+            TEST_METHOD_PROPERTY(L"Description", L"Validates preserved Width/Height and property-value round-tripping after close across activation, restored, minimized, maximized, and non-default presenter states.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowWidthHeightAfterCloseValidatesArguments)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates preserved pending requests, invalid arguments, and ignored finite Width/Height assignments after close, including the largest finite double.")
+            TEST_METHOD_PROPERTY(L"Description", L"Validates preserved pending requests, invalid arguments, and exact finite Width/Height round-tripping after close, including the largest finite double.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 

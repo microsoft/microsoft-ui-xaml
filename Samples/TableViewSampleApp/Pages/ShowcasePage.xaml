@@ -46,33 +46,31 @@
         WhatToLookFor="Select a row, then switch to Grouped: the control keeps the selection because the source is reshaped in place, not rebuilt. Sorted by Salary, each live update and raise re-applies the sort, so the rows stay in order; grouped, they sort within each group when the sort was applied after grouping. The template columns sort by their SortMemberPath (Department, IsActive, JoinDate, Salary), not by the control they show.">
 
         <controls:SamplePresenter.Example>
-            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                <!-- snippet -->
-                <tv:TableView
-                    x:Name="PeopleTable"
-                    AutomationProperties.AutomationId="ShowcaseTable"
-                    AutomationProperties.Name="People directory"
-                    ItemsSource="{x:Bind Source}"
-                    AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
-                    Sorted="OnPeopleTableSorted"
-                    SelectionChanged="OnSelectionChanged"
-                    SelectionMode="Single"
-                    VerticalAlignment="Stretch"
-                    MinHeight="320">
-                    <tv:TableViewTemplateColumn x:Name="AvatarColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-                    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource ShowcaseDepartmentPillTemplate}" SortMemberPath="Department"/>
-                    <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" CanResize="False" HeaderToolTip="Fixed width: this column sets CanResize to False."/>
-                    <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
-                    <tv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource ShowcaseSalaryTemplate}" SortMemberPath="Salary"/>
-                    <tv:TableViewTemplateColumn x:Name="ShiftColumn" Header="Shift" Width="{StaticResource ColWidthTimeCompact}" CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart" Visibility="Collapsed"/>
-                    <tv:TableViewTemplateColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthCombo}" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office" Visibility="Collapsed"/>
-                    <tv:TableViewTextColumn x:Name="EmailColumn" Header="Email" Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" Visibility="Collapsed"/>
-                    <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" Visibility="Collapsed"/>
-                    <tv:TableViewTemplateColumn x:Name="DetailsColumn" Header="Details" Width="{StaticResource ColWidthAction}" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False" Visibility="Collapsed"/>
-                </tv:TableView>
-                <!-- /snippet -->
-            </Border>
+            <!-- snippet -->
+            <tv:TableView
+                x:Name="PeopleTable"
+                AutomationProperties.AutomationId="ShowcaseTable"
+                AutomationProperties.Name="People directory"
+                ItemsSource="{x:Bind Source}"
+                AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
+                Sorted="OnPeopleTableSorted"
+                SelectionChanged="OnSelectionChanged"
+                SelectionMode="Single"
+                VerticalAlignment="Stretch"
+                MinHeight="320">
+                <tv:TableViewTemplateColumn x:Name="AvatarColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource ShowcaseDepartmentPillTemplate}" SortMemberPath="Department"/>
+                <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" CanResize="False" HeaderToolTip="Fixed width: this column sets CanResize to False."/>
+                <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+                <tv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource ShowcaseSalaryTemplate}" SortMemberPath="Salary"/>
+                <tv:TableViewTemplateColumn x:Name="ShiftColumn" Header="Shift" Width="{StaticResource ColWidthTimeCompact}" CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart" Visibility="Collapsed"/>
+                <tv:TableViewTemplateColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthCombo}" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office" Visibility="Collapsed"/>
+                <tv:TableViewTextColumn x:Name="EmailColumn" Header="Email" Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" Visibility="Collapsed"/>
+                <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" Visibility="Collapsed"/>
+                <tv:TableViewTemplateColumn x:Name="DetailsColumn" Header="Details" Width="{StaticResource ColWidthAction}" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False" Visibility="Collapsed"/>
+            </tv:TableView>
+            <!-- /snippet -->
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
@@ -86,6 +84,7 @@
                                   Header="Live updates" IsOn="True" OnContent="On" OffContent="Off" Toggled="OnLiveToggled"/>
                     <Slider x:Name="UpdateIntervalSlider" AutomationProperties.AutomationId="ShowcaseUpdateIntervalSlider"
                             Header="Update interval (ms)" Minimum="200" Maximum="2000" StepFrequency="100" Value="700"
+                            AutomationProperties.HelpText="Milliseconds between live updates, from 200 to 2000."
                             ValueChanged="OnUpdateIntervalChanged"/>
                     <ToggleSwitch x:Name="VibrantToggle" AutomationProperties.AutomationId="ShowcaseVibrantToggle"
                                   Header="Vibrant cells" IsOn="True" OnContent="On" OffContent="Off" Toggled="OnVibrantToggled"/>

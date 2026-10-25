@@ -10,6 +10,7 @@ using System.Threading;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Private.Controls;
 
 using WEX.TestExecution;
@@ -158,6 +159,136 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             else
             {
                 Verify.Fail("Failed on waiting on build tree.");
+            }
+        }
+
+        // Scenario: realize items whose phased bindings (four phases each) take about 15 ms per phase, so the total phase
+        //           work is far larger than one frame's budget.
+        // Expected: every realized item still receives phases 0 to 3 in increasing order, and the work is spread over
+        //           several frames instead of blocking one.
+        // A failure means: slow x:Phase bindings would freeze the UI thread or leave items partially bound.
+        [TestMethod]
+        [TestProperty("Description", "Verifies phased binding work that exceeds a frame budget is spread over several frames and still completes every phase in order.")]
+        public void ValidateSlowPhasesAreSpreadOverFrames()
+        {
+            const int phaseCount = 4;
+            const int itemCount = 6;
+            var calls = new Dictionary<int, List<int>>();
+            var frames = new HashSet<int>();
+            int frame = 0;
+            var allPhasesDone = new ManualResetEvent(false);
+            EventHandler<object> onRendering = (s, e) => frame++;
+
+            RunOnUIThread.Execute(() =>
+            {
+                CompositionTarget.Rendering += onRendering;
+                Action<int, int> record = (item, phase) =>
+                {
+                    if (!calls.ContainsKey(item))
+                    {
+                        calls[item] = new List<int>();
+                    }
+                    calls[item].Add(phase);
+                    if (phase > 0)
+                    {
+                        frames.Add(frame);
+                    }
+                    if (calls.Count == itemCount && calls.Values.All(phases => phases.Count(p => p == phaseCount - 1) > 0))
+                    {
+                        allPhasesDone.Set();
+                    }
+                };
+
+                var repeater = new ItemsRepeater()
+                {
+                    ItemsSource = Enumerable.Range(0, itemCount),
+                    ItemTemplate = new SlowPhasedElementFactory(phaseCount, record),
+                    Layout = new StackLayout(),
+                };
+                Content = new ItemsRepeaterScrollHost()
+                {
+                    Width = 400,
+                    Height = 400,
+                    ScrollViewer = new ScrollViewer { Content = repeater }
+                };
+            });
+
+            bool completed = allPhasesDone.WaitOne(TimeSpan.FromSeconds(10));
+            RunOnUIThread.Execute(() =>
+            {
+                CompositionTarget.Rendering -= onRendering;
+                foreach (var entry in calls)
+                {
+                    Log.Comment($"Item {entry.Key}: phases {string.Join(",", entry.Value)}");
+                }
+                Log.Comment("Frames with phase work: " + frames.Count);
+                Verify.IsTrue(completed, "Every item reached its last phase.");
+                foreach (var entry in calls)
+                {
+                    var distinct = entry.Value.Distinct().ToList();
+                    Verify.AreEqual(phaseCount, distinct.Count, $"Item {entry.Key} received every phase.");
+                    for (int i = 1; i < distinct.Count; i++)
+                    {
+                        Verify.IsGreaterThan(distinct[i], distinct[i - 1], $"Item {entry.Key} phases increase.");
+                    }
+                }
+                Verify.IsGreaterThan(frames.Count, 1, "The slow phase work was spread over several frames.");
+                Content = null;
+            });
+        }
+
+        private partial class SlowPhasedElementFactory : ElementFactory
+        {
+            private readonly int _phaseCount;
+            private readonly Action<int, int> _record;
+
+            public SlowPhasedElementFactory(int phaseCount, Action<int, int> record)
+            {
+                _phaseCount = phaseCount;
+                _record = record;
+            }
+
+            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
+            {
+                var element = new Button() { Width = 100, Height = 50 };
+                XamlBindingHelper.SetDataTemplateComponent(element, new SlowPhasingComponent(_phaseCount, _record));
+                return element;
+            }
+
+            protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
+            {
+            }
+        }
+
+        private partial class SlowPhasingComponent : IDataTemplateComponent
+        {
+            private readonly int _phaseCount;
+            private readonly Action<int, int> _record;
+            private int _item = -1;
+
+            public SlowPhasingComponent(int phaseCount, Action<int, int> record)
+            {
+                _phaseCount = phaseCount;
+                _record = record;
+            }
+
+            public void Recycle()
+            {
+            }
+
+            public void ProcessBindings(object item, int itemIndex, int phase, out int nextPhase)
+            {
+                if (phase == 0)
+                {
+                    _item = (int)item;
+                }
+                else
+                {
+                    Thread.Sleep(15);
+                }
+
+                _record(_item, phase);
+                nextPhase = phase >= _phaseCount - 1 ? -1 : phase + 1;
             }
         }
 

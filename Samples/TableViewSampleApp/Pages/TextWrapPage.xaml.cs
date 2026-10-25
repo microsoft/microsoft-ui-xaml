@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Controls.Tabular;
@@ -119,6 +120,8 @@ public sealed partial class TextWrapPage : SamplePageBase
 
     private void OnBioWidthChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
+        AutomationProperties.SetItemStatus((Slider)sender, string.Format(CultureInfo.CurrentCulture, "{0:N0} pixels", e.NewValue)); // snippet:skip
+
         // Fires during InitializeComponent when Value is set; the XAML Width already matches.
         if (!IsLoaded || BioColumn is null || BioWidthText is null)
         {

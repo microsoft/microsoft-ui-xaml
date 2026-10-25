@@ -3183,7 +3183,7 @@ this.Write("\");\r\n");
              } else { 
 this.Write("                    ");
 
-this.Write(this.ToStringHelper.ToStringWithCulture(bindAssignment.BindUniverse.RootElement.ReferenceExpression));
+this.Write(this.ToStringHelper.ToStringWithCulture(bindAssignment.BindUniverse.LoadRootElement.ReferenceExpression));
 
 this.Write(".FindName(\"");
 

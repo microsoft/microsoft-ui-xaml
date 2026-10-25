@@ -14,6 +14,20 @@ static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBord
 TableViewGroupHeader::TableViewGroupHeader()
 {
     SetDefaultStyleKey(this);
+
+    // Tab from another band must not land on a cache group header outside the viewport.
+    m_gettingFocusRevoker = GettingFocus(
+        winrt::auto_revoke,
+        [weakThis = get_weak()](winrt::UIElement const&, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
+        {
+            if (auto const strongThis = weakThis.get())
+            {
+                if (auto const owner = strongThis->GetOwningTableView())
+                {
+                    winrt::get_self<TableView>(owner)->TryRedirectBandEntryToViewport(*strongThis, args);
+                }
+            }
+        });
 }
 
 winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
@@ -22,6 +36,19 @@ winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
 }
 
 winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSize)
+{
+    auto const desired = MeasureBand(availableSize);
+
+    // The base measure realizes the content template, so a header created disabled, or given a new
+    // content template while disabled, is handled here.
+    if (!IsEnabled() && ContentTemplateRoot() != m_inspectedContentRoot.get())
+    {
+        UpdateDefaultCountOpacity();
+    }
+    return desired;
+}
+
+winrt::Size TableViewGroupHeader::MeasureBand(winrt::Size const& availableSize)
 {
     // Same sum TableViewCellsPanel uses for a row, evaluated at the same point in the layout
     // pass, so the band and the rows can never disagree.
@@ -69,7 +96,22 @@ void TableViewGroupHeader::OnApplyTemplate()
     __super::OnApplyTemplate();
 
     m_isEnabledChangedRevoker.revoke();
+    m_templateRootContextRequestedRevoker.revoke();
     m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
+
+    // A group header's ContextFlyout (set through a TableViewGroupHeader Style) stays closed while
+    // a cell is editing.
+    m_templateRootContextRequestedRevoker = TableViewDetails::HookTemplateRootContextRequested(*this,
+        [weakThis = get_weak()](auto&&, winrt::ContextRequestedEventArgs const& args)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                if (auto const owner = strongThis->GetOwningTableView())
+                {
+                    winrt::get_self<TableView>(owner)->SuppressContextRequestWhileEditing(args);
+                }
+            }
+        });
 
     // Keep CommonStates in sync with IsEnabled so Disabled activates when a consumer toggles it
     // at runtime, not only when it happens to be false at template time.
@@ -80,11 +122,53 @@ void TableViewGroupHeader::OnApplyTemplate()
             if (auto strongThis = weakThis.get())
             {
                 strongThis->UpdateVisualStates(true /* useTransitions */);
+                strongThis->UpdateDefaultCountOpacity();
             }
         });
 
     UpdateVisualStates(false /* useTransitions */);
     UpdateTerminalBottomGridLineSuppression();
+}
+
+void TableViewGroupHeader::UpdateDefaultCountOpacity()
+{
+    // The disabled brush already dims the default count; its Style opacity would dim it twice.
+    if (IsEnabled())
+    {
+        if (auto const count = m_defaultCount.get())
+        {
+            count.ClearValue(winrt::UIElement::OpacityProperty());
+        }
+        return;
+    }
+
+    TrackDefaultCount(ContentTemplateRoot());
+    if (auto const count = m_defaultCount.get())
+    {
+        count.Opacity(1.0);
+    }
+}
+
+void TableViewGroupHeader::TrackDefaultCount(winrt::UIElement const& root)
+{
+    if (root == m_inspectedContentRoot.get())
+    {
+        return;
+    }
+
+    if (auto const previous = m_defaultCount.get())
+    {
+        previous.ClearValue(winrt::UIElement::OpacityProperty());
+        m_defaultCount.set(nullptr);
+    }
+    m_inspectedContentRoot = root ? winrt::make_weak(root) : nullptr;
+
+    // Only the built-in template is touched: an app template's same-named element keeps its Opacity.
+    auto const rootElement = root.try_as<winrt::FrameworkElement>();
+    if (rootElement && rootElement.Name() == L"TableViewDefaultGroupHeaderContentRoot")
+    {
+        m_defaultCount.set(rootElement.FindName(L"TableViewGroupHeaderItemCountText").try_as<winrt::TextBlock>());
+    }
 }
 
 void TableViewGroupHeader::SetTerminalBottomGridLineSuppression(bool suppress)
@@ -105,7 +189,10 @@ void TableViewGroupHeader::UpdateTerminalBottomGridLineSuppression()
         {
             thickness.Bottom = 0.0;
         }
-        gridLineBorder.BorderThickness(thickness);
+        if (gridLineBorder.BorderThickness() != thickness)
+        {
+            gridLineBorder.BorderThickness(thickness);
+        }
     }
 }
 
@@ -235,19 +322,22 @@ void TableViewGroupHeader::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         {
         case winrt::VirtualKey::Enter:
         case winrt::VirtualKey::Space:
-            RequestToggle();
             args.Handled(true);
+            m_gestureFocusState = winrt::FocusState::Keyboard;
+            RequestToggle();
             break;
 
         case winrt::VirtualKey::Right:
             // Right expands in LTR, collapses in RTL -- the TreeViewItem / Expander convention.
-            RequestExpansion(!isRtl);
             args.Handled(true);
+            m_gestureFocusState = winrt::FocusState::Keyboard;
+            RequestExpansion(!isRtl);
             break;
 
         case winrt::VirtualKey::Left:
-            RequestExpansion(isRtl);
             args.Handled(true);
+            m_gestureFocusState = winrt::FocusState::Keyboard;
+            RequestExpansion(isRtl);
             break;
 
         default:
@@ -268,9 +358,36 @@ void TableViewGroupHeader::OnPointerEntered(winrt::PointerRoutedEventArgs const&
 void TableViewGroupHeader::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerExited(args);
+    // Only the pressing pointer may cancel the press (as TableViewRow): another contact or the mouse
+    // leaving must not drop an in-flight tap.
+    if (m_isPressed && args.Pointer().PointerId() != m_pressedPointerId)
+    {
+        return;
+    }
     m_isPointerOver = false;
     m_isPressed = false;
+    m_pressedGroupIdentity.clear();
     UpdateVisualStates(true /* useTransitions */);
+}
+
+void TableViewGroupHeader::ResetPointerStateInternal()
+{
+    // Hover is left alone: it describes where the pointer is, not which group it acted on.
+    m_pressedGroupIdentity.clear();
+    if (m_isPressed)
+    {
+        m_isPressed = false;
+        UpdateVisualStates(false /* useTransitions */);
+    }
+}
+
+winrt::hstring TableViewGroupHeader::GetGroupIdentity()
+{
+    if (auto const owner = GetOwningTableView())
+    {
+        return winrt::get_self<TableView>(owner)->GetContainerIdentityInternal(*this);
+    }
+    return {};
 }
 
 void TableViewGroupHeader::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
@@ -287,6 +404,10 @@ void TableViewGroupHeader::OnPointerPressed(winrt::PointerRoutedEventArgs const&
     }
 
     m_isPressed = true;
+    m_pressedPointerId = args.Pointer().PointerId();
+
+    // A reshape between press and release can recycle this container onto another group.
+    m_pressedGroupIdentity = GetGroupIdentity();
 
     // The band owns the gesture: mark it handled so a press on a group header never reaches the
     // row's selection handling.
@@ -303,14 +424,42 @@ void TableViewGroupHeader::OnPointerReleased(winrt::PointerRoutedEventArgs const
     __super::OnPointerReleased(args);
 
     const bool wasPressed = m_isPressed;
+    auto const pressedIdentity = m_pressedGroupIdentity;
     m_isPressed = false;
+    m_pressedGroupIdentity.clear();
     UpdateVisualStates(true /* useTransitions */);
 
     // Toggle on release-inside, the standard click semantic: a press that drags off the band
     // does not activate.
-    if (wasPressed && m_isPointerOver && IsExpandable())
+    if (!wasPressed || !m_isPointerOver || pressedIdentity != GetGroupIdentity())
+    {
+        return;
+    }
+
+    // Focus before the toggle so the toggle captures it for the restore after the reshape.
+    // Focus on release, not press: leaving an open editor commits it and can reshape mid-gesture.
+    if (Focus(winrt::FocusState::Pointer))
+    {
+        if (auto const owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->SetCellCursorActiveInternal(false);
+        }
+    }
+
+    // The editor commit inside Focus() can reshape and recycle this header onto another group.
+    if (pressedIdentity != GetGroupIdentity())
+    {
+        if (IsExpandable())
+        {
+            args.Handled(true);
+        }
+        return;
+    }
+
+    if (IsExpandable())
     {
         args.Handled(true);
+        m_gestureFocusState = winrt::FocusState::Pointer;
         RequestToggle();
     }
 }
@@ -318,7 +467,12 @@ void TableViewGroupHeader::OnPointerReleased(winrt::PointerRoutedEventArgs const
 void TableViewGroupHeader::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerCaptureLost(args);
+    if (m_isPressed && args.Pointer().PointerId() != m_pressedPointerId)
+    {
+        return;
+    }
     m_isPressed = false;
     m_isPointerOver = false;
+    m_pressedGroupIdentity.clear();
     UpdateVisualStates(true /* useTransitions */);
 }

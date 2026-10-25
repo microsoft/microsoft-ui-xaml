@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
@@ -551,6 +552,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateAutomationTable();
                 tableView.Columns[1].Visibility = Visibility.Collapsed;
+                // Alias over Role, so its cells read differently from the Name column's.
+                tableView.Columns.RemoveAt(2);
+                tableView.Columns.Add(MakeTextColumn("Alias", "Role"));
                 LoadContent(tableView);
             });
 
@@ -577,11 +581,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
 
                 // Visible-column order: the collapsed column is the middle one, so the two survivors are
-                // the first and third columns' cells. Asserted through their composed names, which carry
-                // the owning column's header.
-                Verify.AreEqual("Name, Asha", ((TableViewCellAutomationPeer)children[0]).GetName(),
+                // the first and third columns' cells.
+                for (int i = 0; i < children.Count; i++)
+                {
+                    var gridItem = children[i].GetPattern(PatternInterface.GridItem) as IGridItemProvider;
+                    Verify.AreEqual(i, gridItem?.Column ?? -1, $"Cell peer {i} must report visible column {i}.");
+                }
+                Verify.AreEqual("Asha", ((TableViewCellAutomationPeer)children[0]).GetName(),
                     "The first cell peer must belong to the first visible column.");
-                Verify.AreEqual("Alias, Asha", ((TableViewCellAutomationPeer)children[1]).GetName(),
+                Verify.AreEqual("Designer", ((TableViewCellAutomationPeer)children[1]).GetName(),
                     "The second cell peer must belong to the third column, the next visible one.");
             });
         }
@@ -623,6 +631,169 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(1, gridItem.RowSpan, "Cells never span rows.");
                 Verify.AreEqual(1, gridItem.ColumnSpan, "Cells never span columns.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the public cell peer constructor rejects arguments that cannot describe a cell, and accepts ones that can.")]
+        public void VerifyCellPeerConstructorValidatesArguments()
+        {
+            TableView tableView = null;
+            TableView otherTable = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                otherTable = CreateAutomationTable();
+                var host = new StackPanel();
+                host.Children.Add(tableView);
+                host.Children.Add(otherTable);
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRealizedRows(tableView).First();
+                var cell = GetRowCell(row, 0);
+                var column = tableView.Columns[0];
+                int count = tableView.Columns.Count;
+
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(null, row, column, 0), "A null cell must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, null, column, 0), "A null row must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, null, 0), "A null column must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, column, -1), "A negative column index must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, column, count), "A column index past the table's columns must be rejected.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, otherTable.Columns[0], 0), "A column from another table must be rejected.");
+
+                var peer = new TableViewCellAutomationPeer(cell, row, column, count - 1);
+                Verify.IsNotNull(peer, "In-range arguments must construct a peer.");
+
+                // A row no TableView owns has no column set to check against, so only the index sign is enforced.
+                Verify.IsNotNull(new TableViewCellAutomationPeer(new Grid(), new TableViewRow(), new TableViewTextColumn(), 3),
+                    "An unowned row must accept any non-negative index.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell peer whose row is gone throws ElementNotAvailable from GridItem.Row instead of reporting -1.")]
+        public void VerifyStaleCellPeerGridItemRowThrowsElementNotAvailable()
+        {
+            TableView tableView = null;
+            IGridItemProvider gridItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gridItem = GetCellPeer(RequireRowPeer(tableView, 1), 2).GetPattern(PatternInterface.GridItem) as IGridItemProvider;
+                Verify.IsNotNull(gridItem, "Precondition: the cell peer advertises GridItem.");
+                Verify.AreEqual(1, gridItem.Row, "Precondition: the live cell reports its row.");
+
+                tableView.ItemsSource = new List<Person>();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGridItemRowThrowsElementNotAvailable(gridItem, "a cell whose row was removed");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell peer replaced by a column reorder on the same row throws ElementNotAvailable from GridItem.Row and Column.")]
+        public void VerifyRebuiltCellPeerGridItemThrowsElementNotAvailable()
+        {
+            TableView tableView = null;
+            IGridItemProvider gridItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gridItem = GetCellPeer(RequireRowPeer(tableView, 0), 0).GetPattern(PatternInterface.GridItem) as IGridItemProvider;
+                Verify.IsNotNull(gridItem, "Precondition: the cell peer advertises GridItem.");
+                Verify.AreEqual(0, gridItem.Column, "Precondition: the live cell reports its column.");
+
+                // Only the row's cells are rebuilt, so the old provider's column would name another cell.
+                var alias = tableView.Columns[2];
+                tableView.Columns.RemoveAt(2);
+                tableView.Columns.Insert(0, alias);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGridItemCoordinateThrowsElementNotAvailable(() => gridItem.Row, "Row", "a cell rebuilt by a column reorder");
+                VerifyGridItemCoordinateThrowsElementNotAvailable(() => gridItem.Column, "Column", "a cell rebuilt by a column reorder");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a recycled group header peer throws ElementNotAvailable from GridItem.Row instead of reporting -1.")]
+        public void VerifyRecycledGroupHeaderGridItemRowThrowsElementNotAvailable()
+        {
+            TableView tableView = null;
+            IGridItemProvider gridItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                gridItem = GetGroupHeaderPeer(tableView, 0).GetPattern(PatternInterface.GridItem) as IGridItemProvider;
+                Verify.IsNotNull(gridItem, "Precondition: the group header peer advertises GridItem.");
+                Verify.AreEqual(0, gridItem.Row, "Precondition: the live header reports its row.");
+
+                tableView.ItemsSource = new List<Person>();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyGridItemRowThrowsElementNotAvailable(gridItem, "a recycled group header");
+            });
+        }
+
+        private static void VerifyGridItemRowThrowsElementNotAvailable(IGridItemProvider gridItem, string subject)
+            => VerifyGridItemCoordinateThrowsElementNotAvailable(() => gridItem.Row, "Row", subject);
+
+        private static void VerifyGridItemCoordinateThrowsElementNotAvailable(Func<int> read, string coordinate, string subject)
+        {
+            Exception error = null;
+            int value = int.MinValue;
+            try
+            {
+                value = read();
+            }
+            catch (Exception exception)
+            {
+                error = exception;
+            }
+
+            Verify.AreNotEqual(-1, value, $"GridItem.{coordinate} on {subject} must not report -1, which reads as a real coordinate.");
+            Verify.IsNotNull(error, $"GridItem.{coordinate} on {subject} must throw; it returned {value}.");
+            Verify.AreEqual(unchecked((int)0x80040201), error.HResult, $"GridItem.{coordinate} on {subject} must fail with UIA_E_ELEMENTNOTAVAILABLE.");
         }
 
         [TestMethod]
@@ -668,8 +839,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a cell's automation name is '{column header}, {cell value}'.")]
-        public void VerifyCellNameCombinesColumnHeaderAndValue()
+        [TestProperty("Description", "Verifies a cell's automation name is its value while column headers are shown.")]
+        public void VerifyCellNameIsValueWhenColumnHeadersAreShown()
         {
             TableView tableView = null;
 
@@ -686,19 +857,90 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var rowPeer = RequireRowPeer(tableView, 0);
                 var cellPeer = GetCellPeer(rowPeer, 0);
 
-                // TableView.idl:676 specifies the format outright: the cell peer supplies
-                // "{column header}, {cell value}" names. Without the prefix, moving across a row reads
-                // "Asha, Designer, 30" with no indication of what those are.
-                //
-                // The separator is a literal comma + space and is not localized. That is worth raising,
-                // but the test pins what the IDL says.
-                Verify.AreEqual("Name, Asha", cellPeer.GetName(),
-                    "The cell name must combine the column header and the cell value.");
+                Verify.AreEqual("Asha", cellPeer.GetName(),
+                    "The cell name must be the cell value while the column header is reachable.");
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a cell name degrades to the surviving part when the header or the value is missing.")]
+        [TestProperty("Description", "Verifies a cell name does not repeat a column header that GetColumnHeaderItems already reports.")]
+        public void VerifyCellNameDoesNotRepeatReachableColumnHeader()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cellPeer = GetCellPeer(RequireRowPeer(tableView, 0), 0);
+                var tableItem = cellPeer.GetPattern(PatternInterface.TableItem) as ITableItemProvider;
+                if (tableItem == null)
+                {
+                    Verify.Fail("The cell peer must advertise TableItem.");
+                    return;
+                }
+
+                // Screen readers already speak the header items on entering a column.
+                var columnHeaders = tableItem.GetColumnHeaderItems();
+                Verify.AreEqual(1, columnHeaders == null ? 0 : columnHeaders.Length,
+                    "The shown column header must be reported through GetColumnHeaderItems.");
+                Verify.AreEqual("Asha", cellPeer.GetName(),
+                    "The cell name must not repeat the column header reported through GetColumnHeaderItems.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell name carries the column header only while column headers are hidden.")]
+        public void VerifyCellNameKeepsHeaderPrefixWhenHeadersHidden()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cellPeer = GetCellPeer(RequireRowPeer(tableView, 0), 0);
+                var tableItem = cellPeer.GetPattern(PatternInterface.TableItem) as ITableItemProvider;
+                if (tableItem == null)
+                {
+                    Verify.Fail("The cell peer must advertise TableItem.");
+                    return;
+                }
+
+                Verify.AreEqual("Name, Asha", cellPeer.GetName(),
+                    "With column headers hidden the cell name must carry the column header.");
+                var hiddenHeaders = tableItem.GetColumnHeaderItems();
+                Verify.AreEqual(0, hiddenHeaders == null ? 0 : hiddenHeaders.Length,
+                    "With column headers hidden GetColumnHeaderItems must be empty.");
+
+                tableView.HeadersVisibility = TableViewHeadersVisibility.Column;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cellPeer = GetCellPeer(RequireRowPeer(tableView, 0), 0);
+                Verify.AreEqual("Asha", cellPeer.GetName(),
+                    "Once column headers are shown again the cell name must drop the header.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell name drops a missing header without a dangling separator and names an empty cell blank, with headers shown or hidden.")]
         public void VerifyCellNameFallsBackWhenEitherPartIsMissing()
         {
             TableView tableView = null;
@@ -735,8 +977,151 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // Narrator ("comma Designer"), and a name that is only punctuation is worse than none.
                 Verify.AreEqual("Designer", GetCellPeer(rowPeer, 0).GetName(),
                     "With no string header the value must stand alone, with no leading separator.");
-                Verify.AreEqual("Name", GetCellPeer(rowPeer, 1).GetName(),
-                    "With an empty value the header must stand alone, with no trailing separator.");
+                Verify.AreEqual("blank", GetCellPeer(rowPeer, 1).GetName(),
+                    "An empty cell under a shown header must be named blank, not after the header GetColumnHeaderItems already reports.");
+
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Name, blank", GetCellPeer(RequireRowPeer(tableView, 0), 1).GetName(),
+                    "An empty cell under a hidden header must carry the header and still read as blank.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a hidden non-string column header still names the cell through the header's automation name.")]
+        public void VerifyCellNameUsesObjectHeaderAutomationNameWhenHeadersHidden()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                var icon = new SymbolIcon { Symbol = Symbol.Important };
+                AutomationProperties.SetName(icon, "Priority");
+                tableView.Columns.Add(new TableViewTextColumn
+                {
+                    Header = icon,
+                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                });
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Priority, Asha", GetCellPeer(RequireRowPeer(tableView, 0), 0).GetName(),
+                    "A hidden object header must prefix the cell name with the header's automation name.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the table reports no column headers while HeadersVisibility hides them, matching its cells.")]
+        public void VerifyTableColumnHeadersFollowHeadersVisibility()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.HeadersVisibility = TableViewHeadersVisibility.None;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var table = RequireTablePeer(tableView).GetPattern(PatternInterface.Table) as ITableProvider;
+                if (table == null)
+                {
+                    Verify.Fail("The TableView peer must advertise the Table pattern.");
+                    return;
+                }
+
+                var hidden = table.GetColumnHeaders();
+                Verify.AreEqual(0, hidden == null ? 0 : hidden.Length,
+                    "With column headers hidden the table must report none, as its cells' GetColumnHeaderItems do.");
+
+                tableView.HeadersVisibility = TableViewHeadersVisibility.Column;
+                var shown = table.GetColumnHeaders();
+                Verify.AreEqual(3, shown == null ? 0 : shown.Length,
+                    "With column headers shown the table must report one per visible column.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell holding an interactive control is named after its column header, with headers shown or hidden.")]
+        public void VerifyInteractiveCellNameIsColumnHeader()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                tableView.Columns.Add(MakeTemplateColumn("Actions", (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <Button Content=""Delete"" />
+                      </DataTemplate>")));
+                tableView.Columns.Add(MakeTemplateColumn("Active", (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <ToggleSwitch />
+                      </DataTemplate>")));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            foreach (var visibility in new[] { TableViewHeadersVisibility.Column, TableViewHeadersVisibility.None })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView.HeadersVisibility = visibility;
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var rowPeer = RequireRowPeer(tableView, 0);
+
+                    // The control names itself ("Delete"), so a cell named "Delete" would be heard twice.
+                    Verify.AreEqual("Actions", GetCellPeer(rowPeer, 0).GetName(),
+                        $"A Button cell must be named after its column header (HeadersVisibility {visibility}).");
+                    Verify.AreEqual("Active", GetCellPeer(rowPeer, 1).GetName(),
+                        $"An unnamed ToggleSwitch cell must be named after its column header (HeadersVisibility {visibility}).");
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell showing an unnamed non-text visual is named after its column, not \"blank\".")]
+        public void VerifyUnnamedVisualCellIsNotNamedBlank()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                tableView.Columns.Add(MakeTemplateColumn("Progress", (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                          <ProgressBar Value=""40"" Width=""80"" />
+                      </DataTemplate>")));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Progress", GetCellPeer(RequireRowPeer(tableView, 0), 0).GetName(),
+                    "A cell showing an unnamed ProgressBar is not blank; it is named after its column header.");
             });
         }
 
@@ -771,7 +1156,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // Spec silent; reasoned from the text-column case being named and template columns having
                 // no reason to be a second-class citizen. A cell holding a button, a rating or a status
                 // glyph is a common shape, and it must not read as nothing.
-                Verify.AreEqual("Status, Active", cellPeer.GetName(),
+                Verify.AreEqual("Active", cellPeer.GetName(),
                     "A template column's cell name must incorporate the template content's automation name.");
             });
         }
@@ -1016,7 +1401,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // A non-string header rendered through HeaderTemplate, with an automation name on the
                 // template root. The header object must be neither IStringable nor a String-typed
-                // IPropertyValue, or TryGetColumnHeaderString short-circuits the fallback under test -
+                // IPropertyValue, or TryGetColumnHeaderText short-circuits the fallback under test -
                 // a boxed primitive stringifies and would never reach it.
                 tableView.Columns.Add(new TableViewTextColumn
                 {
@@ -1042,6 +1427,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // primary source and template headers needing some name.
                 Verify.AreEqual("Priority", name,
                     "A template header's peer must take its name from the realized header, not from the TableView owner and not empty.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a templated managed-object header is named from its template, not from the object's ToString.")]
+        public void VerifyColumnHeaderNameIgnoresManagedObjectToStringWhenTemplated()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                tableView.Columns.Add(new TableViewTextColumn
+                {
+                    Header = new TitledColumnHeader { Title = "CPU" },
+                    HeaderTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                              <TextBlock Text=""{Binding Title}"" />
+                          </DataTemplate>"),
+                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                });
+
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]).GetName();
+
+                Verify.AreEqual("CPU", name, "A templated object header must be named from the rendered template.");
+                Verify.IsFalse(name.Contains(nameof(TitledColumnHeader)),
+                    $"A templated object header must not be named after its type; saw '{name}'.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an unnamed template header is not named by the resize gripper in its header cell.")]
+        public void VerifyUnnamedTemplateHeaderIsNotNamedByResizeGripper()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
+                tableView.CanUserResizeColumns = true;
+                tableView.Columns.Add(new TableViewTextColumn
+                {
+                    Header = new Border { Width = 20, Height = 12 },
+                    CanResize = true,
+                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                });
+
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var gripperPeer = FrameworkElementAutomationPeer.CreatePeerForElement(RequireGripper(tableView, 0));
+                var gripperName = gripperPeer?.GetName();
+                Verify.IsFalse(string.IsNullOrEmpty(gripperName), "Precondition: the gripper must have a name.");
+
+                var name = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]).GetName();
+                Log.Comment($"Header name: '{name}'; gripper name: '{gripperName}'.");
+                Verify.IsFalse(!string.IsNullOrEmpty(name) && name.Contains(gripperName),
+                    $"An unnamed header must not take the resize gripper's name; saw '{name}'.");
             });
         }
 
@@ -1213,6 +1667,411 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 column.CanSort = false;
                 Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, column).GetPattern(PatternInterface.Invoke),
                     "Invoke must be withheld while the column's CanSort is false.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header disabled by its HeaderStyle reports IsEnabled=false on its realized and table-owned peers and refuses Invoke.")]
+        public void VerifyHeaderDisabledByStyleIsNotEnabledOrInvokable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.CanUserSortColumns = true;
+                tableView.Columns[0].CanSort = true;
+                var disabledStyle = new Style(typeof(TableViewColumnHeader));
+                disabledStyle.Setters.Add(new Setter(Control.IsEnabledProperty, false));
+                tableView.Columns[0].HeaderStyle = disabledStyle;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                var header = GetHeaderCell(tableView, 0) as Control;
+                Verify.IsNotNull(header, "Precondition: the header cell is a Control.");
+                Verify.IsFalse(header.IsEnabled, "Precondition: the HeaderStyle disables the header.");
+
+                var peers = new (AutomationPeer Peer, string Kind)[]
+                {
+                    (FrameworkElementAutomationPeer.CreatePeerForElement(header), "realized"),
+                    (new TableViewColumnHeaderAutomationPeer(tableView, column), "table-owned"),
+                };
+                foreach (var (peer, kind) in peers)
+                {
+                    Verify.IsFalse(peer.IsEnabled(), $"The {kind} peer of a disabled header must report IsEnabled=false.");
+                    var invoke = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                    Verify.IsNotNull(invoke, $"Precondition: the {kind} peer offers Invoke for a sortable column.");
+                    VerifyFailsWithHResult(UIA_E_ELEMENTNOTENABLED, () => invoke.Invoke(),
+                        $"Invoke on the {kind} peer of a disabled header must fail.");
+                }
+
+                Verify.AreEqual(SortDirection.None, column.SortDirection, "A disabled header must not sort through UIA.");
+            });
+        }
+
+        private const int UIA_E_ELEMENTNOTENABLED = unchecked((int)0x80040200);
+        private const int UIA_E_INVALIDOPERATION = unchecked((int)0x80131509);
+        private const int E_INVALIDARG = unchecked((int)0x80070057);
+
+        // By HRESULT rather than exception type: the projected type for a UIA_E_* code is not a contract.
+        private static void VerifyFailsWithHResult(int expectedHResult, Action action, string message)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                Verify.AreEqual(expectedHResult, e.HResult, $"{message} ({e.GetType().Name})");
+                return;
+            }
+
+            Verify.Fail($"{message} The call did not fail.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the Transform pattern is offered only for columns the user may resize, and never moves or rotates.")]
+        public void VerifyTransformPatternTracksColumnResizability()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                tableView.Columns[1].CanResize = false;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // UIA requires Transform on a HeaderItem the user can resize.
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0])
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+                Verify.IsTrue(transform.CanResize, "A resizable column must report CanResize.");
+                Verify.IsFalse(transform.CanMove, "A column header cannot be moved through Transform.");
+                Verify.IsFalse(transform.CanRotate, "A column header cannot be rotated.");
+
+                Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[1]).GetPattern(PatternInterface.Transform),
+                    "Transform must be withheld for a column whose CanResize is false.");
+
+                tableView.CanUserResizeColumns = false;
+                Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]).GetPattern(PatternInterface.Transform),
+                    "Transform must be withheld while CanUserResizeColumns is false.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a pinned column keeps the Transform pattern but reports CanResize=false and rejects Resize.")]
+        public void VerifyTransformCanResizeIsFalseForPinnedColumns()
+        {
+            TableView starTable = null;
+            TableView pixelTable = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                starTable = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(1.0, GridUnitType.Star)),
+                    ("Second", new GridLength(1.0, GridUnitType.Star)));
+                LoadContent(starTable);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Same rule as gripper visibility: the last Star column has no later Star column to trade with.
+                var first = new TableViewColumnHeaderAutomationPeer(starTable, starTable.Columns[0])
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                var last = new TableViewColumnHeaderAutomationPeer(starTable, starTable.Columns[1])
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(first, "The first Star column opts in to resizing, so Transform must be offered.");
+                Verify.IsNotNull(last, "The pinned Star column still opts in to resizing, so Transform must be offered.");
+                Verify.IsTrue(first.CanResize, "A Star column with a later Star donor can be resized.");
+                Verify.IsFalse(last.CanResize, "The last Star column is pinned, so CanResize must be false.");
+
+                var widthBefore = starTable.Columns[1].Width;
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => last.Resize(80.0, 0.0),
+                    "Resize on a pinned column must fail.");
+                Verify.AreEqual(widthBefore, starTable.Columns[1].Width, "A rejected Resize must not touch Width.");
+
+                pixelTable = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(120.0, GridUnitType.Pixel)));
+                LoadContent(pixelTable);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var fixedColumn = pixelTable.Columns[0];
+                fixedColumn.MinWidth = 120.0;
+                fixedColumn.MaxWidth = 120.0;
+                var fixedTransform = new TableViewColumnHeaderAutomationPeer(pixelTable, fixedColumn)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(fixedTransform, "A fixed-width column that opts in to resizing still offers Transform.");
+                Verify.IsFalse(fixedTransform.CanResize, "MinWidth == MaxWidth pins the column, so CanResize must be false.");
+
+                fixedColumn.MaxWidth = double.PositiveInfinity;
+                Verify.IsTrue(fixedTransform.CanResize, "Lifting MaxWidth must make the column resizable again.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Transform.Resize sets the column width through the resize path and clamps to MinWidth/MaxWidth.")]
+        public void VerifyTransformResizeSetsWidthAndClampsToBounds()
+        {
+            TableView tableView = null;
+            ITransformProvider transform = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                tableView.Columns[0].MinWidth = 80.0;
+                tableView.Columns[0].MaxWidth = 260.0;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+
+                // Height is ignored: a column only resizes along its width. UIA widths are physical pixels.
+                transform.Resize(200.0 * tableView.XamlRoot.RasterizationScale, 999.0);
+                Verify.AreEqual(GridUnitType.Pixel, column.Width.GridUnitType, "A resize writes a pixel width.");
+                Verify.AreEqual(200.0, column.Width.Value, "Resize must set the requested width.");
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                Verify.AreEqual(200.0, column.ActualWidth, "ActualWidth must follow the width Resize wrote.");
+                Verify.AreEqual(150.0, tableView.Columns[1].Width.Value, "Resizing one column must not change another fixed column.");
+
+                transform.Resize(1000.0 * tableView.XamlRoot.RasterizationScale, 0.0);
+                Verify.AreEqual(260.0, column.Width.Value, "Resize must clamp to MaxWidth.");
+                Content.UpdateLayout();
+
+                transform.Resize(10.0 * tableView.XamlRoot.RasterizationScale, 0.0);
+                Verify.AreEqual(80.0, column.Width.Value, "Resize must clamp to MinWidth.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Transform.Resize reads its width in physical pixels, the units UIA reports bounds in.")]
+        public void VerifyTransformResizeWidthIsPhysicalPixels()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+
+                var scale = tableView.XamlRoot.RasterizationScale;
+                Log.Comment($"RasterizationScale = {scale}");
+                if (scale == 1.0)
+                {
+                    // Not settable from a test, and at 1.0 pixels equal DIPs, so the conversion is unobservable.
+                    Log.Warning("SKIPPED (reported as passed): the physical-pixel conversion cannot be observed at RasterizationScale 1.0; run on a scaled display to cover it.");
+                    return;
+                }
+
+                transform.Resize(180.0 * scale, 0.0);
+                Verify.IsTrue(Math.Abs(column.Width.Value - 180.0) < 0.01,
+                    $"Resize must convert physical pixels to DIPs; expected 180, got {column.Width.Value}.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Transform.Resize converts physical pixels through a scale applied above the table, not only the display scale.")]
+        public void VerifyTransformResizeAccountsForAncestorScale()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                var scaledHost = new Grid { RenderTransform = new ScaleTransform { ScaleX = 2.0, ScaleY = 2.0 } };
+                scaledHost.Children.Add(tableView);
+                LoadContent(scaledHost);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+
+                // On screen each DIP of the column spans this many physical pixels.
+                var pixelsPerDip = tableView.XamlRoot.RasterizationScale * 2.0;
+                transform.Resize(170.0 * pixelsPerDip, 0.0);
+                Verify.IsTrue(Math.Abs(column.Width.Value - 170.0) < 0.01,
+                    $"Resize must convert physical pixels through the ancestor scale; expected 170, got {column.Width.Value}.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Transform.Resize applies a width change smaller than the pointer drag's jitter threshold.")]
+        public void VerifyTransformResizeAppliesSmallWidthChange()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+                Verify.AreEqual(150.0, column.ActualWidth, "Precondition: the column starts at 150.");
+
+                // One physical pixel at 300% scale; the pointer drag treats under half a DIP as jitter.
+                transform.Resize(150.3 * tableView.XamlRoot.RasterizationScale, 0.0);
+                Verify.IsTrue(Math.Abs(column.Width.Value - 150.3) < 0.01,
+                    $"An absolute UIA width must be applied however small the change; expected 150.3, got {column.Width.Value}.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Transform.Resize below the drag jitter threshold writes Width at most once, lands exactly next to a bound, and leaves an Auto column Auto when it asks for its current width.")]
+        [TestProperty("data:Case", "{NearMin, NearMax, AtMin, AutoNoop}")]
+        public void VerifyTransformResizeSmallWidthChangeWritesOnce()
+        {
+            var testCase = ((string)TestContext.DataRow["Case"]).Trim();
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", testCase == "AutoNoop" ? GridLength.Auto : new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Second", new GridLength(150.0, GridUnitType.Pixel)));
+                var first = tableView.Columns[0];
+                switch (testCase)
+                {
+                    case "NearMin": first.MinWidth = 100.0; first.Width = new GridLength(100.4, GridUnitType.Pixel); break;
+                    case "NearMax": first.MaxWidth = 200.0; first.Width = new GridLength(199.6, GridUnitType.Pixel); break;
+                    case "AtMin": first.MinWidth = 100.0; first.Width = new GridLength(100.0, GridUnitType.Pixel); break;
+                }
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+
+                double target = column.ActualWidth + 0.0001;
+                double expected = column.ActualWidth;
+                switch (testCase)
+                {
+                    case "NearMin": target = expected = 100.1; break;
+                    case "NearMax": target = expected = 199.9; break;
+                    case "AtMin": target = 99.7; expected = 100.0; break;
+                }
+                int expectedWrites = testCase == "NearMin" || testCase == "NearMax" ? 1 : 0;
+
+                int widthWrites = 0;
+                var widths = new List<string>();
+                column.RegisterPropertyChangedCallback(TableViewColumn.WidthProperty, (s, dp) =>
+                {
+                    widthWrites++;
+                    widths.Add(column.Width.ToString());
+                });
+
+                transform.Resize(target * tableView.XamlRoot.RasterizationScale, 0.0);
+                Log.Comment($"{testCase}: Width writes [{string.Join(", ", widths)}], final {column.Width}.");
+
+                Verify.AreEqual(expectedWrites, widthWrites, $"{testCase}: Width must be written {expectedWrites} time(s).");
+                if (testCase == "AutoNoop")
+                {
+                    Verify.AreEqual(GridUnitType.Auto, column.Width.GridUnitType, "A request for the current width must leave an Auto column Auto.");
+                }
+                else
+                {
+                    Verify.IsTrue(Math.Abs(column.Width.Value - expected) < 0.01, $"{testCase}: expected {expected}, got {column.Width.Value}.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Transform.Move and Rotate fail, and Resize rejects a non-finite or negative width.")]
+        public void VerifyTransformMoveRotateAndInvalidResizeFail()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = TableViewSizingTestHelpers.CreateResizableTable(
+                    ("First", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[0];
+                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                    .GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
+
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => transform.Move(10.0, 10.0), "Move must fail: CanMove is false.");
+                VerifyFailsWithHResult(UIA_E_INVALIDOPERATION, () => transform.Rotate(90.0), "Rotate must fail: CanRotate is false.");
+                VerifyFailsWithHResult(E_INVALIDARG, () => transform.Resize(double.NaN, 0.0), "Resize must reject NaN.");
+                VerifyFailsWithHResult(E_INVALIDARG, () => transform.Resize(double.PositiveInfinity, 0.0), "Resize must reject infinity.");
+                VerifyFailsWithHResult(E_INVALIDARG, () => transform.Resize(-1.0, 0.0), "Resize must reject a negative width.");
+
+                Verify.AreEqual(150.0, column.Width.Value, "A failed Transform call must leave the width untouched.");
             });
         }
 
@@ -2092,6 +2951,64 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
+
+        #region Teardown
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a keyboard-focused header cell's peer still answers after its TableView leaves the tree.")]
+        public void VerifyFocusedHeaderPeerAnswersAfterTableLeavesTree()
+        {
+            TableView tableView = null;
+            StackPanel host = null;
+            FrameworkElement headerCell = null;
+            AutomationPeer headerPeer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                host = new StackPanel();
+                host.Children.Add(new Button { Content = "Sink" });
+                host.Children.Add(tableView);
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                headerCell = GetHeaderCell(tableView, 1);
+                Verify.IsTrue(headerCell.Focus(FocusState.Keyboard), "Precondition: header cell 1 takes keyboard focus.");
+                headerPeer = FrameworkElementAutomationPeer.CreatePeerForElement(headerCell);
+                Verify.IsNotNull(headerPeer, "Precondition: the header cell has a peer.");
+                Verify.AreEqual("Role", headerPeer.GetName(), "Precondition: the live header peer is named by its column.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => host.Children.Remove(tableView));
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Exception error = null;
+                try
+                {
+                    Log.Comment($"Detached header peer name: '{headerPeer.GetName()}'");
+                    Verify.AreEqual(AutomationControlType.HeaderItem, headerPeer.GetAutomationControlType(),
+                        "A detached header peer must still report its control type.");
+                    Log.Comment($"Detached header peer has keyboard focus: {headerPeer.HasKeyboardFocus()}");
+                }
+                catch (Exception e)
+                {
+                    error = e;
+                }
+
+                Verify.IsTrue(error == null, $"Querying a detached header peer must not throw. Instead: {error?.Message}");
+            });
+        }
+
+        #endregion
     }
 
     internal static class TableViewAutomationTestHelpers
@@ -2197,5 +3114,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 .OfType<FrameworkElement>()
                 .Where(child => child.Tag is TableViewColumn)
                 .ToList();
+    }
+
+    // A plain managed header object: CsWinRT gives it IStringable, whose ToString is the type name.
+    internal sealed class TitledColumnHeader
+    {
+        public string Title { get; set; }
     }
 }
