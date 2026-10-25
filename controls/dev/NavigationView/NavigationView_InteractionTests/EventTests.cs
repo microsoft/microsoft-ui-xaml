@@ -281,11 +281,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
 
                     // Pane toggle button offsets from the NavigationView corner, in epx; these are unchanged by
                     // the larger back button hit area. Bounds are in physical pixels, so derive the scale from the
-                    // back button's 44 epx height.
+                    // back button's 42 epx height (its 36 epx backplate plus the 6 epx above it).
                     // The pane toggle button is not shown in Top mode.
                     if (paneDisplayMode != "Top")
                     {
-                        double scale = backBounds.Height / 44.0;
+                        double scale = backBounds.Height / 42.0;
                         var toggleBounds = new Button(FindElement.ById("TogglePaneButton")).BoundingRectangle;
                         Log.Comment($"Verify the pane toggle button has not moved: {toggleBounds}");
                         // UIA reports the toggle's inner 36-epx-high visual, which sits inside its 4,2 padding.
@@ -308,7 +308,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     if (paneDisplayMode == "Top")
                     {
                         // The top pane's content starts at x = 44 epx; the back button's hit target must end there.
-                        double scale = backBounds.Height / 44.0;
+                        double scale = backBounds.Height / 42.0;
                         resetButton.Invoke();
                         Wait.ForIdle();
                         Log.Comment("Click just right of the back button in Top mode");

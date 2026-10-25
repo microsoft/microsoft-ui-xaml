@@ -1288,9 +1288,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var contentLeftPadding = rootGrid.FindName("ContentLeftPadding") as FrameworkElement;
                 var paneToggleButton = rootGrid.FindName("TogglePaneButton") as Button;
 
+                // The hit target grows from the old 40x36 backplate at (4,6) to the NavigationView's corner: (40 + 4) x (36 + 6).
                 Verify.AreEqual(40.0, backButton.Width, "Back button Width");
-                Verify.AreEqual(48.0, backButton.ActualWidth, "Back button hit target width");
-                Verify.AreEqual(44.0, backButton.ActualHeight, "Back button hit target height");
+                Verify.AreEqual(44.0, backButton.ActualWidth, "Back button hit target width");
+                Verify.AreEqual(42.0, backButton.ActualHeight, "Back button hit target height");
+                VerifyBackButtonHitTargetRight(navView, backButton, 44.0);
                 VerifyBackButtonStartsAtCorner(navView, backButton);
                 VerifyBackButtonVisualAndFocusRectUnchanged(navView, backButton);
                 // PaneToggleButtonWidth (40) + back button Width (40).
@@ -1302,13 +1304,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("PaneDisplayMode: " + paneDisplayMode);
                     navView.PaneDisplayMode = paneDisplayMode;
                     Content.UpdateLayout();
-                    Verify.AreEqual(48.0, backButton.ActualWidth, "Back button width");
-                    Verify.AreEqual(44.0, backButton.ActualHeight, "Back button hit target height");
+                    Verify.AreEqual(44.0, backButton.ActualWidth, "Back button width");
+                    Verify.AreEqual(42.0, backButton.ActualHeight, "Back button hit target height");
                     VerifyBackButtonStartsAtCorner(navView, backButton);
                     VerifyBackButtonVisualAndFocusRectUnchanged(navView, backButton);
                     if (paneDisplayMode != NavigationViewPaneDisplayMode.Top)
                     {
-                        VerifyBackButtonHitTargetRight(navView, backButton, 48.0);
+                        VerifyBackButtonHitTargetRight(navView, backButton, 44.0);
                         VerifyElementOffset(navView, paneToggleButton, 0.0, 44.0, "Pane toggle button");
                     }
                     else
@@ -1324,7 +1326,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("PaneDisplayMode: " + paneDisplayMode);
                     navView.PaneDisplayMode = paneDisplayMode;
                     Content.UpdateLayout();
-                    Verify.AreEqual(48.0, backButton.ActualWidth, "Back button hit target width");
+                    Verify.AreEqual(44.0, backButton.ActualWidth, "Back button hit target width");
                     VerifyBackButtonStartsAtCorner(navView, backButton);
                 }
                 navView.FlowDirection = FlowDirection.LeftToRight;
@@ -1334,7 +1336,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.CompactPaneLength = 64;
                 Content.UpdateLayout();
                 Verify.AreEqual(56.0, backButton.Width, "Back button Width");
-                Verify.AreEqual(64.0, backButton.ActualWidth, "Back button hit target width");
+                Verify.AreEqual(60.0, backButton.ActualWidth, "Back button hit target width");
                 VerifyBackButtonStartsAtCorner(navView, backButton);
             });
         }
@@ -1377,10 +1379,171 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifyBackButtonCustomSmallStylesKeepTheirGeometry()
+        {
+            // #5306 keeps NavigationBackButtonSmallStyle overridable. A setter-only override BasedOn the stock style keeps the
+            // enlarged corner hit target; an override with its own template keeps the original geometry.
+            const string legacyTemplate =
+                @"<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' TargetType='Button'>
+                    <Grid x:Name='LegacyRoot' Background='{TemplateBinding Background}'>
+                        <TextBlock Text='{TemplateBinding Content}' HorizontalAlignment='Center' VerticalAlignment='Center' />
+                    </Grid>
+                  </ControlTemplate>";
+
+            RunOnUIThread.Execute(() =>
+            {
+                var stockNavView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.LeftMinimal);
+                Content = stockNavView;
+                Content.UpdateLayout();
+                var stockSmallStyle = GetBackButton(stockNavView).Style;
+                Verify.IsNotNull(stockSmallStyle, "Stock NavigationBackButtonSmallStyle");
+
+                var setterOnlyStyle = new Style(typeof(Button)) { BasedOn = stockSmallStyle };
+                setterOnlyStyle.Setters.Add(new Setter(FrameworkElement.TagProperty, "SetterOnly"));
+                var fullTemplateStyle = new Style(typeof(Button)) { BasedOn = stockSmallStyle };
+                fullTemplateStyle.Setters.Add(new Setter(FrameworkElement.TagProperty, "FullTemplate"));
+                fullTemplateStyle.Setters.Add(new Setter(Control.TemplateProperty, XamlReader.Load(legacyTemplate)));
+
+                foreach (var customStyle in new[] { setterOnlyStyle, fullTemplateStyle })
+                {
+                    bool expectCornerHitTarget = customStyle == setterOnlyStyle;
+                    Log.Comment("App override of NavigationBackButtonSmallStyle: " + customStyle.Setters.Count + " setter(s), corner hit target expected: " + expectCornerHitTarget);
+                    var navView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.LeftMinimal);
+                    navView.Resources["NavigationBackButtonSmallStyle"] = customStyle;
+                    Content = navView;
+                    Content.UpdateLayout();
+
+                    var rootGrid = VisualTreeHelper.GetChild(navView, 0) as Grid;
+                    var backButton = rootGrid.FindName("NavigationViewBackButton") as Button;
+                    var paneToggleButton = rootGrid.FindName("TogglePaneButton") as Button;
+                    var contentLeftPadding = rootGrid.FindName("ContentLeftPadding") as FrameworkElement;
+
+                    for (int pass = 0; pass < 2; pass++)
+                    {
+                        Log.Comment("LeftMinimal uses the app's style");
+                        Verify.AreEqual(customStyle, backButton.Style, "Back button Style in LeftMinimal");
+                        if (expectCornerHitTarget)
+                        {
+                            VerifyBackButtonGeometry(navView, backButton, 48.0, isTopMode: false);
+                        }
+                        else
+                        {
+                            VerifyBackButtonHasOriginalGeometry(navView, backButton, 40.0);
+                        }
+                        VerifyElementOffset(navView, paneToggleButton, 40.0, 4.0, "Pane toggle button");
+                        Verify.AreEqual(80.0, contentLeftPadding.Width, "ContentLeftPadding Width");
+
+                        Log.Comment("Left uses the stock NavigationBackButtonNormalStyle again");
+                        navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                        Content.UpdateLayout();
+                        Verify.AreNotEqual(customStyle, backButton.Style, "Back button Style in Left");
+                        VerifyBackButtonGeometry(navView, backButton, 48.0, isTopMode: false);
+                        VerifyElementOffset(navView, paneToggleButton, 0.0, 44.0, "Pane toggle button");
+
+                        navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+                        Content.UpdateLayout();
+                    }
+
+                    Log.Comment("CompactPaneLength changes while the app's style is applied");
+                    navView.CompactPaneLength = 64;
+                    Content.UpdateLayout();
+                    if (expectCornerHitTarget)
+                    {
+                        VerifyBackButtonGeometry(navView, backButton, 64.0, isTopMode: false);
+                    }
+                    else
+                    {
+                        VerifyBackButtonHasOriginalGeometry(navView, backButton, 56.0);
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        public void VerifyCloseButtonGeometryIsUnchanged()
+        {
+            // The close button shares the stock NavigationBackButtonNormalStyle but doesn't get the enlarged hit target.
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.LeftMinimal);
+                navView.IsPaneOpen = true;
+                Content = navView;
+                Content.UpdateLayout();
+
+                var closeButton = (VisualTreeHelper.GetChild(navView, 0) as Grid).FindName("NavigationViewCloseButton") as Button;
+                Verify.AreEqual(Visibility.Visible, closeButton.Visibility, "Close button Visibility");
+                VerifyElementOffset(navView, closeButton, 4.0, 6.0, "Close button");
+                Verify.AreEqual(40.0, closeButton.ActualWidth, "Close button width");
+                Verify.AreEqual(36.0, closeButton.ActualHeight, "Close button height");
+                Verify.AreEqual(new Thickness(-3), closeButton.FocusVisualMargin, "Close button FocusVisualMargin");
+                var visual = VisualTreeUtils.FindVisualChildByName(closeButton, "RootGrid") as Grid;
+                VerifyElementOffset(navView, visual, 4.0, 6.0, "Close button visual");
+                Verify.AreEqual(40.0, visual.ActualWidth, "Close button visual width");
+                Verify.AreEqual(36.0, visual.ActualHeight, "Close button visual height");
+                var hitTarget = VisualTreeUtils.FindVisualChildByName(closeButton, "HitTargetGrid") as Grid;
+                if (hitTarget != null)
+                {
+                    Verify.IsNull(hitTarget.Background, "Close button HitTargetGrid has no hit-testable background");
+                }
+            });
+        }
+
+        [TestMethod]
+        public void VerifyBackButtonNormalStyleKeyResolvesAsBefore()
+        {
+            // NavigationView's template references NavigationBackButtonNormalStyle with StaticResource. On main (a71c42bd3) an
+            // override of that key in NavigationView.Resources reached neither the back nor the close button; #5306 keeps that.
+            RunOnUIThread.Execute(() =>
+            {
+                var marker = new Style(typeof(Button));
+                marker.Setters.Add(new Setter(FrameworkElement.TagProperty, "Override"));
+                var navView = CreateNavViewWithBackButton(NavigationViewPaneDisplayMode.Left);
+                navView.Resources["NavigationBackButtonNormalStyle"] = marker;
+                Content = navView;
+                Content.UpdateLayout();
+
+                var rootGrid = VisualTreeHelper.GetChild(navView, 0) as Grid;
+                var backButton = rootGrid.FindName("NavigationViewBackButton") as Button;
+                var closeButton = rootGrid.FindName("NavigationViewCloseButton") as Button;
+                Verify.AreNotEqual(marker, backButton.Style, "Back button Style");
+                Verify.AreNotEqual(marker, closeButton.Style, "Close button Style");
+                VerifyBackButtonGeometry(navView, backButton, 48.0, isTopMode: false);
+            });
+        }
+
+        private NavigationView CreateNavViewWithBackButton(NavigationViewPaneDisplayMode paneDisplayMode)
+        {
+            return new NavigationView()
+            {
+                PaneDisplayMode = paneDisplayMode,
+                IsBackButtonVisible = NavigationViewBackButtonVisible.Visible,
+                Width = 400.0
+            };
+        }
+
+        private Button GetBackButton(NavigationView navView)
+        {
+            return (VisualTreeHelper.GetChild(navView, 0) as Grid).FindName("NavigationViewBackButton") as Button;
+        }
+
+        // The geometry the back button had before #5306: its style's 4,2 margin places a Width x 36 button at (4,6), and
+        // NavigationView sets none of MinWidth, Height, Margin or Padding on it.
+        private void VerifyBackButtonHasOriginalGeometry(NavigationView navView, Button backButton, double expectedWidth)
+        {
+            VerifyElementOffset(navView, backButton, 4.0, 6.0, "Back button");
+            Verify.AreEqual(expectedWidth, backButton.ActualWidth, "Back button width");
+            Verify.AreEqual(36.0, backButton.ActualHeight, "Back button height");
+            foreach (var property in new[] { FrameworkElement.MinWidthProperty, FrameworkElement.HeightProperty, FrameworkElement.MarginProperty, Control.PaddingProperty })
+            {
+                Verify.AreEqual(DependencyProperty.UnsetValue, backButton.ReadLocalValue(property), "No local value set by NavigationView");
+            }
+        }
+
         private void VerifyBackButtonGeometry(NavigationView navView, Button backButton, double compactPaneLength, bool isTopMode)
         {
             Verify.AreEqual(compactPaneLength - 8, backButton.Width, "Back button Width");
-            Verify.AreEqual(compactPaneLength, backButton.ActualWidth, "Back button width");
+            Verify.AreEqual(compactPaneLength - 4, backButton.ActualWidth, "Back button width");
             VerifyBackButtonStartsAtCorner(navView, backButton);
             VerifyBackButtonVisualAndFocusRectUnchanged(navView, backButton, compactPaneLength - 8);
             if (isTopMode)
@@ -1389,7 +1552,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                VerifyBackButtonHitTargetRight(navView, backButton, compactPaneLength);
+                VerifyBackButtonHitTargetRight(navView, backButton, compactPaneLength - 4);
             }
         }
 
