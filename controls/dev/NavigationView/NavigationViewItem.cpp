@@ -42,6 +42,8 @@ NavigationViewItem::NavigationViewItem()
 {
     SetDefaultStyleKey(this);
     SetValue(s_MenuItemsProperty, winrt::make<Vector<winrt::IInspectable>>());
+    // Application DragStarting handlers can defer dispatch, so end the press first.
+    DragStarting({ this, &NavigationViewItem::OnDragStarting });
 }
 
 void NavigationViewItem::UpdateVisualStateNoTransition()
@@ -1004,6 +1006,24 @@ void NavigationViewItem::ResetTrackedPointerId()
     m_trackedPointerId = 0;
 }
 
+void NavigationViewItem::ReleaseCapturedPointer()
+{
+    if (m_capturedPointer)
+    {
+        const auto pointer = m_capturedPointer;
+        const auto owner = m_captureOwnerIsItem ? this->try_as<winrt::UIElement>() : GetPresenterOrItem();
+        // Capture loss calls application code synchronously. Consume our bookkeeping first.
+        if (m_captureOwnerIsItem)
+        {
+            ResetTrackedPointerId();
+        }
+        m_capturedPointer = nullptr;
+        m_captureOwnerIsItem = false;
+        MUX_ASSERT(owner);
+        owner.ReleasePointerCapture(pointer);
+    }
+}
+
 // Returns False when the provided pointer Id matches the currently tracked Id.
 // When there is no currently tracked Id, sets the tracked Id to the provided Id and returns False.
 // Returns True when the provided pointer Id does not match the currently tracked Id.
@@ -1024,13 +1044,14 @@ bool NavigationViewItem::IgnorePointerId(const winrt::PointerRoutedEventArgs& ar
 
 void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
+    const auto lifetime = get_strong();
     const bool ignorePointerId = IgnorePointerId(args);
     NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, ignorePointerId);
+    const auto pointerDeviceType = args.Pointer().PointerDeviceType();
     if (ignorePointerId)
     {
         // FUTURE: Remove this workaround, which always switches to a new Touch or Pen input
         //         in case a previous touch/input got lost due to a missing PointerCaptureLost event.
-        auto const& pointerDeviceType = args.Pointer().PointerDeviceType();
         if (
             pointerDeviceType == winrt::PointerDeviceType::Touch ||
             pointerDeviceType == winrt::PointerDeviceType::Pen)
@@ -1038,17 +1059,8 @@ void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, c
             m_isPressed = false;
             m_isPointerOver = false;
 
-            if (m_capturedPointer)
-            {
-                auto presenter = GetPresenterOrItem();
-
-                MUX_ASSERT(presenter);
-
-                presenter.ReleasePointerCapture(m_capturedPointer);
-                m_capturedPointer = nullptr;
-            }
-
             ResetTrackedPointerId();
+            ReleaseCapturedPointer();
         }
         else
         {
@@ -1075,9 +1087,24 @@ void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, c
 
     MUX_ASSERT(presenter);
 
-    if (presenter.CapturePointer(pointer))
+    // Capture is exclusive, but repeated capture on the same element succeeds.
+    // The automatic drag helper captures the CanDrag owner, not its presenter.
+    const bool captureOnItem = CanDrag() &&
+        (pointerDeviceType == winrt::PointerDeviceType::Mouse || pointerDeviceType == winrt::PointerDeviceType::Pen);
+    const auto owner = captureOnItem ? this->try_as<winrt::UIElement>() : presenter;
+    if (owner != presenter && !m_itemPointerReleasedRevoker)
+    {
+        m_itemPointerReleasedRevoker = AddRoutedEventHandler<RoutedEventType::PointerReleased>(
+            owner, { this, &NavigationViewItem::OnItemPointerReleased }, true /*handledEventsToo*/);
+        m_itemPointerCanceledRevoker = AddRoutedEventHandler<RoutedEventType::PointerCanceled>(
+            owner, { this, &NavigationViewItem::OnItemPointerCanceled }, true /*handledEventsToo*/);
+        m_itemPointerCaptureLostRevoker = AddRoutedEventHandler<RoutedEventType::PointerCaptureLost>(
+            owner, { this, &NavigationViewItem::OnItemPointerCanceled }, true /*handledEventsToo*/);
+    }
+    if (owner.CapturePointer(pointer))
     {
         m_capturedPointer = pointer;
+        m_captureOwnerIsItem = captureOnItem;
     }
 
     UpdateVisualState(true);
@@ -1085,6 +1112,7 @@ void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, c
 
 void NavigationViewItem::OnPresenterPointerReleased(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
+    const auto lifetime = get_strong();
     const bool ignorePointerId = IgnorePointerId(args);
     NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, ignorePointerId, m_isPressed);
     if (ignorePointerId)
@@ -1095,9 +1123,14 @@ void NavigationViewItem::OnPresenterPointerReleased(const winrt::IInspectable&, 
     if (m_isPressed)
     {
         m_isPressed = false;
+        const auto capturedPointer = m_capturedPointer;
+        const bool isPointerInBounds = !IsOutOfControlBounds(args.GetCurrentPoint(*this).Position());
+        if (m_captureOwnerIsItem)
+        {
+            m_isPointerOver = isPointerInBounds;
+        }
 
-        if (!IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()) &&
-            IsInNavigationViewOwnedRepeater())
+        if (isPointerInBounds && IsInNavigationViewOwnedRepeater())
         {
             if (auto nvImpl = winrt::get_self<NavigationView>(GetNavigationView()))
             {
@@ -1106,14 +1139,10 @@ void NavigationViewItem::OnPresenterPointerReleased(const winrt::IInspectable&, 
             }
         }
 
-        if (m_capturedPointer)
+        // An invocation handler may retemplate the item or begin a new interaction.
+        if (m_capturedPointer == capturedPointer)
         {
-            auto presenter = GetPresenterOrItem();
-
-            MUX_ASSERT(presenter);
-
-            presenter.ReleasePointerCapture(m_capturedPointer);
-            m_capturedPointer = nullptr;
+            ReleaseCapturedPointer();
         }
 
         UpdateVisualState(true);
@@ -1167,6 +1196,44 @@ void NavigationViewItem::OnPresenterPointerCaptureLost(const winrt::IInspectable
     ProcessPointerCanceled(args);
 }
 
+void NavigationViewItem::OnItemPointerReleased(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+{
+    if (m_captureOwnerIsItem && m_capturedPointer && m_capturedPointer.PointerId() == args.Pointer().PointerId())
+    {
+        OnPresenterPointerReleased(sender, args);
+    }
+}
+
+void NavigationViewItem::OnItemPointerCanceled(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
+{
+    if (m_captureOwnerIsItem && m_capturedPointer && m_capturedPointer.PointerId() == args.Pointer().PointerId())
+    {
+        ProcessPointerCanceled(args);
+    }
+}
+
+void NavigationViewItem::OnDragStarting(const winrt::UIElement&, const winrt::DragStartingEventArgs& args)
+{
+    if (m_captureOwnerIsItem)
+    {
+        m_isPressed = false;
+        m_isPointerOver = false;
+        if (const auto root = XamlRoot())
+        {
+            // The drag source anchor is physical; item bounds are in DIPs.
+            auto position = args.GetPosition(*this);
+            const auto scale = static_cast<float>(root.RasterizationScale());
+            position.X /= scale;
+            position.Y /= scale;
+            m_isPointerOver = !IsOutOfControlBounds(position);
+        }
+        ResetTrackedPointerId();
+        UpdateVisualState(true);
+        // Pen release can omit PointerCaptureLost. DragStarting is a terminal path too.
+        ReleaseCapturedPointer();
+    }
+}
+
 void NavigationViewItem::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
 {
     NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
@@ -1176,17 +1243,8 @@ void NavigationViewItem::OnIsEnabledChanged(const winrt::IInspectable&, const wi
         m_isPressed = false;
         m_isPointerOver = false;
 
-        if (m_capturedPointer)
-        {
-            auto presenter = GetPresenterOrItem();
-
-            MUX_ASSERT(presenter);
-
-            presenter.ReleasePointerCapture(m_capturedPointer);
-            m_capturedPointer = nullptr;
-        }
-
         ResetTrackedPointerId();
+        ReleaseCapturedPointer();
     }
 
     UpdateVisualState(true);
@@ -1222,6 +1280,7 @@ void NavigationViewItem::ProcessPointerCanceled(const winrt::PointerRoutedEventA
     }
 
     m_capturedPointer = nullptr;
+    m_captureOwnerIsItem = false;
     ResetTrackedPointerId();
     UpdateVisualState(true);
 }
@@ -1295,6 +1354,13 @@ void NavigationViewItem::HookInputEvents(const winrt::IControlProtected& control
 
 void NavigationViewItem::UnhookInputEvents()
 {
+    if (m_captureOwnerIsItem)
+    {
+        m_isPressed = false;
+        m_isPointerOver = false;
+        ResetTrackedPointerId();
+        ReleaseCapturedPointer();
+    }
     m_presenterPointerPressedRevoker.revoke();
     m_presenterPointerEnteredRevoker.revoke();
     m_presenterPointerMovedRevoker.revoke();
@@ -1302,6 +1368,9 @@ void NavigationViewItem::UnhookInputEvents()
     m_presenterPointerExitedRevoker.revoke();
     m_presenterPointerCanceledRevoker.revoke();
     m_presenterPointerCaptureLostRevoker.revoke();
+    m_itemPointerReleasedRevoker.revoke();
+    m_itemPointerCanceledRevoker.revoke();
+    m_itemPointerCaptureLostRevoker.revoke();
 }
 
 void NavigationViewItem::UnhookEventsAndClearFields()
