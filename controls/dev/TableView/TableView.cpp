@@ -2765,17 +2765,32 @@ static bool StyleSetsProperty(const winrt::Style& style, const winrt::Dependency
     return false;
 }
 
-// Most-derived setter first, matching which setter a sealed Style applies.
+// The setter a sealed Style applies: the last one in the most-derived Style that has one, even null.
 static winrt::IInspectable StyleSetterValue(const winrt::Style& style, const winrt::DependencyProperty& property)
 {
     for (auto current = style; current; current = current.BasedOn())
     {
+        bool found = false;
+        winrt::IInspectable value{ nullptr };
         for (auto const& setterBase : current.Setters())
         {
             if (auto const setter = setterBase.try_as<winrt::Setter>(); setter && setter.Property() == property)
             {
-                return setter.Value();
+                found = true;
+                value = nullptr;
+                try
+                {
+                    value = setter.Value();
+                }
+                catch (winrt::hresult_error const&)
+                {
+                    // Reading an {x:Null} Setter.Value of a typed property fails, yet the Style applies null.
+                }
             }
+        }
+        if (found)
+        {
+            return value;
         }
     }
     return nullptr;

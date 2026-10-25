@@ -907,6 +907,74 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header Style's ContentTemplate and ContentTemplateSelector follow WinUI setter precedence: the last setter in a Style wins, a derived Style wins over BasedOn, and a winning {x:Null} keeps the trimming TextBlock.")]
+        [TestProperty("data:Setters", "{NullSelectorLast, NullTemplateLast, DerivedNullSelector, SelectorLast}")]
+        public void VerifyHeaderStyleContentSettersUseLastMatch()
+        {
+            var setters = ((string)TestContext.DataRow["Setters"]).Trim();
+            TableView tableView = null;
+            RecordingHeaderTemplateSelector selector = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                selector = new RecordingHeaderTemplateSelector { Template = CreateTextTemplate("Styled") };
+                var style = new Style(typeof(TableViewColumnHeader));
+                switch (setters)
+                {
+                    case "NullSelectorLast":
+                        style.Setters.Add(new Setter(ContentControl.ContentTemplateSelectorProperty, selector));
+                        style.Setters.Add(NullSetter("ContentTemplateSelector"));
+                        break;
+                    case "NullTemplateLast":
+                        style.Setters.Add(new Setter(ContentControl.ContentTemplateProperty, CreateTextTemplate("Styled")));
+                        style.Setters.Add(NullSetter("ContentTemplate"));
+                        break;
+                    case "DerivedNullSelector":
+                        var basedOn = new Style(typeof(TableViewColumnHeader));
+                        basedOn.Setters.Add(new Setter(ContentControl.ContentTemplateSelectorProperty, selector));
+                        style.BasedOn = basedOn;
+                        style.Setters.Add(NullSetter("ContentTemplateSelector"));
+                        break;
+                    case "SelectorLast":
+                        style.Setters.Add(NullSetter("ContentTemplateSelector"));
+                        style.Setters.Add(new Setter(ContentControl.ContentTemplateSelectorProperty, selector));
+                        break;
+                }
+                tableView = CreateTableView(headers: new[] { "Name" });
+                tableView.ColumnHeaderStyle = style;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (ContentControl)GetHeaderCell(tableView, 0);
+                if (setters == "SelectorLast")
+                {
+                    Verify.AreEqual(1, selector.Calls.Count, "The last selector setter must be asked once.");
+                    Verify.IsTrue(FindVisualChildrenByType<TextBlock>(header).Any(t => t.Text == "Styled"), "The last selector's template must render.");
+                    return;
+                }
+                Verify.AreEqual(0, selector.Calls.Count, $"{setters}: a selector a later setter replaced must not be asked.");
+                var block = header.Content as TextBlock;
+                Verify.IsNotNull(block, $"{setters}: a winning null setter must keep the header's own TextBlock.");
+                Verify.AreEqual((TextTrimming?)TextTrimming.CharacterEllipsis, block?.TextTrimming, "The header text must still ellipsize.");
+            });
+        }
+
+        // A {x:Null} setter as XAML builds it.
+        private static Setter NullSetter(string property)
+        {
+            var style = (Style)XamlReader.Load(
+                "<Style xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' TargetType='ContentControl'>" +
+                $"<Setter Property='{property}' Value='{{x:Null}}'/></Style>");
+            var setter = (Setter)style.Setters[0];
+            style.Setters.RemoveAt(0);
+            return setter;
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies replacing HeaderTemplate on a loaded column rebuilds the header.")]
         public void VerifyHeaderTemplateChangeAfterLoadUpdatesLive()
         {
