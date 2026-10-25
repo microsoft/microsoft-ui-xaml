@@ -46,6 +46,10 @@
                 <TextBlock x:Name="HoverMoveCount" Text="0"/>
                 <TextBlock x:Name="PenMoveCount" Text="0"/>
                 <TextBlock x:Name="PenMovePointerId" Text="0"/>
+                <TextBlock x:Name="PenPressPointerId" Text="0"/>
+                <TextBlock x:Name="PenHoverCount" Text="0"/>
+                <TextBlock x:Name="PenHoverPointerId" Text="0"/>
+                <TextBlock x:Name="PenCanceledCount" Text="0"/>
                 <TextBlock x:Name="MouseDragThreshold" Text="0"/>
                 <TextBlock x:Name="RasterizationScale" Text="1"/>
             </StackPanel>

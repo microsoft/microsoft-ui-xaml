@@ -34,6 +34,98 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void SamePenHoverAfterHandledReleaseDoesNotDrag()
+        {
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            using var pen = new SyntheticPen();
+            var start = FindElement.ById("DragHandle").GetClickablePoint();
+            pen.Hover(start);
+            pen.Press(start);
+            pen.Release();
+            int hoverCount = int.Parse(ReadText("PenHoverCount"));
+            pen.Hover(new System.Drawing.Point(start.X + 40, start.Y));
+            Verify.IsTrue(int.Parse(ReadText("PenHoverCount")) > hoverCount);
+            Verify.AreEqual(ReadText("PenPressPointerId"), ReadText("PenHoverPointerId"));
+            Verify.AreEqual("1", ReadText("ReleaseCount"));
+            Verify.AreEqual("0", ReadText("DragCount"));
+            VerifyCaptureReleased();
+            pen.Press(start);
+            pen.Move(new System.Drawing.Point(start.X + 40, start.Y));
+            pen.Release();
+            Verify.AreEqual("1", ReadText("DragCount"));
+        }
+
+        [TestMethod]
+        public void PenHoverDuringMousePressPreservesMouseDrag()
+        {
+            using var controller = InputController.Activate(PointerInputType.Mouse);
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            using var pen = new SyntheticPen();
+            var mouse = PointerInput.Current;
+            var start = FindElement.ById("DragHandle").GetClickablePoint();
+            mouse.Move(start);
+            mouse.Press(PointerButtons.Primary);
+            try
+            {
+                pen.Hover(new System.Drawing.Point(start.X + 40, start.Y));
+                Verify.IsTrue(int.Parse(ReadText("PenHoverCount")) > 0);
+                Verify.AreNotEqual(ReadText("MousePointerId"), ReadText("PenHoverPointerId"));
+                Verify.AreEqual("0", ReadText("DragCount"));
+                new Button(FindElement.ById("Snapshot")).Invoke();
+                Verify.AreEqual("1", ReadText("MouseCaptureCount"));
+                mouse.Move(new System.Drawing.Point(start.X + 60, start.Y));
+                Wait.ForIdle();
+                Verify.AreEqual("1", ReadText("DragCount"));
+            }
+            finally
+            {
+                mouse.Release(PointerButtons.Primary);
+            }
+            VerifyCaptureReleased();
+        }
+
+        [TestMethod]
+        public void MouseHoverDuringPenPressPreservesPenDrag()
+        {
+            using var controller = InputController.Activate(PointerInputType.Mouse);
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            using var pen = new SyntheticPen();
+            var start = FindElement.ById("DragHandle").GetClickablePoint();
+            pen.Hover(start);
+            pen.Press(start);
+            int hoverCount = int.Parse(ReadText("HoverMoveCount"));
+            PointerInput.Move(new System.Drawing.Point(start.X + 40, start.Y));
+            Wait.ForIdle();
+            Verify.IsTrue(int.Parse(ReadText("HoverMoveCount")) > hoverCount);
+            Verify.AreEqual("0", ReadText("DragCount"));
+            new Button(FindElement.ById("Snapshot")).Invoke();
+            Verify.AreEqual("1", ReadText("CaptureCount"));
+            pen.Move(new System.Drawing.Point(start.X + 60, start.Y));
+            pen.Release();
+            Verify.AreEqual("1", ReadText("DragCount"));
+            VerifyCaptureReleased();
+        }
+
+        [TestMethod]
+        public void CanceledPenContactDoesNotDragAndCanRestart()
+        {
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            using var pen = new SyntheticPen();
+            var start = FindElement.ById("DragHandle").GetClickablePoint();
+            pen.Hover(start);
+            pen.Press(start);
+            pen.Cancel();
+            Verify.AreEqual("1", ReadText("PenCanceledCount"));
+            pen.Hover(new System.Drawing.Point(start.X + 40, start.Y));
+            Verify.AreEqual("0", ReadText("DragCount"));
+            VerifyCaptureReleased();
+            pen.Press(start);
+            pen.Move(new System.Drawing.Point(start.X + 40, start.Y));
+            pen.Release();
+            Verify.AreEqual("1", ReadText("DragCount"));
+        }
+
+        [TestMethod]
         public void PenHandledReleaseDoesNotStartDragOnHover()
         {
             VerifyHandledReleaseDoesNotStartDragOnHover(PointerInputType.Pen);

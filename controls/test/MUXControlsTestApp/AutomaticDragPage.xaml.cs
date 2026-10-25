@@ -25,6 +25,8 @@ namespace MUXControlsTestApp
         private int mouseCaptureLostCount;
         private int captureLossActionCount;
         private int penMoveCount;
+        private int penHoverCount;
+        private int penCanceledCount;
         private int childCaptureCount;
         private int childCaptureLostCount;
 
@@ -41,9 +43,20 @@ namespace MUXControlsTestApp
                 {
                     MousePointerId.Text = args.Pointer.PointerId.ToString();
                 }
+                else if (args.Pointer.PointerDeviceType == PointerDeviceType.Pen)
+                {
+                    PenPressPointerId.Text = args.Pointer.PointerId.ToString();
+                }
                 if (ReleaseOnPress.IsChecked == true)
                 {
                     DragSource.ReleasePointerCapture(args.Pointer);
+                }
+            }), true);
+            DragSource.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler((sender, args) =>
+            {
+                if (args.Pointer.PointerDeviceType == PointerDeviceType.Pen)
+                {
+                    PenCanceledCount.Text = (++penCanceledCount).ToString();
                 }
             }), true);
             DragSource.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler((sender, args) =>
@@ -115,6 +128,11 @@ namespace MUXControlsTestApp
                 if (!point.IsInContact && !point.Properties.IsLeftButtonPressed)
                 {
                     HoverMoveCount.Text = (++hoverMoveCount).ToString();
+                    if (args.Pointer.PointerDeviceType == PointerDeviceType.Pen)
+                    {
+                        PenHoverCount.Text = (++penHoverCount).ToString();
+                        PenHoverPointerId.Text = args.Pointer.PointerId.ToString();
+                    }
                 }
             }), true);
             DragSource.DragStarting += (sender, args) =>
