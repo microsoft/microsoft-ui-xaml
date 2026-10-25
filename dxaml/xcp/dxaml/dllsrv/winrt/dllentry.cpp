@@ -16,6 +16,7 @@
 #include <XamlTraceLogging.h>
 #include "XamlTelemetry.h"
 #include "LoadLibraryAbs.h"
+#include "WinUIProfilerHooks.h"
 
 #include <WinUIrc.ver>           //  To define VER_FILEVERSION_STR
 
@@ -124,6 +125,7 @@ BOOL InitializeDll()
 
     IFC(ObtainPlatformServices(&pPal));
     gps.Set(pPal);
+    WinUIProfiler::Hooks::InitializeRuntime();
 
     g_nTlsIsCoreServicesReady = TlsAlloc();
     IFCEXPECT(TLS_OUT_OF_INDEXES != g_nTlsIsCoreServicesReady);
@@ -164,8 +166,9 @@ Cleanup:
     return SUCCEEDED(hr) ? TRUE : FALSE;
 }
 
-void DeinitializeDll()
+void DeinitializeDll(bool processTerminating)
 {
+    WinUIProfiler::Hooks::ShutdownRuntime(processTerminating);
     if (muxDllDirectoryCookie != nullptr)
     {
         RemoveDllDirectory(muxDllDirectoryCookie);
@@ -248,12 +251,17 @@ void DeinitializeDll()
     DirectUI::StaticLockGlobalDeinit();
 }
 
+void DeinitializeDll()
+{
+    DeinitializeDll(false);
+}
+
 extern "C"
 BOOL WINAPI
 DllMain(
     _In_ HINSTANCE hinstDLL,
     _In_ unsigned int fdwReason,
-    _In_opt_ void *
+    _In_opt_ void * reserved
 )
 {
     BOOL fRetVal = TRUE;
@@ -280,7 +288,7 @@ DllMain(
             break;
 
         case DLL_PROCESS_DETACH:
-            DeinitializeDll();
+            DeinitializeDll(reserved != nullptr);
             break;
 
         case DLL_THREAD_DETACH:

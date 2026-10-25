@@ -88,6 +88,7 @@
 
       <PreprocessorDefinitions>
         %(PreprocessorDefinitions);
+        WINUI_PROFILER_ENABLED=1;
         $(XamlCommonPreprocessorDefinitions);
         CONDITION_HANDLING=1;
         WINNT=1;

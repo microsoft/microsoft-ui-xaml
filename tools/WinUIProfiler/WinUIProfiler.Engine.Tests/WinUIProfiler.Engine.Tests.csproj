@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <PropertyGroup Condition="Exists('..\WinUIProfiler.App\ViewModels\SavedSessionViewModel.cs')">
+    <DefineConstants>$(DefineConstants);SAVED_SESSION_VIEWMODEL</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\WinUIProfiler.App\ViewModels\SavedSessionViewModel.cs"
+             Link="App\SavedSessionViewModel.cs"
+             Condition="Exists('..\WinUIProfiler.App\ViewModels\SavedSessionViewModel.cs')" />
+    <Compile Include="..\WinUIProfiler.App\ViewModels\LiveSessionViewModel.cs"
+             Link="App\LiveSessionViewModel.cs" />
+    <Compile Include="..\WinUIProfiler.App\ViewModels\LiveMetricGraphs.cs"
+             Link="App\LiveMetricGraphs.cs" />
+    <Compile Include="..\WinUIProfiler.App\ViewModels\SnapshotHistoryEntry.cs"
+             Link="App\SnapshotHistoryEntry.cs" />
+    <Compile Include="..\WinUIProfiler.App\ViewModels\SnapshotViewerViewModel.cs"
+             Link="App\SnapshotViewerViewModel.cs" />
+    <Compile Include="..\WinUIProfiler.App\ViewModels\TargetSelectionViewModel.cs"
+             Link="App\TargetSelectionViewModel.cs" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <ProjectReference Include="..\WinUIProfiler.Engine\WinUIProfiler.Engine.csproj" />
+    <None Update="TestData\minimal-session.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

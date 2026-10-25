@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.22000.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.22000.0</SupportedOSPlatformVersion>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
+    <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
+    <SelfContained>true</SelfContained>
+    <Platforms>x64;ARM64</Platforms>
+    <Platform Condition="'$(Platform)' == '' or '$(Platform)' == 'AnyCPU'">x64</Platform>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RootNamespace>WinUIProfiler.App</RootNamespace>
+    <PublishTrimmed>false</PublishTrimmed>
+    <DefaultLanguage>en-US</DefaultLanguage>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
+    <ProjectReference Include="..\WinUIProfiler.Engine\WinUIProfiler.Engine.csproj" />
+  </ItemGroup>
+  <Import Project="..\build\LocalWinUI.targets" />
+  <Target Name="WriteProfilerAppDeployment" AfterTargets="Build" DependsOnTargets="CreateWinRTRegistration">
+    <ItemGroup>
+      <ProfilerAppPayload Include="@(MicrosoftWindowsAppSDKFiles);@(MicrosoftWindowsAppSDKFilesRes)">
+        <Destination>$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)</Destination>
+      </ProfilerAppPayload>
+    </ItemGroup>
+    <Copy SourceFiles="@(ProfilerAppPayload)" DestinationFiles="@(ProfilerAppPayload->'%(Destination)')" SkipUnchangedFiles="true" />
+    <WriteLinesToFile File="$(TargetDir)ProfilerAppPayloads.txt"
+                      Lines="@(ProfilerAppPayload->'%(FullPath)|%(Destination)')" Overwrite="true" />
+    <WriteLinesToFile File="$(TargetDir)ProfilerApp.properties"
+                      Lines="Executable=$(TargetDir)$(AssemblyName).exe;Product=$(ProfilerLocalProduct);SelfContained=$(WindowsAppSDKSelfContained);PackageType=$(WindowsPackageType);Platform=$(Platform);DotNetSelfContained=$(SelfContained)"
+                      Overwrite="true" />
+    <WriteLinesToFile File="$(MSBuildThisFileDirectory)obj\ProfilerAppOutput.$(Platform).$(Configuration).txt"
+                      Lines="$(TargetDir)" Overwrite="true" />
+  </Target>
+</Project>

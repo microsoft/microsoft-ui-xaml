@@ -1,0 +1,788 @@
+using System.Diagnostics;
+using Microsoft.Data.Sqlite;
+using Microsoft.Diagnostics.Tracing;
+using Microsoft.Diagnostics.Tracing.Session;
+using WinUIProfiler.Contracts;
+using WinUIProfiler.Engine.Ingestion;
+using WinUIProfiler.Engine.Processing;
+using WinUIProfiler.Engine.Storage;
+using Xunit;
+using Xunit.Abstractions;
+
+namespace WinUIProfiler.Engine.Tests;
+
+[Collection("P03 native ETW")]
+public sealed class IngestionTests(ITestOutputHelper output)
+{
+    internal static string Root => Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\.."));
+    internal static string Harness => Path.Combine(Root, @"BuildOutput\ProfilerHarness\x64\Release\ProfilerInstrumentationHarness.exe");
+
+    [Theory]
+    [InlineData("--lifecycle", 9, 3)]
+    [InlineData("--selection-gap", 3, 2)]
+    [InlineData("--external-device", 8, 2)]
+    [InlineData("--full-gap", 4, 2)]
+    [InlineData("--runtime-restart", 4, 2)]
+    [InlineData("--selection-race", 3, 2)]
+    [InlineData("--epoch-race", 3, 2)]
+    [InlineData("--texture-wrapper", 6, 1)]
+    [InlineData("--brush-owner", 8, 0)]
+    [InlineData("--brush-xaml-owner", 5, 0)]
+    [InlineData("--brush-owner-gap", 7, 0)]
+    [InlineData("--owner-selection-race", 3, 2)]
+    [InlineData("--owner-epoch-race", 3, 2)]
+    public async Task Native_graphics_ETL_preserves_logical_lifetimes_and_unknown_backing_after_reopen(
+        string mode, int resourceCount, int deviceCount)
+    {
+        var executable = Path.Combine(Root,
+            @"tools\WinUIProfiler\WinUIProfiler.Native.Tests\bin\GraphicsObservation\x64\GraphicsObservationTests.exe");
+        using var owned = new OwnedTestProcess(Process.Start(new ProcessStartInfo(executable)
+        {
+            WorkingDirectory = Root, UseShellExecute = false, RedirectStandardOutput = true,
+            ArgumentList = { mode, "--retain-etl" }
+        })!);
+        var process = owned.Process;
+        var textTask = process.StandardOutput.ReadToEndAsync();
+        await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(60));
+        var text = await textTask;
+        Assert.True(process.ExitCode == 0, text);
+        output.WriteLine(text);
+        var retained = Assert.Single(text.Split('\n'), line => line.StartsWith("RETAINED_ETL: ", StringComparison.Ordinal));
+        var etl = retained["RETAINED_ETL: ".Length..].Trim();
+        var path = Path.ChangeExtension(etl, ".sqlite");
+        try
+        {
+            var records = new List<NativeRecord>();
+            using (var source = new ETWTraceEventSource(etl))
+            {
+                source.Dynamic.All += data =>
+                {
+                    if (data.ProviderGuid == EventCatalog.RuntimeProviderId) records.Add(NativeRecord.Capture(data));
+                };
+                Assert.True(source.Process());
+            }
+            var scope = new SessionScope(Guid.NewGuid(), records.First().ReadRuntimeTarget());
+            var decoder = new EventDecoder(scope, new(Stopwatch.Frequency, Stopwatch.Frequency));
+            var decoded = records.Select(record => Assert.IsType<DecodedEvent>(decoder.Decode(record))).ToArray();
+            var resourceEvents = decoded.Where(value => value.Event.Envelope.Identity.EventId == 11).ToArray();
+            var resources = resourceEvents.Select(value => EventCodec.ReadPayload<ResourcePayload>(value.Event.Envelope)).ToArray();
+            var expectedKind = mode switch
+            {
+                "--texture-wrapper" => ResourceKind.Texture2D,
+                "--brush-owner" or "--brush-xaml-owner" or "--brush-owner-gap" or
+                    "--owner-selection-race" or "--owner-epoch-race" => ResourceKind.CompositionBrush,
+                _ => ResourceKind.CompositionSurface
+            };
+            var devices = decoded.Where(value => value.Event.Envelope.Identity.EventId == 10)
+                .Select(value => EventCodec.ReadPayload<DevicePayload>(value.Event.Envelope)).ToArray();
+            Assert.Equal(resourceCount, resources.Length);
+            Assert.Equal(deviceCount, devices.Length);
+            if (mode != "--external-device")
+                Assert.Contains(resources, resource => resource.Operation == ResourceOperation.BaselinePresent);
+            var hasOwner = mode is "--brush-xaml-owner" or "--brush-owner-gap" or
+                "--owner-selection-race" or "--owner-epoch-race";
+            Assert.All(resources, resource => CheckResource(resource, expectedKind, hasOwner));
+            Assert.All(devices, device =>
+            {
+                Assert.Equal(CoverageState.Partial, device.Quality.Coverage);
+                Assert.NotEqual(DeviceOperation.Destroy, device.Operation);
+            });
+            if (mode == "--selection-gap")
+            {
+                Assert.Equal(DeviceOperation.BaselinePresent, devices[1].Operation);
+                Assert.NotEqual(devices[0].DeviceEpoch, devices[1].DeviceEpoch);
+                Assert.NotEqual(resources[0].Resource, resources[1].Resource);
+                Assert.Equal(resources[1].Resource, resources[2].Resource);
+            }
+            else if (mode is "--lifecycle" or "--external-device")
+                Assert.Contains(devices, device => device.Operation == DeviceOperation.OwnershipRelease);
+            if (mode == "--selection-race")
+                Assert.Equal(new ulong?[] { 1, 3, 4 }, resourceEvents.Select(value => value.Event.Envelope.SourceSequence));
+            var info = new SessionInfo(SessionMode.Offline, SessionStatus.Recording, Stopwatch.Frequency, null, [], null);
+            using (var store = SessionStore.Create(path, scope, info, StoreFixture.Partial))
+            {
+                await using var worker = new ProcessingWorker(store, info);
+                await new OfflineEtlSource(etl, scope, info.QpcFrequency).RunAsync(worker);
+                var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.Equal(SessionStatus.Completed, result.Status);
+                Assert.Equal(decoded.Length, result.DurableBoundary.IngestOrdinal);
+                Assert.Equal(0, result.Health.Count(IngestionIssue.DecodeFailure));
+                Assert.Equal(0, result.Health.Count(IngestionIssue.UnknownSchema));
+            }
+            using var reopened = SessionStore.OpenReadOnly(path);
+            Assert.Equal(decoded.Length, reopened.Watermark.IngestOrdinal);
+            var session = await reopened.Queries.GetSession(new(scope), CancellationToken.None);
+            Assert.Equal(CoverageState.Partial, session.Context.Quality.Coverage);
+            using var db = new SqliteConnection(new SqliteConnectionStringBuilder
+                { DataSource = path, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ToString());
+            db.Open();
+            using var command = db.CreateCommand();
+            command.CommandText = "SELECT Envelope FROM SourceEvents WHERE EventId=11 ORDER BY Ordinal LIMIT 10";
+            using var rows = command.ExecuteReader();
+            var index = 0;
+            while (rows.Read())
+            {
+                var envelope = EventCodec.Decode((byte[])rows[0]);
+                Assert.Equal(resourceEvents[index].Event.Envelope.SourceSequence, envelope.SourceSequence);
+                var resource = EventCodec.ReadPayload<ResourcePayload>(envelope);
+                CheckResource(resource, expectedKind, hasOwner);
+                Assert.Equal(resources[index++], resource);
+            }
+            Assert.Equal(resourceCount, index);
+        }
+        finally
+        {
+            File.Delete(etl);
+            foreach (var suffix in new[] { "", "-wal", "-shm", ".writer", ".failure.json" }) File.Delete(path + suffix);
+        }
+
+        static void CheckResource(ResourcePayload resource, ResourceKind kind, bool expectOwner)
+        {
+            Assert.Equal(kind, resource.Classification.Kind);
+            Assert.Equal(CoverageState.Partial, resource.Quality.Coverage);
+            Assert.Equal(SizeProvenance.Unknown, resource.SizeProvenance);
+            Assert.Null(resource.BackingAllocationId);
+            Assert.Null(resource.AllocationBytes);
+            if (expectOwner)
+            {
+                var owner = Assert.IsType<ObjectKey>(resource.Owner);
+                Assert.Equal(IdentityDomain.XamlCore, owner.Domain);
+                Assert.Equal(resource.Resource.Process, owner.Process);
+                Assert.Equal(resource.Resource.ProducerEpoch, owner.ProducerEpoch);
+            }
+            else Assert.Null(resource.Owner);
+            if (kind == ResourceKind.CompositionBrush)
+            {
+                Assert.Null(resource.WidthPixels);
+                Assert.Null(resource.HeightPixels);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Deferred_allocator_loss_replays_under_its_original_epoch_and_persists_incomplete_health()
+    {
+        var executable = Path.Combine(Root,
+            @"tools\WinUIProfiler\WinUIProfiler.Native.Tests\bin\AllocatorRuntime\x64\AllocatorRuntimeTests.exe");
+        using var owned = new OwnedTestProcess(Process.Start(new ProcessStartInfo(executable)
+        {
+            WorkingDirectory = Root, UseShellExecute = false, RedirectStandardOutput = true,
+            ArgumentList = { "--loss-evidence", "--retain-etl" }
+        })!);
+        var process = owned.Process;
+        var textTask = process.StandardOutput.ReadToEndAsync();
+        await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(60));
+        var text = await textTask;
+        Assert.True(process.ExitCode == 0, text);
+        output.WriteLine(text);
+        var retained = Assert.Single(text.Split('\n'), line => line.StartsWith("RETAINED_ETL: ", StringComparison.Ordinal));
+        var etl = retained["RETAINED_ETL: ".Length..].Trim();
+        var path = Path.ChangeExtension(etl, ".sqlite");
+        try
+        {
+            var records = new List<NativeRecord>();
+            using (var source = new ETWTraceEventSource(etl))
+            {
+                source.Dynamic.All += data =>
+                {
+                    if (data.ProviderGuid == EventCatalog.RuntimeProviderId) records.Add(NativeRecord.Capture(data));
+                };
+                Assert.True(source.Process());
+            }
+            var scope = new SessionScope(Guid.NewGuid(), records.First().ReadRuntimeTarget());
+            var decoder = new EventDecoder(scope, new(Stopwatch.Frequency, Stopwatch.Frequency));
+            var decoded = records.Select(record => Assert.IsType<DecodedEvent>(decoder.Decode(record))).ToArray();
+            var firstLoss = Array.FindIndex(decoded, value => value.Event.Envelope.Identity.EventId == 15);
+            Assert.True(firstLoss >= 0);
+            var original = decoded[firstLoss].Event.Stream;
+            var laterEpoch = Array.FindIndex(decoded, firstLoss + 1, value => value.Event.Stream != original);
+            Assert.True(laterEpoch > firstLoss);
+            var deferred = Assert.Single(decoded.Skip(laterEpoch),
+                value => value.Event.Stream == original && value.Event.Envelope.Identity.EventId == 15);
+            var loss = EventCodec.ReadPayload<LossPayload>(deferred.Event.Envelope);
+            Assert.Null(loss.LostEvents);
+            Assert.True(loss.Interval.StartQpc < loss.Interval.EndQpc);
+            Assert.Equal(new SequenceDomainKey(original, scope.Process, 12, 1), Assert.Single(loss.Domains!));
+            Assert.Equal(3ul, deferred.Event.Envelope.SourceSequence);
+            var deferredRecord = records[Array.IndexOf(decoded, deferred)];
+            var truncatedClock = new EventDecoder(scope,
+                new(Stopwatch.Frequency, Stopwatch.Frequency, deferredRecord.TimestampQpc));
+            Assert.Throws<InvalidDataException>(() => truncatedClock.Decode(deferredRecord));
+            var info = new SessionInfo(SessionMode.Offline, SessionStatus.Recording, Stopwatch.Frequency, null, [], null);
+            using (var store = SessionStore.Create(path, scope, info, StoreFixture.Partial))
+            {
+                await using var worker = new ProcessingWorker(store, info);
+                await new OfflineEtlSource(etl, scope, info.QpcFrequency).RunAsync(worker);
+                var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.Equal(SessionStatus.Stopped, result.Status);
+                Assert.Equal(decoded.Length, result.DurableBoundary.IngestOrdinal);
+                Assert.Equal(0, result.Health.Count(IngestionIssue.DecodeFailure));
+                Assert.Equal(0, result.Health.Count(IngestionIssue.UnknownSchema));
+                Assert.Equal(4, result.Health.Count(IngestionIssue.ProducerLoss));
+            }
+            using var reopened = SessionStore.OpenReadOnly(path);
+            Assert.Contains(reopened.ReadIngestionDiagnostics(), item => item.Issue == IngestionIssue.ProducerLoss);
+        }
+        finally
+        {
+            File.Delete(etl);
+            File.Delete(path);
+            File.Delete(path + "-wal");
+            File.Delete(path + "-shm");
+        }
+    }
+
+    [Fact]
+    public async Task Mixed_announced_and_unannounced_runtime_epochs_preserve_observations_and_specific_metadata_gap()
+    {
+        using var fixtures = new NativeFixtures();
+        var records = fixtures.Read();
+        var capabilities = records.First(r => r.Name == "RuntimeCapabilities");
+        var unannounced = records.First(r => r.Name == "TypeResolved");
+        var fields = unannounced.Fields.ToDictionary();
+        var epoch = Guid.NewGuid();
+        fields["ProducerEpoch"] = epoch;
+        unannounced = unannounced.WithFields(fields);
+        var scope = new SessionScope(Guid.NewGuid(), capabilities.ReadRuntimeTarget());
+        var info = new SessionInfo(SessionMode.Offline, SessionStatus.Recording, Stopwatch.Frequency, null, [], null);
+        using var store = SessionStore.Create(Path.Combine(fixtures.DirectoryPath, "epochs.sqlite"), scope, info, StoreFixture.Partial);
+        await using var worker = new ProcessingWorker(store, info);
+        var decoder = new EventDecoder(scope, new(Stopwatch.Frequency, Stopwatch.Frequency));
+        Assert.True(worker.TryEnqueue(decoder.Decode(capabilities)!));
+        Assert.True(worker.TryEnqueue(decoder.Decode(unannounced)!));
+        worker.Complete(SourceCompletion.FiniteEnd);
+        var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.Equal(2, result.DurableBoundary.IngestOrdinal);
+        Assert.Equal(1, result.Health.Count(IngestionIssue.MissingMetadata));
+        Assert.False(result.Health.HasContinuityFailure);
+        var gap = Assert.Single(store.ReadDiagnosticSamples(), row => row.Diagnostic.Issue == IngestionIssue.MissingMetadata);
+        Assert.Contains(epoch.ToString("N"), gap.Diagnostic.Reason);
+        Assert.Equal(EventCatalog.RuntimeProviderId, gap.Diagnostic.ProviderId);
+        Assert.Equal(unannounced.ProducerProcessId, gap.Diagnostic.ProducerProcessId);
+    }
+
+    [Fact]
+    public async Task Foreign_runtime_schema_failures_cannot_consume_selected_health_or_diagnostic_budget()
+    {
+        using var fixtures = new NativeFixtures();
+        var selected = fixtures.Read().First(r => r.Name == "Frame");
+        var target = selected.ReadRuntimeTarget();
+        var scope = new SessionScope(Guid.NewGuid(), target);
+        var info = new SessionInfo(SessionMode.Offline, SessionStatus.Recording, Stopwatch.Frequency, null, [], null);
+        using var store = SessionStore.Create(Path.Combine(fixtures.DirectoryPath, "isolation.sqlite"), scope, info, StoreFixture.Partial);
+        await using var worker = new ProcessingWorker(store, info);
+        var decoder = new EventDecoder(scope, new(Stopwatch.Frequency, Stopwatch.Frequency));
+        var recycledPrefix = selected.RawPayload.ToArray();
+        System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(recycledPrefix.AsSpan(32), target.CreationTimeFileTime!.Value + 1);
+        Assert.True(decoder.IsProvablyForeignRuntime(selected.ProviderId, selected.ProducerProcessId, recycledPrefix));
+        Assert.False(decoder.IsProvablyForeignRuntime(selected.ProviderId, selected.ProducerProcessId, recycledPrefix.AsSpan(0, 40)));
+        recycledPrefix[2] = 255;
+        Assert.False(decoder.IsProvablyForeignRuntime(selected.ProviderId, selected.ProducerProcessId, recycledPrefix));
+        Assert.True(decoder.IsProvablyForeignRuntime(selected.ProviderId, selected.ProducerProcessId + 1, []));
+        Assert.False(decoder.IsProvablyForeignRuntime(EventCatalog.CollectorProviderId, selected.ProducerProcessId + 1, []));
+        Assert.False(decoder.IsProvablyForeignRuntime(EventCatalog.KernelProcessProviderId, selected.ProducerProcessId + 1, []));
+        for (var index = 0; index < 130; index++)
+        {
+            var foreign = new NativeRecord(selected.ProviderId, "Future-" + index, selected.Level, selected.Keywords,
+                selected.ProducerProcessId + 1, selected.ThreadId, selected.TimestampQpc, null,
+                new Dictionary<string, object>(), selected.RawPayload[..10]);
+            Assert.Null(decoder.Decode(foreign));
+            var unsupported = selected.Fields.ToDictionary();
+            unsupported["EventSchemaVersion"] = (byte)255;
+            Assert.Null(decoder.Decode(new(selected.ProviderId, selected.Name, selected.Level, selected.Keywords,
+                selected.ProducerProcessId + 1, selected.ThreadId, selected.TimestampQpc, null, unsupported, selected.RawPayload)));
+            var truncated = selected.Fields.ToDictionary();
+            truncated.Remove("Attempt");
+            Assert.Null(decoder.Decode(new(selected.ProviderId, selected.Name, selected.Level, selected.Keywords,
+                selected.ProducerProcessId + 1, selected.ThreadId, selected.TimestampQpc, null, truncated, selected.RawPayload[..10])));
+            var fields = selected.Fields.ToDictionary();
+            var otherInstance = ((IReadOnlyDictionary<string, object>)fields["TargetProcess"]).ToDictionary();
+            otherInstance["CreationTimeFileTime"] = target.CreationTimeFileTime!.Value + 1;
+            fields["TargetProcess"] = otherInstance;
+            fields.Remove("Attempt");
+            Assert.Null(decoder.Decode(selected.WithFields(fields)));
+            Assert.True(worker.TryEnqueue(decoder.Decode(selected)!));
+        }
+        worker.Complete(SourceCompletion.FiniteEnd);
+        var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(20));
+        Assert.Equal(130, result.DurableBoundary.IngestOrdinal);
+        Assert.False(result.Health.HasContinuityFailure);
+        Assert.Equal(0, result.Health.Count(IngestionIssue.UnknownSchema));
+        Assert.Equal(0, result.Health.Count(IngestionIssue.DecodeFailure));
+        Assert.Equal(0, result.Health.Count(IngestionIssue.DiagnosticLimit));
+        var unattributable = new NativeRecord(selected.ProviderId, "Unknown-selected", selected.Level, selected.Keywords,
+            selected.ProducerProcessId, selected.ThreadId, selected.TimestampQpc, null, new Dictionary<string, object>());
+        Assert.Throws<InvalidDataException>(() => decoder.Decode(unattributable));
+        var unsupportedSelected = selected.Fields.ToDictionary();
+        unsupportedSelected["EventSchemaVersion"] = (byte)255;
+        Assert.Throws<NotSupportedException>(() => decoder.Decode(selected.WithFields(unsupportedSelected)));
+    }
+
+    [Fact]
+    public void Owned_native_stop_returns_final_transport_statistics()
+    {
+        var name = "WinUIProfiler-P03-stop-" + Guid.NewGuid().ToString("N");
+        using var session = new TraceEventSession(name, TraceEventSessionOptions.Create | TraceEventSessionOptions.NoRestartOnCreate);
+        session.EnableProvider(EventCatalog.RuntimeProviderId);
+        var before = EtwSessionStatistics.Query(name);
+        var final = EtwSessionStatistics.Stop(name);
+        session.StopOnDispose = false;
+        Assert.True(final.Events >= before.Events);
+        Assert.True(final.Buffers >= before.Buffers);
+        Assert.Throws<System.ComponentModel.Win32Exception>(() => EtwSessionStatistics.Query(name));
+    }
+
+    [Fact]
+    public async Task Offline_cancellation_and_missing_file_have_explicit_partial_terminal_states()
+    {
+        using var fixtures = new NativeFixtures();
+        using var cancelled = new StoreFixture();
+        using var failed = new StoreFixture();
+        using var store1 = cancelled.Create();
+        using var store2 = failed.Create();
+        await using var worker1 = new ProcessingWorker(store1, cancelled.Info);
+        await using var worker2 = new ProcessingWorker(store2, failed.Info);
+        await new OfflineEtlSource(fixtures.Files[0], cancelled.Scope, cancelled.Info.QpcFrequency).RunAsync(worker1, new(true));
+        await Assert.ThrowsAsync<FileNotFoundException>(() =>
+            new OfflineEtlSource(Path.Combine(fixtures.DirectoryPath, "absent.etl"), failed.Scope, failed.Info.QpcFrequency).RunAsync(worker2));
+        var result1 = await worker1.Completion.WaitAsync(TimeSpan.FromSeconds(10));
+        var result2 = await worker2.Completion.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.Equal(SessionStatus.Stopped, result1.Status);
+        Assert.Equal(new(0, 0), result1.DurableBoundary);
+        Assert.Equal(0, result1.Health.Count(IngestionIssue.ProducerLoss));
+        Assert.Equal(SessionStatus.Failed, result2.Status);
+        Assert.Equal(1, result2.Health.Count(IngestionIssue.SourceFailure));
+    }
+
+    [Fact]
+    public void Unknown_creation_stays_null_and_is_not_bound_to_a_reused_or_different_instance()
+    {
+        using var fixtures = new NativeFixtures();
+        var record = fixtures.Read().First(r => r.Name == "Frame");
+        var fields = record.Fields.ToDictionary();
+        var target = ((IReadOnlyDictionary<string, object>)fields["TargetProcess"]).ToDictionary();
+        target["HasCreationTimeFileTime"] = false;
+        fields["TargetProcess"] = target;
+        var withoutCreation = record.WithFields(fields);
+        var traceLocal = withoutCreation.ReadRuntimeTarget();
+        Assert.Null(traceLocal.CreationTimeFileTime);
+        var scope = new SessionScope(Guid.NewGuid(), traceLocal);
+        Assert.Null(new EventDecoder(new(scope.SessionId, new(traceLocal.ProcessId, null, Guid.NewGuid())),
+            new(Stopwatch.Frequency, Stopwatch.Frequency)).Decode(withoutCreation));
+        var accepted = new EventDecoder(scope, new(Stopwatch.Frequency, Stopwatch.Frequency)).Decode(withoutCreation)!;
+        Assert.Null(accepted.Event.Envelope.Process.CreationTimeFileTime);
+        Assert.Throws<OverflowException>(() => new QpcMapping(1, long.MaxValue).Convert(long.MaxValue));
+        Assert.Throws<InvalidDataException>(() => new QpcMapping(1, 1, 2).Convert(1));
+    }
+
+    [Fact]
+    public void Native_near_budget_arrays_decode_without_a_capabilities_prerequisite()
+    {
+        using var fixtures = new NativeFixtures("--emit-budget");
+        var records = fixtures.Read();
+        Assert.NotEmpty(records);
+        Assert.All(records, record => Assert.Equal("CaptureChunk", record.Name));
+        foreach (var record in records)
+        {
+            var target = record.ReadRuntimeTarget();
+            var decoded = new EventDecoder(new(Guid.NewGuid(), target), new(Stopwatch.Frequency, Stopwatch.Frequency)).Decode(record)!;
+            var chunk = EventCodec.ReadPayload<CaptureChunkPayload>(decoded.Event.Envelope);
+            Assert.InRange(chunk.Objects.Count, 35, 48);
+            Assert.All(chunk.Objects, item => Assert.Equal(1024, item.TypeName!.Length));
+        }
+    }
+
+    [Fact]
+    public void Native_capture_table_references_and_inactive_arms_are_validated_before_projection()
+    {
+        using var fixtures = new NativeFixtures();
+        var record = fixtures.Read().Single(r => r.Name == "CaptureChunk");
+        var target = record.ReadRuntimeTarget();
+        var decoder = new EventDecoder(new(Guid.NewGuid(), target), new(Stopwatch.Frequency, Stopwatch.Frequency));
+        foreach (var (array, field) in new[] { ("Objects", "KeyIndex"), ("Objects", "SizeIndex"), ("Ownership", "FromIndex"),
+            ("Tree", "ChildIndex"), ("Resources", "ClassificationIndex"), ("Visuals", "ValueIndex"), ("Allocations", "QualityIndex") })
+            Assert.Throws<InvalidDataException>(() => decoder.Decode(ReplaceRow(record, array, 0, field, 0)));
+        Assert.Throws<InvalidDataException>(() => decoder.Decode(ReplaceRow(record, "Resources", 0, "OwnerIndex", int.MaxValue)));
+        Assert.Throws<InvalidDataException>(() => decoder.Decode(ReplaceRow(record, "Values", 0, "Integer", 123L)));
+    }
+
+    [Fact]
+    public void Native_raw_payload_is_owned_and_rejects_invalid_UTF8_and_truncation()
+    {
+        using var fixtures = new NativeFixtures();
+        var record = fixtures.Read().First(r => r.Name == "TypeResolved");
+        var target = record.ReadRuntimeTarget();
+        var decoder = new EventDecoder(new(Guid.NewGuid(), target), new(Stopwatch.Frequency, Stopwatch.Frequency));
+        var input = record.RawPayload.ToArray();
+        var owned = new NativeRecord(record.ProviderId, record.Name, record.Level, record.Keywords, record.ProducerProcessId,
+            record.ThreadId, record.TimestampQpc, record.ActivityId, record.Fields, input);
+        var before = owned.RawPayload.ToArray();
+        input.AsSpan().Clear();
+        Assert.Equal(before, owned.RawPayload.ToArray());
+        Assert.NotNull(decoder.Decode(owned));
+        var bad = before.ToArray();
+        var index = bad.AsSpan().IndexOf("Button"u8);
+        Assert.True(index >= 0);
+        bad[index] = 0xff;
+        NativeRecord WithRaw(byte[] bytes) => new(record.ProviderId, record.Name, record.Level, record.Keywords,
+            record.ProducerProcessId, record.ThreadId, record.TimestampQpc, record.ActivityId, record.Fields, bytes);
+        Assert.Throws<InvalidDataException>(() => decoder.Decode(WithRaw(bad)));
+        Assert.Throws<InvalidDataException>(() => decoder.Decode(WithRaw(before[..^1])));
+    }
+
+    private static NativeRecord ReplaceRow(NativeRecord record, string array, int index, string name, object value)
+    {
+        var fields = record.Fields.ToDictionary();
+        var rows = ((IReadOnlyList<object>)fields[array]).ToArray();
+        var row = ((IReadOnlyDictionary<string, object>)rows[index]).ToDictionary();
+        row[name] = value; rows[index] = row; fields[array] = rows;
+        return record.WithFields(fields);
+    }
+
+    [Fact]
+    public async Task Offline_real_wire_replay_is_equivalent_through_SQLite_and_committed_queries()
+    {
+        using var fixtures = new NativeFixtures();
+        var target = fixtures.Read()[0].ReadRuntimeTarget();
+        var canonical = new ProcessInstanceKey(target.ProcessId, target.CreationTimeFileTime, Guid.NewGuid());
+        var results = new List<List<string>>();
+        foreach (var pass in Enumerable.Range(0, 2))
+        {
+            var semantic = new List<string>();
+            foreach (var file in fixtures.Files)
+            {
+                var metadata = OfflineEtlSource.ReadMetadata(file);
+                Assert.Equal(Stopwatch.Frequency, metadata.QpcFrequency);
+                var scope = new SessionScope(Guid.NewGuid(), canonical);
+                var info = new SessionInfo(SessionMode.Offline, SessionStatus.Recording, metadata.QpcFrequency, null, [], null);
+                var path = Path.Combine(fixtures.DirectoryPath, $"import-{pass}-{Guid.NewGuid():N}.sqlite");
+                using var store = SessionStore.Create(path, scope, info, StoreFixture.Partial);
+                await using var worker = new ProcessingWorker(store, info);
+                await new OfflineEtlSource(file, scope, metadata.QpcFrequency).RunAsync(worker);
+                var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(20));
+                Assert.Equal(0, result.Health.Count(IngestionIssue.DecodeFailure));
+                Assert.Equal(0, result.Health.Count(IngestionIssue.WriterFailure));
+                using var db = SessionStore.Connect(path, true);
+                using var command = SessionStore.Command(db, "SELECT Envelope FROM SourceEvents ORDER BY Ordinal");
+                using var rows = command.ExecuteReader();
+                while (rows.Read())
+                {
+                    var e = EventCodec.Decode((byte[])rows[0]);
+                    Assert.Equal(canonical, e.Process);
+                    semantic.Add($"{e.Identity.Name}|{e.ProducerProcessId}|{e.ThreadId}|{e.TimestampQpc}|{e.SourceSequence}|{Convert.ToHexString(e.OwnedPayload.Span)}");
+                }
+                var query = await store.Queries.GetSession(new(scope), default);
+                Assert.Equal(result.DurableBoundary, query.Context.Watermark);
+                Assert.Equal(CoverageState.Partial, query.Context.Quality.Coverage);
+                semantic.Add(System.Text.Json.JsonSerializer.Serialize(query.Value));
+                Assert.Equal(0L, StoreFixture.Scalar(db, "SELECT count(*) FROM SourceProvenance WHERE OriginalInstanceId='" + canonical.InstanceId.ToString("N") + "'"));
+                Assert.True(result.DurableBoundary.IngestOrdinal > 0);
+            }
+            results.Add(semantic);
+        }
+        Assert.Equal(results[0], results[1]);
+    }
+
+    [Fact]
+    public async Task Two_live_sessions_own_only_their_transport_and_native_arrays_keep_flowing_after_one_stops()
+    {
+        var directory = Path.Combine(Root, @"BuildOutput\ProfilerHarness", "P03-live-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            using var childLifetime = new OwnedTestProcess(Process.Start(new ProcessStartInfo(Harness)
+            {
+                WorkingDirectory = Root, UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true,
+                ArgumentList = { "--emit-fixtures", directory, "--await-input" }
+            })!);
+            var child = childLifetime.Process;
+            await ReadUntil(child, "READY: scalar");
+            var target = new ProcessInstanceKey(checked((uint)child.Id), child.StartTime.ToFileTimeUtc(), Guid.NewGuid());
+            var scope1 = new SessionScope(Guid.NewGuid(), target);
+            var scope2 = new SessionScope(Guid.NewGuid(), target);
+            var info = new SessionInfo(SessionMode.LiveAttach, SessionStatus.Recording, Stopwatch.Frequency, null, [], null);
+            using var store1 = SessionStore.Create(Path.Combine(directory, "one.sqlite"), scope1, info, StoreFixture.Partial);
+            using var store2 = SessionStore.Create(Path.Combine(directory, "two.sqlite"), scope2, info, StoreFixture.Partial);
+            var p1 = new SignalProcessor("Frame");
+            var p2 = new SignalProcessor("CaptureChunk");
+            await using var worker1 = new ProcessingWorker(store1, info, processors: [p1]);
+            await using var worker2 = new ProcessingWorker(store2, info, processors: [p2]);
+            await using var source1 = new LiveEtwSource(scope1, Stopwatch.Frequency);
+            await using var source2 = new LiveEtwSource(scope2, Stopwatch.Frequency);
+            var run1 = source1.RunAsync(worker1);
+            var run2 = source2.RunAsync(worker2);
+            await Task.WhenAll(source1.Started, source2.Started).WaitAsync(TimeSpan.FromSeconds(20));
+            Assert.NotEqual(source1.SessionName, source2.SessionName);
+            await child.StandardInput.WriteLineAsync();
+            await ReadUntil(child, "READY: arrays");
+            await p1.Seen.Task.WaitAsync(TimeSpan.FromSeconds(20));
+            await source1.StopAsync();
+            await run1.WaitAsync(TimeSpan.FromSeconds(20));
+            Assert.False(run2.IsCompleted);
+            await child.StandardInput.WriteLineAsync();
+            await p2.Seen.Task.WaitAsync(TimeSpan.FromSeconds(20));
+            await child.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(20));
+            Assert.Equal(0, child.ExitCode);
+            await source2.StopAsync();
+            await run2.WaitAsync(TimeSpan.FromSeconds(20));
+            var first = await worker1.Completion;
+            var second = await worker2.Completion;
+            Assert.Equal(SessionStatus.Stopped, first.Status);
+            Assert.Equal(SessionStatus.Stopped, second.Status);
+            Assert.Equal(0, first.Health.Count(IngestionIssue.DecodeFailure));
+            Assert.Equal(0, second.Health.Count(IngestionIssue.DecodeFailure));
+            Assert.True(second.DurableBoundary.IngestOrdinal > first.DurableBoundary.IngestOrdinal);
+        }
+        finally { Directory.Delete(directory, true); }
+    }
+
+    private static async Task ReadUntil(Process child, string expected)
+    {
+        while (await child.StandardOutput.ReadLineAsync().WaitAsync(TimeSpan.FromSeconds(20)) is { } line)
+            if (line == expected) return;
+        Assert.Fail("Native fixture producer exited before " + expected);
+    }
+    private sealed class SignalProcessor(string eventName) : IEventProcessor
+    {
+        internal TaskCompletionSource Seen { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public IEnumerable<ProjectionChange> Process(IReadOnlyList<NormalizedEvent> events, ProcessingContext context)
+        {
+            if (events.Any(e => e.Envelope.Identity.Name == eventName)) Seen.TrySetResult();
+            return [];
+        }
+        public void Invalidate(HealthSnapshot health) { }
+    }
+
+    [Fact]
+    public async Task Platform_process_schema_has_payload_identity_independent_of_header()
+    {
+        using var session = new TraceEventSession("WinUIProfiler-P03-kernel-" + Guid.NewGuid().ToString("N"),
+            TraceEventSessionOptions.Create | TraceEventSessionOptions.NoRestartOnCreate);
+        var seen = new TaskCompletionSource<NativeRecord>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var records = System.Threading.Channels.Channel.CreateBounded<NativeRecord>(128);
+        session.Source.Dynamic.All += data =>
+        {
+            if (data.ProviderGuid == Guid.Parse("22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716") && (int)data.ID == 1)
+            {
+                try
+                {
+                    var record = NativeRecord.Capture(data);
+                    seen.TrySetResult(record);
+                    if (!records.Writer.TryWrite(record))
+                        records.Writer.TryComplete(new InvalidDataException("Kernel fixture queue exceeded its bound."));
+                }
+                catch (Exception error) when (error is ArgumentException or InvalidDataException or NotSupportedException or OverflowException)
+                {
+                    seen.TrySetException(error);
+                    records.Writer.TryComplete(error);
+                }
+            }
+        };
+        session.EnableProvider(Guid.Parse("22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716"), TraceEventLevel.Informational, 0x10);
+        var reading = Task.Factory.StartNew(() => session.Source.Process(), CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        try
+        {
+            using var decoyLifetime = new OwnedTestProcess(Process.Start(new ProcessStartInfo(Environment.GetEnvironmentVariable("ComSpec")!)
+            { ArgumentList = { "/c", "set", "/p", "P03_DECOY=" }, UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true })!);
+            await seen.Task.WaitAsync(TimeSpan.FromSeconds(20));
+            using var childLifetime = new OwnedTestProcess(Process.Start(new ProcessStartInfo(Environment.GetEnvironmentVariable("ComSpec")!)
+            { ArgumentList = { "/c", "set", "/p", "P03=" }, UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true })!);
+            var child = childLifetime.Process;
+            var actualCreation = child.StartTime.ToFileTimeUtc();
+            using var selectionDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            NativeRecord record;
+            do
+            {
+                record = await records.Reader.ReadAsync(selectionDeadline.Token);
+            } while (unchecked((uint)(int)record.Fields["ProcessID"]) != (uint)child.Id ||
+                ((DateTime)record.Fields["CreateTime"]).ToFileTimeUtc() != actualCreation);
+            output.WriteLine($"Owned kernel event: name={record.Name}, sourcePID={record.ProducerProcessId}, targetPID={child.Id}, creation={actualCreation}.");
+            var targetPid = unchecked((uint)(int)record.Fields["ProcessID"]);
+            var created = ((DateTime)record.Fields["CreateTime"]).ToFileTimeUtc();
+            Assert.Equal((uint)child.Id, targetPid);
+            Assert.Equal(actualCreation, created);
+            Assert.NotEqual(record.ProducerProcessId, targetPid);
+            var scope = new SessionScope(Guid.NewGuid(), new(targetPid, created, Guid.NewGuid()));
+            var decoder = new EventDecoder(scope, new(Stopwatch.Frequency, Stopwatch.Frequency));
+            Assert.Null(decoder.Decode(await seen.Task));
+            var decoded = decoder.Decode(record)!;
+            Assert.Equal(targetPid, decoded.Event.Envelope.Process.ProcessId);
+            Assert.Equal(record.ProducerProcessId, decoded.Event.Envelope.ProducerProcessId);
+            Assert.Null(decoded.Event.Envelope.SourceSequence);
+            Assert.Equal(ProcessOperation.Start, EventCodec.ReadPayload<ProcessPayload>(decoded.Event.Envelope).Operation);
+            var directory = Path.Combine(Root, @"BuildOutput\ProfilerHarness", "P03-kernel-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(directory);
+            try
+            {
+                var info = new SessionInfo(SessionMode.LiveAttach, SessionStatus.Recording, Stopwatch.Frequency, null, [], null);
+                var path = Path.Combine(directory, "kernel.sqlite");
+                using var store = SessionStore.Create(path, scope, info, StoreFixture.Partial);
+                await using var worker = new ProcessingWorker(store, info);
+                Assert.True(worker.TryEnqueue(decoded));
+                worker.Complete(SourceCompletion.FiniteEnd);
+                var result = await worker.Completion.WaitAsync(TimeSpan.FromSeconds(10));
+                Assert.Equal(1, result.DurableBoundary.IngestOrdinal);
+                using var db = SessionStore.Connect(path, true);
+                using var command = SessionStore.Command(db, "SELECT Envelope FROM SourceEvents");
+                var persisted = EventCodec.Decode((byte[])command.ExecuteScalar()!);
+                Assert.Equal(record.ProducerProcessId, persisted.ProducerProcessId);
+                Assert.Equal(targetPid, persisted.Process.ProcessId);
+                Assert.Equal(actualCreation, persisted.Process.CreationTimeFileTime);
+            }
+            finally { Directory.Delete(directory, true); }
+            await child.StandardInput.WriteLineAsync("continue");
+            await child.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
+            await decoyLifetime.Process.StandardInput.WriteLineAsync("continue");
+            await decoyLifetime.Process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        finally
+        {
+            records.Writer.TryComplete();
+            session.Stop();
+            await reading.WaitAsync(TimeSpan.FromSeconds(20));
+        }
+    }
+
+    [Fact]
+    public void Decoder_accepts_all_actual_P04_schemas_and_rebinds_native_identity()
+    {
+        using var fixtures = new NativeFixtures();
+        var records = fixtures.Read();
+        var accepted = new List<DecodedEvent>();
+        foreach (var record in records)
+        {
+            var native = record.ReadRuntimeTarget();
+            var scope = new SessionScope(Guid.NewGuid(), new(native.ProcessId, native.CreationTimeFileTime, Guid.NewGuid()));
+            var decoder = new EventDecoder(scope, new(Stopwatch.Frequency, Stopwatch.Frequency));
+            var decoded = decoder.Decode(record)!;
+            Assert.Equal(scope.Process, decoded.Event.Envelope.Process);
+            Assert.Equal(native, decoded.Provenance.OriginalTarget);
+            Assert.Equal(record.ProducerProcessId, decoded.Event.Envelope.ProducerProcessId);
+            accepted.Add(decoded);
+        }
+        Assert.Equal(Enumerable.Range(1, 16).Select(n => (ushort)n), accepted.Select(e => e.Event.Envelope.Identity.EventId).Distinct().Order());
+        var chunk = EventCodec.ReadPayload<CaptureChunkPayload>(accepted.Single(e => e.Event.Envelope.Identity.EventId == 14).Event.Envelope);
+        Assert.Equal("second variable-width µ name", chunk.Objects[1].TypeName);
+        Assert.Equal(80, chunk.Objects[1].Size.Integer);
+        Assert.Equal(4096ul, chunk.Resources[0].AllocationBytes);
+        Assert.Equal(9ul, chunk.Visuals[0].Cause!.Attempt!.Value.AttemptId);
+        Assert.Equal(chunk.Objects[0].Key, chunk.Resources[0].Owner);
+        Assert.Equal(2, chunk.Objects.Count);
+    }
+
+    [Fact]
+    public void Decoder_rejects_corruption_and_filters_by_actual_creation_not_producer_GUID()
+    {
+        using var fixtures = new NativeFixtures();
+        var record = fixtures.Read().First(r => r.Name == "Frame");
+        var native = record.ReadRuntimeTarget();
+        var selected = new ProcessInstanceKey(native.ProcessId, native.CreationTimeFileTime, Guid.NewGuid());
+        var scope = new SessionScope(Guid.NewGuid(), selected);
+        var decoder = new EventDecoder(scope, new(Stopwatch.Frequency, Stopwatch.Frequency));
+        Assert.NotNull(decoder.Decode(record));
+        var reused = new EventDecoder(new SessionScope(scope.SessionId, new(native.ProcessId, native.CreationTimeFileTime + 1, Guid.NewGuid())),
+            new(Stopwatch.Frequency, Stopwatch.Frequency));
+        Assert.Null(reused.Decode(record));
+        var fields = record.Fields.ToDictionary();
+        fields["EventSchemaVersion"] = (byte)2;
+        Assert.Throws<NotSupportedException>(() => decoder.Decode(record.WithFields(fields)));
+        fields["EventSchemaVersion"] = (byte)1;
+        fields["Outcome"] = (byte)255;
+        Assert.Throws<ArgumentOutOfRangeException>(() => decoder.Decode(record.WithFields(fields)));
+        fields["Outcome"] = (byte)3;
+        fields.Remove("HResult");
+        Assert.Throws<InvalidDataException>(() => decoder.Decode(record.WithFields(fields)));
+        fields = record.Fields.ToDictionary();
+        fields.Add("UnexpectedSchemaField", 1);
+        Assert.Throws<InvalidDataException>(() => decoder.Decode(record.WithFields(fields)));
+    }
+
+    [Fact]
+    public void Native_fixture_seam_retains_real_typed_ETLs()
+    {
+        var directory = Path.Combine(Root, @"BuildOutput\ProfilerHarness", "P03-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo(Harness)
+            {
+                WorkingDirectory = Root, UseShellExecute = false, RedirectStandardOutput = true,
+                ArgumentList = { "--emit-fixtures", directory }
+            })!;
+            Assert.True(process.WaitForExit(60_000), "Native fixture producer did not finish.");
+            var text = process.StandardOutput.ReadToEnd();
+            output.WriteLine(text);
+            Assert.Equal(0, process.ExitCode);
+            var files = Directory.GetFiles(directory, "*.etl");
+            Assert.Equal(2, files.Length);
+            foreach (var file in files)
+            {
+                using var source = new ETWTraceEventSource(file);
+                source.Kernel.EventTraceHeader += data => output.WriteLine($"CLOCK flags={data.ReservedFlags} freq={data.PerfFreq}");
+                source.Dynamic.All += data =>
+                {
+                    if (data.ProviderGuid != Contracts.EventCatalog.RuntimeProviderId) return;
+                    output.WriteLine(data.EventName + ": " + string.Join(", ", data.PayloadNames.Select((n, i) =>
+                        n + "=" + data.PayloadValue(i)?.GetType().FullName + ":" + data.PayloadValue(i))));
+                };
+                Assert.True(source.Process());
+            }
+
+        }
+        finally { Directory.Delete(directory, true); }
+    }
+}
+
+internal sealed class NativeFixtures : IDisposable
+{
+    internal string DirectoryPath { get; } = Path.Combine(IngestionTests.Root, @"BuildOutput\ProfilerHarness", "P03-" + Guid.NewGuid().ToString("N"));
+    internal NativeFixtures(string mode = "--emit-fixtures")
+    {
+        Directory.CreateDirectory(DirectoryPath);
+        using var process = Process.Start(new ProcessStartInfo(IngestionTests.Harness)
+        {
+            WorkingDirectory = IngestionTests.Root, UseShellExecute = false, RedirectStandardOutput = true,
+            ArgumentList = { mode, DirectoryPath }
+        })!;
+        Assert.True(process.WaitForExit(60_000), "Native producer timed out.");
+        var text = process.StandardOutput.ReadToEnd();
+        Assert.True(process.ExitCode == 0, text);
+    }
+    internal string[] Files => Directory.GetFiles(DirectoryPath, "*.etl").Order().ToArray();
+    internal IReadOnlyList<NativeRecord> Read()
+    {
+        var records = new List<NativeRecord>();
+        foreach (var file in Files)
+        {
+            using var source = new ETWTraceEventSource(file);
+            source.Dynamic.All += data =>
+            {
+                if (data.ProviderGuid == EventCatalog.RuntimeProviderId) records.Add(NativeRecord.Capture(data));
+            };
+            Assert.True(source.Process());
+        }
+        return records;
+    }
+    public void Dispose() => Directory.Delete(DirectoryPath, true);
+}
+
+internal sealed class OwnedTestProcess(Process process) : IDisposable
+{
+    internal Process Process { get; } = process;
+    public void Dispose()
+    {
+        try
+        {
+            if (!Process.HasExited)
+            {
+                if (Process.StartInfo.RedirectStandardInput) Process.StandardInput.Close();
+                if (!Process.WaitForExit(5000))
+                {
+                    Process.Kill(entireProcessTree: true);
+                    Assert.True(Process.WaitForExit(10_000), "Owned test producer failed to terminate.");
+                }
+            }
+        }
+        finally { Process.Dispose(); }
+    }
+}

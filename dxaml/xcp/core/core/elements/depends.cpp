@@ -23,6 +23,9 @@
 #include <UIAWrapper.h>
 #include <string>
 #include "XamlTelemetry.h"
+#include <WinUIProfilerHooks.h>
+#include <WinUIProfilerRootScope.h>
+#include <cmath>
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -35,6 +38,8 @@ void TryUnpegManagedPeer(_In_ CDependencyObject* element, _In_ bool isShutdownEx
 
 CDependencyObject::~CDependencyObject()
 {
+    if (WinUIProfiler::Hooks::IdentitiesEnabled())
+        WinUIProfiler::Hooks::Destroyed(WinUIProfiler::Domain::XamlCore, this);
 #if DBG
     InheritedProperties::RecordTextPropertyUsage(this);
 #endif
@@ -2578,6 +2583,8 @@ void CDependencyObject::SetHasEverHadManagedPeer(
 void CDependencyObject::SetDXamlPeer(
     _In_opt_ DirectUI::DependencyObject* pDXamlPeer)
 {
+    if (WinUIProfiler::Hooks::IdentitiesEnabled() && GetDXamlPeer() != pDXamlPeer)
+        WinUIProfiler::Hooks::Associate(this, GetDXamlPeer(), false);
     bool hasEverHadManagedPeer = HasEverHadManagedPeer();
 
     m_pDXAMLPeer = pDXamlPeer;
@@ -2587,6 +2594,13 @@ void CDependencyObject::SetDXamlPeer(
     {
         SetHasEverHadManagedPeer(true);
     }
+    if (pDXamlPeer && WinUIProfiler::Hooks::TypesEnabled())
+    {
+        const auto& typeName = MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetFullName();
+        WinUIProfiler::Hooks::ResolveCoreType(this, static_cast<uint64_t>(GetTypeIndex()) + 1, typeName.GetBuffer(), IsUIElement());
+    }
+    if (WinUIProfiler::Hooks::IdentitiesEnabled())
+        WinUIProfiler::Hooks::Associate(this, pDXamlPeer, true);
 }
 
 //------------------------------------------------------------------------
@@ -2792,6 +2806,54 @@ _Check_return_ HRESULT CDependencyObject::NotifyInheritanceContextChanged(_In_ I
 // attached properties and the only way of changing those is with animations.
 _Check_return_ HRESULT CDependencyObject::NotifyPropertyChanged(const PropertyChangedParams& args)
 {
+    if (WinUIProfiler::Hooks::PropertiesEnabled() || WinUIProfiler::Hooks::FramesEnabled())
+    {
+        const auto root = WinUIProfiler::Hooks::AssociatedRoot(this);
+        WinUIProfiler::Hooks::Work(root, GetContext());
+        if (WinUIProfiler::Hooks::PropertiesEnabled())
+        {
+            const auto& typeName = MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetFullName();
+            WinUIProfiler::Hooks::ResolveCoreType(this, static_cast<uint64_t>(GetTypeIndex()) + 1, typeName.GetBuffer(), IsUIElement());
+            const auto scalar = [](const CValue* source)
+            {
+                WinUIProfiler::Value value;
+                if (!source) return value;
+                value.Unit = 6;
+                value.DataQuality = {};
+                switch (source->GetType())
+                {
+                case valueBool: value.Kind = 2; value.Unit = 5; value.Boolean = source->As<valueBool>(); break;
+                case valueSigned: value.Kind = 0; value.Integer = source->As<valueSigned>(); break;
+                case valueUnsigned: value.Kind = 0; value.Integer = source->As<valueUnsigned>(); break;
+                case valueFloat: value.Kind = 1; value.Number = source->As<valueFloat>(); break;
+                case valueDouble: value.Kind = 1; value.Number = source->As<valueDouble>(); break;
+                default: value.DataQuality = {2, 2, "non-scalar XAML value is not captured"}; break;
+                }
+                if (value.Kind == 1 && !std::isfinite(value.Number))
+                {
+                    value = {};
+                    value.Unit = 6;
+                    value.DataQuality = {2, 2, "non-finite XAML numeric value"};
+                }
+                return value;
+            };
+            const auto declaringType = args.m_pDP->GetDeclaringType()->GetFullName();
+            const auto propertyName = args.m_pDP->GetName();
+            auto previous = scalar(args.m_pOldValue);
+            auto current = scalar(args.m_pNewValue);
+            if (previous.Kind == 4) previous.Unit = current.Unit;
+            if (current.Kind == 4) current.Unit = previous.Unit;
+            if (previous.Unit != current.Unit)
+            {
+                previous = {};
+                current = {};
+                previous.DataQuality = current.DataQuality = {2, 2, "heterogeneous XAML property value kinds"};
+            }
+            WinUIProfiler::Hooks::Property(root, GetContext(), this,
+                static_cast<uint64_t>(args.m_pDP->GetIndex()) + 1, declaringType.GetBuffer(), propertyName.GetBuffer(),
+                previous, current);
+        }
+    }
     // Here the call to ParserOwnsParent ensure that change notifications are not set while the
     // parser is setting properties to the object, that way the parse time is not affected
     // by the notification mechanism. Once the element enters the tree and the binding/listener is set

@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <WinUIProfilerHooks.h>
 #include "InputServices.h"
 
 #include <EffectiveViewportChangedEventArgs.h>
@@ -172,6 +173,9 @@ CLayoutManager::EnterMeasure(_In_ CUIElement* pElement)
 
     m_firePostLayoutEvents = TRUE;
 
+    if (WinUIProfiler::Hooks::FramesEnabled())
+        WinUIProfiler::Hooks::Layout(m_pVisualTree ? m_pVisualTree->GetContentRootNoRef() : nullptr,
+            pElement->GetContext(), pElement, 2, true);
     return S_OK;
 }
 
@@ -180,6 +184,9 @@ HRESULT
 CLayoutManager::ExitMeasure(_In_ CUIElement* pElement)
 {
     --m_cMeasuresOnStack;
+    if (WinUIProfiler::Hooks::FramesEnabled())
+        WinUIProfiler::Hooks::Layout(m_pVisualTree ? m_pVisualTree->GetContentRootNoRef() : nullptr,
+            pElement->GetContext(), pElement, 2, false);
 
     return S_OK;
 }
@@ -195,6 +202,9 @@ CLayoutManager::EnterArrange(_In_ CUIElement* pElement)
 
     m_firePostLayoutEvents = TRUE;
 
+    if (WinUIProfiler::Hooks::FramesEnabled())
+        WinUIProfiler::Hooks::Layout(m_pVisualTree ? m_pVisualTree->GetContentRootNoRef() : nullptr,
+            pElement->GetContext(), pElement, 3, true);
     return S_OK;
 }
 
@@ -203,6 +213,9 @@ HRESULT
 CLayoutManager::ExitArrange(_In_ CUIElement* pElement)
 {
     --m_cArrangesOnStack;
+    if (WinUIProfiler::Hooks::FramesEnabled())
+        WinUIProfiler::Hooks::Layout(m_pVisualTree ? m_pVisualTree->GetContentRootNoRef() : nullptr,
+            pElement->GetContext(), pElement, 3, false);
 
     return S_OK;
 }
@@ -1139,4 +1152,3 @@ bool CLayoutManager::ShouldReportDesiredSizeChanged(_In_ CUIElement* element)
 
     return false;
 }
-

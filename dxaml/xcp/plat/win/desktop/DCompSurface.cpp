@@ -8,6 +8,7 @@
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <PixelFormat.h>
+#include "WinUIProfilerGraphicsHooks.h"
 #ifdef XAMLPROFILER_ENABLED
 #include "XamlProfilerTracing.h"
 #endif
@@ -128,6 +129,9 @@ DCompSurface::CreateWithNoHardware(
         nullptr, &dcompSurface->m_spWinRTSurface));
 
     dcompSurface->m_isVirtual = isVirtual;
+    WinUIProfiler::Hooks::GraphicsSurfaceChanged(dcompSurface.get(), nullptr,
+        WinUIProfiler::Hooks::GraphicsSurfaceOperation::Create, 0, 0);
+    dcompSurface->m_profilerInitializedSurface = true;
 
     return dcompSurface;
 }
@@ -213,6 +217,12 @@ DCompSurface::InitializeSurface(
     // Since it's possible to reuse a DCompSurface across discards, reset m_discarded after re-initializing.
     m_discarded = FALSE;
 
+    WinUIProfiler::Hooks::GraphicsSurfaceChanged(this, pDevice->GetProfilerDeviceOwner(),
+        m_profilerInitializedSurface ? WinUIProfiler::Hooks::GraphicsSurfaceOperation::Rebind :
+            WinUIProfiler::Hooks::GraphicsSurfaceOperation::Create,
+        GetWidthWithoutGutters(), GetHeightWithoutGutters());
+    m_profilerInitializedSurface = true;
+
     return S_OK;
 }
 
@@ -291,6 +301,12 @@ DCompSurface::InitializeSurface(
 
     IFCFAILFAST(m_compositionSurfaceHelper.Initialize(m_pCompositionSurface));
 
+    WinUIProfiler::Hooks::GraphicsSurfaceChanged(this, nullptr,
+        m_profilerInitializedSurface ? WinUIProfiler::Hooks::GraphicsSurfaceOperation::Rebind :
+            WinUIProfiler::Hooks::GraphicsSurfaceOperation::Create,
+        GetWidthWithoutGutters(), GetHeightWithoutGutters());
+    m_profilerInitializedSurface = true;
+
     return S_OK;
 }
 
@@ -333,6 +349,8 @@ DCompSurface::~DCompSurface()
     ReleaseLegacyDCompResources(false /* resetWucSurface */);
 
     DCompSurfaceMonitor::RemoveSurface(this);
+    WinUIProfiler::Hooks::GraphicsSurfaceChanged(this, nullptr,
+        WinUIProfiler::Hooks::GraphicsSurfaceOperation::Destroy, 0, 0);
 }
 
 // Release all D3D device-dependent resources.  This includes all "legacy" DComp resource references, but does not
@@ -352,6 +370,7 @@ DCompSurface::~DCompSurface()
 void DCompSurface::ReleaseLegacyDCompResources(bool resetWucSurface)
 {
     ASSERT(m_cLocks == 0);
+    const bool profilerHadSurface = m_pCompositionSurface != nullptr || m_pVirtualCompositionSurface != nullptr;
 
     // Keep m_spWinRTSurface so it can be reattached later
     if (m_spWinRTSurface != nullptr && resetWucSurface)
@@ -388,6 +407,9 @@ void DCompSurface::ReleaseLegacyDCompResources(bool resetWucSurface)
     ReleaseInterface(m_pCompositionSurface);
     ReleaseInterface(m_pVirtualCompositionSurface);
     m_compositionSurfaceHelper.ReleaseSurface();
+    if (profilerHadSurface)
+        WinUIProfiler::Hooks::GraphicsSurfaceChanged(this, nullptr,
+            WinUIProfiler::Hooks::GraphicsSurfaceOperation::OwnershipRelease, 0, 0);
 }
 
 //-------------------------------------------------------------------------
@@ -1149,6 +1171,9 @@ DCompSurface::Resize(
 
     m_widthWithoutGutters = width;
     m_heightWithoutGutters = height;
+    WinUIProfiler::Hooks::GraphicsSurfaceChanged(this,
+        m_d3dDevice ? m_d3dDevice->GetProfilerDeviceOwner() : nullptr,
+        WinUIProfiler::Hooks::GraphicsSurfaceOperation::Resize, width, height);
 
     if (!IsVirtual())
     {

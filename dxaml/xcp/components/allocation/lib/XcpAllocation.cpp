@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "XcpAllocation.h"
+#include "WinUIProfilerAllocatorRuntime.h"
 #include "XAMLTerminateProcessOnOOM.h"
 #include <cstdlib>
 #include <atomic>
@@ -177,7 +178,7 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateFailFast(_In_ size_t cSize)
 
     EnsureHeap();
 
-    pAddress = HeapAlloc(ghHeap, 0, cSize);
+    pAddress = WinUIProfiler::AllocatorObservation::ObservedHeapAllocate(ghHeap, 0, cSize);
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
@@ -215,7 +216,7 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateZeroMemoryFailFast(_In_ size
 
     EnsureHeap();
 
-    pAddress = HeapAlloc(ghHeap, HEAP_ZERO_MEMORY, cSize);
+    pAddress = WinUIProfiler::AllocatorObservation::ObservedHeapAllocate(ghHeap, HEAP_ZERO_MEMORY, cSize);
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
@@ -267,7 +268,7 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateNoFailFast(_In_ size_t cSize
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 #endif
 
-    pAddress = HeapAlloc(ghHeap, 0, cSize);
+    pAddress = WinUIProfiler::AllocatorObservation::ObservedHeapAllocate(ghHeap, 0, cSize);
     if (pAddress)
     {
         UpdateAllocatedMemory(cSize);
@@ -303,7 +304,7 @@ _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddres
         ASSERT(cOldSize != (SIZE_T)-1);
     }
 
-    void* newAddress = HeapReAlloc(ghHeap, 0, pAddress, cSize);
+    void* newAddress = WinUIProfiler::AllocatorObservation::ObservedHeapResize(ghHeap, 0, pAddress, cSize);
 
     if (!newAddress
         && cSize < 0x0004000)
@@ -362,7 +363,7 @@ void XcpAllocation::OSMemoryFree(_Frees_ptr_opt_ void *pAddress)
         }
     }
 
-    HeapFree(ghHeap, 0, pAddress);
+    WinUIProfiler::AllocatorObservation::ObservedHeapFree(ghHeap, 0, pAddress);
 
 #if COUNT_ALLOC
     g_deallocCount.fetch_add(1, std::memory_order_relaxed);

@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <WinUIProfilerHooks.h>
+#include <WinUIProfilerRootScope.h>
+#include <VisualTree.h>
 #include <framework.h>
 #include <resources.h>
 #include <style.h>
@@ -282,6 +285,9 @@ void CFrameworkElement::RemoveLogicalChild(_Inout_opt_ CDependencyObject* pOldLo
 
         //set it back to the default value
         pChild->m_pLogicalParent = NULL;
+        if (WinUIProfiler::Hooks::TreesEnabled())
+            WinUIProfiler::Hooks::Membership(WinUIProfiler::Hooks::AssociatedRoot(this), GetContext(), this, pChild,
+                OfTypeByIndex<KnownTypeIndex::Popup>() ? 4 : 2, 0, false, 1);
 
         //clear the flags to indicate a value is not set for this property
         pChild->SetPropertyIsDefault(pdp);

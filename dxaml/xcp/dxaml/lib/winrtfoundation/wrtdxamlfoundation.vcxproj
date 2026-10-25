@@ -48,6 +48,12 @@
                 <DisableAnalyzeExternal />
                 <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
             </ClCompile>
+            <ClCompile Include="..\WinUIProfilerRuntimeBridge.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <ExceptionHandling>Sync</ExceptionHandling>
+            </ClCompile>
         </ItemGroup>
     </Target>
 

@@ -298,6 +298,20 @@ protected:
     void EnsureDropShadowVisual(_In_ DCompTreeHost* dcompTreeHost);
     void CleanupDropShadowVisual();
 
+    enum ProfilerVisualSlot : uint32_t
+    {
+        ProfilerPrepend, ProfilerPrimary, ProfilerHandIn, ProfilerContent,
+        ProfilerShadowParent, ProfilerShadowSprite, ProfilerBottomClip,
+        ProfilerDManip = ProfilerBottomClip + 3
+    };
+    void UpdateProfilerVisualSlot(uint32_t slot, WUComp::IVisual* visual) noexcept;
+    void ReconcileProfilerVisualSlots() noexcept;
+    bool IsProfilerVisualSlot(WUComp::IVisual* visual) const noexcept;
+    void TraceProfilerVisualProperty(WUComp::IVisual* visual, uint8_t property, double value) noexcept;
+    int32_t ProfilerVisualOrder(WUComp::IVisual* parent, WUComp::IVisual* child) noexcept;
+    void TraceProfilerVisualMembership(WUComp::IVisual* parent, WUComp::IVisual* child, bool connected,
+        int32_t order = -1, HWCompTreeNodeWinRT* childOwner = nullptr) noexcept;
+
     bool HasTransitionClipAnimation() const;
 
     Microsoft::WRL::ComPtr<WUComp::IVisual> m_prependVisual;
@@ -369,4 +383,3 @@ protected:
 
     std::vector<CXamlLight*> m_lightsTargetingElement;
 };
-

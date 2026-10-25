@@ -275,7 +275,12 @@ _Check_return_ HRESULT CConnectedAnimationService::TimeoutAnimations()
 
 _Check_return_ HRESULT CConnectedAnimationService::PostCommit()
 {
+#if defined(WINUI_PROFILER_FRAME_TEST_HOOKS)
+    // Diagnostic only: the real cleanup executes first and an earlier failure wins.
+    return m_profilerPostCommit.AfterCleanup(CleanupRetainedElements());
+#else
     return CleanupRetainedElements();
+#endif
 }
 
 // Cancel all animations and reset the default duration/easing function

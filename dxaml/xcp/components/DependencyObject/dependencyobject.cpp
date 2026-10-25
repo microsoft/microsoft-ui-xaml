@@ -30,6 +30,7 @@
 #include "CDOAssociativeImpl.h"
 #include "Framework.h"
 #include <FxCallbacks.h>
+#include <WinUIProfilerHooks.h>
 
 using namespace DirectUI;
 
@@ -63,7 +64,10 @@ CDependencyObject::CDependencyObject(_In_opt_ CCoreServices* pCore)
     , m_canParserOverwriteBaseUri(true)
     , m_isUIElement(false)
     , m_isFrameworkElement(false)
-{}
+{
+    if (WinUIProfiler::Hooks::IdentitiesEnabled())
+        WinUIProfiler::Hooks::Born(WinUIProfiler::Domain::XamlCore, this);
+}
 
 KnownTypeIndex CDependencyObject::GetTypeIndex() const
 {

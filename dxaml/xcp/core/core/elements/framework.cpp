@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <WinUIProfilerHooks.h>
+#include <WinUIProfilerRootScope.h>
 #include "MetadataAPI.h"
 #include <DOPointerCast.h>
 #include <TemplateBindingData.h>
@@ -2951,6 +2953,8 @@ void CFrameworkElement::SetTemplatedParentImpl(_In_ CDependencyObject* parent)
     // Create a WeakRef to the TemplatedParent.  It could be released and at that time, it would
     // be too tedious to unhook all the nested children.
     m_pTemplateBindingData->m_pTemplatedParentWeakRef = xref::get_weakref(parent);
+    if (WinUIProfiler::Hooks::TreesEnabled())
+        WinUIProfiler::Hooks::Membership(WinUIProfiler::Hooks::AssociatedRoot(this), GetContext(), parent, this, 3, 0, true, 1);
 }
 
 _Check_return_ HRESULT CFrameworkElement::SetTemplateBinding(
@@ -3286,6 +3290,9 @@ _Check_return_ HRESULT CFrameworkElement::AddLogicalChild(_In_ CDependencyObject
         {
             pChild->EnsureLayoutProperties(false);
             pChild->m_pLogicalParent = this;
+            if (WinUIProfiler::Hooks::TreesEnabled())
+                WinUIProfiler::Hooks::Membership(WinUIProfiler::Hooks::AssociatedRoot(this), GetContext(), this, pChild,
+                    OfTypeByIndex<KnownTypeIndex::Popup>() ? 4 : 2, 0, true, 1);
 
             //set the flags to indicate the property value is now set.
             IFC_RETURN(pChild->SetPropertyIsLocal(pdp));

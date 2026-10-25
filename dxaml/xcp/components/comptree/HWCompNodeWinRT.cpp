@@ -2,12 +2,15 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <WinUIProfilerHooks.h>
+#include <WinUIProfilerRootScope.h>
 #include "HWCompNodeWinRT.h"
 #include <HWRedirectedCompTreeNodeWinRT.h>
 #include <HWWindowedPopupCompTreeNodeWinRT.h>
 #include <DManipData.h>
 #include <DCompTreeHost.h>
 #include <UIElement.h>
+#include <VisualTree.h>
 #include <DOPointerCast.h>
 #include <Popup.h>
 #include <MultiParentShareableDependencyObject.h>
@@ -59,6 +62,117 @@
 
 using namespace DirectUI;
 using namespace RuntimeFeatureBehavior;
+
+namespace
+{
+    bool ProfilerVisualsEnabled() noexcept
+    {
+        using namespace WinUIProfiler;
+        return IsEnabled(Event::ObjectLifetime) || IsEnabled(Event::VisualDelta) ||
+            IsEnabled(Event::Correlation) || IsEnabled(Event::TreeEdge) || IsEnabled(Event::CaptureChunk);
+    }
+}
+
+void HWCompTreeNodeWinRT::UpdateProfilerVisualSlot(uint32_t slot, WUComp::IVisual* visual) noexcept
+{
+    if (ProfilerVisualsEnabled())
+        WinUIProfiler::Hooks::VisualSlot(this, WinUIProfiler::Domain::CompNode, slot, visual);
+}
+
+void HWCompTreeNodeWinRT::ReconcileProfilerVisualSlots() noexcept
+{
+    if (!ProfilerVisualsEnabled()) return;
+    WUComp::IVisual* const visuals[] = {
+        m_prependVisual.Get(), m_primaryVisual.Get(), m_handInVisual.Get(), m_contentVisual.Get(),
+        m_dropShadowParentVisual.Get(), m_dropShadowSpriteVisual.Get(),
+        m_bottomClipVisuals[0].Get(), m_bottomClipVisuals[1].Get(), m_bottomClipVisuals[2].Get(),
+        m_dmanipHitTestVisual.Get()
+    };
+    static_assert(ARRAYSIZE(visuals) == ProfilerDManip + 1);
+    for (uint32_t slot = 0; slot < ARRAYSIZE(visuals); ++slot)
+        if (visuals[slot]) UpdateProfilerVisualSlot(slot, visuals[slot]);
+}
+
+bool HWCompTreeNodeWinRT::IsProfilerVisualSlot(WUComp::IVisual* visual) const noexcept
+{
+    if (!visual) return false;
+    if (visual == m_prependVisual.Get() || visual == m_primaryVisual.Get() ||
+        visual == m_handInVisual.Get() || visual == m_contentVisual.Get() ||
+        visual == m_dropShadowParentVisual.Get() || visual == m_dropShadowSpriteVisual.Get() ||
+        visual == m_dmanipHitTestVisual.Get()) return true;
+    for (const auto& clip : m_bottomClipVisuals)
+        if (visual == clip.Get()) return true;
+    return false;
+}
+
+void HWCompTreeNodeWinRT::TraceProfilerVisualProperty(WUComp::IVisual* visual, uint8_t property, double value) noexcept
+{
+    if (!WinUIProfiler::IsEnabled(WinUIProfiler::Event::VisualDelta)) return;
+    ReconcileProfilerVisualSlots();
+    WinUIProfiler::Hooks::VisualProperty(visual, property, value);
+}
+
+int32_t HWCompTreeNodeWinRT::ProfilerVisualOrder(WUComp::IVisual* parent, WUComp::IVisual* child) noexcept
+{
+    if (!WinUIProfiler::Hooks::TreesEnabled() || !parent || !child) return -1;
+    wrl::ComPtr<WUComp::IContainerVisual> container;
+    wrl::ComPtr<WUComp::IVisualCollection> collection;
+    wrl::ComPtr<wfc::IIterable<WUComp::Visual*>> iterable;
+    wrl::ComPtr<wfc::IIterator<WUComp::Visual*>> iterator;
+    wrl::ComPtr<IUnknown> expected;
+    if (FAILED(child->QueryInterface(IID_PPV_ARGS(&expected))) ||
+        FAILED(parent->QueryInterface(IID_PPV_ARGS(&container))) ||
+        FAILED(container->get_Children(&collection)) ||
+        FAILED(collection.As(&iterable)) || FAILED(iterable->First(&iterator))) return -1;
+    for (int32_t order = 0; order < 65536; ++order)
+    {
+        boolean hasCurrent = false;
+        if (FAILED(iterator->get_HasCurrent(&hasCurrent)) || !hasCurrent) return -1;
+        wrl::ComPtr<WUComp::IVisual> current;
+        wrl::ComPtr<IUnknown> canonical;
+        if (FAILED(iterator->get_Current(&current)) ||
+            FAILED(current.As(&canonical))) return -1;
+        if (canonical.Get() == expected.Get()) return order;
+        if (FAILED(iterator->MoveNext(&hasCurrent))) return -1;
+    }
+    return -1;
+}
+
+void HWCompTreeNodeWinRT::TraceProfilerVisualMembership(WUComp::IVisual* parent, WUComp::IVisual* child,
+    bool connected, int32_t order, HWCompTreeNodeWinRT* childOwner) noexcept
+{
+    if (!WinUIProfiler::Hooks::TreesEnabled()) return;
+    ReconcileProfilerVisualSlots();
+    if (childOwner) childOwner->ReconcileProfilerVisualSlots();
+    if (connected && order < 0) order = ProfilerVisualOrder(parent, child);
+    if (order >= 0 && IsProfilerVisualSlot(parent) &&
+        (childOwner ? childOwner->IsProfilerVisualSlot(child) : IsProfilerVisualSlot(child)))
+    {
+        if (connected)
+        {
+            // Deferred UpdateTree/PushProperties can execute after the render-root scope ends.
+            const auto root = WinUIProfiler::Hooks::AssociatedRoot(m_pUIElementNoRef);
+            WinUIProfiler::Hooks::RootScope scope(root, GetContext(), false);
+            WinUIProfiler::Hooks::VisualMembership(parent, child, order, true);
+            return;
+        }
+        WinUIProfiler::Hooks::VisualMembership(parent, child, order, connected);
+        return;
+    }
+    using namespace WinUIProfiler;
+    const DomainReference domains[] = {{5, EventVersion}};
+    WinUIProfiler::Trace<WinUIProfiler::Event::Loss>([&]() noexcept
+    {
+        LARGE_INTEGER now{};
+        QueryPerformanceCounter(&now);
+        Loss loss;
+        loss.StartQpc = loss.EndQpc = now.QuadPart;
+        loss.Reason = "Partial VisualChild coverage: authoritative order or concrete endpoint owner unavailable; no index/identity inferred";
+        loss.HasDomains = true;
+        loss.Domains = {domains, ARRAYSIZE(domains)};
+        return loss;
+    });
+}
 
 // These constants need to be kept in sync with test code, see WinRTMockDComp.cpp
 static const wchar_t* s_prependVisualTag = L"_XAML_DEBUG_TAG_PrependVisual";
@@ -178,11 +292,14 @@ HWCompTreeNodeWinRT::HWCompTreeNodeWinRT(
     // are both parented under an InteropVisual (although not the same one) in the comp node visual chain, and
     // cannot walk up to their parents.
     //
+    if (WinUIProfiler::Hooks::IdentitiesEnabled())
+        WinUIProfiler::Hooks::Born(WinUIProfiler::Domain::CompNode, this);
     CreateContentVisual(dcompTreeHost);
 }
 
 HWCompTreeNodeWinRT::~HWCompTreeNodeWinRT()
 {
+    ReconcileProfilerVisualSlots();
     if (m_contentVisual != nullptr)
     {
         // When hand off visuals are used, the primary visual is preserved even after the comp node is deleted.
@@ -203,6 +320,10 @@ HWCompTreeNodeWinRT::~HWCompTreeNodeWinRT()
         CleanupChildLinks();
         CleanupContentVisual();
     }
+    if (ProfilerVisualsEnabled())
+        WinUIProfiler::Hooks::ReleaseVisualOwner(this, WinUIProfiler::Domain::CompNode);
+    if (WinUIProfiler::Hooks::IdentitiesEnabled())
+        WinUIProfiler::Hooks::Destroyed(WinUIProfiler::Domain::CompNode, this);
 }
 
 _Check_return_ HRESULT HWCompTreeNodeWinRT::Create(
@@ -234,6 +355,7 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::SetElementData(
 {
     m_pUIElementNoRef = uiElement;
     m_pUIElementPeerWeakRef = xref::get_weakref(uiElement);
+    WinUIProfiler::Hooks::Link(uiElement, WinUIProfiler::Domain::XamlCore, this, WinUIProfiler::Domain::CompNode, 1, true);
 
     if (m_pUIElementNoRef->OfTypeByIndex<KnownTypeIndex::SwapChainElement>())
     {
@@ -309,6 +431,7 @@ bool HWCompTreeNodeWinRT::IsUsingHandOffVisual(CUIElement &element) const
 
 _Check_return_ HRESULT HWCompTreeNodeWinRT::EnsureVisual(_In_ DCompTreeHost *dcompTreeHost)
 {
+    ReconcileProfilerVisualSlots();
     if (m_prependVisual == nullptr)
     {
         ASSERT(dcompTreeHost != nullptr);
@@ -324,6 +447,7 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::EnsureVisual(_In_ DCompTreeHost *dco
             xref_ptr<WUComp::IVisual> handoffVisual;
             m_pUIElementNoRef->GetStoredHandOffVisual(handoffVisual.ReleaseAndGetAddressOf());
             VERIFYHR(handoffVisual->QueryInterface(IID_PPV_ARGS(&m_primaryVisual)));
+            UpdateProfilerVisualSlot(ProfilerPrimary, m_primaryVisual.Get());
             ASSERT(m_primaryVisual != nullptr);
             SetDebugTag(m_primaryVisual.Get(), s_primaryVisualTag);
             DCompTreeHost::SetTagIfEnabled(m_primaryVisual.Get(), VisualDebugTags::CompNode_PrimaryVisual);
@@ -378,6 +502,7 @@ void HWCompTreeNodeWinRT::CreateWUCSpineVisual(_In_ DCompTreeHost* dcompTreeHost
     wrl::ComPtr<ixp::IContainerVisual> containerVisual;
     IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
     IFCFAILFAST(containerVisual->QueryInterface(IID_PPV_ARGS(visual)));
+    ReconcileProfilerVisualSlots();
 
     SetDebugTag(*visual, debugTag);
 }
@@ -422,7 +547,9 @@ void HWCompTreeNodeWinRT::InsertWUCSpineVisual(_In_ WUComp::IVisual* parentVisua
     GetVisualCollectionFromWUCSpineVisual(parentVisual, childCollection.ReleaseAndGetAddressOf());
     // LTEs can render one UIElement in multiple places, which causes us to insert the same WUC hand off visual in multiple
     // places in the tree. DComp will return E_INVALIDARG in this case, which we'll ignore. The subsequent inserts will no-op.
-    IFCFAILFAST_ALLOW_INVALIDARG(childCollection->InsertAtBottom(childVisual));
+    const HRESULT insertionResult = childCollection->InsertAtBottom(childVisual);
+    IFCFAILFAST_ALLOW_INVALIDARG(insertionResult);
+    if (SUCCEEDED(insertionResult)) TraceProfilerVisualMembership(parentVisual, childVisual, true);
 
     // Notify the XAML Profiler of this intra-comp-node spine edge so an out-of-process
     // consumer can reconstruct the full WUC visual tree (prepend -> primary -> content, etc).
@@ -441,7 +568,9 @@ void HWCompTreeNodeWinRT::RemoveWUCSpineVisual(_In_ WUComp::IVisual* parentVisua
     // During shutdown we might find no child collection due to the CompositionContent already closing down the entire tree.
     if (childCollection != nullptr)
     {
+        const int32_t order = ProfilerVisualOrder(parentVisual, childVisual);
         IFCFAILFAST(childCollection->Remove(childVisual));
+        TraceProfilerVisualMembership(parentVisual, childVisual, false, order);
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
@@ -568,6 +697,7 @@ void HWCompTreeNodeWinRT::CleanupBottomClipVisual(int visualID)
         }
 
         // We're finished with all reparenting, release the visual.
+        UpdateProfilerVisualSlot(ProfilerBottomClip + visualID, nullptr);
         m_bottomClipVisuals[visualID] = nullptr;
     }
 }
@@ -599,7 +729,9 @@ void HWCompTreeNodeWinRT::ReparentVisualChildrenHelper(
         IFCFAILFAST(iterator->MoveNext(&hasCurrent));
 
         // Transfer the current visual over to the end of the new container's children
+        const int32_t order = ProfilerVisualOrder(oldParent, visual.get());
         IFCFAILFAST(originalChildrenCollection->Remove(visual));
+        TraceProfilerVisualMembership(oldParent, visual.get(), false, order);
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
@@ -607,6 +739,7 @@ void HWCompTreeNodeWinRT::ReparentVisualChildrenHelper(
         }
 #endif // XAMLPROFILER_ENABLED
         IFCFAILFAST(newChildrenCollection->InsertAtTop(visual));
+        TraceProfilerVisualMembership(newParent, visual.get(), true);
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
@@ -690,6 +823,7 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::PushProperties(
     bool disablePixelSnapping
     ) noexcept
 {
+    ReconcileProfilerVisualSlots();
     if (m_isDCompVisualsDirty || m_disablePixelSnapping != disablePixelSnapping)
     {
         m_disablePixelSnapping = disablePixelSnapping;
@@ -850,6 +984,8 @@ void HWCompTreeNodeWinRT::UpdatePrependTransform()
         // Set the Offset back to [0,0,0] as we're no longer using ECP Translation
         wfn::Vector3 offsetValue = {};
         IFCFAILFAST(m_prependVisual->put_Offset(offsetValue));
+        TraceProfilerVisualProperty(m_prependVisual.Get(), 0, offsetValue.X);
+        TraceProfilerVisualProperty(m_prependVisual.Get(), 1, offsetValue.Y);
     }
 }
 
@@ -1186,6 +1322,8 @@ void HWCompTreeNodeWinRT::SetPrependClipRect(_In_ DCompTreeHost *dcompTreeHost, 
         size.X = m_pUIElementNoRef->GetActualWidth();
         size.Y = m_pUIElementNoRef->GetActualHeight();
         IFCFAILFAST(m_prependVisual->put_Size(size));
+        TraceProfilerVisualProperty(m_prependVisual.Get(), 2, size.X);
+        TraceProfilerVisualProperty(m_prependVisual.Get(), 3, size.Y);
 
         xref_ptr<WUComp::ICompositionClip> compositionClip;
         xref_ptr<WUComp::IInsetClip> insetClip;
@@ -1251,6 +1389,7 @@ void HWCompTreeNodeWinRT::UpdatePrependOpacity(_In_ DCompTreeHost *dcompTreeHost
         }
 
         IFCFAILFAST(m_prependVisual->put_Opacity(staticOpacity));
+        TraceProfilerVisualProperty(m_prependVisual.Get(), 4, staticOpacity);
 
         m_transitionTargetOpacityExpressionCache.Reset();
     }
@@ -1944,6 +2083,8 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisual(
     size.X = m_pUIElementNoRef->GetActualWidth();
     size.Y = m_pUIElementNoRef->GetActualHeight();
     IFCFAILFAST(m_primaryVisual->put_Size(size));
+    TraceProfilerVisualProperty(m_primaryVisual.Get(), 2, size.X);
+    TraceProfilerVisualProperty(m_primaryVisual.Get(), 3, size.Y);
 
     UpdatePrimaryVisualOffset(dcompTreeHost->GetCompositor());
 
@@ -2003,6 +2144,8 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualOffset(_In_ WUComp::ICompositor* co
             || offset.Z != m_previousWUCOffset.Z)
         {
             IFCFAILFAST(m_primaryVisual->put_Offset(offset));
+            TraceProfilerVisualProperty(m_primaryVisual.Get(), 0, offset.X);
+            TraceProfilerVisualProperty(m_primaryVisual.Get(), 1, offset.Y);
             m_previousWUCOffset = offset;
         }
     }
@@ -2077,6 +2220,7 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualOpacity(_In_ WUComp::ICompositor* c
             || opacity != m_previousWUCOpacity)
         {
             IFCFAILFAST(m_primaryVisual->put_Opacity(opacity));
+            TraceProfilerVisualProperty(m_primaryVisual.Get(), 4, opacity);
             m_previousWUCOpacity = opacity;
         }
     }
@@ -2660,6 +2804,7 @@ void HWCompTreeNodeWinRT::EnsureDManipHitTestVisual(_In_ DCompTreeHost *dcompTre
         wrl::ComPtr<WUComp::ISpriteVisual> spriteVisual;
         IFCFAILFAST(compositor->CreateSpriteVisual(&spriteVisual));
         VERIFYHR(spriteVisual.As(&m_dmanipHitTestVisual));
+        UpdateProfilerVisualSlot(ProfilerDManip, m_dmanipHitTestVisual.Get());
 
         if (runtimeEnabledFeatureDetector->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::DumpMockDManipHitTestVisual))
         {
@@ -2719,13 +2864,16 @@ void HWCompTreeNodeWinRT::CleanupDManipHitTestVisual()
     {
         xref_ptr<WUComp::IVisualCollection> childCollection;
         GetVisualCollectionFromWUCSpineVisual(GetBottomMostNonContentVisual(), childCollection.ReleaseAndGetAddressOf());
+        const int32_t order = ProfilerVisualOrder(GetBottomMostNonContentVisual(), m_dmanipHitTestVisual.Get());
         IFCFAILFAST(childCollection->Remove(m_dmanipHitTestVisual.Get()));
+        TraceProfilerVisualMembership(GetBottomMostNonContentVisual(), m_dmanipHitTestVisual.Get(), false, order);
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
             WucVisualTreeProfiler::NotifyChildRemoved(GetBottomMostNonContentVisual(), m_dmanipHitTestVisual.Get());
         }
 #endif // XAMLPROFILER_ENABLED
+        UpdateProfilerVisualSlot(ProfilerDManip, nullptr);
         m_dmanipHitTestVisual = nullptr;
     }
 }
@@ -3264,7 +3412,9 @@ void HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual(_In_ DCompTreeHost* dcom
 // which should effectively address the specific scenarios where we hit this.
 void HWCompTreeNodeWinRT::UpdateHandInVisual()
 {
+    ReconcileProfilerVisualSlots();
     HRESULT hr = S_OK;
+    bool insertedHandIn = false;
 
     // Update by comparing our current HandIn Visual state to what's stored on the CUIElement
     xref_ptr<WUComp::IVisual> currentHandInVisual;
@@ -3284,7 +3434,10 @@ void HWCompTreeNodeWinRT::UpdateHandInVisual()
 
         if (m_handInVisual != nullptr)
         {
+            const int32_t order = ProfilerVisualOrder(GetBottomMostNonContentVisual(), m_handInVisual.Get());
             hr = childCollection->Remove(m_handInVisual.Get());
+            if (SUCCEEDED(hr))
+                TraceProfilerVisualMembership(GetBottomMostNonContentVisual(), m_handInVisual.Get(), false, order);
 
             // It's possible the current hand-in has been disposed by the app, and we're finding out now when the app is replacing it with a new one.
             // For simplicity, ignore RO_E_CLOSED and allow UIElement + compnode to manage it as a valid hand-in. The overhead here is minimal since disposal released the DComp resources.
@@ -3311,6 +3464,22 @@ void HWCompTreeNodeWinRT::UpdateHandInVisual()
         {
             // Note: This will put the hand in visual on top of all the children as well.
             hr = childCollection->InsertAtTop(currentHandInVisual);
+            insertedHandIn = SUCCEEDED(hr);
+            if (hr == E_INVALIDARG && WinUIProfiler::Hooks::TreesEnabled())
+            {
+                const WinUIProfiler::DomainReference domains[] = {{5, WinUIProfiler::EventVersion}};
+                WinUIProfiler::Trace<WinUIProfiler::Event::Loss>([&]() noexcept
+                {
+                    LARGE_INTEGER now{};
+                    QueryPerformanceCounter(&now);
+                    WinUIProfiler::Loss loss;
+                    loss.StartQpc = loss.EndQpc = now.QuadPart;
+                    loss.Reason = "Native hand-in InsertAtTop rejected: HRESULT=0x80070057; no VisualChild edge";
+                    loss.HasDomains = true;
+                    loss.Domains = {domains, ARRAYSIZE(domains)};
+                    return loss;
+                });
+            }
 
             // It's possible the new hand-in has been disposed by the app, and we're finding out now when the app is using it to replace the previous one.
             // For simplicity, ignore RO_E_CLOSED and allow UIElement + compnode to manage it as a valid hand-in. The overhead here is minimal since disposal released the DComp resources.
@@ -3331,7 +3500,10 @@ void HWCompTreeNodeWinRT::UpdateHandInVisual()
             }
 #endif // XAMLPROFILER_ENABLED
         }
+        UpdateProfilerVisualSlot(ProfilerHandIn, currentHandInVisual.get());
         m_handInVisual = currentHandInVisual;
+        if (insertedHandIn)
+            TraceProfilerVisualMembership(GetBottomMostNonContentVisual(), m_handInVisual.Get(), true);
     }
 }
 
@@ -3345,7 +3517,10 @@ void HWCompTreeNodeWinRT::CleanupHandInVisual()
         xref_ptr<WUComp::IVisualCollection> childCollection;
         GetVisualCollectionFromWUCSpineVisual(GetBottomMostNonContentVisual(), childCollection.ReleaseAndGetAddressOf());
 
+        const int32_t order = ProfilerVisualOrder(GetBottomMostNonContentVisual(), m_handInVisual.Get());
         hr = childCollection->Remove(m_handInVisual.Get());
+        if (SUCCEEDED(hr))
+            TraceProfilerVisualMembership(GetBottomMostNonContentVisual(), m_handInVisual.Get(), false, order);
 
         // It's possible the hand-in has been disposed by the app, and we're finding out now when dissociating it from the comp node.
         // For simplicity, ignore RO_E_CLOSED and allow UIElement to manage it as a valid hand-in. The overhead here is minimal since disposal released the DComp resources.
@@ -3396,7 +3571,11 @@ void HWCompTreeNodeWinRT::CleanupHandOffVisual()
         // places in the tree. The subsequent inserts will no-op. When we go to remove those LTEs, we'll try to remove the same
         // hand off visual from multiple places in the tree when it's actually in only one place. Ignore the E_INVALIDARGs that
         // we get from DComp.
-        IFCFAILFAST_ALLOW_INVALIDARG(childCollection->Remove(m_primaryVisual.Get()));
+        const int32_t order = ProfilerVisualOrder(m_prependVisual.Get(), m_primaryVisual.Get());
+        const HRESULT removalResult = childCollection->Remove(m_primaryVisual.Get());
+        IFCFAILFAST_ALLOW_INVALIDARG(removalResult);
+        if (SUCCEEDED(removalResult))
+            TraceProfilerVisualMembership(m_prependVisual.Get(), m_primaryVisual.Get(), false, order);
     }
 
     if (pUIElementPeer && IsUsingHandOffVisual(*pUIElementPeer))
@@ -3440,6 +3619,8 @@ void HWCompTreeNodeWinRT::CleanupChildLinks()
     if (SUCCEEDED(hr))
     {
         IFCFAILFAST(childCollection->RemoveAll());
+        // Children may be app-owned; a bulk removal does not establish individual identities.
+        TraceProfilerVisualMembership(GetBottomMostVisual(), nullptr, false);
     }
     else if (hr != RO_E_CLOSED || !GetContext()->IsTearingDownTree())
     {
@@ -3584,9 +3765,11 @@ void HWCompTreeNodeWinRT::InsertChildSynchronousInternal(
     xref_ptr<WUComp::IVisualCollection> childCollection;
     GetVisualCollectionFromWUCSpineVisual(GetBottomMostVisual(), childCollection.ReleaseAndGetAddressOf());
 
+    HRESULT profilerInsertResult = S_OK;
     if (wucPreviousSibling == nullptr)
     {
         HRESULT insertHR = childCollection->InsertAtBottom(wucChild.Get());
+        profilerInsertResult = insertHR;
 
         //
         // LTEs target elements and render their target elements at another place in the tree. Multiple LTEs can target
@@ -3620,6 +3803,9 @@ void HWCompTreeNodeWinRT::InsertChildSynchronousInternal(
     {
         IFCFAILFAST(childCollection->InsertAbove(wucChild.Get(), wucPreviousSibling));
     }
+    if (WinUIProfiler::Hooks::TreesEnabled() && SUCCEEDED(profilerInsertResult))
+        TraceProfilerVisualMembership(GetBottomMostVisual(), wucChild.Get(), true, -1,
+            child->UsesPlaceholderVisual() ? nullptr : static_cast<HWCompTreeNodeWinRT*>(child));
 
     // Notify the XAML Profiler of this inter-comp-node edge. The child WUC visual is owned by the
     // child comp node, so pass the child comp node's pointer as the owner id.
@@ -3646,6 +3832,9 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::InsertChildAtBeginningInternal(
     GetVisualCollectionFromWUCSpineVisual(GetBottomMostVisual(), childCollection.ReleaseAndGetAddressOf());
 
     IFCFAILFAST(childCollection->InsertAtBottom(wucChild));
+    if (WinUIProfiler::Hooks::TreesEnabled())
+        TraceProfilerVisualMembership(GetBottomMostVisual(), wucChild.get(), true, -1,
+            child->UsesPlaceholderVisual() ? nullptr : static_cast<HWCompTreeNodeWinRT*>(child));
 #ifdef XAMLPROFILER_ENABLED
     if (WucVisualTreeProfiler::IsEnabled())
     {
@@ -3668,7 +3857,11 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::RemoveChildInternal(_In_ HWCompNode 
     {
         xref_ptr<WUComp::IVisual> visualToRemove = child->GetWUCVisualInMainTree();
 
+        const int32_t order = ProfilerVisualOrder(GetBottomMostVisual(), visualToRemove.get());
         IFCFAILFAST(childCollection->Remove(visualToRemove));
+        if (WinUIProfiler::Hooks::TreesEnabled())
+            TraceProfilerVisualMembership(GetBottomMostVisual(), visualToRemove.get(), false, order,
+                child->UsesPlaceholderVisual() ? nullptr : static_cast<HWCompTreeNodeWinRT*>(child));
 #ifdef XAMLPROFILER_ENABLED
         if (WucVisualTreeProfiler::IsEnabled())
         {
@@ -4056,6 +4249,7 @@ void HWCompTreeNodeWinRT::CreateContentVisual(_In_ DCompTreeHost* dcompTreeHost)
     wrl::ComPtr<WUComp::IContainerVisual> container;
     IFCFAILFAST(dcompTreeHost->CreateContainerVisual(container.ReleaseAndGetAddressOf()));
     container.As(&m_contentVisual);
+    UpdateProfilerVisualSlot(ProfilerContent, m_contentVisual.Get());
 
     SetDebugTag(m_contentVisual.Get(), s_contentVisualTag);
     DCompTreeHost::SetTagIfEnabled(m_contentVisual.Get(), VisualDebugTags::CompNode_ContentVisual);
@@ -4142,6 +4336,7 @@ void HWCompTreeNodeWinRT::EnsureDropShadowVisual(_In_ DCompTreeHost* dcompTreeHo
         wrl::ComPtr<ixp::ISpriteVisual> dropShadowSpriteVisual;
         IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateSpriteVisual(dropShadowSpriteVisual.ReleaseAndGetAddressOf()));
         dropShadowSpriteVisual.As(&m_dropShadowSpriteVisual);
+        UpdateProfilerVisualSlot(ProfilerShadowSprite, m_dropShadowSpriteVisual.Get());
         InsertWUCSpineVisual(m_dropShadowParentVisual.Get(), m_dropShadowSpriteVisual.Get());
     }
 }
@@ -4151,7 +4346,9 @@ void HWCompTreeNodeWinRT::CleanupDropShadowVisual()
     if (m_dropShadowParentVisual)
     {
         RemoveWUCSpineVisual(m_prependVisual.Get(), m_dropShadowParentVisual.Get());
+        UpdateProfilerVisualSlot(ProfilerShadowParent, nullptr);
         m_dropShadowParentVisual = nullptr;
+        UpdateProfilerVisualSlot(ProfilerShadowSprite, nullptr);
         m_dropShadowSpriteVisual = nullptr;
 
         // Resetting this flag makes us restart the animation the next time we need a drop shadow. This prevents the

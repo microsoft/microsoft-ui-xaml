@@ -1,0 +1,139 @@
+<Page
+    x:Class="WinUIProfiler.App.Views.SessionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:WinUIProfiler.App.ViewModels"
+    xmlns:views="using:WinUIProfiler.App.Views">
+    <Grid Padding="24" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Spacing="4">
+            <TextBlock x:Uid="Heading" Style="{ThemeResource TitleTextBlockStyle}" />
+        </StackPanel>
+        <views:LiveConnectionPanel Grid.Row="1" x:Name="LiveConnection" />
+        <TabView Grid.Row="2" x:Name="Workspace" IsAddTabButtonVisible="False"
+                 CanReorderTabs="False" CanDragTabs="False" SelectionChanged="Workspace_SelectionChanged">
+            <TabViewItem x:Uid="LiveMetricsTab" IsClosable="False">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                              HorizontalScrollMode="Disabled">
+                    <Grid Padding="0,8,12,8" RowSpacing="8" ColumnSpacing="12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                        <TextBlock Grid.ColumnSpan="2" x:Uid="LiveMetricsNotice" TextWrapping="Wrap"
+                                   Style="{ThemeResource CaptionTextBlockStyle}" />
+                        <views:LiveMetricChart Grid.Row="1" x:Name="CpuChart" x:Uid="LiveCpuChart" Title="CPU" />
+                        <views:LiveMetricChart Grid.Row="1" Grid.Column="1" x:Name="GpuChart" x:Uid="LiveGpuChart" Title="GPU" />
+                        <views:LiveMetricChart Grid.Row="2" x:Name="WorkingSetChart" x:Uid="LiveWorkingSetChart" Title="Working set" />
+                        <views:LiveMetricChart Grid.Row="2" Grid.Column="1" x:Name="PrivateWorkingSetChart" x:Uid="LivePrivateWorkingSetChart" Title="Private working set" />
+                        <views:LiveMetricChart Grid.Row="3" x:Name="CommitChart" x:Uid="LiveCommitChart" Title="Private commit" />
+                    </Grid>
+                </ScrollViewer>
+            </TabViewItem>
+            <TabViewItem x:Uid="SavedSessionTab" IsClosable="False">
+                <Grid Padding="0,8,0,0" RowSpacing="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Uid="ReadOnlyNotice" TextWrapping="Wrap" />
+        <Grid Grid.Row="1" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="SessionPath" x:Uid="SessionPath" IsEnabled="{x:Bind ViewModel.CanOpen, Mode=OneWay}" />
+            <Button Grid.Column="1" x:Uid="Open" Click="Open_Click"
+                    IsEnabled="{x:Bind ViewModel.CanOpen, Mode=OneWay}" VerticalAlignment="Bottom" />
+            <Button Grid.Column="2" x:Uid="Refresh" Click="Refresh_Click"
+                    IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}" VerticalAlignment="Bottom" />
+        </Grid>
+        <InfoBar Grid.Row="2" x:Uid="ReadError" Severity="Error" IsClosable="False"
+                 IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
+                 Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+        <Grid Grid.Row="3" ColumnSpacing="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Spacing="3">
+                <TextBlock x:Uid="SessionId" Style="{ThemeResource CaptionTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.SessionId, Mode=OneWay}" IsTextSelectionEnabled="True" />
+                <TextBlock x:Uid="ProcessId" Style="{ThemeResource CaptionTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.ProcessId, Mode=OneWay}" />
+                <TextBlock Text="{x:Bind ViewModel.ProcessInstanceId, Mode=OneWay}" IsTextSelectionEnabled="True" />
+                <TextBlock x:Uid="CreationTime" Style="{ThemeResource CaptionTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.CreationFileTime, Mode=OneWay}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="3">
+                <TextBlock x:Uid="RecordedState" Style="{ThemeResource CaptionTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.Mode, Mode=OneWay}" />
+                <TextBlock Text="{x:Bind ViewModel.Status, Mode=OneWay}" />
+                <TextBlock Text="{x:Bind ViewModel.StopReason, Mode=OneWay}" TextWrapping="Wrap" />
+                <TextBlock x:Uid="Frequency" Style="{ThemeResource CaptionTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.QpcFrequency, Mode=OneWay}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="3">
+                <TextBlock x:Uid="Watermark" Style="{ThemeResource CaptionTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.CommittedOrdinal, Mode=OneWay}" />
+                <TextBlock Text="{x:Bind ViewModel.CommittedQpc, Mode=OneWay}" />
+                <TextBlock Text="{x:Bind ViewModel.MetricCoverage, Mode=OneWay}"
+                           AutomationProperties.LiveSetting="Polite" />
+                <TextBlock Text="{x:Bind ViewModel.CoverageReason, Mode=OneWay}" TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
+        <ListView Grid.Row="4" x:Uid="Metrics" ItemsSource="{x:Bind ViewModel.Rows, Mode=OneWay}"
+                  SelectionMode="Single" HorizontalContentAlignment="Stretch">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="vm:MetricRow">
+                    <Grid Padding="4,8" ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{x:Bind TimestampQpc}" />
+                            <TextBlock Text="{x:Bind Metric}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="{x:Bind Value}" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                            <TextBlock Text="{x:Bind Unit}" />
+                            <TextBlock Text="{x:Bind Quality}" TextWrapping="Wrap" />
+                            <TextBlock Text="{x:Bind Reason}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{x:Bind Source}" TextWrapping="Wrap" />
+                            <TextBlock Text="{x:Bind GpuScope}" TextWrapping="Wrap" />
+                            <TextBlock Text="{x:Bind SourceObservation}" TextWrapping="Wrap"
+                                       Style="{ThemeResource CaptionTextBlockStyle}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <StackPanel Grid.Row="5" Orientation="Horizontal" Spacing="12">
+            <Button x:Uid="Previous" Click="Previous_Click" IsEnabled="{x:Bind ViewModel.CanPrevious, Mode=OneWay}" />
+            <Button x:Uid="Next" Click="Next_Click" IsEnabled="{x:Bind ViewModel.CanNext, Mode=OneWay}" />
+            <TextBlock x:Uid="Offset" VerticalAlignment="Center" />
+            <TextBlock Text="{x:Bind ViewModel.PageOffset, Mode=OneWay}" VerticalAlignment="Center" />
+            <ProgressRing IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" Width="24" Height="24" />
+        </StackPanel>
+                </Grid>
+            </TabViewItem>
+        </TabView>
+    </Grid>
+</Page>

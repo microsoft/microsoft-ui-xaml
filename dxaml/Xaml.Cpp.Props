@@ -89,6 +89,7 @@
     <ArchDefines Condition="'$(Platform)' == 'x64'">WIN64;_WIN64;_AMD64_;AMD64;</ArchDefines>
     <ArchDefines Condition="'$(Platform)' == 'ARM64'"  >_ARM64_;ARM64;</ArchDefines>
     <ProductBuildVersion Condition="'$(ProductBuildVersion)' == ''">0</ProductBuildVersion>
+    <WinUIProfilerFoundationEnabled>true</WinUIProfilerFoundationEnabled>
     <XamlCommonPreprocessorDefinitions>
       REDIR_BITMAPEX_REUSE;
       _CONTROL_FLOW_GUARD_SVCTAB=1;

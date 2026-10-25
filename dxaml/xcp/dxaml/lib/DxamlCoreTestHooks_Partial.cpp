@@ -26,6 +26,10 @@
 #include <collectionbase.h>
 #include <UIElement_Partial.h>
 #include <DCompTreeHost.h>
+#if defined(WINUI_PROFILER_FRAME_TEST_HOOKS)
+#include <WinUIProfilerHooks.h>
+#include <ConnectedAnimationService.h>
+#endif
 #include <XamlLight.h>
 #include <XamlLight.g.h>
 #include <UIElement.g.h>
@@ -514,6 +518,47 @@ IFACEMETHODIMP
 
     switch (command)
     {
+#if defined(WINUI_PROFILER_FRAME_TEST_HOOKS)
+        case Profiler_ArmPostCommitFailure:
+        case Profiler_GetPostCommitState:
+        {
+            auto dxamlCore = DXamlCore::GetCurrent();
+            auto core = dxamlCore ? dxamlCore->GetHandle() : nullptr;
+            if (!core || !spObject || spObject.Cast<DependencyObject>()->GetHandle()->GetContext() != core)
+                return E_ILLEGAL_METHOD_CALL;
+            // Match the existing forced-fail-fast layout policy: a layout error
+            // must never become eligible for the diagnostic app's one allowance.
+            bool layoutError = false;
+            IFC_RETURN(CoreImports::LayoutManager_DidErrorOccurDuringLayout(core, &layoutError));
+            if (layoutError) return E_ILLEGAL_METHOD_CALL;
+            if (command == Profiler_ArmPostCommitFailure && !WinUIProfiler::Hooks::FramesEnabled())
+                return E_ILLEGAL_METHOD_CALL;
+            core->EnsureConnectedAnimationService();
+            auto service = core->GetConnectedAnimationServiceNoRef();
+            if (!service) return E_UNEXPECTED;
+            if (command == Profiler_ArmPostCommitFailure) return service->ArmProfilerPostCommitFailure();
+            if (!ppReturnValue) return E_POINTER;
+            ctl::ComPtr<wf::IPropertyValueStatics> factory;
+            IFC_RETURN(ctl::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Windows_Foundation_PropertyValue).Get(), &factory));
+            ctl::ComPtr<wf::IPropertyValue> value;
+            IFC_RETURN(factory->CreateUInt32(service->ProfilerPostCommitState(), &value));
+            *ppReturnValue = value.Detach();
+            return S_OK;
+        }
+        case Profiler_CommitMainDeviceWithoutDevice:
+        {
+            auto dxamlCore = DXamlCore::GetCurrent();
+            auto core = dxamlCore ? dxamlCore->GetHandle() : nullptr;
+            if (!core || !core->NWGetWindowRenderTarget()) return E_ILLEGAL_METHOD_CALL;
+            auto host = core->GetDCompTreeHost();
+            if (!host || host->HasDCompDevice() || !WinUIProfiler::Hooks::FramesEnabled())
+                return E_ILLEGAL_METHOD_CALL;
+            const HRESULT result = host->CommitMainDevice(core);
+            if (host->HasDCompDevice()) return E_UNEXPECTED;
+            return result;
+        }
+#endif
         case Popup_SetWindowed:
         {
             CPopup *pPopup = static_cast<CPopup*>(spObject.Cast<Popup>()->GetHandle());
