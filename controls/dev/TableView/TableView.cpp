@@ -2782,9 +2782,13 @@ static winrt::IInspectable StyleSetterValue(const winrt::Style& style, const win
                 {
                     value = setter.Value();
                 }
-                catch (winrt::hresult_error const&)
+                catch (winrt::hresult_error const& e)
                 {
-                    // Reading an {x:Null} Setter.Value of a typed property fails, yet the Style applies null.
+                    // Reading an {x:Null} Setter.Value of a typed property fails with E_FAIL, yet the Style applies null.
+                    if (e.code() != E_FAIL)
+                    {
+                        throw;
+                    }
                 }
             }
         }
