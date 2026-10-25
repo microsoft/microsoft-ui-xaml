@@ -34,6 +34,7 @@ controls/dev/TableViewSource2/
     ShapeDelegates.h                             ShapeDelegates (tracker_ref'd app delegates)
   Engine/                                        shaping engine (only node types so far)
     ShapedTree.h                                 ShapedRef, GroupNode
+    ShapeState.h                                 ShapeState, ShapeFlags (engine state inline on SourceRecord)
 ```
 
 Future layers (visible list, coordinator) each get their own subdirectory when they
@@ -63,7 +64,7 @@ table serves as both the shared identity store and the cached full set that shap
 | 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h` | Declared, not implemented |
 | 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange` | `Source/SourceRecord.h`, `Source/SourceTable.h` | Declared, not implemented |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership decided (desired in source, applied in engine) |
-| 6 | Shaping engine: shaped tree node types `ShapedRef`, `GroupNode` | `Engine/ShapedTree.h` | Node types declared; engine not started |
+| 6 | Shaping engine: shaped tree node types `ShapedRef`, `GroupNode`; per-record `ShapeState` | `Engine/ShapedTree.h`, `Engine/ShapeState.h` | Node types and record state declared; engine not started |
 | 7 | Projection output (rows view and row metadata) | — | Not started |
 | 8 | Coordinator (incremental vs rebuild, owner notifications) | — | Not started |
 
@@ -317,6 +318,7 @@ and that live exactly as long as the item stays in the source.
 | `Identity()` | The logical identity string (`"0x…"` today). It is formatted on first use and cached; this accessor is the only way to read it. |
 | `PropertyChangedToken`, `Watch` | Live-shaping subscription state, revoked in `~SourceRecord()`. `NotObservable` records that an item has no `INotifyPropertyChanged`, so it is not probed again. |
 | `Parent`, `Children`, `Depth`, `HasChildren()` | Source-tree links, written only by `SourceTable`. Non-owning; flat sources leave every record top-level (`Parent == nullptr`) with no children. See *Hierarchy: the source tree in `SourceTable`*. |
+| `ShapeState Shape` | Engine state stored inline (`Engine/ShapeState.h`): filter flags, cached sort keys, filtered and sorted children, visible-descendant count. Written only by the engine and the flattener. See *Engine state storage*. |
 
 Records are not copyable. `SourceTable` holds the sole strong `shared_ptr<SourceRecord>` (`SourceRecordPtr`)
 for each record so that `PropertyChanged` callbacks can capture `weak_ptr<SourceRecord>`
@@ -702,11 +704,13 @@ struct GroupNode                       // engine-owned; headers exist only while
   the node (AG Grid `RowNode.childrenAfterFilter/AfterSort`, VS Code `visible`/`renderNodeCount`)
   and parallel nodes (WPF `LiveShapingItem`, Avalonia `HierarchicalRow`, Glazed Lists
   `TreeList.Node`) remain. We put the state on the record:
-  - Each `SourceRecord` carries one engine-owned `ShapeState` slot; the type is defined in
-    `Engine/` and opaque to `Source/`. It holds the filter pass and has-passing-descendant flags
-    (ancestors of matches stay visible), cached keys (one per sort level, plus the group key), the
-    filtered and sorted children, and `VisibleDescendantCount`. Tree links come from the record's
-    existing `Parent`/`Children`.
+  - Each `SourceRecord` carries one engine-owned `ShapeState Shape` (`Engine/ShapeState.h`). It
+    holds `ShapeFlags` (`PassesFilter`, `HasPassingDescendant` so ancestors of matches stay
+    visible, `ChildrenShaped`, `SortKeysValid`), `SortKeys` (one cached key per sort level;
+    comparer levels hold none), `ShapedChildren` (the filtered and sorted children) and
+    `VisibleDescendantCount`. Tree links come from the record's existing `Parent`/`Children`.
+    Group membership stays in the engine's `m_groupOf` and the key on `GroupNode::Key`, so no
+    group key is cached on the record.
   - Why not parallel `ShapedRecord` nodes: they must mirror every add, remove, reparent and
     Reset, and need a record-to-node back-pointer for `ItemChanged`, removal and selection.
     `ShapedRef`, `VisibleRow` and identity (record address) stay unchanged with state on the record.
@@ -717,8 +721,12 @@ struct GroupNode                       // engine-owned; headers exist only while
   - Keys are cached (unlike Qt/JavaFX/Glazed Lists): path keys go through a binding and key
     selectors cross into app code, so each key is read once per record per level and refreshed
     on `ItemChanged` and on the affected `ShapeDelta`.
-  - Open: `ShapeState` stored inline, or as a lazily allocated `unique_ptr` (no cost when nothing
-    is shaped).
+  - **Stored inline (decided, for now).** The large parts are vectors that allocate nothing until
+    used, so a lazily allocated `unique_ptr` would save only the fixed fields while adding a heap
+    allocation per record when shaping starts, a pointer hop and null check on every access, and a
+    rule for when to free. `Engine/ShapeState.h` is a leaf header (standard library, WinRT,
+    `tracker_ref`), so `Source/` depends on it and not on the engine. Revisit if the fixed size
+    grows.
 - **Group vs. source node:** `ShapedRef::IsGroup()`.
   - A source parent (`Record()->HasChildren()`) is expandable but is not a group.
   - This avoids AG Grid's mix-up, where `rowNode.group` is also true for tree-data parents and
@@ -1052,7 +1060,7 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
 - [ ] Shaped tree node types `ShapedRef`, `GroupNode` (`Engine/ShapedTree.h`): declared, no
       implementation.
 - [x] Decide where engine state lives: an engine-owned `ShapeState` slot on `SourceRecord`.
-- [ ] Declare `ShapeState` (decide inline vs `unique_ptr`) and add the slot to `SourceRecord`.
+- [x] Declare `ShapeState` (`Engine/ShapeState.h`, stored inline) and add `SourceRecord::Shape`.
 - [ ] Run filter, sort, group, and hierarchy over `SourceTable::TopLevel()` and
       `SourceRecord::Children` without re-enumerating the underlying collection.
 - [ ] Map shaped output back to `SourceRecord*` in O(1) via `SourceTable::TryFindByRawPointer`.
@@ -1081,7 +1089,8 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
 - `m_sourceTable` is never created yet (the constructor does not allocate it).
 - `Source/SourceRecord.h`, `Source/SourceTable.h` and `Source/CollectionAccessor2.h` have no `.cpp` files yet (Phase 1.4).
 - The source-tree members of `SourceTable` are declared only (Phase 1.5).
-- `Engine/ShapedTree.h` (`ShapedRef`, `GroupNode`) is declared only (Phase 4).
+- `Engine/ShapedTree.h` (`ShapedRef`, `GroupNode`) and `Engine/ShapeState.h` (`ShapeState`) are declared
+  only (Phase 4).
 - `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h` and `Spec/PathEvaluator.h` are declared only
   (Phase 2); nothing owns a `ShapeSpec`, `ShapeDelegates` or `PathEvaluator` yet.
 - **Split hierarchy out of `SourceTable` (later).** `SourceTable` mixes always-on code with code

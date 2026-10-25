@@ -11,6 +11,7 @@
 #include <winrt/Windows.Foundation.h>
 
 #include "tracker_ref.h"
+#include "Engine/ShapeState.h"
 
 // Per-item source record and record-level change for TableViewSource2
 // (docs/design-notes/TabularControls/TableView-Row-Identity-Reuse-Spec.md).
@@ -68,7 +69,7 @@ struct SourceRecord
     // The tree the source describes, built by ParentBy / ChildrenBy; flat sources leave every record
     // top-level with no children. Never written by Filter, Sort or GroupBy: group membership, group
     // level and expansion live in the shaping layer; filtered/sorted children, filter flags, cached
-    // keys and visible counts live in the engine's ShapeState slot (below, not declared yet).
+    // keys and visible counts live in Shape (below).
     // Non-owning; ownership stays with the item's collection (m_records or a ChildFeed).
 
     // Source parent; nullptr for a top-level record.
@@ -83,12 +84,12 @@ struct SourceRecord
 
     bool HasChildren() const noexcept { return !Children.empty(); }
 
-    // ---- Engine state (decided, not declared yet) -------------------------------------------
+    // ---- Engine state (written only by the engine and the flattener) ------------------------
     //
-    // One engine-owned ShapeState slot per record (type defined in Engine/, opaque here): filter
-    // pass and has-passing-descendant flags, cached sort/group keys, filtered and sorted children,
-    // VisibleDescendantCount. Tree links come from Parent/Children above. Written only by the
-    // engine. OPEN: inline storage or a lazily allocated unique_ptr.
+    // Stored inline (Engine/ShapeState.h): filter flags, cached sort keys, filtered and sorted
+    // children, VisibleDescendantCount. Tree links stay in Parent/Children above. Cached keys are
+    // tracker_refs, so ~SourceRecord destroys them with Item, under the same teardown rules.
+    ShapeState Shape;
 
     // Logical identity, formatted on first use and then cached. The only way to read it.
     winrt::hstring const& Identity() const;
