@@ -314,9 +314,6 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ScrollViewerTests
                  Verify.AreEqual(scrollViewer.HorizontalOffset, horizontalOffset);
                  Verify.AreEqual(scrollViewer.VerticalOffset, verticalOffset);
              });
-
-            TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
-            scrollViewer = null;
         }
 
         [TestMethod]

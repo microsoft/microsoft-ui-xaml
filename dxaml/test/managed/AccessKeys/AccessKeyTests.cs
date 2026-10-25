@@ -385,11 +385,6 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
                     TestServices.WindowHelper.WaitForIdle();
                 }
             }
-
-            TestServices.WindowHelper.ResetWindowContentAndWaitForIdle();
-            rootPanel = null;
-            pivot = null;
-            xamlRoot = null;
         }
 
         [TestMethod]
