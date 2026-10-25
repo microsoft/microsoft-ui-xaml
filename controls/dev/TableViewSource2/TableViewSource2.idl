@@ -39,13 +39,17 @@ runtimeclass TableViewSource2
     // items is null.
     static TableViewSource2 From(Object items);
 
+    // Replaces any existing filter; ClearFilter removes it.
     TableViewSource2 Filter(TableViewPredicate2 predicate);
 
     // Groups by key. groupDirection orders the groups by key (None = order of first appearance in
     // the filtered source); Sort orders only the rows inside each group, never the groups.
     TableViewSource2 GroupBy(TableViewKeySelector2 keySelector, SortDirection2 groupDirection);
 
-    // Each Sort call appends a lower-priority level after the existing ones; ClearSort removes all.
+    // Each Sort call appends a lower-priority level after the existing ones, unless it matches an
+    // existing level, which it then replaces in place: a path matches by string, a key selector or
+    // comparer only when the same delegate object is passed again. Direction None removes the
+    // matching level. ClearSort removes all levels.
     [method_name("SortByPath")]
     TableViewSource2 Sort(String sortMemberPath, SortDirection2 direction);
 

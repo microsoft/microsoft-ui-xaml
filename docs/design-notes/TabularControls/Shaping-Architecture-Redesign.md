@@ -28,11 +28,15 @@ controls/dev/TableViewSource2/
     CollectionAccessor2.h
     SourceRecord.h                               SourceRecord, SourceChange
     SourceTable.h                                SourceTable (records + source tree), HierarchyKind
+  Spec/                                          shape spec: verbs in force (data) + delegate registry + path evaluator
+    ShapeSpec.h                                  ShapeSpec, FilterSpec, SortSpec, GroupSpec, DelegateRef, ShapeDelta
+    PathEvaluator.h                              PathEvaluator (cached SortMemberPathResolver per sort path)
+    ShapeDelegates.h                             ShapeDelegates (tracker_ref'd app delegates)
   Engine/                                        shaping engine (only node types so far)
     ShapedTree.h                                 ShapedRef, GroupNode
 ```
 
-Future layers (shape spec, visible list, coordinator) each get their own subdirectory when they
+Future layers (visible list, coordinator) each get their own subdirectory when they
 are added.
 
 ## Why redesign
@@ -58,7 +62,7 @@ table serves as both the shared identity store and the cached full set that shap
 | 2 | `TableViewSource2` runtime class | `TableViewSource2.h/.cpp` | Verbs are stubs; `Refresh` and `IsLiveShaping` are declared |
 | 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h` | Declared, not implemented |
 | 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange` | `Source/SourceRecord.h`, `Source/SourceTable.h` | Declared, not implemented |
-| 5 | Shape spec | — | **Next to design** |
+| 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Declared, not implemented; ownership and application open |
 | 6 | Shaping engine: shaped tree node types `ShapedRef`, `GroupNode` | `Engine/ShapedTree.h` | Node types declared; engine not started |
 | 7 | Projection output (rows view and row metadata) | — | Not started |
 | 8 | Coordinator (incremental vs rebuild, owner notifications) | — | Not started |
@@ -248,7 +252,7 @@ Verbs are fluent: each returns the same `TableViewSource2` so calls can be chain
 | Verb | Meaning |
 |---|---|
 | `From(items)` | Wraps any collection `TableViewSource.From` accepts. Throws `E_INVALIDARG` when `items` is null. |
-| `Filter(predicate)` | Keeps only the items the predicate accepts. |
+| `Filter(predicate)` | Keeps only the items the predicate accepts. A second call replaces the first, as in v1. |
 | `GroupBy(keySelector, groupDirection)` | Groups by key. `groupDirection` orders the groups by key (`None` = order of first appearance in the filtered source). `Sort` orders only the rows inside each group, never the groups. There is one `GroupBy`; v1's overload taking a group identity selector was removed. |
 | `Sort(sortMemberPath, direction)` | Sorts by property path. Projected as `SortByPath`. |
 | `Sort(keySelector, direction)` | Sorts by key selector. This is the default overload. |
@@ -261,7 +265,10 @@ Verbs are fluent: each returns the same `TableViewSource2` so calls can be chain
 | `IsLiveShaping` | A get/set property, `false` by default. When true, an item's `PropertyChanged` re-applies the active verbs to that item. When false, property edits leave rows in place until the next collection change, verb or `Refresh`. |
 
 Each `Sort` call appends a lower-priority level after the existing ones (`Sort(a).Sort(b)` sorts
-by `a`, then `b`); `ClearSort` removes every level. Unlike v1, group order no longer depends on
+by `a`, then `b`), unless it matches an existing level, in which case it replaces that level in
+place. A path matches by string; a key selector or comparer matches only when the same delegate
+object is passed again. `SortDirection2::None` removes the matching level. `ClearSort` removes
+every level. Unlike v1, group order no longer depends on
 whether `Sort` was declared before or after `GroupBy`.
 
 ## 2. `TableViewSource2` runtime class
@@ -793,13 +800,78 @@ The v1 `IsTableViewSourceGrouped()` branches, and the O(n) scan in
 - **Shared `ShapedNodeBase { Kind }` base for `SourceRecord` and `GroupNode`.** Viable, but adds
   1 byte plus padding to every record for no gain over the tag bit.
 
-## 5. Next: shape spec
+## 5. Shape spec
 
 The shape spec is the stored set of verbs currently in force. The engine, the projection and the
-coordinator all read it. Questions to settle:
+coordinator all read it. It is split in two (`Spec/`):
 
-- **Sort levels (decided):** each `Sort` call appends a lower-priority level. Open: whether sort by
-  path and sort by key selector reduce to one form, and what a repeated key does.
+- **`ShapeSpec`** (`Spec/ShapeSpec.h`): plain data saying *what* is applied. No COM references, so
+  it needs no `tracker_ref`, is copyable and comparable with `==`, and paths stay readable strings.
+
+  ```cpp
+  enum class DelegateId : uint32_t { None = 0 };          // plain value; does not keep the delegate alive
+  struct DelegateRef { DelegateId Id; uint32_t Version; }; // new Version on every Register call
+
+  struct FilterSpec { DelegateRef Predicate; };
+  struct SortSpec   { Kind SortKind /* Path | Key | Comparer */; hstring Path; DelegateRef Delegate;
+                      SortDirection2 Direction /* None for Comparer */; bool Matches(SortSpec const&) const; };
+  struct GroupSpec  { DelegateRef Key; SortDirection2 Direction; };
+  struct ShapeSpec  { vector<FilterSpec> Filters; optional<GroupSpec> Group; vector<SortSpec> Sorts; };
+
+  enum class ShapeDelta { None, Sort, GroupOrder, GroupKey, Filter };   // flags
+  ShapeDelta Diff(ShapeSpec const& before, ShapeSpec const& after);  // pure; == means no work
+  ```
+
+- **`ShapeDelegates`** (`Spec/ShapeDelegates.h`): the registry holding *how*: the app's
+  predicates, key selectors and comparers (`tracker_ref`, optional, destroyed by `Clear()` while
+  the owner is alive), deduplicated by `IUnknown` address so the same delegate object always gets
+  the same `DelegateId`, and every `Register` call returns a new `Version`. `Retain(specsInUse)`
+  releases delegates no spec in use refers to. UI-thread affine.
+- **`PathEvaluator`** (`Spec/PathEvaluator.h`): reads the keys of `Path` sort levels. A path is a
+  string, not a delegate, so it is kept out of `ShapeDelegates`. Uses v1's `SortMemberPathResolver`
+  (a one-time `{Binding}`), so v1 and v2 agree on what a path means; one resolver cached per path,
+  and `Retain(specsInUse)` drops resolvers for paths no spec uses. Holds no app objects between
+  calls, so no `tracker_ref`. UI-thread affine (drives the binding engine), so path sorts read
+  their keys on the UI thread.
+
+| `ShapeDelta` | Engine work |
+|---|---|
+| `None` | Nothing |
+| `Sort` | Re-sort rows inside each group |
+| `GroupOrder` | Reorder groups only |
+| `GroupKey` | Re-bucket into groups, then re-sort |
+| `Filter` | Re-filter from `SourceTable` (no source re-read), then regroup and re-sort |
+
+Compared with the original redesign (`ShapeWork` + `ShapePlan`, Original §4.4): `Sort`,
+`GroupOrder`, `GroupKey` and `Filter` match `ReorderSiblings`, `ReorderGroups`, `Regroup` and
+`Refilter`. There is no `Rehierarchy` (hierarchy is a `SourceTable` Reset) and no `Full` (no first
+shape or `KeyPolicy` in the spec). `ShapeDelta` is flags rather than one "most expensive" value,
+so independent changes such as group order plus row sort combine. `ShapePlan`'s key-cache
+invalidation flags are added only if the engine caches per-row keys. The per-entry `Version`
+follows the original's `StepVersion`.
+
+Decisions and open questions:
+
+- **Sort levels (decided):** each `Sort` call appends a lower-priority level.
+- **Repeated sort (decided, same rules as v1):** a `Sort` call that matches an existing level
+  replaces it in place (keeping its priority) instead of appending.
+  - **Path:** matched by string, so `Sort("Name", Asc)` then `Sort("Name", Desc)` flips the
+    direction. v1 does the same with its `"path:"` axis token (`SortAxisTokenForPath`).
+  - **Key selector / comparer:** matched by delegate object (`IUnknown` pointer). Passing the same
+    object again replaces; a new lambda, even with identical code, is a different object and
+    appends. Apps that want to change a key level's direction keep the delegate in a field. The
+    `ShapeDelegates` registry dedupes by address, so a level matches on `(kind, path or DelegateId)`.
+  - **`None`:** removes the matching level (path or key); with no match it is a no-op. A comparer
+    level has no direction, so only `ClearSort` removes it.
+  - **Why not always append:** with two different lambdas for the same key, the second level never
+    decides anything (the first has already ordered every pair it can), so a direction flip
+    would silently do nothing.
+  - `TableView` column headers will not depend on delegate identity: like v1's internal
+    `SortReplacing` with `"column:<address>"` tokens, they will match by column.
+- **Path and key levels stay separate (decided):** a path level stores the property path as a
+  string, a key level stores the `TableViewKeySelector2`, and a comparer level stores the
+  `TableViewComparer2`. Keeping the path as data lets column headers and saved settings read it.
+  Inside the engine, path and key levels both produce a key per row and share one comparison.
 - **Sort comparer (decided):** `Sort(comparer)` adds a level that compares whole items with a
   `TableViewComparer2`. It is one level like any other, so it can be mixed with path and key
   levels (`Sort(path).Sort(comparer)` breaks path ties with the comparer). It takes no direction;
@@ -818,13 +890,82 @@ coordinator all read it. Questions to settle:
     list, and they swap when the sort changes. We don't adopt that.
   - **Engine freedom:** the engine may physically sort before bucketing for efficiency, as long
     as the result matches this logical order.
-- **Filter:** one predicate, or several combined?
+- **Filter (decided):** the spec holds a list of predicates combined with AND, evaluated in order
+  and stopping at the first rejection; a throwing predicate rejects the item. This matches v1's
+  engine (`ShapingPipeline::m_filters`, `PassesFilter`). The public API keeps v1's behaviour: a
+  `Filter` call replaces the existing filter, and `ClearFilter` removes it, so today the list
+  holds at most one entry. The list leaves room for per-column filters later (v1's engine keys
+  them by an axis token that no public verb exposes).
 - **Hierarchy:** `ParentBy` and `ChildrenBy` are mutually exclusive. Assumed: the last call replaces
   the earlier one (see *Hierarchy: the source tree in `SourceTable`*). The tree itself lives in
-  `SourceTable` and on `SourceRecord`, not in the spec; the spec stores only the selectors.
+  `SourceTable` and on `SourceRecord`, not in the spec. **Decided:** the selectors stay in
+  `SourceTable` too, so a hierarchy change never produces a `ShapeDelta`; `SourceTable` raises a
+  `Reset` `SourceChange` and the coordinator rebuilds from it.
+- **Re-declaration (decided, same as v1):** calling a verb again with the same delegate object
+  (filter, key selector, comparer or group key), even with the same direction, counts as a change
+  to that verb. A delegate can read app state that has moved since (for example, a filter
+  comparing against a `_minAge` field), and the delegate cannot reveal that. v1 does the same
+  (`ShapingPipeline::SetFilter` re-mints the description id on every declaration). Recorded in
+  the spec itself: every `DelegateRef` carries a `Version` that `Register` bumps on each call
+  (like the original redesign's `StepVersion`), so `Diff` stays a pure comparison of two specs and
+  nothing is lost when intermediate specs are dropped.
+  - Only that verb's step re-runs: re-declaring `Filter` re-filters from `SourceTable`; it does
+    not re-read the source like `Refresh()`.
+  - Re-declaring a path sort with the same direction is a no-op: a path reads only the item's own
+    property, which live shaping already tracks.
 - **Diffing:** whether the spec is a comparable value, so the engine can pick the cheapest update.
-  v1 always treats a re-declared verb as changed.
-- **Mutability:** whether each verb replaces the whole spec, or edits it in place.
+  **Decided:** yes. Because re-declarations bump a `Version`, `==` means no work.
+- **Spec ownership, mutability and application (open; decide with the engine, after surveying
+  other frameworks).** A future `DeferRefresh` batches several verbs into one reshape, so the
+  verb-time spec and the applied spec must be separate. Options considered:
+  - **Committed + pending (transaction):** a pending copy exists only inside a batch; verbs edit
+    it in place; at the end the engine applies it and, only on success, it becomes the committed
+    spec (frozen `shared_ptr<const ShapeSpec>` read by the engine and all readers). On failure the
+    pending copy is discarded.
+  - **Copy per verb:** each verb produces a new immutable spec. Same semantics; gains a frozen
+    snapshot per verb, costs a copy per verb. Combining both (edit pending in place, freeze at
+    commit) gets the snapshot without per-verb copies.
+  - **Desired in the source, applied in the engine:** verbs edit the source's desired spec and bump
+    a version; the engine pulls the latest version when ready, dropping intermediate ones (each
+    spec is a full state, not a delta). Failure of the latest cannot fall back to an
+    intermediate, which the app never asked for; on failure the desired spec would reset to the
+    applied one.
+  - Points that hold for every option:
+    - Readers (`IsGrouped`, sort indicators, row metadata, live shaping) and source changes
+      arriving during a batch use only the applied spec.
+    - Re-declarations are carried by `DelegateRef::Version` inside the spec, so no side state
+      travels with the pending/desired spec.
+    - `DelegateId` is a plain value; the registry drops unused delegates at commit, so a delegate
+      the applied spec still uses is never released early.
+    - Nested `DeferRefresh` uses a depth counter (as WPF's `CollectionView`): all levels edit one
+      pending spec, only the outermost end commits, levels have no separate rollback, and
+      disposing a handle twice is a no-op.
+    - With coalesced or deferred application, the verb has already returned, so errors have no
+      caller. Candidate rule: validate inputs at the verb call (throw synchronously), and make
+      application itself non-failing by handling delegate errors per item (a throwing predicate
+      excludes the item as in v1, a throwing key selector gives `null`, a throwing comparer means
+      "equal"). Only fatal errors remain.
+    - A verb called from inside a delegate during apply either throws, or edits the
+      pending/desired spec and triggers one more apply afterwards.
+    - Hierarchy verbs act on `SourceTable`, not the spec, so they are not batched by
+      `DeferRefresh` unless `SourceTable` gets its own deferral.
+- **Path evaluation: revisit `PathEvaluator` and `SortMemberPathResolver` (open).** The current
+  declaration reuses v1's resolver (a hidden `ContentControl` with a `OneTime {Binding}`, one
+  per path) so v1 and v2 agree on what a path means. Questions to settle:
+  - Keep the binding-based resolver, or use a cheaper evaluator (for example reflection through
+    `ICustomPropertyProvider`, or a cached property getter) and accept differences from cell
+    bindings?
+  - The binding engine ties path evaluation to the UI thread; does that fit the engine's threading
+    model, or must path keys be extracted on the UI thread before off-thread work?
+  - Cost: each read is a `DataContext` write plus a binding evaluation, so keys must be read once
+    per record per level into a key cache (engine phase), not per comparison.
+  - Errors: the resolver swallows exceptions and returns `null`; confirm against the engine's error
+    rule.
+  - Live shaping: a dotted path changes when a nested object raises `PropertyChanged`, which the
+    row item does not report. Re-read every path key on `ItemChanged`, or match the first segment
+    against the property name?
+  - Ownership: should `PathEvaluator` be shared with v1 / the column-header sort path, and who
+    calls `Retain` (tied to the spec-ownership question above)?
 
 ## 6. Implementation plan
 
@@ -862,10 +1003,18 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       key index, `SiblingsOf`). Implement, then wire `TableViewSource2` (`ParentBy`, `ChildrenBy`,
       `ClearHierarchy`).
 
-### Phase 2 — Shape spec (`Spec/ShapeSpec.h/.cpp`)
-- [ ] Define how active verbs (`Filter`, `Sort` list, `GroupBy`, `ParentBy` vs `ChildrenBy`) are stored.
-- [ ] Define spec diffing (`ShapeDelta`) so the coordinator knows whether a verb change is a no-op,
-      flat re-sort, filter/group reshape from `m_sourceTable` (no source re-read), or hierarchy rebuild.
+### Phase 2 — Shape spec (`Spec/ShapeSpec.h/.cpp`, `Spec/ShapeDelegates.h/.cpp`, `Spec/PathEvaluator.h/.cpp`)
+- [x] Declare how active verbs (`Filter` list, `Sort` levels, `GroupBy`) are stored (`ShapeSpec`,
+      `FilterSpec`, `SortSpec`, `GroupSpec`, `DelegateRef`). Hierarchy selectors stay in `SourceTable`.
+- [x] Declare spec diffing (`ShapeDelta`, `Diff`) so the coordinator knows whether
+      a verb change is a no-op, flat re-sort, or filter/group reshape from `m_sourceTable` (no source
+      re-read). A delegate re-declaration always marks its verb changed; hierarchy changes arrive as a
+      `SourceTable` Reset.
+- [x] Declare the delegate registry (`ShapeDelegates`) and the path evaluator (`PathEvaluator`).
+- [ ] Implement `SortSpec::Matches`, `Diff`, `ShapeDelegates` and `PathEvaluator`.
+- [ ] Revisit path evaluation (`PathEvaluator`, `SortMemberPathResolver`; open, see §5).
+- [ ] Decide spec ownership and application (open, see §5), then add the members to
+      `TableViewSource2` or the coordinator.
 - [ ] Wire `TableViewSource2` verb methods to update `ShapeSpec`.
 
 ### Phase 3 — Projection output & row metadata (`Projection/Projection.h/.cpp`, `RowMetadataProvider`)
@@ -907,6 +1056,8 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
 - `Source/SourceRecord.h`, `Source/SourceTable.h` and `Source/CollectionAccessor2.h` have no `.cpp` files yet (Phase 1.4).
 - The source-tree members of `SourceTable` are declared only (Phase 1.5).
 - `Engine/ShapedTree.h` (`ShapedRef`, `GroupNode`) is declared only (Phase 4).
+- `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h` and `Spec/PathEvaluator.h` are declared only
+  (Phase 2); nothing owns a `ShapeSpec`, `ShapeDelegates` or `PathEvaluator` yet.
 - **Split hierarchy out of `SourceTable` (later).** `SourceTable` mixes always-on code with code
   used only by one feature (ParentBy, ChildrenBy, live shaping, identity index), which hurts
   readability and single responsibility. Proposed: a `SourceHierarchy` strategy owned by
