@@ -44,6 +44,9 @@
             <TextBlock x:Name="PressedStates" Text="Not read"/>
             <TextBlock x:Name="RetemplateCount" Text="0"/>
             <TextBlock x:Name="LastPointerDevice" Text="None"/>
+            <TextBlock x:Name="LastPressPointerId" Text="0"/>
+            <TextBlock x:Name="LastHoverPointerId" Text="0"/>
+            <TextBlock x:Name="LastHoverDevice" Text="None"/>
             <TextBlock x:Name="DragStartPointerOver" Text="Not read"/>
             <TextBlock x:Name="DragStartAnchor" Text="Not read"/>
             <TextBlock x:Name="HoverMoveCount" Text="0"/>

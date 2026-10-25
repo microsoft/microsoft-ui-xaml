@@ -35,6 +35,59 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void NavigationViewItemSamePenHoverDoesNotDrag()
+        {
+            foreach (bool top in new[] { false, true })
+            {
+                using var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" });
+                if (top) { new CheckBox(FindElement.ById("TopMode")).Check(); }
+                using var pen = new SyntheticPen();
+                var start = FindElement.ById("DragItem").GetClickablePoint();
+                pen.Hover(start);
+                pen.Press(start);
+                pen.Release();
+                int hoverCount = int.Parse(new TextBlock(FindElement.ById("HoverMoveCount")).GetText());
+                pen.Hover(new System.Drawing.Point(start.X + 24, start.Y));
+                Verify.IsTrue(int.Parse(new TextBlock(FindElement.ById("HoverMoveCount")).GetText()) > hoverCount);
+                Verify.AreEqual("Pen", new TextBlock(FindElement.ById("LastHoverDevice")).GetText());
+                Verify.AreEqual(new TextBlock(FindElement.ById("LastPressPointerId")).GetText(),
+                    new TextBlock(FindElement.ById("LastHoverPointerId")).GetText());
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                VerifyNavigationViewDragStateReset();
+                pen.Press(start);
+                pen.Move(new System.Drawing.Point(start.X + 24, start.Y));
+                pen.Release();
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("DragCount")).GetText());
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+            }
+        }
+
+        [TestMethod]
+        public void NavigationViewItemCanceledPenContactCanRestart()
+        {
+            using var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" });
+            using var pen = new SyntheticPen();
+            var start = FindElement.ById("DragItem").GetClickablePoint();
+            pen.Hover(start);
+            pen.Press(start);
+            pen.Cancel();
+            pen.Hover(new System.Drawing.Point(start.X + 24, start.Y));
+            Verify.AreEqual("0", new TextBlock(FindElement.ById("DragCount")).GetText());
+            Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+            VerifyNavigationViewDragStateReset();
+            pen.Press(start);
+            pen.Move(new System.Drawing.Point(start.X + 24, start.Y));
+            pen.Release();
+            Verify.AreEqual("1", new TextBlock(FindElement.ById("DragCount")).GetText());
+            Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+            VerifyNavigationViewDragStateReset();
+            pen.Press(start);
+            pen.Release();
+            Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+        }
+
+        [TestMethod]
         public void NavigationViewItemMousePressCapturesItem()
         {
             using var controller = InputController.Activate(PointerInputType.Mouse);

@@ -43,6 +43,7 @@ namespace MUXControlsTestApp
                 {
                     LastPointerDevice.Text = args.Pointer.PointerDeviceType.ToString();
                     var id = args.Pointer.PointerId;
+                    LastPressPointerId.Text = id.ToString();
                     PressCaptureOwner.Text = item.PointerCaptures?.Any(pointer => pointer.PointerId == id) == true
                         ? "Item"
                         : Descendants(item).OfType<UIElement>().Any(element =>
@@ -57,6 +58,8 @@ namespace MUXControlsTestApp
                     if (!point.IsInContact && !point.Properties.IsLeftButtonPressed)
                     {
                         HoverMoveCount.Text = (++hoverMoveCount).ToString();
+                        LastHoverPointerId.Text = args.Pointer.PointerId.ToString();
+                        LastHoverDevice.Text = args.Pointer.PointerDeviceType.ToString();
                     }
                 }), true);
                 item.DragStarting += (sender, args) =>
