@@ -12,11 +12,13 @@
     <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
     <Setter Property="Content" Value="&#xE72B;" />
     <Setter Property="Margin" Value="4,2" />
+    <!-- The template insets its backplate by Padding. NavigationView sets Padding on its back button for a larger hit target; other buttons keep 0. -->
+    <Setter Property="Padding" Value="0" />
     <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="Button">
-          <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid x:Name="HitTargetGrid">
             <VisualStateManager.VisualStateGroups>
               <VisualStateGroup x:Name="CommonStates">
                 <VisualState x:Name="Normal" />
@@ -54,67 +56,18 @@
                   </Storyboard>
                 </VisualState>
               </VisualStateGroup>
-            </VisualStateManager.VisualStateGroups>
-            <controls:AnimatedIcon x:Name="Content" Height="16" Width="16" local:AnimatedIcon.State="Normal" MirroredWhenRightToLeft="True" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" xmlns:local="using:Microsoft.UI.Xaml.Controls">
-              <animatedvisuals:AnimatedBackVisualSource />
-              <controls:AnimatedIcon.FallbackIconSource>
-                <controls:FontIconSource FontSize="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontSize}" FontFamily="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontFamily}" Glyph="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}" MirroredWhenRightToLeft="True" />
-              </controls:AnimatedIcon.FallbackIconSource>
-            </controls:AnimatedIcon>
-          </Grid>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style x:Key="NavigationBackButtonSmallStyle" TargetType="Button" BasedOn="{StaticResource NavigationBackButtonNormalStyle}">
-    <Setter Property="Margin" Value="4,2,0,2" />
-  </Style>
-  <Style x:Key="NavigationViewBackButtonStyle" TargetType="Button" BasedOn="{StaticResource NavigationBackButtonNormalStyle}">
-    <!-- The template draws no border; BorderThickness insets the transparent hit target instead. -->
-    <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="Button">
-          <Grid x:Name="HitTargetGrid" Background="Transparent" Margin="{TemplateBinding BorderThickness}">
-            <VisualStateManager.VisualStateGroups>
-              <VisualStateGroup x:Name="CommonStates">
-                <VisualState x:Name="Normal" />
-                <VisualState x:Name="PointerOver">
-                  <Storyboard>
-                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                      <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource NavigationViewButtonBackgroundPointerOver}" />
-                    </ObjectAnimationUsingKeyFrames>
-                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
-                      <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource NavigationViewButtonForegroundPointerOver}" />
-                    </ObjectAnimationUsingKeyFrames>
-                  </Storyboard>
+              <!-- NavigationView puts its back button in HitTargetExpanded. The transparent background makes the whole button,
+                   including the Padding around the backplate, hit-testable. Templates without this state keep the original geometry. -->
+              <VisualStateGroup x:Name="HitTargetStates">
+                <VisualState x:Name="HitTargetDefault" />
+                <VisualState x:Name="HitTargetExpanded">
                   <VisualState.Setters>
-                    <Setter Target="Content.(controls:AnimatedIcon.State)" Value="PointerOver" />
+                    <Setter Target="HitTargetGrid.Background" Value="Transparent" />
                   </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="Pressed">
-                  <Storyboard>
-                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                      <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource NavigationViewButtonBackgroundPressed}" />
-                    </ObjectAnimationUsingKeyFrames>
-                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
-                      <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource NavigationViewButtonForegroundPressed}" />
-                    </ObjectAnimationUsingKeyFrames>
-                  </Storyboard>
-                  <VisualState.Setters>
-                    <Setter Target="Content.(controls:AnimatedIcon.State)" Value="Pressed" />
-                  </VisualState.Setters>
-                </VisualState>
-                <VisualState x:Name="Disabled">
-                  <Storyboard>
-                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
-                      <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource NavigationViewButtonForegroundDisabled}" />
-                    </ObjectAnimationUsingKeyFrames>
-                  </Storyboard>
                 </VisualState>
               </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
-            <Grid x:Name="RootGrid" Control.IsTemplateFocusTarget="True" Height="{ThemeResource NavigationBackButtonHeight}" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+            <Grid x:Name="RootGrid" Control.IsTemplateFocusTarget="True" Margin="{TemplateBinding Padding}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
               <controls:AnimatedIcon x:Name="Content" Height="16" Width="16" local:AnimatedIcon.State="Normal" MirroredWhenRightToLeft="True" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" xmlns:local="using:Microsoft.UI.Xaml.Controls">
                 <animatedvisuals:AnimatedBackVisualSource />
                 <controls:AnimatedIcon.FallbackIconSource>
@@ -126,5 +79,8 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+  </Style>
+  <Style x:Key="NavigationBackButtonSmallStyle" TargetType="Button" BasedOn="{StaticResource NavigationBackButtonNormalStyle}">
+    <Setter Property="Margin" Value="4,2,0,2" />
   </Style>
 </ResourceDictionary>

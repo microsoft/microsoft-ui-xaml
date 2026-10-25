@@ -235,6 +235,8 @@ private:
     void CreateAndHookEventsToSettings();
     void OnIsPaneOpenChanged();
     void UpdatePaneButtonsWidths();
+    void UpdateBackButtonHitTarget();
+    void OnBackButtonPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void UpdateHeaderVisibility();
     void UpdateHeaderVisibility(winrt::NavigationViewDisplayMode displayMode);
     void UpdatePaneToggleButtonVisibility();
@@ -414,6 +416,9 @@ private:
     winrt::CoreApplicationViewTitleBar::LayoutMetricsChanged_revoker m_titleBarMetricsChangedRevoker{};
     winrt::CoreApplicationViewTitleBar::IsVisibleChanged_revoker m_titleBarIsVisibleChangedRevoker{};
     winrt::Button::Click_revoker m_backButtonClickedRevoker{};
+    PropertyChanged_revoker m_backButtonStyleChangedRevoker{};
+    PropertyChanged_revoker m_backButtonTemplateChangedRevoker{};
+    PropertyChanged_revoker m_backButtonWidthChangedRevoker{};
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
@@ -482,6 +487,8 @@ private:
     NavigationRecommendedTransitionDirection m_pendingSelectionChangedDirection{ NavigationRecommendedTransitionDirection::Default };
 
     bool m_appliedTemplate{ false };
+    // True while NavigationView has set the back button's local MinWidth/Height/Margin/Padding for the enlarged hit target.
+    bool m_backButtonHitTargetApplied{ false };
 
     // Identifies whenever a call is the result of OnApplyTemplate
     bool m_fromOnApplyTemplate{ false };
