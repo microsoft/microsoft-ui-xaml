@@ -3094,18 +3094,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(WaitForTipState(tip, isOpen: false), "The tip should close");
         }
 
-        // Scenario (issue #8095 review): two ItemsRepeaters share an element factory whose elements use a compiled-binding
-        //           style DataTemplateComponent (as x:Bind does), so ItemsRepeater calls ProcessBindings instead of setting
-        //           DataContext. An OPEN tip targets the element for "A0"; the first repeater's items are cleared and the
-        //           second repeater gets "B0", so the shared pool hands the same element to "B0".
+        // Scenario (issue #8095 review): two ItemsRepeaters share an element factory whose elements (a Border holding a
+        //           Button) use a compiled-binding style DataTemplateComponent (as x:Bind does), so ItemsRepeater calls
+        //           ProcessBindings instead of setting DataContext. An OPEN tip targets the element for "A0" (first run)
+        //           or the Button inside it (second run); the first repeater's items are cleared and the second repeater
+        //           gets "B0", so the shared pool hands the same element to "B0".
         // Expected: the tip either closes or its target still shows "A0".
         // A failure means: the tip stayed open on an element that now represents a different item.
         [TestMethod]
         public void OpenTipClosesWhenCompiledTemplateElementIsReusedForAnotherItem()
         {
+            VerifyTipOnReusedCompiledTemplateElement(targetDescendant: false);
+            VerifyTipOnReusedCompiledTemplateElement(targetDescendant: true);
+        }
+
+        private void VerifyTipOnReusedCompiledTemplateElement(bool targetDescendant)
+        {
+            string what = targetDescendant ? "the Button inside the reused element" : "the reused element";
             TeachingTip tip = null;
             ItemsRepeater repeaterA = null, repeaterB = null;
-            Button target = null;
+            Border element = null;
+            FrameworkElement target = null;
             RunOnUIThread.Execute(() =>
             {
                 var factory = new SharedPoolCompiledBindingFactory();
@@ -3123,13 +3132,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                target = (Button)repeaterA.TryGetElement(0);
-                Verify.IsNotNull(target, "Element for A0");
-                Verify.IsNull(target.DataContext, "A compiled-binding element gets no DataContext from ItemsRepeater");
+                element = (Border)repeaterA.TryGetElement(0);
+                Verify.IsNotNull(element, "Element for A0");
+                Verify.IsNull(element.DataContext, "A compiled-binding element gets no DataContext from ItemsRepeater");
+                target = targetDescendant ? (FrameworkElement)element.Child : element;
                 tip.Target = target;
                 tip.IsOpen = true;
             });
-            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open on the A0 element");
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), $"The tip should open on {what} for A0");
 
             RunOnUIThread.Execute(() =>
             {
@@ -3137,19 +3147,137 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 repeaterB.ItemsSource = new List<string> { "B0" };
                 Content.UpdateLayout();
             });
-            IdleSynchronizer.Wait();
+            WaitForFrames(2);
             WaitForTipState(tip, isOpen: false);
 
             RunOnUIThread.Execute(() =>
             {
-                var shownItem = target.Content as string;
-                Log.Comment($"After reuse: tip.IsOpen={tip.IsOpen}, target.IsLoaded={target.IsLoaded}, target.Content={shownItem}, target.DataContext={target.DataContext}");
-                Verify.AreSame(repeaterB, VisualTreeHelper.GetParent(target), "Precondition: the shared pool should hand the A0 element to the second repeater");
+                var shownItem = ((Button)element.Child).Content as string;
+                Log.Comment($"After reuse ({what}): tip.IsOpen={tip.IsOpen}, target.IsLoaded={target.IsLoaded}, shows={shownItem}, target.DataContext={target.DataContext}");
+                Verify.AreSame(repeaterB, VisualTreeHelper.GetParent(element), "Precondition: the shared pool should hand the A0 element to the second repeater");
                 Verify.IsTrue(!tip.IsOpen || shownItem == "A0",
-                    $"An open tip must not stay on an element that now shows '{shownItem}' instead of 'A0'");
+                    $"An open tip must not stay on {what} when it now shows '{shownItem}' instead of 'A0'");
                 tip.IsOpen = false;
             });
             WaitForTipState(tip, isOpen: false);
+        }
+
+        // Scenario (issue #8095 review): an OPEN tip targets an element hosted by an ItemsRepeater or an ItemsControl, and the
+        //           whole items host is moved to another panel in one UI-thread step, so the target unloads and comes back.
+        //           Covered: UIElement items (each element is its own item), generated elements for string items, a Button
+        //           inside a generated template, nested repeaters, ItemsControl containers, and an untargeted tip.
+        // Expected: the tip stays open when no element from the target up is a container generated for a data item, and
+        //           closes otherwise. The close is deliberate: a generated container can be recycled to another item, and
+        //           TeachingTip can't tell a same-item re-host from a reuse, so it keeps the pre-#8095 behavior there.
+        // A failure means: the ancestor check missed (or wrongly found) a generated item container.
+        [TestMethod]
+        public void OpenTipAfterItemsHostMovesKeepsOnlyNonGeneratedTargets()
+        {
+            VerifyTipAfterItemsHostMoves("an ItemsRepeater UIElement item",
+                () => new ItemsRepeater() { ItemsSource = new List<UIElement> { new Button() { Content = "Static" } } },
+                host => (FrameworkElement)((ItemsRepeater)host).TryGetElement(0),
+                expectOpen: true);
+            VerifyTipAfterItemsHostMoves("an ItemsControl UIElement item",
+                () => new ItemsControl() { ItemsSource = new List<UIElement> { new Button() { Content = "Static" } } },
+                host => (FrameworkElement)((ItemsControl)host).ContainerFromIndex(0),
+                expectOpen: true);
+            VerifyTipAfterItemsHostMoves("an untargeted tip that is itself moved",
+                () => new Button() { Content = "Not a target" },
+                host => null,
+                expectOpen: true);
+            VerifyTipAfterItemsHostMoves("an ItemsRepeater element generated for a string item",
+                () => new ItemsRepeater() { ItemsSource = new List<string> { "Item" } },
+                host => (FrameworkElement)((ItemsRepeater)host).TryGetElement(0),
+                expectOpen: false);
+            VerifyTipAfterItemsHostMoves("a Button inside an ItemsRepeater template generated for a string item",
+                () => new ItemsRepeater()
+                {
+                    ItemsSource = new List<string> { "Item" },
+                    ItemTemplate = (DataTemplate)XamlReader.Load(@"
+                        <DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <StackPanel><Button Content='{Binding}'/></StackPanel>
+                        </DataTemplate>")
+                },
+                host => (FrameworkElement)((StackPanel)((ItemsRepeater)host).TryGetElement(0)).Children[0],
+                expectOpen: false);
+            VerifyTipAfterItemsHostMoves("an inner ItemsRepeater string item nested in an outer UIElement item",
+                () => new ItemsRepeater() { ItemsSource = new List<UIElement> { new ItemsRepeater() { ItemsSource = new List<string> { "Inner" } } } },
+                host => (FrameworkElement)((ItemsRepeater)((ItemsRepeater)host).TryGetElement(0)).TryGetElement(0),
+                expectOpen: false);
+            VerifyTipAfterItemsHostMoves("an ItemsControl container generated for a string item",
+                () => new ItemsControl() { ItemsSource = new List<string> { "Item" } },
+                host => (FrameworkElement)((ItemsControl)host).ContainerFromIndex(0),
+                expectOpen: false);
+        }
+
+        private void VerifyTipAfterItemsHostMoves(string what, Func<FrameworkElement> createHost, Func<FrameworkElement, FrameworkElement> findTarget, bool expectOpen)
+        {
+            TeachingTip tip = null;
+            StackPanel hostA = null, hostB = null;
+            FrameworkElement host = null, target = null;
+            RunOnUIThread.Execute(() =>
+            {
+                host = createHost();
+                hostA = new StackPanel();
+                hostB = new StackPanel() { Margin = new Thickness(0, 40, 0, 0) };
+                hostA.Children.Add(host);
+                tip = new TeachingTip() { Title = "Title", Subtitle = "Subtitle" };
+                hostA.Children.Add(tip);
+                var root = new StackPanel();
+                root.Children.Add(hostA);
+                root.Children.Add(hostB);
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                target = findTarget(host);
+                tip.Target = target;
+                tip.IsOpen = true;
+            });
+            Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should open on " + what);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Without a target, move the tip itself so that it is the element that unloads and comes back.
+                var moved = target != null ? (UIElement)host : tip;
+                hostA.Children.Remove(moved);
+                hostB.Children.Add(moved);
+            });
+            WaitForFrames(2);
+            bool settled = WaitForTipState(tip, expectOpen);
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"{what}: tip.IsOpen={tip.IsOpen}, target.IsLoaded={target?.IsLoaded}");
+                Verify.IsTrue(settled, expectOpen ? "The tip should stay open on " + what : "The tip should close on " + what);
+                tip.IsOpen = false;
+            });
+            WaitForTipState(tip, isOpen: false);
+        }
+
+        // Waits until the UI thread has rendered the given number of frames, so a check deferred to the next
+        // CompositionTarget.Rendering has run.
+        private static void WaitForFrames(int frameCount)
+        {
+            var rendered = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                int remaining = frameCount;
+                EventHandler<object> onRendering = null;
+                onRendering = (s, e) =>
+                {
+                    if (--remaining == 0)
+                    {
+                        CompositionTarget.Rendering -= onRendering;
+                        rendered.Set();
+                    }
+                };
+                CompositionTarget.Rendering += onRendering;
+            });
+            Verify.IsTrue(rendered.WaitOne(DefaultWaitTimeInMS), "Waiting for frames to render");
+            IdleSynchronizer.Wait();
         }
 
         private static void VerifyTipStaysOpenWhenTargetMoves(TeachingTip tip, FrameworkElement target, Panel from, Panel to, string what)
@@ -3159,6 +3287,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 from.Children.Remove(target);
                 to.Children.Add(target);
             });
+            WaitForFrames(2);
             bool stayedOpen = WaitForTipState(tip, isOpen: true);
             RunOnUIThread.Execute(() =>
             {
@@ -3166,14 +3295,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 to.Children.Remove(target);
                 from.Children.Add(target);
             });
+            WaitForFrames(2);
             Verify.IsTrue(WaitForTipState(tip, isOpen: true), "The tip should stay open when the target moves back");
         }
 
-        // Element factory with one pool shared by every repeater that uses it. Each element carries a DataTemplateComponent,
+        // Element factory with one pool shared by every repeater that uses it. Each element (a Border holding a Button) carries a DataTemplateComponent,
         // like a compiled x:Bind template, so ItemsRepeater runs ProcessBindings instead of setting DataContext.
         private partial class SharedPoolCompiledBindingFactory : ElementFactory
         {
-            private readonly Stack<Button> _pool = new Stack<Button>();
+            private readonly Stack<Border> _pool = new Stack<Border>();
 
             protected override UIElement GetElementCore(ElementFactoryGetArgs args)
             {
@@ -3181,14 +3311,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     return _pool.Pop();
                 }
-                var element = new Button() { Width = 100, Height = 40 };
-                XamlBindingHelper.SetDataTemplateComponent(element, new ContentBindingComponent(element));
+                var button = new Button() { Width = 100, Height = 40 };
+                var element = new Border() { Child = button };
+                XamlBindingHelper.SetDataTemplateComponent(element, new ContentBindingComponent(button));
                 return element;
             }
 
             protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
             {
-                var element = (Button)args.Element;
+                var element = (Border)args.Element;
                 if (args.Parent is Panel parent)
                 {
                     parent.Children.Remove(element);
