@@ -141,6 +141,7 @@ void PopupTests::WindowedPopupHasForcedBackground()
         canvas->Children->Append(rectangle);
 
         popup = ref new Popup();
+        popup->XamlRoot = root->XamlRoot;
         popup->Child = canvas;
         popup->IsOpen = true;
 
@@ -156,6 +157,7 @@ void PopupTests::WindowedPopupHasForcedBackground()
         canvas2->Children->Append(rectangle2);
 
         windowedPopup = ref new Popup();
+        windowedPopup->XamlRoot = root->XamlRoot;
         wh->Popup_SetWindowed(windowedPopup);
         windowedPopup->Child = canvas2;
         windowedPopup->IsOpen = true;
@@ -166,7 +168,7 @@ void PopupTests::WindowedPopupHasForcedBackground()
     RunOnUIThread([&]()
     {
         LOG_OUTPUT(L"  > Device lost");
-        wh->ResetDeviceAndVisuals();
+        wh->ResetDeviceAndVisualsWithoutUIThreadTick();
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
@@ -175,7 +177,7 @@ void PopupTests::WindowedPopupHasForcedBackground()
     {
         LOG_OUTPUT(L"  > 2.0 zoom scale");
         wh->SetWindowSizeOverrideWithScale(wf::Size(400, 300), 2.0f);
-        wh->ResetDeviceAndVisuals();
+        wh->ResetDeviceAndVisualsWithoutUIThreadTick();
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");
@@ -183,7 +185,7 @@ void PopupTests::WindowedPopupHasForcedBackground()
     RunOnUIThread([&]()
     {
         LOG_OUTPUT(L"  > Device lost");
-        wh->ResetDeviceAndVisuals();
+        wh->ResetDeviceAndVisualsWithoutUIThreadTick();
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"2");

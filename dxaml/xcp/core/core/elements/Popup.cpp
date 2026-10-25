@@ -397,6 +397,19 @@ void CPopup::CleanupDeviceRelatedResourcesRecursive(_In_ bool cleanupDComp)
     if (cleanupDComp)
     {
         ReleaseDCompResourcesForWindowedPopup();
+
+        // The old compositor closes the ContentIsland. Keep the bridge/HWND, but reconnect a new island when rendering resumes.
+        if (m_contentIsland)
+        {
+            if (m_automationProviderRequestedToken.value != 0)
+            {
+                IFCFAILFAST(m_contentIsland->remove_AutomationProviderRequested(m_automationProviderRequestedToken));
+                m_automationProviderRequestedToken = {};
+            }
+
+            m_inputSiteAdapter.reset();
+            m_contentIsland.Reset();
+        }
     }
 }
 

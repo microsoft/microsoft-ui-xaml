@@ -25,8 +25,7 @@ public:
     TEST_METHOD_CLEANUP(TestCleanup)
 
     BEGIN_TEST_METHOD(WindowedPopupHasForcedBackground)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Crash
-        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Move windowed popups to lifted input
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -106,4 +105,3 @@ private:
 };
 
 } } } } } }
-
