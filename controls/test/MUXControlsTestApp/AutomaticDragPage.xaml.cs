@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace MUXControlsTestApp
@@ -36,6 +37,13 @@ namespace MUXControlsTestApp
         public AutomaticDragPage()
         {
             InitializeComponent();
+            DragList.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
+                LastPointerDevice.Text = args.Pointer.PointerDeviceType.ToString()), true);
+            DragList.DragItemsStarting += (sender, args) =>
+            {
+                DragCount.Text = (++dragCount).ToString();
+                args.Cancel = true;
+            };
             DragSource.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((sender, args) =>
             {
                 LastPointerDevice.Text = args.Pointer.PointerDeviceType.ToString();
@@ -172,6 +180,22 @@ namespace MUXControlsTestApp
             DragSource.CanDrag = true;
         }
 
+        private void UseListView_Click(object sender, RoutedEventArgs args)
+        {
+            DragSource.Visibility = UseListView.IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
+            DragList.Visibility = UseListView.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private static int CountCaptures(DependencyObject element)
+        {
+            int count = (element as UIElement)?.PointerCaptures?.Count ?? 0;
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); ++i)
+            {
+                count += CountCaptures(VisualTreeHelper.GetChild(element, i));
+            }
+            return count;
+        }
+
         private void DropTarget_DragOver(object sender, DragEventArgs args)
         {
             args.AcceptedOperation = DataPackageOperation.Copy;
@@ -200,6 +224,7 @@ namespace MUXControlsTestApp
                 pointer => pointer.PointerDeviceType == PointerDeviceType.Mouse) ?? 0).ToString();
             MouseDragThreshold.Text = (2 * GetSystemMetrics(68 /* SM_CXDRAG */)).ToString(CultureInfo.InvariantCulture);
             RasterizationScale.Text = XamlRoot.RasterizationScale.ToString(CultureInfo.InvariantCulture);
+            ListCaptureCount.Text = CountCaptures(DragList).ToString();
         }
     }
 }

@@ -34,6 +34,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void ListViewMouseCanceledDragCanRestart()
+        {
+            VerifyListViewCanceledDragCanRestart(PointerInputType.Mouse);
+        }
+
+        [TestMethod]
+        public void ListViewTouchCanceledDragCanRestart()
+        {
+            VerifyListViewCanceledDragCanRestart(PointerInputType.SingleTouch);
+        }
+
+        private static void VerifyListViewCanceledDragCanRestart(PointerInputType inputType)
+        {
+            using var controller = InputController.Activate(inputType);
+            using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });
+            new CheckBox(FindElement.ById("UseListView")).Check();
+            var source = FindElement.ById("ListDragItem");
+            var target = FindElement.ById("DropHandle");
+            for (int attempt = 1; attempt <= 2; ++attempt)
+            {
+                if (inputType == PointerInputType.Mouse)
+                {
+                    InputHelper.MouseDragToTarget(source, target);
+                }
+                else
+                {
+                    InputHelper.Pan(source, source.GetClickablePoint(), target.GetClickablePoint(),
+                        holdDuration: 1000, panAcceleration: 0, dragDuration: 500);
+                }
+                Verify.AreEqual(inputType == PointerInputType.Mouse ? "Mouse" : "Touch", ReadText("LastPointerDevice"));
+                Verify.AreEqual(attempt.ToString(), ReadText("DragCount"));
+                new Button(FindElement.ById("Snapshot")).Invoke();
+                Verify.AreEqual("0", ReadText("ListCaptureCount"));
+            }
+        }
+
+        [TestMethod]
         public void SamePenHoverAfterHandledReleaseDoesNotDrag()
         {
             using var setup = new TestSetupHelper(new[] { "Automatic Drag Tests" });

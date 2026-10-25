@@ -19,6 +19,7 @@
             <CheckBox x:Name="CaptureChildTouch" Content="Child captures touch"/>
             <CheckBox x:Name="HandleChildCaptureLoss" Content="Handle child capture loss" IsChecked="True"/>
             <Button x:Name="ToggleDragDuringPress" Content="Disable and reenable drag" Click="ToggleDragDuringPress_Click"/>
+            <CheckBox x:Name="UseListView" Content="ListView source" Click="UseListView_Click"/>
         </StackPanel>
         <Border x:Name="DragSource" CanDrag="True" Background="LightBlue" Height="80">
             <Grid>
@@ -32,6 +33,11 @@
                     <TextBlock x:Name="TouchHandle" Text="Child handles touch"
                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                 </Border>
+                <ListView x:Name="DragList" CanDragItems="True" CanReorderItems="True" AllowDrop="True"
+                          Height="80" Visibility="Collapsed">
+                    <ListViewItem x:Name="ListDragItem" Content="ListView drag source"/>
+                    <ListViewItem Content="Second item"/>
+                </ListView>
             </Grid>
         </Border>
         <Border x:Name="DropTarget" AllowDrop="True" Background="LightGreen" Height="120"
@@ -70,6 +76,7 @@
                 <TextBlock x:Name="ChildTouchPressCount" Text="0"/>
                 <TextBlock x:Name="ChildCaptureCount" Text="0"/>
                 <TextBlock x:Name="ChildCaptureLostCount" Text="0"/>
+                <TextBlock x:Name="ListCaptureCount" Text="0"/>
                 <TextBlock x:Name="ChildTouchReleaseCount" Text="0"/>
             </StackPanel>
         </StackPanel>
