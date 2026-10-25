@@ -143,8 +143,11 @@ public:
     bool HasActiveSort() const;
     // Whether a clear verb has anything to clear, so an owner can tell a no-op clear from a real one.
     bool HasFilter() const noexcept { return m_pipeline.HasFilter(); }
-    // The app predicates and key selectors that threw since the last take; resets the tally.
-    ShapingHelpers::SwallowedFaults TakeSwallowedFaults() noexcept { return m_pipeline.TakeSwallowedFaults(); }
+    // The app predicates and key selectors that threw since the tally was last swapped; puts `faults` in its place.
+    ShapingHelpers::SwallowedFaults ExchangeSwallowedFaults(ShapingHelpers::SwallowedFaults faults) noexcept
+    {
+        return std::exchange(m_pipeline.SwallowedFaultsTally(), faults);
+    }
     bool HasGroup() const noexcept { return static_cast<bool>(m_groupSelector); }
     bool HasParentBy() const noexcept { return static_cast<bool>(m_parentKeySelector); }
     bool HasSortAxis(winrt::hstring const& axisToken) const noexcept { return m_pipeline.HasSortAxis(axisToken); }

@@ -94,15 +94,6 @@ namespace TableViewDetails
         }
         catch (...) { return true; }
     }
-
-    // Whether app code primes the column's editor: the content of its CellEditingTemplate, which PrepareCellForEdit
-    // realizes (the editing factory only creates the presenter). The editing hooks are TableView's code for every
-    // column, derived or not (TableView.idl keeps them internal).
-    inline bool IsAppEditor(const winrt::TableViewColumn& column) noexcept
-    {
-        try { return column.CellEditingTemplate() != nullptr; }
-        catch (...) { return true; }
-    }
 }
 
 struct ColumnResizeBounds

@@ -50,14 +50,19 @@ struct TableViewSource::ShapingTip
     template<class Callback>
     void Apply(Callback&& callback)
     {
-        // Delegate faults contained before this verb (live shaping, a source change) are not its own.
-        source.m_engine->TakeSwallowedFaults();
+        // The verb counts its own contained delegate faults, however it ends. A tally already running belongs to the verb
+        // a delegate started this one in, and goes back to it; with no such verb it is live shaping's or a source
+        // change's, not this verb's.
+        auto const enclosing = source.m_engine->ExchangeSwallowedFaults({});
+        auto takeContained = gsl::finally([this, enclosing]() noexcept
+        {
+            auto const own = source.m_engine->ExchangeSwallowedFaults(previous ? enclosing : ShapingHelpers::SwallowedFaults{});
+            observation.contained = { own.count, own.firstError };
+        });
         try
         {
             std::forward<Callback>(callback)();
             observation.completed = true;
-            auto const contained = source.m_engine->TakeSwallowedFaults();
-            observation.contained = { contained.count, contained.firstError };
         }
         catch (...)
         {

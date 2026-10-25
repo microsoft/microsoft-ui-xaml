@@ -611,12 +611,13 @@ reclassify them. `Unloaded` and the destructor close a running test when they ru
   TableView's handler.
 - A column's display factory and sort member path are the app's code only when the app derived the column class
   (it can override `GenerateElementCore` and `GetSortMemberPathCore`). The editing hooks are TableView's code for
-  every column (they are internal), so their failure fails the test, except the content of a `CellEditingTemplate`,
-  which is the app's while the editor is prepared (that is when it is realized). A write that does not land (a
+  every column (they are internal), so their failure fails the test, except where they realize or focus a
+  `CellEditingTemplate`'s content: that is the app's code, and a throw there is the app's. A write that does not land (a
   converter throws, or the editor has no binding TableView can write through) is still the app's.
 - An app filter predicate, sort or group key selector, or custom comparer that throws is contained by design: the
   row is filtered out, the key is null, the pair compares equal. The verb's outcome stands, and `TableView_Error`
-  reports a recovered callback fault with the first HRESULT and how many threw.
+  reports a recovered callback fault with the first HRESULT and how many threw, also when the verb then fails. A verb
+  that a delegate starts inside another counts only its own.
 - An app fault never overrides TableView's own failure in the same operation; each is reported, subject to
   the diagnostic's once-per-session limit.
 - An app-supplied collection that throws when read, and broken caller contracts (one object on two rows, a
@@ -630,8 +631,9 @@ back across any other ABI call loses its tag and counts as TableView's, and so d
 handler that runs out of memory inside a `SelectionModel` call, since that failure has no error object to match. For
 the display factory and the sort member path the column class decides, so a built-in method that throws on an
 app-derived column without an override counts as the app's, and a built-in text column's binding converter that
-throws while the column builds a cell counts as TableView's. Running out of memory while walking an enumeration-only
-source counts as TableView's, because
+throws while the column builds a cell counts as TableView's. TableView's own layout or focus code that runs inside the
+calls that realize or focus a `CellEditingTemplate`'s content counts as the app's if it throws. Running out of memory
+while walking an enumeration-only source counts as TableView's, because
 TableView's own allocation may be what failed. App delegates that throw outside a shaping verb (live shaping, a
 source change) are not reported, nor is a `ParentBy` parent key selector that throws (its row becomes a root).
 A source setter that throws during a `{Binding}` write never reaches TableView (`UpdateSource` returns normally),

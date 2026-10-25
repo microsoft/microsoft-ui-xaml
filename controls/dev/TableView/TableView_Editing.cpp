@@ -1371,9 +1371,10 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
                 }
                 catch (...)
                 {
-                    // The editing template's content is the app's; the hook itself is TableView's.
-                    NoteColumnFault(&tip, TableViewTip::Operation::BeginEdit, winrt::to_hresult(),
-                        TableViewDetails::IsAppEditor(column) ? std::optional{ TableViewTip::AppFaultKind::Factory } : std::nullopt);
+                    // The hook is TableView's code; the app code it ran (a CellEditingTemplate's content) tags its throw.
+                    auto const fault = TableViewTip::CurrentFault();
+                    NoteColumnFault(&tip, TableViewTip::Operation::BeginEdit, fault.error,
+                        fault.appFault != TableViewTip::AppFaultKind::None ? std::optional{ fault.appFault } : std::nullopt);
                     LogColumnHookThrow(L"PrepareCellForEdit");
                 }
             }

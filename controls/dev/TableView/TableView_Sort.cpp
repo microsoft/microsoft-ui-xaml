@@ -592,6 +592,20 @@ bool TableView::SyncTableViewSourceSort(
     // Comparer faults contained before this sort (a live re-sort) are not its own.
     if (auto const& rankAdapter = m_tableViewSourceSort.CustomSortState) { rankAdapter->TakeSwallowedFaults(); }
 
+    // A custom comparer that threw was contained as "equal": the sort stands, and the fault is the app's. Reported
+    // however this sort ends, from the adapter it ranked with (a reentrant sort can install another).
+    std::shared_ptr<ShapingHelpers::CustomSortRankAdapter> rankedWith;
+    auto reportContained = wil::scope_exit([this, &rankedWith]() noexcept
+    {
+        if (!rankedWith) { return; }
+        if (auto const contained = rankedWith->TakeSwallowedFaults(); contained.count)
+        {
+            TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::Sort, TableViewTip::Stage::Sort,
+                true, TableViewTip::Attribution::Application, contained.firstError, TableViewTip::AppFaultKind::Callback,
+                contained.count);
+        }
+    });
+
     winrt::TableViewKeySelector keySelector{ nullptr };
     winrt::hstring sortAxisToken;
     // What this axis sorts on, purely descriptive. Stays empty for a CustomSortComparer: the
@@ -636,14 +650,15 @@ bool TableView::SyncTableViewSourceSort(
                     }
                 }
 
-                if (auto const& rankAdapter = m_tableViewSourceSort.CustomSortState)
+                rankedWith = m_tableViewSourceSort.CustomSortState;
+                if (rankedWith)
                 {
                     ShapingHelpers::PairwiseComparer comparer =
                         [customComparer](winrt::IInspectable const& a, winrt::IInspectable const& b)
                         {
                             return static_cast<int>(customComparer.Compare(a, b));
                         };
-                    rankAdapter->Rank(comparer, rows);
+                    rankedWith->Rank(comparer, rows);
                 }
             }
         }
@@ -738,17 +753,6 @@ bool TableView::SyncTableViewSourceSort(
     // its rewritten projection into the repeater.
     RefreshRowsPipeline();
     UpdateEmptyState();
-
-    // A custom comparer that threw was contained as "equal": the sort stands, and the fault is the app's.
-    if (auto const& rankAdapter = m_tableViewSourceSort.CustomSortState)
-    {
-        if (auto const contained = rankAdapter->TakeSwallowedFaults(); contained.count)
-        {
-            TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::Sort, TableViewTip::Stage::Sort,
-                true, TableViewTip::Attribution::Application, contained.firstError, TableViewTip::AppFaultKind::Callback,
-                contained.count);
-        }
-    }
     return true;
 }
 

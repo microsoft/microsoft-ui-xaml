@@ -255,8 +255,9 @@ void TableView::RevokeTipInitializationLayout() noexcept
 
 void TableView::IgnoreTipInitializationUnloadedBeforeRender() noexcept
 {
-    // A realized row or group header armed the layout callback, so the table did lay one out.
-    if (!m_tip.initializationPending || m_tipInitializationLayoutToken.value) { return; }
+    // Still waiting, the table laid out no row: a realized row or group header only arms the callback, and the layout
+    // pass that runs it completes Initialize (ArmTipInitializationLayout).
+    if (!m_tip.initializationPending) { return; }
     try
     {
         auto const source = m_activeSource.get();

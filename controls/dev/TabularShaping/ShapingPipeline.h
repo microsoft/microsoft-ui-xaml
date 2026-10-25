@@ -93,7 +93,7 @@ namespace ShapingHelpers
         void ClearFilter() noexcept;
         void ClearFilter(winrt::hstring const& axisToken);
         bool HasFilter() const noexcept { return !m_filters.empty(); }
-        // A predicate that throws excludes the item (fail-safe) and is counted (TakeSwallowedFaults). Returns true
+        // A predicate that throws excludes the item (fail-safe) and is counted (SwallowedFaultsTally). Returns true
         // when no filter is set, so callers can gate unconditionally.
         bool PassesFilter(winrt::IInspectable const& item) const;
         void ApplyFilter(std::vector<winrt::IInspectable>& rows) const;
@@ -152,11 +152,8 @@ namespace ShapingHelpers
         // by the stable sort's source-order tiebreak rather than by any key.
         int CompareItemToRow(winrt::IInspectable const& item, winrt::IInspectable const& row) const;
 
-        // The predicates and key selectors that threw since the last take (a throwing key sorts as null); resets
-        // the tally.
-        SwallowedFaults TakeSwallowedFaults() noexcept { return std::exchange(m_swallowedFaults, {}); }
-        // Where the engine counts the key selectors and predicates it contains outside the pipeline (a group key, an
-        // in-place re-sort).
+        // The tally of the predicates and key selectors that threw (a throwing key sorts as null): the pipeline counts
+        // here, and so does the engine for what it contains outside the pipeline (a group key, an in-place re-sort).
         SwallowedFaults& SwallowedFaultsTally() noexcept { return m_swallowedFaults; }
 
         // -- verb ordering --------------------------------------------------------------------
