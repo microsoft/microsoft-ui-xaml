@@ -27,7 +27,7 @@ winrt::TableViewSource2 TableViewSource2::Filter(winrt::TableViewPredicate2 cons
     ThrowNotImplemented(L"Filter");
 }
 
-winrt::TableViewSource2 TableViewSource2::GroupBy(winrt::TableViewKeySelector2 const& /*key*/)
+winrt::TableViewSource2 TableViewSource2::GroupBy(winrt::TableViewKeySelector2 const& /*key*/, winrt::SortDirection2 /*groupDirection*/)
 {
     ThrowNotImplemented(L"GroupBy");
 }
@@ -38,6 +38,11 @@ winrt::TableViewSource2 TableViewSource2::Sort(winrt::hstring const& /*sortMembe
 }
 
 winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewKeySelector2 const& /*key*/, winrt::SortDirection2 /*direction*/)
+{
+    ThrowNotImplemented(L"Sort");
+}
+
+winrt::TableViewSource2 TableViewSource2::Sort(winrt::TableViewComparer2 const& /*comparer*/)
 {
     ThrowNotImplemented(L"Sort");
 }

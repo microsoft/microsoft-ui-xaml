@@ -75,9 +75,10 @@ classDiagram
         -shared_ptr~SourceTable~ m_sourceTable
         +From(items)$ TableViewSource2
         +Filter(predicate) TableViewSource2
-        +GroupBy(keySelector) TableViewSource2
+        +GroupBy(keySelector, groupDirection) TableViewSource2
         +Sort(sortMemberPath, direction) TableViewSource2
         +Sort(keySelector, direction) TableViewSource2
+        +Sort(comparer) TableViewSource2
         +ParentBy(keySelector, parentKeySelector) TableViewSource2
         +ChildrenBy(childrenSelector) TableViewSource2
         +ClearFilter() TableViewSource2
@@ -203,6 +204,10 @@ classDiagram
         <<delegate>>
         Object(Object item)
     }
+    class TableViewComparer2 {
+        <<delegate>>
+        Int32(Object x, Object y)
+    }
     class TableViewChildrenSelector2 {
         <<delegate>>
         Object(Object item)
@@ -221,6 +226,7 @@ classDiagram
     SourceRecord --> WatchState
     TableViewSource2 ..> TableViewPredicate2
     TableViewSource2 ..> TableViewKeySelector2
+    TableViewSource2 ..> TableViewComparer2
     TableViewSource2 ..> TableViewChildrenSelector2
     TableViewSource2 ..> SortDirection2
 ```
@@ -233,8 +239,9 @@ classDiagram
 |---|---|---|
 | `TableViewPredicate2` | `Boolean(Object item)` | `Filter` |
 | `TableViewKeySelector2` | `Object(Object item)` | `GroupBy`, `Sort`, `ParentBy` |
+| `TableViewComparer2` | `Int32(Object x, Object y)`: negative when `x` sorts first, zero when equal, positive when after | `Sort` |
 | `TableViewChildrenSelector2` | `Object(Object item)` returning a child collection, or `null` for a leaf | `ChildrenBy` |
-| `SortDirection2` | `None`, `Ascending`, `Descending` | `Sort` |
+| `SortDirection2` | `None`, `Ascending`, `Descending` | `Sort`, `GroupBy` |
 
 Verbs are fluent: each returns the same `TableViewSource2` so calls can be chained.
 
@@ -242,15 +249,20 @@ Verbs are fluent: each returns the same `TableViewSource2` so calls can be chain
 |---|---|
 | `From(items)` | Wraps any collection `TableViewSource.From` accepts. Throws `E_INVALIDARG` when `items` is null. |
 | `Filter(predicate)` | Keeps only the items the predicate accepts. |
-| `GroupBy(keySelector)` | Groups by key. There is one `GroupBy`; v1's overload taking a group identity selector was removed. |
+| `GroupBy(keySelector, groupDirection)` | Groups by key. `groupDirection` orders the groups by key (`None` = order of first appearance in the filtered source). `Sort` orders only the rows inside each group, never the groups. There is one `GroupBy`; v1's overload taking a group identity selector was removed. |
 | `Sort(sortMemberPath, direction)` | Sorts by property path. Projected as `SortByPath`. |
 | `Sort(keySelector, direction)` | Sorts by key selector. This is the default overload. |
+| `Sort(comparer)` | Sorts by comparing whole items (like WPF's `CustomSort`). The comparer defines the full order of its level, so there is no direction. Projected as `SortWithComparer`. |
 | `ParentBy(keySelector, parentKeySelector)` | Hierarchy over a flat source. Each item has a unique key and its parent's key (`null` for a root). |
 | `ChildrenBy(childrenSelector)` | Hierarchy over a nested source. Each item returns its child collection. |
 | `ClearFilter` / `ClearGroupBy` / `ClearSort` | Remove the matching verb. |
 | `ClearHierarchy` | Removes the hierarchy declared by `ParentBy` or `ChildrenBy`. |
 | `Refresh()` | Re-reads the source and rebuilds. It is for sources that do not raise change notifications. |
 | `IsLiveShaping` | A get/set property, `false` by default. When true, an item's `PropertyChanged` re-applies the active verbs to that item. When false, property edits leave rows in place until the next collection change, verb or `Refresh`. |
+
+Each `Sort` call appends a lower-priority level after the existing ones (`Sort(a).Sort(b)` sorts
+by `a`, then `b`); `ClearSort` removes every level. Unlike v1, group order no longer depends on
+whether `Sort` was declared before or after `GroupBy`.
 
 ## 2. `TableViewSource2` runtime class
 
@@ -786,10 +798,26 @@ The v1 `IsTableViewSourceGrouped()` branches, and the O(n) scan in
 The shape spec is the stored set of verbs currently in force. The engine, the projection and the
 coordinator all read it. Questions to settle:
 
-- **Sort axes:** how several sorts are represented, and whether sort by path and sort by key
-  selector reduce to one form.
-- **Sort and group ordering:** v1 decides whether a sort orders the groups or the rows within them
-  by declaration order relative to `GroupBy`. Keep that, or make it explicit?
+- **Sort levels (decided):** each `Sort` call appends a lower-priority level. Open: whether sort by
+  path and sort by key selector reduce to one form, and what a repeated key does.
+- **Sort comparer (decided):** `Sort(comparer)` adds a level that compares whole items with a
+  `TableViewComparer2`. It is one level like any other, so it can be mixed with path and key
+  levels (`Sort(path).Sort(comparer)` breaks path ties with the comparer). It takes no direction;
+  an app wanting the reverse order inverts its comparer. Unlike WPF's `CustomSort`, it does not
+  replace the other levels. Key levels keep the engine's default key comparison.
+- **Sort and group ordering (decided):** explicit. `GroupBy`'s `groupDirection` orders groups by
+  key; the `Sort` levels order only rows within groups. v1's declaration-order rule is dropped.
+  - **Logical order:** filter → group → sort within each group, as in TanStack Table, MUI X and
+    AG Grid.
+  - **Filter first:** groups are built only from passing rows, so a group never appears empty.
+  - **Group order:** `Ascending` / `Descending` order groups by key. `None` keeps the order in
+    which groups first appear in the filtered source.
+  - **Row sort never moves groups:** changing `Sort` reorders rows inside groups but never group
+    positions (AG Grid's `groupMaintainOrder` behaviour). WPF and Avalonia differ: they sort
+    before grouping, so with no group sort the groups follow their first row in the sorted
+    list, and they swap when the sort changes. We don't adopt that.
+  - **Engine freedom:** the engine may physically sort before bucketing for efficiency, as long
+    as the result matches this logical order.
 - **Filter:** one predicate, or several combined?
 - **Hierarchy:** `ParentBy` and `ChildrenBy` are mutually exclusive. Assumed: the last call replaces
   the earlier one (see *Hierarchy: the source tree in `SourceTable`*). The tree itself lives in

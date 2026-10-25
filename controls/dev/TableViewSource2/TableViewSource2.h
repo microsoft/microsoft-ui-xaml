@@ -26,9 +26,10 @@ public:
     static winrt::TableViewSource2 From(winrt::IInspectable const& items);
 
     winrt::TableViewSource2 Filter(winrt::TableViewPredicate2 const& predicate);
-    winrt::TableViewSource2 GroupBy(winrt::TableViewKeySelector2 const& key);
+    winrt::TableViewSource2 GroupBy(winrt::TableViewKeySelector2 const& key, winrt::SortDirection2 groupDirection);
     winrt::TableViewSource2 Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection2 direction);
     winrt::TableViewSource2 Sort(winrt::TableViewKeySelector2 const& key, winrt::SortDirection2 direction);
+    winrt::TableViewSource2 Sort(winrt::TableViewComparer2 const& comparer);
     winrt::TableViewSource2 ParentBy(winrt::TableViewKeySelector2 const& key, winrt::TableViewKeySelector2 const& parentKey);
     winrt::TableViewSource2 ChildrenBy(winrt::TableViewChildrenSelector2 const& childrenSelector);
     winrt::TableViewSource2 ClearFilter();

@@ -9,6 +9,11 @@ delegate Boolean TableViewPredicate2(Object item);
 [webhosthidden]
 delegate Object TableViewKeySelector2(Object item);
 
+// Compares two items: negative when x sorts before y, zero when equal, positive when after.
+[MUX_PREVIEW]
+[webhosthidden]
+delegate Int32 TableViewComparer2(Object x, Object y);
+
 // Returns an item's child collection (any collection type From accepts), or null for a leaf.
 [MUX_PREVIEW]
 [webhosthidden]
@@ -36,13 +41,21 @@ runtimeclass TableViewSource2
 
     TableViewSource2 Filter(TableViewPredicate2 predicate);
 
-    TableViewSource2 GroupBy(TableViewKeySelector2 keySelector);
+    // Groups by key. groupDirection orders the groups by key (None = order of first appearance in
+    // the filtered source); Sort orders only the rows inside each group, never the groups.
+    TableViewSource2 GroupBy(TableViewKeySelector2 keySelector, SortDirection2 groupDirection);
 
+    // Each Sort call appends a lower-priority level after the existing ones; ClearSort removes all.
     [method_name("SortByPath")]
     TableViewSource2 Sort(String sortMemberPath, SortDirection2 direction);
 
     [default_overload] [method_name("Sort")]
     TableViewSource2 Sort(TableViewKeySelector2 keySelector, SortDirection2 direction);
+
+    // Sorts by comparing whole items. The comparer defines the full order of its level, so it
+    // takes no direction.
+    [method_name("SortWithComparer")]
+    TableViewSource2 Sort(TableViewComparer2 comparer);
 
     // Hierarchy over a flat source: keySelector returns each item's unique key, parentKeySelector
     // its parent's key (null for a root).
