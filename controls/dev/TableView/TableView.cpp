@@ -3565,6 +3565,11 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
         {
             QueueReshapeAfterEditCloses([this]()
             {
+                // A source sort the app declared since the opt-out is newer: adopt it before clearing.
+                if (std::exchange(m_sortReconcileQueued, false))
+                {
+                    ReconcileSortStateWithSource();
+                }
                 if (!CanUserSortColumns())
                 {
                     ClearSortInternal(false);
@@ -3593,7 +3598,7 @@ void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
             QueueReshapeAfterEditCloses([this, weakColumn = winrt::make_weak(column)]()
             {
                 // A source sort the app declared since the opt-out is newer: adopt it before clearing.
-                if (m_sortReconcileQueued)
+                if (std::exchange(m_sortReconcileQueued, false))
                 {
                     ReconcileSortStateWithSource();
                 }

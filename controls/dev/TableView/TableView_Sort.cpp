@@ -409,13 +409,13 @@ bool TableView::ClearSort()
 
 bool TableView::IsActiveSourceOwnedByOther() const
 {
-    // A refused reclaim leaves no active source while it waits for the owner to let go.
-    if (m_awaitedSource.get())
-    {
-        return true;
-    }
     auto const source = ShapingSourceInternal();
-    return source && m_activeSourceReleased && winrt::get_self<::TableViewSource>(source)->IsOwnedByOther(*this);
+    if (!source)
+    {
+        // A refused reclaim leaves the source unadopted, also once unloaded and no longer awaiting it.
+        return static_cast<bool>(const_cast<TableView*>(this)->ItemsSource().try_as<winrt::TableViewSource>());
+    }
+    return m_activeSourceReleased && winrt::get_self<::TableViewSource>(source)->IsOwnedByOther(*this);
 }
 
 bool TableView::IsSortLitOnlyByApp() const
@@ -1008,8 +1008,11 @@ void TableView::QueueReconcileSortStateWithSource()
         {
             if (auto strongThis = weakThis.get())
             {
-                strongThis->m_sortReconcileQueued = false;
-                strongThis->ReconcileSortStateWithSource();
+                // An opt-out replayed in the meantime may have reconciled already.
+                if (std::exchange(strongThis->m_sortReconcileQueued, false))
+                {
+                    strongThis->ReconcileSortStateWithSource();
+                }
             }
         });
     }

@@ -1187,9 +1187,83 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a sort opt-out deferred while another table owns the source still waits when this table's reclaim is refused, and clears the sort once the reclaim succeeds.")]
+        [TestProperty("Description", "Verifies an edit a Sorting handler opens while a deferred sort opt-out is flushed ahead of a per-group collapse is not force-closed by that collapse.")]
+        public void VerifyEditOpenedWhileFlushingBlocksGroupToggle()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            bool requested = false;
+            bool reopened = false;
+            bool vetoClose = true;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                var source = TableViewSource.From(items);
+                source.GroupBy(o => ((EditablePerson)o).Role);
+                tableView = CreateEditableTable(items);
+                tableView.ItemsSource = source;
+                tableView.IsReadOnly = false;
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Precondition: the Name column sorts."));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.BeginningEdit += (s, e) =>
+                {
+                    if (!requested)
+                    {
+                        requested = true;
+                        tableView.CanUserSortColumns = false;
+                    }
+                };
+                tableView.CellEditEnding += (s, e) => e.Cancel = vetoClose;
+
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Ana");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the edit stays open.");
+
+                // Posted ahead of the drain the forced close below posts, so it flushes the deferred clear itself.
+                var engineer = GetProjectedElements(tableView).OfType<TableViewGroupHeader>()
+                    .First(header => (string)((TableViewGroupInfo)header.Content).Key == "Engineer");
+                ((IExpandCollapseProvider)FrameworkElementAutomationPeer.CreatePeerForElement(engineer).GetPattern(PatternInterface.ExpandCollapse)).Collapse();
+
+                vetoClose = false;
+                tableView.IsReadOnly = true;
+                Verify.IsFalse(tableView.IsEditing, "Precondition: IsReadOnly closes the edit.");
+
+                tableView.Sorting += (s, e) =>
+                {
+                    if (!reopened)
+                    {
+                        reopened = true;
+                        e.Cancel = true;
+                        tableView.IsReadOnly = false;
+                        vetoClose = true;
+                        CaptureSetValue(GetValueProvider(tableView, items[1], columnIndex: 0), "Vetoed");
+                    }
+                };
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(reopened, "Precondition: the flushed clear raised Sorting.");
+                Verify.IsTrue(tableView.IsEditing, "The vetoed edit must stay open.");
+                Verify.AreEqual("Diego", items[1].Name, "The vetoed value must not be committed.");
+                Verify.AreEqual(3, GetProjectedElements(tableView).OfType<TableViewRow>().Count(), "The group collapse must not run under the open edit.");
+            });
+        }
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sort opt-out deferred while another table owns the source still waits when this table's reclaim is refused, also once the table unloads again and a sort request flushes deferred work, and clears the sort once the reclaim succeeds.")]
+        [TestProperty("data:Unload", "{StayLoaded, UnloadBeforeRelease}")]
         public void VerifyDeferredSortOptOutWaitsForRefusedReclaim()
         {
+            var unload = ((string)TestContext.DataRow["Unload"]).Trim() == "UnloadBeforeRelease";
             TableView first = null;
             TableView second = null;
             TableViewSource shared = null;
@@ -1250,9 +1324,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(SortDirection.Descending, first.Columns[0].SortDirection, "The deferred clear must wait while the reclaim is refused.");
+                if (unload)
+                {
+                    host.Children.Remove(first);
+                }
+            });
+            SettleLayout(second);
+
+            // A sort request flushes older deferred work; this one is refused by the column itself.
+            Action requestRefusedSort = () =>
+            {
+                first.Columns[1].CanSort = false;
+                Verify.IsFalse(first.SortByColumn(first.Columns[1], SortDirection.Ascending), "Precondition: the opted-out column does not sort.");
+                Verify.AreEqual(SortDirection.Descending, first.Columns[0].SortDirection, "The deferred clear must wait while the source is not adopted.");
+            };
+
+            RunOnUIThread.Execute(() =>
+            {
+                if (unload)
+                {
+                    requestRefusedSort();
+                }
                 host.Children.Remove(second);
             });
             SettleLayout(first);
+
+            if (unload)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    requestRefusedSort();
+                    host.Children.Insert(0, first);
+                });
+                SettleLayout(first);
+            }
 
             RunOnUIThread.Execute(() =>
             {
