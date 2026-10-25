@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="590" viewBox="0 0 1120 590" role="img" aria-labelledby="title desc">
+  <title id="title">Custom storage needs a complete save lifecycle</title>
+  <desc id="desc">This is a requested future workflow, not complete support in this revision. The app would capture placement, save the complete snapshot with its window identifier in app-owned storage, load it, and apply it to a recreated window before first show. Capture and apply building blocks exist, but public save hooks for normal destruction and session ending are not defined. Session ending can occur without destroying each window. Saving only on normal close does not complete this workflow.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="590" fill="white"/>
+  <text x="32" y="40" class="heading">Custom storage needs a complete save lifecycle</text>
+  <rect x="32" y="65" width="1056" height="48" rx="8" fill="#fff3cd" stroke="#8b4500" stroke-width="2"/>
+  <text x="52" y="96">Deferred: the complete workflow is not supported in this revision.</text>
+  <text x="44" y="150" class="panel">Existing window</text>
+  <text x="432" y="150" class="panel">Your app's store</text>
+  <text x="804" y="150" class="panel">Recreated window</text>
+  <rect x="44" y="178" width="270" height="140" class="app"/>
+  <rect x="46" y="180" width="266" height="28" class="bar"/>
+  <text x="60" y="201">Window</text>
+  <text x="179" y="261" text-anchor="middle">TryGetPlacement()</text>
+  <path d="M432 195 V290 C432 321 688 321 688 290 V195" fill="#fff3cd" stroke="#8b4500" stroke-width="3"/>
+  <ellipse cx="560" cy="195" rx="128" ry="20" fill="#fff3cd" stroke="#8b4500" stroke-width="3"/>
+  <text x="560" y="251" text-anchor="middle">Complete snapshot</text>
+  <text x="560" y="282" text-anchor="middle">Window identifier</text>
+  <rect x="804" y="178" width="270" height="140" class="app"/>
+  <rect x="806" y="180" width="266" height="28" class="bar"/>
+  <text x="820" y="201">Window</text>
+  <text x="939" y="252" text-anchor="middle" class="note">CustomPlacement</text>
+  <text x="939" y="283" text-anchor="middle" class="note">ApplyInitialPlacement</text>
+  <text x="334" y="225" class="note">App saves</text>
+  <path d="M332 252 H410" class="arrow"/>
+  <text x="710" y="225" class="note">App loads</text>
+  <path d="M710 252 H782" class="arrow"/>
+  <text x="44" y="353" class="note">Capture at a valid save point.</text>
+  <text x="804" y="353" class="note">Apply before first show.</text>
+  <rect x="32" y="392" width="1056" height="100" rx="8" fill="#fff3cd" stroke="#8b4500" stroke-width="2"/>
+  <text x="52" y="429" class="panel">Missing public save hooks for destruction and session ending</text>
+  <text x="52" y="464">WM_ENDSESSION can occur without destroying each window.</text>
+  <text x="32" y="545">Capture/apply building blocks do not make this a complete supported workflow.</text>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="570" viewBox="0 0 1120 570" role="img" aria-labelledby="title desc">
+  <title id="title">Center in the selected display's work area</title>
+  <desc id="desc">Only secondary display B is shown; it is left of the primary display and has a negative screen origin. The left strip is a taskbar, outside B's work area. WinUI first prepares the hidden window on B and adjusts its size. The app then moves its outer bounds to the center of the work area and calls Activate. The final solid window keeps the prepared size and centered position. WorkArea already includes its virtual-screen origin.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.hidden{fill:#d5ecff;fill-opacity:.55;stroke:#185a86;stroke-width:3;stroke-dasharray:8 6}.bar{fill:#9bcdf1}.measure{fill:none;stroke:#8b4500;stroke-width:2}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="570" fill="white"/>
+  <text x="32" y="40" class="heading">Center in the selected display's work area</text>
+  <text x="32" y="85" class="panel">WinUI prepares the hidden window</text>
+  <text x="610" y="85" class="panel">App centers, then activates</text>
+  <text x="44" y="119" class="note">B is left of the primary display.</text>
+  <text x="620" y="119" class="note">Same B; left taskbar excluded.</text>
+  <rect x="44" y="150" width="440" height="250" class="monitor"/>
+  <rect x="620" y="150" width="440" height="250" class="monitor"/>
+  <rect x="45" y="151" width="31" height="248" fill="#697681"/>
+  <rect x="621" y="151" width="31" height="248" fill="#697681"/>
+  <text x="88" y="178" class="note">Work area</text>
+  <text x="664" y="178" class="note">Work area</text>
+  <rect x="102" y="205" width="200" height="130" class="hidden"/>
+  <text x="118" y="236">Hidden window</text>
+  <rect x="756" y="210" width="200" height="130" class="app"/>
+  <rect x="758" y="212" width="196" height="28" class="bar"/>
+  <text x="770" y="233">App: centered</text>
+  <path d="M654 275 H752 M654 268 V282 M752 268 V282 M960 275 H1058 M960 268 V282 M1058 268 V282" class="measure"/>
+  <text x="704" y="306" text-anchor="middle" class="note">equal</text>
+  <text x="1008" y="306" text-anchor="middle" class="note">equal</text>
+  <path d="M526 275 H586" class="arrow"/>
+  <text x="44" y="442" class="note">WinUI selects B and adjusts the size.</text>
+  <text x="620" y="442" class="note">Your app centers the outer bounds.</text>
+  <text x="32" y="497">x = workArea.X + (workArea.Width - outerWidth) / 2; likewise for y.</text>
+  <text x="32" y="538">WorkArea already uses screen coordinates. Do not add OuterBounds again.</text>
+</svg>

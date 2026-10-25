@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="540" viewBox="0 0 1120 540" role="img" aria-labelledby="title desc">
+  <title id="title">Fit a terminal window to whole text cells before first display</title>
+  <desc id="desc">Three stages on the same selected display. First, WinUI applies automatic placement while the normal terminal window is hidden; its client area has a partial column and row of text cells. Second, the app reduces the client size to fit whole cells, keeping the display and top-left position unchanged. Third, the app shows the window at the adjusted size without repeating initial placement. Dashed outlines illustrate hidden geometry, not visible windows. Only the final window is visible.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.small{font-size:17px}.cell{font-family:Consolas,monospace;font-size:13px;fill:#185a86}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.hidden{fill:#fff8ec;stroke:#8b4500;stroke-width:3;stroke-dasharray:8 6}.bar{fill:#9bcdf1}.hiddenbar{fill:#ffebca}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+    <pattern id="cells" width="20" height="22" patternUnits="userSpaceOnUse">
+      <path d="M20 0 H0 V22" fill="none" stroke="#6b8b9e" stroke-width="1"/>
+      <text x="5" y="16" class="cell">M</text>
+    </pattern>
+  </defs>
+  <rect width="1120" height="540" fill="white"/>
+  <text x="32" y="40" class="heading">Adjust a terminal window before first display</text>
+  <text x="32" y="73" class="note">WinUI chooses placement; the app fits whole text cells before showing the window.</text>
+
+  <text x="24" y="115" class="panel">1. WinUI applies placement</text>
+  <text x="400" y="115" class="panel">2. App fits whole cells</text>
+  <text x="776" y="115" class="panel">3. App shows the window</text>
+  <text x="36" y="145" class="small">Selected display</text>
+  <text x="412" y="145" class="small">Same display</text>
+  <text x="788" y="145" class="small">Same display</text>
+
+  <g transform="translate(24 158)">
+    <rect width="320" height="250" class="monitor"/>
+    <rect x="1" y="221" width="318" height="28" fill="#697681"/>
+    <text x="160" y="242" class="small" text-anchor="middle" style="fill:white">Taskbar</text>
+    <rect x="52" y="45" width="234" height="166" class="hidden"/>
+    <rect x="54" y="47" width="230" height="24" class="hiddenbar"/>
+    <text x="64" y="65" class="small">Terminal (hidden)</text>
+    <g transform="translate(64 83)">
+      <rect width="210" height="116" fill="white"/>
+      <rect x="200" width="10" height="116" fill="#ffd99b"/>
+      <rect y="110" width="210" height="6" fill="#ffd99b"/>
+      <rect width="210" height="116" fill="url(#cells)" stroke="#6b8b9e"/>
+    </g>
+  </g>
+
+  <path d="M354 280 H385" class="arrow"/>
+
+  <g transform="translate(400 158)">
+    <rect width="320" height="250" class="monitor"/>
+    <rect x="1" y="221" width="318" height="28" fill="#697681"/>
+    <text x="160" y="242" class="small" text-anchor="middle" style="fill:white">Taskbar</text>
+    <rect x="52" y="45" width="224" height="160" class="hidden"/>
+    <rect x="54" y="47" width="220" height="24" class="hiddenbar"/>
+    <text x="64" y="65" class="small">Terminal (hidden)</text>
+    <g transform="translate(64 83)">
+      <rect width="200" height="110" fill="white"/>
+      <rect width="200" height="110" fill="url(#cells)" stroke="#6b8b9e"/>
+    </g>
+  </g>
+
+  <path d="M730 280 H761" class="arrow"/>
+
+  <g transform="translate(776 158)">
+    <rect width="320" height="250" class="monitor"/>
+    <rect x="1" y="221" width="318" height="28" fill="#697681"/>
+    <text x="160" y="242" class="small" text-anchor="middle" style="fill:white">Taskbar</text>
+    <rect x="52" y="45" width="224" height="160" class="app"/>
+    <rect x="54" y="47" width="220" height="24" class="bar"/>
+    <text x="64" y="65" class="small">Terminal</text>
+    <g transform="translate(64 83)">
+      <rect width="200" height="110" fill="white"/>
+      <rect width="200" height="110" fill="url(#cells)" stroke="#6b8b9e"/>
+    </g>
+  </g>
+
+  <text x="184" y="448" text-anchor="middle">Automatic bounds have</text>
+  <text x="184" y="474" text-anchor="middle">a partial row and column.</text>
+  <text x="560" y="448" text-anchor="middle">Keep position; reduce size</text>
+  <text x="560" y="474" text-anchor="middle">to whole rows and columns.</text>
+  <text x="936" y="448" text-anchor="middle">Show the adjusted window;</text>
+  <text x="936" y="474" text-anchor="middle">do not repeat placement.</text>
+  <text x="32" y="521" class="note">Dashed outlines illustrate hidden window geometry. Only stage 3 is visible.</text>
+</svg>

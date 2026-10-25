@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="540" viewBox="0 0 1120 540" role="img" aria-labelledby="title desc">
+  <title id="title">Exit in full-screen and reopen at the last windowed placement</title>
+  <desc id="desc">The normal-state example has three stages on unchanged displays. A packaged app moves its normal window, enters the full-screen presenter, and exits without selecting the overlapped presenter again. A new process creates a window with the same PlacementId, and WinUI automatically restores its normal bounds using the overlapped presenter. The app does not capture or supply a placement snapshot. The dashed outline inside full-screen shows remembered normal bounds, not another open window. The diagram does not specify when WinUI saves data.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.saved{fill:none;stroke:#8b4500;stroke-width:3;stroke-dasharray:8 6}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="540" fill="white"/>
+  <text x="32" y="40" class="heading">Exit in full-screen; reopen at the last windowed placement</text>
+  <text x="32" y="78" class="note">Same packaged app and PlacementId; unchanged displays. Normal-state example.</text>
+  <text x="28" y="120" class="panel">1. Normal window</text>
+  <text x="404" y="120" class="panel">2. App exits in full-screen</text>
+  <text x="780" y="120" class="panel">3. App relaunched</text>
+  <rect x="28" y="143" width="312" height="218" class="monitor"/>
+  <rect x="29" y="338" width="310" height="22" fill="#697681"/>
+  <text x="184" y="354" text-anchor="middle" style="fill:white;font-size:16px">Taskbar</text>
+  <rect x="82" y="196" width="204" height="130" class="app"/>
+  <rect x="84" y="198" width="200" height="26" class="bar"/>
+  <text x="96" y="218">Main window</text>
+  <path d="M354 252 H390" class="arrow"/>
+  <rect x="404" y="143" width="312" height="218" class="monitor"/>
+  <rect x="406" y="145" width="308" height="214" fill="#d5ecff"/>
+  <text x="560" y="177" text-anchor="middle">FullScreen presenter</text>
+  <rect x="458" y="196" width="204" height="130" class="saved"/>
+  <text x="560" y="258" class="note" text-anchor="middle">Windowed bounds</text>
+  <path d="M730 252 H766" class="arrow"/>
+  <rect x="780" y="143" width="312" height="218" class="monitor"/>
+  <rect x="781" y="338" width="310" height="22" fill="#697681"/>
+  <text x="936" y="354" text-anchor="middle" style="fill:white;font-size:16px">Taskbar</text>
+  <rect x="834" y="196" width="204" height="130" class="app"/>
+  <rect x="836" y="198" width="200" height="26" class="bar"/>
+  <text x="848" y="218">Main window</text>
+  <text x="28" y="405" class="note">Windowed bounds recorded</text>
+  <text x="404" y="405" class="note">Exit while FullScreen is active</text>
+  <text x="780" y="405" class="note">Same normal bounds; Overlapped</text>
+  <text x="32" y="467" class="note">WinUI saves and loads windowed placement; the app supplies no snapshot.</text>
+  <text x="32" y="508" class="note">Dashed outline: remembered bounds, not an additional open window.</text>
+</svg>

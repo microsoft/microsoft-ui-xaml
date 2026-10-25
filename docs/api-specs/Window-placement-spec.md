@@ -171,7 +171,7 @@ calling `Activate()`:
   placement logic after your explicit `ApplyInitialPlacement` call completes without error.
   The window retains all the information it needs to open in the correct state.
 
-See [Center a window in the work area of its last-used display](#33-center-a-window-in-the-work-area-of-its-last-used-display)
+See [Center a window in the work area of its last-used display using AppWindow APIs](#33-center-a-window-in-the-work-area-of-its-last-used-display-using-appwindow-apis)
 for an example of preparing placement, adjusting position, and then activating the window.
 
 ### 2.4. Capture and apply placement yourself
@@ -495,6 +495,10 @@ be made before the window is shown for the first time.  Each call re-runs WinUI'
 **Additional behavior and errors**
 
 - This method does not show the window or request activation.
+- WinUI sets the window's presenter to `OverlappedPresenter` if needed, even when no saved
+  placement is available. This also applies when the first `Activate()` runs initial placement
+  automatically. To use another presenter for first presentation, select it after calling
+  `ApplyInitialPlacement` and before calling `Activate()`.
 - WinUI reports an error before applying placement if your app calls from the wrong thread,
   the window is closed, or the options are null or contain invalid values.
 - WinUI reports `E_ILLEGAL_METHOD_CALL` if the window has already been shown or another
@@ -528,7 +532,7 @@ If this is the first time `Activate` has been called for this window:
 See `ApplyInitialPlacement` documentation for more information about how your app can call it directly.
 
 WinUI remembers the `WindowInitialPlacementOptions` sent to the last call to `ApplyInitialPlacement`.  Here's how
-the `WindowInitialPlacementOptions.WindowPlacementReason` affects behavior:
+the `WindowInitialPlacementOptions.Reason` affects behavior:
 
 | `WindowPlacementReason` | First `Activate()` |
 | --- | --- |

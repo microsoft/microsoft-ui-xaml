@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="490" viewBox="0 0 1120 490" role="img" aria-labelledby="title desc">
+  <title id="title">Reopen a normal window at its saved position and size</title>
+  <desc id="desc">The app has package identity. The earlier session and the recreated window use the same PlacementId, Contoso.Editor. With unchanged display configuration, usable saved placement, and no cascade source, WinUI restores the same normal outer bounds. The app creates the new window and calls Activate; it does not load or apply placement explicitly. The drawing does not specify when WinUI saves data.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="490" fill="white"/>
+  <text x="32" y="40" class="heading">Reopen a normal window at its saved position and size</text>
+  <text x="32" y="85" class="panel">Packaged app: earlier session</text>
+  <text x="610" y="85" class="panel">Recreated with the same PlacementId</text>
+  <text x="44" y="118">PlacementId = "Contoso.Editor"</text>
+  <text x="620" y="118">PlacementId = "Contoso.Editor"</text>
+  <rect x="44" y="140" width="440" height="230" class="monitor"/>
+  <rect x="620" y="140" width="440" height="230" class="monitor"/>
+  <rect x="45" y="344" width="438" height="25" fill="#697681"/>
+  <rect x="621" y="344" width="438" height="25" fill="#697681"/>
+  <rect x="112" y="182" width="250" height="134" class="app"/>
+  <rect x="114" y="184" width="246" height="28" class="bar"/>
+  <text x="126" y="205">Editor</text>
+  <rect x="688" y="182" width="250" height="134" class="app"/>
+  <rect x="690" y="184" width="246" height="28" class="bar"/>
+  <text x="702" y="205">Editor</text>
+  <path d="M526 250 H586" class="arrow"/>
+  <text x="44" y="419" class="note">Saved bounds on an unchanged display.</text>
+  <text x="620" y="419" class="note">WinUI reapplies the saved position and size.</text>
+  <text x="32" y="466" class="note">Conditions: usable saved normal record; no open, visible window with this PlacementId.</text>
+</svg>

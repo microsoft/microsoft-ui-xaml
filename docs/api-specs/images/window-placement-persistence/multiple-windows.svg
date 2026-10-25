@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="495" viewBox="0 0 1120 495" role="img" aria-labelledby="title desc">
+  <title id="title">Restore multiple browser windows to their own saved locations</title>
+  <desc id="desc">Before close, browser window A occupies the upper-left area of a display and window B occupies a separate lower-right area. After the app recreates both windows, each returns to its own size and position on the same display. Window A and window B use distinct placement identifiers and separate saved records. The app restores the tabs.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.small{font-size:15px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.peer{fill:#e4f4e8;stroke:#2e6b42;stroke-width:3}.peerbar{fill:#bde0c8}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="495" fill="white"/>
+  <text x="32" y="40" class="heading">Restore each browser window to its own location</text>
+  <text x="32" y="85" class="panel">Before the app closes</text>
+  <text x="610" y="85" class="panel">When the app opens again</text>
+  <rect x="44" y="125" width="440" height="280" class="monitor"/>
+  <rect x="45" y="372" width="438" height="32" fill="#697681"/>
+  <text x="264" y="395" text-anchor="middle" style="fill:white">Taskbar</text>
+  <rect x="72" y="154" width="180" height="172" class="app"/>
+  <rect x="74" y="156" width="176" height="28" class="bar"/>
+  <text x="86" y="177">Window A</text>
+  <rect x="83" y="194" width="66" height="22" rx="3" fill="white"/>
+  <rect x="155" y="194" width="66" height="22" rx="3" fill="#b9d8ef"/>
+  <text x="93" y="210" class="small">Tab 1</text>
+  <text x="165" y="210" class="small">Tab 2</text>
+  <rect x="83" y="225" width="158" height="88" rx="3" fill="white"/>
+  <text x="162" y="277" class="note" text-anchor="middle">Page A</text>
+  <rect x="266" y="220" width="200" height="136" class="peer"/>
+  <rect x="268" y="222" width="196" height="28" class="peerbar"/>
+  <text x="280" y="243">Window B</text>
+  <rect x="277" y="260" width="70" height="22" rx="3" fill="white"/>
+  <rect x="353" y="260" width="70" height="22" rx="3" fill="#cbe7d3"/>
+  <text x="287" y="276" class="small">Tab 3</text>
+  <text x="363" y="276" class="small">Tab 4</text>
+  <rect x="277" y="291" width="178" height="52" rx="3" fill="white"/>
+  <text x="366" y="324" class="note" text-anchor="middle">Page B</text>
+  <path d="M530 265 H581" class="arrow"/>
+  <rect x="620" y="125" width="440" height="280" class="monitor"/>
+  <rect x="621" y="372" width="438" height="32" fill="#697681"/>
+  <text x="840" y="395" text-anchor="middle" style="fill:white">Taskbar</text>
+  <rect x="648" y="154" width="180" height="172" class="app"/>
+  <rect x="650" y="156" width="176" height="28" class="bar"/>
+  <text x="662" y="177">Window A</text>
+  <rect x="659" y="194" width="66" height="22" rx="3" fill="white"/>
+  <rect x="731" y="194" width="66" height="22" rx="3" fill="#b9d8ef"/>
+  <text x="669" y="210" class="small">Tab 1</text>
+  <text x="741" y="210" class="small">Tab 2</text>
+  <rect x="659" y="225" width="158" height="88" rx="3" fill="white"/>
+  <text x="738" y="277" class="note" text-anchor="middle">Page A</text>
+  <rect x="842" y="220" width="200" height="136" class="peer"/>
+  <rect x="844" y="222" width="196" height="28" class="peerbar"/>
+  <text x="856" y="243">Window B</text>
+  <rect x="853" y="260" width="70" height="22" rx="3" fill="white"/>
+  <rect x="929" y="260" width="70" height="22" rx="3" fill="#cbe7d3"/>
+  <text x="863" y="276" class="small">Tab 3</text>
+  <text x="939" y="276" class="small">Tab 4</text>
+  <rect x="853" y="291" width="178" height="52" rx="3" fill="white"/>
+  <text x="942" y="324" class="note" text-anchor="middle">Page B</text>
+  <text x="44" y="443">Save two separate placement records.</text>
+  <text x="620" y="443">Each window returns to its own bounds.</text>
+  <text x="32" y="482" class="note">Distinct IDs: Browser.WindowA and Browser.WindowB. The app recreates the windows and their tabs.</text>
+</svg>

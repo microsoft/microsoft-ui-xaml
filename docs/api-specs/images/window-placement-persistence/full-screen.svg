@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="450" viewBox="0 0 1120 450" role="img" aria-labelledby="title desc">
+  <title id="title">Restore the last valid windowed placement after full-screen mode</title>
+  <desc id="desc">At close, the app fills the entire display in full-screen mode, with no taskbar. On reopen, this example shows the app at its last windowed placement rather than returning to full-screen mode. The windowed example does not imply that every app returns to a normal window.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="450" fill="white"/>
+  <text x="32" y="40" class="heading">Reopen at the last windowed placement</text>
+  <text x="32" y="85" class="panel">When the app closes</text>
+  <text x="610" y="85" class="panel">When the app opens again</text>
+  <rect x="44" y="125" width="440" height="250" class="monitor"/>
+  <rect x="46" y="127" width="436" height="246" fill="#d5ecff"/>
+  <text x="157" y="233" class="panel">App: full-screen</text>
+  <text x="116" y="266">Entire display; no taskbar</text>
+  <path d="M530 250 H581" class="arrow"/>
+  <rect x="620" y="125" width="440" height="250" class="monitor"/>
+  <rect x="621" y="337" width="438" height="37" fill="#697681"/>
+  <text x="784" y="362" style="fill:white">Taskbar</text>
+  <rect x="718" y="165" width="254" height="157" class="app"/>
+  <rect x="720" y="167" width="250" height="28" class="bar"/>
+  <text x="732" y="188">App: windowed (example)</text>
+  <text x="44" y="418">App fills the display</text>
+  <text x="620" y="418">Last windowed placement</text>
+</svg>

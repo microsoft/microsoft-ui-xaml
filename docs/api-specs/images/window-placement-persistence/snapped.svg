@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="450" viewBox="0 0 1120 450" role="img" aria-labelledby="title desc">
+  <title id="title">Adjust saved snap bounds to the current work area</title>
+  <desc id="desc">At close, the app occupies the left half of the work area above a bottom taskbar. On reopen with a left taskbar, the app remains snapped to the left half of the current usable work area, beside the taskbar.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="450" fill="white"/>
+  <text x="32" y="40" class="heading">Keep the app snapped as the work area changes</text>
+  <text x="32" y="85" class="panel">When the app closes</text>
+  <text x="610" y="85" class="panel">When the app opens again</text>
+  <rect x="44" y="125" width="440" height="250" class="monitor"/>
+  <rect x="45" y="337" width="438" height="37" fill="#697681"/>
+  <text x="208" y="362" style="fill:white">Taskbar</text>
+  <rect x="49" y="130" width="212" height="202" class="app"/>
+  <rect x="51" y="132" width="208" height="28" class="bar"/>
+  <text x="63" y="153">App: snapped</text>
+  <text x="64" y="224">Left half</text>
+  <text x="286" y="226">Work area</text>
+  <path d="M530 250 H581" class="arrow"/>
+  <rect x="620" y="125" width="440" height="250" class="monitor"/>
+  <rect x="621" y="126" width="45" height="248" fill="#697681"/>
+  <text transform="translate(651 281) rotate(-90)" style="fill:white">Taskbar</text>
+  <rect x="671" y="130" width="190" height="240" class="app"/>
+  <rect x="673" y="132" width="186" height="28" class="bar"/>
+  <text x="685" y="153">App: snapped</text>
+  <text x="686" y="225">Left half</text>
+  <text x="889" y="226">Work area</text>
+  <text x="44" y="421">App uses the left half</text>
+  <text x="620" y="421">App uses the current left half</text>
+</svg>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="725" viewBox="0 0 1120 725" role="img" aria-labelledby="title desc">
+  <title id="title">Compare ordinary reopen and restart across virtual desktops</title>
+  <desc id="desc">The outlines represent virtual desktops on one display, not separate monitors. At close, the app is on Desktop 1 while the user works in another app on active Desktop 2. An ordinary reopen puts the app on active Desktop 2. An application restart returns the app to Desktop 1 when the saved desktop is available, while the user continues working on active Desktop 2.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.desktop{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.other{fill:#dfe2e6;stroke:#58616b;stroke-width:3}.otherbar{fill:#bec5cc}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="725" fill="white"/>
+  <text x="32" y="36" class="heading">Reopen on the active desktop or restart on the saved desktop</text>
+  <text x="32" y="65" class="note">Desktop 1 and Desktop 2 are virtual desktops on one display.</text>
+  <text x="32" y="108" class="panel">When the app closes</text>
+  <text x="610" y="108" class="panel">When the app opens again</text>
+  <text x="44" y="256">Desktop 1</text>
+  <text x="280" y="256">Desktop 2 (active)</text>
+  <rect x="44" y="272" width="205" height="235" rx="10" class="desktop"/>
+  <rect x="280" y="272" width="205" height="235" rx="10" class="desktop"/>
+  <rect x="60" y="313" width="173" height="125" class="app"/>
+  <rect x="62" y="315" width="169" height="28" class="bar"/>
+  <text x="74" y="336">App</text>
+  <rect x="296" y="313" width="173" height="125" class="other"/>
+  <rect x="298" y="315" width="169" height="28" class="otherbar"/>
+  <text x="310" y="336">Other app</text>
+  <text x="310" y="385">User works here</text>
+  <path d="M522 388 H561 V285 H588" class="arrow"/>
+  <path d="M561 388 V570 H588" class="arrow"/>
+  <text x="620" y="146" class="panel">Ordinary reopen</text>
+  <text x="620" y="180">Desktop 1</text>
+  <text x="856" y="180">Desktop 2 (active)</text>
+  <rect x="620" y="195" width="205" height="180" rx="10" class="desktop"/>
+  <rect x="856" y="195" width="205" height="180" rx="10" class="desktop"/>
+  <rect x="868" y="208" width="176" height="105" class="other"/>
+  <rect x="870" y="210" width="172" height="28" class="otherbar"/>
+  <text x="882" y="231">Other app</text>
+  <rect x="884" y="250" width="163" height="109" class="app"/>
+  <rect x="886" y="252" width="159" height="28" class="bar"/>
+  <text x="898" y="273">App</text>
+  <text x="620" y="430" class="panel">Application restart</text>
+  <text x="620" y="464">Desktop 1</text>
+  <text x="856" y="464">Desktop 2 (active)</text>
+  <rect x="620" y="479" width="205" height="180" rx="10" class="desktop"/>
+  <rect x="856" y="479" width="205" height="180" rx="10" class="desktop"/>
+  <rect x="638" y="521" width="170" height="110" class="app"/>
+  <rect x="640" y="523" width="166" height="28" class="bar"/>
+  <text x="652" y="544">App</text>
+  <rect x="874" y="521" width="170" height="110" class="other"/>
+  <rect x="876" y="523" width="166" height="28" class="otherbar"/>
+  <text x="888" y="544">Other app</text>
+  <text x="888" y="594">User works here</text>
+  <text x="44" y="550">User works on Desktop 2.</text>
+  <text x="44" y="581">App closes on Desktop 1.</text>
+  <text x="620" y="698" class="note">When the saved desktop is available</text>
+</svg>

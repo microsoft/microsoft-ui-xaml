@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="495" viewBox="0 0 1120 495" role="img" aria-labelledby="title desc">
+  <title id="title">Restore app window stacking order after a system reboot</title>
+  <desc id="desc">Before Windows reboots, normal window A overlaps normal window B on the same display. After Windows restarts the app, the app recreates both windows at their saved bounds and explicitly places B below A. Placement persistence restores the bounds; the app separately stores and restores the relative stacking order.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.peer{fill:#e4f4e8;stroke:#2e6b42;stroke-width:3}.peerbar{fill:#bde0c8}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="495" fill="white"/>
+  <text x="32" y="40" class="heading">Restore the app's window stacking order</text>
+  <text x="32" y="85" class="panel">Before Windows reboots</text>
+  <text x="610" y="85" class="panel">After Windows restarts the app</text>
+  <rect x="44" y="125" width="440" height="280" class="monitor"/>
+  <rect x="45" y="372" width="438" height="32" fill="#697681"/>
+  <text x="264" y="395" text-anchor="middle" style="fill:white">Taskbar</text>
+  <rect x="78" y="156" width="284" height="172" class="peer"/>
+  <rect x="80" y="158" width="280" height="28" class="peerbar"/>
+  <text x="92" y="179">Window B</text>
+  <text x="92" y="209" class="note">Behind A</text>
+  <rect x="168" y="220" width="284" height="136" class="app"/>
+  <rect x="170" y="222" width="280" height="28" class="bar"/>
+  <text x="182" y="243">Window A</text>
+  <text x="310" y="305" class="note" text-anchor="middle">Above B</text>
+  <path d="M530 265 H581" class="arrow"/>
+  <rect x="620" y="125" width="440" height="280" class="monitor"/>
+  <rect x="621" y="372" width="438" height="32" fill="#697681"/>
+  <text x="840" y="395" text-anchor="middle" style="fill:white">Taskbar</text>
+  <rect x="654" y="156" width="284" height="172" class="peer"/>
+  <rect x="656" y="158" width="280" height="28" class="peerbar"/>
+  <text x="668" y="179">Window B</text>
+  <text x="668" y="209" class="note">Behind A</text>
+  <rect x="744" y="220" width="284" height="136" class="app"/>
+  <rect x="746" y="222" width="280" height="28" class="bar"/>
+  <text x="758" y="243">Window A</text>
+  <text x="886" y="305" class="note" text-anchor="middle">Above B</text>
+  <text x="44" y="443">Window A overlaps window B.</text>
+  <text x="620" y="443">The app restores B below A.</text>
+  <text x="32" y="482" class="note">Placement persistence remembers bounds, not stacking order. The app saves and restores that order.</text>
+</svg>

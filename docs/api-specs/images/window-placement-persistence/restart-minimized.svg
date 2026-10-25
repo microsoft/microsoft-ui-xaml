@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="700" viewBox="0 0 1120 700" role="img" aria-labelledby="title desc">
+  <title id="title">Compare ordinary reopen and restart of a minimized app</title>
+  <desc id="desc">At close, the app is minimized to a taskbar item while another app remains visible. An ordinary reopen shows the app at its remembered window placement, a normal window in this example. An application restart keeps the app minimized while the other app remains visible. The app remembers the window to return to when restored.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.other{fill:#dfe2e6;stroke:#58616b;stroke-width:3}.otherbar{fill:#bec5cc}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="700" fill="white"/>
+  <text x="32" y="40" class="heading">Minimized state: ordinary reopen versus application restart</text>
+  <text x="32" y="85" class="panel">When the app closes</text>
+  <text x="610" y="85" class="panel">When the app opens again</text>
+  <rect x="44" y="238" width="440" height="250" class="monitor"/>
+  <rect x="90" y="274" width="265" height="157" class="other"/>
+  <rect x="92" y="276" width="261" height="28" class="otherbar"/>
+  <text x="104" y="297">Other app</text>
+  <rect x="45" y="451" width="438" height="36" fill="#697681"/>
+  <rect x="61" y="456" width="172" height="27" fill="#34495e"/>
+  <text x="71" y="476" style="fill:white">App (minimized)</text>
+  <path d="M523 363 H561 V244 H588" class="arrow"/>
+  <path d="M561 363 V537 H588" class="arrow"/>
+  <text x="620" y="129" class="panel">Ordinary reopen: show the app</text>
+  <rect x="620" y="148" width="440" height="230" class="monitor"/>
+  <rect x="647" y="176" width="260" height="142" class="other"/>
+  <rect x="649" y="178" width="256" height="28" class="otherbar"/>
+  <text x="661" y="199">Other app</text>
+  <rect x="710" y="219" width="260" height="112" class="app"/>
+  <rect x="712" y="221" width="256" height="28" class="bar"/>
+  <text x="724" y="242">App: normal (example)</text>
+  <rect x="621" y="343" width="438" height="34" fill="#697681"/>
+  <text x="620" y="427" class="panel">Application restart</text>
+  <rect x="620" y="445" width="440" height="230" class="monitor"/>
+  <rect x="666" y="476" width="265" height="142" class="other"/>
+  <rect x="668" y="478" width="261" height="28" class="otherbar"/>
+  <text x="680" y="499">Other app</text>
+  <rect x="621" y="638" width="438" height="36" fill="#697681"/>
+  <rect x="637" y="643" width="172" height="27" fill="#34495e"/>
+  <text x="647" y="663" style="fill:white">App (minimized)</text>
+  <text x="44" y="540">App stays in the taskbar.</text>
+  <text x="44" y="573">Remembered window: normal</text>
+  <text x="44" y="622">Restart keeps App minimized.</text>
+  <text x="44" y="653">Restore to the remembered window.</text>
+</svg>

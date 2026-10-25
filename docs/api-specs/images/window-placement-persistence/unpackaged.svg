@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="540" viewBox="0 0 1120 540" role="img" aria-labelledby="title desc">
+  <title id="title">Automatic placement currently requires package identity</title>
+  <desc id="desc">An app with package identity can set PlacementId to enable WinUI's automatic persistence and ID-based cascading. An unpackaged app has no supported equivalent automatic path in this revision; the crossed arrow marks deferred support, not a defined runtime error. Capture and apply building blocks remain available. Complete custom storage is also deferred and is not a supported unpackaged workaround.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="540" fill="white"/>
+  <text x="32" y="40" class="heading">Automatic placement currently requires package identity</text>
+  <text x="44" y="100" class="panel">With package identity</text>
+  <text x="620" y="100" class="panel">Without package identity</text>
+  <rect x="62" y="160" width="180" height="130" class="app"/>
+  <rect x="64" y="162" width="176" height="28" class="bar"/>
+  <text x="78" y="183">Window</text>
+  <text x="152" y="241" text-anchor="middle" class="note">PlacementId set</text>
+  <path d="M264 225 H308" class="arrow"/>
+  <rect x="330" y="160" width="160" height="130" rx="8" fill="#f6f8fa" stroke="#34495e" stroke-width="3"/>
+  <text x="410" y="216" text-anchor="middle">WinUI</text>
+  <text x="410" y="246" text-anchor="middle">store</text>
+  <rect x="638" y="160" width="180" height="130" class="app"/>
+  <rect x="640" y="162" width="176" height="28" class="bar"/>
+  <text x="654" y="183">Unpackaged app</text>
+  <text x="728" y="229" text-anchor="middle" class="note">Requested</text>
+  <text x="728" y="255" text-anchor="middle" class="note">automatic path</text>
+  <path d="M840 225 H884" class="arrow"/>
+  <path d="M850 210 L878 240 M878 210 L850 240" fill="none" stroke="#8b4500" stroke-width="4"/>
+  <rect x="906" y="160" width="160" height="130" rx="8" fill="#fff3cd" stroke="#8b4500" stroke-width="3"/>
+  <text x="986" y="216" text-anchor="middle">Automatic</text>
+  <text x="986" y="246" text-anchor="middle">support deferred</text>
+  <text x="44" y="340" class="note">PlacementId opts into saving, loading,</text>
+  <text x="44" y="371" class="note">and ID-based cascading together.</text>
+  <text x="620" y="340" class="note">No supported automatic path in this revision.</text>
+  <text x="620" y="371" class="note">Capture/apply building blocks remain available.</text>
+  <rect x="32" y="420" width="1056" height="78" rx="8" fill="#fff3cd" stroke="#8b4500" stroke-width="2"/>
+  <text x="52" y="452">Custom storage is also deferred.</text>
+  <text x="52" y="481">It is not a complete supported workaround for unpackaged apps in this revision.</text>
+</svg>

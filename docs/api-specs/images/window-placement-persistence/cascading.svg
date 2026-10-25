@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="495" viewBox="0 0 1120 495" role="img" aria-labelledby="title desc">
+  <title id="title">Cascade additional ordinary launches from an open instance</title>
+  <desc id="desc">A normal app window is saved at close. The first launch reopens it. That window stays open while the user opens two more app windows. The later windows form a stair pattern with visible title bars.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="495" fill="white"/>
+  <text x="32" y="40" class="heading">Open more app windows; keep their title bars visible</text>
+  <text x="32" y="85" class="panel">When the app closes</text>
+  <text x="400" y="85" class="panel">When the app opens again</text>
+  <text x="32" y="122">Saved normal window</text>
+  <text x="400" y="122">1. First launch</text>
+  <text x="780" y="122">2. Later launches</text>
+  <rect x="32" y="146" width="270" height="285" class="monitor"/>
+  <rect x="33" y="405" width="268" height="25" fill="#697681"/>
+  <rect x="58" y="184" width="190" height="135" class="app"/>
+  <rect x="60" y="186" width="186" height="28" class="bar"/>
+  <text x="72" y="207">App</text>
+  <path d="M321 285 H376" class="arrow"/>
+  <rect x="400" y="146" width="270" height="285" class="monitor"/>
+  <rect x="401" y="405" width="268" height="25" fill="#697681"/>
+  <rect x="426" y="184" width="190" height="135" class="app"/>
+  <rect x="428" y="186" width="186" height="28" class="bar"/>
+  <text x="440" y="207">App 1</text>
+  <path d="M695 285 H750" class="arrow"/>
+  <rect x="780" y="146" width="310" height="285" class="monitor"/>
+  <rect x="781" y="405" width="308" height="25" fill="#697681"/>
+  <rect x="806" y="184" width="190" height="135" class="app"/>
+  <rect x="808" y="186" width="186" height="28" class="bar"/>
+  <text x="820" y="207">App 1</text>
+  <rect x="838" y="222" width="190" height="135" class="app"/>
+  <rect x="840" y="224" width="186" height="28" class="bar"/>
+  <text x="852" y="245">App 2</text>
+  <rect x="870" y="260" width="190" height="135" class="app"/>
+  <rect x="872" y="262" width="186" height="28" class="bar"/>
+  <text x="884" y="283">App 3</text>
+  <text x="400" y="463">App 1 stays open.</text>
+  <text x="780" y="463">Open App 2, then App 3.</text>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="570" viewBox="0 0 1120 570" role="img" aria-labelledby="title desc">
+  <title id="title">Distinguish outer bounds from visible-frame bounds</title>
+  <desc id="desc">In the normal-window example, the blue outer edge represents NormalRect, including invisible resize borders. The inset dark edge marks the visible frame. In a separate snapped-window example, the orange inset edge represents SnapRect, the visible-frame bounds. That window's NormalRect still describes its separate normal restore bounds, not the snapped outer rectangle. Border widths are exaggerated. Fitting when only an invisible border crosses a work-area boundary remains open.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}</style>
+  </defs>
+  <rect width="1120" height="570" fill="white"/>
+  <text x="32" y="40" class="heading">Distinguish outer bounds from visible-frame bounds</text>
+  <text x="44" y="90" class="panel">Normal window</text>
+  <text x="620" y="90" class="panel">Snapped window: separate example</text>
+  <rect x="94" y="140" width="360" height="230" class="app"/>
+  <rect x="108" y="154" width="332" height="202" fill="white" stroke="#34495e" stroke-width="3"/>
+  <rect x="110" y="156" width="328" height="30" class="bar"/>
+  <text x="124" y="179">App</text>
+  <text x="274" y="261" text-anchor="middle">Visible frame</text>
+  <rect x="704" y="140" width="276" height="230" fill="#e8edf1" stroke="#697681" stroke-width="3"/>
+  <rect x="718" y="154" width="248" height="202" fill="white" stroke="#8b4500" stroke-width="4"/>
+  <rect x="721" y="157" width="242" height="29" class="bar"/>
+  <text x="734" y="179">App</text>
+  <text x="842" y="261" text-anchor="middle">Visible frame</text>
+  <text x="44" y="415" style="fill:#185a86">Blue: NormalRect, full outer bounds</text>
+  <text x="44" y="445" class="note">Includes invisible resize borders.</text>
+  <text x="620" y="415" style="fill:#8b4500">Orange: SnapRect, visible-frame bounds</text>
+  <text x="620" y="445" class="note">NormalRect still stores normal restore bounds.</text>
+  <rect x="32" y="478" width="1056" height="52" rx="8" fill="#fff3cd" stroke="#8b4500" stroke-width="2"/>
+  <text x="52" y="511">Open: fitting when only an invisible border overlaps a work-area boundary.</text>
+  <text x="32" y="555" class="note">Borders are exaggerated for clarity.</text>
+</svg>

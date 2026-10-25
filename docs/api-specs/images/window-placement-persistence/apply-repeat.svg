@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="590" viewBox="0 0 1120 590" role="img" aria-labelledby="title desc">
+  <title id="title">Prepare a hidden window more than once</title>
+  <desc id="desc">The app first applies snapshot A, whose remembered bounds need adjustment to the current work area. WinUI immediately adjusts the hidden window. The app then applies snapshot B, which fits unchanged. The first Activate shows the final prepared bounds without running placement again. In the first panel, the right dashed outline shows input A; outlines labeled hidden mark hidden windows. WinUI does not change either input snapshot.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.hidden{fill:#d5ecff;fill-opacity:.55;stroke:#185a86;stroke-width:3;stroke-dasharray:8 6}.bar{fill:#9bcdf1}.saved{fill:none;stroke:#8b4500;stroke-width:3;stroke-dasharray:8 6}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="590" fill="white"/>
+  <text x="32" y="40" class="heading">Prepare a hidden window more than once</text>
+  <text x="32" y="85">Apply changes the window immediately, but does not show it or change the input.</text>
+  <text x="44" y="133" class="panel">Apply snapshot A</text>
+  <text x="418" y="133" class="panel">Apply snapshot B</text>
+  <text x="792" y="133" class="panel">First Activate()</text>
+  <rect x="44" y="160" width="284" height="220" class="monitor"/>
+  <rect x="418" y="160" width="284" height="220" class="monitor"/>
+  <rect x="792" y="160" width="284" height="220" class="monitor"/>
+  <rect x="45" y="354" width="282" height="25" fill="#697681"/>
+  <rect x="419" y="354" width="282" height="25" fill="#697681"/>
+  <rect x="793" y="354" width="282" height="25" fill="#697681"/>
+  <text x="254" y="190" class="note">Input A</text>
+  <rect x="150" y="205" width="210" height="140" class="saved"/>
+  <rect x="78" y="205" width="210" height="140" class="hidden"/>
+  <text x="94" y="236">A: adjusted, hidden</text>
+  <rect x="466" y="224" width="180" height="120" class="hidden"/>
+  <text x="482" y="255">B: hidden</text>
+  <rect x="840" y="224" width="180" height="120" class="app"/>
+  <rect x="842" y="226" width="176" height="28" class="bar"/>
+  <text x="854" y="247">B: shown</text>
+  <path d="M374 278 H394" class="arrow"/>
+  <path d="M724 278 H767" class="arrow"/>
+  <text x="44" y="420" class="note">Hidden; bounds already adjusted.</text>
+  <text x="418" y="420" class="note">Hidden; window now uses B.</text>
+  <text x="792" y="420" class="note">Shown at B's prepared bounds.</text>
+  <text x="32" y="478" class="note">First panel: the right dashed outline shows input A. Labeled dashed windows are hidden.</text>
+  <text x="32" y="515">WinUI leaves both input snapshots unchanged.</text>
+  <text x="32" y="552">First Activate() keeps the final prepared bounds; it does not run placement again.</text>
+</svg>

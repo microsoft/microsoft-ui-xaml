@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="610" viewBox="0 0 1120 610" role="img" aria-labelledby="title desc">
+  <title id="title">Match a display name, not a permanent hardware ID</title>
+  <desc id="desc">The saved placement refers to physical monitor A with GDI name \\.\DISPLAY2. Three separate fixtures show the possibilities after a connection change. A retained name follows physical monitor A. With no name match, WinUI uses coordinate fallback; monitor B is an example fallback target, not a guaranteed choice. If the name is reassigned to physical monitor B, matching follows B rather than recognizing the old hardware.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}</style>
+  </defs>
+  <rect width="1120" height="610" fill="white"/>
+  <text x="32" y="40" class="heading">Match a display name, not a permanent hardware ID</text>
+  <text x="32" y="85">Saved placement: physical monitor A, GDI name \\.\DISPLAY2</text>
+  <text x="44" y="143" class="panel">Name retained</text>
+  <text x="412" y="143" class="panel">No name match</text>
+  <text x="780" y="143" class="panel">Name reused</text>
+  <rect x="44" y="167" width="292" height="240" class="monitor"/>
+  <rect x="412" y="167" width="292" height="240" class="monitor"/>
+  <rect x="780" y="167" width="292" height="240" class="monitor"/>
+  <text x="62" y="198">Physical monitor A</text>
+  <text x="430" y="198">Physical monitor B</text>
+  <text x="798" y="198">Physical monitor B</text>
+  <text x="62" y="230" class="note">Name: \\.\DISPLAY2</text>
+  <text x="430" y="230" class="note">Name: \\.\DISPLAY1</text>
+  <text x="798" y="230" class="note">Name: \\.\DISPLAY2</text>
+  <rect x="88" y="263" width="200" height="112" class="app"/>
+  <rect x="90" y="265" width="196" height="28" class="bar"/>
+  <text x="102" y="286">App</text>
+  <rect x="456" y="263" width="200" height="112" class="app"/>
+  <rect x="458" y="265" width="196" height="28" class="bar"/>
+  <text x="470" y="286">App</text>
+  <rect x="824" y="263" width="200" height="112" class="app"/>
+  <rect x="826" y="265" width="196" height="28" class="bar"/>
+  <text x="838" y="286">App</text>
+  <text x="44" y="447" class="note">WinUI follows the name.</text>
+  <text x="44" y="475" class="note">A still has the saved name.</text>
+  <text x="412" y="447" class="note">WinUI uses saved coordinates.</text>
+  <text x="412" y="475" class="note">B is one example fallback target.</text>
+  <text x="780" y="447" class="note">WinUI follows the name.</text>
+  <text x="780" y="475" class="note">B now has the saved name.</text>
+  <rect x="32" y="520" width="1056" height="58" rx="8" fill="#fff3cd" stroke="#8b4500" stroke-width="2"/>
+  <text x="52" y="555">Independent fixtures: a GDI name is not a permanent physical-monitor identity.</text>
+</svg>

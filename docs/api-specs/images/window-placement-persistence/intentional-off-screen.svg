@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="650" viewBox="0 0 1120 650" role="img" aria-labelledby="title desc">
+  <title id="title">Preserve an intentional off-screen offset: deferred policy</title>
+  <desc id="desc">Before close, the user leaves part of the app window beyond the right edge of a display. The display layout does not change. Two reopening outcomes are shown: the current proposal moves the window fully inside the work area; the requested, deferred outcome keeps the original off-screen offset. Window content beyond the display edge is clipped. A prominent warning states that the requested behavior is not yet specified.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+    <clipPath id="screen-before"><rect x="45" y="261" width="438" height="167"/></clipPath>
+    <clipPath id="screen-requested"><rect x="621" y="418" width="438" height="167"/></clipPath>
+  </defs>
+  <rect width="1120" height="650" fill="white"/>
+  <text x="32" y="40" class="heading">Keep an intentionally partly off-screen window</text>
+  <text x="32" y="85" class="panel">Before the app closes</text>
+  <text x="610" y="85" class="panel">When the app opens again</text>
+  <text x="44" y="162" class="note">Same display layout before and after.</text>
+  <rect x="44" y="260" width="440" height="200" class="monitor"/>
+  <rect x="45" y="428" width="438" height="31" fill="#697681"/>
+  <text x="264" y="451" text-anchor="middle" style="fill:white">Taskbar</text>
+  <g clip-path="url(#screen-before)">
+    <rect x="374" y="291" width="170" height="118" class="app"/>
+    <rect x="376" y="293" width="166" height="28" class="bar"/>
+    <text x="388" y="314">App</text>
+    <text x="388" y="368" class="note">Visible</text>
+    <text x="388" y="394" class="note">part</text>
+  </g>
+  <path d="M523 360 H561 V245 H588" class="arrow"/>
+  <path d="M561 360 V517 H588" class="arrow"/>
+  <text x="620" y="128">Current proposal: fit inside work area</text>
+  <rect x="620" y="145" width="440" height="200" class="monitor"/>
+  <rect x="621" y="313" width="438" height="31" fill="#697681"/>
+  <text x="840" y="336" text-anchor="middle" style="fill:white">Taskbar</text>
+  <rect x="885" y="178" width="170" height="118" class="app"/>
+  <rect x="887" y="180" width="166" height="28" class="bar"/>
+  <text x="899" y="201">App</text>
+  <text x="970" y="262" class="note" text-anchor="middle">Fully visible</text>
+  <text x="620" y="400">Requested: keep the off-screen offset</text>
+  <rect x="620" y="417" width="440" height="200" class="monitor"/>
+  <rect x="621" y="585" width="438" height="31" fill="#697681"/>
+  <text x="840" y="608" text-anchor="middle" style="fill:white">Taskbar</text>
+  <g clip-path="url(#screen-requested)">
+    <rect x="950" y="448" width="170" height="118" class="app"/>
+    <rect x="952" y="450" width="166" height="28" class="bar"/>
+    <text x="964" y="471">App</text>
+    <text x="964" y="525" class="note">Visible</text>
+    <text x="964" y="551" class="note">part</text>
+  </g>
+  <text x="44" y="511">Part of the window is off-screen.</text>
+  <text x="32" y="559" class="panel">Requested behavior -</text>
+  <text x="32" y="590" class="panel">not yet specified</text>
+</svg>
