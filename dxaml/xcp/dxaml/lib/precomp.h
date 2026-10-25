@@ -185,4 +185,8 @@
 
 #include "MUX-ETWEvents.h"
 
+#ifdef XAMLPROFILER_ENABLED
+#include "XamlProfilerTracing.h"
+#endif
+
 #include <FeatureFlags.h>

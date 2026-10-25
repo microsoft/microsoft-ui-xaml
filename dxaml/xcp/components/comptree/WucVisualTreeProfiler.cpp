@@ -12,7 +12,6 @@
 #include "WucVisualTreeProfiler.h"
 #include <Windows.UI.Composition.h>
 #include "XcpAllocation.h"
-#include "XamlProfilerTracing.h"
 #include <unordered_set>
 
 // This file ports the WUC-visual property extraction used by DCompTreeHelper's live

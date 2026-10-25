@@ -1816,7 +1816,12 @@ ItemsControl::PrepareItemContainer(
     _In_ xaml::IDependencyObject* pContainer,
     _In_ IInspectable* pItem)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::PrepareContainerBegin(pContainer ? static_cast<DependencyObject*>(pContainer)->GetHandle() : nullptr, GetHandle());
+#else
     TracePrepareContainerBegin();
+#endif
+
     HRESULT hr = S_OK;
     ctl::ComPtr<IGroupItem> spGroupItem;
 
@@ -1846,7 +1851,11 @@ ItemsControl::PrepareItemContainer(
     }
 
 Cleanup:
+#ifdef XAMLPROFILER_ENABLED
+    XamlElementTracing::PrepareContainerEnd(pContainer ? static_cast<DependencyObject*>(pContainer)->GetHandle() : nullptr, GetHandle());
+#else
     TracePrepareContainerEnd();
+#endif
     RRETURN(hr);
 }
 
